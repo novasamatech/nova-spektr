@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Address, type DecodedTransaction, type MultisigAccount, type Transaction } from '@/shared/core';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type Address, type DecodedTransaction, type Transaction } from '@/shared/core';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type MultisigEvent, type MultisigOperation, multisigOperationService } from '@/domains/network';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 
@@ -29,16 +29,16 @@ export const buildMultisigTx = (
   tx: DecodedTransaction,
   multisigTx: Transaction,
   params: ExtrinsicResultParams,
-  account: MultisigAccount,
+  signatoryAccountId: AccountId,
 ): MultisigOperation => {
   const operationId = multisigOperationService.getOperationId(
     multisigTx.chainId,
     multisigTx.args.callHash,
-    account.accountId,
+    multisigTx.accountId,
     params.timepoint.height,
     params.timepoint.index,
   );
-  const eventId = multisigOperationService.getEventId(operationId, multisigTx.accountId, 'approve');
+  const eventId = multisigOperationService.getEventId(operationId, signatoryAccountId, 'approve');
 
   const event: MultisigEvent = {
     id: eventId,
@@ -52,18 +52,18 @@ export const buildMultisigTx = (
 
   return {
     id: operationId,
-    accountId: account.accountId,
-    depositor: multisigTx.accountId,
+    status: 'pending',
+    section: tx.section,
+    method: tx.method,
+    accountId: multisigTx.accountId,
     chainId: multisigTx.chainId,
+    depositor: signatoryAccountId,
     transaction: tx,
     callHash: multisigTx.args.callHash,
     callData: multisigTx.args.callData ?? null,
-    status: 'pending',
     blockCreated: pjsSchema.helpers.toBlockHeight(params.timepoint.height),
     indexCreated: params.timepoint.index,
     timestamp: Date.now(),
     events: [event],
-    section: tx.section,
-    method: tx.method,
   };
 };
