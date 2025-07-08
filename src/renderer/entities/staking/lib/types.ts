@@ -15,7 +15,7 @@ export interface IStakingDataService {
   ) => Promise<() => void>;
   fetchLedger: (chainId: ChainId, api: ApiPromise, addresses: Address[]) => Promise<StakingMap>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
-  getUnbondingPeriod: (api: ApiPromise) => string;
+  getUnbondingPeriod: (api: ApiPromise, timelineApi: ApiPromise) => string;
   getTotalStaked: (api: ApiPromise, era: EraIndex) => Promise<string>;
   getNextUnstakingEra: (unlocking?: Unlocking[], era?: number) => EraIndex | undefined;
   hasRedeem: (unlocking?: Unlocking[], era?: number) => boolean;

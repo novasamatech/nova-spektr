@@ -123,12 +123,12 @@ export const useStakingData = (): IStakingDataService => {
     }
   };
 
-  const getUnbondingPeriod = (api: ApiPromise): string => {
+  const getUnbondingPeriod = (api: ApiPromise, timelineApi: ApiPromise): string => {
     try {
       const unbondingDuration = api.consts.staking.bondingDuration.toNumber();
       const sessionsPerEra = api.consts.staking.sessionsPerEra.toNumber();
-      const sessionDuration = api.consts.babe.epochDuration.toNumber();
-      const blockTime = api.consts.babe.expectedBlockTime.toNumber() / 1000;
+      const sessionDuration = timelineApi.consts.babe.epochDuration.toNumber();
+      const blockTime = timelineApi.consts.babe.expectedBlockTime.toNumber() / 1000;
 
       return (unbondingDuration * sessionsPerEra * sessionDuration * blockTime).toString();
     } catch (error) {
