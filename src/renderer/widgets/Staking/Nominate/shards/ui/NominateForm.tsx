@@ -1,16 +1,17 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
+import { type FormEvent, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { formatBalance, toAddress, toShortAddress, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, MultiSelect } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { SignatorySelector } from '@/entities/operations';
+import { accounts } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
+import { AccountAddress, ProxyWalletAlert, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
 
@@ -128,25 +129,44 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { signatory },
+    fields: { signatory, shards },
   } = useForm(formModel.$nominateForm);
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const isMultisig = useUnit(formModel.$isMultisig);
+  const balances = useUnit(balanceModel.$balances);
+  const allAccounts = useUnit(accounts.$list);
+  const allWallets = useUnit(walletModel.$wallets);
 
-  if (!isMultisig || !network) {
+  const signatoriesWithBalance = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+    return signatories[0].map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network.chain.chainId,
+        network.chain.assets[0].assetId.toString(),
+      );
+      return { signer: signatory, balance: transferableAmount(balance) };
+    });
+  }, [signatories, balances]);
+
+  if (!network) {
     return null;
   }
 
   return (
-    <SignatorySelector
+    <SignatorySelect
       signatory={signatory.value}
-      signatories={signatories[0]}
-      asset={network.chain.assets[0]}
-      addressPrefix={network.chain.addressPrefix}
+      signatories={signatoriesWithBalance}
+      allAccounts={allAccounts}
+      allWallets={allWallets}
+      initiator={shards.value[0]}
       hasError={signatory.hasError()}
       errorText={t(signatory.errorText())}
+      network={network}
       onChange={signatory.onChange}
     />
   );

@@ -26,6 +26,7 @@ import {
   transferableAmountBN,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { operationsUtils } from '@/entities/operations';
@@ -265,14 +266,13 @@ const $signatories = combine(
     wallets: walletModel.$wallets,
     account: $proxyForm.fields.account.$value,
     chain: $proxyForm.fields.chain.$value,
-    balances: balanceModel.$balances,
   },
-  ({ wallet, wallets, account, chain, balances }) => {
+  ({ wallet, wallets, account, chain }) => {
     if (!wallet || !chain.chainId || !account || !accountUtils.isMultisigAccount(account)) return [];
 
     const signers = dictionary(account.signatories, 'accountId', () => true);
 
-    return wallets.reduce<{ signer: Account; balance: string }[]>((acc, wallet) => {
+    return wallets.reduce<AnyAccount[]>((acc, wallet) => {
       if (!permissionUtils.canCreateMultisigTx(wallet)) return acc;
 
       const signer = wallet.accounts.find((a) => {
@@ -280,14 +280,7 @@ const $signatories = combine(
       });
 
       if (signer) {
-        const balance = balanceUtils.getBalance(
-          balances,
-          signer.accountId,
-          chain.chainId,
-          chain.assets[0].assetId.toString(),
-        );
-
-        acc.push({ signer, balance: transferableAmount(balance) });
+        acc.push(signer);
       }
 
       return acc;

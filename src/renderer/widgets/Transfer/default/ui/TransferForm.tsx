@@ -1,4 +1,3 @@
-import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 
@@ -14,16 +13,15 @@ import {
   performSearch,
   toAddress,
   validateAddress,
-  withdrawableAmountBN,
+  withdrawableAmount,
 } from '@/shared/lib/utils';
 import { Button, CaptionText, Icon, Identicon, InputHint } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
+import { Address, SignatorySelect } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
-import { SignatorySelector } from '@/entities/operations';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, DeliveryFeeAlert, WalletIcon, accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -83,33 +81,42 @@ const Signatories = () => {
     fields: { signatory },
   } = useForm(formModel.form);
 
+  const initiator = useUnit(formModel.$initiator);
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
   const balances = useUnit(balanceModel.$balances);
+  const allAccounts = useUnit(accounts.$list);
+  const allWallets = useUnit(walletModel.$wallets);
 
-  if (!network || signatories.length <= 1) {
+  const signatoriesWithBalance = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+    return signatories.map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network.chain.chainId,
+        network.chain.assets[0].assetId.toString(),
+      );
+      return { signer: signatory, balance: withdrawableAmount(balance) };
+    });
+  }, [signatories, balances]);
+
+  if (!network) {
     return null;
   }
 
-  const options = signatories.map((signer) => {
-    const balance = balanceUtils.getBalance(
-      balances,
-      signer.accountId,
-      network.chain.chainId,
-      network.asset.assetId.toString(),
-    );
-
-    return { signer, balance: balance ? withdrawableAmountBN(balance) : BN_ZERO };
-  });
-
   return (
-    <SignatorySelector
+    <SignatorySelect
       signatory={signatory.value}
-      signatories={options}
-      asset={getNativeAsset(network.chain.assets)}
-      addressPrefix={network.chain.addressPrefix}
+      signatories={signatoriesWithBalance}
+      allAccounts={allAccounts}
+      allWallets={allWallets}
+      initiator={initiator}
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
+      network={network}
       onChange={signatory.onChange}
     />
   );

@@ -5,7 +5,6 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { combineEvents, delay, spread } from 'patronum';
 
 import {
-  type Account,
   type NoID,
   type PartialProxiedAccount,
   type ProxyGroup,
@@ -17,6 +16,7 @@ import {
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type PathType, Paths } from '@/shared/routes';
+import { type AnyAccount } from '@/domains/network';
 import { subscriptionService } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
@@ -47,7 +47,7 @@ const $addProxyStore = createStore<AddPureProxiedStore | null>(null).reset(flowF
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<AnyAccount[]>([]);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $txWrappers = combine(

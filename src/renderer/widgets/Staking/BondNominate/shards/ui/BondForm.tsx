@@ -1,10 +1,10 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 
 import { type Address, RewardsDestination } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
+import { formatBalance, toAddress, toShortAddress, transferableAmount, validateAddress } from '@/shared/lib/utils';
 import {
   Button,
   Combobox,
@@ -17,12 +17,13 @@ import {
   RadioGroup,
 } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
-import { AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { SignatorySelector } from '@/entities/operations';
+import { accounts } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
-import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
+import { AccountAddress, ProxyWalletAlert, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
@@ -143,25 +144,46 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { signatory },
+    fields: { signatory, shards },
   } = useForm(formModel.$bondForm);
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const isMultisig = useUnit(formModel.$isMultisig);
 
-  if (!isMultisig || !network) {
+  const balances = useUnit(balanceModel.$balances);
+  const allAccounts = useUnit(accounts.$list);
+  const allWallets = useUnit(walletModel.$wallets);
+
+  const signatoriesWithBalance = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+
+    return signatories[0].map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network.chain.chainId,
+        network.chain.assets[0].assetId.toString(),
+      );
+      return { signer: signatory, balance: transferableAmount(balance) };
+    });
+  }, [signatories, balances]);
+
+  if (!network) {
     return null;
   }
 
   return (
-    <SignatorySelector
+    <SignatorySelect
       signatory={signatory.value}
-      signatories={signatories[0]}
-      asset={network.chain.assets[0]}
-      addressPrefix={network.chain.addressPrefix}
+      signatories={signatoriesWithBalance}
+      allAccounts={allAccounts}
+      initiator={shards.value[0]}
+      allWallets={allWallets}
       hasError={signatory.hasError()}
       errorText={t(signatory.errorText())}
+      network={network}
       onChange={signatory.onChange}
     />
   );

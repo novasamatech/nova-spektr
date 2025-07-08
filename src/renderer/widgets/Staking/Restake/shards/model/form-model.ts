@@ -2,12 +2,10 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { createForm } from 'effector-forms';
-import isEmpty from 'lodash/isEmpty';
 import noop from 'lodash/noop';
 import { spread } from 'patronum';
 
 import {
-  type Account,
   type Address,
   type Asset,
   type Chain,
@@ -26,6 +24,7 @@ import {
   transferableAmount,
   unlockingAmount,
 } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, useStakingData } from '@/entities/staking';
@@ -36,8 +35,8 @@ import { type NetworkStore } from '../lib/types';
 type BalanceMap = { balance: string; stake: string };
 
 type FormParams = {
-  shards: Account[];
-  signatory: Account | null;
+  shards: AnyAccount[];
+  signatory: AnyAccount | null;
   amount: string;
 };
 
@@ -48,7 +47,7 @@ type FormSubmitEvent = {
     coreTx: Transaction;
   }[];
   formData: FormParams & {
-    signatory: Account | null;
+    signatory: AnyAccount | null;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     totalFee: string;
@@ -71,7 +70,7 @@ const $staking = restore(stakingSet, null);
 const $minBond = createStore<string>(ZERO_BALANCE);
 const $stakingUnsub = createStore<() => void>(noop);
 
-const $shards = createStore<Account[]>([]);
+const $shards = createStore<AnyAccount[]>([]);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
@@ -85,12 +84,12 @@ const $totalFee = restore(totalFeeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<AnyAccount[]>([]);
 
 const $restakeForm = createForm<FormParams>({
   fields: {
     shards: {
-      init: [] as Account[],
+      init: [] as AnyAccount[],
       rules: [
         {
           name: 'noProxyFee',
@@ -190,7 +189,7 @@ const $restakeForm = createForm<FormParams>({
           validator: (value, form, { network, accountsBalances }) => {
             const amountBN = new BN(formatAmount(value, network.asset.precision));
 
-            return form.shards.every((_: Account, index: number) => {
+            return form.shards.every((_: AnyAccount, index: number) => {
               return amountBN.lte(new BN(accountsBalances[index].balance));
             });
           },
@@ -310,23 +309,16 @@ const $signatories = combine(
   {
     network: $networkStore,
     txWrappers: $txWrappers,
-    balances: balanceModel.$balances,
   },
-  ({ network, txWrappers, balances }) => {
+  ({ network, txWrappers }) => {
     if (!network) return [];
 
-    const { chain, asset } = network;
-
-    return txWrappers.reduce<{ signer: Account; balance: string }[][]>((acc, wrapper) => {
+    return txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
-      const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
+      const signatories = (wrapper as MultisigTxWrapper).signatories;
 
-        return { signer: signatory, balance: transferableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
+      acc.push(signatories);
 
       return acc;
     }, []);
@@ -523,19 +515,29 @@ sample({
 
 sample({
   clock: $restakeForm.fields.signatory.onChange,
-  source: $signatories,
-  filter: (signatories) => !isEmpty(signatories),
-  fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
+  source: {
+    balances: balanceModel.$balances,
+    network: $networkStore,
+  },
+  filter: ({ network }) => nonNullable(network),
+  fn: ({ balances, network }, signatory) => {
+    if (!signatory) return ZERO_BALANCE;
 
-    return match?.balance || ZERO_BALANCE;
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network!.chain.chainId,
+      network!.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
   },
   target: $signatoryBalance,
 });
 
 sample({
   clock: $restakeForm.fields.signatory.$value,
-  filter: (signatory: Account | null): signatory is Account => nonNullable(signatory),
+  filter: (signatory: AnyAccount | null): signatory is AnyAccount => nonNullable(signatory),
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
 });

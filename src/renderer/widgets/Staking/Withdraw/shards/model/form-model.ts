@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { createForm } from 'effector-forms';
-import isEmpty from 'lodash/isEmpty';
 import noop from 'lodash/noop';
 import { spread } from 'patronum';
 
@@ -20,6 +19,7 @@ import {
   ZERO_BALANCE,
   getRelaychainAsset,
   nonNullable,
+  nullable,
   redeemableAmount,
   toAddress,
   transferableAmount,
@@ -288,23 +288,14 @@ const $signatories = combine(
   {
     network: $networkStore,
     txWrappers: $txWrappers,
-    balances: balanceModel.$balances,
   },
-  ({ network, txWrappers, balances }) => {
+  ({ network, txWrappers }) => {
     if (!network) return [];
 
-    const { chain, asset } = network;
-
-    return txWrappers.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, wrapper) => {
+    return txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
-      const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
-
-        return { signer: signatory, balance: transferableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
+      acc.push((wrapper as MultisigTxWrapper).signatories);
 
       return acc;
     }, []);
@@ -487,12 +478,21 @@ sample({
 
 sample({
   clock: $withdrawForm.fields.signatory.onChange,
-  source: $signatories,
-  filter: (signatories) => !isEmpty(signatories),
-  fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
+  source: {
+    balances: balanceModel.$balances,
+    network: $networkStore,
+  },
+  fn: ({ balances, network }, signatory) => {
+    if (nullable(signatory) || nullable(balances) || nullable(network)) return ZERO_BALANCE;
 
-    return match?.balance || ZERO_BALANCE;
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
   },
   target: $signatoryBalance,
 });

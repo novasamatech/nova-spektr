@@ -1,11 +1,9 @@
-/* eslint-disable import-x/max-dependencies */
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import { camelCase, isEmpty } from 'lodash';
+import { camelCase } from 'lodash';
 import { spread } from 'patronum';
 
 import {
-  type Account,
   type Address,
   type Chain,
   type ChainId,
@@ -21,6 +19,7 @@ import {
   formatAmount,
   getAssetId,
   nonNullable,
+  nullable,
   toAccountId,
   toAddress,
   transferableAmount,
@@ -29,6 +28,7 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { TransferType, getExtrinsic, transactionBuilder, transactionService } from '@/entities/transaction';
@@ -40,9 +40,9 @@ import { type NetworkStore } from '../lib/types';
 type BalanceMap = Record<'balance' | 'native', string>;
 
 type FormParams = {
-  account: Account | null;
+  account: AnyAccount | null;
   xcmChain: Chain;
-  signatory: Account | null;
+  signatory: AnyAccount | null;
   destination: Address;
   amount: string;
 };
@@ -54,7 +54,7 @@ type FormSubmitEvent = {
     coreTx: Transaction;
   };
   formData: FormParams & {
-    signatory: Account | null;
+    signatory: AnyAccount | null;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     xcmFee: string;
@@ -90,7 +90,7 @@ const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isXcm = createStore<boolean>(false);
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<AnyAccount[]>([]);
 
 const $transferForm = createForm<FormParams>({
   fields: {
@@ -349,28 +349,14 @@ const $signatories = combine(
   {
     network: $networkStore,
     txWrappers: $txWrappers,
-    balances: balanceModel.$balances,
   },
-  ({ network, txWrappers, balances }) => {
+  ({ network, txWrappers }) => {
     if (!network) return [];
 
-    const { chain } = network;
-
-    return txWrappers.reduce<{ signer: Account; balance: string }[][]>((acc, wrapper) => {
+    return txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
-      const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(
-          balances,
-          signatory.accountId,
-          chain.chainId,
-          chain.assets[0].assetId.toString(),
-        );
-
-        return { signer: signatory, balance: withdrawableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
+      acc.push((wrapper as MultisigTxWrapper).signatories);
 
       return acc;
     }, []);
@@ -561,28 +547,31 @@ sample({
 });
 
 sample({
+  clock: $transferForm.fields.signatory.onChange,
   source: {
-    signatory: $transferForm.fields.signatory.$value,
-    signatories: $signatories,
+    balances: balanceModel.$balances,
+    network: $networkStore,
   },
-  filter: ({ signatory, signatories }) => {
-    return !isEmpty(signatories) && nonNullable(signatory);
-  },
-  fn: ({ signatory, signatories }) => {
-    if (!signatory) {
+  fn: ({ balances, network }, signatory) => {
+    if (nullable(signatory) || nullable(balances) || nullable(network)) {
       return ZERO_BALANCE;
     }
 
-    const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
 
-    return match?.balance || ZERO_BALANCE;
+    return withdrawableAmount(balance);
   },
   target: $signatoryBalance,
 });
 
 sample({
   clock: $transferForm.fields.signatory.$value,
-  filter: (signatory: Account | null): signatory is Account => nonNullable(signatory),
+  filter: (signatory: AnyAccount | null): signatory is AnyAccount => nonNullable(signatory),
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
 });

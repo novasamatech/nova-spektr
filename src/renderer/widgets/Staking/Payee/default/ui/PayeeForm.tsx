@@ -4,16 +4,16 @@ import { type FormEvent, useMemo, useState } from 'react';
 import { type Address, RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { stakeableAmount, toAddress, validateAddress } from '@/shared/lib/utils';
+import { toAddress, transferableAmount, validateAddress } from '@/shared/lib/utils';
 import { Button, Combobox, DetailRow, FootnoteText, Icon, Identicon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
-import { AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { SignatorySelector } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel } from '@/entities/transaction';
-import { AccountAddress } from '@/entities/wallet';
+import { AccountAddress, walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -51,35 +51,38 @@ const Signatories = () => {
   const network = useUnit(formModel.$networkStore);
 
   const balances = useUnit(balanceModel.$balances);
+  const allAccounts = useUnit(accounts.$list);
+  const allWallets = useUnit(walletModel.$wallets);
 
-  const signatoryWithBalance = useMemo(() => {
+  const signatoriesWithBalance = useMemo(() => {
     if (!network) {
       return [];
     }
-
     return signatories.map((signatory) => {
       const balance = balanceUtils.getBalance(
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.asset.assetId.toString(),
+        network.chain.assets[0].assetId.toString(),
       );
-      return { signer: signatory, balance: stakeableAmount(balance) };
+      return { signer: signatory, balance: transferableAmount(balance) };
     });
-  }, [signatories, balances, network]);
+  }, [signatories, balances]);
 
-  if (!network || signatoryWithBalance.length < 2) {
+  if (!network) {
     return null;
   }
 
   return (
-    <SignatorySelector
+    <SignatorySelect
       signatory={signatory.value}
-      signatories={signatoryWithBalance}
-      asset={network.chain.assets[0]}
-      addressPrefix={network.chain.addressPrefix}
+      signatories={signatoriesWithBalance}
+      allAccounts={allAccounts}
+      allWallets={allWallets}
+      initiator={signatory.value}
       hasError={signatory.hasError}
       errorText={signatory.errorMessage}
+      network={network}
       onChange={signatory.onChange}
     />
   );

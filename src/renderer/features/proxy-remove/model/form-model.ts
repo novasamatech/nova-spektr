@@ -7,7 +7,6 @@ import { spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
 import {
-  type Account,
   type Address,
   type Chain,
   type ProxiedAccount,
@@ -26,6 +25,7 @@ import {
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -40,17 +40,14 @@ type ProxyAccounts = {
 };
 
 type FormParams = {
-  signatory: Account | null;
+  signatory: AnyAccount | null;
 };
 
 type Input = {
   chain?: Chain;
-  account?: Account;
+  account?: AnyAccount;
   proxiedAccount?: ProxiedAccount;
-  signatories: {
-    signer: Account;
-    balance: string;
-  }[];
+  signatories: AnyAccount[];
 };
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
@@ -344,6 +341,7 @@ sample({
 
 export const formModel = {
   $wallet,
+  $account,
   $proxyForm,
   $proxyChains,
   $proxiedAccounts,

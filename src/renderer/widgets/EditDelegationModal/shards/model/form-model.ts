@@ -1,7 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
 import { type Asset, type Chain, type Conviction } from '@/shared/core';
@@ -260,31 +259,6 @@ const $proxyWallet = combine(
   },
 );
 
-const $signatories = combine(
-  {
-    network: $networkStore,
-    availableSignatories: $availableSignatories,
-    balances: balanceModel.$balances,
-  },
-  ({ network, availableSignatories, balances }) => {
-    if (!network) return [];
-
-    const { chain, asset } = network;
-
-    return availableSignatories.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, signatories) => {
-      const balancedSignatories = signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
-
-        return { signer: signatory, balance: transferableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
-
-      return acc;
-    }, []);
-  },
-);
-
 const $api = combine(
   {
     apis: networkModel.$apis,
@@ -417,14 +391,21 @@ sample({
 
 sample({
   clock: $delegateForm.fields.signatory.onChange,
-  source: $signatories,
-  filter: (signatories, signatory) => {
-    return !isEmpty(signatories) && nonNullable(signatory);
+  source: {
+    balances: balanceModel.$balances,
+    network: $networkStore,
   },
-  fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory!.id);
+  fn: ({ balances, network }, signatory) => {
+    if (!network || !signatory) return ZERO_BALANCE;
 
-    return match?.balance || ZERO_BALANCE;
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
   },
   target: $signatoryBalance,
 });
@@ -489,7 +470,7 @@ sample({
 export const formModel = {
   $delegateForm,
   $proxyWallet,
-  $signatories,
+  $signatories: $availableSignatories,
 
   $accounts,
   $accountsBalances,

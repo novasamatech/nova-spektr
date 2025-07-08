@@ -6,9 +6,11 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance, transferableAmount } from '@/shared/lib/utils';
 import { Button, InputHint } from '@/shared/ui';
+import { SignatorySelect } from '@/shared/ui-entities';
+import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { SignatorySelector } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
 import { unlockFormAggregate } from '../model/unlockForm';
@@ -43,41 +45,44 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { signatory },
+    fields: { signatory, initiator },
   } = useForm(unlockFormAggregate.form);
 
   const signatories = useUnit(unlockFormAggregate.$signatories);
   const network = useUnit(networkSelectorModel.$network);
   const balances = useUnit(balanceModel.$balances);
+  const allAccounts = useUnit(accounts.$list);
+  const allWallets = useUnit(walletModel.$wallets);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!network) {
       return [];
     }
-
     return signatories.map((signatory) => {
       const balance = balanceUtils.getBalance(
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.asset.assetId.toString(),
+        network.chain.assets[0].assetId.toString(),
       );
       return { signer: signatory, balance: transferableAmount(balance) };
     });
-  }, [signatories, balances, network]);
+  }, [signatories, balances]);
 
-  if (!network?.chain || signatoriesWithBalance.length < 2) {
+  if (!network) {
     return null;
   }
 
   return (
-    <SignatorySelector
+    <SignatorySelect
       signatory={signatory.value}
       signatories={signatoriesWithBalance}
-      asset={network.chain.assets[0]}
-      addressPrefix={network.chain.addressPrefix}
+      allAccounts={allAccounts}
+      allWallets={allWallets}
+      initiator={initiator.value}
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
+      network={network}
       onChange={signatory.onChange}
     />
   );
