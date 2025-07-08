@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { once } from 'patronum';
 
 import { type AssetByChains } from '@/shared/core';
@@ -26,7 +26,11 @@ const $accounts = walletSelect.$selectedAccounts;
 const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
 const $query = restore<string>(queryChanged, '');
 
-const $defaultTokens = createStore(tokensService.getTokensData());
+const populateFx = createEffect((): Promise<AssetByChains[]> => {
+  return tokensService.getTokensData();
+});
+
+const $defaultTokens = restore(populateFx.doneData, []);
 
 const $filteredAccounts = createStore<AnyAccount[] | null>(null);
 
@@ -201,6 +205,9 @@ export const portfolioModel = {
   $accounts,
   $sortedTokens,
   $tokensPopulated,
+
+  populate: populateFx,
+
   events: {
     activeViewChanged,
     hideZeroBalancesChanged,
