@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { includesMultiple, nullable, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { IconButton, Identicon, InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { Box, Combobox, Field, Input } from '@/shared/ui-kit';
+import { Box, Combobox, Field, Input, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -96,12 +96,15 @@ export const Signatory = ({
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: walletUtils.isValidSignatory,
       accountFn: account => {
-        const isChainMatch = accountService.isAccountAvailableOnChain(account, chain); //any own acc available
         const isCorrectAccount = !accountUtils.isVaultBaseAccount(account);
+
+        if (isOwnAccount) return isCorrectAccount;
+
+        const isChainMatch = accountService.isAccountAvailableOnChain(account, chain); //any own acc available
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
         const queryPass = includesMultiple([account.name, address], query);
 
-        return (isOwnAccount || isChainMatch) && isCorrectAccount && queryPass;
+        return isChainMatch && isCorrectAccount && queryPass;
       },
     });
 
@@ -220,10 +223,6 @@ export const Signatory = ({
     ? t('createMultisigAccount.myName')
     : t('createMultisigAccount.signatoryNameLabel', { index: signatoryIndex });
 
-  const addressLabel = isOwnAccount
-    ? t('createMultisigAccount.myAddress')
-    : t('createMultisigAccount.signatoryAddress');
-
   const isInvalid = isInvalidAddress || signatoryAddress !== query;
 
   return (
@@ -240,37 +239,59 @@ export const Signatory = ({
       </Field>
       <div className="grid grid-cols-[444px,28px] gap-x-4">
         <Box width="100%">
-          <Field text={addressLabel}>
-            <Combobox
-              data-testid={TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX}
-              placeholder={t('createMultisigAccount.signatorySelection')}
-              invalid={isDuplicate}
-              value={query}
-              prefixElement={
-                <Identicon address={isInvalid ? '' : signatoryAddress} size={20} background={false} canCopy={false} />
-              }
-              onChange={onAddressChange}
-              onInput={setQuery}
-            >
-              {options.map(group => (
-                <Combobox.Group key={group.id} title={group.label}>
-                  {group.items.map(option => (
-                    <Combobox.Item key={option.id} value={option.value.address}>
+          {isOwnAccount ? (
+            <Field text={t('createMultisigAccount.myAddress')}>
+              <Select
+                placeholder={t('createMultisigAccount.signatorySelection')}
+                value={signatoryAddress}
+                invalid={isDuplicate}
+                onChange={onAddressChange}
+              >
+                {options.map(group =>
+                  group.items.map(option => (
+                    <Select.Item key={option.id} value={option.value.address}>
                       {option.label}
-                    </Combobox.Item>
-                  ))}
-                </Combobox.Group>
-              ))}
-            </Combobox>
+                    </Select.Item>
+                  )),
+                )}
+              </Select>
+              <InputHint active={isInvalid} variant="error">
+                {t('createMultisigAccount.disabledError.addressIsNotSupported')}
+              </InputHint>
+            </Field>
+          ) : (
+            <Field text={t('createMultisigAccount.signatoryAddress')}>
+              <Combobox
+                data-testid={TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX}
+                placeholder={t('createMultisigAccount.signatorySelection')}
+                invalid={isDuplicate}
+                value={query}
+                prefixElement={
+                  <Identicon address={isInvalid ? '' : signatoryAddress} size={20} background={false} canCopy={false} />
+                }
+                onChange={onAddressChange}
+                onInput={setQuery}
+              >
+                {options.map(group => (
+                  <Combobox.Group key={group.id} title={group.label}>
+                    {group.items.map(option => (
+                      <Combobox.Item key={option.id} value={option.value.address}>
+                        {option.label}
+                      </Combobox.Item>
+                    ))}
+                  </Combobox.Group>
+                ))}
+              </Combobox>
 
-            <InputHint active={isInvalid} variant="error">
-              {t('createMultisigAccount.disabledError.addressIsNotSupported')}
-            </InputHint>
+              <InputHint active={isInvalid} variant="error">
+                {t('createMultisigAccount.disabledError.addressIsNotSupported')}
+              </InputHint>
 
-            <InputHint active={isDuplicate} variant="error">
-              {t('createMultisigAccount.duplicateSignatoryAddress')}
-            </InputHint>
-          </Field>
+              <InputHint active={isDuplicate} variant="error">
+                {t('createMultisigAccount.duplicateSignatoryAddress')}
+              </InputHint>
+            </Field>
+          )}
         </Box>
         {!isOwnAccount && onDelete && (
           <IconButton

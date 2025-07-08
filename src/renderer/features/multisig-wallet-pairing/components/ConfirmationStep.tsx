@@ -81,7 +81,7 @@ export const ConfirmationStep = () => {
             </DetailRow>
             <DetailRow label={t('createMultisigAccount.signingAccount')}>
               <div className="flex w-full items-center justify-end gap-x-2">
-                <div className="flex max-w-[348px] flex-col">
+                <div className="flex max-w-[348px] flex-col text-text-secondary">
                   <Account variant="short" accountId={signer.accountId} chain={chain} />
                 </div>
               </div>

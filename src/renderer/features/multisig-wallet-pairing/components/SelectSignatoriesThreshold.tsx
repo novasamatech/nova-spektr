@@ -31,7 +31,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
 
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
-  const wrongChainTypes = useUnit(formModel.$invalidAddresses);
+  const invalidAddresses = useUnit(formModel.$invalidAddresses);
   const canSubmit = useUnit(formModel.$canSubmit);
   const chain = useUnit(formModel.$chain);
 
@@ -67,6 +67,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   };
 
   const asset = getNativeAsset(chain?.assets || []);
+  const thresholdDisabled = signatories.length < 2 || signatories.some(s => s.address === '');
 
   return (
     <>
@@ -81,7 +82,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
               key={index}
               isOwnAccount={index === 0}
               isDuplicate={duplicateSignatories[signatory.address]?.includes(index)}
-              isInvalidAddress={wrongChainTypes.includes(signatory.address)}
+              isInvalidAddress={invalidAddresses.includes(signatory.address)}
               signatoryIndex={index}
               signatory={signatory}
               onDelete={signatoryModel.events.deleteSignatory}
@@ -125,7 +126,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                   placeholder={t('createMultisigAccount.thresholdPlaceholder')}
                   value={(threshold.value || '').toString()}
                   invalid={threshold.hasError}
-                  disabled={[0, 1].includes(signatories.length)}
+                  disabled={thresholdDisabled}
                   height="md"
                   onChange={value => threshold.onChange(Number(value))}
                 >
