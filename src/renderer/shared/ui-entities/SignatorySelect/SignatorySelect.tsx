@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { Alert, FootnoteText, InputHint } from '@/shared/ui';
 import { Field, Select } from '@/shared/ui-kit';
 import { type AnyAccount, accountService } from '@/domains/network';
@@ -47,11 +47,11 @@ export const SignatorySelect = ({
     [onChange, signatories],
   );
 
-  if (!network) {
+  if (nullable(network) || nullable(initiator)) {
     return null;
   }
 
-  if ((signatories.length === 0 || 5 > 4) && nonNullable(initiator)) {
+  if (signatories.length === 0) {
     return (
       <NoSignatoryAlert allWallets={allWallets} initiator={initiator} allAccounts={allAccounts} chain={network.chain} />
     );
