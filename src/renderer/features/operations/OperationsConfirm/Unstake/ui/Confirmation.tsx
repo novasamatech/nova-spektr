@@ -1,6 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
+import { AdditionalType } from '@/shared/core/types/chain';
 import { useI18n } from '@/shared/i18n';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
@@ -34,6 +35,12 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
   const { amount, asset, chain, totalFee, fee, signatory, route, multisigDeposit, api } = confirmStore.meta;
+
+  const timelineApi = useStoreMap({
+    store: confirmModel.$apis,
+    keys: [confirmStore?.meta.chain.additional?.[AdditionalType.TIMELINE_CHAIN] ?? confirmStore?.meta.chain.chainId],
+    fn: (value, [chainId]) => value?.[chainId],
+  });
 
   const proxiedAccount = route.find(accountUtils.isProxiedAccount);
   const multisigAccount = route.find(accountUtils.isMultisigAccount);
@@ -95,7 +102,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
           <StakingPopover.Item>
             {t('staking.confirmation.hintUnstakePeriod')} {' ('}
-            <UnstakingDuration api={api} />
+            <UnstakingDuration api={api} timelineApi={timelineApi} />
             {')'}
           </StakingPopover.Item>
           <StakingPopover.Item>{t('staking.confirmation.hintNoRewards')}</StakingPopover.Item>
