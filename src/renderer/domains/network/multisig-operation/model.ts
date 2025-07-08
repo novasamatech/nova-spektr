@@ -1,4 +1,4 @@
-import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
@@ -14,8 +14,9 @@ import { onchainOperations, subscribeEventsResource, subscribeIndexerResource } 
 import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
 
-const $buffer = createStore<MultisigOperation[]>([]);
 const $list = createStore<MultisigOperation[]>([]);
+
+const operationsReceived = createEvent<MultisigOperation[]>();
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
@@ -75,7 +76,8 @@ const removeOperationsForAccountFx = attach({
 });
 
 deriveFromResources({
-  store: $buffer,
+  store: $list,
+  onReceive: operationsReceived,
   resources: [onchainOperations, subscribeIndexerResource],
   map(state, operations) {
     return multisigOperationService.mergeMultisigOperations(state, operations);
@@ -83,7 +85,8 @@ deriveFromResources({
 });
 
 deriveFromResources({
-  store: $buffer,
+  store: $list,
+  onReceive: operationsReceived,
   resources: [subscribeEventsResource],
   map: (state, { chainId, operationId, event }) => {
     const operation = state.find(x => x.id === operationId && x.chainId === chainId);
@@ -128,14 +131,14 @@ sample({
 });
 
 sample({
-  clock: $buffer.updates,
+  clock: operationsReceived,
   source: $list,
-  fn(operations, buffer) {
+  fn(existing, received) {
     const toAdd: MultisigOperation[] = [];
     const toUpdate: MultisigOperation[] = [];
 
-    for (const newOperation of buffer) {
-      const existingOperation = operations.find(o => o.id === newOperation.id);
+    for (const newOperation of received) {
+      const existingOperation = existing.find(o => o.id === newOperation.id);
       if (existingOperation) {
         if (!isEqual(existingOperation, newOperation)) {
           toUpdate.push({

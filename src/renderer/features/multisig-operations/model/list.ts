@@ -1,21 +1,27 @@
 import { sample } from 'effector';
 
 import { multisigOperation } from '@/domains/network';
+import { submitModel } from '@/features/operations/OperationSubmit';
 
-import { multisigOperationsFeatureStatus } from './status';
+import { multisigOperationsFeature } from './feature';
 
 sample({
-  clock: multisigOperationsFeatureStatus.running,
+  clock: multisigOperationsFeature.running,
   target: [multisigOperation.subscribe, multisigOperation.subscribeEvents],
 });
 
 sample({
-  clock: multisigOperationsFeatureStatus.stopped,
+  clock: multisigOperationsFeature.stopped,
   target: [multisigOperation.unsubscribe, multisigOperation.unsubscribeEvents],
+});
+
+sample({
+  clock: submitModel.output.saveMultisigTx,
+  target: multisigOperation.addOperations,
 });
 
 export const operationsModel = {
   $operations: multisigOperation.$list,
-  $pending: multisigOperationsFeatureStatus.isStarting,
-  $fulfilled: multisigOperationsFeatureStatus.isRunning,
+  $pending: multisigOperationsFeature.isStarting,
+  $fulfilled: multisigOperationsFeature.isRunning,
 };

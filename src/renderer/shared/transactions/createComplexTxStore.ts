@@ -1,14 +1,16 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEffect, createStore, sample } from 'effector';
+import { spread } from 'patronum';
 
 import { type Chain, type Transaction } from '@/shared/core';
-import { nonNullableMap } from '@/shared/lib/utils';
+import { assert, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, transactionService } from '@/domains/network';
+import { accountUtils } from '@/entities/wallet';
 
 import { createFeeCalculator } from './createFeeCalculator';
 
 type Params<T extends Transaction> = {
-  active: Store<boolean>;
+  active?: Store<boolean>;
   api: Store<ApiPromise | null>;
   chain: Store<Chain | null>;
   transaction: Store<T | null>;
@@ -18,7 +20,7 @@ type Params<T extends Transaction> = {
 };
 
 export const createComplexTxStore = <T extends Transaction>({
-  active,
+  active = createStore(true),
   api,
   chain,
   transaction,
@@ -30,9 +32,16 @@ export const createComplexTxStore = <T extends Transaction>({
     if (nonNullableMap(params)) {
       return accountService.findRoute(params.initiator, params.signatory, params.accounts, params.chain);
     }
+    return [];
   });
 
-  const $wrappedTransaction = createStore<Transaction | null>(null);
+  const $tx = createStore<Transaction | null>(null);
+  /**
+   * @deprecated Legacy bindings for multisig saving after operation success
+   *
+   * @see src/renderer/features/operations/OperationSubmit/model/submit-model.ts#28
+   */
+  const $multisigTx = createStore<Transaction | null>(null);
 
   type WrapParams = {
     api: ApiPromise;
@@ -40,30 +49,81 @@ export const createComplexTxStore = <T extends Transaction>({
     route: AnyAccount[];
   };
 
-  const wrapTransactionFx = createEffect(({ transaction, route, api }: WrapParams) => {
-    return transactionService.wrapLegacyTransaction(transaction, route, api);
+  const wrapTransactionFx = createEffect(async ({ transaction, route, api }: WrapParams) => {
+    const tx = await transactionService.wrapLegacyTransaction(transaction, route, api);
+    const signatory = route.at(-1);
+
+    assert(signatory, 'Signatory is required');
+
+    // its a legacy transaction structure which includes unnecessary information about signator
+    // we should set signatory explicitly
+    tx.accountId = signatory.accountId;
+
+    const mutisigAccountIndex = route.findIndex(accountUtils.isMultisigAccount);
+    if (mutisigAccountIndex !== -1) {
+      const multisigTx = await transactionService.wrapLegacyTransaction(
+        transaction,
+        route.slice(mutisigAccountIndex),
+        api,
+      );
+
+      multisigTx.accountId = signatory.accountId;
+
+      return {
+        tx,
+        multisigTx,
+      };
+    }
+
+    return {
+      tx,
+      multisigTx: null,
+    };
   });
 
-  sample({
+  const wrapTransaction = sample({
     clock: [transaction, api, $route],
     source: { transaction, api, route: $route },
-    filter: nonNullableMap,
+  }).filter({ fn: nonNullableMap });
+
+  sample({
+    clock: wrapTransaction,
+    filter: active,
     target: wrapTransactionFx,
   });
 
   sample({
+    clock: transaction,
+    filter: (t) => nullable(t),
+    fn: () => null,
+    target: $tx,
+  });
+
+  sample({
+    clock: active,
+    filter: (active) => !active,
+    fn: () => null,
+    target: [$tx, $multisigTx],
+  });
+
+  sample({
     clock: wrapTransactionFx.doneData,
-    target: $wrappedTransaction,
+    target: spread({
+      tx: $tx,
+      multisigTx: $multisigTx,
+    }),
   });
 
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
     $active: active,
     $api: api,
-    $transaction: $wrappedTransaction,
+    $transaction: $tx,
   });
 
   return {
-    $wrappedTransaction,
+    $route,
+    $tx,
+    $multisigTx,
     $pendingWrapping: wrapTransactionFx.pending,
     $fee,
     $pendingFee,

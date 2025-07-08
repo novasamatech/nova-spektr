@@ -72,6 +72,7 @@ const operationsQuery = gql`
 function mapSubqueryOperationRecord(node: unknown, api: ApiPromise): MultisigOperation | null {
   const response = operationsGqlSchema.parse(node);
   const operationId = multisigOperationService.getOperationId(
+    api.genesisHash.toHex(),
     response.callHash,
     response.accountId,
     response.blockCreated,
@@ -113,9 +114,43 @@ function mapSubqueryOperationRecord(node: unknown, api: ApiPromise): MultisigOpe
 
 async function fetchOperations(url: string, accountId: AccountId, api: ApiPromise): Promise<MultisigOperation[]> {
   const client = new GraphQLClient(url);
-  const result = await client.request<any, { accountId: AccountId }>(operationsQuery, { accountId });
+  const chainId = api.genesisHash.toHex();
+  const [result, chainMultisigs] = await Promise.all([
+    client.request<any, { accountId: AccountId }>(operationsQuery, { accountId }),
+    multisigPallet.storage.multisigs(api, accountId),
+  ]);
 
-  return result.multisigOperations.nodes.map((node: unknown) => mapSubqueryOperationRecord(node, api));
+  const existingMultisigs = new Set(
+    chainMultisigs.map(({ key, multisig }) => {
+      if (nullable(multisig)) {
+        return '';
+      }
+      return multisigOperationService.getOperationId(
+        chainId,
+        key.callHash,
+        key.accountId,
+        multisig.when.height,
+        multisig.when.index,
+      );
+    }),
+  );
+
+  return result.multisigOperations.nodes
+    .map((node: unknown) => mapSubqueryOperationRecord(node, api))
+    .filter((x: MultisigOperation | null) => {
+      if (nullable(x)) return false;
+
+      /**
+       * Subquery responses may have an incorrect "pending" state for completed
+       * operations. To handle this case, we filter out pending operations that
+       * do not exist on chain.
+       */
+      if (x.status === 'pending' && !existingMultisigs.has(x.id)) {
+        return false;
+      }
+
+      return true;
+    });
 }
 
 const multisigEvent = z.union([
@@ -123,13 +158,13 @@ const multisigEvent = z.union([
     ['accountId', pjsSchema.accountId],
     ['timepoint', multisigPallet.schema.multisigTimepoint],
     ['multisigAccountId', pjsSchema.accountId],
-    ['callHash', pjsSchema.hex],
+    ['callHash', pjsSchema.rawString],
   ),
   pjsSchema.tupleMap(
     ['accountId', pjsSchema.accountId],
     ['timepoint', multisigPallet.schema.multisigTimepoint],
     ['multisigAccountId', pjsSchema.accountId],
-    ['callHash', pjsSchema.hex],
+    ['callHash', pjsSchema.rawString],
     ['status', pjsSchema.enumType('Ok', 'Basic', 'Empty', 'Err', 'None')],
   ),
 ]);
@@ -150,9 +185,10 @@ export const onchainOperations = createRemoteResource<RequestParams, MultisigOpe
 
     for (const { key, multisig } of response) {
       if (nullable(multisig)) continue;
-      const timestamp = await getCreatedDateFromApi(multisig.when.height, api);
 
+      const timestamp = await getCreatedDateFromApi(multisig.when.height, api);
       const operationId = multisigOperationService.getOperationId(
+        chain.chainId,
         key.callHash,
         key.accountId,
         multisig.when.height,
@@ -172,7 +208,7 @@ export const onchainOperations = createRemoteResource<RequestParams, MultisigOpe
 
       const transaction = await multisigOperationService.getTransactionFromChain({
         api,
-        callHash: key.callHash,
+        callHash: key.callHash as HexString,
         blockHeight: multisig.when.height,
         extrinsicIndex: multisig.when.index,
       });
@@ -191,7 +227,7 @@ export const onchainOperations = createRemoteResource<RequestParams, MultisigOpe
         chainId,
         status: 'pending',
         accountId: key.accountId,
-        callHash: key.callHash,
+        callHash: key.callHash as HexString,
         callData,
         depositor: multisig.depositor,
         blockCreated: multisig.when.height,
@@ -220,9 +256,11 @@ export const subscribeIndexerResource = createSubscriptionResource<RequestParams
       }
 
       const fn = () => {
-        fetchOperations(url, accountId, api).then(value => {
-          callback({ done: true, value });
-        });
+        fetchOperations(url, accountId, api)
+          .then(value => {
+            callback({ done: true, value });
+          })
+          .catch(error => console.error(error));
       };
 
       fn();
@@ -246,6 +284,7 @@ export const subscribeEventsResource = createSubscriptionResource<
     const unsubscribeFns: Promise<VoidFunction>[] = [];
 
     for (const { accountId, api } of params) {
+      const chainId = api.genesisHash.toHex();
       const unsubscribeFn = polkadotjsHelpers.subscribeSystemEvents(
         {
           api,
@@ -259,6 +298,7 @@ export const subscribeEventsResource = createSubscriptionResource<
           if (data.multisigAccountId !== accountId) return;
 
           const operationId = multisigOperationService.getOperationId(
+            chainId,
             data.callHash,
             data.accountId,
             data.timepoint.height,

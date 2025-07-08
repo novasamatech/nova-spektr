@@ -9,7 +9,7 @@ import { AssetBalance } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { FeeWithLabel, MultisigDepositWithLabel, ProxyDepositLabel } from '@/entities/transaction';
+import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel, ProxyDepositLabel } from '@/entities/transaction';
 import { WalletIcon } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm-model';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
@@ -94,7 +94,7 @@ export const ConfirmationStep = () => {
                   threshold={threshold.value}
                   api={api}
                 />
-                <FeeWithLabel api={api} asset={asset} transaction={transaction} />
+                <FeeWithLabelWithDataLoading api={api} asset={asset} transaction={transaction} />
                 <Alert
                   variant="error"
                   title={t('createMultisigAccount.notEnoughTokensTitle')}

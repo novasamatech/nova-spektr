@@ -1,3 +1,5 @@
+import * as allure from 'allure-js-commons';
+
 import {
   mockDelegatorVotingsX1,
   mockDelegatorVotingsX2,
@@ -55,6 +57,8 @@ test.describe('Governance votes for completed referenda', { tag: ['@governance']
     const governancePage = await assetsPage.goToGovernancePage();
     await governancePage.searchReferenda('1300');
 
-    await expect(page.getByText('AYE 1,000 DOT')).toBeVisible({ timeout: 20000 });
+    await allure.step('Verify that vote label is visible', async () => {
+      await expect(page.getByText('AYE 1,000 DOT')).toBeVisible({ timeout: 20000 });
+    });
   });
 });

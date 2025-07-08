@@ -5,7 +5,7 @@ import noop from 'lodash/noop';
 
 import { AccountType, CryptoType, SigningType, WalletType, type WcAccount } from '@/shared/core';
 import { createFlow, waitFor } from '@/shared/effector';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { isEthereumAccountId, nonNullable, nullable } from '@/shared/lib/utils';
 import { identity } from '@/domains/network';
 import { multisigsModel } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
@@ -100,8 +100,7 @@ sample({
         accountId,
         accountType: AccountType.WALLET_CONNECT,
         signingType: SigningType.WALLET_CONNECT,
-        // TODO check
-        cryptoType: CryptoType.SR25519,
+        cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
         chainId: chain.chainId,
         signingExtras: { pairingTopic: session?.pairingTopic, sessionTopic: session?.topic },
       };

@@ -3,12 +3,12 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { proxyService } from '@/shared/api/proxy';
-import { type BasketTransaction, type Chain, type ChainId, type Connection, TransactionType } from '@/shared/core';
+import { type Chain, type ChainId, type Connection, TransactionType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
-import { basketOperationsService } from '@/aggregates/basket-operations';
+import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
   addProxyConfirmModel,
   addPureProxiedConfirmModel,

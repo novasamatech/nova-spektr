@@ -1,15 +1,16 @@
 import { type TFunction } from 'i18next';
 
+import { type Wallet } from '@/shared/core';
 import { createSDK, createTransformer } from '@/shared/di';
 import { type AnyAccount, accountService } from '@/domains/network';
 
 export const accountNodeConfigTransformer = createTransformer<
-  { account: AnyAccount; translation: TFunction<'translation'> },
-  { title: string; subTitle?: string; color: string; disabled?: boolean }
+  { account: AnyAccount; wallet?: Wallet; t: TFunction<'translation'> },
+  { title: string; subTitle?: string; color: string; background?: string; disabled?: boolean }
 >();
 
 export const accountConnectionTransformer = createTransformer<
-  { source: AnyAccount; target: AnyAccount },
+  { source: AnyAccount; target: AnyAccount; t: TFunction<'translation'> },
   { label?: { text: string; color: string; background: string }; color?: string }
 >();
 
@@ -23,5 +24,7 @@ export const accountSDK = createSDK({
   optional: {
     collectAccountChildren: accountService.accountCollectChildrenPipeline,
     connection: accountConnectionTransformer,
+    validateRouteBalances: accountService.validateRouteBalancesTransformer,
+    validateCallPermission: accountService.validateCallPermissionTransformer,
   },
 });
