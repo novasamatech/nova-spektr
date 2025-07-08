@@ -125,7 +125,7 @@ export const Signatory = ({
         accountOptions.set(address, {
           id: address,
           value: { address, walletId: account.walletId },
-          label: <Address showIcon title={title} address={address} />,
+          label: <Address iconSize={20} showIcon title={title} address={address} />,
         });
       }
     }
@@ -153,7 +153,7 @@ export const Signatory = ({
 
       addressOptions.push({
         id: contact.id.toString(),
-        label: <Address showIcon title={contact.name} address={displayedAddress} />,
+        label: <Address iconSize={20} showIcon title={contact.name} address={displayedAddress} />,
         value: { address: displayedAddress },
       });
     }
@@ -162,7 +162,7 @@ export const Signatory = ({
       const displayedAddress = toAddress(query, { prefix: chain.addressPrefix });
       addressOptions.push({
         id: query,
-        label: <Address showIcon address={displayedAddress} />,
+        label: <Address iconSize={20} showIcon address={displayedAddress} />,
         value: { address: displayedAddress },
       });
     }
@@ -244,7 +244,6 @@ export const Signatory = ({
               <Select
                 placeholder={t('createMultisigAccount.signatorySelection')}
                 value={signatoryAddress}
-                invalid={isDuplicate}
                 onChange={onAddressChange}
               >
                 {options.map(group =>
