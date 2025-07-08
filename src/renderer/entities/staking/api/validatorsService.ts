@@ -25,13 +25,13 @@ async function getValidatorsList(api: ApiPromise, era: EraIndex): Promise<Valida
 /**
  * Get validators with identity, apy and slashing spans
  */
-async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex, isLightClient?: boolean): Promise<ValidatorMap> {
+async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
   const [stake, prefs] = await Promise.all([getValidatorFunction(api)(era), getValidatorsPrefs(api, era)]);
 
   const mergedValidators = merge(stake, prefs);
 
   try {
-    const slashes = await getSlashingSpans(api, Object.keys(stake), era, isLightClient);
+    const slashes = await getSlashingSpans(api, Object.keys(stake), era);
 
     return merge(mergedValidators, slashes);
   } catch {
@@ -180,36 +180,18 @@ function getMaxNominatorRewarded(api: ApiPromise): number {
   return api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
 }
 
-function getSlashDeferDuration(api: ApiPromise): number {
-  return api.consts.staking.slashDeferDuration.toNumber();
-}
-
 async function getSlashingSpans(
   api: ApiPromise,
   addresses: Address[],
   era: EraIndex,
-  isLightClient?: boolean,
 ): Promise<Record<Address, { slashed: boolean }>> {
-  const slashDeferDuration = getSlashDeferDuration(api);
-  let slashingSpans;
+  const unappliedSlashes = await api.query.staking.unappliedSlashes(era);
 
-  if (isLightClient) {
-    const slashingSpansWrapped = await api.query.staking.slashingSpans.entries();
-    slashingSpans = slashingSpansWrapped
-      .filter(([storageKey]) => addresses.includes(storageKey.args[0].toString()))
-      .map((spanWrapped) => spanWrapped[1]);
-  } else {
-    slashingSpans = await api.query.staking.slashingSpans.multi(addresses);
+  if (!unappliedSlashes.length) {
+    return Object.fromEntries(addresses.map((address) => [address, { slashed: false }]));
   }
 
-  return slashingSpans.reduce<Record<Address, { slashed: boolean }>>((acc, span, index) => {
-    let validatorIsSlashed = false;
-    if (span.isSome) {
-      validatorIsSlashed = era - span.unwrap().lastNonzeroSlash.toNumber() < slashDeferDuration;
-    }
+  const slashedSet = new Set(unappliedSlashes.map((slash) => slash.validator.toString()));
 
-    acc[addresses[index]] = { slashed: validatorIsSlashed };
-
-    return acc;
-  }, {});
+  return Object.fromEntries(addresses.map((address) => [address, { slashed: slashedSet.has(address) }]));
 }

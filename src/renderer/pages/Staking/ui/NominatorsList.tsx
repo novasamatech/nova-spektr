@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
 import {
@@ -10,11 +10,13 @@ import {
   type VaultBaseAccount,
   type VaultShardAccount,
 } from '@/shared/core';
+import { AdditionalType } from '@/shared/core/types/chain';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Address as AddressComponent } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
+import { useNetworkData } from '@/entities/network';
 import { useStakingData } from '@/entities/staking';
 import { type NominatorInfo } from '../lib/types';
 
@@ -25,7 +27,7 @@ import { TimeToEra } from './TimeToEra';
 type Props = {
   nominators: (NominatorInfo<VaultBaseAccount> | NominatorInfo<VaultShardAccount>[])[];
   isStakingLoading: boolean;
-  api?: ApiPromise;
+  api: ApiPromise;
   era?: number;
   asset?: Asset;
   chain: Chain;
@@ -47,6 +49,11 @@ export const NominatorsList = ({
   const { getNextUnstakingEra, hasRedeem } = useStakingData();
 
   const getUnstakeBadge = (stake: NominatorInfo<Account>) => {
+    const timelineChainId = useMemo(() => {
+      return chain.additional?.[AdditionalType.TIMELINE_CHAIN] ?? chain.chainId;
+    }, [chain]);
+    const { api: timelineApi } = useNetworkData(timelineChainId);
+
     const nextUnstakingEra = getNextUnstakingEra(stake.unlocking, era);
     if (!nextUnstakingEra) return;
 
@@ -56,7 +63,7 @@ export const NominatorsList = ({
           <div className="flex items-center gap-x-1 rounded-md bg-badge-background px-2 py-0.5">
             <Icon name="unstake" className="text-icon-accent" size={14} />
             <HelpText className="text-icon-accent">
-              <TimeToEra className="my-1" api={api} era={nextUnstakingEra} />
+              <TimeToEra className="my-1" api={api} timelineApi={timelineApi} era={nextUnstakingEra} />
             </HelpText>
           </div>
         </Tooltip.Trigger>
