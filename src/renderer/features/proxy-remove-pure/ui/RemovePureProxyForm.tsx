@@ -6,7 +6,7 @@ import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Alert, Button } from '@/shared/ui';
 import { SignatorySelector } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
 import { formModel } from '../model/form-model';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
 
@@ -85,7 +85,7 @@ const FeeSection = () => {
         />
       )}
 
-      <FeeWithLabel
+      <FeeWithLabelWithDataLoading
         api={api}
         asset={chain.assets[0]}
         transaction={fakeTx}

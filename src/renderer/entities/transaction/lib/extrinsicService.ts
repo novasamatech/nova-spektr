@@ -113,11 +113,11 @@ export const getExtrinsic: Record<
     return api.tx.proxy.killPure(spawner, proxyType, index, height, extIndex);
   },
   // TODO: Check that this method works correctly
-  [TransactionType.PROXY]: ({ real, forceProxyType, transaction }, api) => {
+  [TransactionType.PROXY]: ({ real, forceProxyType, transaction, call }, api) => {
     const tx = transaction as Transaction;
-    const call = getExtrinsic[tx.type](tx.args, api).method;
+    const proxyCall = call ?? getExtrinsic[tx.type](tx.args, api).method;
 
-    return api.tx.proxy.proxy(real, forceProxyType, call);
+    return api.tx.proxy.proxy(real, forceProxyType, proxyCall);
   },
   [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
     return api.tx.proxy.createPure(proxyType, delay, index);

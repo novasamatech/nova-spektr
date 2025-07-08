@@ -55,7 +55,7 @@ describe('accounts service', () => {
   });
 
   it('should filter accounts by chainId', async () => {
-    const filtered = accountService.filterAccountOnChain(
+    const filtered = accountService.filterAccountsOnChain(
       [chainAccount, kusamaChainAccount, universalAccount],
       polkadotChain,
     );
@@ -67,7 +67,7 @@ describe('accounts service', () => {
     const spy = jest.fn().mockReturnValue(true);
     accountService.accountAvailabilityOnChainAnyOf.registerHandler({ body: spy, available: () => true });
 
-    const filtered = accountService.filterAccountOnChain(
+    const filtered = accountService.filterAccountsOnChain(
       [kusamaChainAccount, chainAccount, universalAccount],
       polkadotChain,
     );
@@ -154,7 +154,7 @@ describe('accounts service', () => {
 
     it('should find accounts route', async () => {
       const firstProxyAccount: ProxyAccount = {
-        id: '',
+        id: 'first-proxy',
         type: 'chain',
         name: 'test',
         walletId: 0,
@@ -166,7 +166,7 @@ describe('accounts service', () => {
       };
 
       const secondProxyAccount: ProxyAccount = {
-        id: '',
+        id: 'second-proxy',
         type: 'chain',
         name: 'test',
         walletId: 1,
@@ -178,7 +178,7 @@ describe('accounts service', () => {
       };
 
       const leafAccount: ChainAccount = {
-        id: '',
+        id: 'leaf-account',
         type: 'chain',
         name: 'test',
         walletId: 2,

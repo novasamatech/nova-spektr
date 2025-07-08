@@ -17,6 +17,8 @@ import {
 } from '../lib/types';
 import {
   migrateAccounts,
+  migrateCASBasket,
+  migrateEVMAccountsCryptoType,
   migrateEvents,
   migrateMultishardAccounts,
   migrateMultisigAccounts,
@@ -113,6 +115,10 @@ class DexieStorage extends Dexie {
     this.version(30).stores({
       multisigOperations: 'id',
     });
+
+    this.version(31).upgrade(migrateCASBasket);
+
+    this.version(32).upgrade(migrateEVMAccountsCryptoType);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');

@@ -47,6 +47,8 @@ export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): P
   return { signerPayloadBase };
 };
 
+export const getCallHash = (callData: HexString) => blake2AsHex(hexToU8a(callData));
+
 /**
  * Check that callData correctly resembles callHash
  *
@@ -59,7 +61,7 @@ export const validateCallData = <T extends string = CallData, K extends string =
   callData: T,
   callHash: K,
 ): boolean => {
-  return isHex(callData) && callHash === blake2AsHex(hexToU8a(callData));
+  return isHex(callData) && callHash === getCallHash(callData);
 };
 
 export const getCurrentBlockNumber = async (api: ApiPromise): Promise<BlockHeight> => {

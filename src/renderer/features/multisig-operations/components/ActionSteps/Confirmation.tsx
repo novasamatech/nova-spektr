@@ -11,7 +11,13 @@ import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
-import { Fee, FeeLoader, MultisigDepositWithLabel, XcmFee, isXcmTransaction } from '@/entities/transaction';
+import {
+  FeeLoader,
+  FeeWithDataLoading,
+  MultisigDepositWithLabel,
+  XcmFee,
+  isXcmTransaction,
+} from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { xcmTransferModel } from '@/widgets/Transfer';
 import { Details } from '../Details';
@@ -91,7 +97,7 @@ export const Confirmation = ({ api, operation, account, chain, signAccount, feeT
 
       <DetailRow label={t('operation.networkFee')} className="text-text-primary">
         {api && feeTx ? (
-          <Fee
+          <FeeWithDataLoading
             className="text-footnote"
             api={api}
             asset={chain.assets[0]}

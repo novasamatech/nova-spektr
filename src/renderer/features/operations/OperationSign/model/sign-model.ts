@@ -23,6 +23,7 @@ const flow = createGate();
 
 const formInitiated = createEvent<Input>();
 const dataReceived = createEvent<SignatureData>();
+
 const formSubmitted = createEvent<SignatureData>();
 
 const $signStore = createStore<Input | null>(null).reset([formSubmitted, flow.close]);
@@ -110,6 +111,7 @@ const $signerWallet = combine(
 sample({
   clock: formInitiated,
   source: networkModel.$apis,
+  filter: (_, { signingPayloads }) => signingPayloads.length > 0,
   fn: (apis, input) => ({ input, apis }),
   target: splitTxsFx,
 });

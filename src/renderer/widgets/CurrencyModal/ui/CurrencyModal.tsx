@@ -1,7 +1,7 @@
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@/shared/lib/utils';
-import { BaseModal } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { CurrencyForm } from '@/features/currency';
 
 type Props = {
@@ -19,15 +19,13 @@ export const CurrencyModal = ({ onClose }: Props) => {
   };
 
   return (
-    <BaseModal
-      closeButton
-      isOpen={isModalOpen}
-      contentClass="py-4 px-5"
-      panelClass="w-[440px]"
-      title={t('settings.currency.modalTitle')}
-      onClose={closeFiatModal}
-    >
-      <CurrencyForm onSubmit={closeFiatModal} />
-    </BaseModal>
+    <Modal isOpen={isModalOpen} size="sm" onToggle={closeFiatModal}>
+      <Modal.Title close>{t('settings.currency.modalTitle')}</Modal.Title>
+      <Modal.Content>
+        <div className="px-5 py-4">
+          <CurrencyForm onSubmit={closeFiatModal} />
+        </div>
+      </Modal.Content>
+    </Modal>
   );
 };
