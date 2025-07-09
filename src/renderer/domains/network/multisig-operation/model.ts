@@ -1,8 +1,7 @@
 import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import { type HexString, type NoID } from '@/shared/core';
+import { type HexString } from '@/shared/core';
 import { isEqual } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
@@ -22,18 +21,43 @@ const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
 );
 
-const addOperationsFx = createEffect(async (transactions: NoID<MultisigOperation>[]) => {
+const addOperationsFx = createEffect(async (operations: MultisigOperation[]) => {
   return storageService.multisigOperations
-    .createAll(transactions.map(serializeOperation))
+    .createAll(operations.map(serializeOperation))
     .then(result => result?.map(deserializeOperation) ?? []);
 });
 
-const updateOperationsFx = createEffect((transactions: MultisigOperation[]) => {
-  return storageService.multisigOperations.updateAll(transactions.map(serializeOperation)).then(() => transactions);
+const updateOperationsFx = createEffect((operations: MultisigOperation[]) => {
+  return storageService.multisigOperations.updateAll(operations.map(serializeOperation)).then(() => operations);
 });
 
-const removeTransactionsFx = createEffect((transactions: MultisigOperation[]) => {
-  return storageService.multisigOperations.deleteAll(transactions.map(t => t.id)).then(result => result ?? []);
+const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
+  return storageService.multisigOperations.deleteAll(operations.map(t => t.id)).then(result => result ?? []);
+});
+
+const syncOperationsFx = createEffect(async (operations: MultisigOperation[]) => {
+  const existing = await storageService.multisigOperations.readAll();
+  const toAdd: MultisigOperation[] = [];
+  const toUpdate: MultisigOperation[] = [];
+
+  for (const newOperation of operations) {
+    const existingOperation = existing.find(o => o.id === newOperation.id);
+    if (existingOperation) {
+      if (!isEqual(existingOperation, newOperation)) {
+        toUpdate.push(newOperation);
+      }
+    } else {
+      toAdd.push(newOperation);
+    }
+  }
+
+  if (toAdd.length > 0) {
+    await storageService.multisigOperations.createAll(toAdd.map(serializeOperation));
+  }
+
+  if (toUpdate.length > 0) {
+    await storageService.multisigOperations.updateAll(toUpdate.map(serializeOperation));
+  }
 });
 
 type UpdateCallDataParams = {
@@ -132,33 +156,7 @@ sample({
 
 sample({
   clock: operationsReceived,
-  source: $list,
-  fn(existing, received) {
-    const toAdd: MultisigOperation[] = [];
-    const toUpdate: MultisigOperation[] = [];
-
-    for (const newOperation of received) {
-      const existingOperation = existing.find(o => o.id === newOperation.id);
-      if (existingOperation) {
-        if (!isEqual(existingOperation, newOperation)) {
-          toUpdate.push({
-            ...newOperation,
-            section: newOperation.section || existingOperation.section,
-            method: newOperation.method || existingOperation.method,
-            transaction: newOperation.transaction || existingOperation.transaction,
-          });
-        }
-      } else {
-        toAdd.push(newOperation);
-      }
-    }
-
-    return { toAdd, toUpdate };
-  },
-  target: spread({
-    toAdd: addOperationsFx,
-    toUpdate: updateOperationsFx,
-  }),
+  target: syncOperationsFx,
 });
 
 export const multisigOperation = {
