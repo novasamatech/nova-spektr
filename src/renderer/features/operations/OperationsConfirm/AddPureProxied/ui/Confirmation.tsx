@@ -57,7 +57,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       <TransactionDetails
         chain={confirmStore.chain}
         wallets={wallets}
-        initiator={[confirmStore.account]}
+        initiators={[confirmStore.account]}
         signatory={confirmStore.signatory}
         proxied={confirmStore.proxiedAccount}
       >

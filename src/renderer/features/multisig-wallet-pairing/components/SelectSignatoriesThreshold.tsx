@@ -1,12 +1,12 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 import { Trans } from 'react-i18next';
 
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step, nonNullable } from '@/shared/lib/utils';
 import { Alert, Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
-import { Box, Field, Modal, Select } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
 import { flowModel } from '../model/flow-model';
 import { formModel } from '../model/form-model';
@@ -15,35 +15,33 @@ import { signatoryModel } from '../model/signatory-model';
 import { MultisigCreationFees } from './components';
 import { Signatory } from './components/Signatory';
 
-export const SelectSignatoriesThreshold = () => {
+interface Props {
+  onGoBack: () => void;
+}
+
+export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const {
-    fields: { threshold },
+    fields: { threshold, name },
     submit,
-  } = useForm(formModel.$createMultisigForm);
+  } = useForm(formModel.form);
 
-  const chain = useUnit(formModel.$chain);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
   const wrongChainTypes = useUnit(formModel.$invalidAddresses);
   const canSubmit = useUnit(formModel.$canSubmit);
-  const fakeTx = useUnit(flowModel.$fakeTx);
 
-  const api = useUnit(flowModel.$api);
   const signatories = useUnit(signatoryModel.$signatories);
   const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
-
-  const asset = chain?.assets.at(0);
 
   const onSubmit = (event: FormEvent) => {
     signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
 
     if (ownedSignatoriesWallets.length > 1) {
-      flowModel.events.stepChanged(Step.SIGNER_SELECTION);
+      flowModel.stepChanged(Step.SIGNER_SELECTION);
     } else {
-      flowModel.events.signerSelected(ownedSignatoriesWallets[0].accounts[0]);
       event.preventDefault();
       submit();
     }
@@ -53,29 +51,26 @@ export const SelectSignatoriesThreshold = () => {
     <>
       <Modal.Content>
         <SmallTitleText className="border-b border-container-border px-5 pb-6 text-text-primary">
-          {t('createMultisigAccount.multisigStep', { step: 2 })}{' '}
           {t('createMultisigAccount.signatoryThresholdDescription')}
         </SmallTitleText>
 
         <Box direction="column" gap={6} padding={[6, 5, 4, 5]} height="100%">
-          {signatories.map((signer, index) => (
+          {signatories.map((signatory, index) => (
             <Signatory
               key={index}
               isOwnAccount={index === 0}
-              isDuplicate={duplicateSignatories[signer.address]?.includes(index)}
-              isInvalidAddress={wrongChainTypes.includes(signer.address)}
+              isDuplicate={duplicateSignatories[signatory.address]?.includes(index)}
+              isInvalidAddress={wrongChainTypes.includes(signatory.address)}
               signatoryIndex={index}
-              signatoryName={signer.name}
-              signatoryAddress={signer.address}
-              selectedWalletId={signer.walletId}
+              signatory={signatory}
               onDelete={signatoryModel.events.deleteSignatory}
             />
           ))}
 
           <Button
-            size="sm"
+            size="md"
             variant="text"
-            className="h-8.5 w-max justify-center"
+            className="h-8.5 w-max justify-center gap-x-1"
             suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
             onClick={() => signatoryModel.events.addSignatory({ name: '', address: '', walletId: '' })}
           >
@@ -85,13 +80,32 @@ export const SelectSignatoriesThreshold = () => {
           <hr className="-mx-5 w-full border-divider" />
 
           <div className="flex gap-x-6">
-            <Box width="232px">
+            <Box width="100%">
+              <Field text={t('createMultisigAccount.walletNameLabel')}>
+                <Input
+                  autoFocus
+                  height="md"
+                  placeholder={t('createMultisigAccount.namePlaceholder')}
+                  invalid={name.hasError}
+                  value={name.value}
+                  onChange={name.onChange}
+                />
+
+                <InputHint active>{t('createMultisigAccount.walletNameDescription')}</InputHint>
+                <InputHint variant="error" active={name.hasError}>
+                  {t(name.errorMessage)}
+                </InputHint>
+              </Field>
+            </Box>
+
+            <Box width="232px" shrink={0}>
               <Field text={t('createMultisigAccount.thresholdName')}>
                 <Select
                   placeholder={t('createMultisigAccount.thresholdPlaceholder')}
                   value={(threshold.value || '').toString()}
-                  invalid={threshold.hasError()}
+                  invalid={threshold.hasError}
                   disabled={[0, 1].includes(signatories.length)}
+                  height="md"
                   onChange={value => threshold.onChange(Number(value))}
                 >
                   {Array.from({ length: signatories.length - 1 }, (_, index) => (
@@ -101,10 +115,10 @@ export const SelectSignatoriesThreshold = () => {
                   ))}
                 </Select>
               </Field>
+              <InputHint active className="mt-2">
+                {t('createMultisigAccount.thresholdHint')}
+              </InputHint>
             </Box>
-            <InputHint active className="mt-8.5 flex-1">
-              {t('createMultisigAccount.thresholdHint')}
-            </InputHint>
           </div>
 
           <Alert
@@ -135,14 +149,12 @@ export const SelectSignatoriesThreshold = () => {
 
       <Modal.Footer>
         <Box fitContainer direction="row" horizontalAlign="space-between" verticalAlign="center">
-          <Button variant="text" onClick={() => flowModel.events.stepChanged(Step.NAME_NETWORK)}>
+          <Button variant="text" onClick={onGoBack}>
             {t('createMultisigAccount.backButton')}
           </Button>
 
           <div className="flex items-center justify-end gap-x-6">
-            {nonNullable(asset) ? (
-              <MultisigCreationFees api={api} asset={asset} threshold={threshold.value} transaction={fakeTx} />
-            ) : null}
+            <MultisigCreationFees />
 
             <Button key="create" type="submit" disabled={!canSubmit} onClick={onSubmit}>
               {t('createMultisigAccount.continueButton')}

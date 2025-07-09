@@ -14,6 +14,7 @@ export * from './BondExtra';
 export * from './Unstake';
 export * from './Withdraw';
 
+export * from './Unlock';
 export * from './Delegate';
 export * from './EditDelegation';
 export * from './RevokeDelegation';

@@ -4,8 +4,8 @@ import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, trackService } from '@/domains/collectives';
-import { accounts } from '@/domains/network';
-import { multisigsModel } from '@/entities/multisig';
+import { accounts, multisigOperation } from '@/domains/network';
+import { multisigsModel } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
@@ -48,7 +48,7 @@ const populate = async () => {
   await walletModel.populate();
   multisigsModel.subscribe();
   await proxyModel.populate();
-
+  multisigOperation.populate();
   governanceMetaProvider.populate();
 
   // TODO rework as populate effects
@@ -99,6 +99,8 @@ export const bootstrap = () => {
 
     import('@/features/accounts-structure').then(({ accountsStructureFeature }) => accountsStructureFeature),
 
+    import('@/features/multisig-operations').then(({ multisigOperationsFeature }) => multisigOperationsFeature),
+
     import('@/features/fellowship-activity-feed').then(({ fellowshipActivityFeedFeature }) => fellowshipActivityFeedFeature),
     import('@/features/fellowship-basket').then(({ fellowshipBasketFeature }) => fellowshipBasketFeature),
     import('@/features/fellowship-evidence-salary').then(({ fellowshipEvidenceSalaryFeature }) => fellowshipEvidenceSalaryFeature),
@@ -115,8 +117,6 @@ export const bootstrap = () => {
 
     import('@/features/governance-operation-details').then(({ governanceOperationDetailFeature }) => governanceOperationDetailFeature),
     import('@/features/governance-basket').then(({ governanceBasketFeature }) => governanceBasketFeature),
-
-    import('@/features/multisig-operation-details').then(({ multisigOperationDetailsFeature }) => multisigOperationDetailsFeature),
 
     import('@/features/transfer-operation-details').then(({ transferOperationDetailFeature }) => transferOperationDetailFeature),
     import('@/features/transfer-basket').then(({ transferBasketFeature }) => transferBasketFeature),

@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type EraIndex } from '@/shared/core';
+import { assert } from '@/shared/lib/utils';
 
 export const eraService = {
   subscribeActiveEra,
@@ -29,23 +30,25 @@ async function getActiveEra(api: ApiPromise): Promise<EraIndex | undefined> {
   return eraData.unwrap().get('index').toNumber();
 }
 
-async function getTimeToEra(api: ApiPromise, destinationEra?: EraIndex): Promise<number> {
+async function getTimeToEra(api: ApiPromise, timelineApi: ApiPromise, destinationEra?: EraIndex): Promise<number> {
   if (!destinationEra) return 0;
 
   const eraLength = api.consts.staking.sessionsPerEra.toNumber();
-  const sessionDuration = api.consts.babe.epochDuration.toNumber();
-  const blockTime = api.consts.babe.expectedBlockTime.toNumber() / 1000;
+  const sessionDuration = timelineApi.consts.babe.epochDuration.toNumber();
+  const blockTime = timelineApi.consts.babe.expectedBlockTime.toNumber() / 1000;
 
-  const activeEra = (await api.query.staking.activeEra()).unwrap().index;
+  const activeEra = (await api.query.staking.activeEra()).unwrap();
+  const bondedEras = await api.query.staking.bondedEras();
+  const activeEraStartSessionIndex = bondedEras.find(([e]) => e.eq(activeEra.index))?.[1].toNumber();
 
-  const { eraStartSessionIndex, currentSessionIndex, currentSlot, genesisSlot } = await Promise.all([
-    api.query.staking.erasStartSessionIndex(activeEra),
-    api.query.session.currentIndex(),
-    api.query.babe.currentSlot(),
-    api.query.babe.genesisSlot(),
-  ]).then(([eraStartSessionIndex, currentSessionIndex, currentSlot, genesisSlot]) => {
+  assert(activeEraStartSessionIndex, 'activeEraStartSessionIndex not found');
+
+  const { currentSessionIndex, currentSlot, genesisSlot } = await Promise.all([
+    timelineApi.query.session.currentIndex(),
+    timelineApi.query.babe.currentSlot(),
+    timelineApi.query.babe.genesisSlot(),
+  ]).then(([currentSessionIndex, currentSlot, genesisSlot]) => {
     return {
-      eraStartSessionIndex: eraStartSessionIndex.unwrap().toNumber(),
       currentSessionIndex: currentSessionIndex.toNumber(),
       currentSlot: currentSlot.toNumber(),
       genesisSlot: genesisSlot.toNumber(),
@@ -54,13 +57,19 @@ async function getTimeToEra(api: ApiPromise, destinationEra?: EraIndex): Promise
 
   const sessionStartSlot = currentSessionIndex * sessionDuration + genesisSlot;
   const sessionProgress = currentSlot - sessionStartSlot;
-  const eraProgress = (currentSessionIndex - eraStartSessionIndex) * sessionDuration + sessionProgress;
+  const eraProgress = (currentSessionIndex - activeEraStartSessionIndex) * sessionDuration + sessionProgress;
   let eraRemained = eraProgress;
   if (eraProgress > 0 && eraProgress > eraLength * sessionDuration) {
     eraRemained = eraProgress % (eraLength * sessionDuration);
   }
-  const leftEras = destinationEra - activeEra.toNumber() - 1;
+  const leftEras = destinationEra - activeEra.index.toNumber() - 1;
   const blocksLeftForEras = leftEras * eraLength * sessionDuration;
 
-  return (eraRemained + blocksLeftForEras) * blockTime;
+  // After asset hub migration, active era updates are delayed (no longer tied to session end).
+  // Add a 1–2 block buffer to unstaking timers to avoid edge cases,
+  // but only if the staking chain differs from the timeline chain.
+  // TODO buffer = 1; when polkadot fully migrates to asset hub
+  const buffer = api === timelineApi ? 0 : 1;
+
+  return (eraRemained + blocksLeftForEras + buffer) * blockTime;
 }

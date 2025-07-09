@@ -1,17 +1,13 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEvent } from 'effector';
 
 import { type AccountVote, type Asset, type ReferendumId, type TrackId } from '@/shared/core';
+import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
-import { operationsModel } from '@/entities/operations';
 import { walletModel } from '@/entities/wallet';
+import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import {
-  type ConfirmInfo,
-  createTransactionConfirmStore,
-} from '@/features/operations/OperationsConfirm/lib/createTransactionConfirmStore';
 
-export type RemoveVoteConfirm = ConfirmInfo & {
+export type RemoveVoteConfirm = TxConfirmInfo & {
   api: ApiPromise;
   asset: Asset;
   votes: {
@@ -21,26 +17,22 @@ export type RemoveVoteConfirm = ConfirmInfo & {
   }[];
 };
 
-const sign = createEvent();
-
 const confirmStore = createTransactionConfirmStore<RemoveVoteConfirm>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
-  $multisigTransactions: operationsModel.$multisigTransactions,
+  $multisigTransactions: selectedWalletMultisigOperations.$list,
 });
 
 export const confirmModel = {
   $confirmMap: confirmStore.$confirmMap,
   $isMultisigExists: confirmStore.$isMultisigExists,
 
-  events: {
-    sign,
-    addConfirms: confirmStore.addConfirms,
-    replaceWithConfirm: confirmStore.replaceWithConfirm,
-    fillConfirm: confirmStore.fillConfirm,
-    resetConfirm: confirmStore.resetConfirm,
+  startSigning: confirmStore.startSigning,
+  addConfirms: confirmStore.addConfirms,
+  replaceWithConfirm: confirmStore.replaceWithConfirm,
+  init: confirmStore.init,
+  resetConfirm: confirmStore.resetConfirm,
 
-    submitStarted: submitModel.events.formInitiated,
-    submitFinished: submitModel.output.formSubmitted,
-  },
+  submitStarted: submitModel.events.formInitiated,
+  submitFinished: submitModel.output.formSubmitted,
 };

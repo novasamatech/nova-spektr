@@ -22,7 +22,7 @@ const $input = combine(
       chain: network.chain,
       chainId: network.chainId,
       palletType: network.palletType,
-      accounts: accountService.filterAccountOnChain(accounts, network.chain),
+      accounts: accountService.filterAccountsOnChain(accounts, network.chain),
     };
   },
 );

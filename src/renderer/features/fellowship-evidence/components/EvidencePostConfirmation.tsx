@@ -39,7 +39,7 @@ export const EvidencePostConfirmation = ({
       <Box horizontalAlign="center" padding={[0, 0, 6]}>
         <Icon name="evidence" size={60} />
       </Box>
-      <TransactionDetails wallets={wallets} chain={chain} initiator={[account]} signatory={null}>
+      <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={null}>
         <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.evidenceType')}>{evidenceType}</DetailRow>
         <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.evidence')}>
           <ButtonWebLink

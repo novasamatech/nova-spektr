@@ -1,13 +1,11 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type Chain, type Transaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
-import { type AnyAccount } from '@/domains/network';
-import { multisigUtils } from '@/entities/multisig';
+import { type AnyAccount, type MultisigOperation, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -18,7 +16,7 @@ import { operationsContextModel } from './context';
 type GetMultisigType = {
   signerAccountId: AccountId;
   chain: Chain;
-  tx: MultisigTransactionDS;
+  operation: MultisigOperation;
 };
 
 const flow = createGate<{ chain: Chain | null; signer: AnyAccount | null }>({
@@ -84,8 +82,8 @@ sample({
     wrappedTx: $wrappedTx,
   },
   filter: ({ account }) => nonNullable(account),
-  fn: ({ account, wrappedTx, wallet }, { signerAccountId, chain, tx }) => {
-    const otherSignatories = multisigUtils.getOtherSignatories(account!, signerAccountId);
+  fn: ({ account, wrappedTx, wallet }, { signerAccountId, chain, operation }) => {
+    const otherSignatories = multisigOperationService.getOtherSignatories(account!, signerAccountId);
 
     if (walletUtils.isFlexibleMultisig(wallet) && !wallet.activated && wrappedTx) {
       return transactionBuilder.buildRejectFlexibleMultisigTx({
@@ -95,7 +93,7 @@ sample({
         accountId: account!.accountId,
         transaction: wrappedTx.wrappedTx,
         otherSignatories,
-        tx,
+        tx: operation,
       });
     }
 
@@ -104,7 +102,7 @@ sample({
       signerAccountId,
       threshold: account!.threshold,
       otherSignatories,
-      tx,
+      tx: operation,
     });
   },
   target: $transaction,

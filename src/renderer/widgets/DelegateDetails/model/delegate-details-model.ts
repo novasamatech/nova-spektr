@@ -5,8 +5,10 @@ import { combineEvents } from 'patronum';
 import { type DelegateAccount } from '@/shared/api/governance';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accountService } from '@/domains/network';
 import { votingService } from '@/entities/governance';
-import { accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
+import { permissionUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import {
   delegateRegistryAggregate,
   delegationAggregate,
@@ -73,26 +75,21 @@ const $activeDelegations = combine(
 
 const $activeAccounts = $activeDelegations.map(Object.keys);
 
-const $canDelegate = walletModel.$activeWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
+const $canDelegate = walletSelect.$selectedWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
 
 const $isAddAvailable = combine(
   {
     activeAccounts: $activeAccounts,
-    activeWallet: walletModel.$activeWallet,
+    accounts: walletSelect.$selectedAccounts,
     chain: networkSelectorModel.$governanceChain,
     canDelegate: $canDelegate,
   },
-  ({ canDelegate, activeAccounts, activeWallet, chain }) => {
-    if (!chain || !activeWallet) return false;
+  ({ canDelegate, activeAccounts, accounts, chain }) => {
+    if (!chain) return false;
 
-    const accounts = activeWallet?.accounts.filter((account) => {
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, chain);
-      const isNonBaseVaultAccount = accountUtils.isNonBaseVaultAccount(account, activeWallet);
+    const filteredAccounts = accountService.filterAccountsOnChain(accounts, chain);
 
-      return isChainAndCryptoMatch && isNonBaseVaultAccount;
-    });
-
-    const freeAccounts = accounts.filter(
+    const freeAccounts = filteredAccounts.filter(
       (account) => !activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
     );
 
