@@ -2,47 +2,33 @@ import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
 import { useEffect } from 'react';
 
-import { type MultisigEvent, type MultisigTransactionKey } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { sortByDateDesc } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText } from '@/shared/ui';
-import { operationsModel } from '@/entities/operations';
+import { Box, ScrollArea } from '@/shared/ui-kit';
 import { priceProviderModel } from '@/entities/price';
-import { OperationsFilter } from '@/features/operations';
+import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { operationsContextModel } from '../model/context';
 
-import EmptyOperations from './EmptyState/EmptyOperations';
+import { EmptyOperations } from './EmptyOperations';
 import { FlexibleMultisigShell } from './FlexibleMultisigShell';
-import Operation from './Operation';
+import { Operation } from './Operation';
+import { OperationsFilter } from './OperationsFilter';
 
 export const Operations = () => {
   const { formatDate } = useI18n();
 
-  const events = useUnit(operationsModel.$multisigEvents);
   const account = useUnit(operationsContextModel.$account);
-  const txs = useUnit(operationsContextModel.$availableTransaction);
+  const operations = useUnit(selectedWalletMultisigOperations.$list);
   const incompleteFlexibleMultisigTx = useUnit(operationsContextModel.$incompleteFlexibleMultisigTx);
-  const filteredTxs = useUnit(operationsModel.$filteredTxs);
-
-  const getEventsByTransaction = (tx: MultisigTransactionKey): MultisigEvent[] => {
-    return events.filter(e => {
-      return (
-        e.txAccountId === tx.accountId &&
-        e.txChainId === tx.chainId &&
-        e.txCallHash === tx.callHash &&
-        e.txBlock === tx.blockCreated &&
-        e.txIndex === tx.indexCreated
-      );
-    });
-  };
+  const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
 
   const groupedTxs = groupBy(filteredTxs, tx => {
-    let date = tx.dateCreated;
+    let date: number | undefined = tx.timestamp;
 
     if (nullable(date)) {
-      const events = getEventsByTransaction(tx);
-      date = events.at(0)?.dateCreated;
+      date = tx.events.at(0)?.timestamp;
     }
 
     if (nullable(date)) {
@@ -56,38 +42,44 @@ export const Operations = () => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 
-  if (incompleteFlexibleMultisigTx && account) {
-    return <FlexibleMultisigShell tx={incompleteFlexibleMultisigTx} account={account} />;
+  if (!account) {
+    return null;
+  }
+
+  if (incompleteFlexibleMultisigTx) {
+    return <FlexibleMultisigShell operation={incompleteFlexibleMultisigTx} account={account} />;
   }
 
   return (
-    <>
-      {txs.length > 0 && <OperationsFilter txs={txs} />}
+    <ScrollArea>
+      <Box horizontalAlign="center" padding={[0, 0, 10]}>
+        {operations.length > 0 && <OperationsFilter operations={operations} />}
 
-      {filteredTxs.length === 0 && (
-        <EmptyOperations multisigAccount={account} isEmptyFromFilters={txs.length !== filteredTxs.length} />
-      )}
+        {filteredTxs.length === 0 && (
+          <EmptyOperations multisigAccount={account} isEmptyFromFilters={operations.length !== filteredTxs.length} />
+        )}
 
-      {filteredTxs.length > 0 && (
-        <div className="mt-4 flex h-full w-full flex-col items-center overflow-y-auto pl-6">
-          {Object.entries(groupedTxs)
-            .sort(sortByDateDesc)
-            .map(([date, txs]) => (
-              <section className="mt-6 w-fit" key={date}>
-                <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
-                <ul className="flex w-[736px] flex-col gap-y-1.5">
-                  {txs
-                    .sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0))
-                    .map(tx => (
-                      <li key={tx.dateCreated}>
-                        <Operation tx={tx} account={account} />
-                      </li>
-                    ))}
-                </ul>
-              </section>
-            ))}
-        </div>
-      )}
-    </>
+        {filteredTxs.length > 0 && (
+          <div className="mt-4 flex h-full w-full flex-col items-center overflow-y-auto pl-6">
+            {Object.entries(groupedTxs)
+              .sort(sortByDateDesc)
+              .map(([date, txs]) => (
+                <section className="mt-6 w-fit" key={date}>
+                  <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
+                  <ul className="flex w-[736px] flex-col gap-y-1.5">
+                    {txs
+                      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+                      .map(tx => (
+                        <li key={tx.id}>
+                          <Operation operation={tx} account={account} />
+                        </li>
+                      ))}
+                  </ul>
+                </section>
+              ))}
+          </div>
+        )}
+      </Box>
+    </ScrollArea>
   );
 };

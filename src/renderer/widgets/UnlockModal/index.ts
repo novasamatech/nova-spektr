@@ -1,4 +1,4 @@
-export { UnlockModal } from './ui/UnlockModal';
-export { UnlockConfirmation } from './ui/UnlockConfirmation';
-export { unlockAggregate } from './aggregates/unlock';
-export { unlockConfirmAggregate } from './aggregates/unlockConfirm';
+export { UnlockModal } from './default/ui/UnlockModal';
+export { unlockAggregate } from './default/model/unlock';
+export { UnlockModal as UnlockModalShards } from './shards/ui/UnlockModal';
+export { unlockAggregate as unlockAggregateShards } from './shards/model/unlock';

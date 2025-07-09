@@ -1,23 +1,23 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type Address, type MultisigTransaction } from '@/shared/core';
+import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/network';
 import { TracksDetails } from '@/entities/governance';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { isUndelegateTransaction } from '@/entities/transaction';
 
-type Props = { operation: MultisigTransaction };
+type Props = { operation: MultisigOperation };
 
 export const GovernanceDelegateDetails = ({ operation }: Props) => {
   const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operation.transaction;
 
   const chains = useUnit(networkModel.$chains);
   const apis = useUnit(networkModel.$apis);

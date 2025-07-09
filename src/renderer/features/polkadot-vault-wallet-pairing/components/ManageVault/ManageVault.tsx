@@ -220,7 +220,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
           </HelpText>
         </div>
 
-        <div className="min-h-0 pl-3 pr-3.5">
+        <div className="flex min-h-0 flex-col pb-3 pl-3 pr-3.5">
           <div className="flex w-full items-center justify-between gap-2 pb-4">
             <Popover align="end">
               <Popover.Trigger>

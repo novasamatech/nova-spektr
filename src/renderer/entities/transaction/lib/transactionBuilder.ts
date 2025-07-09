@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
   type Account,
   type Address,
@@ -20,6 +19,7 @@ import {
 } from '@/shared/core';
 import { formatAmount, getAssetId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type MultisigOperation } from '@/domains/network';
 import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
@@ -46,6 +46,7 @@ export const transactionBuilder = {
   buildRejectFlexibleMultisigTx,
   buildCreatePureProxy,
   buildCreateFlexibleMultisig,
+  buildRemark,
 
   buildBatchAll,
   splitBatchAll,
@@ -384,9 +385,10 @@ type UnlockParams = {
   accountId: AccountId;
   actions: ClaimAction[];
   amount: string;
+  target: AccountId;
 };
 
-function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams): Transaction {
+function buildUnlock({ chain, accountId, actions, amount: value, target }: UnlockParams): Transaction {
   const unlockTxs = actions.map((action) => {
     const transaction = {
       chainId: chain.chainId,
@@ -410,7 +412,7 @@ function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams)
       type: TransactionType.UNLOCK,
       args: {
         trackId: action.trackId,
-        target: toAddress(accountId, { prefix: chain.addressPrefix }),
+        target: toAddress(target, { prefix: chain.addressPrefix }),
         value,
       },
     };
@@ -509,7 +511,7 @@ type RejectTxParams = {
   signerAccountId: AccountId;
   threshold: number;
   otherSignatories: Address[];
-  tx: MultisigTransactionDS;
+  tx: MultisigOperation;
 };
 
 function buildRejectMultisigTx({
@@ -636,4 +638,24 @@ function buildCreateFlexibleMultisig({
   const transactions = [wrappedTransaction.wrappedTx, transferTransaction];
 
   return buildBatchAll({ chain, accountId: signer.accountId, transactions });
+}
+
+type RemarkParams = {
+  chainId: ChainId;
+  accountId: AccountId;
+  threshold: number;
+  signatories: AccountId[];
+};
+function buildRemark({ chainId, accountId, threshold, signatories }: RemarkParams): Transaction {
+  return {
+    chainId,
+    accountId,
+    type: TransactionType.REMARK_WITH_EVENT,
+    args: {
+      remark: JSON.stringify({
+        signatories,
+        threshold,
+      }),
+    },
+  };
 }

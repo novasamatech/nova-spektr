@@ -6,7 +6,7 @@ import { type Asset, type Chain, type EraIndex, type Validator } from '@/shared/
 import { includesMultiple, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identity } from '@/domains/network';
-import { networkModel, networkUtils } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 import { type ValidatorMap, eraService, validatorsService } from '@/entities/staking';
 
 type Input = {
@@ -43,10 +43,9 @@ const getMaxValidatorsFx = createEffect((api: ApiPromise): number => {
 type ValidatorsParams = {
   api: ApiPromise;
   era: EraIndex;
-  isLightClient: boolean;
 };
-const getValidatorsFx = createEffect(({ api, era, isLightClient }: ValidatorsParams): Promise<ValidatorMap> => {
-  return validatorsService.getValidatorsWithInfo(api, era, isLightClient);
+const getValidatorsFx = createEffect(({ api, era }: ValidatorsParams): Promise<ValidatorMap> => {
+  return validatorsService.getValidatorsWithInfo(api, era);
 });
 
 const $api = combine(
@@ -137,17 +136,13 @@ sample({
   clock: $era.updates,
   source: {
     api: $api,
-    chain: $chain,
-    connections: networkModel.$connections,
     validators: $validators,
   },
-  filter: ({ chain, validators }, era) => {
-    return Boolean(chain) && Boolean(era) && validators.length === 0;
+  filter: ({ validators }, era) => {
+    return Boolean(era) && validators.length === 0;
   },
-  fn: ({ api, connections, chain }, era) => {
-    const isLightClient = networkUtils.isLightClientConnection(connections[chain!.chainId]);
-
-    return { api: api!, era: era!, isLightClient };
+  fn: ({ api }, era) => {
+    return { api: api!, era: era! };
   },
   target: getValidatorsFx,
 });

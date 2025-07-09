@@ -372,6 +372,13 @@
         "type": "native"
       },
       {
+        "chainId": "0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9",
+        "name": "Westend Asset Hub (TESTNET)",
+        "assetId": 0,
+        "assetSymbol": "WND",
+        "type": "native"
+      },
+      {
         "chainId": "0x0441383e31d1266a92b4cb2ddd4c2e3661ac476996db7e5844c52433b81fe782",
         "name": "Westend Bridge Hub",
         "assetId": 0,
@@ -4046,39 +4053,6 @@
     ]
   },
   {
-    "name": "Subsocial",
-    "precision": 10,
-    "priceId": "subsocial",
-    "icon": {
-      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/SUB.svg",
-      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/SUB.svg"
-    },
-    "symbol": "SUB",
-    "isTestToken": false,
-    "chains": [
-      {
-        "chainId": "0x4a12be580bb959937a1c7a61d5cf24428ed67fa571974b4007645d1886e7c89f",
-        "name": "Subsocial",
-        "assetId": 0,
-        "assetSymbol": "SUB",
-        "type": "native"
-      },
-      {
-        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
-        "name": "Hydration",
-        "assetId": 18,
-        "assetSymbol": "SUB",
-        "type": "orml",
-        "typeExtras": {
-          "currencyIdScale": "0x18000000",
-          "currencyIdType": "u32",
-          "existentialDeposit": "20000000",
-          "transfersEnabled": true
-        }
-      }
-    ]
-  },
-  {
     "name": "LRNA",
     "precision": 12,
     "icon": {
@@ -4176,6 +4150,32 @@
           "currencyIdScale": "0x13000000",
           "currencyIdType": "u32",
           "existentialDeposit": "34",
+          "transfersEnabled": true
+        }
+      }
+    ]
+  },
+  {
+    "name": "Subsocial",
+    "precision": 10,
+    "priceId": "subsocial",
+    "icon": {
+      "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/SUB.svg",
+      "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/SUB.svg"
+    },
+    "symbol": "SUB",
+    "isTestToken": false,
+    "chains": [
+      {
+        "chainId": "0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d",
+        "name": "Hydration",
+        "assetId": 18,
+        "assetSymbol": "SUB",
+        "type": "orml",
+        "typeExtras": {
+          "currencyIdScale": "0x18000000",
+          "currencyIdType": "u32",
+          "existentialDeposit": "20000000",
           "transfersEnabled": true
         }
       }

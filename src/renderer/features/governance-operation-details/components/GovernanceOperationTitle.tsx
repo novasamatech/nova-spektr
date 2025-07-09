@@ -1,23 +1,20 @@
 import { chainsService } from '@/shared/api/network';
-import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
-import { type IconNames } from '@/shared/ui';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
   title: string;
-  icon?: IconNames;
-  operation: MultisigTransaction;
+  operation: MultisigOperation;
 };
 
-export const GovernanceOperationTitle = ({ operation, title, icon }: Props) => {
+export const GovernanceOperationTitle = ({ operation, title }: Props) => {
   const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operation.transaction;
 
   const asset =
     transaction && getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
@@ -25,11 +22,7 @@ export const GovernanceOperationTitle = ({ operation, title, icon }: Props) => {
 
   return (
     <>
-      <TransactionTitle
-        className="flex-1 overflow-hidden"
-        title={t(title || '', { asset: asset?.symbol })}
-        icon={icon}
-      />
+      <TransactionTitle className="flex-1 overflow-hidden" title={t(title || '', { asset: asset?.symbol })} />
 
       {asset && amount && (
         <Box width="160px" direction="row" gap={2} verticalAlign="center">

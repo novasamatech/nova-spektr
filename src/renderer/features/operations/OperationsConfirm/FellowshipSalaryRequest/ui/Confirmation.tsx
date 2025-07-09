@@ -31,7 +31,7 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">
       <SalaryRegisterConfirmation
-        account={record.accounts.initiator}
+        account={record.meta.initiator}
         asset={record.meta.asset}
         chain={record.meta.chain}
         wallets={record.meta.wallets}
@@ -51,10 +51,8 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
           {!hideSignButton && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(record.wallets.signer || record.wallets.initiator)?.type}
-              onClick={() => {
-                confirm.events.sign();
-              }}
+              type={(record.wallets.signatory || record.wallets.initiator)?.type}
+              onClick={() => confirm.startSigning()}
             />
           )}
         </div>
