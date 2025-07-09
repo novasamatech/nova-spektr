@@ -1,12 +1,15 @@
-import { combine, createEvent, restore } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 
 import { TransactionType } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, multisigOperation } from '@/domains/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll, isCreatePureProxyTransaction } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { submitModel } from '@/features/operations/OperationSubmit';
+
+import { multisigOperationsFeature } from './feature';
 
 type FilterName = 'status' | 'network' | 'type';
 type SelectedFilters = Record<FilterName, string[]>;
@@ -75,6 +78,21 @@ const $incompleteFlexibleMultisigTx = combine(
     return null;
   },
 );
+
+sample({
+  clock: multisigOperationsFeature.running,
+  target: [multisigOperation.subscribe, multisigOperation.subscribeEvents],
+});
+
+sample({
+  clock: multisigOperationsFeature.stopped,
+  target: [multisigOperation.unsubscribe, multisigOperation.unsubscribeEvents],
+});
+
+sample({
+  clock: submitModel.output.saveMultisigTx,
+  target: multisigOperation.addOperations,
+});
 
 export const operationsContextModel = {
   $filter,
