@@ -44,7 +44,7 @@ export const Signatories = memo(
         const availableBalance = balance ? locksService.getAvailableBalance(balance).toString() : BN_ZERO.toString();
 
         return {
-          signer: account,
+          account: account,
           balance: availableBalance,
         };
       });

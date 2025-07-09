@@ -6,16 +6,16 @@ import { createPolkadotWallet, createVaultBaseAccount, dotAsset, polkadotChain }
 import { SignatorySelect } from './SignatorySelect';
 
 const signatories = [
-  { signer: createVaultBaseAccount('1', { walletId: 1 }), balance: '100000000000' },
-  { signer: createVaultBaseAccount('2', { walletId: 1 }), balance: '50000000000' },
-  { signer: createVaultBaseAccount('3', { walletId: 2 }), balance: '10000000000' },
+  { account: createVaultBaseAccount('1', { walletId: 1 }), balance: '100000000000' },
+  { account: createVaultBaseAccount('2', { walletId: 1 }), balance: '50000000000' },
+  { account: createVaultBaseAccount('3', { walletId: 2 }), balance: '10000000000' },
 ];
 
-const allAccounts = signatories.map(({ signer }) => signer);
+const allAccounts = signatories.map(({ account }) => account);
 
 const allWallets = [
-  createPolkadotWallet(1, { rootAccountId: signatories[0]!.signer.accountId }),
-  createPolkadotWallet(2, { rootAccountId: signatories[2]!.signer.accountId }),
+  createPolkadotWallet(1, { rootAccountId: signatories[0]!.account.accountId }),
+  createPolkadotWallet(2, { rootAccountId: signatories[2]!.account.accountId }),
 ];
 
 const network = { chain: polkadotChain, asset: dotAsset } as const;
@@ -25,13 +25,13 @@ const meta: Meta<typeof SignatorySelect> = {
   component: SignatorySelect,
   args: {
     signatories,
-    signatory: signatories[0]?.signer ?? null,
+    signatory: signatories[0]?.account ?? null,
     hasError: false,
     errorText: '',
     onChange: fn(),
     network,
     allAccounts,
-    initiator: signatories[0]?.signer ?? null,
+    initiator: signatories[0]?.account ?? null,
     allWallets,
   },
 };

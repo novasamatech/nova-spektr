@@ -14,7 +14,7 @@ import { AssetBalance } from '../AssetBalance/AssetBalance';
 
 type Props = {
   signatory: AnyAccount | null;
-  signatories: { signer: AnyAccount; balance: string }[];
+  signatories: { account: AnyAccount; balance: string }[];
   hasError: boolean;
   errorText: string;
   onChange: (signatory: AnyAccount) => void;
@@ -39,10 +39,10 @@ export const SignatorySelect = ({
 
   const selectSigner = useCallback(
     (signerId: string) => {
-      const selectedSigner = signatories.find(({ signer }) => signer.id === signerId);
+      const selectedSigner = signatories.find(({ account: signer }) => signer.id === signerId);
       if (!selectedSigner) return;
 
-      onChange(selectedSigner.signer);
+      onChange(selectedSigner.account);
     },
     [onChange, signatories],
   );
@@ -71,7 +71,7 @@ export const SignatorySelect = ({
         invalid={hasError}
         onChange={value => selectSigner(value)}
       >
-        {signatories.map(({ signer, balance }) => {
+        {signatories.map(({ account: signer, balance }) => {
           const isShard = accountUtils.isVaultShardAccount(signer);
           const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
 

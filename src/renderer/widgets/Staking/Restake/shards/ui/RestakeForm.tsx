@@ -150,7 +150,7 @@ const Signatories = () => {
         network.chain.chainId,
         network.chain.assets[0].assetId.toString(),
       );
-      return { signer: signatory, balance: transferableAmount(balance) };
+      return { account: signatory, balance: transferableAmount(balance) };
     });
   }, [signatories, balances]);
 
