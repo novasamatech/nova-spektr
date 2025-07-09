@@ -47,7 +47,6 @@ export const Nominate = () => {
       />
     );
   }
-  console.log('initiatorWallet', initiatorWallet);
 
   return (
     <Modal size="fit" isOpen={isModalOpen} onToggle={closeModal}>
