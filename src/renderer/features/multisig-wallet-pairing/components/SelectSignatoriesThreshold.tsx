@@ -4,16 +4,18 @@ import { Trans } from 'react-i18next';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { Step, nonNullable } from '@/shared/lib/utils';
-import { Alert, Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
+import { getNativeAsset, nonNullable, nullable, toAccountId, toAddress, withdrawableAmount } from '@/shared/lib/utils';
+import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
+import { Address, AssetBalance } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
+import { Fee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { flowModel } from '../model/flow-model';
 import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';
 
-import { MultisigCreationFees } from './components';
-import { Signatory } from './components/Signatory';
+import { Signatory } from './components';
+import { MultisigFeeModal } from './components/MultisigFeeModal';
 
 interface Props {
   onGoBack: () => void;
@@ -29,38 +31,58 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
 
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
-  const wrongChainTypes = useUnit(formModel.$invalidAddresses);
+  const invalidAddresses = useUnit(formModel.$invalidAddresses);
   const canSubmit = useUnit(formModel.$canSubmit);
+  const chain = useUnit(formModel.$chain);
+
+  const signerWallet = useUnit(flowModel.$signerWallet);
+  const signer = useUnit(flowModel.$signer);
+  const fee = useUnit(flowModel.$fee);
+  const isFeeLoading = useUnit(flowModel.$isFeeLoading);
+  const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
+  const signerBalance = useUnit(flowModel.$signerBalance);
 
   const signatories = useUnit(signatoryModel.$signatories);
-  const ownedSignatoriesWallets = useUnit(signatoryModel.$ownedSignatoriesWallets);
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
 
-  const onSubmit = (event: FormEvent) => {
-    signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
+  // TODO: delete when indexer is ready
+  const isMultisigDepositLoading = useUnit(flowModel.$isMultisigDepositLoading);
+  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
+  const totalFee = multisigDeposit.add(fee).toString();
+  const isLoading = isFeeLoading || isMultisigDepositLoading;
 
-    if (ownedSignatoriesWallets.length > 1) {
-      flowModel.stepChanged(Step.SIGNER_SELECTION);
-    } else {
-      event.preventDefault();
-      submit();
-    }
+  const onSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    submit();
+
+    // TODO: will be used for multisig as signer
+    // signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
+
+    // if (ownedSignatoriesWallets.length > 1) {
+    //   flowModel.stepChanged(Step.SIGNER_SELECTION);
+    // } else {
+    //   event.preventDefault();
+    // submit();
+    // }
   };
+
+  const asset = getNativeAsset(chain?.assets || []);
+  const thresholdDisabled = signatories.length < 2 || signatories.some(s => s.address === '');
 
   return (
     <>
       <Modal.Content>
-        <SmallTitleText className="border-b border-container-border px-5 pb-6 text-text-primary">
-          {t('createMultisigAccount.signatoryThresholdDescription')}
-        </SmallTitleText>
+        <div className="flex h-full flex-col gap-y-6 px-5 pb-6 pt-4">
+          <SmallTitleText>{t('createMultisigAccount.signatoryThresholdDescription')}</SmallTitleText>
 
-        <Box direction="column" gap={6} padding={[6, 5, 4, 5]} height="100%">
+          <hr className="-ml-5 w-[110%] border-divider" />
+
           {signatories.map((signatory, index) => (
             <Signatory
               key={index}
               isOwnAccount={index === 0}
-              isDuplicate={duplicateSignatories[signatory.address]?.includes(index)}
-              isInvalidAddress={wrongChainTypes.includes(signatory.address)}
+              isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index)}
+              isInvalidAddress={invalidAddresses.includes(signatory.address)}
               signatoryIndex={index}
               signatory={signatory}
               onDelete={signatoryModel.events.deleteSignatory}
@@ -77,7 +99,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
             {t('createMultisigAccount.addNewSignatory')}
           </Button>
 
-          <hr className="-mx-5 w-full border-divider" />
+          <hr className="-ml-5 w-[110%] border-divider" />
 
           <div className="flex gap-x-6">
             <Box width="100%">
@@ -104,7 +126,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                   placeholder={t('createMultisigAccount.thresholdPlaceholder')}
                   value={(threshold.value || '').toString()}
                   invalid={threshold.hasError}
-                  disabled={[0, 1].includes(signatories.length)}
+                  disabled={thresholdDisabled}
                   height="md"
                   onChange={value => threshold.onChange(Number(value))}
                 >
@@ -121,30 +143,62 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
             </Box>
           </div>
 
-          <Alert
-            variant="info"
-            active={nonNullable(hiddenMultisig)}
-            title={t('createMultisigAccount.multisigExistTitle')}
-          >
-            <Alert.Item withDot={false}>
-              <Trans t={t} i18nKey="createMultisigAccount.multisigHiddenExistText" />
-            </Alert.Item>
-            <Alert.Item withDot={false}>
-              <Button
-                variant="text"
-                size="sm"
-                className="p-0"
-                onClick={() => walletModel.events.walletRestored(hiddenMultisig!)}
-              >
-                {t('createMultisigAccount.restoreButton')}
-              </Button>
-            </Alert.Item>
-          </Alert>
+          <div className="mt-auto">
+            <Alert
+              variant="info"
+              active={nonNullable(hiddenMultisig)}
+              title={t('createMultisigAccount.multisigExistTitle')}
+            >
+              <Alert.Item withDot={false}>
+                <Trans t={t} i18nKey="createMultisigAccount.multisigHiddenExistText" />
+              </Alert.Item>
+              <Alert.Item withDot={false}>
+                <Button
+                  variant="text"
+                  size="sm"
+                  className="p-0"
+                  onClick={() => walletModel.events.walletRestored(hiddenMultisig!)}
+                >
+                  {t('createMultisigAccount.restoreButton')}
+                </Button>
+              </Alert.Item>
+            </Alert>
 
-          <Alert variant="error" active={multisigAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')}>
-            <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
-          </Alert>
-        </Box>
+            <Alert variant="error" active={multisigAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')}>
+              <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
+            </Alert>
+
+            {!nullable(signerBalance) && !nullable(chain) && !nullable(signer) && (
+              <Alert
+                variant="error"
+                active={!isEnoughBalance}
+                title={t('createMultisigAccount.disabledError.notEnoughBalanceTitle')}
+              >
+                <Alert.Item withDot={false}>
+                  <Trans
+                    t={t}
+                    i18nKey="createMultisigAccount.disabledError.notEnoughBalanceText"
+                    components={{
+                      account: (
+                        <span className="mx-1 inline-flex w-auto align-sub">
+                          <Address
+                            address={toAddress(signer.accountId, { prefix: chain.addressPrefix })}
+                            title={signer.name}
+                            hideAddress
+                            showIcon
+                            canCopy={false}
+                          />
+                        </span>
+                      ),
+                      fee: <AssetBalance value={totalFee} asset={asset} />,
+                      balance: <AssetBalance value={withdrawableAmount(signerBalance)} asset={asset} />,
+                    }}
+                  />
+                </Alert.Item>
+              </Alert>
+            )}
+          </div>
+        </div>
       </Modal.Content>
 
       <Modal.Footer>
@@ -154,9 +208,29 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
           </Button>
 
           <div className="flex items-center justify-end gap-x-6">
-            <MultisigCreationFees />
+            {signerWallet && (
+              <div className="flex items-center gap-x-2">
+                <FootnoteText className="text-text-tertiary">{t('createMultisigAccount.networkFee')}</FootnoteText>
+                {chain && (
+                  <Fee
+                    fee={totalFee}
+                    isLoading={isLoading}
+                    asset={asset}
+                    className={isEnoughBalance ? '' : 'text-text-negative'}
+                  />
+                )}
 
-            <Button key="create" type="submit" disabled={!canSubmit} onClick={onSubmit}>
+                <MultisigFeeModal>
+                  <IconButton size={16} name="edit" className="text-icon-default" />
+                </MultisigFeeModal>
+              </div>
+            )}
+            <Button
+              key="create"
+              type="submit"
+              disabled={!canSubmit || !isEnoughBalance || isFeeLoading}
+              onClick={onSubmit}
+            >
               {t('createMultisigAccount.continueButton')}
             </Button>
           </div>

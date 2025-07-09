@@ -1,8 +1,10 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 
-import { type Address, type Wallet } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { type Chain, type Wallet } from '@/shared/core';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accountService, accounts } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { balanceSubModel } from '@/features/assets-balances';
 import { type SignatoryInfo } from '../lib/types';
@@ -11,20 +13,22 @@ const addSignatory = createEvent<Omit<SignatoryInfo, 'index'>>();
 const changeSignatory = createEvent<SignatoryInfo>();
 const deleteSignatory = createEvent<number>();
 const getSignatoriesBalance = createEvent<Wallet[]>();
+const validateSignatories = createEvent<Chain>();
 const resetSignatories = createEvent();
 
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
 
 const $duplicateSignatories = combine($signatories, signatories => {
-  const duplicates: Record<Address, number[]> = {};
+  const duplicates: Record<AccountId, number[]> = {};
 
   for (const [index, signer] of signatories.entries()) {
     if (!signer.address) continue;
+    const accountId = toAccountId(signer.address);
 
-    if (duplicates[signer.address]) {
-      duplicates[signer.address].push(index);
+    if (duplicates[accountId]) {
+      duplicates[accountId].push(index);
     } else {
-      duplicates[signer.address] = [];
+      duplicates[accountId] = [];
     }
   }
 
@@ -96,6 +100,33 @@ sample({
 });
 
 sample({
+  clock: validateSignatories,
+  source: {
+    signatories: $signatories,
+    ownWallets: $ownedSignatoriesWallets,
+    accounts: accounts.$list,
+  },
+  fn: ({ signatories, ownWallets, accounts }, chain) => {
+    return signatories.map(s => {
+      if (!s.walletId) {
+        return { ...s, address: toAddress(s.address, { prefix: chain.addressPrefix }) };
+      }
+      const wallet = ownWallets.find(w => w.id.toString() === s.walletId);
+      const account = accounts.find(
+        a => a.walletId === wallet?.id && accountService.isAccountAvailableOnChain(a, chain),
+      );
+
+      if (!account) {
+        return { ...s, address: '', name: '' };
+      }
+
+      return { ...s, address: toAddress(account.accountId, { prefix: chain.addressPrefix }) };
+    });
+  },
+  target: $signatories,
+});
+
+sample({
   clock: deleteSignatory,
   source: $signatories,
   filter: (signatories, index) => signatories.length > index,
@@ -126,5 +157,6 @@ export const signatoryModel = {
     deleteSignatory,
     getSignatoriesBalance,
     resetSignatories,
+    validateSignatories,
   },
 };

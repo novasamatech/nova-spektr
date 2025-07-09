@@ -3,8 +3,9 @@ import { useUnit } from 'effector-react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { Step, nonNullable } from '@/shared/lib/utils';
+import { Step, getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { Alert, BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
+import { Account } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
@@ -27,7 +28,6 @@ export const ConfirmationStep = () => {
 
   const chain = useUnit(formModel.$chain);
   const signatories = useUnit(signatoryModel.$signatories);
-  const ownedSignatories = useUnit(signatoryModel.$ownedSignatoriesWallets);
 
   const {
     fields: { name, threshold },
@@ -35,18 +35,20 @@ export const ConfirmationStep = () => {
 
   const [isSignatoriesModalOpen, toggleSignatoriesModalOpen] = useToggle();
 
-  if (!signerWallet || !signer) return;
+  if (!signerWallet || !signer || !chain) return;
+
+  const asset = getNativeAsset(chain.assets);
 
   return (
     <>
       <Modal.Content>
         <section className="relative flex h-full w-modal flex-1 flex-col px-5">
-          <div className="flex max-h-full flex-1 flex-col">
-            <div className="mb-6 flex flex-col items-center">
+          <div className="flex max-h-full flex-1 flex-col gap-y-4">
+            <div className="mb-2 flex flex-col items-center">
               <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
             </div>
-            <DetailRow label={t('createMultisigAccount.walletName')}>{name.value}</DetailRow>
-            <DetailRow wrapperClassName="my-4" label={t('createMultisigAccount.signatoriesLabel')}>
+            <DetailRow label={t('createMultisigAccount.walletNameLabel')}>{name.value}</DetailRow>
+            <DetailRow label={t('createMultisigAccount.signatoriesLabel')}>
               <>
                 <Counter className="mr-2" variant="neutral">
                   {signatories.length}
@@ -65,34 +67,35 @@ export const ConfirmationStep = () => {
                 signatoriesLength: signatories.length,
               })}
             </DetailRow>
-            <Separator className="my-4 border-filter-border" />
+            <Separator className="border-filter-border" />
             <DetailRow label={t('createMultisigAccount.signingWallet')}>
               <div className="flex w-full items-center justify-end gap-x-2">
                 <WalletIcon type={signerWallet.type} />
 
                 <div className="flex max-w-[348px] flex-col">
                   <BodyText as="span" className="truncate tracking-tight text-text-secondary">
-                    {signer.name || signerWallet.name}
+                    {signerWallet.name}
                   </BodyText>
                 </div>
               </div>
             </DetailRow>
-            <Separator className="my-4 border-filter-border" />
-            {chain ? (
-              <div className="mb-4 flex flex-1 flex-col gap-y-4">
-                <MultisigDepositFee asset={chain.assets[0]} multisigDeposit={multisigDeposit.toString()} />
-
-                <FeeWithLabel fee={fee.toString()} asset={chain.assets[0]} />
-
-                <Alert
-                  variant="error"
-                  title={t('createMultisigAccount.notEnoughTokensTitle')}
-                  active={!isEnoughBalance}
-                >
-                  <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughMultisigTokens')}</Alert.Item>
-                </Alert>
+            <DetailRow label={t('createMultisigAccount.signingAccount')}>
+              <div className="flex w-full items-center justify-end gap-x-2">
+                <div className="flex max-w-[348px] flex-col text-text-secondary">
+                  <Account variant="short" accountId={signer.accountId} chain={chain} />
+                </div>
               </div>
-            ) : null}
+            </DetailRow>
+            <Separator className="border-filter-border" />
+            <div className="mb-4 flex flex-1 flex-col gap-y-4">
+              <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit.toString()} />
+
+              <FeeWithLabel fee={fee.toString()} asset={asset} />
+
+              <Alert variant="error" title={t('createMultisigAccount.notEnoughTokensTitle')} active={!isEnoughBalance}>
+                <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughMultisigTokens')}</Alert.Item>
+              </Alert>
+            </div>
           </div>
         </section>
       </Modal.Content>
@@ -101,11 +104,12 @@ export const ConfirmationStep = () => {
           <Button
             variant="text"
             onClick={() => {
-              if ((ownedSignatories || []).length > 1) {
-                flowModel.stepChanged(Step.SIGNER_SELECTION);
-              } else {
-                flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
-              }
+              flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
+              // if ((ownedSignatories || []).length > 1) {
+              //   flowModel.stepChanged(Step.SIGNER_SELECTION);
+              // } else {
+              //   flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
+              // }
             }}
           >
             {t('createMultisigAccount.backButton')}

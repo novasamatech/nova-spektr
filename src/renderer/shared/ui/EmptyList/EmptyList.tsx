@@ -1,7 +1,8 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { Graphics } from '@/shared/ui-kit';
-import { BodyText, SmallTitleText } from '../Typography';
+import { Box, Graphics } from '@/shared/ui-kit';
+import { Icon } from '../Icon/Icon';
+import { BodyText, FootnoteText, SmallTitleText } from '../Typography';
 
 type Props = {
   iconAlt?: string;
@@ -21,5 +22,16 @@ export const EmptyList = ({ title, message, iconAlt = '', children }: PropsWithC
 
       {children}
     </div>
+  );
+};
+
+export const EmptyListWithIcon = ({ title, message, children }: PropsWithChildren<Props>) => {
+  return (
+    <Box padding={[43, 10]} gap={2} horizontalAlign="center" verticalAlign="center">
+      <Icon size={64} name="empty" className="mb-4" />
+      <SmallTitleText>{title}</SmallTitleText>
+      <FootnoteText className="text-center text-text-tertiary">{message} </FootnoteText>
+      {children}
+    </Box>
   );
 };
