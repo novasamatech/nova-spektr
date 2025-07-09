@@ -7,6 +7,7 @@ import { type ChainId, type MultisigAccount, type WalletFamily } from '@/shared/
 import { useI18n } from '@/shared/i18n';
 import {
   formatBalance,
+  getNativeAsset,
   includesMultiple,
   nonNullable,
   performSearch,
@@ -195,7 +196,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.chain.assets[0].assetId.toString(),
+        network.asset.assetId.toString(),
       );
       return { signer: signatory, balance: withdrawableAmount(balance) };
     });
@@ -487,7 +488,7 @@ const FeeSection = () => {
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={network.chain.assets[0]}
+          asset={getNativeAsset(network.chain.assets)!}
           threshold={(account.value as MultisigAccount).threshold || 1}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
@@ -495,7 +496,7 @@ const FeeSection = () => {
 
       <FeeWithLabelWithDataLoading
         api={api}
-        asset={network.chain.assets[0]}
+        asset={getNativeAsset(network.chain.assets)!}
         transaction={transaction?.wrappedTx || fakeTx}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
@@ -512,7 +513,9 @@ const FeeSection = () => {
         />
       )}
 
-      {nonNullable(deliveryFee) && <DeliveryFeeWithLabel fee={deliveryFee} asset={network.chain.assets[0]} />}
+      {nonNullable(deliveryFee) && (
+        <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
+      )}
     </div>
   );
 };

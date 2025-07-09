@@ -3,7 +3,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { transferableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
 import { SignatorySelect } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -62,7 +62,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.chain.assets[0].assetId.toString(),
+        network.asset.assetId.toString(),
       );
       return { signer: signatory, balance: transferableAmount(balance) };
     });
@@ -158,13 +158,13 @@ const FeeSection = () => {
             </>
           }
         >
-          <Fee fee={multisigDeposit.toString()} asset={network.chain.assets[0]} />
+          <Fee fee={multisigDeposit.toString()} asset={getNativeAsset(network.chain.assets)!} />
         </DetailRow>
       )}
 
       <FeeWithLabel
         label={t('staking.networkFee', { count: 1 })}
-        asset={network.chain.assets[0]}
+        asset={getNativeAsset(network.chain.assets)!}
         fee={fee.toString()}
         isLoading={pendingFee}
       />

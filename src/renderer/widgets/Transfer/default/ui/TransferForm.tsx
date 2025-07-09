@@ -97,7 +97,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.chain.assets[0].assetId.toString(),
+        network.asset.assetId.toString(),
       );
       return { signer: signatory, balance: withdrawableAmount(balance) };
     });
@@ -387,7 +387,7 @@ const FeeSection = () => {
       {nonNullable(initiator) && accountUtils.isMultisigAccount(initiator) && (
         <MultisigDepositWithLabel
           api={api}
-          asset={network.chain.assets[0]}
+          asset={getNativeAsset(network.chain.assets)!}
           threshold={initiator.threshold || 1}
           onDepositChange={formModel.multisigDepositChanged}
         />
@@ -395,7 +395,7 @@ const FeeSection = () => {
 
       <FeeWithLabel
         label={t('operation.networkFee')}
-        asset={network.chain.assets[0]}
+        asset={getNativeAsset(network.chain.assets)!}
         fee={fee.toString()}
         isLoading={pendingFee}
       />
@@ -411,7 +411,9 @@ const FeeSection = () => {
         />
       )}
 
-      {nonNullable(deliveryFee) && <DeliveryFeeWithLabel fee={deliveryFee} asset={network.chain.assets[0]} />}
+      {nonNullable(deliveryFee) && (
+        <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
+      )}
     </div>
   );
 };

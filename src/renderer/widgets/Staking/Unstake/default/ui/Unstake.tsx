@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
+import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
@@ -51,7 +52,7 @@ export const Unstake = () => {
     <Modal size="md" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>
         <OperationTitle
-          title={t('staking.unstake.title', { asset: networkStore.chain.assets[0].symbol })}
+          title={t('staking.unstake.title', { asset: getNativeAsset(networkStore.chain.assets)!.symbol })}
           chainId={networkStore.chain.chainId}
         />
       </Modal.Title>

@@ -63,7 +63,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.chain.assets[0].assetId.toString(),
+        network.asset.assetId.toString(),
       );
       return { signer: signatory, balance: transferableAmount(balance) };
     });
@@ -157,11 +157,11 @@ const FeeSection = () => {
             </>
           }
         >
-          <Fee fee={multisigDeposit.toString()} asset={network.chain.assets[0]} />
+          <Fee fee={multisigDeposit.toString()} asset={network.asset} />
         </DetailRow>
       )}
 
-      <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.chain.assets[0]} />
+      <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.asset} />
     </div>
   );
 };

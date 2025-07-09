@@ -160,7 +160,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.chain.assets[0].assetId.toString(),
+        network.asset.assetId.toString(),
       );
       return { signer: signatory, balance: transferableAmount(balance) };
     });
@@ -320,8 +320,8 @@ const FeeSection = () => {
           }
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.multisigDeposit} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.multisigDeposit} />
+            <AssetBalance value={feeData.multisigDeposit} asset={network.asset} />
+            <AssetFiatBalance asset={network.asset} amount={feeData.multisigDeposit} />
           </div>
         </DetailRow>
       )}
@@ -338,8 +338,8 @@ const FeeSection = () => {
           <FeeLoader fiatFlag={Boolean(fiatFlag)} />
         ) : (
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={feeData.fee} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.fee} />
+            <AssetBalance value={feeData.fee} asset={network.asset} />
+            <AssetFiatBalance asset={network.asset} amount={feeData.fee} />
           </div>
         )}
       </DetailRow>
@@ -353,8 +353,8 @@ const FeeSection = () => {
             <FeeLoader fiatFlag={Boolean(fiatFlag)} />
           ) : (
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={feeData.totalFee} asset={network.chain.assets[0]} />
-              <AssetFiatBalance asset={network.chain.assets[0]} amount={feeData.totalFee} />
+              <AssetBalance value={feeData.totalFee} asset={network.asset} />
+              <AssetFiatBalance asset={network.asset} amount={feeData.totalFee} />
             </div>
           )}
         </DetailRow>

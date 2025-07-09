@@ -4,7 +4,7 @@ import { type FormEvent, useMemo } from 'react';
 import { type MultisigAccount } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, transferableAmount } from '@/shared/lib/utils';
+import { formatBalance, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { Button, InputHint } from '@/shared/ui';
 import { SignatorySelect } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
@@ -62,7 +62,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.chain.assets[0].assetId.toString(),
+        network.asset.assetId.toString(),
       );
       return { signer: signatory, balance: transferableAmount(balance) };
     });
@@ -142,7 +142,7 @@ const FeeSection = () => {
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={network.chain.assets[0]}
+          asset={getNativeAsset(network.chain.assets)!}
           threshold={(initiator.value as MultisigAccount).threshold || 1}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
@@ -150,7 +150,7 @@ const FeeSection = () => {
 
       <FeeWithLabel
         label={t('staking.networkFee', { count: 1 })}
-        asset={network.chain.assets[0]}
+        asset={getNativeAsset(network.chain.assets)!}
         fee={fee.toString()}
         isLoading={pendingFee}
       />

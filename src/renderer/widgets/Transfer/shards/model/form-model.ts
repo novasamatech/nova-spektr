@@ -18,6 +18,7 @@ import {
   ZERO_BALANCE,
   formatAmount,
   getAssetId,
+  getNativeAsset,
   nonNullable,
   nullable,
   toAccountId,
@@ -33,6 +34,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { TransferType, getExtrinsic, transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { TransferRules } from '@/features/operations/OperationsValidation';
 import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
 import { type NetworkStore } from '../lib/types';
@@ -325,12 +327,12 @@ const $accounts = combine(
       const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId.toString());
 
       let nativeBalance = balance;
-      if (asset.assetId !== chain.assets[0].assetId) {
+      if (asset.assetId !== getNativeAsset(chain.assets)!.assetId) {
         nativeBalance = balanceUtils.getBalance(
           balances,
           account.accountId,
           chain.chainId,
-          chain.assets[0].assetId.toString(),
+          network.asset.assetId.toString(),
         );
       }
 
@@ -390,7 +392,7 @@ const $chains = combine(
 const $destinationAccounts = combine(
   {
     isXcm: $isXcm,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chain: $transferForm.fields.xcmChain.$value,
   },
   ({ isXcm, wallet, chain }) => {
@@ -456,7 +458,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  fn: ({ chain, asset }) => getAssetId(chain.assets[0]) === getAssetId(asset),
+  fn: ({ chain, asset }) => getAssetId(getNativeAsset(chain.assets)!) === getAssetId(asset),
   target: $isNative,
 });
 
@@ -537,7 +539,7 @@ sample({
         balances,
         proxyAccount!.accountId,
         network!.chain.chainId,
-        network!.chain.assets[0].assetId.toString(),
+        getNativeAsset(network!.chain.assets)!.assetId.toString(),
       );
     }
 

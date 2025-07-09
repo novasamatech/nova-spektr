@@ -4,7 +4,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { formatBalance, getNativeAsset, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
 import { type DropdownResult } from '@/shared/ui/Dropdowns/common/types';
 import { Address, AssetBalance, SignatorySelect } from '@/shared/ui-entities';
@@ -101,7 +101,7 @@ const AccountsSelector = () => {
           element: (
             <div className="flex flex-grow justify-between" key={account.id}>
               <Address address={address} variant="short" iconSize={20} canCopy={false} title={account.name} showIcon />
-              <AssetBalance value={balance} asset={network.asset} className="w-min" />
+              <AssetBalance value={balance} asset={getNativeAsset(chain.assets)!} className="w-min" />
             </div>
           ),
         };
@@ -160,7 +160,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.chain.assets[0].assetId.toString(),
+        network.asset.assetId.toString(),
       );
       return { signer: signatory, balance: transferableAmount(balance) };
     });
@@ -235,7 +235,7 @@ const FeeSection = () => {
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={chain.assets[0]}
+          asset={getNativeAsset(chain.assets)!}
           threshold={(shards.value[0] as MultisigAccount).threshold || 1}
           onDepositChange={unlockFormAggregate.multisigDepositChanged}
         />
@@ -244,7 +244,7 @@ const FeeSection = () => {
       <FeeWithLabelWithDataLoading
         label={t('operation.networkFee', { count: shards.value.length || 1 })}
         api={api}
-        asset={chain.assets[0]}
+        asset={getNativeAsset(chain.assets)!}
         transaction={transactions?.[0]?.wrappedTx}
         onFeeChange={unlockFormAggregate.feeChanged}
         onFeeLoading={unlockFormAggregate.isFeeLoadingChanged}
@@ -254,7 +254,7 @@ const FeeSection = () => {
         <FeeWithLabelWithDataLoading
           label={t('operation.networkFeeTotal')}
           api={api}
-          asset={chain.assets[0]}
+          asset={getNativeAsset(chain.assets)!}
           multiply={transactions.length}
           transaction={transactions[0].wrappedTx}
           onFeeChange={unlockFormAggregate.totalFeeChanged}

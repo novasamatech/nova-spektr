@@ -63,7 +63,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.chain.assets[0].assetId.toString(),
+        network.asset.assetId.toString(),
       );
       return { signer: signatory, balance: transferableAmount(balance) };
     });
@@ -216,13 +216,13 @@ const FeeSection = () => {
           }
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={multisigDeposit} asset={network.chain.assets[0]} />
-            <AssetFiatBalance asset={network.chain.assets[0]} amount={multisigDeposit} />
+            <AssetBalance value={multisigDeposit} asset={network.asset} />
+            <AssetFiatBalance asset={network.asset} amount={multisigDeposit} />
           </div>
         </DetailRow>
       )}
 
-      <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.chain.assets[0]} />
+      <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.asset} />
     </div>
   );
 };

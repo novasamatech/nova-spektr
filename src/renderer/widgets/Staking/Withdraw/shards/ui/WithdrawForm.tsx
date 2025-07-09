@@ -4,7 +4,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress, transferableAmount } from '@/shared/lib/utils';
+import { formatBalance, getNativeAsset, toAddress, toShortAddress, transferableAmount } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
 import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { accountService, accounts } from '@/domains/network';
@@ -149,7 +149,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.chain.assets[0].assetId.toString(),
+        network.asset.assetId.toString(),
       );
       return { signer: signatory, balance: transferableAmount(balance) };
     });
@@ -228,7 +228,7 @@ const FeeSection = () => {
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={network.chain.assets[0]}
+          asset={getNativeAsset(network.chain.assets)!}
           threshold={(shards.value[0] as MultisigAccount).threshold || 1}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
@@ -237,7 +237,7 @@ const FeeSection = () => {
       <FeeWithLabelWithDataLoading
         label={t('staking.networkFee', { count: shards.value.length || 1 })}
         api={api}
-        asset={network.chain.assets[0]}
+        asset={getNativeAsset(network.chain.assets)!}
         transaction={transactions?.[0]?.wrappedTx}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
@@ -247,7 +247,7 @@ const FeeSection = () => {
         <FeeWithLabelWithDataLoading
           label={t('staking.networkFeeTotal')}
           api={api}
-          asset={network.chain.assets[0]}
+          asset={getNativeAsset(network.chain.assets)!}
           multiply={transactions.length}
           transaction={transactions[0].wrappedTx}
           onFeeChange={formModel.events.totalFeeChanged}

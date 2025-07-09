@@ -62,7 +62,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.chain.assets[0].assetId.toString(),
+        network.asset.assetId.toString(),
       );
       return { signer: signatory, balance: transferableAmount(balance) };
     });
@@ -142,7 +142,7 @@ const FeeSection = () => {
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={network.chain.assets[0]}
+          asset={network.asset}
           threshold={(initiator.value as MultisigAccount).threshold || 1}
           onDepositChange={formModel.multisigDepositChanged}
         />
@@ -150,7 +150,7 @@ const FeeSection = () => {
 
       <FeeWithLabel
         label={t('staking.networkFee', { count: 1 })}
-        asset={network.chain.assets[0]}
+        asset={network.asset}
         fee={fee.toString()}
         isLoading={pendingFee}
       />
