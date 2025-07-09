@@ -6657,7 +6657,6 @@
         "symbol": "WND",
         "precision": 12,
         "type": "native",
-        "staking": "relaychain",
         "icon": {
           "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/WND.svg",
           "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/WND.svg"
@@ -6694,6 +6693,134 @@
     },
     "additional": {
       "identityChain": "0x1eb6fb0ba5187434de017a70cb84d4f47142df1d571d0ef9e7e1407f2b80b93c"
+    }
+  },
+  {
+    "name": "Polkadot Coretime",
+    "specName": "polkadot",
+    "addressPrefix": 0,
+    "chainId": "0xefb56e30d9b4a24099f88820987d0f45fb645992416535d87650d98e00f46fc4",
+    "parentId": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_Coretime.svg",
+    "options": [
+      "pure_proxy",
+      "regular_proxy"
+    ],
+    "nodes": [
+      {
+        "url": "wss://sys.ibp.network/coretime-polkadot",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://coretime-polkadot.dotters.network",
+        "name": "IBP2 node"
+      },
+      {
+        "url": "wss://rpc-coretime-polkadot.luckyfriday.io",
+        "name": "LuckyFriday node"
+      },
+      {
+        "url": "wss://polkadot-coretime-rpc.polkadot.io",
+        "name": "Parity node"
+      }
+    ],
+    "assets": [
+      {
+        "name": "Polkadot",
+        "assetId": 0,
+        "symbol": "DOT",
+        "precision": 10,
+        "type": "native",
+        "priceId": "polkadot",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg"
+        }
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://coretime-polkadot.subscan.io/extrinsic/{hash}",
+        "account": "https://coretime-polkadot.subscan.io/account/{address}",
+        "multisig": "https://coretime-polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+      }
+    ],
+    "externalApi": {
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-polkadot-coretime-stg.novasama-tech.org"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Kusama Coretime",
+    "specName": "kusama",
+    "addressPrefix": 2,
+    "chainId": "0x638cd2b9af4b3bb54b8c1f0d22711fc89924ca93300f0caf25a580432b29d050",
+    "parentId": "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
+    "icon": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Kusama_Coretime.svg",
+    "options": [
+      "pure_proxy",
+      "regular_proxy"
+    ],
+    "nodes": [
+      {
+        "url": "wss://coretime-kusama-rpc.dwellir.com",
+        "name": "Dwellir node"
+      },
+      {
+        "url": "wss://sys.ibp.network/coretime-kusama",
+        "name": "IBP1 node"
+      },
+      {
+        "url": "wss://coretime-kusama.dotters.network",
+        "name": "IBP2 node"
+      },
+      {
+        "url": "wss://rpc-coretime-kusama.luckyfriday.io",
+        "name": "LuckyFriday node"
+      },
+      {
+        "url": "wss://kusama-coretime-rpc.polkadot.io",
+        "name": "Parity node"
+      },
+      {
+        "url": "wss://ksm-rpc.stakeworld.io/coretime",
+        "name": "Stakeworld node"
+      }
+    ],
+    "assets": [
+      {
+        "name": "Kusama",
+        "assetId": 0,
+        "symbol": "KSM",
+        "precision": 12,
+        "type": "native",
+        "priceId": "kusama",
+        "icon": {
+          "monochrome": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/KSM.svg",
+          "colored": "https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/KSM.svg"
+        }
+      }
+    ],
+    "explorers": [
+      {
+        "name": "Subscan",
+        "extrinsic": "https://coretime-kusama.subscan.io/extrinsic/{hash}",
+        "account": "https://coretime-kusama.subscan.io/account/{address}",
+        "multisig": "https://coretime-kusama.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}"
+      }
+    ],
+    "externalApi": {
+      "proxy": [
+        {
+          "type": "subquery",
+          "url": "https://subquery-proxy-kusama-coretime-stg.novasama-tech.org"
+        }
+      ]
     }
   }
 ]
