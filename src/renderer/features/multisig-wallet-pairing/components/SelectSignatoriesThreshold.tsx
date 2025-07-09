@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, nullable, toAddress, withdrawableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable, toAccountId, toAddress, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
 import { Address, AssetBalance } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
@@ -81,7 +81,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
             <Signatory
               key={index}
               isOwnAccount={index === 0}
-              isDuplicate={duplicateSignatories[signatory.address]?.includes(index)}
+              isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index)}
               isInvalidAddress={invalidAddresses.includes(signatory.address)}
               signatoryIndex={index}
               signatory={signatory}

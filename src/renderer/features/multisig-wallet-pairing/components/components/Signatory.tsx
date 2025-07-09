@@ -100,7 +100,7 @@ export const Signatory = ({
 
         if (isOwnAccount) return isCorrectAccount;
 
-        const isChainMatch = accountService.isAccountAvailableOnChain(account, chain); //any own acc available
+        const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
         const queryPass = includesMultiple([account.name, address], query);
 
@@ -158,15 +158,6 @@ export const Signatory = ({
       });
     }
 
-    if (validateAddress(query, chain)) {
-      const displayedAddress = toAddress(query, { prefix: chain.addressPrefix });
-      addressOptions.push({
-        id: query,
-        label: <Address iconSize={20} showIcon address={displayedAddress} />,
-        value: { address: displayedAddress },
-      });
-    }
-
     if (addressOptions.length === 0) return;
 
     const contactsOptions: ComboboxGroup[] = [
@@ -178,7 +169,7 @@ export const Signatory = ({
     ];
 
     setOptions(options => [...contactsOptions, ...options]);
-  }, [query, chain, isOwnAccount, filteredContacts]);
+  }, [chain, isOwnAccount, filteredContacts]);
 
   // initiate the query form in case of not own account
   useEffect(() => {

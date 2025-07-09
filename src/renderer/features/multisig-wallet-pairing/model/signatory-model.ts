@@ -1,8 +1,9 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 
-import { type Address, type Chain, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService, accounts } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { balanceSubModel } from '@/features/assets-balances';
@@ -18,15 +19,16 @@ const resetSignatories = createEvent();
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
 
 const $duplicateSignatories = combine($signatories, signatories => {
-  const duplicates: Record<Address, number[]> = {};
+  const duplicates: Record<AccountId, number[]> = {};
 
   for (const [index, signer] of signatories.entries()) {
     if (!signer.address) continue;
+    const accountId = toAccountId(signer.address);
 
-    if (duplicates[signer.address]) {
-      duplicates[signer.address].push(index);
+    if (duplicates[accountId]) {
+      duplicates[accountId].push(index);
     } else {
-      duplicates[signer.address] = [];
+      duplicates[accountId] = [];
     }
   }
 
