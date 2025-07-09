@@ -243,7 +243,7 @@ export const Signatory = ({
             <Field text={t('createMultisigAccount.myAddress')}>
               <Select
                 placeholder={t('createMultisigAccount.signatorySelection')}
-                value={signatoryAddress}
+                value={toAddress(signatoryAddress, { prefix: POLKADOT_ADDRESS_PREFFIX })}
                 onChange={onAddressChange}
               >
                 {options.map(group =>
