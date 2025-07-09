@@ -5,6 +5,7 @@ import { LabelText } from '../Typography';
 
 import { RadioCard } from './RadioCard';
 import { Option } from './RadioOption';
+import { Select } from './RadioSelect';
 import { type RadioOption, type RadioResult } from './common/types';
 
 import './RadioGroup.css';
@@ -15,7 +16,7 @@ type Props<T> = {
   activeId?: string;
   options: RadioOption<T>[];
   className?: string;
-  onChange: (data: RadioResult<T>) => void;
+  onChange?: (data: RadioResult<T>) => void;
 };
 
 const RadioGroupRoot = <T = never,>({
@@ -27,10 +28,16 @@ const RadioGroupRoot = <T = never,>({
   children,
   onChange,
 }: PropsWithChildren<Props<T>>) => {
-  const activeOption = options.find((option) => option.id === activeId);
+  const activeOption = options.find((option) => option.id === activeId) ?? null;
 
   const radioElement = (
-    <HeadlessRadioGroup by="id" className={className} name={name} value={activeOption} onChange={onChange}>
+    <HeadlessRadioGroup
+      by={(a, b) => a?.id === b?.id}
+      className={className}
+      name={name}
+      value={activeOption}
+      onChange={onChange}
+    >
       {children}
     </HeadlessRadioGroup>
   );
@@ -49,5 +56,6 @@ const RadioGroupRoot = <T = never,>({
 
 export const RadioGroup = Object.assign(RadioGroupRoot, {
   Option,
+  Select,
   CardOption: RadioCard,
 });

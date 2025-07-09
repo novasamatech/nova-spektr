@@ -25,7 +25,8 @@ import { TimeToEra } from './TimeToEra';
 type Props = {
   nominators: (NominatorInfo<VaultBaseAccount> | NominatorInfo<VaultShardAccount>[])[];
   isStakingLoading: boolean;
-  api?: ApiPromise;
+  api: ApiPromise;
+  timelineApi: ApiPromise;
   era?: number;
   asset?: Asset;
   chain: Chain;
@@ -35,6 +36,7 @@ type Props = {
 
 export const NominatorsList = ({
   api,
+  timelineApi,
   era,
   nominators,
   asset,
@@ -56,7 +58,7 @@ export const NominatorsList = ({
           <div className="flex items-center gap-x-1 rounded-md bg-badge-background px-2 py-0.5">
             <Icon name="unstake" className="text-icon-accent" size={14} />
             <HelpText className="text-icon-accent">
-              <TimeToEra className="my-1" api={api} era={nextUnstakingEra} />
+              <TimeToEra className="my-1" api={api} timelineApi={timelineApi} era={nextUnstakingEra} />
             </HelpText>
           </div>
         </Tooltip.Trigger>
