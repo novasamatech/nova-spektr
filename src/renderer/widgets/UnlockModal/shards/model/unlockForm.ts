@@ -1,7 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import isEmpty from 'lodash/isEmpty';
 import { spread } from 'patronum';
 
 import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
@@ -256,29 +255,16 @@ const $proxyWallet = combine(
 
 const $signatories = combine(
   {
-    chainId: networkSelectorModel.$governanceChainId,
     network: networkSelectorModel.$network,
     txWrappers: $txWrappers,
-    balances: balanceModel.$balances,
   },
-  ({ chainId, network, txWrappers, balances }) => {
-    if (!chainId || !network || !txWrappers) return [];
+  ({ network, txWrappers }) => {
+    if (!network || !txWrappers) return [];
 
-    return txWrappers.reduce<{ signer: AnyAccount; balance: string }[][]>((acc, wrapper) => {
+    return txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
-      const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(
-          balances,
-          signatory.accountId,
-          chainId,
-          network.asset.assetId.toString(),
-        );
-
-        return { signer: signatory, balance: transferableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
+      acc.push((wrapper as MultisigTxWrapper).signatories);
 
       return acc;
     }, []);
@@ -412,12 +398,21 @@ sample({
 
 sample({
   clock: $unlockForm.fields.signatory.onChange,
-  source: $signatories,
-  filter: (signatories) => !isEmpty(signatories),
-  fn: (signatories, signatory) => {
-    const match = signatories[0].find(({ signer }) => signer.id === signatory?.id);
+  source: {
+    balances: balanceModel.$balances,
+    network: networkSelectorModel.$network,
+  },
+  fn: ({ balances, network }, signatory) => {
+    if (!signatory || !network) return ZERO_BALANCE;
 
-    return match?.balance || ZERO_BALANCE;
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
   },
   target: $signatoryBalance,
 });

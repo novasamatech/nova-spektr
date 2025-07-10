@@ -1,11 +1,9 @@
-/* eslint-disable import-x/max-dependencies */
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import { camelCase, isEmpty } from 'lodash';
+import { camelCase } from 'lodash';
 import { spread } from 'patronum';
 
 import {
-  type Account,
   type Address,
   type Chain,
   type ChainId,
@@ -20,7 +18,9 @@ import {
   ZERO_BALANCE,
   formatAmount,
   getAssetId,
+  getNativeAsset,
   nonNullable,
+  nullable,
   toAccountId,
   toAddress,
   transferableAmount,
@@ -29,10 +29,12 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { TransferType, getExtrinsic, transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { TransferRules } from '@/features/operations/OperationsValidation';
 import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
 import { type NetworkStore } from '../lib/types';
@@ -40,9 +42,9 @@ import { type NetworkStore } from '../lib/types';
 type BalanceMap = Record<'balance' | 'native', string>;
 
 type FormParams = {
-  account: Account | null;
+  account: AnyAccount | null;
   xcmChain: Chain;
-  signatory: Account | null;
+  signatory: AnyAccount | null;
   destination: Address;
   amount: string;
 };
@@ -54,7 +56,7 @@ type FormSubmitEvent = {
     coreTx: Transaction;
   };
   formData: FormParams & {
-    signatory: Account | null;
+    signatory: AnyAccount | null;
     proxiedAccount?: ProxiedAccount;
     fee: string;
     xcmFee: string;
@@ -90,7 +92,7 @@ const $fee = restore(feeChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isXcm = createStore<boolean>(false);
-const $selectedSignatories = createStore<Account[]>([]);
+const $selectedSignatories = createStore<AnyAccount[]>([]);
 
 const $transferForm = createForm<FormParams>({
   fields: {
@@ -325,12 +327,12 @@ const $accounts = combine(
       const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId.toString());
 
       let nativeBalance = balance;
-      if (asset.assetId !== chain.assets[0].assetId) {
+      if (asset.assetId !== getNativeAsset(chain.assets)!.assetId) {
         nativeBalance = balanceUtils.getBalance(
           balances,
           account.accountId,
           chain.chainId,
-          chain.assets[0].assetId.toString(),
+          network.asset.assetId.toString(),
         );
       }
 
@@ -349,28 +351,14 @@ const $signatories = combine(
   {
     network: $networkStore,
     txWrappers: $txWrappers,
-    balances: balanceModel.$balances,
   },
-  ({ network, txWrappers, balances }) => {
+  ({ network, txWrappers }) => {
     if (!network) return [];
 
-    const { chain } = network;
-
-    return txWrappers.reduce<{ signer: Account; balance: string }[][]>((acc, wrapper) => {
+    return txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
       if (!transactionService.hasMultisig([wrapper])) return acc;
 
-      const balancedSignatories = (wrapper as MultisigTxWrapper).signatories.map((signatory) => {
-        const balance = balanceUtils.getBalance(
-          balances,
-          signatory.accountId,
-          chain.chainId,
-          chain.assets[0].assetId.toString(),
-        );
-
-        return { signer: signatory, balance: withdrawableAmount(balance) };
-      });
-
-      acc.push(balancedSignatories);
+      acc.push((wrapper as MultisigTxWrapper).signatories);
 
       return acc;
     }, []);
@@ -404,7 +392,7 @@ const $chains = combine(
 const $destinationAccounts = combine(
   {
     isXcm: $isXcm,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chain: $transferForm.fields.xcmChain.$value,
   },
   ({ isXcm, wallet, chain }) => {
@@ -470,7 +458,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  fn: ({ chain, asset }) => getAssetId(chain.assets[0]) === getAssetId(asset),
+  fn: ({ chain, asset }) => getAssetId(getNativeAsset(chain.assets)!) === getAssetId(asset),
   target: $isNative,
 });
 
@@ -551,7 +539,7 @@ sample({
         balances,
         proxyAccount!.accountId,
         network!.chain.chainId,
-        network!.chain.assets[0].assetId.toString(),
+        getNativeAsset(network!.chain.assets)!.assetId.toString(),
       );
     }
 
@@ -561,28 +549,31 @@ sample({
 });
 
 sample({
+  clock: $transferForm.fields.signatory.onChange,
   source: {
-    signatory: $transferForm.fields.signatory.$value,
-    signatories: $signatories,
+    balances: balanceModel.$balances,
+    network: $networkStore,
   },
-  filter: ({ signatory, signatories }) => {
-    return !isEmpty(signatories) && nonNullable(signatory);
-  },
-  fn: ({ signatory, signatories }) => {
-    if (!signatory) {
+  fn: ({ balances, network }, signatory) => {
+    if (nullable(signatory) || nullable(balances) || nullable(network)) {
       return ZERO_BALANCE;
     }
 
-    const match = signatories[0].find(({ signer }) => signer.id === signatory.id);
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
 
-    return match?.balance || ZERO_BALANCE;
+    return withdrawableAmount(balance);
   },
   target: $signatoryBalance,
 });
 
 sample({
   clock: $transferForm.fields.signatory.$value,
-  filter: (signatory: Account | null): signatory is Account => nonNullable(signatory),
+  filter: (signatory: AnyAccount | null): signatory is AnyAccount => nonNullable(signatory),
   fn: (signatory) => [signatory],
   target: $selectedSignatories,
 });

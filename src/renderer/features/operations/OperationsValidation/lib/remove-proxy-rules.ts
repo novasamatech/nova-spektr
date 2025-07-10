@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
 import { type Chain } from '@/shared/core';
-import { transferableAmountBN, withdrawableAmountBN } from '@/shared/lib/utils';
+import { getNativeAsset, transferableAmountBN, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '@/entities/balance';
 import { type AccountStore, type SignatoryStore } from '../types/types';
@@ -20,7 +20,7 @@ export const RemoveProxyRules = {
           balances,
           value.accountId,
           form.chain.chainId,
-          form.chain.assets[0].assetId.toString(),
+          getNativeAsset(form.chain.assets).assetId.toString(),
         );
         const proxyDeposit = new BN(params.proxyDeposit);
         const fee = new BN(params.fee);
@@ -48,7 +48,7 @@ export const RemoveProxyRules = {
           balances,
           value.accountId,
           form.chain.chainId,
-          form.chain.assets[0].assetId.toString(),
+          getNativeAsset(form.chain.assets).assetId.toString(),
         );
 
         return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));

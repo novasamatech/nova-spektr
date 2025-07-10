@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
+import { getNativeAsset } from '@/shared/lib/utils';
 import { BaseModal, Button } from '@/shared/ui';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
@@ -53,7 +54,7 @@ export const Unstake = () => {
       isOpen={isModalOpen}
       title={
         <OperationTitle
-          title={t('staking.unstake.title', { asset: networkStore.chain.assets[0].symbol })}
+          title={t('staking.unstake.title', { asset: getNativeAsset(networkStore.chain.assets)!.symbol })}
           chainId={networkStore.chain.chainId}
         />
       }
