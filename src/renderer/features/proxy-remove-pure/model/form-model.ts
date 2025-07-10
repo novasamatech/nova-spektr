@@ -17,6 +17,7 @@ import {
 } from '@/shared/core';
 import {
   TEST_ACCOUNTS,
+  getNativeAsset,
   getProxyTypes,
   isStringsMatchQuery,
   nonNullable,
@@ -102,7 +103,7 @@ const $proxyForm = createForm<FormParams>({
               balances,
               signatory.accountId,
               chain.chainId,
-              chain.assets[0].assetId.toString(),
+              getNativeAsset(chain.assets).assetId.toString(),
             );
 
             return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));
@@ -141,7 +142,7 @@ const $proxiedAccounts = combine(
         balances,
         account.accountId,
         chain.chainId,
-        chain.assets[0].assetId.toString(),
+        getNativeAsset(chain.assets).assetId.toString(),
       );
 
       return { account, balance: transferableAmount(balance) };

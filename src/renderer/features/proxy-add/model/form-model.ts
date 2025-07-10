@@ -22,6 +22,7 @@ import {
   TEST_ACCOUNTS,
   ZERO_BALANCE,
   dictionary,
+  getNativeAsset,
   getProxyTypes,
   isStringsMatchQuery,
   nonNullable,
@@ -133,7 +134,7 @@ const $proxyForm = createForm<FormParams>({
               balances,
               value.accountId,
               form.chain.chainId,
-              form.chain.assets[0].assetId.toString(),
+              getNativeAsset(form.chain.assets).assetId.toString(),
             );
 
             return isMultisig
@@ -163,7 +164,7 @@ const $proxyForm = createForm<FormParams>({
               balances,
               value.accountId,
               form.chain.chainId,
-              form.chain.assets[0].assetId.toString(),
+              getNativeAsset(form.chain.assets).assetId.toString(),
             );
 
             return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));
@@ -311,7 +312,7 @@ const $proxiedAccounts = combine(
         balances,
         account.accountId,
         chain.chainId,
-        chain.assets[0].assetId.toString(),
+        getNativeAsset(chain.assets).assetId.toString(),
       );
 
       return { account, balance: transferableAmount(balance) };

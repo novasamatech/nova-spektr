@@ -4,7 +4,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { withdrawableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button } from '@/shared/ui';
 import { SignatorySelect } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
@@ -65,7 +65,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         chain.chainId,
-        chain.assets[0].assetId.toString(),
+        getNativeAsset(chain.assets).assetId.toString(),
       );
       return { account: signatory, balance: withdrawableAmount(balance) };
     });
