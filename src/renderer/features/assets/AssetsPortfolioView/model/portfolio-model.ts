@@ -36,7 +36,7 @@ const populateFx = createEffect((): Promise<AssetByChains[]> => {
 });
 
 persist({
-  key: 'spektr_tokens',
+  key: 'asset_by_chains',
   source: populateFx.doneData,
   target: $defaultTokens,
   sync: true,
