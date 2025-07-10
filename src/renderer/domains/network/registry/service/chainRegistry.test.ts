@@ -40,6 +40,13 @@ describe('ChainRegistry', () => {
   });
 
   it('should create a singleton instance', () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(chainsMock),
+      } as Response),
+    );
     expect(getChainRegistry()).toEqual(getChainRegistry());
   });
 
