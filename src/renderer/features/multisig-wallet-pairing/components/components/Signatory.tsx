@@ -11,7 +11,6 @@ import { Box, Combobox, Field, Input, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { filterModel } from '@/features/contacts';
 import { type SignatoryInfo } from '../../lib/types';
 import { formModel } from '../../model/form-model';
 import { signatoryModel } from '../../model/signatory-model';
@@ -52,9 +51,9 @@ export const Signatory = ({
   const chain = useUnit(formModel.$chain);
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
+  const selectedSignatories = useUnit(signatoryModel.$signatories);
 
   const [query, setQuery] = useState(signatoryAddress);
-  const [options, setOptions] = useState<ComboboxGroup[]>([]);
 
   const filteredContacts = useMemo(() => {
     if (isOwnAccount) return [];
@@ -89,9 +88,8 @@ export const Signatory = ({
     return ownAccountName || contactAccountName;
   }, [isOwnAccount, ownAccountName, contactAccountName]);
 
-  // Build Own Accounts options
-  useEffect(() => {
-    if (!chain || wallets.length === 0) return;
+  const walletsOptions = useMemo<ComboboxGroup[]>(() => {
+    if (!chain || wallets.length === 0 || (!isOwnAccount && validateAddress(query, chain))) return [];
 
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: walletUtils.isValidSignatory,
@@ -108,9 +106,7 @@ export const Signatory = ({
       },
     });
 
-    if (nullable(filteredWallets) || filteredWallets.length === 0) return;
-
-    const ownAccountOptions: ComboboxGroup[] = [];
+    if (nullable(filteredWallets) || filteredWallets.length === 0) return [];
 
     const accountOptions = new Map<string, ComboboxItem>();
 
@@ -118,6 +114,7 @@ export const Signatory = ({
       for (const account of wallet.accounts) {
         const address = toAddress(account.accountId, { prefix: POLKADOT_ADDRESS_PREFFIX });
 
+        if (!isOwnAccount && selectedSignatories.some(s => toAccountId(s.address) === toAccountId(address))) continue;
         if (accountOptions.has(address)) continue;
 
         const title = wallet.name === account.name ? account.name : `${wallet.name} (${account.name})`;
@@ -129,54 +126,43 @@ export const Signatory = ({
         });
       }
     }
-    if (accountOptions.size === 0) return;
 
-    ownAccountOptions.push({
-      id: 'accounts',
-      label: isOwnAccount ? '' : t('createMultisigAccount.myAccounts'),
-      items: Array.from(accountOptions.values()),
-    });
+    return [
+      {
+        id: 'accounts',
+        label: isOwnAccount ? '' : t('createMultisigAccount.myAccounts'),
+        items: Array.from(accountOptions.values()),
+      },
+    ];
+  }, [query, chain, wallets, isOwnAccount, selectedSignatories]);
 
-    setOptions(ownAccountOptions);
-  }, [query, chain, wallets, isOwnAccount]);
-
-  // Build Contacts options and set combined options
-  useEffect(() => {
-    if (!chain || isOwnAccount) return;
+  // Build Contacts options
+  const contactOptions = useMemo<ComboboxGroup[]>(() => {
+    if (!chain || isOwnAccount || validateAddress(query, chain)) return [];
 
     const addressOptions: ComboboxItem[] = [];
     for (const contact of filteredContacts) {
-      const displayedAddress = toAddress(contact.accountId, { prefix: chain.addressPrefix });
-      const isValidAddress = validateAddress(displayedAddress, chain);
-
-      if (!isValidAddress) continue;
+      if (selectedSignatories.some(s => toAccountId(s.address) === toAccountId(contact.address))) continue;
 
       addressOptions.push({
         id: contact.id.toString(),
-        label: <Address iconSize={20} showIcon title={contact.name} address={displayedAddress} />,
-        value: { address: displayedAddress },
+        label: <Address iconSize={20} showIcon title={contact.name} address={contact.address} />,
+        value: { address: contact.address },
       });
     }
 
-    if (addressOptions.length === 0) return;
+    if (addressOptions.length === 0) return [];
 
-    const contactsOptions: ComboboxGroup[] = [
+    return [
       {
         id: 'contacts',
         label: t('createMultisigAccount.contactsGroup'),
         items: addressOptions,
       },
     ];
+  }, [chain, isOwnAccount, filteredContacts, query, selectedSignatories]);
 
-    setOptions(options => [...contactsOptions, ...options]);
-  }, [chain, isOwnAccount, filteredContacts]);
-
-  // initiate the query form in case of not own account
-  useEffect(() => {
-    if (isOwnAccount || contacts.length === 0) return;
-
-    filterModel.events.formInitiated();
-  }, [isOwnAccount, contacts]);
+  const options = [...contactOptions, ...walletsOptions];
 
   useEffect(() => {
     if (!displayName || displayName === signatoryName) return;
@@ -237,7 +223,7 @@ export const Signatory = ({
                 value={toAddress(signatoryAddress, { prefix: POLKADOT_ADDRESS_PREFFIX })}
                 onChange={onAddressChange}
               >
-                {options.map(group =>
+                {walletsOptions.map(group =>
                   group.items.map(option => (
                     <Select.Item key={option.id} value={option.value.address}>
                       {option.label}
