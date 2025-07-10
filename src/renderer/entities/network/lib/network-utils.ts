@@ -1,3 +1,4 @@
+import { localStorageService } from '@/shared/api/local-storage';
 import {
   type Chain,
   type ChainId,
@@ -9,6 +10,8 @@ import {
   ExternalType,
 } from '@/shared/core';
 import { RelayChains } from '@/shared/lib/utils';
+
+import { CHAINS_STORAGE_KEY } from './constants';
 
 export const networkUtils = {
   isConnectedStatus,
@@ -35,6 +38,7 @@ export const networkUtils = {
 
   getMainRelaychains,
   chainNameToUrl,
+  getChainsFromStorage,
 };
 
 function isConnectedStatus(status: ConnectionStatus): boolean {
@@ -146,4 +150,8 @@ function chainNameToUrl(name: string): string {
     .replace(filteredCharacters, '')
     .replace(multipleDashes, '-')
     .replace(lastDash, '');
+}
+
+function getChainsFromStorage(): Record<ChainId, Chain> | null {
+  return localStorageService.getFromStorage(CHAINS_STORAGE_KEY, null);
 }

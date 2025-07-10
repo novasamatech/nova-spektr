@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type VoidFn } from '@polkadot/api/types';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { persist } from 'effector-storage/local';
 import { combineEvents, spread } from 'patronum';
 
 import {
@@ -23,6 +24,7 @@ import {
 } from '@/shared/core';
 import { createBuffer, series } from '@/shared/effector';
 import { dictionary, nonNullable } from '@/shared/lib/utils';
+import { CHAINS_STORAGE_KEY } from '../lib/constants';
 import { networkUtils } from '../lib/network-utils';
 
 const chainConnected = createEvent<ChainId>();
@@ -33,6 +35,12 @@ const disconnected = createEvent<ChainId>();
 const failed = createEvent<ChainId>();
 
 const $chains = createStore<Record<ChainId, Chain>>({});
+
+persist({
+  key: CHAINS_STORAGE_KEY,
+  store: $chains,
+  sync: true,
+});
 
 const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
@@ -45,8 +53,8 @@ const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
 
 const $populated = createStore(false);
 
-const populateChainsFx = createEffect((): Record<ChainId, Chain> => {
-  return chainsService.getChainsMap();
+const populateChainsFx = createEffect((): Promise<Record<ChainId, Chain>> => {
+  return chainsService.getChainsData().then(chainsService.getChainsMap);
 });
 
 const populateMetadataFx = createEffect((): Promise<ChainMetadata[]> => {

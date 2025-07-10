@@ -1,9 +1,10 @@
+import { useUnit } from 'effector-react';
 import { type ElementType, memo, useMemo } from 'react';
 
-import { chainsService } from '@/shared/api/network';
 import { type ChainId, type Chain as ChainType } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { TextBase } from '@/shared/ui/Typography/common/TextBase';
+import { networkModel } from '@/entities/network';
 import { ChainIcon } from '../ChainIcon/ChainIcon';
 
 type WithChain = { chain: ChainType };
@@ -19,10 +20,9 @@ type Props = {
 
 export const ChainTitle = memo(
   ({ as: Tag = 'div', showChainName = true, fontClass, className, iconSize = 16, ...chainProps }: Props) => {
-    const chainObj = useMemo(
-      () => ('chain' in chainProps ? chainProps.chain : chainsService.getChainById(chainProps.chainId)),
-      [],
-    );
+    const chains = useUnit(networkModel.$chains);
+
+    const chainObj = useMemo(() => ('chain' in chainProps ? chainProps.chain : chains[chainProps.chainId]), []);
 
     if (!showChainName) {
       return <ChainIcon src={chainObj?.icon} name={chainObj?.name} size={iconSize} />;
