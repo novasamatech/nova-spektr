@@ -142,7 +142,9 @@ export const Signatory = ({
 
     const addressOptions: ComboboxItem[] = [];
     for (const contact of filteredContacts) {
-      if (selectedSignatories.some(s => toAccountId(s.address) === toAccountId(contact.address))) continue;
+      const isAlreadySelected = selectedSignatories.some(s => toAccountId(s.address) === toAccountId(contact.address));
+
+      if (isAlreadySelected || !validateAddress(contact.address, chain)) continue;
 
       addressOptions.push({
         id: contact.id.toString(),
