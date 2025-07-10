@@ -5,7 +5,6 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { combineEvents, delay, spread } from 'patronum';
 
 import {
-  type Account,
   type NoID,
   type PartialProxiedAccount,
   type ProxyGroup,
@@ -17,12 +16,14 @@ import {
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type PathType, Paths } from '@/shared/routes';
+import { type AnyAccount } from '@/domains/network';
 import { subscriptionService } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { type ExtrinsicResultParams, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -47,15 +48,15 @@ const $addProxyStore = createStore<AddPureProxiedStore | null>(null).reset(flowF
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $selectedSignatories = createStore<Account[]>([]);
+const $signatories = createStore<AnyAccount[]>([]);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $txWrappers = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     wallets: walletModel.$wallets,
     store: $addProxyStore,
-    signatories: $selectedSignatories,
+    signatories: $signatories,
   },
   ({ wallet, store, wallets, signatories }) => {
     if (!wallet || !store?.chain || !store.account) return [];
@@ -154,7 +155,7 @@ sample({
   clock: formModel.output.formSubmitted,
   filter: ({ formData }) => Boolean(formData.signatory),
   fn: ({ formData }) => [formData.signatory!],
-  target: $selectedSignatories,
+  target: $signatories,
 });
 
 sample({
@@ -378,7 +379,7 @@ sample({
 sample({
   clock: flowFinished,
   source: {
-    activeWallet: walletModel.$activeWallet,
+    activeWallet: walletSelect.$selectedWallet,
     walletDetails: formModel.$wallet,
   },
   filter: ({ activeWallet, walletDetails }) => {

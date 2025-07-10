@@ -1,16 +1,16 @@
 import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
+import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
+import { toAddress, toShortAddress, validateAddress, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button, Combobox, Icon, Identicon, InputHint, Select } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
-import { accountService } from '@/domains/network';
+import { accountService, accounts } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
-import { SignatorySelector } from '@/entities/operations';
 import { ProxyPopover, proxyUtils } from '@/entities/proxy';
 import {
   FeeWithLabelWithDataLoading,
@@ -18,7 +18,7 @@ import {
   ProxyDeposit,
   ProxyDepositLabel,
 } from '@/entities/transaction';
-import { AccountAddress, accountUtils, walletUtils } from '@/entities/wallet';
+import { AccountAddress, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
 
@@ -148,24 +148,42 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { chain, signatory },
+    fields: { chain, signatory, account },
   } = useForm(formModel.$proxyForm);
 
   const signatories = useUnit(formModel.$signatories);
   const isMultisig = useUnit(formModel.$isMultisig);
+
+  const allAccounts = useUnit(accounts.$list);
+  const allWallets = useUnit(walletModel.$wallets);
+  const balances = useUnit(balanceModel.$balances);
+
+  const signatoriesWithBalance = useMemo(() => {
+    return signatories.map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        chain.value.chainId,
+        chain.value.assets[0].assetId.toString(),
+      );
+      return { account: signatory, balance: withdrawableAmount(balance) };
+    });
+  }, [signatories, balances]);
 
   if (!isMultisig) {
     return null;
   }
 
   return (
-    <SignatorySelector
+    <SignatorySelect
       signatory={signatory.value}
-      signatories={signatories}
-      asset={chain.value.assets?.[0]}
-      addressPrefix={chain.value.addressPrefix}
+      signatories={signatoriesWithBalance}
+      allAccounts={allAccounts}
+      initiator={account.value}
+      allWallets={allWallets}
       hasError={signatory.hasError()}
       errorText={t(signatory.errorText())}
+      network={{ chain: chain.value, asset: chain.value.assets[0] }}
       onChange={signatory.onChange}
     />
   );

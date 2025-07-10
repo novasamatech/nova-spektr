@@ -55,8 +55,6 @@ const $proxyBalance = createStore<string>(ZERO_BALANCE);
 
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 
-const $selectedSignatories = createStore<AnyAccount[]>([]);
-
 const $chain = $networkStore.map((network) => network?.chain ?? null);
 
 const form: Form<FormParams> = createForm<FormParams>({
@@ -291,7 +289,7 @@ const $canSubmit = combine(
 
 sample({
   clock: formInitiated,
-  target: [form.reset, $selectedSignatories.reinit],
+  target: form.reset,
 });
 
 sample({
@@ -391,13 +389,6 @@ const $signatoryBalance = combine(
     return transferableAmount(balance);
   },
 );
-
-sample({
-  clock: form.fields.signatory.$value,
-  filter: (signatory: AnyAccount | null): signatory is AnyAccount => nonNullable(signatory),
-  fn: (signatory) => [signatory],
-  target: $selectedSignatories,
-});
 
 sample({
   clock: form.fields.initiator.change,

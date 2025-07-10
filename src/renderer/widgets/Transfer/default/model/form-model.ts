@@ -309,7 +309,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  fn: ({ chain, asset }) => getAssetId(chain.assets[0]) === getAssetId(asset),
+  fn: ({ chain, asset }) => getAssetId(getNativeAsset(chain.assets)!) === getAssetId(asset),
   target: $isNative,
 });
 

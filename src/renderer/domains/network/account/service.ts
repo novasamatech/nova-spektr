@@ -171,10 +171,7 @@ function traverseGraph(
   visitNode(node);
 }
 
-/**
- * Find leaf accounts, that can sign transactions.
- */
-function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Chain): AnyAccount[] {
+function findLeafs(account: AnyAccount, accounts: AnyAccount[], chain: Chain): AnyAccount[] {
   const graphs = createAccountGraphs(accounts, chain);
   const node = graphs.get(account);
   if (nullable(node)) {
@@ -185,13 +182,20 @@ function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Cha
 
   traverseGraph(node, {
     enter(node) {
-      if (node.children.length === 0 && hasPermissionToMakeActions(node.account)) {
+      if (node.children.length === 0) {
         result.push(node.account);
       }
     },
   });
 
   return result;
+}
+
+/**
+ * Find leaf accounts, that can sign transactions.
+ */
+function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Chain): AnyAccount[] {
+  return findLeafs(account, accounts, chain).filter(hasPermissionToMakeActions);
 }
 
 /**
@@ -313,6 +317,7 @@ export const accountService = {
   // graph
 
   createAccountGraphs,
+  findLeafs,
   findSignatories,
   findInitiators,
   findRoute,

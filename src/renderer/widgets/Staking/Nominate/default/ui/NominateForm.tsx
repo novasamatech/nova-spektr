@@ -1,12 +1,16 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent } from 'react';
+import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
+import { transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
+import { SignatorySelect } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { SignatorySelector } from '@/entities/operations';
+import { accounts } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { Fee, FeeWithLabel } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -43,19 +47,40 @@ const Signatories = () => {
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
+  const balances = useUnit(balanceModel.$balances);
+  const allAccounts = useUnit(accounts.$list);
+  const allWallets = useUnit(walletModel.$wallets);
 
-  if (!network || signatories.length < 2) {
+  const signatoriesWithBalance = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+
+    return signatories.map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network.chain.chainId,
+        network.asset.assetId.toString(),
+      );
+      return { account: signatory, balance: transferableAmount(balance) };
+    });
+  }, [signatories, balances]);
+
+  if (!network) {
     return null;
   }
 
   return (
-    <SignatorySelector
+    <SignatorySelect
       signatory={signatory.value}
-      signatories={signatories}
-      asset={network.chain.assets[0]}
-      addressPrefix={network.chain.addressPrefix}
+      signatories={signatoriesWithBalance}
+      allAccounts={allAccounts}
+      allWallets={allWallets}
+      initiator={signatory.value}
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
+      network={network}
       onChange={signatory.onChange}
     />
   );
