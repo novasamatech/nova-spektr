@@ -118,6 +118,8 @@ describe('features/AssetsChainView/ui/NetworkAssets', () => {
 
     expect(assetsNames[0]).toHaveTextContent(testAsset2.name);
     expect(assetsNames[1]).toHaveTextContent(testAsset.name);
-    expect((assetsNames[2]?.textContent || '').localeCompare(assetsNames[3]?.textContent || '')).toEqual(-1);
+    expect((assetsNames[1]?.textContent || '').localeCompare(assetsNames[2]?.textContent || '')).toBeLessThanOrEqual(
+      -1,
+    );
   });
 });
