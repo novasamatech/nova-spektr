@@ -2,7 +2,6 @@ import { useGate, useUnit } from 'effector-react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { $features } from '@/shared/config/features';
 import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -16,7 +15,6 @@ import { accountService, accounts } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
-import { convertToFlexibleFeature } from '@/features/multisig-convert-to-flexible';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
@@ -37,11 +35,6 @@ const {
   views: { AddPureProxied },
 } = proxyAddPureFeature;
 
-const {
-  models: { convertToFlexibleModel },
-  views: { ConvertRegularToFlexible },
-} = convertToFlexibleFeature;
-
 type Props = {
   wallet: MultisigWallet | FlexibleMultisigWallet;
   onClose: () => void;
@@ -55,7 +48,6 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
-  const features = useUnit($features);
 
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
@@ -108,20 +100,12 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
     });
   }
 
-  // TODO: remove it when flexible multisig is supported
-
   if (canCreatePureProxy) {
-    features.flexibleMultisig
-      ? options.push({
-          icon: 'addCircle' as IconNames,
-          title: t('walletDetails.common.convertToFlexibleAction'),
-          onClick: () => convertToFlexibleModel.flow.open({ wallet }),
-        })
-      : options.push({
-          icon: 'addCircle' as IconNames,
-          title: t('walletDetails.common.addPureProxiedAction'),
-          onClick: addPureProxied.events.flowStarted,
-        });
+    options.push({
+      icon: 'addCircle' as IconNames,
+      title: t('walletDetails.common.addPureProxiedAction'),
+      onClick: addPureProxied.events.flowStarted,
+    });
   }
 
   const ActionButton = (
@@ -312,7 +296,6 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
       <AddProxy wallet={wallet} />
       <AddPureProxied wallet={wallet} />
-      <ConvertRegularToFlexible />
     </>
   );
 };
