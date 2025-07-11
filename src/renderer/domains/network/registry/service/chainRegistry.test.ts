@@ -39,7 +39,7 @@ describe('ChainRegistry', () => {
     });
   });
 
-  it('should create a singleton instance', () => {
+  it('should create a singleton instance', async () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({
         ok: true,
@@ -47,7 +47,9 @@ describe('ChainRegistry', () => {
         json: () => Promise.resolve(chainsMock),
       } as Response),
     );
-    expect(getChainRegistry()).toEqual(getChainRegistry());
+    const instanceA = await getChainRegistry();
+    const instanceB = await getChainRegistry();
+    expect(instanceA).toEqual(instanceB);
   });
 
   it('should initialize with provided chains', () => {
