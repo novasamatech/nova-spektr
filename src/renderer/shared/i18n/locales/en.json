@@ -174,14 +174,14 @@
       "description": "A multisig wallet used to create a flexible multisig (proxied) is not displayed in the multisig wallet group to prevent duplication. Use the flexible multisig for all signing operations",
       "existentialDeposit": "Existential deposit:",
       "flexible": "Flexible multisig",
+      "multisigAndProxyExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists",
+      "multisigAndProxyExistTitle": "Multisig wallet and pure proxy already exists",
+      "multisigExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists and it is already connected to a pure proxy <proxy/>. You create an additional pure proxy controlled by this multisig.",
       "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit, proxy deposit and network fee on a selected account",
       "proxyDeposit": "Proxy deposit:",
       "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your flexible multisig.",
       "threshold": "Minimum number of signatories needed to approve a transaction.",
-      "title": "Create flexible multisig",
-      "multisigExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists and it is already connected to a pure proxy <proxy/>. You create an additional pure proxy controlled by this multisig.",
-      "multisigAndProxyExistTitle": "Multisig wallet and pure proxy already exists",
-      "multisigAndProxyExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists"
+      "title": "Create flexible multisig"
     },
     "multisig": "Multisig",
     "multisigCreationFeeLabel": "Additional cost",
@@ -221,6 +221,7 @@
     "notEnoughSignatories": "You need to select at least 2 signatories",
     "notEnoughSignatoriesTitle": "Not enough signatories",
     "notEnoughTokensTitle": "Not enough tokens",
+    "regularNote": "Multisig wallet's name",
     "restoreButton": "Restore",
     "searchContactPlaceholder": "Search",
     "selectMultisigDescription": {
@@ -259,7 +260,6 @@
     "walletFormTitle": "Set up your wallet",
     "walletName": "Wallet name",
     "walletNameDescription": "This name will be visible to you only.",
-    "regularNote": "Multisig wallet's name",
     "walletsTab": "Your wallets",
     "yourAccounts": "Your accounts"
   },
