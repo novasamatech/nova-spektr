@@ -1,20 +1,18 @@
 import { BN } from '@polkadot/util';
 import { useForm } from 'effector-forms';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
-import { type FormEvent, useMemo } from 'react';
+import { type FormEvent } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, formatBalance, nonNullable, transferableAmount } from '@/shared/lib/utils';
+import { formatAmount, formatBalance, nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
-import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
-import { ProxyWalletAlert, walletModel } from '@/entities/wallet';
+import { ProxyWalletAlert } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConvictionSelect } from '@/widgets/VoteModal';
@@ -49,7 +47,6 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
 
           <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
             <ProxyFeeAlert />
-            <Signatories />
             <Amount />
             <Conviction />
           </form>
@@ -90,55 +87,6 @@ const ProxyFeeAlert = () => {
       balance={formattedBalance}
       symbol={network.asset.symbol}
       onClose={shards.resetErrors}
-    />
-  );
-};
-
-const Signatories = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { signatory, shards },
-  } = useForm(formModel.$delegateForm);
-
-  const signatories = useUnit(formModel.$signatories);
-  const network = useUnit(formModel.$networkStore);
-  const isMultisig = useUnit(formModel.$isMultisig);
-  const allAccounts = useUnit(accounts.$list);
-  const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!network) {
-      return [];
-    }
-
-    return signatories[0].map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId.toString(),
-      );
-      return { account: signatory, balance: transferableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  if (!isMultisig || !network) {
-    return null;
-  }
-
-  return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      initiator={shards.value[0]}
-      allWallets={allWallets}
-      hasError={signatory.hasError()}
-      errorText={t(signatory.errorText())}
-      network={network}
-      onChange={signatory.onChange}
     />
   );
 };
