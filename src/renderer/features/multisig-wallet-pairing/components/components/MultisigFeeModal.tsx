@@ -29,7 +29,7 @@ export const MultisigFeeModal = memo(({ children }: PropsWithChildren) => {
   };
 
   return (
-    <Modal size="sm" height="full" isOpen={isOpen} onToggle={setToggle}>
+    <Modal size="md" height="full" isOpen={isOpen} onToggle={setToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('createMultisigAccount.networkSelect.feeTitle')}</Modal.Title>
       <Modal.Content>
@@ -41,7 +41,9 @@ export const MultisigFeeModal = memo(({ children }: PropsWithChildren) => {
               </div>
             </Popover.Trigger>
             <Popover.Content>
-              <div className="flex flex-col gap-y-2">{t('createMultisigAccount.networkSelect.feeDescription')}</div>
+              <div className="flex w-[360px] flex-col p-4 text-text-secondary">
+                {t('createMultisigAccount.networkSelect.feeDescription')}
+              </div>
             </Popover.Content>
           </Popover>
 
