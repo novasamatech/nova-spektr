@@ -3,10 +3,8 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 import { vi } from 'vitest';
 
-import chains from '@/shared/config/chains/chains.json';
 import {
   AccountType,
-  type Chain,
   CryptoType,
   SigningType,
   type VaultBaseAccount,
@@ -14,11 +12,12 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { polkadotAssetHubChain } from '@/shared/mocks';
 import { balanceModel } from '@/entities/balance';
 
 import { NetworkAssets } from './NetworkAssets';
 
-const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
+const testChain = polkadotAssetHubChain;
 const testAsset = testChain.assets[0];
 const testAsset2 = testChain.assets[1];
 
