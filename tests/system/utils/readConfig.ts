@@ -1,15 +1,18 @@
-import fs from 'fs';
-import url from 'node:url';
+import { type Chain } from '@/shared/core';
 
-export async function readConfig(): Promise<any> {
-  const chainsJsonURL = new URL('../../../src/renderer/shared/config/chains/chains.json', import.meta.url);
-  const chainsFilePath = url.fileURLToPath(chainsJsonURL);
-  const chainsData = JSON.parse(fs.readFileSync(chainsFilePath, 'utf-8'));
+export async function readConfig(): Promise<Chain[]> {
+  const CHAINS_FILE = (process.env.CHAINS_FILE || 'chains') + '.json';
+  const CONFIG_VERSION = process.env.CHAINS_VERSION || 'v1';
+  const CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains/${CONFIG_VERSION}/${CHAINS_FILE}`;
 
-  return chainsData;
+  const response = await fetch(CONFIG_URL);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch chains config: ${response.status} ${response.statusText}`);
+  }
+  return response.json();
 }
 
-export function getChainByName(chains: any[], name: string) {
+export function getChainByName(chains: Chain[], name: string) {
   const chain = chains.find((chain) => chain.name === name);
   if (!chain) {
     throw new Error(`Chain with name "${name}" not found`);
