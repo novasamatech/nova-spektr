@@ -44,6 +44,7 @@ persist({
 const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
 
+const $connectionData = createStore<Connection[]>([]);
 const $connections = createStore<Record<ChainId, Connection>>({});
 const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
 
@@ -197,9 +198,16 @@ sample({
 
 sample({
   clock: populateConnectionsFx.doneData,
-  source: $chains,
-  fn: (chains, connections) => {
-    const connectionsMap = dictionary(connections, 'chainId');
+  target: $connectionData,
+});
+
+sample({
+  source: {
+    chains: $chains,
+    connectionData: $connectionData,
+  },
+  fn: ({ chains, connectionData }) => {
+    const connectionsMap = dictionary(connectionData, 'chainId');
     const lightClientChains = networkUtils.getLightClientChains();
 
     return Object.keys(chains).reduce<Record<ChainId, Connection>>((acc, key) => {
