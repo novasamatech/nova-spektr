@@ -7,7 +7,6 @@ import { spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
 import {
-  type Account,
   type Address,
   type Chain,
   type ProxiedAccount,
@@ -18,6 +17,7 @@ import {
 } from '@/shared/core';
 import {
   TEST_ACCOUNTS,
+  getNativeAsset,
   getProxyTypes,
   isStringsMatchQuery,
   nonNullable,
@@ -26,6 +26,7 @@ import {
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -40,17 +41,14 @@ type ProxyAccounts = {
 };
 
 type FormParams = {
-  signatory: Account | null;
+  signatory: AnyAccount | null;
 };
 
 type Input = {
   chain?: Chain;
-  account?: Account;
+  account?: AnyAccount;
   proxiedAccount?: ProxiedAccount;
-  signatories: {
-    signer: Account;
-    balance: string;
-  }[];
+  signatories: AnyAccount[];
 };
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
@@ -105,7 +103,7 @@ const $proxyForm = createForm<FormParams>({
               balances,
               signatory.accountId,
               chain.chainId,
-              chain.assets[0].assetId.toString(),
+              getNativeAsset(chain.assets).assetId.toString(),
             );
 
             return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));
@@ -144,7 +142,7 @@ const $proxiedAccounts = combine(
         balances,
         account.accountId,
         chain.chainId,
-        chain.assets[0].assetId.toString(),
+        getNativeAsset(chain.assets).assetId.toString(),
       );
 
       return { account, balance: transferableAmount(balance) };
@@ -344,6 +342,7 @@ sample({
 
 export const formModel = {
   $wallet,
+  $account,
   $proxyForm,
   $proxyChains,
   $proxiedAccounts,

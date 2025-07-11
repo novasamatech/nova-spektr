@@ -10,7 +10,7 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
-import { TEST_ADDRESS, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { TEST_ADDRESS, getNativeAsset, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -198,7 +198,7 @@ sample({
     return bondData!.shards.map((shard) => {
       return transactionBuilder.buildBondNominate({
         chain: walletData!.chain,
-        asset: walletData!.chain.assets[0],
+        asset: getNativeAsset(walletData!.chain.assets)!,
         accountId: shard.accountId,
         amount: bondData!.amount,
         destination: bondData!.destination,

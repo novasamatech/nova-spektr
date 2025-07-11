@@ -22,6 +22,7 @@ import {
   TEST_ACCOUNTS,
   ZERO_BALANCE,
   dictionary,
+  getNativeAsset,
   getProxyTypes,
   isStringsMatchQuery,
   nonNullable,
@@ -133,7 +134,7 @@ const $proxyForm = createForm<FormParams>({
               balances,
               value.accountId,
               form.chain.chainId,
-              form.chain.assets[0].assetId.toString(),
+              getNativeAsset(form.chain.assets).assetId.toString(),
             );
 
             return isMultisig
@@ -163,7 +164,7 @@ const $proxyForm = createForm<FormParams>({
               balances,
               value.accountId,
               form.chain.chainId,
-              form.chain.assets[0].assetId.toString(),
+              getNativeAsset(form.chain.assets).assetId.toString(),
             );
 
             return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));
@@ -311,7 +312,7 @@ const $proxiedAccounts = combine(
         balances,
         account.accountId,
         chain.chainId,
-        chain.assets[0].assetId.toString(),
+        getNativeAsset(chain.assets).assetId.toString(),
       );
 
       return { account, balance: transferableAmount(balance) };
@@ -325,14 +326,13 @@ const $signatories = combine(
     wallets: walletModel.$wallets,
     account: $proxyForm.fields.account.$value,
     chain: $proxyForm.fields.chain.$value,
-    balances: balanceModel.$balances,
   },
-  ({ wallet, wallets, account, chain, balances }) => {
+  ({ wallet, wallets, account, chain }) => {
     if (!wallet || !chain.chainId || !account || !accountUtils.isMultisigAccount(account)) return [];
 
     const signers = dictionary(account.signatories, 'accountId', () => true);
 
-    return wallets.reduce<{ signer: AnyAccount; balance: string }[]>((acc, wallet) => {
+    return wallets.reduce<AnyAccount[]>((acc, wallet) => {
       if (!permissionUtils.canCreateMultisigTx(wallet)) return acc;
 
       const signer = wallet.accounts.find((a) => {
@@ -340,14 +340,7 @@ const $signatories = combine(
       });
 
       if (signer) {
-        const balance = balanceUtils.getBalance(
-          balances,
-          signer.accountId,
-          chain.chainId,
-          chain.assets[0].assetId.toString(),
-        );
-
-        acc.push({ signer, balance: transferableAmount(balance) });
+        acc.push(signer);
       }
 
       return acc;

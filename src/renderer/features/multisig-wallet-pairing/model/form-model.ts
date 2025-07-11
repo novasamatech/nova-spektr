@@ -36,11 +36,20 @@ const form = createForm<FormParams>({
 const $chain = combine(
   {
     chainId: form.fields.chainId.$value,
-
     chains: networkModel.$chains,
   },
   ({ chainId, chains }): Chain | null => {
     return chains[chainId] ?? null;
+  },
+);
+
+const $isChainConnected = combine(
+  {
+    chainId: form.fields.chainId.$value,
+    statuses: networkModel.$connectionStatuses,
+  },
+  ({ chainId, statuses }) => {
+    return networkUtils.isConnectedStatus(statuses[chainId]);
   },
 );
 
@@ -148,9 +157,11 @@ const $canSubmit = combine(
     hiddenMultisig: $hiddenMultisig,
     threshold: form.fields.threshold.$value,
     name: form.fields.name.$value,
+    isChainConnected: $isChainConnected,
   },
-  ({ invalidAddresses, threshold, name, ...params }) => {
-    if (invalidAddresses.length > 0 || threshold < MIN_THRESHOLD || name.trim() === '') return false;
+  ({ invalidAddresses, threshold, isChainConnected, name, ...params }) => {
+    if (invalidAddresses.length > 0 || threshold < MIN_THRESHOLD || !isChainConnected || name.trim() === '')
+      return false;
 
     return Object.values(params).every(param => nullable(param) || !param);
   },
@@ -163,7 +174,10 @@ sample({
 
 sample({
   clock: form.fields.chainId.change,
-  target: [form.fields.threshold.reset, signatoryModel.events.resetSignatories],
+  source: $chain,
+  filter: nonNullable,
+  fn: chain => chain!,
+  target: signatoryModel.events.validateSignatories,
 });
 
 export const formModel = {
@@ -175,6 +189,7 @@ export const formModel = {
   $availableAccounts,
   $invalidAddresses,
   $canSubmit,
+  $isChainConnected,
 
   formSubmitted: form.submit,
 };

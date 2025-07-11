@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import {
@@ -10,13 +10,11 @@ import {
   type VaultBaseAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { AdditionalType } from '@/shared/core/types/chain';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Address as AddressComponent } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { useNetworkData } from '@/entities/network';
 import { useStakingData } from '@/entities/staking';
 import { type NominatorInfo } from '../lib/types';
 
@@ -28,6 +26,7 @@ type Props = {
   nominators: (NominatorInfo<VaultBaseAccount> | NominatorInfo<VaultShardAccount>[])[];
   isStakingLoading: boolean;
   api: ApiPromise;
+  timelineApi: ApiPromise;
   era?: number;
   asset?: Asset;
   chain: Chain;
@@ -37,6 +36,7 @@ type Props = {
 
 export const NominatorsList = ({
   api,
+  timelineApi,
   era,
   nominators,
   asset,
@@ -49,11 +49,6 @@ export const NominatorsList = ({
   const { getNextUnstakingEra, hasRedeem } = useStakingData();
 
   const getUnstakeBadge = (stake: NominatorInfo<Account>) => {
-    const timelineChainId = useMemo(() => {
-      return chain.additional?.[AdditionalType.TIMELINE_CHAIN] ?? chain.chainId;
-    }, [chain]);
-    const { api: timelineApi } = useNetworkData(timelineChainId);
-
     const nextUnstakingEra = getNextUnstakingEra(stake.unlocking, era);
     if (!nextUnstakingEra) return;
 
