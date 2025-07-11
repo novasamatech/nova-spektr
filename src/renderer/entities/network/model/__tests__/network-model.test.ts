@@ -4,21 +4,17 @@ import { keyBy } from 'lodash';
 import { ProviderType, type ProviderWithMetadata, chainsService, networkService } from '@/shared/api/network';
 import { storageService } from '@/shared/api/storage';
 import { type Chain, type ChainMetadata, type Connection, ConnectionStatus, ConnectionType } from '@/shared/core';
+import { polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { networkModel } from '../network-model';
 
 describe('entities/network/model/network-model', () => {
-  const mockChains = [
-    {
-      name: 'Polkadot',
-      chainId: '0x01',
-    } as unknown as Chain,
-  ];
+  const mockChains = [polkadotChain];
 
   const mockChainMap = keyBy(mockChains, 'chainId');
 
   const mockConnection: Connection = {
     id: 1,
-    chainId: '0x01',
+    chainId: polkadotChainId,
     customNodes: [],
     connectionType: ConnectionType.RPC_NODE,
     activeNode: { name: 'My node', url: 'http://localhost:8080' },
@@ -28,7 +24,7 @@ describe('entities/network/model/network-model', () => {
     id: 1,
     runtimeVersion: 1,
     metadataVersion: 15,
-    chainId: '0x01',
+    chainId: polkadotChainId,
     metadata: '0x123',
   };
 
@@ -61,7 +57,9 @@ describe('entities/network/model/network-model', () => {
     const scope = fork();
 
     await allSettled(networkModel.startNetworks, { scope });
-    expect(scope.getState(networkModel.$connectionStatuses)).toEqual({ '0x01': ConnectionStatus.DISCONNECTED });
+    expect(scope.getState(networkModel.$connectionStatuses)).toEqual({
+      [polkadotChainId]: ConnectionStatus.DISCONNECTED,
+    });
   });
 
   test('should set $connections on networkStarted', async () => {
@@ -70,7 +68,7 @@ describe('entities/network/model/network-model', () => {
     const scope = fork();
 
     await allSettled(networkModel.startNetworks, { scope });
-    expect(scope.getState(networkModel.$connections)).toEqual({ '0x01': mockConnection });
+    expect(scope.getState(networkModel.$connections)).toEqual({ [polkadotChainId]: mockConnection });
   });
 
   test('should set $providers on networkStarted', async () => {
@@ -91,13 +89,13 @@ describe('entities/network/model/network-model', () => {
     await allSettled(networkModel.startNetworks, { scope });
 
     expect(spyCreateProvider).toHaveBeenCalledWith(
-      mockChainMap['0x01'].chainId,
+      mockChainMap[polkadotChainId].chainId,
       ProviderType.WEB_SOCKET,
       { metadata: mockMetadata, nodes: ['http://localhost:8080'] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
     expect(scope.getState(networkModel._test.$providers)).toEqual({
-      '0x01': provider,
+      [polkadotChainId]: provider,
     });
   });
 
@@ -127,11 +125,11 @@ describe('entities/network/model/network-model', () => {
 
     expect(connectMock).toHaveBeenCalled();
     expect(spyCreateProvider).toHaveBeenCalledWith(
-      mockChainMap['0x01'].chainId,
+      mockChainMap[polkadotChainId].chainId,
       ProviderType.LIGHT_CLIENT,
       { metadata: mockMetadata, nodes: [''] },
       { onConnected: expect.any(Function), onDisconnected: expect.any(Function), onError: expect.any(Function) },
     );
-    expect(scope.getState(networkModel._test.$providers)).toEqual({ '0x01': provider });
+    expect(scope.getState(networkModel._test.$providers)).toEqual({ [polkadotChainId]: provider });
   });
 });
