@@ -1,24 +1,20 @@
 import { allSettled, fork } from 'effector';
+import { keyBy } from 'lodash';
 
 import { ProviderType, type ProviderWithMetadata, chainsService, networkService } from '@/shared/api/network';
 import { storageService } from '@/shared/api/storage';
-import {
-  type Chain,
-  type ChainId,
-  type ChainMetadata,
-  type Connection,
-  ConnectionStatus,
-  ConnectionType,
-} from '@/shared/core';
+import { type Chain, type ChainMetadata, type Connection, ConnectionStatus, ConnectionType } from '@/shared/core';
 import { networkModel } from '../network-model';
 
 describe('entities/network/model/network-model', () => {
-  const mockChainMap = {
-    '0x01': {
+  const mockChains = [
+    {
       name: 'Polkadot',
       chainId: '0x01',
     } as unknown as Chain,
-  };
+  ];
+
+  const mockChainMap = keyBy(mockChains, 'chainId');
 
   const mockConnection: Connection = {
     id: 1,
@@ -37,12 +33,12 @@ describe('entities/network/model/network-model', () => {
   };
 
   type StorageParams = {
-    chains?: Record<ChainId, Chain>;
+    chains?: Chain[];
     connections?: Connection[];
     metadata?: ChainMetadata[];
   };
   const mockStorage = ({ chains, connections, metadata }: StorageParams) => {
-    jest.spyOn(chainsService, 'getChainsMap').mockReturnValue(chains || {});
+    jest.spyOn(chainsService, 'getChainsData').mockResolvedValue(chains || []);
     jest.spyOn(storageService.connections, 'readAll').mockResolvedValue(connections || []);
     jest.spyOn(storageService.connections, 'update').mockResolvedValue(1);
     jest.spyOn(storageService.metadata, 'readAll').mockResolvedValue(metadata || []);
@@ -53,7 +49,7 @@ describe('entities/network/model/network-model', () => {
   });
 
   test('should populate $chains on networkStarted', async () => {
-    mockStorage({ chains: mockChainMap });
+    mockStorage({ chains: mockChains });
     const scope = fork();
 
     await allSettled(networkModel.startNetworks, { scope });
@@ -61,7 +57,7 @@ describe('entities/network/model/network-model', () => {
   });
 
   test('should set default $connectionStatuses on networkStarted', async () => {
-    mockStorage({ chains: mockChainMap });
+    mockStorage({ chains: mockChains });
     const scope = fork();
 
     await allSettled(networkModel.startNetworks, { scope });
@@ -69,7 +65,7 @@ describe('entities/network/model/network-model', () => {
   });
 
   test('should set $connections on networkStarted', async () => {
-    mockStorage({ chains: mockChainMap, connections: [mockConnection] });
+    mockStorage({ chains: mockChains, connections: [mockConnection] });
 
     const scope = fork();
 
@@ -79,7 +75,7 @@ describe('entities/network/model/network-model', () => {
 
   test('should set $providers on networkStarted', async () => {
     mockStorage({
-      chains: mockChainMap,
+      chains: mockChains,
       connections: [mockConnection],
       metadata: [mockMetadata],
     });
@@ -107,7 +103,7 @@ describe('entities/network/model/network-model', () => {
 
   test('should set Light Client in $providers on networkStarted', async () => {
     mockStorage({
-      chains: mockChainMap,
+      chains: mockChains,
       connections: [
         {
           ...mockConnection,
