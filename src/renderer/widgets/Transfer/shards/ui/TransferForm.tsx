@@ -7,20 +7,22 @@ import { type ChainId, type MultisigAccount, type WalletFamily } from '@/shared/
 import { useI18n } from '@/shared/i18n';
 import {
   formatBalance,
+  getNativeAsset,
   includesMultiple,
   nonNullable,
   performSearch,
   toAddress,
   toShortAddress,
   validateAddress,
+  withdrawableAmount,
 } from '@/shared/lib/utils';
 import { Button, CaptionText, Icon, Identicon, InputHint } from '@/shared/ui';
-import { Address as AccountAddress, Address, AssetBalance } from '@/shared/ui-entities';
+import { Address as AccountAddress, Address, AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
 import { type AnyAccount, accounts } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
-import { SignatorySelector } from '@/entities/operations';
 import {
   DeliveryFeeWithLabel,
   FeeWithLabelWithDataLoading,
@@ -176,25 +178,44 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { signatory },
+    fields: { signatory, account },
   } = useForm(formModel.$transferForm);
 
   const signatories = useUnit(formModel.$signatories);
-  const isMultisig = useUnit(formModel.$isMultisig);
   const network = useUnit(formModel.$networkStore);
+  const balances = useUnit(balanceModel.$balances);
+  const allWallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(accounts.$list);
 
-  if (!isMultisig || !network) {
+  const signatoriesWithBalance = useMemo(() => {
+    if (!network) {
+      return [];
+    }
+    return signatories[0].map((signatory) => {
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        network.chain.chainId,
+        network.asset.assetId.toString(),
+      );
+      return { account: signatory, balance: withdrawableAmount(balance) };
+    });
+  }, [signatories, balances]);
+
+  if (!network) {
     return null;
   }
 
   return (
-    <SignatorySelector
+    <SignatorySelect
       signatory={signatory.value}
-      signatories={signatories[0]}
-      asset={network.chain.assets[0]}
-      addressPrefix={network.chain.addressPrefix}
+      signatories={signatoriesWithBalance}
+      allWallets={allWallets}
+      initiator={account.value}
+      allAccounts={allAccounts}
       hasError={signatory.hasError()}
       errorText={t(signatory.errorText())}
+      network={network}
       onChange={signatory.onChange}
     />
   );
@@ -467,7 +488,7 @@ const FeeSection = () => {
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={network.chain.assets[0]}
+          asset={getNativeAsset(network.chain.assets)!}
           threshold={(account.value as MultisigAccount).threshold || 1}
           onDepositChange={formModel.events.multisigDepositChanged}
         />
@@ -475,7 +496,7 @@ const FeeSection = () => {
 
       <FeeWithLabelWithDataLoading
         api={api}
-        asset={network.chain.assets[0]}
+        asset={getNativeAsset(network.chain.assets)!}
         transaction={transaction?.wrappedTx || fakeTx}
         onFeeChange={formModel.events.feeChanged}
         onFeeLoading={formModel.events.isFeeLoadingChanged}
@@ -492,7 +513,9 @@ const FeeSection = () => {
         />
       )}
 
-      {nonNullable(deliveryFee) && <DeliveryFeeWithLabel fee={deliveryFee} asset={network.chain.assets[0]} />}
+      {nonNullable(deliveryFee) && (
+        <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
+      )}
     </div>
   );
 };

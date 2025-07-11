@@ -25,6 +25,7 @@ export const confirmModel = {
   $confirms: confirmStore.$confirms,
   $confirmStore: confirmStore.$confirmMap,
   $isMultisigExists: confirmStore.$isMultisigExists,
+  $apis: networkModel.$apis,
 
   formInitiated: confirmStore.init,
   startSigning: confirmStore.startSigning,

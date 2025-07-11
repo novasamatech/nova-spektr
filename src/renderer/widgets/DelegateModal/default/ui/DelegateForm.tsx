@@ -6,12 +6,14 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
+import { SignatorySelect } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff } from '@/entities/governance';
-import { SignatorySelector } from '@/entities/operations';
 import { Fee, FeeWithLabel } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { ConvictionSelect } from '@/widgets/VoteModal';
@@ -66,13 +68,15 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { signatory },
+    fields: { signatory, initiator },
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
 
   const balances = useUnit(balanceModel.$balances);
+  const allAccounts = useUnit(accounts.$list);
+  const allWallets = useUnit(walletModel.$wallets);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!network) {
@@ -86,22 +90,24 @@ const Signatories = () => {
         network.chain.chainId,
         network.asset.assetId.toString(),
       );
-      return { signer: signatory, balance: transferableAmount(balance) };
+      return { account: signatory, balance: transferableAmount(balance) };
     });
-  }, [signatories, balances, network]);
+  }, [signatories, balances]);
 
-  if (!network || signatoriesWithBalance.length < 2) {
+  if (!network) {
     return null;
   }
 
   return (
-    <SignatorySelector
+    <SignatorySelect
       signatory={signatory.value}
       signatories={signatoriesWithBalance}
-      asset={network.chain.assets[0]}
-      addressPrefix={network.chain.addressPrefix}
+      allAccounts={allAccounts}
+      initiator={initiator.value}
+      allWallets={allWallets}
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
+      network={network}
       onChange={signatory.onChange}
     />
   );

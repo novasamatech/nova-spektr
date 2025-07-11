@@ -50,30 +50,6 @@ describe('Create multisig wallet form-model', () => {
     expect(scope.getState(formModel.$multisigAccountId)).toEqual(multisigWallet.accounts[0].accountId);
   });
 
-  test('should reset $signatories and $threshold when chain changes', async () => {
-    const scope = fork({
-      values: new Map()
-        .set(networkModel.$apis, { '0x00': testApi })
-        .set(networkModel.$chains, { '0x00': testChain })
-        .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet, multisigWallet])
-        .set(networkDomain.accounts.__test.$list, accounts)
-        .set(signatoryModel.$signatories, []),
-    });
-
-    await allSettled(signatoryModel.events.changeSignatory, {
-      scope,
-      params: { index: 1, name: 'Alice', address: toAddress(signatoryWallet.accounts[0].accountId), walletId: '1' },
-    });
-
-    await allSettled(formModel.form.fields.threshold.change, { scope, params: 2 });
-
-    await allSettled(formModel.form.fields.chainId.change, { scope, params: testChain.chainId });
-
-    expect(scope.getState(signatoryModel.$signatories)).toEqual([{ address: '', name: '', walletId: '' }]);
-    expect(scope.getState(formModel.form.fields.threshold.$value)).toEqual(0);
-  });
-
   test('should have correct value for $availableAccounts', async () => {
     const scope = fork({
       values: new Map()

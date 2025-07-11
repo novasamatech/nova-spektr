@@ -9,7 +9,6 @@ import { flowModel } from '../model/flow-model';
 
 import { ConfirmationStep } from './ConfirmationStep';
 import { SelectSignatoriesThreshold } from './SelectSignatoriesThreshold';
-import { SignerSelection } from './components/SignerSelection';
 
 const MODAL_SIZE: Record<string, Pick<ComponentProps<typeof Modal>, 'size' | 'height'>> = {
   [Step.SIGNATORIES_THRESHOLD]: { size: 'lg', height: 'full' },
@@ -44,7 +43,7 @@ export const MultisigWallet = ({ isOpen, onToggle, onGoBack, children }: Props) 
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('createMultisigAccount.title')}</Modal.Title>
       {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold onGoBack={onGoBack} />}
-      {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
+      {/* {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />} */}
       {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
       {isStep(activeStep, Step.SIGN) && (
         <Modal.Content>

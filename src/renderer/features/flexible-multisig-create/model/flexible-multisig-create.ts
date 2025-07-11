@@ -21,7 +21,15 @@ import {
   TransactionType,
   WalletType,
 } from '@/shared/core';
-import { Step, TEST_ACCOUNTS, isStep, nonNullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
+import {
+  Step,
+  TEST_ACCOUNTS,
+  getNativeAsset,
+  isStep,
+  nonNullable,
+  toAccountId,
+  withdrawableAmountBN,
+} from '@/shared/lib/utils';
 import { createFeeCalculator, createMultisigDeposit } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
@@ -213,7 +221,7 @@ const $isEnoughBalance = combine(
       balances,
       signer.accountId,
       chain.chainId,
-      chain.assets[0].assetId.toString(),
+      getNativeAsset(chain.assets).assetId.toString(),
     );
 
     return fee

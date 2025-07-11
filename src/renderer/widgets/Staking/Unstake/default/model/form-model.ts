@@ -85,18 +85,14 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             isMultisig: $isMultisig,
             multisigDeposit: $multisigDeposit,
-            signatoriesWithBalance: $signatoriesWithBalance,
+            signatoryBalance: $signatoryBalance,
           }),
-          fn: (signatory, _f, { fee, isMultisig, signatoriesWithBalance, multisigDeposit }) => {
+          fn: (signatory, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
             if (nullable(signatory)) {
               return { message: 'transfer.noSignatoryError' };
             }
 
-            const balance = signatoriesWithBalance.find(
-              (s: { signer: AnyAccount; balance: string }) => s.signer.accountId === signatory?.accountId,
-            )?.balance;
-
-            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(balance))) {
+            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
           },
@@ -239,33 +235,32 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const $signatoriesWithBalance = combine(
-  {
-    network: $networkStore,
-    signatories: $signatories,
-    balances: balanceModel.$balances,
-  },
-  ({ network, signatories, balances }) => {
-    if (!network) return [];
-
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId.toString(),
-      );
-      return { signer: signatory, balance: transferableAmount(balance) };
-    });
-  },
-);
-
 sample({
   clock: $signatories,
   filter: $signatories.map((x) => x.length === 1),
   fn: (s) => s.at(0) ?? null,
   target: form.fields.signatory.change,
 });
+
+const $signatoryBalance = combine(
+  {
+    signatory: form.fields.signatory.$value,
+    balances: balanceModel.$balances,
+    network: $networkStore,
+  },
+  ({ signatory, balances, network }) => {
+    if (nullable(signatory) || nullable(balances) || nullable(network)) return ZERO_BALANCE;
+
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
+
+    return transferableAmount(balance);
+  },
+);
 
 const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
   api: $api,
@@ -483,7 +478,7 @@ sample({
 
 export const formModel = {
   form,
-  $signatories: $signatoriesWithBalance,
+  $signatories,
   $selectedSignatory: form.fields.signatory.$value,
   $route,
 

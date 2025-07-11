@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { toAddress } from '@/shared/lib/utils';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
 import * as networkDomain from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { signatoryModel } from '../signatory-model';
@@ -90,6 +90,10 @@ describe('Create multisig wallet signatory-model', () => {
       scope,
       params: { index: 2, name: 'address_3', address: duplicate },
     });
-    expect(scope.getState(signatoryModel.$duplicateSignatories)).toEqual({ [unique]: [], [duplicate]: [2] });
+
+    expect(scope.getState(signatoryModel.$duplicateSignatories)).toEqual({
+      [toAccountId(unique)]: [],
+      [toAccountId(duplicate)]: [2],
+    });
   });
 });

@@ -10,8 +10,10 @@ import { formatAsset, nonNullable } from '@/shared/lib/utils';
 import { Alert, ButtonCard, ConfirmModal, DetailRow, FootnoteText, LabelHelpBox, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Popover, Skeleton } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
+import { walletModel } from '@/entities/wallet';
 import { locksPeriodsAggregate } from '@/features/governance';
 import { voteForm } from '../model/voteForm';
 import { voteModal } from '../model/voteModal';
@@ -42,6 +44,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
   const isFeeLoading = useUnit(voteForm.$pendingFee);
   const hasDelegatedTrack = useUnit(voteForm.$hasDelegatedTrack);
   const balances = useUnit(balanceModel.$balances);
+  const allWallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(accounts.$list);
 
   const lockPeriods = useStoreMap({
     store: voteModal.$lockPeriods,
@@ -100,6 +104,9 @@ export const VoteForm = ({ chain, asset }: Props) => {
           )}
           {nonNullable(mutisigTx) && (
             <Signatories
+              initiator={initiator.value}
+              allAccounts={allAccounts}
+              allWallets={allWallets}
               value={signatory.value}
               asset={asset}
               chain={chain}

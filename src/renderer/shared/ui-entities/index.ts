@@ -18,3 +18,4 @@ export { CollectiveRank, getRankTitle } from './CollectiveRank/CollectiveRank';
 export { TrackDescription } from './TrackDescription/TrackDescription';
 export { WalletAccountIcon, type IconTheme } from './WalletAccountIcon/WalletAccountIcon';
 export { CollectiveReferendumVoteChart } from './CollectiveReferendumVoteChart/CollectiveReferendumVoteChart';
+export { SignatorySelect } from './SignatorySelect/SignatorySelect';

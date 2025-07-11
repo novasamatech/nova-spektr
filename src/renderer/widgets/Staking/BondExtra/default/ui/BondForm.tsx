@@ -3,12 +3,14 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { stakeableAmount } from '@/shared/lib/utils';
+import { transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
+import { SignatorySelect } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { SignatorySelector } from '@/entities/operations';
 import { Fee, FeeWithLabel } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { formModel } from '../model/form-model';
 
@@ -42,12 +44,14 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { signatory },
+    fields: { signatory, initiator },
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
   const balances = useUnit(balanceModel.$balances);
+  const allAccounts = useUnit(accounts.$list);
+  const allWallets = useUnit(walletModel.$wallets);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!network) {
@@ -61,22 +65,24 @@ const Signatories = () => {
         network.chain.chainId,
         network.asset.assetId.toString(),
       );
-      return { signer: signatory, balance: stakeableAmount(balance) };
+      return { account: signatory, balance: transferableAmount(balance) };
     });
-  }, [signatories, balances, network]);
+  }, [signatories, balances]);
 
-  if (!network || signatoriesWithBalance.length < 2) {
+  if (!network) {
     return null;
   }
 
   return (
-    <SignatorySelector
+    <SignatorySelect
       signatory={signatory.value}
       signatories={signatoriesWithBalance}
-      asset={network.chain.assets[0]}
-      addressPrefix={network.chain.addressPrefix}
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
+      network={network}
+      allAccounts={allAccounts}
+      initiator={initiator.value}
+      allWallets={allWallets}
       onChange={signatory.onChange}
     />
   );
@@ -151,11 +157,11 @@ const FeeSection = () => {
             </>
           }
         >
-          <Fee fee={multisigDeposit.toString()} asset={network.chain.assets[0]} />
+          <Fee fee={multisigDeposit.toString()} asset={network.asset} />
         </DetailRow>
       )}
 
-      <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.chain.assets[0]} />
+      <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.asset} />
     </div>
   );
 };

@@ -67,14 +67,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             isMultisig: $isMultisig,
             multisigDeposit: $multisigDeposit,
-            signatoriesWithBalance: $signatoriesWithBalance,
+            signatoryBalance: $signatoryBalance,
           }),
-          fn: (signatory, _f, { fee, isMultisig, signatoriesWithBalance, multisigDeposit }) => {
-            const balance = signatoriesWithBalance.find(
-              (s: { signer: AnyAccount; balance: string }) => s.signer.accountId === signatory?.accountId,
-            )?.balance;
-
-            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(balance))) {
+          fn: (signatory, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
+            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
 
@@ -143,24 +139,22 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const $signatoriesWithBalance = combine(
+const $signatoryBalance = combine(
   {
-    network: $networkStore,
-    signatories: $signatories,
+    signatory: form.fields.signatory.$value,
     balances: balanceModel.$balances,
+    network: $networkStore,
   },
-  ({ network, signatories, balances }) => {
-    if (!network) return [];
+  ({ signatory, balances, network }) => {
+    if (!signatory || !network) return ZERO_BALANCE;
+    const balance = balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      network.chain.chainId,
+      network.asset.assetId.toString(),
+    );
 
-    return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId.toString(),
-      );
-      return { signer: signatory, balance: transferableAmount(balance) };
-    });
+    return transferableAmount(balance);
   },
 );
 
@@ -319,7 +313,7 @@ sample({
 
 export const formModel = {
   form,
-  $signatories: $signatoriesWithBalance,
+  $signatories,
   $selectedSignatory: form.fields.signatory.$value,
 
   $proxyWallet,
