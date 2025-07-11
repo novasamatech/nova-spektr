@@ -12,7 +12,7 @@ export async function readConfig(): Promise<Chain[]> {
   return response.json();
 }
 
-export function getChainByName(chains: Chain[], name: string) {
+export function getChainByName(chains: Pick<Chain, 'name'>[], name: string) {
   const chain = chains.find((chain) => chain.name === name);
   if (!chain) {
     throw new Error(`Chain with name "${name}" not found`);
