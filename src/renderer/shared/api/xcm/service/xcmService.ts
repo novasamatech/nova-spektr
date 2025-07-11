@@ -6,7 +6,6 @@ import { camelCase, get } from 'lodash';
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
 import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { networkUtils } from '@/entities/network';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
 import { FACTOR_MULTIPLIER, SET_TOPIC_SIZE, XCM_KEY, XCM_URL } from '../lib/constants';
@@ -53,6 +52,10 @@ function getXcmConfig(): XcmConfig | null {
 
 function saveXcmConfig(config: XcmConfig) {
   localStorage.setItem(XCM_KEY, JSON.stringify(config));
+}
+
+function getChainsConfig(): Record<ChainId, Chain> | null {
+  return localStorageService.getFromStorage('network_chains', null);
 }
 
 function getAvailableTransfers(chains: ChainXCM[], assetId: number, chainId: ChainId): XcmTransfer[] {
@@ -308,7 +311,7 @@ type DecodedPayload = {
 
 function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): DecodedPayload {
   const config = getXcmConfig();
-  const chains = networkUtils.getChainsFromStorage();
+  const chains = getChainsConfig();
   if (!config || !chains) return {} as DecodedPayload;
 
   let destinationChain: HexString | undefined;
