@@ -45,7 +45,6 @@ type FormParams = {
 type FormSubmitEvent = {
   transactions: {
     wrappedTx: Transaction;
-    multisigTx?: Transaction;
     coreTx: Transaction;
   };
   formData: FormParams & {
@@ -506,7 +505,6 @@ sample({
     return {
       transactions: {
         wrappedTx: transaction!.wrappedTx,
-        multisigTx: transaction!.multisigTx,
         coreTx: transaction!.coreTx,
       },
       formData: {

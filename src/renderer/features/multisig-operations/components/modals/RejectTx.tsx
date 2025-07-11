@@ -166,7 +166,7 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
         isReject
         tx={rejectTx}
         api={api}
-        multisigTx={operation}
+        operation={operation}
         account={signAccount}
         txPayload={txPayload}
         signature={signature}

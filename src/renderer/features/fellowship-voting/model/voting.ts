@@ -118,7 +118,6 @@ sample({
       account: account!,
       wrappedTxs: [transactions!.wrappedTx],
       coreTxs: [transactions!.coreTx],
-      multisigTxs: transactions!.multisigTx ? [transactions!.multisigTx] : [],
     };
   },
   target: submitModel.events.formInitiated,

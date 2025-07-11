@@ -10,7 +10,6 @@ export type FormParams = {
 export type FormSubmitEvent = {
   transactions: {
     wrappedTx: Transaction;
-    multisigTx?: Transaction;
     coreTx: Transaction;
   };
   formData: FormParams & {

@@ -27,7 +27,6 @@ const $transferStore = createStore<TransferStore | null>(null);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
 const $wrappedTx = createStore<Transaction | null>(null);
-const $multisigTx = createStore<Transaction | null>(null);
 const $coreTx = createStore<Transaction | null>(null);
 
 const $xcmChain = combine(
@@ -71,7 +70,6 @@ sample({
   clock: formModel.output.formSubmitted,
   fn: ({ transactions, formData }) => ({
     wrappedTx: transactions.wrappedTx,
-    multisigTx: transactions.multisigTx || null,
     coreTx: transactions.coreTx,
     store: {
       ...formData,
@@ -80,7 +78,6 @@ sample({
   }),
   target: spread({
     wrappedTx: $wrappedTx,
-    multisigTx: $multisigTx,
     coreTx: $coreTx,
     store: $transferStore,
   }),
@@ -99,7 +96,6 @@ const readyToConfirm = sample({
       id: 0,
       coreTx,
       tx: coreTx,
-      multisigTx: null,
       chain: networkStore.chain,
       asset: networkStore.asset,
       initiator: formData.account,
@@ -165,7 +161,6 @@ sample({
     step: $step,
     transferStore: $transferStore,
     networkStore: $networkStore,
-    multisigTx: $multisigTx,
     coreTx: $coreTx,
     wrappedTx: $wrappedTx,
   },
@@ -186,7 +181,6 @@ sample({
       signatory: transferData.transferStore!.signatory,
       wrappedTxs: [transferData.wrappedTx!],
       coreTxs: [transferData.coreTx!],
-      multisigTxs: transferData.multisigTx ? [transferData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),

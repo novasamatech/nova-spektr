@@ -123,7 +123,7 @@ const $coreTx = combine(
   },
 );
 
-const { $fee, $tx, $multisigTx, $route } = createComplexTxStore({
+const { $fee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: $initiator,
   signatory: $signatory,
@@ -162,7 +162,6 @@ const dataSubmitted = sample({
     coreTx: $coreTx,
     tx: $tx,
     route: $route,
-    multisigTx: $multisigTx,
     initiator: $initiator,
     signatory: $signatory,
     delegate: $delegate,
@@ -178,7 +177,6 @@ const dataSubmitted = sample({
     coreTx,
     route,
     tx,
-    multisigTx,
     multisigDeposit,
     initiator,
     signatory,
@@ -216,7 +214,6 @@ const dataSubmitted = sample({
           coreTx,
           route,
           tx,
-          multisigTx,
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),
@@ -311,7 +308,6 @@ const signSubmitted = sample({
     chain: networkSelectorModel.$governanceChain,
     transaction: $tx,
     coreTx: $coreTx,
-    multisigTx: $multisigTx,
     initiator: $initiator,
     signatory: $signatory,
     step: $step,
@@ -320,7 +316,7 @@ const signSubmitted = sample({
     ...source,
     signParams,
   }),
-}).filterMap(({ chain, transaction, coreTx, multisigTx, initiator, signatory, step, signParams }) => {
+}).filterMap(({ chain, transaction, coreTx, initiator, signatory, step, signParams }) => {
   if (
     nonNullable(chain) &&
     nonNullable(transaction) &&
@@ -336,7 +332,6 @@ const signSubmitted = sample({
       signatory,
       coreTxs: [coreTx],
       wrappedTxs: [transaction],
-      multisigTxs: multisigTx ? [multisigTx] : [],
     };
   }
 });

@@ -63,10 +63,9 @@ const formSubmitted = sample({
     coreTx: unlockFormAggregate.$coreTx,
     tx: unlockFormAggregate.$tx,
     route: unlockFormAggregate.$route,
-    multisigTx: unlockFormAggregate.$multisigTx,
   },
   fn: (source, formData) => ({ source, formData }),
-}).filterMap(({ source: { coreTx, tx, route, multisigTx }, formData }) => {
+}).filterMap(({ source: { coreTx, tx, route }, formData }) => {
   if (
     nonNullable(coreTx) &&
     nonNullable(tx) &&
@@ -82,7 +81,6 @@ const formSubmitted = sample({
         coreTx,
         route,
         tx,
-        multisigTx,
       } satisfies UnlockConfirm,
     ];
   }
@@ -143,7 +141,6 @@ const signFormSubmitted = sample({
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,
-    multisigTx: unlockFormAggregate.$multisigTx,
     coreTx: unlockFormAggregate.$coreTx,
     tx: unlockFormAggregate.$tx,
     step: $step,
@@ -165,7 +162,6 @@ const signFormSubmitted = sample({
       signatory: source.unlockData.signatory,
       coreTxs: [source.coreTx],
       wrappedTxs: [source.tx],
-      multisigTxs: source.multisigTx ? [source.multisigTx] : [],
     };
   }
 });
