@@ -127,9 +127,72 @@ export const SelectSignatoriesThreshold = () => {
               </Alert.Item>
             </Alert>
 
-            <Alert variant="error" active={multisigAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')}>
-              <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
-            </Alert>
+            {signer && (
+              <Alert
+                variant="info"
+                active={multisigAlreadyExists}
+                title={t('createMultisigAccount.flexibleMultisig.multisigAndProxyExistTitle')}
+              >
+                <Alert.Item withDot={false}>
+                  <Trans
+                    t={t}
+                    i18nKey="createMultisigAccount.flexibleMultisig.multisigAndProxyExistText"
+                    components={{
+                      account: (
+                        <span className="mx-1 inline-flex w-auto align-sub">
+                          <Address
+                            address={toAddress(signer.accountId, { prefix: chain?.addressPrefix })}
+                            title={signer.name}
+                            hideAddress
+                            showIcon
+                            canCopy={false}
+                          />
+                        </span>
+                      ),
+                      proxy: (
+                        <span className="mx-1 inline-flex w-auto align-sub">
+                          <Address
+                            address={toAddress(signer.accountId, { prefix: chain?.addressPrefix })}
+                            title={signer.name} // TODO: add proxy account
+                            hideAddress
+                            showIcon
+                            canCopy={false}
+                          />
+                        </span>
+                      ),
+                    }}
+                  />
+                </Alert.Item>
+              </Alert>
+            )}
+
+            {signer && (
+              <Alert
+                variant="info"
+                active={multisigAlreadyExists}
+                title={t('createMultisigAccount.multisigExistTitle')}
+              >
+                <Alert.Item withDot={false}>
+                  <Trans
+                    t={t}
+                    i18nKey="createMultisigAccount.flexibleMultisig.multisigExistText"
+                    components={{
+                      account: (
+                        <span className="mx-1 inline-flex w-auto align-sub">
+                          <Address
+                            address={toAddress(signer.accountId, { prefix: chain?.addressPrefix })}
+                            title={signer.name}
+                            hideAddress
+                            showIcon
+                            canCopy={false}
+                          />
+                        </span>
+                      ),
+                    }}
+                  />
+                </Alert.Item>
+              </Alert>
+            )}
 
             {!nullable(signerBalance) && !nullable(signer) && asset && (
               <Alert
