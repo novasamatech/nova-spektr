@@ -24,7 +24,6 @@ import {
 } from '@/shared/core';
 import { createBuffer, series } from '@/shared/effector';
 import { dictionary, nonNullable } from '@/shared/lib/utils';
-import { CHAINS_STORAGE_KEY } from '../lib/constants';
 import { networkUtils } from '../lib/network-utils';
 
 const chainConnected = createEvent<ChainId>();
@@ -37,7 +36,7 @@ const failed = createEvent<ChainId>();
 const $chains = createStore<Record<ChainId, Chain>>({});
 
 persist({
-  key: CHAINS_STORAGE_KEY,
+  key: 'network_chains',
   store: $chains,
   sync: true,
 });
