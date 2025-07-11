@@ -80,7 +80,7 @@ export const bootstrap = () => {
     import('@/features/wallet-pairing').then(({ walletPairingFeature }) => walletPairingFeature),
 
     import('@/features/multisig-wallet').then(({ multisigWalletFeature }) => multisigWalletFeature),
-    import('@/features/multisig-wallet-pairing').then(({ multisigWalletPairingFeature }) => multisigWalletPairingFeature),
+    import('@/features/multisig-wallet-create').then(({ multisigWalletPairingFeature }) => multisigWalletPairingFeature),
 
     import('@/features/polkadot-vault-wallet').then(({ polkadotVaultWalletFeature }) => polkadotVaultWalletFeature),
     import('@/features/polkadot-vault-wallet-pairing').then(({ polkadotVaultWalletPairingFeature }) => polkadotVaultWalletPairingFeature),
