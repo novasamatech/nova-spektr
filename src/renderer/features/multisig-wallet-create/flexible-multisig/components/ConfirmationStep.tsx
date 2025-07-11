@@ -1,6 +1,5 @@
 import { useUnit } from 'effector-react';
 
-import { WalletType } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
@@ -54,11 +53,11 @@ export const ConfirmationStep = () => {
             <Separator className="my-4 border-filter-border" />
             <DetailRow label={t('createMultisigAccount.signingWallet')}>
               <div className="flex w-full items-center justify-end gap-x-2">
-                <WalletIcon type={signerWallet?.type || WalletType.POLKADOT_VAULT} />
+                <WalletIcon type={signerWallet.type} />
 
                 <div className="flex max-w-[348px] flex-col">
                   <BodyText as="span" className="truncate tracking-tight text-text-secondary">
-                    {signer.name || signerWallet.name}
+                    {signerWallet.name}
                   </BodyText>
                 </div>
               </div>

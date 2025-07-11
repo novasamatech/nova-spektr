@@ -8,7 +8,6 @@ import { delay, or, spread } from 'patronum';
 import { balanceService } from '@/shared/api/balances';
 import { proxyService } from '@/shared/api/proxy';
 import {
-  type Account,
   AccountType,
   type Asset,
   type Contact,
@@ -31,7 +30,7 @@ import {
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { createComplexTxStore, createFeeCalculator } from '@/shared/transactions';
-import { accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkUtils } from '@/entities/network';
@@ -54,7 +53,7 @@ const $api = combine(flexibleMultisigFeature.state, (state): ApiPromise | null =
 const flow = createGate();
 
 const stepChanged = createEvent<Step>();
-const signerSelected = createEvent<Account>();
+const signerSelected = createEvent<AnyAccount>();
 
 const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flow.close);
 
