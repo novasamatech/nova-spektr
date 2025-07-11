@@ -169,6 +169,8 @@ proxiedWalletFeature.inject(walletGroupSlot, {
     const { t } = useI18n();
     const wallets = useUnit(walletsModel.$wallets);
 
+    console.log({ proxiedWallets: wallets });
+
     return (
       <WalletGroup
         title={t('wallets.proxiedLabel')}

@@ -13,6 +13,7 @@ import {
   type NoID,
   type PartialProxiedAccount,
   type ProxiedAccount,
+  type ProxiedConnection,
   type ProxiedWallet,
   type ProxyAccount,
   type ProxyDeposits,
@@ -222,6 +223,64 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
       accountUtils.isChainIdMatch(a, proxiedAccount.chainId) && a.accountId === proxiedAccount.proxyAccountId,
   });
 
+  // Check for existing wallet with same chainId and accountId
+  const existingWallet = wallets.filter(walletUtils.isProxied).find((wallet) => {
+    return wallet.accounts.some(
+      (account) => account.chainId === proxiedAccount.chainId && account.accountId === proxiedAccount.accountId,
+    );
+  });
+
+  console.log({ proxiedAccount, existingWallet });
+
+  if (existingWallet) {
+    // Find the existing account and add a new connection
+    const existingAccount = existingWallet.accounts.find(
+      (account) =>
+        accountUtils.isProxiedAccount(account) &&
+        account.chainId === proxiedAccount.chainId &&
+        account.accountId === proxiedAccount.accountId,
+    );
+
+    if (existingAccount) {
+      const newConnection: ProxiedConnection = {
+        proxyAccountId: proxiedAccount.proxyAccountId,
+        delay: proxiedAccount.delay,
+        proxyType: proxiedAccount.proxyType,
+        proxyVariant: proxiedAccount.proxyVariant,
+        blockNumber: proxiedAccount.blockNumber,
+        extrinsicIndex: proxiedAccount.extrinsicIndex,
+      };
+
+      // Add the new connection to existing connections
+      const updatedConnections = existingAccount.connections
+        ? [...existingAccount.connections, newConnection]
+        : [newConnection];
+
+      // Update the existing account with new connections
+      const updatedAccount = {
+        ...existingAccount,
+        connections: updatedConnections,
+      };
+
+      // Update the wallet with the modified account
+      const updatedAccounts = existingWallet.accounts.map((account) =>
+        account.id === existingAccount.id ? updatedAccount : account,
+      );
+
+      const updatedWallet = {
+        ...existingWallet,
+        accounts: updatedAccounts,
+      };
+
+      console.log('proxy rewrite', {
+        wallet: updatedWallet,
+        accounts: updatedAccounts.filter((a) => a.id === existingAccount.id),
+      });
+
+      return { wallet: updatedWallet, accounts: updatedAccounts.filter((a) => a.id === existingAccount.id) };
+    }
+  }
+
   const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
     name: walletIdentity ? identityService.getFullName(walletIdentity) : proxyBasedName,
     type: WalletType.PROXIED,
@@ -231,6 +290,16 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
 
   const isEthereumChain = networkUtils.isEthereumBased(chains[proxiedAccount.chainId].options);
 
+  // Create initial connection for new account
+  const initialConnection: ProxiedConnection = {
+    proxyAccountId: proxiedAccount.proxyAccountId,
+    delay: proxiedAccount.delay,
+    proxyType: proxiedAccount.proxyType,
+    proxyVariant: proxiedAccount.proxyVariant,
+    blockNumber: proxiedAccount.blockNumber,
+    extrinsicIndex: proxiedAccount.extrinsicIndex,
+  };
+
   const accounts: Omit<NoID<ProxiedAccount>, 'walletId'>[] = [
     {
       ...proxiedAccount,
@@ -239,6 +308,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
       accountType: AccountType.PROXIED,
       signingType: SigningType.WATCH_ONLY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+      connections: [initialConnection],
     },
   ];
 
