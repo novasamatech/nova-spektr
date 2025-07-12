@@ -6,7 +6,7 @@ import { sumValues } from '@/shared/api/network/service/chainsService';
 import { type PriceObject } from '@/shared/api/price-provider';
 import { type Account, type AssetBalance, type AssetByChains, type Balance, type ChainId } from '@/shared/core';
 import {
-  TOKENS_CONFIG_BASE_URL,
+  TOKENS_CONFIG_URL,
   ZERO_BALANCE,
   getBalanceBn,
   nonNullable,
@@ -19,10 +19,6 @@ import { accountUtils } from '@/entities/wallet';
 
 import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type AssetChain } from './types';
 
-const TOKENS_FILE = (process.env.TOKENS_FILE || 'tokens') + '.json';
-const CONFIG_VERSION = process.env.TOKENS_VERSION || 'v1';
-const CONFIG_URL = `${TOKENS_CONFIG_BASE_URL}/${CONFIG_VERSION}/${TOKENS_FILE}`;
-
 export const tokensService = {
   getTokensData,
   getChainWithBalance,
@@ -33,7 +29,7 @@ export const tokensService = {
 };
 
 async function getTokensData(): Promise<AssetByChains[]> {
-  const response = await fetch(CONFIG_URL);
+  const response = await fetch(TOKENS_CONFIG_URL);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch tokens config: ${response.status} ${response.statusText}`);

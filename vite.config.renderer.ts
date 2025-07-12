@@ -55,6 +55,8 @@ const config: UserConfigFn = async ({ mode, command }) => {
       'process.env.BUILD_SOURCE': JSON.stringify(process.env.BUILD_SOURCE),
       'process.env.CHAINS_FILE': JSON.stringify(process.env.CHAINS_FILE ?? 'chains'),
       'process.env.TOKENS_FILE': JSON.stringify(process.env.TOKENS_FILE ?? 'tokens'),
+      'process.env.CHAINS_VERSION': JSON.stringify(process.env.CHAINS_VERSION ?? 'v1'),
+      'process.env.TOKENS_VERSION': JSON.stringify(process.env.TOKENS_VERSION ?? 'v1'),
       'process.env.LOGGER': JSON.stringify(process.env.LOGGER),
     },
     worker: {
