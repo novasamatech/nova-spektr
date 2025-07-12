@@ -30,10 +30,12 @@ sample({
 });
 
 sample({
-  clock: $shards,
-  source: networkModel.$chains,
-  filter: (_, shards) => shards.length > 0,
-  fn: (chains, shards) => chains[shards[0].chainId],
+  source: {
+    shards: $shards,
+    chains: networkModel.$chains,
+  },
+  filter: ({ shards, chains }) => shards.length > 0 && Object.keys(chains).length > 0,
+  fn: ({ shards, chains }) => chains[shards[0].chainId],
   target: $chain,
 });
 
