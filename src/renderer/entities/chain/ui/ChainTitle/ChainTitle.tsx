@@ -22,7 +22,10 @@ export const ChainTitle = memo(
   ({ as: Tag = 'div', showChainName = true, fontClass, className, iconSize = 16, ...chainProps }: Props) => {
     const chains = useUnit(networkModel.$chains);
 
-    const chainObj = useMemo(() => ('chain' in chainProps ? chainProps.chain : chains[chainProps.chainId]), []);
+    const chainObj = useMemo(
+      () => ('chain' in chainProps ? chainProps.chain : chains[chainProps.chainId]),
+      [chains, chainProps],
+    );
 
     if (!showChainName) {
       return <ChainIcon src={chainObj?.icon} name={chainObj?.name} size={iconSize} />;
