@@ -61,3 +61,6 @@ export const MONTH = 30 * 24 * 60 * 60 * 1000;
 
 export const CHAIN_MAP_STORAGE_KEY = 'chain_map';
 export const ASSETS_WITH_CHAINS_STORAGE_KEY = 'assets_with_chains';
+
+export const CHAINS_CONFIG_BASE_URL = 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains';
+export const TOKENS_CONFIG_BASE_URL = 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/tokens';
