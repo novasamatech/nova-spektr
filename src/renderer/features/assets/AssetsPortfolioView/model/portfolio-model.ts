@@ -3,7 +3,7 @@ import { persist } from 'effector-storage/local';
 import { once } from 'patronum';
 
 import { type AssetByChains } from '@/shared/core';
-import { includesMultiple, nullable } from '@/shared/lib/utils';
+import { ASSETS_WITH_CHAINS_STORAGE_KEY, includesMultiple, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
@@ -36,7 +36,7 @@ const populateFx = createEffect((): Promise<AssetByChains[]> => {
 });
 
 persist({
-  key: 'asset_by_chains',
+  key: ASSETS_WITH_CHAINS_STORAGE_KEY,
   source: populateFx.doneData,
   target: $defaultTokens,
   sync: true,

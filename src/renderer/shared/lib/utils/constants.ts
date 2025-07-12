@@ -58,3 +58,6 @@ export const DEFAULT_TIME = new BN(6_000);
 export const ONE_DAY = new BN(24 * 60 * 60 * 1000);
 
 export const MONTH = 30 * 24 * 60 * 60 * 1000;
+
+export const CHAIN_MAP_STORAGE_KEY = 'chain_map';
+export const ASSETS_WITH_CHAINS_STORAGE_KEY = 'assets_with_chains';
