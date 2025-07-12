@@ -4,7 +4,7 @@ import { BN, BN_TEN } from '@polkadot/util';
 import { camelCase, get } from 'lodash';
 
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
-import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
+import { CHAIN_MAP_STORAGE_KEY, getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
@@ -55,7 +55,7 @@ function saveXcmConfig(config: XcmConfig) {
 }
 
 function getChainsConfig(): Record<ChainId, Chain> | null {
-  return localStorageService.getFromStorage('network_chains', null);
+  return localStorageService.getFromStorage(CHAIN_MAP_STORAGE_KEY, null);
 }
 
 function getAvailableTransfers(chains: ChainXCM[], assetId: number, chainId: ChainId): XcmTransfer[] {
