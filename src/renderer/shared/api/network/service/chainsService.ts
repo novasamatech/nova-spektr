@@ -7,7 +7,7 @@ import sortBy from 'lodash/sortBy';
 
 import { type PriceObject } from '@/shared/api/price-provider';
 import { type AssetBalance, type Balance, type Chain, type ChainId } from '@/shared/core';
-import { ZERO_BALANCE, getRelaychainAsset, nonNullable, totalAmount } from '@/shared/lib/utils';
+import { CHAINS_CONFIG_BASE_URL, ZERO_BALANCE, getRelaychainAsset, nonNullable, totalAmount } from '@/shared/lib/utils';
 import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
 
 type ChainWithFiatBalance = Chain & {
@@ -24,7 +24,7 @@ export const chainsService = {
 
 const CHAINS_FILE = (process.env.CHAINS_FILE || 'chains') + '.json';
 const CONFIG_VERSION = process.env.CHAINS_VERSION || 'v1';
-const CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains/${CONFIG_VERSION}/${CHAINS_FILE}`;
+const CONFIG_URL = `${CHAINS_CONFIG_BASE_URL}/${CONFIG_VERSION}/${CHAINS_FILE}`;
 
 async function getChainsData(): Promise<Chain[]> {
   const response = await fetch(CONFIG_URL);

@@ -5,7 +5,14 @@ import { isKusama, isNameStartsWithNumber, isPolkadot } from '@/shared/api/netwo
 import { sumValues } from '@/shared/api/network/service/chainsService';
 import { type PriceObject } from '@/shared/api/price-provider';
 import { type Account, type AssetBalance, type AssetByChains, type Balance, type ChainId } from '@/shared/core';
-import { ZERO_BALANCE, getBalanceBn, nonNullable, totalAmount, totalAmountBN } from '@/shared/lib/utils';
+import {
+  TOKENS_CONFIG_BASE_URL,
+  ZERO_BALANCE,
+  getBalanceBn,
+  nonNullable,
+  totalAmount,
+  totalAmountBN,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '@/entities/balance';
 import { accountUtils } from '@/entities/wallet';
@@ -14,7 +21,7 @@ import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type 
 
 const TOKENS_FILE = (process.env.TOKENS_FILE || 'tokens') + '.json';
 const CONFIG_VERSION = process.env.TOKENS_VERSION || 'v1';
-const CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/tokens/${CONFIG_VERSION}/`;
+const CONFIG_URL = `${TOKENS_CONFIG_BASE_URL}/${CONFIG_VERSION}/${TOKENS_FILE}`;
 
 export const tokensService = {
   getTokensData,
@@ -26,7 +33,7 @@ export const tokensService = {
 };
 
 async function getTokensData(): Promise<AssetByChains[]> {
-  const response = await fetch(CONFIG_URL + TOKENS_FILE);
+  const response = await fetch(CONFIG_URL);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch tokens config: ${response.status} ${response.statusText}`);
