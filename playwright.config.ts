@@ -36,5 +36,5 @@ export default defineConfig({
   ],
 
   timeout: 60000,
-  globalSetup: './scripts/updateTestData.js',
+  globalSetup: './scripts/updateTestData.cjs',
 });

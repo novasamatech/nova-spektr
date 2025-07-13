@@ -8,15 +8,15 @@ const feature = 'Wallets. Proxy wallets';
 const story = 'Transfers';
 
 test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }, () => {
-  // TODO: fix this test to use Asset Hub instead of Westend
-  test.fail('Proxy wallet can make regular transfer', async ({ loginPage }) => {
+  test('Proxy wallet can make regular transfer', async ({ loginPage }) => {
     await allure.feature(feature);
     await allure.story(story);
     test.slow();
+    // TODO: change wallet to use Asset Hub
     const proxyWallet = await loginPage.importDatabase('transfers/proxy-transfer-wallet.json');
     const assetsPage = await proxyWallet.gotoMain();
 
-    const chain = getChainByName(substrateChains, 'Westend');
+    const chain = getChainByName(substrateChains, 'Westend Asset Hub (TESTNET)');
     const transferModal = await assetsPage.openTransfer(chain, 0);
 
     await transferModal.fillAmount('0.01');
