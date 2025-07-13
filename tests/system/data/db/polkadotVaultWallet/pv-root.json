@@ -11,6 +11,11 @@
         "rowCount": 140
       },
       {
+        "name": "connections",
+        "schema": "++id",
+        "rowCount": 0
+      },
+      {
         "name": "accounts",
         "schema": "++id",
         "rowCount": 0
@@ -42,6 +47,11 @@
       }
     ],
     "data": [
+      {
+        "tableName": "connections",
+        "inbound": true,
+        "rows": []
+      },
       {
         "tableName": "wallets",
         "inbound": true,

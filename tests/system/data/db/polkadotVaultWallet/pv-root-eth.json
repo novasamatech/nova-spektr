@@ -6,6 +6,11 @@
     "databaseVersion": 26,
     "tables": [
       {
+        "name": "connections",
+        "schema": "++id",
+        "rowCount": 0
+      },
+      {
         "name": "wallets",
         "schema": "++id",
         "rowCount": 3
@@ -42,6 +47,11 @@
       }
     ],
     "data": [
+      {
+        "tableName": "connections",
+        "inbound": true,
+        "rows": []
+      },
       {
         "tableName": "wallets",
         "inbound": true,
