@@ -4,7 +4,7 @@ import { BN, BN_TEN } from '@polkadot/util';
 import { camelCase, get } from 'lodash';
 
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
-import { CHAINS_MAP_STORAGE_KEY, getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
+import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
@@ -52,10 +52,6 @@ function getXcmConfig(): XcmConfig | null {
 
 function saveXcmConfig(config: XcmConfig) {
   localStorage.setItem(XCM_KEY, JSON.stringify(config));
-}
-
-function getChainsConfig(): Record<ChainId, Chain> | null {
-  return localStorageService.getFromStorage(CHAINS_MAP_STORAGE_KEY, null);
 }
 
 function getAvailableTransfers(chains: ChainXCM[], assetId: number, chainId: ChainId): XcmTransfer[] {
@@ -309,10 +305,13 @@ type DecodedPayload = {
   dest: string;
 };
 
-function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): DecodedPayload {
+function decodeXcm(
+  chainId: ChainId,
+  chains: Record<ChainId, Chain>,
+  data: XcmPalletPayload | XTokensPayload,
+): DecodedPayload {
   const config = getXcmConfig();
-  const chains = getChainsConfig();
-  if (!config || !chains) return {} as DecodedPayload;
+  if (!config) return {} as DecodedPayload;
 
   let destinationChain: HexString | undefined;
   if (data.toRelayChain) {
