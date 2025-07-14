@@ -1,5 +1,5 @@
-import fs from 'fs';
-import url from 'url';
+import fs from 'node:fs';
+import url from 'node:url';
 
 const updateChainsList = () => {
   const chainsJsonURL = new URL('../src/renderer/shared/config/chains/chains_dev.json', import.meta.url);
