@@ -4,12 +4,10 @@ import { spread } from 'patronum';
 import { type ClaimChunkWithAccountId, UnlockChunkType } from '@/shared/api/governance';
 import { type Transaction } from '@/shared/core';
 import { Step, isStep, nonNullable } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { networkSelectorModel } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
-import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { submitUtils } from '@/features/operations/OperationSubmit/lib/submit-utils';
@@ -27,17 +25,13 @@ const txSaved = createEvent();
 
 const $unlockData = createStore<UnlockFormData | null>(null).reset(flowFinished);
 const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
-const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $step = restore<Step>(stepChanged, Step.NONE);
 
 const $pendingSchedule = combine(unlockModel.$claimSchedule, (chunks) =>
   (chunks || []).filter((claim) => claim.type !== UnlockChunkType.CLAIMABLE),
 );
-
-const $isMultisig = $multisigTxs.map((txs) => !!txs?.length);
 
 sample({
   clock: flowStarted,
@@ -63,7 +57,6 @@ sample({
   clock: unlockFormAggregate.formSubmitted,
   fn: ({ transactions, formData }) => {
     const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
-    const multisigTxs = transactions.map((tx) => tx.multisigTx).filter(nonNullable);
     const coreTxs = transactions.map((tx) => ({
       ...tx.coreTx,
       args: { ...tx.coreTx.args, assetId: formData.asset.assetId },
@@ -71,14 +64,12 @@ sample({
 
     return {
       wrappedTxs,
-      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
       coreTxs,
       unlockData: formData,
     };
   },
   target: spread({
     wrappedTxs: $wrappedTxs,
-    multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
     unlockData: $unlockData,
   }),
@@ -95,7 +86,6 @@ sample({
         coreTx: transactions[0].coreTx,
         route: [formData.initiator!],
         tx: transactions[0].coreTx,
-        multisigTx: null,
       } satisfies UnlockConfirm,
     ],
     step: Step.CONFIRM,
@@ -138,7 +128,6 @@ sample({
   source: {
     unlockData: $unlockData,
     chain: networkSelectorModel.$governanceChain,
-    multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
     wrappedTxs: $wrappedTxs,
     step: $step,
@@ -161,7 +150,6 @@ sample({
         signatory: unlockData.unlockData!.signatory,
         coreTxs: unlockData.coreTxs!,
         wrappedTxs: unlockData.wrappedTxs!,
-        multisigTxs: unlockData.multisigTxs || [],
       },
       step: Step.SUBMIT,
     };
@@ -203,21 +191,6 @@ sample({
   clock: flowFinished,
   fn: () => Step.NONE,
   target: [stepChanged, unlockFormAggregate.formCleared],
-});
-
-sample({
-  clock: submitModel.output.formSubmitted,
-  source: $isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
-  fn: () => Paths.OPERATIONS,
-  target: $redirectAfterSubmitPath,
-});
-
-sample({
-  clock: flowFinished,
-  source: $redirectAfterSubmitPath,
-  filter: nonNullable,
-  target: navigationModel.events.navigateTo,
 });
 
 // Basket

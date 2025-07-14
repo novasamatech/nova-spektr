@@ -238,7 +238,7 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: $chain,
   transaction: $coreTx,
@@ -394,7 +394,6 @@ export const formModel = {
   $fee,
   $pendingFee,
   $tx,
-  $multisigTx,
   $route,
   $multisigDeposit,
 

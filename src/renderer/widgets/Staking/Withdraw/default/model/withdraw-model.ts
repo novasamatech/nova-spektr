@@ -62,12 +62,11 @@ sample({
     coreTx: formModel.$coreTx,
     route: formModel.$route,
     tx: formModel.$tx,
-    multisigTx: formModel.$multisigTx,
   },
   filter: ({ networkStore }, { formData }) => {
     return nonNullable(networkStore) && nonNullable(formData.initiator) && nonNullable(formData.signatory);
   },
-  fn: ({ networkStore, coreTx, route, tx, multisigTx }, { formData }) => {
+  fn: ({ networkStore, coreTx, route, tx }, { formData }) => {
     return {
       event: [
         {
@@ -79,7 +78,6 @@ sample({
           coreTx: coreTx!,
           route: route,
           tx: tx!,
-          multisigTx: multisigTx,
         } satisfies WithdrawConfirm,
       ],
       step: Step.CONFIRM,
@@ -130,7 +128,6 @@ sample({
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,
-    multisigTx: formModel.$multisigTx,
     coreTx: formModel.$coreTx,
     wrappedTx: formModel.$tx,
   },
@@ -144,7 +141,7 @@ sample({
       nonNullable(withdrawData?.signatory)
     );
   },
-  fn: ({ withdrawData, networkStore, multisigTx, coreTx, wrappedTx }, signParams) => ({
+  fn: ({ withdrawData, networkStore, coreTx, wrappedTx }, signParams) => ({
     event: {
       ...signParams,
       chain: networkStore!.chain,
@@ -152,7 +149,6 @@ sample({
       signatory: withdrawData!.signatory,
       coreTxs: [coreTx!],
       wrappedTxs: [wrappedTx!],
-      multisigTxs: multisigTx ? [multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),

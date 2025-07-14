@@ -48,7 +48,6 @@ import { walletProviderModel } from './wallet-provider-model';
 type FormSubmitEvent = {
   transactions: {
     wrappedTx: Transaction;
-    multisigTx?: Transaction;
     coreTx: Transaction;
   };
   formData: {
@@ -79,7 +78,6 @@ const $proxyDeposit = createStore(BN_ZERO).reset(flow.close);
 const $error = createStore('').reset(flow.close);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flow.close);
 const $coreTx = createStore<Transaction | null>(null).reset(flow.close);
-const $multisigTx = createStore<Transaction | null>(null).reset(flow.close);
 const $addMultisigStore = createStore<AddMultisigStore | null>(null).reset(flow.close);
 const $signer = restore<Account | null>(signerSelected, null).reset(flow.close);
 
@@ -254,7 +252,6 @@ sample({
     return {
       transactions: {
         wrappedTx: transaction!,
-        multisigTx: transaction!.args.transactions[0],
         coreTx,
       },
       formData: {
@@ -274,13 +271,11 @@ sample({
   clock: formSubmitted,
   fn: ({ transactions, formData }) => ({
     wrappedTx: transactions.wrappedTx,
-    multisigTx: transactions.multisigTx || null,
     coreTx: transactions.coreTx,
     store: formData,
   }),
   target: spread({
     wrappedTx: $wrappedTx,
-    multisigTx: $multisigTx,
     coreTx: $coreTx,
     store: $addMultisigStore,
   }),
@@ -332,14 +327,13 @@ sample({
     addMultisigStore: $addMultisigStore,
     coreTx: $coreTx,
     wrappedTx: $wrappedTx,
-    multisigTx: $multisigTx,
     multisigAccountId: formModel.$multisigAccountId,
     signatories: signatoryModel.$signatories,
   },
   filter: ({ addMultisigStore, coreTx, wrappedTx, multisigAccountId }) => {
     return !!addMultisigStore && !!wrappedTx && !!coreTx && !!multisigAccountId;
   },
-  fn: ({ addMultisigStore, coreTx, wrappedTx, multisigTx, multisigAccountId, signatories }, signParams) => {
+  fn: ({ addMultisigStore, coreTx, wrappedTx, multisigAccountId, signatories }, signParams) => {
     const isEthereumChain = networkUtils.isEthereumBased(addMultisigStore!.chain.options);
     const signatoriesWrapped = signatories.map((s) => ({ accountId: toAccountId(s.address) }));
 
@@ -359,7 +353,6 @@ sample({
         } as MultisigAccount,
         coreTxs: [coreTx!],
         wrappedTxs: [wrappedTx!],
-        multisigTxs: multisigTx ? [multisigTx] : [],
       },
       step: Step.SUBMIT,
     };

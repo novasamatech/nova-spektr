@@ -88,7 +88,6 @@ const formSubmitted = sample({
     route: formModel.$route,
     step: $step,
     multisigDeposit: formModel.$multisigDeposit,
-    multisigTx: formModel.$multisigTx,
   },
 }).filterMap(
   ({
@@ -102,7 +101,6 @@ const formSubmitted = sample({
     coreTx,
     step,
     multisigDeposit,
-    multisigTx,
     tx,
     route,
   }) => {
@@ -140,7 +138,6 @@ const formSubmitted = sample({
           initiator,
           route,
           tx,
-          multisigTx,
         } satisfies DelegateConfirm,
       ];
     }
@@ -213,7 +210,6 @@ const signSubmitted = sample({
   source: {
     walletData: formModel.$walletData,
     transaction: formModel.$tx,
-    multisigTx: formModel.$multisigTx,
     delegateData: $delegateData,
     initiator: formModel.form.fields.initiator.$value,
     step: $step,
@@ -223,7 +219,7 @@ const signSubmitted = sample({
     ...source,
     signParams,
   }),
-}).filterMap(({ delegateData, walletData, transaction, step, initiator, coreTx, multisigTx, signParams }) => {
+}).filterMap(({ delegateData, walletData, transaction, step, initiator, coreTx, signParams }) => {
   if (
     nonNullable(delegateData) &&
     nonNullable(walletData) &&
@@ -242,7 +238,6 @@ const signSubmitted = sample({
       signatory: delegateData.signatory,
       coreTxs: [coreTx],
       wrappedTxs: [transaction],
-      multisigTxs: multisigTx ? [multisigTx] : [],
     };
   }
 });

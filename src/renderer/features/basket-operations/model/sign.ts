@@ -101,7 +101,6 @@ sample({
         description: '',
         coreTxs: transactions.map(tx => tx.coreTx!),
         wrappedTxs: transactions.map(tx => tx.coreTx!),
-        multisigTxs: [],
       },
       step: Step.SUBMIT,
     };

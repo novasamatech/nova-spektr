@@ -4,7 +4,6 @@ import { spread } from 'patronum';
 
 import { type OngoingReferendum } from '@/shared/core';
 import { Step, isStep, nonNullable, nonNullableMap, nullable, toAddress } from '@/shared/lib/utils';
-import { type PathType, Paths } from '@/shared/routes';
 import { votingService } from '@/entities/governance';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -15,9 +14,8 @@ import {
   networkSelectorModel,
   votingAggregate,
 } from '@/features/governance';
-import { navigationModel } from '@/features/navigation';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
-import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
+import { submitModel } from '@/features/operations/OperationSubmit';
 import { voteConfirmModel } from '@/features/operations/OperationsConfirm';
 
 import { voteForm } from './voteForm';
@@ -31,8 +29,6 @@ const flow = createGate<{
     referendum: null,
   },
 });
-
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flow.open);
 
 // Transaction save
 
@@ -255,7 +251,6 @@ sample({
       signatory: meta.signatory,
       wrappedTxs: [meta.tx],
       coreTxs: [meta.coreTx],
-      multisigTxs: meta.multisigTx ? [meta.multisigTx] : [],
     };
   },
   target: submitModel.events.formInitiated,
@@ -279,21 +274,6 @@ sample({
     return { accounts: accountIds };
   },
   target: votingAggregate.events.requestVoting,
-});
-
-sample({
-  clock: voteConfirmModel.submitFinished,
-  source: voteForm.$multisigTx,
-  filter: (multisigTx, results) => nonNullable(multisigTx) && results[0]?.result === ExtrinsicResult.SUCCESS,
-  fn: () => Paths.OPERATIONS,
-  target: $redirectAfterSubmitPath,
-});
-
-sample({
-  clock: flow.close,
-  source: $redirectAfterSubmitPath,
-  filter: nonNullable,
-  target: navigationModel.events.navigateTo,
 });
 
 export const voteModal = {

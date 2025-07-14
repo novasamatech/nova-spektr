@@ -301,7 +301,6 @@ sample({
           ),
           coreTx: coreTxs[0],
           tx: coreTxs[0],
-          multisigTx: null,
         } satisfies RevokeDelegationConfirm;
       }),
       step: Step.CONFIRM,
@@ -389,7 +388,6 @@ sample({
       signatory: revokeDelegationData[0]!.signatory,
       coreTxs: transactions!.map((tx) => tx.coreTx),
       wrappedTxs: transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),

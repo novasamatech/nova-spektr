@@ -396,7 +396,6 @@ sample({
           locks: delegateData!.locks[shard.accountId],
           coreTx: coreTxs[index],
           route: [shard],
-          multisigTx: null,
           tx: transactions![index].wrappedTx,
           initiator: shard,
         } satisfies EditDelegationConfirm;
@@ -465,7 +464,6 @@ sample({
       signatory: delegateFlowData.delegateData!.signatory,
       coreTxs: delegateFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: delegateFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: delegateFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),

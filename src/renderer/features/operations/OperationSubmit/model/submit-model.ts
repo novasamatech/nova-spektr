@@ -6,14 +6,8 @@ import { type Chain, type ChainId, type HexString, type Transaction, Transaction
 import { removeFromCollection } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
-import { buildMultisigTx } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
-import {
-  type ExtrinsicResultParams,
-  decodeCallData,
-  transactionBuilder,
-  transactionService,
-} from '@/entities/transaction';
+import { type ExtrinsicResultParams, transactionBuilder, transactionService } from '@/entities/transaction';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
 export type SubmitInput = {
@@ -21,7 +15,6 @@ export type SubmitInput = {
   account: AnyAccount;
   coreTxs: Transaction[];
   wrappedTxs: Transaction[];
-  multisigTxs: Transaction[];
 
   signatures: HexString[];
   txPayloads: Uint8Array[];
@@ -84,30 +77,6 @@ const signAndSubmitExtrinsicsFx = createEffect(
     }
   },
 );
-
-type SaveMultisigParams = {
-  apis: Record<ChainId, ApiPromise>;
-  multisigTxs: Transaction[];
-  signatoryAccountId: AccountId;
-  params: ExtrinsicResultParams;
-};
-
-const saveMultisigTxFx = createEffect(({ multisigTxs, signatoryAccountId, params, apis }: SaveMultisigParams) => {
-  const result = [];
-
-  for (const multisigTx of multisigTxs) {
-    const api = apis[multisigTx.chainId];
-    if (!api) continue;
-
-    const transaction = decodeCallData(api, multisigTx.accountId, multisigTx.args.callData);
-    const multisigOperation = buildMultisigTx(transaction, multisigTx, params, signatoryAccountId);
-
-    result.push(multisigOperation);
-    console.info(`New transaction was created with call hash ${multisigOperation.callHash}`);
-  }
-
-  return result;
-});
 
 sample({ clock: formInitiated, target: $submitStep.reinit });
 
@@ -177,22 +146,6 @@ sample({
 });
 
 sample({
-  clock: extrinsicSucceeded,
-  source: {
-    apis: networkModel.$apis,
-    submitStore: $submitStore,
-  },
-  filter: ({ submitStore }) => Boolean(submitStore?.multisigTxs.length),
-  fn: ({ submitStore, apis }, { signatory, params }) => ({
-    apis,
-    params,
-    multisigTxs: submitStore!.multisigTxs,
-    signatoryAccountId: signatory,
-  }),
-  target: saveMultisigTxFx,
-});
-
-sample({
   clock: $submittingTxs,
   filter: (txs) => txs.length === 0,
   target: txsExecuted,
@@ -244,6 +197,5 @@ export const submitModel = {
     formSubmitted,
     extrinsicSucceeded,
     extrinsicFailed,
-    saveMultisigTx: saveMultisigTxFx.doneData,
   },
 };
