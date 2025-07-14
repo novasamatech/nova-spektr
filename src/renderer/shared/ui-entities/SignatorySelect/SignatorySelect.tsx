@@ -58,7 +58,7 @@ export const SignatorySelect = ({
   }
 
   // Hide selector if less than two signatories are available
-  if (signatories.length < 2) {
+  if (signatories.length <= 1) {
     return null;
   }
 

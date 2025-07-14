@@ -1,23 +1,18 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useMemo } from 'react';
 
-import { type MultisigAccount } from '@/shared/core';
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { toAddress, toShortAddress, withdrawableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, toAddress, toShortAddress, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button, InputHint, Select } from '@/shared/ui';
-import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
-import { accounts } from '@/domains/network';
+import { Address, AssetBalance, SignatorySelect } from '@/shared/ui-entities';
+import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { PureProxyPopover } from '@/entities/proxy';
-import {
-  FeeWithLabelWithDataLoading,
-  MultisigDepositWithLabel,
-  ProxyDeposit,
-  ProxyDepositLabel,
-} from '@/entities/transaction';
-import { AccountAddress, accountUtils, walletModel } from '@/entities/wallet';
+import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
 
 type Props = {
@@ -26,7 +21,7 @@ type Props = {
 export const AddPureProxiedForm = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const { submit } = useForm(formModel.$proxyForm);
+  const { submit } = useForm(formModel.form);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -55,22 +50,26 @@ const NetworkSelector = () => {
 
   const {
     fields: { chain },
-  } = useForm(formModel.$proxyForm);
+  } = useForm(formModel.form);
 
-  const proxyChains = useUnit(formModel.$proxyChains);
+  const availableChain = useUnit(formModel.$availableChain);
 
-  const options = Object.values(proxyChains).map((chain) => ({
-    id: chain.chainId,
-    value: chain,
-    element: (
-      <ChainTitle
-        className="overflow-hidden"
-        fontClass="text-text-primary truncate"
-        key={chain.chainId}
-        chain={chain}
-      />
-    ),
-  }));
+  const options = useMemo(
+    () =>
+      availableChain.map((chain) => ({
+        id: chain.chainId,
+        value: chain,
+        element: (
+          <ChainTitle
+            className="overflow-hidden"
+            fontClass="text-text-primary truncate"
+            key={chain.chainId}
+            chain={chain}
+          />
+        ),
+      })),
+    [availableChain],
+  );
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -78,12 +77,12 @@ const NetworkSelector = () => {
         label={t('proxy.addProxy.networkLabel')}
         placeholder={t('proxy.addProxy.networkPlaceholder')}
         selectedId={chain.value.chainId}
-        invalid={chain.hasError()}
+        invalid={chain.hasError}
         options={options}
         onChange={({ value }) => chain.onChange(value)}
       />
-      <InputHint variant="error" active={chain.hasError()}>
-        {t(chain.errorText())}
+      <InputHint variant="error" active={chain.hasError}>
+        {t(chain.errorMessage)}
       </InputHint>
     </div>
   );
@@ -93,46 +92,60 @@ const AccountSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { account, chain },
-  } = useForm(formModel.$proxyForm);
+    fields: { initiator, chain },
+  } = useForm(formModel.form);
 
-  const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
+  const accounts = useUnit(formModel.$accounts);
+  const wallet = useUnit(walletSelect.$selectedWallet);
+  const balances = useUnit(balanceModel.$balances);
 
-  if (proxiedAccounts.length <= 1) {
+  if (accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
     return null;
   }
 
-  const options = proxiedAccounts.map(({ account, balance }) => {
-    const isShard = accountUtils.isVaultShardAccount(account);
-    const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
+  const options = useMemo(
+    () =>
+      accounts.map((account) => {
+        const isShard = accountUtils.isVaultShardAccount(account);
+        const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
+        const id = accountService.uniqId(account);
 
-    return {
-      id: account.id.toString(),
-      value: account,
-      element: (
-        <div className="flex w-full justify-between" key={account.id}>
-          <AccountAddress
-            size={20}
-            type="short"
-            address={address}
-            name={isShard ? toShortAddress(address, 16) : account.name}
-            canCopy={false}
-          />
-          <AssetBalance value={balance} asset={chain.value.assets[0]} />
-        </div>
-      ),
-    };
-  });
+        const balance = balanceUtils.getBalance(
+          balances,
+          account.accountId,
+          chain.value.chainId,
+          getNativeAsset(chain.value.assets).assetId.toString(),
+        );
+
+        return {
+          id,
+          value: account,
+          element: (
+            <div className="flex w-full justify-between" key={id}>
+              <Address
+                showIcon
+                canCopy={false}
+                iconSize={20}
+                variant="truncate"
+                address={address}
+                title={isShard ? toShortAddress(address, 16) : account.name}
+              />
+              <AssetBalance value={transferableAmount(balance)} asset={getNativeAsset(chain.value.assets)} />
+            </div>
+          ),
+        };
+      }),
+    [accounts, balances, chain.value],
+  );
 
   return (
     <div className="flex flex-col gap-y-2">
       <Select
         label={t('proxy.addProxy.accountLabel')}
         placeholder={t('proxy.addProxy.accountPlaceholder')}
-        selectedId={account.value.id.toString()}
+        selectedId={accountService.uniqId(initiator.value)}
         options={options}
-        disabled={options.length === 1}
-        onChange={({ value }) => account.onChange(value)}
+        onChange={({ value }) => initiator.onChange(value)}
       />
     </div>
   );
@@ -142,14 +155,13 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { chain, signatory, account },
-  } = useForm(formModel.$proxyForm);
+    fields: { chain, signatory, initiator: account },
+  } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
-  const isMultisig = useUnit(formModel.$isMultisig);
 
   const signatoriesWithBalance = useMemo(() => {
     return signatories.map((signatory) => {
@@ -157,23 +169,19 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         chain.value.chainId,
-        chain.value.assets[0].assetId.toString(),
+        getNativeAsset(chain.value.assets).assetId.toString(),
       );
       return { account: signatory, balance: withdrawableAmount(balance) };
     });
   }, [signatories, balances]);
 
-  if (!isMultisig) {
-    return null;
-  }
-
   return (
     <SignatorySelect
       signatory={signatory.value}
       signatories={signatoriesWithBalance}
-      hasError={signatory.hasError()}
-      errorText={t(signatory.errorText())}
-      network={{ chain: chain.value, asset: chain.value.assets[0] }}
+      hasError={signatory.hasError}
+      errorText={t(signatory.errorMessage)}
+      network={{ chain: chain.value, asset: getNativeAsset(chain.value.assets) }}
       allAccounts={allAccounts}
       initiator={account.value}
       allWallets={allWallets}
@@ -184,11 +192,13 @@ const Signatories = () => {
 
 const FeeSection = () => {
   const {
-    fields: { chain, account },
-  } = useForm(formModel.$proxyForm);
+    fields: { chain },
+  } = useForm(formModel.form);
+  const fee = useUnit(formModel.$fee);
+  const pendingFee = useUnit(formModel.$pendingFee);
 
   const api = useUnit(formModel.$api);
-  const fakeTx = useUnit(formModel.$fakeTx);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
   const isMultisig = useUnit(formModel.$isMultisig);
 
   return (
@@ -198,28 +208,17 @@ const FeeSection = () => {
           api={api}
           proxyNumber={1}
           deposit="0"
-          asset={chain.value.assets[0]}
+          asset={getNativeAsset(chain.value.assets)}
           onDepositChange={formModel.events.proxyDepositChanged}
           onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
         />
       </ProxyDepositLabel>
 
       {isMultisig && (
-        <MultisigDepositWithLabel
-          api={api}
-          asset={chain.value.assets[0]}
-          threshold={(account.value as MultisigAccount).threshold}
-          onDepositChange={formModel.events.multisigDepositChanged}
-        />
+        <MultisigDepositFee asset={getNativeAsset(chain.value.assets)} multisigDeposit={multisigDeposit.toString()} />
       )}
 
-      <FeeWithLabelWithDataLoading
-        api={api}
-        asset={chain.value.assets[0]}
-        transaction={fakeTx}
-        onFeeChange={formModel.events.feeChanged}
-        onFeeLoading={formModel.events.isFeeLoadingChanged}
-      />
+      <FeeWithLabel asset={getNativeAsset(chain.value.assets)} fee={fee} isLoading={pendingFee} />
     </div>
   );
 };
@@ -228,13 +227,13 @@ const FeeError = () => {
   const { t } = useI18n();
 
   const {
-    fields: { account },
-  } = useForm(formModel.$proxyForm);
+    fields: { initiator: account },
+  } = useForm(formModel.form);
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
   return (
-    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={account.hasError()} variant="error">
+    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={account.hasError} variant="error">
       <Alert.Item withDot={false}>
         {isMultisig ? t('proxy.addProxy.balanceAlertMultisig') : t('proxy.addProxy.balanceAlertRegular')}
       </Alert.Item>

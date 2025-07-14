@@ -15,12 +15,8 @@ import {
   removeProxyConfirmModel,
   removePureProxiedConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import {
-  type AddProxyInput,
-  type AddPureProxiedInput,
-  type RemoveProxyInput,
-  type RemovePureProxiedInput,
-} from '../types/confirm';
+import { type AddPureProxiedConfirm } from '@/features/operations/OperationsConfirm';
+import { type AddProxyInput, type RemoveProxyInput, type RemovePureProxiedInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -73,14 +69,15 @@ const prepareAddPureProxiedDataFx = createEffect(async ({ transaction, accounts,
   return {
     id: transaction.id,
     chain,
-    account,
-    amount: transaction.coreTx.args.value,
-    description: '',
+    initiator: account!,
     fee,
     proxyDeposit,
     multisigDeposit: '0',
-    signatory: null,
-  } as AddPureProxiedInput;
+    signatory: account!,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    route: transaction.route,
+  } satisfies AddPureProxiedConfirm;
 });
 
 const prepareRemoveProxyDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -203,7 +200,7 @@ sample({
 sample({
   clock: prepareAddPureProxiedDataFx.doneData,
   fn: (data) => [data],
-  target: addPureProxiedConfirmModel.events.formInitiated,
+  target: addPureProxiedConfirmModel.init,
 });
 
 sample({

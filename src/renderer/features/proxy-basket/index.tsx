@@ -8,7 +8,7 @@ import { basketOperationsService } from '@/aggregates/basket-operations';
 import { basketSDK } from '@/sdk/basket';
 import {
   AddProxyConfirm,
-  AddPureProxiedConfirm,
+  AddPureProxiedConfirmation,
   RemoveProxyConfirm,
   RemovePureProxiedConfirm,
 } from '@/features/operations/OperationsConfirm';
@@ -83,7 +83,7 @@ basketSDK(proxyBasketFeature, {
     if (tx.type === TransactionType.ADD_PROXY) return <AddProxyConfirm id={transaction.id} hideSignButton />;
     if (tx.type === TransactionType.REMOVE_PROXY) return <RemoveProxyConfirm id={transaction.id} hideSignButton />;
     if (tx.type === TransactionType.CREATE_PURE_PROXY)
-      return <AddPureProxiedConfirm id={transaction.id} hideSignButton />;
+      return <AddPureProxiedConfirmation id={transaction.id} hideSignButton />;
     if (tx.type === TransactionType.REMOVE_PURE_PROXY)
       return <RemovePureProxiedConfirm id={transaction.id} hideSignButton />;
 

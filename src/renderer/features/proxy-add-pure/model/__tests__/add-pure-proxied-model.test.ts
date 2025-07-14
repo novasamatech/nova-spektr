@@ -42,7 +42,6 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
 
     await allSettled(addPureProxiedModel.events.flowStarted, { scope });
 
-    expect(scope.getState(addPureProxiedModel.$chain)).toEqual(undefined);
     expect(scope.getState(addPureProxiedModel.$step)).toEqual(Step.INIT);
 
     // await allSettled(formModel.output.formSubmitted, {
