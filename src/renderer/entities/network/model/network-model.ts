@@ -23,7 +23,7 @@ import {
   type NoID,
 } from '@/shared/core';
 import { createBuffer, series } from '@/shared/effector';
-import { CHAINS_MAP_STORAGE_KEY, dictionary, nonNullable } from '@/shared/lib/utils';
+import { dictionary, nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '../lib/network-utils';
 
 const chainConnected = createEvent<ChainId>();
@@ -36,7 +36,7 @@ const failed = createEvent<ChainId>();
 const $chains = createStore<Record<ChainId, Chain>>({});
 
 persist({
-  key: CHAINS_MAP_STORAGE_KEY,
+  key: 'chains_map',
   store: $chains,
   sync: true,
 });
