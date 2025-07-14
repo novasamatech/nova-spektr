@@ -4,20 +4,20 @@ import { concat, orderBy, sortBy } from 'lodash';
 import { isKusama, isNameStartsWithNumber, isPolkadot } from '@/shared/api/network/lib/utils';
 import { sumValues } from '@/shared/api/network/service/chainsService';
 import { type PriceObject } from '@/shared/api/price-provider';
-import tokensProd from '@/shared/config/tokens/tokens.json';
-import tokensDev from '@/shared/config/tokens/tokens_dev.json';
 import { type Account, type AssetBalance, type AssetByChains, type Balance, type ChainId } from '@/shared/core';
-import { ZERO_BALANCE, getBalanceBn, nonNullable, totalAmount, totalAmountBN } from '@/shared/lib/utils';
+import {
+  TOKENS_CONFIG_URL,
+  ZERO_BALANCE,
+  getBalanceBn,
+  nonNullable,
+  totalAmount,
+  totalAmountBN,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '@/entities/balance';
 import { accountUtils } from '@/entities/wallet';
 
 import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type AssetChain } from './types';
-
-const TOKENS: Record<string, any> = {
-  tokens: tokensProd,
-  'tokens-dev': tokensDev,
-};
 
 export const tokensService = {
   getTokensData,
@@ -28,8 +28,14 @@ export const tokensService = {
   calculateTotalBalance,
 };
 
-function getTokensData(): AssetByChains[] {
-  return TOKENS[process.env.TOKENS_FILE || 'tokens'];
+async function getTokensData(): Promise<AssetByChains[]> {
+  const response = await fetch(TOKENS_CONFIG_URL);
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch tokens config: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
 }
 
 function sumTokenBalances(firstBalance: AssetBalance, secondBalance?: AssetBalance | null): AssetBalance {

@@ -11,7 +11,7 @@ import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
-import { assetsSettingsModel } from '@/features/assets';
+import { assetsSettingsModel, portfolioModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
@@ -50,6 +50,7 @@ const populate = async () => {
   await proxyModel.populate();
   multisigOperation.populate();
   governanceMetaProvider.populate();
+  portfolioModel.populate();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();
