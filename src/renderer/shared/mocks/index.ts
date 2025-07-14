@@ -165,33 +165,6 @@ export const polkadotAssetHubChain: Chain = {
       },
     },
   ],
-  explorers: [
-    {
-      name: 'Subscan',
-      account: 'https://assethub-polkadot.subscan.io/account/{address}',
-      extrinsic: 'https://assethub-polkadot.subscan.io/extrinsic/{hash}',
-      multisig: 'https://assethub-polkadot.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}',
-    },
-    {
-      name: 'Statescan',
-      account: 'https://statemint.statescan.io/#/accounts/{address}',
-      event: 'https://statemint.statescan.io/#/events/{event}',
-    },
-  ],
-  externalApi: {
-    history: [
-      {
-        type: 'subquery',
-        url: 'https://gateway.subquery.network/query/0x35',
-      },
-    ],
-    proxy: [
-      {
-        type: 'subquery',
-        url: 'https://subquery-proxy-polkadot-ah-stg.novasama-tech.org',
-      },
-    ],
-  },
 };
 
 export const createRandomId = () => Math.round(Math.random() * 10).toString();
