@@ -49,6 +49,7 @@ const $input = combine(
         if (api && chain) {
           input.push({
             api,
+            chains,
             chain,
             accountId: account.accountId,
           });
@@ -62,6 +63,7 @@ const $input = combine(
           if (api) {
             input.push({
               api,
+              chains,
               chain,
               accountId: account.accountId,
             });

@@ -69,7 +69,11 @@ const operationsQuery = gql`
   }
 `;
 
-function mapSubqueryOperationRecord(node: unknown, api: ApiPromise): MultisigOperation | null {
+function mapSubqueryOperationRecord(
+  node: unknown,
+  api: ApiPromise,
+  chains: Record<ChainId, Chain>,
+): MultisigOperation | null {
   const response = operationsGqlSchema.parse(node);
   const operationId = multisigOperationService.getOperationId(
     api.genesisHash.toHex(),
@@ -83,7 +87,7 @@ function mapSubqueryOperationRecord(node: unknown, api: ApiPromise): MultisigOpe
 
   try {
     if (response.callData) {
-      transaction = decodeCallData(api, response.accountId, response.callData);
+      transaction = decodeCallData(api, response.accountId, response.callData, chains);
     }
   } catch {
     // do nothing
@@ -112,7 +116,12 @@ function mapSubqueryOperationRecord(node: unknown, api: ApiPromise): MultisigOpe
   };
 }
 
-async function fetchOperations(url: string, accountId: AccountId, api: ApiPromise): Promise<MultisigOperation[]> {
+async function fetchOperations(
+  url: string,
+  accountId: AccountId,
+  api: ApiPromise,
+  chains: Record<ChainId, Chain>,
+): Promise<MultisigOperation[]> {
   const client = new GraphQLClient(url);
   const chainId = api.genesisHash.toHex();
   const [result, chainMultisigs] = await Promise.all([
@@ -136,7 +145,7 @@ async function fetchOperations(url: string, accountId: AccountId, api: ApiPromis
   );
 
   return result.multisigOperations.nodes
-    .map((node: unknown) => mapSubqueryOperationRecord(node, api))
+    .map((node: unknown) => mapSubqueryOperationRecord(node, api, chains))
     .filter((x: MultisigOperation | null) => {
       if (nullable(x)) return false;
 
@@ -171,13 +180,14 @@ const multisigEvent = z.union([
 
 type RequestParams = {
   api: ApiPromise;
+  chains: Record<ChainId, Chain>;
   chain: Chain;
   accountId: AccountId;
 };
 
 export const onchainOperations = createRemoteResource<RequestParams, MultisigOperation[]>({
   pool: ({ chain }) => chain.chainId,
-  async fn({ api, accountId, chain }) {
+  async fn({ api, chains, accountId, chain }) {
     const operations: MultisigOperation[] = [];
 
     const response = await multisigPallet.storage.multisigs(api, accountId);
@@ -217,7 +227,7 @@ export const onchainOperations = createRemoteResource<RequestParams, MultisigOpe
 
       let decodedTransaction: DecodedTransaction | null = null;
       try {
-        decodedTransaction = callData ? decodeCallData(api, accountId, callData) : null;
+        decodedTransaction = callData ? decodeCallData(api, accountId, callData, chains) : null;
       } catch {
         // do nothing
       }
@@ -249,14 +259,14 @@ export const subscribeIndexerResource = createSubscriptionResource<RequestParams
   fn(params, callback) {
     const unsubscribeFns: VoidFunction[] = [];
 
-    for (const { chain, accountId, api } of params) {
+    for (const { chain, accountId, api, chains } of params) {
       const url = chain.externalApi?.proxy?.find(x => x.type === 'subquery')?.url;
       if (nullable(url)) {
         throw new Error(`Proxy/multisig indexer doesn't support ${chain.name} chain`);
       }
 
       const fn = () => {
-        fetchOperations(url, accountId, api)
+        fetchOperations(url, accountId, api, chains)
           .then(value => {
             callback({ done: true, value });
           })

@@ -87,27 +87,30 @@ const signAndSubmitExtrinsicsFx = createEffect(
 
 type SaveMultisigParams = {
   apis: Record<ChainId, ApiPromise>;
+  chains: Record<ChainId, Chain>;
   multisigTxs: Transaction[];
   signatoryAccountId: AccountId;
   params: ExtrinsicResultParams;
 };
 
-const saveMultisigTxFx = createEffect(({ multisigTxs, signatoryAccountId, params, apis }: SaveMultisigParams) => {
-  const result = [];
+const saveMultisigTxFx = createEffect(
+  ({ multisigTxs, signatoryAccountId, params, apis, chains }: SaveMultisigParams) => {
+    const result = [];
 
-  for (const multisigTx of multisigTxs) {
-    const api = apis[multisigTx.chainId];
-    if (!api) continue;
+    for (const multisigTx of multisigTxs) {
+      const api = apis[multisigTx.chainId];
+      if (!api) continue;
 
-    const transaction = decodeCallData(api, multisigTx.accountId, multisigTx.args.callData);
-    const multisigOperation = buildMultisigTx(transaction, multisigTx, params, signatoryAccountId);
+      const transaction = decodeCallData(api, multisigTx.accountId, multisigTx.args.callData, chains);
+      const multisigOperation = buildMultisigTx(transaction, multisigTx, params, signatoryAccountId);
 
-    result.push(multisigOperation);
-    console.info(`New transaction was created with call hash ${multisigOperation.callHash}`);
-  }
+      result.push(multisigOperation);
+      console.info(`New transaction was created with call hash ${multisigOperation.callHash}`);
+    }
 
-  return result;
-});
+    return result;
+  },
+);
 
 sample({ clock: formInitiated, target: $submitStep.reinit });
 
@@ -180,11 +183,13 @@ sample({
   clock: extrinsicSucceeded,
   source: {
     apis: networkModel.$apis,
+    chains: networkModel.$chains,
     submitStore: $submitStore,
   },
   filter: ({ submitStore }) => Boolean(submitStore?.multisigTxs.length),
-  fn: ({ submitStore, apis }, { signatory, params }) => ({
+  fn: ({ submitStore, apis, chains }, { signatory, params }) => ({
     apis,
+    chains,
     params,
     multisigTxs: submitStore!.multisigTxs,
     signatoryAccountId: signatory,
