@@ -1,6 +1,6 @@
 import { type Meta, type StoryObj } from '@storybook/react';
 import { uniqBy } from 'lodash';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { chainsService } from '@/shared/api/network';
 import { type Chain } from '@/shared/core';
@@ -40,13 +40,13 @@ export const VariantsDerivedFromConfig: Story = {
     style: 'colored',
     size: 32,
   },
-  render: args => {
+  loaders: [
+    async () => ({
+      chains: await chainsService.getChainsData(),
+    }),
+  ],
+  render: (args, { loaded: { chains } }) => {
     const [query, setQuery] = useState('');
-    const [chains, setChains] = useState<Chain[]>([]);
-
-    useEffect(() => {
-      chainsService.getChainsData().then(setChains);
-    }, []);
 
     const allPossibleAssets = uniqBy(
       (chains as Chain[]).flatMap(({ assets }) => assets),
