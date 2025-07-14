@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type VoidFn } from '@polkadot/api/types';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { persist } from 'effector-storage/local';
 import { combineEvents, spread } from 'patronum';
 
 import {
@@ -34,9 +35,16 @@ const failed = createEvent<ChainId>();
 
 const $chains = createStore<Record<ChainId, Chain>>({});
 
+persist({
+  key: 'chains_map',
+  store: $chains,
+  sync: true,
+});
+
 const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
 
+const $connectionData = createStore<Connection[]>([]);
 const $connections = createStore<Record<ChainId, Connection>>({});
 const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
 
@@ -45,8 +53,8 @@ const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
 
 const $populated = createStore(false);
 
-const populateChainsFx = createEffect((): Record<ChainId, Chain> => {
-  return chainsService.getChainsMap();
+const populateChainsFx = createEffect((): Promise<Record<ChainId, Chain>> => {
+  return chainsService.getChainsData().then(chainsService.getChainsMap);
 });
 
 const populateMetadataFx = createEffect((): Promise<ChainMetadata[]> => {
@@ -190,9 +198,16 @@ sample({
 
 sample({
   clock: populateConnectionsFx.doneData,
-  source: $chains,
-  fn: (chains, connections) => {
-    const connectionsMap = dictionary(connections, 'chainId');
+  target: $connectionData,
+});
+
+sample({
+  source: {
+    chains: $chains,
+    connectionData: $connectionData,
+  },
+  fn: ({ chains, connectionData }) => {
+    const connectionsMap = dictionary(connectionData, 'chainId');
     const lightClientChains = networkUtils.getLightClientChains();
 
     return Object.keys(chains).reduce<Record<ChainId, Connection>>((acc, key) => {

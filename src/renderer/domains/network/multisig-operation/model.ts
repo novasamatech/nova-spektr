@@ -66,15 +66,18 @@ type UpdateCallDataParams = {
 };
 
 const updateCallDataFx = attach({
-  source: networkModel.$apis,
-  effect(apis, { operation, callData }: UpdateCallDataParams) {
+  source: {
+    apis: networkModel.$apis,
+    chains: networkModel.$chains,
+  },
+  effect({ apis, chains }, { operation, callData }: UpdateCallDataParams) {
     const update = scopeBind(updateOperationsFx, { safe: true });
     const api = apis[operation.chainId];
     if (!api) {
       throw new Error(`Api from tx not found: ${operation.chainId}`);
     }
     try {
-      const decoded = decodeCallData(api, operation.accountId, callData);
+      const decoded = decodeCallData(api, operation.accountId, callData, chains);
       const newOperation: MultisigOperation = {
         ...operation,
         section: decoded.section,
