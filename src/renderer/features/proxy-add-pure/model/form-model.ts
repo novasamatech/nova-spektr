@@ -69,7 +69,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             balances: balanceModel.$balances,
             isMultisig: $isMultisig,
           }),
-          fn: (value: AnyAccount, form: FormParams, { isMultisig, balances, fee, proxyDeposit }: any) => {
+          fn: (value, form, { isMultisig, balances, fee, proxyDeposit }) => {
             const balance = balanceUtils.getBalance(
               balances,
               value.accountId,
@@ -101,7 +101,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             balances: balanceModel.$balances,
             isMultisig: $isMultisig,
           }),
-          fn: (value: AnyAccount | null, form: FormParams, { isMultisig, balances, fee, multisigDeposit }: any) => {
+          fn: (value, form, { isMultisig, balances, fee, multisigDeposit }) => {
             if (!value || !isMultisig) return;
 
             const signatoryBalance = balanceUtils.getBalance(

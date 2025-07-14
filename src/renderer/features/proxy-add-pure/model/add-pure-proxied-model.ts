@@ -1,4 +1,3 @@
-/* eslint-disable import-x/max-dependencies */
 import { type ApiPromise } from '@polkadot/api';
 import { type UnsubscribePromise } from '@polkadot/api/types';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
