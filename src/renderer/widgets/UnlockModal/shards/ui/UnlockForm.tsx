@@ -4,14 +4,12 @@ import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, getNativeAsset, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { formatBalance, getNativeAsset, toAddress } from '@/shared/lib/utils';
 import { Button, InputHint, MultiSelect } from '@/shared/ui';
 import { type DropdownResult } from '@/shared/ui/Dropdowns/common/types';
-import { Address, AssetBalance, SignatorySelect } from '@/shared/ui-entities';
-import { accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { Address, AssetBalance } from '@/shared/ui-entities';
 import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
-import { ProxyWalletAlert, walletModel, walletUtils } from '@/entities/wallet';
+import { ProxyWalletAlert, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { networkSelectorModel } from '@/features/governance';
@@ -35,7 +33,6 @@ export const UnlockForm = ({ onGoBack }: Props) => {
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <ProxyFeeAlert />
         <AccountsSelector />
-        <Signatories />
         <Amount />
       </form>
       <div className="flex flex-col gap-y-6 pb-4 pt-6">
@@ -132,56 +129,6 @@ const AccountsSelector = () => {
         {t(shards.errorText())}
       </InputHint>
     </div>
-  );
-};
-
-const Signatories = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { signatory, shards },
-  } = useForm(unlockFormAggregate.$unlockForm);
-
-  const signatories = useUnit(unlockFormAggregate.$signatories);
-  const chain = useUnit(networkSelectorModel.$governanceChain);
-  const network = useUnit(networkSelectorModel.$network);
-
-  const allAccounts = useUnit(accounts.$list);
-  const balances = useUnit(balanceModel.$balances);
-  const allWallets = useUnit(walletModel.$wallets);
-
-  const signatoriesWithBalance = useMemo(() => {
-    if (!network) {
-      return [];
-    }
-
-    return signatories[0].map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        network.chain.chainId,
-        network.asset.assetId.toString(),
-      );
-      return { account: signatory, balance: transferableAmount(balance) };
-    });
-  }, [signatories, balances]);
-
-  if (!chain || !network) {
-    return null;
-  }
-
-  return (
-    <SignatorySelect
-      signatory={signatory.value}
-      signatories={signatoriesWithBalance}
-      allAccounts={allAccounts}
-      allWallets={allWallets}
-      initiator={shards.value[0]}
-      hasError={signatory.hasError()}
-      errorText={t(signatory.errorText())}
-      network={network}
-      onChange={signatory.onChange}
-    />
   );
 };
 
