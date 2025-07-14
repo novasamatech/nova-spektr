@@ -253,7 +253,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
       <Submit
         tx={approveTx}
         api={api}
-        multisigTx={operation}
+        operation={operation}
         account={signAccount}
         txPayload={txPayload}
         signature={signature}

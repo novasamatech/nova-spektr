@@ -15,7 +15,6 @@ export type TxConfirmInfo = {
   chain: Chain;
   tx: Transaction;
   coreTx: Transaction;
-  multisigTx: Transaction | null;
 };
 
 export type ConfirmItem<Input extends TxConfirmInfo = TxConfirmInfo> = {

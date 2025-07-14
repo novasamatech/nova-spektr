@@ -26,7 +26,6 @@ const $withdrawData = createStore<WithdrawData | null>(null).reset(flowFinished)
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
 const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
-const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
@@ -59,19 +58,16 @@ sample({
   clock: formModel.output.formSubmitted,
   fn: ({ transactions, formData }) => {
     const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
-    const multisigTxs = transactions.map((tx) => tx.multisigTx).filter(nonNullable);
     const coreTxs = transactions.map((tx) => tx.coreTx);
 
     return {
       wrappedTxs,
       coreTxs,
-      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
       store: formData,
     };
   },
   target: spread({
     wrappedTxs: $wrappedTxs,
-    multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
     store: $withdrawData,
   }),
@@ -79,9 +75,9 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  source: { networkStore: $networkStore, coreTxs: $coreTxs, multisigTxs: $multisigTxs },
+  source: { networkStore: $networkStore, coreTxs: $coreTxs },
   filter: ({ networkStore }) => nonNullable(networkStore),
-  fn: ({ networkStore, coreTxs, multisigTxs }, { formData }) => ({
+  fn: ({ networkStore, coreTxs }, { formData }) => ({
     event: formData.shards.map((shard, index) => {
       return {
         ...formData,
@@ -89,7 +85,6 @@ sample({
         initiator: shard,
         route: [shard],
         tx: coreTxs![index],
-        multisigTx: multisigTxs![index],
         chain: networkStore!.chain,
         asset: getRelaychainAsset(networkStore!.chain.assets)!,
         coreTx: coreTxs![index],
@@ -135,7 +130,6 @@ sample({
   source: {
     withdrawData: $withdrawData,
     networkStore: $networkStore,
-    multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
     wrappedTxs: $wrappedTxs,
   },
@@ -155,7 +149,6 @@ sample({
       signatory: withdrawData.withdrawData!.signatory,
       coreTxs: withdrawData.coreTxs!,
       wrappedTxs: withdrawData.wrappedTxs!,
-      multisigTxs: withdrawData.multisigTxs || [],
     },
     step: Step.SUBMIT,
   }),

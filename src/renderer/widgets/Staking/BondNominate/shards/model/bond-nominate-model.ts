@@ -301,10 +301,9 @@ sample({
     walletData: $walletData,
     txWrappers: $txWrappers,
     coreTxs: $pureTxs,
-    transactions: $transactions,
   },
   filter: ({ bondData, walletData }) => Boolean(bondData) && Boolean(walletData),
-  fn: ({ bondData, feeData, walletData, coreTxs, transactions }) => {
+  fn: ({ bondData, feeData, walletData, coreTxs }) => {
     return {
       event: [
         {
@@ -317,7 +316,6 @@ sample({
           route: [bondData!.shards[0]],
           coreTx: coreTxs[0],
           tx: coreTxs[0],
-          multisigTx: transactions![0].multisigTx!,
         } satisfies BondNominateConfirm,
       ],
       step: Step.CONFIRM,
@@ -380,7 +378,6 @@ sample({
       signatory: bondFlowData.bondData!.signatory,
       coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: bondFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),

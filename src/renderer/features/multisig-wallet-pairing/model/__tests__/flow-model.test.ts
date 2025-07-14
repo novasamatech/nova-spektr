@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 import { vi } from 'vitest';
 
-import { type ChainId, ConnectionStatus } from '@/shared/core';
+import { ConnectionStatus } from '@/shared/core';
 import { Step, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import * as networkDomain from '@/domains/network';
@@ -80,16 +80,13 @@ describe.skip('Create multisig wallet flow-model', () => {
     await allSettled(formModel.form.submit, { scope });
     const account = { walletId: signerWallet.id } as unknown as networkDomain.AnyAccount;
     const store = {
-      chainId: '0x00' as ChainId,
-      threshold: 2,
       route: [account],
       tx: mockTx,
       coreTx: mockTx,
-      multisigTx: null,
       initiator: account,
       signatory: account,
       chain: testChain,
-    } as MultisigConfirm;
+    } satisfies MultisigConfirm;
 
     await allSettled(confirmModel.init, { scope, params: [store] });
 

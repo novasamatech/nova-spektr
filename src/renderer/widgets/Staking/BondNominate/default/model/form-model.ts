@@ -269,7 +269,7 @@ const $coreTx = combine(
   },
 );
 
-const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
@@ -407,7 +407,6 @@ export const formModel = {
   $multisigDeposit,
   $fee,
   $pendingFee,
-  $multisigTx,
   $tx,
   $coreTx,
   $route,

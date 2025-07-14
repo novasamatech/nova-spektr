@@ -6,7 +6,7 @@ import { type Asset, type Chain } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { formatAsset, nonNullable } from '@/shared/lib/utils';
+import { formatAsset } from '@/shared/lib/utils';
 import { Alert, ButtonCard, ConfirmModal, DetailRow, FootnoteText, LabelHelpBox, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Popover, Skeleton } from '@/shared/ui-kit';
@@ -40,7 +40,6 @@ export const VoteForm = ({ chain, asset }: Props) => {
   const availableBalance = useUnit(voteForm.$availableBalance);
   const signatories = useUnit(voteForm.$signatories);
   const initiators = useUnit(voteForm.$initiators);
-  const mutisigTx = useUnit(voteForm.$multisigTx);
   const isFeeLoading = useUnit(voteForm.$pendingFee);
   const hasDelegatedTrack = useUnit(voteForm.$hasDelegatedTrack);
   const balances = useUnit(balanceModel.$balances);
@@ -102,7 +101,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
               onChange={initiator.onChange}
             />
           )}
-          {nonNullable(mutisigTx) && (
+          {signatories.length > 1 && (
             <Signatories
               initiator={initiator.value}
               allAccounts={allAccounts}

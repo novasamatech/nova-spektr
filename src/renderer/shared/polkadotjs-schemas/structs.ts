@@ -102,7 +102,7 @@ export const enumTypeLooseSchema = <const Value extends string[]>(...args: Value
     if (valid) {
       return value.type as Value[number];
     } else {
-      console.warn(`Enum should be (${args.join(' | ')}), got ${value.type}. Value is fallback as a string`);
+      console.warn(`Enum should be (${args.join(' | ')}), got ${value.type}.`);
       return value.type as string & {};
     }
   });
