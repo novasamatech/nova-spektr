@@ -304,7 +304,6 @@ sample({
         signatory: shard,
         route: [shard],
         tx: coreTxs[index],
-        multisigTx: null,
       })),
       step: Step.CONFIRM,
     };
@@ -365,7 +364,6 @@ sample({
       signatory: nominateFlowData.nominateData!.signatory,
       coreTxs: nominateFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: nominateFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: nominateFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),

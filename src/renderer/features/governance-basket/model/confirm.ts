@@ -74,7 +74,6 @@ const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains,
     route: [account!],
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
-    multisigTx: null,
 
     fee,
     totalLock,
@@ -120,7 +119,6 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     route: [account!],
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
-    multisigTx: null,
 
     fee,
     totalFee: '0',
@@ -169,7 +167,6 @@ const prepareEditDelegationDataFx = createEffect(
       route: [account!],
       tx: transaction.coreTx,
       coreTx: transaction.coreTx,
-      multisigTx: null,
       initiator: account!,
 
       fee,
@@ -229,7 +226,6 @@ const prepareRevokeDelegationDataFx = createEffect(
 
       tx: transaction.coreTx,
       coreTx: transaction.coreTx,
-      multisigTx: null,
 
       fee,
       totalFee: '0',
@@ -258,7 +254,6 @@ const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, a
     initiator: account!,
     existingVote: coreTx.args.vote,
     signatory: account!,
-    multisigTx: null,
     route: [account!],
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
@@ -285,7 +280,6 @@ const prepareRemoveVoteDataFx = createEffect(async ({ transaction, accounts, cha
     asset: chain.assets[0],
     votes: coreTxs.map((t: Transaction) => t.args),
     signatory: account!,
-    multisigTx: null,
     route: [account!],
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,

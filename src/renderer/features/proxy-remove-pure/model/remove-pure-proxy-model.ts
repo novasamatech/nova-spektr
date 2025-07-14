@@ -51,7 +51,6 @@ const $removeProxyStore = createStore<RemoveProxyStore | null>(null).reset(flowF
 
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
 const $availableSignatories = createStore<AnyAccount[][]>([]);
@@ -317,7 +316,6 @@ sample({
   target: spread({
     wrappedTx: $wrappedTx,
     coreTx: $coreTx,
-    multisigTx: $multisigTx,
   }),
 });
 
@@ -389,7 +387,6 @@ sample({
   source: {
     removeProxyStore: $removeProxyStore,
     wrappedTx: $wrappedTx,
-    multisigTx: $multisigTx,
     coreTx: $coreTx,
     txWrappers: $txWrappers,
   },
@@ -404,7 +401,6 @@ sample({
       signatory: proxyData.removeProxyStore!.signatory,
       wrappedTxs: [proxyData.wrappedTx!],
       coreTxs: [proxyData.coreTx!],
-      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),

@@ -50,7 +50,6 @@ const $step = restore(stepChanged, Step.NONE);
 const $removeProxyStore = createStore<RemoveProxyStore | null>(null);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 
 const $signatories = createStore<AnyAccount[][]>([]);
 const $isProxy = createStore<boolean>(false);
@@ -289,7 +288,6 @@ sample({
   target: spread({
     wrappedTx: $wrappedTx,
     coreTx: $coreTx,
-    multisigTx: $multisigTx,
   }),
 });
 
@@ -360,11 +358,10 @@ sample({
     removeProxyStore: $removeProxyStore,
     wrappedTx: $wrappedTx,
     coreTx: $coreTx,
-    multisigTx: $multisigTx,
     txWrappers: $txWrappers,
   },
   filter: (proxyData) => {
-    const isMultisigRequired = !transactionService.hasMultisig(proxyData.txWrappers) || Boolean(proxyData.multisigTx);
+    const isMultisigRequired = !transactionService.hasMultisig(proxyData.txWrappers);
 
     return Boolean(proxyData.removeProxyStore) && Boolean(proxyData.wrappedTx) && isMultisigRequired;
   },
@@ -376,7 +373,6 @@ sample({
       signatory: proxyData.removeProxyStore!.signatory,
       wrappedTxs: [proxyData.wrappedTx!],
       coreTxs: [proxyData.coreTx!],
-      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),

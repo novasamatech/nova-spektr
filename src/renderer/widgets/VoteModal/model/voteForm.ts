@@ -182,7 +182,7 @@ const $coreTx = combine(
   },
 );
 
-const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: networkSelectorModel.$governanceChainApi,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
@@ -274,13 +274,12 @@ sample({
     network: networkSelectorModel.$network,
     route: $route,
     tx: $tx,
-    multisigTx: $multisigTx,
     coreTx: $coreTx,
   },
   filter: ({ network, tx, initiator }, { decision }) => {
     return nonNullable(network) && nonNullable(initiator) && nonNullable(decision) && nonNullable(tx);
   },
-  fn: ({ existingVote, network, tx, coreTx, multisigTx, route, initiator }, { signatory }): VoteConfirm => {
+  fn: ({ existingVote, network, tx, coreTx, route, initiator }, { signatory }): VoteConfirm => {
     return {
       api: network!.api,
       chain: network!.chain,
@@ -291,7 +290,6 @@ sample({
       existingVote,
       tx: tx!,
       coreTx: coreTx!,
-      multisigTx,
     };
   },
   target: voteConfirmModel.replaceWithConfirm,
@@ -314,7 +312,6 @@ export const voteForm = {
 
   $tx,
   $coreTx,
-  $multisigTx,
   $route,
 
   $initiatorWallet,

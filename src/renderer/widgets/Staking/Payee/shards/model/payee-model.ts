@@ -246,7 +246,6 @@ sample({
           signatory: shard,
           route: [shard],
           tx: coreTxs[index],
-          multisigTx: null,
           coreTx: coreTxs[index],
         } satisfies PayeeConfirm;
       }),
@@ -309,7 +308,6 @@ sample({
       signatory: payeeFlowData.payeeData!.signatory,
       coreTxs: payeeFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: payeeFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: payeeFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),

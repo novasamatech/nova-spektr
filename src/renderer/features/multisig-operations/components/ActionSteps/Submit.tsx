@@ -20,14 +20,14 @@ type Props = {
   api: ApiPromise;
   account?: Account;
   tx: Transaction;
-  multisigTx?: MultisigOperation;
+  operation?: MultisigOperation;
   txPayload: Uint8Array;
   signature: HexString;
   isReject?: boolean;
   onClose: () => void;
 };
 
-export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isReject, onClose }: Props) => {
+export const Submit = ({ api, tx, operation, account, txPayload, signature, isReject, onClose }: Props) => {
   const { t } = useI18n();
 
   const [inProgress, toggleInProgress] = useToggle(true);
@@ -44,13 +44,13 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
     if (result.executed) {
       const { params } = result;
 
-      if (multisigTx && tx && account?.accountId) {
+      if (operation && tx && account?.accountId) {
         const isReject =
           tx.type === TransactionType.BATCH_ALL
             ? tx.args.transactions.some((tx: Transaction) => tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI)
             : tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
 
-        const updatedTx: MultisigOperation = { ...multisigTx };
+        const updatedTx: MultisigOperation = { ...operation };
 
         if (params.isFinalApprove) {
           updatedTx.status = params.multisigError ? 'error' : 'executed';
@@ -63,7 +63,7 @@ export const Submit = ({ api, tx, multisigTx, account, txPayload, signature, isR
         if (
           params.isFinalApprove &&
           !params.multisigError &&
-          isProxyTypeTransaction(multisigTx.transaction ?? undefined)
+          isProxyTypeTransaction(operation.transaction ?? undefined)
         ) {
           proxiesModel.findAllProxies();
         }

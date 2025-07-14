@@ -9,7 +9,7 @@ import { networkModel } from '@/entities/network';
 import { decodeCallData } from '@/entities/transaction';
 
 import { deserializeOperation, serializeOperation } from './helpers';
-import { onchainOperations, subscribeEventsResource, subscribeIndexerResource } from './resource';
+import { fetchResource, subscribeEventsResource, subscribeResource } from './resource';
 import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
 
@@ -105,7 +105,7 @@ const removeOperationsForAccountFx = attach({
 deriveFromResources({
   store: $list,
   onReceive: operationsReceived,
-  resources: [onchainOperations, subscribeIndexerResource],
+  resources: [fetchResource, subscribeResource],
   map(state, operations) {
     return multisigOperationService.mergeMultisigOperations(state, operations);
   },
@@ -170,9 +170,9 @@ export const multisigOperation = {
   updateOperations: updateOperationsFx,
   removeOperationsForAccount: removeOperationsForAccountFx,
   updateCallData: updateCallDataFx,
-  requestOperations: onchainOperations.request,
-  subscribe: subscribeIndexerResource.subscribe,
-  unsubscribe: subscribeIndexerResource.unsubscribe,
+  requestOperations: fetchResource.request,
+  subscribe: subscribeResource.subscribe,
+  unsubscribe: subscribeResource.unsubscribe,
   subscribeEvents: subscribeEventsResource.subscribe,
   unsubscribeEvents: subscribeEventsResource.unsubscribe,
 };

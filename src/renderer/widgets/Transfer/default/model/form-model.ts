@@ -38,7 +38,6 @@ type FormParams = {
 };
 
 type FormSubmitEvent = FormParams & {
-  multisigTx: Transaction | null;
   coreTx: Transaction;
   tx: Transaction;
   initiator: AnyAccount;
@@ -219,7 +218,7 @@ const $coreTx = combine(
   },
 );
 
-const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: $initiator,
   signatory: form.fields.signatory.$value,
@@ -406,22 +405,17 @@ const formSubmitFinished = sample({
     route: $route,
     coreTx: $coreTx,
     tx: $tx,
-    multisigTx: $multisigTx,
     fee: $fee,
     xcmFee: xcmTransferModel.$xcmFee,
     deliveryFee: xcmTransferModel.$deliveryFee,
     multisigDeposit: $multisigDeposit,
   },
-  fn: (
-    { chain, initiator, network, route, coreTx, tx, multisigTx, multisigDeposit, fee, xcmFee, deliveryFee },
-    form,
-  ) => {
+  fn: ({ chain, initiator, network, route, coreTx, tx, multisigDeposit, fee, xcmFee, deliveryFee }, form) => {
     if (nullable(chain) || nullable(coreTx) || nullable(tx) || nullable(initiator) || nullable(form.signatory))
       return null;
     return {
       tx,
       coreTx,
-      multisigTx,
       initiator: initiator,
       signatory: form.signatory,
       amount: formatAmount(form.amount, network!.asset.precision),
