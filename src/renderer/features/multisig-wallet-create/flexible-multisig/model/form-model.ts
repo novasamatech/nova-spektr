@@ -3,7 +3,7 @@ import { combine, sample } from 'effector';
 import { type Address, type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { createForm } from '@/shared/forms';
 import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
-import { accountService } from '@/domains/network';
+import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
@@ -77,23 +77,40 @@ const $multisigAccountId = combine(
   },
 );
 
-const $multisigAlreadyExists = combine(
+const $existingMultisig = combine(
   {
-    wallets: walletModel.$wallets,
+    accounts: accounts.$list,
     multisigAccountId: $multisigAccountId,
   },
-  ({ multisigAccountId, wallets }) => {
-    const multisigWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: walletUtils.isMultisig,
-      accountFn: multisigAccount => {
-        if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
-        return multisigAccount.accountId === multisigAccountId;
-      },
-    });
-
-    return nonNullable(multisigWallet);
+  ({ multisigAccountId, accounts }) => {
+    return (
+      accounts.find(a => {
+        if (!accountUtils.isMultisigAccount(a)) return false;
+        return a.accountId === multisigAccountId;
+      }) ?? null
+    );
   },
 );
+
+const $existingProxy = combine(
+  {
+    accounts: accounts.$list,
+    existingMultisig: $existingMultisig,
+  },
+  ({ existingMultisig, accounts }) => {
+    if (nullable(existingMultisig)) return null;
+
+    return (
+      accounts.find(a => {
+        if (!accountUtils.isPureProxiedAccount(a)) return false;
+        return a.proxyAccountId === existingMultisig.accountId;
+      }) ?? null
+    );
+  },
+);
+
+const $multisigAlreadyExists = $existingMultisig.map(nonNullable);
+const $multisigWithProxyAlreadyExists = $existingProxy.map(nonNullable);
 
 const $hiddenMultisig = combine(
   {
@@ -158,6 +175,7 @@ const $canSubmit = combine(
     hasEmptySignatoryName: signatoryModel.$hasEmptySignatoryName,
     hasDuplicateSignatories: signatoryModel.$hasDuplicateSignatories,
     multisigAlreadyExists: $multisigAlreadyExists,
+    multisigWithProxyAlreadyExists: $multisigWithProxyAlreadyExists,
     invalidAddresses: $invalidAddresses,
     hiddenMultisig: $hiddenMultisig,
     threshold: form.fields.threshold.$value,
@@ -187,11 +205,14 @@ export const formModel = {
   form,
   $multisigAccountId,
   $multisigAlreadyExists,
+  $multisigWithProxyAlreadyExists,
   $hiddenMultisig,
   $availableAccounts,
   $invalidAddresses,
   $canSubmit,
   $isChainConnected,
+  $existingProxy,
+  $existingMultisig,
 
   formSubmitted: form.submit,
 };

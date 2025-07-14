@@ -26,6 +26,9 @@ export const SelectSignatoriesThreshold = () => {
 
   const chain = useUnit(formModel.$chain);
   const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
+  const multisigWithProxyAlreadyExists = useUnit(formModel.$multisigWithProxyAlreadyExists);
+  const existingProxy = useUnit(formModel.$existingProxy);
+  const existingMultisig = useUnit(formModel.$existingMultisig);
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
   const canSubmit = useUnit(formModel.$canSubmit);
   const invalidAddresses = useUnit(formModel.$invalidAddresses);
@@ -127,10 +130,10 @@ export const SelectSignatoriesThreshold = () => {
               </Alert.Item>
             </Alert>
 
-            {signer && (
+            {existingMultisig && existingProxy && (
               <Alert
                 variant="info"
-                active={multisigAlreadyExists}
+                active={multisigWithProxyAlreadyExists}
                 title={t('createMultisigAccount.flexibleMultisig.multisigAndProxyExistTitle')}
               >
                 <Alert.Item withDot={false}>
@@ -141,8 +144,8 @@ export const SelectSignatoriesThreshold = () => {
                       account: (
                         <span className="mx-1 inline-flex w-auto align-sub">
                           <Address
-                            address={toAddress(signer.accountId, { prefix: chain?.addressPrefix })}
-                            title={signer.name}
+                            address={toAddress(existingMultisig.accountId, { prefix: chain?.addressPrefix })}
+                            title={existingMultisig.name}
                             hideAddress
                             showIcon
                             canCopy={false}
@@ -152,8 +155,8 @@ export const SelectSignatoriesThreshold = () => {
                       proxy: (
                         <span className="mx-1 inline-flex w-auto align-sub">
                           <Address
-                            address={toAddress(signer.accountId, { prefix: chain?.addressPrefix })}
-                            title={signer.name} // TODO: add proxy account
+                            address={toAddress(existingProxy.accountId, { prefix: chain?.addressPrefix })}
+                            title={existingProxy.name}
                             hideAddress
                             showIcon
                             canCopy={false}
@@ -166,7 +169,7 @@ export const SelectSignatoriesThreshold = () => {
               </Alert>
             )}
 
-            {signer && (
+            {existingMultisig && (
               <Alert
                 variant="info"
                 active={multisigAlreadyExists}
@@ -180,8 +183,8 @@ export const SelectSignatoriesThreshold = () => {
                       account: (
                         <span className="mx-1 inline-flex w-auto align-sub">
                           <Address
-                            address={toAddress(signer.accountId, { prefix: chain?.addressPrefix })}
-                            title={signer.name}
+                            address={toAddress(existingMultisig.accountId, { prefix: chain?.addressPrefix })}
+                            title={existingMultisig.name}
                             hideAddress
                             showIcon
                             canCopy={false}
