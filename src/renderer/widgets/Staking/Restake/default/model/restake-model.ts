@@ -61,11 +61,10 @@ const formSubmitted = sample({
     networkStore: $networkStore,
     coreTx: formModel.$coreTx,
     tx: formModel.$tx,
-    multisigTx: formModel.$multisigTx,
     route: formModel.$route,
   },
   fn: (source, formData) => ({ source, formData }),
-}).filterMap(({ formData, source: { networkStore, coreTx, tx, multisigTx, route } }) => {
+}).filterMap(({ formData, source: { networkStore, coreTx, tx, route } }) => {
   if (
     nonNullable(networkStore) &&
     nonNullable(coreTx) &&
@@ -84,7 +83,6 @@ const formSubmitted = sample({
         coreTx,
         route,
         tx,
-        multisigTx,
       } satisfies RestakeConfirm,
     ];
   }
@@ -150,12 +148,11 @@ const signFormSubmitted = sample({
   source: {
     restakeStore: $restakeStore,
     networkStore: $networkStore,
-    multisigTx: formModel.$multisigTx,
     tx: formModel.$tx,
     coreTx: formModel.$coreTx,
   },
   fn: (source, signParams) => ({ source, signParams }),
-}).filterMap(({ signParams, source: { restakeStore, networkStore, tx, coreTx, multisigTx } }) => {
+}).filterMap(({ signParams, source: { restakeStore, networkStore, tx, coreTx } }) => {
   if (
     nonNullable(restakeStore?.initiator) &&
     nonNullable(restakeStore?.signatory) &&
@@ -170,7 +167,6 @@ const signFormSubmitted = sample({
       signatory: restakeStore.signatory,
       wrappedTxs: [tx],
       coreTxs: [coreTx],
-      multisigTxs: multisigTx ? [multisigTx] : [],
     };
   }
 });

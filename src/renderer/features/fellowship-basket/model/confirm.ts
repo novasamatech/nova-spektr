@@ -65,7 +65,6 @@ const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chai
     fee: new BN(fee),
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    multisigTx: null,
     route: [],
   } satisfies CollectiveVoteConfirm;
 });
@@ -129,7 +128,6 @@ const prepareSalaryInductFx = createEffect(async ({ transaction, wallets, accoun
     fee: new BN(fee),
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    multisigTx: null,
     route: [],
   } satisfies CollectiveSalaryInductConfirm;
 });
@@ -191,7 +189,6 @@ const prepareSalaryRequestFx = createEffect(async ({ transaction, wallets, accou
     signatory: account!,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    multisigTx: null,
     route: [],
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     fee: new BN(fee),
@@ -255,7 +252,6 @@ const prepareSalaryPayoutFx = createEffect(async ({ transaction, wallets, accoun
     signatory: account!,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    multisigTx: null,
     route: [],
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     fee: new BN(fee),
@@ -320,7 +316,6 @@ const prepareEvidencePayoutFx = createEffect(async ({ transaction, wallets, acco
     signatory: account!,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    multisigTx: null,
     route: [],
     pallet: coreTx.args.pallet as CollectiveVoteConfirm['pallet'],
     fee: new BN(fee),

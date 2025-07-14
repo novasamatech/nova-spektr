@@ -7,7 +7,6 @@ import { TransferTypes, XcmTypes, findCoreBatchAll, isCreatePureProxyTransaction
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { multisigOperationsFeature } from './feature';
 
@@ -87,11 +86,6 @@ sample({
 sample({
   clock: multisigOperationsFeature.stopped,
   target: [multisigOperation.unsubscribe, multisigOperation.unsubscribeEvents],
-});
-
-sample({
-  clock: submitModel.output.saveMultisigTx,
-  target: multisigOperation.addOperations,
 });
 
 export const operationsContextModel = {

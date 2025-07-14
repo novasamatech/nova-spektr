@@ -125,7 +125,6 @@ const formSubmitted = sample({
     coreTx: formModel.$coreTx,
     step: $step,
     tx: formModel.$tx,
-    multisigTx: formModel.$multisigTx,
   },
 }).filterMap(
   ({
@@ -142,7 +141,6 @@ const formSubmitted = sample({
     coreTx,
     step,
     tx,
-    multisigTx,
   }) => {
     if (
       nonNullable(delegateData) &&
@@ -182,7 +180,6 @@ const formSubmitted = sample({
           locks: delegateData.locks[initiator.accountId],
           coreTx,
           route: [initiator],
-          multisigTx,
           tx,
           initiator,
         } satisfies EditDelegationConfirm,
@@ -256,7 +253,6 @@ const signSubmitted = sample({
   source: {
     walletData: formModel.$walletData,
     transaction: formModel.$tx,
-    multisigTx: formModel.$multisigTx,
     delegateData: $delegateData,
     accounts: $accounts,
     step: $step,
@@ -266,7 +262,7 @@ const signSubmitted = sample({
     ...source,
     signParams,
   }),
-}).filterMap(({ delegateData, walletData, transaction, step, accounts, coreTx, multisigTx, signParams }) => {
+}).filterMap(({ delegateData, walletData, transaction, step, accounts, coreTx, signParams }) => {
   if (
     nonNullable(delegateData) &&
     nonNullable(walletData) &&
@@ -284,7 +280,6 @@ const signSubmitted = sample({
       signatory: delegateData.signatory,
       coreTxs: [coreTx],
       wrappedTxs: [transaction],
-      multisigTxs: multisigTx ? [multisigTx] : [],
     };
   }
 });

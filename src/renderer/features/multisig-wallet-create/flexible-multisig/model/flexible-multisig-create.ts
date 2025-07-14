@@ -210,7 +210,7 @@ const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
   $transaction: $transactionWithPlaceholder,
 });
 
-const { $tx, $multisigTx, $route } = createComplexTxStore({
+const { $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: $signer,
   signatory: $signer,
@@ -251,18 +251,16 @@ const formSubmitted = sample({
   source: {
     tx: $tx,
     coreTx: $coreTx,
-    multisigTx: $multisigTx,
     route: $route,
     signer: $signer,
     chain: formModel.$chain,
     threshold: formModel.form.fields.threshold.$value,
   },
-}).filterMap(({ chain, tx, multisigTx, coreTx, route, signer, threshold }) => {
+}).filterMap(({ chain, tx, coreTx, route, signer, threshold }) => {
   if (nonNullable(coreTx) && nonNullable(chain) && nonNullable(signer) && nonNullable(tx)) {
     return [
       {
         tx,
-        multisigTx,
         coreTx,
         route,
         signatory: signer,
@@ -321,13 +319,12 @@ sample({
     chain: formModel.$chain,
     coreTx: $coreTx,
     tx: $tx,
-    multisigTx: $multisigTx,
     signer: $signer,
   },
   filter: ({ chain, coreTx, tx, signer }) => {
     return nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(signer);
   },
-  fn: ({ coreTx, tx, chain, multisigTx, signer }, signParams) => {
+  fn: ({ coreTx, tx, chain, signer }, signParams) => {
     return {
       event: {
         ...signParams,
@@ -335,7 +332,6 @@ sample({
         account: signer!,
         coreTxs: [coreTx!],
         wrappedTxs: [tx!],
-        multisigTxs: multisigTx ? [multisigTx] : [],
       },
       step: Step.SUBMIT,
     };

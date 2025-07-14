@@ -36,7 +36,6 @@ const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis 
     initiator: account,
     signatory: account,
     route: [account],
-    multisigTx: null,
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
     amount: transaction.coreTx.args.value,

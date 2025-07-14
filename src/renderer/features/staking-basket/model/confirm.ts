@@ -66,7 +66,6 @@ const prepareBondNominateDataFx = createEffect(async ({ transaction, accounts, c
     route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    multisigTx: null,
     fee,
     totalFee: fee,
     multisigDeposit: '0',
@@ -89,7 +88,6 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
     route: transaction.route,
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
-    multisigTx: transaction.coreTx,
   } satisfies BondExtraConfirm;
 });
 
@@ -120,7 +118,6 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
     multisigDeposit: '0',
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
-    multisigTx: transaction.coreTx,
   } satisfies NominateConfirm;
 });
 
@@ -137,7 +134,6 @@ const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, 
 
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    multisigTx: null,
     route: transaction.route,
 
     fee,
@@ -162,7 +158,6 @@ const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains
     route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    multisigTx: null,
 
     fee,
     totalFee: fee,
@@ -183,7 +178,6 @@ const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains
     route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    multisigTx: null,
     fee,
     totalFee: '0',
     multisigDeposit: '0',
@@ -216,7 +210,6 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
     route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    multisigTx: null,
     fee,
     totalFee: '0',
     multisigDeposit: '0',

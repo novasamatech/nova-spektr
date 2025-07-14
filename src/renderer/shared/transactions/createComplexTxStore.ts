@@ -1,11 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEffect, createStore, sample } from 'effector';
-import { spread } from 'patronum';
 
 import { type Chain, type Transaction } from '@/shared/core';
 import { assert, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, transactionService } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
 
 import { createFeeCalculator } from './createFeeCalculator';
 
@@ -36,12 +34,6 @@ export const createComplexTxStore = <T extends Transaction>({
   });
 
   const $tx = createStore<Transaction | null>(null);
-  /**
-   * @deprecated Legacy bindings for multisig saving after operation success
-   *
-   * @see src/renderer/features/operations/OperationSubmit/model/submit-model.ts#28
-   */
-  const $multisigTx = createStore<Transaction | null>(null);
 
   type WrapParams = {
     api: ApiPromise;
@@ -59,26 +51,7 @@ export const createComplexTxStore = <T extends Transaction>({
     // we should set signatory explicitly
     tx.accountId = signatory.accountId;
 
-    const mutisigAccountIndex = route.findIndex(accountUtils.isMultisigAccount);
-    if (mutisigAccountIndex !== -1) {
-      const multisigTx = await transactionService.wrapLegacyTransaction(
-        transaction,
-        route.slice(mutisigAccountIndex),
-        api,
-      );
-
-      multisigTx.accountId = signatory.accountId;
-
-      return {
-        tx,
-        multisigTx,
-      };
-    }
-
-    return {
-      tx,
-      multisigTx: null,
-    };
+    return tx;
   });
 
   const wrapTransaction = sample({
@@ -103,15 +76,12 @@ export const createComplexTxStore = <T extends Transaction>({
     clock: active,
     filter: (active) => !active,
     fn: () => null,
-    target: [$tx, $multisigTx],
+    target: $tx,
   });
 
   sample({
     clock: wrapTransactionFx.doneData,
-    target: spread({
-      tx: $tx,
-      multisigTx: $multisigTx,
-    }),
+    target: $tx,
   });
 
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
@@ -123,7 +93,6 @@ export const createComplexTxStore = <T extends Transaction>({
   return {
     $route,
     $tx,
-    $multisigTx,
     $pendingWrapping: wrapTransactionFx.pending,
     $fee,
     $pendingFee,
