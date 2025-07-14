@@ -12,7 +12,6 @@ test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }
     await allure.feature(feature);
     await allure.story(story);
     test.slow();
-    // TODO: change wallet to use Asset Hub
     const proxyWallet = await loginPage.importDatabase('transfers/proxy-transfer-wallet.json');
     const assetsPage = await proxyWallet.gotoMain();
 
