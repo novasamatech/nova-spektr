@@ -258,7 +258,6 @@ sample({
         signatory: signatory,
         wrappedTxs: [transactions!.wrappedTx],
         coreTxs: [transactions!.coreTx],
-        multisigTxs: transactions!.multisigTx ? [transactions!.multisigTx] : [],
       },
       step: Step.SUBMIT,
     };

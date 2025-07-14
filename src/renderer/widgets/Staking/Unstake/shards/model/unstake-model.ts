@@ -26,7 +26,6 @@ const $unstakeStore = createStore<UnstakeStore | null>(null).reset(flowFinished)
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
 const $wrappedTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
-const $multisigTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $coreTxs = createStore<Transaction[] | null>(null).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
@@ -58,19 +57,16 @@ sample({
   clock: formModel.output.formSubmitted,
   fn: ({ transactions, formData }) => {
     const wrappedTxs = transactions.map((tx) => tx.wrappedTx);
-    const multisigTxs = transactions.map((tx) => tx.multisigTx).filter(nonNullable);
     const coreTxs = transactions.map((tx) => tx.coreTx);
 
     return {
       wrappedTxs,
       coreTxs,
-      multisigTxs: multisigTxs.length === 0 ? null : multisigTxs,
       unstakeStore: formData,
     };
   },
   target: spread({
     wrappedTxs: $wrappedTxs,
-    multisigTxs: $multisigTxs,
     coreTxs: $coreTxs,
     unstakeStore: $unstakeStore,
   }),
@@ -86,7 +82,7 @@ sample({
   filter: ({ networkStore, api, coreTxs }, { formData }) => {
     return nonNullable(formData) && nonNullable(coreTxs) && nonNullable(networkStore) && nonNullable(api);
   },
-  fn: ({ networkStore, coreTxs, api }, { formData, transactions }) => ({
+  fn: ({ networkStore, coreTxs, api }, { formData }) => ({
     event: [
       {
         ...formData,
@@ -98,7 +94,6 @@ sample({
         initiator: formData.shards[0],
         signatory: formData.signatory!,
         route: [formData.shards[0]],
-        multisigTx: transactions![0].multisigTx!,
       },
     ],
     step: Step.CONFIRM,
@@ -141,7 +136,6 @@ sample({
   source: {
     unstakeStore: $unstakeStore,
     networkStore: $networkStore,
-    multisigTxs: $multisigTxs,
     wrappedTxs: $wrappedTxs,
     coreTxs: $coreTxs,
   },
@@ -161,7 +155,6 @@ sample({
       signatory: transferData.unstakeStore!.signatory,
       wrappedTxs: transferData.wrappedTxs!,
       coreTxs: transferData.coreTxs!,
-      multisigTxs: transferData.multisigTxs || [],
     },
     step: Step.SUBMIT,
   }),

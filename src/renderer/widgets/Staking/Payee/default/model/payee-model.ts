@@ -88,9 +88,8 @@ const formSubmitted = sample({
     route: formModel.$route,
     tx: formModel.$tx,
     fee: formModel.$fee,
-    multisigTx: formModel.$multisigTx,
   },
-}).filterMap(({ payeeData, multisigDeposit, walletData, coreTx, route, tx, multisigTx, fee }) => {
+}).filterMap(({ payeeData, multisigDeposit, walletData, coreTx, route, tx, fee }) => {
   if (
     nonNullable(payeeData.initiator) &&
     nonNullable(payeeData.signatory) &&
@@ -111,7 +110,6 @@ const formSubmitted = sample({
         totalFee: fee.toString(),
         coreTx: coreTx,
         tx: tx,
-        multisigTx: multisigTx,
       } satisfies PayeeConfirm,
     ];
   }
@@ -179,13 +177,12 @@ const signSubmitted = sample({
     walletData: $walletData,
     transaction: formModel.$tx,
     coreTx: formModel.$coreTx,
-    multisigTx: formModel.$multisigTx,
   },
   fn: (source, signParams) => ({
     ...source,
     signParams,
   }),
-}).filterMap(({ payeeData, walletData, transaction, coreTx, multisigTx, signParams }) => {
+}).filterMap(({ payeeData, walletData, transaction, coreTx, signParams }) => {
   if (
     nonNullable(payeeData.initiator) &&
     nonNullable(payeeData.signatory) &&
@@ -200,7 +197,6 @@ const signSubmitted = sample({
       signatory: payeeData.signatory,
       coreTxs: [coreTx],
       wrappedTxs: [transaction],
-      multisigTxs: multisigTx ? [multisigTx] : [],
     };
   }
 });

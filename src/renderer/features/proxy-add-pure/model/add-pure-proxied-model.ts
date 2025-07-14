@@ -46,7 +46,6 @@ const $step = restore(stepChanged, Step.NONE);
 const $addProxyStore = createStore<AddPureProxiedStore | null>(null).reset(flowFinished);
 
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $signatories = createStore<AnyAccount[]>([]);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
@@ -162,13 +161,11 @@ sample({
   clock: formModel.output.formSubmitted,
   fn: ({ transactions, formData }) => ({
     wrappedTx: transactions.wrappedTx,
-    multisigTx: transactions.multisigTx || null,
     coreTx: transactions.coreTx,
     store: formData,
   }),
   target: spread({
     wrappedTx: $wrappedTx,
-    multisigTx: $multisigTx,
     coreTx: $coreTx,
     store: $addProxyStore,
   }),
@@ -220,7 +217,6 @@ sample({
     addProxyStore: $addProxyStore,
     wrappedTx: $wrappedTx,
     coreTx: $coreTx,
-    multisigTx: $multisigTx,
     txWrappers: $txWrappers,
   },
   filter: (proxyData) => {
@@ -234,7 +230,6 @@ sample({
       signatory: proxyData.addProxyStore!.signatory,
       wrappedTxs: [proxyData.wrappedTx!],
       coreTxs: [proxyData.coreTx!],
-      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),
