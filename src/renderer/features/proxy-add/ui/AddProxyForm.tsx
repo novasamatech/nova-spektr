@@ -3,7 +3,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { toAddress, toShortAddress, validateAddress, withdrawableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, toAddress, toShortAddress, validateAddress, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button, Combobox, Icon, Identicon, InputHint, Select } from '@/shared/ui';
 import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
@@ -101,6 +101,8 @@ const AccountSelector = () => {
     return null;
   }
 
+  const nativeAsset = getNativeAsset(chain.value.assets);
+
   const options = proxiedAccounts.map(({ account, balance }) => {
     const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
@@ -118,7 +120,7 @@ const AccountSelector = () => {
             name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
-          <AssetBalance value={balance} asset={chain.value.assets[0]} />
+          <AssetBalance value={balance} asset={nativeAsset} />
         </div>
       ),
     };
@@ -152,13 +154,15 @@ const Signatories = () => {
   const allWallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
 
+  const nativeAsset = getNativeAsset(chain.value.assets);
+
   const signatoriesWithBalance = useMemo(() => {
     return signatories.map((signatory) => {
       const balance = balanceUtils.getBalance(
         balances,
         signatory.accountId,
         chain.value.chainId,
-        chain.value.assets[0].assetId.toString(),
+        nativeAsset.assetId.toString(),
       );
       return { account: signatory, balance: withdrawableAmount(balance) };
     });
@@ -177,7 +181,7 @@ const Signatories = () => {
       allWallets={allWallets}
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
-      network={{ chain: chain.value, asset: chain.value.assets[0] }}
+      network={{ chain: chain.value, asset: nativeAsset }}
       onChange={signatory.onChange}
     />
   );
@@ -291,6 +295,8 @@ const FeeSection = () => {
   const oldProxyDeposit = useUnit(formModel.$oldProxyDeposit);
   const activeProxies = useUnit(formModel.$activeProxies);
 
+  const nativeAsset = getNativeAsset(chain.value.assets);
+
   return (
     <div className="flex flex-col gap-y-2">
       <ProxyDepositLabel>
@@ -298,15 +304,15 @@ const FeeSection = () => {
           api={api}
           deposit={oldProxyDeposit}
           proxyNumber={activeProxies.length + 1}
-          asset={chain.value.assets?.[0]}
+          asset={nativeAsset}
           onDepositChange={formModel.proxyDepositChanged}
           onDepositLoading={formModel.isProxyDepositLoadingChanged}
         />
       </ProxyDepositLabel>
 
-      {isMultisig && <MultisigDepositFee asset={chain.value.assets[0]} multisigDeposit={multisigDeposit.toString()} />}
+      {isMultisig && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit.toString()} />}
 
-      <FeeWithLabel asset={chain.value.assets[0]} fee={fee.toString()} isLoading={pendingFee} />
+      <FeeWithLabel asset={nativeAsset} fee={fee.toString()} isLoading={pendingFee} />
     </div>
   );
 };
