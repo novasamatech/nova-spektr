@@ -28,9 +28,9 @@ describe('widgets/AddPureProxyModal/model/form-model', () => {
     });
 
     await allSettled(formModel.events.formInitiated, { scope });
-    await allSettled(formModel.$proxyForm.fields.chain.onChange, { scope, params: testChain });
+    await allSettled(formModel.form.fields.chain.change, { scope, params: testChain });
 
-    expect(scope.getState(formModel.$proxyForm.$values)).toEqual({
+    expect(scope.getState(formModel.form.$values)).toEqual({
       account: {},
       chain: testChain,
       delegate: '',
