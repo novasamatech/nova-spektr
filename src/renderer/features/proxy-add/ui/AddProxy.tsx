@@ -3,7 +3,8 @@ import { useGate, useUnit } from 'effector-react';
 import { type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -60,31 +61,27 @@ export const AddProxy = ({ wallet }: Props) => {
   }
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      panelClass="max-h-full overflow-y-auto"
-      isOpen={isModalOpen}
-      title={getModalTitle(step, chain)}
-      onClose={closeModal}
-    >
-      {addProxyUtils.isInitStep(step) && <AddProxyForm onGoBack={closeModal} />}
-      {addProxyUtils.isConfirmStep(step) && (
-        <AddProxyConfirm
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => addProxyModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => addProxyModel.events.stepChanged(Step.INIT)}
-        />
-      )}
-      {addProxyUtils.isSignStep(step) && (
-        <OperationSign onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)} />
-      )}
-    </BaseModal>
+    <Modal size="md" height="full" isOpen={isModalOpen} onToggle={closeModal}>
+      <Modal.Title close>{getModalTitle(step, chain)}</Modal.Title>
+      <Modal.Content>
+        {addProxyUtils.isInitStep(step) && <AddProxyForm onGoBack={closeModal} />}
+        {addProxyUtils.isConfirmStep(step) && (
+          <AddProxyConfirm
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => addProxyModel.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={() => addProxyModel.events.stepChanged(Step.INIT)}
+          />
+        )}
+        {addProxyUtils.isSignStep(step) && (
+          <OperationSign onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)} />
+        )}
+      </Modal.Content>
+    </Modal>
   );
 };
