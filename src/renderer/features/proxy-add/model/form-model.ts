@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { createForm } from 'effector-forms';
 import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
@@ -18,6 +17,7 @@ import {
   type VaultBaseAccount,
   type Wallet,
 } from '@/shared/core';
+import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ACCOUNTS,
   ZERO_BALANCE,
@@ -26,6 +26,7 @@ import {
   getProxyTypes,
   isStringsMatchQuery,
   nonNullable,
+  nullable,
   toAddress,
   transferableAmount,
   validateAddress,
@@ -101,54 +102,58 @@ const $activeProxies = createStore<ProxyAccounts['accounts']>([]);
 const $isMultisig = createStore<boolean>(false);
 const $isProxy = createStore<boolean>(false);
 
-const $proxyForm = createForm<FormParams>({
+const form: Form<FormParams> = createForm<FormParams>({
+  validateOn: ['submit'],
   fields: {
     chain: {
-      init: {} as Chain,
-      rules: [
-        {
-          name: 'maxProxies',
-          errorText: 'proxy.addProxy.maxProxiesError',
+      defaultValue: {} as Chain,
+      validator: () => {
+        return {
           source: combine({
             maxProxies: $maxProxies,
             proxies: $activeProxies,
           }),
-          validator: (_v, _f, { maxProxies, proxies }) => maxProxies > proxies.length,
-        },
-      ],
+          fn: (_v, _f, { maxProxies, proxies }) => {
+            if (proxies.length > maxProxies) {
+              return { message: 'proxy.addProxy.maxProxiesError' };
+            }
+          },
+        };
+      },
     },
     account: {
-      init: {} as VaultBaseAccount,
-      rules: [
-        {
-          name: 'notEnoughTokens',
+      defaultValue: {} as VaultBaseAccount,
+      validator: () => {
+        return {
           source: combine({
             fee: $fee,
             proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balances,
             isMultisig: $isMultisig,
           }),
-          validator: (value, form, { isMultisig, balances, ...params }) => {
+          fn: (account, form, { isMultisig, balances, ...params }) => {
             const balance = balanceUtils.getBalance(
               balances,
-              value.accountId,
+              account.accountId,
               form.chain.chainId,
               getNativeAsset(form.chain.assets).assetId.toString(),
             );
 
-            return isMultisig
-              ? new BN(params.proxyDeposit).lte(new BN(transferableAmount(balance)))
-              : new BN(params.proxyDeposit).add(new BN(params.fee)).lte(new BN(transferableAmount(balance)));
+            const isNotEnoughTokens = isMultisig
+              ? new BN(params.proxyDeposit).gte(new BN(transferableAmount(balance)))
+              : new BN(params.proxyDeposit).add(new BN(params.fee)).gte(new BN(transferableAmount(balance)));
+
+            if (isNotEnoughTokens) {
+              return { message: 'transfer.notEnoughBalanceForDepositError' };
+            }
           },
-        },
-      ],
+        };
+      },
     },
     signatory: {
-      init: null,
-      rules: [
-        {
-          name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      defaultValue: null,
+      validator: () => {
+        return {
           source: combine({
             fee: $fee,
             multisigDeposit: $multisigDeposit,
@@ -156,55 +161,60 @@ const $proxyForm = createForm<FormParams>({
             balances: balanceModel.$balances,
             isMultisig: $isMultisig,
           }),
-          validator: (value, form, { isMultisig, balances, ...params }) => {
-            if (!value || !isMultisig) return true;
+          fn: (signatory, form, { isMultisig, balances, ...params }) => {
+            if (nullable(signatory)) {
+              return { message: 'transfer.noSignatoryError' };
+            }
 
             const signatoryBalance = balanceUtils.getBalance(
               balances,
-              value.accountId,
+              signatory.accountId,
               form.chain.chainId,
               getNativeAsset(form.chain.assets).assetId.toString(),
             );
 
-            return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));
+            const isNotEnoughMultisigTokens =
+              isMultisig &&
+              new BN(params.multisigDeposit).add(new BN(params.fee)).gte(withdrawableAmountBN(signatoryBalance));
+
+            if (isNotEnoughMultisigTokens) {
+              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
+            }
           },
-        },
-      ],
+        };
+      },
     },
     delegate: {
-      init: '' as Address,
-      rules: [
-        {
-          name: 'required',
-          errorText: 'proxy.addProxy.proxyAddressRequiredError',
-          validator: (address) => validateAddress(address),
-        },
-        {
-          name: 'sameAsProxied',
-          errorText: 'proxy.addProxy.sameAsProxiedError',
-          validator: (value, { account, chain }) => {
-            return value !== toAddress(account.accountId, { prefix: chain.addressPrefix });
-          },
-        },
-        {
-          name: 'proxyTypeExist',
-          errorText: 'proxy.addProxy.proxyTypeExistError',
+      defaultValue: '' as Address,
+      validator: () => {
+        return {
           source: $activeProxies,
-          validator: (value, { proxyType }, activeProxies: ProxyAccounts['accounts']) => {
-            const sameProxyExist = activeProxies.some((proxy) => {
-              return proxy.proxyType === proxyType && proxy.address === value;
-            });
+          fn: (delegate, form, activeProxies: ProxyAccounts['accounts']) => {
+            const isDelegateValid = validateAddress(delegate);
+            if (!isDelegateValid) {
+              return { message: 'proxy.addProxy.proxyAddressRequiredError' };
+            }
 
-            return !sameProxyExist;
+            const isSameAsProxied =
+              delegate === toAddress(form.account.accountId, { prefix: form.chain.addressPrefix });
+            if (isSameAsProxied) {
+              return { message: 'proxy.addProxy.sameAsProxiedError' };
+            }
+
+            const sameProxyExist = activeProxies.some((proxy) => {
+              return proxy.proxyType === form.proxyType && proxy.address === delegate;
+            });
+            if (sameProxyExist) {
+              return { message: 'proxy.addProxy.proxyTypeExistError' };
+            }
           },
-        },
-      ],
+        };
+      },
     },
     proxyType: {
-      init: '' as ProxyType,
+      defaultValue: '' as ProxyType,
     },
   },
-  validateOn: ['submit'],
 });
 
 // Options for selectors
@@ -213,9 +223,9 @@ const $txWrappers = combine(
   {
     wallet: $wallet,
     wallets: walletModel.$wallets,
-    account: $proxyForm.fields.account.$value,
-    chain: $proxyForm.fields.chain.$value,
-    signatory: $proxyForm.fields.signatory.$value,
+    account: form.fields.account.$value,
+    chain: form.fields.chain.$value,
+    signatory: form.fields.signatory.$value,
   },
   ({ wallet, account, chain, wallets, signatory }) => {
     if (!wallet || !chain || !account.id) return [];
@@ -242,7 +252,7 @@ const $txWrappers = combine(
 const $realAccount = combine(
   {
     txWrappers: $txWrappers,
-    account: $proxyForm.fields.account.$value,
+    account: form.fields.account.$value,
   },
   ({ txWrappers, account }) => {
     if (txWrappers.length === 0) return account;
@@ -293,7 +303,7 @@ const $proxyChains = combine(
 const $proxiedAccounts = combine(
   {
     wallet: $wallet,
-    chain: $proxyForm.fields.chain.$value,
+    chain: form.fields.chain.$value,
     balances: balanceModel.$balances,
   },
   ({ wallet, chain, balances }) => {
@@ -323,8 +333,8 @@ const $signatories = combine(
   {
     wallet: $wallet,
     wallets: walletModel.$wallets,
-    account: $proxyForm.fields.account.$value,
-    chain: $proxyForm.fields.chain.$value,
+    account: form.fields.account.$value,
+    chain: form.fields.chain.$value,
   },
   ({ wallet, wallets, account, chain }) => {
     if (!wallet || !chain.chainId || !account || !accountUtils.isMultisigAccount(account)) return [];
@@ -350,7 +360,7 @@ const $signatories = combine(
 const $proxyAccounts = combine(
   {
     wallets: walletModel.$wallets,
-    chain: $proxyForm.fields.chain.$value,
+    chain: form.fields.chain.$value,
     query: $proxyQuery,
   },
   ({ wallets, chain, query }) => {
@@ -374,7 +384,7 @@ const $proxyTypes = combine(
   {
     apis: networkModel.$apis,
     statuses: networkModel.$connectionStatuses,
-    chain: $proxyForm.fields.chain.$value,
+    chain: form.fields.chain.$value,
   },
   ({ apis, statuses, chain }) => {
     if (!chain.chainId) return [];
@@ -390,7 +400,7 @@ const $proxyTypes = combine(
 
 const $isChainConnected = combine(
   {
-    chain: $proxyForm.fields.chain.$value,
+    chain: form.fields.chain.$value,
     statuses: networkModel.$connectionStatuses,
   },
   ({ chain, statuses }) => {
@@ -403,7 +413,7 @@ const $isChainConnected = combine(
 const $api = combine(
   {
     apis: networkModel.$apis,
-    form: $proxyForm.$values,
+    form: form.$values,
   },
   ({ apis, form }) => {
     if (!form.chain.chainId) return null;
@@ -414,7 +424,7 @@ const $api = combine(
 
 const $pureTx = combine(
   {
-    form: $proxyForm.$values,
+    form: form.$values,
     account: $realAccount,
     isConnected: $isChainConnected,
   },
@@ -438,7 +448,7 @@ const $pureTx = combine(
 const $transaction = combine(
   {
     apis: networkModel.$apis,
-    chain: $proxyForm.fields.chain.$value,
+    chain: form.fields.chain.$value,
     pureTx: $pureTx,
     txWrappers: $txWrappers,
   },
@@ -456,7 +466,7 @@ const $transaction = combine(
 
 const $fakeTx = combine(
   {
-    chain: $proxyForm.fields.chain.$value,
+    chain: form.fields.chain.$value,
     isConnected: $isChainConnected,
   },
   ({ isConnected, chain }): Transaction | undefined => {
@@ -478,7 +488,7 @@ const $fakeTx = combine(
 
 const $canSubmit = combine(
   {
-    isFormValid: $proxyForm.$isValid,
+    isFormValid: form.$isValid,
     isFeeLoading: $isFeeLoading,
     isProxyDepositLoading: $isProxyDepositLoading,
   },
@@ -512,14 +522,14 @@ const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
 
 sample({
   clock: formInitiated,
-  target: [$proxyForm.reset, $proxyQuery.reinit],
+  target: [form.reset, $proxyQuery.reinit],
 });
 
 sample({
   clock: formInitiated,
   source: $proxyChains,
   fn: (chains) => chains[0],
-  target: $proxyForm.fields.chain.onChange,
+  target: form.fields.chain.change,
 });
 
 sample({
@@ -528,31 +538,31 @@ sample({
 });
 
 sample({
-  clock: [$proxyForm.fields.delegate.onChange, $proxyForm.fields.proxyType.onChange],
-  target: [$proxyForm.fields.delegate.resetErrors, $proxyForm.fields.proxyType.resetErrors],
+  clock: [form.fields.delegate.change, form.fields.proxyType.change],
+  target: [form.fields.delegate.resetError, form.fields.proxyType.resetError],
 });
 
 sample({
-  clock: $proxyForm.fields.chain.onChange,
+  clock: form.fields.chain.change,
   target: [
     $proxyQuery.reinit,
-    $proxyForm.fields.chain.resetErrors,
-    $proxyForm.fields.account.resetErrors,
-    $proxyForm.fields.signatory.resetErrors,
-    $proxyForm.fields.delegate.reset,
+    form.fields.chain.resetError,
+    form.fields.account.resetError,
+    form.fields.signatory.resetError,
+    form.fields.delegate.reset,
   ],
 });
 
 sample({
-  clock: $proxyForm.fields.chain.onChange,
+  clock: form.fields.chain.change,
   source: $proxiedAccounts,
   filter: (proxiedAccounts) => proxiedAccounts.length > 0,
   fn: (proxiedAccounts) => proxiedAccounts[0].account,
-  target: $proxyForm.fields.account.onChange,
+  target: form.fields.account.change,
 });
 
 sample({
-  clock: $proxyForm.fields.account.onChange,
+  clock: form.fields.account.change,
   source: {
     wallet: $wallet,
     wallets: walletModel.$wallets,
@@ -577,14 +587,14 @@ sample({
 });
 
 sample({
-  clock: $proxyForm.fields.chain.onChange,
+  clock: form.fields.chain.change,
   source: $proxyTypes,
   fn: (types) => types[0],
-  target: $proxyForm.fields.proxyType.onChange,
+  target: form.fields.proxyType.change,
 });
 
 sample({
-  clock: $proxyForm.fields.chain.onChange,
+  clock: form.fields.chain.change,
   source: networkModel.$apis,
   filter: (_, chain) => Boolean(chain),
   fn: (apis, chain) => apis[chain!.chainId],
@@ -594,7 +604,7 @@ sample({
 sample({
   clock: getMaxProxiesFx.done,
   source: {
-    chain: $proxyForm.fields.chain.$value,
+    chain: form.fields.chain.$value,
     apis: networkModel.$apis,
   },
   filter: ({ chain, apis }, { params }) => {
@@ -605,10 +615,10 @@ sample({
 });
 
 sample({
-  clock: $proxyForm.fields.chain.onChange,
+  clock: form.fields.chain.change,
   source: {
     apis: networkModel.$apis,
-    account: $proxyForm.fields.account.$value,
+    account: form.fields.account.$value,
     isChainConnected: $isChainConnected,
   },
   filter: ({ isChainConnected, account }) => isChainConnected && Boolean(account),
@@ -622,7 +632,7 @@ sample({
 sample({
   clock: getAccountProxiesFx.done,
   source: {
-    chain: $proxyForm.fields.chain.$value,
+    chain: form.fields.chain.$value,
     apis: networkModel.$apis,
   },
   filter: ({ chain, apis }, { params }) => {
@@ -641,7 +651,7 @@ sample({
 // Submit
 
 sample({
-  clock: $proxyForm.formValidated,
+  clock: form.submit.doneData,
   source: {
     realAccount: $realAccount,
     transaction: $transaction,
@@ -676,8 +686,9 @@ sample({
 });
 
 export const formModel = {
+  form,
+
   $wallet,
-  $proxyForm,
   $proxyChains,
   $proxiedAccounts,
   $signatories,
