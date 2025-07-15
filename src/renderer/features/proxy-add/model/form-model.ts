@@ -8,9 +8,7 @@ import { proxyService } from '@/shared/api/proxy';
 import {
   type Address,
   type Chain,
-  type MultisigTxWrapper,
   type ProxiedAccount,
-  type ProxyTxWrapper,
   type ProxyType,
   type Transaction,
   TransactionType,
@@ -37,7 +35,6 @@ import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { operationsUtils } from '@/entities/operations';
-import { transactionService } from '@/entities/transaction';
 import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { proxiesUtils } from '@/features/proxies';
@@ -215,66 +212,6 @@ const form: Form<FormParams> = createForm<FormParams>({
 
 // Options for selectors
 
-const $txWrappers = combine(
-  {
-    wallet: $wallet,
-    wallets: walletModel.$wallets,
-    account: form.fields.account.$value,
-    chain: form.fields.chain.$value,
-    signatory: form.fields.signatory.$value,
-  },
-  ({ wallet, account, chain, wallets, signatory }) => {
-    if (!wallet || !chain || !account.id) return [];
-
-    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: (w) => !walletUtils.isProxied(w) && !walletUtils.isWatchOnly(w),
-      accountFn: (a, w) => {
-        const isBase = accountUtils.isVaultBaseAccount(a);
-        const isPolkadotVault = walletUtils.isPolkadotVault(w);
-
-        return (!isBase || !isPolkadotVault) && accountUtils.isChainAndCryptoMatch(a, chain);
-      },
-    });
-
-    return transactionService.getTxWrappers({
-      wallet,
-      wallets: filteredWallets || [],
-      account,
-      signatories: signatory ? [signatory] : [],
-    });
-  },
-);
-
-const $realAccount = combine(
-  {
-    txWrappers: $txWrappers,
-    account: form.fields.account.$value,
-  },
-  ({ txWrappers, account }) => {
-    if (txWrappers.length === 0) return account;
-
-    if (transactionService.hasMultisig([txWrappers[0]])) {
-      return (txWrappers[0] as MultisigTxWrapper).multisigAccount;
-    }
-
-    return (txWrappers[0] as ProxyTxWrapper).proxyAccount;
-  },
-);
-
-const $proxyWallet = combine(
-  {
-    isProxy: $isProxy,
-    proxyAccount: $realAccount,
-    wallets: walletModel.$wallets,
-  },
-  ({ isProxy, proxyAccount, wallets }) => {
-    if (!isProxy) return undefined;
-
-    return walletUtils.getWalletById(wallets, proxyAccount.walletId);
-  },
-  { skipVoid: false },
-);
-
 const $proxyChains = combine(
   {
     chains: networkModel.$chains,
@@ -421,7 +358,7 @@ const $api = combine(
 const $coreTx = combine(
   {
     form: form.$values,
-    account: $realAccount,
+    account: form.fields.account.$value,
     isConnected: $isChainConnected,
   },
   ({ form, account, isConnected }): Transaction | null => {
@@ -616,7 +553,6 @@ sample({
 sample({
   clock: form.submit.doneData,
   source: {
-    realAccount: $realAccount,
     transaction: $tx,
     coreTx: $coreTx,
     isProxy: $isProxy,
@@ -626,7 +562,7 @@ sample({
     proxies: $activeProxies,
   },
   filter: ({ transaction }) => nonNullable(transaction),
-  fn: ({ proxyDeposit, multisigDeposit, proxies, realAccount, transaction, coreTx, isProxy, fee }, formData) => {
+  fn: ({ proxyDeposit, multisigDeposit, proxies, transaction, coreTx, isProxy, fee }, formData) => {
     const signatory = formData.signatory?.accountId ? formData.signatory : null;
 
     return {
@@ -637,7 +573,6 @@ sample({
       formData: {
         ...formData,
         fee: fee.toString(),
-        account: realAccount,
         signatory,
         proxyDeposit,
         multisigDeposit,
@@ -659,8 +594,6 @@ export const formModel = {
   $proxyAccounts,
   $proxyTypes,
   $proxyQuery,
-  $proxyWallet,
-  $txWrappers,
 
   $activeProxies,
   $oldProxyDeposit,
