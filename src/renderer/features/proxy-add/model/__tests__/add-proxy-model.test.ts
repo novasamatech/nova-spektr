@@ -45,7 +45,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
 
     await allSettled(addProxyModel.events.flowStarted, { scope });
 
-    expect(scope.getState(addProxyModel.$chain)).toEqual(undefined);
+    expect(scope.getState(addProxyModel.$chain)).toEqual(null);
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.INIT);
 
     await allSettled(formModel.formSubmitted, {
