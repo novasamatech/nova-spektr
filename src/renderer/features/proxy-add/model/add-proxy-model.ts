@@ -101,7 +101,7 @@ sample({
     addProxyStore: $addProxyStore,
     wrappedTx: $wrappedTx,
   },
-  filter: ({ addProxyStore, wrappedTx }) => Boolean(addProxyStore) && Boolean(wrappedTx),
+  filter: ({ addProxyStore, wrappedTx }) => nonNullable(addProxyStore) && nonNullable(wrappedTx),
   fn: ({ addProxyStore, wrappedTx }) => ({
     event: {
       signingPayloads: [
@@ -129,7 +129,7 @@ sample({
     wrappedTx: $wrappedTx,
   },
   filter: (proxyData) => {
-    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.wrappedTx) && Boolean(proxyData.coreTx);
+    return nonNullable(proxyData.addProxyStore) && nonNullable(proxyData.wrappedTx) && nonNullable(proxyData.coreTx);
   },
   fn: (proxyData, signParams) => ({
     event: {
