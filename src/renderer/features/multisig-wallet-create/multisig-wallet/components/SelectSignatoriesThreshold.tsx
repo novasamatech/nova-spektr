@@ -1,0 +1,241 @@
+import { useUnit } from 'effector-react';
+import { type FormEvent } from 'react';
+import { Trans } from 'react-i18next';
+
+import { useForm } from '@/shared/forms';
+import { useI18n } from '@/shared/i18n';
+import { getNativeAsset, nonNullable, nullable, toAccountId, toAddress, withdrawableAmount } from '@/shared/lib/utils';
+import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
+import { Address, AssetBalance } from '@/shared/ui-entities';
+import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
+import { Fee } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
+import { flowModel } from '../model/flow-model';
+import { formModel } from '../model/form-model';
+import { signatoryModel } from '../model/signatory-model';
+
+import { Signatory } from './components';
+import { MultisigFeeModal } from './components/MultisigFeeModal';
+
+interface Props {
+  onGoBack: () => void;
+}
+
+export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
+  const { t } = useI18n();
+
+  const {
+    fields: { threshold, name },
+    submit,
+  } = useForm(formModel.form);
+
+  const multisigAlreadyExists = useUnit(formModel.$multisigAlreadyExists);
+  const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
+  const invalidAddresses = useUnit(formModel.$invalidAddresses);
+  const canSubmit = useUnit(formModel.$canSubmit);
+  const chain = useUnit(formModel.$chain);
+
+  const signerWallet = useUnit(flowModel.$signerWallet);
+  const signer = useUnit(flowModel.$signer);
+  const fee = useUnit(flowModel.$fee);
+  const isFeeLoading = useUnit(flowModel.$isFeeLoading);
+  const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
+  const signerBalance = useUnit(flowModel.$signerBalance);
+
+  const signatories = useUnit(signatoryModel.$signatories);
+  const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
+
+  // TODO: delete when indexer is ready
+  const isMultisigDepositLoading = useUnit(flowModel.$isMultisigDepositLoading);
+  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
+  const totalFee = multisigDeposit.add(fee).toString();
+  const isLoading = isFeeLoading || isMultisigDepositLoading;
+
+  const onSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    submit();
+
+    // TODO: will be used for multisig as signer
+    // signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
+
+    // if (ownedSignatoriesWallets.length > 1) {
+    //   flowModel.stepChanged(Step.SIGNER_SELECTION);
+    // } else {
+    //   event.preventDefault();
+    // submit();
+    // }
+  };
+
+  const asset = getNativeAsset(chain?.assets || []);
+  const thresholdDisabled = signatories.length < 2 || signatories.some(s => s.address === '');
+
+  return (
+    <>
+      <Modal.Content>
+        <div className="flex h-full flex-col gap-y-6 px-5 pb-6 pt-4">
+          <SmallTitleText>{t('createMultisigAccount.signatoryThresholdDescription')}</SmallTitleText>
+
+          <hr className="-ml-5 w-[110%] border-divider" />
+
+          {signatories.map((signatory, index) => (
+            <Signatory
+              key={index}
+              isOwnAccount={index === 0}
+              isDuplicate={duplicateSignatories[toAccountId(signatory.address)]?.includes(index)}
+              isInvalidAddress={invalidAddresses.includes(signatory.address)}
+              signatoryIndex={index}
+              signatory={signatory}
+              onDelete={signatoryModel.events.deleteSignatory}
+            />
+          ))}
+
+          <Button
+            size="md"
+            variant="text"
+            className="h-8.5 w-max justify-center gap-x-1"
+            suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
+            onClick={() => signatoryModel.events.addSignatory({ name: '', address: '', walletId: '' })}
+          >
+            {t('createMultisigAccount.addNewSignatory')}
+          </Button>
+
+          <hr className="-ml-5 w-[110%] border-divider" />
+
+          <div className="flex gap-x-6">
+            <Box width="100%">
+              <Field text={t('createMultisigAccount.walletNameLabel')}>
+                <Input
+                  autoFocus
+                  height="md"
+                  placeholder={t('createMultisigAccount.namePlaceholder')}
+                  invalid={name.hasError}
+                  value={name.value}
+                  onChange={name.onChange}
+                />
+
+                <InputHint active>{t('createMultisigAccount.walletNameDescription')}</InputHint>
+                <InputHint variant="error" active={name.hasError}>
+                  {t(name.errorMessage)}
+                </InputHint>
+              </Field>
+            </Box>
+
+            <Box width="232px" shrink={0}>
+              <Field text={t('createMultisigAccount.thresholdName')}>
+                <Select
+                  placeholder={t('createMultisigAccount.thresholdPlaceholder')}
+                  value={(threshold.value || '').toString()}
+                  invalid={threshold.hasError}
+                  disabled={thresholdDisabled}
+                  height="md"
+                  onChange={value => threshold.onChange(Number(value))}
+                >
+                  {Array.from({ length: signatories.length - 1 }, (_, index) => (
+                    <Select.Item key={index} value={(index + 2).toString()}>
+                      {index + 2}
+                    </Select.Item>
+                  ))}
+                </Select>
+              </Field>
+              <InputHint active className="mt-2">
+                {t('createMultisigAccount.thresholdHint')}
+              </InputHint>
+            </Box>
+          </div>
+
+          <div className="mt-auto flex flex-col gap-y-2">
+            <Alert
+              variant="info"
+              active={nonNullable(hiddenMultisig)}
+              title={t('createMultisigAccount.multisigExistTitle')}
+            >
+              <Alert.Item withDot={false}>
+                <Trans t={t} i18nKey="createMultisigAccount.multisigHiddenExistText" />
+              </Alert.Item>
+              <Alert.Item withDot={false}>
+                <Button
+                  variant="text"
+                  size="sm"
+                  className="p-0"
+                  onClick={() => walletModel.events.walletRestored(hiddenMultisig!)}
+                >
+                  {t('createMultisigAccount.restoreButton')}
+                </Button>
+              </Alert.Item>
+            </Alert>
+
+            <Alert variant="error" active={multisigAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')}>
+              <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
+            </Alert>
+
+            {!nullable(signerBalance) && !nullable(chain) && !nullable(signer) && (
+              <Alert
+                variant="error"
+                active={!isEnoughBalance}
+                title={t('createMultisigAccount.disabledError.notEnoughBalanceTitle')}
+              >
+                <Alert.Item withDot={false}>
+                  <Trans
+                    t={t}
+                    i18nKey="createMultisigAccount.disabledError.notEnoughBalanceText"
+                    components={{
+                      account: (
+                        <span className="mx-1 inline-flex w-auto align-sub">
+                          <Address
+                            address={toAddress(signer.accountId, { prefix: chain.addressPrefix })}
+                            title={signer.name}
+                            hideAddress
+                            showIcon
+                            canCopy={false}
+                          />
+                        </span>
+                      ),
+                      fee: <AssetBalance value={totalFee} asset={asset} />,
+                      balance: <AssetBalance value={withdrawableAmount(signerBalance)} asset={asset} />,
+                    }}
+                  />
+                </Alert.Item>
+              </Alert>
+            )}
+          </div>
+        </div>
+      </Modal.Content>
+
+      <Modal.Footer>
+        <Box fitContainer direction="row" horizontalAlign="space-between" verticalAlign="center">
+          <Button variant="text" onClick={onGoBack}>
+            {t('createMultisigAccount.backButton')}
+          </Button>
+
+          <div className="flex items-center justify-end gap-x-6">
+            {signerWallet && (
+              <div className="flex items-center gap-x-2">
+                <FootnoteText className="text-text-tertiary">{t('createMultisigAccount.networkFee')}</FootnoteText>
+                {chain && (
+                  <Fee
+                    fee={totalFee}
+                    isLoading={isLoading}
+                    asset={asset}
+                    className={isEnoughBalance ? '' : 'text-text-negative'}
+                  />
+                )}
+
+                <MultisigFeeModal>
+                  <IconButton size={16} name="edit" className="text-icon-default" />
+                </MultisigFeeModal>
+              </div>
+            )}
+            <Button
+              key="create"
+              type="submit"
+              disabled={!canSubmit || !isEnoughBalance || isFeeLoading}
+              onClick={onSubmit}
+            >
+              {t('createMultisigAccount.continueButton')}
+            </Button>
+          </div>
+        </Box>
+      </Modal.Footer>
+    </>
+  );
+};
