@@ -18,14 +18,14 @@ type Props = PropsWithChildren<{
   chain: Chain;
   initiators: AnyAccount[];
   signatory: AnyAccount | null;
-  proxied?: AnyAccount | null;
 }>;
 
-export const TransactionDetails = memo(({ wallets, chain, proxied, initiators, signatory, children }: Props) => {
+export const TransactionDetails = memo(({ wallets, chain, initiators, signatory, children }: Props) => {
   const { t } = useI18n();
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
+  const firstInitiator = initiators.at(0);
   const initiatorWallet = useMemo(() => {
     return walletUtils.getWalletFilteredAccounts(wallets, {
       accountFn: a => a.id === initiators?.[0]?.id,
@@ -41,19 +41,11 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiators, s
       : null;
   }, [wallets, signatory]);
 
-  const proxiedWallet = useMemo(() => {
-    return proxied
-      ? walletUtils.getWalletFilteredAccounts(wallets, {
-          accountFn: a => a.accountId === proxied.accountId,
-        })
-      : null;
-  }, [wallets, proxied]);
-
   if (!initiatorWallet) {
     return null;
   }
 
-  const shouldRenderProxied = nonNullable(proxiedWallet) && nonNullable(proxied);
+  const shouldRenderProxied = nonNullable(initiatorWallet) && walletUtils.isProxied(initiatorWallet);
   const shouldRenderSignatory =
     nonNullable(signatoryWallet) &&
     nonNullable(signatory) &&
@@ -61,7 +53,7 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiators, s
 
   return (
     <dl className="flex w-full flex-col gap-y-4 text-footnote">
-      {!proxiedWallet && (
+      {!shouldRenderProxied && (
         <>
           <DetailRow label={t('proxy.details.wallet')} className="flex gap-x-2">
             <WalletIcon type={initiatorWallet.type} size={16} />
@@ -74,8 +66,8 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiators, s
                 <CaptionText className="text-white">{initiators.length}</CaptionText>
               </div>
             )}
-            {initiators.length === 1 && (
-              <AccountComponent variant="short" accountId={initiators[0]!.accountId} chain={chain} />
+            {initiators.length === 1 && nonNullable(firstInitiator) && (
+              <AccountComponent variant="short" accountId={firstInitiator.accountId} chain={chain} />
             )}
             {initiators.length > 1 && (
               <button
@@ -90,6 +82,16 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiators, s
               </button>
             )}
           </DetailRow>
+
+          {shouldRenderSignatory && (
+            <DetailRow label={t('proxy.details.signatory')}>
+              <Box direction="row" gap={2}>
+                <WalletIcon type={signatoryWallet.type} size={16} />
+                <span>{signatoryWallet.name}</span>
+                <AccountExplorers accountId={signatory.accountId} chain={chain} />
+              </Box>
+            </DetailRow>
+          )}
         </>
       )}
 
@@ -97,49 +99,34 @@ export const TransactionDetails = memo(({ wallets, chain, proxied, initiators, s
         <>
           <DetailRow label={t('transfer.senderProxiedWallet')}>
             <Box direction="row" gap={2}>
-              <WalletIcon type={proxiedWallet.type} size={16} />
-              <span>{proxiedWallet.name}</span>
-            </Box>
-          </DetailRow>
-
-          <DetailRow label={t('transfer.senderProxiedAccount')}>
-            <AccountComponent accountId={proxied.accountId} chain={chain} />
-          </DetailRow>
-
-          <DetailRow label={t('transfer.signingWallet')}>
-            <Box direction="row" gap={2} verticalAlign="center">
               <WalletIcon type={initiatorWallet.type} size={16} />
               <span>{initiatorWallet.name}</span>
             </Box>
           </DetailRow>
 
-          <DetailRow label={t('transfer.signingAccount')}>
-            {initiators.length === 1 ? (
-              <AccountComponent accountId={initiators[0]!.accountId} chain={chain} />
-            ) : (
-              <button
-                type="button"
-                className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
-                onClick={toggleAccounts}
-              >
-                <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-                  <CaptionText className="text-white">{initiators.length}</CaptionText>
-                </div>
-                <Icon className="group-hover:text-icon-hover" name="info" size={16} />
-              </button>
-            )}
-          </DetailRow>
-        </>
-      )}
+          {nonNullable(firstInitiator) && (
+            <DetailRow label={t('transfer.senderProxiedAccount')}>
+              <AccountComponent accountId={firstInitiator.accountId} chain={chain} />
+            </DetailRow>
+          )}
 
-      {shouldRenderSignatory && (
-        <DetailRow label={t('proxy.details.signatory')}>
-          <Box direction="row" gap={2}>
-            <WalletIcon type={signatoryWallet.type} size={16} />
-            <span>{signatoryWallet.name}</span>
-            <AccountExplorers accountId={signatory.accountId} chain={chain} />
-          </Box>
-        </DetailRow>
+          <Separator className="border-filter-border" />
+
+          {nonNullable(signatoryWallet) && (
+            <DetailRow label={t('transfer.signingWallet')}>
+              <Box direction="row" gap={2} verticalAlign="center">
+                <WalletIcon type={signatoryWallet.type} size={16} />
+                <span>{signatoryWallet.name}</span>
+              </Box>
+            </DetailRow>
+          )}
+
+          {nonNullable(signatory) && (
+            <DetailRow label={t('transfer.signingAccount')}>
+              <AccountComponent accountId={signatory?.accountId} chain={chain} />{' '}
+            </DetailRow>
+          )}
+        </>
       )}
 
       {nonNullable(children) ? <Separator className="border-filter-border" /> : null}

@@ -44,7 +44,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     wallets: { signatory },
   } = confirm;
   const isXcm = meta.destinationChain.chainId !== meta.chain.chainId;
-  const proxyAccount = meta.route.find(accountUtils.isProxiedAccount) ?? null;
   const multisigAccount = meta.route.find(accountUtils.isMultisigAccount) ?? null;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
   const nativeAsset = getNativeAsset(meta.chain.assets);
@@ -66,13 +65,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
-        chain={meta.chain}
-        wallets={wallets}
-        initiators={initiators}
-        signatory={meta.signatory}
-        proxied={proxyAccount}
-      >
+      <TransactionDetails chain={meta.chain} wallets={wallets} initiators={initiators} signatory={meta.signatory}>
         {isXcm && (
           <DetailRow label={t('operation.details.destinationChain')}>
             <ChainTitle

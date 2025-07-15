@@ -58,7 +58,6 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
     );
   }
 
-  const proxyAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount);
   const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
   const { fee, asset, amount, totalLock, signatory } = confirmStore.meta;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
@@ -86,7 +85,6 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
         wallets={wallets}
         initiators={initiators}
         signatory={signatory}
-        proxied={proxyAccount}
       >
         <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
           <BalanceDiff from={transferableBalance} to={transferableBalance.add(new BN(amount))} asset={asset} />
