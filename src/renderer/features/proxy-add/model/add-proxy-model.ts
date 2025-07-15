@@ -29,6 +29,7 @@ const $addProxyStore = createStore<AddProxyStore | null>(null).reset(flowFinishe
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $chain = $addProxyStore.map((store) => store?.chain ?? null);
 
 const $initiatorWallet = combine(
   {
@@ -36,11 +37,10 @@ const $initiatorWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (!store) return null;
 
     return walletUtils.getWalletById(wallets, store.account.walletId);
   },
-  { skipVoid: false },
 );
 
 sample({
@@ -224,7 +224,7 @@ sample({
 
 export const addProxyModel = {
   $step,
-  $chain: $addProxyStore.map((store) => store?.chain, { skipVoid: false }),
+  $chain,
   $initiatorWallet,
 
   events: {

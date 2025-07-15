@@ -35,7 +35,7 @@ export const AddProxy = ({ wallet }: Props) => {
     addProxyModel.output.flowClosed,
   );
 
-  const getModalTitle = (step: Step, chain?: Chain) => {
+  const getModalTitle = (step: Step, chain: Chain | null) => {
     if (addProxyUtils.isInitStep(step) || !chain) {
       return t('operations.modalTitles.addProxy');
     }
