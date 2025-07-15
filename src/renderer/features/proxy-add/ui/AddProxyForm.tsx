@@ -235,7 +235,7 @@ const ProxyInput = () => {
         value={delegate.value}
         invalid={delegate.hasError}
         prefixElement={prefixElement}
-        onInput={formModel.events.proxyQueryChanged}
+        onInput={formModel.proxyQueryChanged}
         onChange={({ value }) => delegate.onChange(value)}
       />
       <InputHint variant="error" active={delegate.hasError}>
@@ -299,8 +299,8 @@ const FeeSection = () => {
           deposit={oldProxyDeposit}
           proxyNumber={activeProxies.length + 1}
           asset={chain.value.assets?.[0]}
-          onDepositChange={formModel.events.proxyDepositChanged}
-          onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
+          onDepositChange={formModel.proxyDepositChanged}
+          onDepositLoading={formModel.isProxyDepositLoadingChanged}
         />
       </ProxyDepositLabel>
 
@@ -309,7 +309,7 @@ const FeeSection = () => {
           api={api}
           asset={chain.value.assets[0]}
           threshold={(account.value as MultisigAccount).threshold}
-          onDepositChange={formModel.events.multisigDepositChanged}
+          onDepositChange={formModel.multisigDepositChanged}
         />
       )}
 

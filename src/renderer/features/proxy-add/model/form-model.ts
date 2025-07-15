@@ -678,15 +678,10 @@ export const formModel = {
 
   flow,
 
-  events: {
-    formInitiated,
-    proxyQueryChanged,
-    proxyDepositChanged,
-    multisigDepositChanged,
-    isProxyDepositLoadingChanged,
-  },
-
-  output: {
-    formSubmitted,
-  },
+  formInitiated,
+  proxyQueryChanged,
+  proxyDepositChanged,
+  multisigDepositChanged,
+  isProxyDepositLoadingChanged,
+  formSubmitted,
 };

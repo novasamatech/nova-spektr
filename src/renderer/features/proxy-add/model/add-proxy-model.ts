@@ -66,11 +66,11 @@ sample({
 
 sample({
   clock: flowStarted,
-  target: formModel.events.formInitiated,
+  target: formModel.formInitiated,
 });
 
 sample({
-  clock: formModel.output.formSubmitted,
+  clock: formModel.formSubmitted,
   fn: ({ transactions, formData }) => ({
     wrappedTx: transactions.wrappedTx,
     coreTx: transactions.coreTx,
@@ -84,7 +84,7 @@ sample({
 });
 
 sample({
-  clock: formModel.output.formSubmitted,
+  clock: formModel.formSubmitted,
   fn: ({ formData, transactions }) => ({
     event: [{ ...formData, transaction: transactions.wrappedTx, coreTx: transactions.coreTx }],
     step: Step.CONFIRM,
