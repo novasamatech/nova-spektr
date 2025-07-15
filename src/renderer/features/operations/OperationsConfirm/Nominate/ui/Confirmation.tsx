@@ -48,7 +48,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const { chain, asset, route, validators, signatory, fee, totalFee, multisigDeposit } = confirmStore.meta;
 
-  const proxiedAccount = route.find(accountUtils.isProxiedAccount);
   const multisigAccount = route.find(accountUtils.isMultisigAccount);
 
   return (
@@ -65,7 +64,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           wallets={wallets}
           initiators={confirms.map((c) => c.meta.initiator)}
           signatory={signatory}
-          proxied={proxiedAccount}
         >
           <DetailRow label={t('staking.confirmation.validatorsLabel')}>
             <button

@@ -79,7 +79,6 @@ export const Confirmation = ({
     ? formatAmount(confirmStore.meta.amount, confirmStore.meta.asset.precision)
     : confirmStore.meta.amount;
 
-  const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount);
   const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount);
 
   const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
@@ -107,7 +106,6 @@ export const Confirmation = ({
           wallets={wallets}
           initiators={confirms.map((confirm) => confirm.meta.initiator)}
           signatory={confirmStore.meta.signatory}
-          proxied={proxiedAccount}
         >
           <DetailRow label={t('staking.confirmation.validatorsLabel')}>
             <button
