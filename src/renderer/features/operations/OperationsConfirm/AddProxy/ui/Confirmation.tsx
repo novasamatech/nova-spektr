@@ -33,7 +33,6 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
   const { route, chain, signatory, delegate, proxyType, proxyDeposit, multisigDeposit, fee } = confirmStore.meta;
 
-  const proxiedAccount = route.find(accountUtils.isProxiedAccount);
   const multisigAccount = route.find(accountUtils.isMultisigAccount);
 
   const nativeAsset = getNativeAsset(chain.assets);
@@ -48,13 +47,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
-        chain={chain}
-        wallets={wallets}
-        initiators={initiators}
-        signatory={signatory}
-        proxied={proxiedAccount}
-      >
+      <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
         <DetailRow label={t('proxy.details.grantAccessType')} className="pr-2">
           <FootnoteText>{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
         </DetailRow>

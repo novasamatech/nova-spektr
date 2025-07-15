@@ -39,7 +39,6 @@ export const Confirmation = ({
 
   const { amount, asset, chain, fee, totalFee, signatory, route, multisigDeposit } = confirmStore.meta;
 
-  const proxiedAccount = route.find(accountUtils.isProxiedAccount);
   const multisigAccount = route.find(accountUtils.isMultisigAccount);
 
   if (!confirmStore || !confirmStore.wallets.initiator) {
@@ -67,13 +66,7 @@ export const Confirmation = ({
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
-        chain={chain}
-        wallets={wallets}
-        initiators={initiators}
-        signatory={signatory}
-        proxied={proxiedAccount}
-      >
+      <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
         {multisigAccount && (
           <DetailRow
             className="text-text-primary"

@@ -59,7 +59,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         wallets={wallets}
         initiators={[confirmStore.account]}
         signatory={confirmStore.signatory}
-        proxied={confirmStore.proxiedAccount}
       >
         <DetailRow
           className="text-text-primary"
