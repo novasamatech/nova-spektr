@@ -2,15 +2,17 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { addProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm/AddProxy';
+import { type AddProxyConfirm } from '@/features/operations/OperationsConfirm/AddProxy/model/confirm-model';
 import { proxiesModel } from '@/features/proxies';
 import { type AddProxyStore, Step } from '../lib/types';
 
@@ -37,9 +39,9 @@ const $initiatorWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return null;
+    if (!store?.initiator) return null;
 
-    return walletUtils.getWalletById(wallets, store.account.walletId);
+    return walletUtils.getWalletById(wallets, store.initiator.walletId);
   },
 );
 
@@ -52,7 +54,7 @@ sample({
 sample({
   clock: flowStarted,
   source: {
-    activeWallet: walletModel.$activeWallet,
+    activeWallet: walletSelect.$selectedWallet,
     walletDetails: formModel.$wallet,
   },
   filter: ({ activeWallet, walletDetails }) => {
@@ -83,20 +85,46 @@ sample({
   }),
 });
 
-sample({
+const formSubmitted = sample({
   clock: formModel.formSubmitted,
-  fn: ({ formData, transactions }) => ({
-    event: [{ ...formData, transaction: transactions.wrappedTx, coreTx: transactions.coreTx }],
-    step: Step.CONFIRM,
-  }),
+  source: {
+    route: formModel.$route,
+    step: $step,
+  },
+  fn: (source, formData) => ({ source, formData }),
+}).filterMap(({ formData: { formData, transactions }, source: { route, step } }) => {
+  if (
+    nonNullable(transactions.coreTx) &&
+    nonNullable(transactions.wrappedTx) &&
+    nonNullable(formData.initiator) &&
+    nonNullable(formData.signatory) &&
+    nonNullable(route) &&
+    isStep(step, Step.INIT)
+  ) {
+    return [
+      {
+        ...formData,
+        initiator: formData.initiator,
+        signatory: formData.signatory,
+        tx: transactions.wrappedTx,
+        coreTx: transactions.coreTx,
+        route,
+      } satisfies AddProxyConfirm,
+    ];
+  }
+});
+
+sample({
+  clock: formSubmitted,
+  fn: (event) => ({ event, step: Step.CONFIRM }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.startSigning,
   source: {
     addProxyStore: $addProxyStore,
     wrappedTx: $wrappedTx,
@@ -107,7 +135,7 @@ sample({
       signingPayloads: [
         {
           chain: addProxyStore!.chain,
-          account: addProxyStore!.account,
+          account: addProxyStore!.initiator!,
           signatory: addProxyStore!.signatory,
           transaction: wrappedTx!,
         },
@@ -135,7 +163,7 @@ sample({
     event: {
       ...signParams,
       chain: proxyData.addProxyStore!.chain,
-      account: proxyData.addProxyStore!.account,
+      account: proxyData.addProxyStore!.initiator!,
       signatory: proxyData.addProxyStore!.signatory,
       coreTxs: [proxyData.coreTx!],
       wrappedTxs: [proxyData.wrappedTx!],

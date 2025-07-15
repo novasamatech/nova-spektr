@@ -58,7 +58,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         formData: {
           chain: testChain,
           signatory: null,
-          account: createVaultBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] }),
+          initiator: createVaultBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] }),
           delegate: TEST_ACCOUNTS[0],
           proxyType: 'Any',
           proxyDeposit: '1',
@@ -71,7 +71,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.CONFIRM);
 
-    await allSettled(confirmModel.output.formSubmitted, { scope });
+    await allSettled(confirmModel.startSigning, { scope });
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.SIGN);
 

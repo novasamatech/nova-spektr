@@ -2026,6 +2026,7 @@
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
     "noAmount": "Please provide amount",
+    "noInitiatorError": "Please select operation initiator",
     "noSignatoryError": "Please select operation signatory",
     "notEnoughBalanceError": "Not enough tokens to transfer specific amount",
     "notEnoughBalanceForDeliveryFeeError": "Not enough tokens to pay for the delivery fee",
