@@ -72,7 +72,6 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         wallets={wallets}
         initiators={[confirmStore.account]}
         signatory={confirmStore.signatory}
-        proxied={confirmStore.proxiedAccount}
       >
         <DetailRow label={t('proxy.details.accessType')}>
           <FootnoteText>{t(proxyUtils.getProxyTypeName(confirmStore.proxyType))}</FootnoteText>

@@ -16,7 +16,7 @@ import {
 } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { FeeWithDataLoading } from '@/entities/transaction';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
@@ -75,7 +75,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
 
   const address = toAddress(initiator.accountId, { prefix: confirm.meta.chain.addressPrefix });
   const locksForAddress = getLocksForAddress(address, trackLocks);
-  const proxiedAccount = confirm.meta.route.find(accountUtils.isProxiedAccount);
 
   return (
     <div className="flex w-modal flex-col items-center gap-4 px-5 py-4">
@@ -108,7 +107,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
         wallets={wallets}
         initiators={[confirm.meta.initiator]}
         signatory={confirm.meta.signatory}
-        proxied={proxiedAccount || undefined}
       >
         {votingPower && amount && conviction ? (
           <>
