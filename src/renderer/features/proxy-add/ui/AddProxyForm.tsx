@@ -12,12 +12,7 @@ import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { ProxyPopover, proxyUtils } from '@/entities/proxy';
-import {
-  FeeWithLabelWithDataLoading,
-  MultisigDepositWithLabel,
-  ProxyDeposit,
-  ProxyDepositLabel,
-} from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositWithLabel, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
 import { AccountAddress, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
@@ -290,7 +285,8 @@ const FeeSection = () => {
   } = useForm(formModel.form);
 
   const api = useUnit(formModel.$api);
-  const fakeTx = useUnit(formModel.$fakeTx);
+  const fee = useUnit(formModel.$fee);
+  const pendingFee = useUnit(formModel.$pendingFee);
   const isMultisig = useUnit(formModel.$isMultisig);
   const oldProxyDeposit = useUnit(formModel.$oldProxyDeposit);
   const activeProxies = useUnit(formModel.$activeProxies);
@@ -317,13 +313,7 @@ const FeeSection = () => {
         />
       )}
 
-      <FeeWithLabelWithDataLoading
-        api={api}
-        asset={chain.value.assets[0]}
-        transaction={fakeTx}
-        onFeeChange={formModel.events.feeChanged}
-        onFeeLoading={formModel.events.isFeeLoadingChanged}
-      />
+      <FeeWithLabel asset={chain.value.assets[0]} fee={fee.toString()} isLoading={pendingFee} />
     </div>
   );
 };

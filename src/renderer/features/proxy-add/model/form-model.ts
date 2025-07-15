@@ -19,7 +19,6 @@ import {
 } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
-  TEST_ACCOUNTS,
   ZERO_BALANCE,
   dictionary,
   getNativeAsset,
@@ -33,7 +32,8 @@ import {
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { createComplexTxStore } from '@/shared/transactions';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { operationsUtils } from '@/entities/operations';
@@ -81,18 +81,14 @@ const proxyQueryChanged = createEvent<string>();
 
 const proxyDepositChanged = createEvent<string>();
 const multisigDepositChanged = createEvent<string>();
-const feeChanged = createEvent<string>();
-const isFeeLoadingChanged = createEvent<boolean>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
 const $wallet = flow.state.map(({ wallet }) => wallet);
 
 const $oldProxyDeposit = createStore<string>('0');
 
-const $fee = restore(feeChanged, ZERO_BALANCE);
 const $newProxyDeposit = restore(proxyDepositChanged, ZERO_BALANCE);
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
-const $isFeeLoading = restore(isFeeLoadingChanged, true);
 const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, true);
 
 const $proxyQuery = createStore<string>('');
@@ -422,14 +418,14 @@ const $api = combine(
   },
 );
 
-const $pureTx = combine(
+const $coreTx = combine(
   {
     form: form.$values,
     account: $realAccount,
     isConnected: $isChainConnected,
   },
-  ({ form, account, isConnected }): Transaction | undefined => {
-    if (!isConnected || !account || !form.delegate || !form.proxyType) return undefined;
+  ({ form, account, isConnected }): Transaction | null => {
+    if (!isConnected || !account || !form.delegate || !form.proxyType) return null;
 
     return {
       chainId: form.chain.chainId,
@@ -442,54 +438,21 @@ const $pureTx = combine(
       },
     };
   },
-  { skipVoid: false },
 );
 
-const $transaction = combine(
-  {
-    apis: networkModel.$apis,
-    chain: form.fields.chain.$value,
-    pureTx: $pureTx,
-    txWrappers: $txWrappers,
-  },
-  ({ apis, chain, pureTx, txWrappers }) => {
-    if (!pureTx) return undefined;
-
-    return transactionService.getWrappedTransaction({
-      api: apis[chain.chainId],
-      transaction: pureTx,
-      txWrappers,
-    });
-  },
-  { skipVoid: false },
-);
-
-const $fakeTx = combine(
-  {
-    chain: form.fields.chain.$value,
-    isConnected: $isChainConnected,
-  },
-  ({ isConnected, chain }): Transaction | undefined => {
-    if (!chain.chainId || !isConnected) return undefined;
-
-    return {
-      chainId: chain.chainId,
-      accountId: TEST_ACCOUNTS[0],
-      type: TransactionType.ADD_PROXY,
-      args: {
-        delegate: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
-        proxyType: 'Any',
-        delay: 0,
-      },
-    };
-  },
-  { skipVoid: false },
-);
+const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
+  api: $api,
+  initiator: form.fields.account.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: form.fields.chain.$value,
+  transaction: $coreTx,
+});
 
 const $canSubmit = combine(
   {
     isFormValid: form.$isValid,
-    isFeeLoading: $isFeeLoading,
+    isFeeLoading: $pendingFee,
     isProxyDepositLoading: $isProxyDepositLoading,
   },
   ({ isFormValid, isFeeLoading, isProxyDepositLoading }) => {
@@ -500,7 +463,7 @@ const $canSubmit = combine(
 const $multisigAlreadyExists = combine(
   {
     apis: networkModel.$apis,
-    coreTxs: $pureTx.map((tx) => (tx ? [tx] : [])),
+    coreTxs: $coreTx.map((tx) => (tx ? [tx] : [])),
     transactions: selectedWalletMultisigOperations.$list,
   },
   ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
@@ -654,7 +617,8 @@ sample({
   clock: form.submit.doneData,
   source: {
     realAccount: $realAccount,
-    transaction: $transaction,
+    transaction: $tx,
+    coreTx: $coreTx,
     isProxy: $isProxy,
     fee: $fee,
     multisigDeposit: $multisigDeposit,
@@ -662,17 +626,17 @@ sample({
     proxies: $activeProxies,
   },
   filter: ({ transaction }) => nonNullable(transaction),
-  fn: ({ proxyDeposit, multisigDeposit, proxies, realAccount, transaction, isProxy, fee }, formData) => {
+  fn: ({ proxyDeposit, multisigDeposit, proxies, realAccount, transaction, coreTx, isProxy, fee }, formData) => {
     const signatory = formData.signatory?.accountId ? formData.signatory : null;
 
     return {
       transactions: {
-        wrappedTx: transaction!.wrappedTx,
-        coreTx: transaction!.coreTx,
+        wrappedTx: transaction!,
+        coreTx: coreTx!,
       },
       formData: {
         ...formData,
-        fee,
+        fee: fee.toString(),
         account: realAccount,
         signatory,
         proxyDeposit,
@@ -703,9 +667,10 @@ export const formModel = {
   $newProxyDeposit,
   $multisigDeposit,
   $fee,
+  $pendingFee,
+  $route,
 
   $api,
-  $fakeTx,
   $isMultisig,
   $isChainConnected,
   $canSubmit,
@@ -718,8 +683,6 @@ export const formModel = {
     proxyQueryChanged,
     proxyDepositChanged,
     multisigDepositChanged,
-    feeChanged,
-    isFeeLoadingChanged,
     isProxyDepositLoadingChanged,
   },
 
