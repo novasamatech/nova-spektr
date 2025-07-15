@@ -1,7 +1,6 @@
 import { useUnit } from 'effector-react';
 import { type FormEvent, useMemo } from 'react';
 
-import { type MultisigAccount } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toShortAddress, validateAddress, withdrawableAmount } from '@/shared/lib/utils';
@@ -12,7 +11,7 @@ import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { ProxyPopover, proxyUtils } from '@/entities/proxy';
-import { FeeWithLabel, MultisigDepositWithLabel, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
 import { AccountAddress, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
@@ -92,13 +91,13 @@ const AccountSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { account, chain },
+    fields: { initiator, chain },
   } = useForm(formModel.form);
 
   const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
   const wallet = useUnit(walletSelect.$selectedWallet);
 
-  if (proxiedAccounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet)) {
+  if (proxiedAccounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value) {
     return null;
   }
 
@@ -130,10 +129,10 @@ const AccountSelector = () => {
       <Select
         label={t('proxy.addProxy.accountLabel')}
         placeholder={t('proxy.addProxy.accountPlaceholder')}
-        selectedId={accountService.uniqId(account.value)}
+        selectedId={accountService.uniqId(initiator.value)}
         options={options}
         disabled={options.length === 1}
-        onChange={({ value }) => account.onChange(value)}
+        onChange={({ value }) => initiator.onChange(value)}
       />
     </div>
   );
@@ -143,7 +142,7 @@ const Signatories = () => {
   const { t } = useI18n();
 
   const {
-    fields: { chain, signatory, account },
+    fields: { chain, signatory, initiator },
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
@@ -174,7 +173,7 @@ const Signatories = () => {
       signatory={signatory.value}
       signatories={signatoriesWithBalance}
       allAccounts={allAccounts}
-      initiator={account.value}
+      initiator={initiator.value}
       allWallets={allWallets}
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
@@ -281,13 +280,14 @@ const ProxyTypeSelector = () => {
 
 const FeeSection = () => {
   const {
-    fields: { chain, account },
+    fields: { chain },
   } = useForm(formModel.form);
 
   const api = useUnit(formModel.$api);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
   const isMultisig = useUnit(formModel.$isMultisig);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
   const oldProxyDeposit = useUnit(formModel.$oldProxyDeposit);
   const activeProxies = useUnit(formModel.$activeProxies);
 
@@ -304,14 +304,7 @@ const FeeSection = () => {
         />
       </ProxyDepositLabel>
 
-      {isMultisig && (
-        <MultisigDepositWithLabel
-          api={api}
-          asset={chain.value.assets[0]}
-          threshold={(account.value as MultisigAccount).threshold}
-          onDepositChange={formModel.multisigDepositChanged}
-        />
-      )}
+      {isMultisig && <MultisigDepositFee asset={chain.value.assets[0]} multisigDeposit={multisigDeposit.toString()} />}
 
       <FeeWithLabel asset={chain.value.assets[0]} fee={fee.toString()} isLoading={pendingFee} />
     </div>
@@ -322,13 +315,13 @@ const FeeError = () => {
   const { t } = useI18n();
 
   const {
-    fields: { account },
+    fields: { initiator },
   } = useForm(formModel.form);
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
   return (
-    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={account.hasError} variant="error">
+    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={initiator.hasError} variant="error">
       <Alert.Item withDot={false}>
         {isMultisig ? t('proxy.addProxy.balanceAlertMultisig') : t('proxy.addProxy.balanceAlertRegular')}
       </Alert.Item>
