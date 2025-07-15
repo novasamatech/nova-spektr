@@ -74,8 +74,6 @@ export const Confirmation = ({
 
   const locksForAddress = getLocksForAddress(confirmStore.meta.initiator.accountId, trackLocks);
 
-  const proxyAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount) ?? null;
-
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
@@ -94,7 +92,6 @@ export const Confirmation = ({
         wallets={wallets}
         initiators={initiators}
         signatory={confirmStore.meta.signatory}
-        proxied={proxyAccount}
       >
         <DetailRow label={t('governance.addDelegation.confirmation.target')}>
           <Account
