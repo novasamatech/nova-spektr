@@ -2,7 +2,7 @@ import { type Meta, type StoryObj } from '@storybook/react';
 import { uniqBy } from 'lodash';
 import { useState } from 'react';
 
-import chains from '@/shared/config/chains/chains.json';
+import { chainsService } from '@/shared/api/network';
 import { type Chain } from '@/shared/core';
 import { performSearch } from '@/shared/lib/utils';
 import { dotAsset } from '@/shared/mocks';
@@ -35,18 +35,23 @@ export const Monochrome: Story = {
   },
 };
 
-const allPossibleAssets = uniqBy(
-  (chains as Chain[]).flatMap(({ assets }) => assets),
-  ({ symbol }) => symbol,
-);
-
 export const VariantsDerivedFromConfig: Story = {
   args: {
     style: 'colored',
     size: 32,
   },
-  render: args => {
+  loaders: [
+    async () => ({
+      chains: await chainsService.getChainsData(),
+    }),
+  ],
+  render: (args, { loaded: { chains } }) => {
     const [query, setQuery] = useState('');
+
+    const allPossibleAssets = uniqBy(
+      (chains as Chain[]).flatMap(({ assets }) => assets),
+      ({ symbol }) => symbol,
+    );
 
     const assets = performSearch({
       records: allPossibleAssets,

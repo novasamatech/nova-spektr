@@ -1,7 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
-import { chainsService } from '@/shared/api/network';
 import { type Address, type Transaction, TransactionType, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
@@ -59,8 +58,7 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
   const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
   const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
-  const validatorsAsset =
-    transaction && getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
+  const validatorsAsset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
 
   if (Boolean(selectedValidators?.length) && defaultAsset) {
     result.push(

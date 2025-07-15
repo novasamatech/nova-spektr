@@ -69,7 +69,11 @@ const operationsQuery = gql`
   }
 `;
 
-function mapSubqueryOperationRecord(node: unknown, api: ApiPromise): MultisigOperation | null {
+function mapSubqueryOperationRecord(
+  node: unknown,
+  api: ApiPromise,
+  chains: Record<ChainId, Chain>,
+): MultisigOperation | null {
   const response = operationsGqlSchema.parse(node);
   const operationId = multisigOperationService.getOperationId(
     api.genesisHash.toHex(),
@@ -83,7 +87,7 @@ function mapSubqueryOperationRecord(node: unknown, api: ApiPromise): MultisigOpe
 
   try {
     if (response.callData) {
-      transaction = decodeCallData(api, response.accountId, response.callData);
+      transaction = decodeCallData(api, response.accountId, response.callData, chains);
     }
   } catch {
     // do nothing
@@ -117,6 +121,7 @@ async function fetchOperationsHistory(
   accountId: AccountId,
   api: ApiPromise,
   existing: MultisigOperation[],
+  chains: Record<ChainId, Chain>,
 ): Promise<MultisigOperation[]> {
   const client = new GraphQLClient(url);
   const result = await client.request<any, { accountId: AccountId }>(operationsQuery, { accountId });
@@ -124,7 +129,7 @@ async function fetchOperationsHistory(
   const existingMultisigs = new Set(existing.map(e => e.id));
 
   return result.multisigOperations.nodes
-    .map((node: unknown) => mapSubqueryOperationRecord(node, api))
+    .map((node: unknown) => mapSubqueryOperationRecord(node, api, chains))
     .filter((x: MultisigOperation | null) => {
       if (nullable(x)) return false;
 
@@ -133,7 +138,12 @@ async function fetchOperationsHistory(
     });
 }
 
-const fetchOnchainOperations = async (api: ApiPromise, chain: Chain, accountId: AccountId) => {
+const fetchOnchainOperations = async (
+  api: ApiPromise,
+  chain: Chain,
+  accountId: AccountId,
+  chains: Record<ChainId, Chain>,
+) => {
   const operations: MultisigOperation[] = [];
 
   const response = await multisigPallet.storage.multisigs(api, accountId);
@@ -173,7 +183,7 @@ const fetchOnchainOperations = async (api: ApiPromise, chain: Chain, accountId: 
 
     let decodedTransaction: DecodedTransaction | null = null;
     try {
-      decodedTransaction = callData ? decodeCallData(api, accountId, callData) : null;
+      decodedTransaction = callData ? decodeCallData(api, accountId, callData, chains) : null;
     } catch {
       // do nothing
     }
@@ -218,20 +228,21 @@ const multisigEvent = z.union([
 
 type RequestParams = {
   api: ApiPromise;
+  chains: Record<ChainId, Chain>;
   chain: Chain;
   accountId: AccountId;
 };
 
 export const fetchResource = createRemoteResource<RequestParams, MultisigOperation[]>({
   pool: ({ chain }) => chain.chainId,
-  async fn({ api, accountId, chain }) {
+  async fn({ api, accountId, chain, chains }) {
     const url = chain.externalApi?.proxy?.find(x => x.type === 'subquery')?.url;
     if (nullable(url)) {
       throw new Error(`Proxy/multisig indexer doesn't support ${chain.name} chain`);
     }
 
-    const chainOperations = await fetchOnchainOperations(api, chain, accountId);
-    const historicOperations = await fetchOperationsHistory(url, accountId, api, chainOperations);
+    const chainOperations = await fetchOnchainOperations(api, chain, accountId, chains);
+    const historicOperations = await fetchOperationsHistory(url, accountId, api, chainOperations, chains);
 
     return [...chainOperations, ...historicOperations];
   },
@@ -241,16 +252,16 @@ export const subscribeResource = createSubscriptionResource<RequestParams[], Mul
   fn(params, callback) {
     const unsubscribeFns: VoidFunction[] = [];
 
-    for (const { chain, accountId, api } of params) {
+    for (const { chain, accountId, api, chains } of params) {
       const url = chain.externalApi?.proxy?.find(x => x.type === 'subquery')?.url;
       if (nullable(url)) {
         throw new Error(`Proxy/multisig indexer doesn't support ${chain.name} chain`);
       }
 
-      fetchOnchainOperations(api, chain, accountId).then(chainOperations => {
+      fetchOnchainOperations(api, chain, accountId, chains).then(chainOperations => {
         callback({ done: true, value: chainOperations });
 
-        fetchOperationsHistory(url, accountId, api, chainOperations).then(historicOperations => {
+        fetchOperationsHistory(url, accountId, api, chainOperations, chains).then(historicOperations => {
           callback({ done: true, value: historicOperations });
         });
       });
@@ -258,7 +269,7 @@ export const subscribeResource = createSubscriptionResource<RequestParams[], Mul
       const unsubscribeFn = polkadotjsHelpers.subscribeSystemEvents(
         { api, section: 'multisig', methods: ['NewMultisig'] },
         () => {
-          fetchOnchainOperations(api, chain, accountId).then(operations => {
+          fetchOnchainOperations(api, chain, accountId, chains).then(operations => {
             callback({ done: true, value: operations });
           });
         },

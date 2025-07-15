@@ -97,7 +97,6 @@ sample({
     const walletIdFromGraph = new Set<number>();
 
     for (const chain of Object.values(chains)) {
-      // Should we avoid WatchOnlyAccount in createAccountGraphs by default?
       const filteredAccounts = accounts.filter((a) => !accountUtils.isWatchOnlyAccount(a));
       const graph = accountService.createAccountGraphs(filteredAccounts, chain);
 
