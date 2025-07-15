@@ -42,7 +42,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     fn: (value, [chainId]) => value?.[chainId],
   });
 
-  const proxiedAccount = route.find(accountUtils.isProxiedAccount);
   const multisigAccount = route.find(accountUtils.isMultisigAccount);
 
   if (!confirmStore) {
@@ -71,7 +70,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         wallets={wallets}
         initiators={confirms.map((c) => c.meta.initiator)}
         signatory={signatory}
-        proxied={proxiedAccount}
       >
         {multisigAccount && (
           <DetailRow

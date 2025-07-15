@@ -34,7 +34,6 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   }
 
   const { destination, chain, signatory, multisigDeposit, fee, totalFee } = confirmStore.meta;
-  const proxiedAccount = confirmStore.meta.route.find(accountUtils.isProxiedAccount) ?? null;
   const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
 
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
@@ -47,13 +46,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
-        chain={chain}
-        wallets={wallets}
-        initiators={initiators}
-        signatory={signatory}
-        proxied={proxiedAccount}
-      >
+      <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
         <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
           {destination ? (
             <Account accountId={toAccountId(destination)} chain={chain} variant="short" />
