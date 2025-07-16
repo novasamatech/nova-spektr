@@ -205,23 +205,16 @@ const form: Form<FormParams> = createForm<FormParams>({
 
 // Options for selectors
 
-const $proxyChains = combine(
+const $availableChains = combine(
   {
     chains: networkModel.$chains,
-    wallet: $wallet,
+    walletAccounts: walletSelect.$selectedAccounts,
   },
-  ({ chains, wallet }) => {
-    if (!wallet) return [];
-
+  ({ chains, walletAccounts }) => {
     const proxyChains = Object.values(chains).filter(proxiesUtils.isRegularProxy);
-    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
 
     return proxyChains.filter((chain) => {
-      return wallet.accounts.some((account) => {
-        if (isPolkadotVault && accountUtils.isVaultBaseAccount(account)) return false;
-
-        return accountUtils.isChainAndCryptoMatch(account, chain);
-      });
+      return walletAccounts.some((account) => accountService.isAccountAvailableOnChain(account, chain));
     });
   },
 );
@@ -408,7 +401,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: $proxyChains,
+  source: $availableChains,
   fn: (chains) => chains[0],
   target: form.fields.chain.change,
 });
@@ -548,7 +541,7 @@ export const formModel = {
   form,
 
   $wallet,
-  $proxyChains,
+  $availableChains,
   $avilableAccounts,
   $signatories,
   $proxyAccounts,

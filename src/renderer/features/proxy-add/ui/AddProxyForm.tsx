@@ -62,20 +62,24 @@ const NetworkSelector = () => {
     fields: { chain },
   } = useForm(formModel.form);
 
-  const proxyChains = useUnit(formModel.$proxyChains);
+  const availableChains = useUnit(formModel.$availableChains);
 
-  const options = Object.values(proxyChains).map((chain) => ({
-    id: chain.chainId,
-    value: chain,
-    element: (
-      <ChainTitle
-        className="overflow-hidden"
-        fontClass="text-text-primary truncate"
-        key={chain.chainId}
-        chain={chain}
-      />
-    ),
-  }));
+  const options = useMemo(
+    () =>
+      Object.values(availableChains).map((chain) => ({
+        id: chain.chainId,
+        value: chain,
+        element: (
+          <ChainTitle
+            className="overflow-hidden"
+            fontClass="text-text-primary truncate"
+            key={chain.chainId}
+            chain={chain}
+          />
+        ),
+      })),
+    [availableChains],
+  );
 
   return (
     <div className="flex flex-col gap-y-2">
