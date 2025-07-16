@@ -46,7 +46,10 @@ export const ConfirmationStep = () => {
               {t('createMultisigAccount.flexibleMultisig.assignControlDescription')}
             </FootnoteText>
             <div>
-              <Button prefixElement={<Icon className="text-icon-button" name="vault" size={14} />} onClick={() => {}}>
+              <Button
+                prefixElement={<Icon className="text-icon-button" name="vault" size={14} />}
+                onClick={() => confirmModel.startSigningFlexible()}
+              >
                 {t('createMultisigAccount.flexibleMultisig.assignControl')}
               </Button>
             </div>
