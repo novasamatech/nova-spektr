@@ -249,6 +249,7 @@ export const fetchResource = createRemoteResource<RequestParams, MultisigOperati
 });
 
 export const subscribeResource = createSubscriptionResource<RequestParams[], MultisigOperation[]>({
+  pool: params => params.flatMap(x => [x.chain.chainId, x.accountId]).join('_'),
   fn(params, callback) {
     const unsubscribeFns: VoidFunction[] = [];
 
