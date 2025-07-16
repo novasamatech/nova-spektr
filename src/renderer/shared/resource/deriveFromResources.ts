@@ -63,15 +63,7 @@ export function deriveFromResources<State, const Resources extends Resource<any,
       clock: closestResource.push,
       source: $state,
       fn: (state, { meta, result }) => map(state, result, meta),
-      target: $state,
+      target: [$state, onReceive].filter(nonNullable),
     });
-
-    if (onReceive) {
-      sample({
-        clock: closestResource.push,
-        fn: ({ result }: { result: State }) => result,
-        target: onReceive,
-      });
-    }
   }
 }

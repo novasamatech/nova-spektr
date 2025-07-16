@@ -43,7 +43,7 @@ export const Operations = () => {
   }, []);
 
   if (!account) {
-    return null;
+    return <EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />;
   }
 
   if (incompleteFlexibleMultisigTx) {
