@@ -75,5 +75,5 @@ function getNotification({ wallets, proxiedAccounts, chains, type }: GetNotifica
 }
 
 function isProxiedAvailable(account: AnyAccount): boolean {
-  return !accountUtils.isWatchOnlyAccount(account) && !accountUtils.isProxiedAccount(account);
+  return !accountUtils.isWatchOnlyAccount(account);
 }
