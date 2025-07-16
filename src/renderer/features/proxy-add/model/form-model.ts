@@ -32,7 +32,6 @@ import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { proxiesUtils } from '@/features/proxies';
 
 type ProxyAccounts = {
@@ -203,12 +202,24 @@ const form: Form<FormParams> = createForm<FormParams>({
   },
 });
 
+const $walletAccounts = combine(
+  {
+    wallet: $wallet,
+    accounts: accounts.$list,
+  },
+  ({ wallet, accounts }) => {
+    if (!wallet) return [];
+
+    return accountService.filterAccountsByWallet(accounts, wallet.id);
+  },
+);
+
 // Options for selectors
 
 const $availableChains = combine(
   {
     chains: networkModel.$chains,
-    walletAccounts: walletSelect.$selectedAccounts,
+    walletAccounts: $walletAccounts,
   },
   ({ chains, walletAccounts }) => {
     const proxyChains = Object.values(chains).filter(proxiesUtils.isRegularProxy);
@@ -228,7 +239,7 @@ const $signatories = createSignatoriesStore({
 const $avilableAccounts = combine(
   {
     chain: form.fields.chain.$value,
-    walletAccounts: walletSelect.$selectedAccounts,
+    walletAccounts: $walletAccounts,
   },
   ({ chain, walletAccounts }) => {
     return walletAccounts.filter((account) => accountService.isAccountAvailableOnChain(account, chain));
