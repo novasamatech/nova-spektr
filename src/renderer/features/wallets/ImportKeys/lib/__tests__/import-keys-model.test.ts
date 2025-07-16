@@ -1,6 +1,8 @@
 import { allSettled, fork } from 'effector';
 
+import { kusamaChain, kusamaChainId, polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { networkModel } from '@/entities/network';
 import { importKeysModel } from '../../model/import-keys-model';
 import { importKeysModelMock } from '../mocks/import-keys-model.mock';
 import { DerivationValidationError, ValidationError } from '../types';
@@ -46,7 +48,13 @@ describe('features/ImportKeys/lib/import-keys-model', () => {
   });
 
   test('should save invalid derivations paths in $validationError', async () => {
-    const scope = fork();
+    const mockChains = {
+      [polkadotChainId]: polkadotChain,
+      [kusamaChainId]: kusamaChain,
+    };
+    const scope = fork({
+      values: [[networkModel.$chains, mockChains]],
+    });
     const file = { type: 'application/yaml', text: async () => importKeysModelMock.invalidPaths };
 
     await allSettled(importKeysModel.events.resetValues, {

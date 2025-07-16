@@ -2,7 +2,9 @@ import { ApiPromise } from '@polkadot/api';
 import { MockProvider } from '@polkadot/rpc-provider/mock';
 import { TypeRegistry } from '@polkadot/types';
 
+import { type Chain, type ChainId } from '@/shared/core';
 import { TEST_ADDRESS, toAccountId } from '@/shared/lib/utils';
+import { polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { decodeCallData } from '../callDataDecoder';
 
 import { metadata } from './metadata';
@@ -18,6 +20,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
   const registry = new TypeRegistry();
   let provider: MockProvider;
   let api: ApiPromise;
+  let chains: Record<ChainId, Chain>;
 
   beforeAll(async () => {
     provider = new MockProvider(registry);
@@ -31,6 +34,10 @@ describe('entities/transaction/lib/callDataDecoder', () => {
       registry,
       throwOnConnect: true,
     });
+
+    chains = {
+      [polkadotChainId]: polkadotChain,
+    };
   });
 
   afterAll(() => provider.disconnect());
@@ -40,6 +47,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
       api,
       TEST_ACCOUNT_ID,
       '0x1e0100379b3f5dc547e92c7bf2b9837b8801954b9a68f7deadb3411400511f66adbe140000000000',
+      chains,
     );
 
     expect(transaction).toEqual({
@@ -61,6 +69,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
       api,
       TEST_ACCOUNT_ID,
       '0x1e0000e4485f31d7848a3f4540dac93d8c056e7cb18b534fbab0c8367a81e1b85e464a001f0102000468161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a2420004030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e802e8030000',
+      chains,
     );
 
     expect(transaction).toEqual({
@@ -99,6 +108,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
       api,
       TEST_ACCOUNT_ID,
       '0x04030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
+      chains,
     );
 
     expect(transaction).toEqual({
@@ -119,6 +129,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
       api,
       TEST_ACCOUNT_ID,
       '0x1f0102000468161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242000000040002e8030000',
+      chains,
     );
 
     expect(transaction).toEqual({
@@ -145,6 +156,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
       api,
       TEST_ACCOUNT_ID,
       '0x0600070010a5d4e80308eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014',
+      chains,
     );
 
     expect(transaction).toEqual({
@@ -163,7 +175,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
   });
 
   test('should decode unstake call', async () => {
-    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, '0x0602070010a5d4e8');
+    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, '0x0602070010a5d4e8', chains);
 
     expect(transaction).toEqual({
       accountId: TEST_ACCOUNT_ID,
@@ -182,6 +194,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
       api,
       TEST_ACCOUNT_ID,
       '0x0605040008eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014',
+      chains,
     );
 
     expect(transaction).toEqual({
@@ -197,7 +210,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
   });
 
   test('should decode redeem call', async () => {
-    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, '0x060301000000');
+    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, '0x060301000000', chains);
 
     expect(transaction).toEqual({
       accountId: TEST_ACCOUNT_ID,
@@ -210,7 +223,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
   });
 
   test('should decode restake call', async () => {
-    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, '0x0613070010a5d4e8');
+    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, '0x0613070010a5d4e8', chains);
 
     expect(transaction).toEqual({
       accountId: TEST_ACCOUNT_ID,
@@ -225,7 +238,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
   });
 
   test('should decode stake more call', async () => {
-    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, '0x0601070010a5d4e8');
+    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, '0x0601070010a5d4e8', chains);
 
     expect(transaction).toEqual({
       accountId: TEST_ACCOUNT_ID,
@@ -244,6 +257,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
       api,
       TEST_ACCOUNT_ID,
       '0x06070308eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014',
+      chains,
     );
 
     expect(transaction).toEqual({
@@ -259,7 +273,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
   });
 
   test('should decode destination call with no payee', async () => {
-    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, '0x060700');
+    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, '0x060700', chains);
 
     expect(transaction).toEqual({
       accountId: TEST_ACCOUNT_ID,

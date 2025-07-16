@@ -62,12 +62,6 @@ export const Confirmation = ({
     return confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
   }, [confirmStore.meta.route]);
 
-  const proxyAccount = useMemo(() => {
-    if (nullable(confirmStore)) return null;
-
-    return confirmStore.meta.route.find(accountUtils.isProxiedAccount) ?? null;
-  }, [confirmStore.meta.route]);
-
   if (!confirmStore || !confirmStore.wallets?.initiator) {
     return (
       <Box width="440px" height="440px" verticalAlign="center" horizontalAlign="center">
@@ -92,13 +86,7 @@ export const Confirmation = ({
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
-        chain={meta.chain}
-        wallets={wallets}
-        initiators={initiators}
-        signatory={meta.signatory}
-        proxied={proxyAccount}
-      >
+      <TransactionDetails chain={meta.chain} wallets={wallets} initiators={initiators} signatory={meta.signatory}>
         <DetailRow label={t('governance.addDelegation.confirmation.target')}>
           <Account variant="short" chain={meta.chain} accountId={toAccountId(meta.target)} />
         </DetailRow>

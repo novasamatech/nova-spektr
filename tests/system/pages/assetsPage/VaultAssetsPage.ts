@@ -28,7 +28,7 @@ export class VaultAssetsPage extends BaseAssetsPage {
   public async checkTransferFee(chain: ChainModel): Promise<VaultAssetsPage> {
     return await step(`Check transfer fee for each asset on chain: ${chain.name}`, async () => {
       const config = await readConfig();
-      const targetChain = config.find((config_chain: any) => config_chain.name === chain.name);
+      const targetChain = config.find((config_chain) => config_chain.name === chain.name);
 
       if (targetChain) {
         for (const asset of targetChain.assets) {

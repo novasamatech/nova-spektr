@@ -35,7 +35,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   const multisigAccount = route.find(accountUtils.isMultisigAccount);
-  const proxiedAccount = route.find(accountUtils.isProxiedAccount);
 
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
@@ -45,13 +44,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
-        chain={chain}
-        wallets={wallets}
-        initiators={initiators}
-        signatory={signatory}
-        proxied={proxiedAccount}
-      >
+      <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
         <DetailRow
           className="text-text-primary"
           label={

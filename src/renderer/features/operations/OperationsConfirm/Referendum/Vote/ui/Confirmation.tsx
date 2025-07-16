@@ -11,7 +11,7 @@ import { Box } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
 import { FeeWithDataLoading } from '@/entities/transaction';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
@@ -76,8 +76,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const address = toAddress(initiator.accountId, { prefix: chain.addressPrefix });
   const locksForAddress = getLocksForAddress(address, trackLocks);
 
-  const proxiedAccount = confirm.meta.route.find(accountUtils.isProxiedAccount);
-
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
@@ -112,7 +110,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         wallets={wallets}
         initiators={[confirm.meta.initiator]}
         signatory={confirm.meta.signatory}
-        proxied={proxiedAccount}
       >
         <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">

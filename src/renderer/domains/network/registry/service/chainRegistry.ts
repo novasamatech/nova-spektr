@@ -140,9 +140,11 @@ export class ChainRegistry {
 // Singleton instance
 let instance: ChainRegistry | undefined;
 
-export function getChainRegistry(): ChainRegistry {
+export async function getChainRegistry(): Promise<ChainRegistry> {
   if (nullable(instance)) {
-    instance = new ChainRegistry(chainsService.getChainsData(), {
+    const chains = await chainsService.getChainsData();
+    const sortedChains = chainsService.sortChains(chains);
+    instance = new ChainRegistry(sortedChains, {
       createWcProvider: getWsProvider,
       createClient,
     });

@@ -2,10 +2,10 @@ import { type TFunction } from 'i18next';
 import groupBy from 'lodash/groupBy';
 import unionBy from 'lodash/unionBy';
 
-import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
   type Address,
+  type Chain,
   type ChainId,
   CryptoType,
   type DraftAccount,
@@ -196,12 +196,12 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
   };
 }
 
-function shouldIgnoreDerivation(derivation: ImportedDerivation): boolean {
+function shouldIgnoreDerivation(derivation: ImportedDerivation, chains: Record<ChainId, Chain>): boolean {
   if (!derivation.derivationPath) return true;
 
   const AllKeyTypes = [KeyType.MAIN, KeyType.PUBLIC, KeyType.HOT, KeyType.CUSTOM];
 
-  const isChainParamValid = derivation.chainId && chainsService.getChainById(derivation.chainId as ChainId);
+  const isChainParamValid = derivation.chainId && chains[derivation.chainId as ChainId];
   const isTypeParamValid = derivation.type && Object.values(AllKeyTypes).includes(derivation.type as KeyType);
   const isShardedAllowedForType =
     !derivation.sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.HOT);

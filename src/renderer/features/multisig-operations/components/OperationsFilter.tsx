@@ -2,12 +2,12 @@ import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
 
-import { chainsService } from '@/shared/api/network';
-import { type ChainId, TransactionType } from '@/shared/core';
+import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, MultiSelect } from '@/shared/ui';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { type MultisigOperation } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { operationsContextModel } from '../model/context';
 
@@ -49,20 +49,14 @@ type Props = {
 export const OperationsFilter = ({ operations }: Props) => {
   const { t } = useI18n();
 
-  const [availableChains, setAvailableChains] = useState<{ chainId: ChainId; name: string }[]>([]);
   const [filtersOptions, setFiltersOptions] = useState<FiltersOptions>(EmptyOptions);
 
   const selectedOptions = useUnit(operationsContextModel.$filter);
-
-  useEffect(() => {
-    const chains = chainsService.getChainsData().map(({ chainId, name }) => ({ chainId, name }));
-
-    setAvailableChains(chains);
-  }, []);
+  const chains = useUnit(networkModel.$chains);
 
   const StatusOptions = getStatusOptions(t);
   const TransactionOptions = getTransactionOptions(t);
-  const NetworkOptions = availableChains.map(({ chainId, name }) => ({
+  const NetworkOptions = Object.values(chains).map(({ chainId, name }) => ({
     id: chainId,
     value: chainId,
     element: name,
@@ -70,7 +64,7 @@ export const OperationsFilter = ({ operations }: Props) => {
 
   useEffect(() => {
     setFiltersOptions(getAvailableFiltersOptions(operations));
-  }, [operations, availableChains]);
+  }, [operations, chains]);
 
   const getAvailableFiltersOptions = (transactions: MultisigOperation[]) => {
     return transactions.reduce(

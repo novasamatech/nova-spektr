@@ -1,15 +1,8 @@
-import { attach, createEffect, createEvent, createStore, sample } from 'effector';
+import { attach, createEvent, createStore, sample } from 'effector';
 
-import { chainsService } from '@/shared/api/network';
-import {
-  type Chain,
-  type ChainId,
-  type DraftAccount,
-  type ID,
-  type VaultChainAccount,
-  type VaultShardAccount,
-} from '@/shared/core';
+import { type Chain, type DraftAccount, type ID, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { accounts } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { proxiesModel } from '@/features/proxies';
 
 type AccountsCreatedParams = {
@@ -31,25 +24,18 @@ const $keysToAdd = createStore<(DraftAccount<VaultChainAccount> | DraftAccount<V
 
 const createAccountsFx = attach({ effect: accounts.createAccounts });
 
-const chainSetFx = createEffect((chainId: ChainId): Chain | undefined => {
-  return chainsService.getChainById(chainId);
-});
-
 sample({
   clock: shardsSelected,
   target: $shards,
 });
 
 sample({
-  clock: $shards,
-  filter: shards => shards.length > 0,
-  fn: shards => shards[0].chainId,
-  target: chainSetFx,
-});
-
-sample({
-  clock: chainSetFx.doneData,
-  filter: (chain): chain is Chain => Boolean(chain),
+  source: {
+    shards: $shards,
+    chains: networkModel.$chains,
+  },
+  filter: ({ shards, chains }) => shards.length > 0 && Object.keys(chains).length > 0,
+  fn: ({ shards, chains }) => chains[shards[0].chainId],
   target: $chain,
 });
 
