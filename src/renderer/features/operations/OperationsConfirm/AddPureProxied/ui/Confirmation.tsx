@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -36,6 +37,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const multisigAccount = route.find(accountUtils.isMultisigAccount);
 
+  const nativeAsset = getNativeAsset(chain.assets);
+
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
@@ -62,7 +65,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             </>
           }
         >
-          <Fee fee={proxyDeposit} asset={chain.assets[0]} />
+          <Fee fee={proxyDeposit} asset={nativeAsset} />
         </DetailRow>
 
         {multisigAccount && (
@@ -83,11 +86,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
               </>
             }
           >
-            <Fee fee={multisigDeposit} asset={chain.assets[0]} />
+            <Fee fee={multisigDeposit} asset={nativeAsset} />
           </DetailRow>
         )}
 
-        <FeeWithLabel fee={fee} asset={chain.assets[0]} />
+        <FeeWithLabel fee={fee} asset={nativeAsset} />
       </TransactionDetails>
 
       <div className="mt-3 flex w-full justify-between">
