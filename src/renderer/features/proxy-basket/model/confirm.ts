@@ -10,12 +10,12 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
+  type AddProxyConfirm,
   addProxyConfirmModel,
   addPureProxiedConfirmModel,
   removeProxyConfirmModel,
   removePureProxiedConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import { type AddProxyConfirm } from '@/features/operations/OperationsConfirm/AddProxy/model/confirm-model';
 import { type AddPureProxiedInput, type RemoveProxyInput, type RemovePureProxiedInput } from '../types/confirm';
 
 type DataParams = {

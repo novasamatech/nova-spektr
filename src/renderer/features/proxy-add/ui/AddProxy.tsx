@@ -9,7 +9,7 @@ import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { AddProxyConfirm } from '@/features/operations/OperationsConfirm/AddProxy';
+import { AddProxyConfirmation } from '@/features/operations/OperationsConfirm/AddProxy';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { Step } from '../lib/types';
 import { addProxyModel } from '../model/add-proxy-model';
@@ -66,7 +66,7 @@ export const AddProxy = ({ wallet }: Props) => {
       <Modal.Content>
         {addProxyUtils.isInitStep(step) && <AddProxyForm onGoBack={closeModal} />}
         {addProxyUtils.isConfirmStep(step) && (
-          <AddProxyConfirm
+          <AddProxyConfirmation
             secondaryActionButton={
               initiatorWallet &&
               basketUtils.isBasketAvailable(initiatorWallet) && (

@@ -11,8 +11,10 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { addProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm/AddProxy';
-import { type AddProxyConfirm } from '@/features/operations/OperationsConfirm/AddProxy/model/confirm-model';
+import {
+  type AddProxyConfirm,
+  addProxyConfirmModel as confirmModel,
+} from '@/features/operations/OperationsConfirm/AddProxy';
 import { proxiesModel } from '@/features/proxies';
 import { type AddProxyStore, Step } from '../lib/types';
 
