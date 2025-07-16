@@ -21,7 +21,7 @@ export const SubmitEvidenceConfirmation = ({ fee, account, wallets, chain, asset
   const { t } = useI18n();
 
   return (
-    <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={null}>
+    <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={account}>
       <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.wish')}>{wish}</DetailRow>
       <DetailRow label={t('fellowship.salary.submitEvidenceConfirm.evidence')}>{evidence}</DetailRow>
       <Separator />
