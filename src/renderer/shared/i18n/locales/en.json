@@ -1376,6 +1376,8 @@
       "votes": "Number of votes",
       "wallet": "Wallet"
     },
+    "noSignatoryErrorTitle": "No account for {network}",
+    "noSignatoryErrorDescription": "The wallet<wallet />does not have an account on the {network} network. You cannot sign this opperation. Please add an account on {network} network.",
     "detailsTitle": "Details",
     "errorWatchOnly": "Can't sign with watch only account.",
     "explorerLink": "View in explorer",
