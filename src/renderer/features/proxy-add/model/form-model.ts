@@ -31,9 +31,7 @@ import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } f
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { operationsUtils } from '@/entities/operations';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { proxiesUtils } from '@/features/proxies';
 
 type ProxyAccounts = {
@@ -385,15 +383,6 @@ const $canSubmit = combine(
   },
 );
 
-const $multisigAlreadyExists = combine(
-  {
-    apis: networkModel.$apis,
-    coreTxs: $coreTx.map((tx) => (tx ? [tx] : [])),
-    transactions: selectedWalletMultisigOperations.$list,
-  },
-  ({ apis, coreTxs, transactions }) => operationsUtils.isMultisigAlreadyExists({ apis, coreTxs, transactions }),
-);
-
 type ProxyParams = {
   api: ApiPromise;
   accountId: AccountId;
@@ -574,7 +563,6 @@ export const formModel = {
   $isMultisig,
   $isChainConnected,
   $canSubmit,
-  $multisigAlreadyExists,
 
   flow,
 
