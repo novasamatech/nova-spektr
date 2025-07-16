@@ -81,6 +81,10 @@ const NetworkSelector = () => {
     [availableChains],
   );
 
+  if (!chain.value) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col gap-y-2">
       <Select
@@ -109,7 +113,7 @@ const AccountSelector = () => {
   const wallet = useUnit(walletSelect.$selectedWallet);
   const balances = useUnit(balanceModel.$balances);
 
-  if (avilableAccounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value) {
+  if (avilableAccounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value || !chain.value) {
     return null;
   }
 
@@ -117,14 +121,14 @@ const AccountSelector = () => {
 
   const options = avilableAccounts.map((account) => {
     const isShard = accountUtils.isVaultShardAccount(account);
-    const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
+    const address = toAddress(account.accountId, { prefix: chain.value!.addressPrefix });
     const id = accountService.uniqId(account);
 
     const balance = balanceUtils.getBalance(
       balances,
       account.accountId,
-      chain.value.chainId,
-      getNativeAsset(chain.value.assets).assetId.toString(),
+      chain.value!.chainId,
+      getNativeAsset(chain.value!.assets).assetId.toString(),
     );
 
     return {
@@ -173,6 +177,8 @@ const Signatories = () => {
   const allWallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
 
+  if (!chain.value) return null;
+
   const nativeAsset = getNativeAsset(chain.value.assets);
 
   const signatoriesWithBalance = useMemo(() => {
@@ -180,7 +186,7 @@ const Signatories = () => {
       const balance = balanceUtils.getBalance(
         balances,
         signatory.accountId,
-        chain.value.chainId,
+        chain.value!.chainId,
         nativeAsset.assetId.toString(),
       );
       return { account: signatory, balance: withdrawableAmount(balance) };
@@ -216,9 +222,11 @@ const ProxyInput = () => {
   const proxyAccounts = useUnit(formModel.$proxyAccounts);
   const proxyQuery = useUnit(formModel.$proxyQuery);
 
+  if (!chain.value) return null;
+
   const options = proxyAccounts.map((proxyAccount) => {
     const isShard = accountUtils.isVaultShardAccount(proxyAccount);
-    const address = toAddress(proxyAccount.accountId, { prefix: chain.value.addressPrefix });
+    const address = toAddress(proxyAccount.accountId, { prefix: chain.value!.addressPrefix });
     const id = accountService.uniqId(proxyAccount);
 
     return {
@@ -313,6 +321,8 @@ const FeeSection = () => {
   const multisigDeposit = useUnit(formModel.$multisigDeposit);
   const oldProxyDeposit = useUnit(formModel.$oldProxyDeposit);
   const activeProxies = useUnit(formModel.$activeProxies);
+
+  if (!chain.value) return null;
 
   const nativeAsset = getNativeAsset(chain.value.assets);
 

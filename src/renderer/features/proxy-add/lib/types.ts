@@ -11,7 +11,7 @@ export const enum Step {
 }
 
 export type AddProxyStore = {
-  chain: Chain;
+  chain: Chain | null;
   initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   delegate: Address;
