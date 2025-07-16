@@ -19,8 +19,8 @@ import { accountUtils } from '@/entities/wallet';
 import { proxiesUtils } from '@/features/proxies';
 
 type FormParams = {
-  chain: Chain;
-  initiator: AnyAccount;
+  chain: Chain | null;
+  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
 };
 
@@ -57,10 +57,10 @@ const $proxyQuery = createStore<string>('');
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     chain: {
-      defaultValue: {} as Chain,
+      defaultValue: null,
     },
     initiator: {
-      defaultValue: {} as AnyAccount,
+      defaultValue: null,
       validator: () => {
         return {
           source: combine({
@@ -70,6 +70,14 @@ const form: Form<FormParams> = createForm<FormParams>({
             isMultisig: $isMultisig,
           }),
           fn: (value, form, { isMultisig, balances, fee, proxyDeposit }) => {
+            if (!value) {
+              return { message: 'proxy.addProxy.noInitiator' };
+            }
+
+            if (!form.chain) {
+              return { message: 'proxy.addProxy.noChain' };
+            }
+
             const balance = balanceUtils.getBalance(
               balances,
               value.accountId,
@@ -103,6 +111,10 @@ const form: Form<FormParams> = createForm<FormParams>({
           }),
           fn: (value, form, { isMultisig, balances, fee, multisigDeposit }) => {
             if (!value || !isMultisig) return;
+
+            if (!form.chain) {
+              return { message: 'proxy.addProxy.noChain' };
+            }
 
             const signatoryBalance = balanceUtils.getBalance(
               balances,
@@ -164,7 +176,7 @@ const $isChainConnected = combine(
     statuses: networkModel.$connectionStatuses,
   },
   ({ chain, statuses }) => {
-    if (!chain.chainId) return false;
+    if (!chain || !chain.chainId) return false;
 
     return networkUtils.isConnectedStatus(statuses[chain.chainId]);
   },
@@ -176,7 +188,7 @@ const $api = combine(
     form: form.$values,
   },
   ({ apis, form }) => {
-    if (!form.chain.chainId) return null;
+    if (!form.chain || !form.chain.chainId) return null;
 
     return apis[form.chain.chainId] ?? null;
   },
@@ -188,6 +200,7 @@ const $accounts = combine(
     walletAccounts: $walletAccounts,
   },
   ({ chain, walletAccounts }) => {
+    if (!chain) return [];
     return walletAccounts.filter((account) => accountService.isAccountAvailableOnChain(account, chain));
   },
 );
@@ -199,7 +212,7 @@ const $coreTx = combine(
     isConnected: $isChainConnected,
   },
   ({ form, account, isConnected }): Transaction | null => {
-    if (!isConnected || !account) return null;
+    if (!isConnected || !account || !form.chain) return null;
 
     return {
       chainId: form.chain.chainId,

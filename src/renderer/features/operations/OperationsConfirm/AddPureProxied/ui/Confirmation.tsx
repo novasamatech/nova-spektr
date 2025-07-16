@@ -7,7 +7,7 @@ import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
-import { Fee, FeeWithLabel } from '@/entities/transaction';
+import { Fee, FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -68,27 +68,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <Fee fee={proxyDeposit} asset={nativeAsset} />
         </DetailRow>
 
-        {multisigAccount && (
-          <DetailRow
-            className="text-text-primary"
-            label={
-              <>
-                <Icon className="text-text-tertiary" name="lock" size={12} />
-                <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
-                <Tooltip>
-                  <Tooltip.Trigger>
-                    <div tabIndex={0}>
-                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-                    </div>
-                  </Tooltip.Trigger>
-                  <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
-                </Tooltip>
-              </>
-            }
-          >
-            <Fee fee={multisigDeposit} asset={nativeAsset} />
-          </DetailRow>
-        )}
+        {multisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit} />}
 
         <FeeWithLabel fee={fee} asset={nativeAsset} />
       </TransactionDetails>
