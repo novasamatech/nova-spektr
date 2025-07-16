@@ -114,11 +114,11 @@ const form: Form<FormParams> = createForm<FormParams>({
           }),
           fn: (initiator, form, { isMultisig, balances, ...params }) => {
             if (nullable(initiator)) {
-              return { message: 'transfer.noInitiatorError' };
+              return { message: 'proxy.addProxy.noInitiatorError' };
             }
 
             if (nullable(form.chain)) {
-              return { message: 'transfer.noChainError' };
+              return { message: 'proxy.addProxy.noChainError' };
             }
 
             const balance = balanceUtils.getBalance(
@@ -133,7 +133,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               : new BN(params.proxyDeposit).add(new BN(params.fee)).gte(new BN(transferableAmount(balance)));
 
             if (isNotEnoughTokens) {
-              return { message: 'transfer.notEnoughBalanceForDepositError' };
+              return { message: 'proxy.addProxy.notEnoughBalanceForDepositError' };
             }
           },
         };
@@ -152,11 +152,11 @@ const form: Form<FormParams> = createForm<FormParams>({
           }),
           fn: (signatory, form, { isMultisig, balances, ...params }) => {
             if (nullable(signatory)) {
-              return { message: 'transfer.noSignatoryError' };
+              return { message: 'proxy.addProxy.noSignatoryError' };
             }
 
             if (nullable(form.chain)) {
-              return { message: 'transfer.noChainError' };
+              return { message: 'proxy.addProxy.noChainError' };
             }
 
             const signatoryBalance = balanceUtils.getBalance(
@@ -189,7 +189,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             }
 
             if (nullable(form.chain)) {
-              return { message: 'transfer.noChainError' };
+              return { message: 'proxy.addProxy.noChainError' };
             }
 
             const isSameAsProxied =
