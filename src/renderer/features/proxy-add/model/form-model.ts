@@ -349,15 +349,15 @@ const $api = combine(
 const $coreTx = combine(
   {
     form: form.$values,
-    account: form.fields.initiator.$value,
+    signatory: form.fields.signatory.$value,
     isConnected: $isChainConnected,
   },
-  ({ form, account, isConnected }): Transaction | null => {
-    if (!isConnected || !account || !form.delegate || !form.proxyType || !form.chain) return null;
+  ({ form, signatory, isConnected }): Transaction | null => {
+    if (!isConnected || !signatory || !form.delegate || !form.proxyType || !form.chain) return null;
 
     return {
       chainId: form.chain.chainId,
-      accountId: account.accountId,
+      accountId: signatory.accountId,
       type: TransactionType.ADD_PROXY,
       args: {
         delegate: toAddress(form.delegate, { prefix: form.chain.addressPrefix }),
