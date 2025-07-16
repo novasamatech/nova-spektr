@@ -4,11 +4,10 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
 import { proxyUtils } from '@/entities/proxy';
-import { FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/entities/transaction';
+import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -59,10 +58,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         <hr className="w-full border-filter-border pr-2" />
 
         <ProxyDepositLabel>
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={proxyDeposit} asset={chain.assets[0]} />
-            <AssetFiatBalance asset={chain.assets[0]} amount={proxyDeposit} />
-          </div>
+          <Fee fee={proxyDeposit} asset={nativeAsset} />
         </ProxyDepositLabel>
 
         {multisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit} />}
