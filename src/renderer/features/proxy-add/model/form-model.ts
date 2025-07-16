@@ -325,6 +325,27 @@ const $api = combine(
   },
 );
 
+// const $fakeTx = combine(
+//   {
+//     chain: form.fields.chain.$value,
+//     isConnected: $isChainConnected,
+//   },
+//   ({ isConnected, chain }): Transaction | null => {
+//     if (!chain.chainId || !isConnected) return null;
+
+//     return {
+//       chainId: chain.chainId,
+//       accountId: TEST_ACCOUNTS[0],
+//       type: TransactionType.ADD_PROXY,
+//       args: {
+//         delegate: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
+//         proxyType: 'Any',
+//         delay: 0,
+//       },
+//     };
+//   },
+// );
+
 const $coreTx = combine(
   {
     form: form.$values,
@@ -354,6 +375,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: form.fields.chain.$value,
   transaction: $coreTx,
+  // TODO fakeTx: $fakeTx,
 });
 
 const $isMultisig = $route.map((route) => {
