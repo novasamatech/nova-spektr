@@ -82,7 +82,19 @@ const mergeMultisigOperations = (a: MultisigOperation[], b: MultisigOperation[])
   return merge({
     a,
     b,
-    filter: (a, b) => !isEqual(a, b),
+    filter: (a, b) => {
+      if (isEqual(a, b)) {
+        return false;
+      }
+
+      // Update should be skipped if the new record is in a pending state while the existing record is already completed.
+      // This can happen after operation approval, when the subquery indexer hasn't received that update yet.
+      if (b.status === 'pending' && a.status !== 'pending') {
+        return false;
+      }
+
+      return true;
+    },
     mergeBy: a => [a.callHash, a.blockCreated, a.indexCreated, a.chainId, a.accountId],
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
