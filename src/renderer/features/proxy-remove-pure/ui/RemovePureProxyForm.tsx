@@ -1,8 +1,8 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useMemo } from 'react';
 
 import { type MultisigAccount } from '@/shared/core';
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button } from '@/shared/ui';
@@ -18,7 +18,7 @@ type Props = {
   onGoBack: () => void;
 };
 export const RemovePureProxyForm = ({ onGoBack }: Props) => {
-  const { submit } = useForm(formModel.$proxyForm);
+  const { submit } = useForm(formModel.form);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -44,7 +44,7 @@ const Signatories = () => {
 
   const {
     fields: { signatory },
-  } = useForm(formModel.$proxyForm);
+  } = useForm(formModel.form);
 
   const account = useUnit(formModel.$account);
 
@@ -81,8 +81,8 @@ const Signatories = () => {
       allAccounts={allAccounts}
       initiator={account}
       allWallets={allWallets}
-      hasError={signatory.hasError()}
-      errorText={t(signatory.errorText())}
+      hasError={signatory.hasError}
+      errorText={t(signatory.errorMessage)}
       network={{ chain, asset: chain.assets[0] }}
       onChange={signatory.onChange}
     />
@@ -127,12 +127,12 @@ const FeeError = () => {
 
   const {
     fields: { signatory },
-  } = useForm(formModel.$proxyForm);
+  } = useForm(formModel.form);
 
   const isMultisig = useUnit(formModel.$isMultisig);
 
   return (
-    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={signatory.hasError()} variant="error">
+    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={signatory.hasError} variant="error">
       <Alert.Item withDot={false}>
         {isMultisig ? t('proxy.addProxy.balanceAlertMultisig') : t('proxy.addProxy.balanceAlertRegular')}
       </Alert.Item>

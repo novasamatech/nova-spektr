@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { createForm } from 'effector-forms';
 import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
@@ -15,6 +14,7 @@ import {
   TransactionType,
   type Wallet,
 } from '@/shared/core';
+import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ACCOUNTS,
   getNativeAsset,
@@ -82,22 +82,21 @@ const $account = $formStore.map((store) => (store ? store.proxiedAccount : null)
 const $realAccount = $formStore.map((store) => (store ? store.account : null), { skipVoid: false });
 const $signatories = $formStore.map((store) => (store ? store.signatories : null), { skipVoid: false });
 
-const $proxyForm = createForm<FormParams>({
+const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     signatory: {
-      init: null,
-      rules: [
-        {
-          name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      defaultValue: null,
+      validator: () => {
+        return {
           source: combine({
             fee: $fee,
+            multisigDeposit: $multisigDeposit,
             balances: balanceModel.$balances,
             isMultisig: $isMultisig,
             chain: $chain,
           }),
-          validator: (signatory, _f, { isMultisig, balances, chain, ...params }) => {
-            if (!signatory || !isMultisig) return true;
+          fn: (signatory, _f, { isMultisig, balances, chain, fee, multisigDeposit }) => {
+            if (!signatory || !isMultisig) return;
 
             const signatoryBalance = balanceUtils.getBalance(
               balances,
@@ -106,10 +105,16 @@ const $proxyForm = createForm<FormParams>({
               getNativeAsset(chain.assets).assetId.toString(),
             );
 
-            return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));
+            const hasEnoughTokens = new BN(multisigDeposit)
+              .add(new BN(fee))
+              .lte(withdrawableAmountBN(signatoryBalance));
+
+            if (!hasEnoughTokens) {
+              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
+            }
           },
-        },
-      ],
+        };
+      },
     },
   },
   validateOn: ['submit'],
@@ -238,7 +243,7 @@ const $fakeTx = combine(
 
 const $canSubmit = combine(
   {
-    isFormValid: $proxyForm.$isValid,
+    isFormValid: form.$isValid,
     isFeeLoading: $isFeeLoading,
   },
   ({ isFormValid, isFeeLoading }) => {
@@ -258,7 +263,7 @@ const getAccountProxiesFx = createEffect(({ api, accountId }: ProxyParams): Prom
 
 sample({
   clock: formInitiated,
-  target: [$proxyForm.reset, $proxyQuery.reinit],
+  target: [form.reset, $proxyQuery.reinit],
 });
 
 sample({
@@ -330,7 +335,7 @@ sample({
 // Submit
 
 sample({
-  clock: $proxyForm.formValidated,
+  clock: form.submit.doneData,
   source: {
     chain: $chain,
     account: $account,
@@ -341,9 +346,9 @@ sample({
 });
 
 export const formModel = {
+  form,
   $wallet,
   $account,
-  $proxyForm,
   $proxyChains,
   $proxiedAccounts,
   $signatories,
