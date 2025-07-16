@@ -209,8 +209,8 @@ const FeeSection = () => {
           proxyNumber={1}
           deposit="0"
           asset={getNativeAsset(chain.value.assets)}
-          onDepositChange={formModel.events.proxyDepositChanged}
-          onDepositLoading={formModel.events.isProxyDepositLoadingChanged}
+          onDepositChange={formModel.proxyDepositChanged}
+          onDepositLoading={formModel.isProxyDepositLoadingChanged}
         />
       </ProxyDepositLabel>
 

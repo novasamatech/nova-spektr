@@ -112,11 +112,11 @@ sample({
 
 sample({
   clock: flowStarted,
-  target: formModel.events.formInitiated,
+  target: formModel.formInitiated,
 });
 
-sample({
-  clock: formModel.output.formSubmitted,
+const formSubmitted = sample({
+  clock: formModel.formSubmitted,
   source: {
     coreTx: formModel.$coreTx,
     multisigDeposit: formModel.$multisigDeposit,
@@ -125,22 +125,35 @@ sample({
     tx: formModel.$tx,
     chain: formModel.form.fields.chain.$value,
   },
-  filter: ({ coreTx, tx, chain }) => nonNullable(tx) && nonNullable(coreTx) && nonNullable(chain),
-  fn: ({ coreTx, multisigDeposit, route, tx, chain }, { formData }) => {
+  fn: (source, formSubmitted) => {
     return {
-      event: [
-        {
-          ...formData,
-          signatory: formData.signatory!,
-          multisigDeposit: multisigDeposit.toString(),
-          fee: formData.fee,
-          proxyDeposit: formData.proxyDeposit,
-          chain,
-          coreTx: coreTx!,
-          route,
-          tx: tx!,
-        } satisfies AddPureProxiedConfirm,
-      ],
+      ...source,
+      ...formSubmitted,
+    };
+  },
+}).filterMap(({ coreTx, multisigDeposit, route, tx, chain, formData }) => {
+  if (nonNullable(tx) && nonNullable(coreTx) && nonNullable(chain) && nonNullable(formData.signatory)) {
+    return [
+      {
+        ...formData,
+        signatory: formData.signatory,
+        multisigDeposit: multisigDeposit.toString(),
+        fee: formData.fee,
+        proxyDeposit: formData.proxyDeposit,
+        chain,
+        coreTx,
+        route,
+        tx,
+      } satisfies AddPureProxiedConfirm,
+    ];
+  }
+});
+
+sample({
+  clock: formSubmitted,
+  fn: (event) => {
+    return {
+      event,
       step: Step.CONFIRM,
     };
   },
