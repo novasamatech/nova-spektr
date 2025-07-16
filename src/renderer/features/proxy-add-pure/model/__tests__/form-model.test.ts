@@ -31,7 +31,7 @@ describe('widgets/AddPureProxyModal/model/form-model', () => {
     await allSettled(formModel.form.fields.chain.change, { scope, params: testChain });
 
     expect(scope.getState(formModel.form.$values)).toEqual({
-      account: {},
+      initiator: {},
       chain: testChain,
       signatory: null,
     });
