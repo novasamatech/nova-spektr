@@ -3,7 +3,14 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, toAddress, toShortAddress, validateAddress, withdrawableAmount } from '@/shared/lib/utils';
+import {
+  getNativeAsset,
+  toAddress,
+  toShortAddress,
+  transferableAmount,
+  validateAddress,
+  withdrawableAmount,
+} from '@/shared/lib/utils';
 import { Alert, Button, Combobox, Icon, Identicon, InputHint, Select } from '@/shared/ui';
 import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
@@ -94,19 +101,27 @@ const AccountSelector = () => {
     fields: { initiator, chain },
   } = useForm(formModel.form);
 
-  const proxiedAccounts = useUnit(formModel.$proxiedAccounts);
+  const avilableAccounts = useUnit(formModel.$avilableAccounts);
   const wallet = useUnit(walletSelect.$selectedWallet);
+  const balances = useUnit(balanceModel.$balances);
 
-  if (proxiedAccounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value) {
+  if (avilableAccounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value) {
     return null;
   }
 
   const nativeAsset = getNativeAsset(chain.value.assets);
 
-  const options = proxiedAccounts.map(({ account, balance }) => {
+  const options = avilableAccounts.map((account) => {
     const isShard = accountUtils.isVaultShardAccount(account);
     const address = toAddress(account.accountId, { prefix: chain.value.addressPrefix });
     const id = accountService.uniqId(account);
+
+    const balance = balanceUtils.getBalance(
+      balances,
+      account.accountId,
+      chain.value.chainId,
+      getNativeAsset(chain.value.assets).assetId.toString(),
+    );
 
     return {
       id,
@@ -120,7 +135,7 @@ const AccountSelector = () => {
             name={isShard ? toShortAddress(address, 16) : account.name}
             canCopy={false}
           />
-          <AssetBalance value={balance} asset={nativeAsset} />
+          <AssetBalance value={transferableAmount(balance)} asset={nativeAsset} />
         </div>
       ),
     };

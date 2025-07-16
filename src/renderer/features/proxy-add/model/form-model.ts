@@ -28,10 +28,11 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { proxiesUtils } from '@/features/proxies';
 
 type ProxyAccounts = {
@@ -225,40 +226,21 @@ const $proxyChains = combine(
   },
 );
 
-const $proxiedAccounts = combine(
-  {
-    wallet: $wallet,
-    chain: form.fields.chain.$value,
-    balances: balanceModel.$balances,
-  },
-  ({ wallet, chain, balances }) => {
-    if (!wallet || !chain.chainId) return [];
-
-    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
-    const walletAccounts = wallet.accounts.filter((account) => {
-      if (isPolkadotVault && accountUtils.isVaultBaseAccount(account)) return false;
-
-      return accountUtils.isChainAndCryptoMatch(account, chain);
-    });
-
-    return walletAccounts.map((account) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        account.accountId,
-        chain.chainId,
-        getNativeAsset(chain.assets).assetId.toString(),
-      );
-
-      return { account, balance: transferableAmount(balance) };
-    });
-  },
-);
-
 const $signatories = createSignatoriesStore({
   chain: form.fields.chain.$value,
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
+
+const $avilableAccounts = combine(
+  {
+    chain: form.fields.chain.$value,
+    walletAccounts: walletSelect.$selectedAccounts,
+  },
+  ({ chain, walletAccounts }) => {
+    return walletAccounts.filter((account) => accountService.isAccountAvailableOnChain(account, chain));
+  },
+);
 
 const $proxyAccounts = combine(
   {
@@ -460,9 +442,9 @@ sample({
 });
 
 sample({
-  source: $proxiedAccounts,
-  filter: (proxiedAccounts) => proxiedAccounts.length > 0,
-  fn: (proxiedAccounts) => proxiedAccounts[0].account,
+  source: $avilableAccounts,
+  filter: (avilableAccounts) => avilableAccounts.length > 0,
+  fn: (avilableAccounts) => avilableAccounts[0],
   target: form.fields.initiator.change,
 });
 
@@ -567,7 +549,7 @@ export const formModel = {
 
   $wallet,
   $proxyChains,
-  $proxiedAccounts,
+  $avilableAccounts,
   $signatories,
   $proxyAccounts,
   $proxyTypes,
