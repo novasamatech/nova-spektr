@@ -43,7 +43,7 @@ type ProxyAccounts = {
 };
 
 type FormParams = {
-  chain: Chain;
+  chain: Chain | null;
   initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   delegate: Address;
@@ -87,7 +87,7 @@ const form: Form<FormParams> = createForm<FormParams>({
   validateOn: ['submit'],
   fields: {
     chain: {
-      defaultValue: {} as Chain,
+      defaultValue: null,
       validator: () => {
         return {
           source: combine({
@@ -115,6 +115,10 @@ const form: Form<FormParams> = createForm<FormParams>({
           fn: (initiator, form, { isMultisig, balances, ...params }) => {
             if (nullable(initiator)) {
               return { message: 'transfer.noInitiatorError' };
+            }
+
+            if (nullable(form.chain)) {
+              return { message: 'transfer.noChainError' };
             }
 
             const balance = balanceUtils.getBalance(
@@ -151,6 +155,10 @@ const form: Form<FormParams> = createForm<FormParams>({
               return { message: 'transfer.noSignatoryError' };
             }
 
+            if (nullable(form.chain)) {
+              return { message: 'transfer.noChainError' };
+            }
+
             const signatoryBalance = balanceUtils.getBalance(
               balances,
               signatory.accountId,
@@ -178,6 +186,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             const isDelegateValid = validateAddress(delegate);
             if (!isDelegateValid) {
               return { message: 'proxy.addProxy.proxyAddressRequiredError' };
+            }
+
+            if (nullable(form.chain)) {
+              return { message: 'transfer.noChainError' };
             }
 
             const isSameAsProxied =
@@ -242,6 +254,8 @@ const $avilableAccounts = combine(
     walletAccounts: $walletAccounts,
   },
   ({ chain, walletAccounts }) => {
+    if (!chain?.chainId) return [];
+
     return walletAccounts.filter((account) => accountService.isAccountAvailableOnChain(account, chain));
   },
 );
@@ -253,7 +267,7 @@ const $proxyAccounts = combine(
     query: $proxyQuery,
   },
   ({ wallets, chain, query }) => {
-    if (!chain.chainId) return [];
+    if (!chain?.chainId) return [];
 
     return walletUtils.getAccountsBy(wallets, (account, wallet) => {
       const isPvWallet = walletUtils.isPolkadotVault(wallet);
@@ -276,7 +290,7 @@ const $proxyTypes = combine(
     chain: form.fields.chain.$value,
   },
   ({ apis, statuses, chain }) => {
-    if (!chain.chainId) return [];
+    if (!chain?.chainId) return [];
     if (networkUtils.isConnectedStatus(statuses[chain.chainId])) {
       return getProxyTypes(apis[chain.chainId]);
     }
@@ -293,7 +307,7 @@ const $isChainConnected = combine(
     statuses: networkModel.$connectionStatuses,
   },
   ({ chain, statuses }) => {
-    if (!chain.chainId) return false;
+    if (!chain?.chainId) return false;
 
     return networkUtils.isConnectedStatus(statuses[chain.chainId]);
   },
@@ -302,12 +316,12 @@ const $isChainConnected = combine(
 const $api = combine(
   {
     apis: networkModel.$apis,
-    form: form.$values,
+    chain: form.fields.chain.$value,
   },
-  ({ apis, form }) => {
-    if (!form.chain.chainId) return null;
+  ({ apis, chain }) => {
+    if (!chain?.chainId) return null;
 
-    return apis[form.chain.chainId] ?? null;
+    return apis[chain.chainId] ?? null;
   },
 );
 
@@ -339,7 +353,7 @@ const $coreTx = combine(
     isConnected: $isChainConnected,
   },
   ({ form, account, isConnected }): Transaction | null => {
-    if (!isConnected || !account || !form.delegate || !form.proxyType) return null;
+    if (!isConnected || !account || !form.delegate || !form.proxyType || !form.chain) return null;
 
     return {
       chainId: form.chain.chainId,
@@ -474,7 +488,7 @@ sample({
     apis: networkModel.$apis,
   },
   filter: ({ chain, apis }, { params }) => {
-    return apis[chain.chainId].genesisHash === params.genesisHash;
+    return nonNullable(chain) && apis[chain.chainId].genesisHash === params.genesisHash;
   },
   fn: (_, { result }) => result,
   target: $maxProxies,
@@ -487,9 +501,9 @@ sample({
     account: form.fields.initiator.$value,
     isChainConnected: $isChainConnected,
   },
-  filter: ({ isChainConnected, account }) => isChainConnected && nonNullable(account),
+  filter: ({ isChainConnected, account }, chain) => isChainConnected && nonNullable(account) && nonNullable(chain),
   fn: ({ apis, account }, chain) => ({
-    api: apis[chain.chainId],
+    api: apis[chain!.chainId],
     accountId: account!.accountId,
   }),
   target: getAccountProxiesFx,
@@ -502,7 +516,7 @@ sample({
     apis: networkModel.$apis,
   },
   filter: ({ chain, apis }, { params }) => {
-    return apis[chain.chainId].genesisHash === params.api.genesisHash;
+    return nonNullable(chain) && apis[chain.chainId].genesisHash === params.api.genesisHash;
   },
   fn: (_, { result }) => ({
     activeProxies: result.accounts,

@@ -98,6 +98,7 @@ const formSubmitted = sample({
   if (
     nonNullable(transactions.coreTx) &&
     nonNullable(transactions.wrappedTx) &&
+    nonNullable(formData.chain) &&
     nonNullable(formData.initiator) &&
     nonNullable(formData.signatory) &&
     nonNullable(route) &&
@@ -106,6 +107,7 @@ const formSubmitted = sample({
     return [
       {
         ...formData,
+        chain: formData.chain,
         initiator: formData.initiator,
         signatory: formData.signatory,
         tx: transactions.wrappedTx,
@@ -136,7 +138,7 @@ sample({
     event: {
       signingPayloads: [
         {
-          chain: addProxyStore!.chain,
+          chain: addProxyStore!.chain!,
           account: addProxyStore!.initiator!,
           signatory: addProxyStore!.signatory,
           transaction: wrappedTx!,
@@ -164,7 +166,7 @@ sample({
   fn: (proxyData, signParams) => ({
     event: {
       ...signParams,
-      chain: proxyData.addProxyStore!.chain,
+      chain: proxyData.addProxyStore!.chain!,
       account: proxyData.addProxyStore!.initiator!,
       signatory: proxyData.addProxyStore!.signatory,
       coreTxs: [proxyData.coreTx!],
