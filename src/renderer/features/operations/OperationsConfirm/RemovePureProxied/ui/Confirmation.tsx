@@ -70,7 +70,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         chain={confirmStore.chain}
         wallets={wallets}
         initiators={[confirmStore.account]}
-        signatory={confirmStore.signatory}
+        signatory={confirmStore.signatory ?? confirmStore.account}
       >
         <DetailRow label={t('proxy.details.accessType')} className="pr-2">
           {/* eslint-disable-next-line i18next/no-literal-string */}
