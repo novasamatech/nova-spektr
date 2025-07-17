@@ -32,7 +32,7 @@ export const createFeeCalculator = ({ $active = createStore(true), $transaction,
     return transactionService.getTransactionFee(transaction, api, signerOptions).then((x) => new BN(x));
   });
 
-  const $pending = restore(fetchFeeFx.pending.updates, true);
+  const $pending = restore(fetchFeeFx.pending.updates, false);
 
   const logErrorFx = createEffect((res: UnitValue<typeof fetchFeeFx.fail>) => {
     console.error('fee calculation faied', res);

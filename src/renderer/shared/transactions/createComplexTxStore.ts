@@ -12,6 +12,7 @@ type Params<T extends Transaction> = {
   api: Store<ApiPromise | null>;
   chain: Store<Chain | null>;
   transaction: Store<T | null>;
+  feeTx?: Store<T | null>;
   accounts: Store<AnyAccount[]>;
   initiator: Store<AnyAccount | null>;
   signatory: Store<AnyAccount | null>;
@@ -22,6 +23,7 @@ export const createComplexTxStore = <T extends Transaction>({
   api,
   chain,
   transaction,
+  feeTx: feeTransaction,
   accounts,
   initiator,
   signatory,
@@ -34,6 +36,7 @@ export const createComplexTxStore = <T extends Transaction>({
   });
 
   const $tx = createStore<Transaction | null>(null);
+  const $feeTx = createStore<Transaction | null>(null);
 
   type WrapParams = {
     api: ApiPromise;
@@ -41,7 +44,7 @@ export const createComplexTxStore = <T extends Transaction>({
     route: AnyAccount[];
   };
 
-  const wrapTransactionFx = createEffect(async ({ transaction, route, api }: WrapParams) => {
+  const wrapTransactionHandler = async ({ transaction, route, api }: WrapParams) => {
     const tx = await transactionService.wrapLegacyTransaction(transaction, route, api);
     const signatory = route.at(-1);
 
@@ -52,7 +55,10 @@ export const createComplexTxStore = <T extends Transaction>({
     tx.accountId = signatory.accountId;
 
     return tx;
-  });
+  };
+
+  const wrapTransactionFx = createEffect(wrapTransactionHandler);
+  const wrapFeeTransactionFx = createEffect(wrapTransactionHandler);
 
   const wrapTransaction = sample({
     clock: [transaction, api, $route],
@@ -64,6 +70,19 @@ export const createComplexTxStore = <T extends Transaction>({
     filter: active,
     target: wrapTransactionFx,
   });
+
+  if (feeTransaction) {
+    const wrapFeeTransaction = sample({
+      clock: [feeTransaction, api, $route],
+      source: { transaction: feeTransaction, api, route: $route },
+    }).filter({ fn: nonNullableMap });
+
+    sample({
+      clock: wrapFeeTransaction,
+      filter: active,
+      target: wrapFeeTransactionFx,
+    });
+  }
 
   sample({
     clock: transaction,
@@ -84,15 +103,41 @@ export const createComplexTxStore = <T extends Transaction>({
     target: $tx,
   });
 
+  if (feeTransaction) {
+    sample({
+      clock: feeTransaction,
+      filter: (t) => nullable(t),
+      fn: () => null,
+      target: $feeTx,
+    });
+
+    sample({
+      clock: active,
+      filter: (active) => !active,
+      fn: () => null,
+      target: $feeTx,
+    });
+
+    sample({
+      clock: wrapFeeTransactionFx.doneData,
+      target: $feeTx,
+    });
+  }
+
+  const $mergedTx = combine({ tx: $tx, feeTx: $feeTx }, ({ tx, feeTx }) => {
+    return tx || feeTx;
+  });
+
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
     $active: active,
     $api: api,
-    $transaction: $tx,
+    $transaction: $mergedTx,
   });
 
   return {
     $route,
     $tx,
+    $feeTx,
     $pendingWrapping: wrapTransactionFx.pending,
     $fee,
     $pendingFee,
