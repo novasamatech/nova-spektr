@@ -1,7 +1,8 @@
 import { createEvent, sample } from 'effector';
-import { createForm } from 'effector-forms';
 
-const PASSPHRASE = 'I understand that I will not be able to manage this wallet';
+import { type Form, createForm } from '@/shared/forms';
+
+const PASSPHRASE = 'I huy';
 
 type FormParams = {
   passphrase: string;
@@ -11,59 +12,50 @@ type FormParams = {
   lossOfFunds: boolean;
 };
 
-type Input = {
-  shouldRemovePureProxy: boolean;
-};
-
-const formInitiated = createEvent<Input>();
+const formInitiated = createEvent();
 const formSubmitted = createEvent();
 
-const $warningForm = createForm<FormParams>({
+const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     passphrase: {
-      init: '',
-      rules: [
-        {
-          name: 'invalid',
-          validator: (value) => value.toLowerCase().trim() === PASSPHRASE.toLowerCase(),
-        },
-      ],
+      defaultValue: '',
+      validator: () => (value: string) => {
+        if (value.toLowerCase().trim() !== PASSPHRASE.toLowerCase()) {
+          return { message: 'pureProxyRemove.warning.invalidPassphrase' };
+        }
+      },
     },
     isCorrectProxy: {
-      init: false,
-      rules: [
-        {
-          name: 'invalid',
-          validator: Boolean,
-        },
-      ],
+      defaultValue: false,
+      validator: () => (value: boolean) => {
+        if (!value) {
+          return { message: 'pureProxyRemove.warning.checkboxRequired' };
+        }
+      },
     },
     isIrreversible: {
-      init: false,
-      rules: [
-        {
-          name: 'invalid',
-          validator: Boolean,
-        },
-      ],
+      defaultValue: false,
+      validator: () => (value: boolean) => {
+        if (!value) {
+          return { message: 'pureProxyRemove.warning.checkboxRequired' };
+        }
+      },
     },
     isInaccessible: {
-      init: false,
-      rules: [
-        {
-          name: 'invalid',
-          validator: Boolean,
-        },
-      ],
+      defaultValue: false,
+      validator: () => (value: boolean) => {
+        if (!value) {
+          return { message: 'pureProxyRemove.warning.checkboxRequired' };
+        }
+      },
     },
     lossOfFunds: {
-      init: false,
-      rules: [
-        {
-          name: 'invalid',
-          validator: Boolean,
-        },
-      ],
+      defaultValue: false,
+      validator: () => (value: boolean) => {
+        if (!value) {
+          return { message: 'pureProxyRemove.warning.checkboxRequired' };
+        }
+      },
     },
   },
   validateOn: ['submit'],
@@ -71,34 +63,18 @@ const $warningForm = createForm<FormParams>({
 
 sample({
   clock: formInitiated,
-  target: $warningForm.reset,
+  target: form.reset,
 });
 
 sample({
-  clock: formInitiated,
-  filter: ({ shouldRemovePureProxy }) => !shouldRemovePureProxy,
-  target: formSubmitted,
-});
-
-sample({
-  clock: formInitiated,
-  target: $warningForm.validate,
-});
-
-sample({
-  clock: $warningForm.formValidated,
+  clock: form.submit.doneData,
   target: formSubmitted,
 });
 
 export const warningModel = {
-  $warningForm,
-  $canSubmit: $warningForm.$eachValid,
+  form,
+  $canSubmit: form.$isValid,
 
-  events: {
-    formInitiated,
-  },
-
-  output: {
-    formSubmitted,
-  },
+  formInitiated,
+  formSubmitted,
 };

@@ -1,11 +1,12 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type ClipboardEvent, type FormEvent } from 'react';
 import { Trans } from 'react-i18next';
 
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
+import { useToggle } from '@/shared/lib/hooks';
 import { Button, FootnoteText } from '@/shared/ui';
-import { Checkbox, Input } from '@/shared/ui-kit';
+import { Checkbox, ConfirmModal, Input } from '@/shared/ui-kit';
 import { warningModel } from '../model/warning-model';
 
 type Props = {
@@ -17,7 +18,7 @@ export const Warning = ({ onGoBack }: Props) => {
   const {
     submit,
     fields: { passphrase, isCorrectProxy, isInaccessible, isIrreversible, lossOfFunds },
-  } = useForm(warningModel.$warningForm);
+  } = useForm(warningModel.form);
 
   const revokeAuthority = (event: FormEvent) => {
     event.preventDefault();
@@ -34,7 +35,7 @@ export const Warning = ({ onGoBack }: Props) => {
         <FootnoteText as="p"> {t('pureProxyRemove.warning.warningMessage')}</FootnoteText>
         <Input
           placeholder={t('general.input.descriptionPlaceholder')}
-          invalid={passphrase.isTouched && passphrase.hasError()}
+          invalid={passphrase.hasError}
           value={passphrase.value}
           onChange={passphrase.onChange}
           onPaste={handlePaste}
@@ -73,6 +74,7 @@ export const Warning = ({ onGoBack }: Props) => {
       </form>
 
       <ActionSection onGoBack={onGoBack} />
+      <ConfirmWarning onGoBack={onGoBack} />
     </div>
   );
 };
@@ -91,5 +93,29 @@ const ActionSection = ({ onGoBack }: Props) => {
         {t('pureProxyRemove.warning.revokeAuthorityButton')}
       </Button>
     </div>
+  );
+};
+
+const ConfirmWarning = ({ onGoBack }: Props) => {
+  const { t } = useI18n();
+
+  const [isRemoveConfirmOpen, toggleIsRemoveConfirmOpen] = useToggle();
+
+  const onClose = () => {
+    toggleIsRemoveConfirmOpen();
+    onGoBack();
+  };
+
+  return (
+    <ConfirmModal
+      isOpen={isRemoveConfirmOpen}
+      cancelText={t('walletDetails.common.confirmRemoveProxyCancel')}
+      confirmText={t('walletDetails.common.confirmRemoveProxySubmit')}
+      type="alert"
+      title={t('walletDetails.common.confirmRemoveProxyTitle')}
+      description={t('walletDetails.common.confirmRemoveProxyDescription')}
+      onCancel={onClose}
+      onConfirm={warningModel.formSubmitted}
+    />
   );
 };

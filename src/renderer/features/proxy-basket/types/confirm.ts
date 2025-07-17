@@ -1,5 +1,4 @@
 import { type Address, type Chain, type ProxiedAccount, type ProxyType, type Transaction } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
 export type AddProxyInput = {
@@ -28,21 +27,6 @@ export type RemoveProxyInput = {
   delegate: Address;
   description: string;
   transaction: Transaction;
-  proxiedAccount?: ProxiedAccount;
-
-  fee: string;
-  multisigDeposit: string;
-  coreTx?: Transaction | null;
-};
-
-export type RemovePureProxiedInput = {
-  signatory: AnyAccount | null;
-  description: string;
-  transaction: Transaction;
-  spawner: AccountId;
-  proxyType: ProxyType;
-  chain?: Chain;
-  account?: AnyAccount;
   proxiedAccount?: ProxiedAccount;
 
   fee: string;

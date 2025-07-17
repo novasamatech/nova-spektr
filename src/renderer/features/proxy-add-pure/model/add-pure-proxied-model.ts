@@ -23,6 +23,7 @@ import { type BasketTransactionDraft, basketOperations } from '@/aggregates/bask
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
+import { type SigningPayload } from '@/features/operations/OperationSign';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
@@ -132,10 +133,17 @@ const formSubmitted = sample({
     };
   },
 }).filterMap(({ coreTx, multisigDeposit, route, tx, chain, formData }) => {
-  if (nonNullable(tx) && nonNullable(coreTx) && nonNullable(chain) && nonNullable(formData.signatory)) {
+  if (
+    nonNullable(tx) &&
+    nonNullable(coreTx) &&
+    nonNullable(chain) &&
+    nonNullable(formData.signatory) &&
+    nonNullable(formData.initiator)
+  ) {
     return [
       {
         ...formData,
+        initiator: formData.initiator,
         signatory: formData.signatory,
         multisigDeposit: multisigDeposit.toString(),
         fee: formData.fee,
@@ -177,12 +185,12 @@ sample({
     event: {
       signingPayloads: [
         {
-          chain,
-          account: initiator,
+          chain: chain!,
+          account: initiator!,
           signatory,
           transaction: tx!,
         },
-      ],
+      ] satisfies SigningPayload[],
     },
     step: Step.SIGN,
   }),
@@ -213,8 +221,8 @@ sample({
   fn: (proxyData, signParams) => ({
     event: {
       ...signParams,
-      chain: proxyData.chain,
-      account: proxyData.initiator,
+      chain: proxyData.chain!,
+      account: proxyData.initiator!,
       signatory: proxyData.signatory,
       wrappedTxs: [proxyData.tx!],
       coreTxs: [proxyData.coreTx!],
@@ -238,8 +246,8 @@ sample({
   filter: ({ step, initiator, chain }) =>
     addPureProxiedUtils.isSubmitStep(step) && nonNullable(initiator) && nonNullable(chain),
   fn: ({ apis, initiator, chain }, submitData) => ({
-    api: apis[chain.chainId],
-    accountId: initiator.accountId,
+    api: apis[chain!.chainId],
+    accountId: initiator!.accountId,
     timepoint: (submitData[0].params as ExtrinsicResultParams).timepoint,
   }),
   target: getPureProxyFx,
@@ -254,9 +262,9 @@ sample({
   filter: ({ initiator, chain }) => nonNullable(initiator) && nonNullable(chain),
   fn: ({ initiator, chain }, { accountId }) => [
     {
-      accountId: initiator.accountId,
+      accountId: initiator!.accountId,
       proxiedAccountId: accountId,
-      chainId: chain.chainId,
+      chainId: chain!.chainId,
       proxyType: 'Any' as const,
       delay: 0,
     },
@@ -275,8 +283,8 @@ sample({
     return [
       {
         accountId,
-        chainId: chain.chainId,
-        proxyAccountId: initiator.accountId,
+        chainId: chain!.chainId,
+        proxyAccountId: initiator!.accountId,
         delay: 0,
         proxyType: 'Any',
         proxyVariant: ProxyVariant.PURE,
@@ -302,7 +310,7 @@ sample({
   fn: ({ chain, proxyGroups, proxyDeposit }, [{ accountId }, { wallet }]) => {
     const newProxyGroup: NoID<ProxyGroup> = {
       walletId: wallet.id,
-      chainId: chain.chainId,
+      chainId: chain!.chainId,
       proxiedAccountId: accountId,
       totalDeposit: proxyDeposit,
     };

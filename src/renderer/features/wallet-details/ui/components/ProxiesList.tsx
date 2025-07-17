@@ -1,25 +1,23 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 
-import { type ProxiedAccount, type ProxyAccount, ProxyVariant, type Wallet } from '@/shared/core';
+import { type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
-import { ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, HelpText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Accordion } from '@/shared/ui-kit';
+import { accountService, accounts } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { accountUtils } from '@/entities/wallet';
-import { proxyRemoveFeature } from '@/features/proxy-remove';
 import { proxyRemovePureFeature } from '@/features/proxy-remove-pure';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 
-const {
-  models: { removeProxy },
-  views: { RemoveProxy },
-} = proxyRemoveFeature;
+// const {
+//   models: { removeProxy },
+//   views: { RemoveProxy },
+// } = proxyRemoveFeature;
 
 const {
   models: { removePureProxy },
@@ -39,45 +37,56 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
 
   const chainsProxies = useUnit(walletDetailsModel.$chainsProxies);
   const walletProxyGroups = useUnit(walletDetailsModel.$walletProxyGroups);
-  const proxyForRemoval = useUnit(removeProxy.$proxyForRemoval);
 
-  const [isRemoveConfirmOpen, toggleIsRemoveConfirmOpen] = useToggle();
+  const walletAccounts = useStoreMap({
+    store: accounts.$list,
+    keys: [wallet],
+    fn: (accounts, [wallet]) => {
+      return accountService.filterAccountsByWallet(accounts, wallet.id);
+    },
+  });
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    const chainProxies = chainsProxies[proxyAccount.chainId] || [];
-    const anyProxies = chainProxies.filter(proxy => proxy.proxyType === 'Any');
-    const isPureProxy = (wallet?.accounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
+    // const chainProxies = chainsProxies[proxyAccount.chainId] || [];
+    // const anyProxies = chainProxies.filter(proxy => proxy.proxyType === 'Any');
+    // const isPureProxy = (walletAccounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
 
-    const shouldRemovePureProxy = isPureProxy && anyProxies.length === 1;
+    // const shouldRemovePureProxy = isPureProxy && anyProxies.length === 1;
 
-    if (shouldRemovePureProxy) {
-      const account = wallet?.accounts.at(0);
-      if (account) {
-        removePureProxy.events.flowStarted({
-          account: wallet?.accounts[0] as ProxiedAccount,
-          proxy: proxyAccount,
-        });
-      }
-    } else {
-      removeProxy.events.removeProxy(proxyAccount);
-      toggleIsRemoveConfirmOpen();
-    }
-  };
-
-  const handleConfirm = () => {
-    toggleIsRemoveConfirmOpen();
-
-    if (!proxyForRemoval || !wallet) return;
-
-    const account = wallet.accounts.find(a => {
-      return (
-        accountUtils.isNonBaseVaultAccount(a, wallet) &&
-        accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId])
-      );
+    removePureProxy.flowStarted({
+      proxied: walletAccounts[0] as ProxiedAccount,
+      proxy: proxyAccount,
     });
 
-    removeProxy.events.flowStarted({ account: account!, proxy: proxyForRemoval });
+    // if (shouldRemovePureProxy) {
+    //   const account = walletAccounts.at(0);
+    //   if (account) {
+    //     console.log('huy', { account, proxyAccount: { ...proxyAccount, address: toAddress(proxyAccount.accountId) } });
+    //     removePureProxy.flowStarted({
+    //       proxied: walletAccounts[0] as ProxiedAccount,
+    //       proxy: proxyAccount,
+    //     });
+    //   }
+    // } else {
+    //   removeProxy.events.removeProxy(proxyAccount);
+    //   toggleIsRemoveConfirmOpen();
+    // }
   };
+
+  // const handleConfirm = () => {
+  //   toggleIsRemoveConfirmOpen();
+
+  //   if (!proxyForRemoval || !wallet) return;
+
+  //   const account = walletAccounts.find(a => {
+  //     return (
+  //       accountUtils.isNonBaseVaultAccount(a, wallet) &&
+  //       accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId])
+  //     );
+  //   });
+
+  //   removeProxy.events.flowStarted({ account: account!, proxy: proxyForRemoval });
+  // };
 
   return (
     <div className={cnTw('flex flex-col', className)}>
@@ -128,7 +137,7 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
         })}
       </ul>
 
-      <ConfirmModal
+      {/* <ConfirmModal
         isOpen={isRemoveConfirmOpen}
         cancelText={t('walletDetails.common.confirmRemoveProxyCancel')}
         confirmText={t('walletDetails.common.confirmRemoveProxySubmit')}
@@ -143,9 +152,9 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
         <FootnoteText className="text-text-tertiary" align="center">
           {t('walletDetails.common.confirmRemoveProxyDescription')}
         </FootnoteText>
-      </ConfirmModal>
+      </ConfirmModal> */}
 
-      <RemoveProxy wallet={wallet} />
+      {/* <RemoveProxy wallet={wallet} /> */}
       <RemovePureProxy wallet={wallet} />
     </div>
   );

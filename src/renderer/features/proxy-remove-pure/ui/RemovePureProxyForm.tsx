@@ -1,7 +1,6 @@
 import { useUnit } from 'effector-react';
 import { type FormEvent, useMemo } from 'react';
 
-import { type MultisigAccount } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
@@ -9,7 +8,7 @@ import { Alert, Button } from '@/shared/ui';
 import { SignatorySelect } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form-model';
 import { removePureProxyModel } from '../model/remove-pure-proxy-model';
@@ -46,7 +45,7 @@ const Signatories = () => {
     fields: { signatory },
   } = useForm(formModel.form);
 
-  const account = useUnit(formModel.$account);
+  const proxiedAccount = useUnit(formModel.$proxiedAccount);
 
   const signatories = useUnit(formModel.$signatories);
   const chain = useUnit(removePureProxyModel.$chain);
@@ -70,7 +69,7 @@ const Signatories = () => {
     });
   }, [signatories, balances]);
 
-  if (!chain || !account) {
+  if (!chain || !proxiedAccount) {
     return null;
   }
 
@@ -79,22 +78,20 @@ const Signatories = () => {
       signatory={signatory.value}
       signatories={signatoriesWithBalance}
       allAccounts={allAccounts}
-      initiator={account}
+      initiator={proxiedAccount}
       allWallets={allWallets}
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
-      network={{ chain, asset: chain.assets[0] }}
+      network={{ chain, asset: getNativeAsset(chain.assets) }}
       onChange={signatory.onChange}
     />
   );
 };
 
 const FeeSection = () => {
-  const api = useUnit(formModel.$api);
-  const fakeTx = useUnit(formModel.$fakeTx);
-  const isMultisig = useUnit(formModel.$isMultisig);
+  const fee = useUnit(formModel.$fee);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
   const chain = useUnit(removePureProxyModel.$chain);
-  const account = useUnit(removePureProxyModel.$realAccount);
 
   if (!chain) {
     return null;
@@ -102,22 +99,11 @@ const FeeSection = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      {isMultisig && (
-        <MultisigDepositWithLabel
-          api={api}
-          asset={chain.assets[0]}
-          threshold={(account as MultisigAccount).threshold}
-          onDepositChange={formModel.events.multisigDepositChanged}
-        />
+      {!multisigDeposit.isZero() && (
+        <MultisigDepositFee asset={getNativeAsset(chain.assets)} multisigDeposit={multisigDeposit.toString()} />
       )}
 
-      <FeeWithLabelWithDataLoading
-        api={api}
-        asset={chain.assets[0]}
-        transaction={fakeTx}
-        onFeeChange={formModel.events.feeChanged}
-        onFeeLoading={formModel.events.isFeeLoadingChanged}
-      />
+      <FeeWithLabel asset={getNativeAsset(chain.assets)} fee={fee} />
     </div>
   );
 };

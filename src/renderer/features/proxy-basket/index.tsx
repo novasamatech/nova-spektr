@@ -10,7 +10,7 @@ import {
   AddProxyConfirm,
   AddPureProxiedConfirmation,
   RemoveProxyConfirm,
-  RemovePureProxiedConfirm,
+  RemovePureProxiedConfirmation,
 } from '@/features/operations/OperationsConfirm';
 import {
   addProxyValidateModel,
@@ -85,7 +85,7 @@ basketSDK(proxyBasketFeature, {
     if (tx.type === TransactionType.CREATE_PURE_PROXY)
       return <AddPureProxiedConfirmation id={transaction.id} hideSignButton />;
     if (tx.type === TransactionType.REMOVE_PURE_PROXY)
-      return <RemovePureProxiedConfirm id={transaction.id} hideSignButton />;
+      return <RemovePureProxiedConfirmation id={transaction.id} hideSignButton />;
 
     return null;
   },
