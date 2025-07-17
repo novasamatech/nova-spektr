@@ -12,7 +12,7 @@ type Params<T extends Transaction> = {
   api: Store<ApiPromise | null>;
   chain: Store<Chain | null>;
   transaction: Store<T | null>;
-  feeTx?: Store<T | null>;
+  feeTransaction?: Store<T | null>;
   accounts: Store<AnyAccount[]>;
   initiator: Store<AnyAccount | null>;
   signatory: Store<AnyAccount | null>;
@@ -23,7 +23,7 @@ export const createComplexTxStore = <T extends Transaction>({
   api,
   chain,
   transaction,
-  feeTx: feeTransaction,
+  feeTransaction,
   accounts,
   initiator,
   signatory,
@@ -83,6 +83,11 @@ export const createComplexTxStore = <T extends Transaction>({
       filter: active,
       target: wrapFeeTransactionFx,
     });
+
+    sample({
+      clock: wrapFeeTransactionFx.doneData,
+      target: $feeTx,
+    });
   }
 
   sample({
@@ -104,30 +109,7 @@ export const createComplexTxStore = <T extends Transaction>({
     target: $tx,
   });
 
-  if (feeTransaction) {
-    sample({
-      clock: feeTransaction,
-      filter: (t) => nullable(t),
-      fn: () => null,
-      target: $feeTx,
-    });
-
-    sample({
-      clock: active,
-      filter: (active) => !active,
-      fn: () => null,
-      target: $feeTx,
-    });
-
-    sample({
-      clock: wrapFeeTransactionFx.doneData,
-      target: $feeTx,
-    });
-  }
-
-  const $mergedTx = combine({ tx: $tx, feeTx: $feeTx }, ({ tx, feeTx }) => {
-    return tx || feeTx;
-  });
+  const $mergedTx = combine($tx, $feeTx, (tx, feeTx) => tx || feeTx);
 
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
     $active: active,
