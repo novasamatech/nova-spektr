@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEffect, createStore, sample } from 'effector';
 
 import { type Chain, type Transaction } from '@/shared/core';
-import { assert, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { assert, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, transactionService } from '@/domains/network';
 
 import { createFeeCalculator } from './createFeeCalculator';
@@ -73,9 +73,10 @@ export const createComplexTxStore = <T extends Transaction>({
 
   if (feeTransaction) {
     const wrapFeeTransaction = sample({
-      clock: [feeTransaction, api, $route],
       source: { transaction: feeTransaction, api, route: $route },
-    }).filter({ fn: nonNullableMap });
+      filter: ({ transaction, api, route }) => nonNullable(transaction) && nonNullable(api) && nonNullable(route),
+      fn: ({ transaction, api, route }) => ({ transaction: transaction!, api: api!, route: route! }),
+    });
 
     sample({
       clock: wrapFeeTransaction,
