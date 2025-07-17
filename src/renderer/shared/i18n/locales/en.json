@@ -1368,8 +1368,6 @@
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
       "sender": "Sender",
-      "senderAccount": "Sender account",
-      "senderProxiedWallet": "Sender wallet (proxied)",
       "timePoint": "Time Point",
       "toNetwork": "To network",
       "validators": "Validators",
@@ -1561,16 +1559,11 @@
     },
     "details": {
       "accessType": "Access type",
-      "account": "Account",
-      "accountProxied": "Account (proxied)",
       "delegateTo": "Delegate to",
       "grantAccessType": "Grant access type",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
-      "sender": "Sender",
-      "signatory": "Signatory",
-      "wallet": "Wallet",
-      "walletProxied": "Wallet (proxied)"
+      "sender": "Sender"
     },
     "names": {
       "any": "All operations",
@@ -1997,6 +1990,16 @@
     "weeks_one": "{ count } week",
     "weeks_other": "{ count } weeks"
   },
+  "transaction": {
+    "details": {
+      "account": "Account",
+      "initiatorAccount": "Account ({type})",
+      "initiatorWallet": "Wallet ({type})",
+      "sinatoryAccount": "Signer account",
+      "sinatoryWallet": "Signer wallet",
+      "wallet": "Wallet"
+    }
+  },
   "transactionMessage": {
     "bond": "Stake { amount } { asset }",
     "destination": "Change reward destination to { address }",
@@ -2049,11 +2052,7 @@
     "requiredRecipientError": "Please enter recipient address",
     "senderAccount": "Sender account",
     "senderLabel": "Sender",
-    "senderProxiedAccount": "Account (proxied)",
-    "senderProxiedWallet": "Wallet (proxied)",
     "signatoryLabel": "Signatory",
-    "signingAccount": "Signing account",
-    "signingWallet": "Signing wallet",
     "startSigningButton": "Sign with Polkadot Vault",
     "successMessage": "Operation Success",
     "swapToCryptoModeAlt": "swap input to crypto",

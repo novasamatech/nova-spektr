@@ -29,7 +29,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const { default: favicons } = await import('@peterek/vite-plugin-favicons');
   const { default: react } = await import('@vitejs/plugin-react-swc');
   const { default: mkcert } = await import('vite-plugin-mkcert');
-  const { compression } = await import('vite-plugin-compression2');
+  const { compression, defineAlgorithm } = await import('vite-plugin-compression2');
   const { nodePolyfills } = await import('vite-plugin-node-polyfills');
 
   const isDev = mode === 'development';
@@ -130,13 +130,10 @@ const config: UserConfigFn = async ({ mode, command }) => {
       isProd &&
         command === 'build' &&
         compression({
-          algorithm: 'gzip',
+          algorithms: [defineAlgorithm('gzip', { level: 9 })],
           include: /.+/,
           skipIfLargerOrEqual: true,
           threshold: 0,
-          compressionOptions: {
-            level: 9,
-          },
         }),
     ],
 
