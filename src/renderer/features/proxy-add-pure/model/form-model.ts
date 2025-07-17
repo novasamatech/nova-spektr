@@ -212,15 +212,15 @@ const $accounts = combine(
 const $coreTx = combine(
   {
     form: form.$values,
-    account: form.fields.initiator.$value,
+    signatory: form.fields.signatory.$value,
     isConnected: $isChainConnected,
   },
-  ({ form, account, isConnected }): Transaction | null => {
-    if (!isConnected || !account || !form.chain) return null;
+  ({ form, signatory, isConnected }): Transaction | null => {
+    if (!isConnected || !signatory || !form.chain) return null;
 
     return {
       chainId: form.chain.chainId,
-      accountId: account.accountId,
+      accountId: signatory.accountId,
       type: TransactionType.CREATE_PURE_PROXY,
       args: { proxyType: 'Any', delay: 0, index: 0 },
     };
