@@ -10,10 +10,14 @@ export const navigationTopLinksPipeline = createPipeline<NavItemProps[]>({
   },
 });
 export const navigationBottomLinksSlot = createSlot();
+export const navigationActionsSlot = createSlot();
 
 export const Navigation = memo(() => {
   const upperItems = usePipeline(navigationTopLinksPipeline, []);
   const lowerItems = useSlot(navigationBottomLinksSlot);
+  const actions = useSlot(navigationActionsSlot);
+
+  console.log(upperItems, lowerItems, actions);
 
   return (
     <nav className="h-full overflow-y-auto">
@@ -21,6 +25,7 @@ export const Navigation = memo(() => {
         {upperItems.map(({ icon, title, link, badge }) => (
           <NavItem key={link} icon={icon} title={title} link={link} badge={badge} />
         ))}
+        <div className="flex flex-col gap-2">{actions}</div>
 
         <div className="mt-auto flex flex-col gap-2">{lowerItems}</div>
       </div>

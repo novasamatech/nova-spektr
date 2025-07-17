@@ -41,6 +41,9 @@ export const Paths = {
 
   // Basket
   BASKET: '/basket',
+
+  // Call data
+  CALL_DATA: '/call-data',
 } as const;
 
 type ReplaceDynamicParts<T extends string> = T extends `${infer Start}/:${string}/${infer End}`

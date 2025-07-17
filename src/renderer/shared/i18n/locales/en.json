@@ -1170,6 +1170,7 @@
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
     "basketLabel": "Basket",
+    "callDataLabel": "Import from call data",
     "fellowship": "Fellowship",
     "governance": "Governance",
     "historyLabel": "History",
@@ -2167,6 +2168,20 @@
       "rejectDescription": "The operation was successfully canceled",
       "rejectTitle": "Rejected",
       "signTitle": "Scan with {walletName} to reconnect your wallet"
+    }
+  },
+  "callData": {
+    "network": "Network",
+    "callData": "Call data",
+    "title": "Import from call data",
+    "placeholder": "Paste the call data here",
+    "isCorrect": "Make sure the operation is correct",
+    "noDecodedTxTitle": "No data available",
+    "noDecodedTxDescription": "Operation details will appear here after call data parsed",
+    "errors": {
+      "required": "Call data is required",
+      "0xPrefix": "Call data must start with 0x",
+      "invalidCallData": "Provided call data is invalid or has the wrong format. Please ensure it is correct and try again."
     }
   },
   "wallets": {
