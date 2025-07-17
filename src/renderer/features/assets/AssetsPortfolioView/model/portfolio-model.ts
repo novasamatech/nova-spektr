@@ -38,6 +38,7 @@ const populateFx = createEffect((): Promise<AssetByChains[] | null> => {
 persist({
   key: 'assets_with_chains',
   store: $defaultTokens,
+  sync: true,
 });
 
 sample({
