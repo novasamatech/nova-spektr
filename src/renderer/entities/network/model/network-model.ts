@@ -67,6 +67,7 @@ const getDefaultStatusesFx = createEffect((chains: Record<ChainId, Chain>): Reco
 persist({
   key: 'chains_map',
   store: $chains,
+  sync: true,
 });
 
 type MetadataSubResult = {
