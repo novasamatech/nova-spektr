@@ -23,7 +23,7 @@ describe('Verification function can verify parachains', () => {
 
   beforeAll(async () => {
     const chains = await chainsService.getChainsData();
-    const [_, polkadotChains, kusamaChains, polkadot, kusama] = prepareTestData(chains);
+    const [_, polkadotChains, kusamaChains, polkadot, kusama] = prepareTestData(chains ?? []);
     polkadotParachains = polkadotChains;
     kusamaParachains = kusamaChains;
 

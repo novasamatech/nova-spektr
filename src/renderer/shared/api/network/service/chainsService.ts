@@ -22,11 +22,12 @@ export const chainsService = {
   sortChainsByBalance,
 };
 
-async function getChainsData(): Promise<Chain[]> {
+async function getChainsData(): Promise<Chain[] | null> {
   const response = await fetch(CHAINS_CONFIG_URL);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch chains config: ${response.status} ${response.statusText}`);
+    console.error(`Failed to fetch chains config: ${response.status} ${response.statusText}`);
+    return null;
   }
 
   return response.json();
