@@ -6,7 +6,6 @@ export const callDataUtils = {
   isConfirmStep,
   isSignStep,
   isSubmitStep,
-  isBasketStep,
 };
 
 function isNoneStep(step: Step): boolean {
@@ -27,8 +26,4 @@ function isSignStep(step: Step): boolean {
 
 function isSubmitStep(step: Step): boolean {
   return step === Step.SUBMIT;
-}
-
-function isBasketStep(step: Step): boolean {
-  return step === Step.BASKET;
 }

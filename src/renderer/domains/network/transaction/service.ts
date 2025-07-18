@@ -89,13 +89,11 @@ async function unwrapTransaction(transaction: AnyTransaction, api: ApiPromise) {
   return list;
 }
 
-function createSubmittableExtrinsic(transaction: AnyTransaction, api: ApiPromise): SubmittableExtrinsic<'promise'> {
-  const encodedExtrinsic = encodeTransaction(transaction, api);
-
+function createSubmittableExtrinsicFromCallData(callData: string, api: ApiPromise): SubmittableExtrinsic<'promise'> {
   try {
-    return api.tx(encodedExtrinsic.callData);
+    return api.tx(callData);
   } catch {
-    const extrinsicCall = api.createType('Call', encodedExtrinsic.callData);
+    const extrinsicCall = api.createType('Call', callData);
     const { method, section } = api.registry.findMetaCall(extrinsicCall.callIndex);
 
     const apiSection = api.tx[section];
@@ -107,6 +105,11 @@ function createSubmittableExtrinsic(transaction: AnyTransaction, api: ApiPromise
 
     return extrinsicFn(...extrinsicCall.args);
   }
+}
+
+function createSubmittableExtrinsic(transaction: AnyTransaction, api: ApiPromise): SubmittableExtrinsic<'promise'> {
+  const encodedExtrinsic = encodeTransaction(transaction, api);
+  return createSubmittableExtrinsicFromCallData(encodedExtrinsic.callData, api);
 }
 
 function encodeTransaction(transaction: AnyTransaction, api: ApiPromise): EncodedTransaction {
@@ -169,6 +172,7 @@ export const transactionService = {
   encodeTransaction,
   decodeTransaction,
 
+  createSubmittableExtrinsicFromCallData,
   createSubmittableExtrinsic,
 
   getExtrinsicFee,

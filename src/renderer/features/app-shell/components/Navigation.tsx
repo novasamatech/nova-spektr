@@ -4,6 +4,7 @@ import { createPipeline, createSlot, usePipeline, useSlot } from '@/shared/di';
 
 import { NavItem, type Props as NavItemProps } from './NavItem';
 
+// TODO refactor to slots
 export const navigationTopLinksPipeline = createPipeline<NavItemProps[]>({
   postprocess: (items) => {
     return items.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
@@ -16,8 +17,6 @@ export const Navigation = memo(() => {
   const upperItems = usePipeline(navigationTopLinksPipeline, []);
   const lowerItems = useSlot(navigationBottomLinksSlot);
   const actions = useSlot(navigationActionsSlot);
-
-  console.log(upperItems, lowerItems, actions);
 
   return (
     <nav className="h-full overflow-y-auto">
