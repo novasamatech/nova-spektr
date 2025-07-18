@@ -5,13 +5,13 @@ import { AdditionalType } from '@/shared/core/types/chain';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAmount, getNativeAsset, toAccountId } from '@/shared/lib/utils';
-import { Button, CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
+import { Button, CaptionText, DetailRow, Duration, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { SelectedValidatorsModal, StakingPopover, UnstakingDuration } from '@/entities/staking';
+import { SelectedValidatorsModal, StakingPopover, UnstakingDuration, useStakingData } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
@@ -55,11 +55,8 @@ export const Confirmation = ({
     fn: (value, [chainId]) => value?.[chainId],
   });
 
-  const eraLength = useStoreMap({
-    store: confirmModel.$eraLength,
-    keys: [confirmStore?.meta.chain?.chainId],
-    fn: (value, [chainId]) => value?.[chainId],
-  });
+  const { getEraDurationSeconds } = useStakingData();
+  const eraDurationSeconds = getEraDurationSeconds(api, timelineApi);
 
   const identities = useStoreMap({
     store: identity.$list,
@@ -191,7 +188,7 @@ export const Confirmation = ({
             <StakingPopover.Item>
               {t('staking.confirmation.hintRewards')}
               {' ('}
-              {t('time.hours_other', { count: eraLength || 0 })}
+              <Duration seconds={eraDurationSeconds} />
               {')'}
             </StakingPopover.Item>
             <StakingPopover.Item>
