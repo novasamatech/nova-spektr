@@ -89,9 +89,9 @@ function getEndBlock(
   undecidingTimeout: BlockHeight,
 ) {
   if (deciding?.confirming) return deciding.confirming;
-  if (deciding) return deciding.since + decisionPeriod;
+  if (deciding) return pjsSchema.helpers.toBlockHeight(deciding.since + decisionPeriod);
 
-  return submitted + undecidingTimeout;
+  return pjsSchema.helpers.toBlockHeight(submitted + undecidingTimeout);
 }
 
 async function mapReferendum({

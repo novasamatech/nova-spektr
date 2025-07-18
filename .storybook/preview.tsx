@@ -5,7 +5,7 @@ import './theme/root.css';
 import { I18Provider } from '@/shared/i18n';
 import { ThemeProvider } from '@/shared/ui-kit';
 
-import type { Preview } from '@storybook/react';
+import type { Preview } from '@storybook/react-vite';
 
 const preview: Preview = {
   parameters: {
@@ -26,7 +26,7 @@ const preview: Preview = {
     },
     (Story) => {
       return (
-        <ThemeProvider bodyAsPortalContainer iconStyle='colored'>
+        <ThemeProvider bodyAsPortalContainer iconStyle="colored">
           <Story />
         </ThemeProvider>
       );

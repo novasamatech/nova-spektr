@@ -1,5 +1,5 @@
-import { type Meta, type StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import { type Meta, type StoryObj } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
 
 import { createPolkadotWallet, createVaultBaseAccount, dotAsset, polkadotChain } from '@/shared/mocks';
 
