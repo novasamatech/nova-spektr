@@ -14,14 +14,14 @@ import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { Step } from '../lib/types';
 import { removeProxyModel } from '../model/remove-proxy-model';
 
-import { RemovePureProxyForm } from './RemoveProxyForm';
+import { RemoveProxyForm } from './RemoveProxyForm';
 import { Warning } from './Warning';
 
 type Props = {
   wallet: Wallet;
 };
 
-export const RemovePureProxy = ({ wallet }: Props) => {
+export const RemoveProxy = ({ wallet }: Props) => {
   useGate(removeProxyModel.flow, { wallet });
 
   const { t } = useI18n();
@@ -80,7 +80,7 @@ export const RemovePureProxy = ({ wallet }: Props) => {
       )}
       <Modal.Content>
         {removeProxyUtils.isWarningStep(step) && <Warning onGoBack={closeModal} />}
-        {removeProxyUtils.isInitStep(step) && <RemovePureProxyForm onGoBack={closeModal} />}
+        {removeProxyUtils.isInitStep(step) && <RemoveProxyForm onGoBack={closeModal} />}
         {removeProxyUtils.isConfirmStep(step) && (
           <Confirmation
             secondaryActionButton={

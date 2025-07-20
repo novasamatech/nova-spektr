@@ -15,7 +15,7 @@ import { removeProxyModel } from '../model/remove-proxy-model';
 type Props = {
   onGoBack: () => void;
 };
-export const RemovePureProxyForm = ({ onGoBack }: Props) => {
+export const RemoveProxyForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(removeProxyModel.form);
 
   const submitProxy = (event: FormEvent) => {

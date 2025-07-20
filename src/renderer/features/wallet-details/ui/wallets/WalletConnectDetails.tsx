@@ -29,7 +29,6 @@ import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { walletConnectForget } from '../../model/walletConnectForgot';
 import { walletConnectReconnect } from '../../model/walletConnectReconnect';
-import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 
@@ -166,15 +165,13 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
               <WalletConnectAccounts wallet={wallet} />
             </Tabs.Content>
             <Tabs.Content value="proxies">
-              {hasProxies ? (
-                <ProxiesList className="h-[379px]" wallet={wallet} canCreateProxy={canCreateProxy} />
-              ) : (
-                <NoProxiesAction
-                  className="h-[379px]"
-                  canCreateProxy={canCreateProxy}
-                  onAddProxy={addProxy.events.flowStarted}
-                />
-              )}
+              <ProxiesList
+                wallet={wallet}
+                hasProxies={hasProxies}
+                className="h-[379px]"
+                canCreateProxy={canCreateProxy}
+                onAddProxy={addProxy.events.flowStarted}
+              />
             </Tabs.Content>
           </Tabs>
         </Modal.Content>

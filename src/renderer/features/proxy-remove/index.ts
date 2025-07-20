@@ -1,7 +1,7 @@
 import { removeProxyModel } from './model/remove-proxy-model';
-import { RemovePureProxy } from './ui/RemoveProxy';
+import { RemoveProxy } from './ui/RemoveProxy';
 
-export const proxyRemovePureFeature = {
-  views: { RemovePureProxy },
-  models: { removePureProxy: removeProxyModel },
+export const proxyRemoveFeature = {
+  views: { RemoveProxy },
+  models: { removeProxyModel },
 };

@@ -16,7 +16,6 @@ import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
@@ -154,15 +153,13 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
             <ChainAccountsList accounts={accounts} />
           </Tabs.Content>
           <Tabs.Content value="proxies">
-            {hasProxies ? (
-              <ProxiesList canCreateProxy={canCreateProxy} wallet={wallet} className="h-[361px]" />
-            ) : (
-              <NoProxiesAction
-                className="h-[361px]"
-                canCreateProxy={canCreateProxy}
-                onAddProxy={addProxy.events.flowStarted}
-              />
-            )}
+            <ProxiesList
+              wallet={wallet}
+              hasProxies={hasProxies}
+              canCreateProxy={canCreateProxy}
+              className="h-[361px]"
+              onAddProxy={addProxy.events.flowStarted}
+            />
           </Tabs.Content>
         </Tabs>
       </Modal.Content>
