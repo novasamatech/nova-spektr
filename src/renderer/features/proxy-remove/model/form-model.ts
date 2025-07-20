@@ -223,7 +223,7 @@ const $fakeTx = combine(
     return {
       chainId: chain.chainId,
       accountId: TEST_ACCOUNTS[0],
-      type: TransactionType.REMOVE_PURE_PROXY,
+      type: TransactionType.KILL_PURE_PROXY,
       args: {
         spawner: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
         proxyType: 'Any',

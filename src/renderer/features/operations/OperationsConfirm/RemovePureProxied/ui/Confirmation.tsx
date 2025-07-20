@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
@@ -73,9 +73,9 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <div className="flex gap-4">
           {secondaryActionButton}
 
-          {!hideSignButton && !isMultisigExists && (
+          {!hideSignButton && (
             <SignButton
-              isDefault={Boolean(secondaryActionButton)}
+              isDefault={nonNullable(secondaryActionButton)}
               type={confirmStore.wallets.signatory?.type}
               onClick={confirmModel.startSigning}
             />

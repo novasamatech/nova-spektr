@@ -215,7 +215,7 @@ sample({
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
 
-    return transaction.type === TransactionType.REMOVE_PURE_PROXY;
+    return transaction.type === TransactionType.KILL_PURE_PROXY;
   },
   fn: ({ accounts, chains, apis, connections }, operation) => ({
     accounts,

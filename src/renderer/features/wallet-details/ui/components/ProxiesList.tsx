@@ -14,11 +14,6 @@ import { walletDetailsModel } from '../../model/wallet-details-model';
 
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 
-// const {
-//   models: { removeProxy },
-//   views: { RemoveProxy },
-// } = proxyRemoveFeature;
-
 const {
   models: { removePureProxy },
   views: { RemovePureProxy },
@@ -47,46 +42,11 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
   });
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    // const chainProxies = chainsProxies[proxyAccount.chainId] || [];
-    // const anyProxies = chainProxies.filter(proxy => proxy.proxyType === 'Any');
-    // const isPureProxy = (walletAccounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
-
-    // const shouldRemovePureProxy = isPureProxy && anyProxies.length === 1;
-
     removePureProxy.flowStarted({
       proxied: walletAccounts[0] as ProxiedAccount,
       proxy: proxyAccount,
     });
-
-    // if (shouldRemovePureProxy) {
-    //   const account = walletAccounts.at(0);
-    //   if (account) {
-    //     console.log('huy', { account, proxyAccount: { ...proxyAccount, address: toAddress(proxyAccount.accountId) } });
-    //     removePureProxy.flowStarted({
-    //       proxied: walletAccounts[0] as ProxiedAccount,
-    //       proxy: proxyAccount,
-    //     });
-    //   }
-    // } else {
-    //   removeProxy.events.removeProxy(proxyAccount);
-    //   toggleIsRemoveConfirmOpen();
-    // }
   };
-
-  // const handleConfirm = () => {
-  //   toggleIsRemoveConfirmOpen();
-
-  //   if (!proxyForRemoval || !wallet) return;
-
-  //   const account = walletAccounts.find(a => {
-  //     return (
-  //       accountUtils.isNonBaseVaultAccount(a, wallet) &&
-  //       accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId])
-  //     );
-  //   });
-
-  //   removeProxy.events.flowStarted({ account: account!, proxy: proxyForRemoval });
-  // };
 
   return (
     <div className={cnTw('flex flex-col', className)}>
@@ -137,24 +97,6 @@ export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props)
         })}
       </ul>
 
-      {/* <ConfirmModal
-        isOpen={isRemoveConfirmOpen}
-        cancelText={t('walletDetails.common.confirmRemoveProxyCancel')}
-        confirmText={t('walletDetails.common.confirmRemoveProxySubmit')}
-        confirmPallet="error"
-        panelClass="w-[240px]"
-        onClose={toggleIsRemoveConfirmOpen}
-        onConfirm={handleConfirm}
-      >
-        <SmallTitleText align="center" className="mb-2">
-          {t('walletDetails.common.confirmRemoveProxyTitle')}
-        </SmallTitleText>
-        <FootnoteText className="text-text-tertiary" align="center">
-          {t('walletDetails.common.confirmRemoveProxyDescription')}
-        </FootnoteText>
-      </ConfirmModal> */}
-
-      {/* <RemoveProxy wallet={wallet} /> */}
       <RemovePureProxy wallet={wallet} />
     </div>
   );

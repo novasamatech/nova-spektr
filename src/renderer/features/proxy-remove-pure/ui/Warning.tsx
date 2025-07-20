@@ -1,28 +1,48 @@
 import { useUnit } from 'effector-react';
-import { type ClipboardEvent, type FormEvent } from 'react';
+import { type ClipboardEvent, type FormEvent, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
 import { Button, FootnoteText } from '@/shared/ui';
-import { Checkbox, ConfirmModal, Input } from '@/shared/ui-kit';
-import { warningModel } from '../model/warning-model';
+import { Checkbox, Input } from '@/shared/ui-kit';
+import { Step } from '../lib/types';
+import { removePureProxyModel } from '../model/remove-pure-proxy-model';
 
 type Props = {
   onGoBack: () => void;
 };
+
 export const Warning = ({ onGoBack }: Props) => {
+  const isKill = useUnit(removePureProxyModel.$isPureProxiedNeedToBeKilled);
+
+  //todo loader might be needed here
+  if (isKill) {
+    return <WarningKill onGoBack={onGoBack} />;
+  }
+
+  return <WarningRemove onGoBack={onGoBack} />;
+};
+
+const PASSPHRASE = 'I huy';
+
+const WarningKill = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const {
-    submit,
-    fields: { passphrase, isCorrectProxy, isInaccessible, isIrreversible, lossOfFunds },
-  } = useForm(warningModel.form);
+  const [passphrase, setPassphrase] = useState('');
+  const [isCorrectProxy, setIsCorrectProxy] = useState(false);
+  const [isInaccessible, setIsInaccessible] = useState(false);
+  const [isIrreversible, setIsIrreversible] = useState(false);
+  const [lossOfFunds, setLossOfFunds] = useState(false);
+
+  const isPassphraseValid = passphrase.toLowerCase().trim() === PASSPHRASE.toLowerCase();
+  const areAllCheckboxesChecked = isCorrectProxy && isInaccessible && isIrreversible && lossOfFunds;
+  const canSubmit = isPassphraseValid && areAllCheckboxesChecked;
 
   const revokeAuthority = (event: FormEvent) => {
     event.preventDefault();
-    submit();
+    if (canSubmit) {
+      removePureProxyModel.stepChanged(Step.INIT);
+    }
   };
 
   const handlePaste = (event: ClipboardEvent) => {
@@ -35,37 +55,37 @@ export const Warning = ({ onGoBack }: Props) => {
         <FootnoteText as="p"> {t('pureProxyRemove.warning.warningMessage')}</FootnoteText>
         <Input
           placeholder={t('general.input.descriptionPlaceholder')}
-          invalid={passphrase.hasError}
-          value={passphrase.value}
-          onChange={passphrase.onChange}
+          invalid={passphrase !== '' && !isPassphraseValid}
+          value={passphrase}
+          onChange={setPassphrase}
           onPaste={handlePaste}
         />
         <FootnoteText as="p" className="text-text-tertiary">
           <Trans t={t} i18nKey="pureProxyRemove.warning.inputHint" />
         </FootnoteText>
         <div>
-          <Checkbox checked={isCorrectProxy.value} onChange={(checked) => isCorrectProxy.onChange(checked)}>
+          <Checkbox checked={isCorrectProxy} onChange={setIsCorrectProxy}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.isCorrectProxyCheckbox" />
             </FootnoteText>
           </Checkbox>
         </div>
         <div>
-          <Checkbox checked={isIrreversible.value} onChange={(checked) => isIrreversible.onChange(checked)}>
+          <Checkbox checked={isIrreversible} onChange={setIsIrreversible}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.isIrreversibleCheckbox" />
             </FootnoteText>
           </Checkbox>
         </div>
         <div>
-          <Checkbox checked={isInaccessible.value} onChange={(checked) => isInaccessible.onChange(checked)}>
+          <Checkbox checked={isInaccessible} onChange={setIsInaccessible}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.isInaccessibleCheckbox" />
             </FootnoteText>
           </Checkbox>
         </div>
         <div>
-          <Checkbox checked={lossOfFunds.value} onChange={(checked) => lossOfFunds.onChange(checked)}>
+          <Checkbox checked={lossOfFunds} onChange={setLossOfFunds}>
             <FootnoteText>
               <Trans t={t} i18nKey="pureProxyRemove.warning.lossOfFundsCheckbox" />
             </FootnoteText>
@@ -73,49 +93,41 @@ export const Warning = ({ onGoBack }: Props) => {
         </div>
       </form>
 
-      <ActionSection onGoBack={onGoBack} />
-      <ConfirmWarning onGoBack={onGoBack} />
+      <div className="mt-4 flex items-center justify-between">
+        <Button variant="text" onClick={onGoBack}>
+          {t('operation.goBackButton')}
+        </Button>
+        <Button form="remove-pure-proxy-warning-form" pallet="error" type="submit" disabled={!canSubmit}>
+          {t('pureProxyRemove.warning.revokeAuthorityButton')}
+        </Button>
+      </div>
     </div>
   );
 };
 
-const ActionSection = ({ onGoBack }: Props) => {
+const WarningRemove = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const canSubmit = useUnit(warningModel.$canSubmit);
-
-  return (
-    <div className="mt-4 flex items-center justify-between">
-      <Button variant="text" onClick={onGoBack}>
-        {t('operation.goBackButton')}
-      </Button>
-      <Button form="remove-pure-proxy-warning-form" pallet="error" type="submit" disabled={!canSubmit}>
-        {t('pureProxyRemove.warning.revokeAuthorityButton')}
-      </Button>
-    </div>
-  );
-};
-
-const ConfirmWarning = ({ onGoBack }: Props) => {
-  const { t } = useI18n();
-
-  const [isRemoveConfirmOpen, toggleIsRemoveConfirmOpen] = useToggle();
-
-  const onClose = () => {
-    toggleIsRemoveConfirmOpen();
-    onGoBack();
+  const onConfirm = () => {
+    removePureProxyModel.stepChanged(Step.INIT);
   };
 
   return (
-    <ConfirmModal
-      isOpen={isRemoveConfirmOpen}
-      cancelText={t('walletDetails.common.confirmRemoveProxyCancel')}
-      confirmText={t('walletDetails.common.confirmRemoveProxySubmit')}
-      type="alert"
-      title={t('walletDetails.common.confirmRemoveProxyTitle')}
-      description={t('walletDetails.common.confirmRemoveProxyDescription')}
-      onCancel={onClose}
-      onConfirm={warningModel.formSubmitted}
-    />
+    <div className="px-5 pb-4">
+      <div className="mt-4 flex flex-col gap-y-4">
+        <FootnoteText as="p" className="text-text-tertiary">
+          {t('walletDetails.common.confirmRemoveProxyDescription')}
+        </FootnoteText>
+      </div>
+
+      <div className="mt-4 flex items-center justify-between">
+        <Button variant="text" onClick={onGoBack}>
+          {t('walletDetails.common.confirmRemoveProxyCancel')}
+        </Button>
+        <Button pallet="error" onClick={onConfirm}>
+          {t('walletDetails.common.confirmRemoveProxySubmit')}
+        </Button>
+      </div>
+    </div>
   );
 };

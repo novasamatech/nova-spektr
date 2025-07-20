@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Address, type Chain, type ProxiedAccount, type ProxyType } from '@/shared/core';
-import { type AnyAccount } from '@/domains/network';
+import { type Address, type Chain, type ProxiedAccount, type ProxyAccount, type ProxyType } from '@/shared/core';
 
 export const enum Step {
   NONE,
@@ -22,9 +21,8 @@ export const enum SubmitStep {
 export type RemoveProxyStore = {
   api: ApiPromise;
   chain: Chain;
-  account: AnyAccount;
-  proxiedAccount?: ProxiedAccount;
-  signatory?: AnyAccount;
+  proxyAccount: ProxyAccount;
+  proxiedAccount: ProxiedAccount;
   spawner: Address;
   proxyType: ProxyType;
 };
