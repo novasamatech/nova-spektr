@@ -80,7 +80,9 @@ const $isPureProxiedNeedToBeKilled = combine(
     isPureProxied: $isPureProxied,
     activeProxies: $activeProxiesForAccount,
   },
-  ({ isPureProxied, activeProxies }) => isPureProxied && activeProxies.length === 1,
+  ({ isPureProxied, activeProxies }) => {
+    return isPureProxied && activeProxies.length === 1;
+  },
 );
 
 type FormParams = {
