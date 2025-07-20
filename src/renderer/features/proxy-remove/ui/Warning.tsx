@@ -6,14 +6,14 @@ import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText } from '@/shared/ui';
 import { Checkbox, Input } from '@/shared/ui-kit';
 import { Step } from '../lib/types';
-import { removePureProxyModel } from '../model/remove-pure-proxy-model';
+import { removeProxyModel } from '../model/remove-proxy-model';
 
 type Props = {
   onGoBack: () => void;
 };
 
 export const Warning = ({ onGoBack }: Props) => {
-  const isKill = useUnit(removePureProxyModel.$isPureProxiedNeedToBeKilled);
+  const isKill = useUnit(removeProxyModel.$isPureProxiedNeedToBeKilled);
 
   //todo loader might be needed here
   if (isKill) {
@@ -41,7 +41,7 @@ const WarningKill = ({ onGoBack }: Props) => {
   const revokeAuthority = (event: FormEvent) => {
     event.preventDefault();
     if (canSubmit) {
-      removePureProxyModel.stepChanged(Step.INIT);
+      removeProxyModel.stepChanged(Step.INIT);
     }
   };
 
@@ -109,7 +109,7 @@ const WarningRemove = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const onConfirm = () => {
-    removePureProxyModel.stepChanged(Step.INIT);
+    removeProxyModel.stepChanged(Step.INIT);
   };
 
   return (

@@ -9,7 +9,7 @@ import { Accordion } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { proxyRemovePureFeature } from '@/features/proxy-remove-pure';
+import { proxyRemovePureFeature } from '@/features/proxy-remove';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';

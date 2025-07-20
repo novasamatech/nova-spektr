@@ -1,24 +1,22 @@
-import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useMemo } from 'react';
 
-import { type MultisigAccount } from '@/shared/core';
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button } from '@/shared/ui';
 import { SignatorySelect } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { FeeWithLabelWithDataLoading, MultisigDepositWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { formModel } from '../model/form-model';
 import { removeProxyModel } from '../model/remove-proxy-model';
 
 type Props = {
   onGoBack: () => void;
 };
-export const RemoveProxyForm = ({ onGoBack }: Props) => {
-  const { submit } = useForm(formModel.$proxyForm);
+export const RemovePureProxyForm = ({ onGoBack }: Props) => {
+  const { submit } = useForm(removeProxyModel.form);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -44,13 +42,12 @@ const Signatories = () => {
 
   const {
     fields: { signatory },
-  } = useForm(formModel.$proxyForm);
-  const account = useUnit(formModel.$account);
+  } = useForm(removeProxyModel.form);
 
-  const signatories = useUnit(formModel.$signatories);
+  const proxiedAccount = useUnit(removeProxyModel.$proxiedAccount);
+
+  const signatories = useUnit(removeProxyModel.$signatories);
   const chain = useUnit(removeProxyModel.$chain);
-  const isMultisig = useUnit(formModel.$isMultisig);
-
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
@@ -71,7 +68,7 @@ const Signatories = () => {
     });
   }, [signatories, balances]);
 
-  if (!isMultisig || !chain || !account) {
+  if (!chain || !proxiedAccount) {
     return null;
   }
 
@@ -80,22 +77,20 @@ const Signatories = () => {
       signatory={signatory.value}
       signatories={signatoriesWithBalance}
       allAccounts={allAccounts}
-      initiator={account}
+      initiator={proxiedAccount}
       allWallets={allWallets}
-      hasError={signatory.hasError()}
-      errorText={t(signatory.errorText())}
-      network={{ chain: chain, asset: chain.assets[0] }}
+      hasError={signatory.hasError}
+      errorText={t(signatory.errorMessage)}
+      network={{ chain, asset: getNativeAsset(chain.assets) }}
       onChange={signatory.onChange}
     />
   );
 };
 
 const FeeSection = () => {
-  const api = useUnit(formModel.$api);
-  const fakeTx = useUnit(formModel.$fakeTx);
-  const isMultisig = useUnit(formModel.$isMultisig);
+  const fee = useUnit(removeProxyModel.$fee);
+  const multisigDeposit = useUnit(removeProxyModel.$multisigDeposit);
   const chain = useUnit(removeProxyModel.$chain);
-  const account = useUnit(removeProxyModel.$realAccount);
 
   if (!chain) {
     return null;
@@ -103,22 +98,11 @@ const FeeSection = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      {isMultisig && (
-        <MultisigDepositWithLabel
-          api={api}
-          asset={chain.assets[0]}
-          threshold={(account as MultisigAccount).threshold}
-          onDepositChange={formModel.events.multisigDepositChanged}
-        />
+      {!multisigDeposit.isZero() && (
+        <MultisigDepositFee asset={getNativeAsset(chain.assets)} multisigDeposit={multisigDeposit} />
       )}
 
-      <FeeWithLabelWithDataLoading
-        api={api}
-        asset={chain.assets[0]}
-        transaction={fakeTx}
-        onFeeChange={formModel.events.feeChanged}
-        onFeeLoading={formModel.events.isFeeLoadingChanged}
-      />
+      <FeeWithLabel asset={getNativeAsset(chain.assets)} fee={fee} />
     </div>
   );
 };
@@ -128,15 +112,11 @@ const FeeError = () => {
 
   const {
     fields: { signatory },
-  } = useForm(formModel.$proxyForm);
-
-  const isMultisig = useUnit(formModel.$isMultisig);
+  } = useForm(removeProxyModel.form);
 
   return (
-    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={signatory.hasError()} variant="error">
-      <Alert.Item withDot={false}>
-        {isMultisig ? t('proxy.addProxy.balanceAlertMultisig') : t('proxy.addProxy.balanceAlertRegular')}
-      </Alert.Item>
+    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={signatory.hasError} variant="error">
+      <Alert.Item withDot={false}>{t(signatory.errorMessage)}</Alert.Item>
     </Alert>
   );
 };
@@ -144,7 +124,7 @@ const FeeError = () => {
 const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const canSubmit = useUnit(formModel.$canSubmit);
+  const canSubmit = useUnit(removeProxyModel.$canSubmit);
 
   return (
     <div className="mt-4 flex items-center justify-between">
