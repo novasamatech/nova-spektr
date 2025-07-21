@@ -3,7 +3,7 @@ import { type ClipboardEvent, type FormEvent, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, FootnoteText } from '@/shared/ui';
+import { Button, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Checkbox, Input } from '@/shared/ui-kit';
 import { Step } from '../lib/types';
 import { removeProxyModel } from '../model/remove-proxy-model';
@@ -15,7 +15,6 @@ type Props = {
 export const Warning = ({ onGoBack }: Props) => {
   const isKill = useUnit(removeProxyModel.$isPureProxiedNeedToBeKilled);
 
-  //todo loader might be needed here
   if (isKill) {
     return <WarningKill onGoBack={onGoBack} />;
   }
@@ -23,7 +22,7 @@ export const Warning = ({ onGoBack }: Props) => {
   return <WarningRemove onGoBack={onGoBack} />;
 };
 
-const PASSPHRASE = 'I huy';
+const PASSPHRASE = 'I understand that I will not be able to manage this wallet';
 
 const WarningKill = ({ onGoBack }: Props) => {
   const { t } = useI18n();
@@ -115,7 +114,10 @@ const WarningRemove = ({ onGoBack }: Props) => {
   return (
     <div className="px-5 pb-4">
       <div className="mt-4 flex flex-col gap-y-4">
-        <FootnoteText as="p" className="text-text-tertiary">
+        <SmallTitleText align="center" className="mb-2">
+          {t('walletDetails.common.confirmRemoveProxyTitle')}
+        </SmallTitleText>
+        <FootnoteText className="text-text-tertiary" align="center">
           {t('walletDetails.common.confirmRemoveProxyDescription')}
         </FootnoteText>
       </div>
