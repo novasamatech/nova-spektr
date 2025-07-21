@@ -4,17 +4,18 @@ import { createGate } from 'effector-react';
 import { once } from 'patronum';
 
 import { type ChainId, type HexString, TransactionType } from '@/shared/core';
+import { type Extrinsic } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type SigningPayload } from '../lib/types';
 
-// TODO: Use it for signing
 type Input = {
   signingPayloads: SigningPayload[];
 };
 
 export type SignatureData = {
+  extrinsics: Extrinsic[];
   signatures: HexString[];
   txPayloads: Uint8Array[];
 };
@@ -52,8 +53,10 @@ const splitTxsFx = createEffect(async ({ input, apis }: SplitParams): Promise<In
     txsToSplit.map(async (tx) => {
       const txs = await transactionService.splitTxsByWeight(apis[tx.chain.chainId], tx.transaction.args.transactions);
 
-      return txs.map((transactions) => ({
-        ...tx,
+      return txs.map<SigningPayload>((transactions) => ({
+        chain: tx.chain,
+        account: tx.account,
+        signatory: tx.signatory,
         transaction: transactionBuilder.buildBatchAll({
           chain: tx.chain,
           accountId: tx.account.accountId,

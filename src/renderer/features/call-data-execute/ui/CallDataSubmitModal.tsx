@@ -10,7 +10,7 @@ import { Step } from '../lib/types';
 import { callDataUtils } from '../lib/utils';
 import { formModel } from '../model/form';
 
-import { Form } from './Form';
+import { CallDataForm } from './CallDataForm';
 
 export const CallDataSubmit = memo(() => {
   const { t } = useI18n();
@@ -40,7 +40,7 @@ export const CallDataSubmitModal = ({ onToggle }: { onToggle: VoidFunction }) =>
     <Modal isOpen size="md" height="fit" onToggle={onToggle}>
       <Modal.Title close>{t('callData.title')}</Modal.Title>
       <Modal.Content disableScroll>
-        {callDataUtils.isInitStep(step) && <Form />}
+        {callDataUtils.isInitStep(step) && <CallDataForm />}
         {
           callDataUtils.isConfirmStep(step) && null
           // <Confirmation

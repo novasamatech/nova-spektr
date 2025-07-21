@@ -3,14 +3,15 @@ import { type FormEvent, memo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, Separator, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Field, Input, Json, Modal, ScrollArea, Select } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
+import { Fee } from '@/entities/transaction';
 import { formModel } from '../model/form';
 
-export const Form = () => {
+export const CallDataForm = () => {
   const { t } = useI18n();
   const { submit } = useForm(formModel.form);
 
@@ -179,9 +180,21 @@ const ActionsSection = () => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const extrinsic = useUnit(formModel.$extrinsic);
+  const fee = useUnit(formModel.$fee);
+  const pendingFee = useUnit(formModel.$pendingFee);
+  const chain = useUnit(formModel.form.fields.chain.$value);
+  const asset = chain ? getNativeAsset(chain.assets) : null;
 
   return (
     <Modal.Footer>
+      {nonNullable(asset) && nonNullable(extrinsic) && (
+        <Box direction="row" gap={2} verticalAlign="center">
+          <FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>
+          <Fee className="text-footnote" fee={fee} isLoading={pendingFee} asset={asset} />
+        </Box>
+      )}
+
       <Button form="transfer-form" type="submit" disabled={!canSubmit}>
         {t('transfer.continueButton')}
       </Button>

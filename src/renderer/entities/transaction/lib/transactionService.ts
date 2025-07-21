@@ -20,11 +20,11 @@ import {
   type Wallet,
   WrapperKind,
 } from '@/shared/core';
-import { type TxMetadata, createTxMetadata, dictionary, nullable } from '@/shared/lib/utils';
+import { type TxMetadata, createTxMetadata, dictionary, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount, type Extrinsic, accountService } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
@@ -45,7 +45,7 @@ export const transactionService = {
 
   createPayload,
   createPayloadWithMetadata,
-  signAndSubmit,
+  submitExtrinsic,
 
   getTxWrappers,
   getWrappedTransaction,
@@ -54,6 +54,7 @@ export const transactionService = {
   getTxWeight,
   verifySignature,
   splitTxsByWeight,
+  splitExtrinsic,
 
   logPayload,
 };
@@ -89,18 +90,16 @@ type SubmitResult =
       error: string;
     };
 
-async function signAndSubmit(
-  transaction: Transaction,
+async function submitExtrinsic(
+  extrinsic: SubmittableExtrinsic<'promise'>,
   signature: HexString,
   payload: Uint8Array,
+  signatory: AccountId,
   api: ApiPromise,
 ): Promise<SubmitResult> {
   return new Promise<SubmitResult>((resolve) => {
     try {
-      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-      const accountId = transaction.accountId;
-
-      extrinsic.addSignature(accountId, hexToU8a(signature), payload);
+      extrinsic.addSignature(signatory, hexToU8a(signature), payload);
       extrinsic
         .send((result) => {
           const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;
@@ -121,7 +120,7 @@ async function signAndSubmit(
           if (dispatchError) {
             resolve({
               executed: false,
-              error: decodeDispatchError(dispatchError, api),
+              error: decodeDispatchError(dispatchError, extrinsic.registry),
             });
             return;
           }
@@ -139,7 +138,7 @@ async function signAndSubmit(
 
               if (api.events.multisig.MultisigExecuted.is(event)) {
                 isFinalApprove = true;
-                multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, api) : '';
+                multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, extrinsic.registry) : '';
               }
 
               if (api.events.system.ExtrinsicSuccess.is(event)) {
@@ -427,6 +426,58 @@ async function getBlockLimit(api: ApiPromise): Promise<BN> {
     maxExtrinsicWeight.muln(LEAVE_SOME_SPACE_MULTIPLIER),
     freeSpaceInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
   );
+}
+
+async function splitExtrinsic({ extrinsic, api }: { extrinsic: Extrinsic; api: ApiPromise }): Promise<Extrinsic[]> {
+  if (extrinsic.method.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(extrinsic.method.method)) {
+    // @ts-expect-error calls arg is Vec<Call>
+    const splitted = await splitExtrinsicsByWeight(api, extrinsic.args.at(0) ?? []);
+    const batched = splitted
+      .map((e) => {
+        if (e.length === 1) {
+          return e.at(0);
+        }
+        return api.tx.utility.batchAll(e);
+      })
+      .filter(nonNullable);
+
+    return batched;
+  }
+
+  return [extrinsic];
+}
+
+async function splitExtrinsicsByWeight(api: ApiPromise, extrinsics: Extrinsic[]) {
+  const blockLimit = await getBlockLimit(api);
+  const result: Extrinsic[][] = [[]];
+
+  let totalRefTime = BN_ZERO;
+
+  const txsWeights: Partial<Record<string, Weight>> = {};
+
+  for (const extrinsic of extrinsics) {
+    const key = `${extrinsic.method.section}.${extrinsic.method.method}`;
+    const weight = txsWeights[key] || (await getExtrinsicWeight(extrinsic));
+
+    if (!txsWeights[key]) {
+      txsWeights[key] = weight;
+    }
+
+    totalRefTime = totalRefTime.add(weight.refTime.toBn());
+
+    if (totalRefTime.lt(blockLimit) && result.length > 0) {
+      const lastBuffer = result.at(-1);
+      if (lastBuffer) {
+        lastBuffer.push(extrinsic);
+      }
+    } else {
+      result.push([extrinsic]);
+
+      totalRefTime = weight.refTime.toBn();
+    }
+  }
+
+  return result;
 }
 
 async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {

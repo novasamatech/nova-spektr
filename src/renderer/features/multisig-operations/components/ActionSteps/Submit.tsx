@@ -10,7 +10,7 @@ import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { type MultisigEvent, type MultisigOperation, multisigOperation } from '@/domains/network';
 import { multisigOperationService } from '@/domains/network';
-import { isProxyTypeTransaction, transactionService } from '@/entities/transaction';
+import { getExtrinsic, isProxyTypeTransaction, transactionService } from '@/entities/transaction';
 import { proxiesModel } from '@/features/proxies';
 import { flexibleShellModel } from '../../model/flexible-shell-model';
 
@@ -39,7 +39,8 @@ export const Submit = ({ api, tx, operation, account, txPayload, signature, isRe
   }, []);
 
   const submitExtrinsic = async (signature: HexString) => {
-    const result = await transactionService.signAndSubmit(tx, signature, txPayload, api);
+    const extrinsic = getExtrinsic[tx.type](tx.args, api);
+    const result = await transactionService.submitExtrinsic(extrinsic, signature, txPayload, tx.accountId, api);
 
     if (result.executed) {
       const { params } = result;

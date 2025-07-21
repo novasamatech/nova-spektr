@@ -8,10 +8,13 @@ import { type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { createForm } from '@/shared/forms';
 import { nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { createFeeCalculator } from '@/shared/transactions';
 import { type AnyAccount, accountService, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { Step } from '../lib/types';
+
+import { callDataExecuteFeature } from './feature';
 
 type FormData = {
   chain: Chain | null;
@@ -92,6 +95,11 @@ sample({
   target: form.fields.callData.setErrors,
 });
 
+const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
+  active: callDataExecuteFeature.isRunning,
+  extrinsic: $extrinsic,
+});
+
 // steps management
 
 const stepChanged = createEvent<Step>();
@@ -157,6 +165,8 @@ export const formModel = {
   $api,
   $extrinsic,
   $args,
+  $fee,
+  $pendingFee,
 
   $signatories,
   $availableChains,

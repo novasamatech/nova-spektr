@@ -3,6 +3,7 @@ import { useGate, useUnit } from 'effector-react';
 import { type HexString } from '@/shared/core';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
+import { getExtrinsic } from '@/entities/transaction';
 import { walletUtils } from '@/entities/wallet';
 import { signModel } from '../model/sign-model';
 
@@ -31,7 +32,11 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   }
 
   const onSignResult = (signatures: HexString[], txPayloads: Uint8Array[]) => {
-    signModel.events.dataReceived({ signatures, txPayloads });
+    // TODO move this wrapping to sign store
+    const extrinsics = signStore.signingPayloads.map(({ transaction }) => {
+      return getExtrinsic[transaction.type](transaction.args, apis[transaction.chainId]);
+    });
+    signModel.events.dataReceived({ extrinsics, signatures, txPayloads });
     onSuccess?.();
   };
 

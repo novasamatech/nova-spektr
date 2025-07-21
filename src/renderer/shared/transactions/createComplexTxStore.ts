@@ -4,6 +4,7 @@ import { type Store, combine, createEffect, createStore, sample } from 'effector
 import { type Chain, type Transaction } from '@/shared/core';
 import { assert, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, transactionService } from '@/domains/network';
+import { getExtrinsic } from '@/entities/transaction';
 
 import { createFeeCalculator } from './createFeeCalculator';
 
@@ -111,10 +112,15 @@ export const createComplexTxStore = <T extends Transaction>({
 
   const $mergedTx = combine($tx, $feeTx, (tx, feeTx) => tx || feeTx);
 
+  const $mergedExtrinsic = combine(api, $mergedTx, (api, tx) => {
+    if (nullable(api)) return null;
+    if (nullable(tx)) return null;
+    return getExtrinsic[tx.type](tx.args, api);
+  });
+
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
-    $active: active,
-    $api: api,
-    $transaction: $mergedTx,
+    active,
+    extrinsic: $mergedExtrinsic,
   });
 
   return {

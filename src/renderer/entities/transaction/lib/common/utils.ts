@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type DispatchError } from '@polkadot/types/interfaces';
 import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
+import { type Registry } from '@polkadot/types/types';
 
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { type VoteTransaction, voteTransactionService } from '@/entities/governance';
@@ -15,11 +16,11 @@ import {
   XcmTypes,
 } from './constants';
 
-export const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, api: ApiPromise): string => {
+export const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, registry: Registry): string => {
   let errorInfo = error.toString();
 
   if (error.isModule) {
-    const decoded = api.registry.findMetaError(error.asModule);
+    const decoded = registry.findMetaError(error.asModule);
 
     errorInfo = decoded.name
       .split(/(?=[A-Z])/)

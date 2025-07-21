@@ -12,6 +12,7 @@ import {
   TEST_ACCOUNTS,
   getNativeAsset,
   nonNullable,
+  nullable,
   toAccountId,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
@@ -19,7 +20,7 @@ import { createComplexTxStore, createFeeCalculator } from '@/shared/transactions
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
-import { transactionBuilder } from '@/entities/transaction';
+import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
@@ -169,14 +170,25 @@ const $fakeFinalTx = combine(
   },
 );
 
-const { $: $proxyFee, $pending: $pendingProxyFee } = createFeeCalculator({
-  $api: $api,
-  $transaction: $fakeProxyTx,
+const $fakeProxyExtrinsic = combine($api, $fakeProxyTx, (api, tx) => {
+  if (nullable(api)) return null;
+  if (nullable(tx)) return null;
+  return getExtrinsic[tx.type](tx.args, api);
 });
 
+const { $: $proxyFee, $pending: $pendingProxyFee } = createFeeCalculator({
+  extrinsic: $fakeProxyExtrinsic,
+});
+
+const $fakeFinalExtrinsic = combine($api, $fakeFinalTx, (api, tx) => {
+  if (nullable(api)) return null;
+  if (nullable(tx)) return null;
+  return getExtrinsic[tx.type](tx.args, api);
+});
+
+
 const { $: $multisigFee, $pending: $pendingMultisigFee } = createFeeCalculator({
-  $api: $api,
-  $transaction: $fakeFinalTx,
+  extrinsic: $fakeFinalExtrinsic,
 });
 
 const $fee = combine($proxyFee, $multisigFee, (proxyFee, multisigFee) => multisigFee.add(proxyFee));

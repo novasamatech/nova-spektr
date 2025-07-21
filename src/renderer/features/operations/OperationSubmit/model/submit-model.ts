@@ -1,16 +1,28 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
+import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { once } from 'patronum';
 
-import { type Chain, type ChainId, type HexString, type Transaction, TransactionType } from '@/shared/core';
-import { removeFromCollection } from '@/shared/lib/utils';
+import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
+import { assert, nonNullable, removeFromCollection } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, type Extrinsic } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { type ExtrinsicResultParams, transactionBuilder, transactionService } from '@/entities/transaction';
+import {
+  type ExtrinsicResultParams,
+  getExtrinsic,
+  transactionBuilder,
+  transactionService,
+} from '@/entities/transaction';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
-export type SubmitInput = {
+type SubmitPayload = {
+  signatory: AccountId;
+  payload: Uint8Array;
+  signature: HexString;
+  extrinsic: Extrinsic;
+};
+
+export type SubmitInputDeprecated = {
   chain: Chain;
   account: AnyAccount;
   coreTxs: Transaction[];
@@ -20,34 +32,80 @@ export type SubmitInput = {
   txPayloads: Uint8Array[];
 };
 
+export type SubmitInput = {
+  api: ApiPromise;
+  payloads: SubmitPayload[];
+};
+
 type Result = { id: number; result: ExtrinsicResult; params: ExtrinsicResultParams | string };
 
-const formInitiated = createEvent<SubmitInput>();
-const submitStarted = createEvent();
+/**
+ * Flow entry point
+ *
+ * @deperecated use "start" event instead
+ */
+const formInitiated = createEvent<SubmitInputDeprecated>();
+/**
+ * Flow entry point
+ */
+const start = createEvent<SubmitInput>();
+/**
+ * Should be triggered from sign comfirmation screen
+ */
+const submitToNetwork = createEvent();
+/**
+ * Submitting is done, finishes flow
+ */
 const formSubmitted = createEvent<Result[]>();
-
+/**
+ * Handlers for each extrinsic submitting result
+ */
 const extrinsicSucceeded = createEvent<{ id: number; signatory: AccountId; params: ExtrinsicResultParams }>();
 const extrinsicFailed = createEvent<{ id: number; signatory: AccountId; params: string }>();
+/**
+ * All extrinsic are settled
+ */
 const txsExecuted = createEvent();
 
-const $submitStore = restore<SubmitInput>(formInitiated, null);
+// intermediate state
 
-const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
+const $submitStore = createStore<SubmitInput | null>(null);
+
+const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' }).reset(
+  start,
+);
+
 const $submittingTxs = createStore<number[]>([]);
-const $results = createStore<Result[]>([]).reset(formInitiated);
+const $results = createStore<Result[]>([]).reset(start);
 
-type SignAndSubmitExtrinsicParams = {
-  apis: Record<ChainId, ApiPromise>;
+// effects
+
+const submitExtrinsicFx = createEffect(async ({ api, payloads }: SubmitInput) => {
+  const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
+  const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
+
+  for (const [index, { extrinsic, signatory, signature, payload }] of payloads.entries()) {
+    transactionService.submitExtrinsic(extrinsic, signature, payload, signatory, api).then((result) => {
+      if (result.executed) {
+        boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
+      } else {
+        boundExtrinsicFailed({ id: index, signatory, params: result.error });
+      }
+    });
+  }
+});
+
+// deprecated flow with Transaction struct
+
+type SplitTransactionsParams = {
+  api: ApiPromise;
   wrappedTxs: Transaction[];
   txPayloads: Uint8Array[];
   signatures: HexString[];
   chain: Chain;
 };
-const signAndSubmitExtrinsicsFx = createEffect(
-  async ({ apis, wrappedTxs, txPayloads, signatures, chain }: SignAndSubmitExtrinsicParams): Promise<void> => {
-    const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
-    const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
-
+const splitTransactionsFx = createEffect(
+  async ({ api, wrappedTxs, txPayloads, signatures, chain }: SplitTransactionsParams): Promise<SubmitInput> => {
     let splittedBatch: Transaction[] = [];
 
     for (const tx of wrappedTxs) {
@@ -55,7 +113,7 @@ const signAndSubmitExtrinsicsFx = createEffect(
         const batchAllTxs = await transactionBuilder.splitBatchAll({
           transaction: tx,
           chain,
-          api: apis[chain.chainId],
+          api,
         });
 
         splittedBatch = splittedBatch.concat(batchAllTxs);
@@ -64,46 +122,65 @@ const signAndSubmitExtrinsicsFx = createEffect(
       }
     }
 
-    for (const [index, transaction] of splittedBatch.entries()) {
-      transactionService
-        .signAndSubmit(transaction, signatures[index], txPayloads[index], apis[transaction.chainId])
-        .then((result) => {
-          if (result.executed) {
-            boundExtrinsicSucceeded({ id: index, signatory: transaction.accountId, params: result.params });
-          } else {
-            boundExtrinsicFailed({ id: index, signatory: transaction.accountId, params: result.error });
-          }
-        });
-    }
+    const payloads: SubmitPayload[] = splittedBatch.map((tx, index) => ({
+      extrinsic: getExtrinsic[tx.type](tx.args, api),
+      payload: txPayloads[index],
+      signature: signatures[index],
+      signatory: tx.accountId,
+    }));
+
+    return {
+      api,
+      payloads,
+    };
   },
 );
 
-sample({ clock: formInitiated, target: $submitStep.reinit });
+sample({
+  clock: formInitiated,
+  source: {
+    apis: networkModel.$apis,
+  },
+  fn({ apis }, { chain, wrappedTxs, txPayloads, signatures }): SplitTransactionsParams {
+    const api = apis[chain.chainId];
+    assert(api, `Api for chain ${chain.chainId} not found`);
+
+    return {
+      api,
+      wrappedTxs,
+      txPayloads,
+      signatures,
+      chain,
+    };
+  },
+  target: splitTransactionsFx,
+});
 
 sample({
-  clock: submitStarted,
+  clock: splitTransactionsFx.doneData,
+  target: start,
+});
+
+// actual flow
+
+sample({
+  clock: start,
+  target: $submitStore,
+});
+
+sample({
+  clock: submitToNetwork,
   source: $submitStore,
   filter: (params) => Boolean(params),
-  fn: (params) => params?.txPayloads.map((_, index) => index) || [],
+  fn: (params) => params?.payloads.map((_, index) => index) || [],
   target: $submittingTxs,
 });
 
 sample({
-  clock: submitStarted,
-  source: {
-    params: $submitStore,
-    apis: networkModel.$apis,
-  },
-  filter: ({ params }) => Boolean(params),
-  fn: ({ apis, params }) => ({
-    apis,
-    signatures: params!.signatures,
-    wrappedTxs: params!.wrappedTxs,
-    coreTxs: params!.coreTxs,
-    txPayloads: params!.txPayloads,
-    chain: params!.chain,
-  }),
-  target: signAndSubmitExtrinsicsFx,
+  clock: submitToNetwork,
+  source: $submitStore,
+  filter: nonNullable,
+  target: submitExtrinsicFx,
 });
 
 sample({
@@ -154,7 +231,7 @@ sample({
 sample({
   clock: once({
     source: txsExecuted,
-    reset: submitStarted,
+    reset: submitToNetwork,
   }),
   source: $results,
   fn: (results) => {
@@ -190,8 +267,12 @@ export const submitModel = {
   $failedTxs: $results.map((result) => result.filter((r) => r.result === ExtrinsicResult.ERROR)),
 
   events: {
+    start,
+    /**
+     * @deprecated Use "submitModel.events.start" instead
+     */
     formInitiated,
-    submitStarted,
+    submitToNetwork,
   },
   output: {
     formSubmitted,
