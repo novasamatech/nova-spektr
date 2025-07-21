@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEffect, createStore, sample } from 'effector';
 
 import { type Chain, type Transaction } from '@/shared/core';
-import { assert, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { assert, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, transactionService } from '@/domains/network';
 
 import { createFeeCalculator } from './createFeeCalculator';
@@ -12,6 +12,7 @@ type Params<T extends Transaction> = {
   api: Store<ApiPromise | null>;
   chain: Store<Chain | null>;
   transaction: Store<T | null>;
+  feeTransaction?: Store<T | null>;
   accounts: Store<AnyAccount[]>;
   initiator: Store<AnyAccount | null>;
   signatory: Store<AnyAccount | null>;
@@ -22,6 +23,7 @@ export const createComplexTxStore = <T extends Transaction>({
   api,
   chain,
   transaction,
+  feeTransaction,
   accounts,
   initiator,
   signatory,
@@ -34,6 +36,7 @@ export const createComplexTxStore = <T extends Transaction>({
   });
 
   const $tx = createStore<Transaction | null>(null);
+  const $feeTx = createStore<Transaction | null>(null);
 
   type WrapParams = {
     api: ApiPromise;
@@ -41,7 +44,7 @@ export const createComplexTxStore = <T extends Transaction>({
     route: AnyAccount[];
   };
 
-  const wrapTransactionFx = createEffect(async ({ transaction, route, api }: WrapParams) => {
+  const wrapTransactionHandler = async ({ transaction, route, api }: WrapParams) => {
     const tx = await transactionService.wrapLegacyTransaction(transaction, route, api);
     const signatory = route.at(-1);
 
@@ -52,7 +55,10 @@ export const createComplexTxStore = <T extends Transaction>({
     tx.accountId = signatory.accountId;
 
     return tx;
-  });
+  };
+
+  const wrapTransactionFx = createEffect(wrapTransactionHandler);
+  const wrapFeeTransactionFx = createEffect(wrapTransactionHandler);
 
   const wrapTransaction = sample({
     clock: [transaction, api, $route],
@@ -64,6 +70,25 @@ export const createComplexTxStore = <T extends Transaction>({
     filter: active,
     target: wrapTransactionFx,
   });
+
+  if (feeTransaction) {
+    const wrapFeeTransaction = sample({
+      source: { transaction: feeTransaction, api, route: $route },
+      filter: ({ transaction, api, route }) => nonNullable(transaction) && nonNullable(api) && nonNullable(route),
+      fn: ({ transaction, api, route }) => ({ transaction: transaction!, api: api!, route: route! }),
+    });
+
+    sample({
+      clock: wrapFeeTransaction,
+      filter: active,
+      target: wrapFeeTransactionFx,
+    });
+
+    sample({
+      clock: wrapFeeTransactionFx.doneData,
+      target: $feeTx,
+    });
+  }
 
   sample({
     clock: transaction,
@@ -84,15 +109,18 @@ export const createComplexTxStore = <T extends Transaction>({
     target: $tx,
   });
 
+  const $mergedTx = combine($tx, $feeTx, (tx, feeTx) => tx || feeTx);
+
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
     $active: active,
     $api: api,
-    $transaction: $tx,
+    $transaction: $mergedTx,
   });
 
   return {
     $route,
     $tx,
+    $feeTx,
     $pendingWrapping: wrapTransactionFx.pending,
     $fee,
     $pendingFee,

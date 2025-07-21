@@ -276,9 +276,8 @@ const getCallDataParser: Record<
 
     try {
       args.payee = JSON.parse(payee);
-    } catch (e) {
+    } catch {
       args.payee = payee;
-      console.warn(e);
     }
 
     if (typeof args.payee === 'object') {

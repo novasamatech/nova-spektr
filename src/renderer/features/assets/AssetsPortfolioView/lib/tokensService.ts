@@ -28,11 +28,12 @@ export const tokensService = {
   calculateTotalBalance,
 };
 
-async function getTokensData(): Promise<AssetByChains[]> {
+async function getTokensData(): Promise<AssetByChains[] | null> {
   const response = await fetch(TOKENS_CONFIG_URL);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch tokens config: ${response.status} ${response.statusText}`);
+    console.error(`Failed to fetch tokens config: ${response.status} ${response.statusText}`);
+    return null;
   }
 
   return response.json();

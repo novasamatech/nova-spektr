@@ -2,6 +2,7 @@ import { attach, createEffect, createEvent, createStore, sample, scopeBind } fro
 
 import { storageService } from '@/shared/api/storage';
 import { type HexString } from '@/shared/core';
+import { createQueuedEffect } from '@/shared/effector';
 import { isEqual } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
@@ -35,7 +36,7 @@ const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
   return storageService.multisigOperations.deleteAll(operations.map(t => t.id)).then(result => result ?? []);
 });
 
-const syncOperationsFx = createEffect(async (operations: MultisigOperation[]) => {
+const syncOperationsFx = createQueuedEffect(async (operations: MultisigOperation[]) => {
   const existing = await storageService.multisigOperations.readAll();
   const toAdd: MultisigOperation[] = [];
   const toUpdate: MultisigOperation[] = [];
