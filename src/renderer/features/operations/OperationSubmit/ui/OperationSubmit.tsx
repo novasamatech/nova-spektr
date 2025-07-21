@@ -27,8 +27,10 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Pr
   const { step, message } = useUnit(submitModel.$submitStep);
 
   useEffect(() => {
-    submitModel.events.submitToNetwork();
-  }, []);
+    if (submitStore) {
+      submitModel.events.submitToNetwork();
+    }
+  }, [submitStore]);
 
   const handleModalClose = () => {
     if (submitUtils.isLoadingStep(step)) {

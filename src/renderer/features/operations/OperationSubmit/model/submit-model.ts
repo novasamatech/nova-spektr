@@ -71,9 +71,7 @@ const txsExecuted = createEvent();
 
 const $submitStore = createStore<SubmitInput | null>(null);
 
-const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' }).reset(
-  start,
-);
+const $submitStep = createStore<{ step: SubmitStep; message: string }>({ step: SubmitStep.LOADING, message: '' });
 
 const $submittingTxs = createStore<number[]>([]);
 const $results = createStore<Result[]>([]).reset(start);
@@ -167,6 +165,8 @@ sample({
   clock: start,
   target: $submitStore,
 });
+
+// debug($submitStore, submitToNetwork, extrinsicSucceeded, extrinsicFailed, $results);
 
 sample({
   clock: submitToNetwork,
