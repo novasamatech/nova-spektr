@@ -45,10 +45,11 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
 
     await allSettled(addProxyModel.events.flowStarted, { scope });
 
-    expect(scope.getState(addProxyModel.$chain)).toEqual(undefined);
+    expect(scope.getState(addProxyModel.$chain)).toEqual(null);
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.INIT);
 
-    await allSettled(formModel.output.formSubmitted, {
+    const account = createVaultBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] });
+    await allSettled(formModel.formSubmitted, {
       scope,
       params: {
         transactions: {
@@ -57,8 +58,8 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         },
         formData: {
           chain: testChain,
-          signatory: null,
-          account: createVaultBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] }),
+          signatory: account,
+          initiator: account,
           delegate: TEST_ACCOUNTS[0],
           proxyType: 'Any',
           proxyDeposit: '1',
@@ -71,7 +72,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.CONFIRM);
 
-    await allSettled(confirmModel.output.formSubmitted, { scope });
+    await allSettled(confirmModel.startSigning, { scope });
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.SIGN);
 

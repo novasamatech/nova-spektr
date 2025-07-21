@@ -10,17 +10,13 @@ import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
+  type AddProxyConfirm,
   addProxyConfirmModel,
   addPureProxiedConfirmModel,
   removeProxyConfirmModel,
   removePureProxiedConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import {
-  type AddProxyInput,
-  type AddPureProxiedInput,
-  type RemoveProxyInput,
-  type RemovePureProxiedInput,
-} from '../types/confirm';
+import { type AddPureProxiedInput, type RemoveProxyInput, type RemovePureProxiedInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -46,18 +42,19 @@ const prepareAddProxyDataFx = createEffect(async ({ transaction, accounts, chain
   return {
     id: transaction.id,
     chain,
-    account,
+    initiator: account!,
     proxyType: transaction.coreTx.args.proxyType,
     delegate: transaction.coreTx.args.delegate,
-    description: '',
 
-    transaction: transaction.coreTx,
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
+    route: transaction.route,
     proxyDeposit,
     proxyNumber: proxy.accounts.length + 1,
     fee,
-    signatory: null,
+    signatory: account!,
     multisigDeposit: '0',
-  } as AddProxyInput;
+  } satisfies AddProxyConfirm;
 });
 
 const prepareAddPureProxiedDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -145,7 +142,7 @@ sample({
 sample({
   clock: prepareAddProxyDataFx.doneData,
   fn: (data) => [data],
-  target: addProxyConfirmModel.events.formInitiated,
+  target: addProxyConfirmModel.init,
 });
 
 sample({
