@@ -325,7 +325,7 @@ sample({
   target: form.submit,
 });
 
-sample({
+const confirmEvent = sample({
   clock: form.submit.doneData,
   source: {
     tx: $tx,
@@ -337,29 +337,42 @@ sample({
     removeProxyStore: $removeProxyStore,
     route: $route,
   },
-  filter: ({ tx, chain, initiator, removeProxyStore }) => {
-    return nonNullable(tx) && nonNullable(chain) && nonNullable(initiator) && nonNullable(removeProxyStore);
+  fn: (source, clock) => {
+    return { ...source, ...clock };
   },
-  fn: ({ tx, coreTx, chain, initiator, fee, multisigDeposit, removeProxyStore, route }, formData) => {
-    return {
-      event: [
-        {
-          id: 0,
-          initiator: initiator!,
-          signatory: formData.signatory!,
-          route,
-          chain: chain!,
-          tx: tx!,
-          coreTx: coreTx!,
-          spawner: toAccountId(removeProxyStore!.spawner),
-          proxyType: removeProxyStore!.proxyType,
-          fee: fee.toString(),
-          multisigDeposit: multisigDeposit.toString(),
-        } satisfies RemovePureProxiedConfirm,
-      ],
-      step: Step.CONFIRM,
-    };
-  },
+}).filterMap(({ tx, coreTx, chain, initiator, fee, multisigDeposit, removeProxyStore, route, signatory }) => {
+  if (
+    nonNullable(tx) &&
+    nonNullable(chain) &&
+    nonNullable(initiator) &&
+    nonNullable(removeProxyStore) &&
+    nonNullable(signatory) &&
+    nonNullable(coreTx)
+  ) {
+    return [
+      {
+        id: 0,
+        initiator: initiator,
+        signatory: signatory,
+        route,
+        chain: chain,
+        tx,
+        coreTx,
+        spawner: toAccountId(removeProxyStore.spawner),
+        proxyType: removeProxyStore.proxyType,
+        fee: fee.toString(),
+        multisigDeposit: multisigDeposit.toString(),
+      } satisfies RemovePureProxiedConfirm,
+    ];
+  }
+});
+
+sample({
+  clock: confirmEvent,
+  fn: (event) => ({
+    event,
+    step: Step.CONFIRM,
+  }),
   target: spread({
     event: confirmModel.init,
     step: stepChanged,
