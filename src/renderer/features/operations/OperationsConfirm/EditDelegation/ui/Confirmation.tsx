@@ -37,11 +37,15 @@ export const Confirmation = ({
   const wallets = useUnit(walletModel.$wallets);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirmStore = confirms[id];
+  const confirm = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (value, [id]) => value[id],
+  });
 
-  const meta = confirmStore?.meta;
-  const initiatorWallet = confirmStore?.wallets.initiator || null;
-  const signerWallet = confirmStore?.wallets.signatory || null;
+  const meta = confirm?.meta;
+  const initiatorWallet = confirm?.wallets.initiator || null;
+  const signerWallet = confirm?.wallets.signatory || null;
 
   const lockPeriods = useStoreMap({
     store: lockPeriodsModel.$lockPeriods,
@@ -60,12 +64,12 @@ export const Confirmation = ({
   }, [confirms]);
 
   const multisigAccount = useMemo(() => {
-    if (nullable(confirmStore)) return null;
+    if (nullable(confirm)) return null;
 
-    return confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
-  }, [confirmStore.meta.route]);
+    return confirm.meta.route.find(accountUtils.isMultisigAccount) ?? null;
+  }, [confirm.meta.route]);
 
-  if (!confirmStore || !meta || !initiatorWallet) {
+  if (!confirm || !meta || !initiatorWallet) {
     return (
       <Box width="440px" height="440px" verticalAlign="center" horizontalAlign="center">
         <Loader color="primary" />

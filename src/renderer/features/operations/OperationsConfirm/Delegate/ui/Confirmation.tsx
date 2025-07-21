@@ -38,15 +38,19 @@ export const Confirmation = ({
   const wallets = useUnit(walletModel.$wallets);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirmStore = confirms[id] || {};
+  const confirm = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (value, [id]) => value[id],
+  });
 
   const lockPeriods = useStoreMap({
     store: lockPeriodsModel.$lockPeriods,
-    keys: [confirmStore.meta?.chain],
+    keys: [confirm.meta?.chain],
     fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
   });
 
-  useGate(locksPeriodsAggregate.gates.flow, { chain: confirmStore.meta?.chain });
+  useGate(locksPeriodsAggregate.gates.flow, { chain: confirm.meta?.chain });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
@@ -57,12 +61,12 @@ export const Confirmation = ({
   }, [confirms]);
 
   const multisigAccount = useMemo(() => {
-    if (nullable(confirmStore)) return null;
+    if (nullable(confirm)) return null;
 
-    return confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
-  }, [confirmStore.meta.route]);
+    return confirm.meta.route.find(accountUtils.isMultisigAccount) ?? null;
+  }, [confirm.meta.route]);
 
-  if (!confirmStore || !confirmStore.wallets?.initiator) {
+  if (!confirm || !confirm.wallets?.initiator) {
     return (
       <Box width="440px" height="440px" verticalAlign="center" horizontalAlign="center">
         <Loader color="primary" />
@@ -70,7 +74,7 @@ export const Confirmation = ({
     );
   }
 
-  const { meta, wallets: confirmWallets } = confirmStore;
+  const { meta, wallets: confirmWallets } = confirm;
 
   const amountValue = config.withFormatAmount ? formatAmount(meta.balance, meta.asset.precision) : meta.balance;
 
