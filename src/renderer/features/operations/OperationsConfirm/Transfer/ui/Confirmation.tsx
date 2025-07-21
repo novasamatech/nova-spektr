@@ -29,7 +29,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const error = useUnit(confirmModel.$error);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirm = confirms[id];
+  const confirm = confirms.find((item) => item.meta.id === id);
 
   if (!confirm) {
     return (
