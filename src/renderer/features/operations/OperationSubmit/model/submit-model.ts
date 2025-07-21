@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import { once } from 'patronum';
+import { once, reset } from 'patronum';
 
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
 import { assert, nonNullable, removeFromCollection } from '@/shared/lib/utils';
@@ -161,19 +161,14 @@ sample({
 
 // actual flow
 
+reset({
+  clock: start,
+  target: $submitStep,
+});
+
 sample({
   clock: start,
   target: $submitStore,
-});
-
-// debug($submitStore, submitToNetwork, extrinsicSucceeded, extrinsicFailed, $results);
-
-sample({
-  clock: submitToNetwork,
-  source: $submitStore,
-  filter: (params) => Boolean(params),
-  fn: (params) => params?.payloads.map((_, index) => index) || [],
-  target: $submittingTxs,
 });
 
 sample({
@@ -181,6 +176,12 @@ sample({
   source: $submitStore,
   filter: nonNullable,
   target: submitExtrinsicFx,
+});
+
+sample({
+  clock: submitExtrinsicFx,
+  fn: (params) => params.payloads.map((_, index) => index),
+  target: $submittingTxs,
 });
 
 sample({
