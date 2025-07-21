@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
@@ -29,7 +29,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const error = useUnit(confirmModel.$error);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirm = confirms.find((item) => item.meta.id === id);
+  const confirm = useStoreMap({
+    store: confirmModel.$confirmMap,
+    keys: [id],
+    fn: (value, [id]) => value[id],
+  });
 
   if (!confirm) {
     return (

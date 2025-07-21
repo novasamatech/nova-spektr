@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -26,15 +26,19 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const wallets = useUnit(walletModel.$wallets);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirmStore = confirms[id];
+  const confirm = useStoreMap({
+    store: confirmModel.$confirmMap,
+    keys: [id],
+    fn: (value, [id]) => value[id],
+  });
 
-  const initiatorWallet = confirmStore.wallets.initiator;
-  const signerWallet = confirmStore.wallets.signatory;
+  const initiatorWallet = confirm.wallets.initiator;
+  const signerWallet = confirm.wallets.signatory;
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
-  const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount);
-  const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
+  const multisigAccount = confirm.meta.route.find(accountUtils.isMultisigAccount);
+  const nativeAsset = getNativeAsset(confirm.meta.chain.assets);
 
-  if (!confirmStore || !initiatorWallet) {
+  if (!confirm || !initiatorWallet) {
     return null;
   }
 
@@ -45,25 +49,21 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
 
         <div className="flex flex-col items-center gap-y-1">
           <AssetBalance
-            value={confirmStore.meta.amount}
-            asset={confirmStore.meta.asset}
+            value={confirm.meta.amount}
+            asset={confirm.meta.asset}
             className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary"
           />
-          <AssetFiatBalance
-            asset={confirmStore.meta.asset}
-            amount={confirmStore.meta.amount}
-            className="text-headline"
-          />
+          <AssetFiatBalance asset={confirm.meta.asset} amount={confirm.meta.amount} className="text-headline" />
         </div>
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />
 
       <TransactionDetails
-        chain={confirmStore.meta.chain}
+        chain={confirm.meta.chain}
         wallets={wallets}
         initiators={confirms.map((confirm) => confirm.meta.initiator)}
-        signatory={confirmStore.meta.signatory}
+        signatory={confirm.meta.signatory}
       >
         {multisigAccount && (
           <DetailRow
@@ -84,20 +84,20 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.meta.multisigDeposit} asset={nativeAsset} />
-              <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.multisigDeposit} />
+              <AssetBalance value={confirm.meta.multisigDeposit} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={confirm.meta.multisigDeposit} />
             </div>
           </DetailRow>
         )}
 
         <FeeWithLabel
-          fee={confirmStore.meta.fee}
+          fee={confirm.meta.fee}
           asset={nativeAsset}
           label={t('staking.networkFee', { count: confirms.length || 1 })}
         />
 
         {confirms.length > 1 && (
-          <FeeWithLabel fee={confirmStore.meta.totalFee} asset={nativeAsset} label={t('staking.networkFeeTotal')} />
+          <FeeWithLabel fee={confirm.meta.totalFee} asset={nativeAsset} label={t('staking.networkFeeTotal')} />
         )}
 
         <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
