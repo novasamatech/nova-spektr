@@ -8,6 +8,7 @@ import {
   type Chain,
   type ChainId,
   type Conviction,
+  type ProxyType,
   type ReferendumId,
   type Signatory,
   type TrackId,
@@ -584,16 +585,17 @@ type AddProxyParams = {
   chain: Chain;
   accountId: AccountId;
   delegateAccountId: AccountId;
+  type: ProxyType;
 };
 
-function buildAddProxy({ chain, accountId, delegateAccountId }: AddProxyParams): Transaction {
+function buildAddProxy({ chain, accountId, delegateAccountId, type }: AddProxyParams): Transaction {
   return {
     chainId: chain.chainId,
     accountId: accountId,
     type: TransactionType.ADD_PROXY,
     args: {
       delegate: toAddress(delegateAccountId, { prefix: chain.addressPrefix }),
-      proxyType: 'Any',
+      proxyType: type,
       delay: 0,
     },
   };
@@ -623,6 +625,7 @@ function buildCreateFlexibleMultisig({
     chain,
     accountId: signerAccountId,
     delegateAccountId: multisigAccountId,
+    type: 'Any',
   });
 
   const remarkTx = transactionBuilder.buildRemark({
