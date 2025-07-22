@@ -1,8 +1,9 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { Step } from '@/shared/lib/utils';
-import { Button, FootnoteText, Icon, Separator, SmallTitleText } from '@/shared/ui';
+import { Step, nonNullable, nullable } from '@/shared/lib/utils';
+import { Button, FootnoteText, Icon, Loader, Separator, SmallTitleText } from '@/shared/ui';
+import { Address } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { OperationSubmit } from '@/features/operations';
 import { confirmModel } from '../model/confirm-model';
@@ -15,6 +16,9 @@ export const ConfirmationStep = () => {
 
   const signerWallet = useUnit(flexibleMultisigModel.$signerWallet);
   const signer = useUnit(flexibleMultisigModel.$signer);
+
+  const proxyAddress = useUnit(confirmModel.$proxyAddress);
+  const pendingProxyCreate = useUnit(confirmModel.$pendingProxyCreate);
 
   if (!signer || !signerWallet) return;
 
@@ -33,10 +37,20 @@ export const ConfirmationStep = () => {
             <div>
               <Button
                 prefixElement={<Icon className="text-icon-button" name="vault" size={14} />}
+                disabled={pendingProxyCreate || nonNullable(proxyAddress)}
                 onClick={() => confirmModel.startSigningProxy()}
               >
                 {t('createMultisigAccount.flexibleMultisig.title')}
               </Button>
+            </div>
+            <div className="mt-4">
+              {pendingProxyCreate && nullable(proxyAddress) && (
+                <Box direction="row" fillContainer verticalAlign="center" horizontalAlign="center">
+                  <Loader color="primary" size={32} />
+                  <FootnoteText> {t('createMultisigAccount.flexibleMultisig.creatingFlexibleProxy')}</FootnoteText>
+                </Box>
+              )}
+              {nonNullable(proxyAddress) && <Address canCopy={false} showIcon address={proxyAddress} />}
             </div>
 
             <Separator className="my-4" />
@@ -48,6 +62,7 @@ export const ConfirmationStep = () => {
             <div>
               <Button
                 prefixElement={<Icon className="text-icon-button" name="vault" size={14} />}
+                disabled={nullable(proxyAddress)}
                 onClick={() => confirmModel.startSigningFlexible()}
               >
                 {t('createMultisigAccount.flexibleMultisig.assignControl')}
