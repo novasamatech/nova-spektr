@@ -1371,8 +1371,6 @@
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
       "sender": "Sender",
-      "senderAccount": "Sender account",
-      "senderProxiedWallet": "Sender wallet (proxied)",
       "timePoint": "Time Point",
       "toNetwork": "To network",
       "validators": "Validators",
@@ -1391,6 +1389,8 @@
     "multisigExistsTitle": "Same transaction already exist",
     "networkFee": "Network fee",
     "networkFeeTotal": "Total network fee",
+    "noSignatoryErrorDescription": "The wallet<wallet />does not have an account on the {network} network. You cannot sign this opperation. Please add an account on {network} network.",
+    "noSignatoryErrorTitle": "No account for {network}",
     "openOperationsButton": "Open operations",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
@@ -1551,6 +1551,10 @@
       "maxProxiesError": "Maximum number of proxy is achieved",
       "networkLabel": "Network",
       "networkPlaceholder": "Select network",
+      "noChainError": "Please select chain",
+      "noInitiatorError": "Please select operation initiator",
+      "noSignatoryError": "Please select operation signatory",
+      "notEnoughBalanceForDepositError": "Not enough tokens to pay for the multisig deposit and/or network fee",
       "notEnoughMultisigTokens": "Not enough tokens to pay multisig deposit and network fee",
       "proxyAddressRequiredError": "Delegate address is required",
       "proxyTypeExistError": "The same proxy already exists, choose another access type",
@@ -1562,16 +1566,11 @@
     },
     "details": {
       "accessType": "Access type",
-      "account": "Account",
-      "accountProxied": "Account (proxied)",
       "delegateTo": "Delegate to",
       "grantAccessType": "Grant access type",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
-      "sender": "Sender",
-      "signatory": "Signatory",
-      "wallet": "Wallet",
-      "walletProxied": "Wallet (proxied)"
+      "sender": "Sender"
     },
     "names": {
       "any": "All operations",
@@ -1998,6 +1997,16 @@
     "weeks_one": "{ count } week",
     "weeks_other": "{ count } weeks"
   },
+  "transaction": {
+    "details": {
+      "account": "Account",
+      "initiatorAccount": "Account ({type})",
+      "initiatorWallet": "Wallet ({type})",
+      "sinatoryAccount": "Signer account",
+      "sinatoryWallet": "Signer wallet",
+      "wallet": "Wallet"
+    }
+  },
   "transactionMessage": {
     "bond": "Stake { amount } { asset }",
     "destination": "Change reward destination to { address }",
@@ -2034,6 +2043,7 @@
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
     "noAmount": "Please provide amount",
+    "noInitiatorError": "Please select operation initiator",
     "noSignatoryError": "Please select operation signatory",
     "notEnoughBalanceError": "Not enough tokens to transfer specific amount",
     "notEnoughBalanceForDeliveryFeeError": "Not enough tokens to pay for the delivery fee",
@@ -2050,11 +2060,7 @@
     "requiredRecipientError": "Please enter recipient address",
     "senderAccount": "Sender account",
     "senderLabel": "Sender",
-    "senderProxiedAccount": "Account (proxied)",
-    "senderProxiedWallet": "Wallet (proxied)",
     "signatoryLabel": "Signatory",
-    "signingAccount": "Signing account",
-    "signingWallet": "Signing wallet",
     "startSigningButton": "Sign with Polkadot Vault",
     "successMessage": "Operation Success",
     "swapToCryptoModeAlt": "swap input to crypto",

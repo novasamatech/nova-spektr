@@ -21,7 +21,7 @@ export const SalaryPayoutConfirmation = ({ fee, account, wallets, chain, asset, 
   const { t } = useI18n();
 
   return (
-    <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={null}>
+    <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={account}>
       <DetailRow label={t('fellowship.salary.beneficiary')}>
         <Account accountId={beneficiary || account.accountId} chain={chain} />
       </DetailRow>

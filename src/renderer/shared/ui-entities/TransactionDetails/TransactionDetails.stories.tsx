@@ -1,4 +1,4 @@
-import { type Meta, type StoryObj } from '@storybook/react';
+import { type Meta, type StoryObj } from '@storybook/react-vite';
 
 import {
   createAccountId,
@@ -50,6 +50,7 @@ export const Default: Story = {
   args: {
     wallets,
     initiators: [firstShard],
+    signatory: firstShard,
   },
 };
 
@@ -57,6 +58,7 @@ export const Multishard: Story = {
   args: {
     wallets,
     initiators: [firstShard, secondShard],
+    signatory: firstShard,
   },
 };
 

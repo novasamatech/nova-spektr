@@ -101,7 +101,6 @@ const Item = memo(({ id, index, children }: ItemProps) => {
 
   return transitions((styles, item) =>
     item ? (
-      // @ts-expect-error Type missmatch with react 19
       <animated.section
         className={cnTw('relative min-h-full w-full', fixedHeight && 'h-full overflow-hidden')}
         style={styles}

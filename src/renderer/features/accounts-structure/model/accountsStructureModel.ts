@@ -2,8 +2,9 @@ import { combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain, type ChainId, ChainOptions } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import { type AccountNode, type AnyAccount, accountService, accounts, identity } from '@/domains/network';
+import { type AccountNode, type AnyAccount, accountService, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { walletModel } from '@/entities/wallet';
 
 const $allChains = networkModel.$chains.map((chains) => {
   const requiredOptions = new Set([ChainOptions.MULTISIG, ChainOptions.PURE_PROXY, ChainOptions.REGULAR_PROXY]);
@@ -99,7 +100,7 @@ const $heldAccountNode = restore(holdAccountNode, null).reset(releaseAccountNode
 export const $highlightedNodes = combine(
   {
     selectedAccount: $selectedAccount,
-    accountList: accounts.$list,
+    accountList: walletModel.$availableAccounts,
     selectedChain: $selectedChain,
     hoveredAccountNode: $hoveredAccountNode,
     heldAccountNode: $heldAccountNode,
@@ -158,7 +159,7 @@ function findNodesRelatedToAccount(
 
 export const $graph = combine(
   {
-    accounts: accounts.$list,
+    accounts: walletModel.$availableAccounts,
     selectedAccount: $selectedAccount,
     selectedChain: $selectedChain,
   },

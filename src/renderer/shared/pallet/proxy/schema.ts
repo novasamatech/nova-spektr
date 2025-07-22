@@ -40,8 +40,10 @@ export const kitchensinkRuntimeProxyType = pjsSchema.enumTypeLoose(
   'OldAuction',
   'OldIdentityJudgement',
   'OldParaRegistration',
+  'OldSudoBalances',
   'Broker',
   'SwapHotkey',
+  'LiquidityMining',
 );
 
 export type ProxyProxyDefinition = z.infer<typeof proxyProxyDefinition>;

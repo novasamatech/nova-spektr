@@ -3,7 +3,7 @@ import { persist } from 'effector-storage/local';
 import { once } from 'patronum';
 
 import { type AssetByChains } from '@/shared/core';
-import { includesMultiple, nullable } from '@/shared/lib/utils';
+import { includesMultiple, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
@@ -31,15 +31,20 @@ const $defaultTokens = createStore<AssetByChains[] | null>(null);
 
 const $filteredAccounts = createStore<AnyAccount[] | null>(null);
 
-const populateFx = createEffect((): Promise<AssetByChains[]> => {
+const populateFx = createEffect((): Promise<AssetByChains[] | null> => {
   return tokensService.getTokensData();
 });
 
 persist({
   key: 'assets_with_chains',
-  source: populateFx.doneData,
-  target: $defaultTokens,
+  store: $defaultTokens,
   sync: true,
+});
+
+sample({
+  clock: populateFx.doneData,
+  filter: (data) => nonNullable(data),
+  target: $defaultTokens,
 });
 
 sample({
