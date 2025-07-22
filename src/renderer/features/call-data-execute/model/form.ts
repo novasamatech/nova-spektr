@@ -16,6 +16,7 @@ import { walletModel } from '@/entities/wallet';
 import { type ExtrinsicSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { Step } from '../lib/types';
+import { callDataExecuteService } from '../service';
 
 import { type ConfirmInput, confirmModel } from './confirm';
 import { callDataExecuteFeature } from './feature';
@@ -74,8 +75,8 @@ const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis)
 );
 
 const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
-const $args = $extrinsic.map((extrinsic) => {
-  return extrinsic ? ((extrinsic.method.toHuman() as object) ?? null) : null;
+const $args = combine($extrinsic, form.fields.chain.$value, (extrinsic, chain) => {
+  return extrinsic && chain ? callDataExecuteService.formatExtrinsic(extrinsic, chain) : null;
 });
 
 const createExtrinsicFx = createQueuedEffect(({ callData, api }: { callData: string; api: ApiPromise }) => {
