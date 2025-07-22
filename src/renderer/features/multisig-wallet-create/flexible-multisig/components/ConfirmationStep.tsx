@@ -50,7 +50,15 @@ export const ConfirmationStep = () => {
                   <FootnoteText> {t('createMultisigAccount.flexibleMultisig.creatingFlexibleProxy')}</FootnoteText>
                 </Box>
               )}
-              {nonNullable(proxyAddress) && <Address canCopy={false} showIcon address={proxyAddress} />}
+              {nonNullable(proxyAddress) && (
+                <Box direction="row" fillContainer verticalAlign="center" horizontalAlign="center" gap={1}>
+                  <Icon className="shrink-0 text-icon-positive" name="checked" size={16} />
+                  <FootnoteText className="shrink-0">
+                    {t('createMultisigAccount.flexibleMultisig.flexibleMultisigCreated')}
+                  </FootnoteText>
+                  <Address variant="short" canCopy={true} showIcon address={proxyAddress} />
+                </Box>
+              )}
             </div>
 
             <Separator className="my-4" />
