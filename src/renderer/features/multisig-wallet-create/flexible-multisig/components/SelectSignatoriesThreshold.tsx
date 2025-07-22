@@ -76,7 +76,7 @@ export const SelectSignatoriesThreshold = () => {
           <Button
             size="md"
             variant="text"
-            className="h-8.5 w-max justify-center gap-x-1"
+            className="h-8.5 w-max justify-center gap-x-1 pl-0"
             suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
             onClick={() => signatoryModel.events.addSignatory({ name: '', address: '', walletId: '' })}
           >
@@ -244,7 +244,12 @@ export const SelectSignatoriesThreshold = () => {
           <div className="flex items-center justify-end gap-x-6">
             <MultisigFees />
 
-            <Button key="create" type="submit" disabled={!canSubmit || isLoading} onClick={onSubmit}>
+            <Button
+              key="create"
+              type="submit"
+              disabled={!canSubmit || !isEnoughBalance || isLoading}
+              onClick={onSubmit}
+            >
               {t('createMultisigAccount.continueButton')}
             </Button>
           </div>
