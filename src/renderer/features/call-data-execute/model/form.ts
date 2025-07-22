@@ -6,10 +6,11 @@ import { readonly, throttle } from 'patronum';
 
 import { type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
-import { createForm } from '@/shared/forms';
-import { nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { type Form, createForm } from '@/shared/forms';
+import { getNativeAsset, nonNullable, nonNullableMap, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { createFeeCalculator } from '@/shared/transactions';
 import { type AnyAccount, accountService, transactionService } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { type ExtrinsicSigningPayload, signModel } from '@/features/operations/OperationSign';
@@ -27,7 +28,7 @@ type FormData = {
 
 const flow = createGate();
 
-const form = createForm<FormData>({
+const form: Form<FormData> = createForm<FormData>({
   fields: {
     chain: {
       defaultValue: null,
@@ -37,9 +38,22 @@ const form = createForm<FormData>({
     },
     signatory: {
       defaultValue: null,
-      validator: () => (signatory) => {
-        if (!signatory) return { message: 'callData.errors.signatoryRequired' };
-      },
+      validator: () => ({
+        source: combine({
+          fee: $fee,
+          balance: $signatoryBalance,
+        }),
+        fn: (signatory, _, { balance, fee }) => {
+          if (!signatory) {
+            return { message: 'callData.errors.signatoryRequired' };
+          }
+
+          const withdrawable = withdrawableAmountBN(balance);
+          if (withdrawable.lt(fee)) {
+            return { message: 'callData.errors.insufficientBalance' };
+          }
+        },
+      }),
     },
     callData: {
       defaultValue: '',
@@ -104,6 +118,24 @@ const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
   active: callDataExecuteFeature.isRunning,
   extrinsic: $extrinsic,
 });
+
+const $signatoryBalance = combine(
+  {
+    signatory: form.fields.signatory.$value,
+    chain: form.fields.chain.$value,
+    balances: balanceModel.$balances,
+  },
+  ({ signatory, chain, balances }) => {
+    if (nullable(signatory) || nullable(chain)) return null;
+
+    return balanceUtils.getBalance(
+      balances,
+      signatory.accountId,
+      chain.chainId,
+      getNativeAsset(chain.assets).assetId.toString(),
+    );
+  },
+);
 
 // steps management
 
@@ -175,9 +207,10 @@ sample({
 const $canSubmit = combine(
   {
     isValid: form.$isValid,
-    decodedTx: $extrinsic,
+    extrinsic: $extrinsic,
+    fee: $fee,
   },
-  ({ isValid, decodedTx }) => isValid && nonNullable(decodedTx),
+  ({ isValid, extrinsic, fee }) => isValid && nonNullable(extrinsic) && !fee.isZero(),
 );
 
 // submit flow

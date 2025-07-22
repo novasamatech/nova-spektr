@@ -47,19 +47,19 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
       <Box padding={[4, 5]}>
         <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
-          <DetailRow label="See decoded">
+          <DetailRow label={t('callData.confirmation.fields.externalExplorer.label')}>
             <ButtonWebLink className="p-0" size="sm" variant="text" href={decodedLink} target="_blank">
-              Polkadot.js
+              {t('callData.confirmation.fields.externalExplorer.value')}
             </ButtonWebLink>
           </DetailRow>
-          <DetailRow label="Call data details">
+          <DetailRow label={t('callData.confirmation.fields.details.label')}>
             <Modal size="lg" height="fit">
               <Modal.Trigger>
                 <Button className="p-0" size="sm" variant="text">
-                  View JSON
+                  {t('callData.confirmation.fields.details.value')}
                 </Button>
               </Modal.Trigger>
-              <Modal.Title close>Call data details</Modal.Title>
+              <Modal.Title close>{t('callData.confirmation.fields.details.label')}</Modal.Title>
               <Modal.Content>
                 <Box padding={5}>
                   <JsonArgs value={args} />

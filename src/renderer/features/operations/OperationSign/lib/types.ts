@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Chain, type ChainId, type HexString, type Transaction, type Wallet } from '@/shared/core';
+import { type Chain, type HexString, type Transaction, type Wallet } from '@/shared/core';
 import { type ValidationErrors } from '@/shared/lib/utils';
 import { type AnyAccount, type Extrinsic } from '@/domains/network';
 
@@ -15,7 +15,6 @@ export const enum ReconnectStep {
 
 export type SigningProps = {
   signerWallet?: Wallet;
-  apis: Record<ChainId, ApiPromise>;
   signingPayloads: ExtrinsicSigningPayload[];
   validateBalance?: () => Promise<ValidationErrors | undefined>;
   onGoBack: () => void;

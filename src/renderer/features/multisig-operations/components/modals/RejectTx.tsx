@@ -13,7 +13,6 @@ import { Modal } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
-import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -53,7 +52,6 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
 
   const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
-  const apis = useUnit(networkModel.$apis);
   const rejectTx = useUnit(rejectModel.$transaction);
 
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
@@ -202,7 +200,6 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
         {activeStep === Step.SIGNING && rejectTx && api && signAccount && (
           <SigningSwitch
             signerWallet={wallets.find(w => w.id === signAccount.walletId)}
-            apis={apis}
             signingPayloads={signingPayloads}
             validateBalance={checkBalance}
             onGoBack={goBack}

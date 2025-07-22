@@ -1,4 +1,3 @@
-import { type ApiPromise } from '@polkadot/api';
 import { u8aConcat } from '@polkadot/util';
 import init, { Encoder } from 'raptorq/raptorq';
 import { useEffect, useState } from 'react';
@@ -17,7 +16,6 @@ import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGenerator
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
 
 type Props = {
-  apis: Record<ChainId, ApiPromise>;
   signingPayloads: ExtrinsicSigningPayload[];
   countdown: number;
   signerWallet: Wallet;
@@ -27,7 +25,6 @@ type Props = {
 };
 
 export const ScanMultiframeQr = ({
-  apis,
   signingPayloads,
   signerWallet,
   countdown,
@@ -59,18 +56,20 @@ export const ScanMultiframeQr = ({
       }
 
       if (!metadataMap[accountId][chainId]) {
-        metadataMap[accountId][chainId] = await createTxMetadata(signingPayload.signatory.accountId, apis[chainId]);
+        metadataMap[accountId][chainId] = await createTxMetadata(
+          signingPayload.signatory.accountId,
+          signingPayload.api,
+        );
       }
     }
 
     const transactionPromises = signingPayloads.map((signingPayload) => {
       const chainId = signingPayload.chain.chainId;
-      const api = apis[chainId];
       const accountId = signingPayload.signatory.accountId;
 
       const info = transactionService.createPayloadWithMetadata(
         signingPayload.extrinsic,
-        api,
+        signingPayload.api,
         metadataMap[accountId][chainId],
       );
 

@@ -16,11 +16,10 @@ type Props = {
 export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   useGate(signModel.gates.flow);
 
-  const apis = useUnit(signModel.$apis);
   const signStore = useUnit(signModel.$signStore);
   const signerWallet = useUnit(signModel.$signerWallet);
 
-  if (!apis || !signStore || !signerWallet) {
+  if (!signStore || !signerWallet) {
     const height = signerWallet && walletUtils.isWalletConnectGroup(signerWallet) ? '430px' : '490px';
 
     return (
@@ -45,7 +44,6 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
 
   return (
     <SigningSwitch
-      apis={apis}
       signerWallet={signerWallet}
       signingPayloads={signStore}
       onGoBack={onGoBack}

@@ -101,17 +101,6 @@ const splitExtrinsicsFx = createEffect(async (input: Input): Promise<Input> => {
   return splitted;
 });
 
-const $apis = $signStore.map((store) => {
-  if (nullable(store)) return {};
-  return store.reduce<Record<ChainId, ApiPromise>>((acc, payload) => {
-    const chainId = payload.api.genesisHash.toHex();
-    return {
-      ...acc,
-      [chainId]: payload.api,
-    };
-  }, {});
-});
-
 const $signerWallet = combine(
   {
     store: $signStore,
@@ -175,7 +164,6 @@ sample({
 
 export const signModel = {
   $signStore,
-  $apis,
   $signerWallet,
 
   events: {

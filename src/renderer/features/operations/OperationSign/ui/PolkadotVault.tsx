@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -10,17 +10,11 @@ import { WalletIcon } from '@/entities/wallet';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 
-export const PolkadotVault = ({
-  apis,
-  signingPayloads,
-  signerWallet,
-  validateBalance,
-  onGoBack,
-  onResult,
-}: SigningProps) => {
+export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
   const { t } = useI18n();
 
-  const [countdown, resetCountdown] = useCountdown(Object.values(apis));
+  const apis = useMemo(() => signingPayloads.map((s) => s.api), [signingPayloads]);
+  const [countdown, resetCountdown] = useCountdown(apis);
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
@@ -94,7 +88,6 @@ export const PolkadotVault = ({
 
           {isMultiframe ? (
             <ScanMultiframeQr
-              apis={apis}
               countdown={countdown}
               signerWallet={signerWallet!}
               signingPayloads={signingPayloads}
@@ -105,7 +98,7 @@ export const PolkadotVault = ({
           ) : (
             <ScanSingleframeQr
               chain={chain}
-              api={apis[chain.chainId]}
+              api={signingPayloads[0].api}
               countdown={countdown}
               account={signingPayloads[0].signatory}
               extrinsic={signingPayloads[0].extrinsic}

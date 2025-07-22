@@ -144,11 +144,22 @@
   "callData": {
     "callData": "Call data",
     "confirmation": {
+      "fields": {
+        "details": {
+          "label": "Call data details",
+          "value": "View JSON"
+        },
+        "externalExplorer": {
+          "label": "See decoded",
+          "value": "Polkadot.js"
+        }
+      },
       "title": "Raw call data"
     },
     "errors": {
       "0xPrefix": "Call data must start with 0x",
       "chainRequired": "Chain is required",
+      "insufficientBalance": "Insufficient balance to pay network fee",
       "invalidCallData": "Provided call data is invalid or has the wrong format. Please ensure it is correct and try again.",
       "required": "Call data is required",
       "signatoryRequired": "Signatory is required"

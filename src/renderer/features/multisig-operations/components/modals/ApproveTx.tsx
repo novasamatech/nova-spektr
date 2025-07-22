@@ -27,7 +27,6 @@ import {
 } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
-import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -68,7 +67,6 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
-  const apis = useUnit(networkModel.$apis);
 
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
@@ -284,7 +282,6 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
         {activeStep === Step.SIGNING && approveTx && api && signAccount && (
           <SigningSwitch
             signerWallet={wallets.find(w => w.id === signAccount.walletId)}
-            apis={apis}
             signingPayloads={signingPayloads}
             validateBalance={checkBalance}
             onGoBack={goBack}

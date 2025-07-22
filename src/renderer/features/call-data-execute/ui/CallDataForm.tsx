@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, memo } from 'react';
+import { type FormEvent, type ReactNode, memo, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
@@ -7,8 +7,10 @@ import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/u
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
+import { accountService } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { Fee } from '@/entities/transaction';
+import { WalletIcon, walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 
 import { JsonArgs } from './JsonArgs';
@@ -66,7 +68,7 @@ const CallDataInput = () => {
 
   return (
     <Field text={t('callData.callData')}>
-      <Input value={callData.value} placeholder={t('callData.placeholder')} onChange={callData.onChange} />
+      <Input height="md" value={callData.value} placeholder={t('callData.placeholder')} onChange={callData.onChange} />
       <InputHint variant="error" active={callData.hasError}>
         {t(callData.errorMessage)}
       </InputHint>
@@ -113,6 +115,7 @@ const ChainSelect = memo(() => {
 const SignatorySelect = memo(() => {
   const { t } = useI18n();
 
+  const wallets = useUnit(walletModel.$wallets);
   const signatories = useUnit(formModel.$signatories);
   const {
     fields: { signatory, chain },
@@ -125,19 +128,48 @@ const SignatorySelect = memo(() => {
     }
   };
 
+  const options = useMemo(() => {
+    const options: ReactNode[] = [];
+
+    for (const wallet of wallets) {
+      const walletAccounts = accountService.filterAccountsByWallet(signatories, wallet.id);
+      if (walletAccounts.length === 0) continue;
+
+      const walletTitle = (
+        <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
+          <WalletIcon type={wallet.type} />
+          <FootnoteText className="text-text-secondary">{wallet.name}</FootnoteText>
+        </Box>
+      );
+
+      options.push(
+        <Select.Group title={walletTitle}>
+          {walletAccounts.map((a) => (
+            <Select.Item key={a.id} value={a.id} depth={1}>
+              <Address
+                showIcon
+                variant="truncate"
+                title={a.name !== wallet.name ? a.name : void 0}
+                address={toAddress(a.accountId, { prefix: chain.value?.addressPrefix })}
+              />
+            </Select.Item>
+          ))}
+        </Select.Group>,
+      );
+    }
+
+    return options;
+  }, [wallets, signatories]);
+
   return (
     <Field text={t('callData.fields.signatory.label')}>
       <Select
         placeholder={t('callData.fields.signatory.placeholder')}
         value={signatory.value?.id ?? null}
-        height="sm"
+        height="md"
         onChange={onChange}
       >
-        {signatories.map((a) => (
-          <Select.Item key={a.id} value={a.id}>
-            <Address showIcon address={toAddress(a.accountId, { prefix: chain.value?.addressPrefix })} />
-          </Select.Item>
-        ))}
+        {options}
       </Select>
       <InputHint variant="error" active={signatory.hasError}>
         {t(signatory.errorMessage)}

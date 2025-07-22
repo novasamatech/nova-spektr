@@ -1,4 +1,3 @@
-import { type ApiPromise } from '@polkadot/api';
 import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
@@ -21,7 +20,6 @@ import { type MultisigOperation } from '@/domains/network';
 import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
-import { transactionService } from './transactionService';
 
 export const transactionBuilder = {
   buildTransfer,
