@@ -43,23 +43,25 @@ export const ConfirmationStep = () => {
                 {t('createMultisigAccount.flexibleMultisig.title')}
               </Button>
             </div>
-            <div className="mt-4">
-              {pendingProxyCreate && nullable(proxyAddress) && (
-                <Box direction="row" fillContainer verticalAlign="center" horizontalAlign="center">
-                  <Loader color="primary" size={32} />
+            {pendingProxyCreate && nullable(proxyAddress) && (
+              <div className="mt-4">
+                <Box direction="row" verticalAlign="center" gap={2}>
+                  <Loader color="primary" size={16} />
                   <FootnoteText> {t('createMultisigAccount.flexibleMultisig.creatingFlexibleProxy')}</FootnoteText>
                 </Box>
-              )}
-              {nonNullable(proxyAddress) && (
-                <Box direction="row" fillContainer verticalAlign="center" horizontalAlign="center" gap={1}>
+              </div>
+            )}
+            {nonNullable(proxyAddress) && (
+              <div className="mt-4">
+                <Box direction="row" fillContainer verticalAlign="center" gap={1}>
                   <Icon className="shrink-0 text-icon-positive" name="checked" size={16} />
                   <FootnoteText className="shrink-0">
                     {t('createMultisigAccount.flexibleMultisig.flexibleMultisigCreated')}
                   </FootnoteText>
                   <Address variant="short" canCopy={true} showIcon address={proxyAddress} />
                 </Box>
-              )}
-            </div>
+              </div>
+            )}
 
             <Separator className="my-4" />
 
