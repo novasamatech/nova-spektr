@@ -1,10 +1,9 @@
 import { type Chain, type ProxyAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { copyToClipboard, toAddress } from '@/shared/lib/utils';
-import { DropdownIconButton, FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
-import { type DropdownIconButtonOption } from '@/shared/ui/types';
+import { FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { Box, Popover } from '@/shared/ui-kit';
+import { Box, Dropdown, Popover } from '@/shared/ui-kit';
 import { ProxyAccount as ProxyAccountComponent } from '@/entities/proxy';
 
 type Props = {
@@ -20,26 +19,28 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemo
   const proxyAddress = toAddress(account.accountId, { prefix: chain.addressPrefix });
   const proxiedAddress = toAddress(account.proxiedAccountId, { prefix: chain.addressPrefix });
 
-  const forgetProxyAction: DropdownIconButtonOption = {
-    icon: 'forget',
-    title: t('walletDetails.common.removeProxyAction'),
-    onClick: () => onRemoveProxy(account),
-  };
-
   return (
     <ProxyAccountComponent
       accountId={account.accountId}
       proxyType={account.proxyType}
       addressPrefix={chain?.addressPrefix}
       suffix={
-        <DropdownIconButton name="more" className="ml-2">
-          <DropdownIconButton.Items>
-            <DropdownIconButton.Item>
-              {/* hack to override dropdown hide on click */}
-              <div onClick={e => e.stopPropagation()}>
+        <Dropdown>
+          <Dropdown.Trigger>
+            <IconButton name="more" className="ml-2" />
+          </Dropdown.Trigger>
+          <Dropdown.Content>
+            <Dropdown.Item>
+              <div
+                className="w-full"
+                onClick={e => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+              >
                 <Popover align="end" side="bottom">
                   <Popover.Trigger>
-                    <button className="flex items-center gap-x-1 py-2 pl-2">
+                    <button className="flex w-full items-center gap-x-1">
                       <IconButton name="info" size={20} className="text-icon-accent" />
                       <FootnoteText className="text-text-secondary">
                         {t('walletDetails.common.openInfoAction')}
@@ -81,14 +82,17 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemo
                   </Popover.Content>
                 </Popover>
               </div>
-            </DropdownIconButton.Item>
+            </Dropdown.Item>
             {canCreateProxy && (
-              <DropdownIconButton.Item>
-                <DropdownIconButton.Option option={forgetProxyAction} />
-              </DropdownIconButton.Item>
+              <Dropdown.Item onSelect={() => onRemoveProxy(account)}>
+                <IconButton name="forget" size={20} className="text-icon-accent" />
+                <FootnoteText className="text-text-secondary">
+                  {t('walletDetails.common.removeProxyAction')}
+                </FootnoteText>
+              </Dropdown.Item>
             )}
-          </DropdownIconButton.Items>
-        </DropdownIconButton>
+          </Dropdown.Content>
+        </Dropdown>
       }
     />
   );
