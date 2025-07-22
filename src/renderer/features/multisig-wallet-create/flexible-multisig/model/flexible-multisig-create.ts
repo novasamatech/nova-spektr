@@ -181,8 +181,6 @@ const { $: $multisigFee, $pending: $pendingMultisigFee } = createFeeCalculator({
 
 const $fee = combine($proxyFee, $multisigFee, (proxyFee, multisigFee) => multisigFee.add(proxyFee));
 
-const $pendingFee = or($pendingProxyFee, $pendingMultisigFee);
-
 const { $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: $signer,
@@ -409,9 +407,10 @@ export const flexibleMultisigModel = {
   $asset,
 
   $fee,
+  $pendingFee: or($pendingProxyFee, $pendingMultisigFee),
   $proxyDeposit,
   $existentialDeposit,
-  $isLoading: or($pendingFee, getExistentialDepositFx.pending),
+  $isLoading: or($pendingProxyFee, $pendingMultisigFee, getExistentialDepositFx.pending),
   $isEnoughBalance,
 
   signerSelected,
