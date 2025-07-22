@@ -5,7 +5,7 @@ import { TEST_IDS } from '@/shared/constants';
 import { type Address as AccountAddress, type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { includesMultiple, nullable, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
-import { IconButton, Identicon, InputHint } from '@/shared/ui';
+import { FootnoteText, IconButton, Identicon, InputHint } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Input, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
@@ -206,7 +206,55 @@ export const Signatory = ({
   const isInvalid = isInvalidAddress || signatoryAddress !== query;
 
   return (
-    <div className="grid grid-cols-[232px,1fr] gap-x-6">
+    <div className="grid grid-cols-[1fr,232px,44px] gap-x-4">
+      <Box width="100%" direction="row" verticalAlign="end" gap={3}>
+        <FootnoteText className="pb-2 text-text-tertiary">{1 + signatoryIndex}</FootnoteText>
+        {isOwnAccount ? (
+          <Field text={t('createMultisigAccount.myAccount')}>
+            <Select
+              placeholder={t('createMultisigAccount.signatorySelection')}
+              value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
+              onChange={onAddressChange}
+            >
+              {walletsOptions.map(group =>
+                group.items.map(option => (
+                  <Select.Item key={option.id} value={option.value.address}>
+                    {option.label}
+                  </Select.Item>
+                )),
+              )}
+            </Select>
+          </Field>
+        ) : (
+          <Field text={t('createMultisigAccount.signatoryAddress')}>
+            <Combobox
+              data-testid={TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX}
+              placeholder={t('createMultisigAccount.signatorySelection')}
+              invalid={isDuplicate}
+              value={query}
+              prefixElement={
+                <Identicon address={isInvalid ? '' : signatoryAddress} size={20} background={false} canCopy={false} />
+              }
+              onChange={onAddressChange}
+              onInput={setQuery}
+            >
+              {options.map(group => (
+                <Combobox.Group key={group.id} title={group.label}>
+                  {group.items.map(option => (
+                    <Combobox.Item key={option.id} value={option.value.address}>
+                      {option.label}
+                    </Combobox.Item>
+                  ))}
+                </Combobox.Group>
+              ))}
+            </Combobox>
+
+            <InputHint active={isDuplicate} variant="error">
+              {t('createMultisigAccount.duplicateSignatoryAddress')}
+            </InputHint>
+          </Field>
+        )}
+      </Box>
       <Field text={nameLabel}>
         <Input
           name={nameLabel}
@@ -217,63 +265,14 @@ export const Signatory = ({
           onChange={onNameChange}
         />
       </Field>
-      <div className="grid grid-cols-[444px,28px] gap-x-4">
-        <Box width="100%">
-          {isOwnAccount ? (
-            <Field text={t('createMultisigAccount.myAccount')}>
-              <Select
-                placeholder={t('createMultisigAccount.signatorySelection')}
-                value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
-                onChange={onAddressChange}
-              >
-                {walletsOptions.map(group =>
-                  group.items.map(option => (
-                    <Select.Item key={option.id} value={option.value.address}>
-                      {option.label}
-                    </Select.Item>
-                  )),
-                )}
-              </Select>
-            </Field>
-          ) : (
-            <Field text={t('createMultisigAccount.signatoryAddress')}>
-              <Combobox
-                data-testid={TEST_IDS.MULTISIG.SIGNATORY_COMBOBOX}
-                placeholder={t('createMultisigAccount.signatorySelection')}
-                invalid={isDuplicate}
-                value={query}
-                prefixElement={
-                  <Identicon address={isInvalid ? '' : signatoryAddress} size={20} background={false} canCopy={false} />
-                }
-                onChange={onAddressChange}
-                onInput={setQuery}
-              >
-                {options.map(group => (
-                  <Combobox.Group key={group.id} title={group.label}>
-                    {group.items.map(option => (
-                      <Combobox.Item key={option.id} value={option.value.address}>
-                        {option.label}
-                      </Combobox.Item>
-                    ))}
-                  </Combobox.Group>
-                ))}
-              </Combobox>
-
-              <InputHint active={isDuplicate} variant="error">
-                {t('createMultisigAccount.duplicateSignatoryAddress')}
-              </InputHint>
-            </Field>
-          )}
-        </Box>
-        {!isOwnAccount && onDelete && (
-          <IconButton
-            className="mt-9 self-start justify-self-center"
-            name="delete"
-            size={16}
-            onClick={() => onDelete(signatoryIndex)}
-          />
-        )}
-      </div>
+      {!isOwnAccount && onDelete && (
+        <IconButton
+          className="mt-9 self-start justify-self-center"
+          name="delete"
+          size={16}
+          onClick={() => onDelete(signatoryIndex)}
+        />
+      )}
     </div>
   );
 };
