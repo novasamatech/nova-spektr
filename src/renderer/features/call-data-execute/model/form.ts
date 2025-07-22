@@ -13,7 +13,7 @@ import { type AnyAccount, accountService, transactionService } from '@/domains/n
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { type ExtrinsicSigningPayload, signModel } from '@/features/operations/OperationSign';
-import { submitModel } from '../../operations/OperationSubmit';
+import { submitModel } from '@/features/operations/OperationSubmit';
 import { Step } from '../lib/types';
 
 import { type ConfirmInput, confirmModel } from './confirm';
@@ -129,7 +129,7 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
+  clock: signModel.events.signed,
   fn: () => Step.SUBMIT,
   target: stepChanged,
 });
@@ -182,54 +182,62 @@ const $canSubmit = combine(
 
 // submit flow
 
-sample({
+const showConfirmation = sample({
   clock: form.submit.doneData,
   source: {
     extrinsic: $extrinsic,
     args: $args,
     fee: $fee,
   },
-  fn: ({ extrinsic, args, fee }, { chain, signatory }): ConfirmInput[] => {
-    return [
-      {
-        chain,
-        extrinsic,
-        initiator: signatory,
-        signatory: signatory,
-        route: [signatory],
-        args,
-        fee,
-      },
-    ];
+  fn: ({ extrinsic, args, fee }, { chain, signatory }) => {
+    if (nullable(extrinsic) || nullable(signatory) || nullable(chain) || nullable(args)) return null;
+    return {
+      chain,
+      extrinsic,
+      initiator: signatory,
+      signatory: signatory,
+      route: [signatory],
+      args,
+      fee,
+    } satisfies ConfirmInput;
   },
-  target: confirmModel.init,
 });
 
 sample({
+  clock: showConfirmation.filter({ fn: nonNullable }),
+  fn: (payload) => [payload],
+  target: confirmModel.init,
+});
+
+const sign = sample({
   clock: confirmModel.startSigning,
   source: {
     form: form.$values,
     extrinsic: $extrinsic,
+    api: $api,
   },
-  fn({ form, extrinsic }): ExtrinsicSigningPayload[] {
-    const payload: ExtrinsicSigningPayload = {
+  fn({ form, extrinsic, api }) {
+    if (nullable(api) || nullable(extrinsic) || nullable(form.signatory) || nullable(form.chain)) return null;
+    return {
       extrinsic,
       signatory: form.signatory,
       chain: form.chain,
-    };
-    return [payload];
+      api,
+    } satisfies ExtrinsicSigningPayload;
   },
+});
+
+sample({
+  clock: sign.filter({ fn: nonNullable }),
+  fn: (payload) => [payload],
   target: signModel.events.init,
 });
 
 sample({
   clock: signModel.events.signed,
-  source: {
-    open: flow.status,
-    api: $api,
-  },
-  filter: ({ open }) => open,
-  fn: ({ api }, payload) => ({ api: api!, payload }),
+  source: flow.status,
+  filter: (open) => open,
+  fn: (_, payload) => payload,
   target: submitModel.events.init,
 });
 

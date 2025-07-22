@@ -2,17 +2,12 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 import { once, reset } from 'patronum';
 
-import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
+import { type Chain, type HexString, type Transaction } from '@/shared/core';
 import { assert, nonNullable, removeFromCollection } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, type Extrinsic, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import {
-  type ExtrinsicResultParams,
-  getExtrinsic,
-  transactionBuilder,
-  transactionService,
-} from '@/entities/transaction';
+import { type ExtrinsicResultParams, getExtrinsic } from '@/entities/transaction';
 import { type SignatureResult } from '@/features/operations/OperationSign/model/sign-model';
 import { ExtrinsicResult, SubmitStep } from '../lib/types';
 
@@ -26,10 +21,7 @@ export type SubmitInputDeprecated = {
   txPayloads: Uint8Array[];
 };
 
-export type SubmitInput = {
-  api: ApiPromise;
-  payload: SignatureResult[];
-};
+type SubmitInput = SignatureResult[];
 
 type Result = { id: number; result: ExtrinsicResult; params: ExtrinsicResultParams | string };
 
@@ -72,11 +64,11 @@ const $results = createStore<Result[]>([]).reset(init);
 
 // effects
 
-const submitExtrinsicFx = createEffect(async ({ api, payload: payloads }: SubmitInput) => {
+const submitExtrinsicFx = createEffect(async (payloads: SubmitInput) => {
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
-  for (const [index, { extrinsic, signatory, signature, payload }] of payloads.entries()) {
+  for (const [index, { api, extrinsic, signatory, signature, payload }] of payloads.entries()) {
     transactionService.submitExtrinsic(extrinsic, signature, payload, signatory, api).then((result) => {
       if (result.executed) {
         boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
@@ -87,44 +79,32 @@ const submitExtrinsicFx = createEffect(async ({ api, payload: payloads }: Submit
   }
 });
 
-// deprecated flow with Transaction struct
+// deprecated flow with Transaction struct. Split impl located in sign-model.
 
 type SplitTransactionsParams = {
   api: ApiPromise;
   wrappedTxs: Transaction[];
   txPayloads: Uint8Array[];
   signatures: HexString[];
-  chain: Chain;
 };
 const splitTransactionsFx = createEffect(
-  async ({ api, wrappedTxs, txPayloads, signatures, chain }: SplitTransactionsParams): Promise<SubmitInput> => {
-    let splittedBatch: Transaction[] = [];
+  async ({ api, wrappedTxs, txPayloads, signatures }: SplitTransactionsParams): Promise<SubmitInput> => {
+    let splittedBatch: { extrinsic: Extrinsic; signatory: AccountId }[] = [];
 
     for (const tx of wrappedTxs) {
-      if (tx.type === TransactionType.BATCH_ALL) {
-        const batchAllTxs = await transactionBuilder.splitBatchAll({
-          transaction: tx,
-          chain,
-          api,
-        });
+      const extrinsic = getExtrinsic[tx.type](tx.args, api);
+      const splitted = await transactionService.splitExtrinsic(extrinsic, api);
 
-        splittedBatch = splittedBatch.concat(batchAllTxs);
-      } else {
-        splittedBatch.push(tx);
-      }
+      splittedBatch = splittedBatch.concat(splitted.map((extrinsic) => ({ extrinsic, signatory: tx.accountId })));
     }
 
-    const payloads: SignatureResult[] = splittedBatch.map((tx, index) => ({
-      extrinsic: getExtrinsic[tx.type](tx.args, api),
+    return splittedBatch.map(({ extrinsic, signatory }, index) => ({
+      api,
+      extrinsic,
       payload: txPayloads[index],
       signature: signatures[index],
-      signatory: tx.accountId,
+      signatory,
     }));
-
-    return {
-      api,
-      payload: payloads,
-    };
   },
 );
 
@@ -142,7 +122,6 @@ sample({
       wrappedTxs,
       txPayloads,
       signatures,
-      chain,
     };
   },
   target: splitTransactionsFx,
@@ -174,7 +153,7 @@ sample({
 
 sample({
   clock: submitExtrinsicFx,
-  fn: (params) => params.payload.map((_, index) => index),
+  fn: (payloads) => payloads.map((_, index) => index),
   target: $submittingTxs,
 });
 

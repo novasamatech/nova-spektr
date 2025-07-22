@@ -3,7 +3,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { GenericSignerPayload } from '@polkadot/types';
 import { type ExtrinsicEra, type Weight } from '@polkadot/types/interfaces';
-import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
 import {
@@ -15,21 +15,17 @@ import {
   type ProxiedAccount,
   type ProxyTxWrapper,
   type Transaction,
-  type TransactionType,
   type TxWrapper,
   type Wallet,
   WrapperKind,
 } from '@/shared/core';
-import { type TxMetadata, createTxMetadata, dictionary, nonNullable, nullable } from '@/shared/lib/utils';
+import { type TxMetadata, createTxMetadata, dictionary, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount, type Extrinsic, accountService } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
-import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
-import { type ExtrinsicResultParams } from './common/types';
-import { decodeDispatchError } from './common/utils';
 import { getExtrinsic, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
 export const transactionService = {
@@ -45,7 +41,6 @@ export const transactionService = {
 
   createPayload,
   createPayloadWithMetadata,
-  submitExtrinsic,
 
   getTxWrappers,
   getWrappedTransaction,
@@ -53,8 +48,6 @@ export const transactionService = {
   getExtrinsicWeight,
   getTxWeight,
   verifySignature,
-  splitTxsByWeight,
-  splitExtrinsic,
 
   logPayload,
 };
@@ -78,99 +71,6 @@ async function getExtrinsicFee(
   const paymentInfo = await extrinsic.paymentInfo(address, options);
 
   return paymentInfo.partialFee.toBn();
-}
-
-type SubmitResult =
-  | {
-      executed: true;
-      params: ExtrinsicResultParams;
-    }
-  | {
-      executed: false;
-      error: string;
-    };
-
-async function submitExtrinsic(
-  extrinsic: SubmittableExtrinsic<'promise'>,
-  signature: HexString,
-  payload: Uint8Array,
-  signatory: AccountId,
-  api: ApiPromise,
-): Promise<SubmitResult> {
-  return new Promise<SubmitResult>((resolve) => {
-    try {
-      extrinsic.addSignature(signatory, hexToU8a(signature), payload);
-      extrinsic
-        .send((result) => {
-          const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;
-
-          const actualTxHash = txHash.toHex();
-          const extrinsicIndex = txIndex;
-          let isFinalApprove = false;
-          let multisigError = '';
-
-          if (internalError) {
-            resolve({
-              executed: false,
-              error: internalError.message,
-            });
-            return;
-          }
-
-          if (dispatchError) {
-            resolve({
-              executed: false,
-              error: decodeDispatchError(dispatchError, extrinsic.registry),
-            });
-            return;
-          }
-
-          if (status.isInvalid) {
-            resolve({
-              executed: false,
-              error: 'Invalid transaction',
-            });
-          }
-
-          if (status.isInBlock) {
-            for (const { event, phase } of events) {
-              if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
-
-              if (api.events.multisig.MultisigExecuted.is(event)) {
-                isFinalApprove = true;
-                multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, extrinsic.registry) : '';
-              }
-
-              if (api.events.system.ExtrinsicSuccess.is(event)) {
-                resolve({
-                  executed: true,
-                  params: {
-                    timepoint: {
-                      index: extrinsicIndex,
-                      height: blockNumber.toNumber(),
-                    },
-                    extrinsicHash: actualTxHash,
-                    isFinalApprove,
-                    multisigError,
-                  },
-                });
-              }
-            }
-          }
-        })
-        .catch((error) => {
-          resolve({
-            executed: false,
-            error: (error as Error).message || 'Error',
-          });
-        });
-    } catch (error) {
-      resolve({
-        executed: false,
-        error: (error as Error).message || 'Error',
-      });
-    }
-  });
 }
 
 function getMultisigDeposit(threshold: MultisigThreshold, api: ApiPromise): string {
@@ -404,105 +304,6 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
   } catch {
     return false;
   }
-}
-
-async function getBlockLimit(api: ApiPromise): Promise<BN> {
-  const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value.refTime.toBn();
-  const maxBlockWeight = api.consts.system.blockWeights.maxBlock.refTime.toBn();
-  const blockWeight = await api.query.system.blockWeight();
-
-  const totalWeight = blockWeight.normal.refTime
-    .toBn()
-    .add(blockWeight.operational.refTime.toBn())
-    .add(blockWeight.mandatory.refTime.toBn());
-
-  const freeSpaceInLastBlock = maxBlockWeight.sub(totalWeight);
-
-  return BN.min(
-    maxExtrinsicWeight.muln(LEAVE_SOME_SPACE_MULTIPLIER),
-    freeSpaceInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
-  );
-}
-
-async function splitExtrinsic({ extrinsic, api }: { extrinsic: Extrinsic; api: ApiPromise }): Promise<Extrinsic[]> {
-  if (extrinsic.method.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(extrinsic.method.method)) {
-    // @ts-expect-error calls arg is Vec<Call>
-    const splitted = await splitExtrinsicsByWeight(api, extrinsic.args.at(0) ?? []);
-    const batched = splitted
-      .map((e) => {
-        if (e.length === 1) {
-          return e.at(0);
-        }
-        return api.tx.utility.batchAll(e);
-      })
-      .filter(nonNullable);
-
-    return batched;
-  }
-
-  return [extrinsic];
-}
-
-async function splitExtrinsicsByWeight(api: ApiPromise, extrinsics: Extrinsic[]) {
-  const blockLimit = await getBlockLimit(api);
-  const result: Extrinsic[][] = [[]];
-
-  let totalRefTime = BN_ZERO;
-
-  const txsWeights: Partial<Record<string, Weight>> = {};
-
-  for (const extrinsic of extrinsics) {
-    const key = `${extrinsic.method.section}.${extrinsic.method.method}`;
-    const weight = txsWeights[key] || (await getExtrinsicWeight(extrinsic));
-
-    if (!txsWeights[key]) {
-      txsWeights[key] = weight;
-    }
-
-    totalRefTime = totalRefTime.add(weight.refTime.toBn());
-
-    if (totalRefTime.lt(blockLimit) && result.length > 0) {
-      const lastBuffer = result.at(-1);
-      if (lastBuffer) {
-        lastBuffer.push(extrinsic);
-      }
-    } else {
-      result.push([extrinsic]);
-
-      totalRefTime = weight.refTime.toBn();
-    }
-  }
-
-  return result;
-}
-
-async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
-  const blockLimit = await getBlockLimit(api);
-  const result: Transaction[][] = [[]];
-
-  let totalRefTime = BN_ZERO;
-
-  const txsWeights: Partial<Record<TransactionType, Weight>> = {};
-
-  for (const tx of txs) {
-    const weight = txsWeights[tx.type] || (await getTxWeight(tx, api, options));
-
-    if (!txsWeights[tx.type]) {
-      txsWeights[tx.type] = weight;
-    }
-
-    totalRefTime = totalRefTime.add(weight.refTime.toBn());
-
-    if (totalRefTime.lt(blockLimit) && result.length > 0) {
-      result[result.length - 1].push(tx);
-    } else {
-      result.push([tx]);
-
-      totalRefTime = weight.refTime.toBn();
-    }
-  }
-
-  return result;
 }
 
 function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {

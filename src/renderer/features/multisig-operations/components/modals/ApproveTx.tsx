@@ -235,7 +235,8 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
     if (nullable(approveTx) || nullable(signAccount)) return [];
     return [
       {
-        chain: chain,
+        api,
+        chain,
         extrinsic: getExtrinsic[approveTx.type](approveTx.args, api),
         signatory: signAccount,
       },

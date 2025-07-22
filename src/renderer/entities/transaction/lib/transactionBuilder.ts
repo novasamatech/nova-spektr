@@ -48,7 +48,6 @@ export const transactionBuilder = {
   buildAddProxy,
 
   buildBatchAll,
-  splitBatchAll,
 };
 
 type TransferParams = {
@@ -271,18 +270,6 @@ function buildBatchAll({ chain, accountId, transactions }: BatchParams): Transac
     type: TransactionType.BATCH_ALL,
     args: { transactions },
   };
-}
-
-type SplitBatchAllParams = { transaction: Transaction; chain: Chain; api: ApiPromise };
-
-async function splitBatchAll({ transaction, chain, api }: SplitBatchAllParams): Promise<Transaction[] | Transaction> {
-  if (transaction.type !== TransactionType.BATCH_ALL) {
-    return transaction;
-  }
-
-  const splittedTxs = await transactionService.splitTxsByWeight(api, transaction.args.transactions);
-
-  return splittedTxs.map((transactions) => buildBatchAll({ chain, accountId: transaction.accountId, transactions }));
 }
 
 type DelegateParams = {

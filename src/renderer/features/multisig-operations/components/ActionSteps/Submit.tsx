@@ -8,9 +8,9 @@ import { useToggle } from '@/shared/lib/hooks';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import { type MultisigEvent, type MultisigOperation, multisigOperation } from '@/domains/network';
+import { type MultisigEvent, type MultisigOperation, multisigOperation, transactionService } from '@/domains/network';
 import { multisigOperationService } from '@/domains/network';
-import { getExtrinsic, isProxyTypeTransaction, transactionService } from '@/entities/transaction';
+import { getExtrinsic, isProxyTypeTransaction } from '@/entities/transaction';
 import { proxiesModel } from '@/features/proxies';
 import { flexibleShellModel } from '../../model/flexible-shell-model';
 

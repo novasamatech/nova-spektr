@@ -52,16 +52,14 @@ export const ScanMultiframeQr = ({
 
     for (const signingPayload of signingPayloads) {
       const accountId = signingPayload.signatory.accountId;
+      const chainId = signingPayload.chain.chainId;
 
       if (!metadataMap[accountId]) {
         metadataMap[accountId] = {};
       }
 
-      if (!metadataMap[accountId][signingPayload.chain.chainId]) {
-        metadataMap[accountId][signingPayload.chain.chainId] = await createTxMetadata(
-          signingPayload.signatory.accountId,
-          apis[signingPayload.chain.chainId],
-        );
+      if (!metadataMap[accountId][chainId]) {
+        metadataMap[accountId][chainId] = await createTxMetadata(signingPayload.signatory.accountId, apis[chainId]);
       }
     }
 

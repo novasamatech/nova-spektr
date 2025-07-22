@@ -1,10 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Call, type Weight } from '@polkadot/types/interfaces';
-import { BN, BN_ZERO } from '@polkadot/util';
+import { type Call, type DispatchError, type Weight } from '@polkadot/types/interfaces';
+import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
+import { type Registry } from '@polkadot/types/types';
+import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 
 import { type Transaction as DeprecatedTransaction, type HexString } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { type AnyAccount } from '../account/types';
 
 import { LEAVE_SOME_SPACE_MULTIPLIER } from './constants';
@@ -234,6 +238,114 @@ async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise): Promise<Ex
   return [extrinsic];
 }
 
+const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, registry: Registry): string => {
+  let errorInfo = error.toString();
+
+  if (error.isModule) {
+    const decoded = registry.findMetaError(error.asModule);
+
+    errorInfo = decoded.name
+      .split(/(?=[A-Z])/)
+      .map(w => w.toLowerCase())
+      .join(' ');
+  }
+
+  return errorInfo;
+};
+
+type SubmitResult =
+  | {
+      executed: true;
+      params: ExtrinsicResultParams;
+    }
+  | {
+      executed: false;
+      error: string;
+    };
+
+async function submitExtrinsic(
+  extrinsic: Extrinsic,
+  signature: HexString,
+  payload: Uint8Array,
+  signatory: AccountId,
+  api: ApiPromise,
+): Promise<SubmitResult> {
+  return new Promise<SubmitResult>(resolve => {
+    try {
+      extrinsic.addSignature(signatory, hexToU8a(signature), payload);
+      extrinsic
+        .send(result => {
+          const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;
+
+          const actualTxHash = txHash.toHex();
+          const extrinsicIndex = txIndex;
+          let isFinalApprove = false;
+          let multisigError = '';
+
+          if (internalError) {
+            resolve({
+              executed: false,
+              error: internalError.message,
+            });
+            return;
+          }
+
+          if (dispatchError) {
+            resolve({
+              executed: false,
+              error: decodeDispatchError(dispatchError, extrinsic.registry),
+            });
+            return;
+          }
+
+          if (status.isInvalid) {
+            resolve({
+              executed: false,
+              error: 'Invalid transaction',
+            });
+          }
+
+          if (status.isInBlock) {
+            for (const { event, phase } of events) {
+              if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
+
+              if (api.events.multisig.MultisigExecuted.is(event)) {
+                isFinalApprove = true;
+                multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, extrinsic.registry) : '';
+              }
+
+              if (api.events.system.ExtrinsicSuccess.is(event)) {
+                resolve({
+                  executed: true,
+                  params: {
+                    timepoint: {
+                      index: extrinsicIndex,
+                      height: blockNumber.toNumber(),
+                    },
+                    extrinsicHash: actualTxHash,
+                    isFinalApprove,
+                    multisigError,
+                  },
+                });
+              }
+            }
+          }
+        })
+        .catch(error => {
+          resolve({
+            executed: false,
+            error: (error as Error).message || 'Error',
+          });
+        });
+    } catch (error) {
+      resolve({
+        executed: false,
+        error: (error as Error).message || 'Error',
+      });
+    }
+  });
+}
+
 export const transactionService = {
   wrapTransactionTransformer,
   wrapLegacyTransactionTransformer,
@@ -259,4 +371,5 @@ export const transactionService = {
   getExtrinsicWeight,
 
   splitExtrinsic,
+  submitExtrinsic,
 };

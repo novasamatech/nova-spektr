@@ -25,6 +25,7 @@ export type DeprecatedSignatureData = {
 };
 
 export type SignatureResult = {
+  api: ApiPromise;
   signatory: AccountId;
   extrinsic: Extrinsic;
   signature: HexString;
@@ -64,31 +65,27 @@ type ConvertParams = {
  */
 const convertOldFormatToNewFx = createEffect(({ input, apis }: ConvertParams): Input => {
   const { signingPayloads } = input;
-  const converted = signingPayloads.map<ExtrinsicSigningPayload>(({ transaction, account, signatory, chain }) => ({
-    chain,
-    signatory: signatory ?? account,
-    extrinsic: getExtrinsic[transaction.type](transaction.args, apis[chain.chainId]),
-  }));
+  const converted = signingPayloads.map<ExtrinsicSigningPayload>(({ transaction, account, signatory, chain }) => {
+    const api = apis[chain.chainId];
+    return {
+      api,
+      chain,
+      signatory: signatory ?? account,
+      extrinsic: getExtrinsic[transaction.type](transaction.args, api),
+    };
+  });
 
   return converted;
 });
-
-type SplitParams = {
-  input: Input;
-  apis: Record<ChainId, ApiPromise>;
-};
 
 /**
  * Some batch extrinsics can be too large for network. in this case we're
  * splitting them into multiple chunks.
  */
-const splitExtrinsicsFx = createEffect(async ({ input, apis }: SplitParams): Promise<Input> => {
+const splitExtrinsicsFx = createEffect(async (input: Input): Promise<Input> => {
   let splitted: ExtrinsicSigningPayload[] = [];
 
-  for (const { chain, signatory, extrinsic } of input) {
-    const api = apis[chain.chainId];
-    if (nullable(api)) continue;
-
+  for (const { api, chain, signatory, extrinsic } of input) {
     const extrinsics = await transactionService.splitExtrinsic(extrinsic, api);
 
     splitted = splitted.concat(
@@ -96,6 +93,7 @@ const splitExtrinsicsFx = createEffect(async ({ input, apis }: SplitParams): Pro
         extrinsic,
         signatory,
         chain,
+        api,
       })),
     );
   }
@@ -103,27 +101,16 @@ const splitExtrinsicsFx = createEffect(async ({ input, apis }: SplitParams): Pro
   return splitted;
 });
 
-const $apis = combine(
-  {
-    apis: networkModel.$apis,
-    store: $signStore,
-  },
-  ({ apis, store }) => {
-    if (!store) return {};
-
-    return store.reduce<Record<ChainId, ApiPromise>>((acc, payload) => {
-      const chainId = payload.chain.chainId;
-      const api = apis[chainId];
-
-      if (!api) return acc;
-
-      return {
-        ...acc,
-        [chainId]: api,
-      };
-    }, {});
-  },
-);
+const $apis = $signStore.map((store) => {
+  if (nullable(store)) return {};
+  return store.reduce<Record<ChainId, ApiPromise>>((acc, payload) => {
+    const chainId = payload.api.genesisHash.toHex();
+    return {
+      ...acc,
+      [chainId]: payload.api,
+    };
+  }, {});
+});
 
 const $signerWallet = combine(
   {
@@ -158,9 +145,7 @@ sample({
 
 sample({
   clock: init,
-  source: networkModel.$apis,
-  filter: (_, payloads) => payloads.length > 0,
-  fn: (apis, input) => ({ input, apis }),
+  filter: (payloads) => payloads.length > 0,
   target: splitExtrinsicsFx,
 });
 

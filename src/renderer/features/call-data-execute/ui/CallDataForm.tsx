@@ -90,7 +90,7 @@ const ChainSelect = memo(() => {
   };
 
   return (
-    <Field text={t('callData.network')}>
+    <Field text={t('callData.fields.network.label')}>
       <Select
         placeholder={t('callData.fields.network.placeholder')}
         value={chain.value?.chainId ?? null}

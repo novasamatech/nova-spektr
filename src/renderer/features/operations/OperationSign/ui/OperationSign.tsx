@@ -31,7 +31,8 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   }
 
   const onSignResult = (signatures: HexString[], payloads: Uint8Array[]) => {
-    const payload = signStore.map(({ signatory, extrinsic }, index) => ({
+    const payload = signStore.map(({ api, signatory, extrinsic }, index) => ({
+      api,
       signatory: signatory.accountId,
       extrinsic,
       signature: signatures[index],

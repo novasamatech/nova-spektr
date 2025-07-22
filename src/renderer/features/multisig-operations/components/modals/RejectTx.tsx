@@ -88,6 +88,7 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
     if (nullable(rejectTx) || nullable(signAccount)) return [];
     return [
       {
+        api,
         chain: chain,
         extrinsic: getExtrinsic[rejectTx.type](rejectTx.args, api),
         signatory: signAccount,

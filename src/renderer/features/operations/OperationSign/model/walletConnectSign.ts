@@ -1,4 +1,3 @@
-import { type ApiPromise } from '@polkadot/api';
 import { type SignerPayloadJSON } from '@polkadot/types/types';
 import { type SessionTypes } from '@walletconnect/types';
 import { attach, createEffect, createStore, sample } from 'effector';
@@ -6,7 +5,7 @@ import { createGate } from 'effector-react';
 import { nanoid } from 'nanoid';
 import { combineEvents, spread } from 'patronum';
 
-import { type ChainId, type HexString, type WcAccount } from '@/shared/core';
+import { type HexString, type WcAccount } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { assert, createTxMetadata, nonNullable, upgradeNonce } from '@/shared/lib/utils';
 import { type AnyAccount, type AnyAccountDraft, accounts } from '@/domains/network';
@@ -43,23 +42,17 @@ const $signed = createStore<SignResponse[]>([]).reset(flow.close);
 
 const gotFirstPayload = $signingPayloads.updates.map((payloads) => payloads.at(0)).filter({ fn: nonNullable });
 
-type SetupParams = {
-  payloads: ExtrinsicSigningPayload[];
-  apis: Record<ChainId, ApiPromise>;
-};
-
-const setupTransactionFx = createEffect(async ({ payloads, apis }: SetupParams) => {
+const setupTransactionFx = createEffect(async (payloads: ExtrinsicSigningPayload[]) => {
   const payload = payloads.at(0);
   assert(payload, "Can't prepare empty payload");
 
   const account = payload.signatory;
-  const api = apis[payload.chain.chainId];
 
-  let metadata = await createTxMetadata(account.accountId, api);
+  let metadata = await createTxMetadata(account.accountId, payload.api);
 
   const result: ReturnType<typeof transactionService.createPayloadWithMetadata>[] = [];
 
-  for (const { extrinsic } of payloads) {
+  for (const { api, extrinsic } of payloads) {
     const payload = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
     result.push(payload);
     metadata = upgradeNonce(metadata, 1);
@@ -172,9 +165,7 @@ sample({
 
 sample({
   clock: $signingPayloads,
-  source: networkModel.$apis,
-  filter: (_, payloads) => payloads.length > 0,
-  fn: (apis, payloads) => ({ apis, payloads }),
+  filter: (payloads) => payloads.length > 0,
   target: setupTransactionFx,
 });
 

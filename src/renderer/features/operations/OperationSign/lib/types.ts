@@ -33,6 +33,7 @@ export type SigningPayload = {
 };
 
 export type ExtrinsicSigningPayload = {
+  api: ApiPromise;
   chain: Chain;
   signatory: AnyAccount;
   extrinsic: Extrinsic;
