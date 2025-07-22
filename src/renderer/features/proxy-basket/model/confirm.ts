@@ -11,13 +11,12 @@ import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
   type AddPureProxiedConfirm,
-  type RemovePureProxiedConfirm,
+  type RemoveProxyConfirm,
   addProxyConfirmModel,
   addPureProxiedConfirmModel,
   removeProxyConfirmModel,
-  removePureProxiedConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import { type AddProxyInput, type RemoveProxyInput } from '../types/confirm';
+import { type AddProxyInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -87,16 +86,17 @@ const prepareRemoveProxyDataFx = createEffect(async ({ transaction, accounts, ch
   return {
     id: transaction.id,
     chain,
-    account,
+    initiator: account!,
     proxyType: transaction.coreTx.args.proxyType,
     delegate: transaction.coreTx.args.delegate,
-    description: '',
+    route: transaction.route,
 
-    transaction: transaction.coreTx,
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
     fee,
-    signatory: null,
+    signatory: account!,
     multisigDeposit: '0',
-  } as RemoveProxyInput;
+  } satisfies RemoveProxyConfirm;
 });
 
 const prepareRemovePureProxiedDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -114,7 +114,7 @@ const prepareRemovePureProxiedDataFx = createEffect(async ({ transaction, accoun
     tx: transaction.coreTx,
     route: transaction.route,
     multisigDeposit: '0',
-  } satisfies RemovePureProxiedConfirm;
+  } satisfies RemoveProxyConfirm;
 });
 
 sample({
@@ -172,7 +172,7 @@ sample({
 sample({
   clock: prepareRemoveProxyDataFx.doneData,
   fn: (data) => [data],
-  target: removeProxyConfirmModel.events.formInitiated,
+  target: removeProxyConfirmModel.init,
 });
 
 sample({
@@ -230,7 +230,7 @@ sample({
 sample({
   clock: prepareRemovePureProxiedDataFx.doneData,
   fn: (data) => [data],
-  target: removePureProxiedConfirmModel.init,
+  target: removeProxyConfirmModel.init,
 });
 
 export const confirm = {

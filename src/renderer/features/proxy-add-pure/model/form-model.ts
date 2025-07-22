@@ -150,7 +150,7 @@ const $walletAccounts = combine(
   },
 );
 
-const $availableChain = combine(
+const $availableChains = combine(
   {
     chains: networkModel.$chains,
     walletAccounts: $walletAccounts,
@@ -283,7 +283,7 @@ sample({
 //default initializers
 sample({
   clock: formInitiated,
-  source: $availableChain,
+  source: $availableChains,
   filter: (chains) => chains.length > 0,
   fn: (chains) => chains.at(0)!,
   target: form.fields.chain.change,
@@ -341,7 +341,7 @@ sample({
 export const formModel = {
   form,
   $wallet,
-  $availableChain,
+  $availableChains,
   $signatories,
   $proxyQuery,
   $tx,

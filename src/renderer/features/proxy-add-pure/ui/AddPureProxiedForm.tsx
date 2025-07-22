@@ -52,13 +52,13 @@ const NetworkSelector = () => {
     fields: { chain },
   } = useForm(formModel.form);
 
-  const availableChain = useUnit(formModel.$availableChain);
+  const availableChains = useUnit(formModel.$availableChains);
 
   if (!chain.value) return null;
 
   const options = useMemo(
     () =>
-      availableChain.map((chain) => ({
+      availableChains.map((chain) => ({
         id: chain.chainId,
         value: chain,
         element: (
@@ -70,7 +70,7 @@ const NetworkSelector = () => {
           />
         ),
       })),
-    [availableChain],
+    [availableChains],
   );
 
   return (

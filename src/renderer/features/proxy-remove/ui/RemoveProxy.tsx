@@ -9,7 +9,7 @@ import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { RemovePureProxiedConfirmation as Confirmation } from '@/features/operations/OperationsConfirm/RemovePureProxied';
+import { RemoveProxyConfirmation as Confirmation } from '@/features/operations/OperationsConfirm/RemoveProxy';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { Step } from '../lib/types';
 import { removeProxyModel } from '../model/remove-proxy-model';

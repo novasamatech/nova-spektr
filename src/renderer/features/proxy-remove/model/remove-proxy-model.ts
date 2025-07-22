@@ -30,9 +30,9 @@ import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { type SubmitInput, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
-  type RemovePureProxiedConfirm,
-  removePureProxiedConfirmModel as confirmModel,
-} from '@/features/operations/OperationsConfirm/RemovePureProxied';
+  type RemoveProxyConfirm,
+  removeProxyConfirmModel as confirmModel,
+} from '@/features/operations/OperationsConfirm/RemoveProxy';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';
 
@@ -359,10 +359,11 @@ const confirmEvent = sample({
         tx,
         coreTx,
         spawner: toAccountId(removeProxyStore.spawner),
+        delegate: toAccountId(removeProxyStore.proxyAccount.accountId),
         proxyType: removeProxyStore.proxyType,
         fee: fee.toString(),
         multisigDeposit: multisigDeposit.toString(),
-      } satisfies RemovePureProxiedConfirm,
+      } satisfies RemoveProxyConfirm,
     ];
   }
 });
