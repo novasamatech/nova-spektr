@@ -1,30 +1,16 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import sortBy from 'lodash/sortBy';
 import { delay, or, spread } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
 import { proxyService } from '@/shared/api/proxy';
-import {
-  AccountType,
-  type Asset,
-  type Contact,
-  CryptoType,
-  type MultisigAccount,
-  type NoID,
-  SigningType,
-  type Transaction,
-  TransactionType,
-  type Wallet,
-  WalletType,
-} from '@/shared/core';
+import { type Asset, type Contact, type Transaction, type Wallet } from '@/shared/core';
 import {
   Step,
   TEST_ACCOUNTS,
   getNativeAsset,
-  isStep,
   nonNullable,
   toAccountId,
   withdrawableAmountBN,
@@ -33,11 +19,10 @@ import { createComplexTxStore, createFeeCalculator } from '@/shared/transactions
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
-import { networkUtils } from '@/entities/network';
-import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { confirmModel } from './confirm-model';
 import { flexibleMultisigFeature } from './feature';
@@ -121,94 +106,82 @@ const $totalDeposit = combine($existentialDeposit, $proxyDeposit, (existentialDe
   return existentialDeposit.add(new BN(proxyDeposit));
 });
 
-// Submit
+// Transactions
 const $coreTx = combine(
   {
-    threshold: formModel.form.fields.threshold.$value,
-    chain: formModel.form.fields.chainId.$value,
+    chain: formModel.$chain,
     account: $signer,
-    signatories: signatoryModel.$signatories,
   },
-  ({ threshold, chain, account, signatories }) => {
-    if (!account) return null;
+  ({ chain, account }) => {
+    if (!account || !chain) return null;
 
-    return transactionBuilder.buildRemark({
-      chainId: chain,
+    return transactionBuilder.buildCreatePureProxy({
+      chain: chain,
       accountId: account.accountId,
-      threshold: threshold || 2,
-      signatories: signatories.map(s => toAccountId(s.address)),
     });
   },
 );
 
-const $transaction = combine(
+const $fakeProxyTx = combine(
   {
-    api: $api,
     chain: formModel.$chain,
+    isConnected: formModel.$isChainConnected,
+    api: $api,
     coreTx: $coreTx,
+  },
+  ({ isConnected, chain, api, coreTx }): Transaction | null => {
+    if (!chain || !isConnected || !api) return null;
+    if (coreTx) return coreTx;
+
+    return transactionBuilder.buildCreatePureProxy({
+      chain: chain,
+      accountId: TEST_ACCOUNTS[0],
+    });
+  },
+);
+
+const $fakeFinalTx = combine(
+  {
+    chain: formModel.$chain,
+    isConnected: formModel.$isChainConnected,
+    api: $api,
     signatories: signatoryModel.$signatories,
     signer: $signer,
     threshold: formModel.form.fields.threshold.$value,
-    multisigAccountId: formModel.$multisigAccountId,
     totalDeposit: $totalDeposit,
   },
-  ({ api, chain, coreTx, signatories, signer, threshold, multisigAccountId, totalDeposit }) => {
-    if (!chain || !coreTx || !api || !signer || !multisigAccountId || !totalDeposit) return null;
+  ({ isConnected, chain, api, signatories, threshold, totalDeposit }): Transaction | null => {
+    if (!chain || !isConnected || !api) return null;
 
     const signatoriesWrapped = signatories
       .filter(a => a.address !== '')
       .map(s => ({ accountId: toAccountId(s.address), address: s.address }));
 
     return transactionBuilder.buildCreateFlexibleMultisig({
-      api,
       chain,
-      signer,
+      signerAccountId: TEST_ACCOUNTS[0],
       signatories: signatoriesWrapped,
-      multisigAccountId,
-      threshold,
-      proxyDeposit: totalDeposit.toString(),
+      multisigAccountId: TEST_ACCOUNTS[0],
+      threshold: threshold || 2,
+      proxyAccountId: TEST_ACCOUNTS[1],
+      proxyDeposit: totalDeposit?.toString() ?? '0',
     });
   },
 );
 
-const $transactionWithPlaceholder = combine(
-  {
-    chain: formModel.$chain,
-    isConnected: formModel.$isChainConnected,
-    api: $api,
-    transaction: $transaction,
-  },
-  ({ isConnected, chain, api, transaction }): Transaction | null => {
-    if (!chain || !isConnected || !api) return null;
-    if (transaction) return transaction;
-
-    const proxyTransaction = transactionBuilder.buildCreatePureProxy({
-      chain: chain,
-      accountId: TEST_ACCOUNTS[0],
-    });
-
-    const extrinsic = getExtrinsic[proxyTransaction.type](proxyTransaction.args, api);
-    const callData = extrinsic.method.toHex();
-    const callHash = extrinsic.method.hash.toHex();
-
-    return {
-      chainId: chain.chainId,
-      accountId: TEST_ACCOUNTS[0],
-      type: TransactionType.MULTISIG_AS_MULTI,
-      args: {
-        threshold: 2,
-        otherSignatories: [TEST_ACCOUNTS[1]],
-        callData,
-        callHash,
-      },
-    };
-  },
-);
-
-const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
+const { $: $proxyFee, $pending: $pendingProxyFee } = createFeeCalculator({
   $api: $api,
-  $transaction: $transactionWithPlaceholder,
+  $transaction: $fakeProxyTx,
 });
+
+const { $: $multisigFee, $pending: $pendingMultisigFee } = createFeeCalculator({
+  $api: $api,
+  $transaction: $fakeFinalTx,
+});
+
+const $fee = combine($proxyFee, $multisigFee, (proxyFee, multisigFee) => multisigFee.add(proxyFee));
+
+const $pendingFee = or($pendingProxyFee, $pendingMultisigFee);
 
 const { $tx, $route } = createComplexTxStore({
   api: $api,
@@ -216,7 +189,7 @@ const { $tx, $route } = createComplexTxStore({
   signatory: $signer,
   accounts: accounts.$list,
   chain: formModel.$chain,
-  transaction: $transaction,
+  transaction: $fakeProxyTx,
 });
 
 const $signerBalance = combine(
@@ -255,9 +228,18 @@ const formSubmitted = sample({
     signer: $signer,
     chain: formModel.$chain,
     threshold: formModel.form.fields.threshold.$value,
+    multisigAccountId: formModel.$multisigAccountId,
+    totalDeposit: $totalDeposit,
   },
-}).filterMap(({ chain, tx, coreTx, route, signer, threshold }) => {
-  if (nonNullable(coreTx) && nonNullable(chain) && nonNullable(signer) && nonNullable(tx)) {
+}).filterMap(({ chain, tx, coreTx, route, signer, threshold, totalDeposit, multisigAccountId }) => {
+  if (
+    nonNullable(totalDeposit) &&
+    nonNullable(coreTx) &&
+    nonNullable(chain) &&
+    nonNullable(signer) &&
+    nonNullable(tx) &&
+    nonNullable(multisigAccountId)
+  ) {
     return [
       {
         tx,
@@ -266,7 +248,9 @@ const formSubmitted = sample({
         signatory: signer,
         initiator: signer,
         threshold,
+        totalDeposit: totalDeposit.toString(),
         chain,
+        multisigAccountId,
       },
     ];
   }
@@ -287,7 +271,7 @@ sample({
 });
 
 sample({
-  clock: confirmModel.startSigning,
+  clock: confirmModel.startSigningProxy,
   source: {
     chain: formModel.$chain,
     tx: $tx,
@@ -342,6 +326,7 @@ sample({
   }),
 });
 
+// Contacts
 sample({
   clock: signModel.output.formSubmitted,
   source: {
@@ -391,75 +376,6 @@ sample({
       );
   },
   target: contactModel.effects.createContactsFx,
-});
-
-// Create wallet
-
-const createWalletFx = attach({ effect: walletModel.createWallet });
-
-sample({
-  clock: submitModel.output.formSubmitted,
-  source: {
-    name: formModel.form.fields.name.$value,
-    threshold: formModel.form.fields.threshold.$value,
-    signatories: signatoryModel.$signatories,
-    chain: formModel.$chain,
-    step: $step,
-    multisigAccoutId: formModel.$multisigAccountId,
-  },
-  filter: ({ step, chain, multisigAccoutId }, results) => {
-    const isSubmitStep = isStep(Step.SUBMIT, step);
-    const isSuccessResult = results.some(({ result }) => submitUtils.isSuccessResult(result));
-
-    return nonNullable(chain) && isSubmitStep && isSuccessResult && nonNullable(multisigAccoutId);
-  },
-  fn: ({ signatories, chain, name, threshold, multisigAccoutId }) => {
-    const sortedSignatories = sortBy(
-      signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address) })),
-      'accountId',
-    );
-
-    const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
-    const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
-      signatories: sortedSignatories,
-      name: name.trim(),
-      accountId: multisigAccoutId!,
-      threshold: threshold,
-      cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-      signingType: SigningType.MULTISIG,
-      accountType: AccountType.MULTISIG,
-      type: 'universal',
-    };
-
-    return {
-      wallet: {
-        name,
-        type: WalletType.FLEXIBLE_MULTISIG,
-        signingType: SigningType.MULTISIG,
-      },
-      accounts: [account],
-    };
-  },
-  target: createWalletFx,
-});
-
-sample({
-  clock: createWalletFx.fail,
-  fn: ({ error }) => error.message,
-  target: $error,
-});
-
-sample({
-  clock: createWalletFx.doneData.filter({ fn: nonNullable }),
-  fn: ({ wallet }) => wallet.id,
-  target: walletProviderModel.events.completed,
-});
-
-sample({
-  clock: delay(submitModel.output.formSubmitted, 2000),
-  source: $step,
-  filter: step => isStep(step, Step.SUBMIT),
-  target: flow.close,
 });
 
 sample({
