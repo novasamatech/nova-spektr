@@ -4,12 +4,14 @@ import { type FormEvent, memo } from 'react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { Button, FootnoteText, Icon, Separator, SmallTitleText } from '@/shared/ui';
+import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { Box, Field, Input, Json, Modal, ScrollArea, Select } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { Fee } from '@/entities/transaction';
 import { formModel } from '../model/form';
+
+import { JsonArgs } from './JsonArgs';
 
 export const CallDataForm = () => {
   const { t } = useI18n();
@@ -37,11 +39,11 @@ export const CallDataForm = () => {
           {nonNullable(args) && (
             <div className="flex flex-col gap-y-3">
               <SmallTitleText>{t('callData.isCorrect')}</SmallTitleText>
-              <Json value={args} name="args" />
+              <JsonArgs value={args} />
             </div>
           )}
           {nullable(args) && (
-            <div className="flex flex-col items-center gap-y-2 px-10 py-28">
+            <div className="flex flex-col items-center gap-y-2 px-10 py-20">
               <Icon size={64} name="empty" className="mb-4" />
               <SmallTitleText>{t('callData.noDecodedTxTitle')}</SmallTitleText>
               <FootnoteText className="text-text-tertiary">{t('callData.noDecodedTxDescription')}</FootnoteText>
@@ -65,6 +67,9 @@ const CallDataInput = () => {
   return (
     <Field text={t('callData.callData')}>
       <Input value={callData.value} placeholder={t('callData.placeholder')} onChange={callData.onChange} />
+      <InputHint variant="error" active={callData.hasError}>
+        {t(callData.errorMessage)}
+      </InputHint>
     </Field>
   );
 };
@@ -98,6 +103,9 @@ const ChainSelect = memo(() => {
           </Select.Item>
         ))}
       </Select>
+      <InputHint variant="error" active={chain.hasError}>
+        {t(chain.errorMessage)}
+      </InputHint>
     </Field>
   );
 });
@@ -125,56 +133,18 @@ const SignatorySelect = memo(() => {
         height="sm"
         onChange={onChange}
       >
-        {signatories.map((signatory) => (
-          <Select.Item key={signatory.id} value={signatory.id}>
-            <Address showIcon address={toAddress(signatory.accountId, { prefix: chain.value?.addressPrefix })} />
+        {signatories.map((a) => (
+          <Select.Item key={a.id} value={a.id}>
+            <Address showIcon address={toAddress(a.accountId, { prefix: chain.value?.addressPrefix })} />
           </Select.Item>
         ))}
       </Select>
+      <InputHint variant="error" active={signatory.hasError}>
+        {t(signatory.errorMessage)}
+      </InputHint>
     </Field>
   );
 });
-
-// const FeeSection = () => {
-//   const { t } = useI18n();
-//   const {
-//     fields: { initiator },
-//   } = useForm(formModel.form);
-//   const network = useUnit(formModel.$networkStore);
-//   const fee = useUnit(formModel.$fee);
-//   const multisigDeposit = useUnit(formModel.$multisigDeposit);
-//   const isFeeLoading = useUnit(formModel.$pendingFee);
-//   const isMultisig = useUnit(formModel.$isMultisig);
-//   if (!network || !initiator.value) {
-//     return null;
-//   }
-//   return (
-//     <div className="flex flex-col gap-y-2">
-//       {isMultisig && (
-//         <DetailRow
-//           className="text-text-primary"
-//           label={
-//             <>
-//               <Icon className="text-text-tertiary" name="lock" size={12} />
-//               <FootnoteText className="text-text-tertiary">{t('staking.multisigDepositLabel')}</FootnoteText>
-//               <Tooltip>
-//                 <Tooltip.Trigger>
-//                   <div tabIndex={0}>
-//                     <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-//                   </div>
-//                 </Tooltip.Trigger>
-//                 <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
-//               </Tooltip>
-//             </>
-//           }
-//         >
-//           <Fee fee={multisigDeposit.toString()} asset={network.asset} />
-//         </DetailRow>
-//       )}
-//       <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.asset} />
-//     </div>
-//   );
-// };
 
 const ActionsSection = () => {
   const { t } = useI18n();
@@ -191,7 +161,7 @@ const ActionsSection = () => {
       {nonNullable(asset) && nonNullable(extrinsic) && (
         <Box direction="row" gap={2} verticalAlign="center">
           <FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>
-          <Fee className="text-footnote" fee={fee} isLoading={pendingFee} asset={asset} />
+          <Fee className="text-footnote" fee={fee} isLoading={pendingFee} asset={asset} hideFiat />
         </Box>
       )}
 

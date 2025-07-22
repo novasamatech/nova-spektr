@@ -34,7 +34,7 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
   // TODO show validation error
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
-  const account = payload.signatory || payload.account;
+  const account = payload.signatory;
 
   useGate(operationSignModel.SignerGate, account);
 
@@ -53,7 +53,7 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
       isVerified = transactionService.verifySignature(
         txPayload.payload,
         signature as HexString,
-        payload.account.accountId,
+        payload.signatory.accountId,
       );
       balanceValidationError = validateBalance && (await validateBalance());
     }

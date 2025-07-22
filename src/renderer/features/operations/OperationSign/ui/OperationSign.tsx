@@ -3,7 +3,6 @@ import { useGate, useUnit } from 'effector-react';
 import { type HexString } from '@/shared/core';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { getExtrinsic } from '@/entities/transaction';
 import { walletUtils } from '@/entities/wallet';
 import { signModel } from '../model/sign-model';
 
@@ -22,7 +21,7 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   const signerWallet = useUnit(signModel.$signerWallet);
 
   if (!apis || !signStore || !signerWallet) {
-    const height = walletUtils.isWalletConnectGroup(signerWallet) ? '430px' : '490px';
+    const height = signerWallet && walletUtils.isWalletConnectGroup(signerWallet) ? '430px' : '490px';
 
     return (
       <Box width="440px" height={height} verticalAlign="center" horizontalAlign="center">
@@ -31,12 +30,15 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
     );
   }
 
-  const onSignResult = (signatures: HexString[], txPayloads: Uint8Array[]) => {
-    // TODO move this wrapping to sign store
-    const extrinsics = signStore.signingPayloads.map(({ transaction }) => {
-      return getExtrinsic[transaction.type](transaction.args, apis[transaction.chainId]);
-    });
-    signModel.events.dataReceived({ extrinsics, signatures, txPayloads });
+  const onSignResult = (signatures: HexString[], payloads: Uint8Array[]) => {
+    const payload = signStore.map(({ signatory, extrinsic }, index) => ({
+      signatory: signatory.accountId,
+      extrinsic,
+      signature: signatures[index],
+      payload: payloads[index],
+    }));
+
+    signModel.events.signed(payload);
     onSuccess?.();
   };
 
@@ -44,7 +46,7 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
     <SigningSwitch
       apis={apis}
       signerWallet={signerWallet}
-      signingPayloads={signStore.signingPayloads}
+      signingPayloads={signStore}
       onGoBack={onGoBack}
       onResult={onSignResult}
     />

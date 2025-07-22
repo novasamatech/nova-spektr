@@ -143,11 +143,15 @@
   },
   "callData": {
     "callData": "Call data",
+    "confirmation": {
+      "title": "Raw call data"
+    },
     "errors": {
       "0xPrefix": "Call data must start with 0x",
       "chainRequired": "Chain is required",
       "invalidCallData": "Provided call data is invalid or has the wrong format. Please ensure it is correct and try again.",
-      "required": "Call data is required"
+      "required": "Call data is required",
+      "signatoryRequired": "Signatory is required"
     },
     "fields": {
       "network": {

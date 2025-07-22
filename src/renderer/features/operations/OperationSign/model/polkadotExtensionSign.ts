@@ -9,7 +9,7 @@ import { assert, createTxMetadata } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { polkadotExtensionService } from '@/features/extension-wallet';
-import { type SigningPayload } from '../lib/types';
+import { type ExtrinsicSigningPayload } from '../lib/types';
 
 type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
 
@@ -18,21 +18,21 @@ export type SignResponse = {
   txPayload: ReturnType<typeof transactionService.createPayloadWithMetadata>;
 };
 
-const flow = createGate<{ payloads: SigningPayload[] }>({ defaultState: { payloads: [] } });
+const flow = createGate<{ payloads: ExtrinsicSigningPayload[] }>({ defaultState: { payloads: [] } });
 
 const $step = createStore<Step>('idle');
 const $signed = createStore<SignResponse[]>([]).reset(flow.close);
 
 type SetupParams = {
-  payload: SigningPayload;
+  payload: ExtrinsicSigningPayload;
   apis: Record<ChainId, ApiPromise>;
 };
 
 const signFx = createEffect(async ({ payload, apis }: SetupParams): Promise<SignResponse> => {
-  const api = apis[payload.transaction.chainId];
-  const account = payload.signatory || payload.account;
+  const api = apis[payload.chain.chainId];
+  const account = payload.signatory;
 
-  assert(api, `Api from chain ${payload.transaction.chainId} not found.`);
+  assert(api, `Api from chain ${payload.chain.chainId} not found.`);
   assert(account, 'Signing account not found');
 
   if (!polkadotExtensionService.isExtensionAccount(account)) throw new Error('Incorrect account for signing');
@@ -42,7 +42,7 @@ const signFx = createEffect(async ({ payload, apis }: SetupParams): Promise<Sign
   assert(wallet, 'Wallet not found');
 
   const metadata = await createTxMetadata(account.accountId, api);
-  const txPayload = transactionService.createPayloadWithMetadata(payload.transaction, api, metadata);
+  const txPayload = transactionService.createPayloadWithMetadata(payload.extrinsic, api, metadata);
 
   transactionService.logPayload([txPayload]);
 

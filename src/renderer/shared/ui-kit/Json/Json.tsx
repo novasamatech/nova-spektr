@@ -8,9 +8,10 @@ import { useTheme } from '../Theme/useTheme';
 type Props = {
   value: object;
   name?: string;
+  sortKeys?: (a: string, b: string) => number;
 };
 
-export const Json = memo(({ value, name }: Props) => {
+export const Json = memo(({ value, name, sortKeys }: Props) => {
   const { theme } = useTheme();
 
   const viewerTheme = useMemo<CSSProperties>(() => {
@@ -34,6 +35,7 @@ export const Json = memo(({ value, name }: Props) => {
       displayDataTypes={false}
       shortenTextAfterLength={50}
       style={viewerTheme}
+      objectSortKeys={sortKeys}
     >
       <ReactJsonViewer.Null render={() => <span style={{ color: 'var(--w-rjv-type-null-color)' }}>null</span>} />
     </ReactJsonViewer>

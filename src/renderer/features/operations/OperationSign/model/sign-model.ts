@@ -3,74 +3,104 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { createGate } from 'effector-react';
 import { once } from 'patronum';
 
-import { type ChainId, type HexString, TransactionType } from '@/shared/core';
-import { type Extrinsic } from '@/domains/network';
+import { type ChainId, type HexString } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type Extrinsic, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { getExtrinsic } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { type SigningPayload } from '../lib/types';
+import { type ExtrinsicSigningPayload, type SigningPayload } from '../lib/types';
 
-type Input = {
+type DeprecatedInput = {
   signingPayloads: SigningPayload[];
 };
 
-export type SignatureData = {
+type Input = ExtrinsicSigningPayload[];
+
+export type DeprecatedSignatureData = {
   extrinsics: Extrinsic[];
   signatures: HexString[];
   txPayloads: Uint8Array[];
 };
 
+export type SignatureResult = {
+  signatory: AccountId;
+  extrinsic: Extrinsic;
+  signature: HexString;
+  payload: Uint8Array;
+};
+
 const flow = createGate();
 
-const formInitiated = createEvent<Input>();
-const dataReceived = createEvent<SignatureData>();
+/**
+ * Filling sign store
+ */
+const init = createEvent<Input>();
+/**
+ * Signator component indicates that payload is signed
+ */
+const signed = createEvent<SignatureResult[]>();
 
-const formSubmitted = createEvent<SignatureData>();
+const $signStore = createStore<Input | null>(null).reset([init, flow.close]);
 
-const $signStore = createStore<Input | null>(null).reset([formSubmitted, flow.close]);
+/**
+ * @deprecated Use "init" instead
+ */
+const formInitiated = createEvent<DeprecatedInput>();
+/**
+ * @deprecated Use signed instead.
+ */
+const formSubmitted = createEvent<DeprecatedSignatureData>();
+
+type ConvertParams = {
+  input: DeprecatedInput;
+  apis: Record<ChainId, ApiPromise>;
+};
+
+/**
+ * Some batch extrinsics can be too large for network. in this case we're
+ * splitting them into multiple chunks.
+ */
+const convertOldFormatToNewFx = createEffect(({ input, apis }: ConvertParams): Input => {
+  const { signingPayloads } = input;
+  const converted = signingPayloads.map<ExtrinsicSigningPayload>(({ transaction, account, signatory, chain }) => ({
+    chain,
+    signatory: signatory ?? account,
+    extrinsic: getExtrinsic[transaction.type](transaction.args, apis[chain.chainId]),
+  }));
+
+  return converted;
+});
 
 type SplitParams = {
   input: Input;
   apis: Record<ChainId, ApiPromise>;
 };
 
-const splitTxsFx = createEffect(async ({ input, apis }: SplitParams): Promise<Input> => {
-  const { signingPayloads } = input;
-  const result: SigningPayload[] = [];
-  const txsToSplit: SigningPayload[] = [];
+/**
+ * Some batch extrinsics can be too large for network. in this case we're
+ * splitting them into multiple chunks.
+ */
+const splitExtrinsicsFx = createEffect(async ({ input, apis }: SplitParams): Promise<Input> => {
+  let splitted: ExtrinsicSigningPayload[] = [];
 
-  for (const tx of signingPayloads) {
-    if (!apis[tx.chain.chainId]) continue;
+  for (const { chain, signatory, extrinsic } of input) {
+    const api = apis[chain.chainId];
+    if (nullable(api)) continue;
 
-    if (tx.transaction.type === TransactionType.BATCH_ALL) {
-      txsToSplit.push(tx);
-    } else {
-      result.push(tx);
-    }
+    const extrinsics = await transactionService.splitExtrinsic(extrinsic, api);
+
+    splitted = splitted.concat(
+      extrinsics.map((extrinsic) => ({
+        extrinsic,
+        signatory,
+        chain,
+      })),
+    );
   }
 
-  const splittedBatches = await Promise.all(
-    txsToSplit.map(async (tx) => {
-      const txs = await transactionService.splitTxsByWeight(apis[tx.chain.chainId], tx.transaction.args.transactions);
-
-      return txs.map<SigningPayload>((transactions) => ({
-        chain: tx.chain,
-        account: tx.account,
-        signatory: tx.signatory,
-        transaction: transactionBuilder.buildBatchAll({
-          chain: tx.chain,
-          accountId: tx.account.accountId,
-          transactions,
-        }),
-      }));
-    }),
-  );
-
-  result.push(...splittedBatches.flat());
-
-  return {
-    signingPayloads: result,
-  };
+  return splitted;
 });
 
 const $apis = combine(
@@ -81,7 +111,7 @@ const $apis = combine(
   ({ apis, store }) => {
     if (!store) return {};
 
-    return store.signingPayloads.reduce<Record<ChainId, ApiPromise>>((acc, payload) => {
+    return store.reduce<Record<ChainId, ApiPromise>>((acc, payload) => {
       const chainId = payload.chain.chainId;
       const api = apis[chainId];
 
@@ -101,31 +131,60 @@ const $signerWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (nullable(store)) return null;
+    const payload = store.at(0);
+    if (nullable(payload)) return null;
 
-    return walletUtils.getWalletById(
-      wallets,
-      (store.signingPayloads[0].signatory || store.signingPayloads[0].account).walletId,
-    );
+    return walletUtils.getWalletById(wallets, payload.signatory.walletId);
   },
-  { skipVoid: false },
 );
+
+// deprecated format handling
 
 sample({
   clock: formInitiated,
   source: networkModel.$apis,
   filter: (_, { signingPayloads }) => signingPayloads.length > 0,
   fn: (apis, input) => ({ input, apis }),
-  target: splitTxsFx,
+  target: convertOldFormatToNewFx,
 });
 
 sample({
-  clock: splitTxsFx.doneData,
+  clock: convertOldFormatToNewFx.doneData,
+  target: init,
+});
+
+// actual flow
+
+sample({
+  clock: init,
+  source: networkModel.$apis,
+  filter: (_, payloads) => payloads.length > 0,
+  fn: (apis, input) => ({ input, apis }),
+  target: splitExtrinsicsFx,
+});
+
+sample({
+  clock: splitExtrinsicsFx.doneData,
   target: $signStore,
 });
 
 sample({
-  clock: once({ source: dataReceived, reset: formInitiated }),
+  clock: once({ source: signed, reset: init }),
+  target: signed,
+});
+
+// deprecated event
+
+sample({
+  clock: once({ source: signed, reset: init }),
+  fn(data) {
+    return {
+      extrinsics: data.map((d) => d.extrinsic),
+      signatures: data.map((d) => d.signature),
+      txPayloads: data.map((d) => d.payload),
+    };
+  },
   target: formSubmitted,
 });
 
@@ -135,10 +194,17 @@ export const signModel = {
   $signerWallet,
 
   events: {
+    /**
+     * @deprecated Use signModel.events.init instead
+     */
     formInitiated,
-    dataReceived,
+    init,
+    signed,
   },
   output: {
+    /**
+     * @deprecated Use signModel.events.signed instead
+     */
     formSubmitted,
   },
   gates: {

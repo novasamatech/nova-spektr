@@ -1,12 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type SubmittableExtrinsic } from '@polkadot/api/types';
+import { type Call, type Weight } from '@polkadot/types/interfaces';
+import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type Transaction as DeprecatedTransaction, type HexString } from '@/shared/core';
 import { createTransformer } from '@/shared/di';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '../account/types';
 
-import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransaction } from './types';
+import { LEAVE_SOME_SPACE_MULTIPLIER } from './constants';
+import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransaction, type Extrinsic } from './types';
 
 const wrapTransactionTransformer = createTransformer<
   AnyTransaction,
@@ -28,7 +30,7 @@ const unwrapTransactionTransformer = createTransformer<
   { api: ApiPromise }
 >();
 const encodeTransactionTransformer = createTransformer<AnyDecodedTransaction, HexString, { api: ApiPromise }>();
-const decodeTransactionTransformer = createTransformer<SubmittableExtrinsic<'promise'>, AnyDecodedTransaction>();
+const decodeTransactionTransformer = createTransformer<Extrinsic, AnyDecodedTransaction>();
 
 function isEncodedTransaction(transaction: AnyTransaction): transaction is EncodedTransaction {
   return transaction.type === 'encoded';
@@ -89,7 +91,7 @@ async function unwrapTransaction(transaction: AnyTransaction, api: ApiPromise) {
   return list;
 }
 
-function createSubmittableExtrinsicFromCallData(callData: string, api: ApiPromise): SubmittableExtrinsic<'promise'> {
+function createSubmittableExtrinsicFromCallData(callData: string, api: ApiPromise): Extrinsic {
   try {
     return api.tx(callData);
   } catch {
@@ -107,7 +109,7 @@ function createSubmittableExtrinsicFromCallData(callData: string, api: ApiPromis
   }
 }
 
-function createSubmittableExtrinsic(transaction: AnyTransaction, api: ApiPromise): SubmittableExtrinsic<'promise'> {
+function createSubmittableExtrinsic(transaction: AnyTransaction, api: ApiPromise): Extrinsic {
   const encodedExtrinsic = encodeTransaction(transaction, api);
   return createSubmittableExtrinsicFromCallData(encodedExtrinsic.callData, api);
 }
@@ -146,14 +148,90 @@ function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDec
   return result;
 }
 
-async function getExtrinsicFee(extrinsic: SubmittableExtrinsic<'promise'>) {
+async function getExtrinsicFee(extrinsic: Extrinsic) {
   const { partialFee } = await extrinsic.paymentInfo(extrinsic.signer);
   return partialFee.toBn();
 }
 
-async function getExtrinsicWeight(extrinsic: SubmittableExtrinsic<'promise'>) {
+async function getExtrinsicWeight(extrinsic: Extrinsic) {
   const { weight } = await extrinsic.paymentInfo(extrinsic.signer);
   return weight;
+}
+
+function isBatchExtrinsic(extrinsic: Extrinsic) {
+  return (
+    extrinsic.method.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(extrinsic.method.method)
+  );
+}
+
+async function getBlockLimit(api: ApiPromise): Promise<BN> {
+  const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value.refTime.toBn();
+  const maxBlockWeight = api.consts.system.blockWeights.maxBlock.refTime.toBn();
+  const blockWeight = await api.query.system.blockWeight();
+
+  const totalWeight = blockWeight.normal.refTime
+    .toBn()
+    .add(blockWeight.operational.refTime.toBn())
+    .add(blockWeight.mandatory.refTime.toBn());
+
+  const freeSpaceInLastBlock = maxBlockWeight.sub(totalWeight);
+
+  return BN.min(
+    maxExtrinsicWeight.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+    freeSpaceInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
+  );
+}
+
+async function splitCallsByWeight(api: ApiPromise, calls: Call[]) {
+  const blockLimit = await getBlockLimit(api);
+  const result: Extrinsic[][] = [[]];
+
+  let totalRefTime = BN_ZERO;
+
+  const txsWeights: Partial<Record<string, Weight>> = {};
+
+  for (const call of calls) {
+    const key = `${call.section}.${call.method}`;
+    const extrinsic = api.tx(call);
+    const weight = txsWeights[key] || (await getExtrinsicWeight(extrinsic));
+
+    if (!txsWeights[key]) {
+      txsWeights[key] = weight;
+    }
+
+    totalRefTime = totalRefTime.add(weight.refTime.toBn());
+
+    if (totalRefTime.lt(blockLimit) && result.length > 0) {
+      const lastBuffer = result.at(-1);
+      if (lastBuffer) {
+        lastBuffer.push(extrinsic);
+      }
+    } else {
+      result.push([extrinsic]);
+
+      totalRefTime = weight.refTime.toBn();
+    }
+  }
+
+  return result;
+}
+
+async function splitExtrinsic(extrinsic: Extrinsic, api: ApiPromise): Promise<Extrinsic[]> {
+  if (isBatchExtrinsic(extrinsic)) {
+    // @ts-expect-error calls arg is Vec<Call>
+    const splitted = await splitCallsByWeight(api, extrinsic.args.at(0) ?? []);
+    const batched = splitted
+      .map(e => {
+        if (e.length === 0) return null;
+        if (e.length === 1) return e.at(0);
+        return api.tx.utility.batchAll(e);
+      })
+      .filter(nonNullable);
+
+    return batched;
+  }
+
+  return [extrinsic];
 }
 
 export const transactionService = {
@@ -166,6 +244,8 @@ export const transactionService = {
   isEncodedTransaction,
   isDecodedTransaction,
 
+  isBatchExtrinsic,
+
   wrapTransaction,
   wrapLegacyTransaction,
   unwrapTransaction,
@@ -177,4 +257,6 @@ export const transactionService = {
 
   getExtrinsicFee,
   getExtrinsicWeight,
+
+  splitExtrinsic,
 };

@@ -2,11 +2,12 @@ import { type ApiPromise } from '@polkadot/api';
 import { useEffect, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants/testIds';
-import { type Address, type Chain, type Transaction } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { CryptoType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { toAddress } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, type Extrinsic } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 import { transactionService } from '../../lib';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
@@ -15,8 +16,7 @@ import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGenerator
 type Props = {
   api: ApiPromise;
   chain: Chain;
-  address: Address;
-  transaction: Transaction;
+  extrinsic: Extrinsic;
   account: AnyAccount;
   countdown: number;
   onGoBack: () => void;
@@ -27,8 +27,7 @@ type Props = {
 export const ScanSingleframeQr = ({
   api,
   chain,
-  transaction,
-  address,
+  extrinsic,
   account,
   countdown,
   onGoBack,
@@ -43,11 +42,11 @@ export const ScanSingleframeQr = ({
     if (txPayload) return;
 
     setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
-  }, [transaction, api]);
+  }, [extrinsic, api]);
 
   const setupTransaction = async (): Promise<void> => {
     try {
-      const { payload } = await transactionService.createPayload(transaction, api);
+      const { payload } = await transactionService.createPayload(extrinsic, account.accountId, api);
 
       setTxPayload(payload);
 
@@ -75,7 +74,7 @@ export const ScanSingleframeQr = ({
         {txPayload && (
           <QrTxGenerator
             payload={txPayload}
-            address={address}
+            address={toAddress(account.accountId, { prefix: chain.addressPrefix })}
             genesisHash={chain.chainId}
             derivationPath={derivationPath}
             signingType={account.signingType}

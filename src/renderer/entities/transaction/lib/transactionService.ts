@@ -333,10 +333,10 @@ function getWrappedTransaction({ api, transaction, txWrappers }: WrapperParams):
   );
 }
 
-async function createPayload(transaction: Transaction, api: ApiPromise) {
-  const metadata = await createTxMetadata(transaction.accountId, api);
+async function createPayload(extrinsic: Extrinsic, signatory: AccountId, api: ApiPromise) {
+  const metadata = await createTxMetadata(signatory, api);
 
-  return createPayloadWithMetadata(transaction, api, metadata);
+  return createPayloadWithMetadata(extrinsic, api, metadata);
 }
 
 function createEra(api: ApiPromise, blockNumber: HexString) {
@@ -344,10 +344,7 @@ function createEra(api: ApiPromise, blockNumber: HexString) {
   return api.registry.createTypeUnsafe<ExtrinsicEra>('ExtrinsicEra', [{ current: blockNumber, period: mortalLength }]);
 }
 
-function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { signerPayloadBase }: TxMetadata) {
-  // TODO we should get extrinsic from arguments, not construct it inside
-  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-
+function createPayloadWithMetadata(extrinsic: Extrinsic, api: ApiPromise, { signerPayloadBase }: TxMetadata) {
   if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
     signerPayloadBase.assetId = undefined;
   }
@@ -373,8 +370,7 @@ function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { 
     .toHex();
 
   return {
-    type: transaction.type,
-    args: transaction.args,
+    extrinsic,
     unsigned: signingPayload,
     hexPayload: signingPayloadHex,
     payload: hexToU8a(signingPayloadHex),
@@ -512,7 +508,7 @@ async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: P
 function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
   console.groupCollapsed('Transactions');
   for (const [index, log] of info.entries()) {
-    console.groupCollapsed(`Operation ${index}: ${log.type}`);
+    console.groupCollapsed(`Operation ${index}: ${log.extrinsic.method.section}.${log.extrinsic.method.method}`);
 
     console.table({
       address: log.unsigned.address,
@@ -521,7 +517,8 @@ function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
     });
 
     console.group('args');
-    console.table(log.args);
+    // @ts-expect-error args field is not defined in json type
+    console.table(log.extrinsic.method.toHuman().args);
     console.groupEnd();
 
     console.groupCollapsed('signer payload');

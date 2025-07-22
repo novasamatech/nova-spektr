@@ -13,7 +13,7 @@ import { type AnyAccount, type AnyAccountDraft, accounts } from '@/domains/netwo
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { DEFAULT_POLKADOT_METHODS, walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
-import { type SigningPayload } from '../lib/types';
+import { type ExtrinsicSigningPayload } from '../lib/types';
 
 type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
 
@@ -21,7 +21,7 @@ type SignResponse = {
   signature: HexString;
 };
 
-const flow = createGate<{ payloads: SigningPayload[]; accounts: AnyAccount[] }>({
+const flow = createGate<{ payloads: ExtrinsicSigningPayload[]; accounts: AnyAccount[] }>({
   defaultState: { payloads: [], accounts: [] },
 });
 const $step = createStore<Step>('idle');
@@ -44,7 +44,7 @@ const $signed = createStore<SignResponse[]>([]).reset(flow.close);
 const gotFirstPayload = $signingPayloads.updates.map((payloads) => payloads.at(0)).filter({ fn: nonNullable });
 
 type SetupParams = {
-  payloads: SigningPayload[];
+  payloads: ExtrinsicSigningPayload[];
   apis: Record<ChainId, ApiPromise>;
 };
 
@@ -52,15 +52,15 @@ const setupTransactionFx = createEffect(async ({ payloads, apis }: SetupParams) 
   const payload = payloads.at(0);
   assert(payload, "Can't prepare empty payload");
 
-  const account = payload.signatory || payload.account;
+  const account = payload.signatory;
   const api = apis[payload.chain.chainId];
 
   let metadata = await createTxMetadata(account.accountId, api);
 
   const result: ReturnType<typeof transactionService.createPayloadWithMetadata>[] = [];
 
-  for (const { transaction } of payloads) {
-    const payload = transactionService.createPayloadWithMetadata(transaction, api, metadata);
+  for (const { extrinsic } of payloads) {
+    const payload = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
     result.push(payload);
     metadata = upgradeNonce(metadata, 1);
   }
@@ -159,12 +159,11 @@ sample({
 sample({
   clock: gotFirstPayload,
   source: networkModel.$chains,
-  fn: (chains, { account, signatory }) => {
-    // TODO remove this hardcode
-    const ac = signatory || account;
-
+  fn: (chains, { signatory }) => {
     return {
-      pairingTopic: walletConnectService.isWalletConnectAccount(ac) ? ac.signingExtras.pairingTopic : undefined,
+      pairingTopic: walletConnectService.isWalletConnectAccount(signatory)
+        ? signatory.signingExtras.pairingTopic
+        : undefined,
       chains: Object.values(chains).map((c) => c.chainId),
     };
   },

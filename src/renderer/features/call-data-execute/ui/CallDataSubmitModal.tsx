@@ -11,6 +11,7 @@ import { callDataUtils } from '../lib/utils';
 import { formModel } from '../model/form';
 
 import { CallDataForm } from './CallDataForm';
+import { Confirmation } from './Confirmation';
 
 export const CallDataSubmit = memo(() => {
   const { t } = useI18n();
@@ -41,20 +42,7 @@ export const CallDataSubmitModal = ({ onToggle }: { onToggle: VoidFunction }) =>
       <Modal.Title close>{t('callData.title')}</Modal.Title>
       <Modal.Content disableScroll>
         {callDataUtils.isInitStep(step) && <CallDataForm />}
-        {
-          callDataUtils.isConfirmStep(step) && null
-          // <Confirmation
-          //   secondaryActionButton={
-          //     initiatorWallet &&
-          //     basketUtils.isBasketAvailable(initiatorWallet) && (
-          //       <Button pallet="secondary" onClick={() => formModel.events.txSaved()}>
-          //         {t('operation.addToBasket')}
-          //       </Button>
-          //     )
-          //   }
-          //   onGoBack={() => formModel.events.stepChanged(Step.INIT)}
-          // />
-        }
+        {callDataUtils.isConfirmStep(step) && <Confirmation onGoBack={() => formModel.stepChanged(Step.INIT)} />}
         {callDataUtils.isSignStep(step) && <OperationSign onGoBack={() => formModel.stepChanged(Step.CONFIRM)} />}
       </Modal.Content>
     </Modal>

@@ -41,7 +41,7 @@ import {
 } from '@/entities/transaction';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
-import { type SigningPayload } from '@/features/operations/OperationSign';
+import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
@@ -231,13 +231,12 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   const readyForNonFinalSign = readyForSign && !thresholdReached;
   const readyForFinalSign = readyForSign && thresholdReached && !!operation.transaction;
 
-  const signingPayloads = useMemo<SigningPayload[]>(() => {
+  const signingPayloads = useMemo<ExtrinsicSigningPayload[]>(() => {
     if (nullable(approveTx) || nullable(signAccount)) return [];
     return [
       {
         chain: chain,
-        account: signAccount,
-        transaction: approveTx,
+        extrinsic: getExtrinsic[approveTx.type](approveTx.args, api),
         signatory: signAccount,
       },
     ];

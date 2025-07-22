@@ -51,7 +51,7 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Pr
 
     if (submitUtils.isWarningStep(step) && submitStore) {
       return {
-        title: t('transfer.warningTitle', { failed: failedTxs.length, all: submitStore.payloads.length }),
+        title: t('transfer.warningTitle', { failed: failedTxs.length, all: submitStore.payload.length }),
         variant: 'warning',
         description: t('transfer.warningDescription'),
       };

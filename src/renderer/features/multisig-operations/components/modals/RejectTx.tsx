@@ -16,10 +16,16 @@ import { OperationTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
-import { OperationResult, isXcmTransaction, transactionService, validateBalance } from '@/entities/transaction';
+import {
+  OperationResult,
+  getExtrinsic,
+  isXcmTransaction,
+  transactionService,
+  validateBalance,
+} from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
-import { type SigningPayload } from '@/features/operations/OperationSign';
+import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
 import { rejectModel } from '../../model/reject-model';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
@@ -78,13 +84,12 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
     accountFn: account => account.accountId === operation.depositor,
   })?.accounts[0];
 
-  const signingPayloads = useMemo<SigningPayload[]>(() => {
+  const signingPayloads = useMemo<ExtrinsicSigningPayload[]>(() => {
     if (nullable(rejectTx) || nullable(signAccount)) return [];
     return [
       {
         chain: chain,
-        account: signAccount,
-        transaction: rejectTx,
+        extrinsic: getExtrinsic[rejectTx.type](rejectTx.args, api),
         signatory: signAccount,
       },
     ];

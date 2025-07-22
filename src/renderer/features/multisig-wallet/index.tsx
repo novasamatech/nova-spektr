@@ -36,8 +36,8 @@ export const multisigWalletFeature = createFeature({
 });
 
 accountSDK(multisigWalletFeature, {
-  actionPermission({ account }) {
-    return accountUtils.isMultisigAccount(account);
+  actionPermission() {
+    return false;
   },
   availableOnChain({ account, chain }) {
     return (

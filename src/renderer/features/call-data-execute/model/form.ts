@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { throttle } from 'patronum';
+import { readonly, throttle } from 'patronum';
 
 import { type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
@@ -12,8 +12,11 @@ import { createFeeCalculator } from '@/shared/transactions';
 import { type AnyAccount, accountService, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { type ExtrinsicSigningPayload, signModel } from '@/features/operations/OperationSign';
+import { submitModel } from '../../operations/OperationSubmit';
 import { Step } from '../lib/types';
 
+import { type ConfirmInput, confirmModel } from './confirm';
 import { callDataExecuteFeature } from './feature';
 
 type FormData = {
@@ -34,6 +37,9 @@ const form = createForm<FormData>({
     },
     signatory: {
       defaultValue: null,
+      validator: () => (signatory) => {
+        if (!signatory) return { message: 'callData.errors.signatoryRequired' };
+      },
     },
     callData: {
       defaultValue: '',
@@ -55,12 +61,11 @@ const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis)
 
 const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
 const $args = $extrinsic.map((extrinsic) => {
-  // @ts-expect-error args field is not defined in types
-  return extrinsic ? (extrinsic.method.toHuman()?.args ?? null) : null;
+  return extrinsic ? ((extrinsic.method.toHuman() as object) ?? null) : null;
 });
 
 const createExtrinsicFx = createQueuedEffect(({ callData, api }: { callData: string; api: ApiPromise }) => {
-  if (callData.length === 0 || !callData.startsWith('0x') || nullable(api)) return null;
+  if (callData.length === 0 || nullable(api)) return null;
   return transactionService.createSubmittableExtrinsicFromCallData(callData, api);
 });
 
@@ -103,19 +108,37 @@ const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
 // steps management
 
 const stepChanged = createEvent<Step>();
-const $step = restore(stepChanged, Step.NONE);
+const $step = readonly(restore(stepChanged, Step.NONE));
 
 sample({
-  clock: flow.open,
+  clock: [flow.open, flow.close],
   fn: () => Step.INIT,
+  target: stepChanged,
+});
+
+sample({
+  clock: form.submit.done,
+  fn: () => Step.CONFIRM,
+  target: stepChanged,
+});
+
+sample({
+  clock: confirmModel.startSigning,
+  fn: () => Step.SIGN,
+  target: stepChanged,
+});
+
+sample({
+  clock: signModel.output.formSubmitted,
+  fn: () => Step.SUBMIT,
   target: stepChanged,
 });
 
 // form options
 
-const $availableSignatories = walletModel.$availableAccounts.map((accounts) =>
-  accounts.filter(accountService.hasPermissionToMakeActions),
-);
+const $availableSignatories = walletModel.$availableAccounts.map((accounts) => {
+  return accounts.filter(accountService.hasPermissionToMakeActions);
+});
 
 const $availableChains = combine(
   {
@@ -156,6 +179,59 @@ const $canSubmit = combine(
   },
   ({ isValid, decodedTx }) => isValid && nonNullable(decodedTx),
 );
+
+// submit flow
+
+sample({
+  clock: form.submit.doneData,
+  source: {
+    extrinsic: $extrinsic,
+    args: $args,
+    fee: $fee,
+  },
+  fn: ({ extrinsic, args, fee }, { chain, signatory }): ConfirmInput[] => {
+    return [
+      {
+        chain,
+        extrinsic,
+        initiator: signatory,
+        signatory: signatory,
+        route: [signatory],
+        args,
+        fee,
+      },
+    ];
+  },
+  target: confirmModel.init,
+});
+
+sample({
+  clock: confirmModel.startSigning,
+  source: {
+    form: form.$values,
+    extrinsic: $extrinsic,
+  },
+  fn({ form, extrinsic }): ExtrinsicSigningPayload[] {
+    const payload: ExtrinsicSigningPayload = {
+      extrinsic,
+      signatory: form.signatory,
+      chain: form.chain,
+    };
+    return [payload];
+  },
+  target: signModel.events.init,
+});
+
+sample({
+  clock: signModel.events.signed,
+  source: {
+    open: flow.status,
+    api: $api,
+  },
+  filter: ({ open }) => open,
+  fn: ({ api }, payload) => ({ api: api!, payload }),
+  target: submitModel.events.init,
+});
 
 export const formModel = {
   flow,

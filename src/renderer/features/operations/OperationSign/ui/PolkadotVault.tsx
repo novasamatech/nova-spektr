@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
-import { ValidationErrors, nullable, toAddress } from '@/shared/lib/utils';
+import { ValidationErrors, nullable } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@/entities/transaction';
-import { WalletIcon, walletUtils } from '@/entities/wallet';
+import { WalletIcon } from '@/entities/wallet';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 
@@ -39,7 +39,7 @@ export const PolkadotVault = ({
       ? scanResult.map(operationSignUtils.transformEcdsaSignature)
       : [scanResult].map(operationSignUtils.transformEcdsaSignature);
 
-    const accountIds = signingPayloads.map((p) => p.signatory?.accountId ?? p.account.accountId);
+    const accountIds = signingPayloads.map((p) => p.signatory.accountId);
 
     let isVerified = false;
 
@@ -69,14 +69,6 @@ export const PolkadotVault = ({
     } else {
       onResult(signatures, txPayloads);
     }
-  };
-
-  const getSignerAccountId = () => {
-    if (walletUtils.isPolkadotVault(signerWallet)) {
-      return signerWallet.rootAccountId;
-    }
-
-    return signingPayloads[0].transaction.accountId;
   };
 
   const scanAgain = () => {
@@ -114,10 +106,9 @@ export const PolkadotVault = ({
             <ScanSingleframeQr
               chain={chain}
               api={apis[chain.chainId]}
-              address={toAddress(getSignerAccountId(), { prefix: chain.addressPrefix })}
               countdown={countdown}
-              account={signingPayloads[0].signatory || signingPayloads[0].account}
-              transaction={signingPayloads[0].transaction}
+              account={signingPayloads[0].signatory}
+              extrinsic={signingPayloads[0].extrinsic}
               onGoBack={onGoBack}
               onResetCountdown={resetCountdown}
               onResult={(payload) => setTxPayloads([payload])}
