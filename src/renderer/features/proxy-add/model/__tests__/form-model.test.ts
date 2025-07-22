@@ -27,11 +27,11 @@ describe('widgets/AddPureProxyModal/model/form-model', () => {
         .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet]),
     });
 
-    await allSettled(formModel.events.formInitiated, { scope });
-    await allSettled(formModel.$proxyForm.fields.chain.onChange, { scope, params: testChain });
+    await allSettled(formModel.formInitiated, { scope });
+    await allSettled(formModel.form.fields.chain.change, { scope, params: testChain });
 
-    expect(scope.getState(formModel.$proxyForm.$values)).toEqual({
-      account: {},
+    expect(scope.getState(formModel.form.$values)).toEqual({
+      initiator: null,
       chain: testChain,
       delegate: '',
       signatory: null,
