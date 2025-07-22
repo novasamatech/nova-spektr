@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { Step, isStep } from '@/shared/lib/utils';
 import { Modal } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
-import { OperationSign, OperationSubmit } from '@/features/operations';
+import { OperationSign } from '@/features/operations';
 import { flexibleMultisigFeature } from '../model/feature';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
@@ -40,10 +40,6 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
     fields: { chainId },
   } = useForm(formModel.form);
 
-  if (isStep(activeStep, Step.SUBMIT)) {
-    return <OperationSubmit isOpen={isOpen} onClose={() => onToggle(false)} />;
-  }
-
   const modalTitle = (
     <div className="flex items-center justify-between">
       {isStep(activeStep, Step.SIGNER_SELECTION)
@@ -74,7 +70,7 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
       {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={onGoBack} />}
       {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
       {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
-      {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
+      {(isStep(activeStep, Step.CONFIRM) || isStep(activeStep, Step.SUBMIT)) && <ConfirmationStep />}
       {isStep(activeStep, Step.SIGN) && (
         <Modal.Content>
           <OperationSign onGoBack={() => flexibleMultisigModel.stepChanged(Step.CONFIRM)} />
