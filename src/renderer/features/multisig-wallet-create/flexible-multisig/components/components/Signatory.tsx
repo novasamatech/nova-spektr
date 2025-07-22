@@ -127,6 +127,8 @@ export const Signatory = ({
       }
     }
 
+    if (accountOptions.size === 0) return [];
+
     return [
       {
         id: 'accounts',
@@ -199,9 +201,7 @@ export const Signatory = ({
     });
   };
 
-  const nameLabel = isOwnAccount
-    ? t('createMultisigAccount.myName')
-    : t('createMultisigAccount.signatoryNameLabel', { index: signatoryIndex });
+  const nameLabel = isOwnAccount ? t('createMultisigAccount.myName') : t('createMultisigAccount.signatoryNameLabel');
 
   const isInvalid = isInvalidAddress || signatoryAddress !== query;
 
@@ -220,7 +220,7 @@ export const Signatory = ({
       <div className="grid grid-cols-[444px,28px] gap-x-4">
         <Box width="100%">
           {isOwnAccount ? (
-            <Field text={t('createMultisigAccount.myAddress')}>
+            <Field text={t('createMultisigAccount.myAccount')}>
               <Select
                 placeholder={t('createMultisigAccount.signatorySelection')}
                 value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}

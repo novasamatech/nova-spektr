@@ -103,7 +103,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
 
           <div className="flex gap-x-6">
             <Box width="100%">
-              <Field text={t('createMultisigAccount.walletNameLabel')}>
+              <Field text={t('createMultisigAccount.walletName')}>
                 <Input
                   autoFocus
                   height="md"
