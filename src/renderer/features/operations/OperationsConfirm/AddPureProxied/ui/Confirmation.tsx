@@ -25,7 +25,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const confirms = useUnit(confirmModel.$confirms);
   const confirmStore = useStoreMap({
-    store: confirmModel.$confirms,
+    store: confirmModel.$confirmStore,
     keys: [id],
     fn: (confirms, [id]) => confirms[id],
   });
