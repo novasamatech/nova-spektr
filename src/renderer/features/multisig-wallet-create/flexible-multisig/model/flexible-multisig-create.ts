@@ -122,7 +122,7 @@ const $coreTx = combine(
   },
 );
 
-const $fakeWithProxy = combine(
+const $fakeProxyTx = combine(
   {
     chain: formModel.$chain,
     isConnected: formModel.$isChainConnected,
@@ -171,7 +171,7 @@ const $fakeFinalTx = combine(
 
 const { $: $proxyFee, $pending: $pendingProxyFee } = createFeeCalculator({
   $api: $api,
-  $transaction: $fakeWithProxy,
+  $transaction: $fakeProxyTx,
 });
 
 const { $: $multisigFee, $pending: $pendingMultisigFee } = createFeeCalculator({
@@ -181,11 +181,7 @@ const { $: $multisigFee, $pending: $pendingMultisigFee } = createFeeCalculator({
 
 const $fee = combine($proxyFee, $multisigFee, (proxyFee, multisigFee) => multisigFee.add(proxyFee));
 
-const $pendingFee = combine(
-  $pendingProxyFee,
-  $pendingMultisigFee,
-  (pendingProxyFee, pendingMultisigFee) => pendingProxyFee && pendingMultisigFee,
-);
+const $pendingFee = or($pendingProxyFee, $pendingMultisigFee);
 
 const { $tx, $route } = createComplexTxStore({
   api: $api,
@@ -193,7 +189,7 @@ const { $tx, $route } = createComplexTxStore({
   signatory: $signer,
   accounts: accounts.$list,
   chain: formModel.$chain,
-  transaction: $fakeWithProxy,
+  transaction: $fakeProxyTx,
 });
 
 const $signerBalance = combine(
