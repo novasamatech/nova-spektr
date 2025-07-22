@@ -17,7 +17,6 @@ type Props = IconProps & {
   hideAddress?: boolean;
   variant?: 'full' | 'truncate' | 'short';
   testId?: string;
-  className?: string;
 };
 
 export const Address = memo(
@@ -30,7 +29,6 @@ export const Address = memo(
     address,
     testId = 'Address',
     hideAddress,
-    className,
   }: Props) => {
     const titleNode = title ? <span className="w-fit max-w-full truncate">{title}</span> : null;
 
@@ -39,7 +37,6 @@ export const Address = memo(
         className={cnTw('w-full', {
           'text-help-text text-text-tertiary': title && !hideAddress,
           hidden: title && hideAddress,
-          className,
         })}
       >
         <Hash value={address} variant={variant} />
