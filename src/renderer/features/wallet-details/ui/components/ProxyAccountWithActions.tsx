@@ -3,7 +3,7 @@ import { useI18n } from '@/shared/i18n';
 import { copyToClipboard, toAddress } from '@/shared/lib/utils';
 import { DropdownIconButton, FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { type DropdownIconButtonOption } from '@/shared/ui/types';
-import { Hash } from '@/shared/ui-entities';
+import { Address } from '@/shared/ui-entities';
 import { Box, Popover } from '@/shared/ui-kit';
 import { ProxyAccount as ProxyAccountComponent } from '@/entities/proxy';
 
@@ -51,7 +51,7 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemo
                       <FootnoteText className="text-text-tertiary">{t('general.explorers.addressTitle')}</FootnoteText>
                       <Box direction="row" verticalAlign="center" gap={3}>
                         <HelpText className="text-text-secondary">
-                          <Hash value={proxyAddress} variant="full" />
+                          <Address address={proxyAddress} variant="full" />
                         </HelpText>
                         <IconButton
                           className="shrink-0"
@@ -66,15 +66,17 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemo
                       <FootnoteText className="text-text-tertiary">
                         {t('walletDetails.common.proxiedAddressTitle')}
                       </FootnoteText>
-                      <div className="flex items-center gap-x-2">
-                        <HelpText className="break-all text-text-secondary">{proxiedAddress}</HelpText>
+                      <Box direction="row" verticalAlign="center" gap={3}>
+                        <HelpText className="text-text-secondary">
+                          <Address address={proxiedAddress} variant="full" />
+                        </HelpText>
                         <IconButton
                           className="shrink-0"
                           name="copy"
                           size={20}
                           onClick={() => copyToClipboard(proxiedAddress)}
                         />
-                      </div>
+                      </Box>
                     </Box>
                   </Popover.Content>
                 </Popover>
