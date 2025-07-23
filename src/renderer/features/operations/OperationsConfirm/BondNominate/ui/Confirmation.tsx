@@ -36,22 +36,25 @@ export const Confirmation = ({
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const confirms = useUnit(confirmModel.$confirms);
+  const confirm = useStoreMap({
+    store: confirmModel.$confirmMap,
+    keys: [id],
+    fn: (value, [id]) => value[id],
+  });
 
-  const confirmStore = confirms[id];
+  const initiatorWallet = confirm.wallets.initiator;
 
-  const initiatorWallet = confirmStore.wallets.initiator;
-
-  const signerWallet = confirmStore.wallets.signatory;
+  const signerWallet = confirm.wallets.signatory;
 
   const api = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirmStore?.meta.chain?.chainId],
+    keys: [confirm?.meta.chain?.chainId],
     fn: (value, [chainId]) => value?.[chainId],
   });
 
   const timelineApi = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirmStore?.meta.chain.additional?.[AdditionalType.TIMELINE_CHAIN] ?? confirmStore?.meta.chain?.chainId],
+    keys: [confirm?.meta.chain.additional?.[AdditionalType.TIMELINE_CHAIN] ?? confirm?.meta.chain?.chainId],
     fn: (value, [chainId]) => value?.[chainId],
   });
 
@@ -60,7 +63,7 @@ export const Confirmation = ({
 
   const identities = useStoreMap({
     store: identity.$list,
-    keys: [confirmStore?.meta.chain?.chainId],
+    keys: [confirm?.meta.chain?.chainId],
     fn: (value, [chainId]) => value[chainId] ?? {},
   });
 
@@ -68,17 +71,17 @@ export const Confirmation = ({
 
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  if (!confirmStore || !initiatorWallet) {
+  if (!confirm || !initiatorWallet) {
     return null;
   }
 
   const amountValue = config.withFormatAmount
-    ? formatAmount(confirmStore.meta.amount, confirmStore.meta.asset.precision)
-    : confirmStore.meta.amount;
+    ? formatAmount(confirm.meta.amount, confirm.meta.asset.precision)
+    : confirm.meta.amount;
 
-  const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount);
+  const multisigAccount = confirm.meta.route.find(accountUtils.isMultisigAccount);
 
-  const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
+  const nativeAsset = getNativeAsset(confirm.meta.chain.assets);
 
   return (
     <>
@@ -89,20 +92,20 @@ export const Confirmation = ({
           <div className="flex flex-col items-center gap-y-1">
             <AssetBalance
               value={amountValue}
-              asset={confirmStore.meta.asset}
+              asset={confirm.meta.asset}
               className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary"
             />
-            <AssetFiatBalance asset={confirmStore.meta.asset} amount={amountValue} className="text-headline" />
+            <AssetFiatBalance asset={confirm.meta.asset} amount={amountValue} className="text-headline" />
           </div>
         </div>
 
         <MultisigExistsAlert active={isMultisigExists} />
 
         <TransactionDetails
-          chain={confirmStore.meta.chain}
+          chain={confirm.meta.chain}
           wallets={wallets}
           initiators={confirms.map((confirm) => confirm.meta.initiator)}
-          signatory={confirmStore.meta.signatory}
+          signatory={confirm.meta.signatory}
         >
           <DetailRow label={t('staking.confirmation.validatorsLabel')}>
             <button
@@ -111,7 +114,7 @@ export const Confirmation = ({
               onClick={toggleValidators}
             >
               <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-                <CaptionText className="text-white">{confirmStore.meta.validators.length}</CaptionText>
+                <CaptionText className="text-white">{confirm.meta.validators.length}</CaptionText>
               </div>
               <Icon className="group-hover:text-icon-hover" name="info" size={16} />
             </button>
@@ -120,12 +123,8 @@ export const Confirmation = ({
           <hr className="w-full border-filter-border pr-2" />
 
           <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
-            {confirmStore.meta.destination ? (
-              <Account
-                accountId={toAccountId(confirmStore.meta.destination)}
-                chain={confirmStore.meta.chain}
-                variant="short"
-              />
+            {confirm.meta.destination ? (
+              <Account accountId={toAccountId(confirm.meta.destination)} chain={confirm.meta.chain} variant="short" />
             ) : (
               <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
             )}
@@ -152,8 +151,8 @@ export const Confirmation = ({
               }
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.meta.multisigDeposit} asset={nativeAsset} />
-                <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.multisigDeposit} />
+                <AssetBalance value={confirm.meta.multisigDeposit} asset={nativeAsset} />
+                <AssetFiatBalance asset={nativeAsset} amount={confirm.meta.multisigDeposit} />
               </div>
             </DetailRow>
           )}
@@ -167,8 +166,8 @@ export const Confirmation = ({
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.meta.fee} asset={nativeAsset} />
-              <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.fee} />
+              <AssetBalance value={confirm.meta.fee} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={confirm.meta.fee} />
             </div>
           </DetailRow>
 
@@ -178,8 +177,8 @@ export const Confirmation = ({
               label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.meta.totalFee} asset={nativeAsset} />
-                <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.totalFee} />
+                <AssetBalance value={confirm.meta.totalFee} asset={nativeAsset} />
+                <AssetFiatBalance asset={nativeAsset} amount={confirm.meta.totalFee} />
               </div>
             </DetailRow>
           )}
@@ -224,7 +223,7 @@ export const Confirmation = ({
 
       <SelectedValidatorsModal
         isOpen={isValidatorsOpen}
-        validators={confirmStore.meta.validators}
+        validators={confirm.meta.validators}
         identities={identities}
         onClose={toggleValidators}
       />

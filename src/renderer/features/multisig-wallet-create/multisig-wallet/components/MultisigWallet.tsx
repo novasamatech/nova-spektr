@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type ComponentProps, type PropsWithChildren } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -25,6 +25,7 @@ type Props = PropsWithChildren<{
 }>;
 
 export const MultisigWallet = ({ isOpen, onToggle, onGoBack, children }: Props) => {
+  useGate(flowModel.flow);
   const { t } = useI18n();
 
   const activeStep = useUnit(flowModel.$step);

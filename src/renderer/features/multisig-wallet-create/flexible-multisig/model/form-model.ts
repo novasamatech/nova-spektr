@@ -38,6 +38,15 @@ const form = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
+const $multisigChains = combine(
+  { chains: networkModel.$chains, statuses: networkModel.$connectionStatuses },
+  ({ chains, statuses }) => {
+    return Object.values(chains).filter(
+      c => networkUtils.isMultisigSupported(c.options) && networkUtils.isConnectedStatus(statuses[c.chainId]),
+    );
+  },
+);
+
 const $chain = combine(
   {
     chainId: form.fields.chainId.$value,
@@ -202,6 +211,7 @@ sample({
 
 export const formModel = {
   $chain,
+  $multisigChains,
   form,
   $multisigAccountId,
   $multisigAlreadyExists,
