@@ -421,6 +421,7 @@ export const flexibleMultisigModel = {
   $pendingFee: or($pendingProxyFee, $pendingMultisigFee),
   $proxyDeposit,
   $existentialDeposit,
+  $totalDeposit,
   $isLoading: or($pendingProxyFee, $pendingMultisigFee, getExistentialDepositFx.pending),
   $isEnoughBalance,
 

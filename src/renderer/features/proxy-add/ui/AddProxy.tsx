@@ -61,7 +61,7 @@ export const AddProxy = ({ wallet }: Props) => {
   }
 
   return (
-    <Modal size="md" height="full" isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size="md" height="fit" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{getModalTitle(step, chain)}</Modal.Title>
       <Modal.Content>
         {addProxyUtils.isInitStep(step) && <AddProxyForm onGoBack={closeModal} />}
