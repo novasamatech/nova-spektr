@@ -50,11 +50,10 @@ const subscribePureEventFx = createEffect(({ api, accounts }: SubscribePureEvent
 
         if (!data || !accounts.some(a => a.accountId === accountId)) return;
 
+        unsubscribe.then(fn => fn());
         resolve(data.pure);
       },
     );
-
-    unsubscribe.then(fn => fn());
   });
 });
 

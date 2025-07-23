@@ -186,7 +186,6 @@ const $fakeFinalExtrinsic = combine($api, $fakeFinalTx, (api, tx) => {
   return getExtrinsic[tx.type](tx.args, api);
 });
 
-
 const { $: $multisigFee, $pending: $pendingMultisigFee } = createFeeCalculator({
   extrinsic: $fakeFinalExtrinsic,
 });
