@@ -1,4 +1,3 @@
-import { encodeAddress } from '@polkadot/util-crypto';
 import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
@@ -582,7 +581,7 @@ function buildAddProxy({ chain, accountId, delegateAccountId, type }: AddProxyPa
     accountId: accountId,
     type: TransactionType.ADD_PROXY,
     args: {
-      delegate: encodeAddress(delegateAccountId, chain.addressPrefix),
+      delegate: delegateAccountId,
       proxyType: type,
       delay: 0,
     },
