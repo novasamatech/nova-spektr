@@ -571,7 +571,7 @@ function buildCreatePureProxy({ chain, accountId }: CreateProxyPureParams): Tran
 type AddProxyParams = {
   chain: Chain;
   accountId: AccountId;
-  delegateAccountId: AccountId;
+  delegateAccountId: AccountId | Address;
   type: ProxyType;
 };
 

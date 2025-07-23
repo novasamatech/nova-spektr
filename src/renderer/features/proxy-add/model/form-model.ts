@@ -5,14 +5,7 @@ import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
-import {
-  type Address,
-  type Chain,
-  type ProxyType,
-  type Transaction,
-  TransactionType,
-  type Wallet,
-} from '@/shared/core';
+import { type Address, type Chain, type ProxyType, type Transaction, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
@@ -31,6 +24,7 @@ import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } f
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxiesUtils } from '@/features/proxies';
 
@@ -355,16 +349,12 @@ const $coreTx = combine(
   ({ form, signatory, isConnected }): Transaction | null => {
     if (!isConnected || !signatory || !form.delegate || !form.proxyType || !form.chain) return null;
 
-    return {
-      chainId: form.chain.chainId,
+    return transactionBuilder.buildAddProxy({
+      chain: form.chain,
       accountId: signatory.accountId,
-      type: TransactionType.ADD_PROXY,
-      args: {
-        delegate: toAddress(form.delegate, { prefix: form.chain.addressPrefix }),
-        proxyType: form.proxyType,
-        delay: 0,
-      },
-    };
+      delegateAccountId: form.delegate,
+      type: form.proxyType,
+    });
   },
 );
 
