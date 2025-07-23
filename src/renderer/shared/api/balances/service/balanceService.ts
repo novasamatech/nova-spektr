@@ -118,6 +118,10 @@ function subscribeNativeAssetsChange(
     for (const [index, systemAccountInfo] of data.entries()) {
       let frozen: BN;
 
+      if (systemAccountInfo.data.free.isEmpty && systemAccountInfo.data.reserved.isEmpty) {
+        continue;
+      }
+
       // Some chains still use "feeFrozen" or "miscFrozen" (HKO, PARA, XRT, ZTG, SUB)
       const accountData = systemAccountInfo.data as unknown as AccountData;
       if (accountData.miscFrozen || accountData.feeFrozen) {
@@ -133,8 +137,8 @@ function subscribeNativeAssetsChange(
         chainId: chain.chainId,
         assetId: assetId.toString(),
         verified: true,
-        free: systemAccountInfo.data.free.toBn(),
-        reserved: systemAccountInfo.data.reserved.toBn(),
+        free: systemAccountInfo.data.free.isEmpty ? undefined : systemAccountInfo.data.free.toBn(),
+        reserved: systemAccountInfo.data.reserved.isEmpty ? undefined : systemAccountInfo.data.reserved.toBn(),
         frozen,
       });
     }
