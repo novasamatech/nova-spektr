@@ -9,7 +9,7 @@ import { transactionService } from '@/entities/transaction';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { type SubmitInput, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SubmitInputDeprecated, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type BondExtraConfirm, bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { Step, type WalletDataShards } from '../lib/types';
 
@@ -204,7 +204,7 @@ const submitEvent = sample({
       account: formParams.initiator,
       coreTxs: [coreTx],
       wrappedTxs: [tx],
-    } satisfies SubmitInput;
+    } satisfies SubmitInputDeprecated;
   }
 });
 

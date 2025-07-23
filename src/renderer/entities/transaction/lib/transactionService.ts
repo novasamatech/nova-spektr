@@ -3,11 +3,10 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { GenericSignerPayload } from '@polkadot/types';
 import { type ExtrinsicEra, type Weight } from '@polkadot/types/interfaces';
-import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { hexToU8a } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 
 import {
-  type Account,
   type Address,
   type HexString,
   type MultisigAccount,
@@ -16,7 +15,6 @@ import {
   type ProxiedAccount,
   type ProxyTxWrapper,
   type Transaction,
-  type TransactionType,
   type TxWrapper,
   type Wallet,
   WrapperKind,
@@ -25,12 +23,9 @@ import { type TxMetadata, createTxMetadata, dictionary, nullable } from '@/share
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount, type Extrinsic, accountService } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
-import { LEAVE_SOME_SPACE_MULTIPLIER } from './common/constants';
-import { type ExtrinsicResultParams } from './common/types';
-import { decodeDispatchError } from './common/utils';
 import { getExtrinsic, wrapAsMulti, wrapAsProxy } from './extrinsicService';
 
 export const transactionService = {
@@ -46,7 +41,6 @@ export const transactionService = {
 
   createPayload,
   createPayloadWithMetadata,
-  signAndSubmit,
 
   getTxWrappers,
   getWrappedTransaction,
@@ -54,7 +48,6 @@ export const transactionService = {
   getExtrinsicWeight,
   getTxWeight,
   verifySignature,
-  splitTxsByWeight,
 
   logPayload,
 };
@@ -78,101 +71,6 @@ async function getExtrinsicFee(
   const paymentInfo = await extrinsic.paymentInfo(address, options);
 
   return paymentInfo.partialFee.toBn();
-}
-
-type SubmitResult =
-  | {
-      executed: true;
-      params: ExtrinsicResultParams;
-    }
-  | {
-      executed: false;
-      error: string;
-    };
-
-async function signAndSubmit(
-  transaction: Transaction,
-  signature: HexString,
-  payload: Uint8Array,
-  api: ApiPromise,
-): Promise<SubmitResult> {
-  return new Promise<SubmitResult>((resolve) => {
-    try {
-      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-      const accountId = transaction.accountId;
-
-      extrinsic.addSignature(accountId, hexToU8a(signature), payload);
-      extrinsic
-        .send((result) => {
-          const { status, events, txHash, txIndex, blockNumber, dispatchError, internalError } = result as any;
-
-          const actualTxHash = txHash.toHex();
-          const extrinsicIndex = txIndex;
-          let isFinalApprove = false;
-          let multisigError = '';
-
-          if (internalError) {
-            resolve({
-              executed: false,
-              error: internalError.message,
-            });
-            return;
-          }
-
-          if (dispatchError) {
-            resolve({
-              executed: false,
-              error: decodeDispatchError(dispatchError, api),
-            });
-            return;
-          }
-
-          if (status.isInvalid) {
-            resolve({
-              executed: false,
-              error: 'Invalid transaction',
-            });
-          }
-
-          if (status.isInBlock) {
-            for (const { event, phase } of events) {
-              if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
-
-              if (api.events.multisig.MultisigExecuted.is(event)) {
-                isFinalApprove = true;
-                multisigError = event.data[4].isErr ? decodeDispatchError(event.data[4].asErr, api) : '';
-              }
-
-              if (api.events.system.ExtrinsicSuccess.is(event)) {
-                resolve({
-                  executed: true,
-                  params: {
-                    timepoint: {
-                      index: extrinsicIndex,
-                      height: blockNumber.toNumber(),
-                    },
-                    extrinsicHash: actualTxHash,
-                    isFinalApprove,
-                    multisigError,
-                  },
-                });
-              }
-            }
-          }
-        })
-        .catch((error) => {
-          resolve({
-            executed: false,
-            error: (error as Error).message || 'Error',
-          });
-        });
-    } catch (error) {
-      resolve({
-        executed: false,
-        error: (error as Error).message || 'Error',
-      });
-    }
-  });
 }
 
 function getMultisigDeposit(threshold: MultisigThreshold, api: ApiPromise): string {
@@ -268,7 +166,7 @@ function getMultisigWrapper({ wallets, account, signatories = [] }: Omit<TxWrapp
 }
 
 function getProxyWrapper({ wallets, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
-  const proxiesMap = wallets.reduce<{ wallet: Wallet; account: Account }[]>((acc, wallet) => {
+  const proxiesMap = wallets.reduce<{ wallet: Wallet; account: AnyAccount }[]>((acc, wallet) => {
     const match = wallet.accounts.find((a) => a.accountId === (account as ProxiedAccount).proxyAccountId);
 
     if (match) {
@@ -335,10 +233,10 @@ function getWrappedTransaction({ api, transaction, txWrappers }: WrapperParams):
   );
 }
 
-async function createPayload(transaction: Transaction, api: ApiPromise) {
-  const metadata = await createTxMetadata(transaction.accountId, api);
+async function createPayload(extrinsic: Extrinsic, signatory: AccountId, api: ApiPromise) {
+  const metadata = await createTxMetadata(signatory, api);
 
-  return createPayloadWithMetadata(transaction, api, metadata);
+  return createPayloadWithMetadata(extrinsic, api, metadata);
 }
 
 function createEra(api: ApiPromise, blockNumber: HexString) {
@@ -346,10 +244,7 @@ function createEra(api: ApiPromise, blockNumber: HexString) {
   return api.registry.createTypeUnsafe<ExtrinsicEra>('ExtrinsicEra', [{ current: blockNumber, period: mortalLength }]);
 }
 
-function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { signerPayloadBase }: TxMetadata) {
-  // TODO we should get extrinsic from arguments, not construct it inside
-  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-
+function createPayloadWithMetadata(extrinsic: Extrinsic, api: ApiPromise, { signerPayloadBase }: TxMetadata) {
   if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
     signerPayloadBase.assetId = undefined;
   }
@@ -375,8 +270,7 @@ function createPayloadWithMetadata(transaction: Transaction, api: ApiPromise, { 
     .toHex();
 
   return {
-    type: transaction.type,
-    args: transaction.args,
+    extrinsic,
     unsigned: signingPayload,
     hexPayload: signingPayloadHex,
     payload: hexToU8a(signingPayloadHex),
@@ -412,57 +306,10 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
   }
 }
 
-async function getBlockLimit(api: ApiPromise): Promise<BN> {
-  const maxExtrinsicWeight = api.consts.system.blockWeights.perClass.normal.maxExtrinsic.value.refTime.toBn();
-  const maxBlockWeight = api.consts.system.blockWeights.maxBlock.refTime.toBn();
-  const blockWeight = await api.query.system.blockWeight();
-
-  const totalWeight = blockWeight.normal.refTime
-    .toBn()
-    .add(blockWeight.operational.refTime.toBn())
-    .add(blockWeight.mandatory.refTime.toBn());
-
-  const freeSpaceInLastBlock = maxBlockWeight.sub(totalWeight);
-
-  return BN.min(
-    maxExtrinsicWeight.muln(LEAVE_SOME_SPACE_MULTIPLIER),
-    freeSpaceInLastBlock.muln(LEAVE_SOME_SPACE_MULTIPLIER),
-  );
-}
-
-async function splitTxsByWeight(api: ApiPromise, txs: Transaction[], options?: Partial<SignerOptions>) {
-  const blockLimit = await getBlockLimit(api);
-  const result: Transaction[][] = [[]];
-
-  let totalRefTime = BN_ZERO;
-
-  const txsWeights: Partial<Record<TransactionType, Weight>> = {};
-
-  for (const tx of txs) {
-    const weight = txsWeights[tx.type] || (await getTxWeight(tx, api, options));
-
-    if (!txsWeights[tx.type]) {
-      txsWeights[tx.type] = weight;
-    }
-
-    totalRefTime = totalRefTime.add(weight.refTime.toBn());
-
-    if (totalRefTime.lt(blockLimit) && result.length > 0) {
-      result[result.length - 1].push(tx);
-    } else {
-      result.push([tx]);
-
-      totalRefTime = weight.refTime.toBn();
-    }
-  }
-
-  return result;
-}
-
 function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
   console.groupCollapsed('Transactions');
   for (const [index, log] of info.entries()) {
-    console.groupCollapsed(`Operation ${index}: ${log.type}`);
+    console.groupCollapsed(`Operation ${index}: ${log.extrinsic.method.section}.${log.extrinsic.method.method}`);
 
     console.table({
       address: log.unsigned.address,
@@ -471,7 +318,8 @@ function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
     });
 
     console.group('args');
-    console.table(log.args);
+    // @ts-expect-error args field is not defined in json type
+    console.table(log.extrinsic.method.toHuman().args);
     console.groupEnd();
 
     console.groupCollapsed('signer payload');

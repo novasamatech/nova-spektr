@@ -1,4 +1,3 @@
-import { type ApiPromise } from '@polkadot/api';
 import { u8aConcat } from '@polkadot/util';
 import init, { Encoder } from 'raptorq/raptorq';
 import { useEffect, useState } from 'react';
@@ -9,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { accountUtils, walletUtils } from '@/entities/wallet';
-import { type SigningPayload } from '@/features/operations/OperationSign';
+import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
 import { transactionService } from '../../lib';
 import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
 import { createMultipleSignPayload, createSubstrateSignPayload } from '../QrCode/QrGenerator/common/utils';
@@ -17,8 +16,7 @@ import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGenerator
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
 
 type Props = {
-  apis: Record<ChainId, ApiPromise>;
-  signingPayloads: SigningPayload[];
+  signingPayloads: ExtrinsicSigningPayload[];
   countdown: number;
   signerWallet: Wallet;
   onGoBack: () => void;
@@ -27,7 +25,6 @@ type Props = {
 };
 
 export const ScanMultiframeQr = ({
-  apis,
   signingPayloads,
   signerWallet,
   countdown,
@@ -51,28 +48,28 @@ export const ScanMultiframeQr = ({
     const metadataMap: Record<Address, Record<ChainId, TxMetadata>> = {};
 
     for (const signingPayload of signingPayloads) {
-      const accountId = signingPayload.account.accountId;
+      const accountId = signingPayload.signatory.accountId;
+      const chainId = signingPayload.chain.chainId;
 
       if (!metadataMap[accountId]) {
         metadataMap[accountId] = {};
       }
 
-      if (!metadataMap[accountId][signingPayload.chain.chainId]) {
-        metadataMap[accountId][signingPayload.chain.chainId] = await createTxMetadata(
-          signingPayload.account.accountId,
-          apis[signingPayload.chain.chainId],
+      if (!metadataMap[accountId][chainId]) {
+        metadataMap[accountId][chainId] = await createTxMetadata(
+          signingPayload.signatory.accountId,
+          signingPayload.api,
         );
       }
     }
 
     const transactionPromises = signingPayloads.map((signingPayload) => {
       const chainId = signingPayload.chain.chainId;
-      const api = apis[chainId];
-      const accountId = signingPayload.account.accountId;
+      const accountId = signingPayload.signatory.accountId;
 
       const info = transactionService.createPayloadWithMetadata(
-        signingPayload.transaction,
-        api,
+        signingPayload.extrinsic,
+        signingPayload.api,
         metadataMap[accountId][chainId],
       );
 
@@ -80,27 +77,26 @@ export const ScanMultiframeQr = ({
 
       const address = walletUtils.isPolkadotVault(signerWallet)
         ? toAddress(signerWallet.rootAccountId, { prefix: 1 })
-        : toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
+        : toAddress(signingPayload.signatory.accountId, { prefix: signingPayload.chain.addressPrefix });
 
       const derivationPath =
-        accountUtils.isVaultShardAccount(signingPayload.account) ||
-        accountUtils.isVaultChainAccount(signingPayload.account)
-          ? signingPayload.account.derivationPath
+        accountUtils.isVaultShardAccount(signingPayload.signatory) ||
+        accountUtils.isVaultChainAccount(signingPayload.signatory)
+          ? signingPayload.signatory.derivationPath
           : undefined;
 
       const signPayload = createSubstrateSignPayload(
         address,
         info.payload,
         chainId,
-        signingPayload.account.signingType,
+        signingPayload.signatory.signingType,
         derivationPath,
-        signingPayload.account.cryptoType,
+        signingPayload.signatory.cryptoType,
       );
 
       return {
         info,
         signPayload,
-        transactionData: signingPayload.transaction,
       };
     });
 

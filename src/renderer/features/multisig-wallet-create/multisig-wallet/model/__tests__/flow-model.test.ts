@@ -5,6 +5,7 @@ import { ConnectionStatus } from '@/shared/core';
 import { Step, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import * as networkDomain from '@/domains/network';
+import { type Extrinsic } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -99,6 +100,7 @@ describe.skip('Create multisig wallet flow-model', () => {
     await allSettled(signModel.output.formSubmitted, {
       scope,
       params: {
+        extrinsics: [{}] as unknown as Extrinsic[],
         signatures: ['0x00'],
         txPayloads: [{}] as unknown as Uint8Array[],
       },
