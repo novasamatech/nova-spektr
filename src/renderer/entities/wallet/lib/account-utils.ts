@@ -132,6 +132,11 @@ function isChainIdMatch(account: AnyAccount, chainId: ChainId): boolean {
   return account.chainId === chainId;
 }
 
+/**
+ * Checks if account is available on chain
+ *
+ * @deprecated Use accountService.isAccountAvailableOnChain instead
+ */
 function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
   return accountService.isChainAccount(account)
     ? isChainIdMatch(account, chain.chainId)

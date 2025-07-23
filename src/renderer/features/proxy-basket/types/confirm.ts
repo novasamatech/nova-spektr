@@ -20,20 +20,6 @@ export type AddProxyInput = {
   coreTx?: Transaction | null;
 };
 
-export type AddPureProxiedInput = {
-  id?: number;
-  chain: Chain;
-  account: AnyAccount;
-  proxiedAccount?: ProxiedAccount;
-  signatory: AnyAccount | null;
-  description: string;
-
-  proxyDeposit: string;
-  fee: string;
-  multisigDeposit: string;
-  coreTx?: Transaction | null;
-};
-
 export type RemoveProxyInput = {
   chain: Chain;
   account: AnyAccount;

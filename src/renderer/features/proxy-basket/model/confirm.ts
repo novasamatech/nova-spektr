@@ -11,12 +11,13 @@ import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
   type AddProxyConfirm,
+  type AddPureProxiedConfirm,
   addProxyConfirmModel,
   addPureProxiedConfirmModel,
   removeProxyConfirmModel,
   removePureProxiedConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import { type AddPureProxiedInput, type RemoveProxyInput, type RemovePureProxiedInput } from '../types/confirm';
+import { type RemoveProxyInput, type RemovePureProxiedInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -70,14 +71,15 @@ const prepareAddPureProxiedDataFx = createEffect(async ({ transaction, accounts,
   return {
     id: transaction.id,
     chain,
-    account,
-    amount: transaction.coreTx.args.value,
-    description: '',
+    initiator: account!,
     fee,
     proxyDeposit,
     multisigDeposit: '0',
-    signatory: null,
-  } as AddPureProxiedInput;
+    signatory: account!,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    route: transaction.route,
+  } satisfies AddPureProxiedConfirm;
 });
 
 const prepareRemoveProxyDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -200,7 +202,7 @@ sample({
 sample({
   clock: prepareAddPureProxiedDataFx.doneData,
   fn: (data) => [data],
-  target: addPureProxiedConfirmModel.events.formInitiated,
+  target: addPureProxiedConfirmModel.init,
 });
 
 sample({
