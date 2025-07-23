@@ -17,7 +17,6 @@ import { basketNavigationFeature } from '@/features/basket-navigation';
 import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
-import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
@@ -73,7 +72,6 @@ export const bootstrap = () => {
     callDataExecuteFeature,
     notificationsNavigationFeature,
     settingsNavigationFeature,
-    flexibleMultisigNavigationFeature,
     basketNavigationFeature,
     stakingNavigationFeature,
     governanceNavigationFeature,
