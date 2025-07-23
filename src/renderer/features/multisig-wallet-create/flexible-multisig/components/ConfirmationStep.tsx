@@ -22,9 +22,8 @@ export const ConfirmationStep = ({ onToggle }: Props) => {
   const signerWallet = useUnit(flexibleMultisigModel.$signerWallet);
   const signer = useUnit(flexibleMultisigModel.$signer);
 
-  const proxyAddress = useUnit(confirmModel.$proxyAddress);
-  const pendingProxyCreate = useUnit(confirmModel.$pendingProxyCreate);
-
+  const proxyAddress = useUnit(assignModel.$proxyAddress);
+  const pendingProxyCreate = useUnit(assignModel.$pendingProxyCreate);
   const flexibleMultisigCreated = useUnit(assignModel.$flexibleMultisigCreated);
 
   if (!signer || !signerWallet) return;

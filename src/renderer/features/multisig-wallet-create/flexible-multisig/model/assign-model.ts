@@ -1,20 +1,21 @@
 import { type ApiPromise } from '@polkadot/api';
-import { attach, combine, createEvent, createStore, sample } from 'effector';
+import { attach, combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { sortBy } from 'lodash';
 import { spread } from 'patronum';
+import { z } from 'zod';
 
-import { AccountType, CryptoType, type NoID, ProxyVariant, SigningType, WalletType } from '@/shared/core';
+import { AccountType, type Address, CryptoType, type NoID, ProxyVariant, SigningType, WalletType } from '@/shared/core';
 import { type FlexibleMultisigAccount, type FlexibleProxiedAccount } from '@/shared/core/types/account';
 import { Step, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { createComplexTxStore } from '@/shared/transactions';
-import { accounts } from '@/domains/network';
+import { type AnyAccount, accounts } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 
-import { confirmModel } from './confirm-model';
 import { flexibleMultisigFeature } from './feature';
 import { flexibleMultisigModel } from './flexible-multisig-create';
 import { formModel } from './form-model';
@@ -26,18 +27,82 @@ const $api = combine(flexibleMultisigFeature.state, (state): ApiPromise | null =
   return state.data.api;
 });
 
-const $confirmMeta = confirmModel.$confirmMap.map(s => (nonNullable(s[0]) ? s[0].meta : null));
-const $signer = $confirmMeta.map(m => (nonNullable(m) ? m.signatory : null));
+const $proxyAddress = createStore<Address | null>(null);
+
+type SubscribePureEvent = {
+  api: ApiPromise;
+  accounts: AnyAccount[];
+};
+
+const subscribePureEventFx = createEffect(({ api, accounts }: SubscribePureEvent): Promise<Address> => {
+  return new Promise(resolve => {
+    const eventSchema = z.object({
+      proxyType: z.string(),
+      who: z.string(),
+      pure: z.string(),
+    });
+
+    const unsubscribe = polkadotjsHelpers.subscribeSystemEvents(
+      { api, section: `proxy`, methods: ['PureCreated'] },
+      event => {
+        const data = eventSchema.parse(event.data.toHuman());
+        const accountId = toAccountId(data.who);
+
+        if (!data || !accounts.some(a => a.accountId === accountId)) return;
+
+        resolve(data.pure);
+      },
+    );
+
+    unsubscribe.then(fn => fn());
+  });
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    api: $api,
+    accounts: accounts.$list,
+    proxyAddress: $proxyAddress,
+  },
+  filter: ({ api, proxyAddress }, results) => {
+    return (
+      nonNullable(api) && nullable(proxyAddress) && results.some(({ result }) => submitUtils.isSuccessResult(result))
+    );
+  },
+  fn: ({ api, accounts }) => {
+    return {
+      api: api!,
+      accounts,
+    };
+  },
+  target: subscribePureEventFx,
+});
+
+sample({
+  clock: subscribePureEventFx.doneData,
+  target: $proxyAddress,
+});
 
 const $coreTx = combine(
   {
-    meta: $confirmMeta,
+    signatory: flexibleMultisigModel.$signer,
+    totalDeposit: flexibleMultisigModel.$totalDeposit,
+    threshold: formModel.form.fields.threshold.$value,
+    chain: formModel.$chain,
+    multisigAccountId: formModel.$multisigAccountId,
     signatories: signatoryModel.$signatories,
-    proxyAddress: confirmModel.$proxyAddress,
+    proxyAddress: $proxyAddress,
   },
-  ({ signatories, meta, proxyAddress }) => {
-    if (nullable(meta) || nullable(proxyAddress)) return null;
-    const { chain, totalDeposit, threshold, signatory, multisigAccountId } = meta;
+  ({ signatories, chain, totalDeposit, threshold, signatory, multisigAccountId, proxyAddress }) => {
+    if (
+      nullable(totalDeposit) ||
+      nullable(multisigAccountId) ||
+      nullable(signatory) ||
+      nullable(chain) ||
+      nullable(proxyAddress)
+    )
+      return null;
 
     const signatoriesWrapped = signatories
       .filter(a => a.address !== '')
@@ -50,7 +115,7 @@ const $coreTx = combine(
       multisigAccountId: toAccountId(multisigAccountId),
       threshold,
       proxyAccountId: toAccountId(proxyAddress),
-      proxyDeposit: totalDeposit,
+      proxyDeposit: totalDeposit.toString(),
     });
   },
 );
@@ -58,8 +123,8 @@ const $coreTx = combine(
 // Second operation
 const { $tx } = createComplexTxStore({
   api: $api,
-  initiator: $confirmMeta.map(m => (nonNullable(m) ? m.initiator : null)),
-  signatory: $signer,
+  initiator: flexibleMultisigModel.$signer,
+  signatory: flexibleMultisigModel.$signer,
   accounts: accounts.$list,
   chain: formModel.$chain,
   transaction: $coreTx,
@@ -72,7 +137,7 @@ sample({
   source: {
     chain: formModel.$chain,
     tx: $tx,
-    signer: $signer,
+    signer: flexibleMultisigModel.$signer,
   },
   filter: ({ chain, tx, signer }) => nonNullable(chain) && nonNullable(tx) && nonNullable(signer),
   fn: ({ chain, tx, signer }) => ({
@@ -100,7 +165,7 @@ sample({
     chain: formModel.$chain,
     coreTx: $coreTx,
     tx: $tx,
-    signer: $signer,
+    signer: flexibleMultisigModel.$signer,
   },
   filter: ({ chain, coreTx, tx, signer }) => {
     return nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(signer);
@@ -149,7 +214,7 @@ sample({
     chain: formModel.$chain,
     flexibleMultisigCreated: $flexibleMultisigCreated,
     multisigAccountId: formModel.$multisigAccountId,
-    proxyAddress: confirmModel.$proxyAddress,
+    proxyAddress: $proxyAddress,
   },
   filter: ({ flexibleMultisigCreated, chain, multisigAccountId, proxyAddress }) => {
     return nonNullable(chain) && flexibleMultisigCreated && nonNullable(multisigAccountId) && nonNullable(proxyAddress);
@@ -207,6 +272,8 @@ sample({
 
 export const assignModel = {
   $flexibleMultisigCreated,
+  $proxyAddress,
 
   startSigningFlexible,
+  $pendingProxyCreate: subscribePureEventFx.pending,
 };
