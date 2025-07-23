@@ -173,6 +173,7 @@
     "flexibleMultisig": {
       "assignControl": "Assign control",
       "assignControlDescription": "Your Multisig will be assigned to control Pure Proxy.",
+      "controlAssigned": "Control assigned",
       "creatingFlexibleProxy": "Creating flexible multisig",
       "description": "A multisig wallet used to create a flexible multisig (proxied) is not displayed in the multisig wallet group to prevent duplication. Use the flexible multisig for all signing operations",
       "existentialDeposit": "Existential deposit:",
@@ -185,6 +186,7 @@
       "proxyDeposit": "Proxy deposit:",
       "pureProxyConfirm": "Pure Proxy will be created.",
       "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your flexible multisig.",
+      "startUsing": "Start using",
       "threshold": "Minimum number of signatories needed to approve a transaction.",
       "title": "Create flexible multisig"
     },

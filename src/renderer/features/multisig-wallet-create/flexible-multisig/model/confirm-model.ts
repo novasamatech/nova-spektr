@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createStore, sample } from 'effector';
 import { z } from 'zod';
 
 import { type Address } from '@/shared/core';
@@ -26,8 +26,6 @@ const confirmStore = createTransactionConfirmStore<FlexibleMultisigConfirm>({
   $apis: networkModel.$apis,
   $multisigTransactions: selectedWalletMultisigOperations.$list,
 });
-
-const startSigningFlexible = createEvent();
 
 const $api = combine(flexibleMultisigFeature.state, (state): ApiPromise | null => {
   if (state.status !== 'running') return null;
@@ -96,7 +94,6 @@ export const confirmModel = {
   replaceWithConfirm: confirmStore.replaceWithConfirm,
   resetConfirm: confirmStore.resetConfirm,
   startSigningProxy: confirmStore.startSigning,
-  startSigningFlexible,
 
   submitStarted: submitModel.events.formInitiated,
   submitFinished: submitModel.output.formSubmitted,

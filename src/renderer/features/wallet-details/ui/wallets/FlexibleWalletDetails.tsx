@@ -46,8 +46,8 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const [tab, setTab] = useState('1');
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
-  const multisigAccount = walletAccounts.find(accountUtils.isMultisigAccount);
-  const proxiedAccount = walletAccounts.find(accountUtils.isProxiedAccount);
+  const multisigAccount = walletAccounts.find(accountUtils.isFlexibleMultisigAccount);
+  const proxiedAccount = walletAccounts.find(accountUtils.isFlexibleProxiedAccount);
 
   assert(multisigAccount, 'Multisig account not found.');
   assert(proxiedAccount, 'Proxied account not found.');
