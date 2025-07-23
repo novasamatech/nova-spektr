@@ -1,7 +1,10 @@
-import { type Account, type Address, type Chain, type ProxyType } from '@/shared/core';
+import { type ApiPromise } from '@polkadot/api';
+
+import { type Address, type Chain, type ProxiedAccount, type ProxyAccount, type ProxyType } from '@/shared/core';
 
 export const enum Step {
   NONE,
+  WARNING,
   INIT,
   CONFIRM,
   SIGN,
@@ -16,10 +19,10 @@ export const enum SubmitStep {
 }
 
 export type RemoveProxyStore = {
+  api: ApiPromise;
   chain: Chain;
-  account: Account;
-  signatory?: Account;
-  delegate: Address;
+  proxyAccount: ProxyAccount;
+  proxiedAccount: ProxiedAccount;
+  spawner: Address;
   proxyType: ProxyType;
-  delay: number;
 };

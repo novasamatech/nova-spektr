@@ -101,8 +101,8 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.createPureProxy'),
     },
     {
-      id: TransactionType.REMOVE_PURE_PROXY,
-      value: TransactionType.REMOVE_PURE_PROXY,
+      id: TransactionType.KILL_PURE_PROXY,
+      value: TransactionType.KILL_PURE_PROXY,
       element: t('operations.titles.removePureProxy'),
     },
     {
