@@ -201,6 +201,11 @@ sample({
 });
 
 sample({
+  clock: form.fields.chain.change,
+  target: form.fields.callData.resetError,
+});
+
+sample({
   clock: flow.close,
   target: form.reset,
 });
