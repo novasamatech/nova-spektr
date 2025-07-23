@@ -571,7 +571,7 @@ function buildCreatePureProxy({ chain, accountId }: CreateProxyPureParams): Tran
 type AddProxyParams = {
   chain: Chain;
   accountId: AccountId;
-  delegateAccountId: AccountId;
+  delegateAccountId: AccountId | Address;
   type: ProxyType;
 };
 
@@ -581,7 +581,7 @@ function buildAddProxy({ chain, accountId, delegateAccountId, type }: AddProxyPa
     accountId: accountId,
     type: TransactionType.ADD_PROXY,
     args: {
-      delegate: toAddress(delegateAccountId, { prefix: chain.addressPrefix }),
+      delegate: delegateAccountId,
       proxyType: type,
       delay: 0,
     },
