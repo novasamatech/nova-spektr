@@ -186,7 +186,6 @@ const $fakeFinalExtrinsic = combine($api, $fakeFinalTx, (api, tx) => {
   return getExtrinsic[tx.type](tx.args, api);
 });
 
-
 const { $: $multisigFee, $pending: $pendingMultisigFee } = createFeeCalculator({
   extrinsic: $fakeFinalExtrinsic,
 });
@@ -422,6 +421,7 @@ export const flexibleMultisigModel = {
   $pendingFee: or($pendingProxyFee, $pendingMultisigFee),
   $proxyDeposit,
   $existentialDeposit,
+  $totalDeposit,
   $isLoading: or($pendingProxyFee, $pendingMultisigFee, getExistentialDepositFx.pending),
   $isEnoughBalance,
 

@@ -607,21 +607,7 @@ function buildCreateFlexibleMultisig({
   signerAccountId,
   proxyDeposit,
 }: CreateFlexibleMultisigParams): Transaction {
-  //TODO: reassign
-  const proxyTx = transactionBuilder.buildAddProxy({
-    chain,
-    accountId: signerAccountId,
-    delegateAccountId: multisigAccountId,
-    type: 'Any',
-  });
-
-  const remarkTx = transactionBuilder.buildRemark({
-    chainId: chain.chainId,
-    accountId: signerAccountId,
-    threshold: threshold || 2,
-    signatories: signatories.map((s) => s.accountId),
-  });
-
+  // transfer deposit to proxy account
   const transferTransaction = {
     chainId: chain.chainId,
     accountId: signerAccountId,
@@ -632,7 +618,46 @@ function buildCreateFlexibleMultisig({
     },
   };
 
-  const transactions = [transferTransaction, remarkTx, proxyTx];
+  // reassign proxy to multisig account
+  const addProxyTx = transactionBuilder.buildAddProxy({
+    chain,
+    accountId: signerAccountId,
+    delegateAccountId: multisigAccountId,
+    type: 'Any',
+  });
+
+  const removeProxyTx = {
+    chainId: chain.chainId,
+    accountId: signerAccountId,
+    type: TransactionType.REMOVE_PROXY,
+    args: {
+      delegate: proxyAccountId,
+      proxyType: 'Any',
+      delay: 0,
+    },
+  };
+
+  const batchProxy = buildBatchAll({ chain, accountId: signerAccountId, transactions: [addProxyTx, removeProxyTx] });
+
+  const wrapper = {
+    chainId: chain.chainId,
+    accountId: proxyAccountId,
+    type: TransactionType.PROXY,
+    args: {
+      real: proxyAccountId,
+      forceProxyType: 'Any',
+      transaction: batchProxy,
+    },
+  };
+
+  const remarkTx = transactionBuilder.buildRemark({
+    chainId: chain.chainId,
+    accountId: signerAccountId,
+    threshold,
+    signatories: signatories.map((s) => s.accountId),
+  });
+
+  const transactions = [transferTransaction, wrapper, remarkTx];
 
   return buildBatchAll({ chain, accountId: signerAccountId, transactions });
 }

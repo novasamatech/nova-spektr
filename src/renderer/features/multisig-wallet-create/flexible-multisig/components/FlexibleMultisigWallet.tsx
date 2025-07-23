@@ -70,7 +70,9 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
       {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={onGoBack} />}
       {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
       {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
-      {(isStep(activeStep, Step.CONFIRM) || isStep(activeStep, Step.SUBMIT)) && <ConfirmationStep />}
+      {(isStep(activeStep, Step.CONFIRM) || isStep(activeStep, Step.SUBMIT)) && (
+        <ConfirmationStep onToggle={onToggle} />
+      )}
       {isStep(activeStep, Step.SIGN) && (
         <Modal.Content>
           <OperationSign onGoBack={() => flexibleMultisigModel.stepChanged(Step.CONFIRM)} />
