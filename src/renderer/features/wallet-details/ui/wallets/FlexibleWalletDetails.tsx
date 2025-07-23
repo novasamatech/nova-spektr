@@ -18,7 +18,6 @@ import { proxyAddFeature } from '@/features/proxy-add';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
-import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 
 const {
@@ -169,10 +168,13 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
     const TabProxy = {
       id: '3',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: hasProxies ? (
-        <ProxiesList wallet={wallet} canCreateProxy={canCreateProxy} />
-      ) : (
-        <NoProxiesAction canCreateProxy={canCreateProxy} onAddProxy={addProxy.events.flowStarted} />
+      panel: (
+        <ProxiesList
+          wallet={wallet}
+          canCreateProxy={canCreateProxy}
+          hasProxies={hasProxies}
+          onAddProxy={addProxy.events.flowStarted}
+        />
       ),
     };
 

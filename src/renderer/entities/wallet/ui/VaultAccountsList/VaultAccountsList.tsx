@@ -20,13 +20,11 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
 
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>
-      <FootnoteText className="mb-1 pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
-
       {chains.map((chain) => {
         if (!accountsMap[chain.chainId]) return;
 
         return (
-          <div key={chain.chainId} className="pe-1 ps-8">
+          <div key={chain.chainId}>
             <Accordion initialOpen>
               <Accordion.Trigger>
                 <span className="normal-case">

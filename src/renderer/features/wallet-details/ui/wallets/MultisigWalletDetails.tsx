@@ -1,16 +1,14 @@
 import { useGate, useUnit } from 'effector-react';
 import { type ReactNode, useMemo, useState } from 'react';
-import { Trans } from 'react-i18next';
 
 import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { assert, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, Icon, IconButton } from '@/shared/ui';
-import { type IconNames } from '@/shared/ui/types';
+import { FootnoteText, IconButton, Separator } from '@/shared/ui';
 import { Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
-import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -20,8 +18,10 @@ import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
-import { NoProxiesAction } from '../components/NoProxiesAction';
+import { walletDetailsModel } from '../../model/wallet-details-model';
+import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
+import { type WalletAction, WalletActions } from '../components/WalletActions';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
@@ -48,6 +48,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
+  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
 
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
@@ -79,64 +80,55 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
     return anyProxy && multisigChains.some(c => networkUtils.isPureProxySupported(c.options));
   }, [multisigChains]);
 
-  const options = [
-    {
-      icon: 'rename' as IconNames,
-      title: t('walletDetails.common.renameButton'),
-      onClick: toggleIsRenameModalOpen,
-    },
-    {
-      icon: 'forget' as IconNames,
-      title: t('walletDetails.common.forgetButton'),
-      onClick: toggleConfirmForget,
-    },
-  ];
+  const actions: WalletAction[] = [];
 
   if (canCreateProxy) {
-    options.push({
-      icon: 'addCircle' as IconNames,
+    actions.push({
+      icon: 'delegate',
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
     });
   }
 
   if (canCreatePureProxy) {
-    options.push({
-      icon: 'addCircle' as IconNames,
+    actions.push({
+      icon: 'createPureProxy',
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxied.events.flowStarted,
     });
   }
 
-  const ActionButton = (
-    <Dropdown align="end">
-      <Dropdown.Trigger>
-        <IconButton name="more" />
-      </Dropdown.Trigger>
-      <Dropdown.Content>
-        {options.map(option => (
-          <Dropdown.Item key={option.title} onSelect={option.onClick}>
-            <Icon name={option.icon} size={20} className="text-icon-accent" />
-            <span className="text-text-secondary">{option.title}</span>
-          </Dropdown.Item>
-        ))}
-      </Dropdown.Content>
-    </Dropdown>
-  );
+  actions.push({
+    icon: 'forget',
+    title: t('walletDetails.common.hideButton'),
+    iconClassName: 'text-icon-negative',
+    backgroundClassName: 'bg-secondary-negative-button-background',
+    onClick: toggleConfirmForget,
+  });
 
-  const TabItems: { id: string; title: string; panel: ReactNode }[] = [];
+  const TabItems: { id: string; title: ReactNode; panel: ReactNode }[] = [];
 
   const multisigAccounts = multisigChains.map(chain => [chain, multisigAccount.accountId] as const);
 
   const TabAccountList = {
     id: '1',
-    title: t('walletDetails.multisig.networksTab'),
+    title: (
+      <span className="flex items-center gap-1">
+        {t('walletDetails.multisig.accountsTab')}
+        <span className="text-text-tertiary">{multisigAccounts.length}</span>
+      </span>
+    ),
     panel: <ChainAccountsList accounts={multisigAccounts} />,
   };
 
   const TabSignatories = {
     id: '2',
-    title: t('walletDetails.multisig.signatoriesTab'),
+    title: (
+      <span className="flex items-center gap-1">
+        {t('walletDetails.multisig.signatoriesTab')}
+        <span className="text-text-tertiary">{multisigAccount.signatories.length}</span>
+      </span>
+    ),
     panel: (
       <ScrollArea>
         <div className="flex flex-col gap-2">
@@ -220,11 +212,19 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   if (canCreateProxy) {
     const TabProxy = {
       id: '3',
-      title: t('walletDetails.common.proxiesTabTitleShort'),
-      panel: hasProxies ? (
-        <ProxiesList wallet={wallet} canCreateProxy={canCreateProxy} />
-      ) : (
-        <NoProxiesAction canCreateProxy={canCreateProxy} onAddProxy={addProxy.events.flowStarted} />
+      title: (
+        <span className="flex items-center gap-1">
+          {t('walletDetails.common.proxiesTabTitleShort')}
+          <span className="text-text-tertiary">{proxiesCount}</span>
+        </span>
+      ),
+      panel: (
+        <ProxiesList
+          wallet={wallet}
+          hasProxies={hasProxies}
+          canCreateProxy={canCreateProxy}
+          onAddProxy={addProxy.events.flowStarted}
+        />
       ),
     };
 
@@ -233,35 +233,28 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
   return (
     <>
-      <Modal size="md" height="lg" isOpen onToggle={open => !open && onClose()}>
-        <Modal.Title close action={ActionButton}>
-          {t('walletDetails.common.title')}
-        </Modal.Title>
+      <Modal size="mdlg" height="full" isOpen onToggle={open => !open && onClose()}>
+        <Modal.Title close> {t('walletDetails.common.title')}</Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 pb-6 pt-4">
-            <div className="flex items-center justify-between">
-              <WalletCardLg wallet={wallet} />
+          <div className="mb-6 flex items-center justify-between px-5">
+            <Box direction="row" verticalAlign="center" gap={3}>
+              <span>
+                <WalletCardLg wallet={wallet} />
+              </span>
+              <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+              <WalletFiatBalance />
+            </Box>
 
-              {multisigAccount && (
-                <div className="shrink-0">
-                  <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
-                </div>
-              )}
-            </div>
-            <div className="flex items-center">
-              <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-              <div className="flex items-center text-footnote">
-                <Trans
-                  t={t}
-                  i18nKey="walletDetails.multisig.chainTitle"
-                  values={{
-                    threshold: multisigAccount.threshold,
-                    signatories: multisigAccount.signatories.length,
-                  }}
-                />
+            {multisigAccount && (
+              <div className="shrink-0">
+                <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
               </div>
-            </div>
+            )}
           </div>
+
+          <WalletActions actions={actions} />
+
+          <Separator className="my-6" />
         </Modal.HeaderContent>
         <Modal.Content disableScroll>
           <Tabs value={tab} onChange={setTab}>

@@ -5,38 +5,30 @@ import { type Chain, type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { IconButton, Separator } from '@/shared/ui';
+import { Button, IconButton } from '@/shared/ui';
 import { ChainAccountsList } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
+import { WalletCardLg, accountUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
-import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
-import { type WalletAction, WalletActions } from '../components/WalletActions';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const {
   models: { addProxy },
-  views: { AddProxy },
 } = proxyAddFeature;
-
-const {
-  models: { addPureProxied },
-  views: { AddPureProxied },
-} = proxyAddPureFeature;
 
 type Props = {
   wallet: Wallet;
   onClose: () => void;
 };
-export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
+export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
   const { t } = useI18n();
 
@@ -63,42 +55,16 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
     setChains(filteredChains);
   }, []);
 
-  const actions: WalletAction[] = [];
-
-  if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
-    actions.push({
-      icon: 'delegate',
-      title: t('walletDetails.common.addProxyAction'),
-      onClick: addProxy.events.flowStarted,
-    });
-  }
-
-  if (permissionUtils.canCreateAnyProxy(wallet)) {
-    actions.push({
-      icon: 'createPureProxy',
-      title: t('walletDetails.common.addPureProxiedAction'),
-      onClick: addPureProxied.events.flowStarted,
-    });
-  }
-
-  actions.push({
-    icon: 'forget',
-    title: t('walletDetails.common.forgetButton'),
-    iconClassName: 'text-icon-negative',
-    backgroundClassName: 'bg-secondary-negative-button-background',
-    onClick: toggleConfirmForget,
-  });
-
   const accountsIds = useMemo(
     () => (firstAccount ? Object.values(chains).map(chain => [chain, firstAccount.accountId] as const) : []),
     [chains, firstAccount],
   );
 
   return (
-    <Modal size="mdlg" height="lg" isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="mb-6 flex items-center justify-between px-5">
+        <div className="mb-4 flex items-center justify-between px-5 pb-6 pt-4">
           <Box direction="row" verticalAlign="center" gap={3}>
             <span>
               <WalletCardLg wallet={wallet} />
@@ -106,15 +72,13 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
             <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
             <WalletFiatBalance />
           </Box>
-
           <div className="shrink-0">
             {firstAccount && <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />}
+            <Button pallet="error" size="sm" variant="fill" onClick={toggleConfirmForget}>
+              {t('walletDetails.common.forgetButton')}
+            </Button>
           </div>
         </div>
-
-        <WalletActions actions={actions} />
-
-        <Separator className="my-6" />
       </Modal.HeaderContent>
       <Modal.Content disableScroll>
         {walletUtils.isWatchOnly(wallet) && !hasProxies ? (
@@ -160,9 +124,6 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
           onClose={toggleConfirmForget}
           onForget={onClose}
         />
-
-        <AddProxy wallet={wallet} />
-        <AddPureProxied wallet={wallet} />
       </Modal.Content>
     </Modal>
   );
