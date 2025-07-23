@@ -48,5 +48,8 @@ export const createMultisigDeposit = ({ $threshold, $api }: Params) => {
     target: $multisigDeposit,
   });
 
-  return { $multisigDeposit, $pending: getMultisigDepositFx.pending };
+  return {
+    $multisigDeposit,
+    $pending: getMultisigDepositFx.pending,
+  };
 };

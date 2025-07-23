@@ -28,7 +28,6 @@ import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsModel } from '../../model/wallet-details-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
 import { ProxiesList } from '../components/ProxiesList';
 import { ShardsList } from '../components/ShardsList';
 
@@ -235,15 +234,13 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             </Tabs.Content>
             <Tabs.Content value="proxies">
               <ScrollArea>
-                {hasProxies ? (
-                  <ProxiesList className="mt-4" wallet={wallet} canCreateProxy={canCreateProxy} />
-                ) : (
-                  <NoProxiesAction
-                    className="mt-4 h-[371px]"
-                    canCreateProxy={canCreateProxy}
-                    onAddProxy={addProxy.events.flowStarted}
-                  />
-                )}
+                <ProxiesList
+                  wallet={wallet}
+                  hasProxies={hasProxies}
+                  className="mt-4 h-[371px]"
+                  canCreateProxy={canCreateProxy}
+                  onAddProxy={addProxy.events.flowStarted}
+                />
               </ScrollArea>
             </Tabs.Content>
           </Tabs>

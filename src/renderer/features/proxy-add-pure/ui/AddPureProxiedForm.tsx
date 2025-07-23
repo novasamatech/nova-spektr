@@ -101,7 +101,9 @@ const AccountSelector = () => {
   const wallet = useUnit(walletSelect.$selectedWallet);
   const balances = useUnit(balanceModel.$balances);
 
-  if (accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !chain.value || !initiator.value) {
+  const chainValue = chain.value;
+
+  if (accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !chainValue || !initiator.value) {
     return null;
   }
 
@@ -109,14 +111,14 @@ const AccountSelector = () => {
     () =>
       accounts.map((account) => {
         const isShard = accountUtils.isVaultShardAccount(account);
-        const address = toAddress(account.accountId, { prefix: chain.value!.addressPrefix });
+        const address = toAddress(account.accountId, { prefix: chainValue.addressPrefix });
         const id = accountService.uniqId(account);
 
         const balance = balanceUtils.getBalance(
           balances,
           account.accountId,
-          chain.value!.chainId,
-          getNativeAsset(chain.value!.assets).assetId.toString(),
+          chainValue.chainId,
+          getNativeAsset(chainValue.assets).assetId.toString(),
         );
 
         return {
@@ -132,7 +134,7 @@ const AccountSelector = () => {
                 address={address}
                 title={isShard ? toShortAddress(address, 16) : account.name}
               />
-              <AssetBalance value={transferableAmount(balance)} asset={getNativeAsset(chain.value!.assets)} />
+              <AssetBalance value={transferableAmount(balance)} asset={getNativeAsset(chainValue.assets)} />
             </div>
           ),
         };
@@ -145,7 +147,7 @@ const AccountSelector = () => {
       <Select
         label={t('proxy.addProxy.accountLabel')}
         placeholder={t('proxy.addProxy.accountPlaceholder')}
-        selectedId={accountService.uniqId(initiator.value!)}
+        selectedId={accountService.uniqId(initiator.value)}
         options={options}
         onChange={({ value }) => initiator.onChange(value)}
       />
@@ -165,19 +167,21 @@ const Signatories = () => {
   const allWallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
 
-  if (!chain.value || !account.value) return null;
+  const chainValue = chain.value;
+
+  if (!chainValue) return null;
 
   const signatoriesWithBalance = useMemo(() => {
     return signatories.map((signatory) => {
       const balance = balanceUtils.getBalance(
         balances,
         signatory.accountId,
-        chain.value!.chainId,
-        getNativeAsset(chain.value!.assets).assetId.toString(),
+        chainValue.chainId,
+        getNativeAsset(chainValue.assets).assetId.toString(),
       );
       return { account: signatory, balance: withdrawableAmount(balance) };
     });
-  }, [signatories, balances, chain.value]);
+  }, [signatories, balances, chainValue]);
 
   return (
     <SignatorySelect
@@ -185,7 +189,7 @@ const Signatories = () => {
       signatories={signatoriesWithBalance}
       hasError={signatory.hasError}
       errorText={t(signatory.errorMessage)}
-      network={{ chain: chain.value, asset: getNativeAsset(chain.value.assets) }}
+      network={{ chain: chainValue, asset: getNativeAsset(chainValue.assets) }}
       allAccounts={allAccounts}
       initiator={account.value}
       allWallets={allWallets}

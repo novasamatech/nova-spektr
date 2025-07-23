@@ -381,7 +381,7 @@ const getCallDataParser: Record<
       delay: decoded.args[2].toString(),
     };
   },
-  [TransactionType.REMOVE_PURE_PROXY]: (decoded): Record<string, any> => {
+  [TransactionType.KILL_PURE_PROXY]: (decoded): Record<string, any> => {
     return {
       spawner: decoded.args[0].toString(),
       proxyType: decoded.args[1].toString(),
@@ -561,7 +561,7 @@ const getProxyTxType = (method: string, section: string): TransactionType | unde
     removeProxy: TransactionType.REMOVE_PROXY,
     proxy: TransactionType.PROXY,
     createPure: TransactionType.CREATE_PURE_PROXY,
-    killPure: TransactionType.REMOVE_PURE_PROXY,
+    killPure: TransactionType.KILL_PURE_PROXY,
   }[method];
 };
 

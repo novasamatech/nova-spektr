@@ -71,11 +71,11 @@ const form: Form<FormParams> = createForm<FormParams>({
           }),
           fn: (value, form, { isMultisig, balances, fee, proxyDeposit }) => {
             if (!value) {
-              return { message: 'proxy.addProxy.noInitiatorError' };
+              return { message: 'proxy.addProxy.noInitiator' };
             }
 
             if (!form.chain) {
-              return { message: 'proxy.addProxy.noChainError' };
+              return { message: 'proxy.addProxy.noChain' };
             }
 
             const balance = balanceUtils.getBalance(
@@ -92,7 +92,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               : proxyDepositBN.add(feeBN).lte(transferableAmountBN(balance));
 
             if (!hasEnoughTokens) {
-              return { message: 'proxy.addProxy.notEnoughBalanceForDepositError' };
+              return { message: 'proxy.addProxy.notEnoughTokens' };
             }
           },
         };

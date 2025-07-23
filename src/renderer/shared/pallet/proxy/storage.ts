@@ -58,7 +58,7 @@ export const storage = {
    */
   proxies(api: ApiPromise, accounts?: AccountId[]) {
     const recordSchema = pjsSchema.tupleMap(
-      ['accounts', pjsSchema.vec(proxyProxyDefinition)],
+      ['proxies', pjsSchema.vec(proxyProxyDefinition)],
       ['deposit', z.union([pjsSchema.u128, pjsSchema.u64])],
     );
 
@@ -66,7 +66,7 @@ export const storage = {
       const schema = pjsSchema.vec(recordSchema);
 
       return substrateRpcPool
-        .call(() => getQuery(api, 'proxies').entries())
+        .call(() => getQuery(api, 'proxies').multi(accounts))
         .then(schema.parse)
         .then(result => zipWith(accounts, result, (account, value) => ({ account, value })));
     }

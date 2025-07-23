@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -24,7 +24,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const wallets = useUnit(walletModel.$wallets);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirmStore = confirms[id];
+  const confirmStore = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (confirms, [id]) => confirms[id],
+  });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 

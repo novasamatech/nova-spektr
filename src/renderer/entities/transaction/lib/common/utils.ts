@@ -70,7 +70,7 @@ export const isRemoveProxyTransaction = (transaction?: Transaction | DecodedTran
 };
 
 export const isRemovePureProxyTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
-  return transaction?.type === TransactionType.REMOVE_PURE_PROXY;
+  return transaction?.type === TransactionType.KILL_PURE_PROXY;
 };
 
 export const isProxyTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {

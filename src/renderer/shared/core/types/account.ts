@@ -74,7 +74,7 @@ export interface FlexibleProxiedAccount extends Omit<ProxiedAccount, 'accountTyp
  */
 export type Account = AnyAccount;
 
-export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId'>;
+export type DraftAccount<T extends AnyAccount> = Omit<NoID<T>, 'accountId' | 'walletId'>;
 
 export const enum AccountType {
   WATCH_ONLY = 'watch_only',

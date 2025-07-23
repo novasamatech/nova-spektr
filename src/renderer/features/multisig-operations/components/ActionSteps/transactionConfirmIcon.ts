@@ -33,7 +33,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.ADD_PROXY]: 'proxyConfirm',
   [TransactionType.CREATE_PURE_PROXY]: 'proxyConfirm',
   [TransactionType.REMOVE_PROXY]: 'proxyConfirm',
-  [TransactionType.REMOVE_PURE_PROXY]: 'proxyConfirm',
+  [TransactionType.KILL_PURE_PROXY]: 'proxyConfirm',
   [TransactionType.PROXY]: 'unknownConfirm',
   // Remark
   [TransactionType.REMARK]: 'unknownConfirm',

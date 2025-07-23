@@ -44,7 +44,7 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.ADD_PROXY]: () => 'operations.modalTitles.addProxy',
   [TransactionType.CREATE_PURE_PROXY]: () => 'operations.modalTitles.createPureProxy',
   [TransactionType.REMOVE_PROXY]: () => 'operations.modalTitles.removeProxy',
-  [TransactionType.REMOVE_PURE_PROXY]: () => 'operations.modalTitles.removePureProxy',
+  [TransactionType.KILL_PURE_PROXY]: () => 'operations.modalTitles.removePureProxy',
   [TransactionType.PROXY]: () => 'operations.modalTitles.proxy',
   // Remark
   [TransactionType.REMARK]: () => 'operations.modalTitles.remark',
