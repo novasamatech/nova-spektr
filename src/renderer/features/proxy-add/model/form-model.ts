@@ -331,7 +331,7 @@ const $fakeTx = combine(
     return transactionBuilder.buildAddProxy({
       chain: chain,
       accountId: TEST_ACCOUNTS[0],
-      delegateAccountId: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
+      delegateAccountId: TEST_ACCOUNTS[0],
       type: 'Any',
     });
   },
