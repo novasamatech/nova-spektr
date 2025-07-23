@@ -109,7 +109,7 @@ export const getExtrinsic: Record<
   [TransactionType.REMOVE_PROXY]: ({ delegate, proxyType, delay }, api) => {
     return api.tx.proxy.removeProxy(delegate, proxyType, delay);
   },
-  [TransactionType.REMOVE_PURE_PROXY]: ({ spawner, proxyType, index, height, extIndex }, api) => {
+  [TransactionType.KILL_PURE_PROXY]: ({ spawner, proxyType, index, height, extIndex }, api) => {
     return api.tx.proxy.killPure(spawner, proxyType, index, height, extIndex);
   },
   // TODO: Check that this method works correctly

@@ -171,8 +171,8 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
       panel: (
         <ProxiesList
           wallet={wallet}
-          canCreateProxy={canCreateProxy}
           hasProxies={hasProxies}
+          canCreateProxy={canCreateProxy}
           onAddProxy={addProxy.events.flowStarted}
         />
       ),

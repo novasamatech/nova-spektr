@@ -1,15 +1,13 @@
-import { type ApiPromise } from '@polkadot/api';
 import { getWalletBySource } from '@talismn/connect-wallets';
 import { createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type ChainId, type HexString } from '@/shared/core';
+import { type HexString } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { assert, createTxMetadata } from '@/shared/lib/utils';
-import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { polkadotExtensionService } from '@/features/extension-wallet';
-import { type SigningPayload } from '../lib/types';
+import { type ExtrinsicSigningPayload } from '../lib/types';
 
 type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
 
@@ -18,31 +16,21 @@ export type SignResponse = {
   txPayload: ReturnType<typeof transactionService.createPayloadWithMetadata>;
 };
 
-const flow = createGate<{ payloads: SigningPayload[] }>({ defaultState: { payloads: [] } });
+const flow = createGate<{ payloads: ExtrinsicSigningPayload[] }>({ defaultState: { payloads: [] } });
 
 const $step = createStore<Step>('idle');
 const $signed = createStore<SignResponse[]>([]).reset(flow.close);
 
-type SetupParams = {
-  payload: SigningPayload;
-  apis: Record<ChainId, ApiPromise>;
-};
+const signFx = createEffect(async ({ api, extrinsic, signatory }: ExtrinsicSigningPayload): Promise<SignResponse> => {
+  if (!polkadotExtensionService.isExtensionAccount(signatory)) {
+    throw new Error('Incorrect account for signing');
+  }
 
-const signFx = createEffect(async ({ payload, apis }: SetupParams): Promise<SignResponse> => {
-  const api = apis[payload.transaction.chainId];
-  const account = payload.signatory || payload.account;
-
-  assert(api, `Api from chain ${payload.transaction.chainId} not found.`);
-  assert(account, 'Signing account not found');
-
-  if (!polkadotExtensionService.isExtensionAccount(account)) throw new Error('Incorrect account for signing');
-
-  const wallet = getWalletBySource(account.extension);
-
+  const wallet = getWalletBySource(signatory.extension);
   assert(wallet, 'Wallet not found');
 
-  const metadata = await createTxMetadata(account.accountId, api);
-  const txPayload = transactionService.createPayloadWithMetadata(payload.transaction, api, metadata);
+  const metadata = await createTxMetadata(signatory.accountId, api);
+  const txPayload = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
 
   transactionService.logPayload([txPayload]);
 
@@ -65,13 +53,7 @@ const signAllFx = series(signFx);
 
 sample({
   clock: flow.open,
-  source: networkModel.$apis,
-  fn(apis, { payloads }) {
-    return payloads.map((payload) => ({
-      payload,
-      apis,
-    }));
-  },
+  fn: ({ payloads }) => payloads,
   target: signAllFx,
 });
 

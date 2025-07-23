@@ -11,12 +11,12 @@ import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
   type AddProxyConfirm,
+  type AddPureProxiedConfirm,
+  type RemoveProxyConfirm,
   addProxyConfirmModel,
   addPureProxiedConfirmModel,
   removeProxyConfirmModel,
-  removePureProxiedConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import { type AddPureProxiedInput, type RemoveProxyInput, type RemovePureProxiedInput } from '../types/confirm';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -70,14 +70,15 @@ const prepareAddPureProxiedDataFx = createEffect(async ({ transaction, accounts,
   return {
     id: transaction.id,
     chain,
-    account,
-    amount: transaction.coreTx.args.value,
-    description: '',
+    initiator: account!,
     fee,
     proxyDeposit,
     multisigDeposit: '0',
-    signatory: null,
-  } as AddPureProxiedInput;
+    signatory: account!,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    route: transaction.route,
+  } satisfies AddPureProxiedConfirm;
 });
 
 const prepareRemoveProxyDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -86,16 +87,17 @@ const prepareRemoveProxyDataFx = createEffect(async ({ transaction, accounts, ch
   return {
     id: transaction.id,
     chain,
-    account,
+    initiator: account!,
     proxyType: transaction.coreTx.args.proxyType,
     delegate: transaction.coreTx.args.delegate,
-    description: '',
+    route: transaction.route,
 
-    transaction: transaction.coreTx,
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
     fee,
-    signatory: null,
+    signatory: account!,
     multisigDeposit: '0',
-  } as RemoveProxyInput;
+  } satisfies RemoveProxyConfirm;
 });
 
 const prepareRemovePureProxiedDataFx = createEffect(async ({ transaction, accounts, chains, apis }: DataParams) => {
@@ -104,16 +106,16 @@ const prepareRemovePureProxiedDataFx = createEffect(async ({ transaction, accoun
   return {
     id: transaction.id,
     chain,
-    account,
+    initiator: account!,
     proxyType: transaction.coreTx.args.proxyType,
     spawner: toAccountId(transaction.coreTx.args.spawner),
-    description: '',
-
-    transaction: transaction.coreTx,
     fee,
-    signatory: null,
+    signatory: account!,
+    coreTx: transaction.coreTx,
+    tx: transaction.coreTx,
+    route: transaction.route,
     multisigDeposit: '0',
-  } as RemovePureProxiedInput;
+  } satisfies RemoveProxyConfirm;
 });
 
 sample({
@@ -171,7 +173,7 @@ sample({
 sample({
   clock: prepareRemoveProxyDataFx.doneData,
   fn: (data) => [data],
-  target: removeProxyConfirmModel.events.formInitiated,
+  target: removeProxyConfirmModel.init,
 });
 
 sample({
@@ -200,7 +202,7 @@ sample({
 sample({
   clock: prepareAddPureProxiedDataFx.doneData,
   fn: (data) => [data],
-  target: addPureProxiedConfirmModel.events.formInitiated,
+  target: addPureProxiedConfirmModel.init,
 });
 
 sample({
@@ -214,7 +216,7 @@ sample({
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
 
-    return transaction.type === TransactionType.REMOVE_PURE_PROXY;
+    return transaction.type === TransactionType.KILL_PURE_PROXY;
   },
   fn: ({ accounts, chains, apis, connections }, operation) => ({
     accounts,
@@ -229,7 +231,7 @@ sample({
 sample({
   clock: prepareRemovePureProxiedDataFx.doneData,
   fn: (data) => [data],
-  target: removePureProxiedConfirmModel.events.formInitiated,
+  target: removeProxyConfirmModel.init,
 });
 
 export const confirm = {

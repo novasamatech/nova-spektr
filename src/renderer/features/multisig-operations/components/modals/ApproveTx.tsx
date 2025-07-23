@@ -27,7 +27,6 @@ import {
 } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
-import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -41,7 +40,7 @@ import {
 } from '@/entities/transaction';
 import { permissionUtils, walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
-import { type SigningPayload } from '@/features/operations/OperationSign';
+import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
 
@@ -68,7 +67,6 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const balances = useUnit(balanceModel.$balances);
-  const apis = useUnit(networkModel.$apis);
 
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
@@ -231,13 +229,13 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   const readyForNonFinalSign = readyForSign && !thresholdReached;
   const readyForFinalSign = readyForSign && thresholdReached && !!operation.transaction;
 
-  const signingPayloads = useMemo<SigningPayload[]>(() => {
+  const signingPayloads = useMemo<ExtrinsicSigningPayload[]>(() => {
     if (nullable(approveTx) || nullable(signAccount)) return [];
     return [
       {
-        chain: chain,
-        account: signAccount,
-        transaction: approveTx,
+        api,
+        chain,
+        extrinsic: getExtrinsic[approveTx.type](approveTx.args, api),
         signatory: signAccount,
       },
     ];
@@ -284,7 +282,6 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
         {activeStep === Step.SIGNING && approveTx && api && signAccount && (
           <SigningSwitch
             signerWallet={wallets.find(w => w.id === signAccount.walletId)}
-            apis={apis}
             signingPayloads={signingPayloads}
             validateBalance={checkBalance}
             onGoBack={goBack}

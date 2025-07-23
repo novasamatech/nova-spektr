@@ -28,8 +28,8 @@ export const proxiedWalletFeature = createFeature({
 });
 
 accountSDK(proxiedWalletFeature, {
-  actionPermission({ account }) {
-    return accountUtils.isProxiedAccount(account);
+  actionPermission() {
+    return false;
   },
   availableOnChain({ account }) {
     return accountUtils.isProxiedAccount(account);

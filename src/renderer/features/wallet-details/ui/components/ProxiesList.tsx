@@ -16,7 +16,7 @@ import { NoProxiesAction } from './NoProxiesAction';
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 
 const {
-  models: { removeProxy },
+  models: { removeProxyModel },
   views: { RemoveProxy },
 } = proxyRemoveFeature;
 
@@ -45,8 +45,8 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   });
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    removeProxy.events.flowStarted({
-      account: walletAccounts[0] as ProxiedAccount,
+    removeProxyModel.flowStarted({
+      proxied: walletAccounts[0] as ProxiedAccount,
       proxy: proxyAccount,
     });
   };
