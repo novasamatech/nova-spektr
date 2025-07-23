@@ -84,6 +84,7 @@ sample({
   target: $proxyAddress,
 });
 
+// Second transaction
 const $coreTx = combine(
   {
     signatory: flexibleMultisigModel.$signer,
@@ -120,7 +121,6 @@ const $coreTx = combine(
   },
 );
 
-// Second operation
 const { $tx } = createComplexTxStore({
   api: $api,
   initiator: flexibleMultisigModel.$signer,
