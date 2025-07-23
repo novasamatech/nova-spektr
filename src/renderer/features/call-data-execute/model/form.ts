@@ -206,6 +206,20 @@ sample({
 });
 
 sample({
+  clock: form.fields.chain.change,
+  source: form.fields.signatory.$value,
+  fn: (signatory, chain) => {
+    if (nullable(signatory) || nullable(chain)) return null;
+    // don't touch selected signatory if it exists on the new chain
+    if (accountService.isAccountAvailableOnChain(signatory, chain)) {
+      return signatory;
+    }
+    return null;
+  },
+  target: form.fields.signatory.change,
+});
+
+sample({
   clock: flow.close,
   target: form.reset,
 });
