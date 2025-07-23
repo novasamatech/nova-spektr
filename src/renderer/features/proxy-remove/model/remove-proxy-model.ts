@@ -316,7 +316,11 @@ sample({
 //todo check whether this works fine if there are erros in form
 sample({
   clock: $step,
-  filter: (step) => removeProxyUtils.isInitStep(step),
+  source: {
+    signatories: $signatories,
+    isMultisig: $isMultisig,
+  },
+  filter: ({ signatories }, step) => removeProxyUtils.isInitStep(step) && signatories.length === 1,
   target: form.submit,
 });
 
