@@ -1,4 +1,3 @@
-import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 import { Trans } from 'react-i18next';
 
@@ -13,22 +12,27 @@ import { MultisigWallet, flowModel } from './multisig-wallet';
 
 export const SelectMultisigWalletType = ({ children }: PropsWithChildren) => {
   const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>(null);
-  const open = useUnit(flowModel.flow.status);
+  const [isOpen, setToggle] = useState<boolean>(false);
 
   const toggleModal = (open: boolean) => {
-    if (open) {
-      flowModel.flow.open();
-      flexibleMultisigModel.flow.open();
-    } else {
+    setToggle(open);
+
+    if (!open) {
       flowModel.flow.close();
       flexibleMultisigModel.flow.close();
       setSelectedFlow(null);
     }
   };
 
+  const handleGoBack = () => {
+    setSelectedFlow(null);
+    flowModel.flow.close();
+    flexibleMultisigModel.flow.close();
+  };
+
   if (nullable(selectedFlow)) {
     return (
-      <Modal size="fit" height="fit" isOpen={open} onToggle={toggleModal}>
+      <Modal size="fit" height="fit" isOpen={isOpen} onToggle={toggleModal}>
         <Modal.Trigger>{children}</Modal.Trigger>
         <SelectMultisig onContinue={setSelectedFlow} />
       </Modal>
@@ -37,7 +41,7 @@ export const SelectMultisigWalletType = ({ children }: PropsWithChildren) => {
 
   if (selectedFlow === 'regularMultisig') {
     return (
-      <MultisigWallet isOpen={open} onToggle={toggleModal} onGoBack={() => setSelectedFlow(null)}>
+      <MultisigWallet isOpen={isOpen} onToggle={toggleModal} onGoBack={handleGoBack}>
         {children}
       </MultisigWallet>
     );
@@ -45,7 +49,7 @@ export const SelectMultisigWalletType = ({ children }: PropsWithChildren) => {
 
   if (selectedFlow === 'flexibleMultisig') {
     return (
-      <FlexibleMultisigWallet isOpen={open} onToggle={toggleModal} onGoBack={() => setSelectedFlow(null)}>
+      <FlexibleMultisigWallet isOpen={isOpen} onToggle={toggleModal} onGoBack={handleGoBack}>
         {children}
       </FlexibleMultisigWallet>
     );
