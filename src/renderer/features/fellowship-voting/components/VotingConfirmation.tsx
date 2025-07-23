@@ -57,7 +57,7 @@ export const VotingConfirmation = ({
         </span>
       </Box>
 
-      <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={null}>
+      <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={account}>
         <DetailRow label={t('fellowship.voting.confirmation.referendumID')}>{referendum.id}</DetailRow>
         <DetailRow label={t('fellowship.voting.confirmation.referendumType')}>
           {isPromotionTrack && t('fellowship.voting.confirmation.promotionTrack')}

@@ -1,5 +1,5 @@
 import { BN, BN_TEN } from '@polkadot/util';
-import { type Meta, type StoryObj } from '@storybook/react';
+import { type Meta, type StoryObj } from '@storybook/react-vite';
 
 import { type Asset } from '@/shared/core';
 import { TEST_ADDRESS } from '@/shared/lib/utils';

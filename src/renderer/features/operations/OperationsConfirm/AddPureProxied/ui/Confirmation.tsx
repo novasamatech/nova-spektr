@@ -83,10 +83,10 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <div className="flex gap-4">
           {secondaryActionButton}
 
-          {!hideSignButton && !isMultisigExists && (
+          {!hideSignButton && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={confirmStore.wallets.signatory?.type}
+              type={confirmStore.wallets.signatory.type}
               onClick={confirmModel.startSigning}
             />
           )}

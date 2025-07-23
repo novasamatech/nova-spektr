@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -25,16 +25,20 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const wallets = useUnit(walletModel.$wallets);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirmStore = confirms[id];
+  const confirm = useStoreMap({
+    store: confirmModel.$confirmMap,
+    keys: [id],
+    fn: (value, [id]) => value[id],
+  });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  if (!confirmStore) {
+  if (!confirm) {
     return null;
   }
 
-  const { destination, chain, signatory, multisigDeposit, fee, totalFee } = confirmStore.meta;
-  const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
+  const { destination, chain, signatory, multisigDeposit, fee, totalFee } = confirm.meta;
+  const multisigAccount = confirm.meta.route.find(accountUtils.isMultisigAccount) ?? null;
 
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
@@ -102,7 +106,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={confirmStore.wallets.signatory.type}
+              type={confirm.wallets.signatory.type}
               onClick={confirmModel.startSigning}
             />
           )}

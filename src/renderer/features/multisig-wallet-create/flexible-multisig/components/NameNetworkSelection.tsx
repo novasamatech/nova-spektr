@@ -7,7 +7,6 @@ import { Step } from '@/shared/lib/utils';
 import { Button, FootnoteText, InputHint, SmallTitleText } from '@/shared/ui';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
-import { networkModel, networkUtils } from '@/entities/network';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
 
@@ -20,7 +19,7 @@ interface Props {
 export const NameNetworkSelection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
-  const chains = useUnit(networkModel.$chains);
+  const chains = useUnit(formModel.$multisigChains);
 
   const {
     fields: { name, chainId },
@@ -39,7 +38,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
           <form id="multisigForm" className="flex h-full flex-col gap-y-6">
             <div className="flex max-w-[360px] items-end gap-x-4">
               <Box width="360px">
-                <Field text={t('createMultisigAccount.walletNameLabel')}>
+                <Field text={t('createMultisigAccount.walletName')}>
                   <Input
                     autoFocus
                     placeholder={t('createMultisigAccount.namePlaceholder')}
@@ -61,17 +60,11 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
                     value={chainId.value}
                     onChange={value => chainId.onChange(value as ChainId)}
                   >
-                    {Object.values(chains)
-                      .filter(c => networkUtils.isMultisigSupported(c.options))
-                      .map(chain => (
-                        <Select.Item key={chain.chainId} value={chain.chainId}>
-                          <ChainTitle
-                            className="overflow-hidden"
-                            chain={chain}
-                            fontClass="text-text-primary truncate"
-                          />
-                        </Select.Item>
-                      ))}
+                    {chains.map(chain => (
+                      <Select.Item key={chain.chainId} value={chain.chainId}>
+                        <ChainTitle className="overflow-hidden" chain={chain} fontClass="text-text-primary truncate" />
+                      </Select.Item>
+                    ))}
                   </Select>
                 </Field>
               </Box>

@@ -35,12 +35,6 @@ const failed = createEvent<ChainId>();
 
 const $chains = createStore<Record<ChainId, Chain>>({});
 
-persist({
-  key: 'chains_map',
-  store: $chains,
-  sync: true,
-});
-
 const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
 
@@ -53,8 +47,9 @@ const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
 
 const $populated = createStore(false);
 
-const populateChainsFx = createEffect((): Promise<Record<ChainId, Chain>> => {
-  return chainsService.getChainsData().then(chainsService.getChainsMap);
+const populateChainsFx = createEffect(async (): Promise<Record<ChainId, Chain> | null> => {
+  const chains = await chainsService.getChainsData();
+  return nonNullable(chains) ? chainsService.getChainsMap(chains) : null;
 });
 
 const populateMetadataFx = createEffect((): Promise<ChainMetadata[]> => {
@@ -67,6 +62,12 @@ const populateConnectionsFx = createEffect((): Promise<Connection[]> => {
 
 const getDefaultStatusesFx = createEffect((chains: Record<ChainId, Chain>): Record<ChainId, ConnectionStatus> => {
   return dictionary(Object.values(chains), 'chainId', () => ConnectionStatus.DISCONNECTED);
+});
+
+persist({
+  key: 'chains_map',
+  store: $chains,
+  sync: true,
 });
 
 type MetadataSubResult = {
@@ -183,6 +184,7 @@ const startNetworksFx = createEffect(() => {
 
 sample({
   clock: populateChainsFx.doneData,
+  filter: (data) => nonNullable(data),
   target: [$chains, getDefaultStatusesFx],
 });
 
@@ -243,12 +245,15 @@ sample({
 const readyToConnect = combineEvents({
   events: [populateConnectionsFx.doneData, populateMetadataFx.doneData, populateChainsFx.doneData],
   reset: startNetworksFx,
-}).map(([connections, metadata, chains]) => {
-  return { connections, metadata, chains };
 });
 
 sample({
   clock: readyToConnect,
+  source: {
+    chains: $chains,
+    connections: $connectionData,
+    metadata: $metadata,
+  },
   fn: ({ connections, metadata, chains }) => {
     return Object.values(chains)
       .filter((chain) => {

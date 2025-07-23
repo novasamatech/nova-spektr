@@ -92,7 +92,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
           <Button
             size="md"
             variant="text"
-            className="h-8.5 w-max justify-center gap-x-1"
+            className="h-8.5 w-max justify-center gap-x-1 pl-0"
             suffixElement={<Icon className="text-icon-primary" name="add" size={16} />}
             onClick={() => signatoryModel.events.addSignatory({ name: '', address: '', walletId: '' })}
           >
@@ -103,7 +103,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
 
           <div className="flex gap-x-6">
             <Box width="100%">
-              <Field text={t('createMultisigAccount.walletNameLabel')}>
+              <Field text={t('createMultisigAccount.walletName')}>
                 <Input
                   autoFocus
                   height="md"

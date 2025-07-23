@@ -82,6 +82,7 @@ export const Identicon = memo(
             'relative flex cursor-copy items-center justify-center rounded-full',
             background && 'rounded-full bg-white',
           )}
+          aria-label="Copy address"
           style={{ width: size, height: size }}
           data-testid={testId}
           onClick={onCopyToClipboard}

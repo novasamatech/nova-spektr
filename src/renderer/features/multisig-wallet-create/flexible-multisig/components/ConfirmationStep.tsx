@@ -1,36 +1,24 @@
 import { useUnit } from 'effector-react';
 
-import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { Step } from '@/shared/lib/utils';
-import { Alert, BodyText, Button, DetailRow, Icon, Separator } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
+import { Step, nonNullable, nullable } from '@/shared/lib/utils';
+import { Button, FootnoteText, Icon, Loader, Separator, SmallTitleText } from '@/shared/ui';
+import { Address } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
-import { SignButton } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
-import { FeeWithLabel, ProxyDepositLabel } from '@/entities/transaction';
-import { WalletIcon } from '@/entities/wallet';
+import { OperationSubmit } from '@/features/operations';
 import { confirmModel } from '../model/confirm-model';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
-import { formModel } from '../model/form-model';
-import { signatoryModel } from '../model/signatory-model';
 
 export const ConfirmationStep = () => {
   const { t } = useI18n();
-
-  const {
-    fields: { name, threshold },
-  } = useForm(formModel.form);
+  const activeStep = useUnit(flexibleMultisigModel.$step);
+  const isSubmitOpen = activeStep === Step.SUBMIT;
 
   const signerWallet = useUnit(flexibleMultisigModel.$signerWallet);
   const signer = useUnit(flexibleMultisigModel.$signer);
 
-  const isEnoughBalance = useUnit(flexibleMultisigModel.$isEnoughBalance);
-  const fee = useUnit(flexibleMultisigModel.$fee);
-  const proxyDeposit = useUnit(flexibleMultisigModel.$proxyDeposit);
-  const asset = useUnit(flexibleMultisigModel.$asset);
-
-  const signatories = useUnit(signatoryModel.$signatories);
+  const proxyAddress = useUnit(confirmModel.$proxyAddress);
+  const pendingProxyCreate = useUnit(confirmModel.$pendingProxyCreate);
 
   if (!signer || !signerWallet) return;
 
@@ -42,69 +30,69 @@ export const ConfirmationStep = () => {
             <div className="mb-6 flex flex-col items-center">
               <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
             </div>
-            <DetailRow label={t('createMultisigAccount.walletName')}>{name.value}</DetailRow>
-            <DetailRow label={t('createMultisigAccount.thresholdName')}>
-              {t('createMultisigAccount.thresholdOutOf', {
-                threshold: threshold.value,
-                signatoriesLength: signatories.length,
-              })}
-            </DetailRow>
-
-            <Separator className="my-4 border-filter-border" />
-            <DetailRow label={t('createMultisigAccount.signingWallet')}>
-              <div className="flex w-full items-center justify-end gap-x-2">
-                <WalletIcon type={signerWallet.type} />
-
-                <div className="flex max-w-[348px] flex-col">
-                  <BodyText as="span" className="truncate tracking-tight text-text-secondary">
-                    {signerWallet.name}
-                  </BodyText>
-                </div>
+            <SmallTitleText>1. {t('createMultisigAccount.flexibleMultisig.title')}</SmallTitleText>
+            <FootnoteText className="mb-4 mt-2 text-text-tertiary">
+              {t('createMultisigAccount.flexibleMultisig.pureProxyConfirm')}
+            </FootnoteText>
+            <div>
+              <Button
+                prefixElement={<Icon className="text-icon-button" name="vault" size={14} />}
+                disabled={pendingProxyCreate || nonNullable(proxyAddress)}
+                onClick={() => confirmModel.startSigningProxy()}
+              >
+                {t('createMultisigAccount.flexibleMultisig.title')}
+              </Button>
+            </div>
+            {pendingProxyCreate && nullable(proxyAddress) && (
+              <div className="mt-4">
+                <Box direction="row" verticalAlign="center" gap={2}>
+                  <Loader color="primary" size={16} />
+                  <FootnoteText> {t('createMultisigAccount.flexibleMultisig.creatingFlexibleProxy')}</FootnoteText>
+                </Box>
               </div>
-            </DetailRow>
-
-            <Separator className="my-4 border-filter-border" />
-            {asset ? (
-              <div className="mb-4 flex flex-1 flex-col gap-y-4">
-                <ProxyDepositLabel>
-                  <div className="flex flex-col items-end gap-y-0.5">
-                    <AssetBalance value={proxyDeposit} asset={asset} className="text-footnote" />
-                    <AssetFiatBalance asset={asset} amount={proxyDeposit.toString()} />
-                  </div>
-                </ProxyDepositLabel>
-                <FeeWithLabel fee={fee} asset={asset} />
-
-                <Alert
-                  variant="error"
-                  title={t('createMultisigAccount.notEnoughTokensTitle')}
-                  active={!isEnoughBalance}
-                >
-                  <Alert.Item withDot={false}>
-                    {t('createMultisigAccount.flexibleMultisig.notEnoughMultisigTokens')}
-                  </Alert.Item>
-                </Alert>
+            )}
+            {nonNullable(proxyAddress) && (
+              <div className="mt-4">
+                <Box direction="row" fillContainer verticalAlign="center" gap={1}>
+                  <Icon className="shrink-0 text-icon-positive" name="checked" size={16} />
+                  <FootnoteText className="shrink-0">
+                    {t('createMultisigAccount.flexibleMultisig.flexibleMultisigCreated')}
+                  </FootnoteText>
+                  <Address variant="short" canCopy={true} showIcon address={proxyAddress} />
+                </Box>
               </div>
-            ) : null}
+            )}
+
+            <Separator className="my-4" />
+
+            <SmallTitleText>2. {t('createMultisigAccount.flexibleMultisig.assignControl')}</SmallTitleText>
+            <FootnoteText className="mb-4 mt-2 text-text-tertiary">
+              {t('createMultisigAccount.flexibleMultisig.assignControlDescription')}
+            </FootnoteText>
+            <div>
+              <Button
+                prefixElement={<Icon className="text-icon-button" name="vault" size={14} />}
+                disabled={nullable(proxyAddress)}
+                onClick={() => confirmModel.startSigningFlexible()}
+              >
+                {t('createMultisigAccount.flexibleMultisig.assignControl')}
+              </Button>
+            </div>
           </div>
         </section>
       </Modal.Content>
 
       <Modal.Footer>
         <Box fitContainer direction="row" horizontalAlign="space-between" verticalAlign="center">
-          <Button
-            variant="text"
-            onClick={() => flexibleMultisigModel.stepChanged(Step.SIGNATORIES_THRESHOLD)}
-            // onClick={() => {
-            //   return (ownedSignatories || []).length > 1
-            //     ? flexibleMultisigModel.stepChanged(Step.SIGNER_SELECTION)
-            //     : flexibleMultisigModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
-            // }}
-          >
+          <Button variant="text" onClick={() => flexibleMultisigModel.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
             {t('createMultisigAccount.backButton')}
           </Button>
-          <SignButton disabled={!isEnoughBalance} type={signerWallet.type} onClick={confirmModel.startSigning} />
         </Box>
       </Modal.Footer>
+
+      {isSubmitOpen && (
+        <OperationSubmit isOpen={isSubmitOpen} onClose={() => flexibleMultisigModel.stepChanged(Step.CONFIRM)} />
+      )}
     </>
   );
 };

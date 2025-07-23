@@ -133,7 +133,7 @@ const NoSignatoryAlert = ({ initiator, allAccounts, chain, allWallets }: NoSigna
   );
 
   return (
-    <Alert active title={t('operation.noSignatoryErrorTitle', { network: chain.name })} variant="warn">
+    <Alert active title={t('operation.noSignatoryErrorTitle', { network: chain.name })} variant="error">
       <FootnoteText className="max-w-full tracking-tight text-text-secondary">
         <Trans
           t={t}
