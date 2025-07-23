@@ -110,10 +110,14 @@ const form: Form<FormParams> = createForm<FormParams>({
             isMultisig: $isMultisig,
           }),
           fn: (value, form, { isMultisig, balances, fee, multisigDeposit }) => {
-            if (!value || !isMultisig) return;
+            if (!isMultisig) return;
+
+            if (!value) {
+              return { message: 'proxy.addProxy.noSignatoryError' };
+            }
 
             if (!form.chain) {
-              return { message: 'proxy.addProxy.noChain' };
+              return { message: 'proxy.addProxy.noChainError' };
             }
 
             const signatoryBalance = balanceUtils.getBalance(
@@ -208,15 +212,15 @@ const $accounts = combine(
 const $coreTx = combine(
   {
     form: form.$values,
-    account: form.fields.initiator.$value,
+    signatory: form.fields.signatory.$value,
     isConnected: $isChainConnected,
   },
-  ({ form, account, isConnected }): Transaction | null => {
-    if (!isConnected || !account || !form.chain) return null;
+  ({ form, signatory, isConnected }): Transaction | null => {
+    if (!isConnected || !signatory || !form.chain) return null;
 
     return {
       chainId: form.chain.chainId,
-      accountId: account.accountId,
+      accountId: signatory.accountId,
       type: TransactionType.CREATE_PURE_PROXY,
       args: { proxyType: 'Any', delay: 0, index: 0 },
     };

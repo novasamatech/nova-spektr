@@ -44,7 +44,7 @@ export const ConfirmationStep = () => {
             <div className="mb-2 flex flex-col items-center">
               <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
             </div>
-            <DetailRow label={t('createMultisigAccount.walletNameLabel')}>{name.value}</DetailRow>
+            <DetailRow label={t('createMultisigAccount.walletName')}>{name.value}</DetailRow>
             <DetailRow label={t('createMultisigAccount.signatoriesLabel')}>
               {chain && (
                 <SelectedSignatoriesModal signatories={signatories} chain={chain}>

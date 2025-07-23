@@ -180,7 +180,7 @@ sample({
     signatory: formModel.form.fields.signatory.$value,
   },
   filter: ({ tx, chain, initiator, signatory }) =>
-    nonNullable(tx) && nonNullable(chain) && nonNullable(initiator) && nonNullable(signatory),
+    nonNullable(tx) && nonNullable(chain) && nonNullable(initiator) && nonNullable(signatory) && nonNullable(chain),
   fn: ({ tx, chain, initiator, signatory }) => ({
     event: {
       signingPayloads: [
@@ -215,7 +215,8 @@ sample({
       nonNullable(proxyData.coreTx) &&
       nonNullable(proxyData.chain) &&
       nonNullable(proxyData.initiator) &&
-      nonNullable(proxyData.signatory)
+      nonNullable(proxyData.signatory) &&
+      nonNullable(proxyData.chain)
     );
   },
   fn: (proxyData, signParams) => ({
@@ -244,7 +245,10 @@ sample({
     chain: formModel.form.fields.chain.$value,
   },
   filter: ({ step, initiator, chain }) =>
-    addPureProxiedUtils.isSubmitStep(step) && nonNullable(initiator) && nonNullable(chain),
+    addPureProxiedUtils.isSubmitStep(step) &&
+    nonNullable(initiator) &&
+    nonNullable(chain) &&
+    nonNullable(chain.chainId),
   fn: ({ apis, initiator, chain }, submitData) => ({
     api: apis[chain!.chainId],
     accountId: initiator!.accountId,

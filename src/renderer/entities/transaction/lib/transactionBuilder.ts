@@ -3,19 +3,17 @@ import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
 import {
-  type Account,
   type Address,
   type Asset,
   type Chain,
   type ChainId,
   type Conviction,
-  type MultisigAccount,
+  type ProxyType,
   type ReferendumId,
   type Signatory,
   type TrackId,
   type Transaction,
   TransactionType,
-  WrapperKind,
 } from '@/shared/core';
 import { formatAmount, getAssetId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -47,6 +45,7 @@ export const transactionBuilder = {
   buildCreatePureProxy,
   buildCreateFlexibleMultisig,
   buildRemark,
+  buildAddProxy,
 
   buildBatchAll,
   splitBatchAll,
@@ -582,62 +581,73 @@ function buildCreatePureProxy({ chain, accountId }: CreateProxyPureParams): Tran
   };
 }
 
+type AddProxyParams = {
+  chain: Chain;
+  accountId: AccountId;
+  delegateAccountId: AccountId;
+  type: ProxyType;
+};
+
+function buildAddProxy({ chain, accountId, delegateAccountId, type }: AddProxyParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    accountId: accountId,
+    type: TransactionType.ADD_PROXY,
+    args: {
+      delegate: toAddress(delegateAccountId, { prefix: chain.addressPrefix }),
+      proxyType: type,
+      delay: 0,
+    },
+  };
+}
+
 type CreateFlexibleMultisigParams = {
   chain: Chain;
-  signer: Account;
-  api: ApiPromise;
+  signerAccountId: AccountId;
   multisigAccountId: AccountId;
+  proxyAccountId: AccountId;
   threshold: number;
   proxyDeposit: string;
   signatories: Signatory[];
 };
 
 function buildCreateFlexibleMultisig({
-  api,
   chain,
   multisigAccountId,
+  proxyAccountId,
   threshold,
   signatories,
-  signer,
+  signerAccountId,
   proxyDeposit,
 }: CreateFlexibleMultisigParams): Transaction {
-  const proxyTransaction = transactionBuilder.buildCreatePureProxy({
-    chain: chain,
-    accountId: signer.accountId,
+  //TODO: reassign
+  const proxyTx = transactionBuilder.buildAddProxy({
+    chain,
+    accountId: signerAccountId,
+    delegateAccountId: multisigAccountId,
+    type: 'Any',
   });
 
-  const wrappedTransaction = transactionService.getWrappedTransaction({
-    api: api,
-    transaction: proxyTransaction,
-    txWrappers: [
-      {
-        kind: WrapperKind.MULTISIG,
-        multisigAccount: {
-          accountId: multisigAccountId,
-          signatories,
-          threshold,
-        } as MultisigAccount,
-        signatories: signatories.map((s) => ({
-          accountId: s.accountId,
-        })) as Account[],
-        signer,
-      },
-    ],
+  const remarkTx = transactionBuilder.buildRemark({
+    chainId: chain.chainId,
+    accountId: signerAccountId,
+    threshold: threshold || 2,
+    signatories: signatories.map((s) => s.accountId),
   });
 
   const transferTransaction = {
     chainId: chain.chainId,
-    accountId: signer.accountId,
+    accountId: signerAccountId,
     type: TransactionType.TRANSFER,
     args: {
-      dest: toAddress(multisigAccountId, { prefix: chain.addressPrefix }),
+      dest: toAddress(proxyAccountId, { prefix: chain.addressPrefix }),
       value: proxyDeposit,
     },
   };
 
-  const transactions = [wrappedTransaction.wrappedTx, transferTransaction];
+  const transactions = [transferTransaction, remarkTx, proxyTx];
 
-  return buildBatchAll({ chain, accountId: signer.accountId, transactions });
+  return buildBatchAll({ chain, accountId: signerAccountId, transactions });
 }
 
 type RemarkParams = {
@@ -646,6 +656,7 @@ type RemarkParams = {
   threshold: number;
   signatories: AccountId[];
 };
+
 function buildRemark({ chainId, accountId, threshold, signatories }: RemarkParams): Transaction {
   return {
     chainId,
