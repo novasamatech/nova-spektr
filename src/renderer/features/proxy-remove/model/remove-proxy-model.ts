@@ -29,7 +29,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { type SubmitInput, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import {
   type RemoveProxyConfirm,
   removeProxyConfirmModel as confirmModel,
@@ -427,7 +427,7 @@ sample({
       account: account!,
       wrappedTxs: [wrappedTx!],
       coreTxs: [coreTx!],
-    } satisfies SubmitInput,
+    },
     step: Step.SUBMIT,
   }),
   target: spread({
