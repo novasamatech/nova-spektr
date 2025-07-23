@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample, split
 import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
-import { type ChainId, type ProxiedAccount, type ProxyAccount, TransactionType, type Wallet } from '@/shared/core';
+import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   getNativeAsset,
@@ -22,6 +22,7 @@ import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -141,30 +142,24 @@ const $coreTx = combine(
     if (!signatory || !data || !proxiedAccount || !chain) return null;
 
     if (isPureProxiedNeedToBeKilled) {
-      return {
-        chainId: chain.chainId,
+      return transactionBuilder.buildKillPureProxy({
+        chain,
         accountId: signatory.accountId,
-        type: TransactionType.KILL_PURE_PROXY,
-        args: {
-          spawner: data!.spawner,
-          proxyType: data!.proxyType,
-          index: 0,
-          height: proxiedAccount.blockNumber,
-          extIndex: proxiedAccount.extrinsicIndex,
-        },
-      };
+        spawner: data.spawner,
+        proxyType: data.proxyType,
+        index: 0,
+        height: proxiedAccount.blockNumber!,
+        extIndex: proxiedAccount.extrinsicIndex!,
+      });
     }
 
-    return {
-      chainId: chain.chainId,
+    return transactionBuilder.buildRemoveProxy({
+      chain,
       accountId: signatory.accountId,
-      type: TransactionType.REMOVE_PROXY,
-      args: {
-        delegate: data!.proxyAccount.accountId,
-        proxyType: data!.proxyType,
-        delay: 0,
-      },
-    };
+      delegate: data.proxyAccount.accountId,
+      proxyType: data.proxyType,
+      delay: 0,
+    });
   },
 );
 

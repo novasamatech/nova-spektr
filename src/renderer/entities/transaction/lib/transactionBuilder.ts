@@ -46,6 +46,8 @@ export const transactionBuilder = {
   buildCreateFlexibleMultisig,
   buildRemark,
   buildAddProxy,
+  buildKillPureProxy,
+  buildRemoveProxy,
 
   buildBatchAll,
   splitBatchAll,
@@ -667,6 +669,60 @@ function buildRemark({ chainId, accountId, threshold, signatories }: RemarkParam
         signatories,
         threshold,
       }),
+    },
+  };
+}
+
+type KillPureProxyParams = {
+  chain: Chain;
+  accountId: AccountId;
+  spawner: Address;
+  proxyType: ProxyType;
+  index: number;
+  height: number;
+  extIndex: number;
+};
+
+function buildKillPureProxy({
+  chain,
+  accountId,
+  spawner,
+  proxyType,
+  index,
+  height,
+  extIndex,
+}: KillPureProxyParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    accountId: accountId,
+    type: TransactionType.KILL_PURE_PROXY,
+    args: {
+      spawner,
+      proxyType,
+      index,
+      height,
+      extIndex,
+    },
+  };
+}
+
+type RemoveProxyParams = {
+  chain: Chain;
+  accountId: AccountId;
+  delegate: AccountId;
+  proxyType: ProxyType;
+  delay: number;
+};
+
+function buildRemoveProxy({ chain, accountId, delegate, proxyType, delay }: RemoveProxyParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    accountId: accountId,
+    type: TransactionType.REMOVE_PROXY,
+    args: {
+      delegate,
+      proxyType,
+      delay,
     },
   };
 }
