@@ -85,11 +85,11 @@ async function getProxies({
 
     for (const { account, value } of entries) {
       try {
-        if (value.accounts.length === 0) {
+        if (value.proxies.length === 0) {
           continue;
         }
 
-        for (const delegatedAccount of value.accounts) {
+        for (const delegatedAccount of value.proxies) {
           const newProxy: NoID<ProxyAccount> = {
             chainId: chain.chainId,
             proxiedAccountId: account,
@@ -124,7 +124,7 @@ async function getProxies({
           }
         }
 
-        for (const delegatedAccount of value.accounts) {
+        for (const delegatedAccount of value.proxies) {
           const newProxy: NoID<ProxyAccount> = {
             chainId: chain.chainId,
             proxiedAccountId: account,

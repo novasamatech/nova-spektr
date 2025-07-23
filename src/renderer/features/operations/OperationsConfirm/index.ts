@@ -4,7 +4,7 @@ export * from './Transfer';
 export * from './AddProxy';
 export * from './AddPureProxied';
 export * from './RemoveProxy';
-export * from './RemovePureProxied';
+export * from './RemoveProxy';
 
 export * from './BondNominate';
 export * from './Nominate';
