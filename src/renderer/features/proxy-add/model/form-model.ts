@@ -8,6 +8,7 @@ import { proxyService } from '@/shared/api/proxy';
 import { type Address, type Chain, type ProxyType, type Transaction, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
+  TEST_ACCOUNTS,
   ZERO_BALANCE,
   getNativeAsset,
   getProxyTypes,
@@ -319,26 +320,22 @@ const $api = combine(
   },
 );
 
-// const $fakeTx = combine(
-//   {
-//     chain: form.fields.chain.$value,
-//     isConnected: $isChainConnected,
-//   },
-//   ({ isConnected, chain }): Transaction | null => {
-//     if (!chain.chainId || !isConnected) return null;
+const $fakeTx = combine(
+  {
+    chain: form.fields.chain.$value,
+    isConnected: $isChainConnected,
+  },
+  ({ isConnected, chain }): Transaction | null => {
+    if (!chain || !isConnected) return null;
 
-//     return {
-//       chainId: chain.chainId,
-//       accountId: TEST_ACCOUNTS[0],
-//       type: TransactionType.ADD_PROXY,
-//       args: {
-//         delegate: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
-//         proxyType: 'Any',
-//         delay: 0,
-//       },
-//     };
-//   },
-// );
+    return transactionBuilder.buildAddProxy({
+      chain: chain,
+      accountId: TEST_ACCOUNTS[0],
+      delegateAccountId: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
+      type: 'Any',
+    });
+  },
+);
 
 const $coreTx = combine(
   {
@@ -365,7 +362,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: form.fields.chain.$value,
   transaction: $coreTx,
-  // TODO fakeTx: $fakeTx,
+  feeTransaction: $fakeTx,
 });
 
 const $isMultisig = $route.map((route) => {
