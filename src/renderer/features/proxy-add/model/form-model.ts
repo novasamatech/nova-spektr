@@ -5,16 +5,10 @@ import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
-import {
-  type Address,
-  type Chain,
-  type ProxyType,
-  type Transaction,
-  TransactionType,
-  type Wallet,
-} from '@/shared/core';
+import { type Address, type Chain, type ProxyType, type Transaction, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
+  TEST_ACCOUNTS,
   ZERO_BALANCE,
   getNativeAsset,
   getProxyTypes,
@@ -31,6 +25,7 @@ import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } f
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxiesUtils } from '@/features/proxies';
 
@@ -325,26 +320,22 @@ const $api = combine(
   },
 );
 
-// const $fakeTx = combine(
-//   {
-//     chain: form.fields.chain.$value,
-//     isConnected: $isChainConnected,
-//   },
-//   ({ isConnected, chain }): Transaction | null => {
-//     if (!chain.chainId || !isConnected) return null;
+const $fakeTx = combine(
+  {
+    chain: form.fields.chain.$value,
+    isConnected: $isChainConnected,
+  },
+  ({ isConnected, chain }): Transaction | null => {
+    if (!chain || !isConnected) return null;
 
-//     return {
-//       chainId: chain.chainId,
-//       accountId: TEST_ACCOUNTS[0],
-//       type: TransactionType.ADD_PROXY,
-//       args: {
-//         delegate: toAddress(TEST_ACCOUNTS[0], { prefix: chain.addressPrefix }),
-//         proxyType: 'Any',
-//         delay: 0,
-//       },
-//     };
-//   },
-// );
+    return transactionBuilder.buildAddProxy({
+      chain: chain,
+      accountId: TEST_ACCOUNTS[0],
+      delegateAccountId: TEST_ACCOUNTS[0],
+      type: 'Any',
+    });
+  },
+);
 
 const $coreTx = combine(
   {
@@ -355,16 +346,12 @@ const $coreTx = combine(
   ({ form, signatory, isConnected }): Transaction | null => {
     if (!isConnected || !signatory || !form.delegate || !form.proxyType || !form.chain) return null;
 
-    return {
-      chainId: form.chain.chainId,
+    return transactionBuilder.buildAddProxy({
+      chain: form.chain,
       accountId: signatory.accountId,
-      type: TransactionType.ADD_PROXY,
-      args: {
-        delegate: toAddress(form.delegate, { prefix: form.chain.addressPrefix }),
-        proxyType: form.proxyType,
-        delay: 0,
-      },
-    };
+      delegateAccountId: form.delegate,
+      type: form.proxyType,
+    });
   },
 );
 
@@ -375,7 +362,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: form.fields.chain.$value,
   transaction: $coreTx,
-  // TODO fakeTx: $fakeTx,
+  feeTransaction: $fakeTx,
 });
 
 const $isMultisig = $route.map((route) => {
