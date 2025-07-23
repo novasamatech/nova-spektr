@@ -13,19 +13,20 @@ type Props = {
   asset: Asset;
   className?: string;
   showSymbol?: boolean;
+  hideFiat?: boolean;
 };
 
-export const Fee = memo(({ fee, isLoading, asset, showSymbol, className }: Props) => {
+export const Fee = memo(({ fee, isLoading, asset, showSymbol, hideFiat, className }: Props) => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   if (isLoading) {
-    return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+    return <FeeLoader fiatFlag={Boolean(fiatFlag) && !hideFiat} />;
   }
 
   return (
     <div className="flex flex-col items-end gap-y-0.5">
       <AssetBalance value={fee} asset={asset} showSymbol={showSymbol} className={className} />
-      <AssetFiatBalance asset={asset} amount={fee} />
+      {!hideFiat && <AssetFiatBalance asset={asset} amount={fee} />}
     </div>
   );
 });

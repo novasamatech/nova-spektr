@@ -32,6 +32,7 @@ export const $defaultFeatures = createStore({
   extensionWallets: true,
   accountsStructure: true,
   multisigRemark: false,
+  callData: true,
 });
 
 export const $features = combine($defaultFeatures, $mutatedFeatures, (base, extend) => ({ ...base, ...extend }));
