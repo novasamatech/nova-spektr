@@ -28,7 +28,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
-  const account = payload.signatory || payload.account;
+  const account = payload.signatory;
 
   useGate(operationSignModel.SignerGate, account);
 
@@ -52,7 +52,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
       isVerified =
         transaction &&
-        transactionService.verifySignature(transaction.payload, signature as HexString, payload.account.accountId);
+        transactionService.verifySignature(transaction.payload, signature as HexString, payload.signatory.accountId);
       balanceValidationError = validateBalance && (await validateBalance());
     }
 

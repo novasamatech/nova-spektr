@@ -164,9 +164,10 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
 
 type ItemProps = {
   value: string;
+  depth?: number;
 };
 
-const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
+const Item = ({ value, depth, children }: PropsWithChildren<ItemProps>) => {
   const { theme } = useTheme();
 
   return (
@@ -180,6 +181,13 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
             theme === 'dark',
         },
       )}
+      style={
+        depth
+          ? {
+              paddingLeft: `${gridSpaceConverter((depth + 1) * 4)}px`,
+            }
+          : void 0
+      }
     >
       <RadixSelect.ItemText asChild>
         <div className="h-full w-full truncate">{children}</div>

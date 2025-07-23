@@ -13,7 +13,7 @@ vi.mock('@/shared/lib/utils', () => ({
 
 describe('hooks/useToggle', () => {
   test('should have default countdown', () => {
-    const { result } = renderHook(() => useCountdown());
+    const { result } = renderHook(() => useCountdown([]));
 
     const [countdown] = result.current;
     expect(countdown).toEqual(DEFAULT_QR_LIFETIME);

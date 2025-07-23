@@ -4,7 +4,7 @@ import { type Store, combine, createStore } from 'effector';
 import { type Account, type Chain, type Transaction, type Wallet } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createFeeCalculator } from '@/shared/transactions';
-import { transactionService } from '@/entities/transaction';
+import { getExtrinsic, transactionService } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 
 type Params = {
@@ -82,9 +82,15 @@ export const createMultipleTxStore = ({
     return nonNullable(wrapper) && transactionService.hasProxy(wrapper);
   });
 
+  const $extrinsic = combine($api, $wrappedTxs, (api, txs) => {
+    if (nullable(api)) return null;
+    const tx = txs?.at(0)?.wrappedTx;
+    if (nullable(tx)) return null;
+    return getExtrinsic[tx.type](tx.args, api);
+  });
+
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
-    $api: $api,
-    $transaction: $wrappedTxs.map((x) => x?.[0]?.wrappedTx ?? null),
+    extrinsic: $extrinsic,
   });
 
   return {

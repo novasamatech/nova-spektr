@@ -5,6 +5,7 @@ export type {
   DecodedTransaction,
   EncodedTransaction,
   Section,
+  Extrinsic,
 } from './transaction/types';
 
 export { accounts } from './account/store';
