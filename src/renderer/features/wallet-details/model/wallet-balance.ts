@@ -23,8 +23,7 @@ const $isLoading = combine(
 
     const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
 
-    const response = !walletAccounts.some(account => balances.some(balance => balance.accountId === account.accountId));
-    return response;
+    return !walletAccounts.some(account => balances.some(balance => balance.accountId === account.accountId));
   },
 );
 

@@ -24,51 +24,49 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
         if (!accountsMap[chain.chainId]) return;
 
         return (
-          <div key={chain.chainId}>
-            <Accordion initialOpen>
-              <Accordion.Trigger>
-                <span className="normal-case">
-                  <ChainTitle fontClass="text-text-primary" chain={chain} />
-                </span>
-                <FootnoteText className="text-text-tertiary">{accountsMap[chain.chainId].length}</FootnoteText>
-              </Accordion.Trigger>
-              <Accordion.Content>
-                <ul>
-                  {accountsMap[chain.chainId].map((account) => {
-                    const isSharded = accountUtils.isAccountWithShards(account);
-                    const accountId = isSharded ? account.at(0)?.accountId : account.accountId;
+          <Accordion initialOpen key={chain.chainId}>
+            <Accordion.Trigger>
+              <span className="normal-case">
+                <ChainTitle fontClass="text-text-primary" chain={chain} />
+              </span>
+              <FootnoteText className="text-text-tertiary">{accountsMap[chain.chainId].length}</FootnoteText>
+            </Accordion.Trigger>
+            <Accordion.Content>
+              <ul>
+                {accountsMap[chain.chainId].map((account) => {
+                  const isSharded = accountUtils.isAccountWithShards(account);
+                  const accountId = isSharded ? account.at(0)?.accountId : account.accountId;
 
-                    if (!accountId) return null;
+                  if (!accountId) return null;
 
-                    return (
-                      <li className="mb-2 last:mb-0" key={accountUtils.getDerivationPath(account)}>
-                        <DerivedAccount
-                          account={account}
-                          addressPrefix={chain.addressPrefix}
-                          onClick={isSharded ? () => onShardClick?.(account) : undefined}
-                        >
-                          {!isSharded && (
-                            <AccountExplorers accountId={accountId} chain={chain}>
-                              <Box gap={0.5}>
-                                <FootnoteText className="text-text-tertiary">
-                                  {t('general.explorers.derivationTitle')}
-                                </FootnoteText>
-                                <HelpText className="break-all text-text-secondary">
-                                  {accountUtils.getDerivationPath(account)}
-                                </HelpText>
-                              </Box>
-                            </AccountExplorers>
-                          )}
-                        </DerivedAccount>
-                      </li>
-                    );
-                  })}
-                </ul>
+                  return (
+                    <li className="mb-2 last:mb-0" key={accountUtils.getDerivationPath(account)}>
+                      <DerivedAccount
+                        account={account}
+                        addressPrefix={chain.addressPrefix}
+                        onClick={isSharded ? () => onShardClick?.(account) : undefined}
+                      >
+                        {!isSharded && (
+                          <AccountExplorers accountId={accountId} chain={chain}>
+                            <Box gap={0.5}>
+                              <FootnoteText className="text-text-tertiary">
+                                {t('general.explorers.derivationTitle')}
+                              </FootnoteText>
+                              <HelpText className="break-all text-text-secondary">
+                                {accountUtils.getDerivationPath(account)}
+                              </HelpText>
+                            </Box>
+                          </AccountExplorers>
+                        )}
+                      </DerivedAccount>
+                    </li>
+                  );
+                })}
+              </ul>
 
-                <hr className="my-1 w-full border-divider" />
-              </Accordion.Content>
-            </Accordion>
-          </div>
+              <hr className="my-1 w-full border-divider" />
+            </Accordion.Content>
+          </Accordion>
         );
       })}
     </div>
