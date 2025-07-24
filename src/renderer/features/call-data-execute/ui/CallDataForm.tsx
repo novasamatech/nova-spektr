@@ -5,10 +5,9 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
+import { Address, ChainSelect } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
-import { ChainTitle } from '@/entities/chain';
 import { Fee } from '@/entities/transaction';
 import { WalletIcon, walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
@@ -29,7 +28,7 @@ export const CallDataForm = () => {
   return (
     <>
       <form id="transfer-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
-        <ChainSelect />
+        <NetworkSelect />
         <SignatorySelect />
         <CallDataInput />
       </form>
@@ -76,7 +75,7 @@ const CallDataInput = () => {
   );
 };
 
-const ChainSelect = memo(() => {
+const NetworkSelect = memo(() => {
   const { t } = useI18n();
 
   const availableChains = useUnit(formModel.$availableChains);
@@ -84,27 +83,14 @@ const ChainSelect = memo(() => {
     fields: { chain },
   } = useForm(formModel.form);
 
-  const onChange = (chainId: string) => {
-    const v = availableChains.find((c) => c.chainId === chainId);
-    if (nonNullable(v)) {
-      chain.onChange(v);
-    }
-  };
-
   return (
     <Field text={t('callData.fields.network.label')}>
-      <Select
+      <ChainSelect
         placeholder={t('callData.fields.network.placeholder')}
-        value={chain.value?.chainId ?? null}
-        height="sm"
-        onChange={onChange}
-      >
-        {availableChains.map((chain) => (
-          <Select.Item key={chain.chainId} value={chain.chainId}>
-            <ChainTitle className="overflow-hidden" fontClass="text-text-primary truncate" chain={chain} />
-          </Select.Item>
-        ))}
-      </Select>
+        value={chain.value}
+        options={availableChains}
+        onChange={chain.onChange}
+      />
       <InputHint variant="error" active={chain.hasError}>
         {t(chain.errorMessage)}
       </InputHint>
