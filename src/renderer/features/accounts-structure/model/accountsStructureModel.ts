@@ -1,6 +1,6 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { type Chain, type ChainId, ChainOptions } from '@/shared/core';
+import { type Chain, ChainOptions } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountNode, type AnyAccount, accountService, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -12,21 +12,13 @@ const $allChains = networkModel.$chains.map((chains) => {
 });
 const $allChainsMap = $allChains.map((chains) => new Map(chains.map((chain) => [chain.chainId, chain])));
 
-const selectChain = createEvent<ChainId>();
+const selectChain = createEvent<Chain | null>();
 const setAccounts = createEvent<AnyAccount[] | null>();
 const selectAccount = createEvent<AnyAccount>();
 
-const $selectedChainId = restore(selectChain, null);
+const $selectedChain = restore(selectChain, null);
 
 const $allAccounts = restore(setAccounts, null);
-
-const $selectedChain = combine(
-  {
-    chainId: $selectedChainId,
-    chains: $allChainsMap,
-  },
-  ({ chainId, chains }) => (chainId ? (chains.get(chainId) ?? null) : null),
-);
 
 const $availableAccounts = combine(
   {
@@ -66,38 +58,37 @@ const $availableChains = combine(
 // Set initial chain to first available one when account changes
 sample({
   clock: $availableChains,
-  source: $selectedChainId,
-  fn: (_, filteredChains) => {
+  fn: (filteredChains) => {
     const firstChain = Array.from(filteredChains.values())[0];
-    return firstChain?.chainId ?? null;
+    return firstChain ?? null;
   },
   target: selectChain,
 });
 
-export const focusOnSelected = createEvent();
-export const reset = createEvent();
+const focusOnSelected = createEvent();
+const reset = createEvent();
 
-export const setPathType = createEvent<'straight' | 'bezier' | 'smoothStep'>();
-export const setEdgeType = createEvent<'solid' | 'dashed'>();
+const setPathType = createEvent<'straight' | 'bezier' | 'smoothStep'>();
+const setEdgeType = createEvent<'solid' | 'dashed'>();
 
-export const $pathType = restore(setPathType, 'bezier').reset(reset);
-export const $edgeType = restore(setEdgeType, 'dashed').reset(reset);
+const $pathType = restore(setPathType, 'bezier').reset(reset);
+const $edgeType = restore(setEdgeType, 'dashed').reset(reset);
 
-export const setViewport = createEvent<{ x: number; y: number; zoom: number }>();
-export const $viewport = restore(setViewport, { x: 0, y: 0, zoom: 1 });
+const setViewport = createEvent<{ x: number; y: number; zoom: number }>();
+const $viewport = restore(setViewport, { x: 0, y: 0, zoom: 1 });
 
-export const setCanvasSize = createEvent<{ width: number; height: number }>();
-export const $canvasSize = restore(setCanvasSize, { width: 0, height: 0 });
+const setCanvasSize = createEvent<{ width: number; height: number }>();
+const $canvasSize = restore(setCanvasSize, { width: 0, height: 0 });
 
-export const enterAccountNode = createEvent<AccountNode>();
-export const leaveAccountNode = createEvent();
-export const holdAccountNode = createEvent<AccountNode>();
-export const releaseAccountNode = createEvent();
+const enterAccountNode = createEvent<AccountNode>();
+const leaveAccountNode = createEvent();
+const holdAccountNode = createEvent<AccountNode>();
+const releaseAccountNode = createEvent();
 
 const $hoveredAccountNode = restore(enterAccountNode, null).reset(leaveAccountNode, releaseAccountNode);
 const $heldAccountNode = restore(holdAccountNode, null).reset(releaseAccountNode);
 
-export const $highlightedNodes = combine(
+const $highlightedNodes = combine(
   {
     selectedAccount: $selectedAccount,
     accountList: walletModel.$availableAccounts,
@@ -157,7 +148,7 @@ function findNodesRelatedToAccount(
   return result;
 }
 
-export const $graph = combine(
+const $graph = combine(
   {
     accounts: walletModel.$availableAccounts,
     selectedAccount: $selectedAccount,
@@ -186,7 +177,6 @@ sample({
 });
 
 export const accountsStructureModel = {
-  $selectedChainId,
   $selectedChain,
   $selectedAccount,
   $availableAccounts,
