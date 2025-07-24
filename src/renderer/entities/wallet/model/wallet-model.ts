@@ -32,12 +32,18 @@ export type CreateParams<T extends AnyAccount = AnyAccount, W extends Wallet = W
   accounts: (T extends any ? Omit<NoID<T>, 'walletId'> : never)[];
 };
 
+export type UpdateParams<T extends AnyAccount = AnyAccount, W extends Wallet = Wallet> = {
+  wallet: Wallet;
+  account: AnyAccount;
+};
+
 const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
 const singleshardCreated = createEvent<CreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
 const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const flexibleMultisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
+const proxiedUpdated = createEvent<UpdateParams<ProxiedAccount>>();
 
 const walletRestored = createEvent<Wallet>();
 const walletRemoved = createEvent<ID>();
@@ -167,6 +173,16 @@ const updateWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
   return wallet;
 });
 
+const updateWalletAccountFx = createEffect(
+  async ({ wallet, account }: { wallet: Wallet; account: AnyAccount }): Promise<Wallet> => {
+    await accounts.updateAccount(account);
+
+    const updatedAccounts = wallet.accounts.map((acc) => (acc.id === account.id ? account : acc));
+
+    return { ...wallet, accounts: updatedAccounts };
+  },
+);
+
 const restoreWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
   await storageService.wallets.update(wallet.id, { isHidden: false });
 
@@ -189,9 +205,14 @@ sample({
     multisigCreated,
     flexibleMultisigCreated,
     singleshardCreated,
-    proxiedCreated,
+    proxiedCreated.filter({ fn: nonNullable }),
   ],
   target: createWalletFx,
+});
+
+sample({
+  clock: proxiedUpdated,
+  target: updateWalletAccountFx,
 });
 
 sample({
@@ -208,6 +229,15 @@ sample({
   source: $rawWallets,
   fn: (wallets, results) => {
     return wallets.concat(results.map((r) => r.wallet));
+  },
+  target: $rawWallets,
+});
+
+sample({
+  clock: updateWalletAccountFx.doneData,
+  source: $rawWallets,
+  fn: (wallets, updatedWallet) => {
+    return wallets.map((wallet) => (wallet.id === updatedWallet.id ? updatedWallet : wallet));
   },
   target: $rawWallets,
 });
@@ -368,6 +398,7 @@ export const walletModel = {
     flexibleMultisigCreated,
     walletConnectCreated,
     proxiedCreated,
+    proxiedUpdated,
     walletCreatedDone,
     walletCreationFail,
     updateWallet,
