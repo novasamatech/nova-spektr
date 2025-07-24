@@ -177,9 +177,15 @@ const updateWalletAccountFx = createEffect(
   async ({ wallet, account }: { wallet: Wallet; account: AnyAccount }): Promise<Wallet> => {
     await accounts.updateAccount(account);
 
-    const updatedAccounts = wallet.accounts.map((acc) => (acc.id === account.id ? account : acc));
-
-    return { ...wallet, accounts: updatedAccounts };
+    console.log('updateWalletAccountFx', { wallet });
+    // const updatedAccounts = wallet.accounts.map((acc) => (acc.id === account.id ? account : acc));
+    //
+    // await storageService.wallets.update(wallet.id, { ...wallet });
+    //
+    // const updatedWallet = { ...wallet, accounts: updatedAccounts };
+    //
+    // return updatedWallet;
+    return wallet;
   },
 );
 

@@ -151,7 +151,7 @@ const useGraphLayout = (
       };
     });
 
-    setNodes(layoutNodes.length <= 15 ? alignNodesTop(layoutNodes) : layoutNodes);
+    setNodes(layoutNodes);
     setEdges(edges);
 
     fitView({
@@ -236,23 +236,3 @@ export const AccountsStructure = memo(() => (
     <AccountsStructureInner />
   </ReactFlowProvider>
 ));
-
-function alignNodesTop(nodes: Node<AccountNodeData>[]) {
-  const layerGroups: Record<number, Node<AccountNodeData>[]> = {};
-  for (const node of nodes) {
-    const key = Math.floor(node.position.x / 200);
-    if (!layerGroups[key]) {
-      layerGroups[key] = [];
-    }
-    layerGroups[key].push(node);
-  }
-
-  for (const group of Object.values(layerGroups)) {
-    const minY = Math.min(...group.map((n) => n.position.y));
-    for (const n of group) {
-      n.position.y -= minY - 20;
-    }
-  }
-
-  return nodes;
-}

@@ -268,6 +268,20 @@ const createProxiedWalletFx = createEffect(
             extrinsicIndex: proxiedAccount.extrinsicIndex,
           };
 
+          // Check if the same connection already exists
+          const connectionExists = existingAccount.connections?.some(
+            (conn) =>
+              conn.proxyAccountId === newConnection.proxyAccountId &&
+              conn.delay === newConnection.delay &&
+              conn.proxyType === newConnection.proxyType &&
+              conn.proxyVariant === newConnection.proxyVariant,
+          );
+
+          // If connection already exists, do nothing
+          if (connectionExists) {
+            return { proxiedUpdated: undefined };
+          }
+
           // Add the new connection to existing connections
           const updatedConnections = existingAccount.connections
             ? [...existingAccount.connections, newConnection]
