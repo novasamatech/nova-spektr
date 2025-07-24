@@ -255,7 +255,7 @@ function createPayloadWithMetadata(extrinsic: Extrinsic, api: ApiPromise, { sign
   const signingPayload = new GenericSignerPayload(api.registry, {
     ...signerPayloadBase,
     method: extrinsic.method.toHex(),
-    version: extrinsic.version,
+    version: api.extrinsicVersion,
     era: era.toHex(),
     // Immortal transaction requires genesisHash instead of blockHash
     blockHash: era.toNumber() === 0 ? signerPayloadBase.genesisHash : signerPayloadBase.blockHash,

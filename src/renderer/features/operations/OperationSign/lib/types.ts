@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import { type Chain, type HexString, type Transaction, type Wallet } from '@/shared/core';
 import { type ValidationErrors } from '@/shared/lib/utils';
-import { type AnyAccount, type Extrinsic } from '@/domains/network';
+import { type AnyAccount, type AnyTransaction, type Extrinsic } from '@/domains/network';
 
 export const enum ReconnectStep {
   NOT_STARTED,
@@ -29,6 +29,13 @@ export type SigningPayload = {
   account: AnyAccount;
   transaction: Transaction;
   signatory: AnyAccount | null;
+};
+
+export type TransactionSigningPayload = {
+  api: ApiPromise;
+  chain: Chain;
+  signatory: AnyAccount;
+  transaction: AnyTransaction;
 };
 
 export type ExtrinsicSigningPayload = {

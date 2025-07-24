@@ -1,9 +1,7 @@
 import { type ExtrinsicConfirmInfo, createExtrinsicConfirmStore } from '@/shared/transactions';
-import { type Extrinsic } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 
 export type ConfirmInput = ExtrinsicConfirmInfo & {
-  extrinsic: Extrinsic;
   args: object;
 };
 
