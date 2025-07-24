@@ -43,6 +43,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
 
   useGate(multisigWalletDetailsModel.flow, { wallet });
+  useGate(walletDetailsModel.flow, { wallet });
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);

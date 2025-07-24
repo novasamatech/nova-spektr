@@ -95,6 +95,8 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
     icon: 'forget',
     title: t('walletDetails.common.hideButton'),
     onClick: toggleConfirmForget,
+    iconClassName: 'text-icon-negative',
+    backgroundClassName: 'bg-secondary-negative-button-background',
   });
 
   const account = wallet.accounts.at(0);
