@@ -29,7 +29,7 @@ describe('entities/wallet/model/wallet-model', () => {
     });
 
     await allSettled(renameWalletModel.events.formInitiated, { scope, params: walletMock.wallet1 });
-    await allSettled(renameWalletModel.$walletForm.fields.name.onChange, { scope, params: walletMock.wallet2.name });
+    await allSettled(renameWalletModel.$walletForm.fields.name.change, { scope, params: walletMock.wallet2.name });
     await allSettled(renameWalletModel.$walletForm.validate, { scope });
 
     expect(scope.getState(renameWalletModel.$walletForm.$isValid)).toEqual(false);
@@ -52,7 +52,7 @@ describe('entities/wallet/model/wallet-model', () => {
     });
 
     await allSettled(renameWalletModel.events.formInitiated, { scope, params: walletMock.wallet1 });
-    await allSettled(renameWalletModel.$walletForm.fields.name.onChange, { scope, params: newName });
+    await allSettled(renameWalletModel.$walletForm.fields.name.change, { scope, params: newName });
     await allSettled(renameWalletModel.$walletForm.submit, { scope });
 
     expect(scope.getState(walletModel.$allWallets)).toEqual([updatedWallet]);

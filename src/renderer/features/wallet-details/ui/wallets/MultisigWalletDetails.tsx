@@ -16,7 +16,7 @@ import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils 
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
-import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -239,13 +239,19 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
           <div className="mb-6 flex items-center justify-between px-5">
             <Box direction="row" verticalAlign="center" gap={3}>
               <span>
-                <WalletCardLg wallet={wallet} />
+                <WalletCardLg wallet={wallet} withoutName={isRenameModalOpen} />
               </span>
-              <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
-              <WalletFiatBalance />
+              {!isRenameModalOpen && (
+                <>
+                  <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                  <WalletFiatBalance />
+                </>
+              )}
             </Box>
 
-            {multisigAccount && (
+            <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+            {multisigAccount && !isRenameModalOpen && (
               <div className="shrink-0">
                 <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
               </div>
@@ -277,8 +283,6 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
           </Tabs>
         </Modal.Content>
       </Modal>
-
-      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
       <ForgetWalletModal
         wallet={wallet}

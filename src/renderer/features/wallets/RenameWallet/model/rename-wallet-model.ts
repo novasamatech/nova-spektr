@@ -1,9 +1,9 @@
 import { attach, combine, createApi, createEffect, createStore, sample } from 'effector';
-import { createForm } from 'effector-forms';
-import { not } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type Wallet } from '@/shared/core';
+import { createForm } from '@/shared/forms/createForm';
+import { type ValidationError } from '@/shared/forms/types';
 import { nonNullable } from '@/shared/lib/utils';
 import * as networkDomain from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -22,22 +22,40 @@ const walletApi = createApi($walletToEdit, {
   formInitiated: (state, props: Wallet) => ({ ...state, ...props }),
 });
 
-const $walletForm = createForm({
+type SourceParams = {
+  walletToEdit: Wallet;
+  wallets: Wallet[];
+};
+
+function validateNameExist(value: string, _: unknown, params: SourceParams): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  if (!value) {
+    errors.push({ message: 'walletDetails.common.nameRequiredError' });
+    return errors;
+  }
+
+  const isSameName = value.toLowerCase() === params.walletToEdit.name.toLowerCase();
+  const isUnique = params.wallets.every((wallet) => wallet.name.toLowerCase() !== value.toLowerCase());
+
+  if (!isSameName && !isUnique) {
+    errors.push({ message: 'walletDetails.common.nameExistsError' });
+  }
+
+  return errors;
+}
+
+const $walletForm = createForm<{ name: string }>({
   fields: {
     name: {
-      init: '',
-      rules: [
-        { name: 'required', errorText: 'walletDetails.common.nameRequiredError', validator: Boolean },
-        {
-          name: 'exist',
-          errorText: 'walletDetails.common.nameExistsError',
-          source: combine({
-            walletToEdit: $walletToEdit,
-            wallets: walletModel.$wallets,
-          }),
-          validator: validateNameExist,
-        },
-      ],
+      defaultValue: '',
+      validator: () => ({
+        source: combine({
+          walletToEdit: $walletToEdit,
+          wallets: walletModel.$wallets,
+        }),
+        fn: validateNameExist,
+      }),
     },
   },
   validateOn: ['submit'],
@@ -52,32 +70,17 @@ const renameWalletFx = createEffect(async ({ id, accounts, ...rest }: Wallet): P
 
 sample({
   clock: walletApi.formInitiated,
-  filter: $walletForm.$isDirty,
   target: $walletForm.reset,
 });
 
 sample({
   clock: walletApi.formInitiated,
-  filter: not($walletForm.$isDirty),
   fn: ({ name }) => ({ name }),
   target: $walletForm.setForm,
 });
 
-type SourceParams = {
-  walletToEdit: Wallet;
-  wallets: Wallet[];
-};
-function validateNameExist(value: string, _: unknown, params: SourceParams): boolean {
-  if (!value) return true;
-
-  const isSameName = value.toLowerCase() === params.walletToEdit.name.toLowerCase();
-  const isUnique = params.wallets.every((wallet) => wallet.name.toLowerCase() !== value.toLowerCase());
-
-  return isSameName || isUnique;
-}
-
 sample({
-  clock: $walletForm.formValidated,
+  clock: $walletForm.submit.doneData,
   source: $walletToEdit,
   filter: (walletToEdit: Wallet | null): walletToEdit is Wallet => nonNullable(walletToEdit),
   fn: (walletToEdit, { name }) => {

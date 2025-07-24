@@ -13,7 +13,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { WalletCardLg, accountUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
-import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
@@ -67,17 +67,26 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
         <div className="mb-4 flex items-center justify-between px-5 pb-6 pt-4">
           <Box direction="row" verticalAlign="center" gap={3}>
             <span>
-              <WalletCardLg wallet={wallet} />
+              <WalletCardLg wallet={wallet} withoutName={isRenameModalOpen} />
             </span>
-            <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
-            <WalletFiatBalance />
+            {!isRenameModalOpen && (
+              <>
+                <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                <WalletFiatBalance />
+              </>
+            )}
           </Box>
-          <div className="shrink-0">
-            {firstAccount && <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />}
-            <Button pallet="error" size="sm" variant="fill" onClick={toggleConfirmForget}>
-              {t('walletDetails.common.forgetButton')}
-            </Button>
-          </div>
+
+          <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+          {!isRenameModalOpen && (
+            <div className="shrink-0">
+              {firstAccount && <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />}
+              <Button pallet="error" size="sm" variant="fill" onClick={toggleConfirmForget}>
+                {t('walletDetails.common.forgetButton')}
+              </Button>
+            </div>
+          )}
         </div>
       </Modal.HeaderContent>
       <Modal.Content disableScroll>
@@ -115,8 +124,6 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
             </Tabs.Content>
           </Tabs>
         )}
-
-        <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
         <ForgetWalletModal
           wallet={wallet}
