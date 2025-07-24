@@ -5,11 +5,12 @@ import { dictionary, getRoundedValue, nullable, totalAmount } from '@/shared/lib
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 const $activeWalletBalance = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chains: networkModel.$chains,
     balances: balanceModel.$balances,
     currency: currencyModel.$activeCurrency,

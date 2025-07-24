@@ -9,15 +9,14 @@ import {
   Button,
   ConfirmModal,
   FootnoteText,
-  Icon,
   IconButton,
+  Separator,
   SmallTitleText,
   StatusLabel,
   StatusModal,
 } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import { type IconNames } from '@/shared/ui/Icon/data';
-import { Dropdown, Modal, Tabs } from '@/shared/ui-kit';
+import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { WalletCardLg, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -29,7 +28,9 @@ import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { walletConnectForget } from '../../model/walletConnectForgot';
 import { walletConnectReconnect } from '../../model/walletConnectReconnect';
+import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
+import { type WalletAction, WalletActions } from '../components/WalletActions';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
@@ -60,6 +61,8 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   const forgetStep = useUnit(walletConnectForget.$forgetStep);
   const reconnectStep = useUnit(walletConnectReconnect.$reconnectStep);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
+  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
+
   const [_, startTransition] = useTransition();
 
   const [tab, setTab] = useState('accounts');
@@ -74,55 +77,33 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
     toggleConfirmForget();
   };
 
-  const options = [
-    {
-      icon: 'rename' as IconNames,
-      title: t('walletDetails.common.renameButton'),
-      onClick: toggleIsRenameModalOpen,
-    },
-    {
-      icon: 'delete' as IconNames,
-      title: t('walletDetails.common.forgetButton'),
-      onClick: toggleConfirmForget,
-    },
-    {
-      icon: 'refresh' as IconNames,
-      title: t('walletDetails.walletConnect.refreshButton'),
-      onClick: walletConnectReconnect.start,
-    },
-  ];
+  const actions: WalletAction[] = [];
 
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
-    options.push({
-      icon: 'addCircle' as IconNames,
+    actions.push({
+      icon: 'delegate',
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
     });
   }
 
   if (permissionUtils.canCreateAnyProxy(wallet)) {
-    options.push({
-      icon: 'addCircle' as IconNames,
+    actions.push({
+      icon: 'createPureProxy',
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxied.events.flowStarted,
     });
   }
 
-  const ActionButton = (
-    <Dropdown align="end">
-      <Dropdown.Trigger>
-        <IconButton name="more" />
-      </Dropdown.Trigger>
-      <Dropdown.Content>
-        {options.map(option => (
-          <Dropdown.Item key={option.title} onSelect={option.onClick}>
-            <Icon name={option.icon} size={20} className="text-icon-accent" />
-            <span className="text-text-secondary">{option.title}</span>
-          </Dropdown.Item>
-        ))}
-      </Dropdown.Content>
-    </Dropdown>
-  );
+  actions.push({
+    icon: 'forget',
+    title: t('walletDetails.common.forgetButton'),
+    iconClassName: 'text-icon-negative',
+    backgroundClassName: 'bg-secondary-negative-button-background',
+    onClick: toggleConfirmForget,
+  });
+
+  const ActionButton = <IconButton name="refresh" size={16} onClick={() => walletConnectReconnect.start()} />;
 
   const changeTab = (tab: string) => {
     startTransition(() => {
@@ -132,33 +113,47 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
 
   return (
     <>
-      <Modal size="md" height="lg" isOpen={isModalOpen} onToggle={closeModal}>
+      <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
         <Modal.Title close action={ActionButton}>
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-4 flex items-center justify-between border-b border-divider px-5 pb-6 pt-4">
-            <div>
-              <WalletCardLg wallet={wallet}>
-                <StatusLabel
-                  className="ml-auto"
-                  title={connected ? t('wallets.connectedLabel') : t('wallets.disconnectedLabel')}
-                  variant={connected ? 'success' : 'waiting'}
-                />
-              </WalletCardLg>
-            </div>
+          <div className="mb-4 flex items-center justify-between px-5 pb-6 pt-4">
+            <Box direction="row" verticalAlign="center" gap={3}>
+              <span>
+                <WalletCardLg wallet={wallet}>
+                  <StatusLabel variant={connected ? 'success' : 'waiting'} />
+                </WalletCardLg>
+              </span>
+              <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+              <WalletFiatBalance />
+            </Box>
 
             <div className="shrink-0">
               <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
             </div>
           </div>
+
+          <WalletActions actions={actions} />
+
+          <Separator className="my-6" />
         </Modal.HeaderContent>
         <Modal.Content disableScroll>
           <Tabs value={tab} onChange={changeTab}>
             <div className="px-5">
               <Tabs.List>
-                <Tabs.Trigger value="accounts">{t('walletDetails.common.accountTabTitle')}</Tabs.Trigger>
-                <Tabs.Trigger value="proxies">{t('walletDetails.common.proxiesTabTitle')}</Tabs.Trigger>
+                <Tabs.Trigger value="accounts">
+                  <span className="flex items-center gap-1">
+                    {t('walletDetails.common.accountTabTitle')}
+                    <span className="text-text-tertiary">{wallet.accounts.length}</span>
+                  </span>
+                </Tabs.Trigger>
+                <Tabs.Trigger value="proxies">
+                  <span className="flex items-center gap-1">
+                    {t('walletDetails.common.proxiesTabTitle')}
+                    <span className="text-text-tertiary">{proxiesCount}</span>
+                  </span>
+                </Tabs.Trigger>
               </Tabs.List>
             </div>
             <Tabs.Content value="accounts">
