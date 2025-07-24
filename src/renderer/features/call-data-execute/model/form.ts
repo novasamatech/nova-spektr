@@ -4,16 +4,16 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { readonly, throttle } from 'patronum';
 
-import { type Chain } from '@/shared/core';
+import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, nonNullableMap, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { createFeeCalculator } from '@/shared/transactions';
-import { type AnyAccount, accountService, transactionService } from '@/domains/network';
+import { type AnyAccount, type EncodedTransaction, accountService, transactionService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
-import { type ExtrinsicSigningPayload, signModel } from '@/features/operations/OperationSign';
+import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { Step } from '../lib/types';
 import { callDataExecuteService } from '../service';
@@ -74,27 +74,35 @@ const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis)
   chain ? (apis[chain.chainId] ?? null) : null,
 );
 
+const $throttledCallData = restore(throttle(form.fields.callData.$value, 500), '').reset(flow.close);
+
+const $transaction = $throttledCallData.map((callData): EncodedTransaction | null => {
+  if (callData.length === 0) return null;
+  return {
+    type: 'encoded',
+    callData: callData as CallData,
+  };
+});
+
 const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
 const $args = combine($extrinsic, form.fields.chain.$value, (extrinsic, chain) => {
   return extrinsic && chain ? callDataExecuteService.formatExtrinsic(extrinsic, chain) : null;
 });
 
-const createExtrinsicFx = createQueuedEffect(({ callData, api }: { callData: string; api: ApiPromise }) => {
-  if (callData.length === 0 || nullable(api)) return null;
-  return transactionService.createSubmittableExtrinsicFromCallData(callData, api);
-});
-
-const $throttledCallData = restore(throttle(form.fields.callData.$value, 500), '').reset(flow.close);
-
-const createExtrinsic = combine({
-  callData: $throttledCallData,
-  api: $api,
-}).updates.filterMap((params) => {
-  if (nonNullableMap(params)) return params;
-});
+const createExtrinsicFx = createQueuedEffect(
+  ({ transaction, api }: { transaction: EncodedTransaction; api: ApiPromise }) => {
+    if (nullable(transaction) || nullable(api)) return null;
+    return transactionService.createSubmittableExtrinsicFromCallData(transaction.callData, api);
+  },
+);
 
 sample({
-  clock: createExtrinsic,
+  clock: combine({
+    transaction: $transaction,
+    api: $api,
+  }).updates.filterMap((params) => {
+    if (nonNullableMap(params)) return params;
+  }),
   target: createExtrinsicFx,
 });
 
@@ -105,6 +113,12 @@ sample({
 
 sample({
   clock: createExtrinsicFx.fail,
+  fn: () => null,
+  target: $extrinsic,
+});
+
+sample({
+  clock: flow.close,
   fn: () => null,
   target: $extrinsic,
 });
@@ -162,7 +176,7 @@ sample({
 });
 
 sample({
-  clock: signModel.events.signed,
+  clock: signModel.signed,
   fn: () => Step.SUBMIT,
   target: stepChanged,
 });
@@ -238,20 +252,23 @@ const $canSubmit = combine(
 const showConfirmation = sample({
   clock: form.submit.doneData,
   source: {
-    extrinsic: $extrinsic,
+    transaction: $transaction,
     args: $args,
     fee: $fee,
+    api: $api,
   },
-  fn: ({ extrinsic, args, fee }, { chain, signatory }) => {
-    if (nullable(extrinsic) || nullable(signatory) || nullable(chain) || nullable(args)) return null;
+  fn: (source, form) => {
+    if (!nonNullableMap(source) || !nonNullableMap(form)) return null;
+
     return {
-      chain,
-      extrinsic,
-      initiator: signatory,
-      signatory: signatory,
-      route: [signatory],
-      args,
-      fee,
+      api: source.api,
+      chain: form.chain,
+      transaction: source.transaction,
+      initiator: form.signatory,
+      signatory: form.signatory,
+      route: [form.signatory],
+      args: source.args,
+      fee: source.fee,
     } satisfies ConfirmInput;
   },
 });
@@ -266,32 +283,32 @@ const sign = sample({
   clock: confirmModel.startSigning,
   source: {
     form: form.$values,
-    extrinsic: $extrinsic,
+    transaction: $transaction,
     api: $api,
   },
-  fn({ form, extrinsic, api }) {
-    if (nullable(api) || nullable(extrinsic) || nullable(form.signatory) || nullable(form.chain)) return null;
+  fn({ form, transaction, api }) {
+    if (nullable(api) || nullable(transaction) || nullable(form.signatory) || nullable(form.chain)) return null;
     return {
-      extrinsic,
+      transaction,
       signatory: form.signatory,
       chain: form.chain,
       api,
-    } satisfies ExtrinsicSigningPayload;
+    } satisfies TransactionSigningPayload;
   },
 });
 
 sample({
   clock: sign.filter({ fn: nonNullable }),
   fn: (payload) => [payload],
-  target: signModel.events.init,
+  target: signModel.init,
 });
 
 sample({
-  clock: signModel.events.signed,
+  clock: signModel.signed,
   source: flow.status,
   filter: (open) => open,
   fn: (_, payload) => payload,
-  target: submitModel.events.init,
+  target: submitModel.init,
 });
 
 export const formModel = {

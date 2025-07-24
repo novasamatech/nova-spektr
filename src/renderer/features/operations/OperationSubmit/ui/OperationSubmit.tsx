@@ -28,7 +28,7 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Pr
 
   useEffect(() => {
     if (submitStore) {
-      submitModel.events.submitToNetwork();
+      submitModel.submitToNetwork();
     }
   }, [submitStore]);
 

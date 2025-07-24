@@ -118,6 +118,13 @@ function createSubmittableExtrinsic(transaction: AnyTransaction, api: ApiPromise
   return createSubmittableExtrinsicFromCallData(encodedExtrinsic.callData, api);
 }
 
+function createEncodedTransactionFromExtrinsic(extrinsic: Extrinsic): EncodedTransaction {
+  return {
+    type: 'encoded',
+    callData: extrinsic.method.toHex(),
+  };
+}
+
 function encodeTransaction(transaction: AnyTransaction, api: ApiPromise): EncodedTransaction {
   if (isEncodedTransaction(transaction)) {
     return transaction;
@@ -364,6 +371,7 @@ export const transactionService = {
   encodeTransaction,
   decodeTransaction,
 
+  createEncodedTransactionFromExtrinsic,
   createSubmittableExtrinsicFromCallData,
   createSubmittableExtrinsic,
 
