@@ -65,11 +65,17 @@ const $hasProxies = combine($chainsProxies, chainsProxies => {
   return Object.values(chainsProxies).some(accounts => accounts.length > 0);
 });
 
+const $proxiesCount = combine($chainsProxies, chainsProxies => {
+  return Object.values(chainsProxies).reduce((acc, accounts) => acc + accounts.length, 0);
+});
+
 export const walletDetailsModel = {
   flow,
 
+  $wallet,
   $chainsProxies,
   $walletProxyGroups,
   $hasProxies,
+  $proxiesCount,
   $canCreateProxy,
 };
