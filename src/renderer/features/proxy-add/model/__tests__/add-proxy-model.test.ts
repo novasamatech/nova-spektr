@@ -5,7 +5,6 @@ import { storageService } from '@/shared/api/storage';
 import { ConnectionStatus, type Transaction } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { createVaultBaseAccount } from '@/shared/mocks';
-import { type Extrinsic } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -80,7 +79,6 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
     await allSettled(signModel.output.formSubmitted, {
       scope,
       params: {
-        extrinsics: [{}] as unknown as Extrinsic[],
         signatures: ['0x00'],
         txPayloads: [{}] as unknown as Uint8Array[],
       },

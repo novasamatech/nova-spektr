@@ -10,16 +10,13 @@ import { type Extrinsic, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { getExtrinsic } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { type ExtrinsicSigningPayload, type SigningPayload } from '../lib/types';
+import { type ExtrinsicSigningPayload, type SigningPayload, type TransactionSigningPayload } from '../lib/types';
 
 type DeprecatedInput = {
   signingPayloads: SigningPayload[];
 };
 
-type Input = ExtrinsicSigningPayload[];
-
 export type DeprecatedSignatureData = {
-  extrinsics: Extrinsic[];
   signatures: HexString[];
   txPayloads: Uint8Array[];
 };
@@ -37,13 +34,13 @@ const flow = createGate();
 /**
  * Filling sign store
  */
-const init = createEvent<Input>();
+const init = createEvent<TransactionSigningPayload[]>();
 /**
  * Signator component indicates that payload is signed
  */
 const signed = createEvent<SignatureResult[]>();
 
-const $signStore = createStore<Input | null>(null).reset([init, flow.close]);
+const $signStore = createStore<ExtrinsicSigningPayload[] | null>(null).reset([init, flow.close]);
 
 /**
  * @deprecated Use "init" instead
@@ -63,15 +60,16 @@ type ConvertParams = {
  * Some batch extrinsics can be too large for network. in this case we're
  * splitting them into multiple chunks.
  */
-const convertOldFormatToNewFx = createEffect(({ input, apis }: ConvertParams): Input => {
+const convertOldFormatToNewFx = createEffect(({ input, apis }: ConvertParams) => {
   const { signingPayloads } = input;
-  const converted = signingPayloads.map<ExtrinsicSigningPayload>(({ transaction, account, signatory, chain }) => {
+  const converted = signingPayloads.map<TransactionSigningPayload>(({ transaction, account, signatory, chain }) => {
     const api = apis[chain.chainId];
+    const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
     return {
       api,
       chain,
+      transaction: transactionService.createEncodedTransactionFromExtrinsic(extrinsic),
       signatory: signatory ?? account,
-      extrinsic: getExtrinsic[transaction.type](transaction.args, api),
     };
   });
 
@@ -82,10 +80,11 @@ const convertOldFormatToNewFx = createEffect(({ input, apis }: ConvertParams): I
  * Some batch extrinsics can be too large for network. in this case we're
  * splitting them into multiple chunks.
  */
-const splitExtrinsicsFx = createEffect(async (input: Input): Promise<Input> => {
+const splitExtrinsicsFx = createEffect(async (input: TransactionSigningPayload[]) => {
   let splitted: ExtrinsicSigningPayload[] = [];
 
-  for (const { api, chain, signatory, extrinsic } of input) {
+  for (const { api, chain, signatory, transaction } of input) {
+    const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
     const extrinsics = await transactionService.splitExtrinsic(extrinsic, api);
 
     splitted = splitted.concat(
@@ -154,7 +153,6 @@ sample({
   clock: once({ source: signed, reset: init }),
   fn(data) {
     return {
-      extrinsics: data.map((d) => d.extrinsic),
       signatures: data.map((d) => d.signature),
       txPayloads: data.map((d) => d.payload),
     };
@@ -166,17 +164,18 @@ export const signModel = {
   $signStore,
   $signerWallet,
 
+  init,
+  signed,
+
   events: {
     /**
-     * @deprecated Use signModel.events.init instead
+     * @deprecated Use signModel.init instead
      */
     formInitiated,
-    init,
-    signed,
   },
   output: {
     /**
-     * @deprecated Use signModel.events.signed instead
+     * @deprecated Use signModel.signed instead
      */
     formSubmitted,
   },
