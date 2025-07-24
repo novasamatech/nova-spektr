@@ -90,19 +90,14 @@ const $args = combine($extrinsic, form.fields.chain.$value, (extrinsic, chain) =
 });
 
 const createExtrinsicFx = createQueuedEffect(
-  ({ transaction, api }: { transaction: EncodedTransaction; api: ApiPromise }) => {
+  ({ transaction, api }: { transaction: EncodedTransaction | null; api: ApiPromise | null }) => {
     if (nullable(transaction) || nullable(api)) return null;
     return transactionService.createSubmittableExtrinsicFromCallData(transaction.callData, api);
   },
 );
 
 sample({
-  clock: combine({
-    transaction: $transaction,
-    api: $api,
-  }).updates.filterMap((params) => {
-    if (nonNullableMap(params)) return params;
-  }),
+  source: { transaction: $transaction, api: $api },
   target: createExtrinsicFx,
 });
 
@@ -113,12 +108,6 @@ sample({
 
 sample({
   clock: createExtrinsicFx.fail,
-  fn: () => null,
-  target: $extrinsic,
-});
-
-sample({
-  clock: flow.close,
   fn: () => null,
   target: $extrinsic,
 });
