@@ -79,7 +79,6 @@ export const multisigWalletDetailsModel = {
   flow,
   $signatories,
 
-  $wallet,
   $chainsProxies,
   $hasProxies,
 };
