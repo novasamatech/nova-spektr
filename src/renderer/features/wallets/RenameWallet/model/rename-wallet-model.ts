@@ -27,24 +27,6 @@ type SourceParams = {
   wallets: Wallet[];
 };
 
-function validateNameExist(value: string, _: unknown, params: SourceParams): ValidationError[] {
-  const errors: ValidationError[] = [];
-
-  if (!value) {
-    errors.push({ message: 'walletDetails.common.nameRequiredError' });
-    return errors;
-  }
-
-  const isSameName = value.toLowerCase() === params.walletToEdit.name.toLowerCase();
-  const isUnique = params.wallets.every((wallet) => wallet.name.toLowerCase() !== value.toLowerCase());
-
-  if (!isSameName && !isUnique) {
-    errors.push({ message: 'walletDetails.common.nameExistsError' });
-  }
-
-  return errors;
-}
-
 const $walletForm = createForm<{ name: string }>({
   fields: {
     name: {
@@ -54,7 +36,23 @@ const $walletForm = createForm<{ name: string }>({
           walletToEdit: $walletToEdit,
           wallets: walletModel.$wallets,
         }),
-        fn: validateNameExist,
+        fn: (value: string, _: unknown, params: SourceParams): ValidationError[] => {
+          const errors: ValidationError[] = [];
+
+          if (!value) {
+            errors.push({ message: 'walletDetails.common.nameRequiredError' });
+            return errors;
+          }
+
+          const isSameName = value.toLowerCase() === params.walletToEdit.name.toLowerCase();
+          const isUnique = params.wallets.every((wallet) => wallet.name.toLowerCase() !== value.toLowerCase());
+
+          if (!isSameName && !isUnique) {
+            errors.push({ message: 'walletDetails.common.nameExistsError' });
+          }
+
+          return errors;
+        },
       }),
     },
   },
