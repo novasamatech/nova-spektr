@@ -21,7 +21,6 @@
 
 <!-- TOC start -->
 - [Key features](#key-features)
-- [Changelog](#changelog)
 - [Development](#development)
   * [Requirements](#requirements)
   * [Commands](#commands)

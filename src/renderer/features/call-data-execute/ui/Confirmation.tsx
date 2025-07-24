@@ -6,6 +6,7 @@ import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button, ButtonWebLink, DetailRow, Icon, LargeTitleText, Separator } from '@/shared/ui';
 import { TransactionDetails } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
+import { transactionService } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -30,13 +31,13 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
   if (!confirm) return null;
 
-  const { initiator, signatory, chain, signatoryWallet, extrinsic, fee, args } = confirm;
+  const { api, initiator, signatory, chain, signatoryWallet, transaction, fee, args } = confirm;
   const node = chain.nodes.at(0);
   if (nullable(node)) return null;
 
   const asset = getNativeAsset(chain.assets);
-  const callData = extrinsic.method.toHex();
-  const decodedLink = getPolkadotAppDecodedUrl(node.url, callData);
+  const encodedTransaction = transactionService.encodeTransaction(transaction, api);
+  const decodedLink = getPolkadotAppDecodedUrl(node.url, encodedTransaction.callData);
 
   return (
     <>

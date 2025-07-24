@@ -38,7 +38,7 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
       payload: payloads[index],
     }));
 
-    signModel.events.signed(payload);
+    signModel.signed(payload);
     onSuccess?.();
   };
 

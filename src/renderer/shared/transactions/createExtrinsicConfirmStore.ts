@@ -1,17 +1,19 @@
+import { type ApiPromise } from '@polkadot/api';
 import { type BN } from '@polkadot/util';
 import { type Store, combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain, type Wallet } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import { type AnyAccount, type Extrinsic } from '@/domains/network';
+import { type AnyAccount, type AnyTransaction } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
 export type ExtrinsicConfirmInfo = {
+  api: ApiPromise;
   initiator: AnyAccount;
   signatory: AnyAccount;
   route: AnyAccount[];
   chain: Chain;
-  extrinsic: Extrinsic;
+  transaction: AnyTransaction;
   fee: BN;
 };
 
