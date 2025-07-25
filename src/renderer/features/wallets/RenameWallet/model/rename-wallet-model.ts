@@ -1,4 +1,4 @@
-import { attach, combine, createApi, createEffect, createStore, sample } from 'effector';
+import { attach, combine, createEffect, createEvent, restore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
 import { type Wallet } from '@/shared/core';
@@ -12,15 +12,11 @@ export type Callbacks = {
   onSubmit: () => void;
 };
 
-const $callbacks = createStore<Callbacks | null>(null);
-const callbacksApi = createApi($callbacks, {
-  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
-});
+const callbackChanged = createEvent<Callbacks>();
+const $callbacks = restore(callbackChanged, null);
 
-const $walletToEdit = createStore<Wallet | null>(null);
-const walletApi = createApi($walletToEdit, {
-  formInitiated: (state, props: Wallet) => ({ ...state, ...props }),
-});
+const formInitiated = createEvent<Wallet>();
+const $walletToEdit = restore(formInitiated, null);
 
 type SourceParams = {
   walletToEdit: Wallet;
@@ -67,14 +63,14 @@ const renameWalletFx = createEffect(async ({ id, accounts, ...rest }: Wallet): P
 });
 
 sample({
-  clock: walletApi.formInitiated,
+  clock: formInitiated,
   target: $walletForm.reset,
 });
 
 sample({
-  clock: walletApi.formInitiated,
-  fn: ({ name }) => ({ name }),
-  target: $walletForm.setForm,
+  clock: formInitiated,
+  fn: ({ name }) => name,
+  target: $walletForm.fields.name.change,
 });
 
 sample({
@@ -111,8 +107,7 @@ sample({
 export const renameWalletModel = {
   $walletForm,
   $walletToEdit,
-  events: {
-    callbacksChanged: callbacksApi.callbacksChanged,
-    formInitiated: walletApi.formInitiated,
-  },
+
+  callbackChanged,
+  formInitiated,
 };

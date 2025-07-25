@@ -24,11 +24,11 @@ export const RenameWallet = ({ wallet, isOpen, onClose }: Props) => {
   useClickOutside([formRef], onClose);
 
   useEffect(() => {
-    renameWalletModel.events.formInitiated(wallet);
+    renameWalletModel.formInitiated(wallet);
   }, [wallet]);
 
   useEffect(() => {
-    renameWalletModel.events.callbacksChanged({ onSubmit: onClose });
+    renameWalletModel.callbackChanged({ onSubmit: onClose });
   }, [onClose]);
 
   if (!isOpen) return null;
