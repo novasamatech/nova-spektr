@@ -14,7 +14,7 @@ import { WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@/enti
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
-import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
@@ -99,17 +99,26 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="mb-6 flex items-center justify-between px-5">
-          <Box direction="row" verticalAlign="center" gap={3}>
+          <Box direction="row" verticalAlign="center" gap={3} height="fit">
             <span>
-              <WalletCardLg wallet={wallet} />
+              <WalletCardLg wallet={wallet} withoutName={isRenameModalOpen} />
             </span>
-            <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
-            <WalletFiatBalance />
+
+            {!isRenameModalOpen && (
+              <div className="flex items-center gap-3 duration-300 animate-in fade-in-0">
+                <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                <WalletFiatBalance />
+              </div>
+            )}
           </Box>
 
-          <div className="shrink-0">
-            {firstAccount && <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />}
-          </div>
+          <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+          {firstAccount && !isRenameModalOpen && (
+            <div className="shrink-0 duration-300 animate-in fade-in-0">
+              <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />
+            </div>
+          )}
         </div>
 
         <WalletActions actions={actions} />
@@ -151,8 +160,6 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
             </Tabs.Content>
           </Tabs>
         )}
-
-        <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
         <ForgetWalletModal
           wallet={wallet}
