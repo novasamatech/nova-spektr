@@ -23,7 +23,7 @@ import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { DerivationsAddressModal, ExportKeysModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
-import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -167,35 +167,45 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
           <div className="mb-6 flex items-center justify-between px-5">
             <Box direction="row" verticalAlign="center" gap={3}>
               <span>
-                <WalletCardLg wallet={wallet} />
+                <WalletCardLg wallet={wallet} withoutName={isRenameModalOpen} />
               </span>
-              <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
-              <Popover side="bottom" align="center">
-                <Popover.Trigger>
-                  <IconButton name="details" />
-                </Popover.Trigger>
-                <Popover.Content>
-                  <Box gap={0.5} padding={4} width="230px">
-                    <FootnoteText className="text-text-tertiary">{t('general.explorers.publicKeyTitle')}</FootnoteText>
-                    <Box direction="row" verticalAlign="center" gap={3}>
-                      <HelpText className="text-text-secondary">
-                        <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
-                      </HelpText>
-                      <IconButton
-                        className="shrink-0 text-icon-default"
-                        name="copy"
-                        onClick={() => copyToClipboard(wallet.rootAccountId)}
-                      />
-                    </Box>
-                  </Box>
-                </Popover.Content>
-              </Popover>
-              <WalletFiatBalance />
+              {!isRenameModalOpen && (
+                <>
+                  <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                  <Popover side="bottom" align="center">
+                    <Popover.Trigger>
+                      <IconButton name="details" />
+                    </Popover.Trigger>
+                    <Popover.Content>
+                      <Box gap={0.5} padding={4} width="230px">
+                        <FootnoteText className="text-text-tertiary">
+                          {t('general.explorers.publicKeyTitle')}
+                        </FootnoteText>
+                        <Box direction="row" verticalAlign="center" gap={3}>
+                          <HelpText className="text-text-secondary">
+                            <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
+                          </HelpText>
+                          <IconButton
+                            className="shrink-0 text-icon-default"
+                            name="copy"
+                            onClick={() => copyToClipboard(wallet.rootAccountId)}
+                          />
+                        </Box>
+                      </Box>
+                    </Popover.Content>
+                  </Popover>
+                  <WalletFiatBalance />
+                </>
+              )}
             </Box>
 
-            <div className="shrink-0">
-              <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
-            </div>
+            <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+            {!isRenameModalOpen && (
+              <div className="shrink-0">
+                <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
+              </div>
+            )}
           </div>
 
           <WalletActions actions={actions} />
@@ -247,7 +257,6 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
 
       <ShardsList />
 
-      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
       <KeyConstructor
         isOpen={isConstructorModalOpen}
         title={wallet.name}
