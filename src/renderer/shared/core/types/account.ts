@@ -36,6 +36,12 @@ export interface MultisigAccount extends UniversalAccount {
   threshold: number;
 }
 
+export interface FlexibleMultisigAccount extends UniversalAccount {
+  accountType: AccountType.FLEX_MULTISIG;
+  signatories: Signatory[];
+  threshold: number;
+}
+
 export interface MultisigSignatoryAccount extends UniversalAccount {
   accountType: AccountType.MULTISIG_SIGNATORY;
 }
@@ -62,13 +68,17 @@ export interface ProxiedConnection {
   extrinsicIndex?: number;
 }
 
+export interface FlexibleProxiedAccount extends Omit<ProxiedAccount, 'accountType'> {
+  accountType: AccountType.FLEX_PROXIED;
+}
+
 /**
  * @deprecated Use `import { type AnyAccount } from '@/domains/network'`
  *   instead.
  */
 export type Account = AnyAccount;
 
-export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId'>;
+export type DraftAccount<T extends AnyAccount> = Omit<NoID<T>, 'accountId' | 'walletId'>;
 
 export const enum AccountType {
   WATCH_ONLY = 'watch_only',
@@ -76,10 +86,11 @@ export const enum AccountType {
   CHAIN = 'chain',
   SHARD = 'shard',
   MULTISIG = 'multisig',
-  FLEXIBLE_MULTISIG = 'flexible_multisig',
   WALLET_CONNECT = 'wallet_connect',
   PROXIED = 'proxied',
   MULTISIG_SIGNATORY = 'multisig_signatory',
+  FLEX_MULTISIG = 'flex_multisig',
+  FLEX_PROXIED = 'flex_proxied',
 }
 
 export const enum KeyType {

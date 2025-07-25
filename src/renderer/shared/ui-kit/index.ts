@@ -29,6 +29,7 @@ export { Label, type LabelVariant } from './Label/Label';
 export { Modal } from './Modal/Modal';
 export { Field } from './Field/Field';
 export { Input } from './Input/Input';
+export { Json } from './Json/Json';
 export { Tabs } from './Tabs/Tabs';
 export { Box } from './Box/Box';
 export { QrReader, type QrScanResult } from './QrReader/QrReader';

@@ -1,28 +1,21 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { Select } from '@/shared/ui-kit';
-import { ChainTitle } from '@/entities/chain';
+import { ChainSelect } from '@/shared/ui-entities';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
 export const ChainSelector = () => {
   const { t } = useI18n();
 
-  const selectedChainId = useUnit(accountsStructureModel.$selectedChainId);
+  const selectedChain = useUnit(accountsStructureModel.$selectedChain);
   const availableChains = useUnit(accountsStructureModel.$availableChains);
 
   return (
-    <Select
+    <ChainSelect
       placeholder={t('proxy.addProxy.networkPlaceholder')}
-      value={selectedChainId}
-      height="sm"
+      value={selectedChain}
+      options={availableChains}
       onChange={accountsStructureModel.selectChain}
-    >
-      {availableChains.map((chain) => (
-        <Select.Item key={chain.chainId} value={chain.chainId}>
-          <ChainTitle className="overflow-hidden" fontClass="text-text-primary truncate" chain={chain} />
-        </Select.Item>
-      ))}
-    </Select>
+    />
   );
 };

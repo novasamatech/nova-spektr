@@ -3,12 +3,13 @@ import { useGate, useUnit } from 'effector-react';
 import { type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { AddProxyConfirm } from '@/features/operations/OperationsConfirm/AddProxy';
+import { AddProxyConfirmation } from '@/features/operations/OperationsConfirm/AddProxy';
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { Step } from '../lib/types';
 import { addProxyModel } from '../model/add-proxy-model';
@@ -35,7 +36,7 @@ export const AddProxy = ({ wallet }: Props) => {
     addProxyModel.output.flowClosed,
   );
 
-  const getModalTitle = (step: Step, chain?: Chain) => {
+  const getModalTitle = (step: Step, chain: Chain | null) => {
     if (addProxyUtils.isInitStep(step) || !chain) {
       return t('operations.modalTitles.addProxy');
     }
@@ -60,31 +61,27 @@ export const AddProxy = ({ wallet }: Props) => {
   }
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      panelClass="max-h-full overflow-y-auto"
-      isOpen={isModalOpen}
-      title={getModalTitle(step, chain)}
-      onClose={closeModal}
-    >
-      {addProxyUtils.isInitStep(step) && <AddProxyForm onGoBack={closeModal} />}
-      {addProxyUtils.isConfirmStep(step) && (
-        <AddProxyConfirm
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => addProxyModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => addProxyModel.events.stepChanged(Step.INIT)}
-        />
-      )}
-      {addProxyUtils.isSignStep(step) && (
-        <OperationSign onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)} />
-      )}
-    </BaseModal>
+    <Modal size="md" height="fit" isOpen={isModalOpen} onToggle={closeModal}>
+      <Modal.Title close>{getModalTitle(step, chain)}</Modal.Title>
+      <Modal.Content>
+        {addProxyUtils.isInitStep(step) && <AddProxyForm onGoBack={closeModal} />}
+        {addProxyUtils.isConfirmStep(step) && (
+          <AddProxyConfirmation
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => addProxyModel.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={() => addProxyModel.events.stepChanged(Step.INIT)}
+          />
+        )}
+        {addProxyUtils.isSignStep(step) && (
+          <OperationSign onGoBack={() => addProxyModel.events.stepChanged(Step.CONFIRM)} />
+        )}
+      </Modal.Content>
+    </Modal>
   );
 };

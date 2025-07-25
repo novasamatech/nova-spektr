@@ -27,8 +27,10 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Pr
   const { step, message } = useUnit(submitModel.$submitStep);
 
   useEffect(() => {
-    submitModel.events.submitStarted();
-  }, []);
+    if (submitStore) {
+      submitModel.submitToNetwork();
+    }
+  }, [submitStore]);
 
   const handleModalClose = () => {
     if (submitUtils.isLoadingStep(step)) {
@@ -49,7 +51,7 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Pr
 
     if (submitUtils.isWarningStep(step) && submitStore) {
       return {
-        title: t('transfer.warningTitle', { failed: failedTxs.length, all: submitStore.txPayloads.length }),
+        title: t('transfer.warningTitle', { failed: failedTxs.length, all: submitStore.length }),
         variant: 'warning',
         description: t('transfer.warningDescription'),
       };

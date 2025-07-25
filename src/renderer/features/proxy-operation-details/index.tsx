@@ -30,7 +30,7 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
     [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
     [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
     [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
-    [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
+    [TransactionType.KILL_PURE_PROXY]: 'operations.titles.removePureProxy',
   };
 
   return Title[transactionType];

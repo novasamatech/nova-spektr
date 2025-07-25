@@ -101,7 +101,7 @@ export const accountIdSchema = z
 
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: `${ctx.path.join('.')} is not account id`,
+      message: `Value is not account id`,
     });
 
     return z.NEVER;
@@ -121,7 +121,7 @@ export const perbillSchema = z.unknown().transform((value, ctx) => {
 
   ctx.addIssue({
     code: z.ZodIssueCode.custom,
-    message: `${ctx.path.join('.')} is not perbill`,
+    message: `Value is not perbill`,
     fatal: true,
   });
 
@@ -140,7 +140,7 @@ export const permillSchema = z.unknown().transform((value, ctx) => {
 
   ctx.addIssue({
     code: z.ZodIssueCode.custom,
-    message: `${ctx.path.join('.')} is not permill`,
+    message: `Value is not permill`,
     fatal: true,
   });
 

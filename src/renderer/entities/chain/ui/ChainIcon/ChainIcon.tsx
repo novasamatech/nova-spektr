@@ -10,6 +10,9 @@ type Props = {
   className?: string;
 };
 
+/**
+ * @deprecated Use import { ChainIcon } from '@/shared/ui-entities' instead
+ */
 export const ChainIcon = memo(({ src, name, size = 16, className }: Props) => {
   const [isImgLoaded, toggleImgLoaded] = useState(false);
 
@@ -17,7 +20,7 @@ export const ChainIcon = memo(({ src, name, size = 16, className }: Props) => {
     <Skeleton active={!isImgLoaded}>
       <img
         src={src}
-        className={cnTw('pointer-events-none select-none', className)}
+        className={cnTw('pointer-events-none h-full select-none', className)}
         width={size}
         height={size}
         alt={name}

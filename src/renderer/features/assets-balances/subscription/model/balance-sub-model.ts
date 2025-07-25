@@ -11,7 +11,6 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubUtils } from '../lib/balance-sub-utils';
 import { type SubAccounts, type Subscriptions } from '../lib/types';
@@ -24,7 +23,7 @@ const $subscriptions = createStore<Subscriptions>({});
 const $subAccounts = createStore<SubAccounts>({});
 const $balancesBucket = createStore<Balance[]>([]);
 
-const $previousWallet = previous(walletModel.$activeWallet);
+const $previousWallet = previous(walletSelect.$selectedWallet);
 
 const populateBalancesFx = createEffect(async (accountIds: Set<AccountId>): Promise<Balance[]> => {
   if (accountIds.size === 0) return Promise.resolve([]);
@@ -140,11 +139,9 @@ const $walletAndChains = combine({
 });
 
 sample({
-  clock: once($walletAndChains.map(({ wallet, chains }) =>
-    nonNullable(wallet) && Object.keys(chains).length > 0
-  )),
+  clock: once($walletAndChains.map(({ wallet, chains }) => nonNullable(wallet) && Object.keys(chains).length > 0)),
   source: $walletAndChains,
-  fn: ({wallet, chains}) => ({
+  fn: ({ wallet, chains }) => ({
     subAccounts: mapValues(chains, () => ({ [wallet!.id]: [] })),
     walletToSub: wallet!,
   }),

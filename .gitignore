@@ -37,3 +37,5 @@ schema.graphql
 /playwright-report/
 /playwright/.cache/
 allure-results
+
+.cursor

@@ -1,3 +1,4 @@
+import { type BN } from '@polkadot/util';
 import { type ComponentProps } from 'react';
 
 import { type Asset } from '@/shared/core';
@@ -41,7 +42,7 @@ export const MultisigDepositWithLabel = ({ wrapperClassName, ...depositProps }: 
 
 type MultisigDepositProps = {
   asset: Asset;
-  multisigDeposit: string;
+  multisigDeposit: BN | string;
 };
 
 export const MultisigDepositFee = ({ asset, multisigDeposit }: MultisigDepositProps) => {

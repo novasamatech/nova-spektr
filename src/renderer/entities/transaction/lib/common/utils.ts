@@ -1,6 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type DispatchError } from '@polkadot/types/interfaces';
-import { type SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { type VoteTransaction, voteTransactionService } from '@/entities/governance';
@@ -14,21 +12,6 @@ import {
   TransferTypes,
   XcmTypes,
 } from './constants';
-
-export const decodeDispatchError = (error: DispatchError | SpRuntimeDispatchError, api: ApiPromise): string => {
-  let errorInfo = error.toString();
-
-  if (error.isModule) {
-    const decoded = api.registry.findMetaError(error.asModule);
-
-    errorInfo = decoded.name
-      .split(/(?=[A-Z])/)
-      .map((w) => w.toLowerCase())
-      .join(' ');
-  }
-
-  return errorInfo;
-};
 
 export const isOldMultisigPallet = (api: ApiPromise): boolean =>
   api.tx.multisig.asMulti.meta.args.length === OLD_MULTISIG_ARGS_AMOUNT;
@@ -87,7 +70,7 @@ export const isRemoveProxyTransaction = (transaction?: Transaction | DecodedTran
 };
 
 export const isRemovePureProxyTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
-  return transaction?.type === TransactionType.REMOVE_PURE_PROXY;
+  return transaction?.type === TransactionType.KILL_PURE_PROXY;
 };
 
 export const isProxyTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {

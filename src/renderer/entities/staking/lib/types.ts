@@ -19,6 +19,7 @@ export interface IStakingDataService {
   getTotalStaked: (api: ApiPromise, era: EraIndex) => Promise<string>;
   getNextUnstakingEra: (unlocking?: Unlocking[], era?: number) => EraIndex | undefined;
   hasRedeem: (unlocking?: Unlocking[], era?: number) => boolean;
+  getEraDurationSeconds: (api: ApiPromise, timelineApi: ApiPromise) => number;
 }
 
 // =====================================================

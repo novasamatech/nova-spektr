@@ -32,7 +32,6 @@ type FormParams = {
 };
 
 type FormSubmitEvent = {
-  multisigTx: Transaction | null;
   transaction: Transaction | null;
   formData: FormParams & {
     route: AnyAccount[];
@@ -262,7 +261,7 @@ const $signatoryBalance = combine(
   },
 );
 
-const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
@@ -439,7 +438,6 @@ sample({
   source: {
     network: $networkStore,
     transaction: $tx,
-    multisigTx: $multisigTx,
     route: $route,
     fee: $fee.map((fee) => fee.toString()),
     multisigDeposit: $multisigDeposit,
@@ -448,13 +446,12 @@ sample({
   filter: ({ network, transaction, selectedSignatory }) => {
     return nonNullable(network) && nonNullable(transaction) && nonNullable(selectedSignatory);
   },
-  fn: ({ network, transaction, selectedSignatory, multisigTx, multisigDeposit, ...fee }, formData) => {
+  fn: ({ network, transaction, selectedSignatory, multisigDeposit, ...fee }, formData) => {
     const { initiator, ...rest } = formData;
     const amount = formatAmount(rest.amount, network!.asset.precision);
 
     return {
       transaction,
-      multisigTx,
       formData: {
         ...fee,
         totalFee: fee.fee,

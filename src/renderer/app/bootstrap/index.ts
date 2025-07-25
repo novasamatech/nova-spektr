@@ -11,12 +11,12 @@ import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
-import { assetsSettingsModel } from '@/features/assets';
+import { assetsSettingsModel, portfolioModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
+import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
-import { flexibleMultisigNavigationFeature } from '@/features/flexible-multisig-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
@@ -50,6 +50,7 @@ const populate = async () => {
   await proxyModel.populate();
   multisigOperation.populate();
   governanceMetaProvider.populate();
+  portfolioModel.populate();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();
@@ -68,9 +69,9 @@ export const bootstrap = () => {
     fellowshipNavigationFeature,
     operationsNavigationFeature,
     contactsNavigationFeature,
+    callDataExecuteFeature,
     notificationsNavigationFeature,
     settingsNavigationFeature,
-    flexibleMultisigNavigationFeature,
     basketNavigationFeature,
     stakingNavigationFeature,
     governanceNavigationFeature,
@@ -80,7 +81,7 @@ export const bootstrap = () => {
     import('@/features/wallet-pairing').then(({ walletPairingFeature }) => walletPairingFeature),
 
     import('@/features/multisig-wallet').then(({ multisigWalletFeature }) => multisigWalletFeature),
-    import('@/features/multisig-wallet-pairing').then(({ multisigWalletPairingFeature }) => multisigWalletPairingFeature),
+    import('@/features/multisig-wallet-create').then(({ multisigWalletPairingFeature }) => multisigWalletPairingFeature),
 
     import('@/features/polkadot-vault-wallet').then(({ polkadotVaultWalletFeature }) => polkadotVaultWalletFeature),
     import('@/features/polkadot-vault-wallet-pairing').then(({ polkadotVaultWalletPairingFeature }) => polkadotVaultWalletPairingFeature),

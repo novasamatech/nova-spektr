@@ -173,7 +173,6 @@ sample({
       route: [account],
       tx: wrappedTxs[index].wrappedTx,
       coreTx: wrappedTxs[index].coreTx!,
-      multisigTx: wrappedTxs[index].multisigTx ?? null,
     }));
   },
   target: removeVoteConfirmModel.init,
@@ -215,7 +214,6 @@ sample({
       signatory: meta.signatory,
       wrappedTxs: [meta.tx],
       coreTxs: [meta.coreTx],
-      multisigTxs: meta.multisigTx ? [meta.multisigTx] : [],
     };
   },
   target: submitModel.events.formInitiated,

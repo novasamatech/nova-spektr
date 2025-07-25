@@ -1,9 +1,11 @@
+import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { type PolkadotVaultWallet, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, SmallTitleText } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { OperationResult, QrDerivationsExportGenerator } from '@/entities/transaction';
 import { exportKeysUtils } from '../lib/export-keys-utils';
 
@@ -17,9 +19,10 @@ type Props = {
 export const ExportKeysModal = ({ isOpen, wallet, accounts, onClose }: Props) => {
   const { t } = useI18n();
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false);
+  const chains = useUnit(networkModel.$chains);
 
   const downloadKeysFile = () => {
-    exportKeysUtils.exportVaultWallet(wallet, wallet.rootAccountId, accounts);
+    exportKeysUtils.exportVaultWallet(wallet, wallet.rootAccountId, accounts, chains);
     setDownloadModalOpen(true);
   };
 

@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -33,16 +33,19 @@ export const Confirmation = ({
   const wallets = useUnit(walletModel.$wallets);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirmStore = confirms[id];
+  const confirm = useStoreMap({
+    store: confirmModel.$confirmStore,
+    keys: [id],
+    fn: (value, [id]) => value[id],
+  });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const { amount, asset, chain, fee, totalFee, signatory, route, multisigDeposit } = confirmStore.meta;
+  const { amount, asset, chain, fee, totalFee, signatory, route, multisigDeposit } = confirm.meta;
 
-  const proxiedAccount = route.find(accountUtils.isProxiedAccount);
   const multisigAccount = route.find(accountUtils.isMultisigAccount);
 
-  if (!confirmStore || !confirmStore.wallets.initiator) {
+  if (!confirm || !confirm.wallets.initiator) {
     return null;
   }
 
@@ -67,13 +70,7 @@ export const Confirmation = ({
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
-        chain={chain}
-        wallets={wallets}
-        initiators={initiators}
-        signatory={signatory}
-        proxied={proxiedAccount}
-      >
+      <TransactionDetails chain={chain} wallets={wallets} initiators={initiators} signatory={signatory}>
         {multisigAccount && (
           <DetailRow
             className="text-text-primary"
@@ -138,7 +135,7 @@ export const Confirmation = ({
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={confirmStore.wallets.signatory?.type}
+              type={confirm.wallets.signatory?.type}
               onClick={confirmModel.startSigning}
             />
           )}

@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type Address, type ChainId, type EraIndex, type Unlocking } from '@/shared/core';
-import { ZERO_BALANCE, redeemableAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, getExpectedBlockTime, redeemableAmount } from '@/shared/lib/utils';
 import { type IStakingDataService, type StakingMap } from '../lib/types';
 
 export const useStakingData = (): IStakingDataService => {
@@ -161,6 +161,14 @@ export const useStakingData = (): IStakingDataService => {
     return redeemableAmount(unlocking, era) !== ZERO_BALANCE;
   };
 
+  const getEraDurationSeconds = (api: ApiPromise, timelineApi: ApiPromise): number => {
+    const sessionsPerEra = api.consts.staking.sessionsPerEra.toNumber();
+    const sessionDuration = timelineApi.consts.babe.epochDuration.toNumber();
+    const expectedBlockTime = getExpectedBlockTime(api).toNumber();
+
+    return (sessionsPerEra * sessionDuration * expectedBlockTime) / 1000;
+  };
+
   return {
     fetchLedger,
     subscribeStaking,
@@ -169,5 +177,6 @@ export const useStakingData = (): IStakingDataService => {
     getTotalStaked,
     getNextUnstakingEra,
     hasRedeem,
+    getEraDurationSeconds,
   };
 };

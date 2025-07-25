@@ -11,7 +11,7 @@ import './Modal.css';
 
 type Props = {
   isOpen?: boolean;
-  size: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'full' | 'fit';
+  size: 'sm' | 'md' | 'mdlg' | 'lg' | 'xl' | 'xxl' | 'full' | 'fit';
   height?: 'full' | 'lg' | 'fit';
   onToggle?: (open: boolean) => void;
 };
@@ -51,6 +51,7 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
               {
                 'w-modal-sm': size === 'sm',
                 'w-modal': size === 'md',
+                'w-[37rem]': size === 'mdlg',
                 'w-modal-lg': size === 'lg',
                 'w-modal-xl': size === 'xl',
                 'w-full': size === 'full',

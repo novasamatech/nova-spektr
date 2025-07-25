@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Chain, TransactionType, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
 import {
   addUniqueItems,
   formatAmount,
@@ -13,7 +13,7 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts, transactionService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import {
   type VotesToRemove,
@@ -23,7 +23,7 @@ import {
   treasuryTracks,
   votingService,
 } from '@/entities/governance';
-import { transactionBuilder } from '@/entities/transaction';
+import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 
@@ -111,13 +111,10 @@ const checkMaxWeightReachedFx = createEffect(
         target: '0x0000000000000000000000000000000000000000',
       });
 
-      if (mockTx.type === TransactionType.BATCH_ALL) {
-        const txs = await transactionBuilder.splitBatchAll({ transaction: mockTx, chain, api });
+      const extrinsic = getExtrinsic[mockTx.type](mockTx.args, api);
+      const txs = await transactionService.splitExtrinsic(extrinsic, api);
 
-        return isArray(txs) && txs.length > 1;
-      } else {
-        return false;
-      }
+      return isArray(txs) && txs.length > 1;
     } else {
       return false;
     }

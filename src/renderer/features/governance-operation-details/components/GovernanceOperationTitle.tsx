@@ -1,10 +1,12 @@
-import { chainsService } from '@/shared/api/network';
+import { useUnit } from 'effector-react';
+
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
@@ -14,10 +16,12 @@ type Props = {
 
 export const GovernanceOperationTitle = ({ operation, title }: Props) => {
   const { t } = useI18n();
+
+  const chains = useUnit(networkModel.$chains);
+
   const transaction = operation.transaction;
 
-  const asset =
-    transaction && getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
+  const asset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
   const amount = transaction && getTransactionAmount(transaction);
 
   return (

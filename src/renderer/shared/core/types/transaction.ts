@@ -37,7 +37,7 @@ export const enum TransactionType {
   REMOVE_PROXY = 'remove_proxy',
   PROXY = 'proxy',
   CREATE_PURE_PROXY = 'create_pure_proxy',
-  REMOVE_PURE_PROXY = 'kill_pure_proxy',
+  KILL_PURE_PROXY = 'kill_pure_proxy',
 
   REMARK = 'remark',
 

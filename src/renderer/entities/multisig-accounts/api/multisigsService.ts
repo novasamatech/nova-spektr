@@ -141,7 +141,7 @@ async function findFlexibleMultisigs(
     if (entries.length === 0) continue;
 
     for (const { account, value } of entries) {
-      const proxyMultisigAccount = value.accounts.at(0);
+      const proxyMultisigAccount = value.proxies.at(0);
       const multisigAccountId = proxyMultisigAccount?.delegate;
       const id = `${chainId}-${multisigAccountId}`;
 
@@ -153,7 +153,7 @@ async function findFlexibleMultisigs(
         continue;
       }
 
-      if (flexMultisigs.get(id) || value.accounts.length !== 1 || proxyMultisigAccount.proxyType !== 'Any') {
+      if (flexMultisigs.get(id) || value.proxies.length !== 1 || proxyMultisigAccount.proxyType !== 'Any') {
         flexMultisigs.delete(id);
         continue;
       }

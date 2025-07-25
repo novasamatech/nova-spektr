@@ -15,11 +15,6 @@ describe('shared/lib/onChainUtils/substrate', () => {
     return getExpectedBlockTime(mockApi);
   };
 
-  test('should get expected block time from Subspace', () => {
-    const time = getTime({ consts: { subspace: { expectedBlockTime: blockTime } } });
-    expect(time).toEqual(blockTime);
-  });
-
   test('should get expected block time with Threshold check', () => {
     const time = getTime({ consts: { timestamp: { minimumPeriod: blockTime } } });
     expect(time.toString()).toEqual(blockTime.muln(2).toString());

@@ -81,6 +81,7 @@ const $walletIdsSerialized = $wallets.map((wallets) =>
     .join(','),
 );
 
+// list of accounts filtered by non-hidden wallets
 const $availableAccounts = combine($walletIdsSerialized, accounts.$list, (wallets, accounts) => {
   const ids = toKeysRecord(wallets.split(','));
 

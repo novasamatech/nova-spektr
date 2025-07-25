@@ -107,7 +107,7 @@ const $coreTx = combine(flow.state, $selectedSignatory, ({ chain, votes }, accou
   });
 });
 
-const { $tx, $multisigTx, $route } = createComplexTxStore({
+const { $tx, $route } = createComplexTxStore({
   api: networkSelectorModel.$governanceChainApi,
   initiator: $initiator,
   signatory: $selectedSignatory,
@@ -193,7 +193,6 @@ sample({
     signatory: $selectedSignatory,
     route: $route,
     tx: $tx,
-    multisigTx: $multisigTx,
     coreTx: $coreTx,
   },
   filter: ({ tx, initiator, state: { votes, asset, chain, api } }) => {
@@ -206,15 +205,7 @@ sample({
       nonNullable(api)
     );
   },
-  fn: ({
-    tx,
-    coreTx,
-    multisigTx,
-    route,
-    initiator,
-    signatory,
-    state: { votes, asset, chain, api },
-  }): RemoveVoteConfirm => {
+  fn: ({ tx, coreTx, route, initiator, signatory, state: { votes, asset, chain, api } }): RemoveVoteConfirm => {
     return {
       api: api!,
       asset: asset!,
@@ -225,7 +216,6 @@ sample({
       route,
       tx: tx!,
       coreTx: coreTx!,
-      multisigTx,
     };
   },
   target: removeVoteConfirmModel.replaceWithConfirm,
@@ -268,7 +258,6 @@ sample({
       signatory: meta.signatory,
       wrappedTxs: [meta.tx],
       coreTxs: [meta.coreTx],
-      multisigTxs: meta.multisigTx ? [meta.multisigTx] : [],
     };
   },
   target: submitModel.events.formInitiated,

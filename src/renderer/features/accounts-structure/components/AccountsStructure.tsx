@@ -19,7 +19,7 @@ import { memo, useCallback, useEffect, useRef } from 'react';
 import { useClickOutside } from '@/shared/lib/hooks';
 import { type AccountNode, type AnyAccount } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
-import { accountsStructureModel, focusOnSelected } from '../model/accountsStructureModel';
+import { accountsStructureModel } from '../model/accountsStructureModel';
 
 import { AccountStructureNode } from './AccountStructureNode';
 import { CustomEdge } from './CustomEdge';
@@ -198,7 +198,7 @@ const AccountsStructureInner = () => {
   useEffect(
     () =>
       // eslint-disable-next-line effector/no-watch
-      focusOnSelected.watch(
+      accountsStructureModel.focusOnSelected.watch(
         () => selectedAccount && fitView({ nodes: [{ id: selectedAccount.id }], maxZoom: 0.5, duration: 500 }),
       ),
     [fitView, selectedAccount],

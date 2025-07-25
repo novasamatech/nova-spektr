@@ -159,11 +159,10 @@ const validatorsFormSubmitted = sample({
     walletData: $walletData,
     coreTx: formModel.$coreTx,
     tx: formModel.$tx,
-    multisigTx: formModel.$multisigTx,
     route: formModel.$route,
     multisigDeposit: $multisigDeposit,
   },
-}).filterMap(({ bondData, fee, walletData, coreTx, multisigDeposit, tx, multisigTx, route }) => {
+}).filterMap(({ bondData, fee, walletData, coreTx, multisigDeposit, tx, route }) => {
   if (
     nonNullable(bondData) &&
     nonNullable(fee) &&
@@ -171,7 +170,6 @@ const validatorsFormSubmitted = sample({
     nonNullable(coreTx) &&
     nonNullable(multisigDeposit) &&
     nonNullable(tx) &&
-    nonNullable(multisigTx) &&
     nonNullable(route)
   ) {
     return [
@@ -184,7 +182,6 @@ const validatorsFormSubmitted = sample({
         multisigDeposit,
         coreTx,
         tx,
-        multisigTx,
         route,
       } satisfies BondNominateConfirm,
     ];
@@ -246,12 +243,11 @@ const signFormSubmitted = sample({
   source: {
     bondData: $bondNominateData,
     walletData: $walletData,
-    multisigTx: formModel.$multisigTx,
     coreTx: formModel.$coreTx,
     wrappedTx: formModel.$tx,
   },
   fn: (source, signParams) => ({ source, signParams }),
-}).filterMap(({ signParams, source: { bondData, walletData, multisigTx, coreTx, wrappedTx } }) => {
+}).filterMap(({ signParams, source: { bondData, walletData, coreTx, wrappedTx } }) => {
   if (nonNullable(bondData) && nonNullable(walletData) && nonNullable(coreTx) && nonNullable(wrappedTx)) {
     return {
       ...signParams,
@@ -260,7 +256,6 @@ const signFormSubmitted = sample({
       signatory: bondData.signatory,
       coreTxs: [coreTx],
       wrappedTxs: [wrappedTx],
-      multisigTxs: multisigTx ? [multisigTx] : [],
     };
   }
 });
