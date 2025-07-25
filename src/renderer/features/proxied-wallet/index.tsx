@@ -54,18 +54,20 @@ accountSDK(proxiedWalletFeature, {
       };
     }
   },
-  connection({ target, t }) {
+  connection({ source, target, t }) {
     if (accountUtils.isProxiedAccount(target)) {
       return {
-        labels: target.connections?.map(connection => {
-          const key = `proxy.types.${connection.proxyType}`;
-          const translatedValue = t(key);
-          return {
-            text: translatedValue !== key ? translatedValue : connection.proxyType,
-            color: 'var(--icons-icon-alert, #7B29FF)',
-            background: '#F5EEFF',
-          };
-        }),
+        labels: target.connections
+          .filter(connection => connection.proxyAccountId === source.accountId)
+          .map(connection => {
+            const key = `proxy.types.${connection.proxyType}`;
+            const translatedValue = t(key);
+            return {
+              text: translatedValue !== key ? translatedValue : connection.proxyType,
+              color: 'var(--icons-icon-alert, #7B29FF)',
+              background: '#F5EEFF',
+            };
+          }),
         color: '#2A1FD5',
       };
     }
