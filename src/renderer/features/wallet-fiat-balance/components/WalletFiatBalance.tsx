@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
 import { FiatBalance, priceProviderModel } from '@/entities/price';
-import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { walletFiatBalanceModel } from '../model/fiatBalance';
 
 BigNumber.config({
@@ -23,7 +23,7 @@ export const WalletFiatBalance = ({ walletId, className }: Props) => {
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const walletBalances = useUnit(walletFiatBalanceModel.$activeWalletBalance);
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeWallet = useUnit(walletSelect.$selectedWallet);
 
   if (!fiatFlag || walletId !== activeWallet?.id) {
     return null;
