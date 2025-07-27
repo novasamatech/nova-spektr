@@ -132,7 +132,7 @@ function isFlexibleProxiedAccount(account: Partial<AnyAccount>): account is Prox
 }
 
 function isPureProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {
-  return isProxiedAccount(account) && account.proxyVariant === ProxyVariant.PURE;
+  return isProxiedAccount(account) && account.connections.some((c) => c.proxyVariant === ProxyVariant.PURE);
 }
 
 // Matchers
@@ -228,19 +228,19 @@ function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): str
 // Proxied accounts
 
 function isAnyProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'Any';
+  return account.connections.some((c) => c.proxyType === 'Any');
 }
 
 function isNonTransferProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'NonTransfer';
+  return account.connections.some((c) => c.proxyType === 'NonTransfer');
 }
 
 function isStakingProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'Staking';
+  return account.connections.some((c) => c.proxyType === 'Staking');
 }
 
 function isGovernanceProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'Governance';
+  return account.connections.some((c) => c.proxyType === 'Governance');
 }
 
 /**

@@ -63,7 +63,7 @@ export interface FlexibleMultisigWallet extends Wallet {
 
 export interface ProxiedWallet extends Wallet {
   type: WalletType.PROXIED;
-  accounts: ProxiedAccount[];
+  accounts: [ProxiedAccount];
 }
 
 export interface WalletConnectWallet extends Wallet {
