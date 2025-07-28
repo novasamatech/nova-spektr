@@ -6,10 +6,11 @@ import './IconButton.css';
 
 type IconProps = ComponentProps<typeof Icon>;
 
-const IconButtonStyle =
+const getIconButtonStyle = (disabled?: boolean) =>
   'relative w-max justify-center rounded-full outline-offset-1 text-icon-default transition-colors shrink-0 h-fit w-fit' +
-  'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active ' +
-  'focus:text-icon-hover focus:bg-hover';
+  (disabled
+    ? ''
+    : ' hover:text-icon-hover hover:bg-hover focus:text-icon-hover focus:bg-hover active:bg-hover active:text-tab-icon-active');
 
 type HTMLButtonProps = Pick<
   ComponentProps<'button'>,
@@ -51,7 +52,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
     <button
       ref={ref}
       type="button"
-      className={cnTw('spektr-icon-button', IconButtonStyle, className)}
+      className={cnTw('spektr-icon-button', getIconButtonStyle(disabled), className)}
       aria-label={ariaLabel || `icon button: ${iconProps.name}`}
       disabled={disabled}
       data-testid={testId}
