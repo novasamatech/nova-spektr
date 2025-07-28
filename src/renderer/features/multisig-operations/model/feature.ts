@@ -42,7 +42,7 @@ const $input = combine(
     const input = [];
 
     for (const account of wallet.accounts) {
-      if (accountUtils.isProxiedAccount(account)) {
+      if (accountUtils.isFlexibleProxiedAccount(account)) {
         const api = apis[account.chainId];
         const chain = chains[account.chainId];
 

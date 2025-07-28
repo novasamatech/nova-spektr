@@ -7,7 +7,6 @@ import {
   type MultisigSignatoryAccount,
   type Transaction,
   TransactionType,
-  WalletIconType,
   WalletType,
 } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
@@ -223,16 +222,11 @@ transactionSDK(multisigWalletFeature, {
 multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isMultisig(wallet)) return null;
 
-  const type =
-    walletUtils.isFlexibleMultisig(wallet) && !wallet.activated
-      ? WalletIconType.FLEXIBLE_MULTISIG_INACTIVE
-      : wallet.type;
-
   const address = wallet.accounts[0]?.accountId;
   const isEthereum = isEthereumAccountId(address);
   const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
-  return <WalletAccountIcon address={address} type={type} size={size} theme={theme} />;
+  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
 });
 
 multisigWalletFeature.inject(walletGroupSlot, {

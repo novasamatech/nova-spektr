@@ -8,6 +8,8 @@ import {
   type Chain,
   type ChainId,
   CryptoType,
+  type FlexibleMultisigAccount,
+  type FlexibleProxiedAccount,
   type MultisigAccount,
   type MultisigSignatoryAccount,
   type MultisigThreshold,
@@ -107,7 +109,7 @@ function isMultisigAccount(account: Partial<AnyAccount>): account is MultisigAcc
   return 'accountType' in account && account.accountType === AccountType.MULTISIG;
 }
 
-function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount {
+function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is FlexibleMultisigAccount {
   return 'accountType' in account && account.accountType === AccountType.FLEX_MULTISIG;
 }
 
@@ -122,7 +124,7 @@ function isProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccou
   );
 }
 
-function isFlexibleProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {
+function isFlexibleProxiedAccount(account: Partial<AnyAccount>): account is FlexibleProxiedAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     accountService.isChainAccount(account) &&
