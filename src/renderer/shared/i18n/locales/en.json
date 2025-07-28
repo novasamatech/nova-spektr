@@ -1661,7 +1661,8 @@
       "IdentityJudgement": "Judgement",
       "NominationPools": "Nominations",
       "NonTransfer": "Non Transfer",
-      "Staking": "Staking"
+      "Staking": "Staking",
+      "SudoBalances": "Sudo Balances"
     }
   },
   "pureProxyRemove": {
