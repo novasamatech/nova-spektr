@@ -11,7 +11,7 @@ export type FlexibleMultisigConfirm = TxConfirmInfo & {
   threshold: number;
 };
 
-const confirmStore = createTransactionConfirmStore<FlexibleMultisigConfirm>({
+const confirmStore = createTransactionConfirmStore<TxConfirmInfo>({
   $wallets: walletModel.$wallets,
   $apis: networkModel.$apis,
   $multisigTransactions: selectedWalletMultisigOperations.$list,

@@ -12,7 +12,6 @@ import { type MultisigEvent, type MultisigOperation, multisigOperation, transact
 import { multisigOperationService } from '@/domains/network';
 import { getExtrinsic, isProxyTypeTransaction } from '@/entities/transaction';
 import { proxiesModel } from '@/features/proxies';
-import { flexibleShellModel } from '../../model/flexible-shell-model';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
@@ -57,21 +56,12 @@ export const Submit = ({ api, tx, operation, account, txPayload, signature, isRe
           updatedTx.status = params.multisigError ? 'error' : 'executed';
         }
 
-        if (params.isFinalApprove && params.multisigError) {
-          flexibleShellModel.events.rejectMultisig();
-        }
-
         if (
           params.isFinalApprove &&
           !params.multisigError &&
           isProxyTypeTransaction(operation.transaction ?? undefined)
         ) {
           proxiesModel.findAllProxies();
-        }
-
-        if (isReject) {
-          flexibleShellModel.events.rejectMultisig();
-          updatedTx.status = 'cancelled';
         }
 
         const eventStatus = isReject ? 'reject' : 'approve';

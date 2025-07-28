@@ -39,7 +39,6 @@ export const transactionBuilder = {
   buildRemoveVote,
   buildRemoveVotes,
   buildRejectMultisigTx,
-  buildRejectFlexibleMultisigTx,
   buildCreatePureProxy,
   buildCreateFlexibleMultisig,
   buildRemark,
@@ -521,37 +520,6 @@ function buildRejectMultisigTx({
       },
     },
   };
-}
-
-type RejectFlexibleTxParams = RejectTxParams & {
-  accountId: AccountId;
-  transaction: Transaction;
-};
-
-function buildRejectFlexibleMultisigTx({
-  chain,
-  signerAccountId,
-  otherSignatories,
-  transaction,
-  threshold,
-  tx,
-}: RejectFlexibleTxParams): Transaction {
-  const asset = chain.assets.at(0);
-  if (!asset) throw new Error('Asset not found');
-
-  const rejectTx = buildRejectMultisigTx({
-    chain,
-    signerAccountId,
-    threshold,
-    otherSignatories,
-    tx,
-  });
-
-  return buildBatchAll({
-    chain,
-    accountId: signerAccountId,
-    transactions: [rejectTx, transaction],
-  });
 }
 
 type CreateProxyPureParams = {

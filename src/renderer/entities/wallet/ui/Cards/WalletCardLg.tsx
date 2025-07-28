@@ -1,8 +1,7 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { type Wallet, WalletIconType } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
-import { walletUtils } from '../../lib/wallet-utils';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = PropsWithChildren<{
@@ -13,15 +12,10 @@ type Props = PropsWithChildren<{
 }>;
 
 export const WalletCardLg = ({ wallet, description, additionalInfo, children, withoutName }: Props) => {
-  const type =
-    walletUtils.isFlexibleMultisig(wallet) && !wallet.activated
-      ? WalletIconType.FLEXIBLE_MULTISIG_INACTIVE
-      : wallet.type;
-
   return (
     <div className="flex w-full min-w-0 items-center gap-x-2">
       <div className="relative">
-        <WalletIcon type={type} size={42} />
+        <WalletIcon type={wallet.type} size={42} />
         {additionalInfo}
       </div>
       <div className="flex min-w-0 flex-col">

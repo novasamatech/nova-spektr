@@ -236,19 +236,9 @@ const formSubmitted = sample({
     route: $route,
     signer: $signer,
     chain: formModel.$chain,
-    threshold: formModel.form.fields.threshold.$value,
-    multisigAccountId: formModel.$multisigAccountId,
-    totalDeposit: $totalDeposit,
   },
-}).filterMap(({ chain, tx, coreTx, route, signer, threshold, totalDeposit, multisigAccountId }) => {
-  if (
-    nonNullable(totalDeposit) &&
-    nonNullable(coreTx) &&
-    nonNullable(chain) &&
-    nonNullable(signer) &&
-    nonNullable(tx) &&
-    nonNullable(multisigAccountId)
-  ) {
+}).filterMap(({ chain, tx, coreTx, route, signer }) => {
+  if (nonNullable(coreTx) && nonNullable(chain) && nonNullable(signer) && nonNullable(tx)) {
     return [
       {
         tx,
@@ -256,10 +246,7 @@ const formSubmitted = sample({
         route,
         signatory: signer,
         initiator: signer,
-        threshold,
-        totalDeposit: totalDeposit.toString(),
         chain,
-        multisigAccountId,
       },
     ];
   }
