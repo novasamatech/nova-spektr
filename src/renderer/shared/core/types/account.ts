@@ -68,13 +68,13 @@ export interface DeprecatedProxiedAccount extends ChainAccount {
 export interface ProxiedAccount extends ChainAccount {
   accountType: AccountType.PROXIED;
   connections: ProxiedConnection[];
+  proxyVariant: ProxyVariant;
 }
 
 export interface ProxiedConnection {
   proxyAccountId: AccountId;
   delay: number;
   proxyType: ProxyType;
-  proxyVariant: ProxyVariant;
   blockNumber?: number;
   extrinsicIndex?: number;
 }
