@@ -1635,7 +1635,8 @@
       "nominationPools": "nominations operations",
       "nonTransfer": "all, except transfer operations",
       "removeProxyTitle": "Revoke delegated authority (proxy) on ",
-      "staking": "staking operations"
+      "staking": "staking operations",
+      "sudoBalances": "balances via sudo"
     },
     "proxyDepositHint": "The deposit stays reserved on your account until the proxy is removed",
     "proxyDepositLabel": "Proxy deposit",

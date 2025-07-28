@@ -28,7 +28,8 @@ export type ProxyType =
   | 'CancelProxy'
   | 'Governance'
   | 'IdentityJudgement'
-  | 'NominationPools';
+  | 'NominationPools'
+  | 'SudoBalances';
 
 export const enum ProxyVariant {
   NONE = 'none', // temp value, until we not receive correct proxy variant

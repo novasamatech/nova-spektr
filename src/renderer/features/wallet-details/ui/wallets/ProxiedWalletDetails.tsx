@@ -41,6 +41,7 @@ const ProxyTypeOperation: Record<ProxyType, string> = {
   Governance: 'proxy.operations.governance',
   IdentityJudgement: 'proxy.operations.identityJudgement',
   NominationPools: 'proxy.operations.nominationPools',
+  SudoBalances: 'proxy.operations.sudoBalances',
 };
 
 type Props = {

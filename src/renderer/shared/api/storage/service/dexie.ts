@@ -23,8 +23,8 @@ import {
   migrateMultishardAccounts,
   migrateMultisigAccounts,
   migratePVAccounts,
-  migrateProxiedAccountsFormat,
   migrateWallets,
+  removeDeprecatedProxiedAccounts,
 } from '../migration';
 
 class DexieStorage extends Dexie {
@@ -122,7 +122,7 @@ class DexieStorage extends Dexie {
 
     this.version(32).upgrade(migrateEVMAccountsCryptoType);
 
-    this.version(33).upgrade(migrateProxiedAccountsFormat);
+    this.version(33).upgrade(removeDeprecatedProxiedAccounts);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');

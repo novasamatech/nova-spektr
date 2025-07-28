@@ -6,4 +6,4 @@ export { migratePVAccounts } from './migration-5';
 export { migrateMultishardAccounts } from './migration-6';
 export { migrateCASBasket } from './migration-7';
 export { migrateEVMAccountsCryptoType } from './migration-8';
-export { migrateProxiedAccountsFormat } from './migration-9';
+export { removeDeprecatedProxiedAccounts } from './migration-9';

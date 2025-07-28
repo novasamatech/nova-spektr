@@ -60,10 +60,8 @@ accountSDK(proxiedWalletFeature, {
         labels: target.connections
           .filter(connection => connection.proxyAccountId === source.accountId)
           .map(connection => {
-            const key = `proxy.types.${connection.proxyType}`;
-            const translatedValue = t(key);
             return {
-              text: translatedValue !== key ? translatedValue : connection.proxyType,
+              text: t([`proxy.types.${connection.proxyType}`, connection.proxyType]),
               color: 'var(--icons-icon-alert, #7B29FF)',
               background: '#F5EEFF',
             };
