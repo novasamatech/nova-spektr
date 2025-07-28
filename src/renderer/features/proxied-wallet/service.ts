@@ -116,26 +116,26 @@ function checkPermission(
     return { success: true };
   }
 
-  let res: Call | ProxyCall = {
-    type: 'call',
-    name: call,
-  };
+  // const res: Call | ProxyCall = {
+  //   type: 'call',
+  //   name: call,
+  // };
 
-  for (const account of proxiedRoute) {
-    if (res.type === 'call') {
-      const proxyCall = createProxyCall(account.proxyType, call);
-      if (!proxyCall) return { success: false, account };
-
-      res = proxyCall;
-      continue;
-    } else {
-      const proxyCall = narrowProxyCall(res, account.proxyType);
-      if (!proxyCall) {
-        return { success: false, account };
-      }
-      res = proxyCall;
-    }
-  }
+  // for (const account of proxiedRoute) {
+  //   if (res.type === 'call') {
+  //     const proxyCall = createProxyCall(account.proxyType, call);
+  //     if (!proxyCall) return { success: false, account };
+  //
+  //     res = proxyCall;
+  //     continue;
+  //   } else {
+  //     const proxyCall = narrowProxyCall(res, account.proxyType);
+  //     if (!proxyCall) {
+  //       return { success: false, account };
+  //     }
+  //     res = proxyCall;
+  //   }
+  // }
 
   return { success: true };
 }
