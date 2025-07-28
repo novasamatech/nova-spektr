@@ -2226,6 +2226,7 @@
     "connectedLabel": "Connected",
     "disconnectedLabel": "Disconnected",
     "emptyList": "Wallets not found",
+    "flexibleMultisigFlexLabel": "FLEX",
     "flexibleMultisigLabel": "Flexible Multisig",
     "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
