@@ -7,9 +7,9 @@ import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { AssetIcon } from '@/shared/ui-entities';
 import { CardStack, Tooltip } from '@/shared/ui-kit';
-import { networkModel } from '@/entities/network';
 import { TokenPrice } from '@/entities/price';
-import { CheckPermission, OperationType, walletModel } from '@/entities/wallet';
+import { CheckPermission, OperationType } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { tokensService } from '../lib/tokensService';
 import { portfolioModel } from '../model/portfolio-model';
 
@@ -24,8 +24,7 @@ type Props = {
 export const TokenBalanceList = memo(({ asset }: Props) => {
   const { t } = useI18n();
 
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const chains = useUnit(networkModel.$chains);
+  const activeWallet = useUnit(walletSelect.$selectedWallet);
 
   const handleSend = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -48,7 +47,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
             <div className="flex flex-col gap-y-0.5">
               <BodyText>{asset.symbol}</BodyText>
               <div className="flex items-center">
-                <ChainsList chains={chains} assetChains={asset.chains} />
+                <ChainsList assetChains={asset.chains} />
                 <FootnoteText className="ml-1.5 text-text-tertiary">
                   {t('balances.availableNetworks', { count: asset.chains.length })}
                 </FootnoteText>
