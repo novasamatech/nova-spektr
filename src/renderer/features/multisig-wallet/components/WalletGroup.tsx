@@ -3,6 +3,7 @@ import { memo } from 'react';
 
 import { AccountType, type Chain, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId, performSearch } from '@/shared/lib/utils';
 import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
@@ -25,6 +26,8 @@ type Props = {
 };
 
 export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }: Props) => {
+  const { t } = useI18n();
+
   const allAccounts = useUnit(accounts.$list);
   const chains = useUnit(networkModel.$chains);
 
@@ -57,12 +60,14 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
               const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
               let chain: Chain | null = null;
+              let label: string | null = null;
 
               if (walletUtils.isFlexibleMultisig(wallet)) {
                 const chainId = wallet.accounts.find(
                   account => account.accountType === AccountType.FLEX_PROXIED,
                 )?.chainId;
                 chain = chainId ? chains[chainId] : null;
+                label = t('wallets.flexibleMultisigFlexLabel');
               }
 
               return (
@@ -75,6 +80,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
                     <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
                   }
                   chain={chain}
+                  label={label}
                   onClick={() => onSelect(wallet)}
                 >
                   <Slot id={walletActionsSlot} props={{ wallet }} />

@@ -1,7 +1,6 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
 import { type Address, type Chain, type Wallet } from '@/shared/core';
-import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, Icon, type IconTheme, Identicon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
@@ -15,6 +14,7 @@ type Props = {
   theme: IconTheme;
   onClick: () => void;
   chain?: Chain | null;
+  label?: string | null;
 };
 
 export const WalletManagement = ({
@@ -26,9 +26,8 @@ export const WalletManagement = ({
   children,
   onClick,
   chain: flexibleMultisigChain,
+  label,
 }: PropsWithChildren<Props>) => {
-  const { t } = useI18n();
-
   return (
     <div
       className={cnTw(
@@ -58,7 +57,7 @@ export const WalletManagement = ({
             </BodyText>
             {flexibleMultisigChain && (
               <div className="flex items-center gap-x-1">
-                <Label variant="purple">{t('wallets.flexibleMultisigFlexLabel')}</Label>
+                <Label variant="purple">{label}</Label>
                 <ChainIcon chain={flexibleMultisigChain} />
               </div>
             )}
