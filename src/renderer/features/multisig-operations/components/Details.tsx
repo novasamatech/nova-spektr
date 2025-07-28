@@ -37,6 +37,7 @@ import {
   isXcmTransaction,
 } from '@/entities/transaction';
 import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {
   operation: MultisigOperation;
@@ -49,7 +50,7 @@ type Props = {
 export const Details = ({ api, operation, account, chain, signatory }: Props) => {
   const { t } = useI18n();
 
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeWallet = useUnit(walletSelect.$selectedWallet);
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
 

@@ -132,6 +132,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
             accounts={activeShards}
             hideZeroBalances={hideZeroBalances}
             query={query}
+            wallet={activeWallet}
           />
         ))}
         <EmptyAssetsState />

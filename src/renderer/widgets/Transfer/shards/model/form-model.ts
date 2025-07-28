@@ -239,7 +239,7 @@ const $coreTx = combine(
 const { $wrappedTx: $transaction, $txWrappers } = createTxStore({
   $api,
   $coreTx,
-  $activeWallet: walletModel.$activeWallet,
+  $activeWallet: walletSelect.$selectedWallet,
   $wallets: walletModel.$wallets,
   $chain: $transferForm.fields.xcmChain.$value,
   $account: $transferForm.fields.account.$value || null,
@@ -308,7 +308,7 @@ const $proxyWallet = combine(
 const $accounts = combine(
   {
     network: $networkStore,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     balances: balanceModel.$balances,
   },
   ({ network, wallet, balances }) => {

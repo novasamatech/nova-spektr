@@ -49,7 +49,7 @@ export const Operation = memo(({ operation, account }: Props) => {
             <OperationIcon operation={operation} />
             {titleNode}
           </div>
-          <OperationTitleStatus operation={operation} />
+          <OperationTitleStatus operation={operation} account={account} />
         </div>
       </Accordion.Button>
       <Accordion.Content className="border-t border-divider">

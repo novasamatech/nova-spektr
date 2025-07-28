@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type KeyboardEvent, memo, useMemo } from 'react';
 
-import { type Asset, type Balance, type ChainId } from '@/shared/core';
+import { type Asset, type Balance, type ChainId, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { KeyboardKey, cnTw, totalAmount, transferableAmountBN } from '@/shared/lib/utils';
@@ -14,9 +14,10 @@ type Props = {
   chainId: ChainId;
   asset: Asset;
   balance?: Balance;
+  wallet: Wallet | null;
 };
 
-export const AssetCard = memo(({ chainId, asset, balance }: Props) => {
+export const AssetCard = memo(({ chainId, asset, balance, wallet }: Props) => {
   const { t } = useI18n();
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
@@ -68,7 +69,7 @@ export const AssetCard = memo(({ chainId, asset, balance }: Props) => {
             </div>
           )}
         </div>
-        <AssetLinks assetId={asset.assetId} chainId={chainId} />
+        <AssetLinks assetId={asset.assetId} chainId={chainId} wallet={wallet} />
       </div>
 
       {isExpanded && (

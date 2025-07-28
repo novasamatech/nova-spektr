@@ -1,15 +1,13 @@
-import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type AssetByChains } from '@/shared/core';
+import { type AssetByChains, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { AssetIcon } from '@/shared/ui-entities';
 import { CardStack, Tooltip } from '@/shared/ui-kit';
 import { TokenPrice } from '@/entities/price';
 import { CheckPermission, OperationType } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { tokensService } from '../lib/tokensService';
 import { portfolioModel } from '../model/portfolio-model';
 
@@ -19,12 +17,13 @@ import { NetworkCard } from './NetworkCard';
 
 type Props = {
   asset: AssetByChains;
+  wallet: Wallet | null;
 };
 
-export const TokenBalanceList = memo(({ asset }: Props) => {
+export const TokenBalanceList = memo(({ asset, wallet }: Props) => {
   const { t } = useI18n();
 
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const activeWallet = wallet;
 
   const handleSend = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -85,7 +84,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
         <ul className="flex flex-col pl-5">
           {asset.chains.map((chain) => (
             <li key={`${chain.chainId}-${chain.assetId}`}>
-              <NetworkCard chain={chain} asset={asset} />
+              <NetworkCard chain={chain} asset={asset} wallet={wallet} />
             </li>
           ))}
         </ul>

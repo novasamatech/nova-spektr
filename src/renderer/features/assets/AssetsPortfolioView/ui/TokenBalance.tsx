@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type AssetByChains } from '@/shared/core';
+import { type AssetByChains, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, CaptionText, FootnoteText, Icon, Plate } from '@/shared/ui';
 import { AssetIcon, ChainIcon } from '@/shared/ui-entities';
@@ -15,9 +15,10 @@ import { AssembledAssetAmount } from './AssembledAssetAmount';
 
 type Props = {
   asset: AssetByChains;
+  wallet: Wallet | null;
 };
 
-export const TokenBalance = memo(({ asset }: Props) => {
+export const TokenBalance = memo(({ asset, wallet }: Props) => {
   const { t } = useI18n();
   const chain = asset.chains[0];
 
@@ -57,7 +58,7 @@ export const TokenBalance = memo(({ asset }: Props) => {
         className="text-text-primar text-right"
       />
       <AssembledAssetAmount asset={asset} balance={chain.balance} />
-      <AssetLinks assetId={asset.chains[0].assetId} chainId={chain.chainId} />
+      <AssetLinks assetId={asset.chains[0].assetId} chainId={chain.chainId} wallet={wallet} />
     </Plate>
   );
 });
