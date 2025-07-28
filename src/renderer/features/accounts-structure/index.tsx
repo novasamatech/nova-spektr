@@ -7,6 +7,7 @@ import {
   simpleOverviewSlot,
   vaultOverviewSlot,
   walletConnectOverviewSlot,
+  watchOnlyOverviewSlot,
 } from '@/features/wallet-details';
 
 import { AccountsStructureModal } from './components/AccountsStructureModal';
@@ -22,6 +23,7 @@ const overviewSlot = combineIdentifiers(
   proxiedOverviewSlot,
   multisigOverviewSlot,
   vaultOverviewSlot,
+  watchOnlyOverviewSlot,
 );
 
 accountsStructureFeature.inject(overviewSlot, ({ walletAccounts }) => {
