@@ -239,26 +239,16 @@ multisigWalletFeature.inject(walletGroupSlot, {
   order: 3,
   render({ query, onSelect }) {
     const { t } = useI18n();
-    const regular = useUnit(walletsModel.$regularMultisig);
-    const flexible = useUnit(walletsModel.$flexibleMultisig);
+    const multisigs = useUnit(walletsModel.$multisigs);
 
     return (
-      <>
-        <WalletGroup
-          title={t('wallets.multisigLabel')}
-          walletType={WalletType.MULTISIG}
-          wallets={regular}
-          query={query}
-          onSelect={onSelect}
-        />
-        <WalletGroup
-          title={t('wallets.flexibleMultisigLabel')}
-          walletType={WalletType.FLEXIBLE_MULTISIG}
-          wallets={flexible}
-          query={query}
-          onSelect={onSelect}
-        />
-      </>
+      <WalletGroup
+        title={t('wallets.multisigLabel')}
+        walletType={WalletType.MULTISIG}
+        wallets={multisigs}
+        query={query}
+        onSelect={onSelect}
+      />
     );
   },
 });

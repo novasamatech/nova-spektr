@@ -1,8 +1,11 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { type Address, type Wallet } from '@/shared/core';
+import { type Address, type Chain, type Wallet } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, Icon, type IconTheme, Identicon } from '@/shared/ui';
+import { Label } from '@/shared/ui-kit';
+import { ChainIcon } from '../ChainIcon/ChainIcon';
 
 type Props = {
   wallet: Wallet;
@@ -11,6 +14,7 @@ type Props = {
   address: Address | undefined;
   theme: IconTheme;
   onClick: () => void;
+  flexibleMultisigChain?: Chain;
 };
 
 export const WalletManagement = ({
@@ -21,7 +25,10 @@ export const WalletManagement = ({
   meta,
   children,
   onClick,
+  flexibleMultisigChain,
 }: PropsWithChildren<Props>) => {
+  const { t } = useI18n();
+
   return (
     <div
       className={cnTw(
@@ -33,7 +40,7 @@ export const WalletManagement = ({
         {wallet.isActive ? (
           <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
         ) : (
-          <div className="row-span-2 h-5 w-5 shrink-0" />
+          <div className="row-span-2 h-4 w-4 shrink-0" />
         )}
 
         <Identicon canCopy={false} address={address} size={16} background={false} theme={theme} />
@@ -49,6 +56,12 @@ export const WalletManagement = ({
             >
               {wallet.name}
             </BodyText>
+            {flexibleMultisigChain && (
+              <div className="flex items-center gap-x-1">
+                <Label variant="purple">{t('wallets.flexibleMultisigFlexLabel')}</Label>
+                <ChainIcon chain={flexibleMultisigChain} />
+              </div>
+            )}
 
             {meta}
           </div>

@@ -379,12 +379,12 @@ sample({
   clock: walletModel.events.walletCreatedDone,
   source: walletModel.$wallets,
   filter: (_, { accounts }) => {
-    const account = accounts.find(accountUtils.isProxiedAccount);
+    const account = accounts.find(accountUtils.isFlexibleProxiedAccount);
 
     return nonNullable(account) && account.proxyType === 'Any';
   },
   fn: (wallets, { accounts }) => {
-    const account = accounts.find(accountUtils.isProxiedAccount)!;
+    const account = accounts.find(accountUtils.isFlexibleProxiedAccount)!;
 
     const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
       walletFn: walletUtils.isFlexibleMultisig,
@@ -397,7 +397,7 @@ sample({
       ...proxyWallet,
       accounts: [{ ...account, walletId: proxyWallet.id }, ...proxyWallet.accounts],
       activated: true,
-    };
+    } satisfies FlexibleMultisigWallet;
   },
   target: $flexibleWithProxy,
 });

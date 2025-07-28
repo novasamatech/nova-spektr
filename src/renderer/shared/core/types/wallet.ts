@@ -3,6 +3,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
 import {
+  type FlexibleMultisigAccount,
+  type FlexibleProxiedAccount,
   type MultisigAccount,
   type ProxiedAccount,
   type VaultBaseAccount,
@@ -58,7 +60,7 @@ export interface MultisigWallet extends Wallet {
 export interface FlexibleMultisigWallet extends Wallet {
   type: WalletType.FLEXIBLE_MULTISIG;
   activated: boolean;
-  accounts: (MultisigAccount | ProxiedAccount)[];
+  accounts: (FlexibleMultisigAccount | FlexibleProxiedAccount)[];
 }
 
 export interface ProxiedWallet extends Wallet {

@@ -20,10 +20,9 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
+import { type FlexibleProxiedAccount } from '@/shared/core/types/account';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-// TODO all this type checks should be defined in features with own context
-// eslint-disable-next-line boundaries/element-types
 import { type AnyAccount, accountService } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 
@@ -122,7 +121,7 @@ function isProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccou
   );
 }
 
-function isFlexibleProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {
+function isFlexibleProxiedAccount(account: Partial<AnyAccount>): account is FlexibleProxiedAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     accountService.isChainAccount(account) &&
