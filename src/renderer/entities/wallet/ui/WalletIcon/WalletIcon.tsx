@@ -1,10 +1,8 @@
-import { WalletIconType, WalletType } from '@/shared/core';
+import { WalletType } from '@/shared/core';
 import { Icon } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/Icon/data';
 
-type WalletIconTypes = WalletType | WalletIconType;
-
-const WalletIconNames: Record<WalletIconTypes, IconNames> = {
+const WalletIconNames: Record<WalletType, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vaultBackground',
   [WalletType.POLKADOT_EXTENSION]: 'polkadotExtensionBackground',
   [WalletType.TALISMAN_EXTENSION]: 'talismanExtensionBackground',
@@ -16,11 +14,10 @@ const WalletIconNames: Record<WalletIconTypes, IconNames> = {
   [WalletType.WALLET_CONNECT]: 'walletConnectBackground',
   [WalletType.NOVA_WALLET]: 'novaWalletBackground',
   [WalletType.PROXIED]: 'proxiedBackground',
-  [WalletIconType.FLEXIBLE_MULTISIG_INACTIVE]: 'flexibleMultisigBackgroundInactive',
 };
 
 type Props = {
-  type: WalletIconTypes;
+  type: WalletType;
   className?: string;
   size?: number;
 };
