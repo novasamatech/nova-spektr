@@ -76,7 +76,7 @@ export const ConfirmationStep = ({ onToggle }: Props) => {
             <div className="my-4">
               <Button
                 prefixElement={<Icon className="text-icon-button" name="vault" size={14} />}
-                disabled={nullable(proxyAddress)}
+                disabled={nullable(proxyAddress) || flexibleMultisigCreated}
                 onClick={() => assignModel.startSigningFlexible()}
               >
                 {t('createMultisigAccount.flexibleMultisig.assignControl')}
