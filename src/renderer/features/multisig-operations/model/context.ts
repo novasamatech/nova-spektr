@@ -1,10 +1,9 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { TransactionType } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
 import { type MultisigOperation, multisigOperation } from '@/domains/network';
-import { TransferTypes, XcmTypes, findCoreBatchAll, isCreatePureProxyTransaction } from '@/entities/transaction';
-import { accountUtils, walletUtils } from '@/entities/wallet';
+import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
 
@@ -60,24 +59,6 @@ const $filteredOperations = combine(selectedWalletMultisigOperations.$list, $fil
 
 const $account = walletSelect.$selectedAccounts.map(x => x.find(accountUtils.isMultisigAccount) ?? null);
 
-const $incompleteFlexibleMultisigTx = combine(
-  { account: $account, wallet: walletSelect.$selectedWallet, txs: selectedWalletMultisigOperations.$list },
-  ({ account, wallet, txs }) => {
-    const signingTransactions = txs.filter(tx => tx.status === 'pending');
-
-    if (
-      nonNullable(account) &&
-      walletUtils.isFlexibleMultisig(wallet) &&
-      !wallet.activated &&
-      signingTransactions.length === 1
-    ) {
-      return signingTransactions.find(tx => isCreatePureProxyTransaction(tx.transaction)) ?? null;
-    }
-
-    return null;
-  },
-);
-
 sample({
   clock: multisigOperationsFeature.running,
   target: [multisigOperation.subscribe, multisigOperation.subscribeEvents],
@@ -92,7 +73,6 @@ export const operationsContextModel = {
   $filter,
   $filteredOperations,
   $account,
-  $incompleteFlexibleMultisigTx,
 
   setFilters,
   resetFilters,
