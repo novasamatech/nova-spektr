@@ -56,10 +56,8 @@ export interface MultisigWallet extends Wallet {
   accounts: MultisigAccount[];
 }
 
-// TODO: try to move signatories data out of account
 export interface FlexibleMultisigWallet extends Wallet {
   type: WalletType.FLEXIBLE_MULTISIG;
-  activated: boolean;
   accounts: (FlexibleMultisigAccount | FlexibleProxiedAccount)[];
 }
 
@@ -126,8 +124,4 @@ export const enum SigningType {
   POLKADOT_VAULT = 'signing_pv',
   EXTENSION = 'signing_ext',
   WALLET_CONNECT = 'signing_wc',
-}
-
-export enum WalletIconType {
-  FLEXIBLE_MULTISIG_INACTIVE = 'wallet_fxms_inactive',
 }

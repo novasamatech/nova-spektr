@@ -8,6 +8,8 @@ import {
   type Chain,
   type ChainId,
   CryptoType,
+  type FlexibleMultisigAccount,
+  type FlexibleProxiedAccount,
   type MultisigAccount,
   type MultisigSignatoryAccount,
   type MultisigThreshold,
@@ -20,7 +22,6 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
-import { type FlexibleProxiedAccount } from '@/shared/core/types/account';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
@@ -106,7 +107,7 @@ function isMultisigAccount(account: Partial<AnyAccount>): account is MultisigAcc
   return 'accountType' in account && account.accountType === AccountType.MULTISIG;
 }
 
-function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount {
+function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is FlexibleMultisigAccount {
   return 'accountType' in account && account.accountType === AccountType.FLEX_MULTISIG;
 }
 

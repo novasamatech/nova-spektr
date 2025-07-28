@@ -1,4 +1,4 @@
-import { attach, combine, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { attach, combine, createEffect, createEvent, sample, scopeBind } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { uniq } from 'lodash';
 import { combineEvents, interval } from 'patronum';
@@ -141,7 +141,6 @@ type MultisigResponse = {
 
 type FlexibleMultisigResponse = {
   type: 'flexibleMultisig';
-  activated: boolean;
   accounts: (ProxiedAccount | MultisigAccountNoId)[];
   chain: Chain;
 };
@@ -184,7 +183,6 @@ const enrichIndexedMultisigsFx = createEffect(
 
     //     return {
     //       type: 'flexibleMultisig',
-    //       activated: Boolean(proxied),
     //       accounts: flexibleAccounts,
     //       chain,
     //     };
@@ -302,13 +300,12 @@ sample({
   clock: populateFlexibleMultisigWallets,
   filter: (multisigs) => multisigs.every((m) => m.accounts.find(accountUtils.isProxiedAccount) || m.accounts.at(0)),
   fn: (multisigs) => {
-    return multisigs.map(({ accounts, activated }) => {
+    return multisigs.map(({ accounts }) => {
       const account = accounts.find(accountUtils.isProxiedAccount) || accounts.at(0);
       const wallet: NoID<Omit<FlexibleMultisigWallet, 'accounts' | 'isActive'>> = {
         name: account!.name,
         type: WalletType.FLEXIBLE_MULTISIG,
         signingType: SigningType.MULTISIG,
-        activated: activated ?? false,
       };
 
       return {
@@ -372,65 +369,6 @@ sample({
   target: proxiesModel.findAllProxies,
 });
 
-// Bond flexible multisig with proxy
-const $flexibleWithProxy = createStore<FlexibleMultisigWallet | null>(null);
-
-sample({
-  clock: walletModel.events.walletCreatedDone,
-  source: walletModel.$wallets,
-  filter: (_, { accounts }) => {
-    const account = accounts.find(accountUtils.isFlexibleProxiedAccount);
-
-    return nonNullable(account) && account.proxyType === 'Any';
-  },
-  fn: (wallets, { accounts }) => {
-    const account = accounts.find(accountUtils.isFlexibleProxiedAccount)!;
-
-    const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: walletUtils.isFlexibleMultisig,
-      accountFn: (a) => a.accountId === account.proxyAccountId,
-    }) as FlexibleMultisigWallet | null;
-
-    if (!proxyWallet) return null;
-
-    return {
-      ...proxyWallet,
-      accounts: [{ ...account, walletId: proxyWallet.id }, ...proxyWallet.accounts],
-      activated: true,
-    } satisfies FlexibleMultisigWallet;
-  },
-  target: $flexibleWithProxy,
-});
-
-sample({
-  clock: $flexibleWithProxy,
-  filter: nonNullable,
-  fn: (flexibleWithProxy) => flexibleWithProxy!.accounts,
-  target: accounts.updateAccounts,
-});
-
-sample({
-  clock: $flexibleWithProxy,
-  filter: nonNullable,
-  target: updateWalletFx,
-});
-
-// Convert flexible shell multisig back to the regular
-const convertFlexibleToRegular = createEvent<MultisigAccount | null>();
-
-sample({
-  clock: convertFlexibleToRegular,
-  source: walletModel.$activeWallet,
-  filter: (wallet, account) => nonNullable(wallet) && nonNullable(account),
-  fn: (wallet, account) => ({
-    ...wallet!,
-    activated: undefined,
-    type: WalletType.MULTISIG,
-    accounts: [account!],
-  }),
-  target: updateWalletFx, //remove or update flex wallet depending on multisig
-});
-
 // Convert regular multisig to flexible
 const convertRegularToFlexible = createEvent<MultisigWallet | null>();
 
@@ -439,7 +377,6 @@ sample({
   filter: (wallet: MultisigWallet | null): wallet is MultisigWallet => nonNullable(wallet),
   fn: (wallet) => ({
     ...wallet,
-    activated: false,
     type: WalletType.FLEXIBLE_MULTISIG,
   }),
   target: updateWalletFx,
@@ -448,7 +385,6 @@ sample({
 export const multisigsModel = {
   subscribe,
   request,
-  convertFlexibleToRegular,
   convertRegularToFlexible,
 
   __test: {
