@@ -56,13 +56,13 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
               const isEthereum = isEthereumAccountId(address);
               const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
-              let chain: Chain | undefined;
+              let chain: Chain | null = null;
 
               if (walletUtils.isFlexibleMultisig(wallet)) {
                 const chainId = wallet.accounts.find(
                   account => account.accountType === AccountType.FLEX_PROXIED,
                 )?.chainId;
-                chain = chainId ? chains[chainId] : undefined;
+                chain = chainId ? chains[chainId] : null;
               }
 
               return (
@@ -74,7 +74,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
                   description={
                     <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
                   }
-                  flexibleMultisigChain={chain}
+                  chain={chain}
                   onClick={() => onSelect(wallet)}
                 >
                   <Slot id={walletActionsSlot} props={{ wallet }} />

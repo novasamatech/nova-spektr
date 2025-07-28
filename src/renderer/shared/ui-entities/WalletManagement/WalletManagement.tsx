@@ -14,7 +14,7 @@ type Props = {
   address: Address | undefined;
   theme: IconTheme;
   onClick: () => void;
-  flexibleMultisigChain?: Chain;
+  chain?: Chain | null;
 };
 
 export const WalletManagement = ({
@@ -25,7 +25,7 @@ export const WalletManagement = ({
   meta,
   children,
   onClick,
-  flexibleMultisigChain,
+  chain: flexibleMultisigChain,
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
