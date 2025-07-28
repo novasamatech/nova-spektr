@@ -2164,10 +2164,10 @@
       "removeWalletTitle": "Remove wallet",
       "removingWallet": "Removing wallet",
       "renameButton": "Rename",
-      "renameWallet": "Enter wallet name",
       "renameLabel": "Name",
       "renameSaveButton": "Save",
       "renameTitle": "Rename wallet",
+      "renameWallet": "Enter wallet name",
       "title": "Wallet details",
       "walletRemoved": "Wallet removed"
     },
