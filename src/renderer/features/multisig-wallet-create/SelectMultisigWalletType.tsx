@@ -3,7 +3,7 @@ import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { BodyText, Button, Icon, RadioGroup } from '@/shared/ui';
+import { BodyText, Button, Icon, RadioGroup, SmallTitleText } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 
 import { type MultisigWalletType, descriptionMultisig } from './constants';
@@ -97,13 +97,25 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
                 <div className="flex items-start gap-x-2" key={item.text}>
                   <Icon name="checkmarkOutline" className="mt-1 shrink-0 text-text-positive" size={14} />
                   <BodyText>
-                    <Trans t={t} i18nKey={item.text} />
+                    <Trans
+                      t={t}
+                      i18nKey={item.text}
+                      components={{
+                        header: <SmallTitleText as="span" />,
+                      }}
+                    />
                   </BodyText>
                 </div>
               ))}
             </div>
             <BodyText className="mt-8 text-text-tertiary">
-              <Trans t={t} i18nKey="createMultisigAccount.selectMultisigDescription.flexibleNote" />
+              <Trans
+                t={t}
+                i18nKey="createMultisigAccount.selectMultisigDescription.flexibleNote"
+                components={{
+                  header: <SmallTitleText className="text-text-tertiary" as="span" />,
+                }}
+              />
             </BodyText>
           </RadioGroup.CardOption>
           <RadioGroup.CardOption option={regularMultisigOption}>
@@ -116,13 +128,25 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
                     <Icon name="checkmarkOutline" className="mt-1 shrink-0 text-text-positive" size={14} />
                   )}
                   <BodyText>
-                    <Trans t={t} i18nKey={item.text} />
+                    <Trans
+                      t={t}
+                      i18nKey={item.text}
+                      components={{
+                        header: <SmallTitleText as="span" />,
+                      }}
+                    />
                   </BodyText>
                 </div>
               ))}
             </div>
-            <BodyText className="mt-8 text-text-tertiary">
-              <Trans t={t} i18nKey="createMultisigAccount.selectMultisigDescription.regularNote" />
+            <BodyText className="mt-12 text-text-tertiary">
+              <Trans
+                t={t}
+                i18nKey="createMultisigAccount.selectMultisigDescription.regularNote"
+                components={{
+                  header: <SmallTitleText className="text-text-tertiary" as="span" />,
+                }}
+              />
             </BodyText>
           </RadioGroup.CardOption>
         </RadioGroup>

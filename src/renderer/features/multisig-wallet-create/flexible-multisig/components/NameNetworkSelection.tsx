@@ -30,7 +30,8 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
       <Modal.Content>
         <section className="flex h-full w-modal-lg flex-1 flex-col gap-y-6 px-5">
           <SmallTitleText>
-            {t('createMultisigAccount.multisigStep', { step: 1 })} {t('createMultisigAccount.nameNetworkDescription')}
+            {t('createMultisigAccount.multisigStep', { step: 1 })}{' '}
+            {t('createMultisigAccount.flexibleMultisig.nameNetworkDescription')}
           </SmallTitleText>
 
           <hr className="-ml-5 w-[110%] border-divider" />
@@ -69,7 +70,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
                 </Field>
               </Box>
               <FootnoteText className="mt-2 text-text-tertiary">
-                {t('createMultisigAccount.networkDescription')}
+                {t('createMultisigAccount.flexibleMultisig.networkDescription')}
               </FootnoteText>
             </div>
           </form>
