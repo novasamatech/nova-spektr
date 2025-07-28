@@ -73,6 +73,13 @@ sample({
   target: $signer,
 });
 
+sample({
+  clock: $signerWallet,
+  filter: nonNullable,
+  fn: wallet => [wallet!],
+  target: signatoryModel.events.getSignatoriesBalance,
+});
+
 const $asset = formModel.$chain.map(chain => (chain ? getNativeAsset(chain.assets) : null));
 
 type GetDepositParams = {
