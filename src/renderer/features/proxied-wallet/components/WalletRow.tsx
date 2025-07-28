@@ -4,8 +4,8 @@ import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { isEthereumAccountId } from '@/shared/lib/utils';
 import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
+import { ChainIcon } from '@/shared/ui-entities';
 import { accountService, accounts } from '@/domains/network';
-import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 
@@ -21,6 +21,7 @@ type Props = {
 };
 export const WalletRow = ({ wallet, onSelect }: Props) => {
   const chains = useUnit(networkModel.$chains);
+
   const account = useStoreMap({
     store: accounts.$list,
     keys: [wallet.id],
@@ -41,7 +42,7 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
       wallet={wallet}
       address={address}
       theme={theme}
-      meta={chain ? <ChainIcon src={chain.icon} size={16} /> : null}
+      meta={chain ? <ChainIcon chain={chain} size={16} /> : null}
       description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}
     >

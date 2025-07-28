@@ -34,8 +34,6 @@ const $signatories = combine(
 
     const walletSignatories: [Wallet, AccountId][] = [];
     for (const wallet of wallets) {
-      if (!walletUtils.isValidSignatory(wallet)) continue;
-
       for (const account of wallet.accounts) {
         if (!signatoriesMap[account.accountId]) continue;
 

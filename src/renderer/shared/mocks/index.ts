@@ -106,6 +106,67 @@ export const kusamaChain: Chain = {
   ],
 };
 
+export const polkadotAssetHubChain: Chain = {
+  name: 'Polkadot Asset Hub',
+  specName: 'polkadot',
+  addressPrefix: 0,
+  chainId: '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f',
+  parentId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+  icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot_Asset_Hub.svg',
+  options: [ChainOptions.MULTISIG, ChainOptions.REGULAR_PROXY, ChainOptions.PURE_PROXY],
+  nodes: [],
+  assets: [
+    {
+      name: 'Polkadot',
+      assetId: 0,
+      symbol: 'DOT',
+      precision: 10,
+      type: AssetType.NATIVE,
+      priceId: 'polkadot',
+      icon: {
+        monochrome:
+          'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/DOT.svg',
+        colored:
+          'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/DOT.svg',
+      },
+    },
+    {
+      name: 'USD Tether',
+      assetId: 1,
+      symbol: 'USDT',
+      precision: 6,
+      type: AssetType.STATEMINE,
+      priceId: 'tether',
+      icon: {
+        monochrome:
+          'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/USDT.svg',
+        colored:
+          'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/USDT.svg',
+      },
+      typeExtras: {
+        assetId: '1984',
+      },
+    },
+    {
+      name: 'USD Coin',
+      assetId: 2,
+      symbol: 'USDC',
+      precision: 6,
+      type: AssetType.STATEMINE,
+      priceId: 'usd-coin',
+      icon: {
+        monochrome:
+          'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/USDC.svg',
+        colored:
+          'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/USDC.svg',
+      },
+      typeExtras: {
+        assetId: '1337',
+      },
+    },
+  ],
+};
+
 export const createRandomId = () => Math.round(Math.random() * 10).toString();
 
 export const createAccountId = (seed: string | number = '0') => {

@@ -9,7 +9,9 @@ import CheckIcon from '@/shared/assets/images/functionals/checkmark.svg?jsx';
 import CloseOutlineIcon from '@/shared/assets/images/functionals/close-outline.svg?jsx';
 import CloseIcon from '@/shared/assets/images/functionals/close.svg?jsx';
 import CopyIcon from '@/shared/assets/images/functionals/copy.svg?jsx';
+import CreatePureProxyIcon from '@/shared/assets/images/functionals/createpureproxy.svg?jsx';
 import CurrencyIcon from '@/shared/assets/images/functionals/currency.svg?jsx';
+import DelegateIcon from '@/shared/assets/images/functionals/delegate.svg?jsx';
 import DeleteIcon from '@/shared/assets/images/functionals/delete.svg?jsx';
 import DetailsIcon from '@/shared/assets/images/functionals/details.svg?jsx';
 import EditKeysIcon from '@/shared/assets/images/functionals/edit-keys.svg?jsx';
@@ -114,6 +116,8 @@ const FunctionalImages = {
   positive: { svg: PositiveIcon },
   negative: { svg: NegativeIcon },
   empty: { svg: EmptyIcon },
+  createPureProxy: { svg: CreatePureProxyIcon },
+  delegate: { svg: DelegateIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

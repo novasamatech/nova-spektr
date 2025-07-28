@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
@@ -29,7 +29,11 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const error = useUnit(confirmModel.$error);
 
   const confirms = useUnit(confirmModel.$confirms);
-  const confirm = confirms[id];
+  const confirm = useStoreMap({
+    store: confirmModel.$confirmMap,
+    keys: [id],
+    fn: (value, [id]) => value[id],
+  });
 
   if (!confirm) {
     return (
@@ -44,7 +48,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     wallets: { signatory },
   } = confirm;
   const isXcm = meta.destinationChain.chainId !== meta.chain.chainId;
-  const proxyAccount = meta.route.find(accountUtils.isProxiedAccount) ?? null;
   const multisigAccount = meta.route.find(accountUtils.isMultisigAccount) ?? null;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
   const nativeAsset = getNativeAsset(meta.chain.assets);
@@ -66,13 +69,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
-        chain={meta.chain}
-        wallets={wallets}
-        initiators={initiators}
-        signatory={meta.signatory}
-        proxied={proxyAccount}
-      >
+      <TransactionDetails chain={meta.chain} wallets={wallets} initiators={initiators} signatory={meta.signatory}>
         {isXcm && (
           <DetailRow label={t('operation.details.destinationChain')}>
             <ChainTitle

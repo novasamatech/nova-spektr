@@ -257,7 +257,6 @@ sample({
           coreTx: coreTxs[0],
           tx: coreTxs[0],
           route: [shard],
-          multisigTx: coreTxs[0],
         } satisfies BondExtraConfirm;
       }),
       step: Step.CONFIRM,
@@ -320,7 +319,6 @@ sample({
       signatory: bondFlowData.bondData!.signatory,
       coreTxs: bondFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: bondFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: bondFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),

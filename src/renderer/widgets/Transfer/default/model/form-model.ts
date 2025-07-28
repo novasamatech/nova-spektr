@@ -6,6 +6,7 @@ import { spread } from 'patronum';
 import { type Address, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
+  TEST_ACCOUNTS,
   ZERO_BALANCE,
   assert,
   formatAmount,
@@ -38,7 +39,6 @@ type FormParams = {
 };
 
 type FormSubmitEvent = FormParams & {
-  multisigTx: Transaction | null;
   coreTx: Transaction;
   tx: Transaction;
   initiator: AnyAccount;
@@ -219,13 +219,38 @@ const $coreTx = combine(
   },
 );
 
-const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+const $feeTx = combine(
+  {
+    network: $networkStore,
+    isXcm: $isXcm,
+    xcmData: xcmTransferModel.$xcmData,
+    isConnected: $isChainConnected,
+    initiator: $initiator,
+  },
+  ({ network, isXcm, xcmData, isConnected, initiator }) => {
+    if (!network || !initiator || !isConnected || (isXcm && !xcmData)) {
+      return null;
+    }
+
+    return transactionBuilder.buildTransfer({
+      chain: network.chain,
+      asset: network.asset,
+      accountId: initiator.accountId,
+      amount: '1',
+      destination: TEST_ACCOUNTS[0],
+      xcmData,
+    });
+  },
+);
+
+const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: $initiator,
   signatory: form.fields.signatory.$value,
   accounts: accounts.$list,
   chain: $chain,
   transaction: $coreTx,
+  feeTransaction: $feeTx,
 });
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
@@ -406,22 +431,17 @@ const formSubmitFinished = sample({
     route: $route,
     coreTx: $coreTx,
     tx: $tx,
-    multisigTx: $multisigTx,
     fee: $fee,
     xcmFee: xcmTransferModel.$xcmFee,
     deliveryFee: xcmTransferModel.$deliveryFee,
     multisigDeposit: $multisigDeposit,
   },
-  fn: (
-    { chain, initiator, network, route, coreTx, tx, multisigTx, multisigDeposit, fee, xcmFee, deliveryFee },
-    form,
-  ) => {
+  fn: ({ chain, initiator, network, route, coreTx, tx, multisigDeposit, fee, xcmFee, deliveryFee }, form) => {
     if (nullable(chain) || nullable(coreTx) || nullable(tx) || nullable(initiator) || nullable(form.signatory))
       return null;
     return {
       tx,
       coreTx,
-      multisigTx,
       initiator: initiator,
       signatory: form.signatory,
       amount: formatAmount(form.amount, network!.asset.precision),

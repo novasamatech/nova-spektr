@@ -10,7 +10,7 @@ import {
 
 import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { CONFIG } from '../lib/constants';
 import { type PolkadotApi } from '../lib/types';
 
@@ -140,9 +140,11 @@ export class ChainRegistry {
 // Singleton instance
 let instance: ChainRegistry | undefined;
 
-export function getChainRegistry(): ChainRegistry {
+export async function getChainRegistry(): Promise<ChainRegistry> {
   if (nullable(instance)) {
-    instance = new ChainRegistry(chainsService.getChainsData(), {
+    const chains = await chainsService.getChainsData();
+    const sortedChains = nonNullable(chains) ? chainsService.sortChains(chains) : [];
+    instance = new ChainRegistry(sortedChains, {
       createWcProvider: getWsProvider,
       createClient,
     });

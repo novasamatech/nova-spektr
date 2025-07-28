@@ -336,7 +336,6 @@ sample({
             wrapper.kind === WrapperKind.PROXY ? wrapper.proxyAccount : wrapper.multisigAccount,
           ),
           tx: coreTxs[index],
-          multisigTx: null,
         } satisfies DelegateConfirm;
       }),
       step: Step.CONFIRM,
@@ -405,7 +404,6 @@ sample({
       signatory: delegateFlowData.delegateData!.signatory,
       coreTxs: delegateFlowData.transactions!.map((tx) => tx.coreTx),
       wrappedTxs: delegateFlowData.transactions!.map((tx) => tx.wrappedTx),
-      multisigTxs: delegateFlowData.transactions!.map((tx) => tx.multisigTx).filter(nonNullable),
     },
     step: Step.SUBMIT,
   }),

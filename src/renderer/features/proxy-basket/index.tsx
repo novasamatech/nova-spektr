@@ -7,10 +7,9 @@ import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { basketSDK } from '@/sdk/basket';
 import {
-  AddProxyConfirm,
-  AddPureProxiedConfirm,
-  RemoveProxyConfirm,
-  RemovePureProxiedConfirm,
+  AddProxyConfirmation,
+  AddPureProxiedConfirmation,
+  RemoveProxyConfirmation,
 } from '@/features/operations/OperationsConfirm';
 import {
   addProxyValidateModel,
@@ -29,7 +28,7 @@ const getOperationTitle = (transaction: Transaction): string | undefined => {
     [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
     [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
     [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
-    [TransactionType.REMOVE_PURE_PROXY]: 'operations.titles.removePureProxy',
+    [TransactionType.KILL_PURE_PROXY]: 'operations.titles.removePureProxy',
   };
 
   return Title[transaction.type];
@@ -40,7 +39,7 @@ const getModalTitle = (transaction: Transaction): string | undefined => {
     [TransactionType.ADD_PROXY]: 'operations.modalTitles.addProxyOn',
     [TransactionType.REMOVE_PROXY]: 'operations.modalTitles.removeProxyOn',
     [TransactionType.CREATE_PURE_PROXY]: 'operations.modalTitles.addPureProxyOn',
-    [TransactionType.REMOVE_PURE_PROXY]: 'operations.modalTitles.removePureProxyOn',
+    [TransactionType.KILL_PURE_PROXY]: 'operations.modalTitles.removePureProxyOn',
   };
 
   return Title[transaction.type];
@@ -80,12 +79,12 @@ basketSDK(proxyBasketFeature, {
 
     const tx = basketOperationsService.getCoreTx(transaction);
 
-    if (tx.type === TransactionType.ADD_PROXY) return <AddProxyConfirm id={transaction.id} hideSignButton />;
-    if (tx.type === TransactionType.REMOVE_PROXY) return <RemoveProxyConfirm id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.ADD_PROXY) return <AddProxyConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.REMOVE_PROXY) return <RemoveProxyConfirmation id={transaction.id} hideSignButton />;
     if (tx.type === TransactionType.CREATE_PURE_PROXY)
-      return <AddPureProxiedConfirm id={transaction.id} hideSignButton />;
-    if (tx.type === TransactionType.REMOVE_PURE_PROXY)
-      return <RemovePureProxiedConfirm id={transaction.id} hideSignButton />;
+      return <AddPureProxiedConfirmation id={transaction.id} hideSignButton />;
+    if (tx.type === TransactionType.KILL_PURE_PROXY)
+      return <RemoveProxyConfirmation id={transaction.id} hideSignButton />;
 
     return null;
   },
@@ -111,7 +110,7 @@ basketSDK(proxyBasketFeature, {
           return result ? errors.concat(result) : errors;
         });
     }
-    if (transaction.coreTx.type === TransactionType.REMOVE_PURE_PROXY) {
+    if (transaction.coreTx.type === TransactionType.KILL_PURE_PROXY) {
       return removePureProxiedValidateModel
         .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
         .then(({ result }) => {

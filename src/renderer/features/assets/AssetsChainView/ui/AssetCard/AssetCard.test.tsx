@@ -6,9 +6,9 @@ import { Provider } from 'effector-react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 
-import chains from '@/shared/config/chains/chains.json';
-import { type Asset, type Balance, type Chain, WalletType } from '@/shared/core';
+import { type Asset, type Balance, WalletType } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { polkadotChain } from '@/shared/mocks';
 import { walletModel } from '@/entities/wallet';
 
 import { AssetCard } from './AssetCard';
@@ -19,7 +19,7 @@ vi.mock('@/shared/i18n', () => ({
   }),
 }));
 
-const testChain = chains[0] as Chain;
+const testChain = polkadotChain;
 const testAsset = testChain.assets[0];
 
 const defaultProps = {

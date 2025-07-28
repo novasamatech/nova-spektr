@@ -9,7 +9,7 @@ import { transactionService } from '@/entities/transaction';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { type SubmitInput, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type SubmitInputDeprecated, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 import { type BondExtraConfirm, bondExtraConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm';
 import { Step, type WalletDataShards } from '../lib/types';
 
@@ -102,9 +102,8 @@ const formSubmitted = sample({
     coreTx: formModel.$coreTx,
     tx: formModel.$tx,
     route: formModel.$route,
-    multisigTx: formModel.$multisigTx,
   },
-}).filterMap(({ formParams, walletData, tx, route, coreTx, fee, multisigDeposit, multisigTx }) => {
+}).filterMap(({ formParams, walletData, tx, route, coreTx, fee, multisigDeposit }) => {
   if (
     nonNullable(formParams) &&
     nonNullable(walletData) &&
@@ -127,7 +126,6 @@ const formSubmitted = sample({
         tx: tx,
         coreTx: coreTx,
         route,
-        multisigTx: multisigTx,
       } satisfies BondExtraConfirm,
     ];
   }
@@ -188,10 +186,9 @@ const submitEvent = sample({
     walletData: $walletData,
     tx: formModel.$tx,
     coreTx: formModel.$coreTx,
-    multisigTx: formModel.$multisigTx,
   },
   fn: (source, signParams) => ({ source, signParams }),
-}).filterMap(({ signParams, source: { formParams, walletData, tx, coreTx, multisigTx } }) => {
+}).filterMap(({ signParams, source: { formParams, walletData, tx, coreTx } }) => {
   if (
     nonNullable(formParams) &&
     nonNullable(walletData) &&
@@ -207,8 +204,7 @@ const submitEvent = sample({
       account: formParams.initiator,
       coreTxs: [coreTx],
       wrappedTxs: [tx],
-      multisigTxs: [multisigTx!],
-    } satisfies SubmitInput;
+    } satisfies SubmitInputDeprecated;
   }
 });
 

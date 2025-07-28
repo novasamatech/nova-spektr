@@ -1,8 +1,9 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { persist } from 'effector-storage/local';
 import { once } from 'patronum';
 
 import { type AssetByChains } from '@/shared/core';
-import { includesMultiple, nullable } from '@/shared/lib/utils';
+import { includesMultiple, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
@@ -26,9 +27,25 @@ const $accounts = walletSelect.$selectedAccounts;
 const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
 const $query = restore<string>(queryChanged, '');
 
-const $defaultTokens = createStore(tokensService.getTokensData());
+const $defaultTokens = createStore<AssetByChains[] | null>(null);
 
 const $filteredAccounts = createStore<AnyAccount[] | null>(null);
+
+const populateFx = createEffect((): Promise<AssetByChains[] | null> => {
+  return tokensService.getTokensData();
+});
+
+persist({
+  key: 'assets_with_chains',
+  store: $defaultTokens,
+  sync: true,
+});
+
+sample({
+  clock: populateFx.doneData,
+  filter: (data) => nonNullable(data),
+  target: $defaultTokens,
+});
 
 sample({
   clock: shardsModel.events.shardsConfirmed,
@@ -55,7 +72,7 @@ const $tokens = combine(
   },
   ({ defaultTokens, activeView, wallet, chains, accounts }) => {
     if (activeView !== AssetsListView.TOKEN_CENTRIC) return DEFAULT_LIST;
-    if (nullable(wallet)) return DEFAULT_LIST;
+    if (nullable(wallet) || nullable(defaultTokens)) return DEFAULT_LIST;
 
     const tokens: AssetByChains[] = [];
 
@@ -201,6 +218,9 @@ export const portfolioModel = {
   $accounts,
   $sortedTokens,
   $tokensPopulated,
+
+  populate: populateFx,
+
   events: {
     activeViewChanged,
     hideZeroBalancesChanged,

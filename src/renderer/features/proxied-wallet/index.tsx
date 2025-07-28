@@ -28,8 +28,8 @@ export const proxiedWalletFeature = createFeature({
 });
 
 accountSDK(proxiedWalletFeature, {
-  actionPermission({ account }) {
-    return accountUtils.isProxiedAccount(account);
+  actionPermission() {
+    return false;
   },
   availableOnChain({ account }) {
     return accountUtils.isProxiedAccount(account);
@@ -46,7 +46,7 @@ accountSDK(proxiedWalletFeature, {
   visualGraphNode({ account }) {
     if (accountUtils.isProxiedAccount(account)) {
       return {
-        title: 'Proxied wallet',
+        title: 'Proxied',
         color: '#2A1FD5',
         background: 'linear-gradient(180deg, #2A0FD2 57.52%, #8A00CC 85.97%)',
       };

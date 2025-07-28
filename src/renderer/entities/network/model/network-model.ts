@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type VoidFn } from '@polkadot/api/types';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { persist } from 'effector-storage/local';
 import { combineEvents, spread } from 'patronum';
 
 import {
@@ -37,6 +38,7 @@ const $chains = createStore<Record<ChainId, Chain>>({});
 const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
 
+const $connectionData = createStore<Connection[]>([]);
 const $connections = createStore<Record<ChainId, Connection>>({});
 const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
 
@@ -45,8 +47,9 @@ const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
 
 const $populated = createStore(false);
 
-const populateChainsFx = createEffect((): Record<ChainId, Chain> => {
-  return chainsService.getChainsMap();
+const populateChainsFx = createEffect(async (): Promise<Record<ChainId, Chain> | null> => {
+  const chains = await chainsService.getChainsData();
+  return nonNullable(chains) ? chainsService.getChainsMap(chains) : null;
 });
 
 const populateMetadataFx = createEffect((): Promise<ChainMetadata[]> => {
@@ -59,6 +62,12 @@ const populateConnectionsFx = createEffect((): Promise<Connection[]> => {
 
 const getDefaultStatusesFx = createEffect((chains: Record<ChainId, Chain>): Record<ChainId, ConnectionStatus> => {
   return dictionary(Object.values(chains), 'chainId', () => ConnectionStatus.DISCONNECTED);
+});
+
+persist({
+  key: 'chains_map',
+  store: $chains,
+  sync: true,
 });
 
 type MetadataSubResult = {
@@ -175,6 +184,7 @@ const startNetworksFx = createEffect(() => {
 
 sample({
   clock: populateChainsFx.doneData,
+  filter: (data) => nonNullable(data),
   target: [$chains, getDefaultStatusesFx],
 });
 
@@ -190,9 +200,16 @@ sample({
 
 sample({
   clock: populateConnectionsFx.doneData,
-  source: $chains,
-  fn: (chains, connections) => {
-    const connectionsMap = dictionary(connections, 'chainId');
+  target: $connectionData,
+});
+
+sample({
+  source: {
+    chains: $chains,
+    connectionData: $connectionData,
+  },
+  fn: ({ chains, connectionData }) => {
+    const connectionsMap = dictionary(connectionData, 'chainId');
     const lightClientChains = networkUtils.getLightClientChains();
 
     return Object.keys(chains).reduce<Record<ChainId, Connection>>((acc, key) => {
@@ -228,12 +245,15 @@ sample({
 const readyToConnect = combineEvents({
   events: [populateConnectionsFx.doneData, populateMetadataFx.doneData, populateChainsFx.doneData],
   reset: startNetworksFx,
-}).map(([connections, metadata, chains]) => {
-  return { connections, metadata, chains };
 });
 
 sample({
   clock: readyToConnect,
+  source: {
+    chains: $chains,
+    connections: $connectionData,
+    metadata: $metadata,
+  },
   fn: ({ connections, metadata, chains }) => {
     return Object.values(chains)
       .filter((chain) => {

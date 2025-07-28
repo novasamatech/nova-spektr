@@ -6,56 +6,39 @@ import orderBy from 'lodash/orderBy';
 import sortBy from 'lodash/sortBy';
 
 import { type PriceObject } from '@/shared/api/price-provider';
-import chainsProd from '@/shared/config/chains/chains.json';
-import chainsDev from '@/shared/config/chains/chains_dev.json';
 import { type AssetBalance, type Balance, type Chain, type ChainId } from '@/shared/core';
-import { ZERO_BALANCE, getRelaychainAsset, nonNullable, nullable, totalAmount } from '@/shared/lib/utils';
+import { CHAINS_CONFIG_URL, ZERO_BALANCE, getRelaychainAsset, nonNullable, totalAmount } from '@/shared/lib/utils';
 import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;
 };
 
-const CHAINS: Record<string, Chain[]> = {
-  chains: chainsProd as Chain[],
-  'chains-dev': chainsDev as Chain[],
-};
-
 export const chainsService = {
   getChainsData,
   getChainsMap,
-  getChainById,
   getStakingChainsData,
   sortChains,
   sortChainsByBalance,
 };
 
-function getChainsData(): Chain[] {
-  const chains = CHAINS[process.env.CHAINS_FILE || 'chains'];
+async function getChainsData(): Promise<Chain[] | null> {
+  const response = await fetch(CHAINS_CONFIG_URL);
 
-  if (nullable(chains)) {
-    throw new Error(`Chains config named "${process.env.CHAINS_FILE}" not found`);
+  if (!response.ok) {
+    console.error(`Failed to fetch chains config: ${response.status} ${response.statusText}`);
+    return null;
   }
 
-  return sortChains(chains);
+  return response.json();
 }
 
-function getChainsMap(): Record<ChainId, Chain> {
-  return keyBy(getChainsData(), 'chainId');
+function getChainsMap(chains: Chain[]): Record<ChainId, Chain> {
+  return keyBy(chains, 'chainId');
 }
 
-function getChainById(chainId: ChainId): Chain | undefined {
-  return getChainsData().find((chain) => chain.chainId === chainId);
-}
-
-function getStakingChainsData(): Chain[] {
-  return getChainsData().reduce<Chain[]>((acc, chain) => {
-    if (getRelaychainAsset(chain.assets)) {
-      acc.push(chain);
-    }
-
-    return acc;
-  }, []);
+function getStakingChainsData(chains: Record<ChainId, Chain>): Chain[] {
+  return Object.values(chains).filter((chain) => getRelaychainAsset(chain.assets));
 }
 
 function sortChains<T extends Pick<Chain, 'name' | 'options'>>(chains: T[]): T[] {

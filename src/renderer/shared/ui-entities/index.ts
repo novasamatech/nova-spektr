@@ -14,6 +14,8 @@ export { TransactionDetails } from './TransactionDetails/TransactionDetails';
 export { RankedAccount } from './RankedAccount/RankedAccount';
 export { WalletOnboardingCard } from './WalletOnboardingCard/WalletOnboardingCard';
 export { ChainAccountsList } from './ChainAccountsList/ChainAccountsList';
+export { ChainIcon } from './ChainIcon/ChainIcon';
+export { ChainSelect } from './ChainSelect/ChainSelect';
 export { CollectiveRank, getRankTitle } from './CollectiveRank/CollectiveRank';
 export { TrackDescription } from './TrackDescription/TrackDescription';
 export { WalletAccountIcon, type IconTheme } from './WalletAccountIcon/WalletAccountIcon';

@@ -21,7 +21,6 @@
 
 <!-- TOC start -->
 - [Key features](#key-features)
-- [Changelog](#changelog)
 - [Development](#development)
   * [Requirements](#requirements)
   * [Commands](#commands)
@@ -103,21 +102,21 @@ pnpm prod:sequence
 
 Development configuration uses:
 
-1. [`chains_dev.json`](/src/renderer/shared/config/chains/chains_dev.json) file that contains testnets in order to debug
+1. [`chains_dev.json`](https://github.com/novasamatech/nova-spektr-utils/blob/main/chains/v1/chains_dev.json) file that contains testnets in order to debug
    and test new features
 2. debug tools are enabled by default
 3. error handling is turned off in order to pay developer's attention to errors
 
 Stage configuration uses:
 
-1. [`chains.json`](/src/renderer/shared/config/chains/chains.json) file for chains configuration
+1. [`chains.json`](https://github.com/novasamatech/nova-spektr-utils/blob/main/chains/v1/chains.json) file for chains configuration
 2. debug tools are enabled by default
 3. errors are handled in a smooth way in order not to interrupt the user
 
 
 Production configuration uses:
 
-1. [`chains.json`](/src/renderer/shared/config/chains/chains.json) file for chains configuration
+1. [`chains.json`](https://github.com/novasamatech/nova-spektr-utils/blob/main/chains/v1/chains.json) file for chains configuration
 2. debug tools are disabled by default
 3. errors are handled in a smooth way in order not to interrupt the user
 

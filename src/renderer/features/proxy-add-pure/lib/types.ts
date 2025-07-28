@@ -1,5 +1,3 @@
-import { type Account, type Chain } from '@/shared/core';
-
 export const enum Step {
   NONE,
   INIT,
@@ -8,10 +6,3 @@ export const enum Step {
   SUBMIT,
   BASKET,
 }
-
-export type AddPureProxiedStore = {
-  chain: Chain;
-  account: Account;
-  signatory: Account | null;
-  proxyDeposit: string;
-};

@@ -10,7 +10,7 @@ export class TransferModalElements {
   static signatoryOptionLocator = TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR_OPTION;
   static xcmSelectorLocator = TEST_IDS.OPERATIONS.XCM_SELECTOR;
 
-  static getUrl(chainId: number, assetId: number): string {
+  static getUrl(chainId: string, assetId: number): string {
     if (chainId === undefined || assetId === undefined) {
       throw new Error('chainId and assetId must be defined');
     }

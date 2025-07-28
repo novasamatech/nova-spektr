@@ -6,7 +6,6 @@ import { type FormEvent, useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useStatusContext } from '@/app/providers';
-import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
   type ChainId,
@@ -19,7 +18,7 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useAltOrCtrlKeyPressed, useToggle } from '@/shared/lib/hooks';
-import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@/shared/lib/utils';
+import { IS_MAC, copyToClipboard, toAddress } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import {
   Button,
@@ -35,6 +34,7 @@ import { Animation } from '@/shared/ui/Animation/Animation';
 import { Address } from '@/shared/ui-entities';
 import { Accordion, Box, Field, Input, Popover, ScrollArea } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
 import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
@@ -59,6 +59,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   const keys = useUnit(manageVaultModel.$keys);
   const keysGroups = useUnit(manageVaultModel.$keysGroups);
   const hasKeys = useUnit(manageVaultModel.$hasKeys);
+  const chains = useUnit(networkModel.$chains);
 
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
@@ -84,8 +85,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   }, [onComplete]);
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-    const chainsMap = dictionary(chains, 'chainId', () => [] as (VaultChainAccount | VaultShardAccount[])[]);
+    const chainsMap = Object.fromEntries(
+      Object.keys(chains).map(chainId => [chainId, [] as (VaultChainAccount | VaultShardAccount[])[]]),
+    );
 
     for (const account of keysGroups) {
       const chainId = accountUtils.isAccountWithShards(account) ? account[0].chainId : account.chainId;

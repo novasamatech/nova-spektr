@@ -110,7 +110,7 @@ const $coreTx = combine(
   },
 );
 
-const { $fee, $tx, $multisigTx } = createComplexTxStore({
+const { $fee, $tx } = createComplexTxStore({
   api: $api,
   initiator: $walletData.map((data) => data?.initiator ?? null),
   signatory: formModel.$selectedSignatory,
@@ -162,9 +162,8 @@ const formSubmitted = sample({
     tx: $tx,
     coreTx: $coreTx,
     validators: $validators,
-    multisigTx: $multisigTx,
   },
-}).filterMap(({ nominateForm, multisigTx, fee, tx, coreTx, validators }) => {
+}).filterMap(({ nominateForm, fee, tx, coreTx, validators }) => {
   if (
     nonNullable(nominateForm) &&
     nonNullable(nominateForm.initiator) &&
@@ -181,7 +180,6 @@ const formSubmitted = sample({
         coreTx,
         tx,
         validators,
-        multisigTx,
       },
     ];
   }
@@ -237,13 +235,12 @@ const signSubmitted = sample({
     nominateForm: $nominateForm,
     transaction: $tx,
     coreTx: $coreTx,
-    multisigTx: $multisigTx,
   },
   fn: (source, signParams) => ({
     ...source,
     signParams,
   }),
-}).filterMap(({ multisigTx, coreTx, nominateForm, transaction, signParams }) => {
+}).filterMap(({ coreTx, nominateForm, transaction, signParams }) => {
   if (
     nonNullable(nominateForm) &&
     nonNullable(nominateForm.initiator) &&
@@ -258,7 +255,6 @@ const signSubmitted = sample({
       signatory: nominateForm.signatory,
       coreTxs: [coreTx],
       wrappedTxs: [transaction],
-      multisigTxs: multisigTx ? [multisigTx] : [],
     };
   }
 });

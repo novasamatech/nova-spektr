@@ -31,7 +31,7 @@ export const WalletManagement = ({
     >
       <button className="flex w-full items-center gap-x-2 rounded py-1.5 pl-2 pr-8" onClick={onClick}>
         {wallet.isActive ? (
-          <Icon name="checkmark" className="shrink-0 text-icon-accent" size={20} />
+          <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
         ) : (
           <div className="row-span-2 h-5 w-5 shrink-0" />
         )}

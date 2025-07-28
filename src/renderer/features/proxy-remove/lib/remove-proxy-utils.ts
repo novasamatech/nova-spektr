@@ -2,6 +2,7 @@ import { Step } from './types';
 
 export const removeProxyUtils = {
   isNoneStep,
+  isWarningStep,
   isInitStep,
   isConfirmStep,
   isSignStep,
@@ -11,6 +12,10 @@ export const removeProxyUtils = {
 
 function isNoneStep(step: Step): boolean {
   return step === Step.NONE;
+}
+
+function isWarningStep(step: Step): boolean {
+  return step === Step.WARNING;
 }
 
 function isInitStep(step: Step): boolean {

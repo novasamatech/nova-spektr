@@ -3,10 +3,8 @@ import { fork } from 'effector';
 import { Provider } from 'effector-react';
 import { vi } from 'vitest';
 
-import chains from '@/shared/config/chains/chains.json';
 import {
   AccountType,
-  type Chain,
   CryptoType,
   SigningType,
   type VaultBaseAccount,
@@ -14,11 +12,12 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { polkadotAssetHubChain } from '@/shared/mocks';
 import { balanceModel } from '@/entities/balance';
 
 import { NetworkAssets } from './NetworkAssets';
 
-const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
+const testChain = polkadotAssetHubChain;
 const testAsset = testChain.assets[0];
 const testAsset2 = testChain.assets[1];
 
@@ -119,6 +118,8 @@ describe('features/AssetsChainView/ui/NetworkAssets', () => {
 
     expect(assetsNames[0]).toHaveTextContent(testAsset2.name);
     expect(assetsNames[1]).toHaveTextContent(testAsset.name);
-    expect((assetsNames[2]?.textContent || '').localeCompare(assetsNames[3]?.textContent || '')).toEqual(-1);
+    expect((assetsNames[1]?.textContent || '').localeCompare(assetsNames[2]?.textContent || '')).toBeLessThanOrEqual(
+      -1,
+    );
   });
 });

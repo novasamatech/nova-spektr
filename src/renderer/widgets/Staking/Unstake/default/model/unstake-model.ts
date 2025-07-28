@@ -25,7 +25,6 @@ const $step = restore(stepChanged, Step.NONE);
 const $unstakeStore = createStore<UnstakeStore | null>(null).reset(flowFinished);
 const $networkStore = restore<NetworkStore | null>(flowStarted, null);
 
-const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
 
@@ -54,15 +53,13 @@ sample({
 
 sample({
   clock: formModel.output.formSubmitted,
-  fn: ({ transaction, multisigTx, formData }) => {
+  fn: ({ transaction, formData }) => {
     return {
       coreTx: transaction,
-      multisigTx,
       unstakeStore: formData,
     };
   },
   target: spread({
-    multisigTx: $multisigTx,
     coreTx: $coreTx,
     unstakeStore: $unstakeStore,
   }),
@@ -73,7 +70,6 @@ const formSubmitted = sample({
   source: {
     networkStore: $networkStore,
     coreTx: $coreTx,
-    multisigTx: $multisigTx,
     api: formModel.$api,
     tx: formModel.$tx,
   },
@@ -83,7 +79,7 @@ const formSubmitted = sample({
       formData,
     };
   },
-}).filterMap(({ formData, multisigTx, tx, networkStore, api, coreTx }) => {
+}).filterMap(({ formData, tx, networkStore, api, coreTx }) => {
   if (
     nonNullable(formData.initiator) &&
     nonNullable(formData.signatory) &&
@@ -102,7 +98,6 @@ const formSubmitted = sample({
         api: api,
         tx: tx,
         coreTx: coreTx,
-        multisigTx: multisigTx,
       },
     ];
   }
@@ -156,7 +151,6 @@ const signSubmitted = sample({
   source: {
     unstakeStore: $unstakeStore,
     networkStore: $networkStore,
-    multisigTx: $multisigTx,
     coreTx: $coreTx,
     tx: formModel.$tx,
   },
@@ -164,7 +158,7 @@ const signSubmitted = sample({
     ...source,
     signParams,
   }),
-}).filterMap(({ unstakeStore, coreTx, multisigTx, networkStore, tx, signParams }) => {
+}).filterMap(({ unstakeStore, coreTx, networkStore, tx, signParams }) => {
   if (nonNullable(unstakeStore) && nonNullable(coreTx) && nonNullable(tx) && nonNullable(networkStore)) {
     return {
       ...signParams,
@@ -173,7 +167,6 @@ const signSubmitted = sample({
       signatory: unstakeStore.signatory,
       wrappedTxs: [tx],
       coreTxs: [coreTx],
-      multisigTxs: multisigTx ? [multisigTx] : [],
     };
   }
 });

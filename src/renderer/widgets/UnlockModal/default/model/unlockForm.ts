@@ -183,7 +183,7 @@ const $coreTx = combine(
   },
 );
 
-const { $fee, $pendingFee, $tx, $multisigTx, $route } = createComplexTxStore({
+const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   chain: networkSelectorModel.$governanceChain,
   transaction: $coreTx,
@@ -340,7 +340,6 @@ export const unlockFormAggregate = {
   $canSubmit,
   $coreTx,
   $tx,
-  $multisigTx,
   $route,
   $fee,
   $pendingFee,

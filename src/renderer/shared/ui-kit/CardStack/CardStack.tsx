@@ -125,7 +125,6 @@ const Content = ({ children }: PropsWithChildren) => {
         )}
       />
       <RadixAccordion.Content asChild forceMount>
-        {/* @ts-expect-error Type missmatch with react 19 */}
         <animated.div style={{ ...springProps, overflow: 'hidden' }}>
           <div ref={setContentRef}>
             <section className="card-stack-content relative">{mountContent ? children : null}</section>
