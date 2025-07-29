@@ -41,7 +41,7 @@ runs:
         fi
 
     - name: Notify Telegram channel
-      if: always()
+      if: always() && github.event.action != 'cancelled'
       uses: appleboy/telegram-action@master
       with:
         to: ${{ inputs.telegram_to }}
