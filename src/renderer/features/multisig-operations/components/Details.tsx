@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import {
-  type Account as AccountType,
   type Address,
   type Chain,
   type MultisigAccount,
@@ -19,7 +18,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { type MultisigOperation, identity } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation, identity } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -42,7 +41,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 type Props = {
   operation: MultisigOperation;
   account?: MultisigAccount;
-  signatory?: AccountType;
+  signatory?: AnyAccount;
   chain: Chain;
   api: ApiPromise;
 };
@@ -120,13 +119,13 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
   const selectedValidators: Validator[] =
     allValidators.filter(v => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
 
-  const proxied = useMemo((): { wallet: Wallet; account: AccountType } | undefined => {
+  const proxied = useMemo((): { wallet: Wallet; account: AnyAccount } | undefined => {
     if (!transaction || !isProxyTransaction(transaction)) {
       return undefined;
     }
 
     const proxiedAccountId = toAccountId(transaction.args.real);
-    const { wallet, account } = wallets.reduce<{ wallet?: Wallet; account?: AccountType }>(
+    const { wallet, account } = wallets.reduce<{ wallet?: Wallet; account?: AnyAccount }>(
       (acc, wallet) => {
         if (acc.wallet) {
           return acc;

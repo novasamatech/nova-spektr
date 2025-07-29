@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Account, type Chain, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
 import {
   addUniqueItems,
   formatAmount,
@@ -13,7 +13,7 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { transactionService } from '@/domains/network';
+import { type AnyAccount, transactionService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import {
   type VotesToRemove,
@@ -28,19 +28,19 @@ import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 
-const formInitiated = createEvent<{ delegate: DelegateAccount; accounts: Account[] }>();
-const formSubmitted = createEvent<{ tracks: number[]; accounts: Account[] }>();
+const formInitiated = createEvent<{ delegate: DelegateAccount; accounts: AnyAccount[] }>();
+const formSubmitted = createEvent<{ tracks: number[]; accounts: AnyAccount[] }>();
 const trackToggled = createEvent<number>();
 const tracksSelected = createEvent<number[]>();
-const accountsChanged = createEvent<Account[]>();
+const accountsChanged = createEvent<AnyAccount[]>();
 
 const $tracks = createStore<number[]>([]).reset(formInitiated);
 const $votedTracks = createStore<string[]>([]).reset(formInitiated);
 const $delegatedTracks = createStore<string[]>([]).reset(formInitiated);
 const $votesToRemove = createStore<VotesToRemove[]>([]).reset(formInitiated);
 
-const $accounts = createStore<Account[]>([]).reset(formInitiated);
-const $availableAccounts = createStore<Account[]>([]).reset(formInitiated);
+const $accounts = createStore<AnyAccount[]>([]).reset(formInitiated);
+const $availableAccounts = createStore<AnyAccount[]>([]).reset(formInitiated);
 const $delegate = createStore<DelegateAccount | null>(null).reset(formInitiated);
 const $isMaxWeightReached = createStore(false).reset(formInitiated);
 
