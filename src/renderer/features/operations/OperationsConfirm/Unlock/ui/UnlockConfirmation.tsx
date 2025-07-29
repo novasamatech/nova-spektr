@@ -43,7 +43,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
     balances,
     confirmStore.meta.initiator.accountId,
     confirmStore.meta.chain.chainId,
-    confirmStore.meta.asset.assetId.toString(),
+    confirmStore.meta.asset.assetId,
   );
 
   const transferableBalance = new BN(transferableAmount(balance));

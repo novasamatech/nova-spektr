@@ -37,12 +37,10 @@ const selectWalletFx = attach({
       return;
     }
 
-    await walletModel.updateWallet({ ...walletToSelect, isActive: true });
-    await Promise.all(
-      currentSelectedWallets.map(w => {
-        return walletModel.updateWallet({ ...w, isActive: false });
-      }),
-    );
+    await walletModel.updateWallets([
+      ...currentSelectedWallets.map(w => ({ ...w, isActive: false })),
+      { ...walletToSelect, isActive: true },
+    ]);
   },
 });
 

@@ -409,7 +409,7 @@ sample({
       balances,
       signatory.accountId,
       network.chain.chainId,
-      network.asset.assetId.toString(),
+      network.asset.assetId,
     );
 
     return transferableAmount(balance);
@@ -475,7 +475,7 @@ sample({
       balances,
       proxyAccounts[0].accountId,
       network!.chain.chainId,
-      network!.asset.assetId.toString(),
+      network!.asset.assetId,
     );
 
     return transferableAmount(balance);

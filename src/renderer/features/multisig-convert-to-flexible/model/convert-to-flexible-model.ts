@@ -65,7 +65,7 @@ sample({
 sample({
   clock: $wallet,
   filter: nonNullable,
-  target: balanceSubModel.events.walletToSubSet,
+  target: balanceSubModel.subscribeWallet,
 });
 
 // signatories
@@ -112,7 +112,7 @@ const $signatoriesWallets = combine(
 
 sample({
   clock: $signatoriesWallets,
-  target: series(balanceSubModel.events.walletToSubSet),
+  target: series(balanceSubModel.subscribeWallet),
 });
 
 sample({
@@ -185,13 +185,13 @@ const $errors = combine(
       balances,
       multisigAccount.accountId,
       chain.chainId,
-      chain.assets.at(0)!.assetId.toString(),
+      chain.assets.at(0)!.assetId,
     );
     const signerBalance = balanceUtils.getBalance(
       balances,
       selectedSignatory.accountId,
       chain.chainId,
-      chain.assets.at(0)!.assetId.toString(),
+      chain.assets.at(0)!.assetId,
     );
 
     if (new BN(proxyDeposit).gte(withdrawableAmountBN(multisigBalance))) {
@@ -296,12 +296,12 @@ sample({
   clock: flow.close,
   source: $wallet,
   filter: nonNullable,
-  target: balanceSubModel.events.walletToUnsubSet,
+  target: balanceSubModel.unsubscribeWallet,
 });
 sample({
   clock: flow.close,
   source: $signatoriesWallets,
-  target: series(balanceSubModel.events.walletToUnsubSet),
+  target: series(balanceSubModel.unsubscribeWallet),
 });
 
 sample({

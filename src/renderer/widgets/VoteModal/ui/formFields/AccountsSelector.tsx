@@ -43,12 +43,7 @@ export const AccountsSelector = memo(
         >
           {accounts.map((account) => {
             const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-            const balance = balanceUtils.getBalance(
-              balances,
-              account.accountId,
-              chain.chainId,
-              asset.assetId.toString(),
-            );
+            const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId);
             const availableBalance = balance ? locksService.getAvailableBalance(balance) : BN_ZERO;
 
             return (

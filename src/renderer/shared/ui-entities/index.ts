@@ -3,6 +3,7 @@ export { DynamicVoteChart } from './DynamicVoteChart/DynamicVoteChart';
 export { Hash } from './Hash/Hash';
 export { Address } from './Address/Address';
 export { Account } from './Account/Account';
+export { AccountSelect } from './AccountSelect/AccountSelect';
 export { AssetIcon } from './AssetIcon/AssetIcon';
 export { BlockTime } from './BlockTime/BlockTime';
 export { AssetBalance } from './AssetBalance/AssetBalance';

@@ -272,7 +272,7 @@ const $accounts = combine(
     const { chain, asset } = network;
 
     return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
+      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId);
       const address = toAddress(shard.accountId, { prefix: chain.addressPrefix });
       const withdraw = redeemableAmount(staking[address]?.unlocking, era || 0);
 
@@ -489,7 +489,7 @@ sample({
       balances,
       signatory.accountId,
       network.chain.chainId,
-      network.asset.assetId.toString(),
+      network.asset.assetId,
     );
 
     return transferableAmount(balance);
@@ -541,7 +541,7 @@ sample({
       balances,
       proxyAccounts[0].accountId,
       network!.chain.chainId,
-      network!.asset.assetId.toString(),
+      network!.asset.assetId,
     );
 
     return transferableAmount(balance);
