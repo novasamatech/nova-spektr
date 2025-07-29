@@ -190,7 +190,7 @@ sample({
 sample({
   clock: flowFinished,
   source: {
-    activeWallet: walletModel.$activeWallet,
+    activeWallet: walletSelect.$selectedWallet,
     walletDetails: formModel.$wallet,
   },
   filter: ({ activeWallet, walletDetails }) => {

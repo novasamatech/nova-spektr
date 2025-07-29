@@ -1,20 +1,17 @@
-import { useUnit } from 'effector-react';
-
+import { type MultisigAccount } from '@/shared/core';
 import { type MultisigOperation } from '@/domains/network';
-import { accountUtils, walletModel } from '@/entities/wallet';
 
 import { Status } from './Status';
 
 type Props = {
   operation: MultisigOperation;
+  account: MultisigAccount | null;
 };
 
-export const OperationTitleStatus = ({ operation }: Props) => {
+export const OperationTitleStatus = ({ operation, account }: Props) => {
   const events = operation.events;
 
   const approvals = events.filter((e) => e.status === 'approve');
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const account = activeWallet?.accounts.find(accountUtils.isMultisigAccount);
 
   return (
     <div className="flex w-[120px] shrink-0 justify-end">
