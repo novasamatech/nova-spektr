@@ -24,8 +24,6 @@ import {
 } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-// TODO all this type checks should be defined in features with own context
-// eslint-disable-next-line boundaries/element-types
 import { type AnyAccount, accountService } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 

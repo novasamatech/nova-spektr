@@ -3,7 +3,7 @@ import { combine, sample } from 'effector';
 import { type Address } from '@/shared/core';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { referendumModel } from '@/entities/governance';
-import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { delegatedVotesModel } from '../model/delegatedVotes';
 import { networkSelectorModel } from '../model/networkSelector';
 
@@ -22,9 +22,9 @@ const $delegatedVotesInChain = combine(
 );
 
 sample({
-  clock: [referendumModel.events.referendumsReceived, networkSelectorModel.$network, walletModel.$activeWallet],
+  clock: [referendumModel.events.referendumsReceived, networkSelectorModel.$network, walletSelect.$selectedWallet],
   source: {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     network: networkSelectorModel.$network,
   },
   filter: ({ wallet, network }) => nonNullable(wallet) && nonNullable(network),

@@ -9,7 +9,6 @@ import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { shardsModel, shardsUtils } from '@/features/wallets';
 import { tokensService } from '../lib/tokensService';
@@ -66,7 +65,7 @@ const $tokens = combine(
   {
     defaultTokens: $defaultTokens,
     activeView: $activeView,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chains: networkModel.$chains,
     accounts: $accounts,
   },
@@ -94,7 +93,7 @@ const $tokens = combine(
 
 const $activeTokens = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     connections: networkModel.$connections,
     chains: networkModel.$chains,
     tokens: $tokens,

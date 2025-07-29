@@ -282,7 +282,7 @@ const $proxyWallet = combine(
 const $accounts = combine(
   {
     network: $networkStore,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     shards: $shards,
     staking: $staking,
     balances: balanceModel.$balances,

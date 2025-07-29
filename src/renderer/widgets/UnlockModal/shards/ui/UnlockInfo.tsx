@@ -8,7 +8,8 @@ import { Button, Duration, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { AssetFiatBalance } from '@/entities/price';
-import { permissionUtils, walletModel } from '@/entities/wallet';
+import { permissionUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { locksModel, networkSelectorModel, unlockModel } from '@/features/governance';
 import { unlockAggregate } from '../model/unlock';
 
@@ -62,7 +63,7 @@ const ActionsSection = () => {
   const { t } = useI18n();
 
   const isUnlockable = useUnit(unlockAggregate.$isUnlockable);
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeWallet = useUnit(walletSelect.$selectedWallet);
 
   if (!activeWallet || !permissionUtils.canUnlock(activeWallet)) return null;
 

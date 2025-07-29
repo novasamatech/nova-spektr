@@ -68,12 +68,6 @@ export interface FlexibleProxiedAccount extends Omit<ProxiedAccount, 'accountTyp
   accountType: AccountType.FLEX_PROXIED;
 }
 
-/**
- * @deprecated Use `import { type AnyAccount } from '@/domains/network'`
- *   instead.
- */
-export type Account = AnyAccount;
-
 export type DraftAccount<T extends AnyAccount> = Omit<NoID<T>, 'accountId' | 'walletId'>;
 
 export const enum AccountType {

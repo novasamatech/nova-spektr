@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import groupBy from 'lodash/groupBy';
 import { type ReactNode, useMemo } from 'react';
 
-import { type Account, type Contact, type MultisigAccount, type Wallet, type WalletsMap } from '@/shared/core';
+import { type Contact, type MultisigAccount, type Wallet, type WalletsMap } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import {
@@ -15,7 +15,7 @@ import {
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton, Identicon } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
+import { type AnyAccount, type MultisigEvent, type MultisigOperation } from '@/domains/network';
 import { type ExtendedChain } from '@/entities/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle } from '@/entities/transaction';
@@ -49,7 +49,7 @@ const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
 };
 
 const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
-  return Object.values(walletsMap).reduce<Record<AccountId, Account>>((acc, wallet) => {
+  return Object.values(walletsMap).reduce<Record<AccountId, AnyAccount>>((acc, wallet) => {
     for (const account of wallet.accounts) {
       acc[account.accountId] = account;
     }
