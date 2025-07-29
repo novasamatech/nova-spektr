@@ -5,12 +5,13 @@ import { type Chain, type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { IconButton, Separator } from '@/shared/ui';
-import { ChainAccountsList } from '@/shared/ui-entities';
+import { isEthereumAccountId } from '@/shared/lib/utils';
+import { HeadlineText, IconButton, Separator } from '@/shared/ui';
+import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { WalletCardLg, accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
+import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
@@ -95,27 +96,37 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   );
 
   return (
-    <Modal size="mdlg" height="lg" isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="mb-6 flex items-center justify-between px-5">
           <Box direction="row" verticalAlign="center" gap={3} height="fit">
-            <span>
-              <WalletCardLg wallet={wallet} withoutName={isRenameModalOpen} />
-            </span>
+            <div className="mr-1">
+              <WalletAccountIcon
+                address={firstAccount?.accountId}
+                type={wallet.type}
+                size={42}
+                theme={isEthereumAccountId(firstAccount?.accountId) ? 'ethereum' : 'polkadot'}
+              />
+            </div>
 
             {!isRenameModalOpen && (
-              <div className="flex items-center gap-3 duration-300 animate-in fade-in-0">
-                <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
-                <WalletFiatBalance />
-              </div>
+              <>
+                <HeadlineText className="truncate text-text-primary" as="h3">
+                  {wallet.name}
+                </HeadlineText>
+                <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                  <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                  <WalletFiatBalance />
+                </div>
+              </>
             )}
           </Box>
 
           <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
           {firstAccount && !isRenameModalOpen && (
-            <div className="shrink-0 duration-300 animate-in fade-in-0">
+            <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
               <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />
             </div>
           )}

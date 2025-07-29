@@ -1,8 +1,10 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { type Address, type Wallet } from '@/shared/core';
-import { cnTw } from '@/shared/lib/utils';
+import { type Address, type Chain, type Wallet } from '@/shared/core';
+import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, Icon, type IconTheme, Identicon } from '@/shared/ui';
+import { Label } from '@/shared/ui-kit';
+import { ChainIcon } from '../ChainIcon/ChainIcon';
 
 type Props = {
   wallet: Wallet;
@@ -11,6 +13,8 @@ type Props = {
   address: Address | undefined;
   theme: IconTheme;
   onClick: () => void;
+  chain?: Chain | null;
+  label?: string | null;
 };
 
 export const WalletManagement = ({
@@ -21,6 +25,8 @@ export const WalletManagement = ({
   meta,
   children,
   onClick,
+  chain,
+  label,
 }: PropsWithChildren<Props>) => {
   return (
     <div
@@ -33,7 +39,7 @@ export const WalletManagement = ({
         {wallet.isActive ? (
           <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
         ) : (
-          <div className="row-span-2 h-5 w-5 shrink-0" />
+          <div className="row-span-2 h-4 w-4 shrink-0" />
         )}
 
         <Identicon canCopy={false} address={address} size={16} background={false} theme={theme} />
@@ -49,6 +55,12 @@ export const WalletManagement = ({
             >
               {wallet.name}
             </BodyText>
+            {
+              <div className="flex items-center gap-x-1">
+                {nonNullable(label) && <Label variant="purple">{label}</Label>}
+                {nonNullable(chain) && <ChainIcon chain={chain} />}
+              </div>
+            }
 
             {meta}
           </div>

@@ -1,4 +1,4 @@
-import { type Address, type WalletIconType, type WalletType } from '@/shared/core';
+import { type Address, type WalletType } from '@/shared/core';
 import { Identicon, type IconTheme as IdenticonIconTheme } from '@/shared/ui';
 import { WalletIcon } from '@/entities/wallet';
 
@@ -7,7 +7,7 @@ export type IconTheme = IdenticonIconTheme;
 type Props = {
   address: Address | undefined;
   size?: number;
-  type: WalletType | WalletIconType;
+  type: WalletType;
   theme?: IconTheme;
 };
 

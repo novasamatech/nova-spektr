@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useRef } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { useForm } from '@/shared/forms/useForm';
+import { useI18n } from '@/shared/i18n';
 import { useClickOutside } from '@/shared/lib/hooks';
 import { IconButton } from '@/shared/ui';
 import { Input } from '@/shared/ui-kit';
@@ -14,6 +15,8 @@ type Props = {
 };
 
 export const RenameWallet = ({ wallet, isOpen, onClose }: Props) => {
+  const { t } = useI18n();
+
   const {
     submit,
     fields: { name },
@@ -24,8 +27,10 @@ export const RenameWallet = ({ wallet, isOpen, onClose }: Props) => {
   useClickOutside([formRef], onClose);
 
   useEffect(() => {
-    renameWalletModel.formInitiated(wallet);
-  }, [wallet]);
+    if (isOpen) {
+      renameWalletModel.formInitiated(wallet);
+    }
+  }, [wallet, isOpen]);
 
   useEffect(() => {
     renameWalletModel.callbackChanged({ onSubmit: onClose });
@@ -46,12 +51,13 @@ export const RenameWallet = ({ wallet, isOpen, onClose }: Props) => {
         height="md"
         textSize="lg"
         name="name"
+        placeholder={t('walletDetails.common.renameWallet')}
         invalid={name.hasError}
         value={name.value}
         onChange={name.onChange}
       />
 
-      <IconButton name="checkmark" disabled={name.hasError || name.value.trim() === ''} onClick={submitForm} />
+      <IconButton name="checkmark" disabled={name.value.trim() === ''} onClick={submitForm} />
     </form>
   );
 };

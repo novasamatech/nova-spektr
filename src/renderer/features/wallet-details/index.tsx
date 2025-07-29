@@ -17,6 +17,7 @@ export { overviewSlot as vaultOverviewSlot } from './ui/wallets/VaultWalletDetai
 export { overviewSlot as multisigOverviewSlot } from './ui/wallets/MultisigWalletDetails';
 export { overviewSlot as proxiedOverviewSlot } from './ui/wallets/ProxiedWalletDetails';
 export { overviewSlot as walletConnectOverviewSlot } from './ui/wallets/WalletConnectDetails';
+export { overviewSlot as watchOnlyOverviewSlot } from './ui/wallets/WatchOnlyWalletDetails';
 
 export { WalletDetails };
 

@@ -6,7 +6,8 @@ import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 const $trigger = createStore<string>('');
 const $debouncedApis = createStore<Record<ChainId, ApiPromise>>({});
@@ -34,7 +35,7 @@ const $input = combine(
   {
     apis: $debouncedApis,
     chains: networkModel.$chains,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
   },
   ({ apis, chains, wallet }) => {
     if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
@@ -42,7 +43,7 @@ const $input = combine(
     const input = [];
 
     for (const account of wallet.accounts) {
-      if (accountUtils.isProxiedAccount(account)) {
+      if (accountUtils.isFlexibleProxiedAccount(account)) {
         const api = apis[account.chainId];
         const chain = chains[account.chainId];
 

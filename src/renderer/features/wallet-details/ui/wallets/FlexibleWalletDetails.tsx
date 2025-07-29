@@ -6,7 +6,7 @@ import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core'
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { assert, nonNullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, Icon, IconButton } from '@/shared/ui';
+import { BodyText, FootnoteText, HeadlineText, Icon, IconButton } from '@/shared/ui';
 import { type IconNames } from '@/shared/ui/types';
 import { AccountExplorers, Address } from '@/shared/ui-entities';
 import { Box, Dropdown, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
@@ -190,6 +190,11 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
         <Modal.HeaderContent>
           <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 pb-6 pt-4">
             <WalletCardLg wallet={wallet} />
+            {!isRenameModalOpen && (
+              <HeadlineText className="ml-3 truncate text-text-primary" as="h3">
+                {wallet.name}
+              </HeadlineText>
+            )}
             {nonNullable(chain) && (
               <div className="flex items-center">
                 <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />

@@ -12,13 +12,13 @@ import { KeyType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { copyToClipboard, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
-import { Hash } from '@/shared/ui-entities';
+import { copyToClipboard, isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
+import { FootnoteText, HeadlineText, HelpText, IconButton, type IconTheme, Separator } from '@/shared/ui';
+import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@/entities/wallet';
+import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { DerivationsAddressModal, ExportKeysModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
@@ -118,7 +118,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
 
   const actions: WalletAction[] = [
     {
-      icon: 'editKeys',
+      icon: 'rename',
       title: t('walletDetails.vault.editKeys'),
       onClick: toggleConstructorModal,
     },
@@ -157,6 +157,12 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
 
   const accountsCount = Object.values(accountsMap).flat(2).length;
 
+  const isSingleAccount = wallet.accounts.length === 1;
+  const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+  if (nullable(address)) return null;
+  const isEthereum = isEthereumAccountId(address);
+  const theme: IconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
+
   return (
     <>
       <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
@@ -166,35 +172,40 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
         <Modal.HeaderContent>
           <div className="mb-6 flex items-center justify-between px-5">
             <Box direction="row" verticalAlign="center" gap={3}>
-              <span>
-                <WalletCardLg wallet={wallet} withoutName={isRenameModalOpen} />
-              </span>
+              <div className="mr-1">
+                <WalletAccountIcon address={address} type={wallet.type} size={42} theme={theme} />
+              </div>
               {!isRenameModalOpen && (
                 <>
-                  <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
-                  <Popover side="bottom" align="center">
-                    <Popover.Trigger>
-                      <IconButton name="details" />
-                    </Popover.Trigger>
-                    <Popover.Content>
-                      <Box gap={0.5} padding={4} width="230px">
-                        <FootnoteText className="text-text-tertiary">
-                          {t('general.explorers.publicKeyTitle')}
-                        </FootnoteText>
-                        <Box direction="row" verticalAlign="center" gap={3}>
-                          <HelpText className="text-text-secondary">
-                            <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
-                          </HelpText>
-                          <IconButton
-                            className="shrink-0 text-icon-default"
-                            name="copy"
-                            onClick={() => copyToClipboard(wallet.rootAccountId)}
-                          />
+                  <HeadlineText className="truncate text-text-primary" as="h3">
+                    {wallet.name}
+                  </HeadlineText>
+                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                    <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                    <Popover side="bottom" align="center">
+                      <Popover.Trigger>
+                        <IconButton name="details" />
+                      </Popover.Trigger>
+                      <Popover.Content>
+                        <Box gap={0.5} padding={4} width="230px">
+                          <FootnoteText className="text-text-tertiary">
+                            {t('general.explorers.publicKeyTitle')}
+                          </FootnoteText>
+                          <Box direction="row" verticalAlign="center" gap={3}>
+                            <HelpText className="text-text-secondary">
+                              <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
+                            </HelpText>
+                            <IconButton
+                              className="shrink-0 text-icon-default"
+                              name="copy"
+                              onClick={() => copyToClipboard(wallet.rootAccountId)}
+                            />
+                          </Box>
                         </Box>
-                      </Box>
-                    </Popover.Content>
-                  </Popover>
-                  <WalletFiatBalance />
+                      </Popover.Content>
+                    </Popover>
+                    <WalletFiatBalance />
+                  </div>
                 </>
               )}
             </Box>
@@ -202,7 +213,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
             {!isRenameModalOpen && (
-              <div className="shrink-0">
+              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
                 <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
               </div>
             )}
