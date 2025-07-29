@@ -120,10 +120,6 @@ class DexieStorage extends Dexie {
 
     this.version(32).upgrade(migrateEVMAccountsCryptoType);
 
-    this.version(33).stores({
-      balances: 'id',
-    });
-
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
