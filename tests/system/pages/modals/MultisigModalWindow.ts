@@ -61,6 +61,7 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
       await this.checkForAlerts();
       await this.waitForContinueButtonToBeEnabled();
       await this.page.getByRole('button', { name: 'Continue' }).click();
+      await this.checkForAlerts();
     });
   }
 

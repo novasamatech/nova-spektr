@@ -106,6 +106,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
       await this.checkForAlerts();
       await this.waitForContinueButtonToBeEnabled();
       await this.page.getByRole('button', { name: 'Continue' }).click();
+      await this.checkForAlerts();
     });
 
     return new ConfirmationModalWindow(this.page, new ConfirmationModalElements(), this.previousPage);
