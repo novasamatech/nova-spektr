@@ -23,8 +23,6 @@ type Props = {
 export const TokenBalanceList = memo(({ asset, wallet }: Props) => {
   const { t } = useI18n();
 
-  const activeWallet = wallet;
-
   const handleSend = (e: React.MouseEvent) => {
     e.stopPropagation();
     portfolioModel.events.transferStarted(asset);
@@ -71,10 +69,10 @@ export const TokenBalanceList = memo(({ asset, wallet }: Props) => {
           <AssembledAssetAmount asset={asset} balance={totalBalance} />
 
           <div className="ml-4 flex gap-x-3">
-            <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet}>
+            <CheckPermission operationType={OperationType.TRANSFER} wallet={wallet}>
               <IconButton size={20} name="sendArrow" onClick={handleSend} />
             </CheckPermission>
-            <CheckPermission operationType={OperationType.RECEIVE} wallet={activeWallet}>
+            <CheckPermission operationType={OperationType.RECEIVE} wallet={wallet}>
               <IconButton size={20} name="receiveArrow" onClick={handleReceive} />
             </CheckPermission>
           </div>
