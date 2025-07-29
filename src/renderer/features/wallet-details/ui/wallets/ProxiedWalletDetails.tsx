@@ -5,16 +5,17 @@ import { type ProxiedWallet, type ProxyType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { FootnoteText, Icon, IconButton, Separator } from '@/shared/ui';
-import { ChainAccountsList } from '@/shared/ui-entities';
+import { isEthereumAccountId } from '@/shared/lib/utils';
+import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
+import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { WalletCardLg, WalletIcon, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { WalletIcon, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
-import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
@@ -78,7 +79,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (canCreateProxy) {
     actions.push({
-      icon: 'addCircle',
+      icon: 'delegate',
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
     });
@@ -95,6 +96,8 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
     icon: 'forget',
     title: t('walletDetails.common.hideButton'),
     onClick: toggleConfirmForget,
+    iconClassName: 'text-icon-negative',
+    backgroundClassName: 'bg-secondary-negative-button-background',
   });
 
   const account = wallet.accounts.at(0);
@@ -114,15 +117,31 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
         <div className="flex flex-col gap-y-2.5 px-5 pb-6">
           <div className="flex items-center justify-between">
             <Box direction="row" verticalAlign="center" gap={3}>
-              <span>
-                <WalletCardLg wallet={wallet} />
-              </span>
-              <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
-              <WalletFiatBalance />
+              <div className="mr-1">
+                <WalletAccountIcon
+                  address={account?.accountId}
+                  type={wallet.type}
+                  size={42}
+                  theme={isEthereumAccountId(account?.accountId) ? 'ethereum' : 'polkadot'}
+                />
+              </div>
+              {!isRenameModalOpen && (
+                <>
+                  <HeadlineText className="truncate text-text-primary" as="h3">
+                    {wallet.name}
+                  </HeadlineText>
+                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                    <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                    <WalletFiatBalance />
+                  </div>
+                </>
+              )}
             </Box>
 
-            {account && (
-              <div className="shrink-0">
+            <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+            {account && !isRenameModalOpen && (
+              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
                 <Slot id={overviewSlot} props={{ walletAccounts: [account] }} />
               </div>
             )}
@@ -191,7 +210,6 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
         onForget={onClose}
       />
 
-      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
       <AddProxy wallet={wallet} />
       <AddPureProxied wallet={wallet} />
     </Modal>

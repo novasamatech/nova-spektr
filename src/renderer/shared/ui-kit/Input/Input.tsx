@@ -14,6 +14,8 @@ type HTMLInputProps = 'value' | 'disabled' | 'placeholder' | 'name' | 'autoFocus
 type ComponentProps = {
   invalid?: boolean;
   height?: 'sm' | 'md';
+  width?: 'full' | 'md';
+  textSize?: 'md' | 'lg';
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   testId?: string;
@@ -29,6 +31,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     {
       type = 'text',
       height = 'sm',
+      width = 'md',
+      textSize = 'md',
       name,
       value,
       placeholder,
@@ -51,7 +55,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <label
         className={cnTw(
-          'flex cursor-text items-center gap-x-2 rounded px-[11px]',
+          'box-border flex cursor-text items-center gap-x-2 rounded px-[11px]',
           'border border-filter-border bg-input-background',
           {
             'h-[34px]': height === 'sm',
@@ -60,6 +64,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             'focus-within:border-active-container-border': !invalid,
             'hover:shadow-card-shadow': !disabled,
             'bg-input-background-disabled': disabled,
+            'w-full': width === 'full',
           },
         )}
       >
@@ -70,6 +75,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             'text-footnote text-text-primary outline-offset-1',
             {
               'bg-transparent text-text-tertiary placeholder:text-text-tertiary': disabled,
+              'text-headline': textSize === 'lg',
             },
           )}
           id={id}

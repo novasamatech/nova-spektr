@@ -117,8 +117,6 @@ function getTxWrappers({ wallet, ...params }: TxWrappersParams): TxWrapper[] {
     return getMultisigWrapper(params);
   }
 
-  // TODO add flexible multisig wrapper
-
   if (walletUtils.isProxied(wallet)) {
     return getProxyWrapper(params);
   }

@@ -5,18 +5,18 @@ import { type FlexibleMultisigWallet, type MultisigWallet } from '@/shared/core'
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { assert, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, IconButton, Separator } from '@/shared/ui';
-import { Address, ChainAccountsList, RootExplorers } from '@/shared/ui-entities';
+import { assert, isEthereumAccountId, toAddress } from '@/shared/lib/utils';
+import { FootnoteText, HeadlineText, IconButton, Separator } from '@/shared/ui';
+import { Address, ChainAccountsList, RootExplorers, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { ContactItem, WalletCardLg, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
+import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
-import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -43,6 +43,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
 
   useGate(multisigWalletDetailsModel.flow, { wallet });
+  useGate(walletDetailsModel.flow, { wallet });
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
@@ -238,15 +239,31 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
         <Modal.HeaderContent>
           <div className="mb-6 flex items-center justify-between px-5">
             <Box direction="row" verticalAlign="center" gap={3}>
-              <span>
-                <WalletCardLg wallet={wallet} />
-              </span>
-              <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
-              <WalletFiatBalance />
+              <div className="mr-1">
+                <WalletAccountIcon
+                  address={multisigAccount?.accountId}
+                  type={wallet.type}
+                  size={42}
+                  theme={isEthereumAccountId(multisigAccount?.accountId) ? 'ethereum' : 'polkadot'}
+                />
+              </div>
+              {!isRenameModalOpen && (
+                <>
+                  <HeadlineText className="truncate text-text-primary" as="h3">
+                    {wallet.name}
+                  </HeadlineText>
+                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                    <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                    <WalletFiatBalance />
+                  </div>
+                </>
+              )}
             </Box>
 
-            {multisigAccount && (
-              <div className="shrink-0">
+            <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+            {multisigAccount && !isRenameModalOpen && (
+              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
                 <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
               </div>
             )}
@@ -277,8 +294,6 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
           </Tabs>
         </Modal.Content>
       </Modal>
-
-      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
       <ForgetWalletModal
         wallet={wallet}

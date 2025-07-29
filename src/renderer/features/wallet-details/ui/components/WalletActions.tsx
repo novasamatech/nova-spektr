@@ -26,7 +26,7 @@ export const WalletActions = ({ actions }: Props) => {
               action.backgroundClassName,
             )}
           >
-            <Icon name={action.icon} size={20} className={cnTw('text-chip-icon', action.iconClassName)} />
+            <Icon name={action.icon} size={16} className={cnTw('text-chip-icon', action.iconClassName)} />
           </div>
           <LabelText>{action.title}</LabelText>
         </button>

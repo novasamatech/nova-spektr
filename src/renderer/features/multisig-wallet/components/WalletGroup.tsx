@@ -1,16 +1,15 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { type Wallet, WalletType } from '@/shared/core';
+import { AccountType, type Chain, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId, performSearch } from '@/shared/lib/utils';
-import { Icon } from '@/shared/ui';
 import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
-import { Accordion, Box, Tooltip } from '@/shared/ui-kit';
+import { Accordion, Box } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { WalletIcon } from '@/entities/wallet';
+import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
 
@@ -28,6 +27,7 @@ type Props = {
 
 export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }: Props) => {
   const { t } = useI18n();
+
   const allAccounts = useUnit(accounts.$list);
   const chains = useUnit(networkModel.$chains);
 
@@ -51,16 +51,6 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
           <WalletIcon type={walletType} />
           <span>{title}</span>
           <span className="text-text-tertiary">{wallets.length}</span>
-          {walletType === WalletType.FLEXIBLE_MULTISIG ? (
-            <Tooltip>
-              <Tooltip.Trigger>
-                <div>
-                  <Icon name="questionOutline" size={16} />
-                </div>
-              </Tooltip.Trigger>
-              <Tooltip.Content>{t('createMultisigAccount.flexibleMultisig.description')}</Tooltip.Content>
-            </Tooltip>
-          ) : null}
         </Accordion.Trigger>
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
@@ -68,6 +58,17 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
               const address = wallet.accounts[0]?.accountId;
               const isEthereum = isEthereumAccountId(address);
               const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
+
+              let chain: Chain | null = null;
+              let label: string | null = null;
+
+              if (walletUtils.isFlexibleMultisig(wallet)) {
+                const chainId = wallet.accounts.find(
+                  account => account.accountType === AccountType.FLEX_PROXIED,
+                )?.chainId;
+                chain = chainId ? chains[chainId] : null;
+                label = t('wallets.flexibleMultisigFlexLabel');
+              }
 
               return (
                 <WalletManagement
@@ -78,6 +79,8 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
                   description={
                     <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
                   }
+                  chain={chain}
+                  label={label}
                   onClick={() => onSelect(wallet)}
                 >
                   <Slot id={walletActionsSlot} props={{ wallet }} />

@@ -5,24 +5,28 @@ import { type WalletConnectGroup } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
+import { isEthereumAccountId, isPolkadotChain } from '@/shared/lib/utils';
 import {
   Button,
   ConfirmModal,
   FootnoteText,
+  HeadlineText,
   IconButton,
+  type IconTheme,
   Separator,
   SmallTitleText,
   StatusLabel,
   StatusModal,
 } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
-import { WalletCardLg, permissionUtils } from '@/entities/wallet';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { forgetWalletModel } from '@/features/wallets/ForgetWallet';
-import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { ForgetStep } from '../../lib/constants';
 import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -62,6 +66,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   const reconnectStep = useUnit(walletConnectReconnect.$reconnectStep);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
   const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
+  const accountList = useUnit(accounts.$list);
 
   const [_, startTransition] = useTransition();
 
@@ -111,6 +116,15 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
     });
   };
 
+  const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
+  const mainAccount =
+    walletAccounts.find(account => accountService.isChainAccount(account) && isPolkadotChain(account.chainId)) ||
+    walletAccounts.at(0);
+  const address = mainAccount?.accountId;
+
+  const isEthereum = isEthereumAccountId(address);
+  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
+
   return (
     <>
       <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
@@ -120,18 +134,30 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
         <Modal.HeaderContent>
           <div className="mb-4 flex items-center justify-between px-5 pb-6 pt-4">
             <Box direction="row" verticalAlign="center" gap={3}>
-              <span>
-                <WalletCardLg wallet={wallet}>
-                  <StatusLabel variant={connected ? 'success' : 'waiting'} />
-                </WalletCardLg>
-              </span>
-              <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
-              <WalletFiatBalance />
+              <div className="mr-1">
+                <WalletAccountIcon address={address} type={wallet.type} size={42} theme={theme} />
+              </div>
+              {!isRenameModalOpen && (
+                <>
+                  <HeadlineText className="truncate text-text-primary" as="h3">
+                    {wallet.name}
+                  </HeadlineText>
+                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                    <StatusLabel variant={connected ? 'success' : 'waiting'} />
+                    <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                    <WalletFiatBalance />
+                  </div>
+                </>
+              )}
             </Box>
 
-            <div className="shrink-0">
-              <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
-            </div>
+            <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+
+            {!isRenameModalOpen && (
+              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
+                <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
+              </div>
+            )}
           </div>
 
           <WalletActions actions={actions} />
@@ -235,8 +261,6 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.walletConnect.abortRejectButton')}
         </Button>
       </StatusModal>
-
-      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
       <AddProxy wallet={wallet} />
       <AddPureProxied wallet={wallet} />

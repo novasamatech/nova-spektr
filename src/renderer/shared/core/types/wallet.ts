@@ -3,6 +3,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
 import {
+  type FlexibleMultisigAccount,
+  type FlexibleProxiedAccount,
   type MultisigAccount,
   type ProxiedAccount,
   type VaultBaseAccount,
@@ -54,11 +56,9 @@ export interface MultisigWallet extends Wallet {
   accounts: MultisigAccount[];
 }
 
-// TODO: try to move signatories data out of account
 export interface FlexibleMultisigWallet extends Wallet {
   type: WalletType.FLEXIBLE_MULTISIG;
-  activated: boolean;
-  accounts: (MultisigAccount | ProxiedAccount)[];
+  accounts: (FlexibleMultisigAccount | FlexibleProxiedAccount)[];
 }
 
 export interface ProxiedWallet extends Wallet {
@@ -124,8 +124,4 @@ export const enum SigningType {
   POLKADOT_VAULT = 'signing_pv',
   EXTENSION = 'signing_ext',
   WALLET_CONNECT = 'signing_wc',
-}
-
-export enum WalletIconType {
-  FLEXIBLE_MULTISIG_INACTIVE = 'wallet_fxms_inactive',
 }

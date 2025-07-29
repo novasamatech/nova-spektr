@@ -12,7 +12,6 @@ import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-m
 import { operationsContextModel } from '../model/context';
 
 import { EmptyOperations } from './EmptyOperations';
-import { FlexibleMultisigShell } from './FlexibleMultisigShell';
 import { Operation } from './Operation';
 import { OperationsFilter } from './OperationsFilter';
 
@@ -21,7 +20,6 @@ export const Operations = () => {
 
   const account = useUnit(operationsContextModel.$account);
   const operations = useUnit(selectedWalletMultisigOperations.$list);
-  const incompleteFlexibleMultisigTx = useUnit(operationsContextModel.$incompleteFlexibleMultisigTx);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
 
   const groupedTxs = groupBy(filteredTxs, tx => {
@@ -44,10 +42,6 @@ export const Operations = () => {
 
   if (!account) {
     return <EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />;
-  }
-
-  if (incompleteFlexibleMultisigTx) {
-    return <FlexibleMultisigShell operation={incompleteFlexibleMultisigTx} account={account} />;
   }
 
   return (

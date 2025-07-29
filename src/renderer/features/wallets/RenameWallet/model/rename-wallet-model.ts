@@ -1,9 +1,9 @@
-import { attach, combine, createApi, createEffect, createStore, sample } from 'effector';
-import { createForm } from 'effector-forms';
-import { not } from 'patronum';
+import { attach, combine, createEffect, createEvent, restore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
 import { type Wallet } from '@/shared/core';
+import { createForm } from '@/shared/forms/createForm';
+import { type ValidationError } from '@/shared/forms/types';
 import { nonNullable } from '@/shared/lib/utils';
 import * as networkDomain from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -12,32 +12,44 @@ export type Callbacks = {
   onSubmit: () => void;
 };
 
-const $callbacks = createStore<Callbacks | null>(null);
-const callbacksApi = createApi($callbacks, {
-  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
-});
+const callbackChanged = createEvent<Callbacks>();
+const $callbacks = restore(callbackChanged, null);
 
-const $walletToEdit = createStore<Wallet | null>(null);
-const walletApi = createApi($walletToEdit, {
-  formInitiated: (state, props: Wallet) => ({ ...state, ...props }),
-});
+const formInitiated = createEvent<Wallet>();
+const $walletToEdit = restore(formInitiated, null);
 
-const $walletForm = createForm({
+type SourceParams = {
+  walletToEdit: Wallet;
+  wallets: Wallet[];
+};
+
+const $walletForm = createForm<{ name: string }>({
   fields: {
     name: {
-      init: '',
-      rules: [
-        { name: 'required', errorText: 'walletDetails.common.nameRequiredError', validator: Boolean },
-        {
-          name: 'exist',
-          errorText: 'walletDetails.common.nameExistsError',
-          source: combine({
-            walletToEdit: $walletToEdit,
-            wallets: walletModel.$wallets,
-          }),
-          validator: validateNameExist,
+      defaultValue: '',
+      validator: () => ({
+        source: combine({
+          walletToEdit: $walletToEdit,
+          wallets: walletModel.$wallets,
+        }),
+        fn: (value: string, _: unknown, params: SourceParams): ValidationError[] => {
+          const errors: ValidationError[] = [];
+
+          if (!value) {
+            errors.push({ message: 'walletDetails.common.nameRequiredError' });
+            return errors;
+          }
+
+          const isSameName = value.toLowerCase() === params.walletToEdit.name.toLowerCase();
+          const isUnique = params.wallets.every((wallet) => wallet.name.toLowerCase() !== value.toLowerCase());
+
+          if (!isSameName && !isUnique) {
+            errors.push({ message: 'walletDetails.common.nameExistsError' });
+          }
+
+          return errors;
         },
-      ],
+      }),
     },
   },
   validateOn: ['submit'],
@@ -51,33 +63,18 @@ const renameWalletFx = createEffect(async ({ id, accounts, ...rest }: Wallet): P
 });
 
 sample({
-  clock: walletApi.formInitiated,
-  filter: $walletForm.$isDirty,
+  clock: formInitiated,
   target: $walletForm.reset,
 });
 
 sample({
-  clock: walletApi.formInitiated,
-  filter: not($walletForm.$isDirty),
-  fn: ({ name }) => ({ name }),
-  target: $walletForm.setForm,
+  clock: formInitiated,
+  fn: ({ name }) => name,
+  target: $walletForm.fields.name.change,
 });
 
-type SourceParams = {
-  walletToEdit: Wallet;
-  wallets: Wallet[];
-};
-function validateNameExist(value: string, _: unknown, params: SourceParams): boolean {
-  if (!value) return true;
-
-  const isSameName = value.toLowerCase() === params.walletToEdit.name.toLowerCase();
-  const isUnique = params.wallets.every((wallet) => wallet.name.toLowerCase() !== value.toLowerCase());
-
-  return isSameName || isUnique;
-}
-
 sample({
-  clock: $walletForm.formValidated,
+  clock: $walletForm.submit.doneData,
   source: $walletToEdit,
   filter: (walletToEdit: Wallet | null): walletToEdit is Wallet => nonNullable(walletToEdit),
   fn: (walletToEdit, { name }) => {
@@ -110,8 +107,7 @@ sample({
 export const renameWalletModel = {
   $walletForm,
   $walletToEdit,
-  events: {
-    callbacksChanged: callbacksApi.callbacksChanged,
-    formInitiated: walletApi.formInitiated,
-  },
+
+  callbackChanged,
+  formInitiated,
 };

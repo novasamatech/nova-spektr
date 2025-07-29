@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
-import { type WalletIconType, WalletType } from '@/shared/core';
+import { WalletType } from '@/shared/core';
 import { Input, Select } from '@/shared/ui-kit';
 
 import { type IconTheme, WalletAccountIcon } from './WalletAccountIcon';
@@ -19,7 +19,7 @@ type Story = StoryObj<typeof WalletAccountIcon>;
 export const VariantsDerivedFromConfig: Story = {
   render: () => {
     const [address, setAddress] = useState('0x42d8cf0748e573fdd1975d1f803f7c3dae1f7334d88916883341478cd7854d7c');
-    const [type, setType] = useState<WalletType | WalletIconType>(WalletType.NOVA_WALLET);
+    const [type, setType] = useState<WalletType>(WalletType.NOVA_WALLET);
     const [theme, setTheme] = useState<IconTheme>('polkadot');
 
     return (
