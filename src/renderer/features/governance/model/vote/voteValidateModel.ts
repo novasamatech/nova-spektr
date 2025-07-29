@@ -33,7 +33,7 @@ const rootValidateFx = createEffect(
     const referendum = await governanceService.getReferendums(api, [transaction.args.referendum]);
     const isOngoing = referendumService.isOngoing(referendum[0]);
 
-    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
 
     const rules: Validation<BN, { shards: unknown[] }>[] = [
       {

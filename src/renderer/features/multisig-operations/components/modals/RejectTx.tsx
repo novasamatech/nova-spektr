@@ -106,7 +106,7 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
     validateBalance({
       api,
       chainId: operation.chainId,
-      assetId: nativeAsset.assetId.toString(),
+      assetId: nativeAsset.assetId,
       transaction: rejectTx ?? undefined,
       getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee: transactionService.getTransactionFee,
@@ -138,12 +138,7 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
     }
 
     const fee = await transactionService.getTransactionFee(rejectTx, api);
-    const balance = balanceUtils.getBalance(
-      balances,
-      signAccount.accountId,
-      chain.chainId,
-      nativeAsset.assetId.toString(),
-    );
+    const balance = balanceUtils.getBalance(balances, signAccount.accountId, chain.chainId, nativeAsset.assetId);
 
     if (!balance) {
       return false;

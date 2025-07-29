@@ -380,7 +380,7 @@ sample({
           tracks,
           target: target?.address || '',
           transferable: transferableAmount(
-            balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
+            balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId),
           ),
           ...delegateData!,
           signatory: delegateData!.signatory!,

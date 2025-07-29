@@ -35,4 +35,10 @@ export default defineConfig({
       ],
     }),
   ],
+  vite: {
+    ssr: {
+      // incompatible with zod 4
+      noExternal: ['zod'],
+    },
+  },
 });

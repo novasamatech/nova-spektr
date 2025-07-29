@@ -66,12 +66,7 @@ function getChainWithBalance(balances: Balance[], chains: AssetChain[], accounts
   return chains.reduce<AssetChain[]>((acc, chain) => {
     const selectedAccountIds = getSelectedAccountIds(accounts, chain.chainId);
 
-    const accountsBalance = balanceUtils.getAssetBalances(
-      balances,
-      selectedAccountIds,
-      chain.chainId,
-      chain.assetId.toString(),
-    );
+    const accountsBalance = balanceUtils.getAssetBalances(balances, selectedAccountIds, chain.chainId, chain.assetId);
 
     const assetBalance = accountsBalance.reduce<AssetBalance>((acc, balance) => {
       return sumTokenBalances(balance, acc);

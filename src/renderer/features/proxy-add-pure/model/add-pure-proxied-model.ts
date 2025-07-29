@@ -108,7 +108,7 @@ sample({
     return activeWallet !== walletDetails;
   },
   fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.events.walletToSubSet,
+  target: balanceSubModel.subscribeWallet,
 });
 
 sample({
@@ -389,7 +389,7 @@ sample({
     return activeWallet !== walletDetails;
   },
   fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.events.walletToUnsubSet,
+  target: balanceSubModel.unsubscribeWallet,
 });
 
 sample({

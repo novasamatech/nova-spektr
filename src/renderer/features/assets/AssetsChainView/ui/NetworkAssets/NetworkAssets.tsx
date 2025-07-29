@@ -1,11 +1,10 @@
 import { useUnit } from 'effector-react';
-import groupBy from 'lodash/groupBy';
 import { memo, useEffect, useMemo, useState } from 'react';
 
 import { sumBalances } from '@/shared/api/network/service/chainsService';
 import { type Asset, type Balance, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { ZERO_BALANCE, totalAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, groupBy, nullable, totalAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, Icon } from '@/shared/ui';
 import { Accordion, Tooltip } from '@/shared/ui-kit';
@@ -57,16 +56,20 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
 
   useEffect(() => {
     const newBalancesObject: Record<string, Balance> = {};
-    const groupedBalances = Object.values(groupBy(chainBalances, 'assetId'));
+    const groupedBalances = groupBy(chainBalances, (b) => b.assetId.toString());
 
-    for (const accountBalances of groupedBalances) {
+    for (const [assetId, accountBalances] of Object.entries(groupedBalances)) {
+      if (nullable(accountBalances)) {
+        continue;
+      }
+
       let total = {} as Balance;
 
       for (const balance of accountBalances) {
         total = sumBalances(balance, total);
       }
 
-      newBalancesObject[accountBalances[0].assetId] = total;
+      newBalancesObject[assetId] = total;
     }
 
     setBalancesObject(newBalancesObject);

@@ -315,7 +315,7 @@ sample({
     return {
       event: shards.map((shard, index) => {
         const transferable = transferableAmount(
-          balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
+          balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId),
         );
 
         return {

@@ -132,12 +132,7 @@ const $signatoryBalance = combine(
   ({ signatory, chain, balances }) => {
     if (nullable(signatory) || nullable(chain)) return null;
 
-    return balanceUtils.getBalance(
-      balances,
-      signatory.accountId,
-      chain.chainId,
-      getNativeAsset(chain.assets).assetId.toString(),
-    );
+    return balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, getNativeAsset(chain.assets).assetId);
   },
 );
 

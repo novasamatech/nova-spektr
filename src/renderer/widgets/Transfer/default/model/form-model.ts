@@ -21,7 +21,7 @@ import {
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -32,6 +32,7 @@ import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
 import { type NetworkStore } from '../lib/types';
 
 type FormParams = {
+  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   destination: Address;
   destinationChain: Chain | null;
@@ -72,6 +73,9 @@ const $asset = $networkStore.map((s) => (s ? s.asset : null));
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
+    initiator: {
+      defaultValue: null,
+    },
     signatory: {
       defaultValue: null,
     },
@@ -126,15 +130,14 @@ const $isChainConnected = combine(
 
 // initiator
 
-const $initiator = combine($networkStore, walletSelect.$selectedAccounts, (store, accounts) => {
-  if (nullable(store)) return null;
-
-  return accounts.find((a) => accountService.isAccountAvailableOnChain(a, store.chain)) ?? null;
+const $initiators = createInitiatorsStore({
+  chain: $chain,
+  accounts: walletSelect.$selectedAccounts,
 });
 
 const $initiatorBalance = combine(
   {
-    initiator: $initiator,
+    initiator: form.fields.initiator.$value,
     balances: balanceModel.$balances,
     chain: $chain,
     asset: $asset,
@@ -147,17 +150,12 @@ const $initiatorBalance = combine(
       };
     }
 
-    const transferable = balanceUtils.getBalance(
-      balances,
-      initiator.accountId,
-      chain.chainId,
-      asset.assetId.toString(),
-    );
+    const transferable = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
     const native = balanceUtils.getBalance(
       balances,
       initiator.accountId,
       chain.chainId,
-      getNativeAsset(chain.assets).assetId.toString(),
+      getNativeAsset(chain.assets).assetId,
     );
 
     return {
@@ -172,7 +170,7 @@ const $initiatorBalance = combine(
 const $signatories = createSignatoriesStore({
   chain: $chain,
   accounts: accounts.$list,
-  initiator: $initiator,
+  initiator: form.fields.initiator.$value,
 });
 
 const $signatoryBalance = combine(
@@ -187,7 +185,7 @@ const $signatoryBalance = combine(
     }
 
     const asset = getNativeAsset(chain.assets);
-    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
+    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId);
     return balance ? withdrawableAmountBN(balance) : BN_ZERO;
   },
 );
@@ -201,7 +199,7 @@ const $coreTx = combine(
     form: form.$values,
     xcmData: xcmTransferModel.$xcmData,
     isConnected: $isChainConnected,
-    initiator: $initiator,
+    initiator: form.fields.initiator.$value,
   },
   ({ network, isXcm, form, xcmData, isConnected, initiator }) => {
     if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
@@ -225,7 +223,7 @@ const $feeTx = combine(
     isXcm: $isXcm,
     xcmData: xcmTransferModel.$xcmData,
     isConnected: $isChainConnected,
-    initiator: $initiator,
+    initiator: form.fields.initiator.$value,
   },
   ({ network, isXcm, xcmData, isConnected, initiator }) => {
     if (!network || !initiator || !isConnected || (isXcm && !xcmData)) {
@@ -245,7 +243,7 @@ const $feeTx = combine(
 
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
-  initiator: $initiator,
+  initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
   accounts: accounts.$list,
   chain: $chain,
@@ -347,8 +345,14 @@ sample({
 
 sample({
   clock: formInitiated,
+  source: $initiators,
+  fn: (initiators) => initiators.at(0) ?? null,
+  target: form.fields.initiator.change,
+});
+
+sample({
+  clock: [$signatories, formInitiated],
   source: $signatories,
-  filter: (signatories) => signatories.length > 0,
   fn: (signatories) => signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
@@ -426,7 +430,7 @@ const formSubmitFinished = sample({
   clock: form.submit.doneData,
   source: {
     chain: $chain,
-    initiator: $initiator,
+    initiator: form.fields.initiator.$value,
     network: $networkStore,
     route: $route,
     coreTx: $coreTx,
@@ -470,7 +474,7 @@ sample({
 export const formModel = {
   form,
 
-  $initiator,
+  $initiators,
   $signatories,
 
   $initiatorBalance,

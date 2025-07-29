@@ -20,7 +20,7 @@ export const AddPureProxiedRules = {
           balances,
           value.accountId,
           form.chain.chainId,
-          getNativeAsset(form.chain.assets).assetId.toString(),
+          getNativeAsset(form.chain.assets).assetId,
         );
         const proxyDeposit = new BN(params.proxyDeposit);
         const fee = new BN(params.fee);
@@ -47,7 +47,7 @@ export const AddPureProxiedRules = {
           balances,
           value.accountId,
           form.chain.chainId,
-          getNativeAsset(form.chain.assets).assetId.toString(),
+          getNativeAsset(form.chain.assets).assetId,
         );
 
         return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));

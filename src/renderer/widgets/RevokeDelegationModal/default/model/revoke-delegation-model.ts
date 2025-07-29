@@ -196,7 +196,7 @@ const dataSubmitted = sample({
       const delegation = delegations[delegate];
       const delegationData = Object.values(delegation)[0];
       const transferable = transferableAmount(
-        balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString()),
+        balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId),
       );
 
       return [

@@ -26,13 +26,13 @@ const defaultProps = {
   asset: testAsset as Asset,
   chainId: testChain.chainId,
   balance: {
-    id: 1,
-    assetId: testAsset.assetId.toString(),
+    id: '1',
+    assetId: testAsset.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
     free: BN_TEN,
     frozen: BN_TWO,
-  } as Balance,
+  } satisfies Balance,
   wallet: {
     walletId: 1,
     id: 1,

@@ -177,12 +177,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
     }
 
     const fee = await oldTransactionService.getTransactionFee(feeTx, api);
-    const balance = balanceUtils.getBalance(
-      balances,
-      signAccount.accountId,
-      chain.chainId,
-      nativeAsset.assetId.toString(),
-    );
+    const balance = balanceUtils.getBalance(balances, signAccount.accountId, chain.chainId, nativeAsset.assetId);
 
     if (!balance) {
       return false;
@@ -218,7 +213,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
       api,
       chainId: operation.chainId,
       transaction: approveTx,
-      assetId: nativeAsset.assetId.toString(),
+      assetId: nativeAsset.assetId,
       getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee: oldTransactionService.getTransactionFee,
     });

@@ -107,12 +107,7 @@ sample({
         continue;
       }
 
-      const balance = balanceUtils.getBalance(
-        balances,
-        signerForChain.accountId,
-        chain.chainId,
-        asset.assetId.toString(),
-      );
+      const balance = balanceUtils.getBalance(balances, signerForChain.accountId, chain.chainId, asset.assetId);
       const withdrawable = withdrawableAmountBN(balance);
 
       if (nullable(fee)) {
