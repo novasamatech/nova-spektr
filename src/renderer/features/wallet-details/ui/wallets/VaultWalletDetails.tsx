@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   type Chain,
@@ -58,8 +58,6 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
   const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
 
-  const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
-
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
@@ -71,6 +69,13 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
 
   const [tab, setTab] = useState('accounts');
   const [chains, setChains] = useState<Chain[]>([]);
+
+  const accountsMap = useMemo(() => {
+    const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
+    //todo sort these accounts
+
+    return accountsMap;
+  }, [wallet.accounts]);
 
   useEffect(() => {
     const filteredChains = Object.values(allChains).filter(c => {

@@ -2178,7 +2178,7 @@
       "accountsTab": "Accounts",
       "addressInProgress": "In progress...",
       "chainTitle": "with threshold { threshold } out of { signatories } signatories",
-      "changeSignatories": "Change signatories/threshold",
+      "changeSignatories": "Change signatories",
       "contactsGroup": "Contacts",
       "otherSignatories_one": "Other signatory { count }",
       "otherSignatories_other": "Other signatories { count }",

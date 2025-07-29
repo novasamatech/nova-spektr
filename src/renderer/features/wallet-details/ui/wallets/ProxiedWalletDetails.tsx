@@ -147,7 +147,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
             )}
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center pl-4">
             <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
             <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
             <WalletIcon type={proxyWallet.type} size={16} className="mx-1" />

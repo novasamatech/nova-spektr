@@ -19,7 +19,7 @@ export const WalletActions = ({ actions }: Props) => {
   return (
     <Box direction="row" verticalAlign="center" horizontalAlign="space-around" gap={2}>
       {actions.map(action => (
-        <button key={action.title} className="flex flex-col items-center gap-1" onClick={action.onClick}>
+        <button key={action.title} className="flex flex-1 flex-col items-center gap-1" onClick={action.onClick}>
           <div
             className={cnTw(
               'flex h-12 w-12 items-center justify-center rounded-full bg-secondary-button-background',

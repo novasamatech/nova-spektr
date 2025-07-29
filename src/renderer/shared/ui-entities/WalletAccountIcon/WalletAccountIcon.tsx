@@ -7,16 +7,17 @@ export type IconTheme = IdenticonIconTheme;
 type Props = {
   address: Address | undefined;
   size?: number;
+  iconSize?: number;
   type: WalletType;
   theme?: IconTheme;
 };
 
-export const WalletAccountIcon = ({ address, size = 32, type, theme = 'polkadot' }: Props) => {
+export const WalletAccountIcon = ({ address, size = 32, iconSize = 16, type, theme = 'polkadot' }: Props) => {
   return (
     <div className="relative" style={{ width: `${size}px`, height: `${size}px` }}>
       <Identicon canCopy={false} address={address} size={size} background={false} theme={theme} />
       <div className="absolute -bottom-1 -right-1 rounded-full border-2 border-white bg-white">
-        <WalletIcon type={type} size={size / 2} />
+        <WalletIcon type={type} size={iconSize} />
       </div>
     </div>
   );
