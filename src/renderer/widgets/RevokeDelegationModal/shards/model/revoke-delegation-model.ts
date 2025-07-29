@@ -282,12 +282,7 @@ sample({
           balance: delegationData.balance.toString(),
           conviction: delegationData.conviction,
           transferable: transferableAmount(
-            balanceUtils.getBalance(
-              balances,
-              revokeData.account!.accountId,
-              walletData.chain!.chainId,
-              asset.assetId.toString(),
-            ),
+            balanceUtils.getBalance(balances, revokeData.account!.accountId, walletData.chain!.chainId, asset.assetId),
           ),
 
           ...revokeData,

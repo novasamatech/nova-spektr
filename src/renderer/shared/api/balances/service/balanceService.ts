@@ -9,16 +9,8 @@ import { camelCase } from 'lodash';
 import noop from 'lodash/noop';
 import uniq from 'lodash/uniq';
 
-import {
-  type Address,
-  type Asset,
-  AssetType,
-  type Balance,
-  type Chain,
-  type LockTypes,
-  type OrmlExtras,
-} from '@/shared/core';
-import { getAssetId, getRepeatedIndex, groupBy, nullable, toAddress } from '@/shared/lib/utils';
+import { type Asset, AssetType, type Balance, type Chain, type LockTypes, type OrmlExtras } from '@/shared/core';
+import { getAssetId, getRepeatedIndex, groupBy, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 type NoIdBalance = Omit<Balance, 'id'>;
@@ -110,17 +102,11 @@ function subscribeNativeAssetsChange(
 ): UnsubscribePromise {
   if (assetId === undefined) return Promise.resolve(noop);
 
-  const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
-
-  return api.query.system.account.multi(addresses, (data) => {
+  return api.query.system.account.multi(accountIds, (data) => {
     const newBalances: NoIdBalance[] = [];
 
     for (const [index, systemAccountInfo] of data.entries()) {
       let frozen: BN;
-
-      if (systemAccountInfo.data.free.isEmpty && systemAccountInfo.data.reserved.isEmpty) {
-        continue;
-      }
 
       // Some chains still use "feeFrozen" or "miscFrozen" (HKO, PARA, XRT, ZTG, SUB)
       const accountData = systemAccountInfo.data as unknown as AccountData;
@@ -135,10 +121,10 @@ function subscribeNativeAssetsChange(
       newBalances.push({
         accountId: accountIds[index],
         chainId: chain.chainId,
-        assetId: assetId.toString(),
+        assetId: assetId,
         verified: true,
-        free: systemAccountInfo.data.free.isEmpty ? undefined : systemAccountInfo.data.free.toBn(),
-        reserved: systemAccountInfo.data.reserved.isEmpty ? undefined : systemAccountInfo.data.reserved.toBn(),
+        free: systemAccountInfo.data.free.toBn(),
+        reserved: systemAccountInfo.data.reserved.toBn(),
         frozen,
       });
     }
@@ -166,13 +152,13 @@ function subscribeStatemineAssetsChange(
     return Promise.resolve(noop);
   }
 
-  const assetsTuples = assets.reduce<[string | Codec, Address][]>((acc, asset) => {
+  const assetsTuples = assets.reduce<[string | Codec, AccountId][]>((acc, asset) => {
     const assetId = getAssetId(asset);
     // @ts-expect-error type argument in createType has incorrect types
     const location = api.createType(type, assetId);
 
     for (const accountId of accountIds) {
-      acc.push([location, toAddress(accountId, { prefix: chain.addressPrefix })]);
+      acc.push([location, accountId]);
     }
 
     return acc;
@@ -190,7 +176,7 @@ function subscribeStatemineAssetsChange(
       newBalances.push({
         accountId: accountIds[accountIndex],
         chainId: chain.chainId,
-        assetId: assets[assetIndex].assetId.toString(),
+        assetId: assets[assetIndex].assetId,
         verified: true,
         frozen: BN_ZERO,
         reserved: BN_ZERO,
@@ -202,19 +188,14 @@ function subscribeStatemineAssetsChange(
   });
 }
 
-function getOrmlAssetTuples(
-  api: ApiPromise,
-  assets: Asset[],
-  addressPrefix: number,
-  accountIds: AccountId[],
-): [Address, Codec][] {
-  return assets.reduce<[Address, Codec][]>((acc, asset) => {
+function getOrmlAssetTuples(api: ApiPromise, assets: Asset[], accountIds: AccountId[]): [AccountId, Codec][] {
+  return assets.reduce<[AccountId, Codec][]>((acc, asset) => {
     const currencyIdType = (asset?.typeExtras as OrmlExtras).currencyIdType;
     const ormlAssetId = (asset?.typeExtras as OrmlExtras).currencyIdScale;
     const assetId = api.createType(currencyIdType, hexToU8a(ormlAssetId));
 
     for (const accountId of accountIds) {
-      acc.push([toAddress(accountId, { prefix: addressPrefix }), assetId]);
+      acc.push([accountId, assetId]);
     }
 
     return acc;
@@ -238,7 +219,7 @@ function subscribeOrmlAssetsChange(
 
   const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
 
-  const assetsTuples = getOrmlAssetTuples(api, assets, chain.addressPrefix, accountIds);
+  const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
   return method.multi(assetsTuples, (data) => {
     const newBalances: NoIdBalance[] = [];
@@ -250,7 +231,7 @@ function subscribeOrmlAssetsChange(
       newBalances.push({
         accountId: accountIds[accountIndex],
         chainId: chain.chainId,
-        assetId: assets[assetIndex].assetId.toString(),
+        assetId: assets[assetIndex].assetId,
         verified: true,
         free: accountInfo.free.toBn(),
         frozen: accountInfo.frozen.toBn(),
@@ -271,9 +252,7 @@ function subscribeLockNativeAssetChange(
 ): UnsubscribePromise {
   if (!api || assetId === undefined) return Promise.resolve(noop);
 
-  const addresses = accountIds.map((accountId) => toAddress(accountId, { prefix: chain.addressPrefix }));
-
-  return api.query.balances.locks.multi(addresses, (data) => {
+  return api.query.balances.locks.multi(accountIds, (data) => {
     const newLocks: NoIdBalance[] = [];
 
     for (const [index, balanceLocks] of data.entries()) {
@@ -285,7 +264,7 @@ function subscribeLockNativeAssetChange(
       newLocks.push({
         accountId: accountIds[index],
         chainId: chain.chainId,
-        assetId: assetId.toString(),
+        assetId,
         locked,
       });
     }
@@ -304,7 +283,7 @@ function subscribeLockOrmlAssetChange(
   if (!api || !assets.length) return Promise.resolve(noop);
 
   const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
-  const assetsTuples = getOrmlAssetTuples(api, assets, chain.addressPrefix, accountIds);
+  const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
   return method.multi(assetsTuples, (data: Vec<PalletBalancesBalanceLock>[]) => {
     const newLocks: NoIdBalance[] = [];
@@ -321,7 +300,7 @@ function subscribeLockOrmlAssetChange(
       newLocks.push({
         accountId: accountIds[accountIndex],
         chainId: chain.chainId,
-        assetId: assets[assetIndex].assetId.toString(),
+        assetId: assets[assetIndex].assetId,
         locked,
       });
     }

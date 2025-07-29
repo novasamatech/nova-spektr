@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Store, attach, createEffect, sample } from 'effector';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, transferableAmount } from '@/shared/lib/utils';
+import { getAssetById, getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -68,11 +68,9 @@ const rootValidateFx = createEffect(
           network: { chain: chain, asset: asset },
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, getNativeAsset(chain.assets).assetId),
             ),
-            balance: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
-            ),
+            balance: transferableAmount(balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId)),
           },
         } as { network: NetworkStore | null; balance: BalanceMap },
       },
@@ -89,7 +87,7 @@ const rootValidateFx = createEffect(
           // TODO: Add support proxy
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, getNativeAsset(chain.assets).assetId),
             ),
           },
         } as DelegateFeeStore,

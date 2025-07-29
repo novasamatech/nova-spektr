@@ -218,7 +218,7 @@ const $signerBalance = combine(
     if (!signer || !chain) return null;
     const asset = getNativeAsset(chain.assets);
 
-    return balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId.toString()) ?? null;
+    return balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId) ?? null;
   },
 );
 

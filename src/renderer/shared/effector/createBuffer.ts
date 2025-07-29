@@ -31,7 +31,7 @@ export const createBuffer = <T>({ source, timeframe }: Params<T>) => {
   sample({
     clock: source,
     source: $buffer,
-    fn: (buffer, value) => buffer.concat(value),
+    fn: (buffer, value) => [...buffer, value],
     target: $buffer,
   });
 

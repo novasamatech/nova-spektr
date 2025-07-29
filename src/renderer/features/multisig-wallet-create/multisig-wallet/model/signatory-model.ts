@@ -64,7 +64,7 @@ const $ownedSignatoriesWallets = combine(
 
 const populateBalanceFx = createEffect((wallets: Wallet[]) => {
   for (const wallet of wallets) {
-    balanceSubModel.events.walletToSubSet(wallet);
+    balanceSubModel.subscribeWallet(wallet);
   }
 });
 

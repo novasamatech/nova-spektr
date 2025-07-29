@@ -112,7 +112,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               balances,
               signatory.accountId,
               chain.chainId,
-              getNativeAsset(chain.assets).assetId.toString(),
+              getNativeAsset(chain.assets).assetId,
             );
 
             const hasEnoughTokens = new BN(multisigDeposit)
@@ -295,13 +295,13 @@ sample({
     return activeWallet !== walletDetails;
   },
   fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.events.walletToSubSet,
+  target: balanceSubModel.subscribeWallet,
 });
 
 sample({
   clock: flowStarted,
   source: {
-    api: $removeProxyStore.map((store) => store?.api),
+    api: $removeProxyStore.map((store) => store?.api ?? null),
   },
   filter: ({ api }, { proxied }) => nonNullable(proxied) && nonNullable(api),
   fn: ({ api }, { proxied }) => {
@@ -513,7 +513,7 @@ sample({
     return activeWallet !== walletDetails;
   },
   fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.events.walletToUnsubSet,
+  target: balanceSubModel.unsubscribeWallet,
 });
 
 sample({

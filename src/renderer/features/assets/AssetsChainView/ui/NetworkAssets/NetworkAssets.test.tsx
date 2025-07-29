@@ -41,14 +41,14 @@ const testWallet = {
 
 const testBalances = [
   {
-    assetId: testAsset.assetId.toString(),
+    assetId: testAsset.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
     free: '10',
     frozen: [{ type: 'test', amount: '1' }],
   },
   {
-    assetId: testAsset2.assetId.toString(),
+    assetId: testAsset2.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
     free: '1000000000000',
