@@ -32,7 +32,8 @@ export class VaultAssetsPage extends BaseAssetsPage {
 
       if (targetChain) {
         for (const asset of targetChain.assets) {
-          await this.page.waitForTimeout(500);
+          // TODO: need to wait before open another transfer modal
+          await this.page.waitForTimeout(1000);
           const transferModal = await this.openTransfer(chain, asset.assetId);
           await transferModal.checkFeeforAsset();
           await transferModal.close();
