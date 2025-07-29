@@ -1,13 +1,15 @@
+import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type AssetByChains, type Wallet } from '@/shared/core';
+import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { AssetIcon } from '@/shared/ui-entities';
 import { CardStack, Tooltip } from '@/shared/ui-kit';
 import { TokenPrice } from '@/entities/price';
 import { CheckPermission, OperationType } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { tokensService } from '../lib/tokensService';
 import { portfolioModel } from '../model/portfolio-model';
 
@@ -17,11 +19,12 @@ import { NetworkCard } from './NetworkCard';
 
 type Props = {
   asset: AssetByChains;
-  wallet: Wallet | null;
 };
 
-export const TokenBalanceList = memo(({ asset, wallet }: Props) => {
+export const TokenBalanceList = memo(({ asset }: Props) => {
   const { t } = useI18n();
+
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
   const handleSend = (e: React.MouseEvent) => {
     e.stopPropagation();

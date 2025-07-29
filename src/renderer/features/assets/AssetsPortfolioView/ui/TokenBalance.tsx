@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type AssetByChains, type Wallet } from '@/shared/core';
+import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, CaptionText, FootnoteText, Icon, Plate } from '@/shared/ui';
 import { AssetIcon, ChainIcon } from '@/shared/ui-entities';
@@ -10,16 +10,18 @@ import { Tooltip } from '@/shared/ui-kit';
 import { AssetLinks } from '@/entities/asset';
 import { networkModel } from '@/entities/network';
 import { TokenPrice } from '@/entities/price';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 import { AssembledAssetAmount } from './AssembledAssetAmount';
 
 type Props = {
   asset: AssetByChains;
-  wallet: Wallet | null;
 };
 
-export const TokenBalance = memo(({ asset, wallet }: Props) => {
+export const TokenBalance = memo(({ asset }: Props) => {
   const { t } = useI18n();
+  const wallet = useUnit(walletSelect.$selectedWallet);
+
   const chain = asset.chains[0];
 
   const chains = useUnit(networkModel.$chains);

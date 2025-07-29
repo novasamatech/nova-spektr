@@ -66,11 +66,7 @@ export const AssetsPortfolioView = () => {
             key={`${asset.priceId || ''}-${asset.symbol}-${asset.chains[0]?.chainId}`}
             className="w-full max-w-[736px]"
           >
-            {asset.chains.length === 1 ? (
-              <TokenBalance asset={asset} wallet={wallet} />
-            ) : (
-              <TokenBalanceList asset={asset} wallet={wallet} />
-            )}
+            {asset.chains.length === 1 ? <TokenBalance asset={asset} /> : <TokenBalanceList asset={asset} />}
           </li>
         ))}
 
