@@ -58,6 +58,7 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
 
   public async clickOnContinueButton(): Promise<void> {
     await step('Click Continue button', async () => {
+      await this.checkForAlerts();
       await this.waitForContinueButtonToBeEnabled();
       await this.page.getByRole('button', { name: 'Continue' }).click();
     });

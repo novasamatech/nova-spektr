@@ -103,6 +103,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
 
   public async openConfirmationModal(): Promise<ConfirmationModalWindow> {
     await step('Open confirmation modal', async () => {
+      await this.checkForAlerts();
       await this.waitForContinueButtonToBeEnabled();
       await this.page.getByRole('button', { name: 'Continue' }).click();
     });

@@ -35,4 +35,18 @@ export abstract class BaseModal<T extends BaseModalElements = BaseModalElements>
 
     return this;
   }
+
+  /**
+   * Checks for any alerts on the page and throws an error if one is found.
+   *
+   * @throws {Error} If an alert is visible on the page, with the alert text
+   *   included in the error message
+   */
+  protected async checkForAlerts(): Promise<void> {
+    const alert = this.page.getByTestId('alert');
+    if (await alert.isVisible()) {
+      const alertText = await alert.textContent();
+      throw new Error(`Alert found on the page with text: ${alertText}`);
+    }
+  }
 }
