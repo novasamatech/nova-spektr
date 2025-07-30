@@ -1,12 +1,13 @@
 import { useGate, useUnit } from 'effector-react';
-import { type ComponentProps, type PropsWithChildren } from 'react';
+import { type ComponentProps, type PropsWithChildren, useState } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { Step, isStep } from '@/shared/lib/utils';
-import { Modal } from '@/shared/ui-kit';
-import { ChainTitle } from '@/entities/chain';
+import { Step, isStep, nonNullable } from '@/shared/lib/utils';
+import { ConfirmModal, Modal } from '@/shared/ui-kit';
+import { OperationTitle } from '@/entities/chain';
 import { OperationSign } from '@/features/operations';
+import { assignModel } from '../model/assign-model';
 import { flexibleMultisigFeature } from '../model/feature';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
@@ -35,49 +36,74 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
   const { t } = useI18n();
   useGate(flexibleMultisigFeature.gate);
 
+  const [isConfirmOpen, setConfirmOpen] = useState<boolean>(false);
+
+  const proxyAddress = useUnit(assignModel.$proxyAddress);
+  const flexibleMultisigCreated = useUnit(assignModel.$flexibleMultisigCreated);
+
   const activeStep = useUnit(flexibleMultisigModel.$step);
   const {
     fields: { chainId },
   } = useForm(formModel.form);
 
-  const modalTitle = (
-    <div className="flex items-center justify-between">
-      {isStep(activeStep, Step.SIGNER_SELECTION)
-        ? t('createMultisigAccount.selectSigner')
-        : t('createMultisigAccount.flexibleMultisig.title')}
-      {!isStep(activeStep, Step.NAME_NETWORK) && !isStep(activeStep, Step.SIGNER_SELECTION) && (
-        <>
-          <span className="mx-1">{t('createMultisigAccount.titleOn')}</span>
-          <ChainTitle
-            chainId={chainId.value}
-            className="gap-x-1.5"
-            fontClass="font-manrope text-header-title text-text-primary truncate"
-          />
-        </>
-      )}
-    </div>
+  const modalTitle = isStep(activeStep, Step.SIGNER_SELECTION) ? (
+    t('createMultisigAccount.selectSigner')
+  ) : isStep(activeStep, Step.NAME_NETWORK) ? (
+    t('createMultisigAccount.flexibleMultisig.title')
+  ) : (
+    <OperationTitle title={t('createMultisigAccount.flexibleMultisig.title')} chainId={chainId.value} />
   );
 
+  const handleClose = () => {
+    if (isStep(activeStep, Step.NAME_NETWORK) || flexibleMultisigCreated) {
+      return onToggle(false);
+    }
+
+    return setConfirmOpen(true);
+  };
+
+  const isConfirmCreation = isStep(activeStep, Step.CONFIRM) && nonNullable(proxyAddress);
+
+  const confirmModalText = isConfirmCreation
+    ? 'createMultisigAccount.flexibleMultisig.closeCreationDescription'
+    : 'createMultisigAccount.flexibleMultisig.leaveDescription';
+
+  const confirmModalTitle = isConfirmCreation
+    ? 'createMultisigAccount.flexibleMultisig.closeCreationTitle'
+    : 'createMultisigAccount.flexibleMultisig.leaveTitle';
+
   return (
-    <Modal
-      isOpen={isOpen}
-      size={MODAL_SIZE[activeStep].size}
-      height={MODAL_SIZE[activeStep].height}
-      onToggle={onToggle}
-    >
-      <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>{modalTitle}</Modal.Title>
-      {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={onGoBack} />}
-      {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
-      {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
-      {(isStep(activeStep, Step.CONFIRM) || isStep(activeStep, Step.SUBMIT)) && (
-        <ConfirmationStep onToggle={onToggle} />
-      )}
-      {isStep(activeStep, Step.SIGN) && (
-        <Modal.Content>
-          <OperationSign onGoBack={() => flexibleMultisigModel.stepChanged(Step.CONFIRM)} />
-        </Modal.Content>
-      )}
-    </Modal>
+    <>
+      <Modal
+        isOpen={isOpen}
+        size={MODAL_SIZE[activeStep].size}
+        height={MODAL_SIZE[activeStep].height}
+        onToggle={handleClose}
+      >
+        <Modal.Trigger>{children}</Modal.Trigger>
+        <Modal.Title close>{modalTitle}</Modal.Title>
+        {isStep(activeStep, Step.NAME_NETWORK) && <NameNetworkSelection onGoBack={onGoBack} />}
+        {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold />}
+        {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />}
+        {(isStep(activeStep, Step.CONFIRM) || isStep(activeStep, Step.SUBMIT)) && (
+          <ConfirmationStep onToggle={onToggle} onClose={handleClose} />
+        )}
+        {isStep(activeStep, Step.SIGN) && (
+          <Modal.Content>
+            <OperationSign onGoBack={() => flexibleMultisigModel.stepChanged(Step.CONFIRM)} />
+          </Modal.Content>
+        )}
+      </Modal>
+      <ConfirmModal
+        title={t(confirmModalTitle)}
+        description={t(confirmModalText)}
+        cancelText={t('general.button.cancelButton')}
+        confirmText={t('createMultisigAccount.flexibleMultisig.leaveButton')}
+        type="warning"
+        isOpen={isConfirmOpen}
+        onConfirm={() => onToggle(false)}
+        onCancel={() => setConfirmOpen(false)}
+      />
+    </>
   );
 };

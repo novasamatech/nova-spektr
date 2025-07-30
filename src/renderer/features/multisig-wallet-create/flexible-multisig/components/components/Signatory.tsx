@@ -100,6 +100,9 @@ export const Signatory = ({
         const isCorrectAccount = !accountUtils.isVaultBaseAccount(account);
         const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+
+        if (isOwnAccount) return isChainMatch && isCorrectAccount;
+
         const queryPass = includesMultiple([account.name, address], query);
 
         return isChainMatch && isCorrectAccount && queryPass;

@@ -37,7 +37,7 @@ const $walletBalance = combine(
       if (!account) return acc;
       if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;
 
-      const asset = chains[balance.chainId]?.assets?.find(asset => asset.assetId.toString() === balance.assetId);
+      const asset = chains[balance.chainId]?.assets?.find(asset => asset.assetId === balance.assetId);
 
       if (!asset?.priceId || !prices[asset.priceId]) return acc;
 

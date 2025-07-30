@@ -36,7 +36,7 @@ export const SelectableSignatory = <T,>({
   const balance = useBalance({
     accountId: toAccountId(address),
     chainId,
-    assetId: asset.assetId.toString(),
+    assetId: asset.assetId,
   });
 
   if (!signatoryWallet) {

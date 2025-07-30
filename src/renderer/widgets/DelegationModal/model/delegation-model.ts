@@ -6,7 +6,7 @@ import { combineEvents, readonly } from 'patronum';
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Address } from '@/shared/core';
 import { Step, includesMultiple, isStep, nonNullable, toAccountId, validateAddress } from '@/shared/lib/utils';
-import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { delegateRegistryAggregate, delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { submitModel } from '@/features/operations/OperationSubmit';
@@ -31,7 +31,7 @@ const $customDelegate = restore(customDelegateChanged, '').reset(openCustomModal
 
 const $delegateList = combine(
   {
-    activeWallet: walletModel.$activeWallet,
+    activeWallet: walletSelect.$selectedWallet,
     delegationsList: delegateRegistryAggregate.$delegateRegistry,
     query: $query,
     sortType: $sortType,
@@ -63,7 +63,7 @@ const $customError = combine(
   {
     delegate: $customDelegate,
     votes: delegationAggregate.$activeDelegations,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     network: delegationAggregate.$network,
   },
   ({ delegate, votes, wallet, network }): DelegationErrors | null => {

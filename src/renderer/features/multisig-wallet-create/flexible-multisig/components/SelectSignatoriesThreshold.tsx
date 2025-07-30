@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { Step, nonNullable, nullable, toAccountId, toAddress, withdrawableAmount } from '@/shared/lib/utils';
+import { Step, nonNullable, toAccountId, toAddress, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { Address, AssetBalance } from '@/shared/ui-entities';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
@@ -37,13 +37,16 @@ export const SelectSignatoriesThreshold = () => {
   const signatories = useUnit(signatoryModel.$signatories);
 
   const fee = useUnit(flexibleMultisigModel.$fee);
+  const totalDeposit = useUnit(flexibleMultisigModel.$totalDeposit);
+
   const isEnoughBalance = useUnit(flexibleMultisigModel.$isEnoughBalance);
-  const signer = useUnit(flexibleMultisigModel.$signer);
+  const initiator = useUnit(flexibleMultisigModel.$initiator);
   const asset = useUnit(flexibleMultisigModel.$asset);
   const signerBalance = useUnit(flexibleMultisigModel.$signerBalance);
   const isLoading = useUnit(flexibleMultisigModel.$isLoading);
 
   const thresholdDisabled = signatories.length < 2 || signatories.some(s => s.address === '');
+  const totalFee = totalDeposit ? fee.add(totalDeposit) : fee;
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -148,7 +151,7 @@ export const SelectSignatoriesThreshold = () => {
                             title={existingMultisig.name}
                             hideAddress
                             showIcon
-                            canCopy={false}
+                            canCopy
                           />
                         </span>
                       ),
@@ -159,7 +162,7 @@ export const SelectSignatoriesThreshold = () => {
                             title={existingProxy.name}
                             hideAddress
                             showIcon
-                            canCopy={false}
+                            canCopy
                           />
                         </span>
                       ),
@@ -187,7 +190,7 @@ export const SelectSignatoriesThreshold = () => {
                             title={existingMultisig.name}
                             hideAddress
                             showIcon
-                            canCopy={false}
+                            canCopy
                           />
                         </span>
                       ),
@@ -197,7 +200,7 @@ export const SelectSignatoriesThreshold = () => {
               </Alert>
             )}
 
-            {!nullable(signerBalance) && !nullable(signer) && asset && (
+            {nonNullable(signerBalance) && nonNullable(initiator) && nonNullable(asset) && (
               <Alert
                 variant="error"
                 active={!isEnoughBalance}
@@ -211,15 +214,15 @@ export const SelectSignatoriesThreshold = () => {
                       account: (
                         <span className="mx-1 inline-flex w-auto align-sub">
                           <Address
-                            address={toAddress(signer.accountId, { prefix: chain?.addressPrefix })}
-                            title={signer.name}
+                            address={toAddress(initiator.accountId, { prefix: chain?.addressPrefix })}
+                            title={initiator.name}
                             hideAddress
                             showIcon
-                            canCopy={false}
+                            canCopy
                           />
                         </span>
                       ),
-                      fee: <AssetBalance value={fee.toString()} asset={asset} />,
+                      fee: <AssetBalance value={totalFee.toString()} asset={asset} />,
                       balance: <AssetBalance value={withdrawableAmount(signerBalance)} asset={asset} />,
                     }}
                   />

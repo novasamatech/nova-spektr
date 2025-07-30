@@ -2,6 +2,7 @@ import { $features } from '@/shared/config/features';
 import { combineIdentifiers } from '@/shared/di';
 import { createFeature } from '@/shared/feature';
 import {
+  flexibleOverviewSlot,
   multisigOverviewSlot,
   proxiedOverviewSlot,
   simpleOverviewSlot,
@@ -24,6 +25,7 @@ const overviewSlot = combineIdentifiers(
   multisigOverviewSlot,
   vaultOverviewSlot,
   watchOnlyOverviewSlot,
+  flexibleOverviewSlot,
 );
 
 accountsStructureFeature.inject(overviewSlot, ({ walletAccounts }) => {

@@ -1,8 +1,9 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type Account, RewardsDestination } from '@/shared/core';
+import { RewardsDestination } from '@/shared/core';
 import { formatAmount, validateAddress } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { type ShardsBondBalanceStore, type ShardsProxyFeeStore, type SignatoryFeeStore } from '../types/types';
 
 import { balanceValidation, descriptionValidation } from './validation';
@@ -36,7 +37,7 @@ export const PayeeRules = {
       name: 'noSignatorySelected',
       errorText: 'transfer.noSignatoryError',
       source,
-      validator: (signatory: Account, _: any, isMultisig: boolean) => {
+      validator: (signatory: AnyAccount, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
 
         return Object.keys(signatory).length > 0;

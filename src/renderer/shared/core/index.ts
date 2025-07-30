@@ -26,7 +26,6 @@ export { WalletType, SigningType } from './types/wallet';
 
 export { AccountType, KeyType } from './types/account';
 export type {
-  Account,
   WatchOnlyAccount,
   VaultBaseAccount,
   VaultChainAccount,

@@ -50,7 +50,7 @@ export const ProxyAccount = ({
           <HelpText className="text-tab-text-accent">{t(proxyUtils.getProxyTypeName(proxyType))}</HelpText>
         </div>
       </div>
-      {suffix}
+      <div className="ml-auto">{suffix}</div>
     </div>
   );
 };

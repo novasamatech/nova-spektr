@@ -1,4 +1,4 @@
-import { useGate, useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
@@ -8,7 +8,7 @@ import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { Button, HeadlineText, IconButton } from '@/shared/ui';
 import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -37,6 +37,12 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
   const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
 
+  const firstAccount = useStoreMap({
+    store: accounts.$list,
+    keys: [wallet.id],
+    fn: (accounts, [walletId]) => accountService.filterAccountsByWallet(accounts, walletId).at(0),
+  });
+
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
@@ -44,7 +50,6 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
   const [chains, setChains] = useState<Chain[]>([]);
   const [tab, setTab] = useState('accounts');
 
-  const firstAccount = wallet.accounts.at(0);
   const isEthereumBased = firstAccount ? accountUtils.isEthereumBased(firstAccount) : false;
 
   useEffect(() => {
@@ -60,14 +65,12 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
     [chains, firstAccount],
   );
 
-  console.log('firstAccount', firstAccount);
-
   return (
     <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="mb-4 flex items-center justify-between px-5 pb-6 pt-4">
-          <Box direction="row" verticalAlign="center" gap={3}>
+          <Box direction="row" verticalAlign="center" gap={2}>
             <div className="mr-1">
               <WalletAccountIcon address={firstAccount?.accountId} type={wallet.type} size={42} />
             </div>
