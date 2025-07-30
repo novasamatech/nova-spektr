@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
-import { type Balance, type ChainId, type PartialBy, type Transaction } from '@/shared/core';
+import { type Asset, type Balance, type ChainId, type PartialBy, type Transaction } from '@/shared/core';
 import { ValidationErrors, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas/primitives';
 
@@ -11,8 +11,8 @@ type Props = {
   api: ApiPromise;
   chainId: ChainId;
   transaction: Transaction;
-  assetId: string;
-  getBalance: (accountId: AccountId, chainId: ChainId, assetId: string) => Balance | undefined;
+  assetId: Asset['assetId'];
+  getBalance: (accountId: AccountId, chainId: ChainId, assetId: Asset['assetId']) => Balance | undefined;
   getTransactionFee: (tx: Transaction, api: ApiPromise) => Promise<string>;
 };
 
@@ -34,13 +34,13 @@ export const validateBalance = async (
 };
 
 const getTokenBalance = ({ getBalance, transaction, assetId, chainId }: Props): Balance | undefined => {
-  return getBalance(transaction.accountId, chainId, assetId.toString());
+  return getBalance(transaction.accountId, chainId, assetId);
 };
 
 const getNativeTokenBalance = ({ assetId, transaction, chainId, getBalance }: Props): Balance | undefined => {
-  if (assetId === '0') return undefined;
+  if (assetId === 0) return undefined;
 
-  return getBalance(transaction.accountId, chainId, '0');
+  return getBalance(transaction.accountId, chainId, 0);
 };
 
 const validateBalanceForAmount = ({ transaction, ...props }: Props): boolean => {

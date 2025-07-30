@@ -18,6 +18,7 @@ import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -217,7 +218,7 @@ const $proxyWallet = combine(
 const $accounts = combine(
   {
     network: $networkStore,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     shards: $shards,
     balances: balanceModel.$balances,
   },
@@ -227,7 +228,7 @@ const $accounts = combine(
     const { chain, asset } = network;
 
     return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
+      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId);
 
       return { account: shard, balance: stakeableAmount(balance) };
     });
@@ -357,7 +358,7 @@ sample({
 
     const { chain, asset } = network;
 
-    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
+    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId);
 
     return transferableAmount(balance);
   },
@@ -389,7 +390,7 @@ sample({
       balances,
       proxyAccount!.accountId,
       network!.chain.chainId,
-      network!.asset.assetId.toString(),
+      network!.asset.assetId,
     );
 
     return transferableAmount(balance);

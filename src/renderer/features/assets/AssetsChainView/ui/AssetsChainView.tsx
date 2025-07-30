@@ -73,7 +73,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     );
 
     setSortedChains(sortedChains);
-  }, [activeWallet, balances, assetsPrices, assetsView, activeShards]);
+  }, [activeWallet, balances, assetsPrices, assetsView, connections, activeShards]);
 
   useEffect(() => {
     let filteredChains: Chain[] = [];
@@ -132,6 +132,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
             accounts={activeShards}
             hideZeroBalances={hideZeroBalances}
             query={query}
+            wallet={activeWallet}
           />
         ))}
         <EmptyAssetsState />

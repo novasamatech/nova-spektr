@@ -18,6 +18,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { networkSelectorModel } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
 import { unlockModel } from '@/features/governance/model/unlock/unlock';
@@ -169,7 +170,7 @@ const $unlockForm = createForm<FormParams>({
 
 const $shards = combine(
   {
-    activeWallet: walletModel.$activeWallet,
+    activeWallet: walletSelect.$selectedWallet,
     chainId: networkSelectorModel.$governanceChainId,
   },
   ({ activeWallet, chainId }) => {
@@ -193,7 +194,7 @@ const $shards = combine(
 
 const $txWrappers = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     wallets: walletModel.$wallets,
     chain: networkSelectorModel.$governanceChain,
     shards: $shards,
@@ -408,7 +409,7 @@ sample({
       balances,
       signatory.accountId,
       network.chain.chainId,
-      network.asset.assetId.toString(),
+      network.asset.assetId,
     );
 
     return transferableAmount(balance);
@@ -474,7 +475,7 @@ sample({
       balances,
       proxyAccounts[0].accountId,
       network!.chain.chainId,
-      network!.asset.assetId.toString(),
+      network!.asset.assetId,
     );
 
     return transferableAmount(balance);

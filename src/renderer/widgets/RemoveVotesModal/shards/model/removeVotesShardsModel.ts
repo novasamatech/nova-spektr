@@ -9,6 +9,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { locksModel, votingAggregate } from '@/features/governance';
 import { createMultipleTxStore } from '@/features/governance/lib/createMultipleTxStore';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
@@ -36,7 +37,7 @@ const flow = createGate<{
 
 // Account
 
-const $availableAccounts = combine(walletModel.$activeWallet, flow.state, (wallet, { votes, chain }) => {
+const $availableAccounts = combine(walletSelect.$selectedWallet, flow.state, (wallet, { votes, chain }) => {
   if (nullable(wallet) || nullable(votes.length) || nullable(chain)) return [];
 
   const accounts = uniq(votes.map((vote) => vote.voter).filter(nonNullable));
@@ -76,7 +77,7 @@ const $coreTxs = combine(flow.state, $availableAccounts, ({ chain, votes }, acco
 const { $wrappedTxs } = createMultipleTxStore({
   $api: flow.state.map(({ api }) => api),
   $chain: flow.state.map(({ chain }) => chain),
-  $activeWallet: walletModel.$activeWallet.map((wallet) => wallet ?? null),
+  $activeWallet: walletSelect.$selectedWallet.map((wallet) => wallet ?? null),
   $wallets: walletModel.$wallets,
   $accounts: $availableAccounts,
   $coreTxs,

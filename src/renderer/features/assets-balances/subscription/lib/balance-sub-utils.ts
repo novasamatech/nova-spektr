@@ -1,79 +1,43 @@
-import { type Chain, type ChainId, type ID } from '@/shared/core';
-import { dictionary } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
+import { type Chain, type ChainId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AccountNode, type AnyAccount, accountService } from '@/domains/network';
 
-import { type SubAccounts } from './types';
+import { type SubscriptionKey } from './types';
 
 export const balanceSubUtils = {
   getSiblingAccounts,
-  formSubAccounts,
+  getSubscriptionKey,
 };
 
-function getSiblingAccounts(
-  selectedAccounts: AnyAccount[],
-  accounts: AnyAccount[],
-  chains: Record<ChainId, Chain>,
-): AnyAccount[] {
-  const multisigAccount = selectedAccounts.find(accountUtils.isMultisigAccount);
+function getSiblingAccounts(selectedAccounts: AnyAccount[], accounts: AnyAccount[], chains: Chain[]) {
+  const siblings = new Map<SubscriptionKey, AnyAccount>();
+  const graphs = new Map<Chain, Map<AnyAccount, AccountNode>>();
 
-  if (multisigAccount) {
-    const signatoriesMap = dictionary(multisigAccount.signatories, 'accountId', true);
-    const signatories = accounts.filter((account) => signatoriesMap[account.accountId]);
+  for (const chain of chains) {
+    for (const selected of selectedAccounts) {
+      if (!accountService.isAccountAvailableOnChain(selected, chain)) continue;
 
-    return selectedAccounts.concat(signatories);
-  }
+      let graph = graphs.get(chain);
+      if (!graph) {
+        graph = accountService.createAccountGraphs(accounts, chain);
+        graphs.set(chain, graph);
+      }
 
-  const polkadotAccount = selectedAccounts.find(accountUtils.isVaultShardAccount || accountUtils.isVaultChainAccount);
-
-  if (polkadotAccount) {
-    return selectedAccounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
-  }
-
-  const proxiedAccount = selectedAccounts.find(accountUtils.isProxiedAccount);
-  if (proxiedAccount) {
-    const proxy = accounts.filter(
-      (account) =>
-        !accountUtils.isWatchOnlyAccount(account) &&
-        proxiedAccount.connections.some((c) => account.accountId === c.proxyAccountId) &&
-        accountUtils.isChainAndCryptoMatch(account, chains[proxiedAccount.chainId]),
-    );
-
-    if (!proxy) return [proxiedAccount];
-
-    return [proxiedAccount, ...getSiblingAccounts(proxy, accounts, chains)];
-  }
-
-  return selectedAccounts;
-}
-
-function formSubAccounts(
-  walletId: ID,
-  accountsToSub: AnyAccount[],
-  subAccounts: SubAccounts,
-  chains: Record<ChainId, Chain>,
-): SubAccounts {
-  const chainIds = Object.keys(subAccounts) as ChainId[];
-
-  const newSubAccounts = accountsToSub.reduce<SubAccounts>((acc, account) => {
-    const chainsToUpdate = chainIds.filter((chainId) => accountUtils.isChainAndCryptoMatch(account, chains[chainId]));
-
-    for (const chainId of chainsToUpdate) {
-      if (!acc[chainId]) {
-        acc[chainId] = { [walletId]: [account.accountId] };
-      } else if (acc[chainId][walletId]) {
-        acc[chainId][walletId].push(account.accountId);
-      } else {
-        acc[chainId][walletId] = [account.accountId];
+      const node = graph.get(selected);
+      if (node) {
+        accountService.traverseGraph(node, {
+          enter(node) {
+            const key = getSubscriptionKey(node.account.accountId, chain.chainId);
+            siblings.set(key, node.account);
+          },
+        });
       }
     }
+  }
 
-    return acc;
-  }, {});
+  return Array.from(siblings.values());
+}
 
-  return chainIds.reduce<SubAccounts>((acc, chainId) => {
-    acc[chainId] = { ...subAccounts[chainId], ...newSubAccounts[chainId] };
-
-    return acc;
-  }, {});
+function getSubscriptionKey(account: AccountId, chain: ChainId): SubscriptionKey {
+  return `${account} ${chain}`;
 }

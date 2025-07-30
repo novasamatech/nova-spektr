@@ -5,6 +5,7 @@ import { createFeature, registerFeatures } from '@/shared/feature';
 import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, trackService } from '@/domains/collectives';
 import { accounts, multisigOperation } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { multisigsModel } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
@@ -51,6 +52,7 @@ const populate = async () => {
   multisigOperation.populate();
   governanceMetaProvider.populate();
   portfolioModel.populate();
+  balanceModel.populate();
 
   // TODO rework as populate effects
   kernelModel.events.appStarted();

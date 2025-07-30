@@ -2,12 +2,12 @@ import { type ApiPromise } from '@polkadot/api';
 import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type Account, type Asset, type Chain, type MultisigAccount, type Transaction } from '@/shared/core';
+import { type Asset, type Chain, type MultisigAccount, type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
-import { type MultisigOperation } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
@@ -31,7 +31,7 @@ export const confirmTransactionInfoSlot = createSlot<{
 type Props = {
   operation: MultisigOperation;
   account: MultisigAccount;
-  signAccount?: Account;
+  signAccount?: AnyAccount;
   chain: Chain;
   api: ApiPromise;
   feeTx?: Transaction | null;

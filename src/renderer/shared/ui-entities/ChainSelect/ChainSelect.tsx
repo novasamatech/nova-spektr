@@ -1,5 +1,6 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
+import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { Box, Select } from '@/shared/ui-kit';
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export const ChainSelect = memo(({ value, options, placeholder, onChange }: Props) => {
+  const sortedOptions = useMemo(() => chainsService.sortChains(options), [options]);
   const handleChange = (chainId: ChainId) => {
     const chain = options.find(chain => chain.chainId === chainId);
     if (nonNullable(chain)) {
@@ -22,7 +24,7 @@ export const ChainSelect = memo(({ value, options, placeholder, onChange }: Prop
 
   return (
     <Select placeholder={placeholder} value={value?.chainId ?? null} height="sm" onChange={handleChange}>
-      {options.map(chain => (
+      {sortedOptions.map(chain => (
         <Select.Item key={chain.chainId} value={chain.chainId}>
           <Box direction="row" gap={2}>
             <ChainIcon chain={chain} />

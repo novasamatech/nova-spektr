@@ -40,7 +40,7 @@ export const Signatories = memo(
 
     const fixedSignatories = useMemo(() => {
       return signatories.map((account) => {
-        const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId.toString());
+        const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId);
         const availableBalance = balance ? locksService.getAvailableBalance(balance).toString() : BN_ZERO.toString();
 
         return {

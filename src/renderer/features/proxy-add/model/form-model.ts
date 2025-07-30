@@ -120,7 +120,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               balances,
               initiator.accountId,
               form.chain.chainId,
-              getNativeAsset(form.chain.assets).assetId.toString(),
+              getNativeAsset(form.chain.assets).assetId,
             );
 
             const isNotEnoughTokens = isMultisig
@@ -158,7 +158,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               balances,
               signatory.accountId,
               form.chain.chainId,
-              getNativeAsset(form.chain.assets).assetId.toString(),
+              getNativeAsset(form.chain.assets).assetId,
             );
 
             const isNotEnoughMultisigTokens =
@@ -243,7 +243,7 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const $avilableAccounts = combine(
+const $availableAccounts = combine(
   {
     chain: form.fields.chain.$value,
     walletAccounts: $walletAccounts,
@@ -447,7 +447,7 @@ sample({
 });
 
 sample({
-  source: $avilableAccounts,
+  source: $availableAccounts,
   filter: (avilableAccounts) => avilableAccounts.length > 0,
   fn: (avilableAccounts) => avilableAccounts[0],
   target: form.fields.initiator.change,
@@ -554,7 +554,7 @@ export const formModel = {
 
   $wallet,
   $availableChains,
-  $avilableAccounts,
+  $availableAccounts,
   $signatories,
   $proxyAccounts,
   $proxyTypes,

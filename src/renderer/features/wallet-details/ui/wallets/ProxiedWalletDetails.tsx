@@ -96,8 +96,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
     icon: 'forget',
     title: t('walletDetails.common.hideButton'),
     onClick: toggleConfirmForget,
-    iconClassName: 'text-icon-negative',
-    backgroundClassName: 'bg-secondary-negative-button-background',
+    variant: 'danger',
   });
 
   const account = wallet.accounts.at(0);
@@ -116,7 +115,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
       <Modal.HeaderContent>
         <div className="flex flex-col gap-y-2.5 px-5 pb-6">
           <div className="flex items-center justify-between">
-            <Box direction="row" verticalAlign="center" gap={3}>
+            <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
                   address={account?.accountId}
@@ -150,7 +149,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
           {proxyWallets.map(
             ({ connection, proxyWallet }) =>
               proxyWallet && (
-                <div className="flex items-center" key={`${connection.proxyType}-${connection.proxyAccountId}`}>
+                <div className="flex items-center pl-4" key={`${connection.proxyType}-${connection.proxyAccountId}`}>
                   <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
                   <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
                   <WalletIcon type={proxyWallet?.type} size={16} className="mx-1" />

@@ -103,8 +103,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   actions.push({
     icon: 'forget',
     title: t('walletDetails.common.forgetButton'),
-    iconClassName: 'text-icon-negative',
-    backgroundClassName: 'bg-secondary-negative-button-background',
+    variant: 'danger',
     onClick: toggleConfirmForget,
   });
 
@@ -133,7 +132,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
         </Modal.Title>
         <Modal.HeaderContent>
           <div className="mb-4 flex items-center justify-between px-5 pb-6 pt-4">
-            <Box direction="row" verticalAlign="center" gap={3}>
+            <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon address={address} type={wallet.type} size={42} theme={theme} />
               </div>

@@ -1,5 +1,6 @@
-import { type Account, AccountType, type Chain, type ChainId, CryptoType, type Wallet } from '@/shared/core';
+import { AccountType, type Chain, type ChainId, CryptoType, type Wallet } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 
 const accounts = [
   {
@@ -36,7 +37,7 @@ const accounts = [
     chainId: '0x02',
     cryptoType: CryptoType.SR25519,
   },
-] as unknown as Account[];
+] as unknown as AnyAccount[];
 
 const wallets = [
   { id: 1, isActive: true, name: 'My active wallet', accounts: [accounts[0], accounts[1]] },

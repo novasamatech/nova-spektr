@@ -13,6 +13,7 @@ import { type AnyAccount, accounts } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 
@@ -20,14 +21,13 @@ import { flexibleMultisigFeature } from './feature';
 import { flexibleMultisigModel } from './flexible-multisig-create';
 import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
-import { walletProviderModel } from './wallet-provider-model';
 
 const $api = combine(flexibleMultisigFeature.state, (state): ApiPromise | null => {
   if (state.status !== 'running') return null;
   return state.data.api;
 });
 
-const $proxyAddress = createStore<Address | null>(null);
+const $proxyAddress = createStore<Address | null>(null).reset(flexibleMultisigModel.flow.close);
 
 type SubscribePureEvent = {
   api: ApiPromise;
@@ -45,6 +45,8 @@ const subscribePureEventFx = createEffect(({ api, accounts }: SubscribePureEvent
     const unsubscribe = polkadotjsHelpers.subscribeSystemEvents(
       { api, section: `proxy`, methods: ['PureCreated'] },
       event => {
+        if (!api) return unsubscribe.then(fn => fn());
+
         const data = eventSchema.parse(event.data.toHuman());
         const accountId = toAccountId(data.who);
 
@@ -94,16 +96,16 @@ const $coreTx = combine(
     signatories: signatoryModel.$signatories,
     proxyAddress: $proxyAddress,
   },
-  ({ signatories, chain, totalDeposit, threshold, signatory, multisigAccountId, proxyAddress }) => {
+  ({ signatories, chain, threshold, signatory, multisigAccountId, proxyAddress, totalDeposit }) => {
     if (
-      nullable(totalDeposit) ||
       nullable(multisigAccountId) ||
       nullable(signatory) ||
       nullable(chain) ||
+      nullable(totalDeposit) ||
       nullable(proxyAddress)
-    )
+    ) {
       return null;
-
+    }
     const signatoriesWrapped = signatories
       .filter(a => a.address !== '')
       .map(s => ({ accountId: toAccountId(s.address), address: s.address }));
@@ -122,7 +124,7 @@ const $coreTx = combine(
 
 const { $tx } = createComplexTxStore({
   api: $api,
-  initiator: flexibleMultisigModel.$signer,
+  initiator: flexibleMultisigModel.$initiator,
   signatory: flexibleMultisigModel.$signer,
   accounts: accounts.$list,
   chain: formModel.$chain,
@@ -137,14 +139,16 @@ sample({
     chain: formModel.$chain,
     tx: $tx,
     signer: flexibleMultisigModel.$signer,
+    initiator: flexibleMultisigModel.$initiator,
   },
-  filter: ({ chain, tx, signer }) => nonNullable(chain) && nonNullable(tx) && nonNullable(signer),
-  fn: ({ chain, tx, signer }) => ({
+  filter: ({ chain, tx, signer, initiator }) =>
+    nonNullable(chain) && nonNullable(tx) && nonNullable(signer) && nonNullable(initiator),
+  fn: ({ chain, tx, signer, initiator }) => ({
     event: {
       signingPayloads: [
         {
           chain: chain!,
-          account: signer!,
+          account: initiator!,
           transaction: tx!,
           signatory: signer,
         },
@@ -164,17 +168,19 @@ sample({
     chain: formModel.$chain,
     coreTx: $coreTx,
     tx: $tx,
-    signer: flexibleMultisigModel.$signer,
+    initiator: flexibleMultisigModel.$initiator,
+    signatory: flexibleMultisigModel.$signer,
   },
-  filter: ({ chain, coreTx, tx, signer }) => {
-    return nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(signer);
+  filter: ({ chain, coreTx, tx, signatory }) => {
+    return nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(signatory);
   },
-  fn: ({ coreTx, tx, chain, signer }, signParams) => {
+  fn: ({ coreTx, tx, chain, signatory, initiator }, signParams) => {
     return {
       event: {
         ...signParams,
         chain: chain!,
-        account: signer!,
+        account: initiator!,
+        signatory: signatory!,
         coreTxs: [coreTx!],
         wrappedTxs: [tx!],
       },
@@ -187,7 +193,7 @@ sample({
   }),
 });
 
-const $flexibleMultisigCreated = createStore<boolean>(false);
+const $flexibleMultisigCreated = createStore<boolean>(false).reset(flexibleMultisigModel.flow.close);
 
 sample({
   clock: submitModel.output.formSubmitted,
@@ -270,7 +276,7 @@ sample({
 sample({
   clock: createWalletFx.doneData.filter({ fn: nonNullable }),
   fn: ({ wallet }) => wallet.id,
-  target: walletProviderModel.events.completed,
+  target: walletSelect.select,
 });
 
 export const assignModel = {
