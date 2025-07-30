@@ -111,7 +111,7 @@ accountSDK(multisigWalletFeature, {
       if (nullable(payer)) {
         return { account, message: 'Multisig signatory payer not found' };
       }
-      const balance = balanceUtils.getBalance(balances, payer.accountId, chainId, asset.assetId.toString());
+      const balance = balanceUtils.getBalance(balances, payer.accountId, chainId, asset.assetId);
       if (nullable(balance)) {
         return { account, message: 'Balance not found' };
       }

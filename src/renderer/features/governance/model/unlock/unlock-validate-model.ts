@@ -39,7 +39,7 @@ const rootValidateFx = createEffect(
       return totalLock;
     });
 
-    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
 
     const rules = [
       {

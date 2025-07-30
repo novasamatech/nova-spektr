@@ -6,7 +6,7 @@ import { Provider } from 'effector-react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 
-import { type Asset, type Balance, WalletType } from '@/shared/core';
+import { type Asset, type Balance, SigningType, type Wallet, WalletType } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { polkadotChain } from '@/shared/mocks';
 import { walletModel } from '@/entities/wallet';
@@ -26,13 +26,22 @@ const defaultProps = {
   asset: testAsset as Asset,
   chainId: testChain.chainId,
   balance: {
-    id: 1,
-    assetId: testAsset.assetId.toString(),
+    id: '1',
+    assetId: testAsset.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
     free: BN_TEN,
     frozen: BN_TWO,
-  } as Balance,
+  } satisfies Balance,
+  wallet: {
+    walletId: 1,
+    id: 1,
+    type: WalletType.POLKADOT_VAULT,
+    isActive: true,
+    name: 'test',
+    accounts: [],
+    signingType: SigningType.POLKADOT_VAULT,
+  } as Wallet,
 };
 
 describe('pages/Assets/AssetCard', () => {

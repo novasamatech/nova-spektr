@@ -1,14 +1,14 @@
 import { useUnit } from 'effector-react';
-import groupBy from 'lodash/groupBy';
 import { memo, useEffect, useMemo, useState } from 'react';
 
 import { sumBalances } from '@/shared/api/network/service/chainsService';
-import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
+import { type Asset, type Balance, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { ZERO_BALANCE, totalAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, groupBy, nullable, totalAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, Icon } from '@/shared/ui';
 import { Accordion, Tooltip } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { type ExtendedChain } from '@/entities/network';
@@ -20,12 +20,13 @@ import { NetworkFiatBalance } from '../NetworkFiatBalance';
 
 type Props = {
   chain: Chain | ExtendedChain;
-  accounts: Account[];
+  accounts: AnyAccount[];
   query: string;
   hideZeroBalances: boolean;
+  wallet: Wallet | null;
 };
 
-export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }: Props) => {
+export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, wallet }: Props) => {
   const { t } = useI18n();
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -55,16 +56,20 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }:
 
   useEffect(() => {
     const newBalancesObject: Record<string, Balance> = {};
-    const groupedBalances = Object.values(groupBy(chainBalances, 'assetId'));
+    const groupedBalances = groupBy(chainBalances, (b) => b.assetId.toString());
 
-    for (const accountBalances of groupedBalances) {
+    for (const [assetId, accountBalances] of Object.entries(groupedBalances)) {
+      if (nullable(accountBalances)) {
+        continue;
+      }
+
       let total = {} as Balance;
 
       for (const balance of accountBalances) {
         total = sumBalances(balance, total);
       }
 
-      newBalancesObject[accountBalances[0].assetId] = total;
+      newBalancesObject[assetId] = total;
     }
 
     setBalancesObject(newBalancesObject);
@@ -126,6 +131,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }:
                 chainId={chain.chainId}
                 asset={asset}
                 balance={balancesObject[asset.assetId.toString()]}
+                wallet={wallet}
               />
             ))}
           </ul>

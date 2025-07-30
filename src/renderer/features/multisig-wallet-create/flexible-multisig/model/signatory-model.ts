@@ -1,7 +1,8 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 
 import { type Address, type Chain, type Wallet } from '@/shared/core';
+import { series } from '@/shared/effector';
 import { toAccountId } from '@/shared/lib/utils';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { balanceSubModel } from '@/features/assets-balances';
@@ -59,15 +60,9 @@ const $ownedSignatoriesWallets = combine(
   },
 );
 
-const populateBalanceFx = createEffect((wallets: Wallet[]) => {
-  for (const wallet of wallets) {
-    balanceSubModel.events.walletToSubSet(wallet);
-  }
-});
-
 sample({
   clock: getSignatoriesBalance,
-  target: populateBalanceFx,
+  target: series(balanceSubModel.fetchWallet),
 });
 
 sample({

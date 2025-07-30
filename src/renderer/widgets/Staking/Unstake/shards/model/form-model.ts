@@ -30,6 +30,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, useStakingData } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { type NetworkStore } from '../lib/types';
 
 type BalanceMap = { balance: string; stake: string };
@@ -219,7 +220,7 @@ const getMinNominatorBondFx = createEffect((api: ApiPromise): Promise<string> =>
 
 const $txWrappers = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     wallets: walletModel.$wallets,
     shards: $shards,
     network: $networkStore,
@@ -281,7 +282,7 @@ const $proxyWallet = combine(
 const $accounts = combine(
   {
     network: $networkStore,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     shards: $shards,
     staking: $staking,
     balances: balanceModel.$balances,
@@ -292,7 +293,7 @@ const $accounts = combine(
     const { chain, asset } = network;
 
     return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
+      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId);
       const address = toAddress(shard.accountId, { prefix: chain.addressPrefix });
       const activeStake = staking[address]?.active || ZERO_BALANCE;
 
@@ -530,7 +531,7 @@ sample({
       balances,
       signatory.accountId,
       network.chain.chainId,
-      network.asset.assetId.toString(),
+      network.asset.assetId,
     );
 
     return transferableAmount(balance);
@@ -582,7 +583,7 @@ sample({
       balances,
       proxyAccounts[0].accountId,
       network!.chain.chainId,
-      network!.asset.assetId.toString(),
+      network!.asset.assetId,
     );
 
     return transferableAmount(balance);

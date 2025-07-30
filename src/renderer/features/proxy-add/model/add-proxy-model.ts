@@ -6,7 +6,6 @@ import { isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -55,17 +54,9 @@ sample({
 
 sample({
   clock: flowStarted,
-  source: {
-    activeWallet: walletSelect.$selectedWallet,
-    walletDetails: formModel.$wallet,
-  },
-  filter: ({ activeWallet, walletDetails }) => {
-    if (!activeWallet || !walletDetails) return false;
-
-    return activeWallet !== walletDetails;
-  },
-  fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.events.walletToSubSet,
+  source: formModel.$wallet,
+  filter: (wallet) => nonNullable(wallet),
+  target: balanceSubModel.fetchWallet,
 });
 
 sample({
@@ -185,21 +176,6 @@ sample({
   source: $addProxyStore,
   filter: (addProxyStore, results) => nonNullable(addProxyStore) && submitUtils.isSuccessResult(results[0].result),
   target: flowFinished,
-});
-
-sample({
-  clock: flowFinished,
-  source: {
-    activeWallet: walletModel.$activeWallet,
-    walletDetails: formModel.$wallet,
-  },
-  filter: ({ activeWallet, walletDetails }) => {
-    if (!activeWallet || !walletDetails) return false;
-
-    return activeWallet !== walletDetails;
-  },
-  fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.events.walletToUnsubSet,
 });
 
 sample({

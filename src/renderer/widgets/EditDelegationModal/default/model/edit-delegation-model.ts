@@ -157,7 +157,7 @@ const formSubmitted = sample({
       const address = toAddress(initiator.accountId, { prefix: walletData.chain.addressPrefix });
 
       const transferable = transferableAmount(
-        balanceUtils.getBalance(balances, initiator.accountId, walletData.chain.chainId, asset.assetId.toString()),
+        balanceUtils.getBalance(balances, initiator.accountId, walletData.chain.chainId, asset.assetId),
       );
 
       return [

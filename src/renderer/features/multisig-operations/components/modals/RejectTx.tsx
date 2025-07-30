@@ -3,14 +3,14 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useMemo, useState } from 'react';
 
-import { type Account, type Asset, type Chain, type HexString, type MultisigAccount } from '@/shared/core';
+import { type Asset, type Chain, type HexString, type MultisigAccount } from '@/shared/core';
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getAssetByTypeExtras, getNativeAsset, nullable, transferableAmount } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { OperationTitle } from '@/entities/chain';
 import { operationDetailsUtils } from '@/entities/operations';
@@ -106,7 +106,7 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
     validateBalance({
       api,
       chainId: operation.chainId,
-      assetId: nativeAsset.assetId.toString(),
+      assetId: nativeAsset.assetId,
       transaction: rejectTx ?? undefined,
       getBalance: balanceUtils.getBalanceWrapped(balances),
       getTransactionFee: transactionService.getTransactionFee,
@@ -132,18 +132,13 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
     }
   };
 
-  const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
+  const validateBalanceForFee = async (signAccount: AnyAccount): Promise<boolean> => {
     if (!api || !rejectTx || !signAccount.accountId || !nativeAsset) {
       return false;
     }
 
     const fee = await transactionService.getTransactionFee(rejectTx, api);
-    const balance = balanceUtils.getBalance(
-      balances,
-      signAccount.accountId,
-      chain.chainId,
-      nativeAsset.assetId.toString(),
-    );
+    const balance = balanceUtils.getBalance(balances, signAccount.accountId, chain.chainId, nativeAsset.assetId);
 
     if (!balance) {
       return false;

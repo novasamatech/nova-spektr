@@ -3,7 +3,8 @@ import { combine, createEvent, restore, sample } from 'effector';
 import { type ChainId, type ConnectionStatus } from '@/shared/core';
 import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 const selectNetwork = createEvent<ChainId>();
 const resetNetwork = createEvent();
@@ -84,7 +85,7 @@ const $isConnectionActive = combine(
 const $hasAccount = combine(
   {
     chain: $governanceChain,
-    activeWallet: walletModel.$activeWallet,
+    activeWallet: walletSelect.$selectedWallet,
   },
   ({ chain, activeWallet }) => {
     if (!activeWallet || !chain) return false;

@@ -102,8 +102,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   actions.push({
     icon: 'forget',
     title: t('walletDetails.common.hideButton'),
-    iconClassName: 'text-icon-negative',
-    backgroundClassName: 'bg-secondary-negative-button-background',
+    variant: 'danger',
     onClick: toggleConfirmForget,
   });
 
@@ -238,7 +237,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
         <Modal.Title close> {t('walletDetails.common.title')}</Modal.Title>
         <Modal.HeaderContent>
           <div className="mb-6 flex items-center justify-between px-5">
-            <Box direction="row" verticalAlign="center" gap={3}>
+            <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
                   address={multisigAccount?.accountId}

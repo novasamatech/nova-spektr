@@ -30,6 +30,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { type NetworkStore } from '../lib/types';
 
 type BalanceMap = { balance: string; withdraw: string };
@@ -198,7 +199,7 @@ const subscribeEraFx = createEffect((api: ApiPromise): Promise<() => void> => {
 
 const $txWrappers = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     wallets: walletModel.$wallets,
     shards: $shards,
     network: $networkStore,
@@ -259,7 +260,7 @@ const $proxyWallet = combine(
 const $accounts = combine(
   {
     network: $networkStore,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     shards: $shards,
     era: $era,
     staking: $staking,
@@ -271,7 +272,7 @@ const $accounts = combine(
     const { chain, asset } = network;
 
     return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
+      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId);
       const address = toAddress(shard.accountId, { prefix: chain.addressPrefix });
       const withdraw = redeemableAmount(staking[address]?.unlocking, era || 0);
 
@@ -488,7 +489,7 @@ sample({
       balances,
       signatory.accountId,
       network.chain.chainId,
-      network.asset.assetId.toString(),
+      network.asset.assetId,
     );
 
     return transferableAmount(balance);
@@ -540,7 +541,7 @@ sample({
       balances,
       proxyAccounts[0].accountId,
       network!.chain.chainId,
-      network!.asset.assetId.toString(),
+      network!.asset.assetId,
     );
 
     return transferableAmount(balance);

@@ -1,13 +1,14 @@
 import { useUnit } from 'effector-react';
 import React, { useEffect, useState } from 'react';
 
-import { type Account, type Asset, type Chain } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { AccountSelectModal } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -99,7 +100,7 @@ export const RemoveVotesDefaultModal = ({ single, chain, asset, onClose }: Props
 type SignatoryProps = {
   chain: Chain;
   asset: Asset;
-  onSelect: (signatory: Account) => void;
+  onSelect: (signatory: AnyAccount) => void;
   onCancel: VoidFunction;
 };
 
@@ -143,7 +144,7 @@ const VoteSignatorySelect = ({ chain, asset, onSelect, onCancel }: SignatoryProp
 type AccountProps = {
   chain: Chain;
   asset: Asset;
-  onSelect: (signatory: Account) => void;
+  onSelect: (signatory: AnyAccount) => void;
   onCancel: VoidFunction;
 };
 
