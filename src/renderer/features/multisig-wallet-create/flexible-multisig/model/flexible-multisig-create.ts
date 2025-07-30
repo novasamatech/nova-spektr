@@ -121,10 +121,10 @@ sample({
   target: $existentialDeposit,
 });
 
-const $proxyDeposit = combine($api, api => (api && proxyService.getProxyDeposit(api, '0', 1)) || '0');
+const $proxyDeposit = combine($api, api => (api && proxyService.getProxyDeposit(api, '0', 1)) ?? null);
 
 const $totalDeposit = combine($existentialDeposit, $proxyDeposit, (existentialDeposit, proxyDeposit) => {
-  if (!existentialDeposit) return new BN(0);
+  if (nullable(proxyDeposit)) return null;
 
   return existentialDeposit.add(new BN(proxyDeposit));
 });
@@ -186,7 +186,7 @@ const $fakeFinalTx = combine(
       multisigAccountId: TEST_ACCOUNTS[0],
       threshold: threshold || 2,
       proxyAccountId: TEST_ACCOUNTS[1],
-      proxyDeposit: totalDeposit.toString(),
+      proxyDeposit: totalDeposit?.toString() || '0',
     });
   },
 );
@@ -243,7 +243,7 @@ const $isEnoughBalance = combine(
     signerBalance: $signerBalance,
   },
   ({ fee, totalDeposit, signerBalance }) => {
-    if (nullable(signerBalance)) return false;
+    if (nullable(signerBalance) || nullable(totalDeposit)) return false;
 
     return fee.add(totalDeposit).lte(withdrawableAmountBN(signerBalance));
   },

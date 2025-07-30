@@ -39,6 +39,8 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
   const [isConfirmOpen, setConfirmOpen] = useState<boolean>(false);
 
   const proxyAddress = useUnit(assignModel.$proxyAddress);
+  const flexibleMultisigCreated = useUnit(assignModel.$flexibleMultisigCreated);
+
   const activeStep = useUnit(flexibleMultisigModel.$step);
   const {
     fields: { chainId },
@@ -53,7 +55,7 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
   );
 
   const handleClose = () => {
-    if (isStep(activeStep, Step.NAME_NETWORK)) {
+    if (isStep(activeStep, Step.NAME_NETWORK) || flexibleMultisigCreated) {
       return onToggle(false);
     }
 

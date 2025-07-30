@@ -96,8 +96,14 @@ const $coreTx = combine(
     signatories: signatoryModel.$signatories,
     proxyAddress: $proxyAddress,
   },
-  ({ signatories, chain, totalDeposit, threshold, signatory, multisigAccountId, proxyAddress }) => {
-    if (nullable(multisigAccountId) || nullable(signatory) || nullable(chain) || nullable(proxyAddress)) {
+  ({ signatories, chain, threshold, signatory, multisigAccountId, proxyAddress, totalDeposit }) => {
+    if (
+      nullable(multisigAccountId) ||
+      nullable(signatory) ||
+      nullable(chain) ||
+      nullable(totalDeposit) ||
+      nullable(proxyAddress)
+    ) {
       return null;
     }
     const signatoriesWrapped = signatories
