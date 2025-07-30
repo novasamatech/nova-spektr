@@ -39,12 +39,12 @@ const $subscribedAccounts = createStore<AnyAccount[]>([]);
 type FetchAccountParam = {
   api: ApiPromise;
   chain: Chain;
-  accountId: AccountId;
+  accounts: AccountId[];
 };
-const fetchAccountFx = createEffect(async ({ api, chain, accountId }: FetchAccountParam) => {
+const fetchAccountsFx = createEffect(async ({ api, chain, accounts }: FetchAccountParam) => {
   return Promise.all([
-    balanceService.fetchBalances(api, chain, [accountId]),
-    balanceService.fetchLockBalances(api, chain, [accountId]),
+    balanceService.fetchBalances(api, chain, accounts),
+    balanceService.fetchLockBalances(api, chain, accounts),
   ]).then(([balances, lockBalances]) =>
     balanceUtils.getMergeBalances(
       balances.map(balanceUtils.insertBalanceId),
@@ -358,24 +358,30 @@ sample({
       const chain = chains[chainId];
       if (nullable(api) || nullable(chain)) continue;
 
+      const accountIds: AccountId[] = [];
+
       for (const account of accounts) {
         if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
 
+        accountIds.push(account.accountId);
+      }
+
+      if (accountIds.length > 0) {
         params.push({
           api,
           chain,
-          accountId: account.accountId,
+          accounts: accountIds,
         });
       }
     }
 
     return params;
   },
-  target: series(fetchAccountFx, { parallel: true, skipErrors: true }),
+  target: series(fetchAccountsFx, { parallel: true, skipErrors: true }),
 });
 
 sample({
-  clock: fetchAccountFx.doneData,
+  clock: fetchAccountsFx.doneData,
   target: updateBalances,
 });
 
