@@ -38,17 +38,18 @@ export const WalletActions = ({ actions }: Props) => {
         const variantClasses = getVariantClasses(action.variant);
 
         return (
-          <button key={action.title} className="flex flex-1 flex-col items-center gap-1" onClick={action.onClick}>
-            <div
+          <div key={action.title} className="flex flex-1 flex-col items-center gap-1">
+            <button
               className={cnTw(
                 'flex h-12 w-12 items-center justify-center rounded-full transition-colors',
                 variantClasses.background,
               )}
+              onClick={action.onClick}
             >
               <Icon name={action.icon} size={16} className={variantClasses.icon} />
-            </div>
+            </button>
             <LabelText>{action.title}</LabelText>
-          </button>
+          </div>
         );
       })}
     </Box>
