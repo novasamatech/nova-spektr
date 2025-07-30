@@ -103,29 +103,30 @@ const AccountSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { initiator, chain },
+    fields: { initiator },
   } = useForm(formModel.form);
 
-  const avilableAccounts = useUnit(formModel.$avilableAccounts);
+  const chain = useUnit(formModel.form.fields.chain.$value);
+  const availableAccounts = useUnit(formModel.$availableAccounts);
   const wallet = useUnit(walletSelect.$selectedWallet);
   const balances = useUnit(balanceModel.$balances);
 
-  if (avilableAccounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value || !chain.value) {
+  if (availableAccounts.length < 2 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value || !chain) {
     return null;
   }
 
-  const nativeAsset = getNativeAsset(chain.value.assets);
+  const nativeAsset = getNativeAsset(chain.assets);
 
-  const options = avilableAccounts.map((account) => {
+  const options = availableAccounts.map((account) => {
     const isShard = accountUtils.isVaultShardAccount(account);
-    const address = toAddress(account.accountId, { prefix: chain.value!.addressPrefix });
+    const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
     const id = accountService.uniqId(account);
 
     const balance = balanceUtils.getBalance(
       balances,
       account.accountId,
-      chain.value!.chainId,
-      getNativeAsset(chain.value!.assets).assetId.toString(),
+      chain.chainId,
+      getNativeAsset(chain.assets).assetId,
     );
 
     return {
@@ -180,12 +181,7 @@ const Signatories = () => {
 
   const signatoriesWithBalance = useMemo(() => {
     return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(
-        balances,
-        signatory.accountId,
-        chain.value!.chainId,
-        nativeAsset.assetId.toString(),
-      );
+      const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.value!.chainId, nativeAsset.assetId);
       return { account: signatory, balance: withdrawableAmount(balance) };
     });
   }, [signatories, balances]);

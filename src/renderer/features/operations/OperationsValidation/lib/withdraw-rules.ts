@@ -1,8 +1,8 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type Account } from '@/shared/core';
 import { ZERO_BALANCE } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import { type AmountFeeStore, type ShardsProxyFeeStore, type SignatoryFeeStore } from '../types/types';
 
 import { balanceValidation, descriptionValidation } from './validation';
@@ -24,7 +24,7 @@ export const WithdrawRules = {
       name: 'noSignatorySelected',
       errorText: 'transfer.noSignatoryError',
       source,
-      validator: (signatory: Account, _: any, isMultisig: boolean) => {
+      validator: (signatory: AnyAccount, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
 
         return Object.keys(signatory).length > 0;
@@ -64,7 +64,7 @@ export const WithdrawRules = {
 
         const feeBN = new BN(feeData.fee);
 
-        return form.shards.every((_: Account, index: number) => {
+        return form.shards.every((_: AnyAccount, index: number) => {
           return feeBN.lte(new BN(accountsBalances[index]));
         });
       },
@@ -74,7 +74,7 @@ export const WithdrawRules = {
       errorText: 'staking.notEnoughUnlockingError',
       source,
       validator: (_v: string, form: any, { accountsBalances }: AmountFeeStore) => {
-        return form.shards.every((_: Account, index: number) => {
+        return form.shards.every((_: AnyAccount, index: number) => {
           return accountsBalances[index] !== ZERO_BALANCE;
         });
       },

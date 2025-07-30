@@ -6,9 +6,9 @@ import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, totalAmount } from '@/shared/lib/utils';
 import { type PathType, Paths, createLink } from '@/shared/routes';
 import { BodyText, FootnoteText } from '@/shared/ui';
+import { ChainIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { EmptyAssetsState } from '@/entities/asset';
-import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { ModalType } from '../lib/types';
@@ -75,7 +75,7 @@ export const AssetTransactionModal = () => {
                 >
                   <div className="flex items-center px-2 py-1.5">
                     <div className="mr-auto flex items-center gap-x-2 px-2 py-1">
-                      <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={24} />
+                      <ChainIcon chain={chains[chain.chainId]} size={24} />
                       <BodyText className="text-inherit">{chain.name}</BodyText>
                     </div>
                     <div className="flex flex-col items-end">

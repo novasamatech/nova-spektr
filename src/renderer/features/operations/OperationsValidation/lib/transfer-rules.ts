@@ -1,8 +1,9 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type Account, type Chain } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { formatAmount, validateAddress } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import {
   type BalanceMap,
   type NetworkStore,
@@ -19,7 +20,7 @@ export const TransferRules = {
       name: 'noProxyFee',
       errorText: 'transfer.notEnoughBalanceForFeeError',
       source,
-      validator: (_a: Account | null, _f: any, { isProxy, proxyBalance, fee }: TransferAccountStore) => {
+      validator: (_a: AnyAccount | null, _f: any, { isProxy, proxyBalance, fee }: TransferAccountStore) => {
         if (!isProxy) return true;
 
         return balanceValidation.isLteThanBalance(fee, proxyBalance.native);
@@ -31,7 +32,7 @@ export const TransferRules = {
       name: 'noSignatorySelected',
       errorText: 'transfer.noSignatoryError',
       source,
-      validator: (signatory: Account | null, _: any, isMultisig: boolean) => {
+      validator: (signatory: AnyAccount | null, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
 
         return signatory !== null && Object.keys(signatory).length > 0;

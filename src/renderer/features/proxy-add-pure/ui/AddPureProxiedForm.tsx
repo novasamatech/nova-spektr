@@ -3,15 +3,15 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, toAddress, toShortAddress, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
-import { Alert, Button, InputHint, Select } from '@/shared/ui';
-import { Address, AssetBalance, SignatorySelect } from '@/shared/ui-entities';
-import { accountService, accounts } from '@/domains/network';
+import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
+import { Alert, Button, InputHint } from '@/shared/ui';
+import { AccountSelect, ChainSelect, SignatorySelect } from '@/shared/ui-entities';
+import { Field } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { ChainTitle } from '@/entities/chain';
 import { PureProxyPopover } from '@/entities/proxy';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
 
@@ -51,39 +51,18 @@ const NetworkSelector = () => {
 
   const availableChains = useUnit(formModel.$availableChains);
 
-  if (!chain.value) return null;
-
-  const options = useMemo(
-    () =>
-      availableChains.map((chain) => ({
-        id: chain.chainId,
-        value: chain,
-        element: (
-          <ChainTitle
-            className="overflow-hidden"
-            fontClass="text-text-primary truncate"
-            key={chain.chainId}
-            chain={chain}
-          />
-        ),
-      })),
-    [availableChains],
-  );
-
   return (
-    <div className="flex flex-col gap-y-2">
-      <Select
-        label={t('proxy.addProxy.networkLabel')}
+    <Field text={t('proxy.addProxy.networkLabel')}>
+      <ChainSelect
         placeholder={t('proxy.addProxy.networkPlaceholder')}
-        selectedId={chain.value.chainId}
-        invalid={chain.hasError}
-        options={options}
-        onChange={({ value }) => chain.onChange(value)}
+        value={chain.value}
+        options={availableChains}
+        onChange={chain.onChange}
       />
       <InputHint variant="error" active={chain.hasError}>
         {t(chain.errorMessage)}
       </InputHint>
-    </div>
+    </Field>
   );
 };
 
@@ -99,56 +78,25 @@ const AccountSelector = () => {
   const balances = useUnit(balanceModel.$balances);
 
   const chainValue = chain.value;
+  const asset = getNativeAsset(chainValue?.assets ?? []);
 
-  if (accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !chainValue || !initiator.value) {
+  if (accounts.length < 2 || walletUtils.isFlexibleMultisig(wallet) || !chainValue) {
     return null;
   }
 
-  const options = useMemo(
-    () =>
-      accounts.map((account) => {
-        const isShard = accountUtils.isVaultShardAccount(account);
-        const address = toAddress(account.accountId, { prefix: chainValue.addressPrefix });
-        const id = accountService.uniqId(account);
-
-        const balance = balanceUtils.getBalance(
-          balances,
-          account.accountId,
-          chainValue.chainId,
-          getNativeAsset(chainValue.assets).assetId.toString(),
-        );
-
-        return {
-          id,
-          value: account,
-          element: (
-            <div className="flex w-full justify-between" key={id}>
-              <Address
-                showIcon
-                canCopy={false}
-                iconSize={20}
-                variant="truncate"
-                address={address}
-                title={isShard ? toShortAddress(address, 16) : account.name}
-              />
-              <AssetBalance value={transferableAmount(balance)} asset={getNativeAsset(chainValue.assets)} />
-            </div>
-          ),
-        };
-      }),
-    [accounts, balances, chain.value],
-  );
-
   return (
-    <div className="flex flex-col gap-y-2">
-      <Select
-        label={t('proxy.addProxy.accountLabel')}
+    <Field text={t('proxy.addProxy.accountLabel')}>
+      <AccountSelect
         placeholder={t('proxy.addProxy.accountPlaceholder')}
-        selectedId={accountService.uniqId(initiator.value)}
-        options={options}
-        onChange={({ value }) => initiator.onChange(value)}
+        options={accounts}
+        value={initiator.value}
+        asset={asset}
+        chain={chainValue}
+        balances={balances}
+        balanceType="transferable"
+        onChange={initiator.onChange}
       />
-    </div>
+    </Field>
   );
 };
 
@@ -174,7 +122,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         chainValue.chainId,
-        getNativeAsset(chainValue.assets).assetId.toString(),
+        getNativeAsset(chainValue.assets).assetId,
       );
       return { account: signatory, balance: withdrawableAmount(balance) };
     });

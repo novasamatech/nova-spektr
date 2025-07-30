@@ -31,7 +31,7 @@ const rootValidateFx = createEffect(
     const voting = votes.find((vote) => vote.type === 'Casting');
     const isVoteExist = voting?.data.votes.find((vote) => vote.referendum === +transaction.args.referendum);
 
-    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
 
     const rules: Validation<BN, { shards: unknown[] }>[] = [
       {

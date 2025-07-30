@@ -60,7 +60,7 @@ const rootValidateFx = createEffect(
     const address = toAddress(accountId, { prefix: chain.addressPrefix });
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
-    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
 
     const rules = [
       {

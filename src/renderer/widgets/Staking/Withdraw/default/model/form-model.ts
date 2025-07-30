@@ -209,7 +209,7 @@ const $signatoryBalance = combine(
       balances,
       signatory.accountId,
       network.chain.chainId,
-      network.asset.assetId.toString(),
+      network.asset.assetId,
     );
 
     return transferableAmount(balance);
@@ -391,7 +391,7 @@ const $proxyBalance = combine(
       balances,
       proxyAccount.accountId,
       network.chain.chainId,
-      network.asset.assetId.toString(),
+      network.asset.assetId,
     );
 
     return transferableAmount(balance);

@@ -25,7 +25,6 @@ import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -112,7 +111,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               balances,
               signatory.accountId,
               chain.chainId,
-              getNativeAsset(chain.assets).assetId.toString(),
+              getNativeAsset(chain.assets).assetId,
             );
 
             const hasEnoughTokens = new BN(multisigDeposit)
@@ -284,24 +283,15 @@ sample({
 });
 
 sample({
-  clock: flowStarted,
-  source: {
-    activeWallet: walletSelect.$selectedWallet,
-    walletDetails: $wallet,
-  },
-  filter: ({ activeWallet, walletDetails }) => {
-    if (!activeWallet || !walletDetails) return false;
-
-    return activeWallet !== walletDetails;
-  },
-  fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.events.walletToSubSet,
+  clock: $wallet,
+  filter: nonNullable,
+  target: balanceSubModel.fetchWallet,
 });
 
 sample({
   clock: flowStarted,
   source: {
-    api: $removeProxyStore.map((store) => store?.api),
+    api: $removeProxyStore.map((store) => store?.api ?? null),
   },
   filter: ({ api }, { proxied }) => nonNullable(proxied) && nonNullable(api),
   fn: ({ api }, { proxied }) => {
@@ -499,21 +489,6 @@ sample({
   clock: txSaved,
   fn: () => Step.BASKET,
   target: stepChanged,
-});
-
-sample({
-  clock: flowFinished,
-  source: {
-    activeWallet: walletSelect.$selectedWallet,
-    walletDetails: $wallet,
-  },
-  filter: ({ activeWallet, walletDetails }) => {
-    if (!activeWallet || !walletDetails) return false;
-
-    return activeWallet !== walletDetails;
-  },
-  fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.events.walletToUnsubSet,
 });
 
 sample({

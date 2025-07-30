@@ -4,7 +4,7 @@ import { concat, orderBy, sortBy } from 'lodash';
 import { isKusama, isNameStartsWithNumber, isPolkadot } from '@/shared/api/network/lib/utils';
 import { sumValues } from '@/shared/api/network/service/chainsService';
 import { type PriceObject } from '@/shared/api/price-provider';
-import { type Account, type AssetBalance, type AssetByChains, type Balance, type ChainId } from '@/shared/core';
+import { type AssetBalance, type AssetByChains, type Balance, type ChainId } from '@/shared/core';
 import {
   TOKENS_CONFIG_URL,
   ZERO_BALANCE,
@@ -14,6 +14,7 @@ import {
   totalAmountBN,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
 import { accountUtils } from '@/entities/wallet';
 
@@ -51,7 +52,7 @@ function sumTokenBalances(firstBalance: AssetBalance, secondBalance?: AssetBalan
   };
 }
 
-function getSelectedAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
+function getSelectedAccountIds(accounts: AnyAccount[], chainId: ChainId): AccountId[] {
   return accounts.reduce<AccountId[]>((acc, account) => {
     if (accountUtils.isChainIdMatch(account, chainId)) {
       acc.push(account.accountId);
@@ -61,16 +62,11 @@ function getSelectedAccountIds(accounts: Account[], chainId: ChainId): AccountId
   }, []);
 }
 
-function getChainWithBalance(balances: Balance[], chains: AssetChain[], accounts: Account[]): AssetChain[] {
+function getChainWithBalance(balances: Balance[], chains: AssetChain[], accounts: AnyAccount[]): AssetChain[] {
   return chains.reduce<AssetChain[]>((acc, chain) => {
     const selectedAccountIds = getSelectedAccountIds(accounts, chain.chainId);
 
-    const accountsBalance = balanceUtils.getAssetBalances(
-      balances,
-      selectedAccountIds,
-      chain.chainId,
-      chain.assetId.toString(),
-    );
+    const accountsBalance = balanceUtils.getAssetBalances(balances, selectedAccountIds, chain.chainId, chain.assetId);
 
     const assetBalance = accountsBalance.reduce<AssetBalance>((acc, balance) => {
       return sumTokenBalances(balance, acc);

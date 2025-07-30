@@ -24,7 +24,8 @@ import {
   votingService,
 } from '@/entities/governance';
 import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 
 const formInitiated = createEvent<{ delegate: DelegateAccount; accounts: AnyAccount[] }>();
@@ -61,7 +62,7 @@ const $accountsBalances = combine(
         balances,
         account.accountId,
         network!.chain.chainId,
-        network!.asset.assetId.toString(),
+        network!.asset.assetId,
       );
 
       acc[account.accountId] = transferableAmount(balance);
@@ -231,7 +232,7 @@ sample({
   source: {
     tracks: $tracks,
     network: delegationAggregate.$network,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
   },
   filter: ({ network, wallet }) => !!network && !!wallet,
   fn: ({ tracks, network, wallet }, _): CheckWeightParams => ({
