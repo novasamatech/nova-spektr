@@ -131,11 +131,7 @@ const AccountSelector = () => {
                 address={address}
                 title={isShard ? toShortAddress(address, 16) : account.name}
               />
-              <AssetBalance
-                className="shrink-0"
-                value={transferableAmount(balance)}
-                asset={getNativeAsset(chainValue.assets)}
-              />
+              <AssetBalance value={transferableAmount(balance)} asset={getNativeAsset(chainValue.assets)} />
             </div>
           ),
         };

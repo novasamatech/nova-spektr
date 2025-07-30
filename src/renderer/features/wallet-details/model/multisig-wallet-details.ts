@@ -23,11 +23,9 @@ const $wallet = flow.state.map(({ wallet }) => wallet);
 const $multisigAccount = $wallet.map(wallet => {
   if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
 
-  return (
-    (wallet.accounts.find(
-      account => accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account),
-    ) as MultisigAccount | FlexibleMultisigAccount | undefined) ?? null
-  );
+  return wallet.accounts
+    .filter(account => accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account))
+    .at(0) as MultisigAccount | FlexibleMultisigAccount;
 });
 
 const $signatories = combine(
