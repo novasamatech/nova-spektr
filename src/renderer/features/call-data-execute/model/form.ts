@@ -13,6 +13,8 @@ import { type AnyAccount, type EncodedTransaction, accountService, transactionSe
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+// TODO move balances subscription to balance model
+import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { Step } from '../lib/types';
@@ -132,7 +134,10 @@ const $signatoryBalance = combine(
   ({ signatory, chain, balances }) => {
     if (nullable(signatory) || nullable(chain)) return null;
 
-    return balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, getNativeAsset(chain.assets).assetId);
+    return (
+      balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, getNativeAsset(chain.assets).assetId) ??
+      null
+    );
   },
 );
 
@@ -187,6 +192,13 @@ const $availableChains = combine(
 const $signatories = combine(form.fields.chain.$value, $availableSignatories, (chain, signatories) => {
   if (nullable(chain)) return [];
   return signatories.filter((a) => accountService.isAccountAvailableOnChain(a, chain));
+});
+
+// additional data loading
+
+sample({
+  clock: $signatories,
+  target: balanceSubModel.fetchAccounts,
 });
 
 // flow setup
