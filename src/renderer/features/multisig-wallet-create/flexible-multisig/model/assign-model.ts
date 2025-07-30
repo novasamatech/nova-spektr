@@ -89,14 +89,14 @@ sample({
 const $coreTx = combine(
   {
     signatory: flexibleMultisigModel.$signer,
-    totalDeposit: flexibleMultisigModel.$totalDeposit,
+    existentialDeposit: flexibleMultisigModel.$existentialDeposit,
     threshold: formModel.form.fields.threshold.$value,
     chain: formModel.$chain,
     multisigAccountId: formModel.$multisigAccountId,
     signatories: signatoryModel.$signatories,
     proxyAddress: $proxyAddress,
   },
-  ({ signatories, chain, totalDeposit, threshold, signatory, multisigAccountId, proxyAddress }) => {
+  ({ signatories, chain, existentialDeposit, threshold, signatory, multisigAccountId, proxyAddress }) => {
     if (nullable(multisigAccountId) || nullable(signatory) || nullable(chain) || nullable(proxyAddress)) {
       return null;
     }
@@ -111,7 +111,7 @@ const $coreTx = combine(
       multisigAccountId: toAccountId(multisigAccountId),
       threshold,
       proxyAccountId: toAccountId(proxyAddress),
-      proxyDeposit: totalDeposit.toString(),
+      proxyDeposit: existentialDeposit.toString(),
     });
   },
 );

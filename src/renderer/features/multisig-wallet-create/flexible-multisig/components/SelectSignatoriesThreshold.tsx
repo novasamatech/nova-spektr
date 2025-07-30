@@ -151,7 +151,7 @@ export const SelectSignatoriesThreshold = () => {
                             title={existingMultisig.name}
                             hideAddress
                             showIcon
-                            canCopy={false}
+                            canCopy
                           />
                         </span>
                       ),
@@ -162,7 +162,7 @@ export const SelectSignatoriesThreshold = () => {
                             title={existingProxy.name}
                             hideAddress
                             showIcon
-                            canCopy={false}
+                            canCopy
                           />
                         </span>
                       ),
@@ -190,7 +190,7 @@ export const SelectSignatoriesThreshold = () => {
                             title={existingMultisig.name}
                             hideAddress
                             showIcon
-                            canCopy={false}
+                            canCopy
                           />
                         </span>
                       ),
@@ -218,7 +218,7 @@ export const SelectSignatoriesThreshold = () => {
                             title={initiator.name}
                             hideAddress
                             showIcon
-                            canCopy={false}
+                            canCopy
                           />
                         </span>
                       ),
