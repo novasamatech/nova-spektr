@@ -1,14 +1,7 @@
 import { combine } from 'effector';
 import { createGate } from 'effector-react';
 
-import {
-  type ChainId,
-  type Contact,
-  type FlexibleMultisigAccount,
-  type MultisigAccount,
-  type ProxyAccount,
-  type Wallet,
-} from '@/shared/core';
+import { type ChainId, type Contact, type ProxyAccount, type Wallet } from '@/shared/core';
 import { dictionary, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { contactModel } from '@/entities/contact';
@@ -25,7 +18,7 @@ const $multisigAccount = $wallet.map(wallet => {
 
   return wallet.accounts
     .filter(account => accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account))
-    .at(0) as MultisigAccount | FlexibleMultisigAccount;
+    .at(0);
 });
 
 const $signatories = combine(
