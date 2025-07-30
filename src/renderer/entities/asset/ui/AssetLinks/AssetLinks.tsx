@@ -1,9 +1,9 @@
 import { memo } from 'react';
-import { Link } from 'react-router-dom';
+import { useLinkClickHandler } from 'react-router-dom';
 
 import { type ChainId, type Wallet } from '@/shared/core';
 import { Paths, createLink } from '@/shared/routes';
-import { Icon } from '@/shared/ui';
+import { IconButton } from '@/shared/ui';
 import { CheckPermission, OperationType } from '@/entities/wallet';
 
 type Props = {
@@ -13,23 +13,34 @@ type Props = {
 };
 
 export const AssetLinks = memo(({ assetId, chainId, wallet }: Props) => {
+  const openSend = useLinkClickHandler<HTMLButtonElement>(
+    createLink(Paths.TRANSFER_ASSET, {}, { chainId: [chainId], assetId: [assetId] }),
+  );
+  const openReceive = useLinkClickHandler<HTMLButtonElement>(
+    createLink(Paths.RECEIVE_ASSET, {}, { chainId: [chainId], assetId: [assetId] }),
+  );
+
   return (
-    <div className="ml-4 flex gap-x-3">
+    <div className="ml-4 flex gap-x-2">
       <CheckPermission operationType={OperationType.TRANSFER} wallet={wallet}>
-        <Link
-          to={createLink(Paths.TRANSFER_ASSET, {}, { chainId: [chainId], assetId: [assetId] })}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Icon name="sendArrow" size={20} />
-        </Link>
+        <IconButton
+          name="sendArrow"
+          size={20}
+          onClick={(e) => {
+            e.stopPropagation();
+            openSend(e);
+          }}
+        />
       </CheckPermission>
       <CheckPermission operationType={OperationType.RECEIVE} wallet={wallet}>
-        <Link
-          to={createLink(Paths.RECEIVE_ASSET, {}, { chainId: [chainId], assetId: [assetId] })}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Icon name="receiveArrow" size={20} />
-        </Link>
+        <IconButton
+          name="receiveArrow"
+          size={20}
+          onClick={(e) => {
+            e.stopPropagation();
+            openReceive(e);
+          }}
+        />
       </CheckPermission>
     </div>
   );
