@@ -25,7 +25,7 @@ import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { forgetWalletModel } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { ForgetStep } from '../../lib/constants';
 import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
@@ -78,8 +78,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
 
   const handleForgetWallet = () => {
     walletConnectForget.forget(wallet);
-    forgetWalletModel.events.forgetWcWallet(wallet);
-    toggleConfirmForget();
+    onClose();
   };
 
   const actions: WalletAction[] = [];
@@ -219,22 +218,12 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
         </FootnoteText>
       </ConfirmModal>
 
-      <ConfirmModal
-        panelClass="w-[240px]"
+      <ForgetWalletModal
+        wallet={wallet}
         isOpen={isConfirmForgetOpen}
-        confirmText={t('walletDetails.common.removeButton')}
-        cancelText={t('walletDetails.common.cancelButton')}
-        confirmPallet="error"
-        onConfirm={handleForgetWallet}
         onClose={toggleConfirmForget}
-      >
-        <SmallTitleText className="mb-2" align="center">
-          {t('walletDetails.common.removeTitle')}
-        </SmallTitleText>
-        <FootnoteText className="text-text-tertiary" align="center">
-          {t('walletDetails.common.removeMessage', { walletName: wallet.name })}
-        </FootnoteText>
-      </ConfirmModal>
+        onForget={handleForgetWallet}
+      />
 
       <StatusModal
         isOpen={walletDetailsUtils.isForgetModalOpen(forgetStep)}
