@@ -71,7 +71,7 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
           />
           <AssembledAssetAmount asset={asset} balance={totalBalance} />
 
-          <div className="ml-4 flex gap-x-3">
+          <div className="ml-4 flex gap-x-2">
             <CheckPermission operationType={OperationType.TRANSFER} wallet={wallet}>
               <IconButton size={20} name="sendArrow" onClick={handleSend} />
             </CheckPermission>
