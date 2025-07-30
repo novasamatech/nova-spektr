@@ -1,13 +1,15 @@
+import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type FormEvent, type ReactNode, memo, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
-import { Address, ChainSelect } from '@/shared/ui-entities';
+import { Address, AssetBalance, ChainSelect } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { Fee } from '@/entities/transaction';
 import { WalletIcon, walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
@@ -103,9 +105,13 @@ const SignatorySelect = memo(() => {
 
   const wallets = useUnit(walletModel.$wallets);
   const signatories = useUnit(formModel.$signatories);
+  const balances = useUnit(balanceModel.$balances);
+  const chain = useUnit(formModel.form.fields.chain.$value);
   const {
-    fields: { signatory, chain },
+    fields: { signatory },
   } = useForm(formModel.form);
+
+  const asset = chain ? getNativeAsset(chain.assets) : null;
 
   const onChange = (id: string) => {
     const v = signatories.find((c) => c.id === id);
@@ -116,6 +122,7 @@ const SignatorySelect = memo(() => {
 
   const options = useMemo(() => {
     const options: ReactNode[] = [];
+    if (nullable(chain) || nullable(asset)) return options;
 
     for (const wallet of wallets) {
       const walletAccounts = accountService.filterAccountsByWallet(signatories, wallet.id);
@@ -130,28 +137,73 @@ const SignatorySelect = memo(() => {
 
       options.push(
         <Select.Group title={walletTitle}>
-          {walletAccounts.map((a) => (
-            <Select.Item key={a.id} value={a.id} depth={1}>
-              <Address
-                showIcon
-                variant="truncate"
-                title={a.name !== wallet.name ? a.name : void 0}
-                address={toAddress(a.accountId, { prefix: chain.value?.addressPrefix })}
-              />
-            </Select.Item>
-          ))}
+          {walletAccounts.map((a) => {
+            const balance = balanceUtils.getBalance(balances, a.accountId, chain.chainId, asset.assetId);
+
+            return (
+              <Select.Item key={a.id} value={a.id} depth={1}>
+                <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+                  <Address
+                    showIcon
+                    canCopy={false}
+                    variant="truncate"
+                    title={a.name !== wallet.name ? a.name : void 0}
+                    address={toAddress(a.accountId, { prefix: chain?.addressPrefix })}
+                  />
+                  <AssetBalance
+                    className="text-footnote text-text-secondary"
+                    value={transferableAmountBN(balance)}
+                    asset={asset}
+                  />
+                </Box>
+              </Select.Item>
+            );
+          })}
         </Select.Group>,
       );
     }
 
     return options;
-  }, [wallets, signatories]);
+  }, [wallets, balances, chain, asset, signatories]);
+
+  const signatoryWallet = useMemo(() => {
+    if (signatory.value) {
+      return wallets.find((w) => w.id === signatory.value?.walletId) ?? null;
+    }
+
+    return null;
+  }, [wallets, signatory.value]);
+
+  const signatoryBalance = useMemo(() => {
+    if (signatory.value && chain && asset) {
+      const balance = balanceUtils.getBalance(balances, signatory.value.accountId, chain.chainId, asset.assetId);
+      return transferableAmountBN(balance);
+    }
+
+    return BN_ZERO;
+  }, [wallets, signatory.value, chain, asset]);
 
   return (
     <Field text={t('callData.fields.signatory.label')}>
       <Select
         placeholder={t('callData.fields.signatory.placeholder')}
         value={signatory.value?.id ?? null}
+        valueNode={
+          nonNullable(signatory.value) && nonNullable(signatoryWallet) ? (
+            <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+              <Address
+                showIcon
+                canCopy={false}
+                variant="truncate"
+                title={signatoryWallet.name}
+                address={toAddress(signatory.value.accountId, { prefix: chain?.addressPrefix })}
+              />
+              {nonNullable(asset) && (
+                <AssetBalance className="text-footnote text-text-secondary" value={signatoryBalance} asset={asset} />
+              )}
+            </Box>
+          ) : null
+        }
         height="md"
         onChange={onChange}
       >
