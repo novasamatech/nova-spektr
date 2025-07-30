@@ -115,30 +115,3 @@ export const Dark: Story = {
     },
   ],
 };
-
-export const CustomValueNode: Story = {
-  render: params => {
-    const [value, onChange] = useState('');
-
-    return (
-      <Box width="200px">
-        <Select
-          {...params}
-          placeholder="Select a fruit"
-          value={value}
-          valueNode={value ? <span>selected: {value}</span> : null}
-          onChange={onChange}
-        >
-          <Select.Group title="Group 1">
-            <Select.Item value="Apple">Apple</Select.Item>
-            <Select.Item value="Orange">Orange</Select.Item>
-          </Select.Group>
-          <Select.Group title="Group 2">
-            <Select.Item value="Watermelon">Watermelon</Select.Item>
-            <Select.Item value="Banana">Banana</Select.Item>
-          </Select.Group>
-        </Select>
-      </Box>
-    );
-  },
-};

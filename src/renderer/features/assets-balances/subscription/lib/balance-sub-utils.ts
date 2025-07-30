@@ -10,7 +10,7 @@ export const balanceSubUtils = {
 };
 
 function getSiblingAccounts(selectedAccounts: AnyAccount[], accounts: AnyAccount[], chains: Chain[]) {
-  const siblings = new Map<SubscriptionKey, AnyAccount>();
+  const siblings = new Map<AccountId, AnyAccount>();
   const graphs = new Map<Chain, Map<AnyAccount, AccountNode>>();
 
   for (const chain of chains) {
@@ -27,8 +27,7 @@ function getSiblingAccounts(selectedAccounts: AnyAccount[], accounts: AnyAccount
       if (node) {
         accountService.traverseGraph(node, {
           enter(node) {
-            const key = getSubscriptionKey(node.account.accountId, chain.chainId);
-            siblings.set(key, node.account);
+            siblings.set(node.account.accountId, node.account);
           },
         });
       }
