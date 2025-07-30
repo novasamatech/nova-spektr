@@ -22,7 +22,7 @@ describe('entities/proxy/lib/proxy-utils', () => {
   test('should return proxied name for a given proxied account', () => {
     const proxiedAccount = {
       accountId: TEST_ACCOUNTS[0],
-      proxyType: 'Any',
+      connections: [{ proxyType: 'Any' }],
       proxyVariant: ProxyVariant.REGULAR,
     } as unknown as ProxiedAccount;
 
