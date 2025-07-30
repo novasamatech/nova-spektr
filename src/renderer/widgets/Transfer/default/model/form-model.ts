@@ -6,7 +6,8 @@ import { spread } from 'patronum';
 import { type Address, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
-  TEST_ACCOUNTS,
+  TEST_ADDRESS,
+  TEST_EVM_ADDRESS,
   ZERO_BALANCE,
   assert,
   formatAmount,
@@ -222,20 +223,24 @@ const $feeTx = combine(
     network: $networkStore,
     isXcm: $isXcm,
     xcmData: xcmTransferModel.$xcmData,
+    xcmChain: xcmTransferModel.$xcmChain,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
   },
-  ({ network, isXcm, xcmData, isConnected, initiator }) => {
+  ({ network, isXcm, xcmChain, xcmData, isConnected, initiator }) => {
     if (!network || !initiator || !isConnected || (isXcm && !xcmData)) {
       return null;
     }
+
+    const destinationChain = isXcm ? xcmChain : network.chain;
+    const destination = networkUtils.isEthereumBased(destinationChain?.options) ? TEST_EVM_ADDRESS : TEST_ADDRESS;
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
       asset: network.asset,
       accountId: initiator.accountId,
       amount: '1',
-      destination: TEST_ACCOUNTS[0],
+      destination,
       xcmData,
     });
   },
