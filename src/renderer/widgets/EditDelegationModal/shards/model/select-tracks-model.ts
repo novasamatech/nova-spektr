@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, sample } from 'effecto
 import { spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Chain, type Wallet } from '@/shared/core';
+import { type Account, type Chain, type Wallet } from '@/shared/core';
 import {
   addUniqueItems,
   formatAmount,
@@ -13,7 +13,7 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, transactionService } from '@/domains/network';
+import { transactionService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import {
   type VotesToRemove,
@@ -24,23 +24,22 @@ import {
   votingService,
 } from '@/entities/governance';
 import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
-import { walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { delegationAggregate, networkSelectorModel, tracksAggregate, votingAggregate } from '@/features/governance';
 
-const formInitiated = createEvent<{ delegate: DelegateAccount; accounts: AnyAccount[] }>();
-const formSubmitted = createEvent<{ tracks: number[]; accounts: AnyAccount[] }>();
+const formInitiated = createEvent<{ delegate: DelegateAccount; accounts: Account[] }>();
+const formSubmitted = createEvent<{ tracks: number[]; accounts: Account[] }>();
 const trackToggled = createEvent<number>();
 const tracksSelected = createEvent<number[]>();
-const accountsChanged = createEvent<AnyAccount[]>();
+const accountsChanged = createEvent<Account[]>();
 
 const $tracks = createStore<number[]>([]).reset(formInitiated);
 const $votedTracks = createStore<string[]>([]).reset(formInitiated);
 const $delegatedTracks = createStore<string[]>([]).reset(formInitiated);
 const $votesToRemove = createStore<VotesToRemove[]>([]).reset(formInitiated);
 
-const $accounts = createStore<AnyAccount[]>([]).reset(formInitiated);
-const $availableAccounts = createStore<AnyAccount[]>([]).reset(formInitiated);
+const $accounts = createStore<Account[]>([]).reset(formInitiated);
+const $availableAccounts = createStore<Account[]>([]).reset(formInitiated);
 const $delegate = createStore<DelegateAccount | null>(null).reset(formInitiated);
 const $isMaxWeightReached = createStore(false).reset(formInitiated);
 
@@ -62,7 +61,7 @@ const $accountsBalances = combine(
         balances,
         account.accountId,
         network!.chain.chainId,
-        network!.asset.assetId,
+        network!.asset.assetId.toString(),
       );
 
       acc[account.accountId] = transferableAmount(balance);
@@ -232,7 +231,7 @@ sample({
   source: {
     tracks: $tracks,
     network: delegationAggregate.$network,
-    wallet: walletSelect.$selectedWallet,
+    wallet: walletModel.$activeWallet,
   },
   filter: ({ network, wallet }) => !!network && !!wallet,
   fn: ({ tracks, network, wallet }, _): CheckWeightParams => ({

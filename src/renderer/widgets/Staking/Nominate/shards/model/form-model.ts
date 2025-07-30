@@ -150,7 +150,7 @@ const $accounts = combine(
     const { chain, asset } = network;
 
     return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId);
+      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
 
       return { account: shard, balance: stakeableAmount(balance) };
     });
@@ -244,7 +244,7 @@ sample({
       balances,
       signatory.accountId,
       network.chain.chainId,
-      network.asset.assetId,
+      network.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);
@@ -267,7 +267,7 @@ sample({
       balances,
       proxyAccount!.accountId,
       network!.chain.chainId,
-      network!.asset.assetId,
+      network!.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);

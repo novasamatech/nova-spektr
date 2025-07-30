@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, HelpText, Icon, IconButton, SmallTitleText } from '@/shared/ui';
-import { ChainIcon } from '@/shared/ui-entities';
+import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { constructorModel } from '../model/constructor-model';
@@ -40,9 +40,11 @@ export const KeysList = () => {
 
           return (
             <li key={keyData.id || keyData.derivationPath} className="flex items-center gap-x-3 py-1.5 pl-2">
-              <div className="mx-6 my-4.5">
-                <ChainIcon chain={chains[keyData.chainId]} size={16} />
-              </div>
+              <ChainIcon
+                className="mx-6 my-4.5"
+                src={chains[keyData.chainId].icon}
+                name={chains[keyData.chainId].name}
+              />
               <div className="flex flex-1 flex-col gap-y-1 overflow-hidden py-1.5">
                 <FootnoteText className="truncate text-text-primary">{keyData.name}</FootnoteText>
                 <FootnoteText className="truncate text-text-secondary">

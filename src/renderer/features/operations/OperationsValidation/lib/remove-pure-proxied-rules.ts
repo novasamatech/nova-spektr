@@ -20,7 +20,7 @@ export const RemovePureProxiedRules = {
           balances,
           value.accountId,
           form.chain.chainId,
-          getNativeAsset(form.chain.assets).assetId,
+          getNativeAsset(form.chain.assets).assetId.toString(),
         );
 
         return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(balance));
@@ -43,7 +43,7 @@ export const RemovePureProxiedRules = {
           balances,
           value.accountId,
           form.chain.chainId,
-          getNativeAsset(form.chain.assets).assetId,
+          getNativeAsset(form.chain.assets).assetId.toString(),
         );
 
         return new BN(params.multisigDeposit).add(new BN(params.fee)).lte(withdrawableAmountBN(signatoryBalance));

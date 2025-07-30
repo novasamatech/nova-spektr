@@ -2,14 +2,13 @@ import { type BN } from '@polkadot/util';
 
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { type Asset } from './asset';
-import { type ChainId } from './general';
+import { type ChainId, type ID } from './general';
 
 export type Balance = AssetBalance & {
-  id: string;
+  id: ID;
   chainId: ChainId;
   accountId: AccountId;
-  assetId: Asset['assetId'];
+  assetId: string;
 };
 
 export type AssetBalance = {
@@ -17,12 +16,10 @@ export type AssetBalance = {
   free?: BN;
   reserved?: BN;
   frozen?: BN;
-  locked?: AssetLock[];
-};
-
-export type AssetLock = {
-  type: LockTypes;
-  amount: BN;
+  locked?: {
+    type: LockTypes;
+    amount: BN;
+  }[];
 };
 
 export const enum LockTypes {

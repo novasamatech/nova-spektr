@@ -594,33 +594,27 @@ function buildCreateFlexibleMultisig({
     type: 'Any',
   });
 
-  const wrapperAdd = {
+  const removeProxyTx = {
     chainId: chain.chainId,
     accountId: signerAccountId,
-    type: TransactionType.PROXY,
+    type: TransactionType.REMOVE_PROXY,
     args: {
-      real: proxyAccountId,
-      forceProxyType: 'Any',
-      transaction: addProxyTx,
+      delegate: proxyAccountId,
+      proxyType: 'Any',
+      delay: 0,
     },
   };
 
-  const removeProxyTx = transactionBuilder.buildRemoveProxy({
-    chain,
-    accountId: signerAccountId,
-    delegate: signerAccountId,
-    proxyType: 'Any',
-    delay: 0,
-  });
+  const batchProxy = buildBatchAll({ chain, accountId: signerAccountId, transactions: [addProxyTx, removeProxyTx] });
 
-  const wrapperRemove = {
+  const wrapper = {
     chainId: chain.chainId,
-    accountId: signerAccountId,
+    accountId: proxyAccountId,
     type: TransactionType.PROXY,
     args: {
       real: proxyAccountId,
       forceProxyType: 'Any',
-      transaction: removeProxyTx,
+      transaction: batchProxy,
     },
   };
 
@@ -631,7 +625,7 @@ function buildCreateFlexibleMultisig({
     signatories: signatories.map((s) => s.accountId),
   });
 
-  const transactions = [remarkTx, transferTransaction, wrapperAdd, wrapperRemove];
+  const transactions = [transferTransaction, wrapper, remarkTx];
 
   return buildBatchAll({ chain, accountId: signerAccountId, transactions });
 }

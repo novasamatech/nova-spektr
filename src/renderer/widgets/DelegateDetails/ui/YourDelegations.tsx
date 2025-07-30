@@ -9,8 +9,7 @@ import { Account as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { Box, Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { allTracks, locksService } from '@/entities/governance';
-import { accountUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
@@ -26,7 +25,7 @@ export const YourDelegations = () => {
   const activeDelegations = useUnit(delegateDetailsModel.$activeDelegations);
   const activeTracks = useUnit(delegateDetailsModel.$activeTracks);
   const delegate = useUnit(delegateDetailsModel.$delegate);
-  const wallet = useUnit(walletSelect.$selectedWallet);
+  const wallet = useUnit(walletModel.$activeWallet);
 
   const [selectedAccounts, setSelectedAccounts] = useState<AnyAccount[]>([]);
 

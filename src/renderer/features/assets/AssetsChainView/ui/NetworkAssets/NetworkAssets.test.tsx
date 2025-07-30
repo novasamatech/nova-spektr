@@ -10,8 +10,6 @@ import {
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
-  type Wallet,
-  WalletType,
 } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { polkadotAssetHubChain } from '@/shared/mocks';
@@ -29,26 +27,16 @@ vi.mock('@/shared/i18n', () => ({
   }),
 }));
 
-const testWallet = {
-  walletId: 1,
-  id: 1,
-  type: WalletType.POLKADOT_VAULT,
-  isActive: true,
-  name: 'test',
-  accounts: [],
-  signingType: SigningType.POLKADOT_VAULT,
-} as Wallet;
-
 const testBalances = [
   {
-    assetId: testAsset.assetId,
+    assetId: testAsset.assetId.toString(),
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
     free: '10',
     frozen: [{ type: 'test', amount: '1' }],
   },
   {
-    assetId: testAsset2.assetId,
+    assetId: testAsset2.assetId.toString(),
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
     free: '1000000000000',
@@ -83,7 +71,7 @@ describe('features/AssetsChainView/ui/NetworkAssets', () => {
     await act(async () => {
       render(
         <Provider value={scope}>
-          <NetworkAssets chain={testChain} accounts={accounts} hideZeroBalances={false} query="" wallet={testWallet} />
+          <NetworkAssets chain={testChain} accounts={accounts} hideZeroBalances={false} query="" />
         </Provider>,
       );
     });

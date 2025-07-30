@@ -18,7 +18,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
-import { accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { delegationAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
@@ -196,7 +196,7 @@ const dataSubmitted = sample({
       const delegation = delegations[delegate];
       const delegationData = Object.values(delegation)[0];
       const transferable = transferableAmount(
-        balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId),
+        balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString()),
       );
 
       return [
@@ -291,7 +291,7 @@ sample({
   }),
   source: {
     network: networkSelectorModel.$network,
-    wallet: walletSelect.$selectedWallet,
+    wallet: walletModel.$activeWallet,
   },
   filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
   fn: ({ network, wallet }) => ({

@@ -5,8 +5,7 @@ import { type Wallet } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { priceProviderModel } from '@/entities/price';
-import { accountUtils, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { assetsSearchModel, assetsSettingsModel, portfolioModel } from '@/features/assets';
 
 const activeShardsSet = createEvent<AnyAccount[]>();
@@ -37,7 +36,7 @@ sample({
 
 sample({
   clock: activeShardsSet,
-  source: walletSelect.$selectedWallet,
+  source: walletModel.$activeWallet,
   filter: (wallet: Wallet | null) => nonNullable(wallet),
   fn: (wallet, accounts) => {
     if (!walletUtils.isPolkadotVault(wallet)) return accounts;
@@ -48,7 +47,7 @@ sample({
 });
 
 sample({
-  clock: walletSelect.$selectedWallet,
+  clock: walletModel.$activeWallet,
   filter: (wallet: Wallet | null) => nonNullable(wallet),
   fn: (wallet) => {
     if (walletUtils.isFlexibleMultisig(wallet)) {

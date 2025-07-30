@@ -117,7 +117,7 @@ const formSubmitted = sample({
       const asset = getRelaychainAsset(walletData.chain.assets)!;
 
       const transferable = transferableAmount(
-        balanceUtils.getBalance(balances, initiator.accountId, walletData.chain.chainId, asset.assetId),
+        balanceUtils.getBalance(balances, initiator.accountId, walletData.chain.chainId, asset.assetId.toString()),
       );
 
       return [

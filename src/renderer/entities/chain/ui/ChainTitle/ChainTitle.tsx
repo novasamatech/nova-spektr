@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
 import { type ElementType, memo, useMemo } from 'react';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { type ChainId, type Chain as ChainType } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { TextBase } from '@/shared/ui/Typography/common/TextBase';
-import { ChainIcon } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';
+import { ChainIcon } from '../ChainIcon/ChainIcon';
 
-type WithChain = { chain: Chain };
+type WithChain = { chain: ChainType };
 type WithChainId = { chainId: ChainId };
 
 type Props = {
@@ -28,12 +28,12 @@ export const ChainTitle = memo(
     );
 
     if (!showChainName) {
-      return <ChainIcon chain={chainObj} size={iconSize} />;
+      return <ChainIcon src={chainObj?.icon} name={chainObj?.name} size={iconSize} />;
     }
 
     return (
       <Tag className={cnTw('flex items-center gap-x-2', className)}>
-        <ChainIcon chain={chainObj} size={iconSize} />
+        <ChainIcon src={chainObj?.icon} name={chainObj?.name} size={iconSize} />
         <TextBase as="span" className={cnTw('text-footnote text-text-tertiary', fontClass)}>
           {chainObj?.name}
         </TextBase>

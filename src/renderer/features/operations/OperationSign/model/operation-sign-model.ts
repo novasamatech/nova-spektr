@@ -1,11 +1,11 @@
 import { createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type AnyAccount } from '@/domains/network';
+import { type Account } from '@/shared/core';
 
-const SignerGate = createGate<AnyAccount | null>({ defaultState: null });
+const SignerGate = createGate<Account | null>({ defaultState: null });
 
-const $signer = createStore<AnyAccount | null>(null);
+const $signer = createStore<Account | null>(null);
 
 sample({
   clock: SignerGate.state,

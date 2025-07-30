@@ -1,7 +1,8 @@
 import { default as BigNumber } from 'bignumber.js';
 import { combine, sample } from 'effector';
+import { previous, spread } from 'patronum';
 
-import { dictionary, getRoundedValue, nonNullable, totalAmount } from '@/shared/lib/utils';
+import { dictionary, getRoundedValue, totalAmount } from '@/shared/lib/utils';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -27,8 +28,20 @@ const $isLoading = combine(
 );
 
 sample({
-  clock: walletDetailsModel.$wallet.updates.filter({ fn: nonNullable }),
-  target: balanceSubModel.fetchWallet,
+  clock: walletDetailsModel.$wallet,
+  source: {
+    previousWallet: previous(walletDetailsModel.$wallet),
+  },
+  fn: ({ previousWallet }, wallet) => {
+    return {
+      walletToSubSet: wallet!,
+      walletToUnsubSet: previousWallet!,
+    };
+  },
+  target: spread({
+    walletToSubSet: balanceSubModel.events.walletToSubSet,
+    walletToUnsubSet: balanceSubModel.events.walletToUnsubSet,
+  }),
 });
 
 const $walletBalance = combine(
@@ -53,7 +66,7 @@ const $walletBalance = combine(
       if (!account) return acc;
       if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;
 
-      const asset = chains[balance.chainId]?.assets?.find(asset => asset.assetId === balance.assetId);
+      const asset = chains[balance.chainId]?.assets?.find(asset => asset.assetId.toString() === balance.assetId);
 
       if (!asset?.priceId || !prices[asset.priceId]) return acc;
 

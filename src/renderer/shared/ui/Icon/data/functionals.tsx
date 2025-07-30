@@ -58,7 +58,6 @@ import VotingCheckFilled from '@/shared/assets/images/functionals/voting-check-f
 import WarnCutoutIcon from '@/shared/assets/images/functionals/warning-cutout.svg?jsx';
 import WhitelistVotingIcon from '@/shared/assets/images/functionals/whitelist-voting.svg?jsx';
 import WithdrawIcon from '@/shared/assets/images/functionals/withdraw.svg?jsx';
-import ChangeSignatoriesIcon from '@/shared/assets/images/functionals/сhangesignatories.svg?jsx';
 
 const FunctionalImages = {
   copy: { svg: CopyIcon },
@@ -119,7 +118,6 @@ const FunctionalImages = {
   empty: { svg: EmptyIcon },
   createPureProxy: { svg: CreatePureProxyIcon },
   delegate: { svg: DelegateIcon },
-  changeSignatories: { svg: ChangeSignatoriesIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

@@ -31,9 +31,6 @@ type Props<T = any> = {
   onChange: (data: DropdownResult<T>) => void;
 };
 
-/**
- * @deprecated Use import { Select } from '@/shared/ui-kit' instead
- */
 export const Select = forwardRef<HTMLButtonElement, Props>(
   (
     {

@@ -282,7 +282,12 @@ sample({
           balance: delegationData.balance.toString(),
           conviction: delegationData.conviction,
           transferable: transferableAmount(
-            balanceUtils.getBalance(balances, revokeData.account!.accountId, walletData.chain!.chainId, asset.assetId),
+            balanceUtils.getBalance(
+              balances,
+              revokeData.account!.accountId,
+              walletData.chain!.chainId,
+              asset.assetId.toString(),
+            ),
           ),
 
           ...revokeData,
@@ -353,7 +358,7 @@ sample({
   }),
   source: {
     network: networkSelectorModel.$network,
-    wallet: walletSelect.$selectedWallet,
+    wallet: walletModel.$activeWallet,
   },
   filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
   fn: ({ network, wallet }) => ({

@@ -1,20 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type ComponentProps, useEffect, useState } from 'react';
 
-import { type HexString, type Transaction } from '@/shared/core';
+import { type Account, type HexString, type Transaction } from '@/shared/core';
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import {
-  type AnyAccount,
-  type MultisigEvent,
-  type MultisigOperation,
-  multisigOperation,
-  transactionService,
-} from '@/domains/network';
+import { type MultisigEvent, type MultisigOperation, multisigOperation, transactionService } from '@/domains/network';
 import { multisigOperationService } from '@/domains/network';
 import { getExtrinsic, isProxyTypeTransaction } from '@/entities/transaction';
 import { proxiesModel } from '@/features/proxies';
@@ -23,7 +17,7 @@ type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' 
 
 type Props = {
   api: ApiPromise;
-  account?: AnyAccount;
+  account?: Account;
   tx: Transaction;
   operation?: MultisigOperation;
   txPayload: Uint8Array;

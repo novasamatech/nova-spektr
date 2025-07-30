@@ -7,8 +7,7 @@ import { useConfirmContext } from '@/shared/providers';
 import { FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { WalletDetails } from '@/features/wallet-details';
 import { delegationAggregate } from '../../aggregates/delegation';
@@ -27,7 +26,7 @@ export const TotalDelegation = ({ onClick }: Props) => {
   const canDelegate = useUnit(delegationAggregate.$canDelegate);
   const delegatedVotingPower = useUnit(delegationAggregate.$delegatedVotingPower);
 
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 

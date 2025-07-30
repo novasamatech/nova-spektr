@@ -8,8 +8,7 @@ import { FootnoteText, Icon, Plate } from '@/shared/ui';
 import { AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Checkbox, Skeleton } from '@/shared/ui-kit';
 import { AssetFiatBalance } from '@/entities/price';
-import { walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { type NominatorInfo } from '../lib/types';
 
 type Props = {
@@ -36,7 +35,7 @@ export const NominatorsItem = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   return (
     <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6 py-2.5">

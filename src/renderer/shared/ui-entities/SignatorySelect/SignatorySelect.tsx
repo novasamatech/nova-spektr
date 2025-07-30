@@ -69,7 +69,6 @@ export const SignatorySelect = ({
         value={signatory?.id.toString() ?? null}
         testId={TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR}
         invalid={hasError}
-        height="md"
         onChange={value => selectSigner(value)}
       >
         {signatories.map(({ account: signer, balance }) => {

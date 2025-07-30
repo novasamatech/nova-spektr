@@ -159,7 +159,7 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
       }
 
       return walletAccounts.map<AccountOption>((account) => {
-        const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId);
+        const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId.toString());
 
         return { account, balance: balance ?? null };
       });
@@ -187,7 +187,12 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
         const firstAccount = account.at(0);
         if (!firstAccount) return [];
 
-        const balance = balanceUtils.getBalance(balances, firstAccount.accountId, chain.chainId, asset.assetId);
+        const balance = balanceUtils.getBalance(
+          balances,
+          firstAccount.accountId,
+          chain.chainId,
+          asset.assetId.toString(),
+        );
 
         return { account: firstAccount, balance: balance ?? null };
       });
@@ -244,7 +249,12 @@ export const createTransactionForm = <FormShape extends NonNullable<unknown>>({
       if (!realAccount || !chain || !asset) return BN_ZERO;
 
       if (transactionService.hasProxy(txWrappers)) {
-        const balance = balanceUtils.getBalance(balances, realAccount.accountId, chain.chainId, asset.assetId);
+        const balance = balanceUtils.getBalance(
+          balances,
+          realAccount.accountId,
+          chain.chainId,
+          asset.assetId.toString(),
+        );
 
         return transferableAmountBN(balance);
       }

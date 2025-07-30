@@ -52,7 +52,7 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
     <button
       ref={ref}
       type="button"
-      className={cnTw('spektr-icon-button p-1.5', getIconButtonStyle(disabled), className)}
+      className={cnTw('spektr-icon-button', getIconButtonStyle(disabled), className)}
       aria-label={ariaLabel || `icon button: ${iconProps.name}`}
       disabled={disabled}
       data-testid={testId}

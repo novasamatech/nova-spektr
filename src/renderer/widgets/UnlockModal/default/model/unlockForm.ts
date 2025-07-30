@@ -121,7 +121,12 @@ const $availableBalance = combine(
     if (nullable(initiator) || nullable(chain)) return BN_ZERO;
 
     const nativeAsset = getNativeAsset(chain.assets);
-    const accountBalance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, nativeAsset.assetId);
+    const accountBalance = balanceUtils.getBalance(
+      balances,
+      initiator.accountId,
+      chain.chainId,
+      nativeAsset.assetId.toString(),
+    );
     if (!accountBalance) return BN_ZERO;
 
     return locksService.getAvailableBalance(accountBalance);
@@ -205,7 +210,7 @@ const $proxyBalance = combine(
       balances,
       proxyAccount.accountId,
       network.chain.chainId,
-      network.asset.assetId,
+      network.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);
@@ -270,7 +275,7 @@ const $signatoryBalance = combine(
       balances,
       signatory.accountId,
       network.chain.chainId,
-      network.asset.assetId,
+      network.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);

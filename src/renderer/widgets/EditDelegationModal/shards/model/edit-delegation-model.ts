@@ -5,6 +5,7 @@ import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import {
+  type Account,
   type MultisigTxWrapper,
   type ProxyTxWrapper,
   type Transaction,
@@ -51,7 +52,7 @@ import { selectTracksModel } from './select-tracks-model';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent<{ delegate: DelegateAccount; accounts: AnyAccount[] }>();
+const flowStarted = createEvent<{ delegate: DelegateAccount; accounts: Account[] }>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 const txsConfirmed = createEvent();
@@ -67,7 +68,7 @@ const $walletData = combine({
 const $target = createStore<DelegateAccount | null>(null).reset(flowFinished);
 const $tracks = createStore<number[]>([]).reset(flowFinished);
 const $delegateData = createStore<Omit<DelegateData, 'tracks' | 'target' | 'shards'> | null>(null).reset(flowFinished);
-const $accounts = createStore<AnyAccount[]>([]).reset(flowFinished);
+const $accounts = createStore<Account[]>([]).reset(flowFinished);
 const $feeData = createStore<FeeData>({ fee: '0', totalFee: '0', multisigDeposit: '0' });
 const $isUnchanged = createStore(false);
 
@@ -380,7 +381,7 @@ sample({
           tracks,
           target: target?.address || '',
           transferable: transferableAmount(
-            balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId),
+            balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
           ),
           ...delegateData!,
           signatory: delegateData!.signatory!,
@@ -506,7 +507,7 @@ sample({
   }),
   source: {
     network: networkSelectorModel.$network,
-    wallet: walletSelect.$selectedWallet,
+    wallet: walletModel.$activeWallet,
   },
   filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
   fn: ({ network, wallet }) => ({

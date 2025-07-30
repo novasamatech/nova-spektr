@@ -1,10 +1,8 @@
 import { type Transaction } from 'dexie';
 
-import { ChainType, CryptoType, type Wallet } from '@/shared/core';
+import { type Account, ChainType, CryptoType, type Wallet } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
-// eslint-disable-next-line boundaries/element-types
-import { type AnyAccount } from '@/domains/network';
 
 /**
  * Migrate accounts table to accounts2 for supporting new format
@@ -14,11 +12,11 @@ import { type AnyAccount } from '@/domains/network';
  * @returns {Promise}
  */
 export async function migrateAccounts(t: Transaction): Promise<void> {
-  const oldAccounts = await t.db.table<AnyAccount>('accounts').toArray();
+  const oldAccounts = await t.db.table<Account>('accounts').toArray();
   const wallets = await t.db.table<Wallet>('wallets').toArray();
 
   const newAccounts = oldAccounts
-    .map<AnyAccount | null>((old) => {
+    .map<Account | null>((old) => {
       const wallet = wallets.find((x) => x.id === old.walletId);
       if (!wallet) return null;
       // @ts-expect-error old types
@@ -26,7 +24,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
       const baseAccountId = nonNullable(baseId) ? oldAccounts.find((x) => x.id === baseId) : null;
 
       const finalType = wallet.type === 'wallet_wo' ? 'watch_only' : type;
-      let res: AnyAccount;
+      let res: Account;
 
       if ('chainId' in old) {
         res = {

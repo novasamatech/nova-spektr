@@ -54,6 +54,16 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     submit();
+
+    // TODO: will be used for multisig as signer
+    // signatoryModel.events.getSignatoriesBalance(ownedSignatoriesWallets);
+
+    // if (ownedSignatoriesWallets.length > 1) {
+    //   flowModel.stepChanged(Step.SIGNER_SELECTION);
+    // } else {
+    //   event.preventDefault();
+    // submit();
+    // }
   };
 
   const asset = getNativeAsset(chain?.assets || []);
@@ -176,7 +186,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                             title={signer.name}
                             hideAddress
                             showIcon
-                            canCopy
+                            canCopy={false}
                           />
                         </span>
                       ),

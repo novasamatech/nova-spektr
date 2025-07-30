@@ -1,10 +1,12 @@
-import { type ChainId } from '@/shared/core';
+import { type UnsubscribePromise } from '@polkadot/api/types';
+
+import { type ChainId, type ID } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-export type SubscriptionKey = `${AccountId} ${ChainId}`;
-
-export type Subscriptions = Record<SubscriptionKey, VoidFunction>;
+export type Subscriptions = {
+  [chainId: ChainId]: { [walletId: ID]: UnsubscribePromise[] } | undefined;
+};
 
 export type SubAccounts = {
-  [chainId: ChainId]: AccountId[];
+  [chainId: ChainId]: { [walletId: ID]: AccountId[] };
 };

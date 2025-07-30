@@ -7,7 +7,7 @@ import { type Referendum, type TrackId, type TrackInfo, type TrackLocks, type Vo
 import { getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@/entities/governance';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { walletModel } from '@/entities/wallet';
 import { unlockService } from '../../lib/unlockService';
 import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
@@ -92,7 +92,7 @@ const getClaimScheduleFx = createEffect(
 );
 
 sample({
-  clock: [networkSelectorModel.$network, walletSelect.$selectedWallet],
+  clock: [networkSelectorModel.$network, walletModel.$activeWallet],
   target: [$claimSchedule.reinit],
 });
 

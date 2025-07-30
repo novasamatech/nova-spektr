@@ -19,7 +19,7 @@ export const MultisigFees = () => {
   const isLoading = useUnit(flexibleMultisigModel.$isLoading);
   const asset = useUnit(flexibleMultisigModel.$asset);
 
-  const totalFee = fee.add(existentialDeposit).add(new BN(proxyDeposit ?? 0));
+  const totalFee = fee.add(existentialDeposit).add(new BN(proxyDeposit));
 
   if (!asset) return;
 
@@ -41,7 +41,7 @@ export const MultisigFees = () => {
             <div className="gap-2 text-help-text text-white">
               <div>
                 {t('createMultisigAccount.flexibleMultisig.proxyDeposit')}
-                <AssetBalance value={proxyDeposit ?? '0'} asset={asset} className="ml-1 text-help-text text-inherit" />
+                <AssetBalance value={proxyDeposit} asset={asset} className="ml-1 text-help-text text-inherit" />
               </div>
               <div>
                 {t('createMultisigAccount.flexibleMultisig.existentialDeposit')}

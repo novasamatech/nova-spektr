@@ -48,7 +48,7 @@ const validateFeeFx = attach({
 
     const accountId = wrapped.accountId;
     const fee = await transactionService.getExtrinsicFee(extrinsic);
-    const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
+    const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
     const feeBN = new BN(fee);
 

@@ -1,4 +1,4 @@
-import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
@@ -9,7 +9,7 @@ import { isEthereumAccountId } from '@/shared/lib/utils';
 import { HeadlineText, IconButton, Separator } from '@/shared/ui';
 import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
@@ -46,12 +46,6 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
   const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
 
-  const firstAccount = useStoreMap({
-    store: accounts.$list,
-    keys: [wallet.id],
-    fn: (accounts, [walletId]) => accountService.filterAccountsByWallet(accounts, walletId).at(0),
-  });
-
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
   const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
@@ -59,6 +53,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   const [chains, setChains] = useState<Chain[]>([]);
   const [tab, setTab] = useState('accounts');
 
+  const firstAccount = wallet.accounts.at(0);
   const isEthereumBased = firstAccount ? accountUtils.isEthereumBased(firstAccount) : false;
 
   useEffect(() => {
@@ -90,7 +85,8 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   actions.push({
     icon: 'forget',
     title: t('walletDetails.common.forgetButton'),
-    variant: 'danger',
+    iconClassName: 'text-icon-negative',
+    backgroundClassName: 'bg-secondary-negative-button-background',
     onClick: toggleConfirmForget,
   });
 
@@ -104,7 +100,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="mb-6 flex items-center justify-between px-5">
-          <Box direction="row" verticalAlign="center" gap={2} height="fit">
+          <Box direction="row" verticalAlign="center" gap={3} height="fit">
             <div className="mr-1">
               <WalletAccountIcon
                 address={firstAccount?.accountId}

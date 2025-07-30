@@ -1,10 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createStore } from 'effector';
 
-import { type Chain, type Transaction, type Wallet } from '@/shared/core';
+import { type Account, type Chain, type Transaction, type Wallet } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createFeeCalculator } from '@/shared/transactions';
-import { type AnyAccount } from '@/domains/network';
 import { getExtrinsic, transactionService } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 
@@ -14,8 +13,8 @@ type Params = {
   $coreTxs: Store<Transaction[]>;
   $activeWallet: Store<Wallet | null>;
   $wallets: Store<Wallet[]>;
-  $accounts: Store<AnyAccount[]>;
-  $signatory?: Store<AnyAccount | null>;
+  $accounts: Store<Account[]>;
+  $signatory?: Store<Account | null>;
 };
 
 export const createMultipleTxStore = ({

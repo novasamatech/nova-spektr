@@ -11,7 +11,7 @@ import { BodyText, FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { votingService } from '@/entities/governance';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { walletModel } from '@/entities/wallet';
 import { detailsAggregate } from '../../aggregates/details';
 import { votingListService } from '../../lib/votingListService';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -28,7 +28,7 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
 
   const [isOpen, closeModal] = useModalClose(true, onClose);
 
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const votes = useStoreMap({
     store: detailsAggregate.$votes,

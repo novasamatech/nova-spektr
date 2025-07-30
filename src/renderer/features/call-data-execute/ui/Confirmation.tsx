@@ -36,17 +36,8 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   if (nullable(node)) return null;
 
   const asset = getNativeAsset(chain.assets);
-
-  let callData: string;
-  try {
-    const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
-    callData = extrinsic.method.toHex();
-  } catch {
-    const encodedTransaction = transactionService.encodeTransaction(transaction, api);
-    callData = encodedTransaction.callData;
-  }
-
-  const decodedLink = getPolkadotAppDecodedUrl(node.url, callData);
+  const encodedTransaction = transactionService.encodeTransaction(transaction, api);
+  const decodedLink = getPolkadotAppDecodedUrl(node.url, encodedTransaction.callData);
 
   return (
     <>

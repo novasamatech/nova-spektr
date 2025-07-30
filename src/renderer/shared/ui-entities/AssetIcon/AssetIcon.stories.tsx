@@ -37,6 +37,7 @@ export const Monochrome: Story = {
 
 export const VariantsDerivedFromConfig: Story = {
   args: {
+    style: 'colored',
     size: 32,
   },
   loaders: [

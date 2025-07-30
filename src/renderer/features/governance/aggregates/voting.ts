@@ -5,8 +5,7 @@ import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identity } from '@/domains/network';
 import { votingModel, votingService } from '@/entities/governance';
-import { accountUtils, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
 
 import { tracksAggregate } from './tracks';
@@ -16,7 +15,7 @@ const requestVoting = createEvent<{ accounts: AccountId[]; tracks?: TrackId[] }>
 const $activeWalletVotes = combine(
   {
     voting: votingModel.$voting,
-    wallet: walletSelect.$selectedWallet,
+    wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
   },
   ({ voting, wallet, chain }): VotingMap => {
@@ -39,7 +38,7 @@ const $activeWalletVotes = combine(
 
 const $possibleAccountsForVoting = combine(
   {
-    wallet: walletSelect.$selectedWallet,
+    wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
   },
   ({ wallet, chain }) => {
@@ -80,9 +79,9 @@ sample({
 });
 
 sample({
-  clock: [tracksAggregate.$tracks, walletSelect.$selectedWallet],
+  clock: [tracksAggregate.$tracks, walletModel.$activeWallet],
   source: {
-    wallet: walletSelect.$selectedWallet,
+    wallet: walletModel.$activeWallet,
     chain: networkSelectorModel.$governanceChain,
   },
   filter: ({ wallet, chain }) => nonNullable(wallet) && nonNullable(chain),

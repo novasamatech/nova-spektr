@@ -2,13 +2,12 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
 
-import { type Chain } from '@/shared/core';
+import { type Account, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { AccountExplorers, Address, AssetBalance } from '@/shared/ui-entities';
 import { Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import {
   getGovernanceTrackDescription,
@@ -332,7 +331,7 @@ const AccountsSelector = () => {
 };
 
 type AccountProps = {
-  account: AnyAccount;
+  account: Account;
   chain: Chain;
   balance: string;
 };

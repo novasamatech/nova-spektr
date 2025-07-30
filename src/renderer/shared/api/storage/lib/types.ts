@@ -1,6 +1,7 @@
 import { type Table } from 'dexie';
 
 import {
+  type Account,
   type Balance,
   type ChainMetadata,
   type Connection,
@@ -28,7 +29,7 @@ export type AnyAccountDS = AnyAccount & { id: string };
 
 export type TWallet = Table<Omit<Wallet, 'accounts'>, Wallet['id']>;
 export type TContact = Table<Contact, Contact['id']>;
-export type TAccount = Table<AnyAccount, AnyAccount['id']>;
+export type TAccount = Table<Account, Account['id']>;
 export type TAccount2 = Table<AnyAccountDS, AnyAccountDS['id']>;
 export type TBalance = Table<Serializable<Balance>, Balance['id']>;
 export type TConnection = Table<Connection, Connection['id']>;

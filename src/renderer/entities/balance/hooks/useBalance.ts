@@ -1,4 +1,4 @@
-import { type Asset, type ChainId } from '@/shared/core';
+import { type Balance, type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { useAssetBalances } from './useAssetBalances';
@@ -6,8 +6,8 @@ import { useAssetBalances } from './useAssetBalances';
 type Props = {
   chainId: ChainId;
   accountId: AccountId;
-  assetId: Asset['assetId'];
+  assetId: string;
 };
-export const useBalance = ({ chainId, accountId, assetId }: Props) => {
-  return useAssetBalances({ chainId, accountIds: [accountId], assetId }).at(0);
+export const useBalance = ({ chainId, accountId, assetId }: Props): Balance | undefined => {
+  return useAssetBalances({ chainId, accountIds: [accountId], assetId })[0];
 };

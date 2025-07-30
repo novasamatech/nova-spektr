@@ -1,12 +1,9 @@
-import { BN_ZERO } from '@polkadot/util';
 import keyBy from 'lodash/keyBy';
 
-import { type Asset, type Balance, type ChainId, type OmitFirstArg } from '@/shared/core';
+import { type Balance, type ChainId, type OmitFirstArg } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const balanceUtils = {
-  getBalanceId,
-  insertBalanceId,
   getAssetBalances,
   getBalance,
   getBalanceWrapped,
@@ -15,35 +12,16 @@ export const balanceUtils = {
   getMergeBalances,
 };
 
-function getBalanceId(balance: Omit<Balance, 'id'>) {
-  return `${balance.accountId} ${balance.chainId} ${balance.assetId.toString()}`;
-}
-
-function insertBalanceId(balance: Omit<Balance, 'id'>): Balance {
-  return {
-    ...balance,
-    id: getBalanceId(balance),
-  };
-}
-
-function getAssetBalances(
-  balances: Balance[],
-  accountIds: AccountId[],
-  chainId: ChainId,
-  assetId: Asset['assetId'],
-): Balance[] {
+function getAssetBalances(balances: Balance[], accountIds: AccountId[], chainId: ChainId, assetId: string): Balance[] {
   return balances.filter((balance) => {
-    return balance.chainId === chainId && balance.assetId === assetId && accountIds.includes(balance.accountId);
+    return (
+      balance.chainId === chainId && balance.assetId === assetId.toString() && accountIds.includes(balance.accountId)
+    );
   });
 }
 
-function getBalance(
-  balances: Balance[],
-  accountId: AccountId,
-  chainId: ChainId,
-  assetId: Asset['assetId'],
-): Balance | undefined {
-  return getAssetBalances(balances, [accountId], chainId, assetId).at(0);
+function getBalance(balances: Balance[], accountId: AccountId, chainId: ChainId, assetId: string): Balance | undefined {
+  return getAssetBalances(balances, [accountId], chainId, assetId)[0];
 }
 
 function getBalanceWrapped(balances: Balance[]) {
@@ -61,38 +39,23 @@ function getAccountsBalances(balances: Balance[], accountIds: AccountId[]): Bala
 }
 
 function getMergeBalances(oldBalances: Balance[], newBalances: Balance[]): Balance[] {
-  const newBalancesMap = keyBy(newBalances, (b) => b.id);
-  const updatedBalances: Balance[] = [];
+  const newBalancesMap = keyBy(newBalances, (b) => `${b.chainId}_${b.assetId}_${b.accountId}`);
 
-  for (const balance of oldBalances) {
-    const newBalance = newBalancesMap[balance.id];
+  const updatedBalances = oldBalances.map((balance) => {
+    const { chainId, assetId, accountId } = balance;
+    const newBalance = newBalancesMap[`${chainId}_${assetId}_${accountId}`];
 
     if (newBalance) {
-      delete newBalancesMap[balance.id];
+      balance.free = newBalance?.free || balance.free;
+      balance.frozen = newBalance?.frozen || balance.frozen;
+      balance.reserved = newBalance?.reserved || balance.reserved;
+      balance.locked = newBalance?.locked || balance.locked;
 
-      updatedBalances.push({
-        ...balance,
-        free: newBalance.free || balance.free,
-        frozen: newBalance.frozen || balance.frozen,
-        reserved: newBalance.reserved || balance.reserved,
-        locked: newBalance.locked || balance.locked,
-      });
-    } else {
-      updatedBalances.push(balance);
+      delete newBalancesMap[`${chainId}_${assetId}_${accountId}`];
     }
-  }
 
-  const normalizedNewBalances = Object.values(newBalancesMap).map<Balance>((balance) => ({
-    id: balance.id,
-    accountId: balance.accountId,
-    assetId: balance.assetId,
-    chainId: balance.chainId,
-    verified: balance.verified,
-    free: balance.free ?? BN_ZERO,
-    frozen: balance.frozen ?? BN_ZERO,
-    reserved: balance.reserved ?? BN_ZERO,
-    locked: balance.locked,
-  }));
+    return balance;
+  });
 
-  return updatedBalances.concat(normalizedNewBalances);
+  return updatedBalances.concat(Object.values(newBalancesMap));
 }

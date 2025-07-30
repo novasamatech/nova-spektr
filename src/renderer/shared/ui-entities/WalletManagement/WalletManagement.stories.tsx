@@ -3,7 +3,7 @@ import { noop } from 'lodash';
 
 import { type MultisigWallet } from '@/shared/core';
 import { FootnoteText, IconButton } from '@/shared/ui';
-import { ChainIcon } from '../ChainIcon/ChainIcon';
+import { ChainIcon } from '@/entities/chain';
 
 import { WalletManagement } from './WalletManagement';
 
@@ -37,15 +37,7 @@ export const WithMeta: Story = {
   args: {
     meta: (
       <ChainIcon
-        chain={{
-          chainId: '0x123',
-          icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot.svg',
-          name: 'Polkadot',
-          specName: 'polkadot',
-          assets: [],
-          nodes: [],
-          addressPrefix: 0,
-        }}
+        src="https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Polkadot.svg"
         size={16}
       />
     ),

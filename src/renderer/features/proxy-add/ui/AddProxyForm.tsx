@@ -23,7 +23,10 @@ import { AccountAddress, accountUtils, walletModel, walletUtils } from '@/entiti
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
 
-export const AddProxyForm = () => {
+type Props = {
+  onGoBack: () => void;
+};
+export const AddProxyForm = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const { submit } = useForm(formModel.form);
@@ -47,7 +50,7 @@ export const AddProxyForm = () => {
         <FeeSection />
         <FeeError />
       </div>
-      <ActionSection />
+      <ActionSection onGoBack={onGoBack} />
     </div>
   );
 };
@@ -103,30 +106,29 @@ const AccountSelector = () => {
   const { t } = useI18n();
 
   const {
-    fields: { initiator },
+    fields: { initiator, chain },
   } = useForm(formModel.form);
 
-  const chain = useUnit(formModel.form.fields.chain.$value);
-  const availableAccounts = useUnit(formModel.$availableAccounts);
+  const avilableAccounts = useUnit(formModel.$avilableAccounts);
   const wallet = useUnit(walletSelect.$selectedWallet);
   const balances = useUnit(balanceModel.$balances);
 
-  if (availableAccounts.length < 2 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value || !chain) {
+  if (avilableAccounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value || !chain.value) {
     return null;
   }
 
-  const nativeAsset = getNativeAsset(chain.assets);
+  const nativeAsset = getNativeAsset(chain.value.assets);
 
-  const options = availableAccounts.map((account) => {
+  const options = avilableAccounts.map((account) => {
     const isShard = accountUtils.isVaultShardAccount(account);
-    const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+    const address = toAddress(account.accountId, { prefix: chain.value!.addressPrefix });
     const id = accountService.uniqId(account);
 
     const balance = balanceUtils.getBalance(
       balances,
       account.accountId,
-      chain.chainId,
-      getNativeAsset(chain.assets).assetId,
+      chain.value!.chainId,
+      getNativeAsset(chain.value!.assets).assetId.toString(),
     );
 
     return {
@@ -181,7 +183,12 @@ const Signatories = () => {
 
   const signatoriesWithBalance = useMemo(() => {
     return signatories.map((signatory) => {
-      const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.value!.chainId, nativeAsset.assetId);
+      const balance = balanceUtils.getBalance(
+        balances,
+        signatory.accountId,
+        chain.value!.chainId,
+        nativeAsset.assetId.toString(),
+      );
       return { account: signatory, balance: withdrawableAmount(balance) };
     });
   }, [signatories, balances]);
@@ -357,13 +364,16 @@ const FeeError = () => {
   );
 };
 
-const ActionSection = () => {
+const ActionSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
-    <div className="mt-4 flex items-center justify-end">
+    <div className="mt-4 flex items-center justify-between">
+      <Button variant="text" onClick={onGoBack}>
+        {t('operation.goBackButton')}
+      </Button>
       <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
         {t('operation.continueButton')}
       </Button>

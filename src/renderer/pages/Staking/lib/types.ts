@@ -1,7 +1,6 @@
-import { type Address, type Unlocking } from '@/shared/core';
-import { type AnyAccount } from '@/domains/network';
+import { type Account, type Address, type Unlocking } from '@/shared/core';
 
-export type NominatorInfo<T extends AnyAccount = AnyAccount> = {
+export type NominatorInfo<T extends Account = Account> = {
   address: Address;
   isSelected: boolean;
   stash?: Address;

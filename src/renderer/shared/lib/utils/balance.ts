@@ -4,7 +4,6 @@ import { default as BigNumber } from 'bignumber.js';
 import { type Asset, type AssetBalance, type Balance, LockTypes, type Unlocking } from '@/shared/core';
 
 import { ZERO_BALANCE } from './constants';
-import { nullable } from './functions';
 
 const MAX_INTEGER = 15;
 
@@ -204,9 +203,10 @@ export const lockedAmount = (balance: Balance): string => {
 };
 
 export const transferableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
-  if (nullable(balance)) return BN_ZERO;
+  if (!balance?.free || !balance?.frozen || !balance?.reserved) return BN_ZERO;
 
-  const { free = BN_ZERO, frozen = BN_ZERO, reserved = BN_ZERO } = balance;
+  const { free, frozen, reserved } = balance;
+
   const diff = BN.max(BN_ZERO, frozen.sub(reserved));
 
   return BN.max(BN_ZERO, free.sub(diff));
@@ -222,9 +222,9 @@ export const transferableAmount = <T extends AssetBalance>(balance?: T): string 
  * account.
  */
 export const withdrawableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
-  if (nullable(balance)) return BN_ZERO;
+  if (!balance?.free || !balance?.frozen) return BN_ZERO;
 
-  const { free = BN_ZERO, frozen = BN_ZERO } = balance;
+  const { free, frozen } = balance;
 
   return BN.max(BN_ZERO, free.sub(frozen));
 };

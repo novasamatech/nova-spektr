@@ -182,7 +182,7 @@ const $availableBalance = combine(
 
     const { chain, asset } = network;
 
-    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
+    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString());
     const address = toAddress(initiator.accountId, { prefix: network.chain.addressPrefix });
     const lock = getLocksForAddress(address, trackLocks);
 
@@ -313,7 +313,7 @@ const $proxyBalance = combine(
       balances,
       proxyAccount.accountId,
       network.chain.chainId,
-      network.asset.assetId,
+      network.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);
@@ -346,7 +346,7 @@ const $signatoryBalance = combine(
       balances,
       signatory.accountId,
       network.chain.chainId,
-      network.asset.assetId,
+      network.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);

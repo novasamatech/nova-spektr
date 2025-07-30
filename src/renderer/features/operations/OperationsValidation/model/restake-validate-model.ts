@@ -26,7 +26,7 @@ const rootValidateFx = createEffect(
     const accountId = transaction.accountId;
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
-    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
+    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
 
     const rules = [
       {

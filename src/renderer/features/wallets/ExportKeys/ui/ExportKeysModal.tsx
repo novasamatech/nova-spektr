@@ -43,6 +43,11 @@ export const ExportKeysModal = ({ isOpen, wallet, accounts, onClose }: Props) =>
           </Button>
         </Box>
       </Modal.Content>
+      <Modal.Footer align="start">
+        <Button variant="text" onClick={onClose}>
+          {t('dynamicDerivations.exportKeys.closeButton')}
+        </Button>
+      </Modal.Footer>
       <OperationResult
         isOpen={isDownloadModalOpen}
         variant="success"

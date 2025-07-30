@@ -6,8 +6,7 @@ import { spread } from 'patronum';
 import { type Address, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
-  TEST_ADDRESS,
-  TEST_EVM_ADDRESS,
+  TEST_ACCOUNTS,
   ZERO_BALANCE,
   assert,
   formatAmount,
@@ -22,7 +21,7 @@ import {
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -33,7 +32,6 @@ import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
 import { type NetworkStore } from '../lib/types';
 
 type FormParams = {
-  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   destination: Address;
   destinationChain: Chain | null;
@@ -74,9 +72,6 @@ const $asset = $networkStore.map((s) => (s ? s.asset : null));
 
 const form: Form<FormParams> = createForm<FormParams>({
   fields: {
-    initiator: {
-      defaultValue: null,
-    },
     signatory: {
       defaultValue: null,
     },
@@ -131,14 +126,15 @@ const $isChainConnected = combine(
 
 // initiator
 
-const $initiators = createInitiatorsStore({
-  chain: $chain,
-  accounts: walletSelect.$selectedAccounts,
+const $initiator = combine($networkStore, walletSelect.$selectedAccounts, (store, accounts) => {
+  if (nullable(store)) return null;
+
+  return accounts.find((a) => accountService.isAccountAvailableOnChain(a, store.chain)) ?? null;
 });
 
 const $initiatorBalance = combine(
   {
-    initiator: form.fields.initiator.$value,
+    initiator: $initiator,
     balances: balanceModel.$balances,
     chain: $chain,
     asset: $asset,
@@ -151,12 +147,17 @@ const $initiatorBalance = combine(
       };
     }
 
-    const transferable = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
+    const transferable = balanceUtils.getBalance(
+      balances,
+      initiator.accountId,
+      chain.chainId,
+      asset.assetId.toString(),
+    );
     const native = balanceUtils.getBalance(
       balances,
       initiator.accountId,
       chain.chainId,
-      getNativeAsset(chain.assets).assetId,
+      getNativeAsset(chain.assets).assetId.toString(),
     );
 
     return {
@@ -171,7 +172,7 @@ const $initiatorBalance = combine(
 const $signatories = createSignatoriesStore({
   chain: $chain,
   accounts: accounts.$list,
-  initiator: form.fields.initiator.$value,
+  initiator: $initiator,
 });
 
 const $signatoryBalance = combine(
@@ -186,7 +187,7 @@ const $signatoryBalance = combine(
     }
 
     const asset = getNativeAsset(chain.assets);
-    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId);
+    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId.toString());
     return balance ? withdrawableAmountBN(balance) : BN_ZERO;
   },
 );
@@ -200,7 +201,7 @@ const $coreTx = combine(
     form: form.$values,
     xcmData: xcmTransferModel.$xcmData,
     isConnected: $isChainConnected,
-    initiator: form.fields.initiator.$value,
+    initiator: $initiator,
   },
   ({ network, isXcm, form, xcmData, isConnected, initiator }) => {
     if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
@@ -223,24 +224,20 @@ const $feeTx = combine(
     network: $networkStore,
     isXcm: $isXcm,
     xcmData: xcmTransferModel.$xcmData,
-    xcmChain: xcmTransferModel.$xcmChain,
     isConnected: $isChainConnected,
-    initiator: form.fields.initiator.$value,
+    initiator: $initiator,
   },
-  ({ network, isXcm, xcmChain, xcmData, isConnected, initiator }) => {
+  ({ network, isXcm, xcmData, isConnected, initiator }) => {
     if (!network || !initiator || !isConnected || (isXcm && !xcmData)) {
       return null;
     }
-
-    const destinationChain = isXcm ? xcmChain : network.chain;
-    const destination = networkUtils.isEthereumBased(destinationChain?.options) ? TEST_EVM_ADDRESS : TEST_ADDRESS;
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
       asset: network.asset,
       accountId: initiator.accountId,
       amount: '1',
-      destination,
+      destination: TEST_ACCOUNTS[0],
       xcmData,
     });
   },
@@ -248,7 +245,7 @@ const $feeTx = combine(
 
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
-  initiator: form.fields.initiator.$value,
+  initiator: $initiator,
   signatory: form.fields.signatory.$value,
   accounts: accounts.$list,
   chain: $chain,
@@ -350,14 +347,8 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: $initiators,
-  fn: (initiators) => initiators.at(0) ?? null,
-  target: form.fields.initiator.change,
-});
-
-sample({
-  clock: [$signatories, formInitiated],
   source: $signatories,
+  filter: (signatories) => signatories.length > 0,
   fn: (signatories) => signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
@@ -435,7 +426,7 @@ const formSubmitFinished = sample({
   clock: form.submit.doneData,
   source: {
     chain: $chain,
-    initiator: form.fields.initiator.$value,
+    initiator: $initiator,
     network: $networkStore,
     route: $route,
     coreTx: $coreTx,
@@ -479,7 +470,7 @@ sample({
 export const formModel = {
   form,
 
-  $initiators,
+  $initiator,
   $signatories,
 
   $initiatorBalance,

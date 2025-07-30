@@ -62,7 +62,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         chain.chainId,
-        getNativeAsset(chain.assets).assetId,
+        getNativeAsset(chain.assets).assetId.toString(),
       );
       return { account: signatory, balance: withdrawableAmount(balance) };
     });

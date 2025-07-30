@@ -33,7 +33,7 @@ const $activeWalletBalance = combine(
       if (nullable(account) || nullable(chain)) return acc;
       if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;
 
-      const asset = chain.assets.find(asset => asset.assetId === balance.assetId);
+      const asset = chain.assets.find(asset => asset.assetId.toString() === balance.assetId);
       if (nullable(asset?.priceId)) return acc;
       const pricesMap = prices[asset.priceId];
       if (nullable(pricesMap)) return acc;

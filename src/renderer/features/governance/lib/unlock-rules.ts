@@ -1,7 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type AnyAccount } from '@/domains/network';
+import { type Account } from '@/shared/core';
 import {
   type AmountFeeStore,
   type ShardsProxyFeeStore,
@@ -27,7 +27,7 @@ export const UnlockRules = {
       name: 'noSignatorySelected',
       errorText: 'transfer.noSignatoryError',
       source,
-      validator: (signatory: AnyAccount, _: any, isMultisig: boolean) => {
+      validator: (signatory: Account, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
 
         return Object.keys(signatory).length > 0;
@@ -67,7 +67,7 @@ export const UnlockRules = {
 
         const feeBN = new BN(feeData.fee);
 
-        return form.shards.every((_: AnyAccount, index: number) => {
+        return form.shards.every((_: Account, index: number) => {
           return feeBN.lte(new BN(accountsBalances[index]));
         });
       },

@@ -220,7 +220,12 @@ const $availableBalance = combine(
     if (!initiator || !referendum || !chain) return BN_ZERO;
 
     const nativeAsset = getNativeAsset(chain.assets);
-    const accountBalance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, nativeAsset.assetId);
+    const accountBalance = balanceUtils.getBalance(
+      balances,
+      initiator.accountId,
+      chain.chainId,
+      nativeAsset.assetId.toString(),
+    );
     if (!accountBalance) return BN_ZERO;
 
     return locksService.getAvailableBalance(accountBalance);

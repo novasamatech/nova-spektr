@@ -8,8 +8,7 @@ import { FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { priceProviderModel } from '@/entities/price';
-import { walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { portfolioModel } from '../model/portfolio-model';
 
 import { TokenBalance } from './TokenBalance';
@@ -34,7 +33,7 @@ export const AssetsPortfolioView = () => {
   const tokensPopulated = useUnit(portfolioModel.$tokensPopulated);
   const accounts = useUnit(portfolioModel.$accounts);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const wallet = useUnit(walletSelect.$selectedWallet);
+  const wallet = useUnit(walletModel.$activeWallet);
 
   const { list, isLoading } = useDeferredList({
     list: sortedTokens,

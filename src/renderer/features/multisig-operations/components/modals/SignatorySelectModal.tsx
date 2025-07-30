@@ -1,17 +1,16 @@
-import { type Asset, type Chain } from '@/shared/core';
+import { type Account, type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Modal } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
 import { SelectableSignatory } from '@/entities/signatory';
 
 type Props = {
   isOpen: boolean;
   chain: Chain;
   nativeAsset: Asset;
-  accounts: AnyAccount[];
+  accounts: Account[];
   onClose: () => void;
-  onSelect: (account: AnyAccount) => void;
+  onSelect: (account: Account) => void;
 };
 
 export const SignatorySelectModal = ({ isOpen, onClose, onSelect, accounts, nativeAsset, chain }: Props) => {

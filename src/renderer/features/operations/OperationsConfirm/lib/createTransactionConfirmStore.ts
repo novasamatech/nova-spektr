@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEvent, createStore, sample } from 'effector';
 
-import { type Chain, type ChainId, type ID, type ProxiedAccount, type Wallet } from '@/shared/core';
+import { type Account, type Chain, type ChainId, type ID, type ProxiedAccount, type Wallet } from '@/shared/core';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { operationsUtils } from '@/entities/operations';
 import { type WrappedTransactions, isProxyTransaction } from '@/entities/transaction';
@@ -23,9 +23,9 @@ export type ConfirmItem<Input extends ConfirmInfo = ConfirmInfo> = {
     signer: Wallet | null;
   };
   accounts: {
-    initiator: AnyAccount;
+    initiator: Account;
     proxied?: ProxiedAccount | null;
-    signer: AnyAccount | null;
+    signer: Account | null;
   };
 };
 

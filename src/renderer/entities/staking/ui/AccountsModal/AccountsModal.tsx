@@ -25,7 +25,7 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
   const balances = useAssetBalances({
     accountIds,
     chainId,
-    assetId: asset.assetId,
+    assetId: asset.assetId.toString(),
   });
 
   const findBalance = (accountId: AccountId): string => {

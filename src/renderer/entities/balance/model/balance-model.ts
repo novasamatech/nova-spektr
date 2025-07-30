@@ -1,47 +1,53 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
+import { throttle } from 'patronum';
 
 import { balanceMapper, storageService } from '@/shared/api/storage';
-import { type Balance } from '@/shared/core';
-import { createBuffer } from '@/shared/effector';
+import { type Balance, type ID } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '../lib/balance-utils';
+import { BUFFER_DELAY, SAVE_TIMEOUT } from '../lib/constants';
 
 const balancesSet = createEvent<Balance[]>();
 const balancesUpdated = createEvent<Balance[]>();
 const balancesRemoved = createEvent<AccountId[]>();
 
 const $balances = createStore<Balance[]>([]);
+const $balancesBuffer = createStore<Balance[]>([]);
 
-const bufferedUpdate = createBuffer({
-  source: sample({ clock: [balancesSet, balancesUpdated] }),
-  timeframe: 1000,
+const insertBalancesFx = createEffect(async (balances: Balance[]): Promise<void> => {
+  const dbBalances = balances.map(balanceMapper.toDB);
+
+  await storageService.balances.insertAll(dbBalances);
 });
 
-const insertBalancesFx = createEffect(async (balances: Balance[]) => {
-  await storageService.balances.insertAll(balances.map(balanceMapper.toDB));
-  return balances;
-});
-
-const removeBalancesFx = createEffect(async (ids: string[]) => {
+const removeBalancesFx = createEffect(async (ids: ID[]): Promise<void> => {
   await storageService.balances.deleteAll(ids);
 });
 
-const populateFx = createEffect(async (): Promise<Balance[]> => {
-  return storageService.balances.readAll().then((balances) => balances.map(balanceMapper.fromDB));
+sample({
+  clock: balancesSet,
+  source: $balancesBuffer,
+  fn: balanceUtils.getMergeBalances,
+  target: $balancesBuffer,
 });
 
 sample({
-  clock: bufferedUpdate,
-  fn(buffer) {
-    return buffer.reduce(balanceUtils.getMergeBalances, []);
-  },
+  clock: balancesUpdated,
+  source: $balancesBuffer,
+  filter: (_, newBalances) => newBalances.length > 0,
+  fn: balanceUtils.getMergeBalances,
+  target: $balancesBuffer,
+});
+
+throttle({
+  source: $balancesBuffer,
+  timeout: SAVE_TIMEOUT,
   target: insertBalancesFx,
 });
 
-sample({
-  clock: insertBalancesFx.doneData,
-  source: $balances,
-  fn: balanceUtils.getMergeBalances,
+throttle({
+  source: $balancesBuffer,
+  timeout: BUFFER_DELAY,
   target: $balances,
 });
 
@@ -54,16 +60,8 @@ sample({
   target: removeBalancesFx,
 });
 
-sample({
-  clock: populateFx.doneData,
-  target: $balances,
-});
-
 export const balanceModel = {
   $balances,
-
-  populate: populateFx,
-
   events: {
     balancesSet,
     balancesUpdated,

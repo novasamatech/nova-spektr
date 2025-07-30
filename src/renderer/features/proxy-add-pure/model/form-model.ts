@@ -82,7 +82,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               balances,
               value.accountId,
               form.chain.chainId,
-              getNativeAsset(form.chain.assets).assetId,
+              getNativeAsset(form.chain.assets).assetId.toString(),
             );
             const proxyDepositBN = new BN(proxyDeposit);
             const feeBN = new BN(fee);
@@ -124,7 +124,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               balances,
               value.accountId,
               form.chain.chainId,
-              getNativeAsset(form.chain.assets).assetId,
+              getNativeAsset(form.chain.assets).assetId.toString(),
             );
 
             const hasEnoughTokens = new BN(multisigDeposit)

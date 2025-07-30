@@ -67,9 +67,11 @@ const rootValidateFx = createEffect(
           network: { chain: chain, asset: asset },
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
             ),
-            balance: transferableAmount(balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId)),
+            balance: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
+            ),
           },
         } as { network: NetworkStore | null; balance: BalanceMap },
       },
@@ -91,9 +93,11 @@ const rootValidateFx = createEffect(
           isXcm: Boolean(transaction.args.xcmData),
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
             ),
-            balance: transferableAmount(balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId)),
+            balance: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
+            ),
           },
         },
       },
@@ -115,9 +119,11 @@ const rootValidateFx = createEffect(
           isXcm: Boolean(transaction.args.xcmData),
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
             ),
-            balance: transferableAmount(balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId)),
+            balance: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
+            ),
           },
         } as TransferAmountFeeStore,
       },
@@ -139,9 +145,11 @@ const rootValidateFx = createEffect(
           isXcm: Boolean(transaction.args.xcmData),
           balance: {
             native: transferableAmount(
-              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId),
+              balanceUtils.getBalance(balances, accountId, chain.chainId, chain.assets[0].assetId.toFixed()),
             ),
-            balance: transferableAmount(balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId)),
+            balance: transferableAmount(
+              balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toFixed()),
+            ),
           },
         } as TransferAmountFeeStore,
       },

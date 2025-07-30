@@ -25,8 +25,7 @@ import {
   useStakingRewards,
   validatorsService,
 } from '@/entities/staking';
-import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { accountUtils, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { WalletDetails } from '@/features/wallet-details';
 import {
@@ -94,7 +93,7 @@ export const Staking = () => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const activeWallet = useUnit(walletModel.$activeWallet);
 
   const { changeClient } = useGraphql();
 

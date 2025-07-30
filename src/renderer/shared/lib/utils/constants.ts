@@ -27,7 +27,6 @@ export const TEST_ACCOUNTS: AccountId[] = [
 ];
 
 export const TEST_ADDRESS = '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ';
-export const TEST_EVM_ADDRESS = '0xaE55781508185aEF188D34c69C0eb03B51a1aD0b';
 export const TEST_SUBSTRATE_ADDRESS = '5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9';
 
 export const TEST_CHAIN_ID = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';

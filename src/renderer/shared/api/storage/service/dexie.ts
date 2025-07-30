@@ -122,9 +122,7 @@ class DexieStorage extends Dexie {
 
     this.version(32).upgrade(migrateEVMAccountsCryptoType);
 
-    this.version(33).upgrade((t) => t.table('balances').clear());
-
-    this.version(34).upgrade(removeDeprecatedProxiedAccounts);
+    this.version(33).upgrade(removeDeprecatedProxiedAccounts);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');

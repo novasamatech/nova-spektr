@@ -10,14 +10,13 @@ import {
   getNativeAsset,
   includesMultiple,
   nonNullable,
-  nullable,
   performSearch,
   toAddress,
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
 import { Button, CaptionText, Icon, Identicon, InputHint } from '@/shared/ui';
-import { AccountSelect, Address, SignatorySelect } from '@/shared/ui-entities';
+import { Address, SignatorySelect } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -25,6 +24,7 @@ import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, DeliveryFeeAlert, WalletIcon, accountUtils, walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';
@@ -57,8 +57,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
     <div className="px-5 pb-4">
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <XcmChainSelector />
-        <InitiatorSelector />
-        <SignatorySelector />
+        <Signatories />
         <Destination />
         <Amount />
       </form>
@@ -75,55 +74,14 @@ export const TransferForm = ({ onGoBack }: Props) => {
   );
 };
 
-const InitiatorSelector = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { initiator },
-  } = useForm(formModel.form);
-
-  const initiators = useUnit(formModel.$initiators);
-  const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balances);
-
-  if (initiators.length < 2) {
-    return null;
-  }
-
-  if (!network) {
-    return null;
-  }
-
-  const asset = getNativeAsset(network.chain.assets);
-
-  return (
-    <Field text={t('operation.selectAccountLabel')}>
-      <AccountSelect
-        value={initiator.value}
-        options={initiators}
-        placeholder={t('operation.selectAccount')}
-        invalid={initiator.hasError}
-        chain={network.chain}
-        asset={asset}
-        balances={balances}
-        balanceType="transferable"
-        onChange={initiator.onChange}
-      />
-      <InputHint variant="error" active={initiator.hasError}>
-        {t(initiator.errorMessage)}
-      </InputHint>
-    </Field>
-  );
-};
-
-const SignatorySelector = () => {
+const Signatories = () => {
   const { t } = useI18n();
 
   const {
     fields: { signatory },
   } = useForm(formModel.form);
 
-  const initiator = useUnit(formModel.form.fields.initiator.$value);
+  const initiator = useUnit(formModel.$initiator);
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
   const balances = useUnit(balanceModel.$balances);
@@ -139,7 +97,7 @@ const SignatorySelector = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.asset.assetId,
+        network.asset.assetId.toString(),
       );
       return { account: signatory, balance: withdrawableAmount(balance) };
     });
@@ -216,12 +174,13 @@ const Destination = () => {
   const { t } = useI18n();
 
   const {
-    fields: { initiator, destination, destinationChain },
+    fields: { destination, destinationChain },
   } = useForm(formModel.form);
 
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
-  const accountsList = useUnit(walletModel.$availableAccounts);
+  const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
+  const accountsList = useUnit(accounts.$list);
   const network = useUnit(formModel.$networkStore);
 
   const [query, setQuery] = useState('');
@@ -243,13 +202,13 @@ const Destination = () => {
   }, [chain]);
 
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
-    if (nullable(chain)) return [];
+    if (validateAddress(query, chain)) return [];
 
     const filteredAccounts = accountsList.filter((account) => {
-      const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
+      const isChainMatch = chain ? accountService.isAccountAvailableOnChain(account, chain) : true;
       const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
       const queryPass = includesMultiple([account.name, address], query);
-      const isMyself = nonNullable(initiator.value) && initiator.value.accountId === account.accountId;
+      const isMyself = selectedAccounts.find((a) => a.accountId === account.accountId);
 
       return isChainMatch && queryPass && !isMyself;
     });
@@ -287,7 +246,7 @@ const Destination = () => {
     }
 
     return ownAccountOptions;
-  }, [query, chain, wallets, accountsList]);
+  }, [query, chain, wallets]);
 
   const contactOptions = useMemo<ComboboxGroup[]>(() => {
     if (validateAddress(query, chain)) return [];
@@ -408,8 +367,8 @@ const Amount = () => {
 const FeeSection = () => {
   const { t } = useI18n();
 
-  const initiator = useUnit(formModel.form.fields.initiator.$value);
   const api = useUnit(formModel.$api);
+  const initiator = useUnit(formModel.$initiator);
   const network = useUnit(formModel.$networkStore);
   const coreTx = useUnit(formModel.$coreTx);
   const isXcm = useUnit(formModel.$isXcm);
@@ -463,7 +422,7 @@ const AlertForDeliveryFee = () => {
   const {
     fields: { amount },
   } = useForm(formModel.form);
-  const initiator = useUnit(formModel.form.fields.initiator.$value);
+  const initiator = useUnit(formModel.$initiator);
 
   const deliveryFee = useUnit(formModel.$deliveryFee);
   const initiatorBalance = useUnit(formModel.$initiatorBalance);

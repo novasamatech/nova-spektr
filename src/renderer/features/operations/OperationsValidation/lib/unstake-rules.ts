@@ -1,8 +1,8 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
+import { type Account } from '@/shared/core';
 import { formatAmount } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
 import {
   type AmountFeeStore,
   type Config,
@@ -43,7 +43,7 @@ export const UnstakeRules = {
       name: 'noSignatorySelected',
       errorText: 'transfer.noSignatoryError',
       source,
-      validator: (signatory: AnyAccount, _: any, isMultisig: boolean) => {
+      validator: (signatory: Account, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
 
         return Object.keys(signatory).length > 0;
@@ -98,7 +98,7 @@ export const UnstakeRules = {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(value);
 
-        return form.shards.every((_: AnyAccount, index: number) => {
+        return form.shards.every((_: Account, index: number) => {
           return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));
         });
       },

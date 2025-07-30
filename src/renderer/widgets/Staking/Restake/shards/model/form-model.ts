@@ -282,7 +282,7 @@ const $proxyWallet = combine(
 const $accounts = combine(
   {
     network: $networkStore,
-    wallet: walletSelect.$selectedWallet,
+    wallet: walletModel.$activeWallet,
     shards: $shards,
     staking: $staking,
     balances: balanceModel.$balances,
@@ -293,7 +293,7 @@ const $accounts = combine(
     const { chain, asset } = network;
 
     return shards.map((shard) => {
-      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId);
+      const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId.toString());
       const address = toAddress(shard.accountId, { prefix: chain.addressPrefix });
       const activeStake = staking[address]?.active || ZERO_BALANCE;
 
@@ -527,7 +527,7 @@ sample({
       balances,
       signatory.accountId,
       network!.chain.chainId,
-      network!.asset.assetId,
+      network!.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);
@@ -579,7 +579,7 @@ sample({
       balances,
       proxyAccounts[0].accountId,
       network!.chain.chainId,
-      network!.asset.assetId,
+      network!.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);

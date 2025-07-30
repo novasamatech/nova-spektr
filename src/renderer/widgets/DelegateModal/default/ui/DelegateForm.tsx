@@ -88,7 +88,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         network.chain.chainId,
-        network.asset.assetId,
+        network.asset.assetId.toString(),
       );
       return { account: signatory, balance: transferableAmount(balance) };
     });

@@ -34,7 +34,7 @@ const $chainAccounts = combine(
     return filteredAccount.map((account) => ({
       ...account,
       balance: withdrawableAmountBN(
-        balanceUtils.getBalance(balances, account.accountId, chain.chainId, chain.assets[0]?.assetId),
+        balanceUtils.getBalance(balances, account.accountId, chain.chainId, chain.assets[0]?.assetId.toString()),
       ),
     }));
   },

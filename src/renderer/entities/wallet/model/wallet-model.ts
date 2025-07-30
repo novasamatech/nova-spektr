@@ -168,12 +168,6 @@ const updateWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
   return wallet;
 });
 
-const updateWalletsFx = createEffect(async (wallets: Wallet[]): Promise<Wallet[]> => {
-  await storageService.wallets.updateAll(wallets.map(({ accounts: _, ...rest }) => rest));
-
-  return wallets;
-});
-
 const restoreWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
   await storageService.wallets.update(wallet.id, { isHidden: false });
 
@@ -346,23 +340,6 @@ sample({
   target: updateWallet,
 });
 
-sample({
-  clock: updateWalletsFx.doneData,
-  source: $rawWallets,
-  fn: (wallets, updated) => {
-    const updatedMap = updated.reduce<Record<string, Wallet>>((acc, w) => {
-      acc[w.id] = w;
-      return acc;
-    }, {});
-
-    return wallets.map((wallet) => {
-      const u = updatedMap[wallet.id];
-      return u ? { ...wallet, ...u } : wallet;
-    });
-  },
-  target: $rawWallets,
-});
-
 export const walletModel = {
   $wallets,
   $allWallets: readonly($allWallets),
@@ -380,7 +357,6 @@ export const walletModel = {
 
   createWallet: createWalletFx,
   createWallets: createWalletsFx,
-  updateWallets: updateWalletsFx,
   updateWallet: updateWalletFx,
   populate: fetchAllWalletsFx,
   walletHidden: walletHiddenFx,

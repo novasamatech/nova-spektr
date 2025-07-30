@@ -1,15 +1,14 @@
 import { type BN } from '@polkadot/util';
 import { type ReactNode } from 'react';
 
-import { type Asset, type Chain } from '@/shared/core';
+import { type Account, type Asset, type Chain } from '@/shared/core';
 import { cnTw, formatBalance, toAddress } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
 import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
 
-type AccountOption = { account: AnyAccount; balance?: BN; title?: string };
+type AccountOption = { account: Account; balance?: BN; title?: string };
 
 type Props = {
   isOpen: boolean;
@@ -19,7 +18,7 @@ type Props = {
   asset: Asset;
   options: AccountOption[];
   onToggle: (open: boolean) => void;
-  onSelect: (account: AnyAccount) => void;
+  onSelect: (account: Account) => void;
 };
 
 export const AccountSelectModal = ({
@@ -55,12 +54,12 @@ export const AccountSelectModal = ({
 };
 
 type ItemProps = {
-  account: AnyAccount;
+  account: Account;
   title?: string;
   balance?: BN;
   asset: Asset;
   chain: Chain;
-  onSelect: (value: AnyAccount) => void;
+  onSelect: (value: Account) => void;
 };
 
 const AccountItem = ({ asset, account, chain, title, balance, onSelect }: ItemProps) => {

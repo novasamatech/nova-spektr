@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import {
+  type Account as AccountType,
   type Address,
   type Chain,
   type MultisigAccount,
@@ -18,7 +19,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { type AnyAccount, type MultisigOperation, identity } from '@/domains/network';
+import { type MultisigOperation, identity } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { TracksDetails, voteTransactionService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
@@ -36,12 +37,11 @@ import {
   isXcmTransaction,
 } from '@/entities/transaction';
 import { WalletIcon, walletModel } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {
   operation: MultisigOperation;
   account?: MultisigAccount;
-  signatory?: AnyAccount;
+  signatory?: AccountType;
   chain: Chain;
   api: ApiPromise;
 };
@@ -49,7 +49,7 @@ type Props = {
 export const Details = ({ api, operation, account, chain, signatory }: Props) => {
   const { t } = useI18n();
 
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const activeWallet = useUnit(walletModel.$activeWallet);
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
 
@@ -119,13 +119,13 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
   const selectedValidators: Validator[] =
     allValidators.filter(v => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
 
-  const proxied = useMemo((): { wallet: Wallet; account: AnyAccount } | undefined => {
+  const proxied = useMemo((): { wallet: Wallet; account: AccountType } | undefined => {
     if (!transaction || !isProxyTransaction(transaction)) {
       return undefined;
     }
 
     const proxiedAccountId = toAccountId(transaction.args.real);
-    const { wallet, account } = wallets.reduce<{ wallet?: Wallet; account?: AnyAccount }>(
+    const { wallet, account } = wallets.reduce<{ wallet?: Wallet; account?: AccountType }>(
       (acc, wallet) => {
         if (acc.wallet) {
           return acc;

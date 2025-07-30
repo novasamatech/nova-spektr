@@ -2,13 +2,19 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Address, type Asset, type Chain, type VaultBaseAccount, type VaultShardAccount } from '@/shared/core';
+import {
+  type Account,
+  type Address,
+  type Asset,
+  type Chain,
+  type VaultBaseAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, Icon } from '@/shared/ui';
 import { Address as AddressComponent } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
 import { useStakingData } from '@/entities/staking';
 import { type NominatorInfo } from '../lib/types';
 
@@ -42,7 +48,7 @@ export const NominatorsList = ({
   const { t } = useI18n();
   const { getNextUnstakingEra, hasRedeem } = useStakingData();
 
-  const getUnstakeBadge = (stake: NominatorInfo<AnyAccount>) => {
+  const getUnstakeBadge = (stake: NominatorInfo<Account>) => {
     const nextUnstakingEra = getNextUnstakingEra(stake.unlocking, era);
     if (!nextUnstakingEra) return;
 
@@ -63,7 +69,7 @@ export const NominatorsList = ({
     );
   };
 
-  const getRedeemBadge = (stake: NominatorInfo<AnyAccount>) => {
+  const getRedeemBadge = (stake: NominatorInfo<Account>) => {
     if (!hasRedeem(stake.unlocking, era)) return;
 
     return (
@@ -81,7 +87,7 @@ export const NominatorsList = ({
     );
   };
 
-  const getContent = (stake: NominatorInfo<AnyAccount>): ReactNode => (
+  const getContent = (stake: NominatorInfo<Account>): ReactNode => (
     <>
       <AddressComponent title={stake.account.name} variant="truncate" address={stake.address} showIcon iconSize={20} />
       <div className="ml-auto">{getUnstakeBadge(stake) || getRedeemBadge(stake)}</div>

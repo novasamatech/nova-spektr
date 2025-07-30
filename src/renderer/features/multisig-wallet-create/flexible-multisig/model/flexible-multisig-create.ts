@@ -16,13 +16,12 @@ import {
   toAccountId,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createFeeCalculator, createSignatoriesStore } from '@/shared/transactions';
+import { createComplexTxStore, createFeeCalculator } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -30,6 +29,7 @@ import { confirmModel } from './confirm-model';
 import { flexibleMultisigFeature } from './feature';
 import { formModel } from './form-model';
 import { signatoryModel } from './signatory-model';
+import { walletProviderModel } from './wallet-provider-model';
 
 const $api = combine(flexibleMultisigFeature.state, (state): ApiPromise | null => {
   if (state.status !== 'running') return null;
@@ -47,9 +47,7 @@ const $existentialDeposit = createStore(BN_ZERO).reset(flow.close);
 const $error = createStore('').reset(flow.close);
 
 const $signer = restore(signerSelected, null).reset(flow.close);
-
-const $initiator = createStore<AnyAccount | null>(null).reset(flow.close);
-const $initiatorWallet = createStore<Wallet | null>(null).reset(flow.close);
+const $signerWallet = createStore<Wallet | null>(null).reset(flow.close);
 
 sample({
   clock: signatoryModel.$ownedSignatoriesWallets,
@@ -60,24 +58,11 @@ sample({
 
     return wallets.find(w => w.id.toString() === ownSignatory.walletId) ?? null;
   },
-  target: $initiatorWallet,
-});
-
-const $signatories = createSignatoriesStore({
-  chain: formModel.$chain,
-  initiator: $initiator,
-  accounts: accounts.$list,
-});
-
-// in the current implementation, the first signatory is always the signer
-sample({
-  clock: $signatories,
-  fn: signatories => (signatories.length >= 1 ? signatories[0] : null),
-  target: $signer,
+  target: $signerWallet,
 });
 
 sample({
-  clock: $initiatorWallet,
+  clock: $signerWallet,
   source: { accounts: accounts.$list, chain: formModel.$chain },
   filter: ({ chain }) => nonNullable(chain),
   fn: ({ accounts, chain }, wallet) => {
@@ -85,11 +70,11 @@ sample({
 
     return accounts.find(a => a.walletId === wallet!.id && accountService.isAccountAvailableOnChain(a, chain!)) ?? null;
   },
-  target: $initiator,
+  target: $signer,
 });
 
 sample({
-  clock: $initiatorWallet,
+  clock: $signerWallet,
   filter: nonNullable,
   fn: wallet => [wallet!],
   target: signatoryModel.events.getSignatoriesBalance,
@@ -121,10 +106,10 @@ sample({
   target: $existentialDeposit,
 });
 
-const $proxyDeposit = combine($api, api => (api && proxyService.getProxyDeposit(api, '0', 1)) ?? null);
+const $proxyDeposit = combine($api, api => (api && proxyService.getProxyDeposit(api, '0', 1)) || '0');
 
 const $totalDeposit = combine($existentialDeposit, $proxyDeposit, (existentialDeposit, proxyDeposit) => {
-  if (nullable(proxyDeposit)) return null;
+  if (!existentialDeposit) return null;
 
   return existentialDeposit.add(new BN(proxyDeposit));
 });
@@ -169,6 +154,7 @@ const $fakeFinalTx = combine(
     isConnected: formModel.$isChainConnected,
     api: $api,
     signatories: signatoryModel.$signatories,
+    signer: $signer,
     threshold: formModel.form.fields.threshold.$value,
     totalDeposit: $totalDeposit,
   },
@@ -186,7 +172,7 @@ const $fakeFinalTx = combine(
       multisigAccountId: TEST_ACCOUNTS[0],
       threshold: threshold || 2,
       proxyAccountId: TEST_ACCOUNTS[1],
-      proxyDeposit: totalDeposit?.toString() || '0',
+      proxyDeposit: totalDeposit?.toString() ?? '0',
     });
   },
 );
@@ -215,7 +201,7 @@ const $fee = combine($proxyFee, $multisigFee, (proxyFee, multisigFee) => multisi
 
 const { $tx, $route } = createComplexTxStore({
   api: $api,
-  initiator: $initiator,
+  initiator: $signer,
   signatory: $signer,
   accounts: accounts.$list,
   chain: formModel.$chain,
@@ -232,7 +218,7 @@ const $signerBalance = combine(
     if (!signer || !chain) return null;
     const asset = getNativeAsset(chain.assets);
 
-    return balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId) ?? null;
+    return balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId.toString()) ?? null;
   },
 );
 
@@ -243,9 +229,9 @@ const $isEnoughBalance = combine(
     signerBalance: $signerBalance,
   },
   ({ fee, totalDeposit, signerBalance }) => {
-    if (nullable(signerBalance) || nullable(totalDeposit)) return false;
+    if (!signerBalance || !fee || !totalDeposit) return false;
 
-    return fee.add(totalDeposit).lte(withdrawableAmountBN(signerBalance));
+    return new BN(fee).add(new BN(totalDeposit)).lte(withdrawableAmountBN(signerBalance));
   },
 );
 
@@ -255,25 +241,18 @@ const formSubmitted = sample({
     tx: $tx,
     coreTx: $coreTx,
     route: $route,
-    initiator: $initiator,
-    signatory: $signer,
+    signer: $signer,
     chain: formModel.$chain,
   },
-}).filterMap(({ chain, tx, coreTx, route, initiator, signatory }) => {
-  if (
-    nonNullable(coreTx) &&
-    nonNullable(chain) &&
-    nonNullable(initiator) &&
-    nonNullable(signatory) &&
-    nonNullable(tx)
-  ) {
+}).filterMap(({ chain, tx, coreTx, route, signer }) => {
+  if (nonNullable(coreTx) && nonNullable(chain) && nonNullable(signer) && nonNullable(tx)) {
     return [
       {
         tx,
         coreTx,
         route,
-        signatory,
-        initiator,
+        signatory: signer,
+        initiator: signer,
         chain,
       },
     ];
@@ -299,17 +278,15 @@ sample({
   source: {
     chain: formModel.$chain,
     tx: $tx,
-    initiator: $initiator,
     signer: $signer,
   },
-  filter: ({ chain, tx, initiator, signer }) =>
-    nonNullable(chain) && nonNullable(tx) && nonNullable(initiator) && nonNullable(signer),
-  fn: ({ chain, tx, initiator, signer }) => ({
+  filter: ({ chain, tx, signer }) => nonNullable(chain) && nonNullable(tx) && nonNullable(signer),
+  fn: ({ chain, tx, signer }) => ({
     event: {
       signingPayloads: [
         {
           chain: chain!,
-          account: initiator!,
+          account: signer!,
           transaction: tx!,
           signatory: signer,
         },
@@ -329,21 +306,17 @@ sample({
     chain: formModel.$chain,
     coreTx: $coreTx,
     tx: $tx,
-    initiator: $initiator,
     signer: $signer,
   },
-  filter: ({ chain, coreTx, tx, initiator, signer }) => {
-    return (
-      nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(initiator) && nonNullable(signer)
-    );
+  filter: ({ chain, coreTx, tx, signer }) => {
+    return nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(signer);
   },
-  fn: ({ coreTx, tx, chain, initiator, signer }, signParams) => {
+  fn: ({ coreTx, tx, chain, signer }, signParams) => {
     return {
       event: {
         ...signParams,
         chain: chain!,
-        account: initiator!,
-        signatory: signer!,
+        account: signer!,
         coreTxs: [coreTx!],
         wrappedTxs: [tx!],
       },
@@ -410,8 +383,7 @@ sample({
 
 sample({
   clock: walletModel.events.walletRestoredSuccess,
-  fn: ({ result: wallet }) => wallet.id,
-  target: walletSelect.select,
+  target: walletProviderModel.events.completed,
 });
 
 sample({
@@ -434,9 +406,8 @@ export const flexibleMultisigModel = {
   $error,
   $step,
   $api,
-  $initiator,
   $signer,
-  $initiatorWallet,
+  $signerWallet,
   $signerBalance,
   $asset,
 

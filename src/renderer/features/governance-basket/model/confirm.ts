@@ -92,7 +92,7 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
   const asset = chain.assets[0];
 
   const transferable = transferableAmount(
-    balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
+    balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
   );
 
   const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
@@ -137,7 +137,7 @@ const prepareEditDelegationDataFx = createEffect(
     const asset = chain.assets[0];
 
     const transferable = transferableAmount(
-      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
+      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
     );
 
     const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
@@ -190,7 +190,7 @@ const prepareRevokeDelegationDataFx = createEffect(
     const asset = chain.assets[0];
 
     const transferable = transferableAmount(
-      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
+      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
     );
     const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
       const lock = data[transaction.coreTx.accountId];

@@ -5,12 +5,12 @@ import { TEST_IDS } from '@/shared/constants';
 import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, CaptionText, FootnoteText, Icon, Plate } from '@/shared/ui';
-import { AssetIcon, ChainIcon } from '@/shared/ui-entities';
+import { AssetIcon } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { AssetLinks } from '@/entities/asset';
+import { ChainIcon } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { TokenPrice } from '@/entities/price';
-import { walletSelect } from '@/aggregates/wallet-select';
 
 import { AssembledAssetAmount } from './AssembledAssetAmount';
 
@@ -20,8 +20,6 @@ type Props = {
 
 export const TokenBalance = memo(({ asset }: Props) => {
   const { t } = useI18n();
-  const wallet = useUnit(walletSelect.$selectedWallet);
-
   const chain = asset.chains[0];
 
   const chains = useUnit(networkModel.$chains);
@@ -34,7 +32,7 @@ export const TokenBalance = memo(({ asset }: Props) => {
           <div className="flex flex-col gap-y-0.5">
             <BodyText>{chain.assetSymbol}</BodyText>
             <div className="mr-3 flex items-center gap-x-1.5">
-              <ChainIcon chain={chains[chain.chainId]} size={18} />
+              <ChainIcon src={chains[chain.chainId].icon} name={chain.name} size={18} />
               <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
               {chain.balance?.verified && (
                 <div className="flex items-center gap-x-2 text-text-warning">
@@ -60,7 +58,7 @@ export const TokenBalance = memo(({ asset }: Props) => {
         className="text-text-primar text-right"
       />
       <AssembledAssetAmount asset={asset} balance={chain.balance} />
-      <AssetLinks assetId={asset.chains[0].assetId} chainId={chain.chainId} wallet={wallet} />
+      <AssetLinks assetId={asset.chains[0].assetId} chainId={chain.chainId} />
     </Plate>
   );
 });

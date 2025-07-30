@@ -1,22 +1,19 @@
-import { useUnit } from 'effector-react';
 import { type ReactNode, memo } from 'react';
 
-import { type AssetByChains } from '@/shared/core';
+import { type AssetByChains, type Chain } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { HelpText } from '@/shared/ui';
-import { ChainIcon } from '@/shared/ui-entities';
-import { networkModel } from '@/entities/network';
+import { ChainIcon } from '@/entities/chain';
 
 const MAX_VISIBLE_CHAINS = 3;
 const MAX_VISIBLE_CHAINS_WHEN_COLLAPSED = 2;
 
 type Props = {
   assetChains: AssetByChains['chains'];
+  chains: Record<`0x${string}`, Chain>;
 };
 
-export const ChainsList = memo(({ assetChains }: Props) => {
-  const chains = useUnit(networkModel.$chains);
-
+export const ChainsList = memo(({ assetChains, chains }: Props) => {
   const shouldRenderCounter = assetChains.length > MAX_VISIBLE_CHAINS;
   const visibleChains = shouldRenderCounter ? MAX_VISIBLE_CHAINS_WHEN_COLLAPSED : assetChains.length;
   const counter = assetChains.length - MAX_VISIBLE_CHAINS_WHEN_COLLAPSED;
@@ -29,7 +26,12 @@ export const ChainsList = memo(({ assetChains }: Props) => {
     const chain = assetChains[index];
     if (nullable(chain)) continue;
     chainNodes[index] = (
-      <ChainIcon key={`${chain.chainId}-${chain.assetSymbol}`} chain={chains[chain.chainId]} size={18} />
+      <ChainIcon
+        key={`${chain.chainId}-${chain.assetSymbol}`}
+        src={chains[chain.chainId].icon}
+        name={chain.name}
+        size={18}
+      />
     );
   }
 

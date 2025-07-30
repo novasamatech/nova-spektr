@@ -3,19 +3,22 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
-import { Alert, Button, InputHint } from '@/shared/ui';
-import { AccountSelect, ChainSelect, SignatorySelect } from '@/shared/ui-entities';
-import { Field } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
+import { getNativeAsset, toAddress, toShortAddress, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
+import { Alert, Button, InputHint, Select } from '@/shared/ui';
+import { Address, AssetBalance, SignatorySelect } from '@/shared/ui-entities';
+import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { ChainTitle } from '@/entities/chain';
 import { PureProxyPopover } from '@/entities/proxy';
 import { FeeWithLabel, MultisigDepositFee, ProxyDeposit, ProxyDepositLabel } from '@/entities/transaction';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
 
-export const AddPureProxiedForm = () => {
+type Props = {
+  onGoBack: () => void;
+};
+export const AddPureProxiedForm = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const { submit } = useForm(formModel.form);
@@ -37,7 +40,7 @@ export const AddPureProxiedForm = () => {
         <FeeSection />
         <FeeError />
       </div>
-      <ButtonsSection />
+      <ButtonsSection onGoBack={onGoBack} />
     </div>
   );
 };
@@ -51,18 +54,39 @@ const NetworkSelector = () => {
 
   const availableChains = useUnit(formModel.$availableChains);
 
+  if (!chain.value) return null;
+
+  const options = useMemo(
+    () =>
+      availableChains.map((chain) => ({
+        id: chain.chainId,
+        value: chain,
+        element: (
+          <ChainTitle
+            className="overflow-hidden"
+            fontClass="text-text-primary truncate"
+            key={chain.chainId}
+            chain={chain}
+          />
+        ),
+      })),
+    [availableChains],
+  );
+
   return (
-    <Field text={t('proxy.addProxy.networkLabel')}>
-      <ChainSelect
+    <div className="flex flex-col gap-y-2">
+      <Select
+        label={t('proxy.addProxy.networkLabel')}
         placeholder={t('proxy.addProxy.networkPlaceholder')}
-        value={chain.value}
-        options={availableChains}
-        onChange={chain.onChange}
+        selectedId={chain.value.chainId}
+        invalid={chain.hasError}
+        options={options}
+        onChange={({ value }) => chain.onChange(value)}
       />
       <InputHint variant="error" active={chain.hasError}>
         {t(chain.errorMessage)}
       </InputHint>
-    </Field>
+    </div>
   );
 };
 
@@ -78,25 +102,56 @@ const AccountSelector = () => {
   const balances = useUnit(balanceModel.$balances);
 
   const chainValue = chain.value;
-  const asset = getNativeAsset(chainValue?.assets ?? []);
 
-  if (accounts.length < 2 || walletUtils.isFlexibleMultisig(wallet) || !chainValue) {
+  if (accounts.length <= 1 || walletUtils.isFlexibleMultisig(wallet) || !chainValue || !initiator.value) {
     return null;
   }
 
+  const options = useMemo(
+    () =>
+      accounts.map((account) => {
+        const isShard = accountUtils.isVaultShardAccount(account);
+        const address = toAddress(account.accountId, { prefix: chainValue.addressPrefix });
+        const id = accountService.uniqId(account);
+
+        const balance = balanceUtils.getBalance(
+          balances,
+          account.accountId,
+          chainValue.chainId,
+          getNativeAsset(chainValue.assets).assetId.toString(),
+        );
+
+        return {
+          id,
+          value: account,
+          element: (
+            <div className="flex w-full justify-between" key={id}>
+              <Address
+                showIcon
+                canCopy={false}
+                iconSize={20}
+                variant="truncate"
+                address={address}
+                title={isShard ? toShortAddress(address, 16) : account.name}
+              />
+              <AssetBalance value={transferableAmount(balance)} asset={getNativeAsset(chainValue.assets)} />
+            </div>
+          ),
+        };
+      }),
+    [accounts, balances, chain.value],
+  );
+
   return (
-    <Field text={t('proxy.addProxy.accountLabel')}>
-      <AccountSelect
+    <div className="flex flex-col gap-y-2">
+      <Select
+        label={t('proxy.addProxy.accountLabel')}
         placeholder={t('proxy.addProxy.accountPlaceholder')}
-        options={accounts}
-        value={initiator.value}
-        asset={asset}
-        chain={chainValue}
-        balances={balances}
-        balanceType="transferable"
-        onChange={initiator.onChange}
+        selectedId={accountService.uniqId(initiator.value)}
+        options={options}
+        onChange={({ value }) => initiator.onChange(value)}
       />
-    </Field>
+    </div>
   );
 };
 
@@ -122,7 +177,7 @@ const Signatories = () => {
         balances,
         signatory.accountId,
         chainValue.chainId,
-        getNativeAsset(chainValue.assets).assetId,
+        getNativeAsset(chainValue.assets).assetId.toString(),
       );
       return { account: signatory, balance: withdrawableAmount(balance) };
     });
@@ -196,13 +251,16 @@ const FeeError = () => {
   );
 };
 
-const ButtonsSection = () => {
+const ButtonsSection = ({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
-    <div className="mt-4 flex items-center justify-end">
+    <div className="mt-4 flex items-center justify-between">
+      <Button variant="text" onClick={onGoBack}>
+        {t('operation.goBackButton')}
+      </Button>
       <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
         {t('operation.continueButton')}
       </Button>

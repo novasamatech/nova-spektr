@@ -6,8 +6,7 @@ import { AccountExplorers } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { WalletIcon } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { WalletIcon, walletModel } from '@/entities/wallet';
 
 type Props = {
   operation: MultisigOperation;
@@ -16,8 +15,8 @@ type Props = {
 export const OperationDetails = ({ operation }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
-  const activeAccounts = useUnit(walletSelect.$selectedAccounts);
+  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeAccounts = useUnit(walletModel.$activeAccounts);
 
   const accountId = activeAccounts.at(0)?.accountId;
   const chain = chains[operation.chainId];

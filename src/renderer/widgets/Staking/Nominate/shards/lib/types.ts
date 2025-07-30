@@ -1,5 +1,4 @@
-import { type Chain, type Validator, type Wallet } from '@/shared/core';
-import { type AnyAccount } from '@/domains/network';
+import { type Account, type Chain, type Validator, type Wallet } from '@/shared/core';
 
 export const enum Step {
   NONE,
@@ -13,13 +12,13 @@ export const enum Step {
 
 export type WalletData = {
   wallet: Wallet;
-  shards: AnyAccount[];
+  shards: Account[];
   chain: Chain;
 };
 
 export type NominateData = {
-  shards: AnyAccount[];
-  signatory: AnyAccount | null;
+  shards: Account[];
+  signatory: Account | null;
   validators: Validator[];
 };
 

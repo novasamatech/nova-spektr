@@ -315,7 +315,7 @@ sample({
     return {
       event: shards.map((shard, index) => {
         const transferable = transferableAmount(
-          balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId),
+          balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId.toString()),
         );
 
         return {
@@ -438,7 +438,7 @@ sample({
   }),
   source: {
     network: networkSelectorModel.$network,
-    wallet: walletSelect.$selectedWallet,
+    wallet: walletModel.$activeWallet,
   },
   filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
   fn: ({ network, wallet }) => ({

@@ -1,16 +1,15 @@
-import { type Chain } from '@/shared/core';
+import { type Account, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { BaseModal, Icon } from '@/shared/ui';
-import { type AnyAccount } from '@/domains/network';
 import { accountUtils } from '../../lib/account-utils';
 import { AccountAddress } from '../AccountAddress/AccountAddress';
 
 type Props = {
   isOpen: boolean;
   chain: Chain;
-  accounts: AnyAccount[];
-  onSelect: (account: AnyAccount) => void;
+  accounts: Account[];
+  onSelect: (account: Account) => void;
   onClose: () => void;
 };
 

@@ -5,8 +5,7 @@ import uniq from 'lodash/uniq';
 import { type DelegationBalanceMap, type DelegationTracksMap } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
-import { permissionUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { permissionUtils, walletModel } from '@/entities/wallet';
 import { networkSelectorModel } from '../model/networkSelector';
 
 import { votingAggregate } from './voting';
@@ -103,7 +102,7 @@ const $activeWalletDelegatedTracks = $activeTracks.map((tracks) => {
 
 const $hasDelegations = $activeDelegations.map((delegations) => Object.values(delegations).length > 0);
 
-const $canDelegate = walletSelect.$selectedWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
+const $canDelegate = walletModel.$activeWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
 
 export const delegationAggregate = {
   $isLoading: votingAggregate.$isLoading,

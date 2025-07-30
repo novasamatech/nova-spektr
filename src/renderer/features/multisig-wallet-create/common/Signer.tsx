@@ -22,7 +22,7 @@ export const Signer = ({ account, wallet, onSubmit, chain }: Props) => {
   const balance = useBalance({
     accountId: account.accountId,
     chainId: chain.chainId,
-    assetId: asset.assetId,
+    assetId: asset.assetId.toString(),
   });
 
   return (

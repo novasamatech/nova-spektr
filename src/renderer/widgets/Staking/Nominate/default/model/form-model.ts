@@ -114,7 +114,7 @@ const $availableBalance = combine(
 
     const { chain, asset } = network;
 
-    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
+    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId.toString());
 
     return stakeableAmount(balance);
   },
@@ -151,7 +151,7 @@ const $signatoryBalance = combine(
       balances,
       signatory.accountId,
       network.chain.chainId,
-      network.asset.assetId,
+      network.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);
@@ -227,7 +227,7 @@ const $proxyBalance = combine(
       balances,
       proxyAccount.accountId,
       network.chain.chainId,
-      network.asset.assetId,
+      network.asset.assetId.toString(),
     );
 
     return transferableAmount(balance);

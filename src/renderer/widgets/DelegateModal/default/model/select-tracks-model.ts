@@ -84,7 +84,7 @@ const $accountsBalances = combine(
         balances,
         account.accountId,
         network!.chain.chainId,
-        network!.asset.assetId,
+        network!.asset.assetId.toString(),
       );
 
       acc[account.accountId] = transferableAmount(balance);
