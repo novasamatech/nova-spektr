@@ -46,7 +46,7 @@ export const SelectSignatoriesThreshold = () => {
   const isLoading = useUnit(flexibleMultisigModel.$isLoading);
 
   const thresholdDisabled = signatories.length < 2 || signatories.some(s => s.address === '');
-  const totalFee = fee.add(totalDeposit);
+  const totalFee = totalDeposit ? fee.add(totalDeposit) : fee;
 
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
