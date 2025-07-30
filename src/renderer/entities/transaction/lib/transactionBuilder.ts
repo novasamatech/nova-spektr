@@ -594,14 +594,6 @@ function buildCreateFlexibleMultisig({
     type: 'Any',
   });
 
-  const removeProxyTx = transactionBuilder.buildRemoveProxy({
-    chain,
-    accountId: signerAccountId,
-    delegate: proxyAccountId,
-    proxyType: 'Any',
-    delay: 0,
-  });
-
   const wrapperAdd = {
     chainId: chain.chainId,
     accountId: signerAccountId,
@@ -612,6 +604,14 @@ function buildCreateFlexibleMultisig({
       transaction: addProxyTx,
     },
   };
+
+  const removeProxyTx = transactionBuilder.buildRemoveProxy({
+    chain,
+    accountId: signerAccountId,
+    delegate: signerAccountId,
+    proxyType: 'Any',
+    delay: 0,
+  });
 
   const wrapperRemove = {
     chainId: chain.chainId,
