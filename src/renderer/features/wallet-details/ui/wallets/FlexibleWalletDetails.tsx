@@ -8,7 +8,6 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { assert, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
-import { type IconNames } from '@/shared/ui/types';
 import { AccountExplorers, Address, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
@@ -89,7 +88,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (canCreateProxy) {
     actions.push({
-      icon: 'delegate' as IconNames,
+      icon: 'delegate',
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
     });
@@ -97,14 +96,14 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (canCreatePureProxy) {
     actions.push({
-      icon: 'createPureProxy' as IconNames,
+      icon: 'createPureProxy',
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxied.events.flowStarted,
     });
   }
 
   actions.push({
-    icon: 'forget' as IconNames,
+    icon: 'forget',
     title: t('walletDetails.common.hideButton'),
     variant: 'danger',
     onClick: toggleConfirmForget,

@@ -94,7 +94,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   }
   actions.push({
     icon: 'forget',
-    title: t('walletDetails.common.hideButton'),
+    title: t('walletDetails.common.forgetButton'),
     onClick: toggleConfirmForget,
     variant: 'danger',
   });

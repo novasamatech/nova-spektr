@@ -15,13 +15,13 @@ type Props = {
 };
 
 export const ForgetWalletModal = ({ wallet, isOpen, onClose, onForget }: Props) => {
+  useGate(forgetWalletModel.gate, { wallet });
+
   const { t } = useI18n();
 
   const isDoNotShowAgain = useUnit(forgetWalletModel.$isDoNotShowAgain);
 
   const [isDoNotShowAgainLocal, setIsDoNotShowAgainLocal] = useState(false);
-
-  useGate(forgetWalletModel.gate, { wallet });
 
   const isConnectedAccountsAlertNeeded = useUnit(forgetWalletModel.$isConnectedAccountsAlertNeeded);
 

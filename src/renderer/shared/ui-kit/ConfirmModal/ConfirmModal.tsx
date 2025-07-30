@@ -8,7 +8,7 @@ import { useTheme } from '../Theme/useTheme';
 
 type Props = {
   title: string;
-  description: string | ReactNode;
+  description: ReactNode;
   cancelText: string;
   confirmText: string;
   type?: 'alert' | 'warning';
