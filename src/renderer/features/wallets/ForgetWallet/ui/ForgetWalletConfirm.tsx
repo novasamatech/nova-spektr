@@ -14,7 +14,7 @@ type Props = {
   onForget: () => void;
 };
 
-export const ForgetWalletModal = ({ wallet, isOpen, onClose, onForget }: Props) => {
+export const ForgetWalletConfirm = ({ wallet, isOpen, onClose, onForget }: Props) => {
   useGate(forgetWalletModel.flow, { wallet });
 
   const { t } = useI18n();
