@@ -15,10 +15,7 @@ import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { formModel } from '../model/form-model';
 
-type Props = {
-  onGoBack: () => void;
-};
-export const AddPureProxiedForm = ({ onGoBack }: Props) => {
+export const AddPureProxiedForm = () => {
   const { t } = useI18n();
 
   const { submit } = useForm(formModel.form);
@@ -40,7 +37,7 @@ export const AddPureProxiedForm = ({ onGoBack }: Props) => {
         <FeeSection />
         <FeeError />
       </div>
-      <ButtonsSection onGoBack={onGoBack} />
+      <ButtonsSection />
     </div>
   );
 };
@@ -199,16 +196,13 @@ const FeeError = () => {
   );
 };
 
-const ButtonsSection = ({ onGoBack }: Props) => {
+const ButtonsSection = () => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
 
   return (
-    <div className="mt-4 flex items-center justify-between">
-      <Button variant="text" onClick={onGoBack}>
-        {t('operation.goBackButton')}
-      </Button>
+    <div className="mt-4 flex items-center justify-end">
       <Button form="add-proxy-form" type="submit" disabled={!canSubmit}>
         {t('operation.continueButton')}
       </Button>

@@ -70,7 +70,7 @@ export const AddPureProxied = ({ wallet }: Props) => {
     <Modal isOpen={isModalOpen} size="md" height="fit" onToggle={closeModal}>
       <Modal.Title close>{getModalTitle(step, chain.value!)}</Modal.Title>
       <Modal.Content>
-        {addPureProxiedUtils.isInitStep(step) && <AddPureProxiedForm onGoBack={closeModal} />}
+        {addPureProxiedUtils.isInitStep(step) && <AddPureProxiedForm />}
         {addPureProxiedUtils.isConfirmStep(step) && (
           <AddPureProxiedConfirmation
             secondaryActionButton={
