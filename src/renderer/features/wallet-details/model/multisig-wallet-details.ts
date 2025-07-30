@@ -2,7 +2,7 @@ import { combine } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type ChainId, type Contact, type ProxyAccount, type Wallet } from '@/shared/core';
-import { dictionary, nullable } from '@/shared/lib/utils';
+import { dictionary, keys, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
@@ -55,7 +55,7 @@ const $signatories = combine(
     return {
       wallets: walletSignatories,
       contacts: contactSignatories,
-      people: Object.keys(signatoriesMap) as AccountId[],
+      people: keys(signatoriesMap),
     };
   },
 );
