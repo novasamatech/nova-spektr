@@ -244,9 +244,13 @@ sample({
       type: 'chain',
       signingType: SigningType.WATCH_ONLY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-      proxyAccountId: multisigAccountId!,
-      delay: 0,
-      proxyType: 'Any',
+      connections: [
+        {
+          proxyAccountId: multisigAccountId!,
+          delay: 0,
+          proxyType: 'Any',
+        },
+      ],
       proxyVariant: ProxyVariant.PURE,
       chainId: chain!.chainId,
     };

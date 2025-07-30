@@ -35,7 +35,7 @@ function getSiblingAccounts(
     const proxy = accounts.filter(
       (account) =>
         !accountUtils.isWatchOnlyAccount(account) &&
-        account.accountId === proxiedAccount.proxyAccountId &&
+        proxiedAccount.connections.some((c) => account.accountId === c.proxyAccountId) &&
         accountUtils.isChainAndCryptoMatch(account, chains[proxiedAccount.chainId]),
     );
 

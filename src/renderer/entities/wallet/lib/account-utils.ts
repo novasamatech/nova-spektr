@@ -132,7 +132,7 @@ function isFlexibleProxiedAccount(account: Partial<AnyAccount>): account is Flex
 }
 
 function isPureProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {
-  return isProxiedAccount(account) && account.connections.some((c) => c.proxyVariant === ProxyVariant.PURE);
+  return isProxiedAccount(account) && account.proxyVariant === ProxyVariant.PURE;
 }
 
 // Matchers

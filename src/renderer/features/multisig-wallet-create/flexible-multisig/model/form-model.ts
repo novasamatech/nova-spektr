@@ -112,7 +112,7 @@ const $existingProxy = combine(
     return (
       accounts.find(a => {
         if (!accountUtils.isPureProxiedAccount(a)) return false;
-        return a.proxyAccountId === existingMultisig.accountId;
+        return a.connections.some(c => c.proxyAccountId === existingMultisig.accountId);
       }) ?? null
     );
   },

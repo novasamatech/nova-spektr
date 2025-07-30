@@ -1622,6 +1622,7 @@
       "governance": "Governance operations",
       "identityJudgement": "Judgement operations",
       "nominationPools": "Nominations operations",
+      "sudoBalances": "Sudo balances",
       "nonTransfer": "All, except transfer operations",
       "staking": "Staking operations",
       "unknown": "Unknown operations"

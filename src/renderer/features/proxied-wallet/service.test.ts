@@ -8,8 +8,13 @@ function createProxy(proxyType: ProxyType): ProxiedAccount {
   return {
     id: '0x00',
     type: 'chain',
-    proxyType: proxyType,
-    proxyAccountId: '0x00' as AccountId,
+    connections: [
+      {
+        proxyType: proxyType,
+        proxyAccountId: '0x00' as AccountId,
+        delay: 0,
+      },
+    ],
     chainId: '0x00',
     accountId: '0x00' as AccountId,
     accountType: AccountType.PROXIED,
@@ -18,7 +23,6 @@ function createProxy(proxyType: ProxyType): ProxiedAccount {
     proxyVariant: ProxyVariant.NONE,
     name: proxyType,
     walletId: 0,
-    delay: 0,
   };
 }
 
