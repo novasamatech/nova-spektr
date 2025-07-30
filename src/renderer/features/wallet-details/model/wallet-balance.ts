@@ -1,8 +1,7 @@
 import { default as BigNumber } from 'bignumber.js';
 import { combine, sample } from 'effector';
-import { previous, spread } from 'patronum';
 
-import { dictionary, getRoundedValue, totalAmount } from '@/shared/lib/utils';
+import { dictionary, getRoundedValue, nonNullable, totalAmount } from '@/shared/lib/utils';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -28,20 +27,8 @@ const $isLoading = combine(
 );
 
 sample({
-  clock: walletDetailsModel.$wallet,
-  source: {
-    previousWallet: previous(walletDetailsModel.$wallet),
-  },
-  fn: ({ previousWallet }, wallet) => {
-    return {
-      walletToSubSet: wallet!,
-      walletToUnsubSet: previousWallet!,
-    };
-  },
-  target: spread({
-    walletToSubSet: balanceSubModel.subscribeWallet,
-    walletToUnsubSet: balanceSubModel.unsubscribeWallet,
-  }),
+  clock: walletDetailsModel.$wallet.updates.filter({ fn: nonNullable }),
+  target: balanceSubModel.fetchWallet,
 });
 
 const $walletBalance = combine(

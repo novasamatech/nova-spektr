@@ -5,7 +5,6 @@ import { spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
 import { type Wallet } from '@/shared/core';
-import { series } from '@/shared/effector';
 import { Step, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { createMultisigDeposit, createTxStore } from '@/shared/transactions';
@@ -63,9 +62,10 @@ sample({
 });
 
 sample({
-  clock: $wallet,
-  filter: nonNullable,
-  target: balanceSubModel.subscribeWallet,
+  clock: $wallet.updates.filter({ fn: nonNullable }),
+  source: accounts.$list,
+  fn: (accounts, wallet) => accountService.filterAccountsByWallet(accounts, wallet.id),
+  target: balanceSubModel.fetchAccounts,
 });
 
 // signatories
@@ -93,26 +93,9 @@ const $signatories = combine(
   },
 );
 
-const $signatoriesWallets = combine(
-  {
-    wallets: walletModel.$wallets,
-    multisigAccount: $multisigAccount,
-    chain: $chain,
-    signatories: $signatories,
-  },
-  ({ wallets, multisigAccount, signatories, chain }) => {
-    if (!multisigAccount || !chain) return [];
-
-    const matchWallets = wallets.filter(
-      w => walletUtils.isValidSignatory(w) && signatories.some(s => s.walletId === w.id),
-    );
-    return matchWallets;
-  },
-);
-
 sample({
-  clock: $signatoriesWallets,
-  target: series(balanceSubModel.subscribeWallet),
+  clock: $signatories,
+  target: balanceSubModel.fetchAccounts,
 });
 
 sample({
@@ -290,18 +273,6 @@ sample({
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
   target: navigationModel.events.navigateTo,
-});
-
-sample({
-  clock: flow.close,
-  source: $wallet,
-  filter: nonNullable,
-  target: balanceSubModel.unsubscribeWallet,
-});
-sample({
-  clock: flow.close,
-  source: $signatoriesWallets,
-  target: series(balanceSubModel.unsubscribeWallet),
 });
 
 sample({
