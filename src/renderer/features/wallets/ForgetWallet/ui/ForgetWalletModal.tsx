@@ -19,7 +19,7 @@ export const ForgetWalletModal = ({ wallet, isOpen, onClose, onForget }: Props) 
 
   const { t } = useI18n();
 
-  const isDoNotShowAgain = useUnit(forgetWalletModel.$isDoNotShowAgain);
+  const isDoNotShowAgain = useUnit(forgetWalletModel.$doNotShowAgain);
 
   const [isDoNotShowAgainLocal, setIsDoNotShowAgainLocal] = useState(false);
 

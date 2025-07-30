@@ -18,11 +18,11 @@ const $wallet = gate.state.map(({ wallet }) => wallet);
 
 const changeDoNotShowAgain = createEvent<boolean>();
 
-const doNotShowAgain = restore(changeDoNotShowAgain, false);
+const $doNotShowAgain = restore(changeDoNotShowAgain, false);
 
 persist({
   key: 'forget_wallet_is_do_not_show_again',
-  store: doNotShowAgain,
+  store: $doNotShowAgain,
   sync: true,
 });
 
@@ -150,7 +150,7 @@ export const forgetWalletModel = {
   gate,
 
   $isConnectedAccountsAlertNeeded,
-  $isDoNotShowAgain: doNotShowAgain,
+  $doNotShowAgain,
 
   remove,
   changeDoNotShowAgain,
