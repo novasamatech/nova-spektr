@@ -3,8 +3,9 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
 import { GenericSignerPayload } from '@polkadot/types';
 import { type ExtrinsicEra, type Weight } from '@polkadot/types/interfaces';
-import { hexToU8a } from '@polkadot/util';
+import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
+import { merkleizeMetadata } from '@polkadot-api/merkleize-metadata';
 
 import {
   type Address,
@@ -39,7 +40,7 @@ export const transactionService = {
   getMultisigDeposit,
   getExtrinsicFee,
 
-  createPayload,
+  createPayloadWithProof,
   createPayloadWithMetadata,
 
   getTxWrappers,
@@ -231,10 +232,57 @@ function getWrappedTransaction({ api, transaction, txWrappers }: WrapperParams):
   );
 }
 
-async function createPayload(extrinsic: Extrinsic, signatory: AccountId, api: ApiPromise) {
-  const metadata = await createTxMetadata(signatory, api);
+async function createPayloadWithProof(extrinsic: Extrinsic, signatory: AccountId, api: ApiPromise) {
+  const { signerPayloadBase } = await createTxMetadata(signatory, api);
 
-  return createPayloadWithMetadata(extrinsic, api, metadata);
+  if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
+    signerPayloadBase.assetId = undefined;
+  }
+
+  // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
+  const era = createEra(api, signerPayloadBase.blockNumber);
+
+  const metadataHex = api.runtimeMetadata.toHex();
+
+  const merkleizedMetadata = merkleizeMetadata(metadataHex, {
+    decimals: api.registry.chainDecimals[0],
+    tokenSymbol: api.registry.chainTokens[0],
+    base58Prefix: api.registry.chainSS58,
+    specName: api.runtimeVersion.specName.toString(),
+    specVersion: api.runtimeVersion.specVersion.toNumber(),
+  });
+
+  const metadataHash = u8aToHex(merkleizedMetadata.digest());
+
+  const signingPayload = new GenericSignerPayload(api.registry, {
+    ...signerPayloadBase,
+    mode: 1,
+    metadataHash,
+    withSignedTransaction: true,
+    method: extrinsic.method.toHex(),
+    version: extrinsic.version,
+    era: era.toHex(),
+    // Immortal transaction requires genesisHash instead of blockHash
+    blockHash: era.toNumber() === 0 ? signerPayloadBase.genesisHash : signerPayloadBase.blockHash,
+    runtimeVersion: {
+      specVersion: signerPayloadBase.specVersion,
+      transactionVersion: signerPayloadBase.transactionVersion,
+    },
+  }).toPayload();
+
+  const extrinsicPayload = api.registry.createType('ExtrinsicPayload', signingPayload, {
+    version: signingPayload.version,
+  });
+  const metadataProof = merkleizedMetadata.getProofForExtrinsicPayload(extrinsicPayload.toU8a(true));
+
+  const payload = extrinsicPayload.toU8a(false);
+
+  return {
+    extrinsic,
+    metadataProof,
+    signingPayload,
+    payload,
+  };
 }
 
 function createEra(api: ApiPromise, blockNumber: HexString) {
@@ -304,7 +352,7 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
   }
 }
 
-function logPayload(info: Awaited<ReturnType<typeof createPayload>>[]) {
+function logPayload(info: Awaited<ReturnType<typeof createPayloadWithMetadata>>[]) {
   console.groupCollapsed('Transactions');
   for (const [index, log] of info.entries()) {
     console.groupCollapsed(`Operation ${index}: ${log.extrinsic.method.section}.${log.extrinsic.method.method}`);

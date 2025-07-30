@@ -4,8 +4,15 @@ import { str } from 'parity-scale-codec';
 import qrcode from 'qrcode-generator';
 import { type Encoder } from 'raptorq/raptorq';
 
-import { type Address, type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
-import { CryptoType, CryptoTypeString, SigningType } from '@/shared/core';
+import {
+  type Address,
+  type Chain,
+  type ChainId,
+  SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
+import { CryptoType, CryptoTypeString } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { DYNAMIC_DERIVATIONS_REQUEST, EXPORT_ADDRESS } from '../../common/constants';
 import { type DynamicDerivationRequestInfo } from '../../common/types';
@@ -45,31 +52,21 @@ export const createSubstrateSignPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   if (signingType === SigningType.POLKADOT_VAULT) {
-    return createDynamicDerivationsSignPayload(
-      address,
-      Command.DynamicDerivationsTransaction,
-      payload,
-      genesisHash,
-      derivationPath,
-      cryptoType,
-    );
+    return createDynamicDerivationsSignPayload(address, payload, genesisHash, derivationPath, cryptoType);
   }
 
-  return createSignPayload(address, Command.Transaction, payload, genesisHash, cryptoType);
+  return createSignPayload(address, payload, genesisHash, cryptoType);
 };
 
 export const createSignPayload = (
   address: string,
-  cmd: number,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
-  const isEthereum = cryptoType === CryptoType.ETHEREUM;
-
   return u8aConcat(
-    isEthereum ? CRYPTO_ETHEREUM : CRYPTO_SR25519,
-    new Uint8Array([cmd]),
+    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
+    new Uint8Array([Command.Transaction]),
     decodeAddress(address),
     u8aToU8a(payload),
     u8aToU8a(genesisHash),
@@ -78,7 +75,6 @@ export const createSignPayload = (
 
 export const createDynamicDerivationsSignPayload = (
   address: string,
-  cmd: number,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
   derivationPath: string,
@@ -86,8 +82,69 @@ export const createDynamicDerivationsSignPayload = (
 ): Uint8Array => {
   return u8aConcat(
     cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
-    new Uint8Array([cmd]),
+    new Uint8Array([Command.DynamicDerivationsTransaction]),
     decodeAddress(address),
+    str.encode(derivationPath),
+    u8aToU8a(payload),
+    u8aToU8a(genesisHash),
+  );
+};
+
+export const createSubstrateSignWithProofPayload = (
+  address: string,
+  metadataProof: Uint8Array,
+  payload: Uint8Array,
+  genesisHash: ChainId | Uint8Array,
+  signingType: SigningType,
+  derivationPath = '',
+  cryptoType = CryptoType.SR25519,
+): Uint8Array => {
+  if (signingType === SigningType.POLKADOT_VAULT) {
+    return createDynamicDerivationsSignWithProofPayload(
+      address,
+      metadataProof,
+      payload,
+      genesisHash,
+      derivationPath,
+      cryptoType,
+    );
+  }
+
+  return createSignWithProofPayload(address, metadataProof, payload, genesisHash, cryptoType);
+};
+
+export const createSignWithProofPayload = (
+  address: string,
+  metadataProof: Uint8Array,
+  payload: Uint8Array,
+  genesisHash: ChainId | Uint8Array,
+  cryptoType = CryptoType.SR25519,
+): Uint8Array => {
+  return u8aConcat(
+    SUBSTRATE_ID,
+    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
+    new Uint8Array([Command.TransactionWithProof]),
+    decodeAddress(address),
+    u8aToU8a(metadataProof),
+    u8aToU8a(payload),
+    u8aToU8a(genesisHash),
+  );
+};
+
+export const createDynamicDerivationsSignWithProofPayload = (
+  address: string,
+  metadataProof: Uint8Array,
+  payload: string | Uint8Array,
+  genesisHash: ChainId | Uint8Array,
+  derivationPath: string,
+  cryptoType = CryptoType.SR25519,
+): Uint8Array => {
+  return u8aConcat(
+    SUBSTRATE_ID,
+    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
+    new Uint8Array([Command.DynamicDerivationsTransactionWithProof]),
+    decodeAddress(address),
+    u8aToU8a(metadataProof),
     str.encode(derivationPath),
     u8aToU8a(payload),
     u8aToU8a(genesisHash),
