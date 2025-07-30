@@ -69,14 +69,14 @@ export interface ProxiedAccount extends ChainAccount {
   accountType: AccountType.PROXIED;
   connections: ProxiedConnection[];
   proxyVariant: ProxyVariant;
+  blockNumber?: number;
+  extrinsicIndex?: number;
 }
 
 export interface ProxiedConnection {
   proxyAccountId: AccountId;
   delay: number;
   proxyType: ProxyType;
-  blockNumber?: number;
-  extrinsicIndex?: number;
 }
 
 export interface FlexibleProxiedAccount extends Omit<ProxiedAccount, 'accountType'> {

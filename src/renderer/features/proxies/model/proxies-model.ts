@@ -13,7 +13,6 @@ import {
   type NoID,
   type PartialProxiedAccount,
   type ProxiedAccount,
-  type ProxiedConnection,
   type ProxiedWallet,
   type ProxyAccount,
   type ProxyDeposits,
@@ -211,127 +210,41 @@ type ProxiedWalletsParams = {
   wallets: Wallet[];
 };
 
-const createProxiedWalletFx = createEffect(
-  ({
-    identity,
-    proxiedAccount,
-    chains,
-    wallets,
-  }: ProxiedWalletsParams): {
-    proxiedUpdated?: {
-      wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'>;
-      account: ProxiedAccount;
-    };
-    proxiedCreated?: {
-      wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'>;
-      accounts: Omit<NoID<ProxiedAccount>, 'walletId'>[];
-    };
-  } => {
-    const chain = chains[proxiedAccount.chainId];
+const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, wallets }: ProxiedWalletsParams) => {
+  const chain = chains[proxiedAccount.chainId];
 
-    const walletIdentity = chain ? identity[chain.chainId]?.[proxiedAccount.accountId] : null;
-    const proxyBasedName = proxyUtils.getProxiedName(proxiedAccount, chain.addressPrefix);
+  const walletIdentity = chain ? identity[chain.chainId]?.[proxiedAccount.accountId] : null;
+  const proxyBasedName = proxyUtils.getProxiedName(proxiedAccount, chain.addressPrefix);
 
-    const flexibleProxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: (w) => walletUtils.isFlexibleMultisig(w),
-      accountFn: (a) =>
-        accountUtils.isChainIdMatch(a, proxiedAccount.chainId) && a.accountId === proxiedAccount.proxyAccountId,
-    });
+  const flexibleProxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
+    walletFn: (w) => walletUtils.isFlexibleMultisig(w),
+    accountFn: (a) =>
+      accountUtils.isChainIdMatch(a, proxiedAccount.chainId) &&
+      proxiedAccount.connections.some((c) => a.accountId === c.proxyAccountId),
+  });
 
-    // Check for existing wallet with same chainId and accountId
-    const existingWallet = wallets.filter(walletUtils.isProxied).find((wallet) => {
-      return wallet.accounts.some(
-        (account) => account.chainId === proxiedAccount.chainId && account.accountId === proxiedAccount.accountId,
-      );
-    });
+  const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
+    name: walletIdentity ? identityService.getFullName(walletIdentity) : proxyBasedName,
+    type: WalletType.PROXIED,
+    signingType: SigningType.WATCH_ONLY,
+    isHidden: !!flexibleProxyWallet,
+  };
 
-    console.log({ proxiedAccount, existingWallet });
+  const isEthereumChain = networkUtils.isEthereumBased(chains[proxiedAccount.chainId].options);
 
-    if (existingWallet) {
-      const existingAccount = existingWallet.accounts.find(
-        (account) =>
-          accountUtils.isProxiedAccount(account) &&
-          account.chainId === proxiedAccount.chainId &&
-          account.accountId === proxiedAccount.accountId,
-      );
-
-      if (existingAccount) {
-        // Find the existing account and add a new connection
-
-        if (existingAccount) {
-          const newConnection: ProxiedConnection = {
-            proxyAccountId: proxiedAccount.proxyAccountId,
-            delay: proxiedAccount.delay,
-            proxyType: proxiedAccount.proxyType,
-            proxyVariant: proxiedAccount.proxyVariant,
-            blockNumber: proxiedAccount.blockNumber,
-            extrinsicIndex: proxiedAccount.extrinsicIndex,
-          };
-
-          // Check if the same connection already exists
-          const connectionExists = existingAccount.connections?.some(
-            (conn) =>
-              conn.proxyAccountId === newConnection.proxyAccountId &&
-              conn.delay === newConnection.delay &&
-              conn.proxyType === newConnection.proxyType &&
-              conn.proxyVariant === newConnection.proxyVariant,
-          );
-
-          // If connection already exists, do nothing
-          if (connectionExists) {
-            return { proxiedUpdated: undefined };
-          }
-
-          // Add the new connection to existing connections
-          const updatedConnections = existingAccount.connections
-            ? [...existingAccount.connections, newConnection]
-            : [newConnection];
-
-          // Update the existing account with new connections
-          const updatedAccount = {
-            ...existingAccount,
-            connections: updatedConnections,
-          };
-
-          return { proxiedUpdated: { wallet: existingWallet, account: updatedAccount } };
-        }
-      }
-    }
-
-    const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
+  const accounts: Omit<NoID<ProxiedAccount>, 'walletId'>[] = [
+    {
+      ...proxiedAccount,
+      type: 'chain',
       name: walletIdentity ? identityService.getFullName(walletIdentity) : proxyBasedName,
-      type: WalletType.PROXIED,
+      accountType: AccountType.PROXIED,
       signingType: SigningType.WATCH_ONLY,
-      isHidden: !!flexibleProxyWallet,
-    };
+      cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+    },
+  ];
 
-    const isEthereumChain = networkUtils.isEthereumBased(chains[proxiedAccount.chainId].options);
-
-    // Create initial connection for new account
-    const initialConnection: ProxiedConnection = {
-      proxyAccountId: proxiedAccount.proxyAccountId,
-      delay: proxiedAccount.delay,
-      proxyType: proxiedAccount.proxyType,
-      proxyVariant: proxiedAccount.proxyVariant,
-      blockNumber: proxiedAccount.blockNumber,
-      extrinsicIndex: proxiedAccount.extrinsicIndex,
-    };
-
-    const accounts: Omit<NoID<ProxiedAccount>, 'walletId'>[] = [
-      {
-        ...proxiedAccount,
-        type: 'chain',
-        name: walletIdentity ? identityService.getFullName(walletIdentity) : proxyBasedName,
-        accountType: AccountType.PROXIED,
-        signingType: SigningType.WATCH_ONLY,
-        cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-        connections: [initialConnection],
-      },
-    ];
-
-    return { proxiedCreated: { wallet, accounts } };
-  },
-);
+  return { wallet, accounts };
+});
 
 const createProxiesWalletsFx = attach({
   source: {
@@ -354,23 +267,6 @@ spread({
     deposits: depositsReceived,
   },
 });
-
-// Do this:
-// sample({
-//   clock: fetchProxiesFx.doneData,
-//   filter: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd.length > 0,
-//   source: {
-//     chains: networkModel.$chains,
-//     wallets: walletModel.$wallets,
-//     identity: identity.$list,
-//   },
-//   // here
-//   fn: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd,
-//   target: createProxiesWalletsFx,
-//   // target: spread({
-//   //   // crud
-//   // }),
-// });
 
 sample({
   clock: fetchProxiesFx.doneData,
@@ -402,20 +298,9 @@ sample({
   target: balanceModel.events.balancesRemoved,
 });
 
-// sample({
-//   clock: createProxiesWalletsFx.doneData,
-//   target: series(walletModel.events.proxiedCreated),
-// });
 sample({
   clock: createProxiesWalletsFx.doneData,
-  fn: (results) => results.flatMap((r) => (r.proxiedCreated ? [r.proxiedCreated] : [])),
   target: series(walletModel.events.proxiedCreated),
-});
-
-sample({
-  clock: createProxiesWalletsFx.doneData,
-  fn: (results) => results.flatMap((r) => (r.proxiedUpdated ? [r.proxiedUpdated] : [])),
-  target: series(walletModel.events.proxiedUpdated),
 });
 
 sample({
@@ -435,5 +320,6 @@ sample({
 
 export const proxiesModel = {
   findAllProxies: findAllProxiesFx,
+  createProxiedWallet: createProxiedWalletFx,
   createProxiesWallets: createProxiesWalletsFx,
 };

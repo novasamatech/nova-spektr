@@ -64,11 +64,19 @@ function isSameProxyGroup(oldGroup: NoID<ProxyGroup>, newGroup: NoID<ProxyGroup>
 }
 
 // TODO: Add i18n for wallet name
-function getProxiedName({ accountId, proxyVariant, proxyType }: PartialProxiedAccount, addressPrefix?: number): string {
+function getProxiedName(
+  { accountId, proxyVariant, connections }: PartialProxiedAccount,
+  addressPrefix?: number,
+): string {
   const address = toAddress(accountId, { chunk: 6, prefix: addressPrefix });
-  const proxyVariantLabel = proxyVariant === ProxyVariant.PURE ? 'for pure' : 'for';
 
-  return `${proxyType} ${proxyVariantLabel} ${address}`;
+  if (connections.length === 1) {
+    const proxyVariantLabel = proxyVariant === ProxyVariant.PURE ? 'for pure' : 'for';
+    const proxyType = connections.at(0)?.proxyType;
+    return `${proxyType} ${proxyVariantLabel} ${address}`;
+  } else {
+    return address;
+  }
 }
 
 function getProxyGroups(wallets: Wallet[], deposits: ProxyDeposits): NoID<ProxyGroup>[] {

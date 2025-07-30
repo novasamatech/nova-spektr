@@ -39,7 +39,10 @@ export const enum ProxyVariant {
 
 export type PartialProxyAccount = Omit<ProxyAccount, 'chainId'>;
 
-export type PartialProxiedAccount = Pick<ProxiedAccount, 'chainId' | 'connections' | 'accountId' | 'proxyVariant'>;
+export type PartialProxiedAccount = Pick<
+  ProxiedAccount,
+  'chainId' | 'connections' | 'accountId' | 'proxyVariant' | 'blockNumber' | 'extrinsicIndex'
+>;
 
 export type ProxyDeposits = {
   chainId: ChainId;

@@ -141,10 +141,6 @@ const $coreTx = combine(
   ({ signatory, proxiedAccount, data, isPureProxiedNeedToBeKilled, chain }) => {
     if (!signatory || !data || !proxiedAccount || !chain) return null;
 
-    const connection = proxiedAccount.connections.find((c) => c.proxyAccountId === data.proxyAccount.accountId);
-
-    assert(connection, `Cannot find proxy connection for ${data.proxyAccount.accountId}`);
-
     if (isPureProxiedNeedToBeKilled) {
       return transactionBuilder.buildKillPureProxy({
         chain,
@@ -152,8 +148,8 @@ const $coreTx = combine(
         spawner: data.spawner,
         proxyType: data.proxyType,
         index: 0,
-        height: connection.blockNumber!,
-        extIndex: connection.extrinsicIndex!,
+        height: proxiedAccount.blockNumber!,
+        extIndex: proxiedAccount.extrinsicIndex!,
       });
     }
 

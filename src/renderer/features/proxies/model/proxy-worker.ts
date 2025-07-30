@@ -11,6 +11,7 @@ import {
   type NoID,
   type PartialProxiedAccount,
   type ProxiedAccount,
+  type ProxiedConnection,
   type ProxyAccount,
   type ProxyDeposits,
   type ProxyType,
@@ -89,40 +90,47 @@ async function getProxies({
           continue;
         }
 
-        for (const delegatedAccount of value.proxies) {
-          const newProxy: NoID<ProxyAccount> = {
-            chainId: chain.chainId,
-            proxiedAccountId: account,
-            accountId: delegatedAccount.delegate,
-            // TODO support all proxy types
-            proxyType: delegatedAccount.proxyType as ProxyType,
-            delay: delegatedAccount.delay,
-          };
+        const newProxied: PartialProxiedAccount = {
+          chainId: chain.chainId,
+          accountId: account,
+          proxyVariant: ProxyVariant.NONE,
+          connections: value.proxies
+            .filter(
+              (delegatedAccount) =>
+                accountsForProxied[delegatedAccount.delegate] && !proxyWorkerUtils.isDelayedProxy(delegatedAccount),
+            )
+            .map(
+              (delegatedAccount) =>
+                ({
+                  proxyAccountId: delegatedAccount.delegate,
+                  proxyType: delegatedAccount.proxyType as ProxyType,
+                  delay: delegatedAccount.delay,
+                }) satisfies ProxiedConnection,
+            ),
+        };
 
-          const needToAddProxiedAccount =
-            accountsForProxied[newProxy.accountId] && !proxyWorkerUtils.isDelayedProxy(newProxy);
+        const existingProxied = proxiedAccounts.find((p) => p.accountId === newProxied.accountId);
+        const needToAddProxiedAccount =
+          newProxied.connections.length > 0 &&
+          (!existingProxied ||
+            existingProxied.connections.length !== newProxied.connections.length ||
+            existingProxied.connections.some((existingConnection, index) => {
+              const newConnection = newProxied.connections.at(index);
+              return (
+                !newConnection ||
+                existingConnection.proxyAccountId !== newConnection.proxyAccountId ||
+                existingConnection.proxyType !== newConnection.proxyType ||
+                existingConnection.delay !== newConnection.delay
+              );
+            }));
 
-          if (needToAddProxiedAccount) {
-            const proxiedAccount: PartialProxiedAccount = {
-              ...newProxy,
-              proxyAccountId: newProxy.accountId,
-              accountId: newProxy.proxiedAccountId,
-              proxyVariant: ProxyVariant.NONE,
-            };
+        if (needToAddProxiedAccount) {
+          proxiedAccountsToAdd.push(newProxied);
 
-            const doesProxiedAccountExist = proxiedAccounts.some((oldProxy) =>
-              proxyWorkerUtils.isSameProxied(oldProxy, proxiedAccount),
-            );
-
-            if (!doesProxiedAccountExist) {
-              proxiedAccountsToAdd.push(proxiedAccount);
-            }
-
-            existingProxiedAccounts.push(proxiedAccount);
-
-            deposits.deposits[account] = value.deposit.toString();
-          }
+          deposits.deposits[account] = value.deposit.toString();
         }
+
+        existingProxiedAccounts.push(newProxied);
 
         for (const delegatedAccount of value.proxies) {
           const newProxy: NoID<ProxyAccount> = {
@@ -144,8 +152,6 @@ async function getProxies({
             }
 
             existingProxies.push(newProxy);
-
-            deposits.deposits[account] = value.deposit.toString();
           }
         }
       } catch (e) {
@@ -159,14 +165,7 @@ async function getProxies({
   const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => proxyWorkerUtils.isSameProxy(p, ep)));
 
   const proxiedAccountsToRemove = Object.values(proxiedAccounts).filter((p) => {
-    return !existingProxiedAccounts.some(
-      (ep) =>
-        ep.accountId === p.accountId &&
-        ep.chainId === p.chainId &&
-        ep.proxyAccountId === p.proxyAccountId &&
-        ep.delay === p.delay &&
-        ep.proxyType === p.proxyType,
-    );
+    return !existingProxiedAccounts.some((ep) => proxyWorkerUtils.isSameProxied(ep, p));
   });
 
   disconnect(api);
@@ -181,7 +180,7 @@ async function getProxies({
 }
 
 export const proxyWorker = {
-  getProxies,
+  getProxies: getProxies,
 };
 
 // @ts-expect-error TODO fix
