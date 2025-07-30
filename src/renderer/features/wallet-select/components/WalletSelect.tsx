@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { TEST_IDS } from '@/shared/constants';
@@ -32,14 +31,12 @@ export const WalletSelect = () => {
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
   const filterQuery = useUnit(walletList.$query);
 
-  const [open, setOpen] = useState(false);
-
   if (!selectedWallet) {
     return <Skeleton width={52} height={16} />;
   }
 
   return (
-    <Popover align="start" sideOffset={2} open={open} onToggle={setOpen}>
+    <Popover align="start" sideOffset={2}>
       <Popover.Trigger>
         <button
           type="button"
@@ -87,7 +84,6 @@ export const WalletSelect = () => {
                   onSelect: ({ id }) => {
                     walletSelect.select(id);
                     navigate(Paths.ASSETS);
-                    setOpen(false);
                   },
                 }}
               />

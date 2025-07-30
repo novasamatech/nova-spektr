@@ -1,7 +1,8 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 
 import { type Chain, type Wallet } from '@/shared/core';
+import { series } from '@/shared/effector';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService, accounts } from '@/domains/network';
@@ -62,15 +63,9 @@ const $ownedSignatoriesWallets = combine(
   },
 );
 
-const populateBalanceFx = createEffect((wallets: Wallet[]) => {
-  for (const wallet of wallets) {
-    balanceSubModel.subscribeWallet(wallet);
-  }
-});
-
 sample({
   clock: getSignatoriesBalance,
-  target: populateBalanceFx,
+  target: series(balanceSubModel.fetchWallet),
 });
 
 sample({

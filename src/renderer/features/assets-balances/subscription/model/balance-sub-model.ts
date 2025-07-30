@@ -5,6 +5,7 @@ import { previous } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
 import { type Balance, type Chain, type ChainId, type Wallet } from '@/shared/core';
+import { series } from '@/shared/effector';
 import { entries, merge, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
@@ -17,10 +18,13 @@ import { type SubscriptionKey, type Subscriptions } from '../lib/types';
 
 const subscribeWallet = createEvent<Wallet>();
 const unsubscribeWallet = createEvent<Wallet>();
+const fetchWallet = createEvent<Wallet>();
 
 const subscribeAccounts = createEvent<AnyAccount[]>();
 const unsubscribeAccounts = createEvent<AnyAccount[]>();
 const unsubscribeChain = createEvent<ChainId>();
+
+const fetchAccounts = createEvent<AnyAccount[]>();
 
 const updateBalances = createEvent<Omit<Balance, 'id'>[]>();
 
@@ -31,6 +35,23 @@ const $subscriptions = createStore<Subscriptions>({});
 const $subscribedAccounts = createStore<AnyAccount[]>([]);
 
 // effects
+
+type FetchAccountParam = {
+  api: ApiPromise;
+  chain: Chain;
+  accountId: AccountId;
+};
+const fetchAccountFx = createEffect(async ({ api, chain, accountId }: FetchAccountParam) => {
+  return Promise.all([
+    balanceService.fetchBalances(api, chain, [accountId]),
+    balanceService.fetchLockBalances(api, chain, [accountId]),
+  ]).then(([balances, lockBalances]) =>
+    balanceUtils.getMergeBalances(
+      balances.map(balanceUtils.insertBalanceId),
+      lockBalances.map(balanceUtils.insertBalanceId),
+    ),
+  );
+});
 
 type SubscribeAccountParam = {
   api: ApiPromise;
@@ -148,7 +169,7 @@ sample({
   target: unsubscribeFx,
 });
 
-// wallet management
+// wallet subscriptions
 
 const $previousWallet = previous(walletSelect.$selectedWallet);
 
@@ -303,11 +324,70 @@ sample({
   target: unsubscribeChain,
 });
 
+// account fetching
+
+sample({
+  clock: fetchWallet,
+  source: {
+    accounts: walletModel.$availableAccounts,
+    chains: networkModel.$chains,
+  },
+  fn({ accounts, chains }, wallet) {
+    const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
+    return balanceSubUtils.getSiblingAccounts(walletAccounts, accounts, Object.values(chains));
+  },
+  target: fetchAccounts,
+});
+
+sample({
+  clock: fetchAccounts,
+  source: {
+    apis: networkModel.$apis,
+    chains: networkModel.$chains,
+    statuses: networkModel.$connectionStatuses,
+  },
+  fn({ chains, apis, statuses }, accounts) {
+    if (accounts.length === 0) return [];
+
+    const params: FetchAccountParam[] = [];
+
+    for (const [chainId, status] of entries(statuses)) {
+      if (!networkUtils.isConnectedStatus(status)) continue;
+
+      const api = apis[chainId];
+      const chain = chains[chainId];
+      if (nullable(api) || nullable(chain)) continue;
+
+      for (const account of accounts) {
+        if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
+
+        params.push({
+          api,
+          chain,
+          accountId: account.accountId,
+        });
+      }
+    }
+
+    return params;
+  },
+  target: series(fetchAccountFx, { parallel: true, skipErrors: true }),
+});
+
+sample({
+  clock: fetchAccountFx.doneData,
+  target: updateBalances,
+});
+
 export const balanceSubModel = {
   subscribeWallet,
   unsubscribeWallet,
+
   subscribeAccounts,
   unsubscribeAccounts,
+
+  fetchAccounts,
+  fetchWallet,
 
   __test: {
     subscribeAccountsFx,

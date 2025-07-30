@@ -20,7 +20,6 @@ import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { type SigningPayload } from '@/features/operations/OperationSign';
@@ -98,17 +97,9 @@ sample({
 
 sample({
   clock: flowStarted,
-  source: {
-    activeWallet: walletSelect.$selectedWallet,
-    walletDetails: formModel.$wallet,
-  },
-  filter: ({ activeWallet, walletDetails }) => {
-    if (!activeWallet || !walletDetails) return false;
-
-    return activeWallet !== walletDetails;
-  },
-  fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.subscribeWallet,
+  source: formModel.$wallet,
+  filter: (wallet) => nonNullable(wallet),
+  target: balanceSubModel.fetchWallet,
 });
 
 sample({
@@ -375,21 +366,6 @@ sample({
 sample({
   clock: delay(getPureProxyFx.doneData, 2000),
   target: flowFinished,
-});
-
-sample({
-  clock: flowFinished,
-  source: {
-    activeWallet: walletSelect.$selectedWallet,
-    walletDetails: formModel.$wallet,
-  },
-  filter: ({ activeWallet, walletDetails }) => {
-    if (!activeWallet || !walletDetails) return false;
-
-    return activeWallet !== walletDetails;
-  },
-  fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.unsubscribeWallet,
 });
 
 sample({
