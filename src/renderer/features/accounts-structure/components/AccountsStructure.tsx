@@ -120,8 +120,6 @@ const useGraphLayout = (
 
     const { nodes, edges } = createGraphElements(graph, selectedAccount.id);
 
-    console.log({ nodes, edges });
-
     const layoutGraph = await elk.layout({
       id: 'root',
       children: nodes.map((node) => ({
