@@ -8,11 +8,19 @@ import { TROUBLESHOOTING_URL, getMetadataPortalMetadataUrl } from '../common/con
 type Props = {
   countdown: number;
   chainId: ChainId;
+  isLegacyQR?: boolean;
   testId?: string;
   onQrReset: () => void;
 };
 
-export const QrGeneratorContainer = ({ countdown, chainId, children, testId, onQrReset }: PropsWithChildren<Props>) => {
+export const QrGeneratorContainer = ({
+  countdown,
+  chainId,
+  children,
+  testId,
+  onQrReset,
+  isLegacyQR = true,
+}: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
   return (
@@ -22,7 +30,7 @@ export const QrGeneratorContainer = ({ countdown, chainId, children, testId, onQ
       <Countdown countdown={children ? countdown : 0} className="mb-4" />
 
       <div
-        className="relative flex h-[240px] w-[240px] flex-col items-center justify-center gap-y-4"
+        className="relative flex min-h-[240px] w-[240px] flex-col items-center justify-center gap-y-4"
         data-testid={testId}
       >
         {children &&
@@ -45,9 +53,12 @@ export const QrGeneratorContainer = ({ countdown, chainId, children, testId, onQ
       <div className="mb-4 mt-6 flex flex-row items-center gap-x-2 py-1">
         <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
 
-        <span className="h-4 border border-divider"></span>
-
-        <InfoLink url={getMetadataPortalMetadataUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
+        {isLegacyQR && (
+          <>
+            <span className="h-4 border border-divider"></span>
+            <InfoLink url={getMetadataPortalMetadataUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
+          </>
+        )}
       </div>
     </section>
   );
