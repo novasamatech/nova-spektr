@@ -58,7 +58,7 @@ describe('pages/Assets/AssetCard', () => {
     const textHidden = screen.queryByText('assetBalance.transferable');
     expect(textHidden).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button'));
+    await userEvent.click(screen.getAllByRole('button')[0]);
 
     const text = screen.queryByText('assetBalance.transferable');
     expect(text).toBeInTheDocument();
@@ -68,7 +68,7 @@ describe('pages/Assets/AssetCard', () => {
     render(<AssetCard {...defaultProps} />, { wrapper: BrowserRouter });
 
     const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toEqual(1);
+    expect(buttons.length).toEqual(3);
   });
 
   test('should navigate to receive asset modal', async () => {
@@ -96,13 +96,13 @@ describe('pages/Assets/AssetCard', () => {
 
     expect(window.location.href).toEqual(new URL('/assets', origin).toString());
 
-    const link = screen.getAllByRole('link')[1];
-    act(() => link.click());
+    const button = screen.getAllByRole('button')[1];
+    act(() => button.click());
 
     const chainId = defaultProps.chainId;
     const assetId = defaultProps.asset.assetId;
     expect(window.location.href).toEqual(
-      new URL(`/assets/receive?chainId=${chainId}&assetId=${assetId}`, origin).toString(),
+      new URL(`/assets/transfer?chainId=${chainId}&assetId=${assetId}`, origin).toString(),
     );
   });
 });
