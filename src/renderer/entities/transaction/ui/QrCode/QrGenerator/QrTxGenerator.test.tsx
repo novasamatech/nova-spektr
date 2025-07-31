@@ -3,13 +3,13 @@ import { decodeAddress } from '@polkadot/util-crypto';
 import { render } from '@testing-library/react';
 
 import { QrTxGenerator } from './QrTxGenerator';
-import { CRYPTO_SR25519, Command, SUBSTRATE_ID } from './common/constants';
+import { Command, SUBSTRATE_ID } from './common/constants';
 
 describe('ui/QrTxGenerator', () => {
   test('should render transaction qr', () => {
     const payload = u8aConcat(
       SUBSTRATE_ID,
-      CRYPTO_SR25519,
+      new Uint8Array(1),
       new Uint8Array([Command.Transaction]),
       decodeAddress('5GmedEVixRJoE8TjMePLqz7DnnQG1d5517sXdiAvAF2t7EYW'),
       u8aToU8a('my_payload'),

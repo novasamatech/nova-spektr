@@ -17,7 +17,7 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { DYNAMIC_DERIVATIONS_REQUEST, EXPORT_ADDRESS } from '../../common/constants';
 import { type DynamicDerivationRequestInfo } from '../../common/types';
 
-import { CRYPTO_ETHEREUM, CRYPTO_SR25519, CRYPTO_STUB, Command, FRAME_SIZE, SUBSTRATE_ID } from './constants';
+import { CRYPTO_STUB, Command, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 
 const MULTIPART = new Uint8Array([0]);
 
@@ -65,7 +65,7 @@ export const createSignPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   return u8aConcat(
-    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
+    new Uint8Array(cryptoTypeToMultisignerIndex(cryptoType)),
     new Uint8Array([Command.Transaction]),
     decodeAddress(address),
     u8aToU8a(payload),
@@ -81,7 +81,7 @@ export const createDynamicDerivationsSignPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   return u8aConcat(
-    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
+    new Uint8Array(cryptoTypeToMultisignerIndex(cryptoType)),
     new Uint8Array([Command.DynamicDerivationsTransaction]),
     decodeAddress(address),
     str.encode(derivationPath),
@@ -126,7 +126,7 @@ export const createSignWithProofPayload = (
 ): Uint8Array => {
   return u8aConcat(
     SUBSTRATE_ID,
-    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
+    new Uint8Array(cryptoTypeToMultisignerIndex(cryptoType)),
     new Uint8Array([Command.TransactionWithProof]),
     decodeAddress(address),
     u8aToU8a(metadataProof),
@@ -145,7 +145,7 @@ export const createDynamicDerivationsSignWithProofPayload = (
 ): Uint8Array => {
   return u8aConcat(
     SUBSTRATE_ID,
-    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ETHEREUM,
+    new Uint8Array(cryptoTypeToMultisignerIndex(cryptoType)),
     new Uint8Array([Command.DynamicDerivationsTransactionWithProof]),
     decodeAddress(address),
     u8aToU8a(metadataProof),
@@ -188,12 +188,17 @@ export const createFrames = (input: Uint8Array, encoder?: Encoder): Uint8Array[]
  *
  * @returns {Number}
  */
-export const cryptoTypeToMultisignerIndex = (cryptoType: CryptoType): number => {
+export const cryptoTypeToMultisignerIndex = (cryptoType: CryptoType | CryptoTypeString): number => {
   return {
     [CryptoType.ED25519]: 0,
     [CryptoType.SR25519]: 1,
     [CryptoType.ECDSA]: 2,
     [CryptoType.ETHEREUM]: 3,
+
+    [CryptoTypeString.ED25519]: 0,
+    [CryptoTypeString.SR25519]: 1,
+    [CryptoTypeString.ECDSA]: 2,
+    [CryptoTypeString.ETHEREUM]: 3,
   }[cryptoType];
 };
 
