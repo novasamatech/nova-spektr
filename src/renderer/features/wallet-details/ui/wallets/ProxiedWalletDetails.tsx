@@ -14,7 +14,7 @@ import { networkModel } from '@/entities/network';
 import { WalletIcon, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -94,7 +94,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   }
   actions.push({
     icon: 'forget',
-    title: t('walletDetails.common.hideButton'),
+    title: t('walletDetails.common.forgetButton'),
     onClick: toggleConfirmForget,
     variant: 'danger',
   });
@@ -197,7 +197,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
         </Tabs>
       </Modal.Content>
 
-      <ForgetWalletModal
+      <ForgetWalletConfirm
         wallet={wallet}
         isOpen={isConfirmForgetOpen}
         onClose={toggleConfirmForget}
