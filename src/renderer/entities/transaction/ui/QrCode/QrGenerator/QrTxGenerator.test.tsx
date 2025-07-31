@@ -5,23 +5,6 @@ import { render } from '@testing-library/react';
 import { QrTxGenerator } from './QrTxGenerator';
 import { CRYPTO_SR25519, Command, SUBSTRATE_ID } from './common/constants';
 
-vi.mock('raptorq/raptorq', () => {
-  const init = () => Promise.resolve();
-  class Encoder {
-    static with_defaults: () => Encoder;
-    encode(data: Uint8Array) {
-      return [data];
-    }
-  }
-  Encoder.with_defaults = function () {
-    return new Encoder();
-  };
-  return {
-    default: init,
-    Encoder,
-  };
-});
-
 describe('ui/QrTxGenerator', () => {
   test('should render transaction qr', () => {
     const payload = u8aConcat(
