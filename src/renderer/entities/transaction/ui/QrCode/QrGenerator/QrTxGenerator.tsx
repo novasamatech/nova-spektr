@@ -1,4 +1,4 @@
-import init, { Encoder } from 'raptorq';
+import init, { Encoder } from 'raptorq/raptorq';
 import { useCallback, useEffect, useState } from 'react';
 
 import { Skeleton } from '@/shared/ui-kit';
