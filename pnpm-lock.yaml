@@ -21,7 +21,7 @@ importers:
         specifier: file:.papi/descriptors
         version: file:.papi/descriptors(polkadot-api@1.9.10(@swc/core@1.12.14(@swc/helpers@0.5.17))(jiti@2.4.2)(postcss@8.5.3)(rxjs@7.8.2)(tsx@4.19.2)(yaml@2.7.1))
       '@polkadot-api/merkleize-metadata':
-        specifier: ^1.1.20
+        specifier: 1.1.20
         version: 1.1.20
       '@polkadot/api':
         specifier: 15.9.1
