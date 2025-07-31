@@ -1,3 +1,6 @@
+import init, { Encoder } from 'raptorq';
+import { useCallback, useEffect, useState } from 'react';
+
 import { Skeleton } from '@/shared/ui-kit';
 
 import { DEFAULT_FRAME_DELAY } from './common/constants';
@@ -18,7 +21,22 @@ export const QrTxGenerator = ({
   bgColor = 'none',
   delay = DEFAULT_FRAME_DELAY,
 }: Props) => {
-  const image = useGenerator(payload, skipEncoding, delay, bgColor);
+  const [encoder, setEncoder] = useState<Encoder>();
+
+  const createEncoder = useCallback(async () => {
+    try {
+      await init();
+      setEncoder(Encoder.with_defaults(payload, 128));
+    } catch (error) {
+      console.error('Failed to create encoder:', error);
+    }
+  }, [payload]);
+
+  useEffect(() => {
+    createEncoder();
+  }, [createEncoder]);
+
+  const image = useGenerator(payload, skipEncoding, delay, bgColor, encoder);
 
   if (!image) {
     return <Skeleton width={size} height={size} />;
