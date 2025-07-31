@@ -5,6 +5,23 @@ import { render } from '@testing-library/react';
 import { QrTxGenerator } from './QrTxGenerator';
 import { CRYPTO_SR25519, Command, SUBSTRATE_ID } from './common/constants';
 
+vi.mock('raptorq/raptorq', () => {
+  const init = () => Promise.resolve();
+  class Encoder {
+    static with_defaults: () => Encoder;
+    encode(data: Uint8Array) {
+      return [data];
+    }
+  }
+  Encoder.with_defaults = function () {
+    return new Encoder();
+  };
+  return {
+    default: init,
+    Encoder,
+  };
+});
+
 describe('ui/QrTxGenerator', () => {
   test('should render transaction qr', () => {
     const payload = u8aConcat(
@@ -15,7 +32,7 @@ describe('ui/QrTxGenerator', () => {
       u8aToU8a('my_payload'),
       u8aToU8a('0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e'),
     );
-    const { container } = render(<QrTxGenerator payload={payload} size="200px" />);
+    const { container } = render(<QrTxGenerator payload={payload} size="200px" skipEncoding />);
 
     const svgQr = container.querySelector('svg');
     expect(svgQr).toBeInTheDocument();
