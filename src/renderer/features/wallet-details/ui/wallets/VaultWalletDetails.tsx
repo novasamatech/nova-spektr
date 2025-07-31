@@ -22,7 +22,7 @@ import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wal
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { DerivationsAddressModal, ExportKeysModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
-import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
 import { vaultDetailsModel } from '../../model/vault-details-model';
@@ -300,7 +300,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
         onComplete={handleVaultKeys}
       />
 
-      <ForgetWalletModal
+      <ForgetWalletConfirm
         wallet={wallet}
         isOpen={isConfirmForgetOpen}
         onClose={toggleConfirmForget}

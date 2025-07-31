@@ -1,5 +1,5 @@
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
@@ -8,7 +8,7 @@ import { useTheme } from '../Theme/useTheme';
 
 type Props = {
   title: string;
-  description: string;
+  description: ReactNode;
   cancelText: string;
   confirmText: string;
   type?: 'alert' | 'warning';
@@ -52,7 +52,11 @@ const Root = ({
             )}
           >
             <AlertDialog.Title className="font-manrope text-small-title">{title}</AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-text-tertiary">{description}</AlertDialog.Description>
+            <AlertDialog.Description className="mt-2 text-text-tertiary">
+              <Box verticalAlign="center" horizontalAlign="center" gap={2} direction="column">
+                {description}
+              </Box>
+            </AlertDialog.Description>
             <Box horizontalAlign="center" direction="row" gap={3} padding={[4, 0, 0]}>
               <AlertDialog.Cancel asChild>
                 <Button className="flex-1" size="sm" variant="fill" pallet="secondary" onClick={onCancel}>
