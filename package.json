@@ -78,7 +78,7 @@
     "@ariakit/react": "0.4.14",
     "@headlessui/react": "^1.7.19",
     "@polkadot-api/descriptors": "file:.papi/descriptors",
-    "@polkadot-api/merkleize-metadata": "^1.1.20",
+    "@polkadot-api/merkleize-metadata": "1.1.20",
     "@polkadot/api": "15.9.1",
     "@polkadot/api-augment": "15.9.1",
     "@polkadot/keyring": "13.4.3",
