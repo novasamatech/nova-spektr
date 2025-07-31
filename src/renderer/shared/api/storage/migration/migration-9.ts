@@ -1,11 +1,21 @@
 import { type Transaction } from 'dexie';
 
-import { AccountType, type Wallet } from '@/shared/core';
-import { type DeprecatedProxiedAccount } from '@/shared/core/types/account';
+import { AccountType, type ProxyType, type ProxyVariant, type Wallet } from '@/shared/core';
 // eslint-disable-next-line boundaries/element-types
 import { nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, type ChainAccount } from '@/domains/network';
+
+interface DeprecatedProxiedAccount extends ChainAccount {
+  accountType: AccountType.PROXIED;
+  proxyAccountId: AccountId;
+  delay: number;
+  proxyType: ProxyType;
+  proxyVariant: ProxyVariant;
+  blockNumber?: number;
+  extrinsicIndex?: number;
+}
 
 function isDeprecatedProxiedAccount(account: AnyAccount): account is DeprecatedProxiedAccount {
   return (

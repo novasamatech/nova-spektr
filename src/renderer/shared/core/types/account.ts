@@ -54,17 +54,6 @@ export interface WcAccount extends ChainAccount {
   };
 }
 
-// @deprecated Use `ProxiedAccount`
-export interface DeprecatedProxiedAccount extends ChainAccount {
-  accountType: AccountType.PROXIED;
-  proxyAccountId: AccountId;
-  delay: number;
-  proxyType: ProxyType;
-  proxyVariant: ProxyVariant;
-  blockNumber?: number;
-  extrinsicIndex?: number;
-}
-
 export interface ProxiedAccount extends ChainAccount {
   accountType: AccountType.PROXIED;
   connections: ProxiedConnection[];
