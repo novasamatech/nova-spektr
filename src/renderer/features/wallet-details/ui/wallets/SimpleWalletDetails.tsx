@@ -14,7 +14,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -176,7 +176,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
           </Tabs>
         )}
 
-        <ForgetWalletModal
+        <ForgetWalletConfirm
           wallet={wallet}
           isOpen={isConfirmForgetOpen}
           onClose={toggleConfirmForget}
