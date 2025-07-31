@@ -33,8 +33,10 @@ export const QrTxGenerator = ({
   }, [payload]);
 
   useEffect(() => {
-    createEncoder();
-  }, [createEncoder]);
+    if (!skipEncoding) {
+      createEncoder();
+    }
+  }, [createEncoder, skipEncoding]);
 
   const image = useGenerator(payload, skipEncoding, delay, bgColor, encoder);
 
