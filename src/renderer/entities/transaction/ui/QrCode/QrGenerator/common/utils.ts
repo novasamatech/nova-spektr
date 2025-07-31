@@ -104,14 +104,6 @@ export const createSubstrateSignWithProofPayload = (
       SUBSTRATE_ID,
       createDynamicDerivationsSignPayload(address, payload, genesisHash, derivationPath, cryptoType),
     );
-    // return createDynamicDerivationsSignWithProofPayload(
-    //   address,
-    //   metadataProof,
-    //   payload,
-    //   genesisHash,
-    //   derivationPath,
-    //   cryptoType,
-    // );
   }
 
   return createSignWithProofPayload(address, metadataProof, payload, genesisHash, cryptoType);
