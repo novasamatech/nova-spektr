@@ -90,13 +90,14 @@ const $coreTx = combine(
   {
     signatory: flexibleMultisigModel.$signer,
     totalDeposit: flexibleMultisigModel.$totalDeposit,
+    isMultisigExists: formModel.$multisigAlreadyExists,
     threshold: formModel.form.fields.threshold.$value,
     chain: formModel.$chain,
     multisigAccountId: formModel.$multisigAccountId,
     signatories: signatoryModel.$signatories,
     proxyAddress: $proxyAddress,
   },
-  ({ signatories, chain, threshold, signatory, multisigAccountId, proxyAddress, totalDeposit }) => {
+  ({ signatories, chain, threshold, signatory, multisigAccountId, proxyAddress, totalDeposit, isMultisigExists }) => {
     if (
       nullable(multisigAccountId) ||
       nullable(signatory) ||
@@ -118,6 +119,7 @@ const $coreTx = combine(
       threshold,
       proxyAccountId: toAccountId(proxyAddress),
       proxyDeposit: totalDeposit.toString(),
+      isMultisigExists,
     });
   },
 );
@@ -234,7 +236,7 @@ sample({
 
     const multisigAccount: Omit<NoID<FlexibleMultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
-      name: name.trim(),
+      name: `${name.trim()} Multisig`,
       accountId: multisigAccountId!,
       threshold: threshold,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,

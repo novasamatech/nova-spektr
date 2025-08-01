@@ -172,7 +172,7 @@ export const SelectSignatoriesThreshold = () => {
               </Alert>
             )}
 
-            {existingMultisig && (
+            {existingMultisig && !existingProxy && (
               <Alert
                 variant="info"
                 active={multisigAlreadyExists}
