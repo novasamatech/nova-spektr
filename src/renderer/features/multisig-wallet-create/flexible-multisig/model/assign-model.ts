@@ -165,32 +165,12 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
-  source: {
-    chain: formModel.$chain,
-    coreTx: $coreTx,
-    tx: $tx,
-    initiator: flexibleMultisigModel.$initiator,
-    signatory: flexibleMultisigModel.$signer,
-  },
-  filter: ({ chain, coreTx, tx, signatory }) => {
-    return nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(signatory);
-  },
-  fn: ({ coreTx, tx, chain, signatory, initiator }, signParams) => {
-    return {
-      event: {
-        ...signParams,
-        chain: chain!,
-        account: initiator!,
-        signatory: signatory!,
-        coreTxs: [coreTx!],
-        wrappedTxs: [tx!],
-      },
-      step: Step.SUBMIT,
-    };
-  },
+  clock: signModel.signed,
+  source: $tx,
+  filter: tx => nonNullable(tx),
+  fn: (_, payload) => ({ event: payload, step: Step.SUBMIT }),
   target: spread({
-    event: submitModel.events.formInitiated,
+    event: submitModel.init,
     step: flexibleMultisigModel.stepChanged,
   }),
 });
