@@ -225,9 +225,9 @@
       "leaveFlowDescription": "Leaving this page stops the Flexible Multisig setup.",
       "leaveFlowTitle": "Please stay on this page",
       "leaveTitle": "Do you want to leave creation without saving?",
-      "multisigExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists",
-      "multisigAndProxyExistTitle": "Multisig wallet and pure proxy already exists",
       "multisigAndProxyExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists and it is already connected to a pure proxy <proxy/>. You create an additional pure proxy controlled by this multisig.",
+      "multisigAndProxyExistTitle": "Multisig wallet and pure proxy already exists",
+      "multisigExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists",
       "nameNetworkDescription": "Select the network and the name of your flexible multisig",
       "networkDescription": "This new flexible multisig will only work on this network. To carry out operations on a different network you will need to create a new flexible multisig.",
       "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit, proxy deposit and network fee on a selected account",
@@ -238,8 +238,8 @@
       "startUsing": "Start using",
       "threshold": "Minimum number of signatories needed to approve a transaction.",
       "title": "Create flexible multisig",
-      "titleOn": "Create flexible multisig on",
-      "titleAssignControl": "Assign control on"
+      "titleAssignControl": "Assign control on",
+      "titleOn": "Create flexible multisig on"
     },
     "multisig": "Multisig",
     "multisigCreationFeeLabel": "Additional cost",
