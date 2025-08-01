@@ -3,7 +3,8 @@ import { hexToU8a } from '@polkadot/util';
 import { type Address } from '@/shared/core';
 import { cnTw, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Identicon, Truncate } from '@/shared/ui';
+import { Truncate } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 
@@ -83,9 +84,7 @@ export const AccountAddress = ({
 
   return (
     <span className={cnTw('flex items-center gap-x-2', className)}>
-      {showIcon && (
-        <Identicon className="inline-block" address={currentAddress} size={size} background={false} canCopy={canCopy} />
-      )}
+      {showIcon && <Identicon address={currentAddress} size={size} background={false} canCopy={canCopy} />}
       {nameContent || addressContent}
     </span>
   );

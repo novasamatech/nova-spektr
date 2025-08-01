@@ -16,8 +16,8 @@ import {
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
-import { Button, CaptionText, Icon, Identicon, InputHint } from '@/shared/ui';
-import { AccountSelect, Address, SignatorySelect } from '@/shared/ui-entities';
+import { Button, CaptionText, InputHint } from '@/shared/ui';
+import { AccountSelect, Address, Identicon, SignatorySelect } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -321,11 +321,7 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      {validateAddress(destination.value, chain) ? (
-        <Identicon size={20} address={destination.value} background={false} />
-      ) : (
-        <Icon size={20} name="emptyIdenticon" />
-      )}
+      <Identicon size={20} address={destination.value} background={false} />
     </div>
   );
 

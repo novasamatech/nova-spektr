@@ -1,8 +1,8 @@
 import { type Chain, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, HelpText, Icon, Identicon } from '@/shared/ui';
-import { AccountExplorers, Hash } from '@/shared/ui-entities';
+import { FootnoteText, HelpText, Icon } from '@/shared/ui';
+import { AccountExplorers, Hash, Identicon } from '@/shared/ui-entities';
 import { Checkbox } from '@/shared/ui-kit';
 import { KeyIcon, accountUtils } from '@/entities/wallet';
 

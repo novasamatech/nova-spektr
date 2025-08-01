@@ -1267,7 +1267,7 @@
       "requestPairing": "Request pairing",
       "requestRejected": "Request was rejected",
       "selectAccountLabel": "Account",
-      "selectAccountPlacehilder": "Select one of accounts",
+      "selectAccountPlaceholder": "Select one of accounts",
       "subWalletTitle": "Add SubWallet extension account",
       "talismanTitle": "Add Talisman extension account"
     },

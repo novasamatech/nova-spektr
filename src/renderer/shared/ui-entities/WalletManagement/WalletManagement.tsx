@@ -2,16 +2,17 @@ import { type PropsWithChildren, type ReactNode } from 'react';
 
 import { type Address, type Chain, type Wallet } from '@/shared/core';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, Icon, type IconTheme, Identicon } from '@/shared/ui';
+import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
 import { ChainIcon } from '../ChainIcon/ChainIcon';
+import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
 
 type Props = {
   wallet: Wallet;
   description?: string | ReactNode;
   meta?: ReactNode;
   address: Address | undefined;
-  theme: IconTheme;
+  theme?: IdenticonIconTheme;
   onClick: () => void;
   chain?: Chain | null;
   label?: string | null;
@@ -42,7 +43,7 @@ export const WalletManagement = ({
           <div className="row-span-2 h-4 w-4 shrink-0" />
         )}
 
-        <Identicon canCopy={false} address={address} size={16} background={false} theme={theme} />
+        <Identicon canCopy={false} address={address ?? ''} size={16} background={false} theme={theme} />
 
         <div className="flex min-w-0 flex-grow flex-col">
           <div className="flex items-center gap-x-2">

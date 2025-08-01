@@ -25,7 +25,6 @@ export { InfoLink } from './InfoLink/InfoLink';
 export { RadioGroup } from './RadioGroup/RadioGroup';
 export { Accordion } from './Accordion/Accordion';
 export { Alert } from './Alert/Alert';
-export { Identicon, type IconTheme } from './Identicon/Identicon';
 export { Counter } from './Counter/Counter';
 export { StatusLabel } from './StatusLabel/StatusLabel';
 export { Switch } from './Switch/Switch';

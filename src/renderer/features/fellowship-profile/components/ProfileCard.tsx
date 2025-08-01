@@ -3,8 +3,8 @@ import { type PropsWithChildren, memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, getRelativeTimeFromApi, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, Button, Duration, FootnoteText, Icon, Identicon, SmallTitleText } from '@/shared/ui';
-import { CollectiveRank, Hash } from '@/shared/ui-entities';
+import { BodyText, Button, Duration, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { CollectiveRank, Hash, Identicon } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
 import { identityService } from '@/domains/network';

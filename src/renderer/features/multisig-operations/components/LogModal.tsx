@@ -13,7 +13,8 @@ import {
   toAddress,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton, Identicon } from '@/shared/ui';
+import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigEvent, type MultisigOperation } from '@/domains/network';
 import { type ExtendedChain } from '@/entities/network';
