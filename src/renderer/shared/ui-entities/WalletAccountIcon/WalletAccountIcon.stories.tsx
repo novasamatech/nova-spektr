@@ -10,7 +10,6 @@ import { WalletAccountIcon } from './WalletAccountIcon';
 const meta: Meta<typeof WalletAccountIcon> = {
   title: 'Design System/entities/WalletAccountIcon',
   component: WalletAccountIcon,
-  render: args => <WalletAccountIcon {...args} />,
 };
 
 export default meta;
