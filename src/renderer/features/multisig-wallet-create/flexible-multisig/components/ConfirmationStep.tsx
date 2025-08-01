@@ -64,7 +64,9 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
               </Box>
             )}
             <Separator className="my-4" />
-            <SmallTitleText>2. {t('createMultisigAccount.flexibleMultisig.assignControl')}</SmallTitleText>
+            <SmallTitleText className={nonNullable(proxyAddress) ? 'text-text-primary' : 'text-text-secondary'}>
+              2. {t('createMultisigAccount.flexibleMultisig.assignControl')}
+            </SmallTitleText>
             <FootnoteText className="mt-2 text-text-tertiary">
               {t('createMultisigAccount.flexibleMultisig.assignControlDescription')}
             </FootnoteText>

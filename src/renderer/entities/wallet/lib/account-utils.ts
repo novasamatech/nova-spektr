@@ -36,6 +36,7 @@ export const accountUtils = {
   isVaultShardAccount,
   isMultisigAccount,
   isFlexibleMultisigAccount,
+  isAnyMultisigAccount,
   isMultisigSignatoryAccount,
   isWcAccount,
   isProxiedAccount,
@@ -109,6 +110,10 @@ function isMultisigAccount(account: Partial<AnyAccount>): account is MultisigAcc
 
 function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is FlexibleMultisigAccount {
   return 'accountType' in account && account.accountType === AccountType.FLEX_MULTISIG;
+}
+
+function isAnyMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount | FlexibleMultisigAccount {
+  return isMultisigAccount(account) || isFlexibleMultisigAccount(account);
 }
 
 function isMultisigSignatoryAccount(account: Partial<AnyAccount>): account is MultisigSignatoryAccount {
