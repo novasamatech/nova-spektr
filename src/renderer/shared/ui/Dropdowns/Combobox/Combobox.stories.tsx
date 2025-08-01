@@ -1,7 +1,7 @@
 import { type Meta, type StoryFn } from '@storybook/react-vite';
 
+import { Identicon } from '@/shared/ui-entities';
 import { Icon } from '../../Icon/Icon';
-import { Identicon } from '../../Identicon/Identicon';
 
 import { Combobox } from './Combobox';
 

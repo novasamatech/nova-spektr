@@ -18,6 +18,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { Input } from '../Input/Input';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';
+import { ThemeProvider } from '../Theme/ThemeProvider';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
@@ -58,23 +59,25 @@ const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inpu
   const ctx = useMemo(() => ({ open, onOpenChange, testId, comboboxRef, listboxRef, anchorRef }), [open, testId]);
 
   return (
-    <Context.Provider value={ctx}>
-      <RadixPopover.Root modal open={open} onOpenChange={onOpenChange}>
-        <Ariakit.ComboboxProvider
-          open={open}
-          setOpen={onOpenChange}
-          defaultValue={value}
-          defaultSelectedValue={value}
-          value={value}
-          selectedValue={value}
-          setSelectedValue={onChange}
-          setValue={value => startTransition(() => onChange(value.trim()))}
-        >
-          <Trigger {...inputProps} onChange={onInput} />
-          <Content>{children}</Content>
-        </Ariakit.ComboboxProvider>
-      </RadixPopover.Root>
-    </Context.Provider>
+    <ThemeProvider preferStaticContent>
+      <Context.Provider value={ctx}>
+        <RadixPopover.Root modal open={open} onOpenChange={onOpenChange}>
+          <Ariakit.ComboboxProvider
+            open={open}
+            setOpen={onOpenChange}
+            defaultValue={value}
+            defaultSelectedValue={value}
+            value={value}
+            selectedValue={value}
+            setSelectedValue={onChange}
+            setValue={value => startTransition(() => onChange(value.trim()))}
+          >
+            <Trigger {...inputProps} onChange={onInput} />
+            <Content>{children}</Content>
+          </Ariakit.ComboboxProvider>
+        </RadixPopover.Root>
+      </Context.Provider>
+    </ThemeProvider>
   );
 };
 

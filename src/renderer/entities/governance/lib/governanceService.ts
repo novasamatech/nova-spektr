@@ -29,29 +29,34 @@ async function parseProposal(
   proposal: FrameSupportPreimagesBounded,
   api: ApiPromise,
   preimageMap: PreimageMap,
-): Promise<Proposal | null> {
-  let proposalHex: HexString | null = null;
+): Promise<{ proposal: Proposal | null; proposalHash: HexString | null }> {
+  let proposalHash: HexString | null = null;
 
   if (proposal.type === 'Inline') {
-    proposalHex = proposal.data;
+    proposalHash = proposal.data;
   }
 
   if (proposal.type === 'Lookup') {
     const preimage = preimageMap.get(proposal.data.hash_);
     if (preimage) {
-      proposalHex = preimage;
+      proposalHash = preimage;
     } else {
       const preimage = await api.query.preimage.preimageFor([proposal.data.hash_, proposal.data.len]);
       if (preimage.isSome) {
-        proposalHex = u8aToHex(preimage.value);
+        proposalHash = u8aToHex(preimage.value);
       }
     }
   }
 
-  if (nullable(proposalHex)) return null;
+  if (nullable(proposalHash)) {
+    return {
+      proposal: null,
+      proposalHash,
+    };
+  }
 
   try {
-    const struct = api.registry.createType('Proposal', proposalHex);
+    const struct = api.registry.createType('Proposal', proposalHash);
 
     if (struct.method === 'spendLocal' && struct.section === 'treasury') {
       const amount = String(struct.args.at(0)?.toHuman()).replaceAll(',', '');
@@ -61,18 +66,27 @@ async function parseProposal(
 
       if (amount && parsedBeneficiary) {
         return {
-          type: 'Spend',
-          amount: new BN(amount),
-          beneficiary: parsedBeneficiary,
+          proposal: {
+            type: 'Spend',
+            amount: new BN(amount),
+            beneficiary: parsedBeneficiary,
+          },
+          proposalHash,
         };
       }
     }
   } catch (e) {
     console.error(e);
-    return null;
+    return {
+      proposal: null,
+      proposalHash,
+    };
   }
 
-  return null;
+  return {
+    proposal: null,
+    proposalHash,
+  };
 }
 
 async function createPreimageMap(
@@ -125,7 +139,8 @@ async function mapReferendum(
         referendumId,
         type: info.type,
         track: info.data.track.toString(),
-        proposal,
+        proposal: proposal.proposal,
+        rawProposal: proposal.proposalHash,
         submitted: info.data.submitted,
         enactment: {
           value: info.data.enactment.data,

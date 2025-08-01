@@ -5,8 +5,8 @@ import { type PropsWithChildren } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
-import { Button, FootnoteText, Icon, IconButton, Identicon, InputHint, Loader, SmallTitleText } from '@/shared/ui';
-import { ChainAccountsList } from '@/shared/ui-entities';
+import { Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
+import { ChainAccountsList, Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { identity as identityModel, identityService } from '@/domains/network';
 import { IDENTITY_CHAIN } from '../lib/constants';
@@ -71,13 +71,7 @@ export const PairingFormModal = ({ children }: Props) => {
                   invalid={address.hasError()}
                   placeholder={t('onboarding.watchOnly.accountAddressPlaceholder')}
                   value={address.value}
-                  prefixElement={
-                    address.isValid ? (
-                      <Identicon address={address.value} background={false} />
-                    ) : (
-                      <Icon name="emptyIdenticon" />
-                    )
-                  }
+                  prefixElement={<Identicon address={address.value} background={false} />}
                   testId={TEST_IDS.ONBOARDING.WALLET_ADDRESS_INPUT}
                   onChange={address.onChange}
                 />

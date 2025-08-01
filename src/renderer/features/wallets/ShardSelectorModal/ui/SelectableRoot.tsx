@@ -1,7 +1,7 @@
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { FootnoteText, Identicon } from '@/shared/ui';
-import { RootExplorers } from '@/shared/ui-entities';
+import { FootnoteText } from '@/shared/ui';
+import { Identicon, RootExplorers } from '@/shared/ui-entities';
 import { Checkbox } from '@/shared/ui-kit';
 
 type Props = {

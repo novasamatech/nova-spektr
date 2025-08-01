@@ -2,9 +2,8 @@ import { useStoreMap, useUnit } from 'effector-react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
-import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
-import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
-import { ChainIcon } from '@/shared/ui-entities';
+import { toAddress } from '@/shared/lib/utils';
+import { ChainIcon, WalletManagement } from '@/shared/ui-entities';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
@@ -33,8 +32,6 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
   const chain = account && accountService.isChainAccount(account) ? chains[account.chainId] : null;
 
   const accountId = account?.accountId;
-  const isEthereum = isEthereumAccountId(accountId);
-  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
   if (!accountId) {
     return null;
@@ -44,7 +41,6 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
     <WalletManagement
       wallet={wallet}
       address={toAddress(accountId, { prefix: chain?.addressPrefix })}
-      theme={theme}
       meta={chain ? <ChainIcon chain={chain} size={16} /> : null}
       description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}

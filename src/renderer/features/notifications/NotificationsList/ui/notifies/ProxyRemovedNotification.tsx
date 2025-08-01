@@ -4,7 +4,8 @@ import { Trans } from 'react-i18next';
 import { type ProxyAction, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { BodyText, Identicon } from '@/shared/ui';
+import { BodyText } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { WalletIcon } from '@/entities/wallet';
@@ -41,7 +42,9 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
             values={{ address, name: notification.proxiedWalletName }}
             components={{
               identicon: (
-                <Identicon className="mx-1 inline-flex" address={address} size={16} background={false} canCopy={true} />
+                <div className="mx-1 inline-flex">
+                  <Identicon address={address} size={16} background={false} canCopy={true} />
+                </div>
               ),
               address: <p className="inline-flex" />,
             }}

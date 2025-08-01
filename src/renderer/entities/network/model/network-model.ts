@@ -19,7 +19,6 @@ import {
   type Connection,
   ConnectionStatus,
   ConnectionType,
-  type ID,
   type NoID,
 } from '@/shared/core';
 import { createBuffer, series } from '@/shared/effector';
@@ -74,28 +73,28 @@ type MetadataSubResult = {
   chainId: ChainId;
   unsubscribe: VoidFn;
 };
-const subscribeRuntimeVersionFx = createEffect(
-  async ({ api, cachedVersion }: { api: ApiPromise; cachedVersion: number | null }): Promise<MetadataSubResult> => {
-    const unsubscribe = await metadataService.subscribeRuntimeVersion({
-      api,
-      cachedRuntimeVersion: cachedVersion,
-      callback: removeMetadata,
-    });
+const subscribeRuntimeVersionFx = createEffect(async (api: ApiPromise): Promise<MetadataSubResult> => {
+  const callback = scopeBind(removeOldMetadata, { safe: true });
 
-    return { chainId: api.genesisHash.toHex(), unsubscribe };
-  },
-);
+  const unsubscribe = await metadataService.subscribeRuntimeVersion({
+    api,
+    callback,
+  });
+
+  return { chainId: api.genesisHash.toHex(), unsubscribe };
+});
 
 const unsubscribeMetadataFx = createEffect((unsubscribe: VoidFn) => {
   unsubscribe();
 });
 
-const saveMetadataFx = createEffect((metadata: NoID<ChainMetadata>[]): Promise<ChainMetadata[] | undefined> => {
+const saveMetadataFx = createEffect((metadata: NoID<ChainMetadata>[]) => {
   return storageService.metadata.createAll(metadata);
 });
 
-const removeMetadataFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => {
-  return storageService.metadata.deleteAll(ids);
+const removeMetadataFx = createEffect((metadata: ChainMetadata[]) => {
+  if (metadata.length === 0) return [];
+  return storageService.metadata.deleteAll(metadata.map((m) => m.id));
 });
 
 type CreateProviderParams = {
@@ -417,28 +416,19 @@ sample({
 
 const metadataReceived = createEvent<NoID<ChainMetadata>>();
 const saveMetadata = createBuffer({ source: metadataReceived, timeframe: 2000 });
-const removeMetadata = createEvent<ApiPromise>();
+const removeOldMetadata = createEvent<{ chainId: ChainId; receivedVersion: number }>();
 
 sample({
-  clock: removeMetadata,
+  clock: removeOldMetadata,
   source: $metadata,
-  fn: (list, removed) => {
-    return list.filter((x) => x.chainId === removed.genesisHash.toHex()).map((x) => x.id);
+  fn: (metadata, { chainId, receivedVersion }) => {
+    return metadata.filter((x) => x.chainId === chainId && x.runtimeVersion < receivedVersion);
   },
   target: removeMetadataFx,
 });
 
 sample({
-  clock: createApiFx.done,
-  source: $metadata,
-  fn: (metadata, { params, result }) => {
-    const cachedVersion = metadata.find((m) => m.chainId === params.chainId)?.runtimeVersion ?? null;
-
-    return {
-      api: result,
-      cachedVersion,
-    };
-  },
+  clock: createApiFx.doneData,
   target: subscribeRuntimeVersionFx,
 });
 
@@ -500,7 +490,7 @@ sample({
 
     return {
       metadata: cleanMetadata.concat(newMetadata!),
-      oldMetadata: oldMetadata.map((x) => x.id),
+      oldMetadata: oldMetadata,
     };
   },
   target: spread({

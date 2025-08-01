@@ -2,7 +2,8 @@ import { type MouseEvent, type PropsWithChildren } from 'react';
 
 import { type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@/shared/lib/utils';
-import { BodyText, CaptionText, FootnoteText, HelpText, Icon, Identicon } from '@/shared/ui';
+import { BodyText, CaptionText, FootnoteText, HelpText, Icon } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 import { accountUtils } from '../../lib/account-utils';
 import { KeyIcon } from '../../lib/constants';
 
