@@ -1,6 +1,5 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { createGate } from 'effector-react';
 
 import { type Chain, type ProxiedAccount, type Transaction, TransactionType, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -38,7 +37,7 @@ type FormSubmitEvent = {
   };
 };
 
-const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
+const flowStarted = createEvent<Wallet>();
 
 const formInitiated = createEvent();
 const formSubmitted = createEvent<FormSubmitEvent>();
@@ -47,7 +46,7 @@ const proxyQueryChanged = createEvent<string>();
 const proxyDepositChanged = createEvent<string>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
-const $wallet = flow.state.map(({ wallet }) => wallet);
+const $wallet = restore(flowStarted, null);
 
 const $proxyDeposit = restore(proxyDepositChanged, ZERO_BALANCE);
 const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, true);
@@ -364,7 +363,7 @@ export const formModel = {
   $isChainConnected,
   $canSubmit,
 
-  flow,
+  flowStarted,
 
   formInitiated,
   proxyQueryChanged,

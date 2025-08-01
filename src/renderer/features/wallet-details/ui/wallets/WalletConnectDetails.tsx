@@ -23,8 +23,8 @@ import { WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { permissionUtils } from '@/entities/wallet';
-import { proxyAddFeature } from '@/features/proxy-add';
-import { proxyAddPureFeature } from '@/features/proxy-add-pure';
+import { AddProxy, addProxyModel } from '@/features/proxy-add';
+import { AddPureProxied } from '@/features/proxy-add-pure';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { ForgetStep } from '../../lib/constants';
@@ -34,20 +34,10 @@ import { walletConnectForget } from '../../model/walletConnectForgot';
 import { walletConnectReconnect } from '../../model/walletConnectReconnect';
 import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
-import { type WalletAction, WalletActions } from '../components/WalletActions';
+import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
-
-const {
-  models: { addProxy },
-  views: { AddProxy },
-} = proxyAddFeature;
-
-const {
-  models: { addPureProxied },
-  views: { AddPureProxied },
-} = proxyAddPureFeature;
 
 type Props = {
   wallet: WalletConnectGroup;
@@ -73,8 +63,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   const [tab, setTab] = useState('accounts');
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isConfirmReconnectOpen, toggleConfirmReconnect] = useToggle();
-  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
-  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
+  const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
 
   const handleForgetWallet = () => {
     walletConnectForget.forget(wallet);
@@ -85,25 +74,30 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
 
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     actions.push({
-      icon: 'delegate',
-      title: t('walletDetails.common.addProxyAction'),
-      onClick: addProxy.events.flowStarted,
+      component: (
+        <AddProxy wallet={wallet}>
+          <Action title={t('walletDetails.common.addProxyAction')} icon="delegate" />
+        </AddProxy>
+      ),
     });
   }
 
   if (permissionUtils.canCreateAnyProxy(wallet)) {
     actions.push({
-      icon: 'createPureProxy',
-      title: t('walletDetails.common.addPureProxiedAction'),
-      onClick: addPureProxied.events.flowStarted,
+      component: (
+        <AddPureProxied wallet={wallet}>
+          <Action title={t('walletDetails.common.addPureProxiedAction')} icon="createPureProxy" />
+        </AddPureProxied>
+      ),
     });
   }
 
   actions.push({
-    icon: 'forget',
-    title: t('walletDetails.common.forgetButton'),
-    variant: 'danger',
-    onClick: toggleConfirmForget,
+    component: (
+      <ForgetWalletConfirm wallet={wallet} onForget={handleForgetWallet}>
+        <Action title={t('walletDetails.common.forgetButton')} icon="forget" variant="danger" />
+      </ForgetWalletConfirm>
+    ),
   });
 
   const ActionButton = <IconButton name="refresh" size={16} onClick={() => walletConnectReconnect.start()} />;
@@ -135,23 +129,23 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
               <div className="mr-1">
                 <WalletAccountIcon address={address} type={wallet.type} size={42} theme={theme} />
               </div>
-              {!isRenameModalOpen && (
+              {!isRenameInputOpen && (
                 <>
-                  <HeadlineText className="truncate text-text-primary" as="h3">
+                  <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
                     {wallet.name}
                   </HeadlineText>
                   <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
                     <StatusLabel variant={connected ? 'success' : 'waiting'} />
-                    <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                    <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
                     <WalletFiatBalance />
                   </div>
                 </>
               )}
             </Box>
 
-            <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+            <RenameWallet wallet={wallet} isOpen={isRenameInputOpen} onClose={toggleIsRenameInputOpen} />
 
-            {!isRenameModalOpen && (
+            {!isRenameInputOpen && (
               <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
                 <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
               </div>
@@ -189,7 +183,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
                 hasProxies={hasProxies}
                 className="h-[379px]"
                 canCreateProxy={canCreateProxy}
-                onAddProxy={addProxy.events.flowStarted}
+                onAddProxy={addProxyModel.events.flowStarted}
               />
             </Tabs.Content>
           </Tabs>
@@ -218,13 +212,6 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
         </FootnoteText>
       </ConfirmModal>
 
-      <ForgetWalletConfirm
-        wallet={wallet}
-        isOpen={isConfirmForgetOpen}
-        onClose={toggleConfirmForget}
-        onForget={handleForgetWallet}
-      />
-
       <StatusModal
         isOpen={walletDetailsUtils.isForgetModalOpen(forgetStep)}
         title={t(
@@ -249,9 +236,6 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.walletConnect.abortRejectButton')}
         </Button>
       </StatusModal>
-
-      <AddProxy wallet={wallet} />
-      <AddPureProxied wallet={wallet} />
     </>
   );
 };

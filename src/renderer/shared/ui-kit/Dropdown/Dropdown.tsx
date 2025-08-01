@@ -18,6 +18,7 @@ type ContextProps = {
   width?: 'auto' | 'trigger';
   keepOpen?: boolean;
   testId?: string;
+  avoidCollisions?: boolean;
 };
 
 const Context = createContext<ContextProps>({});
@@ -39,11 +40,12 @@ const Root = ({
   width = 'auto',
   keepOpen = false,
   testId = 'Dropdown',
+  avoidCollisions = false,
   children,
 }: RootProps) => {
   const ctx = useMemo(
-    () => ({ side, sideOffset, align, alignOffset, width, keepOpen, testId }),
-    [side, sideOffset, align, alignOffset, width, keepOpen, testId],
+    () => ({ side, sideOffset, align, alignOffset, width, keepOpen, testId, avoidCollisions }),
+    [side, sideOffset, align, alignOffset, width, keepOpen, testId, avoidCollisions],
   );
 
   return (
@@ -73,7 +75,7 @@ const Separator = () => {
 
 const Content = ({ children }: PropsWithChildren) => {
   const { portalContainer } = useTheme();
-  const { side, sideOffset, align, alignOffset, width, testId } = useContext(Context);
+  const { side, sideOffset, align, alignOffset, width, testId, avoidCollisions } = useContext(Context);
 
   const calculatedWidth = width === 'trigger' ? 'var(--radix-dropdown-menu-trigger-width)' : undefined;
 
@@ -83,7 +85,7 @@ const Content = ({ children }: PropsWithChildren) => {
         <DropdownMenu.Content
           loop
           asChild
-          avoidCollisions={false}
+          avoidCollisions={avoidCollisions}
           side={side}
           align={align}
           style={{ width: calculatedWidth }}

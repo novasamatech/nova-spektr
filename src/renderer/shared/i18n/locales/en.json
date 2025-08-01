@@ -2179,6 +2179,7 @@
       "renameTitle": "Rename wallet",
       "renameWallet": "Enter wallet name",
       "title": "Wallet details",
+      "viewDetails": "View details",
       "walletRemoved": "Wallet removed"
     },
     "multisig": {

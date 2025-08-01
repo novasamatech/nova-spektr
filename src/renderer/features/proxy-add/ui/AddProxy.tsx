@@ -1,4 +1,5 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
+import { type PropsWithChildren, useEffect, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -13,28 +14,37 @@ import { AddProxyConfirmation } from '@/features/operations/OperationsConfirm/Ad
 import { addProxyUtils } from '../lib/add-proxy-utils';
 import { Step } from '../lib/types';
 import { addProxyModel } from '../model/add-proxy-model';
-import { formModel } from '../model/form-model';
 
 import { AddProxyForm } from './AddProxyForm';
 
-type Props = {
+type Props = PropsWithChildren<{
   wallet: Wallet | null;
-};
+}>;
 
-export const AddProxy = ({ wallet }: Props) => {
-  useGate(formModel.flow, { wallet });
-
+export const AddProxy = ({ wallet, children }: Props) => {
   const { t } = useI18n();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const step = useUnit(addProxyModel.$step);
   const chain = useUnit(addProxyModel.$chain);
   const initiatorWallet = useUnit(addProxyModel.$initiatorWallet);
 
-  const [isModalOpen, closeModal] = useModalClose(!addProxyUtils.isNoneStep(step), addProxyModel.output.flowClosed);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     addProxyUtils.isBasketStep(step),
     addProxyModel.output.flowClosed,
   );
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    addProxyModel.output.flowClosed();
+  };
+
+  useEffect(() => {
+    if (wallet && isModalOpen) {
+      addProxyModel.events.flowStarted(wallet);
+    }
+  }, [wallet, isModalOpen]);
 
   const getModalTitle = (step: Step, chain: Chain | null) => {
     if (addProxyUtils.isInitStep(step) || !chain) {
@@ -60,8 +70,11 @@ export const AddProxy = ({ wallet }: Props) => {
     );
   }
 
+  console.log('rendering modal bitch', { wallet, isModalOpen, step });
+
   return (
-    <Modal size="md" height="fit" isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size="md" height="fit" isOpen={isModalOpen} onToggle={setIsModalOpen}>
+      <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{getModalTitle(step, chain)}</Modal.Title>
       <Modal.Content>
         {addProxyUtils.isInitStep(step) && <AddProxyForm />}

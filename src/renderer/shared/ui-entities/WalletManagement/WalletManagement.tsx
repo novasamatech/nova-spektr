@@ -35,7 +35,7 @@ export const WalletManagement = ({
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
       )}
     >
-      <button className="flex w-full items-center gap-x-2 rounded py-1.5 pl-2 pr-8" onClick={onClick}>
+      <button className="flex w-full items-center gap-x-2 rounded py-1.5 pl-2 pr-10" onClick={onClick}>
         {wallet.isActive ? (
           <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
         ) : (
@@ -72,14 +72,7 @@ export const WalletManagement = ({
         </div>
       </button>
 
-      <div
-        className={cnTw(
-          'absolute right-2 top-1/2 flex -translate-y-1/2 opacity-0 transition-opacity',
-          'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
-        )}
-      >
-        {children}
-      </div>
+      <div className="absolute right-2 top-1/2 flex -translate-y-1/2">{children}</div>
     </div>
   );
 };
