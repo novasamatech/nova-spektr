@@ -112,7 +112,7 @@ function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is Fle
   return 'accountType' in account && account.accountType === AccountType.FLEX_MULTISIG;
 }
 
-function isAnyMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount {
+function isAnyMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount | FlexibleMultisigAccount {
   return isMultisigAccount(account) || isFlexibleMultisigAccount(account);
 }
 
