@@ -5,14 +5,13 @@ import { type WalletConnectGroup } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { isEthereumAccountId, isPolkadotChain } from '@/shared/lib/utils';
+import { isPolkadotChain } from '@/shared/lib/utils';
 import {
   Button,
   ConfirmModal,
   FootnoteText,
   HeadlineText,
   IconButton,
-  type IconTheme,
   Separator,
   SmallTitleText,
   StatusLabel,
@@ -120,9 +119,6 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
     walletAccounts.at(0);
   const address = mainAccount?.accountId;
 
-  const isEthereum = isEthereumAccountId(address);
-  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
-
   return (
     <>
       <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
@@ -133,7 +129,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
           <div className="mb-4 flex items-center justify-between px-5 pb-6 pt-4">
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
-                <WalletAccountIcon address={address} type={wallet.type} size={42} theme={theme} />
+                <WalletAccountIcon address={address} type={wallet.type} size={42} />
               </div>
               {!isRenameModalOpen && (
                 <>

@@ -2,7 +2,8 @@ import { type MouseEvent } from 'react';
 
 import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, IconButton, Identicon } from '@/shared/ui';
+import { BodyText, IconButton } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 
 type Props = {
   name: string;

@@ -13,7 +13,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { copyToClipboard, isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, HeadlineText, HelpText, IconButton, type IconTheme, Separator } from '@/shared/ui';
+import { FootnoteText, HeadlineText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
@@ -165,7 +165,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
   if (nullable(address)) return null;
   const isEthereum = isEthereumAccountId(address);
-  const theme: IconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
+  const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
   return (
     <>

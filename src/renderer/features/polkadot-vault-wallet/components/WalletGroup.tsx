@@ -4,7 +4,7 @@ import { memo } from 'react';
 import { type PolkadotVaultGroup, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { isEthereumAccountId, nullable, performSearch } from '@/shared/lib/utils';
-import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
+import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -63,7 +63,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
               if (nullable(address)) return null;
 
               const isEthereum = isEthereumAccountId(address);
-              const theme: IconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
+              const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
               return (
                 <WalletManagement
