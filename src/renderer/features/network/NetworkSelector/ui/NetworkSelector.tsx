@@ -52,7 +52,7 @@ export const NetworkSelector = ({
               open && SelectButtonStyle[theme].open,
               SelectButtonStyle[theme].disabled,
               'bg-input-background text-text-primary',
-              'rounded border px-3 py-[7px] text-footnote outline-offset-1',
+              'text-footnote border-filter-border rounded-sm border px-3 py-[7px] outline-offset-1',
               'flex w-[248px] items-center justify-between gap-x-2',
             )}
             onClick={scroll}
@@ -75,7 +75,7 @@ export const NetworkSelector = ({
           >
             <div
               ref={ref}
-              className="absolute z-20 mt-1 w-full rounded border border-token-container-border bg-input-background px-1 py-1 shadow-card-shadow"
+              className="border-token-container-border bg-input-background shadow-card-shadow absolute z-20 mt-1 w-full rounded-sm border px-1 py-1"
             >
               <Listbox.Options className="max-h-64 overflow-y-auto overscroll-contain">
                 {connectionList.map((data) => {
@@ -87,15 +87,15 @@ export const NetworkSelector = ({
                       value={data}
                       className={cnTw(
                         OptionStyle,
-                        'mb-1 last:mb-0 ui-selected:bg-selected-background ui-active:bg-action-background-hover',
+                        'ui-selected:bg-selected-background ui-active:bg-action-background-hover mb-1 last:mb-0',
                       )}
                     >
                       <div className="flex items-center gap-x-4">
                         <div className="flex h-8 flex-1 flex-col justify-center overflow-hidden pr-1">
-                          <FootnoteText className="truncate text-text-secondary">
+                          <FootnoteText className="text-text-secondary truncate">
                             {Title[type](t, node?.name)}
                           </FootnoteText>
-                          <HelpText className="truncate text-text-tertiary">{node?.url}</HelpText>
+                          <HelpText className="text-text-tertiary truncate">{node?.url}</HelpText>
                         </div>
                         {node && isCustom && (
                           <>

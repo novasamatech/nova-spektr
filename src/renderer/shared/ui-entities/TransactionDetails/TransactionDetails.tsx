@@ -48,7 +48,7 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
   const isComplexAccountStructure = nullable(initiators.find(i => i === signatory));
 
   return (
-    <dl className="flex w-full flex-col gap-y-4 text-footnote">
+    <dl className="text-footnote flex w-full flex-col gap-y-4">
       {!isComplexAccountStructure && (
         <>
           {nonNullable(initiatorWallet) && (
@@ -60,7 +60,7 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
 
           <DetailRow label={t('transaction.details.account')}>
             {initiators.length === 0 && (
-              <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+              <div className="bg-icon-accent rounded-[30px] px-1.5 py-px">
                 <CaptionText className="text-white">{initiators.length}</CaptionText>
               </div>
             )}
@@ -70,10 +70,10 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
             {initiators.length > 1 && (
               <button
                 type="button"
-                className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
+                className="group hover:bg-action-background-hover flex items-center gap-x-1 rounded-sm px-2 py-1"
                 onClick={toggleAccounts}
               >
-                <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+                <div className="bg-icon-accent rounded-[30px] px-1.5 py-px">
                   <CaptionText className="text-white">{initiators.length}</CaptionText>
                 </div>
                 <Icon className="group-hover:text-icon-hover" name="info" size={16} />

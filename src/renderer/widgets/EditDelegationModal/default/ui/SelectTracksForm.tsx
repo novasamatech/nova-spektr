@@ -46,10 +46,10 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
         <OperationTitle title={t('operations.modalTitles.editDelegationOn')} chainId={network.chain.chainId} />
       </Modal.Title>
       <Modal.Content>
-        <div className="flex h-[582px] w-[896px] flex-col gap-6 bg-card-background">
+        <div className="bg-card-background flex h-[582px] w-[896px] flex-col gap-6">
           <SmallTitleText className="px-5">{t('governance.addDelegation.selectTrackTitle')}</SmallTitleText>
 
-          <hr className="w-full border-filter-border" />
+          <hr className="border-filter-border w-full" />
 
           <div className="flex flex-1 flex-col gap-6 px-5">
             <div className="flex gap-3">

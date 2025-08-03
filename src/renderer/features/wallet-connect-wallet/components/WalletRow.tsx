@@ -44,7 +44,7 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
       wallet={wallet}
       address={address}
       meta={<span className={cnTw('h-1.5 w-1.5 rounded-full', connected ? 'bg-icon-positive' : 'bg-icon-default')} />}
-      description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
+      description={<WalletFiatBalance walletId={wallet.id} className="text-help-text max-w-[215px] truncate" />}
       onClick={() => onSelect(wallet)}
     >
       <Slot id={walletActionsSlot} props={{ wallet }} />

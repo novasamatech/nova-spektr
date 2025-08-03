@@ -20,7 +20,7 @@ export const InactiveNetwork = ({ active, isLoading, className }: Props) => {
   return (
     <div className={cnTw('flex flex-col items-center justify-center', className)}>
       <img src={NoConnection} alt="" width="147" height="147" />
-      <FootnoteText align="center" className="mt-4 w-[280px] text-text-tertiary">
+      <FootnoteText align="center" className="text-text-tertiary mt-4 w-[280px]">
         {t('general.title.inactiveNetwork')}
       </FootnoteText>
 

@@ -21,6 +21,6 @@ operationsNavigationFeature.inject(navigationTopLinksPipeline, (items) => {
     icon: 'operations',
     title: 'navigation.mstOperationLabel',
     link: Paths.OPERATIONS,
-    badge: pending.length > 0 ? <BodyText className="ml-auto text-text-tertiary">{pending.length}</BodyText> : null,
+    badge: pending.length > 0 ? <BodyText className="text-text-tertiary ml-auto">{pending.length}</BodyText> : null,
   });
 });

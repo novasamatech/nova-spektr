@@ -63,7 +63,7 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
 
         <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
 
-        <div className="ml-auto flex text-text-secondary">
+        <div className="text-text-secondary ml-auto flex">
           {referendumId && (
             <FootnoteText className="text-inherit" testId={TEST_IDS.GOVERNANCE.PROPOSAL_ID}>
               #{referendumId}

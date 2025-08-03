@@ -38,18 +38,18 @@ export const MultisigFees = () => {
             <IconButton name="info" size={16} />
           </Tooltip.Trigger>
           <Tooltip.Content>
-            <div className="gap-2 text-help-text text-white">
+            <div className="text-help-text gap-2 text-white">
               <div>
                 {t('createMultisigAccount.flexibleMultisig.proxyDeposit')}
-                <AssetBalance value={proxyDeposit ?? '0'} asset={asset} className="ml-1 text-help-text text-inherit" />
+                <AssetBalance value={proxyDeposit ?? '0'} asset={asset} className="text-help-text ml-1 text-inherit" />
               </div>
               <div>
                 {t('createMultisigAccount.flexibleMultisig.existentialDeposit')}
-                <AssetBalance value={existentialDeposit} asset={asset} className="ml-1 text-help-text text-inherit" />
+                <AssetBalance value={existentialDeposit} asset={asset} className="text-help-text ml-1 text-inherit" />
               </div>
               <div>
                 {t('createMultisigAccount.networkFee')}
-                <AssetBalance value={fee} asset={asset} className="ml-1 text-help-text text-inherit" />
+                <AssetBalance value={fee} asset={asset} className="text-help-text ml-1 text-inherit" />
               </div>
             </div>
           </Tooltip.Content>

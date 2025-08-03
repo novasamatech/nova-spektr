@@ -20,7 +20,7 @@ export const MembersCard = memo(() => {
   return (
     <MembersModal>
       <button
-        className="rounded-xl border border-filter-border bg-card-background text-button-small"
+        className="border-filter-border bg-card-background text-button-small rounded-xl border"
         disabled={pending || isNetworkDisabled}
       >
         <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={4} gap={2}>

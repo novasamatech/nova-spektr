@@ -79,8 +79,8 @@ const Button = ({ name, placeholder, valueNode, testId }: TriggerProps) => {
     <RadixSelect.Trigger
       name={name}
       className={cnTw(
-        'relative flex w-full items-center pl-[11px] pr-6',
-        'rounded border text-footnote outline-offset-1',
+        'relative flex w-full items-center pr-6 pl-[11px]',
+        'text-footnote rounded-sm border outline-offset-1',
         'enabled:hover:shadow-card-shadow',
         'data-[state=open]:border-active-container-border',
         {
@@ -105,7 +105,7 @@ const Button = ({ name, placeholder, valueNode, testId }: TriggerProps) => {
           {valueNode}
         </RadixSelect.Value>
       </div>
-      <Icon name="down" size={16} className="absolute right-1.5 top-1/2 shrink-0 -translate-y-1/2" />
+      <Icon name="down" size={16} className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2" />
     </RadixSelect.Trigger>
   );
 };
@@ -131,8 +131,8 @@ const Content = ({ children }: PropsWithChildren) => {
             elevation={1}
             className={cnTw(
               'z-50 flex flex-col',
-              'h-max max-h-[--radix-popper-available-height] min-w-20',
-              'origin-[--radix-popper-transform-origin] overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+              'h-max max-h-(--radix-popper-available-height) min-w-20',
+              'animate-in fade-in zoom-in-95 origin-(--radix-popper-transform-origin) overflow-hidden duration-100',
               {
                 'border-border-dark bg-background-dark': theme === 'dark',
               },
@@ -159,7 +159,7 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
   return (
     <RadixSelect.Group className="mb-1 last:mb-0">
       <RadixSelect.Label>
-        <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
+        <div className="text-help-text text-text-secondary mb-1 px-3 py-1">{title}</div>
       </RadixSelect.Label>
       {children}
     </RadixSelect.Group>
@@ -178,10 +178,10 @@ const Item = ({ value, depth, children }: PropsWithChildren<ItemProps>) => {
     <RadixSelect.Item
       value={value}
       className={cnTw(
-        'flex w-full cursor-pointer rounded px-3 py-2 text-footnote text-text-secondary contain-inline-size',
-        'focus:bg-action-background-hover focus:outline-none data-[highlighted]:bg-action-background-hover',
+        'text-footnote text-text-secondary flex w-full cursor-pointer rounded-sm px-3 py-2 contain-inline-size',
+        'focus:bg-action-background-hover data-highlighted:bg-action-background-hover focus:outline-hidden',
         {
-          'text-text-tertiary focus:bg-block-background-hover data-[highlighted]:bg-background-item-hover':
+          'text-text-tertiary focus:bg-block-background-hover data-highlighted:bg-background-item-hover':
             theme === 'dark',
         },
       )}

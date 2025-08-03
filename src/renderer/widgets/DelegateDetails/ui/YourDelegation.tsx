@@ -49,7 +49,7 @@ export const YourDelegation = () => {
         <div className="flex flex-col gap-4">
           <DetailRow label={t('governance.addDelegation.accountsLabel', { count: activeAccounts.length })}>
             {accounts.length === 1 ? (
-              <div className="overflow-hidden text-text-secondary">
+              <div className="text-text-secondary overflow-hidden">
                 <Account accountId={accounts?.[0].accountId} chain={chain} variant="short" />
               </div>
             ) : (

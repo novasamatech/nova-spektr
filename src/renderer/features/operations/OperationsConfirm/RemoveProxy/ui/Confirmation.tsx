@@ -44,7 +44,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const nativeAsset = getNativeAsset(chain.assets);
 
   return (
-    <div className="flex flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+    <div className="flex flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon name="proxyConfirm" size={60} />
       </div>
@@ -60,7 +60,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <Account accountId={(spawner || delegate)!} chain={chain} variant="short" />
         </DetailRow>
 
-        <hr className="w-full border-filter-border pr-2" />
+        <hr className="border-filter-border w-full pr-2" />
 
         {multisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit} />}
 

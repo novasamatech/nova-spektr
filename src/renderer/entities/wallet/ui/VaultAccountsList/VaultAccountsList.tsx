@@ -52,7 +52,7 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                                 <FootnoteText className="text-text-tertiary">
                                   {t('general.explorers.derivationTitle')}
                                 </FootnoteText>
-                                <HelpText className="break-all text-text-secondary">
+                                <HelpText className="text-text-secondary break-all">
                                   {accountUtils.getDerivationPath(account)}
                                 </HelpText>
                               </Box>

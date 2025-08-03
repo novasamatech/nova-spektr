@@ -76,9 +76,9 @@ export const ReferendumDetailsModal = ({
     <Modal isOpen size="xl" onToggle={closeModal}>
       <Modal.Title close>{t('governance.referendums.referendumTitle', { index: referendum.referendumId })}</Modal.Title>
       <Modal.Content>
-        <section className="flex h-full w-modal-xl flex-col bg-main-app-background">
+        <section className="w-modal-xl bg-main-app-background flex h-full flex-col">
           <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
-            <Plate className="min-h-0 min-w-80 grow basis-[500px] border-filter-border p-6 shadow-card-shadow">
+            <Plate className="border-filter-border shadow-card-shadow min-h-0 min-w-80 grow basis-[500px] p-6">
               <ProposalDescription
                 chainId={chain.chainId}
                 addressPrefix={chain.addressPrefix}
@@ -89,7 +89,7 @@ export const ReferendumDetailsModal = ({
             <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
               {(referendum.voting.votes.length > 0 || referendum.votedByDelegates.length > 0) && (
                 <DetailsCard>
-                  <div className="grid grid-cols-[270px,auto] items-center justify-between gap-x-1">
+                  <div className="grid grid-cols-[270px_auto] items-center justify-between gap-x-1">
                     <VotedBy
                       direction="column"
                       asset={asset}

@@ -95,7 +95,7 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
             <div className="flex flex-col gap-4">
               {descriptionMultisig.map(item => (
                 <div className="flex items-start gap-x-2" key={item.text}>
-                  <Icon name="checkmarkOutline" className="mt-1 shrink-0 text-text-positive" size={14} />
+                  <Icon name="checkmarkOutline" className="text-text-positive mt-1 shrink-0" size={14} />
                   <BodyText>
                     <Trans
                       t={t}
@@ -108,7 +108,7 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
                 </div>
               ))}
             </div>
-            <BodyText className="mt-8 text-text-tertiary">
+            <BodyText className="text-text-tertiary mt-8">
               <Trans
                 t={t}
                 i18nKey="createMultisigAccount.selectMultisigDescription.flexibleNote"
@@ -123,9 +123,9 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
               {descriptionMultisig.map(item => (
                 <div className="flex items-start gap-x-2" key={item.text}>
                   {item.onlyFlexible ? (
-                    <Icon name="closeOutline" className="mt-1 shrink-0 text-text-negative" size={14} />
+                    <Icon name="closeOutline" className="text-text-negative mt-1 shrink-0" size={14} />
                   ) : (
-                    <Icon name="checkmarkOutline" className="mt-1 shrink-0 text-text-positive" size={14} />
+                    <Icon name="checkmarkOutline" className="text-text-positive mt-1 shrink-0" size={14} />
                   )}
                   <BodyText>
                     <Trans
@@ -139,7 +139,7 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
                 </div>
               ))}
             </div>
-            <BodyText className="mt-12 text-text-tertiary">
+            <BodyText className="text-text-tertiary mt-12">
               <Trans
                 t={t}
                 i18nKey="createMultisigAccount.selectMultisigDescription.regularNote"

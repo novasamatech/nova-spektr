@@ -9,7 +9,7 @@ export const EmptyState = () => {
       <Icon name="document" size={64} />
       <div className="flex max-w-[340px] flex-col items-center gap-2">
         <SmallTitleText>{t('governance.addDelegation.emptyTitle')}</SmallTitleText>
-        <FootnoteText className="text-center text-text-tertiary">
+        <FootnoteText className="text-text-tertiary text-center">
           {t('governance.addDelegation.emptyDescription')}
         </FootnoteText>
       </div>

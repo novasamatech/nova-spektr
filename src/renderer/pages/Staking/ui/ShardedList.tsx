@@ -76,19 +76,19 @@ export const ShardedList = ({
             onChange={selectAllShards}
             onClick={(event) => event.stopPropagation()}
           />
-          <div className="grid grid-cols-[174px,104px,104px] items-center gap-x-6">
+          <div className="grid grid-cols-[174px_104px_104px] items-center gap-x-6">
             <div className="flex items-center gap-x-2">
-              <FootnoteText className="h-5 rounded-full bg-input-background-disabled px-2 py-px text-text-secondary">
+              <FootnoteText className="bg-input-background-disabled text-text-secondary h-5 rounded-full px-2 py-px">
                 {shardsStake.length}
               </FootnoteText>
-              <FootnoteText className="truncate text-text-secondary first-letter:uppercase">
+              <FootnoteText className="text-text-secondary truncate first-letter:uppercase">
                 {shardsStake[0].account.name}
               </FootnoteText>
               <Tooltip>
                 <Tooltip.Trigger>
                   <div className="flex items-center gap-x-1">
-                    {Boolean(shardsStats.unstaking) && <span className="h-1.5 w-1.5 rounded-full bg-icon-accent" />}
-                    {Boolean(shardsStats.withdraw) && <span className="h-1.5 w-1.5 rounded-full bg-icon-positive" />}
+                    {Boolean(shardsStats.unstaking) && <span className="bg-icon-accent h-1.5 w-1.5 rounded-full" />}
+                    {Boolean(shardsStats.withdraw) && <span className="bg-icon-positive h-1.5 w-1.5 rounded-full" />}
                   </div>
                 </Tooltip.Trigger>
                 <Tooltip.Content>

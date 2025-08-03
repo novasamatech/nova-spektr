@@ -30,7 +30,7 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
     <div className="flex gap-x-2">
       <div className="relative">
         <WalletIcon type={WalletType.PROXIED} />
-        <div className="absolute -right-[1px] top-[13px] h-2 w-2 rounded-full border border-white bg-icon-negative" />
+        <div className="bg-icon-negative absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white" />
       </div>
 
       <div className="flex flex-col gap-y-2">

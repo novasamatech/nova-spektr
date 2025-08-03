@@ -51,12 +51,12 @@ export const ProposerName = () => {
     detailsService.getRankTitle(referendum.track, tracks);
 
   return (
-    <div className="flex items-center gap-2 text-footnote">
+    <div className="text-footnote flex items-center gap-2">
       <span className="text-text-secondary">{t('governance.referendum.proposer')}</span>
       {proposerName}
       {proposerLoader}
       {track && (
-        <div className="flex gap-1 text-nowrap text-text-secondary">
+        <div className="text-text-secondary flex gap-1 text-nowrap">
           <Icon name="promoteVoting" size={16} />
           {track}
         </div>

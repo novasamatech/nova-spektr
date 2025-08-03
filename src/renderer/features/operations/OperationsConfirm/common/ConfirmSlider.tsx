@@ -55,7 +55,7 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
           </div>
         </Carousel>
       </ScrollArea>
-      <div className="flex shrink-0 justify-between bg-white px-5 pb-4 pt-3">
+      <div className="flex shrink-0 justify-between bg-white px-5 pt-3 pb-4">
         <div className="flex gap-2">
           <IconButton
             size={20}
@@ -67,8 +67,8 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
 
           <div
             className={cnTw(
-              'h-[42px] w-[77px] rounded-full border border-divider font-semibold',
-              'flex items-center justify-center text-text-secondary',
+              'border-divider h-[42px] w-[77px] rounded-full border font-semibold',
+              'text-text-secondary flex items-center justify-center',
               'shadow-shadow-1',
             )}
           >
@@ -98,7 +98,7 @@ export const Item = ({ __index = 0, children }: ItemProps) => {
   return (
     <Carousel.Item id={__index.toString()} index={__index}>
       <div className="flex h-[580px] shrink-0 flex-col last-of-type:pr-4">
-        <div className="flex max-h-full w-full flex-col rounded-lg bg-white shadow-shadow-2">{children}</div>
+        <div className="shadow-shadow-2 flex max-h-full w-full flex-col rounded-lg bg-white">{children}</div>
       </div>
     </Carousel.Item>
   );

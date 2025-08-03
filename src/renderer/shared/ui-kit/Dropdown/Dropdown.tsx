@@ -65,8 +65,8 @@ const Trigger = ({ disabled, children }: PropsWithChildren<{ disabled?: boolean 
 
 const Separator = () => {
   return (
-    <DropdownMenu.Separator className="h-[1px] w-full px-2">
-      <div className="h-full w-full bg-divider" />
+    <DropdownMenu.Separator className="h-px w-full px-2">
+      <div className="bg-divider h-full w-full" />
     </DropdownMenu.Separator>
   );
 };
@@ -96,8 +96,8 @@ const Content = ({ children }: PropsWithChildren) => {
             elevation={1}
             className={cnTw(
               'z-50 flex flex-col',
-              'h-max max-h-[--radix-popper-available-height] min-w-20',
-              'origin-[--radix-popper-transform-origin] overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+              'h-max max-h-(--radix-popper-available-height) min-w-20',
+              'animate-in fade-in zoom-in-95 origin-(--radix-popper-transform-origin) overflow-hidden duration-100',
               {
                 'max-w-60': width === 'auto',
               },
@@ -121,7 +121,7 @@ const Group = ({ label, children }: GroupProps) => {
   return (
     <DropdownMenu.Group className="flex flex-col gap-1">
       {label ? (
-        <DropdownMenu.Label className="px-3 py-1 text-help-text text-text-secondary">{label}</DropdownMenu.Label>
+        <DropdownMenu.Label className="text-help-text text-text-secondary px-3 py-1">{label}</DropdownMenu.Label>
       ) : null}
       {children}
     </DropdownMenu.Group>
@@ -148,10 +148,10 @@ const Item = ({ onSelect, onClick, disabled, children }: ItemProps) => {
     <DropdownMenu.Item
       asChild
       className={cnTw(
-        'flex items-center gap-2 rounded px-3 py-2 text-footnote text-text-secondary',
-        'cursor-default bg-block-background-default',
+        'text-footnote text-text-secondary flex items-center gap-2 rounded-sm px-3 py-2',
+        'bg-block-background-default cursor-default',
         {
-          'cursor-pointer hover:bg-block-background-hover': !disabled,
+          'hover:bg-block-background-hover cursor-pointer': !disabled,
           'text-text-tertiary': disabled,
         },
       )}
@@ -181,7 +181,7 @@ const CheckboxItem = ({ checked, onChange, onSelect, disabled, children }: Check
     <DropdownMenu.CheckboxItem
       checked={checked}
       className={cnTw(
-        'flex items-center gap-2 rounded-md px-3 py-2 text-start text-footnote text-text-secondary',
+        'text-footnote text-text-secondary flex items-center gap-2 rounded-md px-3 py-2 text-start',
         'cursor-pointer',
         {
           'bg-selected-background text-text-primary': checked,

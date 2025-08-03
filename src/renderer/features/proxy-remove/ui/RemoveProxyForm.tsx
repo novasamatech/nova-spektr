@@ -28,7 +28,7 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
       <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
         <Signatories />
       </form>
-      <div className="flex flex-col gap-y-6 pb-4 pt-6">
+      <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
         <FeeError />
       </div>

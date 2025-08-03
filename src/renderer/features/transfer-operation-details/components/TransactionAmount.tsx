@@ -24,7 +24,7 @@ export const TransactionAmount = ({ operation, className }: Props) => {
       <AssetBalance
         value={value}
         asset={asset}
-        className={cnTw('font-manrope text-[32px] font-bold leading-[36px] text-text-primary', className)}
+        className={cnTw('font-manrope text-text-primary text-[32px] leading-[36px] font-bold', className)}
       />
       <AssetFiatBalance asset={asset} amount={value} className="text-headline" />
     </div>

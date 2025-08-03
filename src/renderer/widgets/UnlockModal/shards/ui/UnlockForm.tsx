@@ -35,7 +35,7 @@ export const UnlockForm = ({ onGoBack }: Props) => {
         <AccountsSelector />
         <Amount />
       </form>
-      <div className="flex flex-col gap-y-6 pb-4 pt-6">
+      <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
       </div>
       <ActionsSection onGoBack={onGoBack} />
@@ -96,7 +96,7 @@ const AccountsSelector = () => {
           id: account.id,
           value: account,
           element: (
-            <div className="flex flex-grow justify-between" key={account.id}>
+            <div className="flex grow justify-between" key={account.id}>
               <Address address={address} variant="short" iconSize={20} canCopy={false} title={account.name} showIcon />
               <AssetBalance value={balance} asset={getNativeAsset(chain.assets)!} className="w-min" />
             </div>

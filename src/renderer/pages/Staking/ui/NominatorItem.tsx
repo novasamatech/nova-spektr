@@ -39,7 +39,7 @@ export const NominatorsItem = ({
   const activeWallet = useUnit(walletSelect.$selectedWallet);
 
   return (
-    <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6 py-2.5">
+    <Plate className="grid grid-cols-[1fr_104px_104px_20px] items-center gap-x-6 py-2.5">
       {activeWallet && !walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
         <div className="flex w-full gap-x-2">
           <Checkbox
@@ -47,10 +47,10 @@ export const NominatorsItem = ({
             checked={stake.isSelected}
             onChange={(checked) => onToggleNominator(stake.address, checked)}
           />
-          <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr),auto]">{content}</div>
+          <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr)_auto]">{content}</div>
         </div>
       ) : (
-        <div className="grid max-w-[222px] grid-cols-[minmax(10px,1fr),auto] items-center gap-x-2">{content}</div>
+        <div className="grid max-w-[222px] grid-cols-[minmax(10px,1fr)_auto] items-center gap-x-2">{content}</div>
       )}
 
       {!stake.totalStake || !asset ? (
@@ -82,7 +82,7 @@ export const NominatorsItem = ({
           <button
             type="button"
             className={cnTw(
-              'group -mx-2 flex select-none items-center gap-x-1.5 rounded-md px-1.5 py-[3px] transition-colors',
+              'group -mx-2 flex items-center gap-x-1.5 rounded-md px-1.5 py-[3px] transition-colors select-none',
               'hover:bg-action-background-hover focus:bg-action-background-hover',
             )}
             onClick={() => onCheckValidators(stake.stash)}

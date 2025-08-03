@@ -149,7 +149,7 @@ export const KeyForm = () => {
           </Field>
         </Box>
 
-        <Button className="mb-1 mt-7.5" type="submit" pallet="secondary" size="sm" disabled={!isValid}>
+        <Button className="mt-7.5 mb-1" type="submit" pallet="secondary" size="sm" disabled={!isValid}>
           {t('dynamicDerivations.keysConstructor.newKeyButton')}
         </Button>
       </div>

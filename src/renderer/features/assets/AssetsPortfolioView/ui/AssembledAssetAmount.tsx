@@ -35,9 +35,9 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
           <div
             tabIndex={0}
             className={cnTw(
-              'border-b border-filter-border px-[1px] transition-colors',
-              'hover:rounded-md hover:border-transparent hover:bg-switch-background-inactive',
-              'focus:rounded-md focus:border-transparent focus:bg-switch-background-inactive',
+              'border-filter-border border-b px-px transition-colors',
+              'hover:bg-switch-background-inactive hover:rounded-md hover:border-transparent',
+              'focus:bg-switch-background-inactive focus:rounded-md focus:border-transparent',
             )}
           >
             <AssetBalance value={totalAmount(balance)} asset={asset} showSymbol={false} />
@@ -54,14 +54,14 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
               amountLocked: balance.frozen ? (
                 <AssetBalance value={balance.frozen} asset={asset} className="text-help-text text-white" />
               ) : (
-                <div className="inline-block rounded-2lg bg-white">
+                <div className="rounded-2lg inline-block bg-white">
                   <Skeleton width={12} height={1.5} />
                 </div>
               ),
               amountReserved: balance.reserved ? (
                 <AssetBalance value={balance.reserved} asset={asset} className="text-help-text text-white" />
               ) : (
-                <div className="inline-block rounded-2lg bg-white">
+                <div className="rounded-2lg inline-block bg-white">
                   <Skeleton width={12} height={1.5} />
                 </div>
               ),

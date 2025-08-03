@@ -83,7 +83,7 @@ const NoValidators = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-y-4">
       <Graphics name="emptyList" alt={t('staking.validators.noValidatorsLabel')} size={178} />
-      <BodyText className="w-52 text-center text-text-tertiary">{t('staking.validators.noValidatorsLabel')}</BodyText>
+      <BodyText className="text-text-tertiary w-52 text-center">{t('staking.validators.noValidatorsLabel')}</BodyText>
     </div>
   );
 };
@@ -131,7 +131,7 @@ const RowItem = memo(({ validator, rowStyle, isChecked }: RowProps) => {
   });
 
   return (
-    <li className="group pl-5 hover:bg-hover">
+    <li className="group hover:bg-hover pl-5">
       <Checkbox
         checked={isChecked}
         disabled={validator.blocked}
