@@ -4,8 +4,8 @@ import { memo } from 'react';
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { FootnoteText, Icon, Markdown, SmallTitleText } from '@/shared/ui';
-import { Box, Skeleton } from '@/shared/ui-kit';
+import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Referendum, trackService } from '@/domains/collectives';
 import { details } from '../model/details';
 

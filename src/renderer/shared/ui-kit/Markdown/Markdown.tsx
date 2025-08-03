@@ -8,10 +8,10 @@ import remarkGfm from 'remark-gfm';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Checkbox } from '@/shared/ui-kit';
-import { Button } from '../Buttons';
-import { Icon } from '../Icon/Icon';
-import { InfoLink } from '../InfoLink/InfoLink';
+import { Button } from '@/shared/ui/Buttons';
+import { Icon } from '@/shared/ui/Icon/Icon';
+import { InfoLink } from '@/shared/ui/InfoLink/InfoLink';
+import { Checkbox } from '../Checkbox/Checkbox';
 
 const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: true };
 const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw];
@@ -44,12 +44,12 @@ const components: Components = {
   ),
   li: ({ node: _, children, className, ...props }) => (
     <li className={className} {...props}>
-      <span className={cnTw({ 'flex items-center gap-2': className?.includes('task-list-item') })}>{children}</span>
+      {children}
     </li>
   ),
   ol: ({ node: _, className, ...props }) => (
     <ul
-      className={cnTw('ml-[2ch] flex list-outside list-decimal appearance-none flex-col gap-0.5', className)}
+      className={cnTw('ml-[2ch] inline-flex list-outside list-decimal appearance-none flex-col gap-0.5', className)}
       {...props}
     />
   ),
@@ -58,7 +58,7 @@ const components: Components = {
       className="text-primary-button-background-default hover:underline focus:w-full"
       url={props.href ?? ''}
       size="inherit"
-      onClick={(e) => e.stopPropagation()}
+      onClick={e => e.stopPropagation()}
     >
       {props.children}
     </InfoLink>
@@ -67,22 +67,24 @@ const components: Components = {
     <span className={cnTw('overflow-hidden overflow-ellipsis text-start text-inherit', className)} {...props} />
   ),
   hr: () => <hr className="bg-current" />,
-  input: ({ node: _, type, ...props }) =>
+  input: ({ node: _, type, className, ...props }) =>
     type === 'checkbox' ? (
-      <Checkbox
-        {...props}
-        onChange={(newCheckedState: boolean) => {
-          if (typeof props.onChange !== 'function') return;
+      <span className={cnTw('me-1 inline-block', className)}>
+        <Checkbox
+          {...props}
+          onChange={(newCheckedState: boolean) => {
+            if (typeof props.onChange !== 'function') return;
 
-          const event = {
-            target: {
-              checked: newCheckedState,
-            },
-          } as ChangeEvent<HTMLInputElement>;
-          props.onChange(event);
-        }}
-        onClick={noop}
-      />
+            const event = {
+              target: {
+                checked: newCheckedState,
+              },
+            } as ChangeEvent<HTMLInputElement>;
+            props.onChange(event);
+          }}
+          onClick={noop}
+        />
+      </span>
     ) : (
       <input {...props} />
     ),
@@ -139,18 +141,21 @@ export const Markdown = memo(({ compact, cut, children }: Props) => {
   }
 
   const markdown = (
-    <ReactMarkdown
+    <div
       className={cnTw('flex flex-col overflow-hidden whitespace-pre-line text-body', {
         'gap-3': !compact,
         'gap-0.5': compact,
       })}
-      remarkRehypeOptions={rehypeOptions}
-      remarkPlugins={remarkPlugins}
-      rehypePlugins={rehypePlugins}
-      components={components}
     >
-      {children}
-    </ReactMarkdown>
+      <ReactMarkdown
+        remarkRehypeOptions={rehypeOptions}
+        remarkPlugins={remarkPlugins}
+        rehypePlugins={rehypePlugins}
+        components={components}
+      >
+        {children}
+      </ReactMarkdown>
+    </div>
   );
 
   if (cut) {

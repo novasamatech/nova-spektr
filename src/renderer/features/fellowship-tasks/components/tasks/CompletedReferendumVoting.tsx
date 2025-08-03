@@ -3,8 +3,8 @@ import { type TFunction } from 'i18next';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, Icon, type IconNames, Markdown, SmallTitleText } from '@/shared/ui';
-import { Box } from '@/shared/ui-kit';
+import { FootnoteText, Icon, type IconNames, SmallTitleText } from '@/shared/ui';
+import { Box, Markdown } from '@/shared/ui-kit';
 import { type CompletedReferendum } from '@/domains/collectives';
 import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { referendums } from '../../model/referendums';
