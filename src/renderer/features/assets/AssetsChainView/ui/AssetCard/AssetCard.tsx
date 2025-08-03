@@ -73,7 +73,7 @@ export const AssetCard = memo(({ chainId, asset, balance, wallet }: Props) => {
       </div>
 
       {isExpanded && (
-        <dl className="border-divider flex gap-x-4 divide-x border-t py-4 pr-4">
+        <dl className="border-divider divide-divider flex gap-x-4 divide-x border-t py-4 pr-4">
           <AssetDetails asset={asset} value={transferableBalance} label={t('assetBalance.transferable')} />
           <AssetDetails asset={asset} value={balance?.frozen} label={t('assetBalance.locked')} />
           <AssetDetails asset={asset} value={balance?.reserved} label={t('assetBalance.reserved')} />
