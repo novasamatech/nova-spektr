@@ -100,7 +100,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
             <AsyncItem>
               <div className="flex flex-col">
                 <div
-                  className="border-stroke flex items-center justify-between border-b px-4 py-2"
+                  className="border-divider flex items-center justify-between border-b px-4 py-2"
                   style={{ background: data.isSelected ? config?.color : 'transparent' }}
                 >
                   <SmallTitleText className={data.isSelected ? 'text-white' : 'text-text-secondary'}>
