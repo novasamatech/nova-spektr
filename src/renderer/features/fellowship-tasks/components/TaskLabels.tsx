@@ -28,7 +28,7 @@ export const TaskLabels = memo(({ tags }: Props) => {
   return tags.map(tag => {
     const labelConfig = tagLabels[tag];
     return (
-      <Label key={tag} variant={labelConfig?.color ?? 'gray'} className="border-filter-border border bg-white">
+      <Label key={tag} variant={labelConfig?.color ?? 'gray'}>
         {t(labelConfig?.text ?? tag)}
       </Label>
     );
