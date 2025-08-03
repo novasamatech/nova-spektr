@@ -17,7 +17,7 @@ type Props = {
 };
 
 const InteractionStyle =
-  'rounded hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
+  'rounded-sm hover:bg-action-background-hover hover:text-text-primary cursor-pointer py-[3px] px-2 -mr-2';
 
 export const OperationAdvancedDetails = ({ operation }: Props) => {
   const { t } = useI18n();
@@ -49,7 +49,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
         pallet="primary"
         size="sm"
         suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} />}
-        className="-ml-2 w-fit text-action-text-default hover:text-action-text-default"
+        className="text-action-text-default hover:text-action-text-default -ml-2 w-fit"
         onClick={toggleAdvanced}
       >
         {t('operation.advanced')}
@@ -108,7 +108,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
               <AssetBalance
                 value={deposit}
                 asset={nativeAsset}
-                className="py-[3px] text-footnote text-text-secondary"
+                className="text-footnote text-text-secondary py-[3px]"
               />
             </DetailRow>
           )}

@@ -1,5 +1,5 @@
 import { app, dialog, ipcMain } from 'electron';
-import { default as Store } from 'electron-store/index';
+import { default as Store } from 'electron-store';
 import { autoUpdater } from 'electron-updater';
 
 import { AUTO_UPDATE_ENABLED } from '../shared/constants/store';

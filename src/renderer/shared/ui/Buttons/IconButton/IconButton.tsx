@@ -1,16 +1,16 @@
 import { type ComponentProps, forwardRef } from 'react';
 
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, tw } from '@/shared/lib/utils';
 import { Icon } from '../../Icon/Icon';
 import './IconButton.css';
 
 type IconProps = ComponentProps<typeof Icon>;
 
 const getIconButtonStyle = (disabled?: boolean) =>
-  'relative w-max justify-center rounded-full outline-offset-1 text-icon-default transition-colors shrink-0 h-fit w-fit' +
+  tw`text-icon-default relative h-fit w-fit w-max shrink-0 justify-center rounded-full outline-offset-1 transition-colors` +
   (disabled
     ? ''
-    : ' hover:text-icon-hover hover:bg-hover focus:text-icon-hover focus:bg-hover active:bg-hover active:text-tab-icon-active');
+    : tw` hover:text-icon-hover hover:bg-hover focus:text-icon-hover focus:bg-hover active:bg-hover active:text-tab-icon-active`);
 
 type HTMLButtonProps = Pick<
   ComponentProps<'button'>,

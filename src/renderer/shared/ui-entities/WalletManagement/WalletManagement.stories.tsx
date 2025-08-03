@@ -54,7 +54,7 @@ export const WithMeta: Story = {
 
 export const WithDescription: Story = {
   args: {
-    meta: <span className="h-1.5 w-1.5 rounded-full bg-icon-positive" />,
+    meta: <span className="bg-icon-positive h-1.5 w-1.5 rounded-full" />,
     description: <FootnoteText className="text-footnote text-text-tertiary">1000 $</FootnoteText>,
   },
 };

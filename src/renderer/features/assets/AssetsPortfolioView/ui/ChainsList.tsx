@@ -37,7 +37,7 @@ export const ChainsList = memo(({ assetChains }: Props) => {
     <div className="flex items-center gap-0.5">
       {chainNodes}
       {shouldRenderCounter && (
-        <div className="b-r-2 flex w-6 items-center justify-center rounded bg-token-background p-0.5">
+        <div className="b-r-2 bg-token-background flex w-6 items-center justify-center rounded-sm p-0.5">
           <HelpText className="text-white">+{counter}</HelpText>
         </div>
       )}

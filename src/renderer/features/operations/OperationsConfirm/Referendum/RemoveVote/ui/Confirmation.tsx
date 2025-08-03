@@ -77,7 +77,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
   const locksForAddress = getLocksForAddress(address, trackLocks);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-4 px-5 py-4">
+    <div className="w-modal flex flex-col items-center gap-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="retractMst" size={60} />
 
@@ -124,7 +124,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
             </DetailRow>
           )
         )}
-        <hr className="w-full border-filter-border pr-2" />
+        <hr className="border-filter-border w-full pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>
           <FeeWithDataLoading api={api} asset={asset} transaction={tx} />
         </DetailRow>

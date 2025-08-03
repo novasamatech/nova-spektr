@@ -122,10 +122,10 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
           <Status status={status} signed={approvals.length} threshold={account?.threshold || 0} />
         </div>
 
-        <div className="flex max-h-[600px] min-h-[464px] flex-col gap-y-4 overflow-y-scroll bg-main-app-background p-5">
+        <div className="bg-main-app-background flex max-h-[600px] min-h-[464px] flex-col gap-y-4 overflow-y-scroll p-5">
           {groupedEvents.map(([date, events]) => (
             <section className="w-full" key={date}>
-              <FootnoteText as="h4" className="mb-4 text-text-tertiary">
+              <FootnoteText as="h4" className="text-text-tertiary mb-4">
                 {date}
               </FootnoteText>
 
@@ -148,7 +148,7 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
                               background={false}
                             />
                           )}
-                          <BodyText className="flex-1 text-text-secondary">{getEventMessage(event)}</BodyText>
+                          <BodyText className="text-text-secondary flex-1">{getEventMessage(event)}</BodyText>
                           <BodyText className="text-text-tertiary">{formatDate(Number(event.timestamp), 'p')}</BodyText>
 
                           {event.extrinsicHash && connection?.explorers && (

@@ -57,7 +57,7 @@ export const NoEvidence = () => {
       <Box padding={[43, 10]} gap={2} horizontalAlign="center" verticalAlign="center">
         <Icon size={64} name="empty" className="mb-4" />
         <SmallTitleText>{t('fellowship.tasks.task.promotionVoting.noEvidence')}</SmallTitleText>
-        <FootnoteText className="text-center text-text-tertiary">
+        <FootnoteText className="text-text-tertiary text-center">
           {t('fellowship.tasks.task.promotionVoting.noEvidenceDescription')}
         </FootnoteText>
       </Box>

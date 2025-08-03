@@ -39,7 +39,7 @@ export const ConfirmationStep = () => {
   return (
     <>
       <Modal.Content>
-        <section className="relative flex h-full w-modal flex-1 flex-col px-5">
+        <section className="w-modal relative flex h-full flex-1 flex-col px-5">
           <div className="flex max-h-full flex-1 flex-col gap-y-4">
             <div className="mb-2 flex flex-col items-center">
               <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
@@ -52,7 +52,7 @@ export const ConfirmationStep = () => {
                     <Counter className="mr-2" variant="neutral">
                       {signatories.length}
                     </Counter>
-                    <IconButton name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                    <IconButton name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
                   </div>
                 </SelectedSignatoriesModal>
               )}
@@ -69,7 +69,7 @@ export const ConfirmationStep = () => {
                 <WalletIcon type={signerWallet.type} />
 
                 <div className="flex max-w-[348px] flex-col">
-                  <BodyText as="span" className="truncate tracking-tight text-text-secondary">
+                  <BodyText as="span" className="text-text-secondary truncate tracking-tight">
                     {signerWallet.name}
                   </BodyText>
                 </div>
@@ -77,7 +77,7 @@ export const ConfirmationStep = () => {
             </DetailRow>
             <DetailRow label={t('createMultisigAccount.signingAccount')}>
               <div className="flex w-full items-center justify-end gap-x-2">
-                <div className="flex max-w-[348px] flex-col text-text-secondary">
+                <div className="text-text-secondary flex max-w-[348px] flex-col">
                   <Account variant="short" accountId={signer.accountId} chain={chain} />
                 </div>
               </div>

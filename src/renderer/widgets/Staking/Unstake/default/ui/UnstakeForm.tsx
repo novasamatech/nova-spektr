@@ -32,7 +32,7 @@ export const UnstakeForm = ({ onGoBack }: Props) => {
         <Signatories />
         <Amount />
       </form>
-      <div className="flex flex-col gap-y-6 pb-4 pt-6">
+      <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
       </div>
       <ActionsSection onGoBack={onGoBack} />
@@ -150,7 +150,7 @@ const FeeSection = () => {
               <Tooltip>
                 <Tooltip.Trigger>
                   <div tabIndex={0}>
-                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                    <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
                   </div>
                 </Tooltip.Trigger>
                 <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

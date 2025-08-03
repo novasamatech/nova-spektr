@@ -67,7 +67,7 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
           <button
             type="button"
             className={cnTw(
-              '-mr-2 flex cursor-pointer items-center gap-x-1 rounded px-2 py-[3px]',
+              '-mr-2 flex cursor-pointer items-center gap-x-1 rounded-sm px-2 py-[3px]',
               'text-text-secondary hover:bg-action-background-hover hover:text-text-primary',
             )}
             onClick={toggleValidators}

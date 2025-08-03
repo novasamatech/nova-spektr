@@ -81,7 +81,7 @@ export const SalaryInfo = memo(() => {
                 </SmallTitleText>
 
                 {isSalaryRequested && (
-                  <FootnoteText className="flex items-center gap-1 pt-2 text-tab-text-accent">
+                  <FootnoteText className="text-tab-text-accent flex items-center gap-1 pt-2">
                     <Icon name="voted" size={16} className="text-inherit" />
                     <span>{t('fellowship.salary.salaryInfo.requestSalarySuccess')}</span>
                   </FootnoteText>
@@ -112,7 +112,7 @@ export const SalaryInfo = memo(() => {
                 </SmallTitleText>
 
                 {isPayoutRequested && (
-                  <FootnoteText className="flex items-center gap-1 pt-2 text-tab-text-accent">
+                  <FootnoteText className="text-tab-text-accent flex items-center gap-1 pt-2">
                     <Icon name="voted" size={16} className="text-inherit" />
                     <span>{t('fellowship.salary.salaryInfo.payoutSalarySuccess')}</span>
                   </FootnoteText>

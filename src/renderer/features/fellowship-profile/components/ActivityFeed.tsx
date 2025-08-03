@@ -51,15 +51,15 @@ export const ActivityFeed = () => {
   return (
     <Box>
       <Box direction="row" padding={[5.5, 5]} gap={2}>
-        <span className="text-caption uppercase text-text-secondary">{t('fellowship.profile.activity')}</span>
-        <span className="text-caption uppercase text-text-tertiary">{list.length}</span>
+        <span className="text-caption text-text-secondary uppercase">{t('fellowship.profile.activity')}</span>
+        <span className="text-caption text-text-tertiary uppercase">{list.length}</span>
       </Box>
       <ScrollArea>
         <Box padding={[0, 3, 5]} gap={6}>
           {list.map(x => (
             <div key={`${x.type}-${x.block}`} className="flex px-2">
               <FootnoteText className="grow items-center">{getMessage(t, x)}</FootnoteText>
-              <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
+              <HelpText className="text-text-secondary max-w-[40%] shrink-0 text-end">
                 <Duration seconds={(now - x.at.getTime()) / 1000} />
               </HelpText>
             </div>

@@ -15,7 +15,7 @@
   "tailwindConfig": "./tailwind.config.ts",
   "tailwindFunctions": [
     "cnTw",
-    "cn"
+    "tw"
   ],
   "jsdocCommentLineStrategy": "keep",
   "jsdocPreferCodeFences": true,

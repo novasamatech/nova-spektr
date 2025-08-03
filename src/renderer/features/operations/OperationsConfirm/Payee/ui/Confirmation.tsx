@@ -43,7 +43,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+    <div className="w-modal flex flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="destinationConfirm" size={60} />
       </div>
@@ -59,7 +59,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           )}
         </DetailRow>
 
-        <hr className="w-full border-filter-border pr-2" />
+        <hr className="border-filter-border w-full pr-2" />
 
         {multisigAccount && (
           <DetailRow
@@ -71,7 +71,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
                 <Tooltip>
                   <Tooltip.Trigger>
                     <div tabIndex={0}>
-                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                      <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
                     </div>
                   </Tooltip.Trigger>
                   <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

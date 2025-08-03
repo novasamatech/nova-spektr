@@ -33,7 +33,7 @@ export const WithdrawForm = ({ onGoBack }: Props) => {
         <AccountsSelector />
         <Amount />
       </form>
-      <div className="flex flex-col gap-y-6 pb-4 pt-6">
+      <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
       </div>
       <ActionsSection onGoBack={onGoBack} />

@@ -68,7 +68,7 @@ const AccountItem = ({ asset, account, chain, title, balance, onSelect }: ItemPr
 
   return (
     <button
-      className="group flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded px-2 py-1.5 text-left text-body text-text-secondary hover:bg-action-background-hover hover:text-text-primary"
+      className="group text-body text-text-secondary hover:bg-action-background-hover hover:text-text-primary flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded-sm px-2 py-1.5 text-left"
       onClick={() => onSelect(account)}
     >
       <div className="w-full min-w-0 shrink truncate">

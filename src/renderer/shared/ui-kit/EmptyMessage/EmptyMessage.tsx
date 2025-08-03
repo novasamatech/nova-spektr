@@ -12,7 +12,7 @@ export const EmptyMessage = ({ title, description }: Props) => {
       <Icon name="document" size={64} />
       <Box gap={2} horizontalAlign="center" width="340px">
         <SmallTitleText className="text-center">{title}</SmallTitleText>
-        <FootnoteText className="text-center text-text-tertiary">{description}</FootnoteText>
+        <FootnoteText className="text-text-tertiary text-center">{description}</FootnoteText>
       </Box>
     </Box>
   );

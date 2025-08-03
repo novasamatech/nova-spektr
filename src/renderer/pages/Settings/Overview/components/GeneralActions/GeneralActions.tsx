@@ -76,8 +76,8 @@ export const GeneralActions = () => {
         <Link
           to={Paths.NETWORK}
           className={cnTw(
-            'grid w-full grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 rounded-md p-3',
-            'transition hover:shadow-card-shadow focus:shadow-card-shadow',
+            'grid w-full grid-flow-col grid-cols-[auto_1fr_auto] items-center gap-x-2 rounded-md p-3',
+            'hover:shadow-card-shadow focus:shadow-card-shadow transition',
           )}
         >
           <Icon className="row-span-2" name="network" size={36} />
@@ -90,13 +90,13 @@ export const GeneralActions = () => {
         <Link
           to={Paths.REFERENDUM_DATA}
           className={cnTw(
-            'flex w-full items-center gap-x-2 rounded p-3',
-            'transition hover:shadow-card-shadow focus:shadow-card-shadow',
+            'flex w-full items-center gap-x-2 rounded-sm p-3',
+            'hover:shadow-card-shadow focus:shadow-card-shadow transition',
           )}
         >
           <Icon className="row-span-2" name="referendum" size={36} />
           <BodyText>{t('settings.overview.referendumLabel')}</BodyText>
-          <FootnoteText className="ml-auto text-text-tertiary">{capitalize(governanceApi?.type)}</FootnoteText>
+          <FootnoteText className="text-text-tertiary ml-auto">{capitalize(governanceApi?.type)}</FootnoteText>
         </Link>
       </Plate>
 
@@ -104,13 +104,13 @@ export const GeneralActions = () => {
         <Link
           to={Paths.CURRENCY}
           className={cnTw(
-            'flex w-full items-center gap-x-2 rounded p-3',
-            'transition hover:shadow-card-shadow focus:shadow-card-shadow',
+            'flex w-full items-center gap-x-2 rounded-sm p-3',
+            'hover:shadow-card-shadow focus:shadow-card-shadow transition',
           )}
         >
           <Icon className="row-span-2" name="currency" size={36} />
           <BodyText>{t('settings.currency.plateTitle')}</BodyText>
-          {fiatFlag && <FootnoteText className="ml-auto text-text-tertiary">{currency?.code}</FootnoteText>}
+          {fiatFlag && <FootnoteText className="text-text-tertiary ml-auto">{currency?.code}</FootnoteText>}
         </Link>
       </Plate>
 
@@ -118,7 +118,7 @@ export const GeneralActions = () => {
 
       {isAutoUpdateSupported && (
         <Plate className="p-0">
-          <div className="flex w-full items-center gap-x-2 rounded p-3 transition hover:shadow-card-shadow focus:shadow-card-shadow">
+          <div className="hover:shadow-card-shadow focus:shadow-card-shadow flex w-full items-center gap-x-2 rounded-sm p-3 transition">
             <Icon className="row-span-2" name="update" size={36} />
             <BodyText className="mr-auto">{t('settings.autoUpdate')}</BodyText>
             <Switch

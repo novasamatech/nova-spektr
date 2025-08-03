@@ -11,12 +11,12 @@ export const AppShell = memo(() => {
   const headerNodes = useSlot(navigationHeaderSlot);
 
   return (
-    <div className="flex h-full animate-in fade-in">
-      <aside className="flex w-[240px] shrink-0 flex-col gap-y-6 border-r border-r-container-border bg-left-navigation-menu-background p-4">
+    <div className="animate-in fade-in flex h-full">
+      <aside className="border-r-container-border bg-left-navigation-menu-background flex w-[240px] shrink-0 flex-col gap-y-6 border-r p-4">
         {headerNodes}
         <Navigation />
       </aside>
-      <main className="flex-1 bg-main-app-background">
+      <main className="bg-main-app-background flex-1">
         <Outlet />
       </main>
     </div>

@@ -72,7 +72,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
                   address={address}
                   theme={theme}
                   description={
-                    <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
+                    <WalletFiatBalance walletId={wallet.id} className="text-help-text max-w-[215px] truncate" />
                   }
                   onClick={() => onSelect(wallet)}
                 >

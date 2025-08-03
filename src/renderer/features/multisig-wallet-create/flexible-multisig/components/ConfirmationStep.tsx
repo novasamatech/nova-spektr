@@ -27,13 +27,13 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
   return (
     <>
       <Modal.Content>
-        <section className="relative flex h-full w-modal flex-1 flex-col px-5">
+        <section className="w-modal relative flex h-full flex-1 flex-col px-5">
           <div className="flex max-h-full flex-1 flex-col">
-            <div className="mb-6 mt-4 flex flex-col items-center">
+            <div className="mt-4 mb-6 flex flex-col items-center">
               <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
             </div>
             <SmallTitleText>1. {t('createMultisigAccount.flexibleMultisig.createPureProxy')}</SmallTitleText>
-            <FootnoteText className="mb-4 mt-2 text-text-tertiary">
+            <FootnoteText className="text-text-tertiary mt-2 mb-4">
               {t('createMultisigAccount.flexibleMultisig.pureProxyConfirm')}
             </FootnoteText>
             {nullable(proxyAddress) &&
@@ -56,7 +56,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
 
             {nonNullable(proxyAddress) && (
               <Box direction="row" fillContainer verticalAlign="center" gap={1}>
-                <Icon className="shrink-0 text-icon-positive" name="checked" size={16} />
+                <Icon className="text-icon-positive shrink-0" name="checked" size={16} />
                 <FootnoteText className="shrink-0">
                   {t('createMultisigAccount.flexibleMultisig.pureProxyCreated')}
                 </FootnoteText>
@@ -67,13 +67,13 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
             <SmallTitleText className={nonNullable(proxyAddress) ? 'text-text-primary' : 'text-text-secondary'}>
               2. {t('createMultisigAccount.flexibleMultisig.assignControl')}
             </SmallTitleText>
-            <FootnoteText className="mt-2 text-text-tertiary">
+            <FootnoteText className="text-text-tertiary mt-2">
               {t('createMultisigAccount.flexibleMultisig.assignControlDescription')}
             </FootnoteText>
             <div className="my-4">
               {flexibleMultisigCreated ? (
                 <Box direction="row" fillContainer verticalAlign="center" gap={1}>
-                  <Icon className="shrink-0 text-icon-positive" name="checked" size={16} />
+                  <Icon className="text-icon-positive shrink-0" name="checked" size={16} />
                   <FootnoteText className="text-text-tertiary">
                     {t('createMultisigAccount.flexibleMultisig.controlAssigned')}
                   </FootnoteText>

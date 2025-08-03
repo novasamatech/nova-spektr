@@ -23,7 +23,7 @@ export const FilledIconButton = memo(
         disabled={disabled}
         className={cnTw(
           'flex appearance-none flex-col items-center gap-2 rounded-lg px-4 py-3',
-          'disabled:pointer-events-none disabled:bg-secondary-button-background disabled:text-text-tertiary',
+          'disabled:bg-secondary-button-background disabled:text-text-tertiary disabled:pointer-events-none',
           {
             'pointer-events-auto': !checked,
           },

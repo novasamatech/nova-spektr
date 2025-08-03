@@ -33,8 +33,8 @@ export const SignatoryCard = ({
   const button = (
     <div
       className={cnTw(
-        'group flex flex-1 cursor-pointer items-center justify-between gap-x-2 rounded px-2 py-1.5 text-text-secondary',
-        'transition-colors hover:bg-action-background-hover hover:text-text-primary',
+        'group text-text-secondary flex flex-1 cursor-pointer items-center justify-between gap-x-2 rounded-sm px-2 py-1.5',
+        'hover:bg-action-background-hover hover:text-text-primary transition-colors',
         className,
       )}
     >

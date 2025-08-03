@@ -53,7 +53,7 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
                 <AssetBalance
                   value={findBalance(account.accountId)}
                   asset={asset}
-                  className="ml-2 w-full text-end text-text-secondary"
+                  className="text-text-secondary ml-2 w-full text-end"
                 />
               </li>
             );

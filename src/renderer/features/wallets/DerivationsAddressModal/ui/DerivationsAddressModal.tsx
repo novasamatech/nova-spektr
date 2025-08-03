@@ -66,7 +66,7 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
               address={toAddress(rootAccountId, { prefix: 1 })}
               derivations={derivationAddressUtils.createDerivationsRequest(keys)}
             />
-            <InfoLink url={TROUBLESHOOTING_URL} className="mb-8.5 mt-10.5">
+            <InfoLink url={TROUBLESHOOTING_URL} className="mt-10.5 mb-8.5">
               {t('signing.troubleshootingLink')}
             </InfoLink>
             <div className="mt-3 flex w-full justify-between pl-2">
