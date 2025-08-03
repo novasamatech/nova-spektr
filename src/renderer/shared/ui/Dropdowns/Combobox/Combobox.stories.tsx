@@ -55,6 +55,6 @@ Custom.args = {
   placeholder: 'Select an option',
   value: customOptions[2],
   options: customOptions,
-  suffixElement: <Icon name="warnCutout" className="absolute right-2 top-[9px] text-alert" size={16} />,
+  suffixElement: <Icon name="warnCutout" className="text-alert absolute top-[9px] right-2" size={16} />,
   onChange: () => {},
 };

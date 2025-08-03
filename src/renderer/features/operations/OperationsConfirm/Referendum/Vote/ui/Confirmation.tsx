@@ -118,7 +118,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.lockingPeriod')}>
           <LockPeriodDiff from={initialConviction} to={conviction} lockPeriods={lockPeriods} />
         </DetailRow>
-        <hr className="w-full border-filter-border pr-2" />
+        <hr className="border-filter-border w-full pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>
           <FeeWithDataLoading api={api} asset={asset} transaction={tx} />
         </DetailRow>

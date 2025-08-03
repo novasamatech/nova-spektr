@@ -60,16 +60,16 @@ export const SelectAccount = ({ asset, chain }: Props) => {
       <Box shrink={0} padding={[3, 5, 0]}>
         <SearchInput value={query} placeholder={t('balances.searchPlaceholder')} onChange={setQuery} />
       </Box>
-      <FootnoteText className="px-5 pt-4 text-text-tertiary">{t('receive.selectAccount')}</FootnoteText>
+      <FootnoteText className="text-text-tertiary px-5 pt-4">{t('receive.selectAccount')}</FootnoteText>
       <ScrollArea>
-        <ul className="h-[590px] p-5 pt-2 text-text-secondary">
+        <ul className="text-text-secondary h-[590px] p-5 pt-2">
           <Skeleton fullWidth active={isLoading}>
             {accountsGroup.map((account) =>
               accountUtils.isAccountWithShards(account) ? (
                 <ShardAccounts accounts={account} chain={chain} asset={asset} key={account.at(0)?.groupId} />
               ) : (
                 <button
-                  className="flex w-full appearance-none flex-col px-3 py-2 hover:bg-action-background-hover"
+                  className="hover:bg-action-background-hover flex w-full appearance-none flex-col px-3 py-2"
                   key={account.accountId}
                   onClick={() => receiveModel.selectAccount(account)}
                 >
@@ -101,13 +101,13 @@ const ShardAccounts = ({ accounts, chain, asset }: ShardAccountsProps) => {
     <>
       <Box direction="row" verticalAlign="center" gap={2} margin={[0, 3]}>
         <Label variant="gray">{accounts.length}</Label>
-        <BodyText className="my-2 text-text-secondary">{accounts.at(0)?.name || ''}</BodyText>
+        <BodyText className="text-text-secondary my-2">{accounts.at(0)?.name || ''}</BodyText>
         <AssetBalance value={groupValue} asset={asset} className="ml-auto whitespace-nowrap text-inherit" />
       </Box>
       <ul className="text-text-secondary">
         {accounts.map((account) => (
           <button
-            className="flex w-full appearance-none flex-col py-2 pl-10 pr-3 hover:bg-action-background-hover"
+            className="hover:bg-action-background-hover flex w-full appearance-none flex-col py-2 pr-3 pl-10"
             key={account.accountId}
             onClick={() => receiveModel.selectAccount(account)}
           >

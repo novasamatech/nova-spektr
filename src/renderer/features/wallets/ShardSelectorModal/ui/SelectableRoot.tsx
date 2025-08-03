@@ -19,7 +19,7 @@ export const SelectableRoot = ({ accountId, accountName, checked, semiChecked, o
     <div
       className={cnTw(
         'group flex cursor-pointer gap-x-2 rounded-md px-2 py-1.5 transition-colors',
-        'transition-colors duration-100 hover:bg-action-background-hover',
+        'hover:bg-action-background-hover transition-colors duration-100',
       )}
     >
       <Checkbox checked={checked} semiChecked={semiChecked} onChange={onChange} />

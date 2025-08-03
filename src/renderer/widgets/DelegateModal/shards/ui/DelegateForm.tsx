@@ -54,7 +54,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
             <Conviction />
           </form>
 
-          <div className="flex flex-1 flex-col justify-end gap-y-6 pb-4 pt-6">
+          <div className="flex flex-1 flex-col justify-end gap-y-6 pt-6 pb-4">
             <FeeSection />
           </div>
         </div>
@@ -250,7 +250,7 @@ const FeeSection = () => {
               <Tooltip>
                 <Tooltip.Trigger>
                   <div tabIndex={0}>
-                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                    <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
                   </div>
                 </Tooltip.Trigger>
                 <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

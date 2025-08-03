@@ -27,7 +27,7 @@ export const TokenBalance = memo(({ asset }: Props) => {
   const chains = useUnit(networkModel.$chains);
 
   return (
-    <Plate className="z-10 flex h-[52px] w-full items-center p-0 pl-[36px] pr-2">
+    <Plate className="z-10 flex h-[52px] w-full items-center p-0 pr-2 pl-[36px]">
       <div className="flex flex-1 gap-x-2" data-testid={TEST_IDS.ASSETS.TOKEN_PLATE}>
         <div className="flex items-center gap-x-2">
           <AssetIcon asset={asset} />
@@ -37,7 +37,7 @@ export const TokenBalance = memo(({ asset }: Props) => {
               <ChainIcon chain={chains[chain.chainId]} size={18} />
               <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
               {chain.balance?.verified && (
-                <div className="flex items-center gap-x-2 text-text-warning">
+                <div className="text-text-warning flex items-center gap-x-2">
                   <Tooltip>
                     <Tooltip.Trigger>
                       <div tabIndex={0}>
@@ -46,7 +46,7 @@ export const TokenBalance = memo(({ asset }: Props) => {
                     </Tooltip.Trigger>
                     <Tooltip.Content>{t('balances.verificationTooltip')}</Tooltip.Content>
                   </Tooltip>
-                  <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
+                  <CaptionText className="text-inherit uppercase">{t('balances.verificationFailedLabel')}</CaptionText>
                 </div>
               )}
             </div>

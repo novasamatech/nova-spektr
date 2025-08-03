@@ -37,7 +37,7 @@ export const BasketList = () => {
   };
 
   return (
-    <div className="flex flex-grow flex-col gap-4 pt-4">
+    <div className="flex grow flex-col gap-4 pt-4">
       <BasketFilter />
 
       {operations.length > 0 && (

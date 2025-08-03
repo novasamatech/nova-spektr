@@ -14,7 +14,7 @@ export const BlockExplorer = ({ href, icon, children }: Props) => {
   return (
     <a
       className={cnTw(
-        'flex w-fit items-center gap-1.5 rounded-md px-1.5 py-1 text-text-secondary',
+        'text-text-secondary flex w-fit items-center gap-1.5 rounded-md px-1.5 py-1',
         'transition-colors',
         'focus:text-text-primary focus:ring-2',
         'hover:bg-action-background-hover hover:text-text-primary',

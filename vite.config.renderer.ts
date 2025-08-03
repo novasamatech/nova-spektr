@@ -31,6 +31,8 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const { default: mkcert } = await import('vite-plugin-mkcert');
   const { compression, defineAlgorithm } = await import('vite-plugin-compression2');
   const { nodePolyfills } = await import('vite-plugin-node-polyfills');
+  // @ts-expect-error unresolved import type
+  const { default: tailwindcss } = await import('@tailwindcss/vite');
 
   const isDev = mode === 'development';
   const isProd = mode === 'production';
@@ -81,6 +83,8 @@ const config: UserConfigFn = async ({ mode, command }) => {
       ...commonPlugins,
 
       command === 'serve' && mkcert(),
+
+      tailwindcss(),
 
       react({
         plugins:

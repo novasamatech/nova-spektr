@@ -74,7 +74,7 @@ export const MultiSelect = ({
     return (
       <span className="flex items-center gap-x-2">
         <FootnoteText as="span">{multiPlaceholder || placeholder}</FootnoteText>
-        <CaptionText as="span" className="h-4 rounded-[30px] bg-icon-accent px-1.5 leading-4 text-white" align="center">
+        <CaptionText as="span" className="bg-icon-accent h-4 rounded-[30px] px-1.5 leading-4 text-white" align="center">
           {selectedOptions.length}
         </CaptionText>
       </span>
@@ -93,7 +93,7 @@ export const MultiSelect = ({
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
               'inline-flex w-full items-center justify-between gap-x-2 py-2 pr-2 text-start',
-              'rounded border bg-input-background px-3 py-[7px]',
+              'bg-input-background rounded-sm border px-3 py-[7px]',
               'text-footnote text-text-primary outline-offset-1',
             )}
             tabIndex={tabIndex}
@@ -157,7 +157,7 @@ export const MultiSelect = ({
 
   return (
     <div className="flex flex-col gap-y-2">
-      <LabelText className="cursor-pointer text-text-tertiary" htmlFor={id}>
+      <LabelText className="text-text-tertiary cursor-pointer" htmlFor={id}>
         {label}
       </LabelText>
       {selectElement}

@@ -205,9 +205,9 @@ export const Signatory = ({
   const isInvalid = isInvalidAddress || signatoryAddress !== query;
 
   return (
-    <div className="grid grid-cols-[1fr,232px,44px] gap-x-4">
+    <div className="grid grid-cols-[1fr_232px_44px] gap-x-4">
       <Box width="100%" direction="row" verticalAlign="end" gap={3}>
-        <FootnoteText className="pb-2 text-text-tertiary">{1 + signatoryIndex}</FootnoteText>
+        <FootnoteText className="text-text-tertiary pb-2">{1 + signatoryIndex}</FootnoteText>
 
         {isOwnAccount ? (
           <Field text={t('createMultisigAccount.myAccount')}>

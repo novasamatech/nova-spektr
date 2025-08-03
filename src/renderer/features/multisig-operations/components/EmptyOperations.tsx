@@ -20,7 +20,7 @@ export const EmptyOperations = ({ multisigAccount, isEmptyFromFilters }: Props) 
   return (
     <div className="flex w-full flex-1 flex-col items-center justify-center gap-y-8">
       <Graphics name="emptyList" alt={t('operations.noOperationsDescription')} size={178} />
-      <BodyText align="center" className="max-w-[340px] text-text-tertiary">
+      <BodyText align="center" className="text-text-tertiary max-w-[340px]">
         {t(emptyText)}
       </BodyText>
     </div>

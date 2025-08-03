@@ -56,7 +56,7 @@ export const ConvictionSelect = ({ conviction, asset, amount, disabled, onChange
       {nonNullable(asset) && nonNullable(amount) ? (
         <DetailRow wrapperClassName="items-start" label={t('governance.vote.field.votingPower')}>
           <AssetBalance
-            className="text-text-tertiary transition-colors group-hover:text-text-primary"
+            className="text-text-tertiary group-hover:text-text-primary transition-colors"
             value={votingService.calculateVotingPower(amount, conviction)}
             asset={asset}
           />

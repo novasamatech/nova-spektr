@@ -47,7 +47,7 @@ export const VotedReferendumItem = memo(({ referendum, network, votes, onSelect 
 
         <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={network.api} />
 
-        <div className="ml-auto flex text-text-secondary">
+        <div className="text-text-secondary ml-auto flex">
           {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}
           {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
         </div>
@@ -62,7 +62,7 @@ export const VotedReferendumItem = memo(({ referendum, network, votes, onSelect 
       </div>
 
       <div className="flex items-center">
-        <Icon name="voted" className="mr-1 text-icon-accent" size={16} />
+        <Icon name="voted" className="text-icon-accent mr-1" size={16} />
         <FootnoteText className="text-tab-text-accent">
           {t('governance.addDelegation.summary.delegateVoted')}&nbsp;
         </FootnoteText>

@@ -23,7 +23,7 @@ export const LanguageSwitcher = ({ className, languages, selected, short, onChan
       <Listbox value={selectedLanguage.value} onChange={onChange}>
         <Listbox.Button
           className={cnTw(
-            'h-7.5 select-none pl-2.5 pr-1',
+            'h-7.5 pr-1 pl-2.5 select-none',
             'hover:bg-primary hover:text-white',
             'bg-shade-8 text-neutral-variant',
             'flex items-center justify-between gap-x-2.5 rounded-l-full rounded-r-full',
@@ -34,14 +34,14 @@ export const LanguageSwitcher = ({ className, languages, selected, short, onChan
           <Icon className="rounded-full border border-white" name={selectedLanguage.value} />
         </Listbox.Button>
         <Listbox.Options
-          className={cnTw('absolute flex flex-col gap-1', top ? 'bottom-0 top-auto' : 'bottom-auto top-0')}
+          className={cnTw('absolute flex flex-col gap-1', top ? 'top-auto bottom-0' : 'top-0 bottom-auto')}
         >
           {languagesList.map((language) => (
             <Listbox.Option key={language.value} value={language.value}>
               {({ active }) => (
                 <div
                   className={cnTw(
-                    'h-7.5 w-full cursor-pointer select-none pl-2.5 pr-1',
+                    'h-7.5 w-full cursor-pointer pr-1 pl-2.5 select-none',
                     'flex items-center justify-between gap-x-2.5 rounded-l-full rounded-r-full',
                     active ? 'bg-primary text-white' : 'bg-shade-8 text-neutral-variant',
                   )}

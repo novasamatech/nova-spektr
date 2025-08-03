@@ -25,7 +25,7 @@ export const ActivityListView = ({ limit, feed, withFullAccountInfo }: PropsWith
   if (nullable(input)) return null;
 
   return (
-    <div className="flex h-full flex-col gap-y-5 pb-4 pt-2">
+    <div className="flex h-full flex-col gap-y-5 pt-2 pb-4">
       {isLoading && Array.from({ length: 5 }).map((_, i) => <ActivityPlaceholder key={i} />)}
 
       {list.map(event => (

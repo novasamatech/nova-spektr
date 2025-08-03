@@ -60,14 +60,14 @@ export const AssetTransactionModal = () => {
             onChange={assetTransactionModel.events.queryChanged}
           />
         </Box>
-        <FootnoteText className="px-5 pb-2 pt-4 text-text-tertiary">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary px-5 pt-4 pb-2">{t('portfolilo.selectNetworkLabel')}</FootnoteText>
         <ScrollArea>
           <ul className="px-5 pb-5">
             {assetWithChains.chains.map((chain) => (
               <li
                 key={`${chain.assetSymbol}_${chain.chainId}`}
                 tabIndex={0}
-                className="flex flex-col rounded text-text-secondary hover:bg-action-background-hover hover:text-text-primary"
+                className="text-text-secondary hover:bg-action-background-hover hover:text-text-primary flex flex-col rounded-sm"
               >
                 <Link
                   to={createLink(path, {}, { chainId: [chain.chainId], assetId: [chain.assetId] })}

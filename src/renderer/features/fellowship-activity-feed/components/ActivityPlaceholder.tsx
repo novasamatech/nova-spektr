@@ -4,7 +4,7 @@ import { Skeleton } from '@/shared/ui-kit';
 export const ActivityPlaceholder = () => {
   return (
     <div className="flex flex-col gap-1 px-4 pt-2">
-      <div className="flex items-center gap-1 text-button-small">
+      <div className="text-button-small flex items-center gap-1">
         <div className="flex min-w-0 grow items-center">
           <BodyText>
             <Skeleton width="10ch" height="1lh" />

@@ -15,7 +15,7 @@ export const StepIndicators = memo(({ steps }: Props) => {
 
     return Array.from({ length: steps }).map((_, i) => (
       // eslint-disable-next-line react/no-array-index-key
-      <div key={i} className="mx-1.5 h-1 w-1 rounded-full bg-icon-button" />
+      <div key={i} className="bg-icon-button mx-1.5 h-1 w-1 rounded-full" />
     ));
   }, [steps]);
 

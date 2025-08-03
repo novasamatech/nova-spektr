@@ -44,8 +44,8 @@ export const OngoingReferendums = memo(
       <Accordion initialOpen>
         <Accordion.Trigger>
           <div className="flex w-full items-center gap-x-2">
-            <CaptionText className="uppercase text-text-secondary">{t('governance.referendums.ongoing')}</CaptionText>
-            <CaptionText className="font-semibold text-text-tertiary">
+            <CaptionText className="text-text-secondary uppercase">{t('governance.referendums.ongoing')}</CaptionText>
+            <CaptionText className="text-text-tertiary font-semibold">
               {isLoading ? <Skeleton width="3ch" height="1em" /> : referendums.length.toString()}
             </CaptionText>
           </div>

@@ -10,7 +10,7 @@ import { type AccountIdentity } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { ExplorersPopover } from '@/entities/wallet';
 
-const TABLE_GRID_CELLS = 'grid-cols-[1fr,128px,128px,40px]';
+const TABLE_GRID_CELLS = 'grid-cols-[1fr_128px_128px_40px]';
 
 type TableProps = {
   validators: Validator[];
@@ -21,14 +21,14 @@ type TableProps = {
 const ValidatorsTableRoot = ({ validators, children, listClassName }: TableProps) => {
   const { t } = useI18n();
 
-  const rowStyle = cnTw('group grid h-14 shrink-0 items-center pl-5 pr-2 hover:bg-hover', TABLE_GRID_CELLS);
+  const rowStyle = cnTw('group hover:bg-hover grid h-14 shrink-0 items-center pr-2 pl-5', TABLE_GRID_CELLS);
 
   return (
     <div className="mt-4 flex flex-col gap-y-2">
-      <div className={cnTw('grid items-center pl-5 pr-2', TABLE_GRID_CELLS)}>
+      <div className={cnTw('grid items-center pr-2 pl-5', TABLE_GRID_CELLS)}>
         <FootnoteText className="text-text-secondary">{t('staking.validators.validatorTableHeader')}</FootnoteText>
-        <FootnoteText className="px-3 text-text-secondary">{t('staking.validators.ownStakeTableHeader')}</FootnoteText>
-        <FootnoteText className="px-3 text-text-secondary">
+        <FootnoteText className="text-text-secondary px-3">{t('staking.validators.ownStakeTableHeader')}</FootnoteText>
+        <FootnoteText className="text-text-secondary px-3">
           {t('staking.validators.totalStakeTableHeader')}
         </FootnoteText>
       </div>

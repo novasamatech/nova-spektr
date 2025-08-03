@@ -36,9 +36,9 @@ export const Welcome = () => {
   }, []);
 
   return (
-    <div className="flex h-full w-full animate-in fade-in">
+    <div className="animate-in fade-in flex h-full w-full">
       <div className="flex h-full w-[512px] flex-col">
-        <TitleText className="px-10 pb-4 pt-10">{t('onboarding.welcome.title')}</TitleText>
+        <TitleText className="px-10 pt-10 pb-4">{t('onboarding.welcome.title')}</TitleText>
 
         <ScrollArea>
           <Box direction="column" gap={4} padding={[4, 10]}>
@@ -46,13 +46,13 @@ export const Welcome = () => {
           </Box>
         </ScrollArea>
 
-        <div className="flex flex-1 items-end px-10 pb-10 pt-4">
+        <div className="flex flex-1 items-end px-10 pt-4 pb-10">
           <PrivacyPolicy />
         </div>
       </div>
       <div
         ref={logo}
-        className="logo-background relative flex h-full flex-1 flex-col items-end justify-center bg-input-background-disabled"
+        className="logo-background bg-input-background-disabled relative flex h-full flex-1 flex-col items-end justify-center"
       >
         <div className={cnTw('relative w-fit', fixed ? `pr-[225px]` : 'self-center')}>
           <Icon name="logoTitle" className="-scale-y-100" size={LOGO_WIDTH} />
