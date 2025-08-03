@@ -44,6 +44,11 @@ declare module '*.svg?jsx' {
   export default content;
 }
 
+declare module '*.md' {
+  const content: string;
+  export default content;
+}
+
 declare module 'units-css' {
   const content: any;
   export default content;

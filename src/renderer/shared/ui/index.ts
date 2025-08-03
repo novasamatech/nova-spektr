@@ -42,7 +42,6 @@ export { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
 export { Truncate } from './Truncate/Truncate';
 export { Countdown } from './Countdown/Countdown';
 export { Tabs } from './Tabs/Tabs';
-export { Markdown } from './Markdown/Markdown';
 export { BlockExplorer } from './BlockExplorer/BlockExplorer';
 export { EmptyList, EmptyListWithIcon } from './EmptyList/EmptyList';
 export { Animation } from './Animation/Animation';
