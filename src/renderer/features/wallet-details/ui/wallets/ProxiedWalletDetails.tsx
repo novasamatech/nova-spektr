@@ -31,6 +31,7 @@ const ProxyTypeOperation: Record<ProxyType, string> = {
   Governance: 'proxy.operations.governance',
   IdentityJudgement: 'proxy.operations.identityJudgement',
   NominationPools: 'proxy.operations.nominationPools',
+  SudoBalances: 'proxy.operations.sudoBalances',
 };
 
 type Props = {
@@ -54,14 +55,13 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (!wallet || !walletUtils.isProxied(wallet)) return null;
 
-  const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-    walletFn: w => !walletUtils.isWatchOnly(w),
-    accountFn: a => a.accountId === wallet.accounts[0]?.proxyAccountId,
-  });
-
-  if (!proxyWallet) {
-    return null;
-  }
+  const proxyWallets = wallet.accounts[0]?.connections.map(connection => ({
+    connection,
+    proxyWallet: walletUtils.getWalletFilteredAccounts(wallets, {
+      walletFn: w => !walletUtils.isWatchOnly(w),
+      accountFn: a => connection.proxyAccountId === a.accountId,
+    }),
+  }));
 
   const actions: WalletAction[] = [];
 
@@ -141,18 +141,23 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
             )}
           </div>
 
-          <div className="flex items-center pl-4">
-            <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-            <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
-            <WalletIcon type={proxyWallet.type} size={16} className="mx-1" />
-            <FootnoteText className="truncate">{proxyWallet.name}</FootnoteText>
-            &nbsp;
-            <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
-            &nbsp;
-            <FootnoteText className="whitespace-nowrap">
-              {t(ProxyTypeOperation[wallet.accounts[0].proxyType])}
-            </FootnoteText>
-          </div>
+          {proxyWallets.map(
+            ({ connection, proxyWallet }) =>
+              proxyWallet && (
+                <div className="flex items-center pl-4" key={`${connection.proxyType}-${connection.proxyAccountId}`}>
+                  <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
+                  <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
+                  <WalletIcon type={proxyWallet?.type} size={16} className="mx-1" />
+                  <FootnoteText className="truncate">{proxyWallet.name}</FootnoteText>
+                  &nbsp;
+                  <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
+                  &nbsp;
+                  <FootnoteText className="whitespace-nowrap">
+                    {t(ProxyTypeOperation[connection.proxyType])}
+                  </FootnoteText>
+                </div>
+              ),
+          )}
         </div>
 
         <WalletActions actions={actions} />

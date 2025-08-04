@@ -278,9 +278,13 @@ sample({
       {
         accountId,
         chainId: chain!.chainId,
-        proxyAccountId: initiator!.accountId,
-        delay: 0,
-        proxyType: 'Any',
+        connections: [
+          {
+            proxyAccountId: initiator!.accountId,
+            delay: 0,
+            proxyType: 'Any',
+          },
+        ],
         proxyVariant: ProxyVariant.PURE,
         blockNumber,
         extrinsicIndex,

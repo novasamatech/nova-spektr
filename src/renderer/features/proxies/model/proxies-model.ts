@@ -44,6 +44,7 @@ type WorkerType = Endpoint<typeof proxyWorker>;
 const LOADING_TIMEOUT = 15_000;
 
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
+const proxiedAccountsUpdated = createEvent<ProxiedAccount[]>();
 const depositsReceived = createEvent<ProxyDeposits>();
 
 const $worker = createStore<WorkerType | null>(null);
@@ -87,6 +88,7 @@ type GetProxiesResult = {
   proxiesToRemove: ProxyAccount[];
   proxiedAccountsToAdd: PartialProxiedAccount[];
   proxiedAccountsToRemove: ProxiedAccount[];
+  proxiedAccountsToUpdate: PartialProxiedAccount[];
   deposits: {
     chainId: ChainId;
     deposits: Record<AccountId, string>;
@@ -117,17 +119,18 @@ const fetchProxiesFx = createEffect(
       proxies: chainProxies,
     });
 
-    const { proxiedAccountsToAdd } = proxiesResult;
+    const { proxiedAccountsToAdd, proxiedAccountsToUpdate } = proxiesResult;
+    const allProxiedAccountsToProcess = [...proxiedAccountsToAdd, ...proxiedAccountsToUpdate];
 
     const proxyUrl =
       networkUtils.isPureProxySupported(chain.options) && chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
 
-    if (proxiedAccountsToAdd.length) {
+    if (allProxiedAccountsToProcess.length) {
       const boundRequestIdentities = scopeBind(requestIdentitiesFx, { safe: true });
       try {
         await withTimeout(
           boundRequestIdentities({
-            accounts: proxiedAccountsToAdd.map((a) => a.accountId),
+            accounts: allProxiedAccountsToProcess.map((a) => a.accountId),
             chainId: chain.chainId,
           }),
           LOADING_TIMEOUT,
@@ -138,17 +141,17 @@ const fetchProxiesFx = createEffect(
       }
     }
 
-    if (proxyUrl && proxiedAccountsToAdd.length) {
+    if (proxyUrl && allProxiedAccountsToProcess.length) {
       const client = new GraphQLClient(proxyUrl);
 
       const pureProxies = await pureProxiesService.filterPureProxiedAccountIds(
         client,
-        proxiedAccountsToAdd.map((p) => p.accountId),
+        allProxiedAccountsToProcess.map((p) => p.accountId),
       );
 
       const pureProxiesMap = dictionary(pureProxies, 'accountId');
 
-      for (const proxiedAccount of proxiedAccountsToAdd) {
+      for (const proxiedAccount of allProxiedAccountsToProcess) {
         const pureProxy = pureProxiesMap[proxiedAccount.accountId];
         if (pureProxy) {
           proxiedAccount.proxyVariant = ProxyVariant.PURE;
@@ -219,7 +222,8 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
   const flexibleProxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: (w) => walletUtils.isFlexibleMultisig(w),
     accountFn: (a) =>
-      accountUtils.isChainIdMatch(a, proxiedAccount.chainId) && a.accountId === proxiedAccount.proxyAccountId,
+      accountUtils.isChainIdMatch(a, proxiedAccount.chainId) &&
+      proxiedAccount.connections.some((c) => a.accountId === c.proxyAccountId),
   });
 
   const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
@@ -263,6 +267,7 @@ spread({
     proxiesToRemove: proxyModel.events.proxiesRemoved,
     proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiedAccountsToRemove: proxiedAccountsRemoved,
+    proxiedAccountsToUpdate: proxiedAccountsUpdated,
     deposits: depositsReceived,
   },
 });
@@ -272,6 +277,11 @@ sample({
   filter: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd.length > 0,
   fn: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd,
   target: createProxiesWalletsFx,
+});
+
+sample({
+  clock: proxiedAccountsUpdated,
+  target: accounts.updateAccounts,
 });
 
 sample({

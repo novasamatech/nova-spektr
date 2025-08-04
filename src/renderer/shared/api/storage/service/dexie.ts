@@ -24,7 +24,9 @@ import {
   migrateMultisigAccounts,
   migratePVAccounts,
   migrateWallets,
+  removeDeprecatedProxiedAccounts,
 } from '../migration';
+
 class DexieStorage extends Dexie {
   connections: TConnection;
   balances: TBalance;
@@ -121,6 +123,8 @@ class DexieStorage extends Dexie {
     this.version(32).upgrade(migrateEVMAccountsCryptoType);
 
     this.version(33).upgrade((t) => t.table('balances').clear());
+
+    this.version(34).upgrade(removeDeprecatedProxiedAccounts);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');

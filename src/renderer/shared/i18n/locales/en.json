@@ -1633,6 +1633,7 @@
       "nominationPools": "Nominations operations",
       "nonTransfer": "All, except transfer operations",
       "staking": "Staking operations",
+      "sudoBalances": "Sudo balances",
       "unknown": "Unknown operations"
     },
     "operations": {
@@ -1644,7 +1645,8 @@
       "nominationPools": "nominations operations",
       "nonTransfer": "all, except transfer operations",
       "removeProxyTitle": "Revoke delegated authority (proxy) on ",
-      "staking": "staking operations"
+      "staking": "staking operations",
+      "sudoBalances": "balances via sudo"
     },
     "proxyDepositHint": "The deposit stays reserved on your account until the proxy is removed",
     "proxyDepositLabel": "Proxy deposit",
@@ -1670,7 +1672,8 @@
       "IdentityJudgement": "Judgement",
       "NominationPools": "Nominations",
       "NonTransfer": "Non Transfer",
-      "Staking": "Staking"
+      "Staking": "Staking",
+      "SudoBalances": "Sudo Balances"
     }
   },
   "pureProxyRemove": {

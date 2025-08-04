@@ -28,7 +28,8 @@ export type ProxyType =
   | 'CancelProxy'
   | 'Governance'
   | 'IdentityJudgement'
-  | 'NominationPools';
+  | 'NominationPools'
+  | 'SudoBalances';
 
 export const enum ProxyVariant {
   NONE = 'none', // temp value, until we not receive correct proxy variant
@@ -40,7 +41,7 @@ export type PartialProxyAccount = Omit<ProxyAccount, 'chainId'>;
 
 export type PartialProxiedAccount = Pick<
   ProxiedAccount,
-  'chainId' | 'proxyAccountId' | 'accountId' | 'delay' | 'proxyType' | 'proxyVariant' | 'blockNumber' | 'extrinsicIndex'
+  'chainId' | 'connections' | 'accountId' | 'proxyVariant' | 'blockNumber' | 'extrinsicIndex'
 >;
 
 export type ProxyDeposits = {
