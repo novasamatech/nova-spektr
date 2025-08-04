@@ -71,6 +71,7 @@ async function getProxies({
 
   const existingProxiedAccounts: PartialProxiedAccount[] = [];
   const proxiedAccountsToAdd: PartialProxiedAccount[] = [];
+  const proxiedAccountsToUpdate: ProxiedAccount[] = [];
 
   const deposits: ProxyDeposits = {
     chainId: chain.chainId,
@@ -78,7 +79,14 @@ async function getProxies({
   };
 
   if (!api || !api.query.proxy) {
-    return { proxiesToAdd, proxiesToRemove: [], proxiedAccountsToAdd, proxiedAccountsToRemove: [], deposits };
+    return {
+      proxiesToAdd,
+      proxiesToRemove: [],
+      proxiedAccountsToAdd,
+      proxiedAccountsToRemove: [],
+      proxiedAccountsToUpdate,
+      deposits,
+    };
   }
 
   try {
@@ -109,23 +117,29 @@ async function getProxies({
             ),
         };
 
-        const existingProxied = proxiedAccounts.find((p) => p.accountId === newProxied.accountId);
-        const needToAddProxiedAccount =
-          newProxied.connections.length > 0 &&
-          (!existingProxied ||
-            existingProxied.connections.length !== newProxied.connections.length ||
-            existingProxied.connections.some((existingConnection, index) => {
-              const newConnection = newProxied.connections.at(index);
-              return (
-                !newConnection ||
-                existingConnection.proxyAccountId !== newConnection.proxyAccountId ||
-                existingConnection.proxyType !== newConnection.proxyType ||
-                existingConnection.delay !== newConnection.delay
-              );
-            }));
+        const isNotEmpty = newProxied.connections.length > 0;
 
-        if (needToAddProxiedAccount) {
-          proxiedAccountsToAdd.push(newProxied);
+        if (isNotEmpty) {
+          const existingProxied = proxiedAccounts.find((p) => p.accountId === newProxied.accountId);
+          if (!existingProxied) {
+            proxiedAccountsToAdd.push(newProxied);
+          } else {
+            const hasChanged =
+              existingProxied.connections.length !== newProxied.connections.length ||
+              existingProxied.connections.some((existingConnection, index) => {
+                const newConnection = newProxied.connections.at(index);
+                return (
+                  !newConnection ||
+                  existingConnection.proxyAccountId !== newConnection.proxyAccountId ||
+                  existingConnection.proxyType !== newConnection.proxyType ||
+                  existingConnection.delay !== newConnection.delay
+                );
+              });
+
+            if (hasChanged) {
+              proxiedAccountsToUpdate.push({ ...existingProxied, ...newProxied });
+            }
+          }
 
           deposits.deposits[account] = value.deposit.toString();
         }
@@ -165,7 +179,7 @@ async function getProxies({
   const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => proxyWorkerUtils.isSameProxy(p, ep)));
 
   const proxiedAccountsToRemove = Object.values(proxiedAccounts).filter((p) => {
-    return !existingProxiedAccounts.some((ep) => proxyWorkerUtils.isSameProxied(ep, p));
+    return !existingProxiedAccounts.some((ep) => ep.accountId === p.accountId);
   });
 
   disconnect(api);
@@ -175,6 +189,7 @@ async function getProxies({
     proxiesToRemove,
     proxiedAccountsToAdd,
     proxiedAccountsToRemove,
+    proxiedAccountsToUpdate,
     deposits,
   };
 }
