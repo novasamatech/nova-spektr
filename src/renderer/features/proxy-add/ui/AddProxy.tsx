@@ -70,8 +70,6 @@ export const AddProxy = ({ wallet, children }: Props) => {
     );
   }
 
-  console.log('rendering modal bitch', { wallet, isModalOpen, step });
-
   return (
     <Modal size="md" height="fit" isOpen={isModalOpen} onToggle={setIsModalOpen}>
       <Modal.Trigger>{children}</Modal.Trigger>

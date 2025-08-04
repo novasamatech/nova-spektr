@@ -93,8 +93,6 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
     [chains, firstAccount],
   );
 
-  console.log('huy', { firstAccount, isRenameInputOpen });
-
   return (
     <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
