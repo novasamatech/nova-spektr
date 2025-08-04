@@ -76,7 +76,7 @@ export const GeneralActions = () => {
         <Link
           to={Paths.NETWORK}
           className={cnTw(
-            'grid w-full grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 rounded-md p-3',
+            'grid w-full grid-flow-col grid-cols-[auto_1fr_auto] items-center gap-x-2 rounded-md p-3',
             'transition hover:shadow-card-shadow focus:shadow-card-shadow',
           )}
         >
@@ -90,7 +90,7 @@ export const GeneralActions = () => {
         <Link
           to={Paths.REFERENDUM_DATA}
           className={cnTw(
-            'flex w-full items-center gap-x-2 rounded p-3',
+            'flex w-full items-center gap-x-2 rounded-sm p-3',
             'transition hover:shadow-card-shadow focus:shadow-card-shadow',
           )}
         >
@@ -104,7 +104,7 @@ export const GeneralActions = () => {
         <Link
           to={Paths.CURRENCY}
           className={cnTw(
-            'flex w-full items-center gap-x-2 rounded p-3',
+            'flex w-full items-center gap-x-2 rounded-sm p-3',
             'transition hover:shadow-card-shadow focus:shadow-card-shadow',
           )}
         >
@@ -118,7 +118,7 @@ export const GeneralActions = () => {
 
       {isAutoUpdateSupported && (
         <Plate className="p-0">
-          <div className="flex w-full items-center gap-x-2 rounded p-3 transition hover:shadow-card-shadow focus:shadow-card-shadow">
+          <div className="flex w-full items-center gap-x-2 rounded-sm p-3 transition hover:shadow-card-shadow focus:shadow-card-shadow">
             <Icon className="row-span-2" name="update" size={36} />
             <BodyText className="mr-auto">{t('settings.autoUpdate')}</BodyText>
             <Switch

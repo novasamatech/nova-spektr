@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId } from '@/shared/lib/utils';
-import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountSDK } from '@/sdk/account';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -59,7 +59,7 @@ extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
 
   const address = wallet.accounts[0]?.accountId;
   const isEthereum = isEthereumAccountId(address);
-  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
+  const theme = isEthereum ? 'ethereum' : 'polkadot';
 
   return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
 });

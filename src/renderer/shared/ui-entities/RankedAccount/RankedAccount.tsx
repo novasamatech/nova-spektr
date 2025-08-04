@@ -3,10 +3,10 @@ import { type PropsWithChildren } from 'react';
 import { type Chain } from '@/shared/core';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Identicon } from '@/shared/ui';
 import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
 import { CollectiveRank } from '../CollectiveRank/CollectiveRank';
+import { Identicon } from '../Identicon/Identicon';
 
 type Props = {
   name?: string;

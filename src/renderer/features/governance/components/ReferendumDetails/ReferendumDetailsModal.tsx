@@ -89,7 +89,7 @@ export const ReferendumDetailsModal = ({
             <div className="flex shrink-0 grow basis-[320px] flex-row flex-wrap gap-4">
               {(referendum.voting.votes.length > 0 || referendum.votedByDelegates.length > 0) && (
                 <DetailsCard>
-                  <div className="grid grid-cols-[270px,auto] items-center justify-between gap-x-1">
+                  <div className="grid grid-cols-[270px_auto] items-center justify-between gap-x-1">
                     <VotedBy
                       direction="column"
                       asset={asset}

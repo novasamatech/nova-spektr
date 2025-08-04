@@ -1,6 +1,6 @@
 import { type Meta, type StoryFn } from '@storybook/react-vite';
 
-import { Identicon } from '../../Identicon/Identicon';
+import { Identicon } from '@/shared/ui-entities';
 
 import { MultiSelect } from './MultiSelect';
 

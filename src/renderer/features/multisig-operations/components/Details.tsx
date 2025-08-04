@@ -206,12 +206,12 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
             <button
               type="button"
               className={cnTw(
-                '-mr-2 flex cursor-pointer items-center gap-x-1 rounded px-2 py-[3px]',
+                '-mr-2 flex cursor-pointer items-center gap-x-1 rounded-sm px-2 py-[3px]',
                 'hover:bg-action-background-hover hover:text-text-primary',
               )}
               onClick={toggleValidators}
             >
-              <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+              <div className="rounded-[30px] bg-icon-accent px-1.5 py-px">
                 <CaptionText className="text-white" align="center">
                   {selectedValidators.length}
                 </CaptionText>

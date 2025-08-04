@@ -33,7 +33,7 @@ export const NetworkList = ({ title, query, networkList, children }: Props) => {
       <Box padding={[1.5, 2]}>
         <Accordion.Trigger>
           <div className="flex w-full items-center gap-x-1.5">
-            <CaptionText as="h2" className="uppercase tracking-[0.75px] text-text-secondary">
+            <CaptionText as="h2" className="tracking-[0.75px] text-text-secondary uppercase">
               {title}
             </CaptionText>
             <Counter variant="waiting">{networkList.length}</Counter>

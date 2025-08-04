@@ -15,7 +15,7 @@ export const NoProxiesAction = ({ className, canCreateProxy = true, onAddProxy }
   return (
     <div className={cnTw('flex h-full flex-col items-center justify-center py-4', className)}>
       <Icon name="document" size={64} />
-      <div className="mb-2 mt-6 flex items-center gap-x-1.5">
+      <div className="mt-6 mb-2 flex items-center gap-x-1.5">
         <SmallTitleText>{t('walletDetails.common.emptyProxyTitle')}</SmallTitleText>
         <ProxyPopover />
       </div>

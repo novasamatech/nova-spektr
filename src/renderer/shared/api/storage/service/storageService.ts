@@ -1,4 +1,4 @@
-import { type IndexableType, type Table } from 'dexie';
+import { type IndexableType, type Table, type UpdateSpec } from 'dexie';
 
 import { type NoID } from '@/shared/core';
 
@@ -74,7 +74,7 @@ export class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  async update(id: K, item: Partial<NoID<T>>): Promise<K | undefined> {
+  async update(id: K, item: UpdateSpec<T>): Promise<K | undefined> {
     try {
       const isUpdated = await this.dexieTable.update(id, item);
 
@@ -86,7 +86,7 @@ export class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  async updateAll(items: (Partial<T> & { id: K })[]): Promise<number[] | undefined> {
+  async updateAll(items: (UpdateSpec<T> & { id: K })[]): Promise<number[] | undefined> {
     if (items.length === 0) {
       return undefined;
     }

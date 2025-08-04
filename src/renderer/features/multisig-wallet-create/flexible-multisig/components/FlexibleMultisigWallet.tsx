@@ -46,12 +46,12 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
     fields: { chainId },
   } = useForm(formModel.form);
 
-  const modalTitle = isStep(activeStep, Step.SIGNER_SELECTION) ? (
-    t('createMultisigAccount.selectSigner')
-  ) : isStep(activeStep, Step.NAME_NETWORK) ? (
+  const modalTitle = isStep(activeStep, Step.NAME_NETWORK) ? (
     t('createMultisigAccount.flexibleMultisig.title')
+  ) : isStep(activeStep, Step.SIGN) && nonNullable(proxyAddress) ? (
+    <OperationTitle title={t('createMultisigAccount.flexibleMultisig.titleAssignControl')} chainId={chainId.value} />
   ) : (
-    <OperationTitle title={t('createMultisigAccount.flexibleMultisig.title')} chainId={chainId.value} />
+    <OperationTitle title={t('createMultisigAccount.flexibleMultisig.titleOn')} chainId={chainId.value} />
   );
 
   const handleClose = () => {

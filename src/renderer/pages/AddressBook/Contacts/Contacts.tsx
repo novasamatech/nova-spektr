@@ -24,7 +24,7 @@ export const Contacts = () => {
     <>
       <div className="flex h-full flex-col">
         <Header title={t('addressBook.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-          <div className="grid grid-cols-[230px,1fr] items-center gap-x-3">
+          <div className="grid grid-cols-[230px_1fr] items-center gap-x-3">
             <ContactFilter />
             <CreateContactNavigation />
           </div>

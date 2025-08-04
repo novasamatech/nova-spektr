@@ -324,41 +324,19 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
-  source: {
-    chain: formModel.$chain,
-    coreTx: $coreTx,
-    tx: $tx,
-    initiator: $initiator,
-    signer: $signer,
-  },
-  filter: ({ chain, coreTx, tx, initiator, signer }) => {
-    return (
-      nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(initiator) && nonNullable(signer)
-    );
-  },
-  fn: ({ coreTx, tx, chain, initiator, signer }, signParams) => {
-    return {
-      event: {
-        ...signParams,
-        chain: chain!,
-        account: initiator!,
-        signatory: signer!,
-        coreTxs: [coreTx!],
-        wrappedTxs: [tx!],
-      },
-      step: Step.SUBMIT,
-    };
-  },
+  clock: signModel.signed,
+  source: $tx,
+  filter: tx => nonNullable(tx),
+  fn: (_, payload) => ({ event: payload, step: Step.SUBMIT }),
   target: spread({
-    event: submitModel.events.formInitiated,
+    event: submitModel.init,
     step: stepChanged,
   }),
 });
 
 // Contacts
 sample({
-  clock: signModel.output.formSubmitted,
+  clock: signModel.signed,
   source: {
     signatories: signatoryModel.$signatories,
     contacts: contactModel.$contacts,
@@ -385,7 +363,7 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
+  clock: signModel.signed,
   source: {
     signatories: signatoryModel.$signatories,
     contacts: contactModel.$contacts,

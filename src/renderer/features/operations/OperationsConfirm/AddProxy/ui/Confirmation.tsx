@@ -43,7 +43,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon name="proxyConfirm" size={60} />
       </div>

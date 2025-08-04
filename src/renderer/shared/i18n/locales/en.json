@@ -225,9 +225,9 @@
       "leaveFlowDescription": "Leaving this page stops the Flexible Multisig setup.",
       "leaveFlowTitle": "Please stay on this page",
       "leaveTitle": "Do you want to leave creation without saving?",
-      "multisigAndProxyExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists",
+      "multisigAndProxyExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists and it is already connected to a pure proxy <proxy/>. You create an additional pure proxy controlled by this multisig.",
       "multisigAndProxyExistTitle": "Multisig wallet and pure proxy already exists",
-      "multisigExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists and it is already connected to a pure proxy <proxy/>. You create an additional pure proxy controlled by this multisig.",
+      "multisigExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists",
       "nameNetworkDescription": "Select the network and the name of your flexible multisig",
       "networkDescription": "This new flexible multisig will only work on this network. To carry out operations on a different network you will need to create a new flexible multisig.",
       "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit, proxy deposit and network fee on a selected account",
@@ -237,7 +237,9 @@
       "signatoryThresholdDescription": "Assign the signatories and set the signatory threshold for your flexible multisig.",
       "startUsing": "Start using",
       "threshold": "Minimum number of signatories needed to approve a transaction.",
-      "title": "Create flexible multisig"
+      "title": "Create flexible multisig",
+      "titleAssignControl": "Assign control on",
+      "titleOn": "Create flexible multisig on"
     },
     "multisig": "Multisig",
     "multisigCreationFeeLabel": "Additional cost",
@@ -1265,7 +1267,7 @@
       "requestPairing": "Request pairing",
       "requestRejected": "Request was rejected",
       "selectAccountLabel": "Account",
-      "selectAccountPlacehilder": "Select one of accounts",
+      "selectAccountPlaceholder": "Select one of accounts",
       "subWalletTitle": "Add SubWallet extension account",
       "talismanTitle": "Add Talisman extension account"
     },
@@ -1804,7 +1806,7 @@
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",
     "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Polkadot Vault",
     "signatureExpiredLabel": "QR Code has expired",
-    "signer": "Signer:",
+    "signer": "Signing wallet:",
     "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
   },
@@ -2182,6 +2184,7 @@
       "renameTitle": "Rename wallet",
       "renameWallet": "Enter wallet name",
       "title": "Wallet details",
+      "viewDetails": "View details",
       "walletRemoved": "Wallet removed"
     },
     "multisig": {

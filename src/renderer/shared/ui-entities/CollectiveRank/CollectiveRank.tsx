@@ -1,12 +1,14 @@
-import { type ComponentProps, memo } from 'react';
+import { type PropsWithChildren, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, toRomanNumeral } from '@/shared/lib/utils';
+import { cnTw, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { TextBase } from '@/shared/ui/Typography';
-import { Box, Label } from '@/shared/ui-kit';
+import { Box } from '@/shared/ui-kit';
 
-const pickRankColor = (rank: number): ComponentProps<typeof Label>['variant'] => {
-  const rankVariants: Record<number, ComponentProps<typeof Label>['variant']> = {
+type Variant = 'orange' | 'red' | 'purple' | 'lightBlue' | 'green' | 'blue' | 'gray';
+
+const pickRankColor = (rank: number): Variant => {
+  const rankVariants: Record<number, Variant> = {
     2: 'orange',
     3: 'red',
     4: 'purple',
@@ -44,7 +46,7 @@ export const CollectiveRank = memo(({ rank, showName }: Props) => {
   const { t } = useI18n();
 
   return (
-    <Label variant={pickRankColor(rank)} className="rounded px-1">
+    <Label variant={pickRankColor(rank)}>
       <Box direction="row" gap={1}>
         <span className="text-text-primary">{nonNullable(rank) ? toRomanNumeral(rank) : null}</span>
         {showName ? (
@@ -56,3 +58,24 @@ export const CollectiveRank = memo(({ rank, showName }: Props) => {
     </Label>
   );
 });
+
+export const Label = ({ variant, children }: PropsWithChildren<{ variant: Variant }>) => {
+  return (
+    <span
+      className={cnTw(
+        'flex h-fit w-fit max-w-full shrink-0 truncate rounded-sm px-1 py-1 text-caption uppercase select-none',
+        {
+          ['bg-badge-red-background-default text-text-negative']: variant === 'red',
+          ['bg-badge-orange-background-default text-text-warning']: variant === 'orange',
+          ['bg-badge-green-background-default text-text-positive']: variant === 'green',
+          ['bg-label-lightblue-default text-text-conviction-slider-text-2']: variant === 'lightBlue',
+          ['bg-badge-background text-tab-text-accent']: variant === 'blue',
+          ['bg-label-purple-default text-icon-alert']: variant === 'purple',
+          ['bg-input-background-disabled text-text-secondary']: variant === 'gray',
+        },
+      )}
+    >
+      {children}
+    </span>
+  );
+};

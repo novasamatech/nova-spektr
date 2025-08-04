@@ -63,13 +63,13 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
               id={id}
               tabIndex={tabIndex}
               className={cnTw(
+                'flex min-h-9 w-full items-center justify-between gap-x-2 px-3 py-[7px] pr-2',
+                'rounded-sm text-footnote outline-offset-1',
                 open && SelectButtonStyle[theme].open,
                 !open && !invalid && SelectButtonStyle[theme].closed,
                 invalid && SelectButtonStyle[theme].invalid,
                 SelectButtonStyle[theme].disabled,
                 ThemeStyles[theme],
-                'flex min-h-9 w-full items-center justify-between gap-x-2 px-3 py-[7px] pr-2',
-                'rounded border text-footnote outline-offset-1',
               )}
             >
               {selectedOption && !open ? (

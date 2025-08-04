@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
-import { ScProvider, WsProvider } from '@polkadot/rpc-provider';
+import { ScProvider } from '@polkadot/rpc-provider/substrate-connect';
 import { type ProviderInterface } from '@polkadot/rpc-provider/types';
+import { WsProvider } from '@polkadot/rpc-provider/ws';
 import { createEndpoint } from '@remote-ui/rpc';
 import * as Sc from '@substrate/connect';
 

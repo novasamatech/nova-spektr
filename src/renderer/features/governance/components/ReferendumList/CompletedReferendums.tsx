@@ -52,7 +52,7 @@ export const CompletedReferendums = memo(
       <Accordion initialOpen>
         <Accordion.Trigger>
           <div className="flex w-full items-center gap-x-2">
-            <CaptionText className="font-semibold uppercase tracking-[0.75px] text-text-secondary">
+            <CaptionText className="font-semibold tracking-[0.75px] text-text-secondary uppercase">
               {t('governance.referendums.completed')}
             </CaptionText>
             <CaptionText className="font-semibold text-text-tertiary">

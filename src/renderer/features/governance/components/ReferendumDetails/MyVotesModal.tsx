@@ -75,7 +75,7 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
       <Modal.Title close>{t('governance.walletVotes.title')}</Modal.Title>
       <Modal.Content>
         <div className="grid grid-cols-12 items-center px-5 pb-4">
-          <FootnoteText className="col-span-5 pb-1 pr-2 text-text-tertiary">
+          <FootnoteText className="col-span-5 pr-2 pb-1 text-text-tertiary">
             {t('governance.walletVotes.listColumnAccount')}
           </FootnoteText>
           <FootnoteText className="col-span-2 basis-16 px-2 pb-1 text-text-tertiary">

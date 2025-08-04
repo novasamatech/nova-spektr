@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 
 import { type BrowserWindow, app, session } from 'electron';
-import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import { REACT_DEVELOPER_TOOLS, default as installExtension } from 'electron-devtools-installer';
 
 import { runAppSingleInstance } from './factories/instance';
 import { setupLogger } from './factories/logs';
@@ -76,8 +76,8 @@ runAppSingleInstance(async () => {
     await installExtension(REACT_DEVELOPER_TOOLS);
 
     // Reloading extensions for correct initialization in dev tools
-    session.defaultSession.getAllExtensions().map((e) => {
-      session.defaultSession.loadExtension(e.path);
+    session.defaultSession.extensions.getAllExtensions().map((e) => {
+      session.defaultSession.extensions.loadExtension(e.path);
     });
   }
 });

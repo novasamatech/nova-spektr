@@ -43,7 +43,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet]),
     });
 
-    await allSettled(addProxyModel.events.flowStarted, { scope });
+    await allSettled(addProxyModel.events.flowStarted, { scope, params: initiatorWallet });
 
     expect(scope.getState(addProxyModel.$chain)).toEqual(null);
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.INIT);

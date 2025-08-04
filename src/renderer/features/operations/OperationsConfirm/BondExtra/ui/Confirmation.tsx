@@ -54,7 +54,7 @@ export const Confirmation = ({
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="stakeMoreConfirm" size={60} />
 
@@ -62,7 +62,7 @@ export const Confirmation = ({
           <AssetBalance
             value={amountValue}
             asset={asset}
-            className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary"
+            className="font-manrope text-[32px] leading-[36px] font-bold text-text-primary"
           />
           <AssetFiatBalance asset={asset} amount={amountValue} className="text-headline" />
         </div>

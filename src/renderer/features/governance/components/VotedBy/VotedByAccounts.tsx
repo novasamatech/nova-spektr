@@ -85,7 +85,7 @@ const Voted = ({ asset, type, votes, multiplier }: VotedProps) => {
   return (
     <div className="flex w-full items-center gap-x-1">
       <Icon name="voted" size={16} className="shrink-0 text-icon-accent" />
-      <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-accent">
+      <FootnoteText className="flex items-center gap-x-0.5 truncate text-nowrap whitespace-nowrap text-icon-accent">
         <Trans
           t={t}
           i18nKey={i18nKey[type]}

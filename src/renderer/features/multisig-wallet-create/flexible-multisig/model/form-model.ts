@@ -94,7 +94,7 @@ const $existingMultisig = combine(
   ({ multisigAccountId, accounts }) => {
     return (
       accounts.find(a => {
-        if (!accountUtils.isMultisigAccount(a)) return false;
+        if (!accountUtils.isAnyMultisigAccount(a)) return false;
         return a.accountId === multisigAccountId;
       }) ?? null
     );
@@ -108,18 +108,14 @@ const $existingProxy = combine(
   },
   ({ existingMultisig, accounts }) => {
     if (nullable(existingMultisig)) return null;
-
     return (
       accounts.find(a => {
-        if (!accountUtils.isPureProxiedAccount(a)) return false;
+        if (!accountUtils.isPureProxiedAccount(a) && !accountUtils.isFlexibleProxiedAccount(a)) return false;
         return a.connections.some(c => c.proxyAccountId === existingMultisig.accountId);
       }) ?? null
     );
   },
 );
-
-const $multisigAlreadyExists = $existingMultisig.map(nonNullable);
-const $multisigWithProxyAlreadyExists = $existingProxy.map(nonNullable);
 
 const $hiddenMultisig = combine(
   {
@@ -183,8 +179,6 @@ const $canSubmit = combine(
     hasEmptySignatories: signatoryModel.$hasEmptySignatories,
     hasEmptySignatoryName: signatoryModel.$hasEmptySignatoryName,
     hasDuplicateSignatories: signatoryModel.$hasDuplicateSignatories,
-    multisigAlreadyExists: $multisigAlreadyExists,
-    multisigWithProxyAlreadyExists: $multisigWithProxyAlreadyExists,
     invalidAddresses: $invalidAddresses,
     hiddenMultisig: $hiddenMultisig,
     threshold: form.fields.threshold.$value,
@@ -214,8 +208,8 @@ export const formModel = {
   $multisigChains,
   form,
   $multisigAccountId,
-  $multisigAlreadyExists,
-  $multisigWithProxyAlreadyExists,
+  $multisigAlreadyExists: $existingMultisig.map(nonNullable),
+  $multisigWithProxyAlreadyExists: $existingProxy.map(nonNullable),
   $hiddenMultisig,
   $availableAccounts,
   $invalidAddresses,

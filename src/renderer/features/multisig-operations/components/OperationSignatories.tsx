@@ -77,7 +77,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
           size="sm"
           prefixElement={<Icon name="chat" size={16} />}
           suffixElement={
-            <CaptionText className="rounded-full bg-chip-icon px-1.5 pb-[2px] pt-[1px] !text-white">
+            <CaptionText className="rounded-full bg-chip-icon px-1.5 pt-px pb-[2px] text-white!">
               {operation.events.length}
             </CaptionText>
           }

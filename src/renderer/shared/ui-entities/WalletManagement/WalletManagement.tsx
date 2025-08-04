@@ -2,16 +2,17 @@ import { type PropsWithChildren, type ReactNode } from 'react';
 
 import { type Address, type Chain, type Wallet } from '@/shared/core';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, Icon, type IconTheme, Identicon } from '@/shared/ui';
+import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
 import { ChainIcon } from '../ChainIcon/ChainIcon';
+import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
 
 type Props = {
   wallet: Wallet;
   description?: string | ReactNode;
   meta?: ReactNode;
   address: Address | undefined;
-  theme: IconTheme;
+  theme?: IdenticonIconTheme;
   onClick: () => void;
   chain?: Chain | null;
   label?: string | null;
@@ -35,14 +36,14 @@ export const WalletManagement = ({
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
       )}
     >
-      <button className="flex w-full items-center gap-x-2 rounded py-1.5 pl-2 pr-8" onClick={onClick}>
+      <button className="flex w-full items-center gap-x-2 rounded py-1.5 pr-10 pl-2" onClick={onClick}>
         {wallet.isActive ? (
           <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
         ) : (
           <div className="row-span-2 h-4 w-4 shrink-0" />
         )}
 
-        <Identicon canCopy={false} address={address} size={16} background={false} theme={theme} />
+        {address && <Identicon canCopy={false} address={address} size={16} background={false} theme={theme} />}
 
         <div className="flex min-w-0 flex-grow flex-col">
           <div className="flex items-center gap-x-2">
@@ -72,14 +73,7 @@ export const WalletManagement = ({
         </div>
       </button>
 
-      <div
-        className={cnTw(
-          'absolute right-2 top-1/2 flex -translate-y-1/2 opacity-0 transition-opacity',
-          'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
-        )}
-      >
-        {children}
-      </div>
+      <div className="absolute top-1/2 right-2 flex -translate-y-1/2">{children}</div>
     </div>
   );
 };

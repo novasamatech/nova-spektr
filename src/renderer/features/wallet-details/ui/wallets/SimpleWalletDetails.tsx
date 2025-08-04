@@ -12,26 +12,16 @@ import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
-import { proxyAddFeature } from '@/features/proxy-add';
-import { proxyAddPureFeature } from '@/features/proxy-add-pure';
+import { AddProxy, addProxyModel } from '@/features/proxy-add';
+import { AddPureProxied } from '@/features/proxy-add-pure';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
-import { type WalletAction, WalletActions } from '../components/WalletActions';
+import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
-
-const {
-  models: { addProxy },
-  views: { AddProxy },
-} = proxyAddFeature;
-
-const {
-  models: { addPureProxied },
-  views: { AddPureProxied },
-} = proxyAddPureFeature;
 
 type Props = {
   wallet: Wallet;
@@ -53,8 +43,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   });
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
-  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
-  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+  const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
 
   const [chains, setChains] = useState<Chain[]>([]);
   const [tab, setTab] = useState('accounts');
@@ -73,25 +62,30 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     actions.push({
-      icon: 'delegate',
-      title: t('walletDetails.common.addProxyAction'),
-      onClick: addProxy.events.flowStarted,
+      component: (
+        <AddProxy wallet={wallet}>
+          <Action title={t('walletDetails.common.addProxyAction')} icon="delegate" />
+        </AddProxy>
+      ),
     });
   }
 
   if (permissionUtils.canCreateAnyProxy(wallet)) {
     actions.push({
-      icon: 'createPureProxy',
-      title: t('walletDetails.common.addPureProxiedAction'),
-      onClick: addPureProxied.events.flowStarted,
+      component: (
+        <AddPureProxied wallet={wallet}>
+          <Action title={t('walletDetails.common.addPureProxiedAction')} icon="createPureProxy" />
+        </AddPureProxied>
+      ),
     });
   }
 
   actions.push({
-    icon: 'forget',
-    title: t('walletDetails.common.forgetButton'),
-    variant: 'danger',
-    onClick: toggleConfirmForget,
+    component: (
+      <ForgetWalletConfirm wallet={wallet} onForget={onClose}>
+        <Action title={t('walletDetails.common.forgetButton')} icon="forget" variant="danger" />
+      </ForgetWalletConfirm>
+    ),
   });
 
   const accountsIds = useMemo(
@@ -114,22 +108,22 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
               />
             </div>
 
-            {!isRenameModalOpen && (
+            {!isRenameInputOpen && (
               <>
-                <HeadlineText className="truncate text-text-primary" as="h3">
+                <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
                   {wallet.name}
                 </HeadlineText>
                 <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
-                  <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
+                  <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
                   <WalletFiatBalance />
                 </div>
               </>
             )}
           </Box>
 
-          <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
+          <RenameWallet wallet={wallet} isOpen={isRenameInputOpen} onClose={toggleIsRenameInputOpen} />
 
-          {firstAccount && !isRenameModalOpen && (
+          {firstAccount && !isRenameInputOpen && (
             <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
               <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />
             </div>
@@ -170,21 +164,11 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
                 hasProxies={hasProxies}
                 canCreateProxy={canCreateProxy}
                 className="h-[388px]"
-                onAddProxy={addProxy.events.flowStarted}
+                onAddProxy={addProxyModel.events.flowStarted}
               />
             </Tabs.Content>
           </Tabs>
         )}
-
-        <ForgetWalletConfirm
-          wallet={wallet}
-          isOpen={isConfirmForgetOpen}
-          onClose={toggleConfirmForget}
-          onForget={onClose}
-        />
-
-        <AddProxy wallet={wallet} />
-        <AddPureProxied wallet={wallet} />
       </Modal.Content>
     </Modal>
   );

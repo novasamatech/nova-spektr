@@ -63,7 +63,7 @@ export const ShardedGroup = ({ rootAccountId, accounts, chain }: Props) => {
       </Accordion.Trigger>
       <Accordion.Content>
         {accounts.map((shard) => (
-          <li key={shard.accountId} className="ml-6 mt-2">
+          <li key={shard.accountId} className="mt-2 ml-6">
             <SelectableShard
               account={shard}
               chain={chain}

@@ -1,6 +1,6 @@
 import { type Validator } from '@/shared/core/types/validator';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
+import { nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
 import { Modal } from '@/shared/ui-kit';
@@ -22,17 +22,19 @@ export const SelectedValidatorsModal = ({ isOpen, validators, identities, onClos
       <Modal.Title close>{t('staking.confirmation.validatorsTitle')}</Modal.Title>
       <Modal.Content>
         <ul className="flex flex-col [overflow-y:overlay]">
-          {validators.map((validator) => (
-            <li
-              key={validator.address}
-              className="group grid h-10 shrink-0 grid-cols-[1fr,40px] items-center pl-5 pr-2 hover:bg-hover"
-            >
-              <ValidatorsTable.ShortRow
-                validator={validator}
-                identity={identities[toAccountId(validator.address) as AccountId]}
-              />
-            </li>
-          ))}
+          {validators.map((validator) => {
+            const identity = identities[toAccountId(validator.address)];
+            if (nullable(identity)) return null;
+
+            return (
+              <li
+                key={validator.address}
+                className="group grid h-10 shrink-0 grid-cols-[1fr_40px] items-center pr-2 pl-5 hover:bg-hover"
+              >
+                <ValidatorsTable.ShortRow validator={validator} identity={identity} />
+              </li>
+            );
+          })}
         </ul>
       </Modal.Content>
     </Modal>

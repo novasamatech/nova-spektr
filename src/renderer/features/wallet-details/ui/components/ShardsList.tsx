@@ -24,7 +24,7 @@ export const ShardsList = () => {
         <ul className="flex max-h-[530px] flex-col gap-y-2 overflow-y-auto px-3">
           {shards.map(shard => (
             <li key={shard.accountId}>
-              <div className="group flex w-full items-center justify-between gap-x-1 rounded px-2 py-1.5 transition-colors">
+              <div className="group flex w-full items-center justify-between gap-x-1 rounded-sm px-2 py-1.5 transition-colors">
                 <div className="w-[370px]">
                   <Address
                     address={toAddress(shard.accountId, { prefix: chain.addressPrefix })}

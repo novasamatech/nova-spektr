@@ -107,7 +107,7 @@ const ShardAccounts = ({ accounts, chain, asset }: ShardAccountsProps) => {
       <ul className="text-text-secondary">
         {accounts.map((account) => (
           <button
-            className="flex w-full appearance-none flex-col py-2 pl-10 pr-3 hover:bg-action-background-hover"
+            className="flex w-full appearance-none flex-col py-2 pr-3 pl-10 hover:bg-action-background-hover"
             key={account.accountId}
             onClick={() => receiveModel.selectAccount(account)}
           >
