@@ -136,7 +136,7 @@ const SignatorySelect = memo(() => {
       );
 
       options.push(
-        <Select.Group title={walletTitle}>
+        <Select.Group key={wallet.id} title={walletTitle}>
           {walletAccounts.map((a) => {
             const balance = balanceUtils.getBalance(balances, a.accountId, chain.chainId, asset.assetId);
 

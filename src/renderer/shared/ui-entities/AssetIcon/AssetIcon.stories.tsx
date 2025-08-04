@@ -70,7 +70,7 @@ export const VariantsDerivedFromConfig: Story = {
           {assets.map(asset => (
             <div key={asset.symbol} className="flex w-fit flex-col items-center justify-center gap-1.5">
               <AssetIcon {...args} asset={asset} />
-              <FootnoteText className="text-center text-text-secondary">
+              <FootnoteText className="text-text-secondary text-center">
                 {asset.name} ({asset.symbol})
               </FootnoteText>
             </div>

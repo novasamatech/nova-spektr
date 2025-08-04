@@ -50,7 +50,7 @@ export const ShardedGroup = ({ rootAccountId, accounts, chain }: Props) => {
       <Accordion.Trigger>
         <div className="w-full" onClick={(e) => e.stopPropagation()}>
           <Checkbox checked={isChecked} semiChecked={isSemiChecked} onChange={toggleSharded}>
-            <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
+            <div className="rounded-2lg bg-input-background-disabled flex h-5 w-7.5 items-center justify-center">
               <CaptionText className="text-text-secondary">{accounts.length}</CaptionText>
             </div>
             <FootnoteText
@@ -63,7 +63,7 @@ export const ShardedGroup = ({ rootAccountId, accounts, chain }: Props) => {
       </Accordion.Trigger>
       <Accordion.Content>
         {accounts.map((shard) => (
-          <li key={shard.accountId} className="ml-6 mt-2">
+          <li key={shard.accountId} className="mt-2 ml-6">
             <SelectableShard
               account={shard}
               chain={chain}

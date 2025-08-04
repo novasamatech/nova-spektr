@@ -15,7 +15,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -132,7 +132,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
     panel: (
       <ScrollArea>
         <div className="flex flex-col gap-2">
-          <FootnoteText className="px-5 text-text-tertiary">
+          <FootnoteText className="text-text-tertiary px-5">
             {t('walletDetails.multisig.thresholdLabel', {
               min: multisigAccount.threshold,
               max: multisigAccount.signatories.length,
@@ -142,7 +142,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
           <div className="flex flex-col gap-2">
             {signatories.wallets.length > 0 && (
               <div className="flex flex-col gap-y-2">
-                <FootnoteText className="px-5 text-text-tertiary">
+                <FootnoteText className="text-text-tertiary px-5">
                   {t('walletDetails.multisig.walletsGroup')} {signatories.wallets.length}
                 </FootnoteText>
 
@@ -185,11 +185,11 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
             {signatories.people.length > 0 && (
               <div className="flex flex-col gap-2">
-                <FootnoteText className="px-5 text-text-tertiary">
+                <FootnoteText className="text-text-tertiary px-5">
                   {t('walletDetails.multisig.otherSignatories', { count: signatories.people.length })}
                 </FootnoteText>
 
-                <ul className="flex flex-col gap-y-2 text-footnote text-text-secondary">
+                <ul className="text-footnote text-text-secondary flex flex-col gap-y-2">
                   {signatories.people.map(accountId => (
                     <li key={accountId} className="px-3">
                       <ContactItem address={accountId}>
@@ -248,10 +248,10 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
               </div>
               {!isRenameModalOpen && (
                 <>
-                  <HeadlineText className="truncate text-text-primary" as="h3">
+                  <HeadlineText className="text-text-primary truncate" as="h3">
                     {wallet.name}
                   </HeadlineText>
-                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                  <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
                     <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
                     <WalletFiatBalance />
                   </div>
@@ -262,7 +262,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
             {multisigAccount && !isRenameModalOpen && (
-              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
+              <div className="animate-in fade-in-0 ml-2 shrink-0 duration-300">
                 <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
               </div>
             )}
@@ -294,7 +294,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
         </Modal.Content>
       </Modal>
 
-      <ForgetWalletModal
+      <ForgetWalletConfirm
         wallet={wallet}
         isOpen={isConfirmForgetOpen}
         onClose={toggleConfirmForget}

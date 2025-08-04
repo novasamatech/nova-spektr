@@ -24,7 +24,7 @@ export const Tasks = () => {
 
   if (nullable(input) || pending) {
     return (
-      <div className="flex h-full grow flex-col items-center justify-center overflow-hidden rounded-xl border border-filter-border bg-card-background">
+      <div className="border-filter-border bg-card-background flex h-full grow flex-col items-center justify-center overflow-hidden rounded-xl border">
         <Loader color="primary" size={24} />
       </div>
     );
@@ -33,7 +33,7 @@ export const Tasks = () => {
   const tasksCount = (groups.personal?.length ?? 0) + (groups.general?.length ?? 0);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border">
+    <div className="border-filter-border flex h-full flex-col overflow-hidden rounded-xl border">
       <Title count={tasksCount} />
       {hasAccount && activeTasks.length ? (
         <ScrollArea>
@@ -63,7 +63,7 @@ const AllDone = () => {
       <Icon name="document" size={64} />
       <Box gap={2} horizontalAlign="center" width="340px">
         <SmallTitleText className="text-center">{t('fellowship.tasks.emptyTitle')}</SmallTitleText>
-        <FootnoteText className="text-center text-text-tertiary">{t('fellowship.tasks.emptyDescription')}</FootnoteText>
+        <FootnoteText className="text-text-tertiary text-center">{t('fellowship.tasks.emptyDescription')}</FootnoteText>
       </Box>
     </Box>
   );

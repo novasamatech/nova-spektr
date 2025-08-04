@@ -47,15 +47,15 @@ export const BaseModal = ({
           className={cnTw(
             'absolute inset-0 flex min-h-full items-center justify-center overflow-hidden p-4',
             'bg-dim-background',
-            'duration-300 animate-in fade-in',
+            'animate-in fade-in duration-300',
             zIndex,
           )}
         >
           <Dialog.Content
             style={panelStyle}
             className={cnTw(
-              'w-modal max-w-full transform rounded-lg bg-white text-left align-middle shadow-modal transition-all',
-              'duration-300 animate-in fade-in zoom-in-95',
+              'w-modal shadow-modal max-w-full transform rounded-lg bg-white text-left align-middle transition-all',
+              'animate-in fade-in zoom-in-95 duration-300',
               panelClass,
             )}
             data-testid={testId}
@@ -64,7 +64,7 @@ export const BaseModal = ({
               <Dialog.Title asChild>
                 <header className={cnTw('flex w-full items-center justify-between contain-inline-size', headerClass)}>
                   {title && typeof title === 'string' && (
-                    <HeaderTitleText className="truncate py-1 font-bold text-text-primary">{title}</HeaderTitleText>
+                    <HeaderTitleText className="text-text-primary truncate py-1 font-bold">{title}</HeaderTitleText>
                   )}
 
                   {title && typeof title !== 'string' && title}

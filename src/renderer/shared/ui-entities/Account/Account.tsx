@@ -33,7 +33,7 @@ export const Account = memo(
     hideExplorers,
   }: Props) => {
     return (
-      <div className="flex w-max min-w-0 max-w-full items-center gap-2">
+      <div className="flex w-max max-w-full min-w-0 items-center gap-2">
         <Address
           showIcon={!hideIcon}
           variant={variant}

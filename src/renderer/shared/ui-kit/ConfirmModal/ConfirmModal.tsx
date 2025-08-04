@@ -1,5 +1,5 @@
 import * as AlertDialog from '@radix-ui/react-alert-dialog';
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, type ReactNode } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
@@ -8,7 +8,7 @@ import { useTheme } from '../Theme/useTheme';
 
 type Props = {
   title: string;
-  description: string;
+  description: ReactNode;
   cancelText: string;
   confirmText: string;
   type?: 'alert' | 'warning';
@@ -40,19 +40,23 @@ const Root = ({
           className={cnTw(
             'absolute inset-0 z-50 flex min-h-full items-center justify-center overflow-hidden p-4',
             'bg-dim-background',
-            'duration-300 animate-in fade-in',
+            'animate-in fade-in duration-300',
           )}
         >
           <AlertDialog.Content
             className={cnTw(
               'flex w-60 flex-col overflow-hidden p-4',
-              'text-center align-middle text-body',
-              'transform rounded-lg bg-white shadow-modal transition-transform',
-              'duration-200 animate-in fade-in zoom-in-95',
+              'text-body text-center align-middle',
+              'shadow-modal transform rounded-lg bg-white transition-transform',
+              'animate-in fade-in zoom-in-95 duration-200',
             )}
           >
             <AlertDialog.Title className="font-manrope text-small-title">{title}</AlertDialog.Title>
-            <AlertDialog.Description className="mt-2 text-text-tertiary">{description}</AlertDialog.Description>
+            <AlertDialog.Description className="text-text-tertiary mt-2">
+              <Box verticalAlign="center" horizontalAlign="center" gap={2} direction="column">
+                {description}
+              </Box>
+            </AlertDialog.Description>
             <Box horizontalAlign="center" direction="row" gap={3} padding={[4, 0, 0]}>
               <AlertDialog.Cancel asChild>
                 <Button className="flex-1" size="sm" variant="fill" pallet="secondary" onClick={onCancel}>

@@ -14,7 +14,7 @@ import { networkModel } from '@/entities/network';
 import { WalletIcon, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -94,7 +94,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   }
   actions.push({
     icon: 'forget',
-    title: t('walletDetails.common.hideButton'),
+    title: t('walletDetails.common.forgetButton'),
     onClick: toggleConfirmForget,
     variant: 'danger',
   });
@@ -126,10 +126,10 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
               </div>
               {!isRenameModalOpen && (
                 <>
-                  <HeadlineText className="truncate text-text-primary" as="h3">
+                  <HeadlineText className="text-text-primary truncate" as="h3">
                     {wallet.name}
                   </HeadlineText>
-                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                  <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
                     <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
                     <WalletFiatBalance />
                   </div>
@@ -140,7 +140,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
             <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
             {account && !isRenameModalOpen && (
-              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
+              <div className="animate-in fade-in-0 ml-2 shrink-0 duration-300">
                 <Slot id={overviewSlot} props={{ walletAccounts: [account] }} />
               </div>
             )}
@@ -197,7 +197,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
         </Tabs>
       </Modal.Content>
 
-      <ForgetWalletModal
+      <ForgetWalletConfirm
         wallet={wallet}
         isOpen={isConfirmForgetOpen}
         onClose={toggleConfirmForget}

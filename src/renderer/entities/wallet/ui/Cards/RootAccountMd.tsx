@@ -2,7 +2,8 @@ import { type MouseEvent } from 'react';
 
 import { SS58_PUBLIC_KEY_PREFIX, cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, IconButton, Identicon } from '@/shared/ui';
+import { BodyText, IconButton } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 
 type Props = {
   name: string;
@@ -25,13 +26,13 @@ export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick
   return (
     <div
       className={cnTw(
-        'group relative flex w-full items-center rounded transition-colors',
+        'group relative flex w-full items-center rounded-sm transition-colors',
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
         className,
       )}
     >
       <button
-        className="flex w-full items-center gap-x-2 overflow-hidden rounded px-2 py-1.5"
+        className="flex w-full items-center gap-x-2 overflow-hidden rounded-sm px-2 py-1.5"
         onClick={handleClick(onClick)}
       >
         <Identicon
@@ -41,7 +42,7 @@ export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick
           address={toAddress(accountId, { prefix: SS58_PUBLIC_KEY_PREFIX })}
           size={20}
         />
-        <BodyText className="truncate pr-5 text-text-secondary">{name}</BodyText>
+        <BodyText className="text-text-secondary truncate pr-5">{name}</BodyText>
       </button>
 
       <IconButton name="details" className="absolute right-2 mx-1.5" onClick={onInfoClick} />

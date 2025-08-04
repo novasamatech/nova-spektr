@@ -120,7 +120,7 @@ export const AmountInput = ({
     }
 
     if (typeof balance === 'string') {
-      return <AssetBalance className="inline text-footnote text-text-primary" value={balance} asset={asset} />;
+      return <AssetBalance className="text-footnote text-text-primary inline" value={balance} asset={asset} />;
     }
 
     return balance;
@@ -140,7 +140,7 @@ export const AmountInput = ({
 
   const currencyIcon = showCurrency && nonNullable(rate) && nonNullable(activeCurrency) && (
     <div className="flex min-w-fit items-center gap-x-1">
-      <div className="relative flex h-8 w-8 items-center justify-center rounded-full border border-token-border bg-token-background p-[1px]">
+      <div className="border-token-border bg-token-background relative flex h-8 w-8 items-center justify-center rounded-full border p-px">
         {activeCurrency.symbol ? (
           <TitleText align="center" className="text-white">
             {activeCurrency.symbol}
@@ -169,7 +169,7 @@ export const AmountInput = ({
   const suffixElement = showCurrency && nonNullable(rate) && nonNullable(activeCurrency) && (
     <div className="flex items-center gap-x-2">
       <IconButton name="swapArrow" onClick={toggleCurrencyMode} />
-      <FootnoteText className="uppercase text-text-tertiary">
+      <FootnoteText className="text-text-tertiary uppercase">
         {currencyMode
           ? `${altValue}${altValueSuffix} ${asset.symbol}`
           : `${activeCurrency?.symbol || activeCurrency?.code} ${altValue}${altValueSuffix}`}
@@ -234,7 +234,7 @@ export const Input = ({
 
   return (
     <div className="flex flex-col gap-y-2">
-      <label htmlFor={id} className="text-footnote font-medium text-text-tertiary">
+      <label htmlFor={id} className="text-footnote text-text-tertiary font-medium">
         {label}
       </label>
       <div className="relative w-full">
@@ -249,16 +249,16 @@ export const Input = ({
         </div>
         <input
           className={cnTw(
-            'w-full rounded p-[11px]',
-            'border border-filter-border bg-input-background',
-            'placeholder:text-text-secondary focus:outline-none',
-            'text-right font-manrope text-title text-text-primary outline-offset-1',
+            'w-full rounded-sm p-[11px]',
+            'border-filter-border bg-input-background border',
+            'placeholder:text-text-secondary focus:outline-hidden focus-visible:outline-hidden!',
+            'font-manrope text-title text-text-primary text-right outline-offset-1',
             {
               'pb-[37px]': suffixElement,
               'border-filter-border-negative': invalid,
               'focus-within:border-active-container-border': !invalid,
               'hover:shadow-card-shadow': !disabled,
-              'bg-transparent text-text-tertiary placeholder:text-text-tertiary': disabled,
+              'text-text-tertiary placeholder:text-text-tertiary bg-transparent': disabled,
             },
           )}
           id={id}
@@ -271,7 +271,7 @@ export const Input = ({
           data-testid={testId}
           onChange={(event) => onChange?.(event.target.value)}
         />
-        <div className={cnTw(!suffixElement && 'hidden', 'absolute bottom-3 right-3')}>{suffixElement}</div>
+        <div className={cnTw(!suffixElement && 'hidden', 'absolute right-3 bottom-3')}>{suffixElement}</div>
       </div>
     </div>
   );

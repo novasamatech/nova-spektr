@@ -5,14 +5,13 @@ import { type WalletConnectGroup } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { isEthereumAccountId, isPolkadotChain } from '@/shared/lib/utils';
+import { isPolkadotChain } from '@/shared/lib/utils';
 import {
   Button,
   ConfirmModal,
   FootnoteText,
   HeadlineText,
   IconButton,
-  type IconTheme,
   Separator,
   SmallTitleText,
   StatusLabel,
@@ -25,7 +24,7 @@ import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { forgetWalletModel } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { ForgetStep } from '../../lib/constants';
 import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
@@ -78,8 +77,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
 
   const handleForgetWallet = () => {
     walletConnectForget.forget(wallet);
-    forgetWalletModel.events.forgetWcWallet(wallet);
-    toggleConfirmForget();
+    onClose();
   };
 
   const actions: WalletAction[] = [];
@@ -121,9 +119,6 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
     walletAccounts.at(0);
   const address = mainAccount?.accountId;
 
-  const isEthereum = isEthereumAccountId(address);
-  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
-
   return (
     <>
       <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
@@ -131,17 +126,17 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-4 flex items-center justify-between px-5 pb-6 pt-4">
+          <div className="mb-4 flex items-center justify-between px-5 pt-4 pb-6">
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
-                <WalletAccountIcon address={address} type={wallet.type} size={42} theme={theme} />
+                <WalletAccountIcon address={address} type={wallet.type} size={42} />
               </div>
               {!isRenameModalOpen && (
                 <>
-                  <HeadlineText className="truncate text-text-primary" as="h3">
+                  <HeadlineText className="text-text-primary truncate" as="h3">
                     {wallet.name}
                   </HeadlineText>
-                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                  <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
                     <StatusLabel variant={connected ? 'success' : 'waiting'} />
                     <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
                     <WalletFiatBalance />
@@ -153,7 +148,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
             <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
             {!isRenameModalOpen && (
-              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
+              <div className="animate-in fade-in-0 ml-2 shrink-0 duration-300">
                 <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
               </div>
             )}
@@ -219,22 +214,12 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
         </FootnoteText>
       </ConfirmModal>
 
-      <ConfirmModal
-        panelClass="w-[240px]"
+      <ForgetWalletConfirm
+        wallet={wallet}
         isOpen={isConfirmForgetOpen}
-        confirmText={t('walletDetails.common.removeButton')}
-        cancelText={t('walletDetails.common.cancelButton')}
-        confirmPallet="error"
-        onConfirm={handleForgetWallet}
         onClose={toggleConfirmForget}
-      >
-        <SmallTitleText className="mb-2" align="center">
-          {t('walletDetails.common.removeTitle')}
-        </SmallTitleText>
-        <FootnoteText className="text-text-tertiary" align="center">
-          {t('walletDetails.common.removeMessage', { walletName: wallet.name })}
-        </FootnoteText>
-      </ConfirmModal>
+        onForget={handleForgetWallet}
+      />
 
       <StatusModal
         isOpen={walletDetailsUtils.isForgetModalOpen(forgetStep)}

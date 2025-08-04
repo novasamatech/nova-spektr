@@ -1,60 +1,51 @@
-import { attach, createEffect, createEvent, sample, split } from 'effector';
+import { attach, createEvent, createStore, restore, sample } from 'effector';
+import { createGate } from 'effector-react';
+import { persist } from 'effector-storage/local';
 import { spread } from 'patronum';
 
-import { type MultisigAccount, type Wallet } from '@/shared/core';
-import { accountService, accounts, multisigOperation } from '@/domains/network';
+import { type Wallet } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
+import { accountService, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
-import { networkModel, networkUtils } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxiesModel } from '@/features/proxies';
 import { forgetService } from '../service';
 
-const forgetWallet = createEvent<Wallet>();
-const forgetSimpleWallet = createEvent<Wallet>();
-const forgetMultisigWallet = createEvent<Wallet>();
-const forgetWcWallet = createEvent<Wallet>();
+const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
-const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount) => {
-  return multisigOperation.removeOperationsForAccount(account.accountId);
+const $wallet = flow.state.map(({ wallet }) => wallet);
+
+const changeDoNotShowAgain = createEvent<boolean>();
+
+const $doNotShowAgain = restore(changeDoNotShowAgain, false);
+
+persist({
+  key: 'forget_wallet_is_do_not_show_again',
+  store: $doNotShowAgain,
+  sync: true,
 });
 
-split({
-  source: forgetWallet,
-  match: {
-    multisigWallet: (wallet: Wallet) => walletUtils.isMultisig(wallet),
-  },
-  cases: {
-    multisigWallet: forgetMultisigWallet,
-    __: forgetSimpleWallet,
-  },
-});
+const remove = createEvent();
+
+const $walletToHide = createStore<number | null>(null);
+const $walletsToRemove = createStore<number[]>([]);
+
+const $isConnectedAccountsAlertNeeded = $walletsToRemove.map((walletsToRemove) => walletsToRemove.length > 1);
 
 sample({
-  clock: forgetMultisigWallet,
-  fn: (wallet) => wallet.accounts[0] as MultisigAccount,
-  target: deleteMultisigOperationsFx,
-});
-
-sample({
-  clock: forgetMultisigWallet,
+  clock: $wallet,
   source: {
     accounts: accounts.$list,
     chains: networkModel.$chains,
   },
-  filter: ({ accounts }, { id: walletId }) => {
-    const accountsToDelete = accountService.filterAccountsByWallet(accounts, walletId);
-    return accountsToDelete.some(accountUtils.isMultisigAccount);
-  },
-  fn: ({ accounts, chains }, { id: walletId }) => {
-    const accountsToDelete = accountService.filterAccountsByWallet(accounts, walletId);
+  fn: ({ accounts, chains }, wallet) => {
+    if (nullable(wallet)) return { walletToHidden: null, walletsToRemove: [] };
+    const accountsToDelete = accountService.filterAccountsByWallet(accounts, wallet.id);
 
     const walletIdFromGraph = new Set<number>();
 
     for (const chain of Object.values(chains)) {
-      if (!networkUtils.isMultisigSupported(chain.options)) {
-        continue;
-      }
-
       const filteredAccounts = accounts.filter((a) => !accountUtils.isWatchOnlyAccount(a));
       const graph = accountService.createAccountGraphs(filteredAccounts, chain);
 
@@ -69,11 +60,20 @@ sample({
       }
     }
 
-    return { walletToHidden: walletId, walletsToRemove: Array.from(walletIdFromGraph) };
+    const walletsToRemove = [...Array.from(walletIdFromGraph)];
+
+    if (!walletUtils.isMultisig(wallet)) {
+      walletsToRemove.push(wallet.id);
+    }
+
+    return {
+      walletToHidden: walletUtils.isMultisig(wallet) ? wallet.id : null,
+      walletsToRemove,
+    };
   },
   target: spread({
-    walletToHidden: walletModel.walletHidden,
-    walletsToRemove: walletModel.walletsRemoved,
+    walletToHidden: $walletToHide,
+    walletsToRemove: $walletsToRemove,
   }),
 });
 
@@ -82,38 +82,18 @@ const walletsRemovedFx = attach({
 });
 
 sample({
-  clock: [forgetSimpleWallet, forgetWcWallet],
+  clock: remove,
   source: {
-    accounts: accounts.$list,
-    chains: networkModel.$chains,
+    walletToHide: $walletToHide,
+    walletsToRemove: $walletsToRemove,
   },
-  fn: ({ accounts, chains }, { id: walletId }) => {
-    const accountsToDelete = accountService.filterAccountsByWallet(accounts, walletId);
-
-    if (accountsToDelete.length === 1 && accountUtils.isWatchOnlyAccount(accountsToDelete.at(0)!)) {
-      return [walletId];
-    }
-
-    const walletIdFromGraph = new Set<number>();
-
-    for (const chain of Object.values(chains)) {
-      const filteredAccounts = accounts.filter((a) => !accountUtils.isWatchOnlyAccount(a));
-      const graph = accountService.createAccountGraphs(filteredAccounts, chain);
-
-      for (const account of accountsToDelete) {
-        if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
-
-        const accountsList = forgetService.findParentAccounts(graph, account);
-
-        for (const a of accountsList) {
-          walletIdFromGraph.add(a.walletId);
-        }
-      }
-    }
-
-    return [...Array.from(walletIdFromGraph), walletId];
+  fn: ({ walletToHide, walletsToRemove }) => {
+    return { walletToHide: walletToHide ?? undefined, walletsToRemove };
   },
-  target: walletsRemovedFx,
+  target: spread({
+    walletToHide: walletModel.walletHidden,
+    walletsToRemove: walletsRemovedFx,
+  }),
 });
 
 sample({
@@ -131,8 +111,11 @@ sample({
 });
 
 export const forgetWalletModel = {
-  events: {
-    forgetWallet,
-    forgetWcWallet,
-  },
+  flow,
+
+  $isConnectedAccountsAlertNeeded,
+  $doNotShowAgain,
+
+  remove,
+  changeDoNotShowAgain,
 };

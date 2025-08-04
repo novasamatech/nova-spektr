@@ -8,7 +8,6 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { assert, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
-import { type IconNames } from '@/shared/ui/types';
 import { AccountExplorers, Address, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
@@ -17,7 +16,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -89,7 +88,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (canCreateProxy) {
     actions.push({
-      icon: 'delegate' as IconNames,
+      icon: 'delegate',
       title: t('walletDetails.common.addProxyAction'),
       onClick: addProxy.events.flowStarted,
     });
@@ -97,14 +96,14 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (canCreatePureProxy) {
     actions.push({
-      icon: 'createPureProxy' as IconNames,
+      icon: 'createPureProxy',
       title: t('walletDetails.common.addPureProxiedAction'),
       onClick: addPureProxied.events.flowStarted,
     });
   }
 
   actions.push({
-    icon: 'forget' as IconNames,
+    icon: 'forget',
     title: t('walletDetails.common.hideButton'),
     variant: 'danger',
     onClick: toggleConfirmForget,
@@ -207,10 +206,10 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
                 </div>
                 {!isRenameModalOpen && (
                   <>
-                    <HeadlineText className="truncate text-text-primary" as="h3">
+                    <HeadlineText className="text-text-primary truncate" as="h3">
                       {wallet.name}
                     </HeadlineText>
-                    <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                    <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
                       <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
                       <WalletFiatBalance />
                     </div>
@@ -221,7 +220,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
               <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
               {multisigAccount && !isRenameModalOpen && (
-                <div className="ml-auto shrink-0 duration-300 animate-in fade-in-0">
+                <div className="animate-in fade-in-0 ml-auto shrink-0 duration-300">
                   <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
                 </div>
               )}
@@ -229,7 +228,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
             {nonNullable(chain) && (
               <div className="flex items-center pl-4">
                 <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-                <div className="flex items-center text-footnote">
+                <div className="text-footnote flex items-center">
                   <Trans
                     t={t}
                     i18nKey="walletDetails.multisig.singleChainTitle"
@@ -276,7 +275,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
       <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
-      <ForgetWalletModal
+      <ForgetWalletConfirm
         wallet={wallet}
         isOpen={isConfirmForgetOpen}
         onClose={toggleConfirmForget}

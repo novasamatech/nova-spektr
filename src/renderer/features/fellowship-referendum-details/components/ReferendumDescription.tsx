@@ -4,8 +4,8 @@ import { memo } from 'react';
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { FootnoteText, Icon, Markdown, SmallTitleText } from '@/shared/ui';
-import { Box, Skeleton } from '@/shared/ui-kit';
+import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Referendum, trackService } from '@/domains/collectives';
 import { details } from '../model/details';
 
@@ -57,7 +57,7 @@ export const NoEvidence = () => {
       <Box padding={[43, 10]} gap={2} horizontalAlign="center" verticalAlign="center">
         <Icon size={64} name="empty" className="mb-4" />
         <SmallTitleText>{t('fellowship.tasks.task.promotionVoting.noEvidence')}</SmallTitleText>
-        <FootnoteText className="text-center text-text-tertiary">
+        <FootnoteText className="text-text-tertiary text-center">
           {t('fellowship.tasks.task.promotionVoting.noEvidenceDescription')}
         </FootnoteText>
       </Box>

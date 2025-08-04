@@ -1,7 +1,7 @@
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { FootnoteText, Identicon } from '@/shared/ui';
-import { RootExplorers } from '@/shared/ui-entities';
+import { FootnoteText } from '@/shared/ui';
+import { Identicon, RootExplorers } from '@/shared/ui-entities';
 import { Checkbox } from '@/shared/ui-kit';
 
 type Props = {
@@ -19,7 +19,7 @@ export const SelectableRoot = ({ accountId, accountName, checked, semiChecked, o
     <div
       className={cnTw(
         'group flex cursor-pointer gap-x-2 rounded-md px-2 py-1.5 transition-colors',
-        'transition-colors duration-100 hover:bg-action-background-hover',
+        'hover:bg-action-background-hover transition-colors duration-100',
       )}
     >
       <Checkbox checked={checked} semiChecked={semiChecked} onChange={onChange} />

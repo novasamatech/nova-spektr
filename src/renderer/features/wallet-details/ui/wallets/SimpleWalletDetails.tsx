@@ -14,7 +14,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -116,10 +116,10 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
 
             {!isRenameModalOpen && (
               <>
-                <HeadlineText className="truncate text-text-primary" as="h3">
+                <HeadlineText className="text-text-primary truncate" as="h3">
                   {wallet.name}
                 </HeadlineText>
-                <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
                   <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
                   <WalletFiatBalance />
                 </div>
@@ -130,7 +130,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
           <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
           {firstAccount && !isRenameModalOpen && (
-            <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
+            <div className="animate-in fade-in-0 ml-2 shrink-0 duration-300">
               <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />
             </div>
           )}
@@ -176,7 +176,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
           </Tabs>
         )}
 
-        <ForgetWalletModal
+        <ForgetWalletConfirm
           wallet={wallet}
           isOpen={isConfirmForgetOpen}
           onClose={toggleConfirmForget}

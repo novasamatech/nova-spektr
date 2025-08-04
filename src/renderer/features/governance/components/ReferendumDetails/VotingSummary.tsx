@@ -31,17 +31,17 @@ export const VotingSummary = ({ referendum, chain, asset }: Props) => {
   return (
     <div className="flex flex-col items-start gap-3">
       <div className="flex w-full items-center gap-2">
-        <div className="h-3 w-1 rounded-[0.25em] bg-icon-positive" />
+        <div className="bg-icon-positive h-3 w-1 rounded-[0.25em]" />
         <FootnoteText>{t('governance.referendum.aye')}</FootnoteText>
         <FootnoteText className="grow text-end">{formatAsset(votingSummary.ayes, asset)}</FootnoteText>
       </div>
       <div className="flex w-full items-center gap-2">
-        <div className="h-3 w-1 rounded-[4px] bg-icon-negative" />
+        <div className="bg-icon-negative h-3 w-1 rounded-[4px]" />
         <FootnoteText>{t('governance.referendum.nay')}</FootnoteText>
         <FootnoteText className="grow text-end">{formatAsset(votingSummary.nays, asset)}</FootnoteText>
       </div>
       <div className="flex w-full items-center gap-2">
-        <div className="h-3 w-1 rounded-[4px] bg-icon-default" />
+        <div className="bg-icon-default h-3 w-1 rounded-[4px]" />
         <FootnoteText>{t('governance.referendum.support')}</FootnoteText>
         <FootnoteText className="grow text-end">{formatAsset(votingSummary.support, asset)}</FootnoteText>
       </div>

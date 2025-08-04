@@ -160,7 +160,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
                 return (
                   <Dropdown.Item key={key} onSelect={() => onClickAction(typedKey, option.path)}>
                     <div className="flex w-full items-center gap-2">
-                      <Icon name={option.icon} size={20} className="shrink-0 text-icon-accent" />
+                      <Icon name={option.icon} size={20} className="text-icon-accent shrink-0" />
                       {t(option.title)}
                     </div>
                   </Dropdown.Item>

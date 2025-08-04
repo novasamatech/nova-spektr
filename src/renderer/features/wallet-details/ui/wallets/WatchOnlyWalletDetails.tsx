@@ -12,7 +12,7 @@ import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { proxyAddFeature } from '@/features/proxy-add';
-import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -69,7 +69,7 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
     <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="mb-4 flex items-center justify-between px-5 pb-6 pt-4">
+        <div className="mb-4 flex items-center justify-between px-5 pt-4 pb-6">
           <Box direction="row" verticalAlign="center" gap={2}>
             <div className="mr-1">
               <WalletAccountIcon address={firstAccount?.accountId} type={wallet.type} size={42} />
@@ -77,10 +77,10 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
 
             {!isRenameModalOpen && (
               <>
-                <HeadlineText className="truncate text-text-primary" as="h3">
+                <HeadlineText className="text-text-primary truncate" as="h3">
                   {wallet.name}
                 </HeadlineText>
-                <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
                   <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
                   <WalletFiatBalance />
                 </div>
@@ -91,7 +91,7 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
           <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
           {!isRenameModalOpen && (
-            <div className="ml-2 flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+            <div className="animate-in fade-in-0 ml-2 flex shrink-0 items-center gap-3 duration-300">
               {firstAccount && <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />}
               <Button pallet="error" size="sm" variant="fill" onClick={toggleConfirmForget}>
                 {t('walletDetails.common.forgetButton')}
@@ -136,7 +136,7 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
           </Tabs>
         )}
 
-        <ForgetWalletModal
+        <ForgetWalletConfirm
           wallet={wallet}
           isOpen={isConfirmForgetOpen}
           onClose={toggleConfirmForget}

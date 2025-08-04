@@ -13,7 +13,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { copyToClipboard, isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, HeadlineText, HelpText, IconButton, type IconTheme, Separator } from '@/shared/ui';
+import { FootnoteText, HeadlineText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Hash, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
@@ -22,7 +22,7 @@ import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wal
 import { proxyAddFeature } from '@/features/proxy-add';
 import { proxyAddPureFeature } from '@/features/proxy-add-pure';
 import { DerivationsAddressModal, ExportKeysModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
-import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
 import { vaultDetailsModel } from '../../model/vault-details-model';
@@ -165,7 +165,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
   if (nullable(address)) return null;
   const isEthereum = isEthereumAccountId(address);
-  const theme: IconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
+  const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
   return (
     <>
@@ -181,10 +181,10 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
               </div>
               {!isRenameModalOpen && (
                 <>
-                  <HeadlineText className="truncate text-text-primary" as="h3">
+                  <HeadlineText className="text-text-primary truncate" as="h3">
                     {wallet.name}
                   </HeadlineText>
-                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                  <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
                     <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
                     <Popover side="bottom" align="center">
                       <Popover.Trigger>
@@ -200,7 +200,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
                               <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
                             </HelpText>
                             <IconButton
-                              className="shrink-0 text-icon-default"
+                              className="text-icon-default shrink-0"
                               name="copy"
                               onClick={() => copyToClipboard(wallet.rootAccountId)}
                             />
@@ -217,7 +217,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
             {!isRenameModalOpen && (
-              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
+              <div className="animate-in fade-in-0 ml-2 shrink-0 duration-300">
                 <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
               </div>
             )}
@@ -300,7 +300,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
         onComplete={handleVaultKeys}
       />
 
-      <ForgetWalletModal
+      <ForgetWalletConfirm
         wallet={wallet}
         isOpen={isConfirmForgetOpen}
         onClose={toggleConfirmForget}

@@ -32,7 +32,7 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
   }
 
   return (
-    <div className="flex h-full flex-col bg-main-app-background py-4">
+    <div className="bg-main-app-background flex h-full flex-col py-4">
       {isListLoading && (
         <div className="flex h-full items-center justify-center">
           <Loader color="primary" size={25} />
@@ -41,7 +41,7 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
 
       {!isListLoading && (
         <>
-          <div className="mx-5 mb-4 grid grid-cols-[1fr,auto] items-center gap-x-4">
+          <div className="mx-5 mb-4 grid grid-cols-[1fr_auto] items-center gap-x-4">
             <SearchInput
               value={query}
               placeholder={t('general.input.searchPlaceholder')}

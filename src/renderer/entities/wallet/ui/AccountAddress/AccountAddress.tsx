@@ -3,7 +3,8 @@ import { hexToU8a } from '@polkadot/util';
 import { type Address } from '@/shared/core';
 import { cnTw, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Identicon, Truncate } from '@/shared/ui';
+import { Truncate } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 
@@ -65,7 +66,7 @@ export const AccountAddress = ({
   const typeIsAdaptive = type === 'adaptive';
   const addressToShow = type === 'short' ? toShortAddress(currentAddress, symbols) : currentAddress;
 
-  const nameContent = name && <p className={cnTw('truncate text-footnote text-text-primary', addressFont)}>{name}</p>;
+  const nameContent = name && <p className={cnTw('text-footnote text-text-primary truncate', addressFont)}>{name}</p>;
 
   const addressContent = typeIsAdaptive ? (
     <Truncate
@@ -76,16 +77,14 @@ export const AccountAddress = ({
       text={addressToShow}
     />
   ) : (
-    <span className={cnTw('inline-block truncate break-all text-footnote text-inherit transition-colors', addressFont)}>
+    <span className={cnTw('text-footnote inline-block truncate break-all text-inherit transition-colors', addressFont)}>
       {addressToShow}
     </span>
   );
 
   return (
     <span className={cnTw('flex items-center gap-x-2', className)}>
-      {showIcon && (
-        <Identicon className="inline-block" address={currentAddress} size={size} background={false} canCopy={canCopy} />
-      )}
+      {showIcon && <Identicon address={currentAddress} size={size} background={false} canCopy={canCopy} />}
       {nameContent || addressContent}
     </span>
   );

@@ -3,8 +3,8 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { Identicon, SmallTitleText } from '@/shared/ui';
-import { Account, CollectiveRank } from '@/shared/ui-entities';
+import { SmallTitleText } from '@/shared/ui';
+import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
 import { identityService } from '@/domains/network';

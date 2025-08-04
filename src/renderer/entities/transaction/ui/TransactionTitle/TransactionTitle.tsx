@@ -13,7 +13,7 @@ export const TransactionTitle = ({ title, icon, className, children }: PropsWith
   return (
     <div className={cnTw('inline-flex items-center gap-x-3', className)}>
       {icon && (
-        <div className="box-content flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-token-container-border">
+        <div className="border-token-container-border box-content flex h-7 w-7 shrink-0 items-center justify-center rounded-full border">
           <Icon name={icon} size={20} />
         </div>
       )}

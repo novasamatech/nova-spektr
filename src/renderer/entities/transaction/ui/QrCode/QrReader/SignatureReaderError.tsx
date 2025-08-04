@@ -15,7 +15,7 @@ export const SignatureReaderError = ({ error, onTryAgain }: Props) => {
   }
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-y-4 rounded-2lg backdrop-blur-md">
+    <div className="rounded-2lg flex h-full w-full flex-col items-center justify-center gap-y-4 backdrop-blur-md">
       <FootnoteText className="text-white" align="center">
         {t(CameraErrorText[error].label)}
         <br />
