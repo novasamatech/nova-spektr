@@ -5,6 +5,7 @@ import { GenericSignerPayload } from '@polkadot/types';
 import { type ExtrinsicEra, type Weight } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
+import { merkleizeMetadata } from '@polkadot-api/merkleize-metadata';
 
 import {
   type Address,
@@ -232,7 +233,6 @@ function getWrappedTransaction({ api, transaction, txWrappers }: WrapperParams):
 }
 
 async function createPayloadWithProof(extrinsic: Extrinsic, signatory: AccountId, api: ApiPromise) {
-  const { merkleizeMetadata } = await import('@polkadot-api/merkleize-metadata');
   const { signerPayloadBase } = await createTxMetadata(signatory, api);
 
   if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
