@@ -51,7 +51,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
           <AssetBalance
             value={confirm.meta.amount}
             asset={confirm.meta.asset}
-            className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
+            className="font-manrope text-[32px] leading-[36px] font-bold text-text-primary"
           />
           <AssetFiatBalance asset={confirm.meta.asset} amount={confirm.meta.amount} className="text-headline" />
         </div>
@@ -75,7 +75,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
                 <Tooltip>
                   <Tooltip.Trigger>
                     <div tabIndex={0}>
-                      <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
                     </div>
                   </Tooltip.Trigger>
                   <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

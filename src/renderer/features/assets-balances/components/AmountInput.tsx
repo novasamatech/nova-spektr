@@ -120,7 +120,7 @@ export const AmountInput = ({
     }
 
     if (typeof balance === 'string') {
-      return <AssetBalance className="text-footnote text-text-primary inline" value={balance} asset={asset} />;
+      return <AssetBalance className="inline text-footnote text-text-primary" value={balance} asset={asset} />;
     }
 
     return balance;
@@ -140,7 +140,7 @@ export const AmountInput = ({
 
   const currencyIcon = showCurrency && nonNullable(rate) && nonNullable(activeCurrency) && (
     <div className="flex min-w-fit items-center gap-x-1">
-      <div className="border-token-border bg-token-background relative flex h-8 w-8 items-center justify-center rounded-full border p-px">
+      <div className="relative flex h-8 w-8 items-center justify-center rounded-full border border-token-border bg-token-background p-px">
         {activeCurrency.symbol ? (
           <TitleText align="center" className="text-white">
             {activeCurrency.symbol}
@@ -234,7 +234,7 @@ export const Input = ({
 
   return (
     <div className="flex flex-col gap-y-2">
-      <label htmlFor={id} className="text-footnote text-text-tertiary font-medium">
+      <label htmlFor={id} className="text-footnote font-medium text-text-tertiary">
         {label}
       </label>
       <div className="relative w-full">
@@ -250,15 +250,15 @@ export const Input = ({
         <input
           className={cnTw(
             'w-full rounded-sm p-[11px]',
-            'border-filter-border bg-input-background border',
+            'border border-filter-border bg-input-background',
             'placeholder:text-text-secondary focus:outline-hidden focus-visible:outline-hidden!',
-            'font-manrope text-title text-text-primary text-right outline-offset-1',
+            'text-right font-manrope text-title text-text-primary outline-offset-1',
             {
               'pb-[37px]': suffixElement,
               'border-filter-border-negative': invalid,
               'focus-within:border-active-container-border': !invalid,
               'hover:shadow-card-shadow': !disabled,
-              'text-text-tertiary placeholder:text-text-tertiary bg-transparent': disabled,
+              'bg-transparent text-text-tertiary placeholder:text-text-tertiary': disabled,
             },
           )}
           id={id}

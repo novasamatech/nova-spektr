@@ -42,7 +42,7 @@ export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick
           address={toAddress(accountId, { prefix: SS58_PUBLIC_KEY_PREFIX })}
           size={20}
         />
-        <BodyText className="text-text-secondary truncate pr-5">{name}</BodyText>
+        <BodyText className="truncate pr-5 text-text-secondary">{name}</BodyText>
       </button>
 
       <IconButton name="details" className="absolute right-2 mx-1.5" onClick={onInfoClick} />

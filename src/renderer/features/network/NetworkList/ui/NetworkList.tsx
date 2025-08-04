@@ -33,7 +33,7 @@ export const NetworkList = ({ title, query, networkList, children }: Props) => {
       <Box padding={[1.5, 2]}>
         <Accordion.Trigger>
           <div className="flex w-full items-center gap-x-1.5">
-            <CaptionText as="h2" className="text-text-secondary tracking-[0.75px] uppercase">
+            <CaptionText as="h2" className="tracking-[0.75px] text-text-secondary uppercase">
               {title}
             </CaptionText>
             <Counter variant="waiting">{networkList.length}</Counter>
@@ -49,7 +49,7 @@ export const NetworkList = ({ title, query, networkList, children }: Props) => {
       <Accordion.Content>
         <ul className="px-2">
           {networkList.map((network) => (
-            <li key={network.chainId} className="border-b-filter-border border-b last:border-0">
+            <li key={network.chainId} className="border-b border-b-filter-border last:border-0">
               {children(network)}
             </li>
           ))}

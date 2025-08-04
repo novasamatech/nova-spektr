@@ -20,7 +20,7 @@ export const RootAccountLg = ({ name, accountId, className, children }: Props) =
     <div className={cnTw('flex w-full items-center gap-x-2', className)}>
       <div className="flex w-full items-center gap-x-2 overflow-hidden py-[3px]" onClick={handleClick}>
         <Identicon theme="jdenticon" background={false} canCopy={false} address={accountId} size={28} />
-        <BodyText className="text-text-secondary truncate">{name}</BodyText>
+        <BodyText className="truncate text-text-secondary">{name}</BodyText>
       </div>
 
       {children ? <div className="mx-1.5 flex gap-2">{children}</div> : null}

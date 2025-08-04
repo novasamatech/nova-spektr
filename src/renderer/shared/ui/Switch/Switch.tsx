@@ -27,7 +27,7 @@ export const Switch = ({
   labelPosition = 'left',
 }: PropsWithChildren<Props>) => {
   const label = (
-    <HeadlessSwitch.Label as={LabelText} className="text-text-secondary cursor-pointer">
+    <HeadlessSwitch.Label as={LabelText} className="cursor-pointer text-text-secondary">
       {children}
     </HeadlessSwitch.Label>
   );
@@ -41,8 +41,8 @@ export const Switch = ({
         defaultChecked={defaultChecked}
         className={cnTw(
           checked || defaultChecked
-            ? 'bg-switch-background-active border border-transparent'
-            : 'border-container-border bg-switch-background-inactive border',
+            ? 'border border-transparent bg-switch-background-active'
+            : 'border border-container-border bg-switch-background-inactive',
           disabled && 'opacity-50',
           'relative inline-flex w-7.5 transform items-center rounded-full p-px transition',
           switchClassName,
@@ -51,7 +51,7 @@ export const Switch = ({
       >
         <span
           className={cnTw(
-            'shadow-knob-shadow bg-knob-background inline-block h-3.5 w-3.5 rounded-full transition',
+            'inline-block h-3.5 w-3.5 rounded-full bg-knob-background shadow-knob-shadow transition',
             checked || defaultChecked ? 'translate-x-[12px]' : '',
             knobClassName,
           )}

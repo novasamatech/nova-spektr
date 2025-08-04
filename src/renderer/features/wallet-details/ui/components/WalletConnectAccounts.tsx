@@ -50,9 +50,9 @@ export const WalletConnectAccounts = memo(({ wallet }: Props) => {
 
       {wcDetailsUtils.isReadyToReconnect(reconnectStep, connected) && (
         <div className="mx-auto flex h-[390px] w-[208px] flex-col items-center justify-center">
-          <Icon name="document" size={64} className="text-icon-default mb-6" />
+          <Icon name="document" size={64} className="mb-6 text-icon-default" />
           <SmallTitleText className="mb-2">{t('walletDetails.walletConnect.disconnectedTitle')}</SmallTitleText>
-          <FootnoteText className="text-text-tertiary mb-4" align="center">
+          <FootnoteText className="mb-4 text-text-tertiary" align="center">
             {t('walletDetails.walletConnect.disconnectedDescription', { walletName })}
           </FootnoteText>
           <Button size="sm" onClick={() => walletConnectReconnect.start()}>

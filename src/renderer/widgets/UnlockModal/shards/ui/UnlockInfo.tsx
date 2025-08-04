@@ -30,7 +30,7 @@ export const UnlockInfo = () => {
   return (
     <div className="flex flex-col items-center gap-y-1 px-5 pb-4">
       <Icon name="opengovVotingLock" size={60} />
-      <AssetBalance className="text-large-title mt-2" value={totalLock.toString()} asset={network.asset} />
+      <AssetBalance className="mt-2 text-large-title" value={totalLock.toString()} asset={network.asset} />
       <AssetFiatBalance className="mb-5" amount={totalLock.toString()} asset={network.asset} />
       {isLoading && <Skeleton width={60} height={5} />}
 

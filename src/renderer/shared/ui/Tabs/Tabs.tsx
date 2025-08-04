@@ -28,18 +28,18 @@ export const Tabs = ({
   onChange,
 }: Props) => (
   <Tab.Group defaultIndex={initialIndex} onChange={onChange}>
-    <Tab.List className={cnTw('bg-tab-background flex gap-x-1 rounded-md p-0.5', tabsClassName)}>
+    <Tab.List className={cnTw('flex gap-x-1 rounded-md bg-tab-background p-0.5', tabsClassName)}>
       {items.map(({ id, title }) => (
         <Tab
           key={id}
           className={cnTw(
-            'ui-selected:shadow-card-shadow ui-selected:bg-white flex w-full items-center justify-center rounded-sm bg-transparent px-2 py-1.5',
+            'flex w-full items-center justify-center rounded-sm bg-transparent px-2 py-1.5 ui-selected:bg-white ui-selected:shadow-card-shadow',
             tabClassName,
           )}
         >
           <FootnoteText
             align="center"
-            className="text-button-small text-text-secondary ui-selected:text-text-primary flex items-center"
+            className="flex items-center text-button-small text-text-secondary ui-selected:text-text-primary"
           >
             {title}
           </FootnoteText>

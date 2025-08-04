@@ -25,7 +25,7 @@ export const ThemeProvider = ({ bodyAsPortalContainer, preferStaticContent, icon
 
   return (
     <ThemeContext.Provider value={value}>
-      <div className="text-body text-text-primary contents">{children}</div>
+      <div className="contents text-body text-text-primary">{children}</div>
       <div ref={setPortal} className="pointer-events-none absolute inset-0 z-100" />
     </ThemeContext.Provider>
   );

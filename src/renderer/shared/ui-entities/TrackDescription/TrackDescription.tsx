@@ -29,7 +29,7 @@ export const TrackDescription = memo(({ track }: Props) => {
       </Popover.Trigger>
       <Popover.Content>
         <Box padding={4} gap={2} width={90}>
-          <FootnoteText as="ul" className="text-text-secondary list-disc pl-3">
+          <FootnoteText as="ul" className="list-disc pl-3 text-text-secondary">
             <Trans t={t} i18nKey={`fellowship.salary.promotionHelpRank${track.id}`} components={{ li: <li /> }} />
           </FootnoteText>
           <InfoLink url="https://github.com/polkadot-fellows/manifesto/blob/main/manifesto.pdf">

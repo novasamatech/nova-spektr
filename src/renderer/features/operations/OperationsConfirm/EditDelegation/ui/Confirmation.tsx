@@ -80,7 +80,7 @@ export const Confirmation = ({
   const amountValue = config.withFormatAmount ? formatAmount(meta.balance, meta.asset.precision) : meta.balance;
 
   return (
-    <div className="w-modal flex flex-col items-center gap-y-4 px-5 py-4">
+    <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="editDelegationConfirm" size={60} />
 
@@ -100,7 +100,7 @@ export const Confirmation = ({
           <TracksDetails tracks={meta.tracks} />
         </DetailRow>
 
-        <hr className="border-filter-border w-full pr-2" />
+        <hr className="w-full border-filter-border pr-2" />
 
         <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
           <BalanceDiff
@@ -119,7 +119,7 @@ export const Confirmation = ({
           <LockPeriodDiff from={meta.previousConviction} to={meta.conviction} lockPeriods={lockPeriods} />
         </DetailRow>
 
-        <hr className="border-filter-border w-full pr-2" />
+        <hr className="w-full border-filter-border pr-2" />
 
         {multisigAccount && (
           <DetailRow
@@ -131,7 +131,7 @@ export const Confirmation = ({
                 <Tooltip>
                   <Tooltip.Trigger>
                     <div tabIndex={0}>
-                      <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
                     </div>
                   </Tooltip.Trigger>
                   <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

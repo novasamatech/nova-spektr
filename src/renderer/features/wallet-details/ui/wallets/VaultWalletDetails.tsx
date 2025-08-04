@@ -179,10 +179,10 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
               </div>
               {!isRenameInputOpen && (
                 <>
-                  <HeadlineText className="text-text-primary ml-1 truncate" as="h3">
+                  <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
                     {wallet.name}
                   </HeadlineText>
-                  <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
+                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
                     <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
                     <Popover side="bottom" align="center">
                       <Popover.Trigger>
@@ -198,7 +198,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
                               <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
                             </HelpText>
                             <IconButton
-                              className="text-icon-default shrink-0"
+                              className="shrink-0 text-icon-default"
                               name="copy"
                               onClick={() => copyToClipboard(wallet.rootAccountId)}
                             />
@@ -215,7 +215,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             <RenameWallet wallet={wallet} isOpen={isRenameInputOpen} onClose={toggleIsRenameInputOpen} />
 
             {!isRenameInputOpen && (
-              <div className="animate-in fade-in-0 ml-2 shrink-0 duration-300">
+              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
                 <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
               </div>
             )}

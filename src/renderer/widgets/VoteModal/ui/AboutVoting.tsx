@@ -14,7 +14,7 @@ export const AboutVoting = () => {
           i18nKey="governance.voting.aboutVoting"
           components={{
             header: <SmallTitleText />,
-            p: <FootnoteText className="text-text-secondary mt-2" />,
+            p: <FootnoteText className="mt-2 text-text-secondary" />,
             ul: <FootnoteText className="ms-2 list-disc" />,
             li: <FootnoteText as="li" className="text-text-secondary" />,
           }}
@@ -26,7 +26,7 @@ export const AboutVoting = () => {
           i18nKey="governance.voting.aboutVotingPower"
           components={{
             header: <SmallTitleText />,
-            p: <FootnoteText className="text-text-secondary mt-2" />,
+            p: <FootnoteText className="mt-2 text-text-secondary" />,
           }}
         />
       </div>

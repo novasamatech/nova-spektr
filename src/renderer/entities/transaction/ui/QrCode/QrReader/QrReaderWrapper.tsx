@@ -152,11 +152,11 @@ export const QrReaderWrapper = ({ onResult, countdown, validationError, isMultiF
             )}
 
             {progress && (
-              <div className="bg-black-background z-10 flex items-center gap-x-2 rounded-2xl p-1.5 pl-3">
+              <div className="z-10 flex items-center gap-x-2 rounded-2xl bg-black-background p-1.5 pl-3">
                 <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
                 <CaptionText
                   as="span"
-                  className="bg-label-background-gray rounded-[26px] px-2 py-1 text-white uppercase"
+                  className="rounded-[26px] bg-label-background-gray px-2 py-1 text-white uppercase"
                 >
                   {t('signing.parsingCount', { current: progress.decoded, total: progress.total })}
                 </CaptionText>

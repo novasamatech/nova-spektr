@@ -34,7 +34,7 @@ export const RootExplorers = memo(({ accountId, children }: Props) => {
               <HelpText className="text-text-secondary">
                 <Hash value={address} variant="full" />
               </HelpText>
-              <IconButton className="text-icon-default shrink-0" name="copy" onClick={() => copyToClipboard(address)} />
+              <IconButton className="shrink-0 text-icon-default" name="copy" onClick={() => copyToClipboard(address)} />
             </Box>
           </Box>
 

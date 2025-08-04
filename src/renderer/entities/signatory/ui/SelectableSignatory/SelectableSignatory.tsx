@@ -45,7 +45,7 @@ export const SelectableSignatory = <T,>({
 
   return (
     <button
-      className="group text-text-secondary hover:bg-action-background-hover hover:text-text-primary flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5"
+      className="group flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-text-secondary hover:bg-action-background-hover hover:text-text-primary"
       onClick={() => onSelected(value)}
     >
       <WalletIcon type={signatoryWallet.type} />
@@ -54,7 +54,7 @@ export const SelectableSignatory = <T,>({
         <AssetBalance
           value={transferableAmount(balance)}
           asset={asset}
-          className="text-body mr-6 ml-auto text-inherit"
+          className="mr-6 ml-auto text-body text-inherit"
         />
       )}
       <Icon name="right" className={cnTw('group-hover:text-icon-active', !balance && 'ml-auto')} size={16} />

@@ -18,7 +18,7 @@ export const DelegationCard = ({ asset, delegate, onClick }: Props) => {
   return (
     <button
       className={cnTw(
-        'border-container-border w-full rounded-sm border bg-white p-4 transition-shadow',
+        'w-full rounded-sm border border-container-border bg-white p-4 transition-shadow',
         'shadow-shadow-1 hover:shadow-shadow-2 focus:shadow-shadow-2',
       )}
       onClick={onClick}
@@ -36,14 +36,14 @@ export const DelegationCard = ({ asset, delegate, onClick }: Props) => {
               </BodyText>
             </div>
 
-            <div className="border-divider flex flex-col gap-1 border-l pl-5">
+            <div className="flex flex-col gap-1 border-l border-divider pl-5">
               <FootnoteText className="text-text-tertiary">
                 {t('governance.addDelegation.card.delegations')}
               </FootnoteText>
               <BodyText>{delegate.delegators || '0'}</BodyText>
             </div>
 
-            <div className="border-divider flex flex-col gap-1 border-l pl-5">
+            <div className="flex flex-col gap-1 border-l border-divider pl-5">
               <FootnoteText className="text-text-tertiary">{t('governance.addDelegation.card.voted')}</FootnoteText>
               <BodyText>{delegate.delegateVotesMonth || '0'}</BodyText>
             </div>

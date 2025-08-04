@@ -53,7 +53,7 @@ export const SelectedSignatoriesModal = ({ signatories, chain, children }: Props
                 <WalletCardMd
                   wallet={wallet}
                   description={
-                    <HelpText className="text-text-tertiary truncate">{toShortAddress(address, 12)}</HelpText>
+                    <HelpText className="truncate text-text-tertiary">{toShortAddress(address, 12)}</HelpText>
                   }
                 >
                   <AccountExplorers accountId={toAccountId(address)} chain={chain} />

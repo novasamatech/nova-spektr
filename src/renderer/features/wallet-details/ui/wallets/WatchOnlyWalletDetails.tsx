@@ -72,10 +72,10 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
 
             {!isRenameInputOpen && (
               <>
-                <HeadlineText className="text-text-primary ml-1 truncate" as="h3">
+                <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
                   {wallet.name}
                 </HeadlineText>
-                <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
+                <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
                   <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
                   <WalletFiatBalance />
                 </div>
@@ -86,7 +86,7 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
           <RenameWallet wallet={wallet} isOpen={isRenameInputOpen} onClose={toggleIsRenameInputOpen} />
 
           {!isRenameInputOpen && (
-            <div className="animate-in fade-in-0 ml-2 flex shrink-0 items-center gap-3 duration-300">
+            <div className="ml-2 flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
               {firstAccount && <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />}
               <ForgetWalletConfirm wallet={wallet} onForget={onClose}>
                 <Button pallet="error" size="sm" variant="fill">

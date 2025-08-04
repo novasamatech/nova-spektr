@@ -7,7 +7,7 @@ import './IconButton.css';
 type IconProps = ComponentProps<typeof Icon>;
 
 const getIconButtonStyle = (disabled?: boolean) =>
-  tw`text-icon-default relative h-fit w-fit w-max shrink-0 justify-center rounded-full outline-offset-1 transition-colors` +
+  tw`relative h-fit w-fit w-max shrink-0 justify-center rounded-full text-icon-default outline-offset-1 transition-colors` +
   (disabled
     ? ''
     : tw` hover:bg-hover hover:text-icon-hover focus:bg-hover focus:text-icon-hover active:bg-hover active:text-tab-icon-active`);

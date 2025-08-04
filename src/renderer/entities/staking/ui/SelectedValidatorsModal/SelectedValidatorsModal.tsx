@@ -29,7 +29,7 @@ export const SelectedValidatorsModal = ({ isOpen, validators, identities, onClos
             return (
               <li
                 key={validator.address}
-                className="group hover:bg-hover grid h-10 shrink-0 grid-cols-[1fr_40px] items-center pr-2 pl-5"
+                className="group grid h-10 shrink-0 grid-cols-[1fr_40px] items-center pr-2 pl-5 hover:bg-hover"
               >
                 <ValidatorsTable.ShortRow validator={validator} identity={identity} />
               </li>

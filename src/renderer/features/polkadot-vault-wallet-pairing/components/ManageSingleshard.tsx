@@ -190,7 +190,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
         </div>
       </div>
 
-      <div className="bg-input-background-disabled relative flex w-[472px] flex-col gap-y-6 rounded-r-lg pt-4">
+      <div className="relative flex w-[472px] flex-col gap-y-6 rounded-r-lg bg-input-background-disabled pt-4">
         <IconButton name="close" size={20} className="absolute top-3 right-3 m-1" onClick={onClose} />
 
         <SmallTitleText className="mt-15 px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>

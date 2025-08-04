@@ -41,7 +41,7 @@ export const ContactItem = ({
 
           {keyType && (
             <Icon
-              className="text-text-secondary z-10 -ml-2.5 rounded-full border bg-white"
+              className="z-10 -ml-2.5 rounded-full border bg-white text-text-secondary"
               size={iconSize}
               name={KeyIcon[keyType]}
             />
@@ -52,7 +52,7 @@ export const ContactItem = ({
           {name ? (
             <BodyText
               className={cnTw(
-                'text-text-secondary truncate transition-colors',
+                'truncate text-text-secondary transition-colors',
                 'group-focus-within:text-text-primary group-hover:text-text-primary',
               )}
             >
@@ -70,7 +70,7 @@ export const ContactItem = ({
           )}
 
           {nonNullable(name) && !hideAddress && (
-            <HelpText className="text-text-tertiary truncate">{formattedAddress}</HelpText>
+            <HelpText className="truncate text-text-tertiary">{formattedAddress}</HelpText>
           )}
         </div>
       </div>

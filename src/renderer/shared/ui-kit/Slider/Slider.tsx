@@ -52,7 +52,7 @@ type Props = (SimpleProps | RangeProps) & {
 };
 
 const thumbClassName = cnTw(
-  'border-white-button-background-default relative block h-5 w-5 rounded-full border-2',
+  'relative block h-5 w-5 rounded-full border-2 border-white-button-background-default',
   'bg-primary-button-background-default',
   'hover:bg-primary-button-background-hover',
   'active:bg-primary-button-background-active',
@@ -100,8 +100,8 @@ export const Slider = memo(
               minStepsBetweenThumbs={1}
               onValueChange={handleChange}
             >
-              <RadixSlider.Track className="bg-icon-blue-line relative block h-2 w-full">
-                <RadixSlider.Range className="bg-primary-button-background-default absolute block h-full ps-2" />
+              <RadixSlider.Track className="relative block h-2 w-full bg-icon-blue-line">
+                <RadixSlider.Range className="absolute block h-full bg-primary-button-background-default ps-2" />
               </RadixSlider.Track>
 
               <StepIndicators steps={totalSteps} />

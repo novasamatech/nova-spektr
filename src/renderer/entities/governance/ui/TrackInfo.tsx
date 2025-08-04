@@ -36,7 +36,7 @@ export const TrackInfo = ({ trackId }: Props) => {
   const { title, icon } = getTrackInfo(trackId);
 
   return (
-    <div className="text-text-secondary ml-auto flex">
+    <div className="ml-auto flex text-text-secondary">
       <Icon name={icon} size={16} className="mr-1 ml-2 text-inherit" />
       <FootnoteText className="text-inherit">{t(title)}</FootnoteText>
     </div>

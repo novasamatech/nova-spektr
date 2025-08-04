@@ -106,7 +106,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
               <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
 
               {hasFailedVerification && (
-                <div className="text-text-warning flex items-center gap-x-2">
+                <div className="flex items-center gap-x-2 text-text-warning">
                   {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
                   <Tooltip>
                     <Tooltip.Trigger>

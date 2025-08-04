@@ -30,7 +30,7 @@ export const Locks = ({ onClick }: Props) => {
             <FootnoteText>{t('governance.locks.lock')}</FootnoteText>
             {isUnlockLoading && <Skeleton width={15} height={4} />}
             {!isUnlockLoading && isUnlockable && (
-              <FootnoteText className="text-text-positive ml-1">{t('governance.locks.unlockable')}</FootnoteText>
+              <FootnoteText className="ml-1 text-text-positive">{t('governance.locks.unlockable')}</FootnoteText>
             )}
           </div>
           {isLoading && <Skeleton width={30} height={4.5} />}

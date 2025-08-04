@@ -13,12 +13,12 @@ export const Progress = memo(({ value, max = 100 }: Props) => {
 
   return (
     <RadixProgress.Root
-      className="bg-secondary-button-background h-0.5 w-full overflow-hidden rounded-full"
+      className="h-0.5 w-full overflow-hidden rounded-full bg-secondary-button-background"
       value={value}
       max={max}
     >
       <RadixProgress.Indicator
-        className="bg-primary-button-background-default h-full rounded-full transition-transform"
+        className="h-full rounded-full bg-primary-button-background-default transition-transform"
         style={{ transform: `translateX(-${100 - progress}%)` }}
       />
     </RadixProgress.Root>

@@ -34,10 +34,10 @@ export const ShardsList = () => {
                   />
                 </div>
                 <AccountExplorers accountId={shard.accountId} chain={chain}>
-                  <HelpText className="text-text-tertiary text-xs font-normal">
+                  <HelpText className="text-xs font-normal text-text-tertiary">
                     {t('general.explorers.derivationTitle')}
                   </HelpText>
-                  <HelpText className="text-text-secondary break-all">{accountUtils.getDerivationPath(shard)}</HelpText>
+                  <HelpText className="break-all text-text-secondary">{accountUtils.getDerivationPath(shard)}</HelpText>
                 </AccountExplorers>
               </div>
             </li>

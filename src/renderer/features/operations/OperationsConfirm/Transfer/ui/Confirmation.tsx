@@ -53,7 +53,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const nativeAsset = getNativeAsset(meta.chain.assets);
 
   return (
-    <div className="w-modal flex flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={isXcm ? 'crossChainConfirm' : 'transferConfirm'} size={60} />
 
@@ -61,7 +61,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <AssetBalance
             value={meta.amount}
             asset={meta.asset}
-            className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
+            className="font-manrope text-[32px] leading-[36px] font-bold text-text-primary"
           />
           <AssetFiatBalance asset={meta.asset} amount={meta.amount} className="text-headline" />
         </div>
@@ -84,7 +84,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <Account accountId={toAccountId(meta.destination)} chain={meta.destinationChain} variant="short" />
         </DetailRow>
 
-        <hr className="border-filter-border w-full pr-2" />
+        <hr className="w-full border-filter-border pr-2" />
 
         {multisigAccount && (
           <DetailRow
@@ -96,7 +96,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
                 <Tooltip>
                   <Tooltip.Trigger>
                     <div tabIndex={0}>
-                      <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
                     </div>
                   </Tooltip.Trigger>
                   <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

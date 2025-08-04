@@ -41,7 +41,7 @@ export const WalletSelect = () => {
         <button
           type="button"
           data-testid={TEST_IDS.COMMON.WALLET_BUTTON}
-          className="shadow-card-shadow border-container-border bg-left-navigation-menu-background w-full rounded-md border"
+          className="w-full rounded-md border border-container-border bg-left-navigation-menu-background shadow-card-shadow"
         >
           <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={3}>
             <div className="flex h-8 w-full min-w-0 items-center gap-x-2">
@@ -49,7 +49,7 @@ export const WalletSelect = () => {
                 <Slot id={walletIconSlot} props={{ wallet: selectedWallet, size: 32 }} />
               </div>
               <div className="flex min-w-0 flex-col">
-                <BodyText className="text-text-primary truncate">{selectedWallet.name}</BodyText>
+                <BodyText className="truncate text-text-primary">{selectedWallet.name}</BodyText>
                 <WalletFiatBalance walletId={selectedWallet.id} className="truncate" />
               </div>
             </div>
@@ -60,14 +60,14 @@ export const WalletSelect = () => {
 
       <Popover.Content>
         <section className="flex h-full max-h-[87vh] min-h-0 w-[300px] flex-col overflow-hidden">
-          <header className="border-divider flex items-center justify-between border-b px-5 py-3">
+          <header className="flex items-center justify-between border-b border-divider px-5 py-3">
             <SmallTitleText>{t('wallets.title')}</SmallTitleText>
             <div>
               <Slot id={walletSelectActionsSlot} />
             </div>
           </header>
 
-          <div className="border-divider border-b p-2">
+          <div className="border-b border-divider p-2">
             <SearchInput
               value={filterQuery}
               placeholder={t('wallets.searchPlaceholder')}
@@ -76,7 +76,7 @@ export const WalletSelect = () => {
           </div>
 
           <ScrollArea>
-            <div className="divide-divider flex flex-col gap-1 divide-y px-1 pb-1 empty:p-0">
+            <div className="flex flex-col gap-1 divide-y divide-divider px-1 pb-1 empty:p-0">
               <Slot
                 id={walletGroupSlot}
                 props={{
@@ -90,7 +90,7 @@ export const WalletSelect = () => {
             </div>
             <div className="hidden h-full flex-col items-center justify-center gap-2 p-4 [*:empty~&]:flex">
               <Graphics name="emptyList" size={64} />
-              <BodyText className="text-text-tertiary text-center">{t('wallets.emptyList')}</BodyText>
+              <BodyText className="text-center text-text-tertiary">{t('wallets.emptyList')}</BodyText>
             </div>
           </ScrollArea>
         </section>

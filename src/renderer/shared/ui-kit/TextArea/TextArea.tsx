@@ -28,11 +28,11 @@ export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
         {...props}
         className={cnTw(
           'w-full rounded-sm px-3 py-2',
-          'text-footnote text-text-primary resize-none',
-          'bg-input-background outline-filter-border placeholder:text-text-secondary outline-1 outline-solid',
+          'resize-none text-footnote text-text-primary',
+          'bg-input-background outline-1 outline-filter-border outline-solid placeholder:text-text-secondary',
           {
             'outline-filter-border-negative': invalid,
-            'hover:shadow-card-shadow focus-within:outline-active-container-border focus:outline-1': !disabled,
+            'focus-within:outline-active-container-border hover:shadow-card-shadow focus:outline-1': !disabled,
             'bg-input-background-disabled text-text-tertiary placeholder:text-text-tertiary': disabled,
             'absolute inset-0': autosize,
           },

@@ -56,7 +56,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <label
         className={cnTw(
           'box-border flex cursor-text items-center gap-x-2 rounded-sm px-[11px]',
-          'border-filter-border bg-input-background border',
+          'border border-filter-border bg-input-background',
           {
             'h-[34px]': height === 'sm',
             'h-[42px]': height === 'md',
@@ -71,10 +71,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {prefixElement ? <div className="flex shrink-0">{prefixElement}</div> : prefixElement}
         <input
           className={cnTw(
-            'placeholder:text-text-secondary h-full w-full appearance-none focus:ring-0 focus-visible:outline-none!',
+            'h-full w-full appearance-none placeholder:text-text-secondary focus:ring-0 focus-visible:outline-none!',
             'text-footnote text-text-primary outline-offset-1',
             {
-              'text-text-tertiary placeholder:text-text-tertiary bg-transparent': disabled,
+              'bg-transparent text-text-tertiary placeholder:text-text-tertiary': disabled,
               'text-headline': textSize === 'lg',
             },
           )}
