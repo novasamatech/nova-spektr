@@ -100,7 +100,10 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
         </RenameWalletModal>
       ),
     },
-    {
+  ];
+
+  if (!walletUtils.isProxied(wallet) && !walletUtils.isFlexibleMultisig(wallet)) {
+    items.push({
       component: (
         <ForgetWalletConfirm wallet={wallet}>
           <Dropdown.Item>
@@ -111,8 +114,8 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
           </Dropdown.Item>
         </ForgetWalletConfirm>
       ),
-    },
-  ];
+    });
+  }
 
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     items.push({
