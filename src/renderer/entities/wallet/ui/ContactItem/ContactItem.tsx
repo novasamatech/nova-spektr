@@ -3,8 +3,8 @@ import { type PropsWithChildren } from 'react';
 import { type Address, type KeyType } from '@/shared/core';
 import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, HelpText, Icon, Identicon } from '@/shared/ui';
-import { Hash } from '@/shared/ui-entities';
+import { BodyText, HelpText, Icon } from '@/shared/ui';
+import { Hash, Identicon } from '@/shared/ui-entities';
 import { KeyIcon } from '../../lib/constants';
 
 type Props = PropsWithChildren<{
@@ -31,7 +31,7 @@ export const ContactItem = ({
   return (
     <div
       className={cnTw(
-        'group relative flex w-full items-center rounded transition-colors',
+        'group relative flex w-full items-center rounded-sm transition-colors',
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
       )}
     >
@@ -41,7 +41,7 @@ export const ContactItem = ({
 
           {keyType && (
             <Icon
-              className="z-10 -ml-2.5 rounded-full border bg-white text-text-secondary"
+              className="text-text-secondary z-10 -ml-2.5 rounded-full border bg-white"
               size={iconSize}
               name={KeyIcon[keyType]}
             />
@@ -52,7 +52,7 @@ export const ContactItem = ({
           {name ? (
             <BodyText
               className={cnTw(
-                'truncate text-text-secondary transition-colors',
+                'text-text-secondary truncate transition-colors',
                 'group-focus-within:text-text-primary group-hover:text-text-primary',
               )}
             >
@@ -70,15 +70,15 @@ export const ContactItem = ({
           )}
 
           {nonNullable(name) && !hideAddress && (
-            <HelpText className="truncate text-text-tertiary">{formattedAddress}</HelpText>
+            <HelpText className="text-text-tertiary truncate">{formattedAddress}</HelpText>
           )}
         </div>
       </div>
 
       <div
         className={cnTw(
-          'absolute right-2 top-1/2 flex -translate-y-1/2 opacity-0 transition-opacity',
-          'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
+          'absolute top-1/2 right-2 flex -translate-y-1/2 opacity-0 transition-opacity',
+          'group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100',
         )}
       >
         {children}

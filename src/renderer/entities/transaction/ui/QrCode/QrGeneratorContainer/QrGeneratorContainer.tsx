@@ -42,10 +42,10 @@ export const QrGeneratorContainer = ({ countdown, chainId, children, testId, onQ
         {!children && <Shimmering />}
       </div>
 
-      <div className="mb-4 mt-6 flex flex-row items-center gap-x-2 py-1">
+      <div className="mt-6 mb-4 flex flex-row items-center gap-x-2 py-1">
         <InfoLink url={TROUBLESHOOTING_URL}>{t('signing.troubleshootingLink')}</InfoLink>
 
-        <span className="h-4 border border-divider"></span>
+        <span className="border-divider h-4 border"></span>
 
         <InfoLink url={getMetadataPortalMetadataUrl(chainId)}>{t('signing.metadataPortalLink')}</InfoLink>
       </div>

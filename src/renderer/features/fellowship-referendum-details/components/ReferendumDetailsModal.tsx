@@ -44,7 +44,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{title || baseTitle}</Modal.Title>
       <Modal.Content disableScroll>
-        <div className="flex h-full bg-main-app-background">
+        <div className="bg-main-app-background flex h-full">
           <ScrollArea>
             <Box direction="row" width="100%" gap={4} padding={[4, 6]} fillContainer>
               <Box width="100%" gap={4}>

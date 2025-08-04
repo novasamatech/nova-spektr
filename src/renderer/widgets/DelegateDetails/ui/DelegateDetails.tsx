@@ -48,16 +48,16 @@ export const DelegateDetails = () => {
     <Modal isOpen={isOpen} size="xl" height="full" onToggle={() => delegateDetailsModel.events.closeModal()}>
       <Modal.Title close>{t('governance.addDelegation.delegateTitle')}</Modal.Title>
       <Modal.Content>
-        <div className="flex min-h-[678px] items-start gap-4 rounded-lg bg-main-app-background px-6 py-6">
-          <Plate className="flex-1 border-filter-border p-6 shadow-card-shadow">
+        <div className="bg-main-app-background flex min-h-[678px] items-start gap-4 rounded-lg px-6 py-6">
+          <Plate className="shadow-card-shadow border-filter-border flex-1 p-6">
             {delegate && <DelegateDescription delegate={delegate} />}
           </Plate>
 
           <div className="flex flex-col gap-4">
-            <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
+            <Plate className="shadow-card-shadow border-filter-border w-[350px] p-6">
               <YourDelegation />
             </Plate>
-            <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
+            <Plate className="shadow-card-shadow border-filter-border w-[350px] p-6">
               <DelegateActivity />
             </Plate>
             <DelegateIdentity />

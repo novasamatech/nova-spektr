@@ -42,8 +42,8 @@ export const AssetCard = memo(({ chainId, asset, balance, wallet }: Props) => {
       tabIndex={0}
       aria-expanded={isExpanded}
       className={cnTw(
-        'group flex cursor-pointer flex-col rounded bg-block-background-default',
-        'transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow',
+        'group bg-block-background-default flex cursor-pointer flex-col rounded-sm',
+        'hover:shadow-card-shadow focus:shadow-card-shadow transition-shadow',
       )}
       onClick={toggleExpanded}
       onKeyDown={onWrapperKeyDown}
@@ -73,7 +73,7 @@ export const AssetCard = memo(({ chainId, asset, balance, wallet }: Props) => {
       </div>
 
       {isExpanded && (
-        <dl className="flex gap-x-4 divide-x border-t border-divider py-4 pr-4">
+        <dl className="divide-divider border-divider flex gap-x-4 divide-x border-t py-4 pr-4">
           <AssetDetails asset={asset} value={transferableBalance} label={t('assetBalance.transferable')} />
           <AssetDetails asset={asset} value={balance?.frozen} label={t('assetBalance.locked')} />
           <AssetDetails asset={asset} value={balance?.reserved} label={t('assetBalance.reserved')} />

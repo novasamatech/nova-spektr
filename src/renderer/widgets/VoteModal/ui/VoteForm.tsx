@@ -204,7 +204,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
             <SmallTitleText className="text-center">
               {t('governance.vote.abstainConvictionWarningTitle')}
             </SmallTitleText>
-            <FootnoteText className="text-center text-text-tertiary">
+            <FootnoteText className="text-text-tertiary text-center">
               <Trans
                 t={t}
                 i18nKey="governance.vote.abstainConvictionWarningDescription"

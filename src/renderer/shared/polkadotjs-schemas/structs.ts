@@ -1,14 +1,14 @@
 import { Enum, Option } from '@polkadot/types';
-import { ZodOptional, z } from 'zod';
+import { type RefinementCtx, ZodOptional, z } from 'zod';
 
-const safeParse = <T extends z.ZodType>(schema: T, value: unknown, ctx: z.RefinementCtx): z.infer<T> | never => {
+const safeParse = <T extends z.ZodType>(schema: T, value: unknown, ctx: RefinementCtx): z.infer<T> | never => {
   const result = schema.safeParse(value);
 
   if (result.success) {
     return result.data;
   } else {
     for (const issue of result.error.issues) {
-      ctx.addIssue(issue);
+      ctx.addIssue(issue.message);
     }
 
     return z.NEVER;

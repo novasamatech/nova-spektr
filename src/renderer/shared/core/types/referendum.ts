@@ -3,7 +3,7 @@ import { type BN } from '@polkadot/util';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { type Asset } from './asset';
-import { type Address, type BlockHeight } from './general';
+import { type Address, type BlockHeight, type HexString } from './general';
 import { type TrackId } from './track';
 
 export type ReferendumId = string;
@@ -27,6 +27,7 @@ export type OngoingReferendum = {
   referendumId: ReferendumId;
   track: TrackId;
   proposal: Proposal | null;
+  rawProposal: HexString | null;
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;

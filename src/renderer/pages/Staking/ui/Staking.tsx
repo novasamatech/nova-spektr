@@ -433,7 +433,7 @@ export const Staking = () => {
               </EmptyList>
             )}
 
-            <InactiveNetwork active={!networkIsActive} className="mb-28 flex-grow" />
+            <InactiveNetwork active={!networkIsActive} className="mb-28 grow" />
           </section>
         </div>
       </div>

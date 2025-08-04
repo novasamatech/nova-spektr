@@ -55,9 +55,9 @@ export const SelectTrackForm = ({ isOpen, onClose }: Props) => {
         <OperationTitle title={t('governance.addDelegation.title')} chainId={network.chain.chainId} />
       </Modal.Title>
       <Modal.Content>
-        <div className="flex h-[582px] w-[896px] flex-col gap-6 bg-card-background">
+        <div className="bg-card-background flex h-[582px] w-[896px] flex-col gap-6">
           <SmallTitleText className="px-5">{t('governance.addDelegation.selectTrackTitle')}</SmallTitleText>
-          <hr className="w-full border-filter-border" />
+          <hr className="border-filter-border w-full" />
           <AccountsSelector />
           <div className="flex flex-1 flex-col gap-6 px-5">
             <div className="flex gap-3">
@@ -322,12 +322,12 @@ const AccountsSelector = () => {
             onChange={(values) => selectTracksModel.events.accountsChanged(values.map(({ value }) => value))}
           />
         </div>
-        <FootnoteText className="flex-1 text-text-tertiary">
+        <FootnoteText className="text-text-tertiary flex-1">
           {t('governance.addDelegation.multishardDescription')}
         </FootnoteText>
       </div>
 
-      <hr className="w-full border-filter-border" />
+      <hr className="border-filter-border w-full" />
     </>
   );
 };
@@ -346,7 +346,7 @@ const AccountInfo = ({ account, chain, balance }: AccountProps) => (
     <AssetBalance
       value={balance}
       asset={chain.assets[0]}
-      className="w-full text-right text-footnote text-text-secondary"
+      className="text-footnote text-text-secondary w-full text-right"
     />
   </div>
 );

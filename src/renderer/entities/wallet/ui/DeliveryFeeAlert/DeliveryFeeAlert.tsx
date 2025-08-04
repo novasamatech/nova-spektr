@@ -2,8 +2,8 @@ import { Trans } from 'react-i18next';
 
 import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Alert, FootnoteText, Identicon } from '@/shared/ui';
-import { Hash } from '@/shared/ui-entities';
+import { Alert, FootnoteText } from '@/shared/ui';
+import { Hash, Identicon } from '@/shared/ui-entities';
 
 type Props = {
   address: Address;
@@ -17,7 +17,7 @@ export const DeliveryFeeAlert = ({ address, fee, balance, symbol, onClose }: Pro
   const { t } = useI18n();
 
   const component = (
-    <span className="mx-1 inline-flex items-center gap-x-1 align-bottom text-footnote text-text-secondary">
+    <span className="text-footnote text-text-secondary mx-1 inline-flex items-center gap-x-1 align-bottom">
       <Identicon address={address} size={16} background={false} />
       <Hash value={address} variant="short" />
     </span>
@@ -25,7 +25,7 @@ export const DeliveryFeeAlert = ({ address, fee, balance, symbol, onClose }: Pro
 
   return (
     <Alert active title={t('operation.deliveryFeeErrorTitle')} variant="error" onClose={onClose}>
-      <FootnoteText className="max-w-full tracking-tight text-text-secondary">
+      <FootnoteText className="text-text-secondary max-w-full tracking-tight">
         <Trans
           t={t}
           i18nKey="operation.deliveryFeeErrorDescription"

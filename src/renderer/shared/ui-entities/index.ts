@@ -19,6 +19,7 @@ export { ChainIcon } from './ChainIcon/ChainIcon';
 export { ChainSelect } from './ChainSelect/ChainSelect';
 export { CollectiveRank, getRankTitle } from './CollectiveRank/CollectiveRank';
 export { TrackDescription } from './TrackDescription/TrackDescription';
-export { WalletAccountIcon, type IconTheme } from './WalletAccountIcon/WalletAccountIcon';
+export { WalletAccountIcon } from './WalletAccountIcon/WalletAccountIcon';
 export { CollectiveReferendumVoteChart } from './CollectiveReferendumVoteChart/CollectiveReferendumVoteChart';
 export { SignatorySelect } from './SignatorySelect/SignatorySelect';
+export { Identicon, type IdenticonIconTheme } from './Identicon/Identicon';

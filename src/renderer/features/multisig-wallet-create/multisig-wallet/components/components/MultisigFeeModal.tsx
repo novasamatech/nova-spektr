@@ -41,7 +41,7 @@ export const MultisigFeeModal = memo(({ children }: PropsWithChildren) => {
               </div>
             </Popover.Trigger>
             <Popover.Content>
-              <div className="flex w-[360px] flex-col p-4 text-text-secondary">
+              <div className="text-text-secondary flex w-[360px] flex-col p-4">
                 {t('createMultisigAccount.networkSelect.feeDescription')}
               </div>
             </Popover.Content>

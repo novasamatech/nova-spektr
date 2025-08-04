@@ -83,7 +83,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.activityFeed.activityModal.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="flex gap-x-2 bg-main-app-background px-5 py-4">
+        <div className="bg-main-app-background flex gap-x-2 px-5 py-4">
           <div className="inline grow">
             <SearchInput
               placeholder={t('fellowship.activityFeed.activityModal.search-placeholder')}

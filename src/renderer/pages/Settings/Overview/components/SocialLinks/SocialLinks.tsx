@@ -47,8 +47,8 @@ export const SocialLinks = () => {
           <Plate as="li" key={link.title} className="p-0">
             <a
               className={cnTw(
-                'grid w-full grid-flow-col grid-cols-[auto,1fr,auto] items-center gap-x-2 rounded-md p-3',
-                'transition hover:shadow-card-shadow focus:shadow-card-shadow',
+                'grid w-full grid-flow-col grid-cols-[auto_1fr_auto] items-center gap-x-2 rounded-md p-3',
+                'hover:shadow-card-shadow focus:shadow-card-shadow transition',
               )}
               href={link.href}
               target="_blank"

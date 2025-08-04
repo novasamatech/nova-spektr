@@ -27,12 +27,12 @@ export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
       <textarea
         {...props}
         className={cnTw(
-          'w-full rounded px-3 py-2',
-          'resize-none text-footnote text-text-primary',
-          'bg-input-background outline outline-1 outline-filter-border placeholder:text-text-secondary',
+          'w-full rounded-sm px-3 py-2',
+          'text-footnote text-text-primary resize-none',
+          'bg-input-background outline-filter-border placeholder:text-text-secondary outline-1 outline-solid',
           {
             'outline-filter-border-negative': invalid,
-            'focus-within:outline-active-container-border hover:shadow-card-shadow focus:outline-1': !disabled,
+            'hover:shadow-card-shadow focus-within:outline-active-container-border focus:outline-1': !disabled,
             'bg-input-background-disabled text-text-tertiary placeholder:text-text-tertiary': disabled,
             'absolute inset-0': autosize,
           },
@@ -49,7 +49,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, Props>(
 
     if (autosize) {
       return (
-        <div className="relative whitespace-pre-wrap px-3 py-2" style={{ minHeight: 16 + rows * 18 }}>
+        <div className="relative px-3 py-2 whitespace-pre-wrap" style={{ minHeight: 16 + rows * 18 }}>
           <FootnoteText>{value}&nbsp;</FootnoteText>
           {textarea}
         </div>

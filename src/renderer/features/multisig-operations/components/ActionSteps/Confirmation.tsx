@@ -115,7 +115,7 @@ export const Confirmation = ({ api, operation, account, chain, signAccount, feeT
         </DetailRow>
       )}
 
-      <SignButton disabled={!isFeeLoaded} className="ml-auto mt-3" type={signerWallet?.type} onClick={onSign} />
+      <SignButton disabled={!isFeeLoaded} className="mt-3 ml-auto" type={signerWallet?.type} onClick={onSign} />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { type DelegateAccount } from '@/shared/api/governance';
 import { cnTw } from '@/shared/lib/utils';
-import { Icon, Identicon } from '@/shared/ui';
+import { Icon } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 
 const isDefaultImage = (image?: string) => !image || image.includes('default');
 

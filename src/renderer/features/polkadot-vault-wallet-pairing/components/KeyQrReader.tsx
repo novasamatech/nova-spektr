@@ -121,10 +121,10 @@ export const KeyQrReader = ({ size = 300, onComplete }: Props) => {
           {cameraState === CameraState.INVALID_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
+              <p className="text-neutral mt-5 text-xl leading-6 font-semibold">
                 {t('onboarding.paritySigner.wrongQRCodeLabel')}
               </p>
-              <p className="max-w-[395px] text-sm text-neutral-variant">
+              <p className="text-neutral-variant max-w-[395px] text-sm">
                 {t('onboarding.paritySigner.wrongQRCodeDescription')}
               </p>
             </>
@@ -132,10 +132,10 @@ export const KeyQrReader = ({ size = 300, onComplete }: Props) => {
           {cameraState === CameraState.MULTISHARD_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
+              <p className="text-neutral mt-5 text-xl leading-6 font-semibold">
                 {t('onboarding.paritySigner.multishardQRCodeLabel')}
               </p>
-              <p className="max-w-[395px] text-sm text-neutral-variant">
+              <p className="text-neutral-variant max-w-[395px] text-sm">
                 {t('onboarding.paritySigner.multishardQRCodeDescription')}
               </p>
             </>
@@ -143,28 +143,28 @@ export const KeyQrReader = ({ size = 300, onComplete }: Props) => {
           {cameraState === CameraState.UNKNOWN_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
+              <p className="text-neutral mt-5 text-xl leading-6 font-semibold">
                 {t('onboarding.paritySigner.notWorkingLabel')}
               </p>
-              <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.notWorkingDescription')}</p>
+              <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.notWorkingDescription')}</p>
             </>
           )}
           {cameraState === CameraState.DECODE_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
+              <p className="text-neutral mt-5 text-xl leading-6 font-semibold">
                 {t('onboarding.paritySigner.decodeErrorLabel')}
               </p>
-              <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.decodeErrorDescription')}</p>
+              <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.decodeErrorDescription')}</p>
             </>
           )}
           {cameraState === CameraState.DENY_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
+              <p className="text-neutral mt-5 text-xl leading-6 font-semibold">
                 {t('onboarding.paritySigner.accessDeniedLabel')}
               </p>
-              <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.accessDeniedDescription')}</p>
+              <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.accessDeniedDescription')}</p>
             </>
           )}
         </div>
@@ -190,17 +190,17 @@ export const KeyQrReader = ({ size = 300, onComplete }: Props) => {
       {cameraState === CameraState.LOADING && (
         <div className="flex h-[288px] w-full flex-col items-center">
           <div className="relative flex h-full w-full items-center justify-center">
-            <p className="absolute flex items-center gap-x-2.5 pb-3.5 font-semibold text-shade-40">
+            <p className="text-shade-40 absolute flex items-center gap-x-2.5 pb-3.5 font-semibold">
               <Loader color="primary" />
               {t('onboarding.paritySigner.startCameraLabel')}
             </p>
-            <Icon className="absolute text-shade-12" name="qrFrame" size={240} />
+            <Icon className="text-shade-12 absolute" name="qrFrame" size={240} />
           </div>
         </div>
       )}
 
       <div className="flex flex-col gap-4">
-        <div className={cnTw('relative overflow-hidden rounded-2lg', isCameraPending && 'hidden')} style={sizeStyle}>
+        <div className={cnTw('rounded-2lg relative overflow-hidden', isCameraPending && 'hidden')} style={sizeStyle}>
           <VaultQrReader
             size={size}
             cameraId={activeCamera}
@@ -213,7 +213,7 @@ export const KeyQrReader = ({ size = 300, onComplete }: Props) => {
           <div className="absolute inset-0 flex h-full w-full items-center justify-center">
             {isScanComplete ? (
               <>
-                <div className="rounded-2lg backdrop-blur-sm after:absolute after:inset-0 after:bg-white/50" />
+                <div className="rounded-2lg backdrop-blur-xs after:absolute after:inset-0 after:bg-white/50" />
                 <Icon size={100} name="checkmarkCutout" className="text-success" />
               </>
             ) : null}
@@ -239,7 +239,7 @@ export const KeyQrReader = ({ size = 300, onComplete }: Props) => {
             <FootnoteText className="text-text-tertiary">{t('qrReader.parsingLabel')}</FootnoteText>
             <CaptionText
               className={cnTw(
-                'rounded-full bg-label-background-gray px-2 py-1 uppercase text-white',
+                'bg-label-background-gray rounded-full px-2 py-1 text-white uppercase',
                 total === decoded && 'bg-label-background-green',
               )}
             >

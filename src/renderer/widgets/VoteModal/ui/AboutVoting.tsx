@@ -7,14 +7,14 @@ export const AboutVoting = () => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col gap-2 whitespace-pre-line p-4">
+    <div className="flex flex-col gap-2 p-4 whitespace-pre-line">
       <div>
         <Trans
           t={t}
           i18nKey="governance.voting.aboutVoting"
           components={{
             header: <SmallTitleText />,
-            p: <FootnoteText className="mt-2 text-text-secondary" />,
+            p: <FootnoteText className="text-text-secondary mt-2" />,
             ul: <FootnoteText className="ms-2 list-disc" />,
             li: <FootnoteText as="li" className="text-text-secondary" />,
           }}
@@ -26,7 +26,7 @@ export const AboutVoting = () => {
           i18nKey="governance.voting.aboutVotingPower"
           components={{
             header: <SmallTitleText />,
-            p: <FootnoteText className="mt-2 text-text-secondary" />,
+            p: <FootnoteText className="text-text-secondary mt-2" />,
           }}
         />
       </div>

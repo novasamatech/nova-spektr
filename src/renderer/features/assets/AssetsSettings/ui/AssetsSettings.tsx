@@ -20,7 +20,7 @@ export const AssetsSettings = memo(() => {
         <div className="relative">
           <IconButton name="settingsLite" className="p-1.5" testId={TEST_IDS.ASSETS.SETTINGS_WIDGET} />
           {hideZeroBalances && (
-            <span className="absolute right-0 top-0 h-1.5 w-1.5 rounded-full bg-icon-accent duration-100 animate-in fade-in" />
+            <span className="bg-icon-accent animate-in fade-in absolute top-0 right-0 h-1.5 w-1.5 rounded-full duration-100" />
           )}
         </div>
       </Popover.Trigger>
@@ -34,7 +34,7 @@ export const AssetsSettings = memo(() => {
           >
             {t('balances.hideZeroBalancesLabel')}
           </Switch>
-          <hr className="-mx-3 my-4 border-divider" />
+          <hr className="border-divider -mx-3 my-4" />
           <Field text={t('balances.pageView')}>
             <Select
               placeholder={t('settings.networks.selectorPlaceholder')}

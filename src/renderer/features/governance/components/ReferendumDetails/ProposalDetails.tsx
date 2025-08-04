@@ -32,7 +32,7 @@ export const ProposalDetails = ({ proposal }: Props) => {
   const amount = formatBalance(proposal.amount.toString(), nativeAsset?.precision ?? 0, { M: false });
   return (
     <>
-      <DetailRow className="text-right text-text-secondary" label={t('governance.advanced.fields.beneficiary')}>
+      <DetailRow className="text-text-secondary text-right" label={t('governance.advanced.fields.beneficiary')}>
         <Account accountId={proposal.beneficiary} variant="short" chain={chain} title={identity?.name} hideAddress />
       </DetailRow>
       <DetailRow

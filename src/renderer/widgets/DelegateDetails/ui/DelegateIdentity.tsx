@@ -19,7 +19,7 @@ export const DelegateIdentity = () => {
   if (!delegate || !identity) return null;
 
   return (
-    <Plate className="w-[350px] border-filter-border p-6 shadow-card-shadow">
+    <Plate className="shadow-card-shadow border-filter-border w-[350px] p-6">
       <div className="flex flex-col gap-6">
         <SmallTitleText>{t('governance.addDelegation.delegateIdentity')}</SmallTitleText>
         {getIdentityList(identity).map(({ key, value, url }) => (

@@ -27,7 +27,7 @@ export const Signer = ({ account, wallet, onSubmit, chain }: Props) => {
 
   return (
     <li
-      className="flex cursor-pointer items-center justify-between gap-x-6 py-4 pl-2 pr-2 text-text-secondary hover:bg-hover"
+      className="text-text-secondary hover:bg-hover flex cursor-pointer items-center justify-between gap-x-6 py-4 pr-2 pl-2"
       onClick={e => onSubmit(e, account)}
     >
       <div className="flex items-center gap-x-2 truncate">
@@ -38,7 +38,7 @@ export const Signer = ({ account, wallet, onSubmit, chain }: Props) => {
       <AssetBalance
         value={transferableAmount(balance) || BN_ZERO}
         asset={asset}
-        className="ml-auto text-right text-body text-inherit"
+        className="text-body ml-auto text-right text-inherit"
       />
       <Icon name="right" size={20} className="shrink-0" />
     </li>

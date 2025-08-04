@@ -16,7 +16,7 @@ export const NotificationsList = () => {
     <div className="mx-auto mt-4 flex w-[736px] flex-1 flex-col gap-4 overflow-y-auto">
       {notificationGroups.map(([date, notifications]) => (
         <section className="flex w-full flex-col gap-1" key={date}>
-          <FootnoteText className="ml-2 flex h-8 items-center text-text-tertiary">{date}</FootnoteText>
+          <FootnoteText className="text-text-tertiary ml-2 flex h-8 items-center">{date}</FootnoteText>
           <ul className="flex flex-col gap-y-1.5">
             {notifications.map((notification) => (
               <NotificationRow key={notification.id} notification={notification} />

@@ -24,8 +24,8 @@ export const Select = ({ option, disabled, children }: PropsWithChildren<Props>)
         >
           <span
             className={cnTw(
-              'relative h-4 w-4 rounded-full border border-filter-border bg-card-background',
-              checked ? 'spektr-radio border-0 bg-primary-button-background-default' : 'border-filter-border',
+              'border-filter-border bg-card-background relative h-4 w-4 rounded-full border',
+              checked ? 'spektr-radio bg-primary-button-background-default border-0' : 'border-filter-border',
             )}
           />
           {children}

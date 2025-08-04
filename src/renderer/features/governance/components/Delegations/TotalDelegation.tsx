@@ -67,7 +67,7 @@ export const TotalDelegation = ({ onClick }: Props) => {
   return (
     <>
       <button onClick={handleClick}>
-        <Plate className="flex h-[90px] w-[240px] items-center justify-between px-4 pb-4.5 pt-3">
+        <Plate className="flex h-[90px] w-[240px] items-center justify-between px-4 pt-3 pb-4.5">
           <div className="flex flex-col items-start gap-y-2">
             <div className="flex items-center gap-x-1">
               <Icon size={16} name="opengovDelegations" />

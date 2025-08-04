@@ -41,7 +41,7 @@ export const Operation = memo(({ operation, account }: Props) => {
   }
 
   return (
-    <Accordion className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow">
+    <Accordion className="hover:shadow-card-shadow focus-visible:shadow-card-shadow bg-block-background-default rounded transition-shadow">
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
         <div className="flex h-[52px] w-full items-center gap-4 overflow-hidden">
           <div className="flex w-full items-center gap-4 overflow-hidden">
@@ -52,7 +52,7 @@ export const Operation = memo(({ operation, account }: Props) => {
           <OperationTitleStatus operation={operation} account={account} />
         </div>
       </Accordion.Button>
-      <Accordion.Content className="border-t border-divider">
+      <Accordion.Content className="border-divider border-t">
         <OperationFullInfo operation={operation} account={account} />
       </Accordion.Content>
     </Accordion>

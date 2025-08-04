@@ -4,20 +4,10 @@ import { type FormEvent, useState } from 'react';
 
 import { type Address, RewardsDestination } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, toAddress, toShortAddress, validateAddress } from '@/shared/lib/utils';
-import {
-  Button,
-  Combobox,
-  DetailRow,
-  FootnoteText,
-  Icon,
-  Identicon,
-  InputHint,
-  MultiSelect,
-  RadioGroup,
-} from '@/shared/ui';
+import { formatBalance, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { Button, Combobox, DetailRow, FootnoteText, Icon, InputHint, MultiSelect, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
-import { AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance, Identicon } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
@@ -44,7 +34,7 @@ export const PayeeForm = ({ onGoBack }: Props) => {
         <AccountsSelector />
         <Destination />
       </form>
-      <div className="flex flex-col gap-y-6 pb-4 pt-6">
+      <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
       </div>
       <ActionsSection onGoBack={onGoBack} />
@@ -185,11 +175,7 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      {validateAddress(payout) ? (
-        <Identicon address={payout} size={20} background={false} canCopy={false} />
-      ) : (
-        <Icon size={20} name="emptyIdenticon" />
-      )}
+      <Identicon address={payout} size={20} background={false} canCopy={false} />
     </div>
   );
 
@@ -261,7 +247,7 @@ const FeeSection = () => {
               <Tooltip>
                 <Tooltip.Trigger>
                   <div tabIndex={0}>
-                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                    <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
                   </div>
                 </Tooltip.Trigger>
                 <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

@@ -48,13 +48,13 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
               <BodyText>{asset.symbol}</BodyText>
               <div className="flex items-center">
                 <ChainsList assetChains={asset.chains} />
-                <FootnoteText className="ml-1.5 text-text-tertiary">
+                <FootnoteText className="text-text-tertiary ml-1.5">
                   {t('balances.availableNetworks', { count: asset.chains.length })}
                 </FootnoteText>
                 {totalBalance.verified && (
                   <Tooltip>
                     <Tooltip.Trigger>
-                      <div tabIndex={0} className="ml-2 text-text-warning">
+                      <div tabIndex={0} className="text-text-warning ml-2">
                         <Icon name="warn" className="cursor-pointer text-inherit" size={14} />
                       </div>
                     </Tooltip.Trigger>

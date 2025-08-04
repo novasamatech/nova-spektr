@@ -26,7 +26,7 @@ export const MultisigDepositWithLabel = ({ wrapperClassName, ...depositProps }: 
           <Tooltip>
             <Tooltip.Trigger>
               <div tabIndex={0}>
-                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
               </div>
             </Tooltip.Trigger>
             <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>
@@ -58,7 +58,7 @@ export const MultisigDepositFee = ({ asset, multisigDeposit }: MultisigDepositPr
           <Tooltip>
             <Tooltip.Trigger>
               <div tabIndex={0}>
-                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
               </div>
             </Tooltip.Trigger>
             <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

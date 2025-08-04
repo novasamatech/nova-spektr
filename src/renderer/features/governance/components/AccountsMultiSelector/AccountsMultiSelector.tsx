@@ -98,7 +98,7 @@ export const AccountsMultiSelector = ({
     return (
       <span className="flex items-center gap-x-2">
         <FootnoteText as="span">{multiPlaceholder || placeholder}</FootnoteText>
-        <CaptionText as="span" className="h-4 rounded-[30px] bg-icon-accent px-1.5 leading-4 text-white" align="center">
+        <CaptionText as="span" className="bg-icon-accent h-4 rounded-[30px] px-1.5 leading-4 text-white" align="center">
           {selectedOptions.length}
         </CaptionText>
       </span>
@@ -120,7 +120,7 @@ export const AccountsMultiSelector = ({
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
               'bg-input-background text-text-primary',
-              'rounded border text-footnote outline-offset-1',
+              'text-footnote rounded-sm border outline-offset-1',
               'inline-flex w-full items-center justify-between gap-2 px-2 py-2',
             )}
             tabIndex={tabIndex}
@@ -140,7 +140,7 @@ export const AccountsMultiSelector = ({
               <li
                 key="all"
                 className={cnTw(
-                  'mb-1 rounded p-2 hover:bg-action-background-hover',
+                  'hover:bg-action-background-hover mb-1 rounded-sm p-2',
                   OptionStyleTheme[theme](false, areAllOptionsSelected),
                 )}
               >
@@ -203,7 +203,7 @@ export const AccountsMultiSelector = ({
 
   return (
     <div className="flex flex-col gap-y-2">
-      <LabelText className="cursor-pointer text-text-tertiary" htmlFor={id}>
+      <LabelText className="text-text-tertiary cursor-pointer" htmlFor={id}>
         {label}
       </LabelText>
       {selectElement}
@@ -242,13 +242,13 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
     <>
       <div
         className={cnTw(
-          'my-1 flex rounded hover:bg-action-background-hover',
+          'hover:bg-action-background-hover my-1 flex rounded-sm',
           OptionStyleTheme[theme](false, isChecked),
         )}
       >
         <div className="w-full p-2 pl-6">
           <Checkbox checked={isChecked} semiChecked={isSemiChecked} onChange={(checked) => toggleGroup(checked)}>
-            <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
+            <div className="rounded-2lg bg-input-background-disabled flex h-5 w-7.5 items-center justify-center">
               <CaptionText className="text-text-secondary">{list.length}</CaptionText>
             </div>
             <FootnoteText className={cnTw('flex-1', isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}>

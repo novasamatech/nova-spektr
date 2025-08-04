@@ -4,9 +4,9 @@ import { memo } from 'react';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { isEthereumAccountId, performSearch } from '@/shared/lib/utils';
+import { performSearch } from '@/shared/lib/utils';
 import { Icon, type IconNames } from '@/shared/ui';
-import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
+import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Label } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -62,17 +62,14 @@ export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Prop
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map((wallet) => {
               const address = wallet.accounts[0]?.accountId;
-              const isEthereum = isEthereumAccountId(address);
-              const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
               return (
                 <WalletManagement
                   key={wallet.id}
                   wallet={wallet}
                   address={address}
-                  theme={theme}
                   description={
-                    <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
+                    <WalletFiatBalance walletId={wallet.id} className="text-help-text max-w-[215px] truncate" />
                   }
                   onClick={() => onSelect(wallet)}
                 >

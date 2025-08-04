@@ -199,10 +199,10 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
               </div>
               {!isRenameInputOpen && (
                 <>
-                  <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
+                  <HeadlineText className="text-text-primary ml-1 truncate" as="h3">
                     {wallet.name}
                   </HeadlineText>
-                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                  <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
                     <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
                     <WalletFiatBalance />
                   </div>
@@ -213,7 +213,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
             <RenameWallet wallet={wallet} isOpen={isRenameInputOpen} onClose={toggleIsRenameInputOpen} />
 
             {multisigAccount && !isRenameInputOpen && (
-              <div className="ml-auto shrink-0 duration-300 animate-in fade-in-0">
+              <div className="animate-in fade-in-0 ml-auto shrink-0 duration-300">
                 <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
               </div>
             )}
@@ -221,7 +221,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
           {nonNullable(chain) && (
             <div className="flex items-center pl-4">
               <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-              <div className="flex items-center text-footnote">
+              <div className="text-footnote flex items-center">
                 <Trans
                   t={t}
                   i18nKey="walletDetails.multisig.singleChainTitle"

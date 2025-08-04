@@ -4,8 +4,8 @@ import { memo } from 'react';
 import { AccountType, type Chain, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { isEthereumAccountId, performSearch } from '@/shared/lib/utils';
-import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
+import { performSearch } from '@/shared/lib/utils';
+import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -56,8 +56,6 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
               const address = wallet.accounts[0]?.accountId;
-              const isEthereum = isEthereumAccountId(address);
-              const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
               let chain: Chain | null = null;
               let label: string | null = null;
@@ -74,10 +72,9 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
                 <WalletManagement
                   key={wallet.id}
                   wallet={wallet}
-                  theme={theme}
                   address={address}
                   description={
-                    <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
+                    <WalletFiatBalance walletId={wallet.id} className="text-help-text max-w-[215px] truncate" />
                   }
                   chain={chain}
                   label={label}

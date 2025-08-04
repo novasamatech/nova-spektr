@@ -18,6 +18,7 @@ import { cnTw } from '@/shared/lib/utils';
 import { Input } from '../Input/Input';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';
+import { ThemeProvider } from '../Theme/ThemeProvider';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
@@ -58,23 +59,25 @@ const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inpu
   const ctx = useMemo(() => ({ open, onOpenChange, testId, comboboxRef, listboxRef, anchorRef }), [open, testId]);
 
   return (
-    <Context.Provider value={ctx}>
-      <RadixPopover.Root modal open={open} onOpenChange={onOpenChange}>
-        <Ariakit.ComboboxProvider
-          open={open}
-          setOpen={onOpenChange}
-          defaultValue={value}
-          defaultSelectedValue={value}
-          value={value}
-          selectedValue={value}
-          setSelectedValue={onChange}
-          setValue={value => startTransition(() => onChange(value.trim()))}
-        >
-          <Trigger {...inputProps} onChange={onInput} />
-          <Content>{children}</Content>
-        </Ariakit.ComboboxProvider>
-      </RadixPopover.Root>
-    </Context.Provider>
+    <ThemeProvider preferStaticContent>
+      <Context.Provider value={ctx}>
+        <RadixPopover.Root modal open={open} onOpenChange={onOpenChange}>
+          <Ariakit.ComboboxProvider
+            open={open}
+            setOpen={onOpenChange}
+            defaultValue={value}
+            defaultSelectedValue={value}
+            value={value}
+            selectedValue={value}
+            setSelectedValue={onChange}
+            setValue={value => startTransition(() => onChange(value.trim()))}
+          >
+            <Trigger {...inputProps} onChange={onInput} />
+            <Content>{children}</Content>
+          </Ariakit.ComboboxProvider>
+        </RadixPopover.Root>
+      </Context.Provider>
+    </ThemeProvider>
   );
 };
 
@@ -125,8 +128,8 @@ const Content = ({ children }: PropsWithChildren) => {
         <Surface
           elevation={1}
           className={cnTw(
-            'z-50 flex h-max max-h-[--radix-popper-available-height] flex-col p-1',
-            'overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+            'z-50 flex h-max max-h-(--radix-popper-available-height) flex-col p-1',
+            'animate-in fade-in zoom-in-95 overflow-hidden duration-100',
           )}
         >
           <ScrollArea>
@@ -149,7 +152,7 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
   return (
     <Ariakit.ComboboxGroup className="mb-1 last:mb-0">
       <Ariakit.ComboboxGroupLabel>
-        <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
+        <div className="text-help-text text-text-secondary mb-1 px-3 py-1">{title}</div>
       </Ariakit.ComboboxGroupLabel>
       {children}
     </Ariakit.ComboboxGroup>
@@ -166,8 +169,8 @@ const Item = ({ value, children }: PropsWithChildren<ItemProps>) => {
       focusOnHover
       value={value}
       className={cnTw(
-        'flex cursor-pointer rounded px-3 py-2 text-footnote text-text-secondary',
-        'bg-block-background-default data-[active-item]:bg-block-background-hover',
+        'text-footnote text-text-secondary flex cursor-pointer rounded-sm px-3 py-2',
+        'data-active-item:bg-block-background-hover bg-block-background-default',
         'mb-1 last:mb-0',
       )}
     >

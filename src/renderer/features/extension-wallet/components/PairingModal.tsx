@@ -4,8 +4,8 @@ import { type PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button, IconButton, Identicon, Loader, SmallTitleText } from '@/shared/ui';
-import { ChainAccountsList } from '@/shared/ui-entities';
+import { Button, IconButton, Loader, SmallTitleText } from '@/shared/ui';
+import { ChainAccountsList, Identicon } from '@/shared/ui-entities';
 import { Box, Carousel, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -87,7 +87,7 @@ export const PairingModal = ({ title, extension, children }: Props) => {
                     <Field text={t('onboarding.extension.selectAccountLabel')}>
                       <Select<AccountId>
                         value={selectedAccount}
-                        placeholder={t('onboarding.extension.selectAccountPlacehilder')}
+                        placeholder={t('onboarding.extension.selectAccountPlaceholder')}
                         onChange={setSelectedAccount}
                       >
                         {accounts.map((account) => (
@@ -132,8 +132,8 @@ export const PairingModal = ({ title, extension, children }: Props) => {
             </Modal.Footer>
           </div>
 
-          <div className="relative flex min-h-0 w-[50%] flex-col gap-4 rounded-r-lg bg-input-background-disabled pt-4">
-            <div className="absolute right-3 top-3 m-1">
+          <div className="bg-input-background-disabled relative flex min-h-0 w-[50%] flex-col gap-4 rounded-r-lg pt-4">
+            <div className="absolute top-3 right-3 m-1">
               <IconButton name="close" size={20} onClick={() => toggleModal(false)} />
             </div>
 

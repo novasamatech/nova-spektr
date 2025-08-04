@@ -53,7 +53,7 @@ export const WebSplashScreen = () => {
   }, []);
 
   return (
-    <div className="flex h-full w-full items-center justify-center p-4 font-manrope duration-500 animate-in fade-in">
+    <div className="font-manrope animate-in fade-in flex h-full w-full items-center justify-center p-4 duration-500">
       <div className="fixed -top-[1100px] left-[50%] h-[1140px] w-[1140px] -translate-x-[50%] rounded-full bg-[#FF57E4] blur-[215px]" />
       <div className="z-10 flex flex-col items-center gap-[86px]">
         <div className="flex items-center gap-[88px]">
@@ -64,7 +64,7 @@ export const WebSplashScreen = () => {
             </div>
             <div className="flex w-[500px] flex-col gap-7.5 leading-[normal]">
               {/* eslint-disable-next-line i18next/no-literal-string */}
-              <p className="text-[19.6px] font-bold uppercase tracking-[5px] text-text-secondary">
+              <p className="text-text-secondary text-[19.6px] font-bold tracking-[5px] uppercase">
                 {t('splashscreen.title')}
               </p>
               <p className="text-[46.5px] font-bold text-black">{t(screen.title)}</p>

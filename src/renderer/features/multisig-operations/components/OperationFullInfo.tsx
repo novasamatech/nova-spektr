@@ -58,7 +58,7 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
 
   return (
     <div className="flex flex-1">
-      <div className="flex w-[416px] flex-col border-r border-r-divider p-4">
+      <div className="border-r-divider flex w-[416px] flex-col border-r p-4">
         <div className="mb-4 flex items-center justify-between py-1">
           <SmallTitleText className="mr-auto">{t('operation.detailsTitle')}</SmallTitleText>
 
@@ -70,7 +70,7 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
                 </Button>
               )}
               {explorerLink && (
-                <InfoLink url={explorerLink} className="ml-0.5 flex items-center gap-x-0.5 text-footnote">
+                <InfoLink url={explorerLink} className="text-footnote ml-0.5 flex items-center gap-x-0.5">
                   <span>{t('operation.explorerLink')}</span>
                   <Icon name="right" size={16} />
                 </InfoLink>

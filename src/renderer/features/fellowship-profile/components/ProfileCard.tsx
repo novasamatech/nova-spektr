@@ -3,8 +3,8 @@ import { type PropsWithChildren, memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, getRelativeTimeFromApi, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, Button, Duration, FootnoteText, Icon, Identicon, SmallTitleText } from '@/shared/ui';
-import { CollectiveRank, Hash } from '@/shared/ui-entities';
+import { BodyText, Button, Duration, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { CollectiveRank, Hash, Identicon } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
@@ -44,7 +44,7 @@ const Card = ({ padding = true, children }: PropsWithChildren<CardProps>) => {
   return (
     <div
       className={cnTw(
-        'rounded-xl border border-filter-border bg-card-background text-button-small',
+        'border-filter-border bg-card-background text-button-small rounded-xl border',
         padding ? 'p-4' : 'p-0',
       )}
     >
@@ -61,7 +61,7 @@ const ProfileLoader = ({ active, children }: PropsWithChildren<{ active: boolean
 
   return (
     <Card padding={false}>
-      <div className="divider flex h-11 items-center justify-between border-b border-filter-border px-4">
+      <div className="divider border-filter-border flex h-11 items-center justify-between border-b px-4">
         <Skeleton height={5} />
       </div>
 
@@ -133,7 +133,7 @@ const Member = () => {
 
   return (
     <Card padding={false}>
-      <div className="divider flex h-11 items-center justify-between border-b border-filter-border pl-4 pr-1">
+      <div className="divider border-filter-border flex h-11 items-center justify-between border-b pr-1 pl-4">
         <span className="text-button-small">{t('fellowship.members.myProfile')}</span>
 
         <ProfileModal>
@@ -162,7 +162,7 @@ const Member = () => {
 
               {memberService.isCoreMember(member) && member.isActive ? (
                 <Box direction="row" verticalAlign="center" gap={1} shrink={0}>
-                  <span className="h-[9px] w-[9px] rounded-full bg-icon-positive" />
+                  <span className="bg-icon-positive h-[9px] w-[9px] rounded-full" />
                   <FootnoteText>{t('fellowship.members.active')}</FootnoteText>
                 </Box>
               ) : null}

@@ -64,7 +64,7 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
     <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="mb-4 flex items-center justify-between px-5 pb-6 pt-4">
+        <div className="mb-4 flex items-center justify-between px-5 pt-4 pb-6">
           <Box direction="row" verticalAlign="center" gap={2}>
             <div className="mr-1">
               <WalletAccountIcon address={firstAccount?.accountId} type={wallet.type} size={42} />
@@ -72,10 +72,10 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
 
             {!isRenameInputOpen && (
               <>
-                <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
+                <HeadlineText className="text-text-primary ml-1 truncate" as="h3">
                   {wallet.name}
                 </HeadlineText>
-                <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
                   <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
                   <WalletFiatBalance />
                 </div>
@@ -86,7 +86,7 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
           <RenameWallet wallet={wallet} isOpen={isRenameInputOpen} onClose={toggleIsRenameInputOpen} />
 
           {!isRenameInputOpen && (
-            <div className="ml-2 flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+            <div className="animate-in fade-in-0 ml-2 flex shrink-0 items-center gap-3 duration-300">
               {firstAccount && <Slot id={overviewSlot} props={{ walletAccounts: [firstAccount] }} />}
               <ForgetWalletConfirm wallet={wallet} onForget={onClose}>
                 <Button pallet="error" size="sm" variant="fill">
