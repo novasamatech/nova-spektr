@@ -51,7 +51,7 @@ export const KeysList = () => {
               </div>
               <IconButton
                 name="delete"
-                className="ml-2 mr-9 w-max shrink-0 hover:text-text-negative focus:text-text-negative"
+                className="mr-9 ml-2 w-max shrink-0 hover:text-text-negative focus:text-text-negative"
                 onClick={() => constructorModel.events.keyRemoved(index)}
               />
             </li>

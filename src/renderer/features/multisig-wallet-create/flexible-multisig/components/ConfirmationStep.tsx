@@ -29,11 +29,11 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
       <Modal.Content>
         <section className="relative flex h-full w-modal flex-1 flex-col px-5">
           <div className="flex max-h-full flex-1 flex-col">
-            <div className="mb-6 mt-4 flex flex-col items-center">
+            <div className="mt-4 mb-6 flex flex-col items-center">
               <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
             </div>
             <SmallTitleText>1. {t('createMultisigAccount.flexibleMultisig.createPureProxy')}</SmallTitleText>
-            <FootnoteText className="mb-4 mt-2 text-text-tertiary">
+            <FootnoteText className="mt-2 mb-4 text-text-tertiary">
               {t('createMultisigAccount.flexibleMultisig.pureProxyConfirm')}
             </FootnoteText>
             {nullable(proxyAddress) &&
@@ -64,7 +64,9 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
               </Box>
             )}
             <Separator className="my-4" />
-            <SmallTitleText>2. {t('createMultisigAccount.flexibleMultisig.assignControl')}</SmallTitleText>
+            <SmallTitleText className={nonNullable(proxyAddress) ? 'text-text-primary' : 'text-text-secondary'}>
+              2. {t('createMultisigAccount.flexibleMultisig.assignControl')}
+            </SmallTitleText>
             <FootnoteText className="mt-2 text-text-tertiary">
               {t('createMultisigAccount.flexibleMultisig.assignControlDescription')}
             </FootnoteText>

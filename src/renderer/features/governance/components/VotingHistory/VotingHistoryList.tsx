@@ -72,7 +72,7 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
               return (
                 <div
                   key={`${voter}-${balance.toString()}-${conviction}`}
-                  className="grid h-11 grid-cols-[224px,1fr] items-center gap-x-3 px-2"
+                  className="grid h-11 grid-cols-[224px_1fr] items-center gap-x-3 px-2"
                 >
                   <Account
                     hideAddress

@@ -25,12 +25,12 @@ export const WalletCardMd = ({ wallet, description, meta, children, onClick }: P
   return (
     <div
       className={cnTw(
-        'group relative flex w-full items-center rounded transition-colors',
+        'group relative flex w-full items-center rounded-sm transition-colors',
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
       )}
     >
       <button
-        className={cnTw('flex w-full items-center gap-x-2 rounded px-2 py-1.5', {
+        className={cnTw('flex w-full items-center gap-x-2 rounded-sm px-2 py-1.5', {
           'pointer-events-none': nullable(onClick),
           'pr-6': nonNullable(children),
         })}
@@ -59,8 +59,8 @@ export const WalletCardMd = ({ wallet, description, meta, children, onClick }: P
 
       <div
         className={cnTw(
-          'absolute right-2 top-1/2 flex -translate-y-1/2 opacity-0 transition-opacity',
-          'focus:opacity-100 group-focus-within:opacity-100 group-hover:opacity-100',
+          'absolute top-1/2 right-2 flex -translate-y-1/2 opacity-0 transition-opacity',
+          'group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100',
         )}
       >
         {children}

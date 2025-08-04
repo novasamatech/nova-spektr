@@ -42,7 +42,7 @@ export const EvidenceFormModal = memo(({ isOpen, wish, children, onToggle }: Pro
         <Separator />
       </Modal.HeaderContent>
       <Modal.Content>
-        <form className="flex flex-grow flex-col" onSubmit={handleSubmit}>
+        <form className="flex grow flex-col" onSubmit={handleSubmit}>
           <Box padding={[4, 5]} gap={4}>
             <Alert active={!!uploadError} variant="error" title={t('fellowship.salary.evidenceForm.uploadError')}>
               <Alert.Item withDot={false}>{uploadError}</Alert.Item>

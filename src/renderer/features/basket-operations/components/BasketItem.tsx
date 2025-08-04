@@ -41,7 +41,7 @@ export const BasketItem = ({ transaction, selected, onSelect, onClick }: Props) 
   return (
     <li
       key={transaction.id}
-      className="grid h-[52px] grid-cols-[40px,533px,124px,auto] items-stretch rounded-md bg-block-background-default"
+      className="grid h-[52px] grid-cols-[40px_533px_124px_auto] items-stretch rounded-md bg-block-background-default"
     >
       <div className="flex items-center justify-center px-3">
         <Checkbox checked={selected} disabled={disabled} onClick={() => onSelect(transaction)} />

@@ -199,9 +199,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       </div>
 
       <div className="relative flex h-full w-[472px] flex-col overflow-hidden rounded-r-lg border-l pt-4">
-        <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={onClose} />
+        <IconButton name="close" size={20} className="absolute top-3 right-3 m-1" onClick={onClose} />
 
-        <div className="mb-6 mt-[52px] flex items-center justify-between px-5">
+        <div className="mt-[52px] mb-6 flex items-center justify-between px-5">
           <div className="flex items-center gap-x-1.5">
             <SmallTitleText>{t('onboarding.vault.vaultTitle')}</SmallTitleText>
             <VaultInfoPopover />
@@ -222,7 +222,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
           </HelpText>
         </div>
 
-        <div className="flex min-h-0 flex-col pb-3 pl-3 pr-3.5">
+        <div className="flex min-h-0 flex-col pr-3.5 pb-3 pl-3">
           <div className="flex w-full items-center justify-between gap-2 pb-4">
             <Popover align="end">
               <Popover.Trigger>
@@ -254,7 +254,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
           <FootnoteText className="ml-9 pl-2 text-text-tertiary">{t('onboarding.vault.accountTitle')}</FootnoteText>
 
           <ScrollArea>
-            <div className="ml-9 mr-1 flex flex-col gap-2 divide-y">
+            <div className="mr-1 ml-9 flex flex-col gap-2 divide-y">
               {chainElements.map(([chainId, chainAccounts]) => {
                 if (chainAccounts.length === 0) return;
 

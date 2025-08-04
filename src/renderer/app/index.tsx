@@ -71,7 +71,7 @@ const Root = () => {
 
   return (
     <ThemeProvider theme="light" iconStyle="colored">
-      <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <HashRouter>
         <I18Provider>
           <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
             <Suspense fallback={splashScreen}>

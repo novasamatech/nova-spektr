@@ -52,7 +52,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
             <Conviction />
           </form>
 
-          <div className="flex flex-1 flex-col justify-end gap-y-6 pb-4 pt-6">
+          <div className="flex flex-1 flex-col justify-end gap-y-6 pt-6 pb-4">
             <FeeSection />
           </div>
         </div>

@@ -116,7 +116,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
                     </Tooltip.Trigger>
                     <Tooltip.Content>{t('balances.verificationTooltip')}</Tooltip.Content>
                   </Tooltip>
-                  <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
+                  <CaptionText className="text-inherit uppercase">{t('balances.verificationFailedLabel')}</CaptionText>
                 </div>
               )}
             </div>

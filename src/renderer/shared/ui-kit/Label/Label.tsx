@@ -16,14 +16,13 @@ export type LabelVariant =
 
 type Props = PropsWithChildren<{
   variant: LabelVariant;
-  className?: string;
 }>;
 
-export const Label = ({ variant, children, className }: Props) => {
+export const Label = ({ variant, children }: Props) => {
   return (
     <span
       className={cnTw(
-        'flex h-fit w-fit max-w-full shrink-0 select-none truncate rounded-2xl px-2 py-1 text-caption uppercase',
+        'flex h-fit w-fit max-w-full shrink-0 truncate rounded-2xl px-2 py-1 text-caption uppercase select-none',
         {
           ['bg-badge-red-background-default text-text-negative']: variant === 'red',
           ['bg-label-background-red text-white']: variant === 'darkRed',
@@ -36,7 +35,6 @@ export const Label = ({ variant, children, className }: Props) => {
           ['bg-label-background-gray text-white']: variant === 'darkGray',
           ['bg-input-background-disabled text-text-secondary']: variant === 'gray',
         },
-        className,
       )}
     >
       <span className="truncate">{children}</span>

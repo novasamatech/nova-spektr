@@ -115,7 +115,7 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
       {signerWallet && (
         <div className="mb-1 flex h-8 w-full items-center justify-center">
           <div className="flex h-full items-center justify-center gap-x-0.5">
-            <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
+            <FootnoteText className="whitespace-nowrap text-text-secondary">{t('signing.signer')}</FootnoteText>
 
             <div className="flex w-full items-center gap-x-2 px-2">
               <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />

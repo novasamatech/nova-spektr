@@ -76,7 +76,7 @@ export const ShardedList = ({
             onChange={selectAllShards}
             onClick={(event) => event.stopPropagation()}
           />
-          <div className="grid grid-cols-[174px,104px,104px] items-center gap-x-6">
+          <div className="grid grid-cols-[174px_104px_104px] items-center gap-x-6">
             <div className="flex items-center gap-x-2">
               <FootnoteText className="h-5 rounded-full bg-input-background-disabled px-2 py-px text-text-secondary">
                 {shardsStake.length}

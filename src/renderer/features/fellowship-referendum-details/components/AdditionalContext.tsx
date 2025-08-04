@@ -1,10 +1,10 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon, Markdown } from '@/shared/ui';
+import { Icon } from '@/shared/ui';
 import { FootnoteText, SmallTitleText, TitleText } from '@/shared/ui/Typography';
 import { Account } from '@/shared/ui-entities';
-import { Skeleton } from '@/shared/ui-kit';
+import { Markdown, Skeleton } from '@/shared/ui-kit';
 import { Box } from '@/shared/ui-kit/Box/Box';
 import { identityService } from '@/domains/network';
 import { details } from '../model/details';

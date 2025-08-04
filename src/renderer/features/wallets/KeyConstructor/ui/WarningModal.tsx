@@ -16,7 +16,7 @@ export const WarningModal = ({ isOpen, onClose, onConfirm }: Props) => {
       title={<SmallTitleText>{t('dynamicDerivations.keysConstructor.warnModalTitle')}</SmallTitleText>}
       onClose={onClose}
     >
-      <FootnoteText className="pb-4 pt-2 text-center text-text-tertiary">
+      <FootnoteText className="pt-2 pb-4 text-center text-text-tertiary">
         {t('dynamicDerivations.keysConstructor.warnModalDescription')}
       </FootnoteText>
       <div className="flex items-center justify-center gap-x-4">

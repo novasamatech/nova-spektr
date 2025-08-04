@@ -52,7 +52,7 @@ export const NetworkSelector = ({
               open && SelectButtonStyle[theme].open,
               SelectButtonStyle[theme].disabled,
               'bg-input-background text-text-primary',
-              'rounded border px-3 py-[7px] text-footnote outline-offset-1',
+              'rounded-sm border border-filter-border px-3 py-[7px] text-footnote outline-offset-1',
               'flex w-[248px] items-center justify-between gap-x-2',
             )}
             onClick={scroll}
@@ -75,7 +75,7 @@ export const NetworkSelector = ({
           >
             <div
               ref={ref}
-              className="absolute z-20 mt-1 w-full rounded border border-token-container-border bg-input-background px-1 py-1 shadow-card-shadow"
+              className="absolute z-20 mt-1 w-full rounded-sm border border-token-container-border bg-input-background px-1 py-1 shadow-card-shadow"
             >
               <Listbox.Options className="max-h-64 overflow-y-auto overscroll-contain">
                 {connectionList.map((data) => {

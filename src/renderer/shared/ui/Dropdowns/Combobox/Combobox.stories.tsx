@@ -1,7 +1,7 @@
 import { type Meta, type StoryFn } from '@storybook/react-vite';
 
+import { Identicon } from '@/shared/ui-entities';
 import { Icon } from '../../Icon/Icon';
-import { Identicon } from '../../Identicon/Identicon';
 
 import { Combobox } from './Combobox';
 
@@ -55,6 +55,6 @@ Custom.args = {
   placeholder: 'Select an option',
   value: customOptions[2],
   options: customOptions,
-  suffixElement: <Icon name="warnCutout" className="absolute right-2 top-[9px] text-alert" size={16} />,
+  suffixElement: <Icon name="warnCutout" className="absolute top-[9px] right-2 text-alert" size={16} />,
   onChange: () => {},
 };

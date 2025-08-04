@@ -3,16 +3,9 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import {
-  getNativeAsset,
-  toAddress,
-  toShortAddress,
-  transferableAmount,
-  validateAddress,
-  withdrawableAmount,
-} from '@/shared/lib/utils';
-import { Alert, Button, Combobox, Icon, Identicon, InputHint, Select } from '@/shared/ui';
-import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
+import { getNativeAsset, toAddress, toShortAddress, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
+import { Alert, Button, Combobox, InputHint, Select } from '@/shared/ui';
+import { AssetBalance, Identicon, SignatorySelect } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -43,7 +36,7 @@ export const AddProxyForm = () => {
         <ProxyInput />
         <ProxyTypeSelector />
       </form>
-      <div className="flex flex-col gap-y-6 pb-4 pt-6">
+      <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
         <FeeError />
       </div>
@@ -241,11 +234,7 @@ const ProxyInput = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      {validateAddress(delegate.value) ? (
-        <Identicon address={delegate.value} size={20} background={false} canCopy={false} />
-      ) : (
-        <Icon size={20} name="emptyIdenticon" />
-      )}
+      <Identicon address={delegate.value} size={20} background={false} canCopy={false} />
     </div>
   );
 

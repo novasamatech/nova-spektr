@@ -41,7 +41,7 @@ export const VotedByDelegates = ({ asset, identity, delegates, multiplier }: Pro
     return (
       <div className="flex w-full items-center gap-x-1" data-testid={TEST_IDS.GOVERNANCE.PROPOSAL_VOTE_DETAILS}>
         <Icon name="voted" size={16} className="shrink-0 text-icon-alert" />
-        <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-alert">
+        <FootnoteText className="flex items-center gap-x-0.5 truncate text-nowrap whitespace-nowrap text-icon-alert">
           <Trans
             t={t}
             i18nKey={i18nKey[delegate.decision]}
@@ -62,7 +62,7 @@ export const VotedByDelegates = ({ asset, identity, delegates, multiplier }: Pro
     return (
       <div className="flex w-full items-center gap-x-1">
         <Icon name="voted" size={16} className="shrink-0 text-icon-alert" />
-        <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-alert">
+        <FootnoteText className="flex items-center gap-x-0.5 truncate text-nowrap whitespace-nowrap text-icon-alert">
           <Trans
             t={t}
             i18nKey={`governance.${isDelegatesAye ? 'votedAyeByDelegates' : 'votedNayByDelegates'}`}

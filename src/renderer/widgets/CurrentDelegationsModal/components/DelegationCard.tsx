@@ -32,7 +32,7 @@ export const DelegationCard = ({ asset, delegate, votes = [], onClick }: Props) 
   return (
     <button
       className={cnTw(
-        'w-full rounded border border-container-border bg-white transition-shadow',
+        'w-full rounded-sm border border-container-border bg-white transition-shadow',
         'shadow-shadow-1 hover:shadow-shadow-2 focus:shadow-shadow-2',
       )}
       onClick={onClick}
@@ -42,7 +42,7 @@ export const DelegationCard = ({ asset, delegate, votes = [], onClick }: Props) 
         <FootnoteText>{delegate.shortDescription}</FootnoteText>
       </Box>
 
-      <div className="flex flex-col gap-4 divide-divider border-t p-3">
+      <div className="flex flex-col gap-4 border-t border-divider p-3">
         <DetailRow label={t('governance.addDelegation.card.lockedAmount')}>
           {votes.length > 1 && <AssetBalance value={totalVotes} asset={asset} />}
 

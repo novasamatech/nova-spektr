@@ -51,8 +51,8 @@ export const ActivityFeed = () => {
   return (
     <Box>
       <Box direction="row" padding={[5.5, 5]} gap={2}>
-        <span className="text-caption uppercase text-text-secondary">{t('fellowship.profile.activity')}</span>
-        <span className="text-caption uppercase text-text-tertiary">{list.length}</span>
+        <span className="text-caption text-text-secondary uppercase">{t('fellowship.profile.activity')}</span>
+        <span className="text-caption text-text-tertiary uppercase">{list.length}</span>
       </Box>
       <ScrollArea>
         <Box padding={[0, 3, 5]} gap={6}>

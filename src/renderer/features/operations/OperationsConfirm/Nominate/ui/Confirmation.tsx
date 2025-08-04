@@ -52,7 +52,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   return (
     <>
-      <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+      <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
         <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="changeValidatorsConfirm" size={60} />
         </div>
@@ -68,10 +68,10 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <DetailRow label={t('staking.confirmation.validatorsLabel')}>
             <button
               type="button"
-              className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
+              className="group flex items-center gap-x-1 rounded-sm px-2 py-1 hover:bg-action-background-hover"
               onClick={toggleValidators}
             >
-              <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+              <div className="rounded-[30px] bg-icon-accent px-1.5 py-px">
                 <CaptionText className="text-white">{validators.length}</CaptionText>
               </div>
               <Icon className="group-hover:text-icon-hover" name="info" size={16} />

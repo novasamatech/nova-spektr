@@ -21,7 +21,6 @@ import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent();
 const flowFinished = createEvent();
 const flowClosed = createEvent();
 const txSaved = createEvent();
@@ -31,7 +30,7 @@ const $step = restore(stepChanged, Step.NONE);
 const $addProxyStore = createStore<AddProxyStore | null>(null).reset(flowFinished);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(formModel.flowStarted);
 const $chain = $addProxyStore.map((store) => store?.chain ?? null);
 
 const $initiatorWallet = combine(
@@ -47,21 +46,16 @@ const $initiatorWallet = combine(
 );
 
 sample({
-  clock: flowStarted,
+  clock: formModel.flowStarted,
   fn: () => Step.INIT,
   target: stepChanged,
 });
 
 sample({
-  clock: flowStarted,
+  clock: formModel.flowStarted,
   source: formModel.$wallet,
   filter: (wallet) => nonNullable(wallet),
   target: balanceSubModel.fetchWallet,
-});
-
-sample({
-  clock: flowStarted,
-  target: formModel.formInitiated,
 });
 
 sample({
@@ -236,7 +230,7 @@ export const addProxyModel = {
   $initiatorWallet,
 
   events: {
-    flowStarted,
+    flowStarted: formModel.flowStarted,
     stepChanged,
     txSaved,
   },

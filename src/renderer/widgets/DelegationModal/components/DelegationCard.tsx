@@ -18,7 +18,7 @@ export const DelegationCard = ({ asset, delegate, onClick }: Props) => {
   return (
     <button
       className={cnTw(
-        'w-full rounded border border-container-border bg-white p-4 transition-shadow',
+        'w-full rounded-sm border border-container-border bg-white p-4 transition-shadow',
         'shadow-shadow-1 hover:shadow-shadow-2 focus:shadow-shadow-2',
       )}
       onClick={onClick}
@@ -28,7 +28,7 @@ export const DelegationCard = ({ asset, delegate, onClick }: Props) => {
         <div className="flex flex-col gap-2.5">
           <FootnoteText>{delegate.shortDescription}</FootnoteText>
 
-          <div className="grid grid-cols-[1fr,100px,128px] gap-x-5">
+          <div className="grid grid-cols-[1fr_100px_128px] gap-x-5">
             <div className="flex flex-col gap-1">
               <FootnoteText className="text-text-tertiary">{t('governance.addDelegation.card.votes')}</FootnoteText>
               <BodyText>
@@ -36,14 +36,14 @@ export const DelegationCard = ({ asset, delegate, onClick }: Props) => {
               </BodyText>
             </div>
 
-            <div className="flex flex-col gap-1 divide-divider border-l pl-5">
+            <div className="flex flex-col gap-1 border-l border-divider pl-5">
               <FootnoteText className="text-text-tertiary">
                 {t('governance.addDelegation.card.delegations')}
               </FootnoteText>
               <BodyText>{delegate.delegators || '0'}</BodyText>
             </div>
 
-            <div className="flex flex-col gap-1 divide-divider border-l pl-5">
+            <div className="flex flex-col gap-1 border-l border-divider pl-5">
               <FootnoteText className="text-text-tertiary">{t('governance.addDelegation.card.voted')}</FootnoteText>
               <BodyText>{delegate.delegateVotesMonth || '0'}</BodyText>
             </div>

@@ -93,7 +93,7 @@ export const MultiSelect = ({
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
               'inline-flex w-full items-center justify-between gap-x-2 py-2 pr-2 text-start',
-              'rounded border bg-input-background px-3 py-[7px]',
+              'rounded-sm border bg-input-background px-3 py-[7px]',
               'text-footnote text-text-primary outline-offset-1',
             )}
             tabIndex={tabIndex}

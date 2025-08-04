@@ -12,7 +12,7 @@ export const ListItemPlaceholder = () => {
         <HeaderTitleText>
           <Skeleton width="28ch" height="22px" />
         </HeaderTitleText>
-        <div className="h-full w-[1px] bg-divider" />
+        <div className="h-full w-px bg-divider" />
         <HeaderTitleText>
           <Skeleton width="28ch" height="22px" />
         </HeaderTitleText>

@@ -2,8 +2,8 @@ import { Trans } from 'react-i18next';
 
 import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Alert, FootnoteText, Identicon } from '@/shared/ui';
-import { Hash } from '@/shared/ui-entities';
+import { Alert, FootnoteText } from '@/shared/ui';
+import { Hash, Identicon } from '@/shared/ui-entities';
 
 type Props = {
   address: Address;

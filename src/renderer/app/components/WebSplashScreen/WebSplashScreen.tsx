@@ -64,7 +64,7 @@ export const WebSplashScreen = () => {
             </div>
             <div className="flex w-[500px] flex-col gap-7.5 leading-[normal]">
               {/* eslint-disable-next-line i18next/no-literal-string */}
-              <p className="text-[19.6px] font-bold uppercase tracking-[5px] text-text-secondary">
+              <p className="text-[19.6px] font-bold tracking-[5px] text-text-secondary uppercase">
                 {t('splashscreen.title')}
               </p>
               <p className="text-[46.5px] font-bold text-black">{t(screen.title)}</p>

@@ -92,7 +92,7 @@ export const Governance = () => {
         <Box horizontalAlign="center" height="100%" padding={[6, 0]}>
           <Box width="736px" height="100%" gap={5}>
             <div className="flex gap-x-3">
-              <Plate className="h-[90px] w-[240px] px-4 pb-4.5 pt-3">
+              <Plate className="h-[90px] w-[240px] px-4 pt-3 pb-4.5">
                 <NetworkSelector />
               </Plate>
               {isApiConnected && (
