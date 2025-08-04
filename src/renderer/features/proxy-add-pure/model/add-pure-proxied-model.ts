@@ -37,13 +37,12 @@ import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
 const $step = restore(stepChanged, Step.NONE);
 
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(formModel.flowStarted);
 
 const $initiatorWallet = combine(
   {
@@ -90,20 +89,20 @@ const getPureProxyFx = createEffect(
 );
 
 sample({
-  clock: flowStarted,
+  clock: formModel.flowStarted,
   fn: () => Step.INIT,
   target: stepChanged,
 });
 
 sample({
-  clock: flowStarted,
+  clock: formModel.flowStarted,
   source: formModel.$wallet,
   filter: (wallet) => nonNullable(wallet),
   target: balanceSubModel.fetchWallet,
 });
 
 sample({
-  clock: flowStarted,
+  clock: formModel.flowStarted,
   target: formModel.formInitiated,
 });
 
@@ -294,7 +293,7 @@ sample({
 sample({
   clock: combineEvents({
     events: [getPureProxyFx.doneData, walletModel.events.walletCreatedDone],
-    reset: flowStarted,
+    reset: formModel.flowStarted,
   }),
   source: {
     chain: formModel.form.fields.chain.$value,
@@ -379,7 +378,7 @@ export const addPureProxiedModel = {
   $initiatorWallet,
 
   events: {
-    flowStarted,
+    flowStarted: formModel.flowStarted,
     stepChanged,
     txSaved,
   },

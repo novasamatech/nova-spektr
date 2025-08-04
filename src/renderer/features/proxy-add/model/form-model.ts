@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
@@ -57,8 +56,7 @@ type FormSubmitEvent = {
     proxyNumber: number;
   };
 };
-
-const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
+const flowStarted = createEvent<Wallet>();
 
 const formInitiated = createEvent();
 const formSubmitted = createEvent<FormSubmitEvent>();
@@ -67,7 +65,7 @@ const proxyQueryChanged = createEvent<string>();
 const proxyDepositChanged = createEvent<string>();
 const isProxyDepositLoadingChanged = createEvent<boolean>();
 
-const $wallet = flow.state.map(({ wallet }) => wallet);
+const $wallet = restore(flowStarted, null);
 
 const $oldProxyDeposit = createStore<string>('0');
 
@@ -407,6 +405,11 @@ const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
 // Fields connections
 
 sample({
+  clock: flowStarted,
+  target: formInitiated,
+});
+
+sample({
   clock: formInitiated,
   target: [form.reset, $proxyQuery.reinit],
 });
@@ -568,12 +571,11 @@ export const formModel = {
   $pendingFee,
   $route,
 
+  flowStarted,
   $api,
   $isMultisig,
   $isChainConnected,
   $canSubmit,
-
-  flow,
 
   formInitiated,
   proxyQueryChanged,

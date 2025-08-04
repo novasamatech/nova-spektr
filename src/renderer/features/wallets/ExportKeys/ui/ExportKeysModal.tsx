@@ -1,23 +1,23 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
+import { type PropsWithChildren, useMemo, useState } from 'react';
 
-import { type PolkadotVaultWallet, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type PolkadotVaultWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, SmallTitleText } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { OperationResult, QrDerivationsExportGenerator } from '@/entities/transaction';
+import { walletDetailsUtils } from '@/features/wallet-details';
 import { exportKeysUtils } from '../lib/export-keys-utils';
 
-type Props = {
-  isOpen: boolean;
+type Props = PropsWithChildren<{
   wallet: PolkadotVaultWallet;
-  accounts: (VaultChainAccount | VaultShardAccount[])[];
-  onClose: () => void;
-};
+}>;
 
-export const ExportKeysModal = ({ isOpen, wallet, accounts, onClose }: Props) => {
+export const ExportKeysModal = ({ wallet, children }: Props) => {
   const { t } = useI18n();
+
+  const [isOpen, setIsOpen] = useState(false);
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false);
   const chains = useUnit(networkModel.$chains);
 
@@ -26,11 +26,19 @@ export const ExportKeysModal = ({ isOpen, wallet, accounts, onClose }: Props) =>
     setDownloadModalOpen(true);
   };
 
+  const accounts = useMemo(() => {
+    const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
+    //todo sort these accounts
+
+    return Object.values(accountsMap).flat();
+  }, [wallet]);
+
   return (
-    <Modal isOpen={isOpen} size="md" height="fit" onToggle={onClose}>
+    <Modal size="md" height="fit" isOpen={isOpen} onToggle={setIsOpen}>
+      <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('dynamicDerivations.exportKeys.modalTitle')}</Modal.Title>
       <Modal.Content>
-        <Box direction="column" gap={6} horizontalAlign="center">
+        <Box direction="column" gap={6} padding={3} horizontalAlign="center">
           <SmallTitleText>{t('dynamicDerivations.exportKeys.qrCodeTitle')}</SmallTitleText>
           <QrDerivationsExportGenerator
             walletName={wallet.name}
