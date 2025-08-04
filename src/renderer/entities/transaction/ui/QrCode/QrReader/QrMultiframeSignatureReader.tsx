@@ -5,7 +5,7 @@ import { useRef } from 'react';
 
 import { type HexString } from '@/shared/core';
 import { QR_READER_ERRORS, QrReader, type QrReaderCamera, QrReaderErrorCode } from '@/shared/ui-kit';
-import { CRYPTO_SR25519 } from '../QrGenerator/common/constants';
+import { cryptoTypeToMultisignerIndex } from '../QrGenerator/common/utils';
 import { FRAME_KEY, SIGNED_TRANSACTION_BULK } from '../common/constants';
 import { QR_READER_DECODE_ERRORS } from '../common/errors';
 import { DecodeQrError, type ErrorObject, type Progress } from '../common/types';
@@ -13,8 +13,10 @@ import { DecodeQrError, type ErrorObject, type Progress } from '../common/types'
 import { RaptorFrame } from './RaptorFrame';
 import { Status, isQrErrorObject } from './scannerUtils';
 
-const makeResultPayload = <T extends Uint8Array[]>(data?: T): HexString[] => {
-  return (data || []).map((s) => u8aToHex(new Uint8Array([...CRYPTO_SR25519, ...s])));
+const makeResultPayload = (payload?: ReturnType<typeof SIGNED_TRANSACTION_BULK.decode>['payload']) => {
+  return (payload || []).map((item) =>
+    u8aToHex(new Uint8Array([cryptoTypeToMultisignerIndex(item.MultiSignature), ...item.signature])),
+  );
 };
 
 const createFrame = (metadata?: Uint8Array[]): RaptorFrame => {
@@ -65,7 +67,7 @@ export const QrMultiframeSignatureReader = ({
       }
 
       isComplete.current = true;
-      onResult?.(makeResultPayload(result?.payload.map((item) => item.signature)));
+      onResult?.(makeResultPayload(result?.payload));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
       onProgress?.({ decoded: 1, total: frameData.total });
@@ -126,7 +128,7 @@ export const QrMultiframeSignatureReader = ({
 
       isComplete.current = true;
 
-      onResult?.(makeResultPayload<Uint8Array[]>(result?.payload.map((item) => item.signature)));
+      onResult?.(makeResultPayload(result?.payload));
       break;
     }
   };

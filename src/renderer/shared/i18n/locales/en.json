@@ -1801,6 +1801,8 @@
     "parsingCount": "{current} of {total}",
     "parsingLabel": "Parsing data",
     "qrCountdownTitle": "QR code valid for",
+    "qrLegacyVaultTitle": "Legacy",
+    "qrNewVaultTitle": "New (Vault v7+)",
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",
