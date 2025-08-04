@@ -41,7 +41,7 @@ export const WalletCardMd = ({ wallet, description, meta, children, onClick }: P
           <div className="flex items-center gap-x-2">
             <BodyText
               className={cnTw(
-                'text-text-secondary truncate transition-colors',
+                'truncate text-text-secondary transition-colors',
                 'group-focus-within:text-text-primary group-hover:text-text-primary',
               )}
             >

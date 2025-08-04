@@ -49,7 +49,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
         pallet="primary"
         size="sm"
         suffixElement={<Icon name={isAdvancedShown ? 'up' : 'down'} size={16} />}
-        className="text-action-text-default hover:text-action-text-default -ml-2 w-fit"
+        className="-ml-2 w-fit text-action-text-default hover:text-action-text-default"
         onClick={toggleAdvanced}
       >
         {t('operation.advanced')}
@@ -108,7 +108,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
               <AssetBalance
                 value={deposit}
                 asset={nativeAsset}
-                className="text-footnote text-text-secondary py-[3px]"
+                className="py-[3px] text-footnote text-text-secondary"
               />
             </DetailRow>
           )}

@@ -63,7 +63,7 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
           ) : (
             <>
               <Box shrink={0} padding={[0, 5, 2]}>
-                <FootnoteText className="text-text-tertiary px-2">
+                <FootnoteText className="px-2 text-text-tertiary">
                   {t('fellowship.members.modalAccountTitle')}
                 </FootnoteText>
               </Box>

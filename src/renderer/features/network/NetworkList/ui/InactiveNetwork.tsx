@@ -15,7 +15,7 @@ export const InactiveNetwork = ({ networkItem, children }: PropsWithChildren<Pro
       <div className="mr-auto ml-2 flex flex-col overflow-hidden pr-2">
         <BodyText className="truncate">{networkItem.name}</BodyText>
         {networkItem.connection.activeNode && (
-          <HelpText className="text-text-tertiary truncate">{networkItem.connection.activeNode.url}</HelpText>
+          <HelpText className="truncate text-text-tertiary">{networkItem.connection.activeNode.url}</HelpText>
         )}
       </div>
       {children}

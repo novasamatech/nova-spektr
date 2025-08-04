@@ -26,8 +26,8 @@ importDBFeature.inject(onboardingActionsSlot, {
 
     return (
       <ImportDBModal>
-        <div className="border-alert bg-alert-background-warning rounded-lg border p-2">
-          <BodyText className="text-alert mb-2 flex items-center justify-center gap-1">
+        <div className="rounded-lg border border-alert bg-alert-background-warning p-2">
+          <BodyText className="mb-2 flex items-center justify-center gap-1 text-alert">
             <Icon name="warn" size={12} className="text-inherit" />
             {/* eslint-disable i18next/no-literal-string */}
             <span>DEV MODE</span>

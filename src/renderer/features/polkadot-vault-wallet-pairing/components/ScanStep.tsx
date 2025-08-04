@@ -36,7 +36,7 @@ export const ScanStep = ({ onBack, onComplete }: Props) => {
         </Modal.Footer>
       </div>
 
-      <div className="animate-in fade-in flex-1 bg-black duration-500">
+      <div className="flex-1 bg-black duration-500 animate-in fade-in">
         <video className="pointer-events-none h-full object-contain" autoPlay loop>
           <source src={onboarding_tutorial_webm} type="video/webm" />
           <source src={onboarding_tutorial} type="video/mp4" />

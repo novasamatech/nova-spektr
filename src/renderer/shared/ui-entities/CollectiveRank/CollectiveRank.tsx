@@ -63,7 +63,7 @@ export const Label = ({ variant, children }: PropsWithChildren<{ variant: Varian
   return (
     <span
       className={cnTw(
-        'text-caption flex h-fit w-fit max-w-full shrink-0 truncate rounded-sm px-1 py-1 uppercase select-none',
+        'flex h-fit w-fit max-w-full shrink-0 truncate rounded-sm px-1 py-1 text-caption uppercase select-none',
         {
           ['bg-badge-red-background-default text-text-negative']: variant === 'red',
           ['bg-badge-orange-background-default text-text-warning']: variant === 'orange',

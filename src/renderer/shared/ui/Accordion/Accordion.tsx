@@ -32,7 +32,7 @@ const Button = forwardRef<HTMLButtonElement, PropsWithChildren<ButtonProps>>(
       <Disclosure.Button
         ref={ref}
         className={cnTw(
-          'group hover:bg-action-background-hover flex w-full items-center justify-between gap-x-2 rounded-sm',
+          'group flex w-full items-center justify-between gap-x-2 rounded-sm hover:bg-action-background-hover',
           buttonClass,
         )}
         onClick={onClick}

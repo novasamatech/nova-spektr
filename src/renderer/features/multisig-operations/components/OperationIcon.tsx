@@ -11,7 +11,7 @@ type Props = {
 export const OperationIcon = ({ operation }: Props) => {
   const icon = useTransformer(operationIconTransformer, { operation });
   return (
-    <div className="border-token-container-border box-content flex h-7 w-7 shrink-0 items-center justify-center rounded-full border">
+    <div className="box-content flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-token-container-border">
       <Icon name={icon || 'unknownMst'} size={20} />
     </div>
   );

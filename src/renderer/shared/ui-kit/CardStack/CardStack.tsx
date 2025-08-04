@@ -58,21 +58,21 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
     <RadixAccordion.Header asChild>
       <div className={cnTw('card-stack-header-wrap relative z-10 block w-full', sticky && open && 'sticky top-2 z-10')}>
         {sticky && open && (
-          <div className="card-stack-sticky-gap bg-top-nav-bar-background absolute -top-2 right-0 left-0 -z-10 h-4 w-full" />
+          <div className="card-stack-sticky-gap absolute -top-2 right-0 left-0 -z-10 h-4 w-full bg-top-nav-bar-background" />
         )}
         <RadixAccordion.Trigger
           className={cnTw(
-            'card-stack-trigger group bg-row-background flex w-full items-center gap-x-2 py-1 pr-2 pl-3',
-            'shadow-stack hover:shadow-stack-hover focus:shadow-stack-hover outline-hidden! data-[state=open]:shadow-none',
+            'card-stack-trigger group flex w-full items-center gap-x-2 bg-row-background py-1 pr-2 pl-3',
+            'shadow-stack outline-hidden! hover:shadow-stack-hover focus:shadow-stack-hover data-[state=open]:shadow-none',
             'transition-all duration-300',
             'data-[state=closed]:rounded-md data-[state=open]:rounded-t-md',
-            'data-[state=open]:border-divider border-b border-transparent',
+            'border-b border-transparent data-[state=open]:border-divider',
           )}
         >
           <Icon
             className={cnTw(
               'transition-all duration-100 group-data-[state=open]:rotate-90',
-              'text-icon-default group-hover:text-icon-hover group-focus:text-icon-hover shrink-0',
+              'shrink-0 text-icon-default group-hover:text-icon-hover group-focus:text-icon-hover',
             )}
             name="shelfRight"
             size={16}
@@ -120,7 +120,7 @@ const Content = ({ children }: PropsWithChildren) => {
     <div className="relative min-h-1.5 overflow-hidden">
       <div
         className={cnTw(
-          'card-stack-plate shadow-stack absolute top-0 left-1/2 h-full w-full -translate-x-1/2 rounded-b-md bg-white',
+          'card-stack-plate absolute top-0 left-1/2 h-full w-full -translate-x-1/2 rounded-b-md bg-white shadow-stack',
           'group-data-[state=open]/stack:shadow-none',
         )}
       />

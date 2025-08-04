@@ -17,9 +17,9 @@ export const KeysList = () => {
   if (!hasKeys) {
     return (
       <div className="flex h-full flex-col items-center justify-center">
-        <Icon name="document" size={64} className="text-icon-default mb-6" />
+        <Icon name="document" size={64} className="mb-6 text-icon-default" />
         <SmallTitleText>{t('dynamicDerivations.keysConstructor.emptyListTitle')}</SmallTitleText>
-        <FootnoteText className="text-text-tertiary mt-2">
+        <FootnoteText className="mt-2 text-text-tertiary">
           {t('dynamicDerivations.keysConstructor.emptyListDescription')}
         </FootnoteText>
       </div>
@@ -44,14 +44,14 @@ export const KeysList = () => {
                 <ChainIcon chain={chains[keyData.chainId]} size={16} />
               </div>
               <div className="flex flex-1 flex-col gap-y-1 overflow-hidden py-1.5">
-                <FootnoteText className="text-text-primary truncate">{keyData.name}</FootnoteText>
-                <FootnoteText className="text-text-secondary truncate">
+                <FootnoteText className="truncate text-text-primary">{keyData.name}</FootnoteText>
+                <FootnoteText className="truncate text-text-secondary">
                   {accountUtils.getDerivationPath(key)}
                 </FootnoteText>
               </div>
               <IconButton
                 name="delete"
-                className="hover:text-text-negative focus:text-text-negative mr-9 ml-2 w-max shrink-0"
+                className="mr-9 ml-2 w-max shrink-0 hover:text-text-negative focus:text-text-negative"
                 onClick={() => constructorModel.events.keyRemoved(index)}
               />
             </li>

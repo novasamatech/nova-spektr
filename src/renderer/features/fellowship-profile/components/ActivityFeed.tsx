@@ -59,7 +59,7 @@ export const ActivityFeed = () => {
           {list.map(x => (
             <div key={`${x.type}-${x.block}`} className="flex px-2">
               <FootnoteText className="grow items-center">{getMessage(t, x)}</FootnoteText>
-              <HelpText className="text-text-secondary max-w-[40%] shrink-0 text-end">
+              <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
                 <Duration seconds={(now - x.at.getTime()) / 1000} />
               </HelpText>
             </div>

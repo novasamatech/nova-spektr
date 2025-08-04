@@ -19,7 +19,7 @@ export const MultisigCreatedNotification = ({
     <div className="flex gap-x-2">
       <div className="relative">
         <WalletIcon type={WalletType.MULTISIG} />
-        <div className="bg-icon-positive absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white" />
+        <div className="absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white bg-icon-positive" />
       </div>
 
       <div className="flex flex-col gap-y-2">

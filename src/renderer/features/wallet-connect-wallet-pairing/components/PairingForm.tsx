@@ -120,7 +120,7 @@ export const PairingForm = ({ type, onBack }: Props) => {
         </div>
       </div>
 
-      <div className="bg-input-background-disabled flex w-[472px] flex-col gap-y-6 rounded-r-lg py-4">
+      <div className="flex w-[472px] flex-col gap-y-6 rounded-r-lg bg-input-background-disabled py-4">
         <SmallTitleText className="mt-15 px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
         <MultiAccountsList accounts={accounts} className="h-[416px]" />
       </div>

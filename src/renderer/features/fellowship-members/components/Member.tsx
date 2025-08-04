@@ -19,7 +19,7 @@ export const Member = ({ item, chain }: Props) => {
   });
 
   return (
-    <div className="text-text-secondary hover:bg-action-background-hover hover:text-text-primary rounded-md">
+    <div className="rounded-md text-text-secondary hover:bg-action-background-hover hover:text-text-primary">
       <RankedAccount
         chain={chain}
         rank={item.rank}

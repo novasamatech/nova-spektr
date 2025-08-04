@@ -80,7 +80,7 @@ const Button = ({ name, placeholder, valueNode, testId }: TriggerProps) => {
       name={name}
       className={cnTw(
         'relative flex w-full items-center pr-6 pl-[11px]',
-        'text-footnote rounded-sm border outline-offset-1',
+        'rounded-sm border text-footnote outline-offset-1',
         'enabled:hover:shadow-card-shadow',
         'data-[state=open]:border-active-container-border',
         {
@@ -132,7 +132,7 @@ const Content = ({ children }: PropsWithChildren) => {
             className={cnTw(
               'z-50 flex flex-col',
               'h-max max-h-(--radix-popper-available-height) min-w-20',
-              'animate-in fade-in zoom-in-95 origin-(--radix-popper-transform-origin) overflow-hidden duration-100',
+              'origin-(--radix-popper-transform-origin) overflow-hidden duration-100 animate-in fade-in zoom-in-95',
               {
                 'border-border-dark bg-background-dark': theme === 'dark',
               },
@@ -159,7 +159,7 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
   return (
     <RadixSelect.Group className="mb-1 last:mb-0">
       <RadixSelect.Label>
-        <div className="text-help-text text-text-secondary mb-1 px-3 py-1">{title}</div>
+        <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
       </RadixSelect.Label>
       {children}
     </RadixSelect.Group>
@@ -178,8 +178,8 @@ const Item = ({ value, depth, children }: PropsWithChildren<ItemProps>) => {
     <RadixSelect.Item
       value={value}
       className={cnTw(
-        'text-footnote text-text-secondary flex w-full cursor-pointer rounded-sm px-3 py-2 contain-inline-size',
-        'focus:bg-action-background-hover data-highlighted:bg-action-background-hover focus:outline-hidden',
+        'flex w-full cursor-pointer rounded-sm px-3 py-2 text-footnote text-text-secondary contain-inline-size',
+        'focus:bg-action-background-hover focus:outline-hidden data-highlighted:bg-action-background-hover',
         {
           'text-text-tertiary focus:bg-block-background-hover data-highlighted:bg-background-item-hover':
             theme === 'dark',

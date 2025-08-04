@@ -217,7 +217,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         </div>
 
         <div className="mb-6 pl-5">
-          <HelpText className="text-text-tertiary flex items-center gap-1">
+          <HelpText className="flex items-center gap-1 text-text-tertiary">
             <Trans t={t} i18nKey="onboarding.vault.altHint" components={{ button }} />
           </HelpText>
         </div>
@@ -232,7 +232,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
               </Popover.Trigger>
               <Popover.Content>
                 <Box padding={[4, 3]} width="230px">
-                  <FootnoteText className="text-text-tertiary pb-[2px]">
+                  <FootnoteText className="pb-[2px] text-text-tertiary">
                     {t('general.explorers.publicKeyTitle')}
                   </FootnoteText>
                   <Box direction="row" gap={2} verticalAlign="center">
@@ -251,7 +251,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
             </Popover>
           </div>
 
-          <FootnoteText className="text-text-tertiary ml-9 pl-2">{t('onboarding.vault.accountTitle')}</FootnoteText>
+          <FootnoteText className="ml-9 pl-2 text-text-tertiary">{t('onboarding.vault.accountTitle')}</FootnoteText>
 
           <ScrollArea>
             <div className="mr-1 ml-9 flex flex-col gap-2 divide-y">
@@ -280,10 +280,10 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                               </Popover.Trigger>
                               <Popover.Content>
                                 <Box padding={[4, 3]} width="230px">
-                                  <FootnoteText className="text-text-tertiary pb-[2px]">
+                                  <FootnoteText className="pb-[2px] text-text-tertiary">
                                     {t('general.explorers.publicKeyTitle')}
                                   </FootnoteText>
-                                  <HelpText className="text-text-secondary break-all">{derivationPath}</HelpText>
+                                  <HelpText className="break-all text-text-secondary">{derivationPath}</HelpText>
                                 </Box>
                               </Popover.Content>
                             </Popover>

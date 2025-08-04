@@ -19,7 +19,7 @@ const remarkPlugins: Options['remarkPlugins'] = [remarkGfm];
 
 const components: Components = {
   h1: ({ node: _, className, ...props }) => (
-    <h1 className={cnTw('text-header-title border-b pb-2 not-first:mt-6', className)} {...props} />
+    <h1 className={cnTw('border-b pb-2 text-header-title not-first:mt-6', className)} {...props} />
   ),
   h2: ({ node: _, className, ...props }) => (
     <h2 className={cnTw('text-header-title not-first:mt-4', className)} {...props} />
@@ -93,7 +93,7 @@ const components: Components = {
     const [showError, setShowError] = useState(false);
 
     return showError ? (
-      <span className="border-alert-border-negative flex w-fit flex-wrap items-center justify-center rounded-md border p-2 pl-3">
+      <span className="flex w-fit flex-wrap items-center justify-center rounded-md border border-alert-border-negative p-2 pl-3">
         <span className="flex items-center gap-2">
           <Icon className="text-icon-negative" size={16} name="warn" />
           <span>{t('general.image.loadingError')}</span>
@@ -109,7 +109,7 @@ const components: Components = {
   code: ({ node: _, className, ...props }) => {
     return (
       <code
-        className={cnTw('bg-block-background rounded-md border box-decoration-clone px-0.5 leading-none', className)}
+        className={cnTw('rounded-md border bg-block-background box-decoration-clone px-0.5 leading-none', className)}
         {...props}
       />
     );
@@ -142,7 +142,7 @@ export const Markdown = memo(({ compact, cut, children }: Props) => {
 
   const markdown = (
     <div
-      className={cnTw('text-body flex flex-col overflow-hidden whitespace-pre-line', {
+      className={cnTw('flex flex-col overflow-hidden text-body whitespace-pre-line', {
         'gap-3': !compact,
         'gap-0.5': compact,
       })}

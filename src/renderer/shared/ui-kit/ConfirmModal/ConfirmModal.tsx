@@ -40,19 +40,19 @@ const Root = ({
           className={cnTw(
             'absolute inset-0 z-50 flex min-h-full items-center justify-center overflow-hidden p-4',
             'bg-dim-background',
-            'animate-in fade-in duration-300',
+            'duration-300 animate-in fade-in',
           )}
         >
           <AlertDialog.Content
             className={cnTw(
               'flex w-60 flex-col overflow-hidden p-4',
-              'text-body text-center align-middle',
-              'shadow-modal transform rounded-lg bg-white transition-transform',
-              'animate-in fade-in zoom-in-95 duration-200',
+              'text-center align-middle text-body',
+              'transform rounded-lg bg-white shadow-modal transition-transform',
+              'duration-200 animate-in fade-in zoom-in-95',
             )}
           >
             <AlertDialog.Title className="font-manrope text-small-title">{title}</AlertDialog.Title>
-            <AlertDialog.Description className="text-text-tertiary mt-2">
+            <AlertDialog.Description className="mt-2 text-text-tertiary">
               <Box verticalAlign="center" horizontalAlign="center" gap={2} direction="column">
                 {description}
               </Box>

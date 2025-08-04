@@ -62,7 +62,7 @@ const Content = ({ children }: PropsWithChildren) => {
   return (
     <RadixTooltip.Portal container={portalContainer}>
       <RadixTooltip.Content
-        className="bg-switch-background-active text-help-text animate-in fade-in zoom-in-95 z-50 h-fit max-h-(--radix-tooltip-content-available-height) w-fit max-w-48 origin-(--radix-popper-transform-origin) rounded-md px-2 py-1 text-white duration-100"
+        className="z-50 h-fit max-h-(--radix-tooltip-content-available-height) w-fit max-w-48 origin-(--radix-popper-transform-origin) rounded-md bg-switch-background-active px-2 py-1 text-help-text text-white duration-100 animate-in fade-in zoom-in-95"
         side={side}
         align={align}
         arrowPadding={gridSpaceConverter(3)}

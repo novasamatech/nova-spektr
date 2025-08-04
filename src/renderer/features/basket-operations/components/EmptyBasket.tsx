@@ -14,7 +14,7 @@ export const EmptyBasket = ({ text }: Props) => {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-y-4">
       <Graphics name="emptyList" alt={t('basket.noOperationsLabel')} size={178} />
-      <BodyText className="text-text-tertiary w-[300px] text-center">
+      <BodyText className="w-[300px] text-center text-text-tertiary">
         <Trans t={t} i18nKey={text} />
       </BodyText>
     </div>

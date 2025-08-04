@@ -43,7 +43,7 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
         <div className="flex flex-col gap-4 ps-5 pe-3 pb-4">
           <DetailRow
             label={t('governance.advanced.fields.proposer')}
-            className="text-footnote text-text-secondary text-right"
+            className="text-right text-footnote text-text-secondary"
           >
             {submissionDeposit && chain ? (
               <Account accountId={submissionDeposit.who} chain={chain} variant="short" />
@@ -72,7 +72,7 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
 
             {nonNullable(rawProposal) ? (
               <DetailRow label={t('governance.advanced.fields.callHash')}>
-                <div className="text-footnote text-text-secondary flex w-32 items-center gap-1">
+                <div className="flex w-32 items-center gap-1 text-footnote text-text-secondary">
                   <Hash value={rawProposal} variant="short" />
                   <IconButton name="copy" onClick={() => copyToClipboard(rawProposal)} />
                 </div>

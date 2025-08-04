@@ -55,7 +55,7 @@ export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll }
       </RadixScrollArea.Viewport>
       <RadixScrollArea.Scrollbar
         className={cnTw(
-          'animate-in fade-in flex touch-none border-transparent p-px transition-all duration-300 select-none hover:border-(--scrollbar-border) hover:bg-(--scrollbar-bg)',
+          'flex touch-none border-transparent p-px transition-all duration-300 animate-in select-none fade-in hover:border-(--scrollbar-border) hover:bg-(--scrollbar-bg)',
           {
             'border-l hover:px-[3px]': orientation === 'vertical',
             'border-t hover:py-[3px]': orientation === 'horizontal',

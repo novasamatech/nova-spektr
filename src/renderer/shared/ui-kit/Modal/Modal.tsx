@@ -38,16 +38,16 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
           className={cnTw(
             'absolute inset-0 z-50 flex min-h-full items-center justify-center overflow-hidden p-4',
             'bg-dim-background',
-            'animate-in fade-in duration-300',
+            'duration-300 animate-in fade-in',
           )}
         >
           <Dialog.Content
             aria-describedby={undefined}
             className={cnTw(
               'ui-kit-modal-height flex max-w-full min-w-32 flex-col overflow-hidden',
-              'text-body text-left align-middle',
-              'shadow-modal transform rounded-lg bg-white transition-transform',
-              'animate-in fade-in zoom-in-95 duration-200',
+              'text-left align-middle text-body',
+              'transform rounded-lg bg-white shadow-modal transition-transform',
+              'duration-200 animate-in fade-in zoom-in-95',
               {
                 'w-modal-sm': size === 'sm',
                 'w-modal': size === 'md',
@@ -82,7 +82,7 @@ const Title = ({ action, close, children }: TitleProps) => {
   return (
     <Dialog.Title asChild hidden={!headerExist} className={!headerExist ? 'hidden' : ''}>
       <header className="flex w-full items-center justify-between py-3 ps-5 pe-3 contain-inline-size">
-        <h1 className="font-manrope text-header-title text-text-primary truncate py-1 font-bold">{children}</h1>
+        <h1 className="truncate py-1 font-manrope text-header-title font-bold text-text-primary">{children}</h1>
 
         <div className="z-20 flex h-7.5 items-center gap-x-4">
           {action}

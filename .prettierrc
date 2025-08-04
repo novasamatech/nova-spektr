@@ -12,7 +12,7 @@
     "prettier-plugin-css-order",
     "prettier-plugin-tailwindcss"
   ],
-  "tailwindConfig": "./tailwind.config.ts",
+  "tailwindStylesheet": "./src/renderer/app/index.css",
   "tailwindFunctions": [
     "cnTw",
     "tw"

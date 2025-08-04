@@ -76,9 +76,9 @@ export const ReferendumDetailsModal = ({
     <Modal isOpen size="xl" onToggle={closeModal}>
       <Modal.Title close>{t('governance.referendums.referendumTitle', { index: referendum.referendumId })}</Modal.Title>
       <Modal.Content>
-        <section className="w-modal-xl bg-main-app-background flex h-full flex-col">
+        <section className="flex h-full w-modal-xl flex-col bg-main-app-background">
           <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
-            <Plate className="border-filter-border shadow-card-shadow min-h-0 min-w-80 grow basis-[500px] p-6">
+            <Plate className="min-h-0 min-w-80 grow basis-[500px] border-filter-border p-6 shadow-card-shadow">
               <ProposalDescription
                 chainId={chain.chainId}
                 addressPrefix={chain.addressPrefix}

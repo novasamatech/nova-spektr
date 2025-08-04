@@ -20,7 +20,7 @@ export const WalletCardLg = ({ wallet, description, additionalInfo, children, wi
       </div>
       <div className="flex min-w-0 flex-col">
         {!withoutName && (
-          <HeadlineText className="text-text-primary ml-3 truncate" as="h3">
+          <HeadlineText className="ml-3 truncate text-text-primary" as="h3">
             {wallet.name}
           </HeadlineText>
         )}

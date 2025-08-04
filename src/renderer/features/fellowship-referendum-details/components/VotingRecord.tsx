@@ -67,7 +67,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
                 <SmallTitleText>
                   {nonNullable(activityThreshold) ? Math.min(activity?.activity, activityThreshold).toString() : '100'}
                 </SmallTitleText>
-                <CaptionText className="text-text-secondary ml-1 text-[10px]">
+                <CaptionText className="ml-1 text-[10px] text-text-secondary">
                   {activityThreshold || '100'}%
                 </CaptionText>
               </Box>
@@ -96,7 +96,7 @@ export const VotingRecord = memo(({ evidence }: Props) => {
                     ? Math.min(activity?.agreement, agreementThreshold).toString()
                     : '100'}
                 </SmallTitleText>
-                <CaptionText className="text-text-secondary ml-1 text-[10px]">
+                <CaptionText className="ml-1 text-[10px] text-text-secondary">
                   {agreementThreshold || '100'}%
                 </CaptionText>
               </Box>

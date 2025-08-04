@@ -48,7 +48,7 @@ export const SocialLinks = () => {
             <a
               className={cnTw(
                 'grid w-full grid-flow-col grid-cols-[auto_1fr_auto] items-center gap-x-2 rounded-md p-3',
-                'hover:shadow-card-shadow focus:shadow-card-shadow transition',
+                'transition hover:shadow-card-shadow focus:shadow-card-shadow',
               )}
               href={link.href}
               target="_blank"
