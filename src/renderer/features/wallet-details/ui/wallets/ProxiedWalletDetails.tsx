@@ -14,7 +14,6 @@ import { networkModel } from '@/entities/network';
 import { WalletIcon, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { AddProxy, addProxyModel } from '@/features/proxy-add';
 import { AddPureProxied } from '@/features/proxy-add-pure';
-import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -85,13 +84,15 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
       ),
     });
   }
-  actions.push({
-    component: (
-      <ForgetWalletConfirm wallet={wallet} onForget={onClose}>
-        <Action title={t('walletDetails.common.forgetButton')} icon="forget" variant="danger" />
-      </ForgetWalletConfirm>
-    ),
-  });
+
+  //todo uncomment when we can hide proxied wallets
+  // actions.push({
+  //   component: (
+  //     <ForgetWalletConfirm wallet={wallet} onForget={onClose}>
+  //       <Action title={t('walletDetails.common.forgetButton')} icon="forget" variant="danger" />
+  //     </ForgetWalletConfirm>
+  //   ),
+  // });
 
   const account = wallet.accounts.at(0);
   const chain = account ? chains[account.chainId] : null;
