@@ -32,20 +32,20 @@ export const WalletManagement = ({
   return (
     <div
       className={cnTw(
-        'group relative flex w-full items-center rounded-sm transition-colors',
+        'group relative flex w-full items-center rounded transition-colors',
         'focus-within:bg-action-background-hover hover:bg-action-background-hover',
       )}
     >
-      <button className="flex w-full items-center gap-x-2 rounded-sm py-1.5 pr-8 pl-2" onClick={onClick}>
+      <button className="flex w-full items-center gap-x-2 rounded py-1.5 pr-10 pl-2" onClick={onClick}>
         {wallet.isActive ? (
           <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
         ) : (
           <div className="row-span-2 h-4 w-4 shrink-0" />
         )}
 
-        <Identicon canCopy={false} address={address ?? ''} size={16} background={false} theme={theme} />
+        {address && <Identicon canCopy={false} address={address} size={16} background={false} theme={theme} />}
 
-        <div className="flex min-w-0 grow flex-col">
+        <div className="flex min-w-0 flex-grow flex-col">
           <div className="flex items-center gap-x-2">
             <BodyText
               className={cnTw(
@@ -73,14 +73,7 @@ export const WalletManagement = ({
         </div>
       </button>
 
-      <div
-        className={cnTw(
-          'absolute top-1/2 right-2 flex -translate-y-1/2 opacity-0 transition-opacity',
-          'group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100',
-        )}
-      >
-        {children}
-      </div>
+      <div className="absolute top-1/2 right-2 flex -translate-y-1/2">{children}</div>
     </div>
   );
 };

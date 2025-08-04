@@ -1,4 +1,5 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
+import { type PropsWithChildren, useEffect, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
 import { useForm } from '@/shared/forms';
@@ -18,14 +19,14 @@ import { formModel } from '../model/form-model';
 
 import { AddPureProxiedForm } from './AddPureProxiedForm';
 
-type Props = {
+type Props = PropsWithChildren<{
   wallet: Wallet;
-};
+}>;
 
-export const AddPureProxied = ({ wallet }: Props) => {
-  useGate(formModel.flow, { wallet });
-
+export const AddPureProxied = ({ wallet, children }: Props) => {
   const { t } = useI18n();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const step = useUnit(addPureProxiedModel.$step);
   const {
@@ -33,14 +34,21 @@ export const AddPureProxied = ({ wallet }: Props) => {
   } = useForm(formModel.form);
   const initiatorWallet = useUnit(addPureProxiedModel.$initiatorWallet);
 
-  const [isModalOpen, closeModal] = useModalClose(
-    !addPureProxiedUtils.isNoneStep(step),
-    addPureProxiedModel.output.flowFinished,
-  );
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     addPureProxiedUtils.isBasketStep(step),
     addPureProxiedModel.output.flowFinished,
   );
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    addPureProxiedModel.output.flowFinished();
+  };
+
+  useEffect(() => {
+    if (wallet && isModalOpen) {
+      addPureProxiedModel.events.flowStarted(wallet);
+    }
+  }, [wallet, isModalOpen]);
 
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (addPureProxiedUtils.isInitStep(step) || !chain) {
@@ -67,7 +75,8 @@ export const AddPureProxied = ({ wallet }: Props) => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="md" height="fit" onToggle={closeModal}>
+    <Modal isOpen={isModalOpen} size="md" height="fit" onToggle={setIsModalOpen}>
+      <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{getModalTitle(step, chain.value!)}</Modal.Title>
       <Modal.Content>
         {addPureProxiedUtils.isInitStep(step) && <AddPureProxiedForm />}

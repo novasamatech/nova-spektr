@@ -40,7 +40,7 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
         .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet]),
     });
 
-    await allSettled(addPureProxiedModel.events.flowStarted, { scope });
+    await allSettled(addPureProxiedModel.events.flowStarted, { scope, params: initiatorWallet });
 
     expect(scope.getState(addPureProxiedModel.$step)).toEqual(Step.INIT);
 

@@ -13,27 +13,17 @@ import { accountService, accounts } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
-import { proxyAddFeature } from '@/features/proxy-add';
-import { proxyAddPureFeature } from '@/features/proxy-add-pure';
+import { AddProxy, addProxyModel } from '@/features/proxy-add';
+import { AddPureProxied } from '@/features/proxy-add-pure';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
-import { type WalletAction, WalletActions } from '../components/WalletActions';
+import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
 
 export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
-
-const {
-  models: { addProxy },
-  views: { AddProxy },
-} = proxyAddFeature;
-
-const {
-  models: { addPureProxied },
-  views: { AddPureProxied },
-} = proxyAddPureFeature;
 
 type Props = {
   wallet: MultisigWallet | FlexibleMultisigWallet;
@@ -51,8 +41,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const accountList = useUnit(accounts.$list);
   const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
 
-  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
-  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
+  const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [tab, setTab] = useState('1');
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
@@ -85,25 +74,30 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (canCreateProxy) {
     actions.push({
-      icon: 'delegate',
-      title: t('walletDetails.common.addProxyAction'),
-      onClick: addProxy.events.flowStarted,
+      component: (
+        <AddProxy wallet={wallet}>
+          <Action title={t('walletDetails.common.addProxyAction')} icon="delegate" />
+        </AddProxy>
+      ),
     });
   }
 
   if (canCreatePureProxy) {
     actions.push({
-      icon: 'createPureProxy',
-      title: t('walletDetails.common.addPureProxiedAction'),
-      onClick: addPureProxied.events.flowStarted,
+      component: (
+        <AddPureProxied wallet={wallet}>
+          <Action title={t('walletDetails.common.addPureProxiedAction')} icon="createPureProxy" />
+        </AddPureProxied>
+      ),
     });
   }
 
   actions.push({
-    icon: 'forget',
-    title: t('walletDetails.common.hideButton'),
-    variant: 'danger',
-    onClick: toggleConfirmForget,
+    component: (
+      <ForgetWalletConfirm wallet={wallet} onForget={onClose}>
+        <Action title={t('walletDetails.common.forgetButton')} icon="forget" variant="danger" />
+      </ForgetWalletConfirm>
+    ),
   });
 
   const TabItems: { id: string; title: ReactNode; panel: ReactNode }[] = [];
@@ -223,7 +217,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
           wallet={wallet}
           hasProxies={hasProxies}
           canCreateProxy={canCreateProxy}
-          onAddProxy={addProxy.events.flowStarted}
+          onAddProxy={addProxyModel.events.flowStarted}
         />
       ),
     };
@@ -232,77 +226,65 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   }
 
   return (
-    <>
-      <Modal size="mdlg" height="full" isOpen onToggle={open => !open && onClose()}>
-        <Modal.Title close> {t('walletDetails.common.title')}</Modal.Title>
-        <Modal.HeaderContent>
-          <div className="mb-6 flex items-center justify-between px-5">
-            <Box direction="row" verticalAlign="center" gap={2}>
-              <div className="mr-1">
-                <WalletAccountIcon
-                  address={multisigAccount?.accountId}
-                  type={wallet.type}
-                  size={42}
-                  theme={isEthereumAccountId(multisigAccount?.accountId) ? 'ethereum' : 'polkadot'}
-                />
-              </div>
-              {!isRenameModalOpen && (
-                <>
-                  <HeadlineText className="truncate text-text-primary" as="h3">
-                    {wallet.name}
-                  </HeadlineText>
-                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
-                    <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
-                    <WalletFiatBalance />
-                  </div>
-                </>
-              )}
-            </Box>
-
-            <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
-
-            {multisigAccount && !isRenameModalOpen && (
-              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
-                <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
-              </div>
+    <Modal size="mdlg" height="full" isOpen onToggle={open => !open && onClose()}>
+      <Modal.Title close> {t('walletDetails.common.title')}</Modal.Title>
+      <Modal.HeaderContent>
+        <div className="mb-6 flex items-center justify-between px-5">
+          <Box direction="row" verticalAlign="center" gap={2}>
+            <div className="mr-1">
+              <WalletAccountIcon
+                address={multisigAccount?.accountId}
+                type={wallet.type}
+                size={42}
+                theme={isEthereumAccountId(multisigAccount?.accountId) ? 'ethereum' : 'polkadot'}
+              />
+            </div>
+            {!isRenameInputOpen && (
+              <>
+                <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
+                  {wallet.name}
+                </HeadlineText>
+                <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                  <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
+                  <WalletFiatBalance />
+                </div>
+              </>
             )}
-          </div>
+          </Box>
 
-          <WalletActions actions={actions} />
+          <RenameWallet wallet={wallet} isOpen={isRenameInputOpen} onClose={toggleIsRenameInputOpen} />
 
-          <Separator className="my-6" />
-        </Modal.HeaderContent>
-        <Modal.Content disableScroll>
-          <Tabs value={tab} onChange={setTab}>
-            <Box padding={[0, 5]}>
-              <Tabs.List>
-                {TabItems.map(({ id, title }) => (
-                  <Tabs.Trigger key={id} value={id}>
-                    {title}
-                  </Tabs.Trigger>
-                ))}
-              </Tabs.List>
-            </Box>
-            {TabItems.map(({ id, panel }) => (
-              <Tabs.Content key={id} value={id}>
-                <Box padding={[4, 0, 0]} fitContainer>
-                  {panel}
-                </Box>
-              </Tabs.Content>
-            ))}
-          </Tabs>
-        </Modal.Content>
-      </Modal>
+          {multisigAccount && !isRenameInputOpen && (
+            <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
+              <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
+            </div>
+          )}
+        </div>
 
-      <ForgetWalletConfirm
-        wallet={wallet}
-        isOpen={isConfirmForgetOpen}
-        onClose={toggleConfirmForget}
-        onForget={onClose}
-      />
+        <WalletActions actions={actions} />
 
-      <AddProxy wallet={wallet} />
-      <AddPureProxied wallet={wallet} />
-    </>
+        <Separator className="my-6" />
+      </Modal.HeaderContent>
+      <Modal.Content disableScroll>
+        <Tabs value={tab} onChange={setTab}>
+          <Box padding={[0, 5]}>
+            <Tabs.List>
+              {TabItems.map(({ id, title }) => (
+                <Tabs.Trigger key={id} value={id}>
+                  {title}
+                </Tabs.Trigger>
+              ))}
+            </Tabs.List>
+          </Box>
+          {TabItems.map(({ id, panel }) => (
+            <Tabs.Content key={id} value={id}>
+              <Box padding={[4, 0, 0]} fitContainer>
+                {panel}
+              </Box>
+            </Tabs.Content>
+          ))}
+        </Tabs>
+      </Modal.Content>
+    </Modal>
   );
 };
