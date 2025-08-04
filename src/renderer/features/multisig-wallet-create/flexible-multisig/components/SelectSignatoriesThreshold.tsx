@@ -62,7 +62,7 @@ export const SelectSignatoriesThreshold = () => {
             {t('createMultisigAccount.flexibleMultisig.signatoryThresholdDescription')}
           </SmallTitleText>
 
-          <hr className="border-divider -ml-5 w-[110%]" />
+          <hr className="-ml-5 w-[110%] border-divider" />
 
           {signatories.map((signatory, index) => (
             <Signatory
@@ -86,7 +86,7 @@ export const SelectSignatoriesThreshold = () => {
             {t('createMultisigAccount.addNewSignatory')}
           </Button>
 
-          <hr className="border-divider -ml-5 w-[110%]" />
+          <hr className="-ml-5 w-[110%] border-divider" />
 
           <div className="flex gap-x-6">
             <Box width="232px">

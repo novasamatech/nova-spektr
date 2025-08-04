@@ -33,7 +33,7 @@ export const ConvertToFlexibleConfirm = () => {
 
   return (
     <>
-      <div className="w-modal flex flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+      <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
         <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="proxyConfirm" size={60} />
         </div>
@@ -53,7 +53,7 @@ export const ConvertToFlexibleConfirm = () => {
                 <Tooltip>
                   <Tooltip.Trigger>
                     <div tabIndex={0}>
-                      <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
                     </div>
                   </Tooltip.Trigger>
                   <Tooltip.Content>{t('proxy.proxyDepositHint')}</Tooltip.Content>
@@ -76,7 +76,7 @@ export const ConvertToFlexibleConfirm = () => {
                 <Tooltip>
                   <Tooltip.Trigger>
                     <div tabIndex={0}>
-                      <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                      <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
                     </div>
                   </Tooltip.Trigger>
                   <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

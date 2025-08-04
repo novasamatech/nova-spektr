@@ -67,8 +67,8 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
 
           <div
             className={cnTw(
-              'border-divider h-[42px] w-[77px] rounded-full border font-semibold',
-              'text-text-secondary flex items-center justify-center',
+              'h-[42px] w-[77px] rounded-full border border-divider font-semibold',
+              'flex items-center justify-center text-text-secondary',
               'shadow-shadow-1',
             )}
           >
@@ -98,7 +98,7 @@ export const Item = ({ __index = 0, children }: ItemProps) => {
   return (
     <Carousel.Item id={__index.toString()} index={__index}>
       <div className="flex h-[580px] shrink-0 flex-col last-of-type:pr-4">
-        <div className="shadow-shadow-2 flex max-h-full w-full flex-col rounded-lg bg-white">{children}</div>
+        <div className="flex max-h-full w-full flex-col rounded-lg bg-white shadow-shadow-2">{children}</div>
       </div>
     </Carousel.Item>
   );

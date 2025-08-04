@@ -16,13 +16,13 @@ type Props = {
 export const DiffValue = ({ className, from, to, diff, suffix = null, equal, positive }: Props) => {
   return (
     <div className={cnTw('flex flex-col items-end', className)}>
-      <FootnoteText className="text-text-primary flex items-center gap-0.5">
+      <FootnoteText className="flex items-center gap-0.5 text-text-primary">
         <span>{from}</span>
         <Icon name="arrowRight" size={12} className="text-inherit" />
         <span>{to}</span>
         {suffix}
       </FootnoteText>
-      <FootnoteText className="text-tab-text-accent flex items-center">
+      <FootnoteText className="flex items-center text-tab-text-accent">
         {!equal &&
           (positive ? (
             <Icon name="arrowDoubleUp" size={16} className="text-inherit" />

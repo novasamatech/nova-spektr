@@ -9,8 +9,8 @@ type Props = {
 export const Title = memo(({ count }: Props) => {
   const { t } = useI18n();
   return (
-    <div className="border-filter-border bg-card-background flex h-11 shrink-0 items-center border-b px-5">
-      <span className="text-button-small flex gap-1.5">
+    <div className="flex h-11 shrink-0 items-center border-b border-filter-border bg-card-background px-5">
+      <span className="flex gap-1.5 text-button-small">
         <span>{t('fellowship.tasks.cardTitle')}</span>
         <span className="text-text-tertiary">{count.toString()}</span>
       </span>

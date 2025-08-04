@@ -64,7 +64,7 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
               tabIndex={tabIndex}
               className={cnTw(
                 'flex min-h-9 w-full items-center justify-between gap-x-2 px-3 py-[7px] pr-2',
-                'text-footnote rounded-sm outline-offset-1',
+                'rounded-sm text-footnote outline-offset-1',
                 open && SelectButtonStyle[theme].open,
                 !open && !invalid && SelectButtonStyle[theme].closed,
                 invalid && SelectButtonStyle[theme].invalid,
@@ -133,7 +133,7 @@ export const Select = forwardRef<HTMLButtonElement, Props>(
 
     return (
       <div className="flex flex-col gap-y-2">
-        <LabelText className="text-text-tertiary cursor-pointer font-medium" htmlFor={id}>
+        <LabelText className="cursor-pointer font-medium text-text-tertiary" htmlFor={id}>
           {label}
         </LabelText>
         {selectElement}

@@ -10,7 +10,7 @@ type Props = {
 
 export const DynamicVoteChart = ({ value, hasVotes, disabled, votesImpact = 0 }: Props) => {
   if (disabled) {
-    return <div className="bg-tab-icon-inactive h-1.5 w-full rounded-md" />;
+    return <div className="h-1.5 w-full rounded-md bg-tab-icon-inactive" />;
   }
 
   return (

@@ -132,7 +132,7 @@ export const PairingModal = ({ title, extension, children }: Props) => {
             </Modal.Footer>
           </div>
 
-          <div className="bg-input-background-disabled relative flex min-h-0 w-[50%] flex-col gap-4 rounded-r-lg pt-4">
+          <div className="relative flex min-h-0 w-[50%] flex-col gap-4 rounded-r-lg bg-input-background-disabled pt-4">
             <div className="absolute top-3 right-3 m-1">
               <IconButton name="close" size={20} onClick={() => toggleModal(false)} />
             </div>

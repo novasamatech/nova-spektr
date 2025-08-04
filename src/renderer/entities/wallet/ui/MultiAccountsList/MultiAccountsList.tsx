@@ -25,14 +25,14 @@ export const MultiAccountsList = ({ accounts, className, headerClassName }: Prop
   return (
     <div className="flex flex-col">
       <div className={cnTw('flex px-5 py-4', headerClassName)}>
-        <FootnoteText className="text-text-tertiary w-[214px]">
+        <FootnoteText className="w-[214px] text-text-tertiary">
           {t('accountList.networksColumn', { count: accounts.length })}
         </FootnoteText>
-        <FootnoteText className="text-text-tertiary w-[214px]">{t('accountList.addressColumn')}</FootnoteText>
+        <FootnoteText className="w-[214px] text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
       </div>
 
       <ScrollArea>
-        <ul className={cnTw('divide-divider z-0 flex flex-col divide-y pb-4', className)}>
+        <ul className={cnTw('z-0 flex flex-col divide-y divide-divider pb-4', className)}>
           {list.map(({ chain, accountId }) => {
             const { chainId, addressPrefix } = chain;
 
@@ -41,7 +41,7 @@ export const MultiAccountsList = ({ accounts, className, headerClassName }: Prop
                 <ChainTitle className="w-[214px]" fontClass="text-text-primary" chain={chain} />
 
                 <div className="flex w-[214px]">
-                  <FootnoteText as="div" className="text-text-secondary w-[180px]">
+                  <FootnoteText as="div" className="w-[180px] text-text-secondary">
                     <Address address={toAddress(accountId, { prefix: addressPrefix })} variant="truncate" showIcon />
                   </FootnoteText>
                   <AccountExplorers accountId={accountId} chain={chain} />

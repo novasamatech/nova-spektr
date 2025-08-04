@@ -12,7 +12,7 @@ type Props = {
 export const Header = ({ title, children, titleClass, headerClass }: PropsWithChildren<Props>) => (
   <header
     className={cnTw(
-      'border-container-border bg-top-nav-bar-background w-full border-b px-6 pt-[19px] pb-4.5',
+      'w-full border-b border-container-border bg-top-nav-bar-background px-6 pt-[19px] pb-4.5',
       {
         'flex justify-between': nonNullable(children),
       },

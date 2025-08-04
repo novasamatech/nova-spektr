@@ -79,13 +79,13 @@ export const YourDelegations = () => {
               onChange={toggleAllAccounts}
             />
           </Box>
-          <FootnoteText className="text-text-tertiary px-3">
+          <FootnoteText className="px-3 text-text-tertiary">
             {t('governance.addDelegation.accountsLabel', { count: 1 })}
           </FootnoteText>
-          <FootnoteText className="text-text-tertiary justify-self-end px-3">
+          <FootnoteText className="justify-self-end px-3 text-text-tertiary">
             {t('governance.addDelegation.lockedAmount')}
           </FootnoteText>
-          <FootnoteText className="text-text-tertiary px-3">{t('governance.addDelegation.tracksLabel')}</FootnoteText>
+          <FootnoteText className="px-3 text-text-tertiary">{t('governance.addDelegation.tracksLabel')}</FootnoteText>
         </div>
 
         <ul className="mx-2 mb-4 flex flex-col gap-y-2">

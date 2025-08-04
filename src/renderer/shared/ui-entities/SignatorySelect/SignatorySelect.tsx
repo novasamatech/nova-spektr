@@ -127,7 +127,7 @@ const NoSignatoryAlert = ({ initiator, allAccounts, chain, allWallets }: NoSigna
   const component = (
     <span className="mx-1 inline-flex max-w-[200px] items-center gap-x-1 align-bottom">
       {found && <WalletIcon className="shrink-0" type={found.type} size={16} />}
-      <FootnoteText as="span" className="text-text-secondary truncate transition-colors">
+      <FootnoteText as="span" className="truncate text-text-secondary transition-colors">
         {found?.name}
       </FootnoteText>
     </span>
@@ -135,7 +135,7 @@ const NoSignatoryAlert = ({ initiator, allAccounts, chain, allWallets }: NoSigna
 
   return (
     <Alert active title={t('operation.noSignatoryErrorTitle', { network: chain.name })} variant="error">
-      <FootnoteText className="text-text-secondary max-w-full tracking-tight">
+      <FootnoteText className="max-w-full tracking-tight text-text-secondary">
         <Trans
           t={t}
           i18nKey="operation.noSignatoryErrorDescription"

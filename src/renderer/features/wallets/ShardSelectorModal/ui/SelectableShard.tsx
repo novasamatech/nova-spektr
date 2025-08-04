@@ -26,7 +26,7 @@ export const SelectableShard = ({ account, chain, checked, semiChecked, onChange
     <div
       className={cnTw(
         'group grid h-11 w-full max-w-full grid-cols-[1fr_auto] items-center gap-x-2 rounded-md px-2 py-1.5',
-        'hover:bg-action-background-hover transition-colors duration-100',
+        'transition-colors duration-100 hover:bg-action-background-hover',
       )}
     >
       <div className="overflow-hidden">
@@ -37,7 +37,7 @@ export const SelectableShard = ({ account, chain, checked, semiChecked, onChange
                 <div className="flex flex-row">
                   <Identicon address={address} size={20} background={false} canCopy={false} />
                   <Icon
-                    className="text-text-secondary z-10 -ml-2.5 rounded-full border bg-white"
+                    className="z-10 -ml-2.5 rounded-full border bg-white text-text-secondary"
                     size={20}
                     name={KeyIcon[account.keyType]}
                   />
@@ -70,7 +70,7 @@ export const SelectableShard = ({ account, chain, checked, semiChecked, onChange
         {(isShard || isChain) && (
           <>
             <FootnoteText className="text-text-tertiary">{t('general.explorers.derivationTitle')}</FootnoteText>
-            <HelpText className="text-text-secondary break-all">{account.derivationPath}</HelpText>
+            <HelpText className="break-all text-text-secondary">{account.derivationPath}</HelpText>
           </>
         )}
       </AccountExplorers>

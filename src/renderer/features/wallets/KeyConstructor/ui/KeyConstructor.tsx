@@ -55,7 +55,7 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
 
       <Modal.Content disableScroll>
         <div className="flex h-full flex-col">
-          <div className="border-divider border-b px-5 pt-4 pb-6">
+          <div className="border-b border-divider px-5 pt-4 pb-6">
             <KeyForm />
           </div>
           <div className="mt-4 flex-1 overflow-y-auto">

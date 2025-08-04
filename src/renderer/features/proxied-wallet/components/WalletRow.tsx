@@ -42,7 +42,7 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
       wallet={wallet}
       address={toAddress(accountId, { prefix: chain?.addressPrefix })}
       meta={chain ? <ChainIcon chain={chain} size={16} /> : null}
-      description={<WalletFiatBalance walletId={wallet.id} className="text-help-text max-w-[215px] truncate" />}
+      description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}
     >
       <Slot id={walletActionsSlot} props={{ wallet }} />

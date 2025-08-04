@@ -47,7 +47,7 @@ export const VotedCombined = ({ direction, asset, identity, delegates, multiplie
 
   return (
     <div className="flex w-full items-center gap-x-1" data-testid={TEST_IDS.GOVERNANCE.PROPOSAL_VOTE_DETAILS}>
-      <Icon name="voted" size={16} className="text-icon-accent shrink-0" />
+      <Icon name="voted" size={16} className="shrink-0 text-icon-accent" />
       <FootnoteText className="text-icon-accent">{t('governance.voted')}</FootnoteText>
     </div>
   );

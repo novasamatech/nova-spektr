@@ -21,7 +21,7 @@ export const EvidenceDetailsModal = memo(({ evidence, children, title }: Props) 
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{title}</Modal.Title>
       <Modal.Content>
-        <div className="bg-main-app-background grid h-full grid-cols-[1fr_360px] gap-x-4 p-6">
+        <div className="grid h-full grid-cols-[1fr_360px] gap-x-4 bg-main-app-background p-6">
           <Box>
             <Content evidence={evidence} />
           </Box>

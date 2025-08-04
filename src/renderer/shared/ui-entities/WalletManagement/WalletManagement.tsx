@@ -38,7 +38,7 @@ export const WalletManagement = ({
     >
       <button className="flex w-full items-center gap-x-2 rounded-sm py-1.5 pr-8 pl-2" onClick={onClick}>
         {wallet.isActive ? (
-          <Icon name="checkmarkCutout" className="text-icon-accent shrink-0" size={16} />
+          <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
         ) : (
           <div className="row-span-2 h-4 w-4 shrink-0" />
         )}
@@ -49,7 +49,7 @@ export const WalletManagement = ({
           <div className="flex items-center gap-x-2">
             <BodyText
               className={cnTw(
-                'text-text-secondary truncate transition-colors',
+                'truncate text-text-secondary transition-colors',
                 'group-focus-within:text-text-primary group-hover:text-text-primary',
                 { 'text-text-primary': wallet.isActive },
               )}

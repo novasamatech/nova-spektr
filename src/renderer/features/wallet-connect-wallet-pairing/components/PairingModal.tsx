@@ -31,9 +31,9 @@ const showCompleteStatus = (t: TFunction, showStatus: (props: StatusModalProps) 
       content: (
         <div className="flex h-20 items-center justify-center gap-1">
           <Icon name="logo" size={56} />
-          <div className="border-text-positive h-0 w-3 rounded-sm border-[1.5px]"></div>
+          <div className="h-0 w-3 rounded-sm border-[1.5px] border-text-positive"></div>
           <Icon name="checkmarkOutline" className="text-text-positive" size={18} />
-          <div className="border-text-positive h-0 w-3 rounded-sm border-[1.5px]"></div>
+          <div className="h-0 w-3 rounded-sm border-[1.5px] border-text-positive"></div>
           <Icon name={WalletLogo[type]} size={56} />
         </div>
       ),
@@ -124,7 +124,7 @@ export const PairingModal = memo(({ variant, children }: Props) => {
                 </div>
               </div>
 
-              <div className="animate-in fade-in flex w-full flex-col bg-black duration-500">
+              <div className="flex w-full flex-col bg-black duration-500 animate-in fade-in">
                 <video className="h-full object-contain" autoPlay loop>
                   <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
                   <source src={novawallet_onboarding_tutorial} type="video/mp4" />

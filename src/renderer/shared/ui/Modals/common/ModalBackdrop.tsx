@@ -11,6 +11,6 @@ export const ModalBackdrop = () => (
     leaveFrom="opacity-100"
     leaveTo="opacity-0"
   >
-    <div className="bg-dim-background fixed inset-0" />
+    <div className="fixed inset-0 bg-dim-background" />
   </Transition.Child>
 );

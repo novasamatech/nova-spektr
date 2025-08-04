@@ -139,10 +139,10 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           {cameraState === CameraState.INVALID_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="text-neutral mt-5 text-xl leading-6 font-semibold">
+              <p className="mt-5 text-xl leading-6 font-semibold text-neutral">
                 {t('onboarding.paritySigner.wrongQRCodeLabel')}
               </p>
-              <p className="text-neutral-variant max-w-[395px] text-sm">
+              <p className="max-w-[395px] text-sm text-neutral-variant">
                 {t('onboarding.paritySigner.wrongQRCodeDescription')}
               </p>
             </>
@@ -150,28 +150,28 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           {cameraState === CameraState.UNKNOWN_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="text-neutral mt-5 text-xl leading-6 font-semibold">
+              <p className="mt-5 text-xl leading-6 font-semibold text-neutral">
                 {t('onboarding.paritySigner.notWorkingLabel')}
               </p>
-              <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.notWorkingDescription')}</p>
+              <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.notWorkingDescription')}</p>
             </>
           )}
           {cameraState === CameraState.DECODE_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="text-neutral mt-5 text-xl leading-6 font-semibold">
+              <p className="mt-5 text-xl leading-6 font-semibold text-neutral">
                 {t('onboarding.paritySigner.decodeErrorLabel')}
               </p>
-              <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.decodeErrorDescription')}</p>
+              <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.decodeErrorDescription')}</p>
             </>
           )}
           {cameraState === CameraState.DENY_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="text-neutral mt-5 text-xl leading-6 font-semibold">
+              <p className="mt-5 text-xl leading-6 font-semibold text-neutral">
                 {t('onboarding.paritySigner.accessDeniedLabel')}
               </p>
-              <p className="text-neutral-variant text-sm">{t('onboarding.paritySigner.accessDeniedDescription')}</p>
+              <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.accessDeniedDescription')}</p>
             </>
           )}
         </div>
@@ -197,11 +197,11 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
       {cameraState === CameraState.LOADING && (
         <div className="flex h-[288px] w-full flex-col items-center">
           <div className="relative flex h-full w-full items-center justify-center">
-            <p className="text-shade-40 absolute flex items-center gap-x-2.5 pb-3.5 font-semibold">
+            <p className="absolute flex items-center gap-x-2.5 pb-3.5 font-semibold text-shade-40">
               <Loader color="primary" />
               {t('onboarding.paritySigner.startCameraLabel')}
             </p>
-            <Icon className="text-shade-12 absolute" name="qrFrame" size={240} />
+            <Icon className="absolute text-shade-12" name="qrFrame" size={240} />
           </div>
         </div>
       )}
@@ -256,11 +256,11 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             </Button>
 
             {total > 1 && (
-              <div className="bg-black-background z-10 flex items-center gap-x-2 rounded-2xl p-1.5 pl-3">
+              <div className="z-10 flex items-center gap-x-2 rounded-2xl bg-black-background p-1.5 pl-3">
                 <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
                 <CaptionText
                   as="span"
-                  className="bg-label-background-gray rounded-[26px] px-2 py-1 text-white uppercase"
+                  className="rounded-[26px] bg-label-background-gray px-2 py-1 text-white uppercase"
                 >
                   {t('signing.parsingCount', { current: decoded, total: total })}
                 </CaptionText>

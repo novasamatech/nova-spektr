@@ -37,7 +37,7 @@ export const TokenBalance = memo(({ asset }: Props) => {
               <ChainIcon chain={chains[chain.chainId]} size={18} />
               <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
               {chain.balance?.verified && (
-                <div className="text-text-warning flex items-center gap-x-2">
+                <div className="flex items-center gap-x-2 text-text-warning">
                   <Tooltip>
                     <Tooltip.Trigger>
                       <div tabIndex={0}>

@@ -15,7 +15,7 @@ export const ContactRow = ({ contact, children }: PropsWithChildren<Props>) => {
       <div className="flex gap-x-2 p-3">
         <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
         <IconButton
-          className="text-icon-default shrink-0 self-end"
+          className="shrink-0 self-end text-icon-default"
           name="copy"
           onClick={() => copyToClipboard(contact.address)}
         />

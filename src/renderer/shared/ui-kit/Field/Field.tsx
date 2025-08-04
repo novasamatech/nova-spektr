@@ -7,7 +7,7 @@ type Props = {
 export const Field = ({ text, children }: PropsWithChildren<Props>) => {
   return (
     <label className="flex w-full flex-col gap-y-2">
-      <span className="text-footnote text-text-tertiary font-medium">{text}</span>
+      <span className="text-footnote font-medium text-text-tertiary">{text}</span>
       {children}
     </label>
   );
