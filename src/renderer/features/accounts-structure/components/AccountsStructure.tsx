@@ -43,6 +43,8 @@ const elk = new ELK({
     'elk.direction': 'RIGHT',
     'elk.layered.spacing.nodeNodeBetweenLayers': '200',
     'elk.spacing.nodeNode': '50',
+    'elk.spacing.edgeNode': '75',
+    'elk.spacing.edgeEdge': '75',
     'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
     'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
     'elk.layered.crossingMinimization.greedySwitch.activationThreshold': '0',
@@ -52,15 +54,8 @@ const elk = new ELK({
     'elk.layered.nodePlacement.bk.edgeStraightening': 'ALWAYS',
     'elk.layered.nodePlacement.bk.fixedAlignment': 'TOP',
     'elk.alignment': 'TOP',
-    'elk.alg.libavoid.clusterCrossingPenalty': '1',
+    'elk.alg.libavoid.clusterCrossingPenalty': '2',
     'elk.alg.libavoid.crossingPenalty': '1',
-    'elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
-    'elk.layered.mergeHierarchyEdges': 'false',
-    'elk.layered.spacing.edgeEdgeBetweenLayers': '15',
-    'elk.layered.spacing.edgeNode': '10',
-    'elk.layered.spacing.edgeEdge': '10',
-    'elk.layered.spacing.baseValue': '10',
-    'elk.layered.spacing.individual': 'true',
   },
 });
 
@@ -151,7 +146,7 @@ const useGraphLayout = (
       };
     });
 
-    setNodes(layoutNodes.length <= 15 ? alignNodesTop(layoutNodes) : layoutNodes);
+    setNodes(layoutNodes);
     setEdges(edges);
 
     fitView({
@@ -236,23 +231,3 @@ export const AccountsStructure = memo(() => (
     <AccountsStructureInner />
   </ReactFlowProvider>
 ));
-
-function alignNodesTop(nodes: Node<AccountNodeData>[]) {
-  const layerGroups: Record<number, Node<AccountNodeData>[]> = {};
-  for (const node of nodes) {
-    const key = Math.floor(node.position.x / 200);
-    if (!layerGroups[key]) {
-      layerGroups[key] = [];
-    }
-    layerGroups[key].push(node);
-  }
-
-  for (const group of Object.values(layerGroups)) {
-    const minY = Math.min(...group.map((n) => n.position.y));
-    for (const n of group) {
-      n.position.y -= minY - 20;
-    }
-  }
-
-  return nodes;
-}

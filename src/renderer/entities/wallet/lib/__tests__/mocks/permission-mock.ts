@@ -57,42 +57,42 @@ const proxiedWallet = {
 
 const anyProxyAccount = {
   accountType: AccountType.PROXIED,
-  proxyType: 'Any',
+  connections: [{ proxyType: 'Any' }],
 } as ProxiedAccount;
 
 const nonTransferProxyAccount = {
   accountType: AccountType.PROXIED,
-  proxyType: 'NonTransfer',
+  connections: [{ proxyType: 'NonTransfer' }],
 } as ProxiedAccount;
 
 const stakingProxyAccount = {
   accountType: AccountType.PROXIED,
-  proxyType: 'Staking',
+  connections: [{ proxyType: 'Staking' }],
 } as ProxiedAccount;
 
 const auctionProxyAccount = {
   accountType: AccountType.PROXIED,
-  proxyType: 'Auction',
+  connections: [{ proxyType: 'Auction' }],
 } as ProxiedAccount;
 
 const cancelProxyAccount = {
   accountType: AccountType.PROXIED,
-  proxyType: 'CancelProxy',
+  connections: [{ proxyType: 'CancelProxy' }],
 } as ProxiedAccount;
 
 const governanceProxyAccount = {
   accountType: AccountType.PROXIED,
-  proxyType: 'Governance',
+  connections: [{ proxyType: 'Governance' }],
 } as ProxiedAccount;
 
 const identityJudgementProxyAccount = {
   accountType: AccountType.PROXIED,
-  proxyType: 'IdentityJudgement',
+  connections: [{ proxyType: 'IdentityJudgement' }],
 } as ProxiedAccount;
 
 const nominationPoolsProxyAccount = {
   accountType: AccountType.PROXIED,
-  proxyType: 'NominationPools',
+  connections: [{ proxyType: 'NominationPools' }],
 } as ProxiedAccount;
 
 export const permissionMocks = {

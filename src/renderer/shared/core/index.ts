@@ -33,6 +33,7 @@ export type {
   MultisigSignatoryAccount,
   WcAccount,
   ProxiedAccount,
+  ProxiedConnection,
   VaultShardAccount,
   DraftAccount,
   FlexibleMultisigAccount,

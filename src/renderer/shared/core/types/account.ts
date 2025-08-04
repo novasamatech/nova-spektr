@@ -56,12 +56,16 @@ export interface WcAccount extends ChainAccount {
 
 export interface ProxiedAccount extends ChainAccount {
   accountType: AccountType.PROXIED;
-  proxyAccountId: AccountId;
-  delay: number;
-  proxyType: ProxyType;
+  connections: ProxiedConnection[];
   proxyVariant: ProxyVariant;
   blockNumber?: number;
   extrinsicIndex?: number;
+}
+
+export interface ProxiedConnection {
+  proxyAccountId: AccountId;
+  delay: number;
+  proxyType: ProxyType;
 }
 
 export interface FlexibleProxiedAccount extends Omit<ProxiedAccount, 'accountType'> {

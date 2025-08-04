@@ -165,7 +165,9 @@ function getMultisigWrapper({ wallets, account, signatories = [] }: Omit<TxWrapp
 
 function getProxyWrapper({ wallets, account, signatories = [] }: Omit<TxWrappersParams, 'wallet'>) {
   const proxiesMap = wallets.reduce<{ wallet: Wallet; account: AnyAccount }[]>((acc, wallet) => {
-    const match = wallet.accounts.find((a) => a.accountId === (account as ProxiedAccount).proxyAccountId);
+    const match = wallet.accounts.find((a) =>
+      (account as ProxiedAccount).connections.some((c) => a.accountId === c.proxyAccountId),
+    );
 
     if (match) {
       acc.push({ wallet, account: match });

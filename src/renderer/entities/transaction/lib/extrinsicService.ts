@@ -235,13 +235,18 @@ type WrapAsProxyParams = {
   txWrapper: ProxyTxWrapper;
 };
 export const wrapAsProxy = ({ transaction, txWrapper }: WrapAsProxyParams): Transaction => {
+  const connection = txWrapper.proxiedAccount.connections.find(
+    (c) => c.proxyAccountId === txWrapper.proxyAccount.accountId,
+  );
+  assert(connection);
+
   return {
     chainId: transaction.chainId,
     accountId: txWrapper.proxyAccount.accountId,
     type: TransactionType.PROXY,
     args: {
       real: txWrapper.proxiedAccount.accountId,
-      forceProxyType: txWrapper.proxiedAccount.proxyType,
+      forceProxyType: connection.proxyType,
       transaction,
     },
   };

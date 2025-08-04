@@ -87,7 +87,7 @@ export const CustomEdge = ({
 
   const connection =
     data && useTransformer(accountConnectionTransformer, { source: sourceAccount, target: targetAccount, t });
-  const label = connection?.label;
+  const labels = connection?.labels;
   const connectionColor = connection?.color || '#363643';
 
   const shouldFade = highlightedNodesIds
@@ -112,25 +112,34 @@ export const CustomEdge = ({
         }}
       />
 
-      {label && (
+      {labels && (
         <EdgeLabelRenderer>
           <div
             style={{
               position: 'absolute',
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-              padding: '5px 10px',
-              fontSize: '10px',
-              fontWeight: '600',
-              color: label.color,
-              borderRadius: '26px',
-              border: '2px solid #F9F9F9',
-              background: label.background,
-              textTransform: 'uppercase',
               opacity: shouldFade ? 0 : 1,
               transition: 'opacity 300ms',
             }}
           >
-            {label.text}
+            {labels.map((label, index) => (
+              <div
+                key={`${label.text}-${index}`}
+                style={{
+                  padding: '3px 6px',
+                  fontSize: '10px',
+                  lineHeight: '12px',
+                  fontWeight: '600',
+                  color: label.color,
+                  borderRadius: '26px',
+                  border: '2px solid #F9F9F9',
+                  background: label.background,
+                  textTransform: 'uppercase',
+                }}
+              >
+                {label.text}
+              </div>
+            ))}
           </div>
         </EdgeLabelRenderer>
       )}
