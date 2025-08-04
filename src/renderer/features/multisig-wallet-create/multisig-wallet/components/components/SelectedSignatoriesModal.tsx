@@ -33,7 +33,7 @@ export const SelectedSignatoriesModal = ({ signatories, chain, children }: Props
         <HeaderTitleText>{t('createMultisigAccount.selectedSignatoriesTitle')}</HeaderTitleText>
       </Modal.Title>
       <Modal.Content>
-        <ul className="flex max-h-[660px] w-full flex-col gap-y-2 px-3 pb-4 pt-2">
+        <ul className="flex max-h-[660px] w-full flex-col gap-y-2 px-3 pt-2 pb-4">
           {signatories.map(({ name, address, walletId }) => {
             if (!walletId) {
               return (

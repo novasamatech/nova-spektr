@@ -55,7 +55,7 @@ export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll }
       </RadixScrollArea.Viewport>
       <RadixScrollArea.Scrollbar
         className={cnTw(
-          'flex touch-none select-none border-transparent p-[1px] transition-all duration-300 animate-in fade-in hover:border-[--scrollbar-border] hover:bg-[--scrollbar-bg]',
+          'flex touch-none border-transparent p-px transition-all duration-300 animate-in select-none fade-in hover:border-(--scrollbar-border) hover:bg-(--scrollbar-bg)',
           {
             'border-l hover:px-[3px]': orientation === 'vertical',
             'border-t hover:py-[3px]': orientation === 'horizontal',
@@ -64,7 +64,7 @@ export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll }
         orientation={orientation}
       >
         <RadixScrollArea.Thumb
-          className="relative flex-shrink rounded-full bg-[--scrollbar-thumb-bg] after:absolute after:-inset-1.5 after:block"
+          className="relative shrink rounded-full bg-(--scrollbar-thumb-bg) after:absolute after:-inset-1.5 after:block"
           style={{
             [orientation === 'vertical' ? '--radix-scroll-area-thumb-width' : '--radix-scroll-area-thumb-height']:
               gridSpaceConverter(1.5) + 'px',

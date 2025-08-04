@@ -56,7 +56,7 @@ export const PromotionInfo = memo(() => {
   return (
     <Box gap={6}>
       <Box direction="row" verticalAlign="center" horizontalAlign="space-between">
-        <CaptionText className="uppercase text-text-secondary">{t('fellowship.salary.promotionNextRank')}</CaptionText>
+        <CaptionText className="text-text-secondary uppercase">{t('fellowship.salary.promotionNextRank')}</CaptionText>
         <CollectiveRank showName rank={nextTrack?.id ?? 0} />
       </Box>
       {!hasPromotionEvidence && (

@@ -37,7 +37,7 @@ export const VoteChart = ({ value, threshold, disabled, thresholdIndicatorBorder
         <div
           className={cnTw(
             'absolute flex h-4 w-1.5 translate-x-[-50%] items-center justify-center rounded-md bg-border-dark',
-            'after:contest-[""] after:block after:h-full after:w-0.5 after:rounded-sm after:bg-border-dark',
+            'after:contest-[""] after:block after:h-full after:w-0.5 after:rounded-xs after:bg-border-dark',
           )}
           style={{
             backgroundColor: `var(--${thresholdIndicatorBorder})`,

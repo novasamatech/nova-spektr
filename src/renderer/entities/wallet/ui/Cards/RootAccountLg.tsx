@@ -2,7 +2,8 @@ import { type MouseEvent, type PropsWithChildren } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, Identicon } from '@/shared/ui';
+import { BodyText } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 
 type Props = PropsWithChildren<{
   name: string;

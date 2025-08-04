@@ -4,10 +4,10 @@ import { type FormEvent, useMemo, useState } from 'react';
 import { type Address, RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { toAddress, transferableAmount, validateAddress } from '@/shared/lib/utils';
-import { Button, Combobox, DetailRow, FootnoteText, Icon, Identicon, InputHint, RadioGroup } from '@/shared/ui';
+import { toAddress, transferableAmount } from '@/shared/lib/utils';
+import { Button, Combobox, DetailRow, FootnoteText, Icon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
-import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
+import { AssetBalance, Identicon, SignatorySelect } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -34,7 +34,7 @@ export const PayeeForm = ({ onGoBack }: Props) => {
         <Signatories />
         <Destination />
       </form>
-      <div className="flex flex-col gap-y-6 pb-4 pt-6">
+      <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
       </div>
       <ActionsSection onGoBack={onGoBack} />
@@ -131,11 +131,7 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      {validateAddress(payout) ? (
-        <Identicon address={payout} size={20} background={false} canCopy={false} />
-      ) : (
-        <Icon size={20} name="emptyIdenticon" />
-      )}
+      <Identicon address={payout} size={20} background={false} canCopy={false} />
     </div>
   );
 

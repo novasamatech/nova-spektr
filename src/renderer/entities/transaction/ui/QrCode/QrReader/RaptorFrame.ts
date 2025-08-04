@@ -6,17 +6,18 @@ import { DecodeQrError } from '../common/types';
 
 const RAPTORQ_HEADER_SIZE = 4;
 
+const frameParser = new Parser()
+  .bit1('tag')
+  .array('size', { type: 'uint8', lengthInBytes: 3 })
+  .array('payload', { type: 'uint8', readUntil: 'eof' });
+
 export class RaptorFrame {
   private readonly size: number;
   private readonly total: number;
   private readonly payload: Uint8Array;
 
   constructor(data: Uint8Array) {
-    const result = new Parser()
-      .bit1('tag')
-      .array('size', { type: 'uint8', lengthInBytes: 3 })
-      .array('payload', { type: 'uint8', readUntil: 'eof' })
-      .parse(data);
+    const result = frameParser.parse(data);
 
     if (!result.payload || result.payload.length === 0) {
       throw QR_READER_DECODE_ERRORS[DecodeQrError.NOT_RAPTOR_PACKAGE];

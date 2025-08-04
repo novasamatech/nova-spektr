@@ -31,7 +31,7 @@ export const VotedByDelegate = memo(({ asset, address, voterName, votingPower, d
   return (
     <div className="flex items-center gap-x-1" data-testid={testId}>
       <Icon name="voted" size={16} className="text-icon-accent" />
-      <FootnoteText className="flex max-w-56 items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-accent">
+      <FootnoteText className="flex max-w-56 items-center gap-x-0.5 truncate text-nowrap whitespace-nowrap text-icon-accent">
         <Trans
           t={t}
           i18nKey={`governance.${decision === 'aye' ? 'votedAyeBy' : 'votedNayBy'}`}

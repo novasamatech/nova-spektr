@@ -91,7 +91,9 @@ function canRejectMultisigTx(wallet: Wallet): boolean {
 function canCreateAnyProxy(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
   if (walletUtils.isProxied(wallet)) {
-    return accountUtils.isAnyProxyType(wallet.accounts[0]);
+    const firstAccount = wallet.accounts[0];
+    if (!firstAccount) return false;
+    return accountUtils.isAnyProxyType(firstAccount);
   }
 
   return true;
@@ -100,8 +102,10 @@ function canCreateAnyProxy(wallet: Wallet): boolean {
 function canCreateNonAnyProxy(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
   if (walletUtils.isProxied(wallet)) {
-    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
-    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+    const firstAccount = wallet.accounts[0];
+    if (!firstAccount) return false;
+    const isAnyProxy = accountUtils.isAnyProxyType(firstAccount);
+    const isNonTransfer = accountUtils.isNonTransferProxyType(firstAccount);
 
     return isAnyProxy || isNonTransfer;
   }
@@ -112,8 +116,10 @@ function canCreateNonAnyProxy(wallet: Wallet): boolean {
 function canRemoveProxy(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
   if (walletUtils.isProxied(wallet)) {
-    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
-    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+    const firstAccount = wallet.accounts[0];
+    if (!firstAccount) return false;
+    const isAnyProxy = accountUtils.isAnyProxyType(firstAccount);
+    const isNonTransfer = accountUtils.isNonTransferProxyType(firstAccount);
 
     return isAnyProxy || isNonTransfer;
   }
@@ -124,9 +130,11 @@ function canRemoveProxy(wallet: Wallet): boolean {
 function canUseGovernance(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet) || nullable(wallet.accounts.at(0))) return false;
   if (walletUtils.isProxied(wallet)) {
-    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
-    const isGovernanceProxy = accountUtils.isGovernanceProxyType(wallet.accounts[0]);
-    const isNonTransferProxy = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
+    const firstAccount = wallet.accounts[0];
+    if (!firstAccount) return false;
+    const isAnyProxy = accountUtils.isAnyProxyType(firstAccount);
+    const isGovernanceProxy = accountUtils.isGovernanceProxyType(firstAccount);
+    const isNonTransferProxy = accountUtils.isNonTransferProxyType(firstAccount);
 
     return isAnyProxy || isGovernanceProxy || isNonTransferProxy;
   }

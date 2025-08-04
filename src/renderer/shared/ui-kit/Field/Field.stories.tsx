@@ -14,6 +14,6 @@ type Story = StoryObj<typeof Field>;
 export const Default: Story = {
   args: {
     text: 'Label name',
-    children: <input value="Input value" className="w-52 rounded border border-gray-300 p-2" />,
+    children: <input value="Input value" className="w-52 rounded-sm border border-gray-300 p-2" />,
   },
 };

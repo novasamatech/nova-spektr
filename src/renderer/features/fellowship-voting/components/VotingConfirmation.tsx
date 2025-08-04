@@ -52,7 +52,7 @@ export const VotingConfirmation = ({
       <Box gap={3} horizontalAlign="center">
         <Icon className="text-icon-default" name="voteMst" size={60} />
 
-        <span className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary">
+        <span className="font-manrope text-[32px] leading-[36px] font-bold text-text-primary">
           {t('governance.referendum.votes', { votes, count: votes })}
         </span>
       </Box>

@@ -1,13 +1,12 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
-import { isString } from 'lodash';
 
 import { type Asset, type OngoingReferendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { copyToClipboard, formatAsset } from '@/shared/lib/utils';
-import { DetailRow, IconButton, Separator, Truncate } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
+import { copyToClipboard, formatAsset, nonNullable } from '@/shared/lib/utils';
+import { DetailRow, IconButton, Separator } from '@/shared/ui';
+import { Account, Hash } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { networkSelectorModel } from '../../model/networkSelector';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -21,7 +20,7 @@ type Props = {
 };
 
 export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
-  const { decisionDeposit, submissionDeposit, approvalThreshold, supportThreshold, tally, proposal } = referendum;
+  const { decisionDeposit, submissionDeposit, approvalThreshold, supportThreshold, tally, rawProposal } = referendum;
 
   const chain = useUnit(networkSelectorModel.$governanceChain);
 
@@ -41,7 +40,7 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
     <Modal isOpen={isOpen} size="md" onToggle={closeModal}>
       <Modal.Title close>{t('governance.advanced.title')}</Modal.Title>
       <Modal.Content>
-        <div className="flex flex-col gap-4 pb-4 pe-3 ps-5">
+        <div className="flex flex-col gap-4 ps-5 pe-3 pb-4">
           <DetailRow
             label={t('governance.advanced.fields.proposer')}
             className="text-right text-footnote text-text-secondary"
@@ -71,11 +70,11 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
 
             <DetailRow label={t('governance.advanced.fields.electorate')}>{electorate}</DetailRow>
 
-            {isString(proposal) ? (
+            {nonNullable(rawProposal) ? (
               <DetailRow label={t('governance.advanced.fields.callHash')}>
-                <div className="flex w-32 items-center gap-1 text-text-secondary">
-                  <Truncate className="text-footnote" start={6} end={5} text={proposal} />
-                  <IconButton name="copy" onClick={() => copyToClipboard(proposal)} />
+                <div className="flex w-32 items-center gap-1 text-footnote text-text-secondary">
+                  <Hash value={rawProposal} variant="short" />
+                  <IconButton name="copy" onClick={() => copyToClipboard(rawProposal)} />
                 </div>
               </DetailRow>
             ) : null}

@@ -21,7 +21,7 @@ export const RadioCard = ({ option, children }: PropsWithChildren<Props>) => {
       {({ checked }) => (
         <div
           className={cnTw(
-            'max-w-[300px] flex-1 cursor-pointer rounded border border-filter-border p-6',
+            'max-w-[300px] flex-1 cursor-pointer rounded-sm border border-filter-border p-6',
             'transition hover:bg-hover',
             checked && 'border-active-container-border',
           )}

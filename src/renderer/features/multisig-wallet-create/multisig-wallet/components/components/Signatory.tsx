@@ -5,8 +5,8 @@ import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Address as AccountAddress, type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { includesMultiple, nullable, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
-import { FootnoteText, IconButton, Identicon, InputHint } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
+import { FootnoteText, IconButton, InputHint } from '@/shared/ui';
+import { Address, Identicon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Input, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
@@ -205,7 +205,7 @@ export const Signatory = ({
   const isInvalid = isInvalidAddress || signatoryAddress !== query;
 
   return (
-    <div className="grid grid-cols-[1fr,232px,44px] gap-x-4">
+    <div className="grid grid-cols-[1fr_232px_44px] gap-x-4">
       <Box width="100%" direction="row" verticalAlign="end" gap={3}>
         <FootnoteText className="pb-2 text-text-tertiary">{1 + signatoryIndex}</FootnoteText>
 

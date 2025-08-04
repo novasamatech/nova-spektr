@@ -564,6 +564,7 @@ type CreateFlexibleMultisigParams = {
   threshold: number;
   proxyDeposit: string;
   signatories: Signatory[];
+  isMultisigExists?: boolean;
 };
 
 function buildCreateFlexibleMultisig({
@@ -574,6 +575,7 @@ function buildCreateFlexibleMultisig({
   signatories,
   signerAccountId,
   proxyDeposit,
+  isMultisigExists,
 }: CreateFlexibleMultisigParams): Transaction {
   // transfer deposit to proxy account
   const transferTransaction = {
@@ -624,14 +626,19 @@ function buildCreateFlexibleMultisig({
     },
   };
 
-  const remarkTx = transactionBuilder.buildRemark({
-    chainId: chain.chainId,
-    accountId: signerAccountId,
-    threshold,
-    signatories: signatories.map((s) => s.accountId),
-  });
+  let transactions;
+  if (isMultisigExists) {
+    transactions = [transferTransaction, wrapperAdd, wrapperRemove];
+  } else {
+    const remarkTx = transactionBuilder.buildRemark({
+      chainId: chain.chainId,
+      accountId: signerAccountId,
+      threshold,
+      signatories: signatories.map((s) => s.accountId),
+    });
 
-  const transactions = [remarkTx, transferTransaction, wrapperAdd, wrapperRemove];
+    transactions = [remarkTx, transferTransaction, wrapperAdd, wrapperRemove];
+  }
 
   return buildBatchAll({ chain, accountId: signerAccountId, transactions });
 }

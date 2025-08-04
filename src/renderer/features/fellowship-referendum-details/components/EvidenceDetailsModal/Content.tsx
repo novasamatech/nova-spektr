@@ -3,8 +3,8 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { Alert, Markdown } from '@/shared/ui';
-import { Box, Skeleton } from '@/shared/ui-kit';
+import { Alert } from '@/shared/ui';
+import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 import { evidenceModel } from '../../model/evidence';
 import { Card } from '../Card';

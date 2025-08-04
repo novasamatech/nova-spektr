@@ -12,7 +12,7 @@ export const LastActivity = memo(() => {
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border bg-card-background">
-      <div className="flex h-11 shrink-0 items-center justify-between border-b border-filter-border bg-card-background pl-4 pr-2">
+      <div className="flex h-11 shrink-0 items-center justify-between border-b border-filter-border bg-card-background pr-2 pl-4">
         <span className="text-button-small">{t('fellowship.activityFeed.lastActivityCardTitle')}</span>
 
         <ActivityModal>

@@ -60,7 +60,7 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
 
           <DetailRow label={t('transaction.details.account')}>
             {initiators.length === 0 && (
-              <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+              <div className="rounded-[30px] bg-icon-accent px-1.5 py-px">
                 <CaptionText className="text-white">{initiators.length}</CaptionText>
               </div>
             )}
@@ -70,10 +70,10 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
             {initiators.length > 1 && (
               <button
                 type="button"
-                className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
+                className="group flex items-center gap-x-1 rounded-sm px-2 py-1 hover:bg-action-background-hover"
                 onClick={toggleAccounts}
               >
-                <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+                <div className="rounded-[30px] bg-icon-accent px-1.5 py-px">
                   <CaptionText className="text-white">{initiators.length}</CaptionText>
                 </div>
                 <Icon className="group-hover:text-icon-hover" name="info" size={16} />

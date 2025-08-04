@@ -15,7 +15,7 @@ import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
-const GRID_TEMPLATE = 'grid-cols-[40px,412px,166px,62px,44px,44px]';
+const GRID_TEMPLATE = 'grid-cols-[40px_412px_166px_62px_44px_44px]';
 
 export const YourDelegations = () => {
   const { t } = useI18n();
@@ -71,7 +71,7 @@ export const YourDelegations = () => {
     >
       <Modal.Title close>{t('governance.delegationDetails.yourDelegationsTitle')}</Modal.Title>
       <Modal.Content>
-        <div className={cnTw('mx-2 mb-2 mt-4 grid grid-flow-row items-center', GRID_TEMPLATE)}>
+        <div className={cnTw('mx-2 mt-4 mb-2 grid grid-flow-row items-center', GRID_TEMPLATE)}>
           <Box direction="row" horizontalAlign="center" verticalAlign="center">
             <Checkbox
               checked={selectedAccounts.length === activeAccounts.length}

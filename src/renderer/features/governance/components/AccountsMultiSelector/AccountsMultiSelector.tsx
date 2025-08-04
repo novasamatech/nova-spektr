@@ -120,7 +120,7 @@ export const AccountsMultiSelector = ({
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
               'bg-input-background text-text-primary',
-              'rounded border text-footnote outline-offset-1',
+              'rounded-sm border text-footnote outline-offset-1',
               'inline-flex w-full items-center justify-between gap-2 px-2 py-2',
             )}
             tabIndex={tabIndex}
@@ -140,7 +140,7 @@ export const AccountsMultiSelector = ({
               <li
                 key="all"
                 className={cnTw(
-                  'mb-1 rounded p-2 hover:bg-action-background-hover',
+                  'mb-1 rounded-sm p-2 hover:bg-action-background-hover',
                   OptionStyleTheme[theme](false, areAllOptionsSelected),
                 )}
               >
@@ -242,7 +242,7 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
     <>
       <div
         className={cnTw(
-          'my-1 flex rounded hover:bg-action-background-hover',
+          'my-1 flex rounded-sm hover:bg-action-background-hover',
           OptionStyleTheme[theme](false, isChecked),
         )}
       >

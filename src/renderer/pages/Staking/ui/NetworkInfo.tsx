@@ -58,7 +58,7 @@ export const NetworkInfo = ({
 
   return (
     <Plate className="flex w-full flex-col gap-y-3">
-      <div className="grid grid-cols-[178px,repeat(2,122px),28px] items-start gap-x-6">
+      <div className="grid grid-cols-[178px_repeat(2,122px)_28px] items-start gap-x-6">
         <div className="flex flex-col gap-y-2">
           <FootnoteText className="text-text-secondary">{t('staking.overview.networkLabel')}</FootnoteText>
           <Select

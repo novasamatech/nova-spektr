@@ -44,7 +44,7 @@ export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, c
   if (active) {
     return (
       <span
-        className={cnTw('spektr-shimmer block h-fit rounded-2lg [&>*]:invisible', {
+        className={cnTw('spektr-shimmer block h-fit rounded-2lg *:invisible', {
           'w-full': fullWidth,
           'w-fit': !fullWidth,
         })}

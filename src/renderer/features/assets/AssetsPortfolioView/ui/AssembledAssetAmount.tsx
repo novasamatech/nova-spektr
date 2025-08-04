@@ -35,7 +35,7 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
           <div
             tabIndex={0}
             className={cnTw(
-              'border-b border-filter-border px-[1px] transition-colors',
+              'border-b border-filter-border px-px transition-colors',
               'hover:rounded-md hover:border-transparent hover:bg-switch-background-inactive',
               'focus:rounded-md focus:border-transparent focus:bg-switch-background-inactive',
             )}

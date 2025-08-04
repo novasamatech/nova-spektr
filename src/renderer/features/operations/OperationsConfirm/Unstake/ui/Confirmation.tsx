@@ -49,7 +49,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   }
 
   return (
-    <div className="flex flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+    <div className="flex flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name="unstakeConfirm" size={60} />
 
@@ -57,7 +57,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <AssetBalance
             value={amount}
             asset={asset}
-            className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary"
+            className="font-manrope text-[32px] leading-[36px] font-bold text-text-primary"
           />
           <AssetFiatBalance asset={asset} amount={amount} className="text-headline" />
         </div>

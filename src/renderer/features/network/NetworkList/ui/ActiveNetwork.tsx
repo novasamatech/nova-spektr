@@ -45,7 +45,7 @@ export const ActiveNetwork = ({ networkItem, children }: PropsWithChildren<Props
   return (
     <div className="flex items-center py-3">
       <ChainIcon chain={networkItem} size={26} />
-      <div className="ml-2 mr-auto flex flex-col overflow-hidden pr-2">
+      <div className="mr-auto ml-2 flex flex-col overflow-hidden pr-2">
         <BodyText className="truncate">{networkItem.name}</BodyText>
         {networkItem.connection.activeNode && (
           <HelpText className="truncate text-text-tertiary">{networkItem.connection.activeNode.url}</HelpText>

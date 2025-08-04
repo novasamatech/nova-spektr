@@ -11,8 +11,8 @@ import {
 } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { assert, isEthereumAccountId, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
-import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
+import { assert, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { multisigOperationService, transactionService } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
 import { networkUtils } from '@/entities/network';
@@ -221,12 +221,9 @@ transactionSDK(multisigWalletFeature, {
 
 multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isMultisig(wallet)) return null;
-
   const address = wallet.accounts[0]?.accountId;
-  const isEthereum = isEthereumAccountId(address);
-  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
+  return <WalletAccountIcon address={address} type={wallet.type} size={size} />;
 });
 
 multisigWalletFeature.inject(walletGroupSlot, {
