@@ -100,9 +100,13 @@ export const createSubstrateSignWithProofPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   if (signingType === SigningType.POLKADOT_VAULT) {
-    return u8aConcat(
-      SUBSTRATE_ID,
-      createDynamicDerivationsSignPayload(address, payload, genesisHash, derivationPath, cryptoType),
+    return createDynamicDerivationsSignWithProofPayload(
+      address,
+      metadataProof,
+      payload,
+      genesisHash,
+      derivationPath,
+      cryptoType,
     );
   }
 
@@ -140,8 +144,8 @@ export const createDynamicDerivationsSignWithProofPayload = (
     new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
     new Uint8Array([Command.DynamicDerivationsTransactionWithProof]),
     decodeAddress(address),
-    u8aToU8a(metadataProof),
     str.encode(derivationPath),
+    u8aToU8a(metadataProof),
     u8aToU8a(payload),
     u8aToU8a(genesisHash),
   );
