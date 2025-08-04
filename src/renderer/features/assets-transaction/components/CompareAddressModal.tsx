@@ -52,10 +52,10 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
         </Modal.Trigger>
         <Modal.Content>
           <Box padding={[4, 5]} horizontalAlign="center" gap={3}>
-            <FootnoteText className="text-text-secondary mb-3">{t('receive.unfiedAddress.description')}</FootnoteText>
-            <div className="bg-main-app-background flex w-full items-center justify-between gap-2 p-3 pr-2">
+            <FootnoteText className="mb-3 text-text-secondary">{t('receive.unfiedAddress.description')}</FootnoteText>
+            <div className="flex w-full items-center justify-between gap-2 bg-main-app-background p-3 pr-2">
               <Box gap={1}>
-                <FootnoteText className="text-text-secondary flex gap-2">
+                <FootnoteText className="flex gap-2 text-text-secondary">
                   {t('receive.unfiedAddress.unifiedFormat')}
                   <Label variant="green">{t('receive.unfiedAddress.new')}</Label>
                 </FootnoteText>
@@ -68,7 +68,7 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
               </Button>
             </div>
 
-            <div className="bg-main-app-background flex w-full items-center justify-between gap-2 p-3 pr-2">
+            <div className="flex w-full items-center justify-between gap-2 bg-main-app-background p-3 pr-2">
               <Box gap={1}>
                 <FootnoteText className="text-text-secondary">{t('receive.unfiedAddress.legacyFormat')}</FootnoteText>
                 <FootnoteText>
@@ -111,7 +111,7 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
       <OperationResult
         autoCloseTimeout={2000}
         isOpen={Boolean(statusType)}
-        content={<Icon size={40} name="checkmarkOutline" className="text-icon-positive m-4" />}
+        content={<Icon size={40} name="checkmarkOutline" className="m-4 text-icon-positive" />}
         title={t(assetTransactionUtils.getStatusTitle(statusType))}
         onClose={() => setStatusType(null)}
       />

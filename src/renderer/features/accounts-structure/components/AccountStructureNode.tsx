@@ -100,7 +100,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
             <AsyncItem>
               <div className="flex flex-col">
                 <div
-                  className="border-divider flex items-center justify-between border-b px-4 py-2"
+                  className="flex items-center justify-between border-b border-divider px-4 py-2"
                   style={{ background: data.isSelected ? config?.color : 'transparent' }}
                 >
                   <SmallTitleText className={data.isSelected ? 'text-white' : 'text-text-secondary'}>
@@ -113,7 +113,7 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
                     </LabelText>
                   )}
                 </div>
-                <div className="text-text-secondary flex min-h-[56px] px-4 py-2 align-middle text-sm">
+                <div className="flex min-h-[56px] px-4 py-2 align-middle text-sm text-text-secondary">
                   <Address
                     address={toAddress(data.node.account.accountId, { prefix: chain?.addressPrefix })}
                     title={title}

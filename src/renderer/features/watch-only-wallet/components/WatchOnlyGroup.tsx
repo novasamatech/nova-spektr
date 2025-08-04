@@ -57,7 +57,7 @@ export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
                   wallet={wallet}
                   address={address}
                   description={
-                    <WalletFiatBalance walletId={wallet.id} className="text-help-text max-w-[215px] truncate" />
+                    <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
                   }
                   onClick={() => onSelect(wallet)}
                 >

@@ -44,10 +44,10 @@ export const ProxyAccount = ({
     <div className={cnTw('flex items-center gap-x-2', className)}>
       <Identicon address={address} size={20} background={false} canCopy={canCopy} />
       <div className="grid gap-y-0.5">
-        <BodyText className="text-text-secondary truncate">{name ?? addressContent}</BodyText>
-        {name && <HelpText className="text-text-tertiary truncate">{addressContent}</HelpText>}
+        <BodyText className="truncate text-text-secondary">{name ?? addressContent}</BodyText>
+        {name && <HelpText className="truncate text-text-tertiary">{addressContent}</HelpText>}
         <div className="mt-0.5 flex items-center gap-x-1">
-          <span className="bg-tab-text-accent h-1 w-1 rounded-full" />
+          <span className="h-1 w-1 rounded-full bg-tab-text-accent" />
           <HelpText className="text-tab-text-accent">{t(proxyUtils.getProxyTypeName(proxyType))}</HelpText>
         </div>
       </div>

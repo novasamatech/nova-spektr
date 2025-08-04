@@ -27,7 +27,7 @@ export const AssetBalance = ({ value, asset, className, showSymbol = true }: Pro
   });
 
   return (
-    <span className={cnTw('text-body text-text-primary shrink-0', className)}>
+    <span className={cnTw('shrink-0 text-body text-text-primary', className)}>
       {balanceValue}
       {suffix} {showSymbol && symbol}
     </span>

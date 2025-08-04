@@ -35,7 +35,7 @@ basketNavigationFeature.inject(navigationBottomLinksSlot, {
         icon="operations"
         title={t('navigation.basketLabel')}
         link={Paths.BASKET}
-        badge={<BodyText className="text-text-tertiary ml-auto">{availableOperations.length || ''}</BodyText>}
+        badge={<BodyText className="ml-auto text-text-tertiary">{availableOperations.length || ''}</BodyText>}
       ></NavItem>
     );
   },

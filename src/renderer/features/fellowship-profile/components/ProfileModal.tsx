@@ -84,7 +84,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
               {salaryService.formatSalaryAmount(salary.active)}
             </DetailRow>
             <div className="w-full grow" />
-            <div className="border-divider h-4.5 w-px border-r" />
+            <div className="h-4.5 w-px border-r border-divider" />
             <div className="w-full grow" />
             <DetailRow label={t('fellowship.profile.passiveSalary')}>
               {salaryService.formatSalaryAmount(salary.passive)}

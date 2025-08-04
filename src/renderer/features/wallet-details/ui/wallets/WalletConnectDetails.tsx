@@ -133,10 +133,10 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
               </div>
               {!isRenameModalOpen && (
                 <>
-                  <HeadlineText className="text-text-primary truncate" as="h3">
+                  <HeadlineText className="truncate text-text-primary" as="h3">
                     {wallet.name}
                   </HeadlineText>
-                  <div className="animate-in fade-in-0 flex shrink-0 items-center gap-3 duration-300">
+                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
                     <StatusLabel variant={connected ? 'success' : 'waiting'} />
                     <IconButton name="rename" size={16} onClick={toggleIsRenameModalOpen} />
                     <WalletFiatBalance />
@@ -148,7 +148,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
             <RenameWallet wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
 
             {!isRenameModalOpen && (
-              <div className="animate-in fade-in-0 ml-2 shrink-0 duration-300">
+              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
                 <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
               </div>
             )}

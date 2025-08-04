@@ -85,7 +85,7 @@ export const Confirmation = ({
 
   return (
     <>
-      <div className="w-modal flex flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+      <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
         <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="startStakingConfirm" size={60} />
 
@@ -93,7 +93,7 @@ export const Confirmation = ({
             <AssetBalance
               value={amountValue}
               asset={confirm.meta.asset}
-              className="font-manrope text-text-primary text-[32px] leading-[36px] font-bold"
+              className="font-manrope text-[32px] leading-[36px] font-bold text-text-primary"
             />
             <AssetFiatBalance asset={confirm.meta.asset} amount={amountValue} className="text-headline" />
           </div>
@@ -110,17 +110,17 @@ export const Confirmation = ({
           <DetailRow label={t('staking.confirmation.validatorsLabel')}>
             <button
               type="button"
-              className="group hover:bg-action-background-hover flex items-center gap-x-1 rounded-sm px-2 py-1"
+              className="group flex items-center gap-x-1 rounded-sm px-2 py-1 hover:bg-action-background-hover"
               onClick={toggleValidators}
             >
-              <div className="bg-icon-accent rounded-[30px] px-1.5 py-px">
+              <div className="rounded-[30px] bg-icon-accent px-1.5 py-px">
                 <CaptionText className="text-white">{confirm.meta.validators.length}</CaptionText>
               </div>
               <Icon className="group-hover:text-icon-hover" name="info" size={16} />
             </button>
           </DetailRow>
 
-          <hr className="border-filter-border w-full pr-2" />
+          <hr className="w-full border-filter-border pr-2" />
 
           <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
             {confirm.meta.destination ? (
@@ -130,7 +130,7 @@ export const Confirmation = ({
             )}
           </DetailRow>
 
-          <hr className="border-filter-border w-full pr-2" />
+          <hr className="w-full border-filter-border pr-2" />
 
           {multisigAccount && (
             <DetailRow
@@ -142,7 +142,7 @@ export const Confirmation = ({
                   <Tooltip>
                     <Tooltip.Trigger>
                       <div tabIndex={0}>
-                        <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                        <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
                       </div>
                     </Tooltip.Trigger>
                     <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

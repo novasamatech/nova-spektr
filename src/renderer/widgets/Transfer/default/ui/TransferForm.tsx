@@ -277,7 +277,7 @@ const Destination = () => {
         label: (
           <div className="flex items-center gap-x-2" key={walletFamily}>
             <WalletIcon type={walletFamily as WalletFamily} />
-            <CaptionText className="text-text-secondary font-semibold uppercase">
+            <CaptionText className="font-semibold text-text-secondary uppercase">
               {t(constants.GROUP_LABELS[walletFamily as WalletFamily])}
             </CaptionText>
           </div>

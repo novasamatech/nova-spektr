@@ -31,7 +31,7 @@ export const WalletCardSm = ({ wallet, onClick, children }: Props) => {
         <WalletIcon className="shrink-0" type={wallet.type} size={16} />
         <FootnoteText
           className={cnTw(
-            'text-text-secondary truncate transition-colors',
+            'truncate text-text-secondary transition-colors',
             'group-focus-within:text-text-primary group-hover:text-text-primary',
           )}
         >

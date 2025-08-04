@@ -44,10 +44,10 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
 
   return (
     <Box padding={[4, 5, 6, 5]} horizontalAlign="center" gap={2}>
-      <div className="bg-main-app-background w-full justify-items-center py-5">
+      <div className="w-full justify-items-center bg-main-app-background py-5">
         <QrTextGenerator skipEncoding className="mb-4" payload={qrCodePayload} size={240} />
       </div>
-      <div className="bg-main-app-background flex w-full items-center justify-between px-5 py-3">
+      <div className="flex w-full items-center justify-between bg-main-app-background px-5 py-3">
         <Account
           variant="truncate"
           accountId={selectedAccount.accountId}
@@ -60,7 +60,7 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
         </Button>
       </div>
       {(chain.explorers || []).length > 0 && (
-        <div className="bg-main-app-background flex w-full items-center justify-between px-5 py-3">
+        <div className="flex w-full items-center justify-between bg-main-app-background px-5 py-3">
           <FootnoteText className="text-text-secondary">{t('receive.viewInExplorers')}</FootnoteText>
           <ul className="flex gap-x-2">
             {chain.explorers?.map(({ name, account }) => (
@@ -81,7 +81,7 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
 
       {isUnifiedAddress && (
         <>
-          <div className="bg-main-app-background mb-3 flex w-full items-center justify-between px-5 py-3">
+          <div className="mb-3 flex w-full items-center justify-between bg-main-app-background px-5 py-3">
             <FootnoteText className="text-text-secondary">{t('receive.exchangeAccount')}</FootnoteText>
             <Button variant="text" size="sm" onClick={() => handleCopy(legacyAddress, 'legacy')}>
               {t('receive.copyLegacyFormat')}
@@ -99,7 +99,7 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
       <OperationResult
         autoCloseTimeout={2000}
         isOpen={Boolean(statusType)}
-        content={<Icon size={40} name="checkmarkOutline" className="text-icon-positive m-4" />}
+        content={<Icon size={40} name="checkmarkOutline" className="m-4 text-icon-positive" />}
         title={t(assetTransactionUtils.getStatusTitle(statusType))}
         onClose={() => setStatusType(null)}
       />

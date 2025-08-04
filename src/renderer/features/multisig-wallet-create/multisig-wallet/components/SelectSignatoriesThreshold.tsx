@@ -65,7 +65,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
         <div className="flex h-full flex-col gap-y-6 px-5 pt-4 pb-6">
           <SmallTitleText>{t('createMultisigAccount.signatoryThresholdDescription')}</SmallTitleText>
 
-          <hr className="border-divider -ml-5 w-[110%]" />
+          <hr className="-ml-5 w-[110%] border-divider" />
 
           {signatories.map((signatory, index) => (
             <Signatory
@@ -89,7 +89,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
             {t('createMultisigAccount.addNewSignatory')}
           </Button>
 
-          <hr className="border-divider -ml-5 w-[110%]" />
+          <hr className="-ml-5 w-[110%] border-divider" />
 
           <div className="flex gap-x-6">
             <Box width="100%">

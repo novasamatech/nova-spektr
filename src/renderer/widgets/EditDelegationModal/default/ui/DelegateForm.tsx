@@ -44,7 +44,7 @@ export const DelegateForm = ({ isOpen, onClose, onGoBack }: Props) => {
         )}
       </Modal.Title>
       <Modal.Content>
-        <div className="bg-card-background flex w-full flex-1 flex-col rounded-lg px-5">
+        <div className="flex w-full flex-1 flex-col rounded-lg bg-card-background px-5">
           <SmallTitleText>{t('governance.addDelegation.formTitle')}</SmallTitleText>
 
           <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
@@ -217,7 +217,7 @@ const FeeSection = () => {
               <Tooltip>
                 <Tooltip.Trigger>
                   <div tabIndex={0}>
-                    <Icon name="info" className="hover:text-icon-hover cursor-pointer" size={16} />
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
                   </div>
                 </Tooltip.Trigger>
                 <Tooltip.Content>{t('staking.tooltips.depositDescription')}</Tooltip.Content>

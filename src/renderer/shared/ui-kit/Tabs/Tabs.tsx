@@ -28,7 +28,7 @@ const Root = ({ value, onChange, children }: RootProps) => {
 
 const List = ({ children }: PropsWithChildren) => {
   return (
-    <RadixTabs.List className="bg-tab-background mb-2 flex shrink-0 gap-x-1 rounded-md p-0.5">
+    <RadixTabs.List className="mb-2 flex shrink-0 gap-x-1 rounded-md bg-tab-background p-0.5">
       {children}
     </RadixTabs.List>
   );
@@ -44,9 +44,9 @@ const Trigger = ({ value, disabled, children }: TriggerProps) => {
     <RadixTabs.Trigger
       value={value}
       className={cnTw(
-        'text-button-small text-text-secondary flex w-full items-center justify-center gap-1 rounded-sm bg-transparent px-2 py-1.5',
+        'flex w-full items-center justify-center gap-1 rounded-sm bg-transparent px-2 py-1.5 text-button-small text-text-secondary',
         'transition-all duration-100',
-        'data-[state=active]:text-text-primary data-[state=active]:shadow-card-shadow data-[state=active]:bg-white',
+        'data-[state=active]:bg-white data-[state=active]:text-text-primary data-[state=active]:shadow-card-shadow',
       )}
       disabled={disabled}
     >

@@ -25,7 +25,7 @@ export const Vote = ({ item, chain }: Props) => {
   });
 
   return (
-    <div className="text-text-secondary hover:bg-action-background-hover hover:text-text-primary flex items-center justify-between rounded-md pe-2">
+    <div className="flex items-center justify-between rounded-md pe-2 text-text-secondary hover:bg-action-background-hover hover:text-text-primary">
       <div className="shrink-0 grow">
         <RankedAccount
           rank={member?.rank || 0}

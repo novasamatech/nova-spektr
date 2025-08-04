@@ -25,7 +25,7 @@ export const FlexibleMultisigCreatedNotification = ({
     <Box gap={2} direction="row">
       <div className="relative">
         <WalletIcon type={WalletType.FLEXIBLE_MULTISIG} />
-        <div className="bg-icon-positive absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white" />
+        <div className="absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white bg-icon-positive" />
       </div>
 
       <Box gap={4}>

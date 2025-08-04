@@ -48,7 +48,7 @@ export const AccountsSelector = memo(
 
             return (
               <Select.Item key={account.id} value={account.id}>
-                <div className="text-body flex w-full items-center justify-between gap-2 text-start">
+                <div className="flex w-full items-center justify-between gap-2 text-start text-body">
                   <Address
                     showIcon
                     hideAddress

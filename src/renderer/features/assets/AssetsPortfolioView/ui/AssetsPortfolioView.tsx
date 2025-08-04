@@ -54,7 +54,7 @@ export const AssetsPortfolioView = () => {
           <FootnoteText className="text-text-tertiary" align="right">
             {fiatFlag && t('balances.price')}
           </FootnoteText>
-          <FootnoteText className="text-text-tertiary col-end-4" align="right">
+          <FootnoteText className="col-end-4 text-text-tertiary" align="right">
             {t('balances.balance')}
           </FootnoteText>
         </div>

@@ -211,7 +211,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
               )}
               onClick={toggleValidators}
             >
-              <div className="bg-icon-accent rounded-[30px] px-1.5 py-px">
+              <div className="rounded-[30px] bg-icon-accent px-1.5 py-px">
                 <CaptionText className="text-white" align="center">
                   {selectedValidators.length}
                 </CaptionText>

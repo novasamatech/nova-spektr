@@ -77,7 +77,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
           size="sm"
           prefixElement={<Icon name="chat" size={16} />}
           suffixElement={
-            <CaptionText className="bg-chip-icon rounded-full px-1.5 pt-px pb-[2px] text-white!">
+            <CaptionText className="rounded-full bg-chip-icon px-1.5 pt-px pb-[2px] text-white!">
               {operation.events.length}
             </CaptionText>
           }
@@ -90,7 +90,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
       <div className="flex flex-col gap-y-2">
         {Boolean(walletSignatories.length) && (
           <>
-            <FootnoteText className="text-text-tertiary mb-2" as="h4">
+            <FootnoteText className="mb-2 text-text-tertiary" as="h4">
               {t('operation.walletSignatoriesTitle')}
             </FootnoteText>
             <ul className="flex flex-col gap-y-2">
@@ -112,7 +112,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
 
         {Boolean(contactSignatories.length) && (
           <>
-            <FootnoteText className="text-text-tertiary mb-2" as="h4">
+            <FootnoteText className="mb-2 text-text-tertiary" as="h4">
               {t('operation.contactSignatoriesTitle')}
             </FootnoteText>
             <ul className="flex flex-col gap-y-2">

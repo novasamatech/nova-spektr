@@ -36,7 +36,7 @@ export const Welcome = () => {
   }, []);
 
   return (
-    <div className="animate-in fade-in flex h-full w-full">
+    <div className="flex h-full w-full animate-in fade-in">
       <div className="flex h-full w-[512px] flex-col">
         <TitleText className="px-10 pt-10 pb-4">{t('onboarding.welcome.title')}</TitleText>
 
@@ -52,7 +52,7 @@ export const Welcome = () => {
       </div>
       <div
         ref={logo}
-        className="logo-background bg-input-background-disabled relative flex h-full flex-1 flex-col items-end justify-center"
+        className="logo-background relative flex h-full flex-1 flex-col items-end justify-center bg-input-background-disabled"
       >
         <div className={cnTw('relative w-fit', fixed ? `pr-[225px]` : 'self-center')}>
           <Icon name="logoTitle" className="-scale-y-100" size={LOGO_WIDTH} />

@@ -38,7 +38,7 @@ export const RemoveOperation = ({ operation }: Props) => {
         onConfirm={handleRemoveConfirmed}
       >
         <SmallTitleText align="center">{t('basket.removeConfirm.title')}</SmallTitleText>
-        <FootnoteText className="text-text-tertiary mt-2" align="center">
+        <FootnoteText className="mt-2 text-text-tertiary" align="center">
           {t('basket.removeConfirm.description')}
         </FootnoteText>
       </ConfirmModal>

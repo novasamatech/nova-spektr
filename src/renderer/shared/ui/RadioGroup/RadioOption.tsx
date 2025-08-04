@@ -21,13 +21,13 @@ export const Option = ({ option, children }: PropsWithChildren<Props>) => {
       {({ checked }) => (
         <div
           className={cnTw(
-            'border-filter-border mb-2 cursor-pointer rounded-sm border last:mb-0',
+            'mb-2 cursor-pointer rounded-sm border border-filter-border last:mb-0',
             checked && 'border-active-container-border',
           )}
         >
           <div
             className={cnTw(
-              'hover:bg-hover focus:bg-hover flex cursor-pointer items-center justify-between p-3 transition',
+              'flex cursor-pointer items-center justify-between p-3 transition hover:bg-hover focus:bg-hover',
               checked ? 'bg-hover' : 'bg-tab-background',
             )}
           >
@@ -36,8 +36,8 @@ export const Option = ({ option, children }: PropsWithChildren<Props>) => {
             </SmallTitleText>
             <span
               className={cnTw(
-                'border-filter-border bg-card-background relative h-4 w-4 rounded-full border',
-                checked ? 'spektr-radio bg-primary-button-background-default border-0' : 'border-filter-border',
+                'relative h-4 w-4 rounded-full border border-filter-border bg-card-background',
+                checked ? 'spektr-radio border-0 bg-primary-button-background-default' : 'border-filter-border',
               )}
             />
           </div>

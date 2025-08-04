@@ -21,7 +21,7 @@ export const NoProxiesAction = ({ className, canCreateProxy = true, onAddProxy }
       </div>
       {canCreateProxy && (
         <>
-          <FootnoteText className="text-text-tertiary mb-4">
+          <FootnoteText className="mb-4 text-text-tertiary">
             {t('walletDetails.common.emptyProxyDescription')}
           </FootnoteText>
           <Button size="sm" onClick={onAddProxy}>

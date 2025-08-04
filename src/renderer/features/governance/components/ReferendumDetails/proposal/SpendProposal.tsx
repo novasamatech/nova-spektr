@@ -32,12 +32,12 @@ export const SpendProposal = ({ proposal }: Props) => {
   const formattedAddress = toAddress(proposal.beneficiary, { prefix: chain.addressPrefix });
 
   return (
-    <div className="text-text-secondary flex items-center gap-2">
+    <div className="flex items-center gap-2 text-text-secondary">
       <FootnoteText className="text-text-secondary">{t('governance.referendum.beneficiary')}</FootnoteText>
       <FootnoteText className="grow">
         <Address address={formattedAddress} variant="short" showIcon title={identity?.name} hideAddress />
       </FootnoteText>
-      <FootnoteText className="text-text-secondary flex shrink-0">
+      <FootnoteText className="flex shrink-0 text-text-secondary">
         {t('governance.referendum.requested', { amount: amount.formatted, asset: nativeAsset?.symbol })}
       </FootnoteText>
     </div>

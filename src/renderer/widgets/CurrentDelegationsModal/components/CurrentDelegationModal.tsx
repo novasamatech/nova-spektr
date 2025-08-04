@@ -32,7 +32,7 @@ export const CurrentDelegationModal = () => {
         <OperationTitle title={t('governance.delegations.title')} chainId={network.chain.chainId} />
       </Modal.Title>
       <Modal.Content>
-        <div className="bg-main-app-background flex h-full flex-col py-4">
+        <div className="flex h-full flex-col bg-main-app-background py-4">
           {isListLoading && (
             <div className="flex h-full items-center justify-center">
               <Loader color="primary" size={25} />

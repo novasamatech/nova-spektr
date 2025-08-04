@@ -95,7 +95,7 @@ export const NetworkInfo = ({
 
       {isChildrenShown && (
         <>
-          <hr className="border-divider -mx-3" />
+          <hr className="-mx-3 border-divider" />
           {children}
         </>
       )}

@@ -17,7 +17,7 @@ export const EmptyList = ({ title, message, iconAlt = '', children }: PropsWithC
 
       <div className="flex flex-col items-center gap-3">
         <SmallTitleText>{title}</SmallTitleText>
-        <BodyText className="text-text-tertiary w-[300px] text-center">{message}</BodyText>
+        <BodyText className="w-[300px] text-center text-text-tertiary">{message}</BodyText>
       </div>
 
       {children}
@@ -30,7 +30,7 @@ export const EmptyListWithIcon = ({ title, message, children }: PropsWithChildre
     <Box padding={[43, 10]} gap={2} horizontalAlign="center" verticalAlign="center">
       <Icon size={64} name="empty" className="mb-4" />
       <SmallTitleText>{title}</SmallTitleText>
-      <FootnoteText className="text-text-tertiary text-center">{message} </FootnoteText>
+      <FootnoteText className="text-center text-text-tertiary">{message} </FootnoteText>
       {children}
     </Box>
   );

@@ -49,7 +49,7 @@ export const NominatorsList = ({
     return (
       <Tooltip>
         <Tooltip.Trigger>
-          <div className="bg-badge-background flex items-center gap-x-1 rounded-md px-2 py-0.5">
+          <div className="flex items-center gap-x-1 rounded-md bg-badge-background px-2 py-0.5">
             <Icon name="unstake" className="text-icon-accent" size={14} />
             <HelpText className="text-icon-accent">
               <TimeToEra className="my-1" api={api} timelineApi={timelineApi} era={nextUnstakingEra} />
@@ -69,7 +69,7 @@ export const NominatorsList = ({
     return (
       <Tooltip>
         <Tooltip.Trigger>
-          <div className="bg-positive-background text-text-positive flex items-center gap-x-1 rounded-md px-2 py-0.5">
+          <div className="flex items-center gap-x-1 rounded-md bg-positive-background px-2 py-0.5 text-text-positive">
             <Icon name="redeem" className="text-text-positive" size={14} />
             <HelpText className="text-text-positive">{t('staking.tooltips.redeemTitle')}</HelpText>
           </div>

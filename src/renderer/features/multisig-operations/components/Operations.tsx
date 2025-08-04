@@ -59,7 +59,7 @@ export const Operations = () => {
               .sort(sortByDateDesc)
               .map(([date, txs]) => (
                 <section className="mt-6 w-fit" key={date}>
-                  <FootnoteText className="text-text-tertiary mb-3 ml-2">{date}</FootnoteText>
+                  <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
                   <ul className="flex w-[736px] flex-col gap-y-1.5">
                     {txs
                       .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))

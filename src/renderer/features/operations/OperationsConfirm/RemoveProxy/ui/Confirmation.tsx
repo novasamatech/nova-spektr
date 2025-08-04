@@ -60,7 +60,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <Account accountId={(spawner || delegate)!} chain={chain} variant="short" />
         </DetailRow>
 
-        <hr className="border-filter-border w-full pr-2" />
+        <hr className="w-full border-filter-border pr-2" />
 
         {multisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit} />}
 

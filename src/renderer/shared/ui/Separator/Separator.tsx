@@ -13,9 +13,9 @@ type Props = PropsWithChildren<{
 export const Separator = ({ className, vertical, children }: Props) => {
   if (vertical) {
     return (
-      <div className={cnTw('spektr-vertical-separator border-divider flex items-center', className)}>
+      <div className={cnTw('spektr-vertical-separator flex items-center border-divider', className)}>
         {children ? (
-          <CaptionText className="text-text-tertiary my-4 uppercase" align="center">
+          <CaptionText className="my-4 text-text-tertiary uppercase" align="center">
             {children}
           </CaptionText>
         ) : null}
@@ -24,9 +24,9 @@ export const Separator = ({ className, vertical, children }: Props) => {
   }
 
   return (
-    <div className={cnTw('spektr-separator border-divider flex w-full items-center', className)}>
+    <div className={cnTw('spektr-separator flex w-full items-center border-divider', className)}>
       {children ? (
-        <CaptionText className="text-text-tertiary mx-4 uppercase" align="center">
+        <CaptionText className="mx-4 text-text-tertiary uppercase" align="center">
           {children}
         </CaptionText>
       ) : null}

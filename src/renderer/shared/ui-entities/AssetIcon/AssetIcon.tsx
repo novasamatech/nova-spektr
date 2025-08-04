@@ -24,7 +24,7 @@ export const AssetIcon = memo(({ asset, style, size = 36 }: Props) => {
   return (
     <div
       className={cnTw('relative h-fit w-fit min-w-fit rounded-full', {
-        'border-token-border bg-token-background border p-px': computedStyle === 'monochrome',
+        'border border-token-border bg-token-background p-px': computedStyle === 'monochrome',
       })}
     >
       {!isImgLoaded && <Skeleton circle width={iconSize / 4} height={iconSize / 4} />}
