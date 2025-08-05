@@ -12,7 +12,6 @@ import {
   type TMultisigOperations,
   type TNotification,
   type TProxy,
-  type TProxyGroup,
   type TWallet,
 } from '../lib/types';
 import {
@@ -42,7 +41,6 @@ class DexieStorage extends Dexie {
   notifications: TNotification;
   metadata: TMetadata;
   proxies: TProxy;
-  proxyGroups: TProxyGroup;
   basketTransactions: TBasketTransaction;
 
   constructor() {
@@ -76,7 +74,6 @@ class DexieStorage extends Dexie {
 
     this.version(21).stores({
       proxies: '++id',
-      proxyGroups: '++id',
       connections: '++id',
       notifications: '++id',
       metadata: null,
@@ -136,7 +133,6 @@ class DexieStorage extends Dexie {
     this.notifications = this.table('notifications');
     this.metadata = this.table('metadata');
     this.proxies = this.table('proxies');
-    this.proxyGroups = this.table('proxyGroups');
     this.basketTransactions = this.table('basketTransactions');
   }
 }
@@ -146,7 +142,7 @@ const dexie = new DexieStorage();
 export const exportDb = async () => {
   const blob = await exportDB(dexie, {
     prettyJson: true,
-    skipTables: ['metadata', 'balances', 'proxies', 'proxyGroups', 'basketTransactions'],
+    skipTables: ['metadata', 'balances', 'proxies', 'basketTransactions'],
   });
 
   return { blob, fileName: 'spektr-database.json' };
@@ -167,7 +163,6 @@ export const dexieStorage = {
   contacts: dexie.contacts,
   connections: dexie.connections,
   proxies: dexie.proxies,
-  proxyGroups: dexie.proxyGroups,
   notifications: dexie.notifications,
   metadata: dexie.metadata,
   balances: dexie.balances,

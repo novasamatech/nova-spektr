@@ -31,9 +31,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
 
   test('should go through the process of proxy create', async () => {
     jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
-    jest.spyOn(storageService.proxyGroups, 'createAll').mockResolvedValue([]);
     jest.spyOn(storageService.proxies, 'updateAll').mockResolvedValue([]);
-    jest.spyOn(storageService.proxyGroups, 'updateAll').mockResolvedValue([]);
 
     const scope = fork({
       values: new Map()

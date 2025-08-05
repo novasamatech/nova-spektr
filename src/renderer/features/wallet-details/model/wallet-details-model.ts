@@ -1,11 +1,12 @@
 import { combine } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type ChainId, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
+import { type ChainId, type ProxyAccount, type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
-import { permissionUtils } from '@/entities/wallet';
+import { accountUtils, permissionUtils } from '@/entities/wallet';
+import { proxiesModel } from '@/features/proxies';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
@@ -36,28 +37,22 @@ const $chainsProxies = combine(
 const $walletProxyGroups = combine(
   {
     wallet: $wallet,
-    chainsProxies: $chainsProxies,
-    groups: proxyModel.$walletsProxyGroups,
+    deposits: proxiesModel.$deposits,
   },
-  ({ wallet, groups }): ProxyGroup[] => {
-    if (nullable(wallet) || nullable(groups[wallet.id])) return [];
+  ({ wallet, deposits }) => {
+    if (nullable(wallet)) return [];
 
-    // TODO: Find why it can be doubled sometimes https://github.com/novasamatech/nova-spektr/issues/1655
-    const walletGroups = groups[wallet.id];
-    const filteredGroups = walletGroups.reduceRight(
-      (acc, group) => {
-        const id = `${group.chainId}_${group.proxiedAccountId}_${group.walletId}`;
+    return wallet.accounts.filter(accountUtils.isProxiedAccount).map(account => {
+      const chainDeposits = deposits.find(d => d.chainId === account.chainId);
+      const deposit = chainDeposits?.deposits[account.accountId] || '0';
 
-        if (!acc[id]) {
-          acc[id] = group;
-        }
-
-        return acc;
-      },
-      {} as Record<string, ProxyGroup>,
-    );
-
-    return Object.values(filteredGroups);
+      return {
+        chainId: account.chainId,
+        proxiedAccountId: account.accountId,
+        walletId: account.walletId,
+        totalDeposit: deposit,
+      };
+    });
   },
 );
 

@@ -3,14 +3,6 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type ProxiedAccount } from './account';
 import { type ChainId, type ID } from './general';
 
-export type ProxyGroup = {
-  id: ID;
-  walletId: ID;
-  proxiedAccountId: AccountId;
-  chainId: ChainId;
-  totalDeposit: string;
-};
-
 export type ProxyAccount = {
   id: ID;
   accountId: AccountId;

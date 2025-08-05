@@ -312,22 +312,8 @@ sample({
   target: series(walletModel.events.proxiedCreated),
 });
 
-sample({
-  clock: depositsReceived,
-  source: {
-    wallets: walletModel.$wallets,
-    groups: proxyModel.$proxyGroups,
-  },
-  filter: (_, deposits) => Boolean(deposits),
-  fn: ({ wallets, groups }, deposits) => proxyUtils.createProxyGroups(wallets, groups, deposits!),
-  target: spread({
-    toAdd: proxyModel.events.proxyGroupsAdded,
-    toUpdate: proxyModel.events.proxyGroupsUpdated,
-    toRemove: proxyModel.events.proxyGroupsRemoved,
-  }),
-});
-
 export const proxiesModel = {
+  $deposits,
   findAllProxies: findAllProxiesFx,
   createProxiedWallet: createProxiedWalletFx,
   createProxiesWallets: createProxiesWalletsFx,

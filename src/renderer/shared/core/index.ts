@@ -66,7 +66,6 @@ export type {
   PartialProxyAccount,
   PartialProxiedAccount,
   ProxyDeposits,
-  ProxyGroup,
   ProxyType,
 } from './types/proxy';
 export { ProxyVariant } from './types/proxy';
