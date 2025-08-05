@@ -31,10 +31,10 @@ const $proxyAddress = createStore<Address | null>(null).reset(flexibleMultisigMo
 
 type SubscribePureEvent = {
   api: ApiPromise;
-  signer: AnyAccount;
+  signatory: AnyAccount;
 };
 
-const subscribePureEventFx = createEffect(({ api, signer }: SubscribePureEvent): Promise<Address> => {
+const subscribePureEventFx = createEffect(({ api, signatory }: SubscribePureEvent): Promise<Address> => {
   return new Promise(resolve => {
     const eventSchema = z.object({
       proxyType: z.string(),
@@ -50,7 +50,7 @@ const subscribePureEventFx = createEffect(({ api, signer }: SubscribePureEvent):
         const data = eventSchema.parse(event.data.toHuman());
         const accountId = toAccountId(data.who);
 
-        if (!data || signer.accountId !== accountId) return;
+        if (!data || signatory.accountId !== accountId) return;
 
         unsubscribe.then(fn => fn());
         resolve(data.pure);
@@ -63,21 +63,21 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: {
     api: $api,
-    signer: flexibleMultisigModel.$signer,
+    signatory: flexibleMultisigModel.$signer,
     proxyAddress: $proxyAddress,
   },
-  filter: ({ api, signer, proxyAddress }, results) => {
+  filter: ({ api, signatory, proxyAddress }, results) => {
     return (
       nonNullable(api) &&
       nullable(proxyAddress) &&
-      nonNullable(signer) &&
+      nonNullable(signatory) &&
       results.some(({ result }) => submitUtils.isSuccessResult(result))
     );
   },
-  fn: ({ api, signer }) => {
+  fn: ({ api, signatory }) => {
     return {
       api: api!,
-      signer: signer!,
+      signatory: signatory!,
     };
   },
   target: subscribePureEventFx,
@@ -143,19 +143,19 @@ sample({
   source: {
     chain: formModel.$chain,
     tx: $tx,
-    signer: flexibleMultisigModel.$signer,
+    signatory: flexibleMultisigModel.$signer,
     initiator: flexibleMultisigModel.$initiator,
   },
-  filter: ({ chain, tx, signer, initiator }) =>
-    nonNullable(chain) && nonNullable(tx) && nonNullable(signer) && nonNullable(initiator),
-  fn: ({ chain, tx, signer, initiator }) => ({
+  filter: ({ chain, tx, signatory, initiator }) =>
+    nonNullable(chain) && nonNullable(tx) && nonNullable(signatory) && nonNullable(initiator),
+  fn: ({ chain, tx, signatory, initiator }) => ({
     event: {
       signingPayloads: [
         {
           chain: chain!,
           account: initiator!,
           transaction: tx!,
-          signatory: signer,
+          signatory,
         },
       ],
     },
