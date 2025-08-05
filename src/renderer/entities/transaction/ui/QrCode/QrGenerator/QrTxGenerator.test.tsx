@@ -15,7 +15,7 @@ describe('ui/QrTxGenerator', () => {
       u8aToU8a('my_payload'),
       u8aToU8a('0xe143f23803ac50e8f6f8e62695d1ce9e4e1d68aa36c1cd2cfd15340213f3423e'),
     );
-    const { container } = render(<QrTxGenerator payload={payload} size="200px" skipEncoding />);
+    const { container } = render(<QrTxGenerator payload={payload} size="200px" />);
 
     const svgQr = container.querySelector('svg');
     expect(svgQr).toBeInTheDocument();

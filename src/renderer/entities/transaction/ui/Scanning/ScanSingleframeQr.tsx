@@ -115,8 +115,8 @@ export const ScanSingleframeQr = ({
               <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
             </Tabs.List>
           </Box>
-          {qrPayload && <QrTxGenerator payload={qrPayload} />}
         </Tabs>
+        <QrTxGenerator payload={qrPayload} />
       </QrGeneratorContainer>
 
       <div className="mt-3 flex w-full justify-between pl-2">
