@@ -58,6 +58,7 @@ export interface ProxiedAccount extends ChainAccount {
   accountType: AccountType.PROXIED;
   connections: ProxiedConnection[];
   proxyVariant: ProxyVariant;
+  deposit: string;
   blockNumber?: number;
   extrinsicIndex?: number;
 }

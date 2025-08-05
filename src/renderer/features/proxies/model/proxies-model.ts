@@ -15,7 +15,6 @@ import {
   type ProxiedAccount,
   type ProxiedWallet,
   type ProxyAccount,
-  type ProxyDeposits,
   ProxyVariant,
   SigningType,
   type Wallet,
@@ -23,7 +22,6 @@ import {
 } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { dictionary, withTimeout } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type AnyAccount,
   type IdentityMap,
@@ -45,10 +43,8 @@ const LOADING_TIMEOUT = 15_000;
 
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const proxiedAccountsUpdated = createEvent<ProxiedAccount[]>();
-const depositsReceived = createEvent<ProxyDeposits>();
 
 const $worker = createStore<WorkerType | null>(null);
-const $deposits = createStore<ProxyDeposits[]>([]);
 
 // Worker management
 
@@ -89,10 +85,6 @@ type GetProxiesResult = {
   proxiedAccountsToAdd: PartialProxiedAccount[];
   proxiedAccountsToRemove: ProxiedAccount[];
   proxiedAccountsToUpdate: PartialProxiedAccount[];
-  deposits: {
-    chainId: ChainId;
-    deposits: Record<AccountId, string>;
-  };
 };
 
 const requestIdentitiesFx = attach({
@@ -268,7 +260,6 @@ spread({
     proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiedAccountsToRemove: proxiedAccountsRemoved,
     proxiedAccountsToUpdate: proxiedAccountsUpdated,
-    deposits: depositsReceived,
   },
 });
 
@@ -282,14 +273,6 @@ sample({
 sample({
   clock: proxiedAccountsUpdated,
   target: accounts.updateAccounts,
-});
-
-sample({
-  clock: depositsReceived,
-  source: $deposits,
-  filter: (_, newDeposits) => newDeposits && Object.keys(newDeposits.deposits).length > 0,
-  fn: (deposits, newDeposits) => deposits.filter((d) => d.chainId === newDeposits.chainId).concat(newDeposits),
-  target: $deposits,
 });
 
 sample({
@@ -310,21 +293,6 @@ sample({
 sample({
   clock: createProxiesWalletsFx.doneData,
   target: series(walletModel.events.proxiedCreated),
-});
-
-sample({
-  clock: depositsReceived,
-  source: {
-    wallets: walletModel.$wallets,
-    groups: proxyModel.$proxyGroups,
-  },
-  filter: (_, deposits) => Boolean(deposits),
-  fn: ({ wallets, groups }, deposits) => proxyUtils.createProxyGroups(wallets, groups, deposits!),
-  target: spread({
-    toAdd: proxyModel.events.proxyGroupsAdded,
-    toUpdate: proxyModel.events.proxyGroupsUpdated,
-    toRemove: proxyModel.events.proxyGroupsRemoved,
-  }),
 });
 
 export const proxiesModel = {

@@ -31,33 +31,6 @@ describe('entities/proxy/lib/proxy-utils', () => {
     expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
   });
 
-  test('should return proxy group', () => {
-    const { wallets, deposits } = proxyMock;
-    const result = proxyUtils.getProxyGroups([wallets[0]], deposits[0]);
-
-    expect(result).toEqual([
-      {
-        walletId: 1,
-        proxiedAccountId: TEST_ACCOUNTS[0],
-        chainId: '0x001',
-        totalDeposit: '100',
-      },
-    ]);
-  });
-
-  test('should return proxy group for Wallet Connect', () => {
-    const { wallets, deposits } = proxyMock;
-    const result = proxyUtils.getProxyGroups([wallets[1]], deposits[1]);
-
-    expect(result).toEqual([
-      {
-        walletId: 2,
-        proxiedAccountId: TEST_ACCOUNTS[1],
-        chainId: '0x001',
-        totalDeposit: '200',
-      },
-    ]);
-  });
 
   test('should sort proxy accounts by type', () => {
     const { proxyAccounts } = proxyMock;

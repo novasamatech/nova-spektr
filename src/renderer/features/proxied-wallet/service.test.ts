@@ -23,6 +23,7 @@ function createProxy(proxyType: ProxyType): ProxiedAccount {
     proxyVariant: ProxyVariant.NONE,
     name: proxyType,
     walletId: 0,
+    deposit: '100',
   };
 }
 
