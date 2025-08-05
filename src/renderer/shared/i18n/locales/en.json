@@ -1727,6 +1727,12 @@
       "switchLabel": "Show currency values",
       "unpopularFiatLabel": "Fiat currencies"
     },
+    "hiddenWallets": {
+      "modalTitle": "Hidden wallets",
+      "searchPlaceholder": "Search",
+      "allWallets": "All wallets",
+      "restore": "Restore"
+    },
     "networks": {
       "activeNetworksLabel": "Active networks",
       "addNodeButton": "Add custom node",
@@ -1787,7 +1793,8 @@
       "twitterLabel": "Twitter",
       "versionLabel": "Version",
       "youtubeDescription": "Discover our demo recordings and valuable learning materials on YouTube!",
-      "youtubeLabel": "YouTube"
+      "youtubeLabel": "YouTube",
+      "hiddenWalletsLabel": "Hidden wallets"
     },
     "title": "Settings"
   },

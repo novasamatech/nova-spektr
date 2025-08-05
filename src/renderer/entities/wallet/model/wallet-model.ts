@@ -40,6 +40,8 @@ const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 
 const walletRestored = createEvent<Wallet>();
+const walletsRestored = createEvent<ID[]>();
+
 const walletRemoved = createEvent<ID>();
 // TODO this is temp solution, each type of wallet should update own data inside feature
 const updateWallet = createEvent<{ walletId: ID; data: NonNullable<unknown> }>();
@@ -180,6 +182,12 @@ const restoreWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => 
   return wallet;
 });
 
+const restoreWalletsFx = createEffect(async (walletIds: ID[]): Promise<ID[]> => {
+  await Promise.all(walletIds.map((walletId) => storageService.wallets.update(walletId, { isHidden: false })));
+
+  return walletIds;
+});
+
 sample({
   clock: fetchAllWalletsFx.doneData,
   target: $rawWallets,
@@ -314,6 +322,22 @@ sample({
 });
 
 sample({
+  clock: walletsRestored,
+  target: restoreWalletsFx,
+});
+
+sample({
+  clock: restoreWalletsFx.doneData,
+  source: $rawWallets,
+  fn: (wallets, walletIdsToRestore) => {
+    return wallets.map((wallet) => {
+      return walletIdsToRestore.includes(wallet.id) ? { ...wallet, isHidden: false } : wallet;
+    });
+  },
+  target: $rawWallets,
+});
+
+sample({
   clock: restoreWalletFx.doneData,
   source: $rawWallets,
   fn: (wallets, walletToRestore) => {
@@ -400,6 +424,8 @@ export const walletModel = {
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
     walletRestored,
+    walletsRestored,
+    walletsRestoredSuccess: restoreWalletsFx.done,
     walletRestoredSuccess: restoreWalletFx.done,
   },
 

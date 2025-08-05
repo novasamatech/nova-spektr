@@ -88,6 +88,19 @@ export const GeneralActions = () => {
 
       <Plate className="p-0">
         <Link
+          to={Paths.HIDDEN_WALLETS}
+          className={cnTw(
+            'flex w-full items-center gap-x-2 rounded-md p-3',
+            'transition hover:shadow-card-shadow focus:shadow-card-shadow',
+          )}
+        >
+          <Icon className="row-span-2" name="hiddenWallet" size={36} />
+          <BodyText>{t('settings.overview.hiddenWalletsLabel')}</BodyText>
+        </Link>
+      </Plate>
+
+      <Plate className="p-0">
+        <Link
           to={Paths.REFERENDUM_DATA}
           className={cnTw(
             'flex w-full items-center gap-x-2 rounded-sm p-3',

@@ -23,6 +23,7 @@ export const Paths = {
   // Settings
   SETTINGS: '/settings',
   NETWORK: '/settings/network',
+  HIDDEN_WALLETS: '/settings/hidden-wallets',
   CURRENCY: '/settings/currency',
   REFERENDUM_DATA: '/settings/referendum',
 
