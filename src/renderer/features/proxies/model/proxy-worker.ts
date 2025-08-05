@@ -14,7 +14,6 @@ import {
   type ProxiedAccount,
   type ProxiedConnection,
   type ProxyAccount,
-  type ProxyDeposits,
   type ProxyType,
   ProxyVariant,
 } from '@/shared/core';
@@ -74,11 +73,6 @@ async function getProxies({
   const proxiedAccountsToAdd: PartialProxiedAccount[] = [];
   const proxiedAccountsToUpdate: ProxiedAccount[] = [];
 
-  const deposits: ProxyDeposits = {
-    chainId: chain.chainId,
-    deposits: {},
-  };
-
   if (!api || !api.query.proxy) {
     return {
       proxiesToAdd,
@@ -86,7 +80,6 @@ async function getProxies({
       proxiedAccountsToAdd,
       proxiedAccountsToRemove: [],
       proxiedAccountsToUpdate,
-      deposits,
     };
   }
 
@@ -103,6 +96,7 @@ async function getProxies({
           chainId: chain.chainId,
           accountId: account,
           proxyVariant: ProxyVariant.NONE,
+          deposit: value.deposit.toString(),
           connections: value.proxies
             .filter(
               (delegatedAccount) =>
@@ -127,6 +121,7 @@ async function getProxies({
           } else {
             const hasChanged =
               existingProxied.connections.length !== newProxied.connections.length ||
+              existingProxied.deposit !== newProxied.deposit ||
               existingProxied.connections.some((existingConnection, index) => {
                 const newConnection = newProxied.connections.at(index);
                 return (
@@ -141,8 +136,6 @@ async function getProxies({
               proxiedAccountsToUpdate.push({ ...existingProxied, ...newProxied });
             }
           }
-
-          deposits.deposits[account] = value.deposit.toString();
         }
 
         existingProxiedAccounts.push(newProxied);
@@ -191,7 +184,6 @@ async function getProxies({
     proxiedAccountsToAdd,
     proxiedAccountsToRemove,
     proxiedAccountsToUpdate,
-    deposits,
   };
 }
 

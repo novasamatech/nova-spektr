@@ -70,6 +70,7 @@ export const accounts = {
     proxyVariant: ProxyVariant.PURE,
     blockNumber: 23960326,
     extrinsicIndex: 2,
+    deposit: '100',
     connections: [
       {
         proxyAccountId: '0xf9e94d71f4e3695e07e21b574e1ce2e56b228a020a34824884ed9987e6a4e4ad' as AccountId,

@@ -60,6 +60,7 @@ describe('features/proxies/lib/worker-utils', () => {
       name: 'Proxied wallet',
       accountType: AccountType.PROXIED,
       accountId: '0x00' as AccountId,
+      deposit: '100',
       connections: [
         {
           proxyAccountId: '0x01' as AccountId,
@@ -78,6 +79,7 @@ describe('features/proxies/lib/worker-utils', () => {
       name: 'Proxied wallet 2',
       accountType: AccountType.PROXIED,
       accountId: '0x00' as AccountId,
+      deposit: '100',
       connections: [
         {
           proxyAccountId: '0x01' as AccountId,
@@ -102,6 +104,7 @@ describe('features/proxies/lib/worker-utils', () => {
       name: 'Proxied wallet',
       accountType: AccountType.PROXIED,
       accountId: '0x00' as AccountId,
+      deposit: '100',
       connections: [
         {
           proxyAccountId: '0x01' as AccountId,
@@ -120,6 +123,7 @@ describe('features/proxies/lib/worker-utils', () => {
       name: 'Proxied wallet 2',
       accountType: AccountType.PROXIED,
       accountId: '0x00' as AccountId,
+      deposit: '100',
       connections: [
         {
           proxyAccountId: '0x02' as AccountId,

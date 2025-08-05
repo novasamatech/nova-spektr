@@ -22,9 +22,7 @@ describe('widgets/AddPureProxyModal/model/add-pure-proxied-model', () => {
 
   test('should go through the process of pure proxied create', async () => {
     jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
-    jest.spyOn(storageService.proxyGroups, 'createAll').mockResolvedValue([]);
     jest.spyOn(storageService.proxies, 'updateAll').mockResolvedValue([]);
-    jest.spyOn(storageService.proxyGroups, 'updateAll').mockResolvedValue([]);
 
     jest.spyOn(subscriptionService, 'subscribeEvents').mockImplementation((api, params, callback) => {
       callback({ data: [{ toHex: () => '0x01' }] } as unknown as Event);

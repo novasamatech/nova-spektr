@@ -232,6 +232,7 @@ sample({
       type: 'chain',
       signingType: SigningType.WATCH_ONLY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+      deposit: '100',
       connections: [
         {
           proxyAccountId: multisigAccountId!,
