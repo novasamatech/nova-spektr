@@ -31,10 +31,10 @@ const $proxyAddress = createStore<Address | null>(null).reset(flexibleMultisigMo
 
 type SubscribePureEvent = {
   api: ApiPromise;
-  accounts: AnyAccount[];
+  signer: AnyAccount;
 };
 
-const subscribePureEventFx = createEffect(({ api, accounts }: SubscribePureEvent): Promise<Address> => {
+const subscribePureEventFx = createEffect(({ api, signer }: SubscribePureEvent): Promise<Address> => {
   return new Promise(resolve => {
     const eventSchema = z.object({
       proxyType: z.string(),
@@ -50,7 +50,7 @@ const subscribePureEventFx = createEffect(({ api, accounts }: SubscribePureEvent
         const data = eventSchema.parse(event.data.toHuman());
         const accountId = toAccountId(data.who);
 
-        if (!data || !accounts.some(a => a.accountId === accountId)) return;
+        if (!data || signer.accountId !== accountId) return;
 
         unsubscribe.then(fn => fn());
         resolve(data.pure);
@@ -63,18 +63,21 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: {
     api: $api,
-    accounts: accounts.$list,
+    signer: flexibleMultisigModel.$signer,
     proxyAddress: $proxyAddress,
   },
-  filter: ({ api, proxyAddress }, results) => {
+  filter: ({ api, signer, proxyAddress }, results) => {
     return (
-      nonNullable(api) && nullable(proxyAddress) && results.some(({ result }) => submitUtils.isSuccessResult(result))
+      nonNullable(api) &&
+      nullable(proxyAddress) &&
+      nonNullable(signer) &&
+      results.some(({ result }) => submitUtils.isSuccessResult(result))
     );
   },
-  fn: ({ api, accounts }) => {
+  fn: ({ api, signer }) => {
     return {
       api: api!,
-      accounts,
+      signer: signer!,
     };
   },
   target: subscribePureEventFx,
