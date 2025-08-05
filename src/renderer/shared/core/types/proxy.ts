@@ -33,10 +33,5 @@ export type PartialProxyAccount = Omit<ProxyAccount, 'chainId'>;
 
 export type PartialProxiedAccount = Pick<
   ProxiedAccount,
-  'chainId' | 'connections' | 'accountId' | 'proxyVariant' | 'blockNumber' | 'extrinsicIndex'
+  'chainId' | 'connections' | 'accountId' | 'proxyVariant' | 'blockNumber' | 'extrinsicIndex' | 'deposit'
 >;
-
-export type ProxyDeposits = {
-  chainId: ChainId;
-  deposits: Record<AccountId, string>;
-};

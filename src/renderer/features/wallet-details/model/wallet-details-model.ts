@@ -6,7 +6,6 @@ import { nullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { accountUtils, permissionUtils } from '@/entities/wallet';
-import { proxiesModel } from '@/features/proxies';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
@@ -34,27 +33,18 @@ const $chainsProxies = combine(
   },
 );
 
-const $walletProxyGroups = combine(
-  {
-    wallet: $wallet,
-    deposits: proxiesModel.$deposits,
-  },
-  ({ wallet, deposits }) => {
-    if (nullable(wallet)) return [];
+const $walletProxyGroups = $wallet.map(wallet => {
+  if (nullable(wallet)) return [];
 
-    return wallet.accounts.filter(accountUtils.isProxiedAccount).map(account => {
-      const chainDeposits = deposits.find(d => d.chainId === account.chainId);
-      const deposit = chainDeposits?.deposits[account.accountId] || '0';
-
-      return {
-        chainId: account.chainId,
-        proxiedAccountId: account.accountId,
-        walletId: account.walletId,
-        totalDeposit: deposit,
-      };
-    });
-  },
-);
+  return wallet.accounts.filter(accountUtils.isProxiedAccount).map(account => {
+    return {
+      chainId: account.chainId,
+      proxiedAccountId: account.accountId,
+      walletId: account.walletId,
+      totalDeposit: account.deposit,
+    };
+  });
+});
 
 const $hasProxies = combine($chainsProxies, chainsProxies => {
   return Object.values(chainsProxies).some(accounts => accounts.length > 0);

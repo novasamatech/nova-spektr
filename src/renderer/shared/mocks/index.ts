@@ -245,6 +245,7 @@ export const createProxiedAccount = (id = createRandomId(), walletId = 0): Proxi
       proxyType: 'Any',
     },
   ],
+  deposit: '100',
   chainId: polkadotChainId,
   cryptoType: CryptoType.SR25519,
   name: `Proxied Account ${id}`,
