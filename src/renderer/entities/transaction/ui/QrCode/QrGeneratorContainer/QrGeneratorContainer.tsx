@@ -2,7 +2,7 @@ import { type PropsWithChildren } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, Countdown, FootnoteText, Icon, InfoLink, Shimmering, SmallTitleText } from '@/shared/ui';
+import { Button, Countdown, FootnoteText, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { TROUBLESHOOTING_URL, getMetadataPortalMetadataUrl } from '../common/constants';
 
 type Props = {
@@ -46,8 +46,6 @@ export const QrGeneratorContainer = ({
               </Button>
             </>
           ))}
-
-        {!children && <Shimmering />}
       </div>
 
       <div className="mt-6 mb-4 flex flex-row items-center gap-x-2 py-1">

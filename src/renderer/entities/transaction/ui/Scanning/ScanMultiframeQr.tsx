@@ -1,5 +1,4 @@
 import { u8aConcat } from '@polkadot/util';
-import init, { Encoder } from 'raptorq/raptorq';
 import { useEffect, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
@@ -10,7 +9,7 @@ import { Button } from '@/shared/ui';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
 import { transactionService } from '../../lib';
-import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
+import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
 import { createMultipleSignPayload, createSubstrateSignPayload } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
@@ -34,7 +33,6 @@ export const ScanMultiframeQr = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const [encoder, setEncoder] = useState<Encoder>();
   const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
 
@@ -106,8 +104,6 @@ export const ScanMultiframeQr = ({
 
     transactionService.logPayload(txRequests.map(({ info }) => info));
 
-    await init();
-
     const transactionsEncoded = u8aConcat(
       TRANSACTION_BULK.encode({ TransactionBulk: 'V1', payload: txRequests.map((t) => t.signPayload) }),
     );
@@ -115,7 +111,6 @@ export const ScanMultiframeQr = ({
 
     setBulkTransactions(bulk);
     setTxPayloads(txRequests.map((t) => t.info.payload));
-    setEncoder(Encoder.with_defaults(bulk, 128));
   };
 
   useEffect(onResetCountdown, [bulkTransactions]);
@@ -130,7 +125,7 @@ export const ScanMultiframeQr = ({
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
         onQrReset={setupTransactions}
       >
-        {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
+        <QrTxGenerator payload={bulkTransactions} size="200px" />
       </QrGeneratorContainer>
 
       <div className="mt-3 flex w-full justify-between">

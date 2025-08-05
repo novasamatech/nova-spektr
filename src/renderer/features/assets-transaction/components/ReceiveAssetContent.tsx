@@ -45,7 +45,7 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
   return (
     <Box padding={[4, 5, 6, 5]} horizontalAlign="center" gap={2}>
       <div className="w-full justify-items-center bg-main-app-background py-5">
-        <QrTextGenerator skipEncoding className="mb-4" payload={qrCodePayload} size={240} />
+        <QrTextGenerator className="mb-4" payload={qrCodePayload} />
       </div>
       <div className="flex w-full items-center justify-between bg-main-app-background px-5 py-3">
         <Account
