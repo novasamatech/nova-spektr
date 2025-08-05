@@ -4,7 +4,7 @@ export const SUBSTRATE_ID = new Uint8Array([0x53]);
 export const CRYPTO_STUB = new Uint8Array([0xff]);
 
 export const DEFAULT_FRAME_DELAY = 50;
-export const TIMER_INC = 1;
+export const DEFAULT_MAX_FRAME_DELAY = 250;
 
 export const enum Command {
   Transaction = 0x00,
