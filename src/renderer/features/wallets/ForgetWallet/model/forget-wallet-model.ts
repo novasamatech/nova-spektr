@@ -28,6 +28,8 @@ persist({
 
 const remove = createEvent();
 
+const removed = createEvent();
+
 const $walletToHide = createStore<number | null>(null);
 const $walletsToRemove = createStore<number[]>([]);
 
@@ -110,6 +112,11 @@ sample({
   target: proxiesModel.findAllProxies,
 });
 
+sample({
+  clock: walletsRemovedFx.done,
+  target: removed,
+});
+
 export const forgetWalletModel = {
   flow,
 
@@ -117,5 +124,6 @@ export const forgetWalletModel = {
   $doNotShowAgain,
 
   remove,
+  removed,
   changeDoNotShowAgain,
 };

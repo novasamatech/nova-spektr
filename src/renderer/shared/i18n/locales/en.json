@@ -1728,10 +1728,18 @@
       "unpopularFiatLabel": "Fiat currencies"
     },
     "hiddenWallets": {
-      "modalTitle": "Hidden wallets",
-      "searchPlaceholder": "Search",
       "allWallets": "All wallets",
-      "restore": "Restore"
+      "emptyList": "List of hidden wallets is empty",
+      "emptyListDescription": "You haven’t hidden any wallets yet. All your wallets are currently visible in Wallet management.",
+      "modalTitle": "Hidden wallets",
+      "nothingWasFound": "Nothing was found",
+      "restore": "Restore",
+      "restored": "Wallets restored",
+      "restoredDescription": "The selected wallets have been restored and are now visible in Wallet management.",
+      "searchPlaceholder": "Search",
+      "updateSearch": "Update the search or cancel filtering.",
+      "walletHidden": "Wallet hidden",
+      "youCanRestore": "You can restore it anytime from Settings."
     },
     "networks": {
       "activeNetworksLabel": "Active networks",
@@ -1780,6 +1788,7 @@
       "generalLabel": "General",
       "githubDescription": "Contribute and explore our open-source project on GitHub for collaborative code shaping!",
       "githubLabel": "GitHub",
+      "hiddenWalletsLabel": "Hidden wallets",
       "languageLabel": "Language",
       "mediumDescription": "Engaging content to expand knowledge and stay informed about Nova Spektr!",
       "mediumLabel": "Medium",
@@ -1793,8 +1802,7 @@
       "twitterLabel": "Twitter",
       "versionLabel": "Version",
       "youtubeDescription": "Discover our demo recordings and valuable learning materials on YouTube!",
-      "youtubeLabel": "YouTube",
-      "hiddenWalletsLabel": "Hidden wallets"
+      "youtubeLabel": "YouTube"
     },
     "title": "Settings"
   },

@@ -11,6 +11,7 @@ const $regularMultisigs = $hiddenWallets.map((wallets) =>
 
 const clearSelection = createEvent();
 const restoreWallets = createEvent();
+const walletsRestored = createEvent();
 
 const changeQuery = createEvent<string>();
 const $query = restore(changeQuery, '').reset(clearSelection);
@@ -69,6 +70,11 @@ sample({
   target: walletModel.events.walletsRestored,
 });
 
+sample({
+  clock: walletModel.events.walletsRestoredSuccess,
+  target: walletsRestored,
+});
+
 export const hiddenWalletsModel = {
   $hiddenWallets,
   $query,
@@ -83,4 +89,5 @@ export const hiddenWalletsModel = {
   toggleGroupSelection,
   toggleAllSelection,
   clearSelection,
+  walletsRestored,
 };

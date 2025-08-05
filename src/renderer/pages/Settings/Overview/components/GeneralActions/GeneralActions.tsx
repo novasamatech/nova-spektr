@@ -59,7 +59,6 @@ export const GeneralActions = () => {
   return (
     <div className="flex flex-col gap-y-2">
       <FootnoteText className="text-text-tertiary">{t('settings.overview.generalLabel')}</FootnoteText>
-
       {/*<li className="flex items-center gap-x-2.5 w-full p-[15px] text-neutral-variant bg-white rounded-2lg shadow-surface">*/}
       {/*  <Icon name="language" />*/}
       {/*  <p className="font-semibold text-base">{t('settings.overview.languageLabel')}</p>*/}

@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useEffect, useMemo } from 'react';
 
 import { AccountType, type Chain, type ID, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -38,6 +38,7 @@ type MultiSelectProps = BaseProps & {
   selectedWalletIds: ID[];
   onGroupToggle: (walletIds: ID[]) => void;
   onWalletToggle: (walletId: ID) => void;
+  setSearchResults?: (wallets: Wallet[]) => void;
 };
 
 type Props = SingleSelectProps | MultiSelectProps;
@@ -58,12 +59,14 @@ export const WalletGroup = memo((props: Props) => {
     weights: { name: 1, allAddresses: 0.8 },
   });
 
-  if (filteredWallets.length === 0) {
-    return null;
-  }
+  useEffect(() => {
+    if (isMultipleSelect && props.setSearchResults) {
+      props.setSearchResults(filteredWallets);
+    }
+  }, [filteredWallets, isMultipleSelect, props]);
 
   // Checkbox state logic for multiple select
-  const getGroupCheckboxState = () => {
+  const groupCheckboxState = useMemo(() => {
     if (!isMultipleSelect) return { checked: false, semiChecked: false };
 
     const { selectedWalletIds } = props;
@@ -77,25 +80,27 @@ export const WalletGroup = memo((props: Props) => {
     } else {
       return { checked: false, semiChecked: true };
     }
-  };
+  }, [isMultipleSelect, props.selectedWalletIds, filteredWallets]);
+
+  if (filteredWallets.length === 0) {
+    return null;
+  }
 
   const handleGroupCheckboxChange = () => {
     if (!isMultipleSelect) return;
-    const { onGroupToggle } = props;
+
     const walletIds = filteredWallets.map(w => w.id);
-    onGroupToggle(walletIds);
+    props.onGroupToggle(walletIds);
   };
 
   const handleWalletClick = (wallet: Wallet) => {
     if (isMultipleSelect) {
-      const { onWalletToggle } = props;
-      onWalletToggle(wallet.id);
-    } else {
-      onSelect(wallet);
+      props.onWalletToggle(wallet.id);
+      return;
     }
-  };
 
-  const groupCheckboxState = getGroupCheckboxState();
+    onSelect(wallet);
+  };
 
   return (
     <Box padding={[1, 0, 0]}>
@@ -119,7 +124,7 @@ export const WalletGroup = memo((props: Props) => {
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
               const address = wallet.accounts[0]?.accountId;
-              const isSelected = isMultipleSelect && props.selectedWalletIds?.includes(wallet.id);
+              const isSelected = isMultipleSelect ? props.selectedWalletIds.includes(wallet.id) : false;
 
               let chain: Chain | null = null;
               let label: string | null = null;
@@ -141,7 +146,7 @@ export const WalletGroup = memo((props: Props) => {
                       checkBox={
                         isMultipleSelect && (
                           <Checkbox
-                            checked={isSelected || false}
+                            checked={isSelected}
                             onChange={() => handleWalletClick(wallet)}
                             onClick={e => e.stopPropagation()}
                           />

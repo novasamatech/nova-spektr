@@ -10,7 +10,7 @@ import { navigationModel } from '@/features/navigation';
 import { ROUTES_CONFIG } from '@/pages/index';
 
 import { bootstrap } from './bootstrap';
-import { GraphqlProvider, StatusModalProvider } from './providers';
+import { GraphqlProvider, NotificationProvider, StatusModalProvider } from './providers';
 
 logger.init();
 bootstrap();
@@ -40,7 +40,9 @@ export const App = () => {
   return (
     <ConfirmDialogProvider>
       <StatusModalProvider>
-        <GraphqlProvider>{appRoutes}</GraphqlProvider>
+        <NotificationProvider>
+          <GraphqlProvider>{appRoutes}</GraphqlProvider>
+        </NotificationProvider>
       </StatusModalProvider>
     </ConfirmDialogProvider>
   );
