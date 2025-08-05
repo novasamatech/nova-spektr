@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import { QrCode, Skeleton } from '@/shared/ui-kit';
 
-import { DEFAULT_FRAME_DELAY } from './common/constants';
+import { DEFAULT_FRAME_DELAY, DEFAULT_MAX_FRAME_DELAY } from './common/constants';
 import { createFrames } from './common/utils';
 
 type Props = {
@@ -53,6 +53,7 @@ export const QrTxGenerator = ({
       qrColor={qrColor}
       className={className}
       delay={DEFAULT_FRAME_DELAY}
+      maxDelay={DEFAULT_MAX_FRAME_DELAY}
       testId={testId}
     />
   );

@@ -6,15 +6,19 @@ type Props = {
   payload: Uint8Array | Uint8Array[];
   size: string;
   delay?: number;
+  maxDelay?: number;
   bgColor?: string;
   qrColor?: string;
   className?: string;
   testId?: string;
 };
 
-export const QrCode = ({ payload, delay, size, bgColor, qrColor, className, testId }: Props) => {
-  const [frameIdx, setFrameIdx] = useState(0);
+export const QrCode = ({ payload, delay = 0, maxDelay, size, bgColor, qrColor, className, testId }: Props) => {
+  const MAX_DELAY = maxDelay ?? delay;
+
+  const delayRef = useRef(delay);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [frameIdx, setFrameIdx] = useState(0);
 
   const isMultiFrame = Array.isArray(payload);
   const frames = useMemo(() => (isMultiFrame ? payload : [payload]), [payload]);
@@ -26,11 +30,19 @@ export const QrCode = ({ payload, delay, size, bgColor, qrColor, className, test
     }
 
     const tick = () => {
-      setFrameIdx(idx => (idx + 1) % frames.length);
-      timerRef.current = setTimeout(tick, delay);
+      setFrameIdx(prevIdx => {
+        const nextIdx = (prevIdx + 1) % frames.length;
+
+        if (nextIdx === 0) {
+          delayRef.current = Math.min(delayRef.current + 1, MAX_DELAY);
+        }
+
+        return nextIdx;
+      });
+      timerRef.current = setTimeout(tick, delayRef.current);
     };
 
-    timerRef.current = setTimeout(tick, delay);
+    timerRef.current = setTimeout(tick, delayRef.current);
 
     return () => {
       if (timerRef.current) {
@@ -38,7 +50,7 @@ export const QrCode = ({ payload, delay, size, bgColor, qrColor, className, test
         timerRef.current = null;
       }
     };
-  }, [frames, isMultiFrame, delay]);
+  }, [frames, isMultiFrame, delayRef]);
 
   const image = images[frameIdx] ?? '';
 
