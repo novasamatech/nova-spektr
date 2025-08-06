@@ -202,8 +202,13 @@ function findSignatories(account: AnyAccount, accounts: AnyAccount[], chain: Cha
  * Find graphs roots.
  */
 function findInitiators(accounts: AnyAccount[], chain: Chain): AnyAccount[] {
+  const filteredAccounts = accounts.filter(account => isAccountAvailableOnChain(account, chain));
+  if (filteredAccounts.length === 0) {
+    return [];
+  }
+
   const graphs = createAccountGraphs(accounts, chain);
-  const result = new Set<AnyAccount>(accounts.filter(account => isAccountAvailableOnChain(account, chain)));
+  const result = new Set<AnyAccount>(filteredAccounts);
 
   for (const node of graphs.values()) {
     traverseGraph(node, {

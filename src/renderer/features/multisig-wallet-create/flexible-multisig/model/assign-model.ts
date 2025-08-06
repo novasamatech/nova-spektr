@@ -225,7 +225,8 @@ sample({
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.FLEX_MULTISIG,
-      type: 'universal',
+      type: 'chain',
+      chainId: chain!.chainId,
     };
 
     const pureAccount: Omit<NoID<FlexibleProxiedAccount>, 'walletId'> = {

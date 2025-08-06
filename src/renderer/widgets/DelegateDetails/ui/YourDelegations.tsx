@@ -9,8 +9,6 @@ import { Account as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { Box, Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { allTracks, locksService } from '@/entities/governance';
-import { accountUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
@@ -26,18 +24,15 @@ export const YourDelegations = () => {
   const activeDelegations = useUnit(delegateDetailsModel.$activeDelegations);
   const activeTracks = useUnit(delegateDetailsModel.$activeTracks);
   const delegate = useUnit(delegateDetailsModel.$delegate);
-  const wallet = useUnit(walletSelect.$selectedWallet);
+  const initiators = useUnit(delegateDetailsModel.$initiators);
 
   const [selectedAccounts, setSelectedAccounts] = useState<AnyAccount[]>([]);
 
   if (!chain) return null;
 
   const accounts =
-    wallet?.accounts.filter((account) => {
-      const isChainMatch = accountUtils.isChainAndCryptoMatch(account, chain);
-      const accountExist = activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix }));
-
-      return isChainMatch && accountExist;
+    initiators.filter((account) => {
+      return activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix }));
     }) || [];
 
   const toggleAccount = (account: AnyAccount) => {
@@ -53,7 +48,7 @@ export const YourDelegations = () => {
       setSelectedAccounts([]);
     } else {
       const selectableAccounts = activeAccounts.map((address) => {
-        return wallet?.accounts.find((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === address);
+        return accounts.find((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === address);
       });
 
       setSelectedAccounts(selectableAccounts.filter(nonNullable));
@@ -92,7 +87,7 @@ export const YourDelegations = () => {
           {activeAccounts.map((address, index) => {
             const activeDelegation = activeDelegations[address];
 
-            const account = wallet?.accounts.find((a) => {
+            const account = accounts.find((a) => {
               return toAddress(a.accountId, { prefix: chain.addressPrefix }) === address;
             });
 
