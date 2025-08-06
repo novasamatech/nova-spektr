@@ -10,7 +10,12 @@ import {
   transferableAmountBN,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createInitiatorsStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -197,17 +202,6 @@ const $api = combine(
   },
 );
 
-const $accounts = combine(
-  {
-    chain: form.fields.chain.$value,
-    walletAccounts: $walletAccounts,
-  },
-  ({ chain, walletAccounts }) => {
-    if (!chain) return [];
-    return walletAccounts.filter((account) => accountService.isAccountAvailableOnChain(account, chain));
-  },
-);
-
 const $coreTx = combine(
   {
     form: form.$values,
@@ -290,6 +284,11 @@ sample({
   filter: (chains) => chains.length > 0,
   fn: (chains) => chains.at(0)!,
   target: form.fields.chain.change,
+});
+
+const $accounts = createInitiatorsStore({
+  chain: form.fields.chain.$value,
+  accounts: $walletAccounts,
 });
 
 sample({
