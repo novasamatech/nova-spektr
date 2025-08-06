@@ -109,7 +109,9 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
           <Dropdown.Item>
             <div className="flex items-center gap-2">
               <Icon name="forget" size={20} className="text-icon-accent" />
-              {t('walletDetails.common.forgetButton')}
+              {walletUtils.isRegularMultisig(wallet)
+                ? t('walletDetails.common.hideButton')
+                : t('walletDetails.common.forgetButton')}
             </div>
           </Dropdown.Item>
         </ForgetWalletConfirm>
