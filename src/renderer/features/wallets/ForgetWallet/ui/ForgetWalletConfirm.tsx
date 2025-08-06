@@ -46,9 +46,6 @@ export const ForgetWalletConfirm = ({ wallet, onClose, onForget, children }: Pro
             </FootnoteText>
           </Box>
         ),
-        height: 'fit',
-        size: 'fit',
-        duration: 3000,
       });
       return;
     }
@@ -60,9 +57,6 @@ export const ForgetWalletConfirm = ({ wallet, onClose, onForget, children }: Pro
           <SmallTitleText>{t('walletDetails.common.walletRemoved')}</SmallTitleText>
         </Box>
       ),
-      height: 'fit',
-      size: 'fit',
-      duration: 3000,
     });
   };
 

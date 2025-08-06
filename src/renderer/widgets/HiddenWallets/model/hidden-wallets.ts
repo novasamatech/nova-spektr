@@ -24,32 +24,39 @@ const $inputQuery = restore(changeQuery, '').reset(clearSelection);
 // Debounced query for expensive search operations (300ms delay)
 const $query = restore(debounce(changeQuery, 300), '').reset(clearSelection);
 
-const $selectedWalletIds = createStore<Set<ID>>(new Set())
-  .on(toggleWalletSelection, (selected, walletId) => {
+const $selectedWalletIds = createStore<Set<ID>>(new Set()).reset(clearSelection);
+
+sample({
+  clock: toggleWalletSelection,
+  source: $selectedWalletIds,
+  fn: (selected, walletId) => {
     const newSelected = new Set(selected);
+
     if (newSelected.has(walletId)) {
       newSelected.delete(walletId);
     } else {
       newSelected.add(walletId);
     }
     return newSelected;
-  })
-  .on(toggleGroupSelection, (selected, groupWalletIds) => {
+  },
+  target: $selectedWalletIds,
+});
+
+sample({
+  clock: toggleGroupSelection,
+  source: $selectedWalletIds,
+  fn: (selected, groupWalletIds) => {
     const newSelected = new Set(selected);
     const allSelected = groupWalletIds.every((id) => newSelected.has(id));
 
-    if (allSelected) {
-      for (const id of groupWalletIds) {
-        newSelected.delete(id);
-      }
-    } else {
-      for (const id of groupWalletIds) {
-        newSelected.add(id);
-      }
+    for (const id of groupWalletIds) {
+      allSelected ? newSelected.delete(id) : newSelected.add(id);
     }
+
     return newSelected;
-  })
-  .reset(clearSelection);
+  },
+  target: $selectedWalletIds,
+});
 
 sample({
   clock: toggleAllSelection,

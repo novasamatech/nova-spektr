@@ -145,4 +145,4 @@ export type {
   ModalNotificationProps,
   ToastNotification,
   ModalNotification,
-} from './types/notification-service';
+} from './types/notificationService';

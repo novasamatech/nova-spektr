@@ -16,8 +16,7 @@ import {
   type ModalNotificationProps,
   type ToastNotification,
   type ToastNotificationProps,
-} from '@/shared/core/types/notification-service';
-import { useToggle } from '@/shared/lib/hooks';
+} from '@/shared/core/types/notificationService';
 import { DEFAULT_TRANSITION, nullable } from '@/shared/lib/utils';
 import { Modal } from '@/shared/ui-kit';
 
@@ -33,9 +32,47 @@ type NotificationContextProps = {
 const NotificationContext = createContext<NotificationContextProps>({} as NotificationContextProps);
 
 const MAX_TOASTS = 5;
+const DEFAULT_NOTIFICATION_DURATION = 3000;
+const NO_AUTO_DISMISS = 0;
+
+const createToastNotification = (props: ToastNotificationProps): ToastNotification => ({
+  content: props.content,
+  id: nanoid(),
+  createdAt: Date.now(),
+  position: props.position || 'bottom-right',
+  variant: props.variant || 'default',
+  duration: props.duration ?? DEFAULT_NOTIFICATION_DURATION,
+  onDismiss: props.onDismiss ?? noop,
+});
+
+const createModalNotification = (props: ModalNotificationProps): ModalNotification => ({
+  content: props.content,
+  title: props.title ?? '',
+  id: nanoid(),
+  size: props.size || 'fit',
+  height: props.height || 'fit',
+  showCloseButton: props.showCloseButton ?? false,
+  duration: props.duration ?? DEFAULT_NOTIFICATION_DURATION,
+  onClose: props.onClose ?? noop,
+});
+
+const shouldAutoDismiss = (duration: number): boolean => duration > NO_AUTO_DISMISS;
+
+const scheduleAutoDismiss = (callback: () => void, duration: number): void => {
+  if (shouldAutoDismiss(duration)) {
+    setTimeout(callback, duration);
+  }
+};
+
+const clearTimeoutSafely = (timeoutRef: React.RefObject<NodeJS.Timeout | null>): void => {
+  if (timeoutRef.current) {
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
+  }
+};
 
 export const NotificationProvider = ({ children }: PropsWithChildren) => {
-  const [isModalOpen, toggleModal] = useToggle();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
   const [currentModal, setCurrentModal] = useState<ModalNotification | null>(null);
@@ -43,50 +80,34 @@ export const NotificationProvider = ({ children }: PropsWithChildren) => {
   const modalQueue = useRef<ModalNotification[]>([]);
   const modalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const toast = useCallback((props: ToastNotificationProps): string => {
-    const id = nanoid();
-    const notification: ToastNotification = {
-      content: props.content,
-      id,
-      createdAt: Date.now(),
-      position: props.position || 'bottom-right',
-      variant: props.variant || 'default',
-      duration: props.duration ?? 3000,
-      onDismiss: props.onDismiss ?? noop,
-    };
-
-    setToasts((prev) => {
-      const newToasts = [notification, ...prev];
-      // Keep only the most recent toasts if we exceed the limit
-      return newToasts.slice(0, MAX_TOASTS);
+  const addToastToQueue = useCallback((notification: ToastNotification): void => {
+    setToasts((previousToasts) => {
+      const updatedToasts = [notification, ...previousToasts];
+      return updatedToasts.slice(0, MAX_TOASTS);
     });
+  }, []);
 
-    // Auto-dismiss if duration is set
-    if (notification.duration > 0) {
-      setTimeout(() => {
-        dismissToast(id);
-      }, notification.duration);
-    }
+  const toast = useCallback((props: ToastNotificationProps): string => {
+    const notification = createToastNotification(props);
 
-    return id;
+    addToastToQueue(notification);
+    scheduleAutoDismiss(() => dismissToast(notification.id), notification.duration);
+
+    return notification.id;
   }, []);
 
   const dismissToast = useCallback((id: string) => {
-    setToasts((prev) => {
-      const toastToRemove = prev.find((t) => t.id === id);
-      if (toastToRemove?.onDismiss) {
-        toastToRemove.onDismiss();
-      }
-      return prev.filter((t) => t.id !== id);
+    setToasts((previousToasts) => {
+      const toastToRemove = previousToasts.find((toast) => toast.id === id);
+      toastToRemove?.onDismiss?.();
+      return previousToasts.filter((toast) => toast.id !== id);
     });
   }, []);
 
   const dismissAllToasts = useCallback(() => {
-    setToasts((prev) => {
-      for (const toast of prev) {
-        if (toast.onDismiss) {
-          toast.onDismiss();
-        }
+    setToasts((previousToasts) => {
+      for (const toast of previousToasts) {
+        toast.onDismiss?.();
       }
       return [];
     });
@@ -97,71 +118,51 @@ export const NotificationProvider = ({ children }: PropsWithChildren) => {
     if (nullable(nextModal)) return;
 
     setCurrentModal(nextModal);
-    toggleModal();
-  }, [toggleModal]);
+    setIsModalOpen(true);
+  }, []);
+
+  const showModalImmediately = useCallback((notification: ModalNotification): void => {
+    setCurrentModal(notification);
+    setIsModalOpen(true);
+  }, []);
+
+  const queueModal = useCallback((notification: ModalNotification): void => {
+    modalQueue.current.push(notification);
+  }, []);
 
   const modal = useCallback(
     (props: ModalNotificationProps): void => {
-      const notification: ModalNotification = {
-        content: props.content,
-        title: props.title ?? '',
-        id: nanoid(),
-        size: props.size || 'sm',
-        height: props.height || 'fit',
-        showCloseButton: props.showCloseButton ?? false,
-        duration: props.duration ?? 0,
-        onClose: props.onClose ?? noop,
-      };
-
-      // If no modal is currently open, show immediately
-      if (!currentModal) {
-        setCurrentModal(notification);
-        toggleModal();
-      } else {
-        // Queue the modal
-        modalQueue.current.push(notification);
+      const notification = createModalNotification(props);
+      const isModalCurrentlyOpen = currentModal !== null;
+      if (!isModalCurrentlyOpen) {
+        showModalImmediately(notification);
+        return;
       }
+      queueModal(notification);
     },
-    [currentModal, toggleModal],
+    [currentModal, showModalImmediately, queueModal],
   );
 
   const handleModalClose = useCallback(() => {
-    if (currentModal) {
-      // Clear any existing timeout
-      if (modalTimeoutRef.current) {
-        clearTimeout(modalTimeoutRef.current);
-        modalTimeoutRef.current = null;
-      }
+    if (!currentModal) return;
 
-      // Call onClose callback if provided
-      if (currentModal.onClose) {
-        currentModal.onClose();
-      }
+    clearTimeoutSafely(modalTimeoutRef);
+    currentModal.onClose?.();
 
-      setCurrentModal(null);
-      toggleModal();
+    setCurrentModal(null);
+    setIsModalOpen(false);
 
-      // Process next modal in queue after transition
-      setTimeout(() => {
-        processModalQueue();
-      }, DEFAULT_TRANSITION);
-    }
-  }, [currentModal, toggleModal, processModalQueue]);
+    setTimeout(() => processModalQueue(), DEFAULT_TRANSITION);
+  }, [currentModal, processModalQueue]);
 
-  // Set up auto-close timeout when modal is shown
   useEffect(() => {
-    if (currentModal?.duration && isModalOpen) {
-      modalTimeoutRef.current = setTimeout(() => {
-        handleModalClose();
-      }, currentModal.duration);
+    const isModalOpenWithAutoDismiss = isModalOpen && currentModal && shouldAutoDismiss(currentModal.duration);
+
+    if (isModalOpenWithAutoDismiss) {
+      modalTimeoutRef.current = setTimeout(handleModalClose, currentModal.duration);
     }
 
-    return () => {
-      if (modalTimeoutRef.current) {
-        clearTimeout(modalTimeoutRef.current);
-        modalTimeoutRef.current = null;
-      }
-    };
+    return () => clearTimeoutSafely(modalTimeoutRef);
   }, [currentModal, isModalOpen, handleModalClose]);
 
   const value = useMemo(

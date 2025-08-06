@@ -6,7 +6,7 @@ export type ToastVariant = 'default' | 'success' | 'warning' | 'error' | 'info';
 
 export type ToastNotificationProps = {
   content: ReactNode;
-  duration?: number; // in milliseconds, 0 means no auto-dismiss
+  duration?: number; // in milliseconds, 0 means no auto-dismiss, default is 3000
   position?: ToastPosition;
   variant?: ToastVariant;
   onDismiss?: () => void;
@@ -23,7 +23,7 @@ export type ModalNotificationProps = {
   height?: 'full' | 'lg' | 'fit';
   title?: string;
   showCloseButton?: boolean;
-  duration?: number; // in milliseconds, if not provided modal stays open until manually closed
+  duration?: number; // in milliseconds, 0 means no auto-dismiss, default is 3000
   onClose?: () => void;
 };
 

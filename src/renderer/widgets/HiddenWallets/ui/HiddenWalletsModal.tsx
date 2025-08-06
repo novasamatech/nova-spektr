@@ -51,9 +51,6 @@ export const HiddenWalletsModal = ({ onClose }: Props) => {
             </FootnoteText>
           </Box>
         ),
-        height: 'fit',
-        size: 'fit',
-        duration: 3000,
       });
     });
 
