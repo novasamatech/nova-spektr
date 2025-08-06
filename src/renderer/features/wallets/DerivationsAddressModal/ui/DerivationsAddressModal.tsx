@@ -38,7 +38,7 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
 
   const qrPayload = useMemo(() => {
     const derivations = derivationAddressUtils.createDerivationsRequest(keys);
-    const address = encodeAddress(rootAccountId, 1);
+    const address = encodeAddress(rootAccountId);
     return createDynamicDerivationPayload(address, derivations);
   }, [rootAccountId, keys]);
 

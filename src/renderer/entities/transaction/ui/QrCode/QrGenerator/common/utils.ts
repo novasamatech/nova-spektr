@@ -183,7 +183,7 @@ export const createDynamicDerivationPayload = (publicKey: Address, derivations: 
     payload: {
       multisigner: {
         MultiSigner: CryptoTypeString.SR25519,
-        public: decodeAddress(publicKey, false, 1),
+        public: decodeAddress(publicKey),
       },
       dynamicDerivations: derivations.map((d) => ({
         derivationPath: d.derivationPath,
@@ -214,7 +214,7 @@ export const createDynamicDerivationExportPayload = (
         name: walletName,
         multiSigner: {
           MultiSigner: CryptoTypeString.SR25519,
-          public: decodeAddress(publicKey, false, 1),
+          public: decodeAddress(publicKey),
         },
         derivedKeys: derivations
           .map((d) => {
