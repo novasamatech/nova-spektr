@@ -95,7 +95,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   actions.push({
     component: (
       <ForgetWalletConfirm wallet={wallet} onForget={onClose}>
-        <Action title={t('walletDetails.common.forgetButton')} icon="forget" variant="danger" />
+        <Action title={t('walletDetails.common.hideButton')} icon="forget" variant="danger" />
       </ForgetWalletConfirm>
     ),
   });
