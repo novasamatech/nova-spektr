@@ -1,4 +1,4 @@
-import throttle from 'lodash/throttle';
+import { throttle } from 'lodash';
 import { useLayoutEffect, useRef, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';

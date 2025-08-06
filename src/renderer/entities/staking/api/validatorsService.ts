@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import merge from 'lodash/merge';
+import { merge } from 'lodash';
 
 import { type Address, type EraIndex, type Validator } from '@/shared/core';
 import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from '../lib/constants';

@@ -1,4 +1,4 @@
-import keyBy from 'lodash/keyBy';
+import { keyBy } from 'lodash';
 import { useEffect, useState } from 'react';
 
 import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';

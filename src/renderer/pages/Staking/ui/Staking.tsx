@@ -1,5 +1,5 @@
 import { useStoreMap, useUnit } from 'effector-react';
-import uniqBy from 'lodash/uniqBy';
+import { uniqBy } from 'lodash';
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 
 import { useGraphql } from '@/app/providers';

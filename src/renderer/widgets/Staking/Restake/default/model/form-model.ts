@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { spread } from 'patronum';
 
 import { type Address, type Asset, type Chain, type ChainId } from '@/shared/core';

@@ -1,5 +1,5 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import uniq from 'lodash/uniq';
+import { uniq } from 'lodash';
 import { combineEvents } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';

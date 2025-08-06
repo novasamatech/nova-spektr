@@ -1,5 +1,5 @@
 import { type Transaction } from 'dexie';
-import uniqBy from 'lodash/uniqBy';
+import { uniqBy } from 'lodash';
 
 import {
   AccountType,
