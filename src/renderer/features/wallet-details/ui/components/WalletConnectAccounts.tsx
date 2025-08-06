@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import keyBy from 'lodash/keyBy';
+import { keyBy } from 'lodash';
 import { memo, useMemo } from 'react';
 
 import wallet_connect_reconnect from '@/shared/assets/video/wallet_connect_reconnect.mp4';

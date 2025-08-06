@@ -31,10 +31,10 @@ const $proxyAddress = createStore<Address | null>(null).reset(flexibleMultisigMo
 
 type SubscribePureEvent = {
   api: ApiPromise;
-  accounts: AnyAccount[];
+  signatory: AnyAccount;
 };
 
-const subscribePureEventFx = createEffect(({ api, accounts }: SubscribePureEvent): Promise<Address> => {
+const subscribePureEventFx = createEffect(({ api, signatory }: SubscribePureEvent): Promise<Address> => {
   return new Promise(resolve => {
     const eventSchema = z.object({
       proxyType: z.string(),
@@ -50,7 +50,7 @@ const subscribePureEventFx = createEffect(({ api, accounts }: SubscribePureEvent
         const data = eventSchema.parse(event.data.toHuman());
         const accountId = toAccountId(data.who);
 
-        if (!data || !accounts.some(a => a.accountId === accountId)) return;
+        if (!data || signatory.accountId !== accountId) return;
 
         unsubscribe.then(fn => fn());
         resolve(data.pure);
@@ -63,18 +63,21 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: {
     api: $api,
-    accounts: accounts.$list,
+    signatory: flexibleMultisigModel.$signer,
     proxyAddress: $proxyAddress,
   },
-  filter: ({ api, proxyAddress }, results) => {
+  filter: ({ api, signatory, proxyAddress }, results) => {
     return (
-      nonNullable(api) && nullable(proxyAddress) && results.some(({ result }) => submitUtils.isSuccessResult(result))
+      nonNullable(api) &&
+      nullable(proxyAddress) &&
+      nonNullable(signatory) &&
+      results.some(({ result }) => submitUtils.isSuccessResult(result))
     );
   },
-  fn: ({ api, accounts }) => {
+  fn: ({ api, signatory }) => {
     return {
       api: api!,
-      accounts,
+      signatory: signatory!,
     };
   },
   target: subscribePureEventFx,
@@ -140,19 +143,19 @@ sample({
   source: {
     chain: formModel.$chain,
     tx: $tx,
-    signer: flexibleMultisigModel.$signer,
+    signatory: flexibleMultisigModel.$signer,
     initiator: flexibleMultisigModel.$initiator,
   },
-  filter: ({ chain, tx, signer, initiator }) =>
-    nonNullable(chain) && nonNullable(tx) && nonNullable(signer) && nonNullable(initiator),
-  fn: ({ chain, tx, signer, initiator }) => ({
+  filter: ({ chain, tx, signatory, initiator }) =>
+    nonNullable(chain) && nonNullable(tx) && nonNullable(signatory) && nonNullable(initiator),
+  fn: ({ chain, tx, signatory, initiator }) => ({
     event: {
       signingPayloads: [
         {
           chain: chain!,
           account: initiator!,
           transaction: tx!,
-          signatory: signer,
+          signatory,
         },
       ],
     },
@@ -222,7 +225,8 @@ sample({
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       signingType: SigningType.MULTISIG,
       accountType: AccountType.FLEX_MULTISIG,
-      type: 'universal',
+      type: 'chain',
+      chainId: chain!.chainId,
     };
 
     const pureAccount: Omit<NoID<FlexibleProxiedAccount>, 'walletId'> = {
@@ -232,6 +236,7 @@ sample({
       type: 'chain',
       signingType: SigningType.WATCH_ONLY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+      deposit: '100',
       connections: [
         {
           proxyAccountId: multisigAccountId!,

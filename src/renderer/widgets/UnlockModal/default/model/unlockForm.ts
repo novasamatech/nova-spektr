@@ -5,7 +5,7 @@ import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
 import { type Asset, type Chain } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import { ZERO_BALANCE, getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
@@ -247,9 +247,14 @@ sample({
   target: form.fields.amount.change,
 });
 
+const $initiators = createInitiatorsStore({
+  chain: networkSelectorModel.$governanceChain,
+  accounts: walletSelect.$selectedAccounts,
+});
+
 sample({
   clock: formInitiated,
-  source: walletSelect.$selectedAccounts,
+  source: $initiators,
   filter: (selectedAccounts, claims) =>
     nonNullable(claims) && nonNullable(selectedAccounts) && claims.length > 0 && selectedAccounts.length > 0,
   fn: (selectedAccounts, claims) =>

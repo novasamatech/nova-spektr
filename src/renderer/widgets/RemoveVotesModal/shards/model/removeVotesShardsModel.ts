@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import uniq from 'lodash/uniq';
+import { uniq } from 'lodash';
 
 import { type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
 import { Step, nonNullable, nullable, toAddress } from '@/shared/lib/utils';

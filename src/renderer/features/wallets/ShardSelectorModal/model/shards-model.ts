@@ -1,5 +1,5 @@
 import { attach, combine, createApi, createEvent, createStore, sample } from 'effector';
-import cloneDeep from 'lodash/cloneDeep';
+import { cloneDeep } from 'lodash';
 
 import { type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';

@@ -1,9 +1,6 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
-import concat from 'lodash/concat';
-import keyBy from 'lodash/keyBy';
-import orderBy from 'lodash/orderBy';
-import sortBy from 'lodash/sortBy';
+import { concat, keyBy, orderBy, sortBy } from 'lodash';
 
 import { type PriceObject } from '@/shared/api/price-provider';
 import { type AssetBalance, type Balance, type Chain, type ChainId } from '@/shared/core';

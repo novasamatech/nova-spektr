@@ -1,7 +1,7 @@
 import { type SessionTypes } from '@walletconnect/types';
 import { attach, combine, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 
 import { AccountType, CryptoType, SigningType, WalletType, type WcAccount } from '@/shared/core';
 import { createFlow, waitFor } from '@/shared/effector';

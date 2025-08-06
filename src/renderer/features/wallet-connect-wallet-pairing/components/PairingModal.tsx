@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { type PropsWithChildren, memo, useEffect } from 'react';
 
 import { type StatusModalProps, useStatusContext } from '@/app/providers';

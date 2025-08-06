@@ -250,8 +250,9 @@ const Destination = () => {
       const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
       const queryPass = includesMultiple([account.name, address], query);
       const isMyself = nonNullable(initiator.value) && initiator.value.accountId === account.accountId;
+      const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(account);
 
-      return isChainMatch && queryPass && !isMyself;
+      return isChainMatch && queryPass && !isMyself && !isFlexibleMultisigAccount;
     });
 
     const accountByGroup = services.walletSelect.getWalletFamilyByAccounts(wallets, filteredAccounts);

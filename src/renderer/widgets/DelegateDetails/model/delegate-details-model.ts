@@ -1,10 +1,11 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import uniq from 'lodash/uniq';
+import { uniq } from 'lodash';
 import { combineEvents } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { createInitiatorsStore } from '@/shared/transactions';
 import { accountService } from '@/domains/network';
 import { votingService } from '@/entities/governance';
 import { permissionUtils } from '@/entities/wallet';
@@ -29,6 +30,11 @@ const $delegate = restore(flowStarted, null).reset(flowStarted);
 
 const closeModal = $isModalOpen.reinit;
 const closeDelegationsModal = $isDelegationsOpen.reinit;
+
+const $initiators = createInitiatorsStore({
+  chain: networkSelectorModel.$governanceChain,
+  accounts: walletSelect.$selectedAccounts,
+});
 
 const $activeTracks = combine(
   {
@@ -167,6 +173,7 @@ export const delegateDetailsModel = {
   $activeTracks,
   $uniqueTracks,
   $activeDelegations,
+  $initiators,
 
   $isAddAvailable,
   $isEditAvailable: $isRevokeAvailable,

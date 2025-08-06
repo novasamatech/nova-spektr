@@ -36,7 +36,7 @@ export interface MultisigAccount extends UniversalAccount {
   threshold: number;
 }
 
-export interface FlexibleMultisigAccount extends UniversalAccount {
+export interface FlexibleMultisigAccount extends ChainAccount {
   accountType: AccountType.FLEX_MULTISIG;
   signatories: Signatory[];
   threshold: number;
@@ -58,6 +58,7 @@ export interface ProxiedAccount extends ChainAccount {
   accountType: AccountType.PROXIED;
   connections: ProxiedConnection[];
   proxyVariant: ProxyVariant;
+  deposit: string;
   blockNumber?: number;
   extrinsicIndex?: number;
 }
