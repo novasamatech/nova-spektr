@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { type ReactNode, useMemo, useState } from 'react';
 
 import { type FlexibleMultisigWallet, type MultisigWallet, WalletType } from '@/shared/core';
