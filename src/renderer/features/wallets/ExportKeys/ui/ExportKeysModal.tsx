@@ -35,7 +35,7 @@ export const ExportKeysModal = ({ wallet, children }: Props) => {
   }, [wallet]);
 
   const qrPayload = useMemo(() => {
-    const address = encodeAddress(wallet.rootAccountId, 1);
+    const address = encodeAddress(wallet.rootAccountId);
     return createDynamicDerivationExportPayload(wallet.name, address, accounts.flat(), chains);
   }, [wallet.name, wallet.rootAccountId, accounts, chains]);
 
