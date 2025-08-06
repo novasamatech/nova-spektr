@@ -1,6 +1,7 @@
-import { combine } from 'effector';
+import { combine, restore } from 'effector';
 import { or } from 'patronum';
 
+import { attachToFeatureInput } from '@/shared/feature';
 import { groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type CompletedReferendum,
@@ -40,6 +41,14 @@ const $evidencePeriods = fellowship.$store.map(store => store?.evidencePeriods ?
 const $maxRank = fellowship.$store.map(input => input?.maxRank ?? 0);
 const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
+
+const $voting = fellowship.$store.map(store => store?.voting ?? []);
+const $accountsVotes = restore(
+  attachToFeatureInput(fellowshipTasksFeature, $voting).map(({ input: { account }, data: voting }) => {
+    return voting.filter(voting => voting.accountId === account?.accountId);
+  }),
+  [],
+);
 
 // basket
 
@@ -247,13 +256,18 @@ const $ongoingReferendumsTasks = combine(
     members: $members,
     member: $member,
     currentBlock: fellowshipNetwork.$currentBlock,
+    accountsVotes: $accountsVotes,
   },
-  ({ referendums, operations, maxRank, members, member, currentBlock }) => {
+  ({ referendums, operations, maxRank, members, member, currentBlock, accountsVotes }) => {
     if (nullable(member) || nullable(currentBlock)) return [];
 
     const possibleReferendums = referendums.filter(referendum => {
       return trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
     });
+
+    const hasUserVoted = (referendum: OngoingReferendum) => {
+      return nonNullable(accountsVotes.find(vote => vote.referendumId === referendum.id));
+    };
 
     const groups = groupBy(possibleReferendums, referendum => {
       return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track)
@@ -286,9 +300,10 @@ const $ongoingReferendumsTasks = combine(
     const evidenceTasks = groups.evidence
       ? groups.evidence.map<TaskDescription>(referendum => {
           const weight = getWeight(referendum);
+          const finalWeight = hasUserVoted(referendum) ? weight.sortingScore - 10000 : weight.sortingScore;
           return {
             id: `referendum_${referendum.id}`,
-            weight: weight.sortingScore,
+            weight: finalWeight,
             group: 'general',
             body: PromotionRetentionReferendumVoting,
             meta: {
@@ -303,9 +318,10 @@ const $ongoingReferendumsTasks = combine(
     const otherTasks = groups.other
       ? groups.other.map<TaskDescription>(referendum => {
           const weight = getWeight(referendum);
+          const finalWeight = hasUserVoted(referendum) ? weight.sortingScore - 10000 : weight.sortingScore;
           return {
             id: `referendum_${referendum.id}`,
-            weight: weight.sortingScore,
+            weight: finalWeight,
             group: 'general',
             body: OngoingReferendumVoting,
             meta: {
