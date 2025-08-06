@@ -20,7 +20,12 @@ import {
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createInitiatorsStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -241,17 +246,10 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const $availableAccounts = combine(
-  {
-    chain: form.fields.chain.$value,
-    walletAccounts: $walletAccounts,
-  },
-  ({ chain, walletAccounts }) => {
-    if (!chain?.chainId) return [];
-
-    return walletAccounts.filter((account) => accountService.isAccountAvailableOnChain(account, chain));
-  },
-);
+const $availableAccounts = createInitiatorsStore({
+  chain: form.fields.chain.$value,
+  accounts: $walletAccounts,
+});
 
 const $proxyAccounts = combine(
   {

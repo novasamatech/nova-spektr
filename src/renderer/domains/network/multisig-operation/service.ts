@@ -1,6 +1,13 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type CallHash, type Chain, type ChainId, ChainOptions, type MultisigAccount } from '@/shared/core';
+import {
+  type CallHash,
+  type Chain,
+  type ChainId,
+  ChainOptions,
+  type FlexibleMultisigAccount,
+  type MultisigAccount,
+} from '@/shared/core';
 import { isEqual, merge, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { transactionService } from '../transaction/service';
@@ -8,7 +15,7 @@ import { transactionService } from '../transaction/service';
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX } from './constants';
 import { type MultisigEvent, type MultisigOperation } from './types';
 
-function getOtherSignatories(account: MultisigAccount, signer: AccountId) {
+function getOtherSignatories(account: MultisigAccount | FlexibleMultisigAccount, signer: AccountId) {
   return (
     Array.from(account.signatories)
       .map(s => s.accountId)
