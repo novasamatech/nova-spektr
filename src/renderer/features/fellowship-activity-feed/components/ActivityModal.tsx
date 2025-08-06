@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import orderBy from 'lodash/orderBy';
+import { orderBy } from 'lodash';
 import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';

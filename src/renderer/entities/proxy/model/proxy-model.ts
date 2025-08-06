@@ -1,5 +1,5 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import groupBy from 'lodash/groupBy';
+import { groupBy } from 'lodash';
 
 import { storageService } from '@/shared/api/storage';
 import { type ID, type NoID, type ProxyAccount } from '@/shared/core';

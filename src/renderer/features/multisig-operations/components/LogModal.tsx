@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import groupBy from 'lodash/groupBy';
+import { groupBy } from 'lodash';
 import { type ReactNode, useMemo } from 'react';
 
 import { type Contact, type MultisigAccount, type Wallet, type WalletsMap } from '@/shared/core';
