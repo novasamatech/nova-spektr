@@ -22,6 +22,7 @@ export const HiddenWalletsModal = ({ onClose }: Props) => {
 
   const notification = useNotification();
 
+  const inputQuery = useUnit(hiddenWalletsModel.$inputQuery);
   const query = useUnit(hiddenWalletsModel.$query);
   const selectionState = useUnit(hiddenWalletsModel.$selectionState);
 
@@ -85,7 +86,7 @@ export const HiddenWalletsModal = ({ onClose }: Props) => {
       );
     }
 
-    if (regularMultisigs.length > 0 && multisigSearchResults.length === 0 && query.length > 0) {
+    if (regularMultisigs.length > 0 && multisigSearchResults.length === 0 && inputQuery.length > 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center px-12">
           <Icon size={64} name="empty" className="mb-6" />
@@ -127,7 +128,7 @@ export const HiddenWalletsModal = ({ onClose }: Props) => {
     }
 
     return null;
-  }, [query, regularMultisigs, selectionState, multisigSearchResults, t]);
+  }, [inputQuery, query, regularMultisigs, selectionState, multisigSearchResults, t]);
 
   return (
     <Modal isOpen={isModalOpen} height="full" size="md" onToggle={handleClose}>
@@ -136,11 +137,12 @@ export const HiddenWalletsModal = ({ onClose }: Props) => {
         <section className="flex h-full flex-col space-y-4 p-4">
           {regularMultisigs.length > 0 && (
             <SearchInput
-              value={query}
+              value={inputQuery}
               placeholder={t('settings.hiddenWallets.searchPlaceholder')}
               onChange={hiddenWalletsModel.changeQuery}
             />
           )}
+
           {content}
 
           <Button className="mt-3 ml-auto" disabled={selectionState.selectedCount === 0} onClick={handleRestore}>

@@ -65,13 +65,17 @@ export const WalletGroup = memo((props: Props) => {
     }
   }, [filteredWallets, isMultipleSelect, props]);
 
+  // Optimized Set for O(1) selection lookups
+  const selectedWalletIdsSet = useMemo(() => {
+    return isMultipleSelect ? new Set(props.selectedWalletIds) : new Set();
+  }, [isMultipleSelect, props.selectedWalletIds]);
+
   // Checkbox state logic for multiple select
   const groupCheckboxState = useMemo(() => {
     if (!isMultipleSelect) return { checked: false, semiChecked: false };
 
-    const { selectedWalletIds } = props;
     const walletIds = filteredWallets.map(w => w.id);
-    const selectedInGroup = walletIds.filter(id => selectedWalletIds.includes(id));
+    const selectedInGroup = walletIds.filter(id => selectedWalletIdsSet.has(id));
 
     if (selectedInGroup.length === 0) {
       return { checked: false, semiChecked: false };
@@ -80,7 +84,7 @@ export const WalletGroup = memo((props: Props) => {
     } else {
       return { checked: false, semiChecked: true };
     }
-  }, [isMultipleSelect, props.selectedWalletIds, filteredWallets]);
+  }, [isMultipleSelect, selectedWalletIdsSet, filteredWallets]);
 
   if (filteredWallets.length === 0) {
     return null;
@@ -124,7 +128,7 @@ export const WalletGroup = memo((props: Props) => {
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
               const address = wallet.accounts[0]?.accountId;
-              const isSelected = isMultipleSelect ? props.selectedWalletIds.includes(wallet.id) : false;
+              const isSelected = isMultipleSelect ? selectedWalletIdsSet.has(wallet.id) : false;
 
               let chain: Chain | null = null;
               let label: string | null = null;
