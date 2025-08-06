@@ -1,4 +1,4 @@
-import orderBy from 'lodash/orderBy';
+import { orderBy } from 'lodash';
 
 import { type DelegateInfo } from '@/shared/api/governance';
 import { type Address, type Identity } from '@/shared/core';

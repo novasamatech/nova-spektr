@@ -2198,10 +2198,13 @@
       "chainTitle": "with threshold { threshold } out of { signatories } signatories",
       "changeSignatories": "Change signatories",
       "contactsGroup": "Contacts",
+      "multisigWallet": "Multisig wallet",
+      "on": "on",
       "otherSignatories_one": "Other signatory { count }",
       "otherSignatories_other": "Other signatories { count }",
       "signatoriesGroup": "Signatories { amount }",
       "signatoriesTab": "Signatories",
+      "singleChainTitle": "via  <wallet />  {walletName} on  <chain /> chain with threshold { threshold } out of { signatories } signatories",
       "thresholdLabel": "Threshold { min } out of { max }",
       "walletsGroup": "Your wallets"
     },

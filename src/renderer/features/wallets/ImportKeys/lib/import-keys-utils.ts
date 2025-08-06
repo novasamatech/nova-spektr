@@ -1,6 +1,5 @@
 import { type TFunction } from 'i18next';
-import groupBy from 'lodash/groupBy';
-import unionBy from 'lodash/unionBy';
+import { groupBy, unionBy } from 'lodash';
 
 import {
   AccountType,

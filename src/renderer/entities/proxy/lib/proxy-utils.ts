@@ -1,5 +1,4 @@
-import sortBy from 'lodash/sortBy';
-import uniqBy from 'lodash/uniqBy';
+import { sortBy, uniqBy } from 'lodash';
 
 import {
   type ChainId,

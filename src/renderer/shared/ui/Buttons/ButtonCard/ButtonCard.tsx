@@ -1,4 +1,4 @@
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { type MouseEvent, type PropsWithChildren, forwardRef } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';

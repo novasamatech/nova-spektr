@@ -1,5 +1,5 @@
 import { BN_ZERO } from '@polkadot/util';
-import keyBy from 'lodash/keyBy';
+import { keyBy } from 'lodash';
 
 import { type Asset, type Balance, type ChainId, type OmitFirstArg } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
