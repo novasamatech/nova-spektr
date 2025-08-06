@@ -30,7 +30,7 @@ export const QrGeneratorContainer = ({
       <Countdown countdown={children ? countdown : 0} className="mb-4" />
 
       <div
-        className="relative flex min-h-[240px] w-[240px] flex-col items-center justify-center gap-y-4"
+        className="relative flex min-h-[250px] w-[250px] flex-col items-center justify-center gap-y-4"
         data-testid={testId}
       >
         {children &&
