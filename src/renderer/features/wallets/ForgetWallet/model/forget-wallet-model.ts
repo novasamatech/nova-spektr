@@ -28,8 +28,6 @@ persist({
 
 const remove = createEvent();
 
-const removed = createEvent();
-
 const $walletToHide = createStore<number | null>(null);
 const $walletsToRemove = createStore<number[]>([]);
 
@@ -64,12 +62,12 @@ sample({
 
     const walletsToRemove = [...Array.from(walletIdFromGraph)];
 
-    if (!walletUtils.isMultisig(wallet)) {
+    if (!walletUtils.isRegularMultisig(wallet)) {
       walletsToRemove.push(wallet.id);
     }
 
     return {
-      walletToHidden: walletUtils.isMultisig(wallet) ? wallet.id : null,
+      walletToHidden: walletUtils.isRegularMultisig(wallet) ? wallet.id : null,
       walletsToRemove,
     };
   },
@@ -112,11 +110,6 @@ sample({
   target: proxiesModel.findAllProxies,
 });
 
-sample({
-  clock: walletsRemovedFx.done,
-  target: removed,
-});
-
 export const forgetWalletModel = {
   flow,
 
@@ -124,6 +117,5 @@ export const forgetWalletModel = {
   $doNotShowAgain,
 
   remove,
-  removed,
   changeDoNotShowAgain,
 };
