@@ -38,7 +38,7 @@ accountSDK(proxiedWalletFeature, {
     return false;
   },
   collectAccountChildren(children, { account, accounts }) {
-    if (accountUtils.isProxiedAccount(account)) {
+    if (accountUtils.isProxiedAccount(account) || accountUtils.isFlexibleProxiedAccount(account)) {
       return accounts
         .filter(a => account.connections?.some(connection => connection.proxyAccountId === a.accountId))
         .concat(children);
@@ -113,7 +113,11 @@ transactionSDK(proxiedWalletFeature, {
     }
   },
   wrap(transition, { api, account, route, index }) {
-    if (accountUtils.isProxiedAccount(account) || accountUtils.isPureProxiedAccount(account)) {
+    if (
+      accountUtils.isProxiedAccount(account) ||
+      accountUtils.isFlexibleProxiedAccount(account) ||
+      accountUtils.isPureProxiedAccount(account)
+    ) {
       const encodedTransaction = transactionService.encodeTransaction(transition, api);
       const proxyAccount = route.at(index + 1);
       assert(proxyAccount, `Proxy for ${account.accountId} is not found`);
@@ -144,7 +148,11 @@ transactionSDK(proxiedWalletFeature, {
     }
   },
   wrapLegacy(transition, { api, account, route, index }) {
-    if (accountUtils.isProxiedAccount(account) || accountUtils.isPureProxiedAccount(account)) {
+    if (
+      accountUtils.isProxiedAccount(account) ||
+      accountUtils.isFlexibleProxiedAccount(account) ||
+      accountUtils.isPureProxiedAccount(account)
+    ) {
       const extrinsic = getExtrinsic[transition.type](transition.args, api);
 
       const proxyAccount = route.at(index + 1);

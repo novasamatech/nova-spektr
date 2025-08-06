@@ -1,6 +1,6 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine } from 'effector';
-import uniq from 'lodash/uniq';
+import { uniq } from 'lodash';
 
 import { type DelegationBalanceMap, type DelegationTracksMap } from '@/shared/core';
 import { toAccountId, toAddress } from '@/shared/lib/utils';

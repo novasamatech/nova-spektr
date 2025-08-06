@@ -1,22 +1,15 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type UnsubscribePromise } from '@polkadot/api/types';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { combineEvents, delay, spread } from 'patronum';
+import { delay, spread } from 'patronum';
 
-import {
-  type NoID,
-  type PartialProxiedAccount,
-  type ProxyGroup,
-  ProxyVariant,
-  type Timepoint,
-  WalletType,
-} from '@/shared/core';
+import { type PartialProxiedAccount, ProxyVariant, type Timepoint } from '@/shared/core';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type PathType, Paths } from '@/shared/routes';
 import { subscriptionService } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { proxyModel, proxyUtils } from '@/entities/proxy';
+import { proxyModel } from '@/entities/proxy';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
@@ -292,37 +285,6 @@ sample({
     ] as PartialProxiedAccount[];
   },
   target: proxiesModel.createProxiesWallets,
-});
-
-sample({
-  clock: combineEvents({
-    events: [getPureProxyFx.doneData, walletModel.events.walletCreatedDone],
-    reset: formModel.flowStarted,
-  }),
-  source: {
-    chain: formModel.form.fields.chain.$value,
-    proxyGroups: proxyModel.$proxyGroups,
-    proxyDeposit: formModel.$proxyDeposit,
-  },
-  filter: ({ chain }, [_, { wallet }]) => wallet.type === WalletType.PROXIED && nonNullable(chain),
-  fn: ({ chain, proxyGroups, proxyDeposit }, [{ accountId }, { wallet }]) => {
-    const newProxyGroup: NoID<ProxyGroup> = {
-      walletId: wallet.id,
-      chainId: chain!.chainId,
-      proxiedAccountId: accountId,
-      totalDeposit: proxyDeposit,
-    };
-
-    const existingProxyGroup = proxyGroups.find((group) => proxyUtils.isSameProxyGroup(group, newProxyGroup));
-
-    return existingProxyGroup
-      ? { toUpdate: [{ id: existingProxyGroup.id, ...newProxyGroup }] }
-      : { toAdd: [newProxyGroup] };
-  },
-  target: spread({
-    toAdd: proxyModel.events.proxyGroupsAdded,
-    toUpdate: proxyModel.events.proxyGroupsUpdated,
-  }),
 });
 
 sample({

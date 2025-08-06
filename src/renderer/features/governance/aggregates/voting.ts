@@ -3,7 +3,7 @@ import { combine, createEvent, sample } from 'effector';
 import { type TrackId, type VotingMap } from '@/shared/core';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { identity } from '@/domains/network';
+import { accountService, identity } from '@/domains/network';
 import { votingModel, votingService } from '@/entities/governance';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -46,20 +46,22 @@ const $possibleAccountsForVoting = combine(
     if (nullable(wallet) || nullable(chain)) return [];
 
     if (!walletUtils.isPolkadotVault(wallet)) {
-      return wallet.accounts.filter((a) => accountUtils.isChainAndCryptoMatch(a, chain));
+      return wallet.accounts.filter((a) => accountService.isAccountAvailableOnChain(a, chain));
     }
 
     const accounts = wallet.accounts.filter((a) => {
       return (
-        accountUtils.isChainAndCryptoMatch(a, chain) &&
-        (accountUtils.isVaultShardAccount(a) || accountUtils.isVaultChainAccount(a))
+        accountService.isAccountAvailableOnChain(a, chain) &&
+        (accountUtils.isVaultShardAccount(a) ||
+          accountUtils.isVaultChainAccount(a) ||
+          accountUtils.isFlexibleMultisigAccount(a))
       );
     });
 
     if (accounts.length > 0) return accounts;
 
     return wallet.accounts.filter((a) => {
-      return accountUtils.isVaultBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain);
+      return accountUtils.isVaultBaseAccount(a) && accountService.isAccountAvailableOnChain(a, chain);
     });
   },
 );

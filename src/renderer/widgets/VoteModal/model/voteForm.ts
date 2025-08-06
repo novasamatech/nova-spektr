@@ -11,7 +11,7 @@ import {
 } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService, voteTransactionService } from '@/entities/governance';
@@ -95,13 +95,14 @@ const form: Form<FormFields> = createForm<FormFields>({
 
 // initiators
 
-const $initiators = combine(
-  walletSelect.$selectedAccounts,
-  networkSelectorModel.$governanceChain,
-  (accounts, chain) => {
-    return chain ? (accountService.filterAccountsOnChain(accounts, chain) ?? []) : [];
-  },
-);
+const $initiatorsList = createInitiatorsStore({
+  chain: networkSelectorModel.$governanceChain,
+  accounts: walletSelect.$selectedAccounts,
+});
+
+const $initiators = combine($initiatorsList, networkSelectorModel.$governanceChain, (accounts, chain) => {
+  return chain ? (accountService.filterAccountsOnChain(accounts, chain) ?? []) : [];
+});
 
 const $initiatorWallet = combine(walletModel.$wallets, form.fields.initiator.$value, (wallets, initiator) => {
   if (nullable(initiator)) return null;

@@ -7,7 +7,6 @@ import {
   type Contact,
   type Notification,
   type ProxyAccount,
-  type ProxyGroup,
   type Serializable,
   type Wallet,
 } from '@/shared/core';
@@ -33,7 +32,6 @@ export type TAccount2 = Table<AnyAccountDS, AnyAccountDS['id']>;
 export type TBalance = Table<Serializable<Balance>, Balance['id']>;
 export type TConnection = Table<Connection, Connection['id']>;
 export type TProxy = Table<ProxyAccount, ProxyAccount['id']>;
-export type TProxyGroup = Table<ProxyGroup, ProxyGroup['id']>;
 export type TMultisigOperations = Table<Serializable<MultisigOperation>, MultisigOperation['id']>;
 export type TNotification = Table<Notification, Notification['id']>;
 export type TMetadata = Table<ChainMetadata, ChainMetadata['id']>;

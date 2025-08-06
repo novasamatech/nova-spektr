@@ -1,6 +1,6 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
-import keyBy from 'lodash/keyBy';
+import { keyBy } from 'lodash';
 
 // TODO: resolve cross import
 import {

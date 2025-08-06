@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { attach, combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import sortBy from 'lodash/sortBy';
+import { sortBy } from 'lodash';
 import { delay, spread } from 'patronum';
 
 import { $features } from '@/shared/config/features';
