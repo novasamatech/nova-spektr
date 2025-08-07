@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useMemo } from 'react';
 
-import { AccountType, type Chain, type ID, type Wallet, type WalletType } from '@/shared/core';
+import { AccountType, type Chain, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
@@ -35,9 +35,9 @@ type SingleSelectProps = BaseProps & {
 type MultiSelectProps = BaseProps & {
   isMultipleSelect: true;
   onSelect: (wallets: Wallet[]) => unknown;
-  selectedWalletIds: ID[];
-  onGroupToggle: (walletIds: ID[]) => void;
-  onWalletToggle: (walletId: ID) => void;
+  selectedWalletIds: Wallet[];
+  onGroupToggle: (wallets: Wallet[]) => void;
+  onWalletToggle: (wallet: Wallet) => void;
   setSearchResults?: (wallets: Wallet[]) => void;
 };
 
@@ -93,13 +93,12 @@ export const WalletGroup = memo((props: Props) => {
   const handleGroupCheckboxChange = () => {
     if (!isMultipleSelect) return;
 
-    const walletIds = filteredWallets.map(w => w.id);
-    props.onGroupToggle(walletIds);
+    props.onGroupToggle(filteredWallets);
   };
 
   const handleWalletClick = (wallet: Wallet) => {
     if (isMultipleSelect) {
-      props.onWalletToggle(wallet.id);
+      props.onWalletToggle(wallet);
       return;
     }
 

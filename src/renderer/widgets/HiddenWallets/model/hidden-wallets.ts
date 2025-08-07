@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { debounce } from 'patronum';
 
-import { type ID } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
 import { walletModel, walletUtils } from '@/entities/wallet';
 
 const $hiddenWallets = walletModel.$hiddenWallets;
@@ -15,8 +15,8 @@ const changeQuery = createEvent<string>();
 const restoreWallets = createEvent();
 const walletsRestored = createEvent();
 const clearSelection = createEvent();
-const toggleWalletSelection = createEvent<ID>();
-const toggleGroupSelection = createEvent<ID[]>();
+const toggleWalletSelection = createEvent<Wallet>();
+const toggleGroupSelection = createEvent<Wallet[]>();
 const toggleAllSelection = createEvent();
 
 const $inputQuery = restore(changeQuery, '').reset(clearSelection);
@@ -24,27 +24,27 @@ const $inputQuery = restore(changeQuery, '').reset(clearSelection);
 // Debounced query for expensive search operations (300ms delay)
 const $query = restore(debounce(changeQuery, 300), '').reset(clearSelection);
 
-const $selectedWalletIds = createStore<Set<ID>>(new Set()).reset(clearSelection);
+const $selectedWallet = createStore<Set<Wallet>>(new Set()).reset(clearSelection);
 
 sample({
   clock: toggleWalletSelection,
-  source: $selectedWalletIds,
-  fn: (selected, walletId) => {
+  source: $selectedWallet,
+  fn: (selected, wallet) => {
     const newSelected = new Set(selected);
 
-    if (newSelected.has(walletId)) {
-      newSelected.delete(walletId);
+    if (newSelected.has(wallet)) {
+      newSelected.delete(wallet);
     } else {
-      newSelected.add(walletId);
+      newSelected.add(wallet);
     }
     return newSelected;
   },
-  target: $selectedWalletIds,
+  target: $selectedWallet,
 });
 
 sample({
   clock: toggleGroupSelection,
-  source: $selectedWalletIds,
+  source: $selectedWallet,
   fn: (selected, groupWalletIds) => {
     const newSelected = new Set(selected);
     const allSelected = groupWalletIds.every((id) => newSelected.has(id));
@@ -55,20 +55,19 @@ sample({
 
     return newSelected;
   },
-  target: $selectedWalletIds,
+  target: $selectedWallet,
 });
 
 sample({
   clock: toggleAllSelection,
-  source: { selectedIds: $selectedWalletIds, wallets: $regularMultisigs },
+  source: { selectedIds: $selectedWallet, wallets: $regularMultisigs },
   fn: ({ selectedIds, wallets }) => {
-    const allWalletIds = wallets.map((w) => w.id);
-    return selectedIds.size === allWalletIds.length ? new Set<ID>() : new Set(allWalletIds);
+    return selectedIds.size === wallets.length ? new Set<Wallet>() : new Set(wallets);
   },
-  target: $selectedWalletIds,
+  target: $selectedWallet,
 });
 
-const $selectionState = combine($selectedWalletIds, $regularMultisigs, (selectedIds, wallets) => {
+const $selectionState = combine($selectedWallet, $regularMultisigs, (selectedIds, wallets) => {
   const totalWallets = wallets.length;
   const selectedCount = selectedIds.size;
 
@@ -84,19 +83,19 @@ const $selectionState = combine($selectedWalletIds, $regularMultisigs, (selected
 
 sample({
   clock: restoreWallets,
-  source: $selectedWalletIds,
+  source: $selectedWallet,
   fn: (selectedIds) => Array.from(selectedIds),
-  target: walletModel.events.walletsRestored,
+  target: walletModel.restoreWallets,
 });
 
 sample({
   clock: restoreWallets,
-  fn: () => new Set<ID>(),
-  target: $selectedWalletIds,
+  fn: () => new Set<Wallet>(),
+  target: $selectedWallet,
 });
 
 sample({
-  clock: walletModel.events.walletsRestoredSuccess,
+  clock: walletModel.restoreWallets.done,
   target: walletsRestored,
 });
 
@@ -106,7 +105,7 @@ export const hiddenWalletsModel = {
   $inputQuery, // For immediate UI feedback
   $query, // Debounced query for expensive operations
   $regularMultisigs,
-  $selectedWalletIds,
+  $selectedWalletIds: $selectedWallet,
   $selectionState,
 
   // Events

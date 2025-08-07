@@ -39,9 +39,6 @@ const flexibleMultisigCreated = createEvent<CreateParams<MultisigAccount>>();
 const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
 const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
 
-const walletRestored = createEvent<Wallet>();
-const walletsRestored = createEvent<ID[]>();
-
 const walletRemoved = createEvent<ID>();
 // TODO this is temp solution, each type of wallet should update own data inside feature
 const updateWallet = createEvent<{ walletId: ID; data: NonNullable<unknown> }>();
@@ -176,16 +173,9 @@ const updateWalletsFx = createEffect(async (wallets: Wallet[]): Promise<Wallet[]
   return wallets;
 });
 
-const restoreWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
-  await storageService.wallets.update(wallet.id, { isHidden: false });
-
-  return wallet;
-});
-
-const restoreWalletsFx = createEffect(async (walletIds: ID[]): Promise<ID[]> => {
-  await Promise.all(walletIds.map((walletId) => storageService.wallets.update(walletId, { isHidden: false })));
-
-  return walletIds;
+const restoreWalletsFx = attach({
+  effect: updateWalletsFx,
+  mapParams: (wallets: Wallet[]) => wallets.map((wallet) => ({ ...wallet, isHidden: false })),
 });
 
 sample({
@@ -312,43 +302,6 @@ sample({
 });
 
 sample({
-  clock: walletRestored,
-  source: $hiddenWallets,
-  filter: (hiddenWallets, walletToRestore) => {
-    return hiddenWallets.some((wallet) => wallet.id === walletToRestore.id);
-  },
-  fn: (_, walletToRestore) => walletToRestore,
-  target: restoreWalletFx,
-});
-
-sample({
-  clock: walletsRestored,
-  target: restoreWalletsFx,
-});
-
-sample({
-  clock: restoreWalletsFx.doneData,
-  source: $rawWallets,
-  fn: (wallets, walletIdsToRestore) => {
-    return wallets.map((wallet) => {
-      return walletIdsToRestore.includes(wallet.id) ? { ...wallet, isHidden: false } : wallet;
-    });
-  },
-  target: $rawWallets,
-});
-
-sample({
-  clock: restoreWalletFx.doneData,
-  source: $rawWallets,
-  fn: (wallets, walletToRestore) => {
-    return wallets.map((wallet) => {
-      return wallet.id === walletToRestore.id ? { ...wallet, isHidden: false } : wallet;
-    });
-  },
-  target: $rawWallets,
-});
-
-sample({
   clock: updateWallet,
   source: $rawWallets,
   fn: (wallets, { walletId, data }) => {
@@ -409,6 +362,7 @@ export const walletModel = {
   populate: fetchAllWalletsFx,
   walletHidden: walletHiddenFx,
   walletsRemoved: walletsRemovedFx,
+  restoreWallets: restoreWalletsFx,
 
   events: {
     watchOnlyCreated,
@@ -423,10 +377,6 @@ export const walletModel = {
     updateWalletWithDB,
     walletRemoved,
     walletRemovedSuccess: removeWalletFx.done,
-    walletRestored,
-    walletsRestored,
-    walletsRestoredSuccess: restoreWalletsFx.done,
-    walletRestoredSuccess: restoreWalletFx.done,
   },
 
   __test: {
