@@ -1,39 +1,54 @@
 import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
-import { type ID } from '@/shared/core';
+import { balanceService } from '@/shared/api/balances';
+import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatFiatBalance } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
-import { FiatBalance, priceProviderModel } from '@/entities/price';
-import { walletSelect } from '@/aggregates/wallet-select';
-import { walletFiatBalanceModel } from '../model/fiatBalance';
+import { balanceModel } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
+import { FiatBalance, currencyModel, priceProviderModel } from '@/entities/price';
 
 BigNumber.config({
   ROUNDING_MODE: BigNumber.ROUND_DOWN,
 });
 
 type Props = {
-  walletId: ID;
+  wallet: Wallet;
   className?: string;
 };
 
-export const WalletFiatBalance = ({ walletId, className }: Props) => {
+export const WalletFiatBalance = ({ wallet, className }: Props) => {
   const { t } = useI18n();
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const walletBalances = useUnit(walletFiatBalanceModel.$activeWalletBalance);
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
 
-  if (!fiatFlag || walletId !== activeWallet?.id) {
+  const chains = useUnit(networkModel.$chains);
+  const balances = useUnit(balanceModel.$balances);
+  const currency = useUnit(currencyModel.$activeCurrency);
+  const prices = useUnit(priceProviderModel.$assetsPrices);
+
+  const balance = useMemo(() => {
+    return balanceService.calculateWalletBalance({
+      wallet,
+      chains,
+      balances,
+      currency,
+      prices,
+    });
+  }, [wallet, chains, balances, currency, prices]);
+
+  if (!fiatFlag) {
     return null;
   }
 
-  if (!walletBalances) {
+  if (!balance) {
     return <Skeleton width={14} height={4.5} />;
   }
 
-  const { value: formattedValue, suffix } = formatFiatBalance(walletBalances.toString());
+  const { value: formattedValue, suffix } = formatFiatBalance(balance.toString());
 
   const balanceValue = t('assetBalance.number', { value: formattedValue });
 

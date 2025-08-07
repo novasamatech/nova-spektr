@@ -11,9 +11,7 @@ import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
-import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
-
-const { WalletFiatBalance } = walletsFiatBalanceFeature.views;
+import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
@@ -82,7 +80,7 @@ export const WalletGroup = memo((props: Props) => {
                       wallet={wallet}
                       address={address}
                       description={
-                        <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
+                        <WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />
                       }
                       chain={chain}
                       label={label}
