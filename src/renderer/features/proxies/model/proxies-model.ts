@@ -11,6 +11,7 @@ import {
   CryptoType,
   ExternalType,
   type NoID,
+  NotificationType,
   type PartialProxiedAccount,
   type ProxiedAccount,
   type ProxiedWallet,
@@ -32,6 +33,7 @@ import {
 } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
+import { notificationModel } from '@/entities/notification';
 import { proxyModel, proxyUtils, pureProxiesService } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { proxiesUtils } from '../lib/proxies-utils';
@@ -241,7 +243,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
   return { wallet, accounts };
 });
 
-const createProxiesWalletsFx = attach({
+const createProxiedWalletsFx = attach({
   source: {
     chains: networkModel.$chains,
     wallets: walletModel.$wallets,
@@ -267,7 +269,7 @@ sample({
   clock: fetchProxiesFx.doneData,
   filter: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd.length > 0,
   fn: ({ proxiedAccountsToAdd }) => proxiedAccountsToAdd,
-  target: createProxiesWalletsFx,
+  target: createProxiedWalletsFx,
 });
 
 sample({
@@ -291,12 +293,29 @@ sample({
 });
 
 sample({
-  clock: createProxiesWalletsFx.doneData,
+  clock: createProxiedWalletsFx.doneData,
   target: series(walletModel.events.proxiedCreated),
+});
+
+sample({
+  clock: createProxiedWalletsFx.doneData,
+  source: {
+    chains: networkModel.$chains,
+    wallets: walletModel.$wallets,
+  },
+  fn: ({ chains, wallets }, walletDrafts) => {
+    const proxiedAccounts = walletDrafts.flatMap(({ accounts }) => accounts);
+
+    return proxiesUtils.getNotification({
+      wallets,
+      proxiedAccounts,
+      chains,
+      type: NotificationType.PROXY_CREATED,
+    });
+  },
+  target: notificationModel.events.notificationsAdded,
 });
 
 export const proxiesModel = {
   findAllProxies: findAllProxiesFx,
-  createProxiedWallet: createProxiedWalletFx,
-  createProxiesWallets: createProxiesWalletsFx,
 };
