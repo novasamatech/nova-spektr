@@ -34,6 +34,7 @@ export { Json } from './Json/Json';
 export { Tabs } from './Tabs/Tabs';
 export { Box } from './Box/Box';
 export { QrReader, type QrScanResult } from './QrReader/QrReader';
+export { QrCode } from './QrCode/QrCode';
 export { ConfirmModal } from './ConfirmModal/ConfirmModal';
 
 export { QR_READER_ERRORS } from './QrReader/errors';

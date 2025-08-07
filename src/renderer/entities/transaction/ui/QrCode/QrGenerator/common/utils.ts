@@ -1,7 +1,6 @@
 import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { str } from 'parity-scale-codec';
-import qrcode from 'qrcode-generator';
 import { type Encoder } from 'raptorq/raptorq';
 
 import {
@@ -20,26 +19,6 @@ import { type DynamicDerivationRequestInfo } from '../../common/types';
 import { CRYPTO_STUB, Command, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 
 const MULTIPART = new Uint8Array([0]);
-
-// HACK The default function take string -> number[], the Uint8array is compatible
-// with that signature and the use thereof
-// @ts-expect-error hack
-qrcode.stringToBytes = (data: Uint8Array): Uint8Array => data;
-
-export const getSvgString = (value: Uint8Array, bgColor = 'none'): string => {
-  const qr = qrcode(0, 'M');
-
-  // This will only work for the case where we actually pass `Bytes` in here
-  qr.addData(value as unknown as string, 'Byte');
-  qr.make();
-
-  const svgTag = qr.createSvgTag(2, 0);
-
-  return svgTag
-    .replace(/width="\d+px"/, 'width="100%"')
-    .replace(/height="\d+px"/, 'height="100%"')
-    .replace(/white/, bgColor);
-};
 
 export const encodeNumber = (value: number): Uint8Array => new Uint8Array([value >> 8, value & 0xff]);
 
@@ -100,9 +79,13 @@ export const createSubstrateSignWithProofPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   if (signingType === SigningType.POLKADOT_VAULT) {
-    return u8aConcat(
-      SUBSTRATE_ID,
-      createDynamicDerivationsSignPayload(address, payload, genesisHash, derivationPath, cryptoType),
+    return createDynamicDerivationsSignWithProofPayload(
+      address,
+      metadataProof,
+      payload,
+      genesisHash,
+      derivationPath,
+      cryptoType,
     );
   }
 
@@ -140,8 +123,8 @@ export const createDynamicDerivationsSignWithProofPayload = (
     new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
     new Uint8Array([Command.DynamicDerivationsTransactionWithProof]),
     decodeAddress(address),
-    u8aToU8a(metadataProof),
     str.encode(derivationPath),
+    u8aToU8a(metadataProof),
     u8aToU8a(payload),
     u8aToU8a(genesisHash),
   );
@@ -200,7 +183,7 @@ export const createDynamicDerivationPayload = (publicKey: Address, derivations: 
     payload: {
       multisigner: {
         MultiSigner: CryptoTypeString.SR25519,
-        public: decodeAddress(publicKey, false, 1),
+        public: decodeAddress(publicKey),
       },
       dynamicDerivations: derivations.map((d) => ({
         derivationPath: d.derivationPath,
@@ -231,7 +214,7 @@ export const createDynamicDerivationExportPayload = (
         name: walletName,
         multiSigner: {
           MultiSigner: CryptoTypeString.SR25519,
-          public: decodeAddress(publicKey, false, 1),
+          public: decodeAddress(publicKey),
         },
         derivedKeys: derivations
           .map((d) => {

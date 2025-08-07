@@ -1,3 +1,4 @@
+import { encodeAddress } from '@polkadot/util-crypto';
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useMemo, useState } from 'react';
 
@@ -6,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { Button, SmallTitleText } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { OperationResult, QrDerivationsExportGenerator } from '@/entities/transaction';
+import { OperationResult, QrTxGenerator, createDynamicDerivationExportPayload } from '@/entities/transaction';
 import { walletDetailsUtils } from '@/features/wallet-details';
 import { exportKeysUtils } from '../lib/export-keys-utils';
 
@@ -33,6 +34,11 @@ export const ExportKeysModal = ({ wallet, children }: Props) => {
     return Object.values(accountsMap).flat();
   }, [wallet]);
 
+  const qrPayload = useMemo(() => {
+    const address = encodeAddress(wallet.rootAccountId);
+    return createDynamicDerivationExportPayload(wallet.name, address, accounts.flat(), chains);
+  }, [wallet.name, wallet.rootAccountId, accounts, chains]);
+
   return (
     <Modal size="md" height="fit" isOpen={isOpen} onToggle={setIsOpen}>
       <Modal.Trigger>{children}</Modal.Trigger>
@@ -40,12 +46,7 @@ export const ExportKeysModal = ({ wallet, children }: Props) => {
       <Modal.Content>
         <Box direction="column" gap={6} padding={3} horizontalAlign="center">
           <SmallTitleText>{t('dynamicDerivations.exportKeys.qrCodeTitle')}</SmallTitleText>
-          <QrDerivationsExportGenerator
-            walletName={wallet.name}
-            rootAccountId={wallet.rootAccountId}
-            derivations={accounts.flat()}
-            size={240}
-          />
+          <QrTxGenerator payload={qrPayload} enableRaptorQ />
           <Button variant="fill" pallet="primary" onClick={downloadKeysFile}>
             {t('dynamicDerivations.exportKeys.downloadButton')}
           </Button>
