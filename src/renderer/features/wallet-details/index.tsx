@@ -93,7 +93,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
         <RenameWalletModal wallet={wallet}>
           <Dropdown.Item>
             <div className="flex items-center gap-2">
-              <Icon name="rename" size={20} className="text-icon-accent" />
+              <Icon name="renameUnderline" size={20} className="text-icon-accent" />
               {t('walletDetails.common.renameButton')}
             </div>
           </Dropdown.Item>
