@@ -119,6 +119,19 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
     });
   }
 
+  if (walletUtils.isFlexibleMultisig(wallet)) {
+    items.push({
+      component: (
+        <Dropdown.Item disabled>
+          <div className="flex items-center gap-2">
+            <Icon name="changeSignatories" size={20} className="text-icon-accent" />
+            {t('walletDetails.multisig.changeSignatories')}
+          </div>
+        </Dropdown.Item>
+      ),
+    });
+  }
+
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     items.push({
       component: (
