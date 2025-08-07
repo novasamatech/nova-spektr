@@ -31,6 +31,8 @@ export const WalletFiatBalance = ({ wallet, className }: Props) => {
   const prices = useUnit(priceProviderModel.$assetsPrices);
 
   const balance = useMemo(() => {
+    if (!fiatFlag) return null;
+
     return balanceService.calculateWalletBalance({
       wallet,
       chains,
@@ -38,7 +40,7 @@ export const WalletFiatBalance = ({ wallet, className }: Props) => {
       currency,
       prices,
     });
-  }, [wallet, chains, balances, currency, prices]);
+  }, [wallet, chains, balances, currency, prices, fiatFlag]);
 
   if (!fiatFlag) {
     return null;
