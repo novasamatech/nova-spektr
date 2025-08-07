@@ -22,7 +22,6 @@ const transferStarted = createEvent<AssetByChains>();
 const receiveStarted = createEvent<AssetByChains>();
 
 const $hideZeroBalances = restore(hideZeroBalancesChanged, false);
-const $accounts = walletSelect.$selectedAccounts;
 const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
 const $query = restore<string>(queryChanged, '');
 
@@ -56,8 +55,28 @@ sample({
   target: $filteredAccounts,
 });
 
+const $allInitiators = combine(
+  {
+    accounts: walletSelect.$selectedAccounts,
+    chains: networkModel.$chains,
+  },
+  ({ accounts, chains }) => {
+    if (nullable(accounts) || Object.keys(chains).length === 0) return [];
+    const result = [];
+
+    for (const [_, chain] of Object.entries(chains)) {
+      const initiators = accountService.findInitiators(accounts, chain);
+      if (initiators.length > 0) {
+        result.push(...initiators);
+      }
+    }
+
+    return result;
+  },
+);
+
 sample({
-  clock: walletSelect.$selectedAccounts,
+  clock: $allInitiators,
   target: $filteredAccounts,
 });
 
@@ -67,7 +86,7 @@ const $tokens = combine(
     activeView: $activeView,
     wallet: walletSelect.$selectedWallet,
     chains: networkModel.$chains,
-    accounts: $accounts,
+    accounts: $allInitiators,
   },
   ({ defaultTokens, activeView, wallet, chains, accounts }) => {
     if (activeView !== AssetsListView.TOKEN_CENTRIC) return DEFAULT_LIST;
@@ -214,7 +233,7 @@ const $tokensPopulated = createStore(false).on(once($sortedTokens.updates), () =
 
 export const portfolioModel = {
   $activeView,
-  $accounts,
+  $accounts: $allInitiators,
   $sortedTokens,
   $tokensPopulated,
 

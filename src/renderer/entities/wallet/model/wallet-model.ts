@@ -204,7 +204,7 @@ sample({
     multisigCreated,
     flexibleMultisigCreated,
     singleshardCreated,
-    proxiedCreated,
+    proxiedCreated.filter({ fn: nonNullable }),
   ],
   target: createWalletFx,
 });

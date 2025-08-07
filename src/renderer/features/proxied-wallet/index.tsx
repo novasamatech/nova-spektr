@@ -4,6 +4,7 @@ import { $features } from '@/shared/config/features';
 import { type Transaction, TransactionType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { assert } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/domains/network';
@@ -37,8 +38,10 @@ accountSDK(proxiedWalletFeature, {
     return false;
   },
   collectAccountChildren(children, { account, accounts }) {
-    if (accountUtils.isProxiedAccount(account)) {
-      return accounts.filter(a => a.accountId === account.proxyAccountId).concat(children);
+    if (accountUtils.isProxiedAccount(account) || accountUtils.isFlexibleProxiedAccount(account)) {
+      return accounts
+        .filter(a => account.connections?.some(connection => connection.proxyAccountId === a.accountId))
+        .concat(children);
     }
     return children;
   },
@@ -51,29 +54,31 @@ accountSDK(proxiedWalletFeature, {
       };
     }
   },
-  connection({ target, t }) {
+  connection({ source, target, t }) {
     if (accountUtils.isProxiedAccount(target)) {
       return {
-        label: {
-          text: (() => {
-            const key = `proxy.types.${target.proxyType}`;
-            const translatedValue = t(key);
-            return translatedValue !== key ? translatedValue : target.proxyType;
-          })(),
-          color: 'var(--icons-icon-alert, #7B29FF)',
-          background: '#F5EEFF',
-        },
+        labels: target.connections
+          .filter(connection => connection.proxyAccountId === source.accountId)
+          .map(connection => {
+            return {
+              text: t([`proxy.types.${connection.proxyType}`, connection.proxyType]),
+              color: 'var(--icons-icon-alert, #7B29FF)',
+              background: '#F5EEFF',
+            };
+          }),
         color: '#2A1FD5',
       };
     }
   },
-  validateCallPermission({ route, call }) {
-    const result = proxyService.checkPermission(route, call);
-    if (result.success) return;
-    return {
-      account: result.account,
-      message: `Proxy account ${result.account} with type ${result.account.proxyType} cannot handle ${call} call`,
-    };
+  validateCallPermission() {
+    // ToDo: revert when validations fixed
+    // validateCallPermission({ route, call }) {
+    // const result = proxyService.checkPermission(route, call);
+    // if (result.success) return;
+    // return {
+    //   account: result.account,
+    //   message: `Proxy account ${result.account} with type ${result.account.proxyType} cannot handle ${call} call`,
+    // };
   },
 });
 
@@ -107,16 +112,26 @@ transactionSDK(proxiedWalletFeature, {
       return transaction;
     }
   },
-  wrap(transition, { api, account }) {
-    if (accountUtils.isProxiedAccount(account) || accountUtils.isPureProxiedAccount(account)) {
+  wrap(transition, { api, account, route, index }) {
+    if (
+      accountUtils.isProxiedAccount(account) ||
+      accountUtils.isFlexibleProxiedAccount(account) ||
+      accountUtils.isPureProxiedAccount(account)
+    ) {
       const encodedTransaction = transactionService.encodeTransaction(transition, api);
+      const proxyAccount = route.at(index + 1);
+      assert(proxyAccount, `Proxy for ${account.accountId} is not found`);
+
+      const proxyConnection = account.connections.find(c => c.proxyAccountId === proxyAccount.accountId);
+      assert(proxyConnection, `Proxy connection for ${proxyAccount.accountId} is not found`);
+
       const proxyTransaction: ProxyTransaction = {
         type: 'decoded',
         section: 'proxy',
         method: 'proxy',
         args: {
           real: account.accountId,
-          forceProxyType: account.proxyType,
+          forceProxyType: proxyConnection.proxyType,
           call: encodedTransaction.callData,
         },
       };
@@ -132,16 +147,27 @@ transactionSDK(proxiedWalletFeature, {
       };
     }
   },
-  wrapLegacy(transition, { api, account }) {
-    if (accountUtils.isProxiedAccount(account) || accountUtils.isPureProxiedAccount(account)) {
+  wrapLegacy(transition, { api, account, route, index }) {
+    if (
+      accountUtils.isProxiedAccount(account) ||
+      accountUtils.isFlexibleProxiedAccount(account) ||
+      accountUtils.isPureProxiedAccount(account)
+    ) {
       const extrinsic = getExtrinsic[transition.type](transition.args, api);
+
+      const proxyAccount = route.at(index + 1);
+      assert(proxyAccount, `Proxy for ${account.accountId} is not found`);
+
+      const proxyConnection = account.connections.find(c => c.proxyAccountId === proxyAccount.accountId);
+      assert(proxyConnection, `Proxy connection for ${proxyAccount.accountId} is not found`);
+
       const proxyTransaction: Transaction = {
         type: TransactionType.PROXY,
         accountId: account.accountId,
         chainId: api.genesisHash.toHex(),
         args: {
           real: account.accountId,
-          forceProxyType: account.proxyType,
+          forceProxyType: proxyConnection.proxyType,
           call: extrinsic.method.toHex(),
         },
       };

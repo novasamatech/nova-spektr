@@ -12,8 +12,8 @@ import {
   type NoID,
   type PartialProxiedAccount,
   type ProxiedAccount,
+  type ProxiedConnection,
   type ProxyAccount,
-  type ProxyDeposits,
   type ProxyType,
   ProxyVariant,
 } from '@/shared/core';
@@ -71,14 +71,16 @@ async function getProxies({
 
   const existingProxiedAccounts: PartialProxiedAccount[] = [];
   const proxiedAccountsToAdd: PartialProxiedAccount[] = [];
-
-  const deposits: ProxyDeposits = {
-    chainId: chain.chainId,
-    deposits: {},
-  };
+  const proxiedAccountsToUpdate: ProxiedAccount[] = [];
 
   if (!api || !api.query.proxy) {
-    return { proxiesToAdd, proxiesToRemove: [], proxiedAccountsToAdd, proxiedAccountsToRemove: [], deposits };
+    return {
+      proxiesToAdd,
+      proxiesToRemove: [],
+      proxiedAccountsToAdd,
+      proxiedAccountsToRemove: [],
+      proxiedAccountsToUpdate,
+    };
   }
 
   try {
@@ -90,40 +92,53 @@ async function getProxies({
           continue;
         }
 
-        for (const delegatedAccount of value.proxies) {
-          const newProxy: NoID<ProxyAccount> = {
-            chainId: chain.chainId,
-            proxiedAccountId: account,
-            accountId: delegatedAccount.delegate,
-            // TODO support all proxy types
-            proxyType: delegatedAccount.proxyType as ProxyType,
-            delay: delegatedAccount.delay,
-          };
+        const newProxied: PartialProxiedAccount = {
+          chainId: chain.chainId,
+          accountId: account,
+          proxyVariant: ProxyVariant.NONE,
+          deposit: value.deposit.toString(),
+          connections: value.proxies
+            .filter(
+              (delegatedAccount) =>
+                accountsForProxied[delegatedAccount.delegate] && !proxyWorkerUtils.isDelayedProxy(delegatedAccount),
+            )
+            .map(
+              (delegatedAccount) =>
+                ({
+                  proxyAccountId: delegatedAccount.delegate,
+                  proxyType: delegatedAccount.proxyType as ProxyType,
+                  delay: delegatedAccount.delay,
+                }) satisfies ProxiedConnection,
+            ),
+        };
 
-          const needToAddProxiedAccount =
-            accountsForProxied[newProxy.accountId] && !proxyWorkerUtils.isDelayedProxy(newProxy);
+        const isNotEmpty = newProxied.connections.length > 0;
 
-          if (needToAddProxiedAccount) {
-            const proxiedAccount: PartialProxiedAccount = {
-              ...newProxy,
-              proxyAccountId: newProxy.accountId,
-              accountId: newProxy.proxiedAccountId,
-              proxyVariant: ProxyVariant.NONE,
-            };
+        if (isNotEmpty) {
+          const existingProxied = proxiedAccounts.find((p) => p.accountId === newProxied.accountId);
+          if (!existingProxied) {
+            proxiedAccountsToAdd.push(newProxied);
+          } else {
+            const hasChanged =
+              existingProxied.connections.length !== newProxied.connections.length ||
+              existingProxied.deposit !== newProxied.deposit ||
+              existingProxied.connections.some((existingConnection, index) => {
+                const newConnection = newProxied.connections.at(index);
+                return (
+                  !newConnection ||
+                  existingConnection.proxyAccountId !== newConnection.proxyAccountId ||
+                  existingConnection.proxyType !== newConnection.proxyType ||
+                  existingConnection.delay !== newConnection.delay
+                );
+              });
 
-            const doesProxiedAccountExist = proxiedAccounts.some((oldProxy) =>
-              proxyWorkerUtils.isSameProxied(oldProxy, proxiedAccount),
-            );
-
-            if (!doesProxiedAccountExist) {
-              proxiedAccountsToAdd.push(proxiedAccount);
+            if (hasChanged) {
+              proxiedAccountsToUpdate.push({ ...existingProxied, ...newProxied });
             }
-
-            existingProxiedAccounts.push(proxiedAccount);
-
-            deposits.deposits[account] = value.deposit.toString();
           }
         }
+
+        existingProxiedAccounts.push(newProxied);
 
         for (const delegatedAccount of value.proxies) {
           const newProxy: NoID<ProxyAccount> = {
@@ -145,8 +160,6 @@ async function getProxies({
             }
 
             existingProxies.push(newProxy);
-
-            deposits.deposits[account] = value.deposit.toString();
           }
         }
       } catch (e) {
@@ -160,14 +173,7 @@ async function getProxies({
   const proxiesToRemove = proxies.filter((p) => !existingProxies.some((ep) => proxyWorkerUtils.isSameProxy(p, ep)));
 
   const proxiedAccountsToRemove = Object.values(proxiedAccounts).filter((p) => {
-    return !existingProxiedAccounts.some(
-      (ep) =>
-        ep.accountId === p.accountId &&
-        ep.chainId === p.chainId &&
-        ep.proxyAccountId === p.proxyAccountId &&
-        ep.delay === p.delay &&
-        ep.proxyType === p.proxyType,
-    );
+    return !existingProxiedAccounts.some((ep) => ep.accountId === p.accountId);
   });
 
   disconnect(api);
@@ -177,12 +183,12 @@ async function getProxies({
     proxiesToRemove,
     proxiedAccountsToAdd,
     proxiedAccountsToRemove,
-    deposits,
+    proxiedAccountsToUpdate,
   };
 }
 
 export const proxyWorker = {
-  getProxies,
+  getProxies: getProxies,
 };
 
 // @ts-expect-error TODO fix

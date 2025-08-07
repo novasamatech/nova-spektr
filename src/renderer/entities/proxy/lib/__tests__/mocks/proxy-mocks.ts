@@ -1,10 +1,4 @@
-import {
-  type ProxyAccount,
-  type ProxyDeposits,
-  type VaultBaseAccount,
-  type Wallet,
-  type WcAccount,
-} from '@/shared/core';
+import { type ProxyAccount, type VaultBaseAccount, type Wallet, type WcAccount } from '@/shared/core';
 import { AccountType, CryptoType, SigningType, WalletType } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -81,16 +75,6 @@ const wallets: Wallet[] = [
     ],
   },
 ];
-const deposits: ProxyDeposits[] = [
-  {
-    chainId: '0x001',
-    deposits: { [TEST_ACCOUNTS[0]]: '100' },
-  },
-  {
-    chainId: '0x001',
-    deposits: { [TEST_ACCOUNTS[1]]: '200' },
-  },
-];
 
 const proxyAccounts: ProxyAccount[] = [
   {
@@ -123,6 +107,5 @@ export const proxyMock = {
   oldProxy,
   newProxy,
   wallets,
-  deposits,
   proxyAccounts,
 };

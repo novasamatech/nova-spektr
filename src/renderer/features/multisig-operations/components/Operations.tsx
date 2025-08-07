@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import groupBy from 'lodash/groupBy';
+import { groupBy } from 'lodash';
 import { useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';

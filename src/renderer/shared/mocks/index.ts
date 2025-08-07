@@ -237,10 +237,15 @@ export const createWcAccount = (id = createRandomId(), walletId = 0): WcAccount 
 export const createProxiedAccount = (id = createRandomId(), walletId = 0): ProxiedAccount => ({
   id,
   accountId: createAccountId(`Proxied account ${id}`),
-  proxyAccountId: createAccountId(`Random account ${id}`),
-  delay: 0,
-  proxyType: 'Any',
   proxyVariant: ProxyVariant.REGULAR,
+  connections: [
+    {
+      proxyAccountId: createAccountId(`Random account ${id}`),
+      delay: 0,
+      proxyType: 'Any',
+    },
+  ],
+  deposit: '100',
   chainId: polkadotChainId,
   cryptoType: CryptoType.SR25519,
   name: `Proxied Account ${id}`,
@@ -310,7 +315,7 @@ export const createWcWallet = (id: number, accounts: WcAccount[]): WalletConnect
   signingType: SigningType.WALLET_CONNECT,
 });
 
-export const createProxiedWallet = (id: number, accounts: ProxiedAccount[]): ProxiedWallet => ({
+export const createProxiedWallet = (id: number, accounts: [ProxiedAccount]): ProxiedWallet => ({
   id,
   accounts,
   type: WalletType.PROXIED,

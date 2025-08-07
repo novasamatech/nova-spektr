@@ -15,7 +15,6 @@ import {
   type ProxiedAccount,
   type ProxiedWallet,
   type ProxyAccount,
-  type ProxyDeposits,
   ProxyVariant,
   SigningType,
   type Wallet,
@@ -23,7 +22,6 @@ import {
 } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { dictionary, withTimeout } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type AnyAccount,
   type IdentityMap,
@@ -44,10 +42,9 @@ type WorkerType = Endpoint<typeof proxyWorker>;
 const LOADING_TIMEOUT = 15_000;
 
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
-const depositsReceived = createEvent<ProxyDeposits>();
+const proxiedAccountsUpdated = createEvent<ProxiedAccount[]>();
 
 const $worker = createStore<WorkerType | null>(null);
-const $deposits = createStore<ProxyDeposits[]>([]);
 
 // Worker management
 
@@ -87,10 +84,7 @@ type GetProxiesResult = {
   proxiesToRemove: ProxyAccount[];
   proxiedAccountsToAdd: PartialProxiedAccount[];
   proxiedAccountsToRemove: ProxiedAccount[];
-  deposits: {
-    chainId: ChainId;
-    deposits: Record<AccountId, string>;
-  };
+  proxiedAccountsToUpdate: PartialProxiedAccount[];
 };
 
 const requestIdentitiesFx = attach({
@@ -117,17 +111,18 @@ const fetchProxiesFx = createEffect(
       proxies: chainProxies,
     });
 
-    const { proxiedAccountsToAdd } = proxiesResult;
+    const { proxiedAccountsToAdd, proxiedAccountsToUpdate } = proxiesResult;
+    const allProxiedAccountsToProcess = [...proxiedAccountsToAdd, ...proxiedAccountsToUpdate];
 
     const proxyUrl =
       networkUtils.isPureProxySupported(chain.options) && chain.externalApi?.[ExternalType.PROXY]?.[0]?.url;
 
-    if (proxiedAccountsToAdd.length) {
+    if (allProxiedAccountsToProcess.length) {
       const boundRequestIdentities = scopeBind(requestIdentitiesFx, { safe: true });
       try {
         await withTimeout(
           boundRequestIdentities({
-            accounts: proxiedAccountsToAdd.map((a) => a.accountId),
+            accounts: allProxiedAccountsToProcess.map((a) => a.accountId),
             chainId: chain.chainId,
           }),
           LOADING_TIMEOUT,
@@ -138,17 +133,17 @@ const fetchProxiesFx = createEffect(
       }
     }
 
-    if (proxyUrl && proxiedAccountsToAdd.length) {
+    if (proxyUrl && allProxiedAccountsToProcess.length) {
       const client = new GraphQLClient(proxyUrl);
 
       const pureProxies = await pureProxiesService.filterPureProxiedAccountIds(
         client,
-        proxiedAccountsToAdd.map((p) => p.accountId),
+        allProxiedAccountsToProcess.map((p) => p.accountId),
       );
 
       const pureProxiesMap = dictionary(pureProxies, 'accountId');
 
-      for (const proxiedAccount of proxiedAccountsToAdd) {
+      for (const proxiedAccount of allProxiedAccountsToProcess) {
         const pureProxy = pureProxiesMap[proxiedAccount.accountId];
         if (pureProxy) {
           proxiedAccount.proxyVariant = ProxyVariant.PURE;
@@ -219,7 +214,8 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
   const flexibleProxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: (w) => walletUtils.isFlexibleMultisig(w),
     accountFn: (a) =>
-      accountUtils.isChainIdMatch(a, proxiedAccount.chainId) && a.accountId === proxiedAccount.proxyAccountId,
+      accountUtils.isChainIdMatch(a, proxiedAccount.chainId) &&
+      proxiedAccount.connections.some((c) => a.accountId === c.proxyAccountId),
   });
 
   const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
@@ -263,7 +259,7 @@ spread({
     proxiesToRemove: proxyModel.events.proxiesRemoved,
     proxiesToAdd: proxyModel.events.proxiesAdded,
     proxiedAccountsToRemove: proxiedAccountsRemoved,
-    deposits: depositsReceived,
+    proxiedAccountsToUpdate: proxiedAccountsUpdated,
   },
 });
 
@@ -275,11 +271,8 @@ sample({
 });
 
 sample({
-  clock: depositsReceived,
-  source: $deposits,
-  filter: (_, newDeposits) => newDeposits && Object.keys(newDeposits.deposits).length > 0,
-  fn: (deposits, newDeposits) => deposits.filter((d) => d.chainId === newDeposits.chainId).concat(newDeposits),
-  target: $deposits,
+  clock: proxiedAccountsUpdated,
+  target: accounts.updateAccounts,
 });
 
 sample({
@@ -300,21 +293,6 @@ sample({
 sample({
   clock: createProxiesWalletsFx.doneData,
   target: series(walletModel.events.proxiedCreated),
-});
-
-sample({
-  clock: depositsReceived,
-  source: {
-    wallets: walletModel.$wallets,
-    groups: proxyModel.$proxyGroups,
-  },
-  filter: (_, deposits) => Boolean(deposits),
-  fn: ({ wallets, groups }, deposits) => proxyUtils.createProxyGroups(wallets, groups, deposits!),
-  target: spread({
-    toAdd: proxyModel.events.proxyGroupsAdded,
-    toUpdate: proxyModel.events.proxyGroupsUpdated,
-    toRemove: proxyModel.events.proxyGroupsRemoved,
-  }),
 });
 
 export const proxiesModel = {

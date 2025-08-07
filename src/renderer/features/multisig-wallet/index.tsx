@@ -40,7 +40,9 @@ accountSDK(multisigWalletFeature, {
   },
   availableOnChain({ account, chain }) {
     return (
-      (accountUtils.isMultisigAccount(account) || accountUtils.isMultisigSignatoryAccount(account)) &&
+      (accountUtils.isMultisigAccount(account) ||
+        accountUtils.isMultisigSignatoryAccount(account) ||
+        (accountUtils.isFlexibleMultisigAccount(account) && networkUtils.isPureProxySupported(chain.options))) &&
       networkUtils.isMultisigSupported(chain.options)
     );
   },
@@ -48,7 +50,7 @@ accountSDK(multisigWalletFeature, {
     return false;
   },
   collectAccountChildren(children, { account, accounts }) {
-    if (accountUtils.isMultisigAccount(account)) {
+    if (accountUtils.isAnyMultisigAccount(account)) {
       return account.signatories
         .map((signatory, index) => {
           const userAccount = accounts.find(a => a.accountId === signatory.accountId);
@@ -104,7 +106,7 @@ accountSDK(multisigWalletFeature, {
     }
   },
   validateRouteBalances({ account, api, route, balances, chainId, asset, index }) {
-    if (accountUtils.isMultisigAccount(account)) {
+    if (accountUtils.isAnyMultisigAccount(account)) {
       const deposit = multisigService.getMultisigDeposit(account.threshold, api);
       const payer = route.at(index + 1);
 
@@ -156,7 +158,7 @@ transactionSDK(multisigWalletFeature, {
     }
   },
   wrap(transaction, { api, account, route, index }) {
-    if (accountUtils.isMultisigAccount(account)) {
+    if (accountUtils.isAnyMultisigAccount(account)) {
       const signatory = route.at(index + 1);
       assert(signatory, 'Signatory not found');
 
@@ -191,7 +193,7 @@ transactionSDK(multisigWalletFeature, {
     }
   },
   wrapLegacy(transaction, { api, account, route, index }) {
-    if (accountUtils.isMultisigAccount(account)) {
+    if (accountUtils.isAnyMultisigAccount(account)) {
       const signatory = route.at(index + 1);
       assert(signatory, 'Signatory not found');
 

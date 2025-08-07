@@ -7,8 +7,6 @@ import { Button, DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { allTracks, locksService } from '@/entities/governance';
-import { accountUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
 import { delegationModel } from '@/widgets/DelegationModal';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
@@ -21,25 +19,22 @@ export const YourDelegation = () => {
   const uniqueTracks = useUnit(delegateDetailsModel.$uniqueTracks);
   const activeDelegations = useUnit(delegateDetailsModel.$activeDelegations);
   const chain = useUnit(delegateDetailsModel.$chain);
-  const wallet = useUnit(walletSelect.$selectedWallet);
 
   const isAddAvailable = useUnit(delegateDetailsModel.$isAddAvailable);
   const isEditAvailable = useUnit(delegateDetailsModel.$isEditAvailable);
   const isViewAvailable = useUnit(delegateDetailsModel.$isViewAvailable);
   const isRevokeAvailable = useUnit(delegateDetailsModel.$isRevokeAvailable);
   const delegate = useUnit(delegateDetailsModel.$delegate);
-
-  const accounts =
-    wallet?.accounts.filter(
-      (account) =>
-        chain &&
-        accountUtils.isChainAndCryptoMatch(account, chain) &&
-        activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
-    ) ?? [];
+  const initiators = useUnit(delegateDetailsModel.$initiators);
 
   if (nullable(chain)) {
     return null;
   }
+
+  const accounts =
+    initiators.filter((account) => {
+      return activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix }));
+    }) || [];
 
   return (
     <div className="flex flex-col gap-6">

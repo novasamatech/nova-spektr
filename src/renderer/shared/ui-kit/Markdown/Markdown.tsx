@@ -1,6 +1,6 @@
 import './Markdown.css';
 
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { type ChangeEvent, memo, useState } from 'react';
 import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';

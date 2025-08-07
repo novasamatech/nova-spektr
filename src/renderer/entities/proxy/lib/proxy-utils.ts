@@ -1,31 +1,22 @@
-import sortBy from 'lodash/sortBy';
-import uniqBy from 'lodash/uniqBy';
+import { sortBy, uniqBy } from 'lodash';
 
 import {
   type ChainId,
-  type NoID,
   type PartialProxiedAccount,
   type ProxyAccount,
-  type ProxyDeposits,
-  type ProxyGroup,
   type ProxyType,
   ProxyVariant,
-  type Wallet,
 } from '@/shared/core';
 import { splitCamelCaseString, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
 
 import { ProxyTypeName } from './constants';
 
 export const proxyUtils = {
   isSameProxy,
-  isSameProxyGroup,
   sortAccountsByProxyType,
   getProxiedName,
-  getProxyGroups,
-  createProxyGroups,
   getProxyTypeName,
   getProxyAccountsOnChain,
 };
@@ -55,79 +46,20 @@ function sortAccountsByProxyType(accounts: ProxyAccount[]): ProxyAccount[] {
   return sortBy(accounts, (account) => typeOrder.indexOf(account.proxyType));
 }
 
-function isSameProxyGroup(oldGroup: NoID<ProxyGroup>, newGroup: NoID<ProxyGroup>): boolean {
-  return (
-    oldGroup.walletId === newGroup.walletId &&
-    oldGroup.proxiedAccountId === newGroup.proxiedAccountId &&
-    oldGroup.chainId === newGroup.chainId
-  );
-}
-
 // TODO: Add i18n for wallet name
-function getProxiedName({ accountId, proxyVariant, proxyType }: PartialProxiedAccount, addressPrefix?: number): string {
+function getProxiedName(
+  { accountId, proxyVariant, connections }: PartialProxiedAccount,
+  addressPrefix?: number,
+): string {
   const address = toAddress(accountId, { chunk: 6, prefix: addressPrefix });
-  const proxyVariantLabel = proxyVariant === ProxyVariant.PURE ? 'for pure' : 'for';
 
-  return `${proxyType} ${proxyVariantLabel} ${address}`;
-}
-
-function getProxyGroups(wallets: Wallet[], deposits: ProxyDeposits): NoID<ProxyGroup>[] {
-  const walletsAccounts = wallets.map(({ accounts }) => accounts);
-
-  return Object.values(walletsAccounts).reduce<NoID<ProxyGroup>[]>((acc, accounts) => {
-    const walletProxyGroups = accounts.reduce<NoID<ProxyGroup>[]>((acc, account) => {
-      const isChainMatch = accountUtils.isChainIdMatch(account, deposits.chainId);
-      const accountDeposit = deposits.deposits[account.accountId];
-
-      if (isChainMatch && accountDeposit) {
-        acc.push({
-          walletId: account.walletId,
-          proxiedAccountId: account.accountId,
-          chainId: deposits.chainId,
-          totalDeposit: accountDeposit,
-        });
-      }
-
-      return acc;
-    }, []);
-
-    acc.push(...walletProxyGroups);
-
-    return acc;
-  }, []);
-}
-
-type CreateProxyGroupResult = {
-  toAdd: NoID<ProxyGroup>[];
-  toUpdate: NoID<ProxyGroup>[];
-  toRemove: ProxyGroup[];
-};
-
-function createProxyGroups(wallets: Wallet[], groups: ProxyGroup[], deposits: ProxyDeposits): CreateProxyGroupResult {
-  const proxyGroups = getProxyGroups(wallets, deposits);
-
-  const { toAdd, toUpdate } = proxyGroups.reduce<Record<'toAdd' | 'toUpdate', NoID<ProxyGroup>[]>>(
-    (acc, g) => {
-      const shouldUpdate = groups.some((p) => isSameProxyGroup(p, g));
-
-      if (shouldUpdate) {
-        acc.toUpdate.push(g);
-      } else {
-        acc.toAdd.push(g);
-      }
-
-      return acc;
-    },
-    { toAdd: [], toUpdate: [] },
-  );
-
-  const toRemove = groups.filter((p) => {
-    if (p.chainId !== deposits.chainId) return false;
-
-    return proxyGroups.every((g) => !proxyUtils.isSameProxyGroup(g, p));
-  });
-
-  return { toAdd, toUpdate, toRemove };
+  if (connections.length === 1) {
+    const proxyVariantLabel = proxyVariant === ProxyVariant.PURE ? 'for pure' : 'for';
+    const proxyType = connections.at(0)?.proxyType;
+    return `${proxyType} ${proxyVariantLabel} ${address}`;
+  } else {
+    return address;
+  }
 }
 
 function getProxyTypeName(proxyType: ProxyType | string): string {

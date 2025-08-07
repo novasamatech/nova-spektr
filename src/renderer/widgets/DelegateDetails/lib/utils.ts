@@ -1,5 +1,5 @@
 import { default as BigNumber } from 'bignumber.js';
-import capitalize from 'lodash/capitalize';
+import { capitalize } from 'lodash';
 
 import { type Delegation } from '@/shared/api/governance/off-chain/lib/types';
 import { type Identity } from '@/shared/core';

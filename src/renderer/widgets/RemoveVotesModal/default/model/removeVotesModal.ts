@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import uniq from 'lodash/uniq';
+import { uniq } from 'lodash';
 
 import { type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
 import { Step, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -43,7 +43,12 @@ const selectAccount = createEvent<AnyAccount>();
 
 const $pickedAccount = restore(selectAccount, null).reset(flow.close);
 
-const $availableAccounts = combine(walletSelect.$selectedAccounts, flow.state, (selectedAccounts, { votes, chain }) => {
+const $initiatorsList = createInitiatorsStore({
+  chain: networkSelectorModel.$governanceChain,
+  accounts: walletSelect.$selectedAccounts,
+});
+
+const $availableAccounts = combine($initiatorsList, flow.state, (selectedAccounts, { votes, chain }) => {
   if (nullable(votes.length) || nullable(chain)) return [];
 
   const accounts = uniq(votes.map((vote) => vote.voter).filter(nonNullable));

@@ -52,32 +52,32 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({
   const $confirmMap = combine($store, $wallets, (store, wallets) => {
     if (!wallets.length) return {};
 
-    return store.reduce<ConfirmMap>((acc, meta, index) => {
+    return store.reduce<ConfirmMap>((confirmMap, meta, index) => {
       const { wrappedTransactions, account } = meta;
       const { wrappedTx, coreTx } = wrappedTransactions;
 
       const isProxyTx = isProxyTransaction(wrappedTx) || isProxyTransaction(coreTx);
-      const initiatorAccount = walletUtils.getAccountBy(wallets, (acc) => {
+      const initiatorAccount = walletUtils.getAccountBy(wallets, (accountItem) => {
         if (accountUtils.isProxiedAccount(account)) {
-          return acc.accountId == account.proxyAccountId;
+          return account.connections.some((c) => accountItem.accountId === c.proxyAccountId);
         }
 
-        const isSameAccount = coreTx.accountId === acc.accountId;
+        const isSameAccount = coreTx.accountId === accountItem.accountId;
 
         return isSameAccount;
       });
 
-      if (!initiatorAccount) return acc;
+      if (!initiatorAccount) return confirmMap;
 
       const initiatorWallet = walletUtils.getWalletById(wallets, initiatorAccount.walletId);
-      if (!initiatorWallet) return acc;
+      if (!initiatorWallet) return confirmMap;
 
       const signerWallet = meta.signatory && walletUtils.getWalletById(wallets, meta.signatory?.walletId);
 
       const proxiedAccount = isProxyTx && accountUtils.isProxiedAccount(account) ? account : null;
       const proxiedWallet = proxiedAccount && walletUtils.getWalletById(wallets, proxiedAccount.walletId);
 
-      acc[meta.id ?? index] = {
+      confirmMap[meta.id ?? index] = {
         meta,
         wallets: {
           signer: signerWallet || null,
@@ -91,7 +91,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({
         },
       };
 
-      return acc;
+      return confirmMap;
     }, {});
   });
 

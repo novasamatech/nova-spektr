@@ -11,7 +11,7 @@ export const accountNodeConfigTransformer = createTransformer<
 
 export const accountConnectionTransformer = createTransformer<
   { source: AnyAccount; target: AnyAccount; t: TFunction<'translation'> },
-  { label?: { text: string; color: string; background: string }; color?: string }
+  { labels?: { text: string; color: string; background: string }[]; color?: string }
 >();
 
 export const accountSDK = createSDK({

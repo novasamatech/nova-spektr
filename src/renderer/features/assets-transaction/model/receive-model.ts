@@ -5,6 +5,7 @@ import { type Chain } from '@/shared/core';
 import { createFlow } from '@/shared/effector';
 import { nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
+import { createInitiatorsStore } from '@/shared/transactions';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { accountUtils } from '@/entities/wallet';
@@ -17,9 +18,14 @@ const $selectedChain = flow.state.map((state) => state.chain);
 const selectAccount = createEvent<AnyAccount>();
 const $selectedAccount = restore<AnyAccount | null>(selectAccount, null).reset(flow.close);
 
+const $initiators = createInitiatorsStore({
+  chain: $selectedChain,
+  accounts: walletSelect.$selectedAccounts,
+});
+
 const $chainAccounts = combine(
   {
-    selectedAccounts: walletSelect.$selectedAccounts,
+    selectedAccounts: $initiators,
     chain: $selectedChain,
     balances: balanceModel.$balances,
   },

@@ -31,6 +31,9 @@ export const enum ChainType {
   ETHEREUM,
 }
 
+/**
+ * CryptoTypeString enum used for MULTI_SIGNER taggedUnion fields
+ */
 export const enum CryptoTypeString {
   SR25519 = 'SR25519',
   ED25519 = 'ED25519',

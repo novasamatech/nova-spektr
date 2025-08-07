@@ -1,5 +1,5 @@
 import { useStoreMap, useUnit } from 'effector-react';
-import uniqBy from 'lodash/uniqBy';
+import { uniqBy } from 'lodash';
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 
 import { useGraphql } from '@/app/providers';
@@ -95,6 +95,7 @@ export const Staking = () => {
 
   const chains = useUnit(networkModel.$chains);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
 
   const { changeClient } = useGraphql();
 
@@ -133,14 +134,15 @@ export const Staking = () => {
   const { api: timelineApi } = useNetworkData(timelineChainId);
 
   const accounts =
-    activeWallet?.accounts.filter((account, _, collection) => {
+    selectedAccounts.filter((account, _, collection) => {
       if (!chainId) return false;
 
       const isBaseAccount = accountUtils.isVaultBaseAccount(account);
       const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
       const hasManyAccounts = collection.length > 1;
+      const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(account);
 
-      if (isPolkadotVault && isBaseAccount && hasManyAccounts) {
+      if ((isPolkadotVault && isBaseAccount && hasManyAccounts) || isFlexibleMultisigAccount) {
         return false;
       }
 
@@ -282,7 +284,7 @@ export const Staking = () => {
         // @ts-expect-error TODO fix
         acc.push(shardsGroup);
       } else {
-        if (walletUtils.isFlexibleMultisig(activeWallet) && accountUtils.isMultisigAccount(account)) {
+        if (accountUtils.isFlexibleMultisigAccount(account)) {
           return acc;
         }
 

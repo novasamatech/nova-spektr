@@ -13,6 +13,7 @@ import {
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { createInitiatorsStore } from '@/shared/transactions';
 import { type AnyAccount, transactionService } from '@/domains/network';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -50,13 +51,18 @@ const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
   return Object.keys(tracks);
 });
 
+const $initiators = createInitiatorsStore({
+  chain: networkSelectorModel.$governanceChain,
+  accounts: walletSelect.$selectedAccounts,
+});
+
 const $availableAccounts = combine(
   {
     wallet: walletSelect.$selectedWallet,
     delegations: delegationAggregate.$activeDelegations,
     network: delegationAggregate.$network,
     delegate: $delegate,
-    accounts: walletSelect.$selectedAccounts,
+    accounts: $initiators,
   },
   ({ wallet, delegations, network, delegate, accounts }) => {
     if (!wallet || !network?.chain || !delegate) return [];

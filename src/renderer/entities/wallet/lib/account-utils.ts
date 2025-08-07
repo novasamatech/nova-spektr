@@ -1,6 +1,6 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
-import keyBy from 'lodash/keyBy';
+import { keyBy } from 'lodash';
 
 // TODO: resolve cross import
 import {
@@ -233,19 +233,19 @@ function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): str
 // Proxied accounts
 
 function isAnyProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'Any';
+  return account.connections.some((c) => c.proxyType === 'Any');
 }
 
 function isNonTransferProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'NonTransfer';
+  return account.connections.some((c) => c.proxyType === 'NonTransfer');
 }
 
 function isStakingProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'Staking';
+  return account.connections.some((c) => c.proxyType === 'Staking');
 }
 
 function isGovernanceProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'Governance';
+  return account.connections.some((c) => c.proxyType === 'Governance');
 }
 
 /**

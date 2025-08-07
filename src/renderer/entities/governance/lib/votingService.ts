@@ -1,5 +1,5 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import isEmpty from 'lodash/isEmpty';
+import { isEmpty } from 'lodash';
 
 import {
   type AccountVote,
