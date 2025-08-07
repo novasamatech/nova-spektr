@@ -113,7 +113,7 @@ export const HiddenWalletsModal = ({ onClose }: Props) => {
             walletType={WalletType.MULTISIG}
             wallets={regularMultisigs}
             query={query}
-            selectedWalletIds={selectionState.selectedWallets}
+            selectedWallets={selectionState.selectedWallets}
             setSearchResults={setMultisigSearchResults}
             onSelect={noop}
             onGroupToggle={hiddenWalletsModel.toggleGroupSelection}

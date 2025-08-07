@@ -35,7 +35,7 @@ type SingleSelectProps = BaseProps & {
 type MultiSelectProps = BaseProps & {
   isMultipleSelect: true;
   onSelect: (wallets: Wallet[]) => unknown;
-  selectedWalletIds: Wallet[];
+  selectedWallets: Wallet[];
   onGroupToggle: (wallets: Wallet[]) => void;
   onWalletToggle: (wallet: Wallet) => void;
   setSearchResults?: (wallets: Wallet[]) => void;
@@ -66,25 +66,24 @@ export const WalletGroup = memo((props: Props) => {
   }, [filteredWallets, isMultipleSelect, props]);
 
   // Optimized Set for O(1) selection lookups
-  const selectedWalletIdsSet = useMemo(() => {
-    return isMultipleSelect ? new Set(props.selectedWalletIds) : new Set();
-  }, [isMultipleSelect, props.selectedWalletIds]);
+  const selectedWalletSet = useMemo(() => {
+    return isMultipleSelect ? new Set(props.selectedWallets) : new Set<Wallet>();
+  }, [isMultipleSelect, props]);
 
   // Checkbox state logic for multiple select
   const groupCheckboxState = useMemo(() => {
     if (!isMultipleSelect) return { checked: false, semiChecked: false };
 
-    const walletIds = filteredWallets.map(w => w.id);
-    const selectedInGroup = walletIds.filter(id => selectedWalletIdsSet.has(id));
+    const selectedInGroup = filteredWallets.filter(wallet => selectedWalletSet.has(wallet));
 
     if (selectedInGroup.length === 0) {
       return { checked: false, semiChecked: false };
-    } else if (selectedInGroup.length === walletIds.length) {
+    } else if (selectedInGroup.length === filteredWallets.length) {
       return { checked: true, semiChecked: false };
     } else {
       return { checked: false, semiChecked: true };
     }
-  }, [isMultipleSelect, selectedWalletIdsSet, filteredWallets]);
+  }, [isMultipleSelect, selectedWalletSet, filteredWallets]);
 
   if (filteredWallets.length === 0) {
     return null;
@@ -127,7 +126,7 @@ export const WalletGroup = memo((props: Props) => {
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
               const address = wallet.accounts[0]?.accountId;
-              const isSelected = isMultipleSelect ? selectedWalletIdsSet.has(wallet.id) : false;
+              const isSelected = isMultipleSelect ? selectedWalletSet.has(wallet) : false;
 
               let chain: Chain | null = null;
               let label: string | null = null;

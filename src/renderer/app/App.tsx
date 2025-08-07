@@ -5,7 +5,6 @@ import { matchPath, useLocation, useNavigate, useRoutes } from 'react-router-dom
 import { logger } from '@/shared/config/utils';
 import { ConfirmDialogProvider } from '@/shared/providers';
 import { Paths } from '@/shared/routes';
-import { NotificationProvider } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { ROUTES_CONFIG } from '@/pages/index';
@@ -41,9 +40,7 @@ export const App = () => {
   return (
     <ConfirmDialogProvider>
       <StatusModalProvider>
-        <NotificationProvider>
-          <GraphqlProvider>{appRoutes}</GraphqlProvider>
-        </NotificationProvider>
+        <GraphqlProvider>{appRoutes}</GraphqlProvider>
       </StatusModalProvider>
     </ConfirmDialogProvider>
   );
