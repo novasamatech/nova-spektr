@@ -18,7 +18,7 @@ import {
   type ToastNotificationProps,
 } from '@/shared/core/types/notificationService';
 import { DEFAULT_TRANSITION, nullable } from '@/shared/lib/utils';
-import { Modal } from '@/shared/ui-kit';
+import { Modal } from '../Modal/Modal';
 
 import { ToastContainer } from './ToastContainer';
 
@@ -81,7 +81,7 @@ export const NotificationProvider = ({ children }: PropsWithChildren) => {
   const modalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const addToastToQueue = useCallback((notification: ToastNotification): void => {
-    setToasts((previousToasts) => {
+    setToasts(previousToasts => {
       const updatedToasts = [notification, ...previousToasts];
       return updatedToasts.slice(0, MAX_TOASTS);
     });
@@ -97,15 +97,15 @@ export const NotificationProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   const dismissToast = useCallback((id: string) => {
-    setToasts((previousToasts) => {
-      const toastToRemove = previousToasts.find((toast) => toast.id === id);
+    setToasts(previousToasts => {
+      const toastToRemove = previousToasts.find(toast => toast.id === id);
       toastToRemove?.onDismiss?.();
-      return previousToasts.filter((toast) => toast.id !== id);
+      return previousToasts.filter(toast => toast.id !== id);
     });
   }, []);
 
   const dismissAllToasts = useCallback(() => {
-    setToasts((previousToasts) => {
+    setToasts(previousToasts => {
       for (const toast of previousToasts) {
         toast.onDismiss?.();
       }

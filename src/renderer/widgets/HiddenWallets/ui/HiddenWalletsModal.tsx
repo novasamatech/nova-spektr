@@ -2,14 +2,13 @@ import { useUnit } from 'effector-react';
 import noop from 'lodash/noop';
 import { useEffect, useMemo, useState } from 'react';
 
-import { useNotification } from '@/app/providers';
 import { type Wallet, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { DEFAULT_TRANSITION } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
-import { Box, Checkbox, Modal, SearchInput } from '@/shared/ui-kit';
+import { Box, Checkbox, Modal, SearchInput, useNotification } from '@/shared/ui-kit';
 import { WalletGroup } from '@/features/multisig-wallet';
 import { hiddenWalletsModel } from '../model/hidden-wallets';
 
@@ -126,6 +125,8 @@ export const HiddenWalletsModal = ({ onClose }: Props) => {
 
     return null;
   }, [inputQuery, query, regularMultisigs, selectionState, multisigSearchResults, t]);
+
+  console.log(selectionState);
 
   return (
     <Modal isOpen={isModalOpen} height="full" size="md" onToggle={handleClose}>

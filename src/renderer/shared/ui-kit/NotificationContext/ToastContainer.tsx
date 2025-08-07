@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom';
 
 import { type ToastNotification, type ToastPosition } from '@/shared/core';
 import { cnTw, entries } from '@/shared/lib/utils';
-import { useTheme } from '@/shared/ui-kit/Theme/useTheme';
+import { useTheme } from '../Theme/useTheme';
 
 import { Toast } from './Toast';
 
@@ -51,7 +51,7 @@ export const ToastContainer = ({ toasts, onDismiss }: Props) => {
             'items-end': position.includes('right'),
           })}
         >
-          {positionToasts.map((toast) => (
+          {positionToasts.map(toast => (
             <Toast key={toast.id} toast={toast} onDismiss={onDismiss} />
           ))}
         </div>

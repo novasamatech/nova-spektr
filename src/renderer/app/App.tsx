@@ -5,12 +5,13 @@ import { matchPath, useLocation, useNavigate, useRoutes } from 'react-router-dom
 import { logger } from '@/shared/config/utils';
 import { ConfirmDialogProvider } from '@/shared/providers';
 import { Paths } from '@/shared/routes';
+import { NotificationProvider } from '@/shared/ui-kit';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { ROUTES_CONFIG } from '@/pages/index';
 
 import { bootstrap } from './bootstrap';
-import { GraphqlProvider, NotificationProvider, StatusModalProvider } from './providers';
+import { GraphqlProvider, StatusModalProvider } from './providers';
 
 logger.init();
 bootstrap();

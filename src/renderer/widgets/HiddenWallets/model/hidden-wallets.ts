@@ -90,6 +90,12 @@ sample({
 });
 
 sample({
+  clock: restoreWallets,
+  fn: () => new Set<ID>(),
+  target: $selectedWalletIds,
+});
+
+sample({
   clock: walletModel.events.walletsRestoredSuccess,
   target: walletsRestored,
 });

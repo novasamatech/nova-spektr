@@ -66,7 +66,7 @@ export const Toast = ({ toast, onDismiss }: Props) => {
         name="close"
         size={16}
         className={cnTw('shrink-0', variantIconColors[toast.variant])}
-        onClick={(e) => {
+        onClick={e => {
           e.stopPropagation();
           handleDismiss();
         }}

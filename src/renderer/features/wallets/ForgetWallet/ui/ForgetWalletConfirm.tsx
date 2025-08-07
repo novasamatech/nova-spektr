@@ -1,11 +1,10 @@
 import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
-import { useNotification } from '@/app/providers';
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Animation, FootnoteText, SmallTitleText } from '@/shared/ui';
-import { Box, Checkbox, ConfirmModal } from '@/shared/ui-kit';
+import { Box, Checkbox, ConfirmModal, useNotification } from '@/shared/ui-kit';
 import { walletUtils } from '@/entities/wallet';
 import { forgetWalletModel } from '../model/forget-wallet-model';
 
