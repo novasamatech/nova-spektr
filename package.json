@@ -139,7 +139,7 @@
     "patronum": "2.3.0",
     "polkadot-api": "1.15.2",
     "qr-code-styling": "1.9.1",
-    "qrcode-generator": "1.4.4",
+    "qrcode-generator": "2.0.2",
     "raptorq": "1.7.24",
     "react": "19.1.1",
     "react-dom": "19.1.1",

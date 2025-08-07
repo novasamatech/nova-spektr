@@ -1,9 +1,9 @@
-import { stringToU8a, u8aConcat, u8aToHex } from '@polkadot/util';
+import { u8aConcat, u8aToHex } from '@polkadot/util';
 
 import { SigningType } from '@/shared/core';
 
 import { SUBSTRATE_ID } from './constants';
-import { createFrames, createSignPayload, createSubstrateSignPayload, encodeNumber, getSvgString } from './utils';
+import { createFrames, createSignPayload, createSubstrateSignPayload, encodeNumber } from './utils';
 
 describe('QrCode/QrGenerator/onChainUtils', () => {
   test('should encodes 1 correctly', () => {
@@ -56,12 +56,5 @@ describe('QrCode/QrGenerator/onChainUtils', () => {
         '12345678' + // data
         'b0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe', // genesisHash
     ]);
-  });
-
-  test('should create svg string', () => {
-    const svg = getSvgString(stringToU8a('test'), 'red');
-
-    expect(svg).toMatch(/<svg version="1.1" xmlns="http:\/\/www.w3.org\/2000\/svg" width="100%" height="100%"/);
-    expect(svg).toMatch(/<rect width="100%" height="100%" fill="red"/);
   });
 });

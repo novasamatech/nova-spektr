@@ -16,10 +16,13 @@ export { DeliveryFee } from './DeliveryFee/DeliveryFee';
 export { DeliveryFeeWithLabel } from './DeliveryFeeWithLabel/DeliveryFeeWithLabel';
 
 // TODO: requires refactoring clickup task - https://app.clickup.com/t/86933e82e
-export { cryptoTypeToMultisignerIndex } from './QrCode/QrGenerator/common/utils';
-export { QrDerivationsGenerator } from './QrCode/QrGenerator/QrDerivationsGenerator';
-export { QrDerivationsExportGenerator } from './QrCode/QrGenerator/QrDerivationsExportGenerator';
+export {
+  cryptoTypeToMultisignerIndex,
+  createDynamicDerivationPayload,
+  createDynamicDerivationExportPayload,
+} from './QrCode/QrGenerator/common/utils';
 export { QrTextGenerator } from './QrCode/QrGenerator/QrTextGenerator';
+export { QrTxGenerator } from './QrCode/QrGenerator/QrTxGenerator';
 export { VaultQrReader } from './QrCode/QrReader/VaultQrReader';
 export { QrReaderWrapper } from './QrCode/QrReader/QrReaderWrapper';
 export * from './QrCode/common/types';

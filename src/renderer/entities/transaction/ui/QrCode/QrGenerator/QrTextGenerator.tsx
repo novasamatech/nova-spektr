@@ -1,32 +1,24 @@
 import { stringToU8a } from '@polkadot/util';
 
-import { DEFAULT_FRAME_DELAY } from './common/constants';
-import useGenerator from './common/useGenerator';
+import { QrCode, Skeleton } from '@/shared/ui-kit';
 
 type Props = {
-  size?: number;
+  payload?: string;
+  size?: string;
   bgColor?: string;
-  skipEncoding?: boolean;
-  delay?: number;
-  payload: string;
+  qrColor?: string;
   className?: string;
+  testId?: string;
 };
 
-export const QrTextGenerator = ({
-  payload,
-  size,
-  skipEncoding = false,
-  delay = DEFAULT_FRAME_DELAY,
-  bgColor = 'none',
-  className,
-}: Props) => {
-  const image = useGenerator(stringToU8a(payload), skipEncoding, delay, bgColor);
-
-  if (!payload || !image) {
-    return null;
+export const QrTextGenerator = ({ payload, size = '240px', qrColor, bgColor, className, testId }: Props) => {
+  if (!payload) {
+    return <Skeleton height={size} width={size} />;
   }
 
+  const frame = stringToU8a(payload);
+
   return (
-    <div style={{ width: size, height: size }} className={className} dangerouslySetInnerHTML={{ __html: image }} />
+    <QrCode payload={frame} size={size} bgColor={bgColor} qrColor={qrColor} className={className} testId={testId} />
   );
 };
