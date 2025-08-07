@@ -1,10 +1,7 @@
-import { createStore } from 'effector';
-
+import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
-
-const $enable = createStore(true);
 
 export const hiddenWalletsFeature = createFeature({
   name: 'wallets/hidden',
-  enable: $enable,
+  enable: $features.map(({ hiddenWallets }) => hiddenWallets),
 });
