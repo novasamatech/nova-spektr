@@ -7,7 +7,7 @@ import { AppShell } from '@/features/app-shell';
 import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Onboarding } from './Onboarding';
 import { PageLoadingState } from './PageLoadingState';
-import { Currency, HiddenWallets, Networks, ReferendumData, Overview as Settings } from './Settings';
+import { Currency, Networks, ReferendumData, Overview as Settings } from './Settings';
 
 // features with lower priority - can be loaded later
 
@@ -158,7 +158,6 @@ export const ROUTES_CONFIG: RouteObject[] = [
           { path: Paths.NETWORK, element: <Networks /> },
           { path: Paths.CURRENCY, element: <Currency /> },
           { path: Paths.REFERENDUM_DATA, element: <ReferendumData /> },
-          { path: Paths.HIDDEN_WALLETS, element: <HiddenWallets /> },
         ],
       },
       {

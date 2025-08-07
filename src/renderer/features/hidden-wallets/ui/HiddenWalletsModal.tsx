@@ -4,19 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { type Wallet, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
-import { DEFAULT_TRANSITION } from '@/shared/lib/utils';
-import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { BodyText, Button, FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Box, Checkbox, Modal, SearchInput, useNotification } from '@/shared/ui-kit';
 import { WalletGroup } from '@/features/multisig-wallet';
 import { hiddenWalletsModel } from '../model/hidden-wallets';
 
-type Props = {
-  onClose: () => void;
-};
-
-export const HiddenWalletsModal = ({ onClose }: Props) => {
+export const HiddenWalletsModal = () => {
   const { t } = useI18n();
 
   const notification = useNotification();
@@ -28,18 +22,9 @@ export const HiddenWalletsModal = ({ onClose }: Props) => {
   const regularMultisigs = useUnit(hiddenWalletsModel.$regularMultisigs);
   const [multisigSearchResults, setMultisigSearchResults] = useState<Wallet[]>([]);
 
-  const [isModalOpen, toggleIsModalOpen] = useToggle(true);
-
-  const closeModal = () => {
-    toggleIsModalOpen();
-    setTimeout(onClose, DEFAULT_TRANSITION);
-  };
-
   useEffect(() => {
     // eslint-disable-next-line effector/no-watch
     const unsubscribe = hiddenWalletsModel.walletsRestored.watch(() => {
-      closeModal();
-
       notification.modal({
         content: (
           <Box width={60} padding={4} gap={1} verticalAlign="center" horizontalAlign="center">
@@ -66,7 +51,6 @@ export const HiddenWalletsModal = ({ onClose }: Props) => {
 
   const handleClose = () => {
     hiddenWalletsModel.clearSelection();
-    closeModal();
   };
 
   const content = useMemo(() => {
@@ -126,10 +110,16 @@ export const HiddenWalletsModal = ({ onClose }: Props) => {
     return null;
   }, [inputQuery, query, regularMultisigs, selectionState, multisigSearchResults, t]);
 
-  console.log(selectionState);
-
   return (
-    <Modal isOpen={isModalOpen} height="full" size="md" onToggle={handleClose}>
+    <Modal height="full" size="md" onToggle={handleClose}>
+      <Modal.Trigger>
+        <Plate className="p-0">
+          <button className="flex w-full cursor-pointer items-center gap-x-2 rounded-md p-3 transition hover:shadow-card-shadow focus:shadow-card-shadow">
+            <Icon className="row-span-2" name="hiddenWallet" size={36} />
+            <BodyText>{t('settings.overview.hiddenWalletsLabel')}</BodyText>
+          </button>
+        </Plate>
+      </Modal.Trigger>
       <Modal.Title close>{t('settings.hiddenWallets.modalTitle')}</Modal.Title>
       <Modal.Content>
         <section className="flex h-full flex-col space-y-4 p-4">
