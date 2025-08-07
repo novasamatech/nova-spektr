@@ -1,11 +1,10 @@
 import { default as BigNumber } from 'bignumber.js';
 import { combine, createEvent, restore, sample } from 'effector';
 
-import { dictionary, getRoundedValue, totalAmount } from '@/shared/lib/utils';
+import { balanceService } from '@/shared/api/balances';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 export type Callbacks = {
@@ -29,26 +28,13 @@ const $walletBalance = combine(
 
     if (!wallet || !prices || !balances || !currency?.coingeckoId) return new BigNumber(0);
 
-    const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
-    const accountMap = dictionary(wallet.accounts, 'accountId');
-
-    return balances.reduce<BigNumber>((acc, balance) => {
-      const account = accountMap[balance.accountId];
-      if (!account) return acc;
-      if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;
-
-      const asset = chains[balance.chainId]?.assets?.find(asset => asset.assetId === balance.assetId);
-
-      if (!asset?.priceId || !prices[asset.priceId]) return acc;
-
-      const price = prices[asset.priceId][currency.coingeckoId];
-      if (price) {
-        const fiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
-        acc = acc.plus(new BigNumber(fiatBalance));
-      }
-
-      return acc;
-    }, new BigNumber(0));
+    return balanceService.calculateWalletBalance({
+      wallet,
+      chains,
+      balances,
+      currency,
+      prices,
+    });
   },
 );
 
