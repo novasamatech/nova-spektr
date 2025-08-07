@@ -3,9 +3,7 @@ import { groupBy } from 'lodash';
 import { debounce } from 'patronum';
 
 import { type Wallet } from '@/shared/core';
-import { series } from '@/shared/effector';
 import { walletModel } from '@/entities/wallet';
-import { balanceSubModel } from '@/features/assets-balances';
 
 const $hiddenWallets = walletModel.$hiddenWallets;
 
@@ -22,21 +20,12 @@ const toggleWalletSelection = createEvent<Wallet>();
 const toggleGroupSelection = createEvent<Wallet[]>();
 const toggleAllSelection = createEvent();
 
-const loadBalances = createEvent();
-
 const $inputQuery = restore(changeQuery, '').reset(clearSelection);
 
 // Debounced query for expensive search operations (300ms delay)
 const $query = restore(debounce(changeQuery, 300), '').reset(clearSelection);
 
 const $selectedWallets = createStore<Set<Wallet>>(new Set()).reset(clearSelection);
-
-sample({
-  clock: loadBalances,
-  source: $hiddenWallets,
-  fn: (hiddenWallets) => hiddenWallets,
-  target: series(balanceSubModel.fetchWallet),
-});
 
 sample({
   clock: toggleWalletSelection,
@@ -122,7 +111,6 @@ export const hiddenWalletsModel = {
 
   // Events
   changeQuery,
-  loadBalances,
   restoreWallets,
   walletsRestored,
   clearSelection,

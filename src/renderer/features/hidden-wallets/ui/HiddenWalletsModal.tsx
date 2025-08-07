@@ -6,6 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { BodyText, Button, FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Box, Checkbox, Modal, SearchInput, useNotification } from '@/shared/ui-kit';
+import { hiddenWalletsBalancesModel } from '../model/balances';
 import { hiddenWalletsModel } from '../model/hidden-wallets';
 
 import { WalletGroup } from './walletGroup';
@@ -25,7 +26,7 @@ export const HiddenWalletsModal = () => {
   const [multisigSearchResults, setMultisigSearchResults] = useState<Wallet[]>([]);
 
   useEffect(() => {
-    hiddenWalletsModel.loadBalances();
+    hiddenWalletsBalancesModel.loadBalances();
   }, []);
 
   useEffect(() => {

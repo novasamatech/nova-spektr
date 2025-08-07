@@ -9,11 +9,10 @@ import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Checkbox } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { FiatBalance } from '@/entities/price';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
-import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
-
-const { WalletFiatBalance } = walletsFiatBalanceFeature.views;
+import { hiddenWalletsBalancesModel } from '../model/balances';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
@@ -46,6 +45,7 @@ export const WalletGroup = memo((props: Props) => {
 
   const allAccounts = useUnit(accounts.$list);
   const chains = useUnit(networkModel.$chains);
+  const balances = useUnit(hiddenWalletsBalancesModel.$balances);
 
   const filteredWallets = performSearch({
     query,
@@ -136,9 +136,7 @@ export const WalletGroup = memo((props: Props) => {
                           onClick={(e) => e.stopPropagation()}
                         />
                       }
-                      description={
-                        <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
-                      }
+                      description={<FiatBalance amount={balances[wallet.id].toString()} />}
                       chain={chain}
                       label={label}
                       onClick={() => handleWalletClick(wallet)}
