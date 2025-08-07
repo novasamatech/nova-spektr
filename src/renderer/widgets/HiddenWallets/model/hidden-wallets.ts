@@ -24,11 +24,11 @@ const $inputQuery = restore(changeQuery, '').reset(clearSelection);
 // Debounced query for expensive search operations (300ms delay)
 const $query = restore(debounce(changeQuery, 300), '').reset(clearSelection);
 
-const $selectedWallet = createStore<Set<Wallet>>(new Set()).reset(clearSelection);
+const $selectedWallets = createStore<Set<Wallet>>(new Set()).reset(clearSelection);
 
 sample({
   clock: toggleWalletSelection,
-  source: $selectedWallet,
+  source: $selectedWallets,
   fn: (selected, wallet) => {
     const newSelected = new Set(selected);
 
@@ -39,40 +39,40 @@ sample({
     }
     return newSelected;
   },
-  target: $selectedWallet,
+  target: $selectedWallets,
 });
 
 sample({
   clock: toggleGroupSelection,
-  source: $selectedWallet,
-  fn: (selected, groupWalletIds) => {
+  source: $selectedWallets,
+  fn: (selected, groupWallets) => {
     const newSelected = new Set(selected);
-    const allSelected = groupWalletIds.every((id) => newSelected.has(id));
+    const allSelected = groupWallets.every((wallet) => newSelected.has(wallet));
 
-    for (const id of groupWalletIds) {
-      allSelected ? newSelected.delete(id) : newSelected.add(id);
+    for (const wallet of groupWallets) {
+      allSelected ? newSelected.delete(wallet) : newSelected.add(wallet);
     }
 
     return newSelected;
   },
-  target: $selectedWallet,
+  target: $selectedWallets,
 });
 
 sample({
   clock: toggleAllSelection,
-  source: { selectedIds: $selectedWallet, wallets: $regularMultisigs },
-  fn: ({ selectedIds, wallets }) => {
-    return selectedIds.size === wallets.length ? new Set<Wallet>() : new Set(wallets);
+  source: { selectedWallets: $selectedWallets, wallets: $regularMultisigs },
+  fn: ({ selectedWallets, wallets }) => {
+    return selectedWallets.size === wallets.length ? new Set<Wallet>() : new Set(wallets);
   },
-  target: $selectedWallet,
+  target: $selectedWallets,
 });
 
-const $selectionState = combine($selectedWallet, $regularMultisigs, (selectedIds, wallets) => {
+const $selectionState = combine($selectedWallets, $regularMultisigs, (selectedWallets, wallets) => {
   const totalWallets = wallets.length;
-  const selectedCount = selectedIds.size;
+  const selectedCount = selectedWallets.size;
 
   return {
-    selectedWalletIds: Array.from(selectedIds), // Convert Set to Array for UI compatibility
+    selectedWallets: Array.from(selectedWallets), // Convert Set to Array for UI compatibility
     selectedCount,
     totalWallets,
     allSelected: selectedCount > 0 && selectedCount === totalWallets,
@@ -83,15 +83,15 @@ const $selectionState = combine($selectedWallet, $regularMultisigs, (selectedIds
 
 sample({
   clock: restoreWallets,
-  source: $selectedWallet,
-  fn: (selectedIds) => Array.from(selectedIds),
+  source: $selectedWallets,
+  fn: (selectedWallets) => Array.from(selectedWallets),
   target: walletModel.restoreWallets,
 });
 
 sample({
   clock: restoreWallets,
   fn: () => new Set<Wallet>(),
-  target: $selectedWallet,
+  target: $selectedWallets,
 });
 
 sample({
@@ -105,7 +105,7 @@ export const hiddenWalletsModel = {
   $inputQuery, // For immediate UI feedback
   $query, // Debounced query for expensive operations
   $regularMultisigs,
-  $selectedWalletIds: $selectedWallet,
+  $selectedWallets,
   $selectionState,
 
   // Events

@@ -43,7 +43,7 @@ describe('entities/wallet/model/wallet-model', () => {
       handlers: [[accounts.deleteAccounts, (accounts: AnyAccount[]) => accounts]],
     });
 
-    await allSettled(walletModel.events.walletRemoved, { scope, params: removedWallet.id });
+    await allSettled(walletModel.events.removeWallet, { scope, params: removedWallet.id });
 
     expect(scope.getState(walletModel.$allWallets)).toEqual(remainingWallets);
   });

@@ -292,7 +292,7 @@ sample({
 
 sample({
   clock: createProxiesWalletsFx.doneData,
-  target: series(walletModel.events.proxiedCreated),
+  target: series(walletModel.events.createProxied),
 });
 
 export const proxiesModel = {
