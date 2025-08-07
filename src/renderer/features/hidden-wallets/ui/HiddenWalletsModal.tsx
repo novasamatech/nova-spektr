@@ -1,14 +1,14 @@
 import { useUnit } from 'effector-react';
-import noop from 'lodash/noop';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type Wallet, WalletType } from '@/shared/core';
+import { type Wallet, type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Button, FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Box, Checkbox, Modal, SearchInput, useNotification } from '@/shared/ui-kit';
-import { WalletGroup } from '@/features/multisig-wallet';
 import { hiddenWalletsModel } from '../model/hidden-wallets';
+
+import { WalletGroup } from './walletGroup';
 
 export const HiddenWalletsModal = () => {
   const { t } = useI18n();
@@ -19,8 +19,14 @@ export const HiddenWalletsModal = () => {
   const query = useUnit(hiddenWalletsModel.$query);
   const selectionState = useUnit(hiddenWalletsModel.$selectionState);
 
-  const regularMultisigs = useUnit(hiddenWalletsModel.$regularMultisigs);
+  const hiddenWallets = useUnit(hiddenWalletsModel.$hiddenWallets);
+  const hiddenWalletsByType = useUnit(hiddenWalletsModel.$hiddenWalletsByType);
+
   const [multisigSearchResults, setMultisigSearchResults] = useState<Wallet[]>([]);
+
+  useEffect(() => {
+    hiddenWalletsModel.loadBalances();
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line effector/no-watch
@@ -42,7 +48,7 @@ export const HiddenWalletsModal = () => {
   }, [notification, t]);
 
   const handleRestore = () => {
-    if (regularMultisigs.length === 0) {
+    if (hiddenWallets.length === 0) {
       return;
     }
 
@@ -54,7 +60,7 @@ export const HiddenWalletsModal = () => {
   };
 
   const content = useMemo(() => {
-    if (regularMultisigs.length === 0) {
+    if (hiddenWallets.length === 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center px-12">
           <Icon size={64} name="empty" className="mb-6" />
@@ -66,7 +72,7 @@ export const HiddenWalletsModal = () => {
       );
     }
 
-    if (regularMultisigs.length > 0 && multisigSearchResults.length === 0 && inputQuery.length > 0) {
+    if (hiddenWallets.length > 0 && multisigSearchResults.length === 0 && inputQuery.length > 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center px-12">
           <Icon size={64} name="empty" className="mb-6" />
@@ -78,7 +84,7 @@ export const HiddenWalletsModal = () => {
       );
     }
 
-    if (regularMultisigs.length > 0) {
+    if (hiddenWallets.length > 0) {
       return (
         <div className="flex flex-1 flex-col">
           <div className="flex items-center gap-2 p-2">
@@ -91,24 +97,24 @@ export const HiddenWalletsModal = () => {
             </Checkbox>
           </div>
 
-          <WalletGroup
-            isMultipleSelect
-            title={t('wallets.multisigLabel')}
-            walletType={WalletType.MULTISIG}
-            wallets={regularMultisigs}
-            query={query}
-            selectedWallets={selectionState.selectedWallets}
-            setSearchResults={setMultisigSearchResults}
-            onSelect={noop}
-            onGroupToggle={hiddenWalletsModel.toggleGroupSelection}
-            onWalletToggle={hiddenWalletsModel.toggleWalletSelection}
-          />
+          {Object.entries(hiddenWalletsByType).map(([type, wallets]) => (
+            <WalletGroup
+              key={type}
+              walletType={type as WalletType}
+              wallets={wallets}
+              query={query}
+              selectedWallets={selectionState.selectedWallets}
+              setSearchResults={setMultisigSearchResults}
+              onGroupToggle={hiddenWalletsModel.toggleGroupSelection}
+              onWalletToggle={hiddenWalletsModel.toggleWalletSelection}
+            />
+          ))}
         </div>
       );
     }
 
     return null;
-  }, [inputQuery, query, regularMultisigs, selectionState, multisigSearchResults, t]);
+  }, [inputQuery, query, hiddenWallets, selectionState, multisigSearchResults, t]);
 
   return (
     <Modal height="full" size="md" onToggle={handleClose}>
@@ -123,7 +129,7 @@ export const HiddenWalletsModal = () => {
       <Modal.Title close>{t('settings.hiddenWallets.modalTitle')}</Modal.Title>
       <Modal.Content>
         <section className="flex h-full flex-col space-y-4 p-4">
-          {regularMultisigs.length > 0 && (
+          {hiddenWallets.length > 0 && (
             <SearchInput
               value={inputQuery}
               placeholder={t('settings.hiddenWallets.searchPlaceholder')}

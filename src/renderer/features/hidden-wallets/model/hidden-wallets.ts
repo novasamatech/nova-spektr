@@ -1,14 +1,17 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { groupBy } from 'lodash';
 import { debounce } from 'patronum';
 
 import { type Wallet } from '@/shared/core';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { series } from '@/shared/effector';
+import { walletModel } from '@/entities/wallet';
+import { balanceSubModel } from '@/features/assets-balances';
 
 const $hiddenWallets = walletModel.$hiddenWallets;
 
-const $regularMultisigs = $hiddenWallets.map((wallets) =>
-  wallets.filter((wallet) => walletUtils.isRegularMultisig(wallet)),
-);
+const $hiddenWalletsByType = $hiddenWallets.map((wallets) => {
+  return groupBy(wallets, (wallet) => wallet.type);
+});
 
 // Events
 const changeQuery = createEvent<string>();
@@ -19,12 +22,21 @@ const toggleWalletSelection = createEvent<Wallet>();
 const toggleGroupSelection = createEvent<Wallet[]>();
 const toggleAllSelection = createEvent();
 
+const loadBalances = createEvent();
+
 const $inputQuery = restore(changeQuery, '').reset(clearSelection);
 
 // Debounced query for expensive search operations (300ms delay)
 const $query = restore(debounce(changeQuery, 300), '').reset(clearSelection);
 
 const $selectedWallets = createStore<Set<Wallet>>(new Set()).reset(clearSelection);
+
+sample({
+  clock: loadBalances,
+  source: $hiddenWallets,
+  fn: (hiddenWallets) => hiddenWallets,
+  target: series(balanceSubModel.fetchWallet),
+});
 
 sample({
   clock: toggleWalletSelection,
@@ -60,14 +72,14 @@ sample({
 
 sample({
   clock: toggleAllSelection,
-  source: { selectedWallets: $selectedWallets, wallets: $regularMultisigs },
+  source: { selectedWallets: $selectedWallets, wallets: $hiddenWallets },
   fn: ({ selectedWallets, wallets }) => {
     return selectedWallets.size === wallets.length ? new Set<Wallet>() : new Set(wallets);
   },
   target: $selectedWallets,
 });
 
-const $selectionState = combine($selectedWallets, $regularMultisigs, (selectedWallets, wallets) => {
+const $selectionState = combine($selectedWallets, $hiddenWallets, (selectedWallets, wallets) => {
   const totalWallets = wallets.length;
   const selectedCount = selectedWallets.size;
 
@@ -102,14 +114,15 @@ sample({
 export const hiddenWalletsModel = {
   // Stores
   $hiddenWallets,
+  $hiddenWalletsByType,
   $inputQuery, // For immediate UI feedback
   $query, // Debounced query for expensive operations
-  $regularMultisigs,
   $selectedWallets,
   $selectionState,
 
   // Events
   changeQuery,
+  loadBalances,
   restoreWallets,
   walletsRestored,
   clearSelection,
