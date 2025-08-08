@@ -7,7 +7,7 @@ export const ViewClass: Record<Exclude<Position, 'auto'>, string> = {
   down: tw`top-full mt-2.5`,
 };
 
-export const OptionsContainerStyle = tw`shadow-card-shadow absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-sm border px-1 py-1`;
+export const OptionsContainerStyle = tw`absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-sm border px-1 py-1 shadow-card-shadow`;
 
 export const ButtonTextFilledStyle = {
   light: 'text-inherit',
@@ -47,15 +47,15 @@ export const OptionTextStyle = {
 
 export const SelectButtonStyle = {
   light: {
-    closed: tw`border-filter-border border`,
-    open: tw`border-active-container-border border`,
-    invalid: tw`border-filter-border-negative border`,
-    disabled: tw`disabled:bg-input-background-disabled disabled:text-text-tertiary enabled:hover:shadow-card-shadow`,
+    closed: tw`border border-filter-border`,
+    open: tw`border border-active-container-border`,
+    invalid: tw`border border-filter-border-negative`,
+    disabled: tw`enabled:hover:shadow-card-shadow disabled:bg-input-background-disabled disabled:text-text-tertiary`,
   },
   dark: {
-    closed: tw`border-border-dark border`,
-    open: tw`border-active-container-border border`,
-    invalid: tw`border-filter-border-negative border`,
-    disabled: tw`disabled:bg-input-background-disabled disabled:text-text-tertiary enabled:hover:shadow-card-shadow`,
+    closed: tw`border border-border-dark`,
+    open: tw`border border-active-container-border`,
+    invalid: tw`border border-filter-border-negative`,
+    disabled: tw`enabled:hover:shadow-card-shadow disabled:bg-input-background-disabled disabled:text-text-tertiary`,
   },
 };

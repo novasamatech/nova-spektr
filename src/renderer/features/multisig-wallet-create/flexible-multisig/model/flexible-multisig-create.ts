@@ -387,13 +387,13 @@ sample({
 });
 
 sample({
-  clock: walletModel.events.walletRestoredSuccess,
-  fn: ({ result: wallet }) => wallet.id,
+  clock: walletModel.restoreWallets.doneData,
+  fn: data => data.at(0)?.id ?? null,
   target: walletSelect.select,
 });
 
 sample({
-  clock: walletModel.events.walletRestoredSuccess,
+  clock: walletModel.restoreWallets.done,
   target: flow.close,
 });
 

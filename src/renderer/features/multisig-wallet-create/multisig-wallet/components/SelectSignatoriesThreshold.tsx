@@ -147,7 +147,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                   variant="text"
                   size="sm"
                   className="p-0"
-                  onClick={() => walletModel.events.walletRestored(hiddenMultisig!)}
+                  onClick={() => walletModel.restoreWallets([hiddenMultisig!])}
                 >
                   {t('createMultisigAccount.restoreButton')}
                 </Button>
