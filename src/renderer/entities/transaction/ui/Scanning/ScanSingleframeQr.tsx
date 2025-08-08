@@ -4,7 +4,7 @@ import { encodeAddress } from '@polkadot/util-crypto';
 import { useEffect, useRef, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants/testIds';
-import { type Chain } from '@/shared/core';
+import { type Chain, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { createTxMetadata } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
@@ -99,6 +99,8 @@ export const ScanSingleframeQr = ({
     }
   };
 
+  const isPV = account.signingType === SigningType.POLKADOT_VAULT;
+
   return (
     <>
       <QrGeneratorContainer
@@ -111,12 +113,12 @@ export const ScanSingleframeQr = ({
         <Tabs value={tab} onChange={setTab}>
           <Box shrink={0} fitContainer>
             <Tabs.List>
-              <Tabs.Trigger value="new">{t('signing.qrNewVaultTitle')}</Tabs.Trigger>
+              <Tabs.Trigger value="new">{t('signing.qrNewVaultTitle', { version: isPV ? '7.1' : '7.0' })}</Tabs.Trigger>
               <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
             </Tabs.List>
           </Box>
-          {qrPayload && <QrTxGenerator payload={qrPayload} />}
         </Tabs>
+        <QrTxGenerator payload={qrPayload} />
       </QrGeneratorContainer>
 
       <div className="mt-3 flex w-full justify-between pl-2">

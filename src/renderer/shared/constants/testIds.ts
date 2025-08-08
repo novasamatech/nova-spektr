@@ -50,4 +50,5 @@ export const TEST_IDS = {
     SIGNATORY_COMBOBOX: 'multisig-signatory-combobox',
   },
   CLOSE_BUTTON: 'Icon:close',
+  BASE_MODAL: 'BaseModal',
 } as const;
