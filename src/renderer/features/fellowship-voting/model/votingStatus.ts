@@ -1,4 +1,4 @@
-import { combine, restore, sample } from 'effector';
+import { combine, sample } from 'effector';
 
 import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
@@ -23,12 +23,9 @@ const $votingAccount = fellowshipVotingFeature.input.map(input => input?.account
 
 // voting
 
-const $accountsVotes = restore(
-  attachToFeatureInput(fellowshipVotingFeature, $voting).map(({ input: { account }, data: voting }) => {
-    return voting.filter(voting => voting.accountId === account?.accountId);
-  }),
-  [],
-);
+const $accountsVotes = combine({ voting: $voting, account: $votingAccount }, ({ voting, account }) => {
+  return voting.filter(voting => voting.accountId === account?.accountId);
+});
 
 sample({
   clock: fellowshipVotingFeature.running,
