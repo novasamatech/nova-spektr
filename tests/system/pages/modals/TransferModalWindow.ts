@@ -39,7 +39,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
       await this.page.goto(url);
 
       if (waitForModal) {
-        await this.page.getByTestId('BaseModal').waitFor({ state: 'visible' });
+        await this.page.getByTestId(TEST_IDS.BASE_MODAL).waitFor({ state: 'visible' });
       }
 
       return this;
@@ -124,7 +124,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
   public async close(): Promise<BasePage> {
     await step('Close transfer modal', async () => {
       await this.page.getByTestId(TEST_IDS.CLOSE_BUTTON).click();
-      await this.page.getByTestId('BaseModal').waitFor({ state: 'hidden' });
+      await this.page.getByTestId(TEST_IDS.BASE_MODAL).waitFor({ state: 'hidden' });
     });
 
     return this.previousPage;
