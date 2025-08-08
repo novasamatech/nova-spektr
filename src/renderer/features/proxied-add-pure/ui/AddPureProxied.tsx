@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, useEffect, useState } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
 import { useForm } from '@/shared/forms';
@@ -46,11 +46,15 @@ export const AddPureProxied = ({ wallet, onClose, children }: Props) => {
     onClose?.();
   };
 
-  useEffect(() => {
-    if (wallet && isModalOpen) {
+  const onToggle = (isOpen: boolean) => {
+    if (isOpen) {
+      setIsModalOpen(true);
       addPureProxiedModel.events.flowStarted(wallet);
+      return;
     }
-  }, [wallet, isModalOpen]);
+
+    closeModal();
+  };
 
   const getModalTitle = (step: Step, chain?: Chain) => {
     if (addPureProxiedUtils.isInitStep(step) || !chain) {
@@ -77,12 +81,7 @@ export const AddPureProxied = ({ wallet, onClose, children }: Props) => {
   }
 
   return (
-    <Modal
-      isOpen={isModalOpen}
-      size="md"
-      height="fit"
-      onToggle={(open) => (open ? setIsModalOpen(true) : closeModal())}
-    >
+    <Modal isOpen={isModalOpen} size="md" height="fit" onToggle={onToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{getModalTitle(step, chain.value!)}</Modal.Title>
       <Modal.Content>

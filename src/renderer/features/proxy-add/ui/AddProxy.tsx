@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, useEffect, useState } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -18,7 +18,7 @@ import { addProxyModel } from '../model/add-proxy-model';
 import { AddProxyForm } from './AddProxyForm';
 
 type Props = PropsWithChildren<{
-  wallet: Wallet | null;
+  wallet: Wallet;
   onClose?: () => void;
 }>;
 
@@ -42,11 +42,15 @@ export const AddProxy = ({ wallet, onClose, children }: Props) => {
     onClose?.();
   };
 
-  useEffect(() => {
-    if (wallet && isModalOpen) {
+  const onToggle = (isOpen: boolean) => {
+    if (isOpen) {
+      setIsModalOpen(true);
       addProxyModel.events.flowStarted(wallet);
+      return;
     }
-  }, [wallet, isModalOpen]);
+
+    closeModal();
+  };
 
   const getModalTitle = (step: Step, chain: Chain | null) => {
     if (addProxyUtils.isInitStep(step) || !chain) {
@@ -73,12 +77,7 @@ export const AddProxy = ({ wallet, onClose, children }: Props) => {
   }
 
   return (
-    <Modal
-      size="md"
-      height="fit"
-      isOpen={isModalOpen}
-      onToggle={(open) => (open ? setIsModalOpen(true) : closeModal())}
-    >
+    <Modal size="md" height="fit" isOpen={isModalOpen} onToggle={onToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{getModalTitle(step, chain)}</Modal.Title>
       <Modal.Content>
