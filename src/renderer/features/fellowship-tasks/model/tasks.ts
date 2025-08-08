@@ -287,23 +287,26 @@ const $ongoingReferendumsTasks = combine(
         track: referendum.track,
       });
 
-      return tasksService.getReferendumImportance({
+      const importance = tasksService.getReferendumImportance({
         referendum,
         maximumAvailableVotingWeight,
         memberVotingWeight,
         currentBlock,
       });
+
+      const sortingScore = hasUserVoted(referendum)
+        ? importance.sortingScore - ALREADY_VOTED_SORTING_PENALTY
+        : importance.sortingScore;
+
+      return { ...importance, sortingScore };
     };
 
     const evidenceTasks = groups.evidence
       ? groups.evidence.map<TaskDescription>(referendum => {
           const weight = getWeight(referendum);
-          const finalWeight = hasUserVoted(referendum)
-            ? weight.sortingScore - ALREADY_VOTED_SORTING_PENALTY
-            : weight.sortingScore;
           return {
             id: `referendum_${referendum.id}`,
-            weight: finalWeight,
+            weight: weight.sortingScore,
             group: 'general',
             body: PromotionRetentionReferendumVoting,
             meta: {
@@ -318,12 +321,9 @@ const $ongoingReferendumsTasks = combine(
     const otherTasks = groups.other
       ? groups.other.map<TaskDescription>(referendum => {
           const weight = getWeight(referendum);
-          const finalWeight = hasUserVoted(referendum)
-            ? weight.sortingScore - ALREADY_VOTED_SORTING_PENALTY
-            : weight.sortingScore;
           return {
             id: `referendum_${referendum.id}`,
-            weight: finalWeight,
+            weight: weight.sortingScore,
             group: 'general',
             body: OngoingReferendumVoting,
             meta: {
