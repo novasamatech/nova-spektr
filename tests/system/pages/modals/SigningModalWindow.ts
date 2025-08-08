@@ -21,6 +21,7 @@ export class SigningModalWindow extends BaseModal<SigningModalElements> {
 
   public async checkSignReadyWalletConnect(): Promise<void> {
     await step('Check that we are on signing page', async () => {
+      await this.checkForAlerts();
       await expect(this.page.getByText(SigningModalElements.signReadyWalletConnectLocator)).toBeVisible();
     });
   }

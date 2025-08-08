@@ -24,6 +24,7 @@ const boundaries = boundaryTypes.map((type) => ({
 
 module.exports = {
   root: true,
+  ignorePatterns: ['scripts/*'],
   env: {
     browser: true,
     es6: true,

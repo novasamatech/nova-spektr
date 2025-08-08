@@ -5,7 +5,7 @@ const updateChainsList = async () => {
   const chainsListURL = new URL('../tests/system/data/chains/chainsList.ts', import.meta.url);
   const chainsListPath = url.fileURLToPath(chainsListURL);
 
-  const CHAINS_FILE = (process.env.CHAINS_FILE || 'chains') + '.json';
+  const CHAINS_FILE = (process.env.CHAINS_FILE || 'chains_dev') + '.json';
   const CONFIG_VERSION = 'v1';
   const CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains/${CONFIG_VERSION}/${CHAINS_FILE}`;
 
