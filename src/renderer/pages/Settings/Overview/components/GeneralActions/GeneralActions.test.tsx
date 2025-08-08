@@ -24,8 +24,7 @@ describe('screens/Settings/Overview/GeneralActions', () => {
     expect(label).toBeInTheDocument();
 
     expect(links[0]).toHaveAttribute('href', '/settings/network');
-    expect(links[1]).toHaveAttribute('href', '/settings/hidden-wallets');
-    expect(links[2]).toHaveAttribute('href', '/settings/referendum');
-    expect(links[3]).toHaveAttribute('href', '/settings/currency');
+    expect(links[1]).toHaveAttribute('href', '/settings/referendum');
+    expect(links[2]).toHaveAttribute('href', '/settings/currency');
   });
 });
