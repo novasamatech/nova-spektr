@@ -9,8 +9,8 @@ import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
-import { FiatBalance } from '@/entities/price';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletList } from '../model/list';
 
 export const walletGroupSlot = createSlot<{
@@ -27,7 +27,6 @@ export const WalletSelect = () => {
 
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
   const filterQuery = useUnit(walletList.$query);
-  const balance = useUnit(walletList.$walletBalance);
 
   useEffect(() => {
     walletList.fetchWallets();
@@ -52,7 +51,7 @@ export const WalletSelect = () => {
               </div>
               <div className="flex min-w-0 flex-col">
                 <BodyText className="truncate text-text-primary">{selectedWallet.name}</BodyText>
-                <FiatBalance amount={balance.toString()} className="truncate" />
+                <WalletFiatBalance wallet={selectedWallet} className="truncate" />
               </div>
             </div>
             <Icon name="down" size={16} className="ml-auto shrink-0" />

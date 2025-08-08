@@ -33,6 +33,7 @@ export const ForgetWalletConfirm = ({ wallet, onClose, onForget, children }: Pro
     forgetWalletModel.remove();
     !isDoNotShowAgain && forgetWalletModel.changeDoNotShowAgain(isDoNotShowAgainLocal);
     onForget && onForget();
+    onClose?.();
 
     if (isWalletToBeHidden) {
       notification.modal({
