@@ -10,6 +10,7 @@ import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
 type Props = {
   wallet: Wallet;
   description?: string | ReactNode;
+  checkBox?: ReactNode;
   meta?: ReactNode;
   address: Address | undefined;
   theme?: IdenticonIconTheme;
@@ -28,6 +29,7 @@ export const WalletManagement = ({
   onClick,
   chain,
   label,
+  checkBox,
 }: PropsWithChildren<Props>) => {
   return (
     <div
@@ -43,6 +45,7 @@ export const WalletManagement = ({
           <div className="row-span-2 h-4 w-4 shrink-0" />
         )}
 
+        {checkBox}
         {address && <Identicon canCopy={false} address={address} size={16} background={false} theme={theme} />}
 
         <div className="flex min-w-0 flex-grow flex-col">

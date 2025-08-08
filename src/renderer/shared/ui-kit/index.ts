@@ -36,6 +36,7 @@ export { Box } from './Box/Box';
 export { QrReader, type QrScanResult } from './QrReader/QrReader';
 export { QrCode } from './QrCode/QrCode';
 export { ConfirmModal } from './ConfirmModal/ConfirmModal';
+export { NotificationProvider, useNotification } from './NotificationContext';
 
 export { QR_READER_ERRORS } from './QrReader/errors';
 export { QrReaderErrorCode, type QrReaderCamera, type QrReaderError } from './QrReader/types';

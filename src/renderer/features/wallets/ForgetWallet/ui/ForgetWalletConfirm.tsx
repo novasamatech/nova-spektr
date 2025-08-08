@@ -3,8 +3,9 @@ import { type PropsWithChildren, useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText } from '@/shared/ui';
-import { Checkbox, ConfirmModal } from '@/shared/ui-kit';
+import { Animation, FootnoteText, SmallTitleText } from '@/shared/ui';
+import { Box, Checkbox, ConfirmModal, useNotification } from '@/shared/ui-kit';
+import { walletUtils } from '@/entities/wallet';
 import { forgetWalletModel } from '../model/forget-wallet-model';
 
 type Props = PropsWithChildren<{
@@ -18,16 +19,45 @@ export const ForgetWalletConfirm = ({ wallet, onClose, onForget, children }: Pro
 
   const { t } = useI18n();
 
+  const notification = useNotification();
+
   const isDoNotShowAgain = useUnit(forgetWalletModel.$doNotShowAgain);
 
   const [isDoNotShowAgainLocal, setIsDoNotShowAgainLocal] = useState(false);
 
   const isConnectedAccountsAlertNeeded = useUnit(forgetWalletModel.$isConnectedAccountsAlertNeeded);
 
+  const isWalletToBeHidden = walletUtils.isRegularMultisig(wallet);
+
   const forgetWallet = () => {
     forgetWalletModel.remove();
     !isDoNotShowAgain && forgetWalletModel.changeDoNotShowAgain(isDoNotShowAgainLocal);
     onForget && onForget();
+    onClose?.();
+
+    if (isWalletToBeHidden) {
+      notification.modal({
+        content: (
+          <Box width={60} padding={4} gap={1} verticalAlign="center" horizontalAlign="center">
+            <Animation variant="success" width={80} height={80} />
+            <SmallTitleText>{t('settings.hiddenWallets.walletHidden')}</SmallTitleText>
+            <FootnoteText className="text-center text-text-secondary">
+              {t('settings.hiddenWallets.youCanRestore')}
+            </FootnoteText>
+          </Box>
+        ),
+      });
+      return;
+    }
+
+    notification.modal({
+      content: (
+        <Box width={60} padding={4} gap={1} verticalAlign="center" horizontalAlign="center">
+          <Animation variant="success" width={80} height={80} />
+          <SmallTitleText>{t('walletDetails.common.walletRemoved')}</SmallTitleText>
+        </Box>
+      ),
+    });
   };
 
   if (isConnectedAccountsAlertNeeded && !isDoNotShowAgain) {

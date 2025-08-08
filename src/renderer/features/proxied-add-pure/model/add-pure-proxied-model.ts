@@ -61,15 +61,15 @@ type GetPureProxyResult = {
 };
 const getPureProxyFx = createEffect(
   ({ api, accountId, timepoint }: GetPureProxyParams): Promise<GetPureProxyResult> => {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const pureCreatedParams = {
         section: 'proxy',
         method: 'PureCreated',
         data: [undefined, toAddress(accountId, { prefix: api.consts.system.ss58Prefix.toNumber() })],
       };
 
-      const unsubscribe: UnsubscribePromise = subscriptionService.subscribeEvents(api, pureCreatedParams, (event) => {
-        unsubscribe?.then((fn) => fn());
+      const unsubscribe: UnsubscribePromise = subscriptionService.subscribeEvents(api, pureCreatedParams, event => {
+        unsubscribe?.then(fn => fn());
 
         resolve({
           accountId: pjsSchema.helpers.toAccountId(event.data[0].toHex()),
@@ -90,7 +90,7 @@ sample({
 sample({
   clock: formModel.flowStarted,
   source: formModel.$wallet,
-  filter: (wallet) => nonNullable(wallet),
+  filter: wallet => nonNullable(wallet),
   target: balanceSubModel.fetchWallet,
 });
 
@@ -142,7 +142,7 @@ const formSubmitted = sample({
 
 sample({
   clock: formSubmitted,
-  fn: (event) => {
+  fn: event => {
     return {
       event,
       step: Step.CONFIRM,
@@ -192,7 +192,7 @@ sample({
     initiator: formModel.form.fields.initiator.$value,
     signatory: formModel.form.fields.signatory.$value,
   },
-  filter: (proxyData) => {
+  filter: proxyData => {
     return (
       nonNullable(proxyData.tx) &&
       nonNullable(proxyData.coreTx) &&

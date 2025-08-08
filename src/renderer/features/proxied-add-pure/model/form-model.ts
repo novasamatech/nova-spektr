@@ -166,8 +166,8 @@ const $availableChains = combine(
   ({ chains, walletAccounts }) => {
     const proxyChains = Object.values(chains).filter(proxiesUtils.isPureProxy);
 
-    return proxyChains.filter((chain) => {
-      return walletAccounts.some((account) => accountService.isAccountAvailableOnChain(account, chain));
+    return proxyChains.filter(chain => {
+      return walletAccounts.some(account => accountService.isAccountAvailableOnChain(account, chain));
     });
   },
 );
@@ -229,12 +229,10 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   signatory: form.fields.signatory.$value,
 });
 
-const $isProxy = $route.map((route) => nonNullable(route.find((account) => accountUtils.isProxiedAccount(account))));
-const $isMultisig = $route.map((route) =>
-  nonNullable(route.find((account) => accountUtils.isMultisigAccount(account))),
-);
+const $isProxy = $route.map(route => nonNullable(route.find(account => accountUtils.isProxiedAccount(account))));
+const $isMultisig = $route.map(route => nonNullable(route.find(account => accountUtils.isMultisigAccount(account))));
 
-const $multisigThreshold = $route.map((route) => {
+const $multisigThreshold = $route.map(route => {
   const multisig = route.find(accountUtils.isMultisigAccount);
   if (!multisig) return null;
 
@@ -281,8 +279,8 @@ sample({
 sample({
   clock: formInitiated,
   source: $availableChains,
-  filter: (chains) => chains.length > 0,
-  fn: (chains) => chains.at(0)!,
+  filter: chains => chains.length > 0,
+  fn: chains => chains.at(0)!,
   target: form.fields.chain.change,
 });
 
@@ -294,16 +292,16 @@ const $accounts = createInitiatorsStore({
 sample({
   clock: form.fields.chain.change,
   source: $accounts,
-  filter: (accounts) => accounts.length > 0,
-  fn: (accounts) => accounts.at(0)!,
+  filter: accounts => accounts.length > 0,
+  fn: accounts => accounts.at(0)!,
   target: form.fields.initiator.change,
 });
 
 sample({
   clock: form.fields.initiator.change,
   source: $signatories,
-  filter: (signatories) => signatories.length < 2,
-  fn: (signatories) => signatories.at(0)!,
+  filter: signatories => signatories.length < 2,
+  fn: signatories => signatories.at(0)!,
   target: form.fields.signatory.change,
 });
 

@@ -22,8 +22,8 @@ import { type IdenticonIconTheme, WalletAccountIcon } from '@/shared/ui-entities
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { permissionUtils } from '@/entities/wallet';
+import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy, addProxyModel } from '@/features/proxy-add';
-import { AddPureProxied } from '@/features/proxy-add-pure';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { ForgetStep } from '../../lib/constants';

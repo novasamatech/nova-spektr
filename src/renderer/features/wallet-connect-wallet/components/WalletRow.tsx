@@ -6,13 +6,9 @@ import { Slot, createSlot } from '@/shared/di';
 import { cnTw, isPolkadotChain } from '@/shared/lib/utils';
 import { WalletManagement } from '@/shared/ui-entities';
 import { accountService, accounts as accountsDomainModel } from '@/domains/network';
-import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
+import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletConnectService } from '../lib/service';
 import { walletConnect } from '../model/connect';
-
-const {
-  views: { WalletFiatBalance },
-} = walletsFiatBalanceFeature;
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
@@ -44,7 +40,7 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
       wallet={wallet}
       address={address}
       meta={<span className={cnTw('h-1.5 w-1.5 rounded-full', connected ? 'bg-icon-positive' : 'bg-icon-default')} />}
-      description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
+      description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}
     >
       <Slot id={walletActionsSlot} props={{ wallet }} />

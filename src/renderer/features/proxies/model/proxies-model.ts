@@ -294,7 +294,7 @@ sample({
 
 sample({
   clock: createProxiedWalletsFx.doneData,
-  target: series(walletModel.events.proxiedCreated),
+  target: series(walletModel.events.createProxied),
 });
 
 sample({

@@ -462,7 +462,7 @@ sample({
     return removeProxyUtils.isSubmitStep(step) && nonNullable(wallet) && isPureProxiedNeedToBeKilled;
   },
   fn: ({ wallet }) => wallet!.id,
-  target: walletModel.events.walletRemoved,
+  target: walletModel.events.removeWallet,
 });
 
 sample({

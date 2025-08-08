@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { TEST_IDS } from '@/shared/constants';
@@ -9,12 +10,8 @@ import { Paths } from '@/shared/routes';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
+import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletList } from '../model/list';
-
-const {
-  views: { WalletFiatBalance },
-} = walletsFiatBalanceFeature;
 
 export const walletGroupSlot = createSlot<{
   query: string;
@@ -30,6 +27,10 @@ export const WalletSelect = () => {
 
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
   const filterQuery = useUnit(walletList.$query);
+
+  useEffect(() => {
+    walletList.fetchWallets();
+  }, []);
 
   if (!selectedWallet) {
     return <Skeleton width={52} height={16} />;
@@ -50,7 +51,7 @@ export const WalletSelect = () => {
               </div>
               <div className="flex min-w-0 flex-col">
                 <BodyText className="truncate text-text-primary">{selectedWallet.name}</BodyText>
-                <WalletFiatBalance walletId={selectedWallet.id} className="truncate" />
+                <WalletFiatBalance wallet={selectedWallet} className="truncate" />
               </div>
             </div>
             <Icon name="down" size={16} className="ml-auto shrink-0" />
