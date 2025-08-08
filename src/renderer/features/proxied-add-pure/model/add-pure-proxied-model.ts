@@ -284,7 +284,7 @@ sample({
       },
     ] as PartialProxiedAccount[];
   },
-  target: proxiesModel.createProxiesWallets,
+  target: proxiesModel.createProxiedWalletsFx,
 });
 
 sample({
