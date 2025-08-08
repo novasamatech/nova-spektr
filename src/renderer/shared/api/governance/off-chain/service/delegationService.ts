@@ -42,14 +42,14 @@ async function getDelegatesFromRegistry(chain: Chain): Promise<DelegateDetails[]
     .catch(() => []);
 }
 
-async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number): Promise<DelegateStat[]> {
+async function getDelegatesFromExternalSource(chain: Chain, timestamp: number): Promise<DelegateStat[]> {
   const client = getGraphQLClient(chain);
   if (!client) {
     return [];
   }
 
   return client
-    .request(GET_DELEGATE_LIST, { activityStartBlock: blockNumber })
+    .request(GET_DELEGATE_LIST, { timestamp })
     .then((data) => {
       return (
         (data as any)?.delegates?.nodes?.map(
