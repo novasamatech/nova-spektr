@@ -31,7 +31,6 @@ describe('entities/proxy/lib/proxy-utils', () => {
     expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
   });
 
-
   test('should sort proxy accounts by type', () => {
     const { proxyAccounts } = proxyMock;
     const sortedAccounts = proxyUtils.sortAccountsByProxyType(proxyAccounts);

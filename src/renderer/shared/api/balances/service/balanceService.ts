@@ -5,11 +5,31 @@ import { type AccountData, type Balance as ChainBalance } from '@polkadot/types/
 import { type PalletBalancesBalanceLock } from '@polkadot/types/lookup';
 import { type Codec } from '@polkadot/types/types';
 import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
+import { BigNumber } from 'bignumber.js';
 import { camelCase, noop, uniq } from 'lodash';
 
-import { type Asset, AssetType, type Balance, type Chain, type LockTypes, type OrmlExtras } from '@/shared/core';
-import { getAssetId, getRepeatedIndex, groupBy, nullable } from '@/shared/lib/utils';
+import {
+  type Asset,
+  AssetType,
+  type Balance,
+  type Chain,
+  type ChainId,
+  type LockTypes,
+  type OrmlExtras,
+  type Wallet,
+} from '@/shared/core';
+import {
+  dictionary,
+  getAssetId,
+  getRepeatedIndex,
+  getRoundedValue,
+  groupBy,
+  nullable,
+  totalAmount,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { accountUtils, walletUtils } from '@/entities/wallet';
+import { type CurrencyItem, type PriceObject } from '../../price-provider/lib/types';
 
 type NoIdBalance = Omit<Balance, 'id'>;
 
@@ -20,6 +40,7 @@ export const balanceService = {
 
   fetchBalances,
   fetchLockBalances,
+  calculateWalletBalance,
 };
 
 // subscription
@@ -573,4 +594,63 @@ async function getExistentialDeposit(api: ApiPromise, asset: Asset): Promise<BN>
       return new BN((asset.typeExtras as OrmlExtras).existentialDeposit);
     }
   }
+}
+
+/**
+ * Calculates the total fiat balance for a wallet across all chains and assets.
+ *
+ * @remarks
+ *   - Excludes vault base accounts for Polkadot Vault wallets
+ *   - Skips balances for accounts/chains that don't exist in the provided data
+ *   - Requires valid price data for each asset to include it in calculations
+ *   - Uses asset precision for accurate fiat conversion calculations
+ *
+ * @param params - The calculation parameters
+ * @param params.wallet - The wallet to calculate balance for
+ * @param params.chains - Record of chain configurations indexed by chain ID
+ * @param params.balances - Array of balance entries for the wallet
+ * @param params.currency - The target fiat currency for calculation
+ * @param params.prices - Price data mapping asset price IDs to currency prices
+ *
+ * @returns The total wallet balance in the specified fiat currency as
+ *   BigNumber. Returns 0 if any required data is missing or invalid.
+ */
+function calculateWalletBalance({
+  wallet,
+  chains,
+  balances,
+  currency,
+  prices,
+}: {
+  wallet: Wallet | null;
+  chains: Record<ChainId, Chain>;
+  balances: Balance[];
+  currency: CurrencyItem | null;
+  prices: PriceObject | null;
+}) {
+  if (nullable(currency?.coingeckoId) || nullable(wallet) || nullable(prices) || balances.length === 0) {
+    return new BigNumber(0);
+  }
+
+  const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
+
+  const accountMap = dictionary(wallet.accounts, 'accountId');
+
+  return balances.reduce((acc, balance) => {
+    const account = accountMap[balance.accountId];
+    const chain = chains[balance.chainId];
+    if (nullable(account) || nullable(chain)) return acc;
+    if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;
+
+    const asset = chain.assets.find((asset) => asset.assetId === balance.assetId);
+    if (nullable(asset?.priceId)) return acc;
+    const pricesMap = prices[asset.priceId];
+    if (nullable(pricesMap)) return acc;
+    const price = pricesMap[currency.coingeckoId];
+    if (nullable(price)) return acc;
+
+    const fiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
+
+    return acc.plus(new BigNumber(fiatBalance));
+  }, new BigNumber(0));
 }

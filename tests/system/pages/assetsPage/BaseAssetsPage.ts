@@ -13,7 +13,13 @@ import { BaseSettingsPage } from '../settingsPage/BaseSettingsPage';
 export class BaseAssetsPage extends BasePage<AssetsPageElements> {
   public async openTransfer(chain: ChainModel, assetId: number): Promise<TransferModalWindow> {
     return await step(`Open transfer modal for ${chain.name} (asset ID: ${assetId})`, async () => {
-      return new TransferModalWindow(this.page, new TransferModalElements(), this, chain, assetId).openTransferModal();
+      return await new TransferModalWindow(
+        this.page,
+        new TransferModalElements(),
+        this,
+        chain,
+        assetId,
+      ).openTransferModal();
     });
   }
 

@@ -8,13 +8,8 @@ import { performSearch } from '@/shared/lib/utils';
 import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { WalletIcon } from '@/entities/wallet';
-import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
+import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletsModel } from '../model/wallets';
-
-// TODO invert this dependency
-const {
-  views: { WalletFiatBalance },
-} = walletsFiatBalanceFeature;
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
@@ -56,9 +51,7 @@ export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
                   key={wallet.id}
                   wallet={wallet}
                   address={address}
-                  description={
-                    <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
-                  }
+                  description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
                   onClick={() => onSelect(wallet)}
                 >
                   <Slot id={walletActionsSlot} props={{ wallet }} />

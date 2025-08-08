@@ -1730,6 +1730,20 @@
       "switchLabel": "Show currency values",
       "unpopularFiatLabel": "Fiat currencies"
     },
+    "hiddenWallets": {
+      "allWallets": "All wallets",
+      "emptyList": "List of hidden wallets is empty",
+      "emptyListDescription": "You haven’t hidden any wallets yet. All your wallets are currently visible in Wallet management.",
+      "modalTitle": "Hidden wallets",
+      "nothingWasFound": "Nothing was found",
+      "restore": "Restore",
+      "restored": "Wallets restored",
+      "restoredDescription": "The selected wallets have been restored and are now visible in Wallet management.",
+      "searchPlaceholder": "Search",
+      "updateSearch": "Update the search or cancel filtering.",
+      "walletHidden": "Wallet hidden",
+      "youCanRestore": "You can restore it anytime from Settings."
+    },
     "networks": {
       "activeNetworksLabel": "Active networks",
       "addNodeButton": "Add custom node",
@@ -1777,6 +1791,7 @@
       "generalLabel": "General",
       "githubDescription": "Contribute and explore our open-source project on GitHub for collaborative code shaping!",
       "githubLabel": "GitHub",
+      "hiddenWalletsLabel": "Hidden wallets",
       "languageLabel": "Language",
       "mediumDescription": "Engaging content to expand knowledge and stay informed about Nova Spektr!",
       "mediumLabel": "Medium",
@@ -1802,7 +1817,7 @@
     "parsingLabel": "Parsing data",
     "qrCountdownTitle": "QR code valid for",
     "qrLegacyVaultTitle": "Legacy",
-    "qrNewVaultTitle": "New (Vault v7+)",
+    "qrNewVaultTitle": "New (Vault v{version}+)",
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
     "scanSignatureTitle": "Scan QR code from Polkadot Vault",

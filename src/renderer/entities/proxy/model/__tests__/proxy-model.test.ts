@@ -23,7 +23,6 @@ const newProxyMock = {
   delay: 0,
 } as ProxyAccount;
 
-
 describe('entities/proxy/model/proxy-model', () => {
   afterEach(() => {
     jest.restoreAllMocks();
@@ -52,5 +51,4 @@ describe('entities/proxy/model/proxy-model', () => {
 
     expect(scope.getState(proxyModel.$proxies)).toEqual({ '0x01': [newProxyMock] });
   });
-
 });

@@ -29,18 +29,18 @@ type DbWallet = Omit<Wallet, 'accounts'>;
 
 export type CreateParams<T extends AnyAccount = AnyAccount, W extends Wallet = Wallet> = {
   wallet: Omit<NoID<W>, 'isActive' | 'accounts'>;
-  accounts: (T extends any ? Omit<NoID<T>, 'walletId'> : never)[];
+  accounts: Omit<NoID<T>, 'walletId'>[];
 };
 
-const watchOnlyCreated = createEvent<CreateParams<WatchOnlyAccount>>();
-const singleshardCreated = createEvent<CreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
-const multisigCreated = createEvent<CreateParams<MultisigAccount>>();
-const flexibleMultisigCreated = createEvent<CreateParams<MultisigAccount>>();
-const walletConnectCreated = createEvent<CreateParams<WcAccount>>();
-const proxiedCreated = createEvent<CreateParams<ProxiedAccount>>();
+// Events - renamed to start with verbs
+const createWatchOnly = createEvent<CreateParams<WatchOnlyAccount>>();
+const createSingleshard = createEvent<CreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
+const createMultisig = createEvent<CreateParams<MultisigAccount>>();
+const createFlexibleMultisig = createEvent<CreateParams<MultisigAccount>>();
+const createWalletConnect = createEvent<CreateParams<WcAccount>>();
+const createProxied = createEvent<CreateParams<ProxiedAccount>>();
 
-const walletRestored = createEvent<Wallet>();
-const walletRemoved = createEvent<ID>();
+const removeWallet = createEvent<ID>();
 // TODO this is temp solution, each type of wallet should update own data inside feature
 const updateWallet = createEvent<{ walletId: ID; data: NonNullable<unknown> }>();
 const updateWalletWithDB = createEvent<Wallet>();
@@ -56,19 +56,16 @@ const $wallets = $allWallets.map((wallets) => wallets.filter((x) => !x.isHidden)
 const $hiddenWallets = $allWallets.map((wallets) => wallets.filter((x) => x.isHidden));
 
 // TODO: ideally it should be a feature
-const $activeWallet = combine($wallets, (wallets) => {
-  return wallets.find((wallet) => wallet.isActive) ?? null;
-});
+const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive) ?? null);
 
 // TODO: ideally it should be a feature
-const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, accounts) => {
+const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, allAccounts) => {
   if (nullable(wallet)) return [];
-
-  return accountService.filterAccountsByWallet(accounts, wallet.id);
+  return accountService.filterAccountsByWallet(allAccounts, wallet.id);
 });
 
 // Workaround - select event recreates wallet array every time, serialized ids are more stable.
-const $walletIdsSerialized = $wallets.map((wallets) =>
+const $walletIds = $wallets.map((wallets) =>
   wallets
     .map((w) => w.id)
     .sort()
@@ -76,10 +73,9 @@ const $walletIdsSerialized = $wallets.map((wallets) =>
 );
 
 // list of accounts filtered by non-hidden wallets
-const $availableAccounts = combine($walletIdsSerialized, accounts.$list, (wallets, accounts) => {
-  const ids = toKeysRecord(wallets.split(','));
-
-  return accounts.filter((a) => a.walletId in ids);
+const $availableAccounts = combine($walletIds, accounts.$list, (walletIds, allAccounts) => {
+  const ids = toKeysRecord(walletIds.split(','));
+  return allAccounts.filter((a) => a.walletId in ids);
 });
 
 const $populated = restore(
@@ -174,10 +170,9 @@ const updateWalletsFx = createEffect(async (wallets: Wallet[]): Promise<Wallet[]
   return wallets;
 });
 
-const restoreWalletFx = createEffect(async (wallet: Wallet): Promise<Wallet> => {
-  await storageService.wallets.update(wallet.id, { isHidden: false });
-
-  return wallet;
+const restoreWalletsFx = attach({
+  effect: updateWalletsFx,
+  mapParams: (wallets: Wallet[]) => wallets.map((wallet) => ({ ...wallet, isHidden: false })),
 });
 
 sample({
@@ -191,12 +186,12 @@ const walletCreationFail = sample({ clock: createWalletFx.fail }).filter({ fn: n
 
 sample({
   clock: [
-    walletConnectCreated,
-    watchOnlyCreated,
-    multisigCreated,
-    flexibleMultisigCreated,
-    singleshardCreated,
-    proxiedCreated.filter({ fn: nonNullable }),
+    createWalletConnect,
+    createWatchOnly,
+    createMultisig,
+    createFlexibleMultisig,
+    createSingleshard,
+    createProxied.filter({ fn: nonNullable }),
   ],
   target: createWalletFx,
 });
@@ -222,14 +217,10 @@ sample({
 // Remove wallet
 
 sample({
-  clock: walletRemoved,
+  clock: removeWallet,
   source: $allWallets,
-  filter: (wallets, walletId) => {
-    return wallets.some((wallet) => wallet.id === walletId);
-  },
-  fn: (wallets, walletId) => {
-    return wallets.find((wallet) => wallet.id === walletId)!;
-  },
+  filter: (wallets, walletId) => wallets.some((w) => w.id === walletId),
+  fn: (wallets, walletId) => wallets.find((w) => w.id === walletId)!,
   target: removeWalletFx,
 });
 
@@ -250,9 +241,8 @@ const removeWalletsFx = createEffect(async (wallets: Wallet[]): Promise<ID[]> =>
 const walletsRemovedFx = attach({
   source: $allWallets,
   effect: (wallets, walletIds: ID[]) => {
-    const filteredWallets = wallets.filter((wallet) => walletIds.includes(wallet.id));
+    const filteredWallets = wallets.filter((w) => walletIds.includes(w.id));
     if (filteredWallets.length === 0) return;
-
     return removeWalletsFx(filteredWallets);
   },
 });
@@ -260,18 +250,14 @@ const walletsRemovedFx = attach({
 sample({
   clock: removeWalletFx.doneData,
   source: $rawWallets,
-  fn: (wallets, walletId) => {
-    return wallets.filter((wallet) => wallet.id !== walletId);
-  },
+  fn: (wallets, walletId) => wallets.filter((w) => w.id !== walletId),
   target: $rawWallets,
 });
 
 sample({
   clock: removeWalletsFx.doneData,
   source: $rawWallets,
-  fn: (wallets, walletIds) => {
-    return wallets.filter((wallet) => !walletIds.includes(wallet.id));
-  },
+  fn: (wallets, walletIds) => wallets.filter((w) => !walletIds.includes(w.id)),
   target: $rawWallets,
 });
 
@@ -286,8 +272,7 @@ const hideWalletFx = createEffect(async (walletId: ID): Promise<ID> => {
 const walletHiddenFx = attach({
   source: $allWallets,
   effect: (wallets, walletId: ID) => {
-    if (!wallets.some((wallet) => wallet.id === walletId)) return;
-
+    if (!wallets.some((w) => w.id === walletId)) return;
     return hideWalletFx(walletId);
   },
 });
@@ -295,43 +280,14 @@ const walletHiddenFx = attach({
 sample({
   clock: hideWalletFx.doneData,
   source: $rawWallets,
-  fn: (wallets, walletIdToHide) => {
-    return wallets.map((wallet) => {
-      return wallet.id === walletIdToHide ? { ...wallet, isHidden: true } : wallet;
-    });
-  },
-  target: $rawWallets,
-});
-
-sample({
-  clock: walletRestored,
-  source: $hiddenWallets,
-  filter: (hiddenWallets, walletToRestore) => {
-    return hiddenWallets.some((wallet) => wallet.id === walletToRestore.id);
-  },
-  fn: (_, walletToRestore) => walletToRestore,
-  target: restoreWalletFx,
-});
-
-sample({
-  clock: restoreWalletFx.doneData,
-  source: $rawWallets,
-  fn: (wallets, walletToRestore) => {
-    return wallets.map((wallet) => {
-      return wallet.id === walletToRestore.id ? { ...wallet, isHidden: false } : wallet;
-    });
-  },
+  fn: (wallets, walletIdToHide) => wallets.map((w) => (w.id === walletIdToHide ? { ...w, isHidden: true } : w)),
   target: $rawWallets,
 });
 
 sample({
   clock: updateWallet,
   source: $rawWallets,
-  fn: (wallets, { walletId, data }) => {
-    return wallets.map((wallet) => {
-      return wallet.id === walletId ? { ...wallet, ...data } : wallet;
-    });
-  },
+  fn: (wallets, { walletId, data }) => wallets.map((w) => (w.id === walletId ? { ...w, ...data } : w)),
   target: $rawWallets,
 });
 
@@ -355,9 +311,9 @@ sample({
       return acc;
     }, {});
 
-    return wallets.map((wallet) => {
-      const u = updatedMap[wallet.id];
-      return u ? { ...wallet, ...u } : wallet;
+    return wallets.map((w) => {
+      const u = updatedMap[w.id];
+      return u ? { ...w, ...u } : w;
     });
   },
   target: $rawWallets,
@@ -385,22 +341,21 @@ export const walletModel = {
   populate: fetchAllWalletsFx,
   walletHidden: walletHiddenFx,
   walletsRemoved: walletsRemovedFx,
+  restoreWallets: restoreWalletsFx,
 
   events: {
-    watchOnlyCreated,
-    singleshardCreated,
-    multisigCreated,
-    flexibleMultisigCreated,
-    walletConnectCreated,
-    proxiedCreated,
+    createWatchOnly,
+    createSingleshard,
+    createMultisig,
+    createFlexibleMultisig,
+    createWalletConnect,
+    createProxied,
     walletCreatedDone,
     walletCreationFail,
     updateWallet,
     updateWalletWithDB,
-    walletRemoved,
+    removeWallet,
     walletRemovedSuccess: removeWalletFx.done,
-    walletRestored,
-    walletRestoredSuccess: restoreWalletFx.done,
   },
 
   __test: {

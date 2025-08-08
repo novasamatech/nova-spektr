@@ -310,10 +310,12 @@ export const subscribeEventsResource = createSubscriptionResource<
           const operationId = multisigOperationService.getOperationId(
             chainId,
             data.callHash,
-            data.accountId,
+            data.multisigAccountId,
             data.timepoint.height,
             data.timepoint.index,
           );
+
+          const eventStatus = event.method === 'MultisigCancelled' ? 'reject' : 'approve';
 
           callback({
             done: true,
@@ -321,9 +323,9 @@ export const subscribeEventsResource = createSubscriptionResource<
               chainId: api.genesisHash.toHex(),
               operationId,
               event: {
-                id: multisigOperationService.getEventId(operationId, accountId, 'approve'),
+                id: multisigOperationService.getEventId(operationId, accountId, eventStatus),
                 accountId: data.accountId,
-                status: event.method === 'MultisigCancelled' ? 'reject' : 'approve',
+                status: eventStatus,
                 indexCreated: data.timepoint.index,
                 blockCreated: data.timepoint.height,
                 timestamp: Date.now(),
