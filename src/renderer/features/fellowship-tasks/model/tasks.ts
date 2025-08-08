@@ -1,7 +1,6 @@
-import { combine, restore } from 'effector';
+import { combine } from 'effector';
 import { or } from 'patronum';
 
-import { attachToFeatureInput } from '@/shared/feature';
 import { groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type CompletedReferendum,
@@ -43,12 +42,9 @@ const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
 
 const $voting = fellowship.$store.map(store => store?.voting ?? []);
-const $accountsVotes = restore(
-  attachToFeatureInput(fellowshipTasksFeature, $voting).map(({ input: { account }, data: voting }) => {
-    return voting.filter(voting => voting.accountId === account?.accountId);
-  }),
-  [],
-);
+const $accountsVotes = combine({ voting: $voting, account: $member }, ({ voting, account }) => {
+  return voting.filter(voting => voting.accountId === account?.accountId);
+});
 
 // basket
 
