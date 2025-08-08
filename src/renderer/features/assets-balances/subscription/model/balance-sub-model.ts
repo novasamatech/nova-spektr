@@ -211,6 +211,13 @@ sample({
   target: subscribeWallet,
 });
 
+// fetch balances when a wallet is created
+sample({
+  clock: walletModel.createWallet.doneData.filter({ fn: nonNullable }),
+  fn: ({ wallet }) => wallet as Wallet,
+  target: fetchWallet,
+});
+
 // account subscriptions
 
 sample({

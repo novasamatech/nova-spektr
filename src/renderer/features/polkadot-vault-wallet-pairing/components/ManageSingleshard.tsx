@@ -86,7 +86,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
   const createWallet: SubmitHandler<WalletForm> = ({ walletName }) => {
     if (!accountId || accountId.length === 0) return;
 
-    walletModel.events.singleshardCreated({
+    walletModel.events.createSingleshard({
       wallet: {
         name: walletName,
         rootAccountId: accountId,

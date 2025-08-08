@@ -11,9 +11,7 @@ import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
-import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
-
-const { WalletFiatBalance } = walletsFiatBalanceFeature.views;
+import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
@@ -25,7 +23,8 @@ type Props = {
   onSelect: (wallet: Wallet) => unknown;
 };
 
-export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }: Props) => {
+export const WalletGroup = memo((props: Props) => {
+  const { wallets, walletType, query, title, onSelect } = props;
   const { t } = useI18n();
 
   const allAccounts = useUnit(accounts.$list);
@@ -44,13 +43,19 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
     return null;
   }
 
+  const handleWalletClick = (wallet: Wallet) => {
+    onSelect(wallet);
+  };
+
   return (
     <Box padding={[1, 0, 0]}>
       <Accordion initialOpen>
         <Accordion.Trigger>
-          <WalletIcon type={walletType} />
-          <span>{title}</span>
-          <span className="text-text-tertiary">{wallets.length}</span>
+          <div className="flex w-full items-center gap-2">
+            <WalletIcon type={walletType} />
+            <span>{title}</span>
+            <span className="ml-auto text-text-tertiary">{filteredWallets.length}</span>
+          </div>
         </Accordion.Trigger>
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
@@ -69,19 +74,22 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
               }
 
               return (
-                <WalletManagement
-                  key={wallet.id}
-                  wallet={wallet}
-                  address={address}
-                  description={
-                    <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
-                  }
-                  chain={chain}
-                  label={label}
-                  onClick={() => onSelect(wallet)}
-                >
-                  <Slot id={walletActionsSlot} props={{ wallet }} />
-                </WalletManagement>
+                <div key={wallet.id} className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <WalletManagement
+                      wallet={wallet}
+                      address={address}
+                      description={
+                        <WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />
+                      }
+                      chain={chain}
+                      label={label}
+                      onClick={() => handleWalletClick(wallet)}
+                    >
+                      <Slot id={walletActionsSlot} props={{ wallet }} />
+                    </WalletManagement>
+                  </div>
+                </div>
               );
             })}
           </Box>

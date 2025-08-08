@@ -131,3 +131,12 @@ export type {
   DelegationBalanceMap,
   DelegationTracksMap,
 } from './types/voting';
+
+export type {
+  ToastPosition,
+  ToastVariant,
+  ToastNotificationProps,
+  ModalNotificationProps,
+  ToastNotification,
+  ModalNotification,
+} from './types/notificationService';

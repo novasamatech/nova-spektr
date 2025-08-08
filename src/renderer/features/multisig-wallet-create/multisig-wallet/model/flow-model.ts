@@ -448,7 +448,7 @@ sample({
 });
 
 sample({
-  clock: walletModel.events.walletRestoredSuccess,
+  clock: walletModel.restoreWallets.done,
   target: flow.close,
 });
 

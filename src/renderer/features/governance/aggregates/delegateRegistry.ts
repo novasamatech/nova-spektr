@@ -5,7 +5,7 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import { type Chain } from '@/shared/core';
-import { MONTH, getBlockTimeAgo, nonNullable, toAccountId } from '@/shared/lib/utils';
+import { MONTH, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identity } from '@/domains/network';
 import { networkSelectorModel } from '../model/networkSelector';
@@ -21,10 +21,10 @@ type DelegateRegistryParams = {
 };
 
 const requestDelegateRegistryFx = createEffect(
-  async ({ chain, api }: DelegateRegistryParams): Promise<DelegateAccount[]> => {
-    const blockNumber = await getBlockTimeAgo(MONTH, api);
+  async ({ chain }: DelegateRegistryParams): Promise<DelegateAccount[]> => {
+    const timestamp = Math.floor((Date.now() - MONTH) / 1000);
     const delegates = await delegationService.getDelegatesFromRegistry(chain);
-    const stats = await delegationService.getDelegatesFromExternalSource(chain, blockNumber);
+    const stats = await delegationService.getDelegatesFromExternalSource(chain, timestamp);
 
     return delegationService.aggregateDelegateAccounts(delegates, stats, chain);
   },

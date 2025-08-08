@@ -117,7 +117,7 @@ const Signatories = () => {
   if (!chainValue) return null;
 
   const signatoriesWithBalance = useMemo(() => {
-    return signatories.map((signatory) => {
+    return signatories.map(signatory => {
       const balance = balanceUtils.getBalance(
         balances,
         signatory.accountId,
