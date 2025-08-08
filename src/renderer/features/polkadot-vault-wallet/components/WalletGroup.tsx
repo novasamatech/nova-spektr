@@ -10,12 +10,7 @@ import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { WalletIcon } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
-import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
-
-// TODO invert this dependency
-const {
-  views: { WalletFiatBalance },
-} = walletsFiatBalanceFeature;
+import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
@@ -71,9 +66,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
                   wallet={wallet}
                   address={address}
                   theme={theme}
-                  description={
-                    <WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />
-                  }
+                  description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
                   onClick={() => onSelect(wallet)}
                 >
                   <Slot id={walletActionsSlot} props={{ wallet }} />

@@ -40,6 +40,7 @@ import PromoteIcon from '@/shared/assets/images/functionals/promote.svg?jsx';
 import QuestionIcon from '@/shared/assets/images/functionals/question.svg?jsx';
 import ReferendumIcon from '@/shared/assets/images/functionals/referendum.svg?jsx';
 import RefreshIcon from '@/shared/assets/images/functionals/refresh.svg?jsx';
+import RenameUnderlineIcon from '@/shared/assets/images/functionals/rename-underlined.svg?jsx';
 import RenameIcon from '@/shared/assets/images/functionals/rename.svg?jsx';
 import RequestSalaryIcon from '@/shared/assets/images/functionals/request salary.svg?jsx';
 import RetainIcon from '@/shared/assets/images/functionals/retain.svg?jsx';
@@ -92,6 +93,7 @@ const FunctionalImages = {
   editKeys: { svg: EditKeysIcon },
   more: { svg: MoreIcon },
   rename: { svg: RenameIcon },
+  renameUnderline: { svg: RenameUnderlineIcon },
   forget: { svg: ForgetIcon },
   update: { svg: UpdateIcon },
   opengovLock: { svg: OpenGovLockIcon },

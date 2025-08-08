@@ -13,8 +13,8 @@ import { accountService, accounts } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
+import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy, addProxyModel } from '@/features/proxy-add';
-import { AddPureProxied } from '@/features/proxy-add-pure';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
@@ -95,7 +95,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   actions.push({
     component: (
       <ForgetWalletConfirm wallet={wallet} onForget={onClose}>
-        <Action title={t('walletDetails.common.hideButton')} icon="forget" variant="danger" />
+        <Action title={t('walletDetails.common.hideButton')} icon="eyeSlashed" variant="danger" />
       </ForgetWalletConfirm>
     ),
   });

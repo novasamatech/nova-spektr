@@ -4,7 +4,7 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Button, Icon } from '@/shared/ui';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
-import { generalActionsSlot } from '@/pages/Settings/Overview/components/GeneralActions/GeneralActions';
+import { generalActionsSlot } from '@/pages/Settings/Overview/components';
 
 import { ImportDBModal } from './components/ImportDBModal';
 import { ImportDBSetting } from './components/ImportDBSetting';
@@ -15,7 +15,7 @@ export const importDBFeature = createFeature({
 });
 
 importDBFeature.inject(generalActionsSlot, {
-  order: 0,
+  order: 1,
   render: () => <ImportDBSetting />,
 });
 

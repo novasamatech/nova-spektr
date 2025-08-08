@@ -20,7 +20,7 @@ import { resetFeatureStatuses, updateFeatureStatus } from '@/shared/config/featu
 import { I18Provider } from '@/shared/i18n';
 import { isElectron } from '@/shared/lib/utils';
 import { FallbackScreen } from '@/shared/ui';
-import { ThemeProvider } from '@/shared/ui-kit';
+import { NotificationProvider, ThemeProvider } from '@/shared/ui-kit';
 
 import { LoadingDelay, controlledLazy, suspenseDelay } from './DelayedSuspense';
 import { ElectronSplashScreen } from './components/ElectronSplashScreen/ElectronSplashScreen';
@@ -74,10 +74,12 @@ const Root = () => {
       <HashRouter>
         <I18Provider>
           <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
-            <Suspense fallback={splashScreen}>
-              <App onReady={() => setAppLoaded(true)} />
-              <LoadingDelay suspense={loadingDelay} />
-            </Suspense>
+            <NotificationProvider>
+              <Suspense fallback={splashScreen}>
+                <App onReady={() => setAppLoaded(true)} />
+                <LoadingDelay suspense={loadingDelay} />
+              </Suspense>
+            </NotificationProvider>
           </ErrorBoundary>
         </I18Provider>
       </HashRouter>
