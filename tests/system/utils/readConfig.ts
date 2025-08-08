@@ -1,5 +1,5 @@
 import { type Chain } from '@/shared/core';
-import { CHAINS_CONFIG_URL } from '@/shared/lib/utils';
+import { CHAINS_CONFIG_URL } from '../BaseTestConfig';
 
 export async function readConfig(): Promise<Chain[]> {
   const response = await fetch(CHAINS_CONFIG_URL);

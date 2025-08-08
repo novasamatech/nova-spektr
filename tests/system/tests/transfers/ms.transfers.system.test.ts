@@ -20,7 +20,6 @@ test.describe('Multisig wallet transfers', { tag: ['@multisig-transfers', '@regr
       const chain = getChainByName(substrateChains, chainName);
       const transferModal = await assetsPage.openTransfer(chain, assetId);
 
-      await transferModal.chooseSignatory();
       await transferModal.fillAmount(amount);
       await transferModal.fillRecipient(recipient);
       const confirmationModal = await transferModal.openConfirmationModal();

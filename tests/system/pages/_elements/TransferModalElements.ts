@@ -15,6 +15,6 @@ export class TransferModalElements {
       throw new Error('chainId and assetId must be defined');
     }
 
-    return `#/assets/transfer?chainId=${chainId}&assetId=${assetId}`;
+    return `/#/assets/transfer?chainId=${chainId}&assetId=${assetId}`;
   }
 }
