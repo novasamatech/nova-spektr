@@ -34,12 +34,19 @@ import { memberSalary } from './memberSalary';
 import { periods } from './periods';
 import { referendums } from './referendums';
 
+const ALREADY_VOTED_SORTING_PENALTY = 10_000;
+
 const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
 const $member = fellowshipTasksFeature.input.map(input => input?.member ?? null);
 const $evidencePeriods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 const $maxRank = fellowship.$store.map(input => input?.maxRank ?? 0);
 const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
+
+const $voting = fellowship.$store.map(store => store?.voting ?? []);
+const $accountsVotes = combine({ voting: $voting, account: $member }, ({ voting, account }) => {
+  return voting.filter(voting => voting.accountId === account?.accountId);
+});
 
 // basket
 
@@ -247,13 +254,18 @@ const $ongoingReferendumsTasks = combine(
     members: $members,
     member: $member,
     currentBlock: fellowshipNetwork.$currentBlock,
+    accountsVotes: $accountsVotes,
   },
-  ({ referendums, operations, maxRank, members, member, currentBlock }) => {
+  ({ referendums, operations, maxRank, members, member, currentBlock, accountsVotes }) => {
     if (nullable(member) || nullable(currentBlock)) return [];
 
     const possibleReferendums = referendums.filter(referendum => {
       return trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
     });
+
+    const hasUserVoted = (referendum: OngoingReferendum) => {
+      return nonNullable(accountsVotes.find(vote => vote.referendumId === referendum.id));
+    };
 
     const groups = groupBy(possibleReferendums, referendum => {
       return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track)
@@ -275,12 +287,18 @@ const $ongoingReferendumsTasks = combine(
         track: referendum.track,
       });
 
-      return tasksService.getReferendumImportance({
+      const importance = tasksService.getReferendumImportance({
         referendum,
         maximumAvailableVotingWeight,
         memberVotingWeight,
         currentBlock,
       });
+
+      const sortingScore = hasUserVoted(referendum)
+        ? importance.sortingScore - ALREADY_VOTED_SORTING_PENALTY
+        : importance.sortingScore;
+
+      return { ...importance, sortingScore };
     };
 
     const evidenceTasks = groups.evidence
