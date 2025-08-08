@@ -103,15 +103,21 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   ];
 
   if (!walletUtils.isProxied(wallet) && !walletUtils.isFlexibleMultisig(wallet)) {
+    let icon: IconNames = 'forget';
+    let title = t('walletDetails.common.forgetButton');
+
+    if (walletUtils.isRegularMultisig(wallet)) {
+      icon = 'eyeSlashed';
+      title = t('walletDetails.common.hideButton');
+    }
+
     items.push({
       component: (
         <ForgetWalletConfirm wallet={wallet}>
           <Dropdown.Item>
             <div className="flex items-center gap-2">
-              <Icon name="forget" size={20} className="text-icon-accent" />
-              {walletUtils.isRegularMultisig(wallet)
-                ? t('walletDetails.common.hideButton')
-                : t('walletDetails.common.forgetButton')}
+              <Icon name={icon} size={20} className="text-icon-accent" />
+              {title}
             </div>
           </Dropdown.Item>
         </ForgetWalletConfirm>

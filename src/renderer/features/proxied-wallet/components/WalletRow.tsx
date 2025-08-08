@@ -6,11 +6,7 @@ import { toAddress } from '@/shared/lib/utils';
 import { ChainIcon, WalletManagement } from '@/shared/ui-entities';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
-
-const {
-  views: { WalletFiatBalance },
-} = walletsFiatBalanceFeature;
+import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
@@ -42,7 +38,7 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
       wallet={wallet}
       address={toAddress(accountId, { prefix: chain?.addressPrefix })}
       meta={chain ? <ChainIcon chain={chain} size={16} /> : null}
-      description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
+      description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}
     >
       <Slot id={walletActionsSlot} props={{ wallet }} />

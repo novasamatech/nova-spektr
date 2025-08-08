@@ -131,6 +131,7 @@ export const bootstrap = () => {
     import('@/features/proxy-basket').then(({ proxyBasketFeature }) => proxyBasketFeature),
 
     import('@/features/import-db').then(({ importDBFeature }) => importDBFeature),
+    import('@/features/hidden-wallets').then(({ hiddenWalletsFeature }) => hiddenWalletsFeature),
   ]);
 
   populate();
