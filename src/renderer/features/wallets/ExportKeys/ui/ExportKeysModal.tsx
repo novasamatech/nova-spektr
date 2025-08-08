@@ -13,14 +13,20 @@ import { exportKeysUtils } from '../lib/export-keys-utils';
 
 type Props = PropsWithChildren<{
   wallet: PolkadotVaultWallet;
+  onClose?: () => void;
 }>;
 
-export const ExportKeysModal = ({ wallet, children }: Props) => {
+export const ExportKeysModal = ({ wallet, onClose, children }: Props) => {
   const { t } = useI18n();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isDownloadModalOpen, setDownloadModalOpen] = useState(false);
   const chains = useUnit(networkModel.$chains);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    onClose?.();
+  };
 
   const downloadKeysFile = () => {
     exportKeysUtils.exportVaultWallet(wallet, wallet.rootAccountId, accounts, chains);
@@ -40,7 +46,7 @@ export const ExportKeysModal = ({ wallet, children }: Props) => {
   }, [wallet.name, wallet.rootAccountId, accounts, chains]);
 
   return (
-    <Modal size="md" height="fit" isOpen={isOpen} onToggle={setIsOpen}>
+    <Modal size="md" height="fit" isOpen={isOpen} onToggle={(open) => (open ? setIsOpen(true) : handleClose())}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('dynamicDerivations.exportKeys.modalTitle')}</Modal.Title>
       <Modal.Content>

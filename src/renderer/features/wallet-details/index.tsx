@@ -79,8 +79,14 @@ const DropdownItem = (props: DropdownItemProps) => {
 
 walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   const [isWalletDetailsOpen, setIsWalletDetailsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const { t } = useI18n();
+
+  const createModalCloseHandler = (modalCloseFn?: () => void) => () => {
+    modalCloseFn?.();
+    setIsDropdownOpen(false);
+  };
 
   const items: DropdownItemProps[] = [
     {
@@ -90,7 +96,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
     },
     {
       component: (
-        <RenameWalletModal wallet={wallet}>
+        <RenameWalletModal wallet={wallet} onClose={createModalCloseHandler()}>
           <Dropdown.Item>
             <div className="flex items-center gap-2">
               <Icon name="renameUnderline" size={20} className="text-icon-accent" />
@@ -113,7 +119,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
 
     items.push({
       component: (
-        <ForgetWalletConfirm wallet={wallet}>
+        <ForgetWalletConfirm wallet={wallet} onClose={createModalCloseHandler()}>
           <Dropdown.Item>
             <div className="flex items-center gap-2">
               <Icon name={icon} size={20} className="text-icon-accent" />
@@ -141,7 +147,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
     items.push({
       component: (
-        <AddProxy wallet={wallet}>
+        <AddProxy wallet={wallet} onClose={createModalCloseHandler()}>
           <Dropdown.Item>
             <div className="flex items-center gap-2">
               <Icon name="delegate" size={20} className="text-icon-accent" />
@@ -156,7 +162,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   if (walletUtils.isPolkadotVault(wallet)) {
     items.push({
       component: (
-        <ExportKeysModal wallet={wallet}>
+        <ExportKeysModal wallet={wallet} onClose={createModalCloseHandler()}>
           <Dropdown.Item>
             <div className="flex items-center gap-2">
               <Icon name="export" size={20} className="text-icon-accent" />
@@ -171,7 +177,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   if (permissionUtils.canCreateAnyProxy(wallet)) {
     items.push({
       component: (
-        <AddPureProxied wallet={wallet}>
+        <AddPureProxied wallet={wallet} onClose={createModalCloseHandler()}>
           <Dropdown.Item>
             <div className="flex items-center gap-2">
               <Icon name="createPureProxy" size={20} className="text-icon-accent" />
@@ -185,7 +191,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
 
   return (
     <>
-      <Dropdown keepOpen avoidCollisions>
+      <Dropdown keepOpen avoidCollisions open={isDropdownOpen} onToggle={setIsDropdownOpen}>
         <Dropdown.Trigger>
           <IconButton name="more" />
         </Dropdown.Trigger>
@@ -196,7 +202,11 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
         </Dropdown.Content>
       </Dropdown>
 
-      <WalletDetails wallet={wallet} isOpen={isWalletDetailsOpen} onClose={() => setIsWalletDetailsOpen(false)} />
+      <WalletDetails
+        wallet={wallet}
+        isOpen={isWalletDetailsOpen}
+        onClose={createModalCloseHandler(() => setIsWalletDetailsOpen(false))}
+      />
     </>
   );
 });

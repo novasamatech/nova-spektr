@@ -21,9 +21,10 @@ import { AddPureProxiedForm } from './AddPureProxiedForm';
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
+  onClose?: () => void;
 }>;
 
-export const AddPureProxied = ({ wallet, children }: Props) => {
+export const AddPureProxied = ({ wallet, onClose, children }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,6 +43,7 @@ export const AddPureProxied = ({ wallet, children }: Props) => {
   const closeModal = () => {
     setIsModalOpen(false);
     addPureProxiedModel.output.flowFinished();
+    onClose?.();
   };
 
   useEffect(() => {
@@ -75,7 +77,12 @@ export const AddPureProxied = ({ wallet, children }: Props) => {
   }
 
   return (
-    <Modal isOpen={isModalOpen} size="md" height="fit" onToggle={setIsModalOpen}>
+    <Modal
+      isOpen={isModalOpen}
+      size="md"
+      height="fit"
+      onToggle={(open) => (open ? setIsModalOpen(true) : closeModal())}
+    >
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{getModalTitle(step, chain.value!)}</Modal.Title>
       <Modal.Content>

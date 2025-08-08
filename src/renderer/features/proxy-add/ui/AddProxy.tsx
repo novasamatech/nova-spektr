@@ -19,9 +19,10 @@ import { AddProxyForm } from './AddProxyForm';
 
 type Props = PropsWithChildren<{
   wallet: Wallet | null;
+  onClose?: () => void;
 }>;
 
-export const AddProxy = ({ wallet, children }: Props) => {
+export const AddProxy = ({ wallet, onClose, children }: Props) => {
   const { t } = useI18n();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,6 +39,7 @@ export const AddProxy = ({ wallet, children }: Props) => {
   const closeModal = () => {
     setIsModalOpen(false);
     addProxyModel.output.flowClosed();
+    onClose?.();
   };
 
   useEffect(() => {
@@ -71,7 +73,12 @@ export const AddProxy = ({ wallet, children }: Props) => {
   }
 
   return (
-    <Modal size="md" height="fit" isOpen={isModalOpen} onToggle={setIsModalOpen}>
+    <Modal
+      size="md"
+      height="fit"
+      isOpen={isModalOpen}
+      onToggle={(open) => (open ? setIsModalOpen(true) : closeModal())}
+    >
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{getModalTitle(step, chain)}</Modal.Title>
       <Modal.Content>
