@@ -28,6 +28,14 @@ export const ExportKeysModal = ({ wallet, onClose, children }: Props) => {
     onClose?.();
   };
 
+  const onToggle = (isOpen: boolean) => {
+    if (isOpen) {
+      setIsOpen(true);
+      return;
+    }
+    handleClose();
+  };
+
   const downloadKeysFile = () => {
     exportKeysUtils.exportVaultWallet(wallet, wallet.rootAccountId, accounts, chains);
     setDownloadModalOpen(true);
@@ -46,7 +54,7 @@ export const ExportKeysModal = ({ wallet, onClose, children }: Props) => {
   }, [wallet.name, wallet.rootAccountId, accounts, chains]);
 
   return (
-    <Modal size="md" height="fit" isOpen={isOpen} onToggle={(open) => (open ? setIsOpen(true) : handleClose())}>
+    <Modal size="md" height="fit" isOpen={isOpen} onToggle={onToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('dynamicDerivations.exportKeys.modalTitle')}</Modal.Title>
       <Modal.Content>

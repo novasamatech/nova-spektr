@@ -27,6 +27,14 @@ export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
     onClose?.();
   };
 
+  const onToggle = (isOpen: boolean) => {
+    if (isOpen) {
+      setIsOpen(true);
+      return;
+    }
+    handleClose();
+  };
+
   useEffect(() => {
     if (isOpen) {
       renameWalletModel.formInitiated(wallet);
@@ -43,7 +51,7 @@ export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
   };
 
   return (
-    <Modal size="sm" height="fit" isOpen={isOpen} onToggle={(open) => (open ? setIsOpen(true) : handleClose())}>
+    <Modal size="sm" height="fit" isOpen={isOpen} onToggle={onToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('walletDetails.common.renameWallet')}</Modal.Title>
       <Modal.Content>
