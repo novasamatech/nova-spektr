@@ -318,4 +318,5 @@ sample({
 
 export const proxiesModel = {
   findAllProxies: findAllProxiesFx,
+  createProxiedWalletsFx: createProxiedWalletsFx,
 };
