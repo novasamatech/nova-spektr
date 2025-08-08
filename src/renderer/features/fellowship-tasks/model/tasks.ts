@@ -34,6 +34,8 @@ import { memberSalary } from './memberSalary';
 import { periods } from './periods';
 import { referendums } from './referendums';
 
+const ALREADY_VOTED_SORTING_PENALTY = 10_000;
+
 const $chain = fellowshipTasksFeature.input.map(input => input?.chain ?? null);
 const $member = fellowshipTasksFeature.input.map(input => input?.member ?? null);
 const $evidencePeriods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
@@ -296,7 +298,9 @@ const $ongoingReferendumsTasks = combine(
     const evidenceTasks = groups.evidence
       ? groups.evidence.map<TaskDescription>(referendum => {
           const weight = getWeight(referendum);
-          const finalWeight = hasUserVoted(referendum) ? weight.sortingScore - 10000 : weight.sortingScore;
+          const finalWeight = hasUserVoted(referendum)
+            ? weight.sortingScore - ALREADY_VOTED_SORTING_PENALTY
+            : weight.sortingScore;
           return {
             id: `referendum_${referendum.id}`,
             weight: finalWeight,
@@ -314,7 +318,9 @@ const $ongoingReferendumsTasks = combine(
     const otherTasks = groups.other
       ? groups.other.map<TaskDescription>(referendum => {
           const weight = getWeight(referendum);
-          const finalWeight = hasUserVoted(referendum) ? weight.sortingScore - 10000 : weight.sortingScore;
+          const finalWeight = hasUserVoted(referendum)
+            ? weight.sortingScore - ALREADY_VOTED_SORTING_PENALTY
+            : weight.sortingScore;
           return {
             id: `referendum_${referendum.id}`,
             weight: finalWeight,
