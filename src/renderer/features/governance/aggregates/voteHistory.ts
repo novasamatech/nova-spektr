@@ -4,7 +4,7 @@ import { createGate } from 'effector-react';
 import { type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { identity } from '@/domains/network';
+import { identity, identityService } from '@/domains/network';
 import { voteHistoryModel } from '@/entities/governance';
 import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
@@ -43,9 +43,11 @@ const $voteHistory = combine(
       const aggregatedHistory = historyList.flatMap((vote) => {
         const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
 
+        const identityName = identityService.getFullName(identities[chainId]?.[vote.voter as AccountId] ?? {});
+
         return splitVotes.map((vote) => ({
           ...vote,
-          name: identities[chainId]?.[vote.voter as AccountId]?.name ?? null,
+          name: identityName,
         }));
       });
 
