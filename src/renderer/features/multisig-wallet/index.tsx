@@ -75,6 +75,11 @@ accountSDK(multisigWalletFeature, {
         })
         .concat(children);
     }
+
+    if (accountUtils.isFlexibleProxiedAccount(account)) {
+      return accounts.filter(a => a.accountId === account.proxyAccountId).concat(children);
+    }
+
     return children;
   },
   visualGraphNode({ account, t }) {
@@ -235,6 +240,23 @@ transactionSDK(multisigWalletFeature, {
 
         return multisigTransaction;
       });
+    }
+
+    if (accountUtils.isFlexibleProxiedAccount(account)) {
+      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
+      const proxyTransaction: Transaction = {
+        type: TransactionType.PROXY,
+        accountId: account.accountId,
+        chainId: api.genesisHash.toHex(),
+        args: {
+          real: account.accountId,
+          forceProxyType: 'Any',
+          call: extrinsic.method.toHex(),
+        },
+      };
+
+      return proxyTransaction;
     }
   },
 });

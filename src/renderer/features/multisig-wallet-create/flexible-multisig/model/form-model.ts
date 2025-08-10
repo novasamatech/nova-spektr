@@ -110,8 +110,15 @@ const $existingProxy = combine(
     if (nullable(existingMultisig)) return null;
     return (
       accounts.find(a => {
-        if (!accountUtils.isPureProxiedAccount(a) && !accountUtils.isFlexibleProxiedAccount(a)) return false;
-        return a.connections.some(c => c.proxyAccountId === existingMultisig.accountId);
+        if (accountUtils.isPureProxiedAccount(a)) {
+          return a.connections.some(c => c.proxyAccountId === existingMultisig.accountId);
+        }
+
+        if (accountUtils.isFlexibleProxiedAccount(a)) {
+          return a.proxyAccountId === existingMultisig.accountId;
+        }
+
+        return false;
       }) ?? null
     );
   },
