@@ -43,11 +43,9 @@ const $voteHistory = combine(
       const aggregatedHistory = historyList.flatMap((vote) => {
         const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
 
-        const identityName = identityService.getFullName(identities[chainId]?.[vote.voter as AccountId] ?? {});
-
         return splitVotes.map((vote) => ({
           ...vote,
-          name: identityName,
+          name: identityService.getFullName(identities[chainId]?.[vote.voter as AccountId] ?? {}),
         }));
       });
 
