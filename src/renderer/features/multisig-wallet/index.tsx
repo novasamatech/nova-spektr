@@ -75,10 +75,17 @@ accountSDK(multisigWalletFeature, {
         })
         .concat(children);
     }
+
+    if (accountUtils.isFlexibleProxiedAccount(account)) {
+      return accounts
+        .filter(a => a.walletId === account.walletId && a.accountId === account.proxyAccountId)
+        .concat(children);
+    }
+
     return children;
   },
   visualGraphNode({ account, t }) {
-    if (accountUtils.isMultisigAccount(account)) {
+    if (accountUtils.isAnyMultisigAccount(account)) {
       return {
         title: 'Multisig',
         subTitle: t('accountsStructure.multisigThreshold', {
@@ -87,6 +94,14 @@ accountSDK(multisigWalletFeature, {
         }),
         color: '#05B199',
         background: 'linear-gradient(180deg, #00AF9A 55.03%, #1AB775 100.43%)',
+      };
+    }
+
+    if (accountUtils.isFlexibleProxiedAccount(account)) {
+      return {
+        title: 'Flexible multisig',
+        color: '#E85649',
+        background: 'linear-gradient(180deg, #E85649 53.45%, #8707D5 80.32%)',
       };
     }
 
@@ -99,9 +114,15 @@ accountSDK(multisigWalletFeature, {
     }
   },
   connection({ target }) {
-    if (accountUtils.isMultisigAccount(target)) {
+    if (accountUtils.isAnyMultisigAccount(target)) {
       return {
         color: '#05B199',
+      };
+    }
+
+    if (accountUtils.isFlexibleProxiedAccount(target)) {
+      return {
+        color: '#E85649',
       };
     }
   },
@@ -217,6 +238,23 @@ transactionSDK(multisigWalletFeature, {
 
         return multisigTransaction;
       });
+    }
+
+    if (accountUtils.isFlexibleProxiedAccount(account)) {
+      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
+      const proxyTransaction: Transaction = {
+        type: TransactionType.PROXY,
+        accountId: account.accountId,
+        chainId: api.genesisHash.toHex(),
+        args: {
+          real: account.accountId,
+          forceProxyType: 'Any',
+          call: extrinsic.method.toHex(),
+        },
+      };
+
+      return proxyTransaction;
     }
   },
 });

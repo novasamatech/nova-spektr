@@ -4,13 +4,14 @@ import { sortBy } from 'lodash';
 import { spread } from 'patronum';
 import { z } from 'zod';
 
-import { AccountType, type Address, CryptoType, type NoID, ProxyVariant, SigningType, WalletType } from '@/shared/core';
+import { AccountType, type Address, CryptoType, type NoID, SigningType, WalletType } from '@/shared/core';
 import { type FlexibleMultisigAccount, type FlexibleProxiedAccount } from '@/shared/core/types/account';
-import { Step, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { Step, assert, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { createComplexTxStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
+import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -209,7 +210,11 @@ sample({
   filter: ({ flexibleMultisigCreated, chain, multisigAccountId, proxyAddress }) => {
     return nonNullable(chain) && flexibleMultisigCreated && nonNullable(multisigAccountId) && nonNullable(proxyAddress);
   },
-  fn: ({ signatories, chain, name, threshold, multisigAccountId, proxyAddress }) => {
+  fn: ({ signatories, chain, name, threshold, multisigAccountId, proxyAddress }, results) => {
+    const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
+    assert(successResult, 'Successful result for flexible multisig creation was not found');
+
+    const timepoint = (successResult.params as ExtrinsicResultParams).timepoint;
     const sortedSignatories = sortBy(
       signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address) })),
       'accountId',
@@ -237,15 +242,11 @@ sample({
       signingType: SigningType.WATCH_ONLY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
       deposit: '100',
-      connections: [
-        {
-          proxyAccountId: multisigAccountId!,
-          delay: 0,
-          proxyType: 'Any',
-        },
-      ],
-      proxyVariant: ProxyVariant.PURE,
+      proxyAccountId: multisigAccountId!,
+      delay: 0,
       chainId: chain!.chainId,
+      blockNumber: timepoint.height,
+      extrinsicIndex: timepoint.index,
     };
 
     return {

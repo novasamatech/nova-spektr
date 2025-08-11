@@ -4,7 +4,7 @@ import { $features } from '@/shared/config/features';
 import { type Transaction, TransactionType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { assert } from '@/shared/lib/utils';
+import { assert, nonNullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/domains/network';
@@ -38,9 +38,10 @@ accountSDK(proxiedWalletFeature, {
     return false;
   },
   collectAccountChildren(children, { account, accounts }) {
-    if (accountUtils.isProxiedAccount(account) || accountUtils.isFlexibleProxiedAccount(account)) {
-      return accounts
-        .filter(a => account.connections?.some(connection => connection.proxyAccountId === a.accountId))
+    if (accountUtils.isProxiedAccount(account)) {
+      return account.connections
+        .map(connection => accounts.find(a => connection.proxyAccountId === a.accountId))
+        .filter(nonNullable)
         .concat(children);
     }
     return children;
@@ -113,11 +114,7 @@ transactionSDK(proxiedWalletFeature, {
     }
   },
   wrap(transition, { api, account, route, index }) {
-    if (
-      accountUtils.isProxiedAccount(account) ||
-      accountUtils.isFlexibleProxiedAccount(account) ||
-      accountUtils.isPureProxiedAccount(account)
-    ) {
+    if (accountUtils.isProxiedAccount(account) || accountUtils.isPureProxiedAccount(account)) {
       const encodedTransaction = transactionService.encodeTransaction(transition, api);
       const proxyAccount = route.at(index + 1);
       assert(proxyAccount, `Proxy for ${account.accountId} is not found`);
@@ -147,13 +144,9 @@ transactionSDK(proxiedWalletFeature, {
       };
     }
   },
-  wrapLegacy(transition, { api, account, route, index }) {
-    if (
-      accountUtils.isProxiedAccount(account) ||
-      accountUtils.isFlexibleProxiedAccount(account) ||
-      accountUtils.isPureProxiedAccount(account)
-    ) {
-      const extrinsic = getExtrinsic[transition.type](transition.args, api);
+  wrapLegacy(transaction, { api, account, route, index }) {
+    if (accountUtils.isProxiedAccount(account) || accountUtils.isPureProxiedAccount(account)) {
+      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
       const proxyAccount = route.at(index + 1);
       assert(proxyAccount, `Proxy for ${account.accountId} is not found`);
