@@ -62,6 +62,7 @@ function findSourceFiles(dir, files = []) {
 
 function extractKeysFromSource(files) {
   const usedKeys = new Set();
+  const keyUsage = new Map();
   const keyPatterns = [
     {
       pattern: /t\(['"`]([^'"`]+)['"`]/g,
@@ -84,7 +85,8 @@ function extractKeysFromSource(files) {
   for (const file of files) {
     try {
       const content = fs.readFileSync(file, 'utf8');
-      for (const { pattern, description } of keyPatterns) {
+      const relativePath = path.relative(process.cwd(), file);
+      for (const { pattern } of keyPatterns) {
         let match;
         while ((match = pattern.exec(content)) !== null) {
           const key = match[1];
@@ -95,10 +97,13 @@ function extractKeysFromSource(files) {
             !key.includes('\\') &&
             key.match(/^[a-zA-Z][a-zA-Z0-9._-]*$/) &&
             key.length > 1 &&
-            !isTestString(key) &&
-            !isSimpleVariable(key)
+            !isLikelyNonI18nKey(key)
           ) {
             usedKeys.add(key);
+            if (!keyUsage.has(key)) {
+              keyUsage.set(key, []);
+            }
+            keyUsage.get(key).push(relativePath);
           }
         }
       }
@@ -106,52 +111,28 @@ function extractKeysFromSource(files) {
       log(`Error reading file ${file}: ${error.message}`, 'yellow');
     }
   }
-  return { usedKeys };
+  return { usedKeys, keyUsage };
 }
 
-function isTestString(key) {
-  const testStrings = [
-    'children',
-    'EN',
-    'English',
-    'Subtitle',
-    'Disabled',
-    'closed',
-    'opened',
-    'div',
-    'canvas',
-    'tupleMap',
-    'metadataReceived',
-    'status',
-    'index',
-    'generalActions',
-    'socialLinks',
-    'version',
-    'id',
-  ];
-  return testStrings.includes(key);
-}
-
-function isSimpleVariable(key) {
-  const simpleVars = [
-    'assetId',
-    'chainId',
-    'canvas',
-    'status',
-    'index',
-    'id',
-    'div',
-    'children',
-    'closed',
-    'opened',
-    'tupleMap',
-    'metadataReceived',
-  ];
-  if (simpleVars.includes(key)) return true;
-  if (!key.includes('.') && key.length < 10 && key.match(/^[a-z][a-zA-Z0-9]*$/)) {
-    return true;
-  }
+function isLikelyNonI18nKey(key) {
+  if (!key) return true;
+  if (key.length <= 2) return true;
+  if (!key.includes('.')) return true;
+  if (/^[A-Z]{1,}$/.test(key)) return true;
   return false;
+}
+
+function getKeyValue(key, localeData) {
+  const parts = key.split('.');
+  let current = localeData;
+  for (const part of parts) {
+    if (current && typeof current === 'object' && part in current) {
+      current = current[part];
+    } else {
+      return null;
+    }
+  }
+  return current;
 }
 
 function removeUnusedKeys(localeData, unusedKeys) {
@@ -212,7 +193,7 @@ async function main() {
   log(`📊 Found ${localeKeys.length} keys in locale file`, 'blue');
   const sourceFiles = findSourceFiles(SRC_DIR);
   log(`📁 Found ${sourceFiles.length} source files`, 'blue');
-  const { usedKeys } = extractKeysFromSource(sourceFiles);
+  const { usedKeys, keyUsage } = extractKeysFromSource(sourceFiles);
   log(`🔍 Found ${usedKeys.size} unique keys used in source code`, 'blue');
   const unusedKeys = [];
   for (const key of localeKeys) {
@@ -224,6 +205,11 @@ async function main() {
     log('✅ No unused keys found. Nothing to clean!', 'green');
     return;
   }
+
+  console.log('\n' + '='.repeat(80));
+  logBold('🧹 i18n Keys Cleaning Report', 'cyan');
+  console.log('='.repeat(80));
+
   log(`Found ${unusedKeys.length} unused keys to remove`, 'yellow');
   const cleanedData = removeUnusedKeys(localeData, unusedKeys);
   const finalCleanedData = cleanupEmptyObjects(cleanedData);
@@ -233,14 +219,35 @@ async function main() {
     log(`✅ Cleaned locale file saved to: ${CLEANED_LOCALE_FILE_PATH}`, 'green');
     log(`📊 Removed ${unusedKeys.length} unused keys`, 'blue');
     if (unusedKeys.length > 0) {
-      log('\n📋 Examples of removed keys:', 'cyan');
-      unusedKeys.slice(0, 10).forEach((key) => {
-        log(`  • ${key}`, 'yellow');
+      log('\n📋 Removed keys grouped by namespace:', 'cyan');
+      const groupedUnused = {};
+      unusedKeys.forEach((key) => {
+        const firstPart = key.split('.')[0];
+        if (!groupedUnused[firstPart]) {
+          groupedUnused[firstPart] = [];
+        }
+        groupedUnused[firstPart].push(key);
       });
-      if (unusedKeys.length > 10) {
-        log(`  ... and ${unusedKeys.length - 10} more`, 'yellow');
-      }
+      Object.entries(groupedUnused).forEach(([group, keys]) => {
+        log(`\n  ${group}:`, 'yellow');
+        keys.sort().forEach((key) => {
+          const value = getKeyValue(key, localeData);
+          const preview = typeof value === 'string' && value.length > 50 ? value.substring(0, 50) + '...' : value;
+          log(`    • ${key}`, 'yellow');
+          if (preview) {
+            log(`      Value: "${preview}"`, 'yellow');
+          }
+        });
+      });
     }
+    console.log('\n' + '='.repeat(80));
+    logBold('📊 Summary', 'cyan');
+    console.log('='.repeat(80));
+    log(`Total keys in original locale file: ${localeKeys.length}`, 'blue');
+    log(`Total keys used in code: ${usedKeys.size}`, 'blue');
+    log(`Keys removed: ${unusedKeys.length}`, 'yellow');
+    log(`Keys remaining: ${localeKeys.length - unusedKeys.length}`, 'green');
+
     log('\n💡 To apply the changes:', 'cyan');
     log(`1. Review the cleaned file: ${CLEANED_LOCALE_FILE_PATH}`, 'cyan');
     log('2. If satisfied, replace the original file:', 'cyan');

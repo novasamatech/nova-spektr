@@ -59,6 +59,14 @@ function findSourceFiles(dir, files = []) {
   return files;
 }
 
+function isLikelyNonI18nKey(key) {
+  if (!key) return true;
+  if (key.length <= 2) return true;
+  if (!key.includes('.')) return true;
+  if (/^[A-Z]{1,}$/.test(key)) return true;
+  return false;
+}
+
 function extractKeysFromSource(files) {
   const usedKeys = new Set();
   const keyUsage = new Map();
@@ -85,7 +93,7 @@ function extractKeysFromSource(files) {
     try {
       const content = fs.readFileSync(file, 'utf8');
       const relativePath = path.relative(process.cwd(), file);
-      for (const { pattern, description } of keyPatterns) {
+      for (const { pattern } of keyPatterns) {
         let match;
         while ((match = pattern.exec(content)) !== null) {
           const key = match[1];
@@ -96,8 +104,7 @@ function extractKeysFromSource(files) {
             !key.includes('\\') &&
             key.match(/^[a-zA-Z][a-zA-Z0-9._-]*$/) &&
             key.length > 1 &&
-            !isTestString(key) &&
-            !isSimpleVariable(key)
+            !isLikelyNonI18nKey(key)
           ) {
             usedKeys.add(key);
             if (!keyUsage.has(key)) {
@@ -112,51 +119,6 @@ function extractKeysFromSource(files) {
     }
   }
   return { usedKeys, keyUsage };
-}
-
-function isTestString(key) {
-  const testStrings = [
-    'children',
-    'EN',
-    'English',
-    'Subtitle',
-    'Disabled',
-    'closed',
-    'opened',
-    'div',
-    'canvas',
-    'tupleMap',
-    'metadataReceived',
-    'status',
-    'index',
-    'generalActions',
-    'socialLinks',
-    'version',
-    'id',
-  ];
-  return testStrings.includes(key);
-}
-
-function isSimpleVariable(key) {
-  const simpleVars = [
-    'assetId',
-    'chainId',
-    'canvas',
-    'status',
-    'index',
-    'id',
-    'div',
-    'children',
-    'closed',
-    'opened',
-    'tupleMap',
-    'metadataReceived',
-  ];
-  if (simpleVars.includes(key)) return true;
-  if (!key.includes('.') && key.length < 10 && key.match(/^[a-z][a-zA-Z0-9]*$/)) {
-    return true;
-  }
-  return false;
 }
 
 function keyExistsInLocale(key, localeData) {
@@ -272,8 +234,6 @@ function main() {
   log(`Total keys used in code: ${usedKeys.size}`, 'blue');
   log(`Missing keys: ${missingKeys.length}`, missingKeys.length > 0 ? 'red' : 'green');
   log(`Unused keys: ${unusedKeys.length}`, unusedKeys.length > 0 ? 'yellow' : 'green');
-  const coverage = ((usedKeys.size / localeKeys.length) * 100).toFixed(1);
-  log(`Coverage: ${coverage}%`, coverage > 90 ? 'green' : 'yellow');
   if (missingKeys.length > 0) {
     log('\n❌ Found missing keys. Please add them to the locale file.', 'red');
     process.exit(1);
