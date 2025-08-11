@@ -6,7 +6,7 @@ import { memo } from 'react';
 import { type Asset, type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ZERO_BALANCE, formatFiatBalance } from '@/shared/lib/utils';
-import { Shimmering } from '@/shared/ui/Shimmering/Shimmering';
+import { Skeleton } from '@/shared/ui-kit';
 import { currencyModel } from '../model/currency-model';
 import { priceProviderModel } from '../model/price-provider-model';
 
@@ -39,7 +39,7 @@ export const AssetFiatBalance = memo(({ asset, amount, className }: Props) => {
     currency && prices && asset.priceId && prices[asset.priceId] && prices[asset.priceId][currency.coingeckoId];
 
   if (!price) {
-    return <Shimmering width={56} height={18} />;
+    return <Skeleton width="56px" height="18px" />;
   }
 
   const priceToShow = new BigNumber(price.price).multipliedBy(amountBn);
