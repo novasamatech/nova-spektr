@@ -1,19 +1,24 @@
+import { type ApiPromise } from '@polkadot/api';
 import { attach, combine, createEffect, createEvent, sample, scopeBind } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { uniq } from 'lodash';
 import { combineEvents, interval } from 'patronum';
 
 import {
+  AccountType,
   type Chain,
+  type ChainId,
+  CryptoType,
   ExternalType,
+  type FlexibleMultisigAccount,
   type FlexibleMultisigCreated,
   type FlexibleMultisigWallet,
+  type FlexibleProxiedAccount,
   type MultisigAccount,
   type MultisigCreated,
   type MultisigWallet,
   type NoID,
   NotificationType,
-  type ProxiedAccount,
   SigningType,
   type Wallet,
   WalletType,
@@ -133,6 +138,8 @@ const getLastMultisigsFx = takeLast({
 });
 
 type MultisigAccountNoId = NoID<Omit<MultisigAccount, 'walletId'>>;
+type FlexMultisigAccountNoId = NoID<Omit<FlexibleMultisigAccount, 'walletId'>>;
+type FlexibleProxiedAccountNoId = NoID<Omit<FlexibleProxiedAccount, 'walletId'>>;
 type MultisigResponse = {
   type: 'multisig';
   accounts: MultisigAccountNoId[];
@@ -141,7 +148,7 @@ type MultisigResponse = {
 
 type FlexibleMultisigResponse = {
   type: 'flexibleMultisig';
-  accounts: (ProxiedAccount | MultisigAccountNoId)[];
+  accounts: (FlexibleProxiedAccountNoId | FlexMultisigAccountNoId)[];
   chain: Chain;
 };
 
@@ -149,64 +156,55 @@ type GetMultisigResponse = MultisigResponse | FlexibleMultisigResponse;
 
 type FilteredMultisigParams = {
   accounts: MultisigResult[];
+  apis: Record<ChainId, ApiPromise>;
 };
 const enrichIndexedMultisigsFx = createEffect(
-  async ({ accounts }: FilteredMultisigParams): Promise<GetMultisigResponse[]> => {
+  async ({ accounts, apis }: FilteredMultisigParams): Promise<GetMultisigResponse[]> => {
+    console.log({ findFlexibleMultisigsFor: accounts });
+
     if (accounts.length === 0) return [];
 
-    // TODO: uncomment when flexible multisigs will be supported
-    // const flexibleMultisigs = await multisigService.findFlexibleMultisigs(apis, accounts);
+    const flexibleMultisigs = await multisigService.findFlexibleMultisigs(apis, accounts);
 
-    // const buildFlex = flexibleMultisigs.map(
-    //   ({ threshold, proxied, accountId, signatories, chain, name }): FlexibleMultisigResponse => {
-    //     const multisigAccount = multisigUtils.buildMultisigAccount({
-    //       threshold,
-    //       accountId,
-    //       signatories,
-    //       name: name ?? toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
-    //     });
+    console.log({ accounts, flexibleMultisigs });
 
-    //     const flexibleAccounts = proxied
-    //       ? [
-    //           {
-    //             ...proxied,
-    //             accountType: AccountType.PROXIED,
-    //             proxyVariant: ProxyVariant.PURE,
-    //             type: 'chain',
-    //             chainId: chain.chainId,
-    //             signingType: SigningType.WATCH_ONLY,
-    //             name: name ?? toAddress(proxied.accountId, { chunk: 5, prefix: chain.addressPrefix }),
-    //           } as ProxiedAccount,
-    //           multisigAccount,
-    //         ]
-    //       : [multisigAccount];
+    const buildFlex = flexibleMultisigs.map(
+      ({ threshold, proxied, accountId, signatories, chain, name }): FlexibleMultisigResponse => {
+        const multisigAccount = multisigUtils.buildFlexibleMultisigAccount({
+          threshold,
+          accountId,
+          signatories,
+          name: name ?? toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
+          chainId: chain.chainId,
+        });
 
-    //     return {
-    //       type: 'flexibleMultisig',
-    //       accounts: flexibleAccounts,
-    //       chain,
-    //     };
-    //   },
-    // );
+        const flexibleAccounts = proxied
+          ? [
+              {
+                ...proxied,
+                chainId: chain.chainId,
+                accountType: AccountType.FLEX_PROXIED,
+                deposit: proxied.deposit,
+                extrinsicIndex: 777,
+                blockNumber: 777,
+                name: toAddress(proxied.accountId, { chunk: 6, prefix: chain.addressPrefix }),
+                signingType: SigningType.WATCH_ONLY,
+                type: 'chain',
+                cryptoType: CryptoType.SR25519,
+              } satisfies FlexibleProxiedAccountNoId,
+              multisigAccount,
+            ]
+          : [multisigAccount];
 
-    // const buildRegular = multisigService.getUniqMultisigs(accounts).map(
-    //   ({ threshold, accountId, signatories, chain, name }): GetMultisigResponse => ({
-    //     type: 'multisig',
-    //     accounts: [
-    //       multisigUtils.buildMultisigAccount({
-    //         threshold,
-    //         accountId,
-    //         signatories,
-    //         name: name ?? toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
-    //       }),
-    //     ],
-    //     chain,
-    //   }),
-    // );
+        return {
+          type: 'flexibleMultisig',
+          accounts: flexibleAccounts,
+          chain,
+        };
+      },
+    );
 
-    // return [...buildRegular, ...buildFlex];
-
-    return multisigService.getUniqMultisigs(accounts).map(
+    const buildRegular = multisigService.getUniqMultisigs(accounts).map(
       ({ threshold, accountId, signatories, chain, name }): GetMultisigResponse => ({
         type: 'multisig',
         accounts: [
@@ -220,6 +218,8 @@ const enrichIndexedMultisigsFx = createEffect(
         chain,
       }),
     );
+
+    return [...buildRegular, ...buildFlex];
   },
 );
 
@@ -249,6 +249,8 @@ sample({
   },
   filter: (_, multisigs) => multisigs.length > 0,
   fn: ({ multisigAccounts, apis }, indexedMultisigs) => {
+    console.log({ multisigAccounts, indexedMultisigs });
+
     const existingAccountIds = new Set(multisigAccounts.map((a) => a.accountId));
     const accounts = indexedMultisigs.filter((indexed) => !existingAccountIds.has(indexed.accountId));
 

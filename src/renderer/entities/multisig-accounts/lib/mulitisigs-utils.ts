@@ -1,8 +1,10 @@
 import {
   AccountType,
   type Chain,
+  type ChainId,
   ChainOptions,
   CryptoType,
+  type FlexibleMultisigAccount,
   type MultisigAccount,
   type NoID,
   SigningType,
@@ -14,6 +16,7 @@ import { multisigOperationService } from '@/domains/network';
 export const multisigUtils = {
   isFlexibleMultisigSupported,
   buildMultisigAccount,
+  buildFlexibleMultisigAccount,
 };
 
 function isFlexibleMultisigSupported(chain: Chain) {
@@ -44,6 +47,38 @@ function buildMultisigAccount({ threshold, accountId, signatories, name }: Build
     signingType: SigningType.MULTISIG,
     accountType: AccountType.MULTISIG,
     type: 'universal',
+  };
+
+  return account;
+}
+
+type BuildFlexibleMultisigParams = {
+  threshold: number;
+  accountId: AccountId;
+  signatories: AccountId[];
+  name: string;
+  chainId: ChainId;
+};
+
+function buildFlexibleMultisigAccount({
+  threshold,
+  accountId,
+  signatories,
+  name,
+  chainId,
+}: BuildFlexibleMultisigParams) {
+  const account: NoID<Omit<FlexibleMultisigAccount, 'walletId'>> = {
+    threshold: threshold,
+    accountId: accountId,
+    signatories: signatories.map((signatory) => ({
+      accountId: signatory,
+    })),
+    name: name,
+    cryptoType: isEthereumAccountId(accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+    signingType: SigningType.MULTISIG,
+    accountType: AccountType.FLEX_MULTISIG,
+    type: 'chain',
+    chainId: chainId,
   };
 
   return account;

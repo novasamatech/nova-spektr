@@ -30,6 +30,7 @@ export type MultisigResult = {
     proxyAccountId: AccountId;
     proxyType: 'Any';
     delay: number;
+    deposit: string;
   };
 };
 
@@ -140,6 +141,8 @@ async function findFlexibleMultisigs(
   for (const { chainId, entries } of proxyEntries) {
     if (entries.length === 0) continue;
 
+    console.log({ entries });
+
     for (const { account, value } of entries) {
       const proxyMultisigAccount = value.proxies.at(0);
       const multisigAccountId = proxyMultisigAccount?.delegate;
@@ -165,6 +168,7 @@ async function findFlexibleMultisigs(
           accountId: account,
           proxyType: proxyMultisigAccount.proxyType,
           delay: proxyMultisigAccount.delay,
+          deposit: value.deposit.toString(),
         },
       });
     }
