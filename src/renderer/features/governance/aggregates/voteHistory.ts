@@ -38,15 +38,21 @@ const $voteHistory = combine(
     if (!chainId) return {};
 
     const result: Record<ReferendumId, AggregatedVoteHistory[]> = {};
+    const chainIdentities = identities[chainId];
 
     for (const [referendumId, historyList] of Object.entries(history)) {
       const aggregatedHistory = historyList.flatMap((vote) => {
         const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
 
-        return splitVotes.map((vote) => ({
-          ...vote,
-          name: identityService.getFullName(identities[chainId]?.[vote.voter as AccountId] ?? {}),
-        }));
+        return splitVotes.map((vote) => {
+          const identity = chainIdentities[vote.voter as AccountId];
+          const identityName = identity ? identityService.getFullName(identity) : null;
+
+          return {
+            ...vote,
+            name: identityName,
+          };
+        });
       });
 
       result[referendumId] = aggregatedHistory.sort(votingPowerSorting);
