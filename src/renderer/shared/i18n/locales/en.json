@@ -1,8 +1,6 @@
 {
   "accountList": {
-    "addressColumn": "Account",
-    "networksColumn_one": "Network {count}",
-    "networksColumn_other": "Networks {count}"
+    "addressColumn": "Account"
   },
   "accountsStructure": {
     "button": "Open overview",
@@ -26,44 +24,26 @@
   },
   "addressBook": {
     "contactList": {
-      "emptySearchDescription": "Try to search for another name",
       "emptySearchLabel": "No contact with entered name were found",
       "nameColumnTitle": "Name",
-      "noContactsButton": "Add your first contact",
       "noContactsLabel": "The contact list is empty, you can add a new contact"
     },
     "createContact": {
-      "accountIdExistsError": "Account address already in use",
-      "accountIdIncorrectError": "Incorrect account address",
       "accountIdLabel": "Account address",
       "accountIdPlaceholder": "Enter or paste an address",
-      "accountIdRequiredError": "Account address is required",
       "addContactButton": "Add contact",
-      "nameExistsError": "Name already in use",
       "nameLabel": "Name",
       "namePlaceholder": "Enter name",
-      "nameRequiredError": "Name is required",
-      "title": "Add contact",
-      "typeAddressAndNameButton": "Type a name and address",
-      "typeAddressButton": "Type the address",
-      "typeNameButton": "Type a name"
+      "title": "Add contact"
     },
     "editContact": {
-      "accountIdExistsError": "Account address already in use",
-      "accountIdIncorrectError": "Incorrect account address",
       "accountIdLabel": "Account address",
       "accountIdPlaceholder": "Enter or paste an address",
-      "accountIdRequiredError": "Account address is required",
       "editWarning": "If you have a multisig wallet with this contact, then changing the contact will not affect the multisig wallet",
-      "nameExistsError": "Name already in use",
       "nameLabel": "Name",
       "namePlaceholder": "Enter name",
-      "nameRequiredError": "Name is required",
       "saveContactButton": "Save",
-      "title": "Edit contact",
-      "typeAddressAndNameButton": "Type a name and address",
-      "typeAddressButton": "Type the address",
-      "typeNameButton": "Type a name"
+      "title": "Edit contact"
     },
     "removeConfirm": {
       "cancelButton": "Cancel",
@@ -77,7 +57,6 @@
   "assetBalance": {
     "locked": "Locked",
     "number": "{value, number}",
-    "numberWithSuffix": "{value, number}{suffix}",
     "reserved": "Reserved",
     "transferable": "Transferable"
   },
@@ -103,19 +82,13 @@
     "verificationFailedLabel": "verification failed",
     "verificationTooltip": "The balance may be wrong or outdated, please check your network connection"
   },
-  "basemodal": {
-    "closeButton": "Close modal window"
-  },
   "basket": {
     "chainError": "Failed: { date }",
-    "emptySignButton": "Select operations",
     "filter": {
       "failed": "Failed",
       "unavailable": "Unavailable",
       "valid": "Valid"
     },
-    "noOperationsDescription": "There are no operations in the basket yet",
-    "noOperationsDescriptionFiltered": "Nothing was found.<br />Update the search or cancel filtering.",
     "noOperationsLabel": "No operations",
     "refreshButton": "Refresh list",
     "removeConfirm": {
@@ -124,22 +97,11 @@
       "proceedButton": "Delete",
       "title": "Delete this operation?"
     },
-    "searchPlaceholder": "Search",
-    "selectAll": "Select all",
-    "selectedStatus_one": "{ selected } out of { count } operation selected",
-    "selectedStatus_other": "{ selected } out of { count } operations selected",
-    "signButton": "Sign",
     "signOperations": {
       "title": "Sign { transactions } operations"
     },
     "title": "Basket",
-    "validationError": "Unavailable",
-    "validationWarning": {
-      "cancelButton": "Cancel",
-      "description": "They will be excluded from the checkout. Would you like to proceed?",
-      "proceedButton": "Proceed",
-      "title": "Some of the selected operations are unavailable"
-    }
+    "validationError": "Unavailable"
   },
   "callData": {
     "callData": "Call data",
@@ -155,14 +117,6 @@
         }
       },
       "title": "Raw call data"
-    },
-    "errors": {
-      "0xPrefix": "Call data must start with 0x",
-      "chainRequired": "Chain is required",
-      "insufficientBalance": "Insufficient balance to pay network fee",
-      "invalidCallData": "Provided call data is invalid or the wrong network was selected. Please ensure it is correct and try again",
-      "required": "Call data is required",
-      "signatoryRequired": "Signatory is required"
     },
     "fields": {
       "network": {
@@ -181,56 +135,36 @@
     "title": "Import from call data"
   },
   "createMultisigAccount": {
-    "accountsTab": "Accounts",
-    "addContact": "Add new",
-    "addContactsButton": "Add selected",
     "addNewSignatory": "Add new signatory",
-    "addSignatoryButton": "Add signatory",
-    "alertTitle": "Select wallet",
-    "availableLabel": "Available",
     "backButton": "Back",
     "chainName": "Network",
     "chainPlaceholder": "Select network",
     "closeButton": "Close",
     "contactsGroup": "Contacts",
-    "contactsTab": "Contacts",
     "continueButton": "Continue",
-    "create": "Create",
     "createMultisigWallet": "Create multisig wallet",
-    "createionStatusTitle": "Mulitisig creation",
     "disabledError": {
       "addressIsNotSupported": "This address is unsupported on the selected chain",
-      "differentAccounts": "Wallets with different accounts for chains are not supported",
-      "emptyName": "A name is required",
       "notEnoughBalanceText": "The account <account/> has insufficient funds to cover the transaction fee of <fee/>. Transferable balance: <balance/>. Please top up the balance of this wallet and try again.",
-      "notEnoughBalanceTitle": "The creation of this multisig cannot be completed",
-      "unsupportedType": "This type of wallet is not supported for the Multisig wallet creation"
+      "notEnoughBalanceTitle": "The creation of this multisig cannot be completed"
     },
-    "disabledLabel": "Not supported",
     "duplicateSignatoryAddress": "Signatory address already exist",
-    "errorMessage": "Something went wrong",
     "flexibleMultisig": {
       "assignControl": "Assign control",
       "assignControlDescription": "Your Multisig will be assigned to control Pure Proxy.",
-      "closeCreationDescription": "A pure proxy is being created and will appear as a proxied wallet. If you leave now, you’ll need to create the flexible multisig and assign control manually. Stay in the flow to complete flexible multisig wallet creation.",
-      "closeCreationTitle": "Do you want to close creation without saving?",
       "controlAssigned": "Control assigned",
       "createPureProxy": "Create Pure Proxy",
       "creatingFlexibleProxy": "Creating flexible multisig",
-      "description": "A multisig wallet used to create a flexible multisig (proxied) is not displayed in the multisig wallet group to prevent duplication. Use the flexible multisig for all signing operations",
       "existentialDeposit": "Existential deposit:",
       "flexible": "Flexible multisig",
       "leaveButton": "Leave",
-      "leaveDescription": "If you exit, the changes will not be saved.",
       "leaveFlowDescription": "Leaving this page stops the Flexible Multisig setup.",
       "leaveFlowTitle": "Please stay on this page",
-      "leaveTitle": "Do you want to leave creation without saving?",
       "multisigAndProxyExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists and it is already connected to a pure proxy <proxy/>. You create an additional pure proxy controlled by this multisig.",
       "multisigAndProxyExistTitle": "Multisig wallet and pure proxy already exists",
       "multisigExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists",
       "nameNetworkDescription": "Select the network and the name of your flexible multisig",
       "networkDescription": "This new flexible multisig will only work on this network. To carry out operations on a different network you will need to create a new flexible multisig.",
-      "notEnoughMultisigTokens": "Not enough tokens for paying multisig deposit, proxy deposit and network fee on a selected account",
       "proxyDeposit": "Proxy deposit:",
       "pureProxyConfirm": "A brand-new Pure Proxy will be created as part of a flexible multisig.",
       "pureProxyCreated": "Pure Proxy created:",
@@ -243,7 +177,6 @@
     },
     "multisig": "Multisig",
     "multisigCreationFeeLabel": "Additional cost",
-    "multisigDeposit": "Multisig deposit:",
     "multisigExistText": "The multisig wallet with the selected signatories and threshold already exists. Please change the signatories or threshold to create a new one.",
     "multisigExistTitle": "Multisig wallet already exists",
     "multisigHiddenExistText": "The multisig wallet with the selected signatories and threshold already exists but was previously removed by you.<br />Would you like to restore it now?",
@@ -264,132 +197,73 @@
       "networkFee": "Network fee",
       "unavailableNetwork": "Unavailable network"
     },
-    "newMultisigTitle": "New multisig",
-    "noOwnSignatory": "You need at least 1 owned account as part of the signatories",
-    "noOwnSignatoryTitle": "No owned account",
-    "noWallets": "Looks like you don't have any non-watch only wallets",
-    "noWalletsLabel": "The wallet list is empty",
-    "notEmptySignatory": "No empty signatory allowed",
-    "notEmptySignatoryName": "No empty signatory name allowed",
-    "notEmptySignatoryNameTitle": "Empty signatory name",
-    "notEmptySignatoryTitle": "Empty signatory",
     "notEnoughMultisigTokens": "Selected wallets do not have sufficient balance to pay for the proxy deposit, multisig deposit, and network fees",
-    "notEnoughSignatories": "You need to select at least 2 signatories",
-    "notEnoughSignatoriesTitle": "Not enough signatories",
     "notEnoughTokensTitle": "Not enough tokens",
     "restoreButton": "Restore",
-    "searchContactPlaceholder": "Search",
     "selectMultisigDescription": {
-      "featureFive": "<header>Address does not change</header> when changing signatories",
-      "featureFour": "<header>Change signatories and threshold</header> at any time",
-      "featureOne": "<header>Multiple Signatories</header> required to approve transactions",
-      "featureThree": "<header>Delegate authority</header> over certain operations",
-      "featureTwo": "<header>Set custom signatory threshold</header> which must be met for transactions to be executed",
       "flexibleDescription": "Can modify signatories",
       "flexibleNote": "Pure Proxy deposit will be reserved on your account. This wallet <header>only works on the network</header> it was created on.",
       "regularDescription": "Regular multisig wallet",
       "regularNote": "Only fee is required. This wallet <header>works on all networks.</header>"
     },
-    "selectSigner": "Select signing wallet",
     "selectedSignatoriesTitle": "Selected signatories",
-    "signatoriesDescription": "Add signatories to your multisig account",
     "signatoriesLabel": "Signatories",
     "signatoryAddress": "Signatory account",
     "signatoryNameLabel": "Signatory name",
     "signatorySelection": "Choose or enter account address",
     "signatoryThresholdDescription": "Set up your multisig: signatories, name and threshold",
-    "signatoryTitle": "Select signatories",
     "signingAccount": "Signing account",
     "signingWallet": "Signing wallet",
-    "signingWith": "Signing with",
     "successMessage": "Wallet added",
-    "thresholdDescription": "Set the threshold of signatories required to execute a transaction",
-    "thresholdErrorDescription": "Threshold must be set and superior or equal to { minThreshold }",
-    "thresholdErrorTitle": "Invalid threshold",
     "thresholdHint": "Minimum signatories needed to approve.",
     "thresholdName": "Threshold",
     "thresholdOutOf": "{ threshold } out of { signatoriesLength }",
     "thresholdPlaceholder": "Select number",
     "title": "Create multisig",
-    "walletFormTitle": "Set up your wallet",
     "walletName": "Multisig wallet's name",
-    "walletNameDescription": "This name will be visible to you only.",
-    "walletsTab": "Your wallets",
-    "yourAccounts": "Your accounts"
-  },
-  "delegate": {
-    "title": "Delegations"
+    "walletNameDescription": "This name will be visible to you only."
   },
   "dropdown": {
     "chooseOptionLabel": "Choose an option"
   },
   "dynamicDerivations": {
     "exportKeys": {
-      "closeButton": "Close",
       "downloadButton": "Download as a txt-file",
       "downloadSuccessPopup": "Keys exported",
       "modalTitle": "Export keys",
       "qrCodeTitle": "Scan the QR code with Polkadot Vault"
     },
     "importKeys": {
-      "backButton": "Back",
       "continueButton": "Continue",
       "downloadTemplateButton": "Download the template",
       "error": {
         "invalidFile": "Incorrect file format",
-        "invalidPasswordPath_one": "Password derivation path {invalidValues} is not allowed, please check the file.",
-        "invalidPasswordPath_other": "Password derivation paths {invalidValues} are not allowed, please check the file.",
-        "invalidPath_one": "Derivation path {invalidValues} is not valid, please check the file.",
-        "invalidPath_other": "Derivation paths {invalidValues} are not valid, please check the file.",
-        "invalidRoot": "The public key doesn’t match.",
-        "missingName_one": "Name is not specified for the key with {invalidValues}, please check the file.",
-        "missingName_other": "Name is not specified for the keys with {invalidValues}, please check the file.",
-        "wrongShardsNumber_one": "Number of shards {invalidValues} is not valid, please check the file.",
-        "wrongShardsNumber_other": "Numbers of shards {invalidValues} are not valid, please check the file."
+        "invalidRoot": "The public key doesn’t match."
       },
       "fileInputPlaceholder": "Select .yaml or .txt file on your computer",
       "modalTitle": "Import keys",
       "report": {
-        "addedKeys_one": "{count} key added",
-        "addedKeys_other": "{count} keys added",
-        "duplicatedKeys_one": "{count} derivation path is duplicated.",
-        "duplicatedKeys_other": "{count} derivation paths are duplicated.",
-        "networksIgnored_one": "{count} networks ignored with genesis hash:",
-        "networksIgnored_other": "{count} networks ignored with genesis hash:",
-        "title": "Success",
-        "updatedNetworks_one": "for {count} network.",
-        "updatedNetworks_other": "for {count} networks."
+        "title": "Success"
       }
     },
     "keysConstructor": {
-      "backButton": "Back",
       "derivationLabel": "Derivation path",
       "derivationPlaceholder": "Derivation path",
-      "displayNameError": "Please enter key display name",
-      "duplicateDerivationError": "Duplicated derivation path",
       "emptyListDescription": "Use form at the top to add derivation paths",
       "emptyListTitle": "No data available",
       "keyNameLabel": "Key display name",
       "keyNamePlaceholder": "Choose name",
       "keyTypeCustom": "Custom key",
-      "keyTypeGovernance": "Governance account",
       "keyTypeHot": "Hot account",
       "keyTypeLabel": "Type of key",
       "keyTypeMain": "Main account",
       "keyTypePlaceholder": "Select",
       "keyTypePublic": "Public account",
-      "keyTypeStaking": "Staking account",
       "listKeysLabel": "Keys",
       "listNetworkLabel": "Network",
-      "maxShardsError": "Max 50",
-      "minShardsError": "Min 2",
       "networkLabel": "Network",
       "networkPlaceholder": "Select network",
       "newKeyButton": "Add new key",
-      "notNumberError": "Not a number",
-      "numberRequiredError": "Enter number",
-      "passwordDerivationError": "Password derivation path is not allowed",
-      "requiredDerivationError": "Please enter derivation path",
       "saveButton": "Save",
       "shardInfoLink": "Multishard operations wiki",
       "shardInfoOne": "Sharding creates a set of different keys (shards) that are independent from each other but associated with each other in the Nova Spektr application for some operations.",
@@ -401,22 +275,16 @@
       "warnModalCancelButton": "Cancel",
       "warnModalDescription": "Applied changes will not be saved. Are you sure?",
       "warnModalLeaveButton": "Leave form",
-      "warnModalTitle": "Leave form without changes?",
-      "wrongDerivationError": "Wrong derivation path format"
+      "warnModalTitle": "Leave form without changes?"
     }
   },
   "emptyState": {
     "accountDescription": "You don't have an account in that network.",
     "addAccountButton": "Add account",
-    "addNewAccountButton": "Add new account",
-    "createAccount": "Create a new account",
-    "createFlexibleMultisig": "Create a new flexible multisig wallet",
-    "createMultisig": "Create a new multisig wallet",
-    "createOrImportAccount": "Create a new account or import an existing one"
+    "addNewAccountButton": "Add new account"
   },
   "fallbackScreen": {
     "message": "Sorry, something went wrong",
-    "omniLogoAlt": "Nova Spektr logo",
     "reloadButton": "Refresh"
   },
   "fellowship": {
@@ -455,43 +323,14 @@
       "subsquare": "Subsquare",
       "title": "Additional"
     },
-    "basket": {
-      "salaryInduct": "Activate salary",
-      "salaryPayout": "Withdraw salary",
-      "salaryRequest": "Request salary",
-      "setActive": "Change status",
-      "submitEvidence": "Submit evidence",
-      "vote": "Vote"
-    },
-    "details": {
-      "noDetails": "Details not found"
-    },
-    "errors": {
-      "disconnect": {
-        "action": "Open network settings",
-        "description": "Referendum information such as the description and voting statistics cannot be accessed and may be outdated.\nPlease check the connection in your network settings.",
-        "title": "You are not connected to this network"
-      }
-    },
     "evidenceModal": {
       "additionalContext": "Additional context provided",
       "by": "By:",
-      "currentRank": "Current rank:",
-      "dateOfInitialInduction": "Date of initial induction:",
-      "dateOfLastReport": "Date of last report:",
-      "matrixUsername": "Matrix username:",
       "member": "Member stats",
-      "memberDetails": "Member details",
       "noAdditionalContext": "No additional context provided",
-      "polkadotAddress": "Polkadot address:",
-      "promotedAt": "(promotion executed on <time/>)",
       "titlePromotion": "Should {name} be promoted to Rank {rank}?",
-      "titleRetention": "Should {name} be retained at Rank {rank}?",
-      "votingRecord": "Voting record",
-      "votingTitle": "Is it good enough for rank {rank}?"
+      "titleRetention": "Should {name} be retained at Rank {rank}?"
     },
-    "fellow_one": "{ count } Member",
-    "fellow_other": "{ count } Members",
     "members": {
       "active": "Active",
       "activity": "Activity",
@@ -503,7 +342,6 @@
       "toNextRank": "To next rank",
       "viewDetails": "View details"
     },
-    "n/a": "N/A",
     "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
     "profile": {
@@ -521,7 +359,6 @@
         "requestedPromotion": "Promotion requested",
         "requestedRetention": "Retention requested"
       },
-      "fellow": "Fellow",
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
       "ready": "Ready",
@@ -537,45 +374,6 @@
         "title": "Switching status on"
       }
     },
-    "rank": {
-      "0": "Candidate",
-      "1": "Humble",
-      "2": "Proficient",
-      "3": "Fellow",
-      "4": "Architect",
-      "5": "Architect adept",
-      "6": "Grand architect",
-      "7": "Free master",
-      "8": "Masters constant",
-      "9": "Grand master"
-    },
-    "referendums": {
-      "completed": "Completed referendums",
-      "ongoing": "Ongoing referendums",
-      "tracks": {
-        "architects": "Architects",
-        "architectsAdept": "Architects Adept",
-        "fellows": "Fellows",
-        "grandArchitects": "Grand Architects",
-        "grandMasters": "Grand Masters",
-        "masters": "Masters",
-        "mastersConstant": "Masters Constant",
-        "members": "Members",
-        "proficientMembers": "Proficient Members",
-        "promoteToIDan": "Promote To I Dan",
-        "promoteToIiDan": "Promote To II Dan",
-        "promoteToIiiDan": "Promote To III Dan",
-        "promoteToIvDan": "Promote To IV Dan",
-        "promoteToVDan": "Promote To V Dan",
-        "promoteToViDan": "Promote To VI Dan",
-        "retainAtIDan": "Retain At I Dan",
-        "retainAtIiDan": "Retain At II Dan2",
-        "retainAtIiiDan": "Retain At III Dan",
-        "retainAtIvDan": "Retain At IV Dan",
-        "retainAtVDan": "Retain At V Dan",
-        "retainAtViDan": "Retain At VI Dan"
-      }
-    },
     "salary": {
       "beneficiary": "Beneficiary",
       "cardTitle": "Evidence & Salary",
@@ -583,18 +381,15 @@
       "evidenceForm": {
         "areas": {
           "label": "Areas of expertise and interest",
-          "placeholder": "Enter areas",
-          "required": "Areas are required"
+          "placeholder": "Enter areas"
         },
         "comments": {
           "label": "Comments",
-          "placeholder": "Enter comments about how your retention period went",
-          "required": "Comments are required"
+          "placeholder": "Enter comments about how your retention period went"
         },
         "evidence": {
           "label": "Evidence text",
-          "placeholder": "Enter more about the work you did, add links, and tell about your future work plans",
-          "required": "Evidence are required"
+          "placeholder": "Enter more about the work you did, add links, and tell about your future work plans"
         },
         "uploadError": "Upload error"
       },
@@ -603,15 +398,6 @@
       "promotionAppliedAlertDescription": "You are already uploaded evidence for promotion. If you want to add it for retention, you can upload it again — the previous one will be replaced.",
       "promotionAppliedAlertTitle": "Promotion evidence is uploaded",
       "promotionEvidenceModalTitle": "Submit your promotion evidence",
-      "promotionHelpRank1": "<li>Provide three examples of meaningful protocol contributions.</li><li>Actively design a deployable or future protocol component at PRP² standards.</li><li>Assist in analysis, formalization, or implementation at peer-reviewed or PRP standards.</li><li>Know Polkadot’s key goals and principles.</li><li>Examples: fixing key issues, enabling network fixes, proposing innovations, or improving protocol design.</li>",
-      "promotionHelpRank2": "<li>Lead formalization, implementation, or analysis of a major protocol component, with peer-reviewed publication or justified exception.</li><li>Publish at least one long-form semi-technical article on Polkadot.</li>",
-      "promotionHelpRank3": "<li>In-person review on contributions.</li><li>Defend Polkadot's role confidently.</li><li>Advocate via articles, social media, or events.</li><li>Share knowledge: forums, talks, or platforms.</li><li>Lead protocol design or implementation with review or deployment.</li>",
-      "promotionHelpRank4": "<li>Play a key role in creating and formalizing a major protocol component, with formalization in a peer-reviewed publication or deployment in the protocol after expert code review.</li><li>Promote or defend Polkadot outside the ecosystem through a public presentation or notable media (e.g., journal or news).</li>",
-      "promotionHelpRank5": "<li>Publish a long-form article on relevant technology beyond Polkadot.</li><li>Lead ideation, design, and formalization or prototyping of a major component.</li><li>Contribute to the creation of three other major components.</li><li>Assist in shaping the long-term technical roadmap through advocacy, research, or analysis.</li>",
-      "promotionHelpRank6": "<li>Lead the design and implementation of a major protocol innovation.</li><li>Publish at least three long-form articles on relevant technology beyond Polkadot.</li><li>Discuss: What have you learnt from this individual which you might ultimately find useful in your efforts to help Polkadot succeed?</li>",
-      "promotionHelpRank7": "<li>Deepened understanding of Polkadot’s philosophy through discussion, literature parallels, or expert discourse.</li><li>Delivered major presentations on Polkadot to peers from other ecosystems or industries.</li><li>Discuss: Does the wider academic community or industry tend to learn from this individual (even if the individual did not discover this knowledge themselves)?</li>",
-      "promotionHelpRank8": "<li>Publish a canonical article on Polkadot’s philosophical principles.</li><li>Publish an industry-recognized article on a relevant innovation beyond Polkadot.</li><li>Be widely recognized as an intellectual leader beyond the Polkadot ecosystem.</li><li>Discuss: How did this individual's idea or invention become adopted in the wider academic community or industry?</li>",
-      "promotionHelpRank9": "<li>Generally recognised as a philosophical, social, artistic, political and/or technological heavyweight outside of blockchain or crypto.</li><li>Discuss: what outstanding service did the individual provide to the Polkadot network?</li>",
       "promotionNextRank": "Next promotion",
       "promotionRankHelpLabel": "What is expected from Rank {rank} ({name})",
       "promotionReadManifesto": "Read manifesto",
@@ -650,9 +436,6 @@
         "retain": "Retain at { rank }"
       },
       "submitEvidenceVoteConfirm": {
-        "evidence": "Evidence",
-        "evidenceType": "Evidence type",
-        "rank": "Rank",
         "vote": "Vote"
       }
     },
@@ -662,25 +445,13 @@
       "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
       "emptyTitle": "All tasks completed",
       "general": "General",
-      "labels": {
-        "controversial": "TIEBREAKER",
-        "importantVote": "OPINION MATTERS",
-        "urgent": "LAST CALL"
-      },
       "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
       "noAccountTitle": "List tasks is empty",
       "personal": "Personal",
       "reviewBasket": "Confirm now",
-      "reviewBasketTitle_one": "Decision",
-      "reviewBasketTitle_other": "Decisions",
       "task": {
         "anyReferendum": {
-          "noDescription": "No description provided",
-          "title": "Review referendum"
-        },
-        "evidence": {
-          "promotionTitle": "Review promotion evidence",
-          "retentionTitle": "Review retention evidence"
+          "noDescription": "No description provided"
         },
         "promotion": {
           "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",
@@ -688,15 +459,8 @@
           "title": "Feel ready for a promotion?"
         },
         "promotionVoting": {
-          "mergedPullRequests": "Merged",
           "noEvidence": "No evidence provided",
-          "noEvidenceDescription": "This member didn’t submit evidence. Consider this when evaluating the request.",
-          "pullRequests": "PRs",
-          "title": "Review promotion evidence"
-        },
-        "referendum": {
-          "promotionTitle": "Promote to { rank }",
-          "retentionTitle": "Retain at { rank }"
+          "noEvidenceDescription": "This member didn’t submit evidence. Consider this when evaluating the request."
         },
         "requestPayout": {
           "description": "Your current earnings are {salary}. Don’t forget to get your salary on time to receive your funds on time.",
@@ -720,14 +484,9 @@
           "request": "Submit",
           "title": "Submit your retention evidence",
           "until": "Submit until {date}"
-        },
-        "retentionVoting": {
-          "title": "Review retention evidence"
         }
       },
       "titles": {
-        "promote": "Should {name} be promoted to Rank {rank}?",
-        "retain": "Should {name} be retained at Rank {rank}?",
         "votingTitle": {
           "rank": "Is it good enough for Rank {rank}?",
           "rfcOrWhitelist": "What do you think?"
@@ -740,7 +499,6 @@
       "noProfile": "You are not a fellowship member"
     },
     "voting": {
-      "aye": "Aye",
       "confirmation": {
         "fee": "Network fee",
         "promotionTrack": "Promotion",
@@ -758,27 +516,20 @@
         "rankThreshold": "You cannot vote in this referendum because your rank is below the required level."
       },
       "good": "Good",
-      "nay": "Nay",
       "notGood": "Not Good",
       "summary": "What do others think?",
       "threshold": "Threshold",
       "title": "Vote on",
       "tooltip": "This will create a referendum with a { vote } vote pre-cast",
       "voteImpact": {
-        "huge": "Huge",
-        "impact": "Impact:",
-        "minor": "Minor",
-        "moderate": "Moderate"
-      },
-      "voted": "Voted:",
-      "votingStatus": "Voting status"
+        "impact": "Impact:"
+      }
     },
     "votingHistory": {
       "completedVotingVoted": "You found it",
       "emptyListDescription": "Members will appear here once opinions are submitted",
       "emptyListTitle": "No opinions yet",
       "level": {
-        "controversial": "Controversial",
         "good": "Good",
         "notGood": "Not Good"
       },
@@ -788,10 +539,7 @@
       "subtitle": "Other members find the evidence to be",
       "subtitlePromotionRetention": "Other members find it to be",
       "voteEnded": "Opinion collection has concluded, the fellowship oracle identified it to be",
-      "voteEndedPromotionRetention": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
-      "votes_one": "{ count } vote",
-      "votes_other": "{ count } votes",
-      "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
+      "voteEndedPromotionRetention": "Opinion collection has concluded, the fellowship oracle identified the evidence to be"
     }
   },
   "general": {
@@ -806,16 +554,13 @@
       "closeButton": "Close",
       "continueButton": "Continue",
       "networkSettingsLink": "Network settings",
-      "pasteButton": "Paste",
       "refreshButton": "Refresh",
-      "submitButton": "Submit",
-      "uploadButton": "Upload"
+      "submitButton": "Submit"
     },
     "explorers": {
       "addressTitle": "Address",
       "derivationTitle": "Derivation path",
       "explorerButton": "View on { name }",
-      "explorerTitle": "Explorers",
       "publicKeyTitle": "Public key"
     },
     "image": {
@@ -827,15 +572,12 @@
       "availableLabel": "Available:",
       "descriptionPlaceholder": "Choose an operation description",
       "searchLabel": "Search",
-      "searchPlaceholder": "Search",
-      "signerLabel": "Select signer",
-      "transferableLabel": "Transferable"
+      "searchPlaceholder": "Search"
     },
     "timeout": {
       "expired": "Expired"
     },
     "title": {
-      "appName": "Nova Spektr",
       "inactiveNetwork": "Network is inactive, please check the connection in network settings"
     }
   },
@@ -843,8 +585,6 @@
     "addDelegation": {
       "accountLabel": "Your accounts",
       "accountPlaceholder": "Select",
-      "accountsLabel_one": "Account",
-      "accountsLabel_other": "Accounts",
       "actionButton": "Add delegation",
       "addCustom": "Add custom",
       "addDelegationButton": "Add new delegation",
@@ -853,23 +593,18 @@
         "message": "Tell us more about yourself so Spektr users get to know you better.",
         "title": "Are you a delegate?"
       },
-      "alreadyDelegatedError": "Already delegated",
       "cantAddDelegationTitle": "You can't add a delegation",
       "card": {
         "delegations": "Delegations",
-        "individual": "Individual",
         "lockedAmount": "Locked amount",
-        "organization": "Organization",
         "voted": "Voted last 30 days",
-        "votes": "Delegated",
-        "votingPower": "Delegated voting power"
+        "votes": "Delegated"
       },
       "confirmation": {
         "target": "Delegate",
         "tracks": "Tracks"
       },
       "continueButton": "Continue",
-      "convictionLabel": "Conviction",
       "customDelegationLabel": "Delegate to",
       "customDelegationPlaceholder": "Enter address",
       "customDelegationTitle": "Add custom delegation on",
@@ -882,13 +617,11 @@
       "emptyTitle": "Nothing was found",
       "formTitle": "Step 2. Select the number of votes and the multiplier",
       "group": {
-        "admin": "Admin",
         "fellowship": "Fellowship",
         "governance": "Governance",
         "selectAll": "Select all",
         "treasury": "Treasury"
       },
-      "invalidAddressError": "Invalid address",
       "lockedAmount": "Locked amount",
       "lockedLabel": "Locked amount",
       "manyAccountsPlaceholder": "Select accounts",
@@ -907,54 +640,12 @@
       },
       "summary": {
         "accountLabel": "Account",
-        "acrossTracks_one": "Across { count } track",
-        "acrossTracks_other": "Across { count } tracks",
         "delegateVoted": "Delegate voted:",
         "delegatedLabel": "Delegated",
         "delegationSummary": "Delegation summary",
         "listEmptyState": "Nothing was found"
       },
       "title": "Add delegation on",
-      "tracks": {
-        "crowdloans": "Auction admin",
-        "crowdloansDescription": "Origin for starting auctions.",
-        "fellowshipAdmin": "Fellowship: Admin",
-        "fellowshipAdminDescription": "Origin for managing the composition of the fellowship.",
-        "fellowshipWhitelist": "Fellowship: Whitelist",
-        "fellowshipWhitelistDescription": "Origin commanded by members of the Polkadot Fellowship.",
-        "governanceCanceller": "Governance: Canceller",
-        "governanceCancellerDescription": "Origin able to cancel referenda.",
-        "governanceKiller": "Governance: Killer",
-        "governanceKillerDescription": "Origin able to kill referenda.",
-        "governanceLease": "Lease admin",
-        "governanceLeaseDescription": "Origin able to force slot leases.",
-        "governanceRegistrar": "Governance: Registrar",
-        "governanceRegistrarDescription": "Origin for managing the registrar.",
-        "root": "Root",
-        "rootDescription": "Origin for upgrades, fixes, and network rescues.",
-        "staking": "Staking admin",
-        "stakingDescription": "Origin for canceling slashes.",
-        "treasuryAny": "Treasury: Any",
-        "treasuryAnyDescription": "Origin for spending (any amount of) funds until the upper limit of { value } { asset } or equivalent value in stablecoins.",
-        "treasuryAnyDescriptionGeneral": "Origin for spending (any amount of) funds until the upper limit",
-        "treasuryBigSpend": "Treasury: Big spend",
-        "treasuryBigSpendDescription": "Origin able to spend up to { value } { asset } from the treasury at once or equivalent value in stablecoins.",
-        "treasuryBigSpendDescriptionGeneral": "Origin able to spend big amount from the treasury.",
-        "treasuryBigTips": "Treasury: Big tips",
-        "treasuryBigTipsDescription": "Origin able to spend up to { value } { asset } from the treasury at once or equivalent value in stablecoins.",
-        "treasuryBigTipsDescriptionGeneral": "Origin able to spend big tips amount from the treasury.",
-        "treasuryMediumSpend": "Treasury: Medium spend",
-        "treasuryMediumSpendDescription": "Origin able to spend up to { value } { asset } from the treasury at once or equivalent value in stablecoins.",
-        "treasuryMediumSpendDescriptionGeneral": "Origin able to spend medium amount from the treasury.",
-        "treasurySmallSpend": "Treasury: Small spend",
-        "treasurySmallSpendDescription": "Origin able to spend up to { value } { asset } from the treasury at once or equivalent value in stablecoins.",
-        "treasurySmallSpendDescriptionGeneral": "Origin able to spend small amount from the treasury.",
-        "treasurySmallTips": "Treasury: Small tips",
-        "treasurySmallTipsDescription": "Origin able to spend up to { value } { asset} from the treasury at once or equivalent value in stablecoins.",
-        "treasurySmallTipsDescriptionGeneral": "Origin able to spend small tips amount from the treasury.",
-        "wishForChange": "Wish for change",
-        "wishForChangeDescription": "Origin for signaling that the network wishes for some change."
-      },
       "tracksLabel": "Tracks",
       "unchangeLabel": "Unchange voting power",
       "viewDelegationButton": "View delegations",
@@ -963,8 +654,7 @@
       "votedTracksDescription": "You cannot delegate on: { tracks } tracks because you have existing votes on those tracks. Please remove those votes in order to delegate on those tracks.",
       "votedTracksTitle": "You cannot delegate on some tracks",
       "votesValue": "<votes /> votes",
-      "walletTypeRestrictionError": "You can't add a delegation in that wallet type",
-      "yourAccountError": "You cannot delegate to the same account"
+      "walletTypeRestrictionError": "You can't add a delegation in that wallet type"
     },
     "additional": {
       "polkassemblyLink": "https://{network}.polkassembly.io/referenda/{referendumId}",
@@ -986,32 +676,16 @@
       },
       "title": "Advanced"
     },
-    "curves": {
-      "LinearDecreasing": "Linear decreasing",
-      "Reciprocal": "Reciprocal",
-      "SteppedDecreasing": "Stepped decreasing"
-    },
     "delegationDetails": {
-      "accountsCounter_one": "{ count } account selected",
-      "accountsCounter_other": "{ count } accounts selected",
-      "editDelegationButton_one": "Edit delegation",
-      "editDelegationButton_other": "Edit delegations",
-      "revokeDelegationButton_one": "Revoke delegation",
-      "revokeDelegationButton_other": "Revoke delegations",
       "yourDelegation": "Your Delegation",
       "yourDelegationsTitle": "Your delegations"
     },
     "delegations": {
       "label": "Delegated voting power",
-      "title": "Delegations on",
-      "tracksLabel_one": "across { count } track",
-      "tracksLabel_other": "across { count } tracks"
+      "title": "Delegations on"
     },
     "emptyStateDescription": "Update the search or cancel filtering",
     "emptyStateLabel": "Nothing was found",
-    "errors": {
-      "notEnoughBalanceError": "Not enough funds to vote"
-    },
     "filters": {
       "notVoted": "Not Voted",
       "tracks": "Tracks",
@@ -1021,7 +695,6 @@
     "locks": {
       "governanceLock": "Governance lock",
       "lock": "Locked amount",
-      "noLockedAmount": "No available locked token",
       "title": "Unlock on",
       "undelegatePeriod": "Undelegate period",
       "unlock": "Unlock",
@@ -1034,7 +707,6 @@
       "formTitle": "Show referendum data",
       "save": "Save",
       "selectPlaceholder": "Select",
-      "sourceError": "Data source is required",
       "title": "Referendum data"
     },
     "operations": {
@@ -1062,80 +734,33 @@
       "timeline": "Timeline",
       "vote": "Vote",
       "votedTokens": "{voted} of {total} {asset}",
-      "votes_one": "{votes} vote",
-      "votes_other": "{votes} votes",
       "votingStatus": "Voting status",
       "votingSummary": "Summary"
     },
     "referendums": {
-      "approveIn": "Approve in",
       "approved": "Approved",
       "canceled": "Canceled",
-      "cancelled": "Cancelled",
       "completed": "Completed",
-      "crowdloans": "Crowdloans",
       "deciding": "Deciding",
-      "executeIn": "Execute in",
       "executed": "Executed",
-      "fellowshipAdmin": "Fellowship: Admin",
-      "fellowshipWhitelist": "Fellowship: Whitelist",
-      "governanceCanceller": "Governance: Canceller",
-      "governanceKiller": "Governance: Killer",
-      "governanceLease": "Governance: Lease",
-      "governanceRegistrar": "Governance: Registrar",
       "killed": "Killed",
-      "mainAgenda": "Main agenda",
       "noDeposit": "Waiting for deposit",
       "ongoing": "Ongoing",
       "passing": "Passing",
-      "pending": "Pending",
       "referendumTitle": "Referendum #{ index }",
-      "rejectIn": "Reject in",
       "rejected": "Rejected",
-      "staking": "Staking",
-      "timedOut": "Timed out",
-      "timeoutIn": "Time out in",
-      "treasuryAny": "Treasury: Any",
-      "treasuryBigSpend": "Treasury: Big spend",
-      "treasuryBigTips": "Treasury: Big tips",
-      "treasuryMediumSpend": "Treasury: Medium spend",
-      "treasurySmallSpend": "Treasury: Small spend",
-      "treasurySmallTips": "Treasury: Small tips",
-      "wishForChange": "Wish for change"
+      "timedOut": "Timed out"
     },
     "revokeDelegation": {
       "title": "Revoke delegation on"
     },
     "searchPlaceholder": "Search",
-    "timeline": {
-      "status": {
-        "All": "All",
-        "Approved": "Approved",
-        "Awarded": "Awarded",
-        "Cancelled": "Cancelled",
-        "ConfirmAborted": "Confirm aborted",
-        "ConfirmStarted": "Confirm started",
-        "Confirmed": "Confirmed",
-        "Created": "Created",
-        "Deciding": "Deciding",
-        "DecisionDepositPlaced": "Decision deposit placed",
-        "Executed": "Executed",
-        "Killed": "Killed",
-        "Rejected": "Rejected",
-        "Submitted": "Submitted",
-        "TimedOut": "Timed out"
-      }
-    },
     "title": "Governance",
     "vote": {
       "abstainConvictionWarningDescription": "When you cast abstain votes you can only vote with 0.1x conviction.<br />Your voting power will be <amount/>.",
       "abstainConvictionWarningTitle": "Vote conviction will be set to 0.1x",
       "delegationError": "You are delegating votes for selected referendum's track. Please either ask your delegate to vote or remove delegation to be able to vote directly.",
       "delegationErrorTitle": "Already delegating votes",
-      "errors": {
-        "noAccountError": "Please select your account",
-        "noSignatoryError": "Please select operation signatory"
-      },
       "field": {
         "accounts": "Your account",
         "accountsPlaceholder": "Select account",
@@ -1147,9 +772,7 @@
         "networkFee": "Network fee",
         "tracks": "Tracks",
         "votingPower": "Voting power"
-      },
-      "noVoteForReferendum": "There're no existing votes for this referendum",
-      "timeoutReferendumError": "This referendum has already passed"
+      }
     },
     "voteHistory": {
       "listColumnAccount": "Account",
@@ -1159,28 +782,15 @@
       "notAvailable": "Vote history is unavailable",
       "notAvailableDescription": "Please refresh to update the information.",
       "title": "Vote history",
-      "totalVotesCount": "{value} votes",
       "viewVoteHistory": "View vote history"
     },
     "voted": "Voted",
-    "votedAbstain": "ABSTAIN <amount/>",
-    "votedAye": "AYE <amount/>",
-    "votedAyeBy": "AYE <amount/> via <delegate/>",
-    "votedAyeByDelegates": "AYE <amount/> via delegates",
     "votedByDelegates": "Voted via delegates",
-    "votedConvictedAye": "AYE <amount/> × { multiplier }x",
-    "votedConvictedAyeBy": "AYE <amount/> × { multiplier }x via <delegate/>",
-    "votedConvictedNay": "NAY <amount/> × { multiplier }x",
-    "votedConvictedNayBy": "NAY <amount/> × { multiplier }x via <delegate/>",
-    "votedNay": "NAY <amount/>",
-    "votedNayBy": "NAY <amount/> via <delegate/>",
-    "votedNayByDelegates": "NAY <amount/> via delegates",
     "votedWithAmount": "Voted:",
     "voting": {
       "aboutLabel": "About voting",
       "aboutVoting": "<header>Voting</header><p>In the Polkadot OpenGov voting system, there are three types of votes:</p><ul><li>Aye vote - a vote \"for\" a proposal. Votes are counted with a conviction multiplier that increases the\nnumber of votes based on the voter's conviction.</li><li>Nay vote - a vote \"against.\" Similar to the aye vote, it considers the level of conviction, multiplying the number of votes.</li><li>Abstain vote - abstaining from voting. Abstain votes do not affect the conviction level and are not counted in the vote tally with conviction.</li></ul>",
       "aboutVotingPower": "<header>Voting power and lock period</header><p>Conviction is a mechanism that allows participants to amplify their vote by locking their tokens for various periods (lock period). The longer the tokens are locked, the stronger the vote. \nFor example, a six-times conviction increases the vote's weight and requires a token lock for 32 weeks after voting ends.</p>",
-      "removeTitle": "Remove vote from",
       "revoteTitle": "Revote on",
       "selectAccountTitle": "Select account which vote you want to remove",
       "voteTitle": "Vote on"
@@ -1195,43 +805,17 @@
   "importDB": {
     "continueButton": "Continue",
     "deleteButton": "Erase all data",
-    "errors": {
-      "invalidStructure": "Invalid file structure"
-    },
     "exportButton": "Export database",
     "fileInputPlaceholder": "Select .json file on your computer",
     "importTitle": "Import database"
   },
   "log": {
-    "cancelledMessage": "rejected this operation",
-    "error": "Error",
-    "errorCancelledMessage": "tried to reject this operation",
-    "errorSignedMessage": "tried to sign this operation",
-    "initiatedMessage": "created this operation",
-    "signedMessage": "signed this operation",
-    "title": "Log",
-    "unknownMessage": " made an unknown action"
-  },
-  "multisigOperations": {
-    "noSignatory": "Add signatory wallet before making multisig operation",
-    "title": "Multisig Operations"
+    "title": "Log"
   },
   "navigation": {
-    "addressBookLabel": "Address Book",
-    "balancesLabel": "Portfolio",
     "basketLabel": "Basket",
-    "callDataLabel": "Import from call data",
-    "fellowship": "Fellowship",
-    "governance": "Governance",
-    "historyLabel": "History",
-    "mstOperationLabel": "Operations",
-    "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Notifications",
-    "settingsLabel": "Settings",
-    "stakingLabel": "Staking",
-    "transfersLabel": "Transfer",
-    "unknownWalletLabel": "Unknown wallet",
-    "walletsLabel": "Wallets"
+    "settingsLabel": "Settings"
   },
   "notifications": {
     "details": {
@@ -1249,10 +833,7 @@
   },
   "onboarding": {
     "accountAddressLabel": "Account address",
-    "accountsTitle": "Manage accounts",
     "backButton": "Back",
-    "checkAccountsButton": "Check your accounts",
-    "confirmAccountsListButton": "Yes, these are my accounts",
     "continueButton": "Continue",
     "extension": {
       "accountsTitle": "Manage accounts",
@@ -1276,15 +857,11 @@
     "identityNotFound": "Identity not found. Use custom name",
     "identitySearch": "Searching for identity...",
     "novaWallet": {
-      "scanTitle": "Scan with Nova Wallet",
       "title": "Add wallet by Nova Wallet"
     },
     "paritySigner": {
       "accessDeniedDescription": "Please make sure you grant access to camera",
       "accessDeniedLabel": "Access denied!",
-      "accountNamePlaceholder": "Enter a name for this account",
-      "checkAddress": "Check address",
-      "continueButton": "Continue",
       "decodeErrorDescription": "Error occurred while decoding QR code",
       "decodeErrorLabel": "Recognition error!",
       "generateAddressesModalTitle": "Generate accounts addresses",
@@ -1296,25 +873,15 @@
       "selectCameraLabel": "Select camera",
       "startCameraLabel": "Starting camera",
       "tryAgainButton": "Try again",
-      "typeNameButton": "Type a name to finish...",
-      "walletNameLabel": "Wallet name",
-      "walletNamePlaceholder": "Enter a name for your wallet",
       "wrongQRCodeDescription": "The scanned QR code doesn't contain valid network address",
       "wrongQRCodeLabel": "Wrong QR code!"
     },
-    "pasteButton": "Paste",
-    "readAccountsLabel": "Following accounts have been successfully read",
-    "readAccountsParitySignerLabel": "Following accounts have been successfully read from Polkadot Vault",
-    "readyToUseLabel": "Your wallet is ready to use!",
     "vault": {
       "accountTitle": "Account",
       "accountsTitle": "Manage accounts",
       "addMoreKeysButton": "Add more keys",
-      "addressColumn": "Address",
       "altHint": "Hold <button /> to see the details",
-      "derivationPath": "Derivation path",
       "editKeysButton": "Edit keys",
-      "fillNamesButton": "Autofill account names",
       "hotkeyCtrl": "Ctrl",
       "hotkeyOption": "Option",
       "importButton": "Import",
@@ -1325,39 +892,26 @@
         "vaultTitle": "What is the Vault?"
       },
       "manageTitle": "Set up your wallet",
-      "nameColumn": "Account name",
       "scanTitle": "Scan the account QR code",
       "title": "Add wallet by Polkadot Vault",
       "vaultTitle": "Vault"
     },
     "walletConnect": {
-      "accountsTitle": "Manage accounts",
-      "addressColumn": "Address",
       "manageTitle": "Set up your wallet",
-      "nameColumn": "Account name",
       "pairedDescription": "Paired",
       "rejected": "Pairing rejected",
-      "scanTitle": "Scan with your mobile wallet",
       "title": "Add wallet by WalletConnect"
     },
     "walletNameLabel": "Wallet name",
     "walletNamePlaceholder": "Enter a name for your wallet",
     "watchOnly": {
-      "accountAddressError": "The entered address is not a valid one, please type or paste it again",
       "accountAddressPlaceholder": "Enter or paste your account address",
       "accountsTitle": "Manage accounts",
-      "addWatchOnlyDescription1": "Track the activity of any wallet without injecting",
-      "addWatchOnlyDescription2": "your private key to Nova Spektr",
-      "addWatchOnlyLabel": "Add Watch-Only Wallet",
-      "addressAndNameRequiredError": "Type address and name",
-      "addressRequiredError": "Type or paste address",
       "emptyState": "All your accounts in different networks will be shown here",
       "manageTitle": "Set up your wallet",
-      "nameRequiredError": "Type a wallet name",
       "title": "Add Watch-only wallet",
       "walletNameMaxLenError": "Wallet name should be shorter then 256 symbols",
-      "walletNameRequiredError": "Please enter wallet name",
-      "yourAccountsLoadingLabel": "Your accounts will be showing up here"
+      "walletNameRequiredError": "Please enter wallet name"
     },
     "welcome": {
       "ledgerDescription": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
@@ -1387,47 +941,34 @@
     "addedToBasket": "Added to basket",
     "advanced": "Advanced",
     "approveButton": "Approve",
-    "cancelTitle": "Reject",
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
-    "createFlexibleMultisig": {
-      "description": "Wait for the signing of the operation from all the signatories of the wallet. You can see the operation status below.",
-      "rejectConfirmDescription": "If you reject this operation then you will cancel the creation of the Pure Proxy account and will not create a flexible multisig. The Proxy deposit will be refunded to you. Are you sure you want to reject this operation?",
-      "rejectConfirmTitle": "Reject finalizing the creation of your flexible multisig?",
-      "title": "Flexible multisig is creating..."
-    },
     "deliveryFee": "Delivery fee",
     "deliveryFeeErrorDescription": "The account<account />doesn't have enough tokens to pay the delivery fee of {fee} {symbol}<br />Transferable balance: {balance} {symbol}. Please top up the balance and of this account and try again.",
     "deliveryFeeErrorTitle": "Not enough tokens to pay the delivery fee",
     "details": {
       "accessType": "Access type",
-      "account": "Account",
-      "amount": "Amount",
       "callData": "Call Data",
       "callHash": "Call Hash",
-      "controller": "Controller",
       "delegateTo": "Delegate to",
       "delegationTarget": "Delegate",
       "delegationTracks": "Tracks",
       "delegationVotes": "Number of votes",
       "deposit": "Multisig deposit",
       "depositor": "Depositor",
-      "description": "Description",
       "destinationChain": "To network",
       "fromNetwork": "From network",
       "multisigWallet": "Wallet",
       "payee": "Rewards destination",
       "recipient": "Recipient",
       "referendum": "Referendum",
-      "rejectReason": "Reject reason",
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
       "sender": "Sender",
       "timePoint": "Time Point",
       "toNetwork": "To network",
       "validators": "Validators",
-      "votes": "Number of votes",
-      "wallet": "Wallet"
+      "votes": "Number of votes"
     },
     "detailsTitle": "Details",
     "errorWatchOnly": "Can't sign with watch only account.",
@@ -1435,7 +976,6 @@
     "feeErrorMessage": "Insufficient funds to pay the network fee",
     "feeErrorTitle": "Error",
     "goBackButton": "Back",
-    "inProgress": "Submitting approval...",
     "logButton": "Log",
     "multisigExistsDescription": "Due to the blockchain limitations, multisig operations with identical details can't be in a signing status simultaneously. Wait for the current one to be signed or reject it to create a new one.",
     "multisigExistsTitle": "Same transaction already exist",
@@ -1447,51 +987,24 @@
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
-    "rejectInProgress": "Submitting Rejection...",
     "selectAccount": "Select account",
     "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",
-    "selectSignatoryLabel": "Signatory",
-    "selectSignatoryTitle": "Select signatory",
     "sign": {
-      "default": "Sign",
-      "novaWallet": "Sign with Nova Wallet",
-      "polkadotExtension": "Sign with Polkadot js extension",
-      "polkadotVault": "Sign with Polkadot Vault",
-      "subWalletExtension": "Sign with SubWallet extension",
-      "talismanExtension": "Sign with Talisman extension",
-      "title": "Sign { count } operations",
-      "walletConnect": "Sign with WalletConnect"
+      "title": "Sign { count } operations"
     },
     "signatoriesTitle": "Signatories",
-    "signatoriesTitleCount": "Signatories { count }",
     "signing": "{ signed } of { threshold } signed",
     "status": {
       "cancelled": "Rejected",
       "error": "Error",
-      "established": "Established",
       "executed": "Executed",
       "signing": "On signing"
     },
     "submitErrorButton": "Close",
-    "successMessage": "Operation Approved",
-    "successRejectMessage": "Operation Rejected",
     "walletConnect": {
-      "defaultWalletName": "WalletConnect",
       "expiredDescription": "The operation isn’t valid anymore",
-      "failedDescription": "Scan with your mobile wallet to connect",
-      "failedTitle": "Waiting for Reconnect...",
-      "reconnect": {
-        "cancelButton": "Cancel",
-        "confirmButton": "Reconnect",
-        "connected": "Connected",
-        "description": "You need to reconnect to proceed with signing",
-        "reconnecting": "Waiting for Reconnect...",
-        "title": "{ walletName } is not connected"
-      },
       "rejected": "Rejected",
-      "signTitle_one": "Confirm with { walletName }",
-      "signTitle_other": "Confirm { count } operations on your { walletName } app",
       "tryAgainButton": "Try again"
     },
     "walletSignatoriesTitle": "Your wallets",
@@ -1508,11 +1021,8 @@
     "filters": {
       "clearAll": "Clear all",
       "networkPlaceholder": "Network",
-      "networkSummary": "Networks",
       "operationTypePlaceholder": "Operation type",
-      "operationTypeSummary": "Operation types",
-      "statusPlaceholder": "Operation status",
-      "statusSummary": "Operation statuses"
+      "statusPlaceholder": "Operation status"
     },
     "modalTitles": {
       "addProxy": "Add delegated authority (proxy)",
@@ -1520,53 +1030,21 @@
       "addPureProxy": "Create pure proxy",
       "addPureProxyOn": "Create pure proxy on",
       "approve": "Approve",
-      "approveMultisig": "Approve multisig operation",
       "convertToFlexible": "Convert to flexible multisig on",
-      "createPureProxy": "Add delegated authority (pure proxy)",
-      "delegateOn": "Delegate on",
-      "destinationOn": "Set reward destination on",
       "editDelegationOn": "Edit delegation on",
-      "nominateOn": "Change Validators on",
-      "proxy": "Proxy",
-      "redeemOn": "Withdraw Unstaked { asset } on",
       "reject": "Reject",
-      "remark": "System Remark",
-      "remarkOn": "Send remark on",
-      "removeProxy": "Revoke delegated authority (proxy)",
-      "removeProxyOn": "Revoke delegated authority (proxy) on",
-      "removePureProxy": "Revoke delegated authority (pure proxy)",
-      "removePureProxyOn": "Revoke delegated authority (pure proxy) on",
-      "removeVote": "Remove vote { asset } on",
-      "removeVoteOn": "Remove Vote",
-      "restakeOn": "Restake { asset } on",
-      "revote": "Revote { asset } on",
-      "stakeMoreOn": "Stake More { asset } on",
-      "startStakingOn": "Start Staking { asset } on",
-      "transferFrom": "Transfer { asset } from",
-      "transferOn": "Transfer { asset } on",
-      "undelegateOn": "Revoke delegation on",
-      "unknownOn": "Unknown Operation on",
-      "unlockOn": "Unlock on",
-      "unstakeOn": "Unstake { asset } on",
-      "vote": "Vote { asset } on"
+      "removeVoteOn": "Remove Vote"
     },
     "noOperationsDescription": "Your operation history will appear here",
-    "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
-    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
     "title": "Operations",
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
-      "approveMultisig": "Approve multisig operation",
-      "batchAll": "Batch All",
       "createPureProxy": "Create pure proxy",
       "crossChainTransfer": "Cross-chain transfer",
       "delegate": "Delegate",
       "destination": "Set reward destination",
-      "editDelegation": "Edit Delegation",
       "nominate": "Change Validators",
-      "proxy": "Proxy",
       "redeem": "Withdraw Unstaked",
-      "remark": "Remark",
       "removeProxy": "Revoke delegated authority (proxy)",
       "removePureProxy": "Revoke delegated authority (pure proxy)",
       "removeVote": "Remove vote",
@@ -1575,7 +1053,6 @@
       "stakeMore": "Stake More",
       "startStaking": "Start Staking",
       "transfer": "Transfer",
-      "transferAll": "Transfer All",
       "undelegate": "Revoke delegation",
       "unknown": "Unknown Operation",
       "unlock": "Unlock",
@@ -1599,20 +1076,10 @@
       "balanceAlertTitle": "Not enough tokens",
       "delegateLabel": "Give authority to",
       "delegatePlaceholder": "Enter address",
-      "maxLengthDescriptionError": "Description cannot exceed { maxLength } symbols",
-      "maxProxiesError": "Maximum number of proxy is achieved",
       "networkLabel": "Network",
       "networkPlaceholder": "Select network",
-      "noChainError": "Please select chain",
-      "noInitiatorError": "Please select operation initiator",
-      "noSignatoryError": "Please select operation signatory",
-      "notEnoughBalanceForDepositError": "Not enough tokens to pay for the multisig deposit and/or network fee",
-      "notEnoughMultisigTokens": "Not enough tokens to pay multisig deposit and network fee",
-      "proxyAddressRequiredError": "Delegate address is required",
-      "proxyTypeExistError": "The same proxy already exists, choose another access type",
       "proxyTypeLabel": "Access type",
       "proxyTypePlaceholder": "Choose type",
-      "sameAsProxiedError": "Delegated account can’t be equal to delegating account",
       "signatoryLabel": "Signatory",
       "signatoryPlaceholder": "Select signatory"
     },
@@ -1620,33 +1087,7 @@
       "accessType": "Access type",
       "delegateTo": "Delegate to",
       "grantAccessType": "Grant access type",
-      "revokeAccessType": "Revoke access type",
-      "revokeFor": "Revoke for",
-      "sender": "Sender"
-    },
-    "names": {
-      "any": "All operations",
-      "auction": "Auction operations",
-      "cancelProxy": "Cancel operations",
-      "governance": "Governance operations",
-      "identityJudgement": "Judgement operations",
-      "nominationPools": "Nominations operations",
-      "nonTransfer": "All, except transfer operations",
-      "staking": "Staking operations",
-      "sudoBalances": "Sudo balances",
-      "unknown": "Unknown operations"
-    },
-    "operations": {
-      "any": "all operations",
-      "auction": "auction operations",
-      "cancelProxy": "cancel operations",
-      "governance": "governance operations",
-      "identityJudgement": "judgement operations",
-      "nominationPools": "nominations operations",
-      "nonTransfer": "all, except transfer operations",
-      "removeProxyTitle": "Revoke delegated authority (proxy) on ",
-      "staking": "staking operations",
-      "sudoBalances": "balances via sudo"
+      "revokeFor": "Revoke for"
     },
     "proxyDepositHint": "The deposit stays reserved on your account until the proxy is removed",
     "proxyDepositLabel": "Proxy deposit",
@@ -1658,23 +1099,8 @@
       "title1": "What is a Pure Proxy?",
       "title2": "Why should I create a Pure Proxy?"
     },
-    "submitError": "Error",
-    "submitErrorButton": "Close",
-    "submitInProgress": "Submitting operation...",
-    "submitSuccess": "Operation Success",
     "tooltipPart1": "Proxied wallets are wallet which have set one of your accounts in Nova Spektr as delegated authority (Proxies).",
-    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet.",
-    "types": {
-      "Any": "Any",
-      "Auction": "Auction",
-      "CancelProxy": "Cancel",
-      "Governance": "Governance",
-      "IdentityJudgement": "Judgement",
-      "NominationPools": "Nominations",
-      "NonTransfer": "Non Transfer",
-      "Staking": "Staking",
-      "SudoBalances": "Sudo Balances"
-    }
+    "tooltipPart2": "This means that you can control certain functions of these wallets based on the access type granted to you by the proxied wallet."
   },
   "pureProxyRemove": {
     "warning": {
@@ -1690,31 +1116,25 @@
   "qrReader": {
     "parsingLabel": "Parsing data",
     "parsingProgress": "{decoded} of {total}",
-    "parsingSubLabel": "Please hold still...",
     "videoError": "Your browser doesn't support video"
   },
   "receive": {
-    "addressCopied": "Address copied",
     "compareAddressFormat": "Compare address format",
     "copy": "Copy",
     "copyLegacyFormat": "Copy legacy format",
     "exchangeAccount": "Need address for exchange?",
     "explorerLinkLabel": "Link to {name}",
-    "legacyAddressCopied": "Legacy address copied",
     "selectAccount": "Select account",
     "title": "Receive {asset} on",
     "unfiedAddress": {
       "alertDescription": "Send only { asset } ({ assetName }) token to this legacy address on the { network } network.",
       "alertTitle": "About legacy format",
       "checkboxLabel": "Do not show this again. You can copy legacy address in receive.",
-      "compareAddressTitle": "Compare address formats",
       "description": "You may need to use the legacy format when interacting with certain",
       "legacyFormat": "Legacy format",
       "new": "New",
-      "newUnifiedTitle": "New unified address",
       "unifiedFormat": "Unified format"
     },
-    "unifiedAddressCopied": "Unified address copied",
     "viewInExplorers": "View in explorers"
   },
   "settings": {
@@ -1747,9 +1167,7 @@
     "networks": {
       "activeNetworksLabel": "Active networks",
       "addNodeButton": "Add custom node",
-      "addressEmpty": "Address can not be empty",
       "addressHint": "Example: wss://rpc.polkadot.io",
-      "addressInvalidUrl": "The entered address is not valid",
       "addressLabel": "Node address",
       "addressNoConnect": "Could not connect to node, try again later",
       "addressPlaceholder": "Enter node address",
@@ -1772,13 +1190,9 @@
       "editNodeButton": "Edit custom node",
       "emptyStateLabel": "Nothing was found, update the search",
       "errorStatusLabel": "Error",
-      "maxLengthNameError": "Name must be between 3 and 50 characters long",
       "nameLabel": "Name",
       "namePlaceholder": "Enter node name",
-      "nodeExist": "RPC node already exists",
-      "requiredNameError": "Name is required",
       "searchPlaceholder": "Search",
-      "selectorAddNodeButton": "Add custom node",
       "selectorAutoBalance": "Auto balance",
       "selectorDisableNode": "Disable network",
       "selectorLightClient": "Light client",
@@ -1789,23 +1203,13 @@
     },
     "overview": {
       "generalLabel": "General",
-      "githubDescription": "Contribute and explore our open-source project on GitHub for collaborative code shaping!",
-      "githubLabel": "GitHub",
       "hiddenWalletsLabel": "Hidden wallets",
       "languageLabel": "Language",
-      "mediumDescription": "Engaging content to expand knowledge and stay informed about Nova Spektr!",
-      "mediumLabel": "Medium",
       "networkDetailsLabel": "Manage network connection",
       "networkLabel": "Network",
       "referendumLabel": "Referendum data",
       "socialLabel": "Social",
-      "telegramDescription": "Connect, get help, and share ideas with our Telegram community!",
-      "telegramLabel": "Telegram",
-      "twitterDescription": "Stay connected with us and never miss out on the latest updates and news!",
-      "twitterLabel": "Twitter",
-      "versionLabel": "Version",
-      "youtubeDescription": "Discover our demo recordings and valuable learning materials on YouTube!",
-      "youtubeLabel": "YouTube"
+      "versionLabel": "Version"
     },
     "title": "Settings"
   },
@@ -1820,39 +1224,11 @@
     "qrNewVaultTitle": "New (Vault v{version}+)",
     "qrNotValid": "QR code isn’t valid anymore",
     "scanQrTitle": "Scan the operation QR code with Polkadot Vault",
-    "scanSignatureTitle": "Scan QR code from Polkadot Vault",
-    "signatureExpiredDescription": "For security reasons generated operations valid for only 5 mins. Please generate new QR code and sign it with Polkadot Vault",
-    "signatureExpiredLabel": "QR Code has expired",
     "signer": "Signing wallet:",
-    "title": "Signing",
     "troubleshootingLink": "I have an error in Polkadot Vault"
   },
   "splashscreen": {
-    "multisig": {
-      "description": "Enhance the security of your assets with Multisig Wallets in Nova Spektr! Multisigs are super easy to use and allow you to further secure access to your Polkadot assets, requiring multiple signatures for transaction approval.",
-      "title": "Multisig operations"
-    },
-    "opengov": {
-      "description": "Decide the fate of the network! Nova Spektr supports Polkadot OpenGov, empowering you to vote, delegate and more! Nova Spektr makes it easier than ever before to observe, participate and delegate in OpenGov!",
-      "title": "OpenGov"
-    },
-    "oss": {
-      "description": "Don't trust, verify. Nova Spektr is fully open-source, meaning that anyone in the world can review its code and ensure transparency and security.",
-      "title": "Open Source & Trustless"
-    },
-    "proxy": {
-      "description": "Delegate Authority for certain operations to secondary accounts with Nova Spektr's Proxy feature! Manage frequent actions such as changing validator nominations from an easier to access account and more!",
-      "title": "Proxy Wallets"
-    },
-    "staking": {
-      "description": "Nova Spektr makes it easy to stake your assets and earn rewards while contributing to the network's security! Using Nova Spektr you can easily stake your DOT, KSM and more in seconds from your multisig accounts!",
-      "title": "Staking"
-    },
-    "title": "Feature",
-    "walletConnect": {
-      "description": "Nova Spektr supports WalletConnect v2! Seamlessly connect to Nova Spektr with any WalletConnect-compatible wallet for a smooth and secure experience.",
-      "title": "WalletConnect 2.0"
-    }
+    "title": "Feature"
   },
   "staking": {
     "about": {
@@ -1866,59 +1242,28 @@
       "totalStakedLabel": "Total staked",
       "unlimitedLabel": "Unlimited",
       "unstakingPeriodLabel": "Unstaking period",
-      "unstakingPeriodValue": "{ period } days",
       "yearlyEarningLabel": "Yearly"
     },
     "actions": {
-      "changeValidatorsLabel": "Change validators",
-      "destinationLabel": "Change rewards destination",
-      "filterButton": "Filter",
       "manageStakePlaceholder": "Manage stake",
       "noOverlapPlaceholder": "No intersecting operation",
-      "redeemLabel": "Withdraw unstaked",
-      "returnToStakeLabel": "Return to stake",
-      "selectAccPlaceholder": "Select accounts",
-      "stakeMoreLabel": "Stake more",
-      "startStakingLabel": "Start staking",
-      "unstakeLabel": "Unstake"
+      "selectAccPlaceholder": "Select accounts"
     },
     "bond": {
-      "aboutRewards": "About rewards",
       "accountLabel": "Account",
       "accountPlaceholder": "Select accounts",
       "backButton": "Back",
-      "continueButton": "Continue",
-      "goToStakingButton": "Back to Staking",
       "incorrectAddressError": "Please enter correct address",
       "manyAccountsPlaceholder": "Multiple accounts selected",
-      "noBondBalanceError": "Some accounts don't have enough balance",
-      "noStakingAssetDescription": "No staking asset was found for { chainName }",
-      "noStakingAssetLabel": "No staking asset",
-      "payoutAccountLabel": "Payout account",
       "payoutAccountPlaceholder": "Payout account address",
-      "requiredAddressError": "Payout account is required",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",
-      "selectNetworkLabel": "Select network",
-      "selectStakeAccountSummary": "Multiple accounts",
-      "signatoryLabel": "Signatory",
-      "signatoryPlaceholder": "Select Signatory",
       "title": "Start staking { asset } on",
       "transferableRewards": "Transferable rewards"
     },
     "confirmation": {
-      "accountLabel_one": "Account",
-      "accountLabel_other": "Accounts",
       "accountsTitle": "Selected accounts",
-      "backButton": "Back",
-      "changeValidatorsTitle": "Change validators",
       "electedValidators": "Elected",
-      "errorModalDiscardButton": "Discard",
-      "errorModalEditButton": "Edit",
-      "errorModalSubtitle": "You can discard these transactions",
-      "errorModalTitle": "Error submitting { number } transactions",
-      "hintMstExists": "Multisig transaction already exists",
-      "hintMstTitle": "Error",
       "hintNewRewards": "You will get increased rewards starting from the next era",
       "hintNewValidators": "Your validators will change in the next era",
       "hintNoRewards": "During unstaking period tokens produce no rewards",
@@ -1929,145 +1274,63 @@
       "hintUnstakePeriod": "To unstake tokens you will have to wait for the ustaking period",
       "hintWithdraw": "After unstaking period don’t forget to redeem your tokens",
       "notElectedValidators": "Not elected",
-      "queueButton": "Add to operation queue",
       "restakeRewards": "Restake rewards",
       "rewardsDestinationLabel": "Rewards destination",
-      "signatoryLabel": "Signatory",
-      "signer": "Signer",
-      "submittingOperation": "Submitting operation",
-      "totalAmount": "Total amount",
-      "transactionProgress": "Transactions",
-      "transferableRewards": "Transferable rewards",
       "validatorsLabel": "Validators",
       "validatorsTitle": "Selected validators"
     },
     "destination": {
-      "initDestinationSubtitle": "Rewards destination",
       "title": "Change rewards destination on"
     },
-    "loadingMessage": "Connecting to { chainName }",
     "multisigDepositLabel": "Multisig Deposit",
     "networkFeeTotal": "Total network fee",
-    "networkFee_one": "Network fee",
-    "networkFee_other": "Network fee per account",
-    "nominators": {
-      "electedTitle": "Elected",
-      "nominated": "Nominated",
-      "notAssigned": "Not assigned",
-      "notElectedTitle": "Not Elected",
-      "rewards": "Rewards (APY)",
-      "validators": "Validators",
-      "yourValidatorsTitle": "Selected validators"
-    },
-    "notEnoughBalanceError": "Not enough funds to complete operation",
-    "notEnoughBalanceForDepositError": "Insufficient balance to pay deposit and network fee",
-    "notEnoughBalanceForFeeError": "Not enough tokens to pay for the network fee",
-    "notEnoughStakedError": "Not enough staked to unstake specific amount",
-    "notEnoughUnlockingError": "Not enough unlocking to return specific amount",
     "overview": {
-      "aboutStakingLabel": "About { asset } staking",
       "accountTableHeader": "Accounts",
       "actionsTitle": "Accounts",
-      "emptyFilterDescription": "Try another filter parameters",
-      "emptyFilterLabel": "No results",
-      "networkDisabledLabel": "Network is inactive",
       "networkLabel": "Network",
       "networkPlaceholder": "Select network",
-      "noAccountsLabel": "Your haven’t got any account to start staking",
-      "noActiveWalletsDescription": "Please select a wallet for staking",
-      "noActiveWalletsLabel": "No wallet selected",
-      "noResultsDescription": "Please try another filter parameters",
-      "noResultsLabel": "No staking found",
-      "noValidatorsLabel": "No validators nominated",
       "rewardsTableHeader": "Rewards",
-      "searchPlaceholder": "Search by account name",
       "stakeTableHeader": "Staked",
-      "stakingAssetLabel": "Staking <strong>{ asset }</strong> on",
       "totalRewardsLabel": "Total rewards",
       "totalStakedLabel": "Total staked",
       "viewValidatorsOption": "View validators"
     },
-    "requiredAmountError": "Please enter amount",
     "restake": {
-      "confirmRestakeSubtitle": "Confirmation",
-      "initRestakeSubtitle": "Restake",
-      "title": "Return to stake on ",
-      "transferable": "Transferable",
-      "unstakingPlaceholder": "Unstaking"
+      "title": "Return to stake on "
     },
     "stakeMore": {
-      "availablePlaceholder": "Available",
-      "confirmStakeMoreSubtitle": "Confirmation",
-      "initStakeMoreSubtitle": "Stake more",
       "title": "Stake more { asset } on"
     },
-    "submitSuccessMultishard": "Operations success",
-    "submitSuccessMultisig": "Operation approved",
-    "submitSuccessSingle": "Operation success",
     "title": "Staking",
     "tooltips": {
       "depositDescription": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
       "redeemAndUnstake": "Unstake - {countUnstake} account<br />Withdraw - {countWithdraw} account",
       "redeemDescription": "Your tokens are ready to be withdrawn",
       "redeemTitle": "Withdraw",
-      "unstakeDescription": "Your tokens are being unstaked<br />at the moment",
-      "unstakeTitle": "Unstaking"
+      "unstakeDescription": "Your tokens are being unstaked<br />at the moment"
     },
     "unstake": {
-      "confirmUnstakeSubtitle": "Confirmation",
-      "initUnstakeSubtitle": "Unstake",
-      "noUnstakeBalanceError": "Some accounts don't have enough balance",
-      "stakedPlaceholder": "Staked",
-      "title": "Unstake { asset } on",
-      "transferable": "Transferable"
+      "title": "Unstake { asset } on"
     },
     "validators": {
-      "blockedPopoverSubtitle": "Nominators no longer accepted",
-      "blockedPopoverTitle": "Blocked",
       "continueButton": "Continue with selected validators: {selected}",
-      "filterButton": "Filter",
-      "filterByIdentity": "Having on-chain identity",
-      "filterNotOversubscribed": "Not oversubscribed",
-      "filterNotSlashed": "Not slashed",
       "maxValidatorsLabel": "(Max { max })",
       "noValidatorsLabel": "No matching validators",
-      "nominatedTableHeader": "Nominated",
-      "oversubPopoverSubtitle": "Validator is oversubscribed",
-      "oversubPopoverTitle": "Oversubscribed",
       "ownStakeTableHeader": "Own stake",
-      "rewardsTableHeader": "Rewards (APY)",
       "searchPlaceholder": "Search",
       "selectValidatorButton": "Select at least one validator",
       "selectedValidatorsLabel": "Selected validators",
-      "slashedPopoverSubtitle": "Validator has been slashed recently",
-      "slashedPopoverTitle": "Slashed",
-      "subtitle": "Validators",
       "title": "Change validators on",
       "totalStakeTableHeader": "Total stake",
       "validatorTableHeader": "Account"
     },
     "warning": {
-      "controller": "This operation works with <strong>Controller</strong> accounts only.<br />Would you like to deselect <strong>Stash</strong> accounts to continue?",
       "noButton": "No",
-      "stash": "This operation works with <strong>Stash</strong> accounts only.<br />Would you like to deselect <strong>Controller</strong> accounts to continue?",
       "yesButton": "Yes"
     },
     "withdraw": {
-      "availablePlaceholder": "Available",
-      "confirmRedeemSubtitle": "Confirmation",
-      "initRedeemSubtitle": "Redeem",
       "title": "Withdraw unstaked { asset } on"
     }
-  },
-  "time": {
-    "days_one": "{ count } day",
-    "days_other": "{ count } days",
-    "hoursMinutesSeconds": "{ hours }:{ minutes }:{ seconds }",
-    "hours_one": "{ count } hour",
-    "hours_other": "{ count } hours",
-    "minutesSeconds": "{ minutes }:{ seconds }",
-    "weeks_one": "{ count } week",
-    "weeks_other": "{ count } weeks"
   },
   "transaction": {
     "details": {
@@ -2079,77 +1342,24 @@
       "wallet": "Wallet"
     }
   },
-  "transactionMessage": {
-    "bond": "Stake { amount } { asset }",
-    "destination": "Change reward destination to { address }",
-    "nominate": "Change validator set",
-    "redeem": "Withdraw { amount } { asset }",
-    "restake": "Return { amount } { asset } to stake",
-    "restakeDestination": "restake",
-    "stakeMore": "Increase stake by { amount } { asset }",
-    "transfer": "Transfer { amount } { asset } to { address }",
-    "unstake": "Unstake { amount } { asset }"
-  },
   "transfer": {
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",
-    "descriptionLengthError": "Description cannot exceed { maxLength } symbols",
     "destinationChainLabel": "Recipient network",
     "destinationChainPlaceholder": "Select recipient network",
-    "editOperationButton": "Edit operation",
-    "executing": "Submitting operation",
-    "expired": "Transaction expired",
-    "formTitle": "Send <strong>{ asset }</strong> on <strong>{ network }</strong>",
     "inProgress": "Submitting operation...",
-    "incorrectRecipientError": "Please enter correct recipient address",
-    "invalidAddress": "Invalid address",
-    "invalidSignature": "Error occurred while decoding QR code. Scan again.",
-    "multiple": {
-      "executing": "Submitting operations",
-      "transactions": "Transactions"
-    },
-    "multisigTransactionExist": "Multisig transaction already exists",
     "myselfButton": "Myself",
-    "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
-    "networkFee": "Network fee",
-    "noAmount": "Please provide amount",
-    "noInitiatorError": "Please select operation initiator",
-    "noSignatoryError": "Please select operation signatory",
-    "notEnoughBalanceError": "Not enough tokens to transfer specific amount",
-    "notEnoughBalanceForDeliveryFeeError": "Not enough tokens to pay for the delivery fee",
-    "notEnoughBalanceForDepositError": "Not enough tokens to pay for the multisig deposit and/or network fee",
-    "notEnoughBalanceForFeeError": "Not enough tokens to pay for the network fee",
-    "notEnoughBalanceForXcmFeeError": "Not enough tokens to pay for the cross-chain fee",
-    "notZeroAmountError": "Value cannot be zero",
     "onChainPlaceholder": "On-chain",
-    "pasteButton": "Paste",
     "recipientLabel": "Recipient",
     "recipientPlaceholder": "Address",
-    "requiredAmountError": "Please enter amount",
-    "requiredDescriptionError": "Description is required",
-    "requiredRecipientError": "Please enter recipient address",
-    "senderAccount": "Sender account",
-    "senderLabel": "Sender",
     "signatoryLabel": "Signatory",
-    "startSigningButton": "Sign with Polkadot Vault",
     "successMessage": "Operation Success",
-    "swapToCryptoModeAlt": "swap input to crypto",
-    "swapToCurrencyModeAlt": "swap input to currency",
     "title": "Transfer { asset } on",
     "warningDescription": "They will be returned to the operation basket. You can resolve an issue and execute them later",
     "warningTitle": "{failed} out of {all} operations has not been executed",
     "xcmTitle": "Transfer { asset } from"
-  },
-  "transferDetails": {
-    "fromNetwork": "From network",
-    "networkDeposit": "Multisig deposit",
-    "networkFee": "Network fee",
-    "recipient": "Recipient",
-    "sender": "Sender",
-    "title": "Send",
-    "wallet": "Wallet"
   },
   "voteChart": {
     "good": "Good",
@@ -2167,7 +1377,6 @@
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
       "confirmRemoveProxySubmit": "Delete",
       "confirmRemoveProxyTitle": "Revoke delegated authority?",
-      "convertToFlexibleAction": "Convert to flexible multisig",
       "doNotShowAgain": "Do not show this again",
       "emptyProxyDescription": "Add new proxies to work with them",
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",
@@ -2175,8 +1384,6 @@
       "hideButton": "Hide",
       "linkedWalletsWillBeRemovedDescription": "This wallet is a signatory in multisigs or as a proxy for other wallets. These related accounts will be automatically hidden. They’ll reappear if you pair this wallet again.",
       "linkedWalletsWillBeRemovedTitle": "Linked wallets will be removed",
-      "nameExistsError": "This wallet name already exists",
-      "nameRequiredError": "Name is required",
       "openInfoAction": "Open info",
       "proxiedAddressTitle": "Delegated from",
       "proxiesTabTitle": "Delegated to",
@@ -2188,26 +1395,18 @@
       "proxyTooltipWhyProxy": "Delegated authorities offer an additional layer of control. You can set explicit permissions and restrictions for another account to control certain operations relating to your assets. Delegated authorities allow you to distribute responsibilities more effectively.You are able to customize the type of access that delegated authorities have. For example you can allow another account to conduct only staking operations, only governance operations, or any operation on the network except for the transfer of assets.",
       "proxyTooltipWhyProxyTitle": "Why do I need to create delegated authorities (proxies)?",
       "proxyVia": "via",
-      "removeButton": "Remove",
-      "removeMessage": "Are you sure you want to remove { walletName }?",
       "removeProxyAction": "Revoke authority",
-      "removeTitle": "Remove wallet",
       "removeWalletDesc": "Are you sure you want to remove {walletName}?",
       "removeWalletTitle": "Remove wallet",
-      "removingWallet": "Removing wallet",
       "renameButton": "Rename",
-      "renameLabel": "Name",
       "renameSaveButton": "Save",
-      "renameTitle": "Rename wallet",
       "renameWallet": "Enter wallet name",
       "title": "Wallet details",
       "viewDetails": "View details",
       "walletRemoved": "Wallet removed"
     },
     "multisig": {
-      "accountGroup": "Account",
       "accountTab": "Account and signatories",
-      "accountsGroup": "Your accounts",
       "accountsTab": "Accounts",
       "addressInProgress": "In progress...",
       "chainTitle": "with threshold { threshold } out of { signatories } signatories",
@@ -2215,11 +1414,8 @@
       "contactsGroup": "Contacts",
       "multisigWallet": "Multisig wallet",
       "on": "on",
-      "otherSignatories_one": "Other signatory { count }",
-      "otherSignatories_other": "Other signatories { count }",
       "signatoriesGroup": "Signatories { amount }",
       "signatoriesTab": "Signatories",
-      "singleChainTitle": "via  <wallet />  {walletName} on  <chain /> chain with threshold { threshold } out of { signatories } signatories",
       "thresholdLabel": "Threshold { min } out of { max }",
       "walletsGroup": "Your wallets"
     },
@@ -2227,23 +1423,16 @@
       "editKeys": "Edit keys",
       "export": "Export keyset",
       "import": "Import keyset",
-      "networksTab": "Networks",
-      "noAccounts": "No actual accounts data",
       "shardsTitle": "Shards"
     },
     "walletConnect": {
       "abortRejectButton": "Close",
       "confirmButton": "Yes, refresh",
-      "connectedStatus": "Connected",
       "disconnectedDescription": "Resume the connection to work with the {walletName}",
-      "disconnectedStatus": "Not connected",
       "disconnectedTitle": "Wallet not connected",
-      "failedDescription": "Please try again later or create a new wallet",
-      "failedTitle": "Something went wrong",
       "reconnectButton": "Reconnect",
       "reconnectConfirmDescription": "Make sure that corresponding wallet is selected in your wallet app connected via WalletConnect",
       "reconnectConfirmTitle": "Is a proper wallet selected?",
-      "refreshButton": "Refresh",
       "rejectDescription": "The operation was successfully canceled",
       "rejectTitle": "Rejected",
       "signTitle": "Scan with {walletName} to reconnect your wallet"
@@ -2259,39 +1448,18 @@
     "addTalismanExtension": "Talisman",
     "addWalletConnect": "WalletConnect",
     "addWatchOnly": "Watch-only",
-    "connectedLabel": "Connected",
-    "disconnectedLabel": "Disconnected",
     "emptyList": "Wallets not found",
     "flexibleMultisigFlexLabel": "FLEX",
-    "flexibleMultisigLabel": "Flexible Multisig",
-    "multishardLabel": "Multishard",
     "multisigLabel": "Multisig",
     "novaWalletLabel": "Nova Wallet",
     "paritySignerLabel": "Polkadot Vault",
     "polkadotExtensionLabel": "Polkadot js extension",
     "proxiedLabel": "Delegated to you (Proxied)",
     "searchPlaceholder": "Search",
-    "shards": "Shards",
     "subWalletExtensionLabel": "SubWallet extension",
     "talismanExtensionLabel": "Talisman extension",
     "title": "Wallets",
     "walletConnectLabel": "WalletConnect",
     "watchOnlyLabel": "Watch-only"
-  },
-  "welcome": {
-    "addLedgerButton": "Coming soon",
-    "addLedgerComingSoonLabel": "Add Ledger wallet (coming soon)",
-    "addLedgerLabel": "Ledger's the smartest way to secure, buy, exchange and grow your crypto assets",
-    "addParitySignerAlt": "Icon of Polkadot Vault option",
-    "addParitySignerAreaLabel": "Add Polkadot Vault wallet",
-    "addParitySignerButton": "Add Polkadot Vault wallet",
-    "addParitySignerLabel": "Use dedicated hardware wallet for Polkadot, Kusama, and other Substrate-based chains",
-    "addWatchOnlyAlt": "Icon of Watch-Only option",
-    "addWatchOnlyAreaLabel": "Add Watch-Only wallet",
-    "addWatchOnlyButton": "Add Watch-Only wallet",
-    "addWatchOnlyLabel": "Track the activity of any wallet without injecting your private key to Nova Spektr",
-    "ledgerImageAlt": "Icon of Ledger option",
-    "omniEnterpriseLabel": "Nova Spektr",
-    "welcomeToLabel": "Welcome to"
   }
 }

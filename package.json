@@ -68,6 +68,8 @@
     "storybook:build": "storybook build -o $(pnpm --silent run config folders.storybookBuild)",
     "githook:pre-commit": "lint-staged --relative",
     "prepare": "husky",
+    "i18n:check": "node scripts/check-i18n-keys.js",
+    "i18n:clean": "node scripts/clean-i18n-keys.js",
     "r": "pnpm run-s"
   },
   "engines": {
