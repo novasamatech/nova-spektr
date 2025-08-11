@@ -77,7 +77,9 @@ accountSDK(multisigWalletFeature, {
     }
 
     if (accountUtils.isFlexibleProxiedAccount(account)) {
-      return accounts.filter(a => a.accountId === account.proxyAccountId).concat(children);
+      return accounts
+        .filter(a => a.walletId === account.walletId && a.accountId === account.proxyAccountId)
+        .concat(children);
     }
 
     return children;
