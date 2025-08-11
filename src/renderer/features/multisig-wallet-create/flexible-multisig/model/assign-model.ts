@@ -6,7 +6,7 @@ import { z } from 'zod';
 
 import { AccountType, type Address, CryptoType, type NoID, SigningType, WalletType } from '@/shared/core';
 import { type FlexibleMultisigAccount, type FlexibleProxiedAccount } from '@/shared/core/types/account';
-import { Step, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { Step, assert, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { createComplexTxStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
