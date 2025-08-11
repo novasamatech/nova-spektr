@@ -212,7 +212,7 @@ sample({
   },
   fn: ({ signatories, chain, name, threshold, multisigAccountId, proxyAddress }, results) => {
     const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
-    assert(successResult);
+    assert(successResult, 'Successful result for flexible multisig creation was not found');
 
     const timepoint = (successResult.params as ExtrinsicResultParams).timepoint;
     const sortedSignatories = sortBy(
