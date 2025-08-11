@@ -69,8 +69,13 @@ export interface ProxiedConnection {
   proxyType: ProxyType;
 }
 
-export interface FlexibleProxiedAccount extends Omit<ProxiedAccount, 'accountType'> {
+export interface FlexibleProxiedAccount extends ChainAccount {
   accountType: AccountType.FLEX_PROXIED;
+  proxyAccountId: AccountId;
+  delay: number;
+  deposit: string;
+  blockNumber: number;
+  extrinsicIndex: number;
 }
 
 export type DraftAccount<T extends AnyAccount> = Omit<NoID<T>, 'accountId' | 'walletId'>;
