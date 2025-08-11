@@ -18,7 +18,7 @@ import { memo, useCallback, useEffect, useRef } from 'react';
 
 import { useClickOutside } from '@/shared/lib/hooks';
 import { type AccountNode, type AnyAccount } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
+import { accountConnectionTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
 import { AccountStructureNode } from './AccountStructureNode';
@@ -81,6 +81,8 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
     });
 
     for (const child of node.children) {
+      const connection = accountConnectionTransformer({ source: child.account, target: node.account });
+
       edges.push({
         id: `e${child.account.id}-${node.account.id}`,
         source: child.account.id,
@@ -90,11 +92,7 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
           target: node.account,
         },
         markerEnd: {
-          color: accountUtils.isFlexibleProxiedAccount(node.account)
-            ? '#E85649'
-            : accountUtils.isAnyMultisigAccount(node.account)
-              ? '#05B199'
-              : '#2A1FD5',
+          color: connection?.color || '#2A1FD5',
           type: MarkerType.Arrow,
           width: 20,
           height: 20,

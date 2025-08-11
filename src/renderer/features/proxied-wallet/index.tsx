@@ -56,7 +56,7 @@ accountSDK(proxiedWalletFeature, {
     }
   },
   connection({ source, target, t }) {
-    if (accountUtils.isProxiedAccount(target)) {
+    if (accountUtils.isProxiedAccount(target) && t) {
       return {
         labels: target.connections
           .filter(connection => connection.proxyAccountId === source.accountId)
