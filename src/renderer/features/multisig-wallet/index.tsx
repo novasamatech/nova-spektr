@@ -83,7 +83,7 @@ accountSDK(multisigWalletFeature, {
     return children;
   },
   visualGraphNode({ account, t }) {
-    if (accountUtils.isMultisigAccount(account)) {
+    if (accountUtils.isAnyMultisigAccount(account)) {
       return {
         title: 'Multisig',
         subTitle: t('accountsStructure.multisigThreshold', {
@@ -95,13 +95,9 @@ accountSDK(multisigWalletFeature, {
       };
     }
 
-    if (accountUtils.isFlexibleMultisigAccount(account)) {
+    if (accountUtils.isFlexibleProxiedAccount(account)) {
       return {
         title: 'Flexible multisig',
-        subTitle: t('accountsStructure.multisigThreshold', {
-          threshold: account.threshold,
-          total: account.signatories.length,
-        }),
         color: '#E85649',
         background: 'linear-gradient(180deg, #E85649 53.45%, #8707D5 80.32%)',
       };
@@ -116,13 +112,13 @@ accountSDK(multisigWalletFeature, {
     }
   },
   connection({ target }) {
-    if (accountUtils.isMultisigAccount(target)) {
+    if (accountUtils.isAnyMultisigAccount(target)) {
       return {
         color: '#05B199',
       };
     }
 
-    if (accountUtils.isFlexibleMultisigAccount(target)) {
+    if (accountUtils.isFlexibleProxiedAccount(target)) {
       return {
         color: '#E85649',
       };

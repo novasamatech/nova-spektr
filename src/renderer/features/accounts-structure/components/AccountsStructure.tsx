@@ -90,9 +90,9 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
           target: node.account,
         },
         markerEnd: {
-          color: accountUtils.isFlexibleMultisigAccount(node.account)
+          color: accountUtils.isFlexibleProxiedAccount(node.account)
             ? '#E85649'
-            : accountUtils.isMultisigAccount(node.account)
+            : accountUtils.isAnyMultisigAccount(node.account)
               ? '#05B199'
               : '#2A1FD5',
           type: MarkerType.Arrow,
