@@ -8,7 +8,6 @@ import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN 
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Address, AssetBalance, ChainSelect } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
-import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { Fee } from '@/entities/transaction';
 import { WalletIcon, walletModel } from '@/entities/wallet';
@@ -30,8 +29,8 @@ export const CallDataForm = () => {
   return (
     <>
       <form id="transfer-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
-        <NetworkSelect />
         <SignatorySelect />
+        <NetworkSelect />
         <CallDataInput />
       </form>
 
@@ -104,7 +103,7 @@ const SignatorySelect = memo(() => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const signatories = useUnit(formModel.$signatories);
+  const signatories = useUnit(formModel.$availableSignatories);
   const balances = useUnit(balanceModel.$balances);
   const chain = useUnit(formModel.form.fields.chain.$value);
   const {
@@ -124,9 +123,20 @@ const SignatorySelect = memo(() => {
     const options: ReactNode[] = [];
     if (nullable(chain) || nullable(asset)) return options;
 
-    for (const wallet of wallets) {
-      const walletAccounts = accountService.filterAccountsByWallet(signatories, wallet.id);
-      if (walletAccounts.length === 0) continue;
+    // Group signatories by wallet - signatories are already filtered by selected wallet
+    const walletGroups = new Map<number, typeof signatories>();
+
+    for (const signatory of signatories) {
+      const walletId = signatory.walletId;
+      if (!walletGroups.has(walletId)) {
+        walletGroups.set(walletId, []);
+      }
+      walletGroups.get(walletId)!.push(signatory);
+    }
+
+    for (const [walletId, walletAccounts] of walletGroups) {
+      const wallet = wallets.find((w) => w.id === walletId);
+      if (!wallet) continue;
 
       const walletTitle = (
         <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">

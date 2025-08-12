@@ -182,29 +182,23 @@ const $availableChains = combine(
     signatories: $availableSignatories,
   },
   ({ chains, signatories }) => {
-    if (signatories.length === 0) return chains;
+    if (signatories.length === 0) return [];
     return chains.filter((chain) => {
       return signatories.some((a) => accountService.isAccountAvailableOnChain(a, chain));
     });
   },
 );
 
-const $signatories = combine(form.fields.chain.$value, $availableSignatories, (chain, signatories) => {
-  if (nullable(chain)) return [];
-  return signatories.filter((a) => accountService.isAccountAvailableOnChain(a, chain));
-});
-
-// additional data loading
-
 sample({
-  clock: $signatories,
+  clock: $availableSignatories,
   target: balanceSubModel.fetchAccounts,
 });
 
 // flow setup
 
+// Auto-select first available chain when chains become available
 sample({
-  clock: flow.open,
+  clock: [$availableChains, flow.open],
   source: $availableChains,
   fn: (chains) => chains.at(0) ?? null,
   target: form.fields.chain.change,
@@ -318,7 +312,7 @@ export const formModel = {
   $fee,
   $pendingFee,
 
-  $signatories,
+  $availableSignatories,
   $availableChains,
 
   stepChanged,
