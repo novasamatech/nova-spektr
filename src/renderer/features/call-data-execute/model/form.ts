@@ -180,12 +180,12 @@ const $availableSignatories = walletModel.$availableAccounts.map((accounts) => {
 const $availableChains = combine(
   {
     chains: networkModel.$chains.map((chains) => Object.values(chains)),
-    signatories: $availableSignatories,
+    selectedSignatory: form.fields.signatory.$value,
   },
-  ({ chains, signatories }) => {
-    if (signatories.length === 0) return [];
+  ({ chains, selectedSignatory }) => {
+    if (nullable(selectedSignatory)) return [];
     return chains.filter((chain) => {
-      return signatories.some((a) => accountService.isAccountAvailableOnChain(a, chain));
+      return accountService.isAccountAvailableOnChain(selectedSignatory, chain);
     });
   },
 );
@@ -197,11 +197,12 @@ sample({
 
 // flow setup
 
-// Auto-select first available chain when chains become available
 sample({
-  clock: [$availableChains, flow.open],
-  source: $availableChains,
-  fn: (chains) => chains.at(0) ?? null,
+  clock: [$availableChains],
+  source: { availableChains: $availableChains, selectedChain: form.fields.chain.$value },
+  filter: ({ availableChains, selectedChain }) =>
+    !selectedChain || !availableChains.some((chain) => chain.chainId === selectedChain.chainId),
+  fn: ({ availableChains }) => availableChains.at(0) ?? null,
   target: form.fields.chain.change,
 });
 
