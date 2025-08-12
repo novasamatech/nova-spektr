@@ -16,13 +16,22 @@ const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: nul
 
 const $wallet = flow.state.map(({ wallet }) => wallet);
 
-const changeDoNotShowAgain = createEvent<boolean>();
+const changeConnectedAccountsDoNotShowAgain = createEvent<boolean>();
 
-const $doNotShowAgain = restore(changeDoNotShowAgain, false);
+const $connectedAccountsDoNotShowAgain = restore(changeConnectedAccountsDoNotShowAgain, false);
 
 persist({
   key: 'forget_wallet_is_do_not_show_again',
-  store: $doNotShowAgain,
+  store: $connectedAccountsDoNotShowAgain,
+  sync: true,
+});
+
+const changeHideWalletDoNotShowAgain = createEvent<boolean>();
+const $hideWalletDoNotShowAgain = restore(changeHideWalletDoNotShowAgain, false);
+
+persist({
+  key: 'hide_wallet_do_not_show_again',
+  store: $hideWalletDoNotShowAgain,
   sync: true,
 });
 
@@ -113,9 +122,11 @@ sample({
 export const forgetWalletModel = {
   flow,
 
+  $wallet,
   $isConnectedAccountsAlertNeeded,
-  $doNotShowAgain,
-
+  $connectedAccountsDoNotShowAgain,
+  $hideWalletDoNotShowAgain,
   remove,
-  changeDoNotShowAgain,
+  changeConnectedAccountsDoNotShowAgain,
+  changeHideWalletDoNotShowAgain,
 };
