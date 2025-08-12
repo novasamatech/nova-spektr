@@ -18,6 +18,7 @@ import { JsonArgs } from './JsonArgs';
 export const CallDataForm = () => {
   const { t } = useI18n();
   const { submit } = useForm(formModel.form);
+  const showSignatories = useUnit(formModel.$showSignatories);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -29,7 +30,8 @@ export const CallDataForm = () => {
   return (
     <>
       <form id="transfer-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
-        <SignatorySelect />
+        <InitiatorSelect />
+        {showSignatories && <SignatorySelect />}
         <NetworkSelect />
         <CallDataInput />
       </form>
@@ -99,11 +101,138 @@ const NetworkSelect = memo(() => {
   );
 });
 
+const InitiatorSelect = memo(() => {
+  const { t } = useI18n();
+
+  const wallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(formModel.$allAccounts);
+  const balances = useUnit(balanceModel.$balances);
+  const chain = useUnit(formModel.form.fields.chain.$value);
+  const {
+    fields: { initiator: initiator },
+  } = useForm(formModel.form);
+
+  const asset = chain ? getNativeAsset(chain.assets) : null;
+
+  const onChange = (id: string) => {
+    const v = allAccounts.find((c) => c.id === id);
+    if (nonNullable(v)) {
+      initiator.onChange(v);
+    }
+  };
+
+  const options = useMemo(() => {
+    const options: ReactNode[] = [];
+    if (nullable(chain) || nullable(asset)) return options;
+
+    // Group accounts by wallet
+    const walletGroups = new Map<number, typeof allAccounts>();
+
+    for (const account of allAccounts) {
+      const walletId = account.walletId;
+      if (!walletGroups.has(walletId)) {
+        walletGroups.set(walletId, []);
+      }
+      walletGroups.get(walletId)!.push(account);
+    }
+
+    for (const [walletId, walletAccounts] of walletGroups) {
+      const wallet = wallets.find((w) => w.id === walletId);
+      if (!wallet) continue;
+
+      const walletTitle = (
+        <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
+          <WalletIcon type={wallet.type} />
+          <FootnoteText className="text-text-secondary">{wallet.name}</FootnoteText>
+        </Box>
+      );
+
+      options.push(
+        <Select.Group key={wallet.id} title={walletTitle}>
+          {walletAccounts.map((a) => {
+            const balance = balanceUtils.getBalance(balances, a.accountId, chain.chainId, asset.assetId);
+
+            return (
+              <Select.Item key={a.id} value={a.id} depth={1}>
+                <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+                  <Address
+                    showIcon
+                    canCopy={false}
+                    variant="truncate"
+                    title={a.name !== wallet.name ? a.name : void 0}
+                    address={toAddress(a.accountId, { prefix: chain?.addressPrefix })}
+                  />
+                  <AssetBalance
+                    className="text-footnote text-text-secondary"
+                    value={transferableAmountBN(balance)}
+                    asset={asset}
+                  />
+                </Box>
+              </Select.Item>
+            );
+          })}
+        </Select.Group>,
+      );
+    }
+
+    return options;
+  }, [wallets, balances, chain, asset, allAccounts]);
+
+  const wallet = useMemo(() => {
+    if (initiator.value) {
+      return wallets.find((w) => w.id === initiator.value?.walletId) ?? null;
+    }
+
+    return null;
+  }, [wallets, initiator.value]);
+
+  const balance = useMemo(() => {
+    if (initiator.value && chain && asset) {
+      const balance = balanceUtils.getBalance(balances, initiator.value.accountId, chain.chainId, asset.assetId);
+      return transferableAmountBN(balance);
+    }
+
+    return BN_ZERO;
+  }, [wallets, initiator.value, chain, asset]);
+
+  return (
+    <Field text={t('callData.fields.initiator.label')}>
+      <Select
+        placeholder={t('callData.fields.initiator.placeholder')}
+        value={initiator.value?.id ?? null}
+        valueNode={
+          nonNullable(initiator.value) && nonNullable(wallet) ? (
+            <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+              <Address
+                showIcon
+                canCopy={false}
+                variant="truncate"
+                title={wallet.name}
+                address={toAddress(initiator.value.accountId, { prefix: chain?.addressPrefix })}
+              />
+              {nonNullable(asset) && (
+                <AssetBalance className="text-footnote text-text-secondary" value={balance} asset={asset} />
+              )}
+            </Box>
+          ) : null
+        }
+        height="md"
+        onChange={onChange}
+      >
+        {options}
+      </Select>
+      <InputHint variant="error" active={initiator.hasError}>
+        {t(initiator.errorMessage)}
+      </InputHint>
+    </Field>
+  );
+});
+
 const SignatorySelect = memo(() => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const signatories = useUnit(formModel.$availableSignatories);
+  const signatories = useUnit(formModel.$signatories);
   const balances = useUnit(balanceModel.$balances);
   const chain = useUnit(formModel.form.fields.chain.$value);
   const {
@@ -123,7 +252,7 @@ const SignatorySelect = memo(() => {
     const options: ReactNode[] = [];
     if (nullable(chain) || nullable(asset)) return options;
 
-    // Group signatories by wallet - signatories are already filtered by selected wallet
+    // Group signatories by wallet
     const walletGroups = new Map<number, typeof signatories>();
 
     for (const signatory of signatories) {

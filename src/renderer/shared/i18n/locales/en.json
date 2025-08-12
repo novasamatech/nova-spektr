@@ -165,12 +165,16 @@
       "signatoryRequired": "Signatory is required"
     },
     "fields": {
+      "initiator": {
+        "label": "Submit from",
+        "placeholder": "Select account..."
+      },
       "network": {
         "label": "Network",
         "placeholder": "Select network..."
       },
       "signatory": {
-        "label": "Signing from",
+        "label": "Signing with",
         "placeholder": "Select signatory..."
       }
     },

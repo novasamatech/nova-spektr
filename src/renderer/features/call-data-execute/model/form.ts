@@ -8,7 +8,7 @@ import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, nonNullableMap, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
-import { createFeeCalculator } from '@/shared/transactions';
+import { createFeeCalculator, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, type EncodedTransaction, accountService, transactionService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -26,6 +26,7 @@ import { callDataExecuteFeature } from './feature';
 
 type FormData = {
   chain: Chain | null;
+  initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   callData: string;
 };
@@ -39,6 +40,9 @@ const form: Form<FormData> = createForm<FormData>({
       validator: () => (chain) => {
         if (!chain) return { message: 'callData.errors.chainRequired' };
       },
+    },
+    initiator: {
+      defaultValue: null,
     },
     signatory: {
       defaultValue: null,
@@ -71,6 +75,14 @@ const form: Form<FormData> = createForm<FormData>({
   },
 });
 
+// Clear signatory errors when initiator has permissions
+sample({
+  clock: form.fields.initiator.$value,
+  source: form.fields.initiator.$value,
+  filter: (initiator) => Boolean(initiator && accountService.hasPermissionToMakeActions(initiator)),
+  target: form.fields.signatory.resetError,
+});
+
 // extrinsic
 
 const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis) =>
@@ -79,6 +91,7 @@ const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis)
 
 const $throttledCallData = restore(throttle(form.fields.callData.$value, 500), '').reset(flow.close);
 
+// build transaction
 const $transaction = $throttledCallData.map((callData): EncodedTransaction | null => {
   if (callData.length === 0) return null;
   return {
@@ -133,7 +146,8 @@ const $signatoryBalance = combine(
     balances: balanceModel.$balances,
   },
   ({ signatory, chain, balances }) => {
-    if (nullable(signatory) || nullable(chain)) return null;
+    if (nullable(chain)) return null;
+    if (nullable(signatory)) return null;
 
     return (
       balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, getNativeAsset(chain.assets).assetId) ??
@@ -173,27 +187,36 @@ sample({
 
 // form options
 
-const $availableSignatories = walletModel.$availableAccounts.map((accounts) => {
-  return accounts.filter(accountService.hasPermissionToMakeActions);
-});
+const $allAccounts = walletModel.$availableAccounts;
 
 const $availableChains = combine(
   {
     chains: networkModel.$chains.map((chains) => Object.values(chains)),
-    selectedSignatory: form.fields.signatory.$value,
+    initiator: form.fields.initiator.$value,
   },
-  ({ chains, selectedSignatory }) => {
-    if (nullable(selectedSignatory)) return [];
+  ({ chains, initiator }) => {
+    if (nullable(initiator)) return [];
     return chains.filter((chain) => {
-      return accountService.isAccountAvailableOnChain(selectedSignatory, chain);
+      return accountService.isAccountAvailableOnChain(initiator, chain);
     });
   },
 );
 
 sample({
-  clock: $availableSignatories,
+  clock: $allAccounts,
   target: balanceSubModel.fetchAccounts,
 });
+
+const $signatories = createSignatoriesStore({
+  chain: form.fields.chain.$value,
+  accounts: $allAccounts,
+  initiator: form.fields.initiator.$value,
+});
+
+const $showSignatories = combine({
+  signatories: $signatories,
+  initiator: form.fields.initiator.$value,
+}).map(({ signatories, initiator }) => signatories.length > 1 || signatories.at(0)?.accountId !== initiator?.accountId);
 
 // flow setup
 
@@ -206,40 +229,41 @@ sample({
   target: form.fields.chain.change,
 });
 
-// Preselect signatory based on selected wallet
+// Preselect initiator based on selected wallet
 sample({
-  clock: [walletSelect.$selectedWallet, $availableSignatories, flow.open],
+  clock: [flow.open],
   source: {
     selectedWallet: walletSelect.$selectedWallet,
-    availableSignatories: $availableSignatories,
-    currentSignatory: form.fields.signatory.$value,
+    allAccounts: $allAccounts,
+    initiator: form.fields.initiator.$value,
   },
-  fn: ({ selectedWallet, availableSignatories, currentSignatory }) => {
-    if (nonNullable(currentSignatory) || nullable(selectedWallet)) return currentSignatory;
+  fn: ({ selectedWallet, allAccounts, initiator }) => {
+    if (nonNullable(initiator) || nullable(selectedWallet)) return initiator;
 
-    const matchingSignatory = availableSignatories.find((signatory) =>
-      selectedWallet.accounts.some((account) => account.accountId === signatory.accountId),
+    const matchingAccount = allAccounts.find((account) =>
+      selectedWallet.accounts.some((walletAccount) => walletAccount.accountId === account.accountId),
     );
 
-    return (matchingSignatory || availableSignatories.at(0)) ?? null;
+    return (matchingAccount || allAccounts.at(0)) ?? null;
   },
+  target: form.fields.initiator.change,
+});
+
+// Preselect signatory when initiator changes
+sample({
+  clock: [$signatories],
+  source: {
+    selectedSignatory: form.fields.signatory.$value,
+  },
+  filter: ({ selectedSignatory }, signatories) =>
+    !selectedSignatory || !signatories.some((s) => s.accountId === selectedSignatory.accountId),
+  fn: (_, signatories) => signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
 
 sample({
   clock: form.fields.chain.change,
   target: form.fields.callData.resetError,
-});
-
-sample({
-  clock: form.fields.chain.change,
-  source: form.fields.signatory.$value,
-  fn: (signatory, chain) => {
-    if (nullable(signatory) || nullable(chain)) return null;
-
-    return signatory;
-  },
-  target: form.fields.signatory.change,
 });
 
 sample({
@@ -273,9 +297,9 @@ const showConfirmation = sample({
       api: source.api,
       chain: form.chain,
       transaction: source.transaction,
-      initiator: form.signatory,
-      signatory: form.signatory,
-      route: [form.signatory],
+      initiator: form.initiator,
+      signatory: form.signatory || form.initiator,
+      route: [form.signatory || form.initiator],
       args: source.args,
       fee: source.fee,
     } satisfies ConfirmInput;
@@ -288,6 +312,7 @@ sample({
   target: confirmModel.init,
 });
 
+// pass signatory from form
 const sign = sample({
   clock: confirmModel.startSigning,
   source: {
@@ -296,9 +321,18 @@ const sign = sample({
     api: $api,
   },
   fn({ form, transaction, api }) {
-    if (nullable(api) || nullable(transaction) || nullable(form.signatory) || nullable(form.chain)) return null;
+    if (
+      nullable(api) ||
+      nullable(transaction) ||
+      nullable(form.initiator) ||
+      nullable(form.signatory) ||
+      nullable(form.chain)
+    )
+      return null;
+
     return {
       transaction,
+      // initiator: form.initiator,
       signatory: form.signatory,
       chain: form.chain,
       api,
@@ -331,8 +365,10 @@ export const formModel = {
   $fee,
   $pendingFee,
 
-  $availableSignatories,
-  $availableChains,
+  $allAccounts: $allAccounts,
+  $availableChains: $availableChains,
+  $signatories: $signatories,
+  $showSignatories: $showSignatories,
 
   stepChanged,
 };
