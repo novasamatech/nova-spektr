@@ -21,7 +21,9 @@ const $list = combine(
     const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
 
     const accountIds = walletAccounts.map((a) => a.accountId);
-    return operations.filter((tx) => accountIds.includes(tx.accountId) && tx.chainId in chains);
+    return operations.filter(
+      (tx) => accountIds.includes(tx.accountId) && tx.chainId in chains && tx.status === 'pending',
+    );
   },
 );
 

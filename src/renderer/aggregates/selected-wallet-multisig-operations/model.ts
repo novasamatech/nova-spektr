@@ -12,9 +12,7 @@ const $list = combine(
   },
   ({ accounts, operations, chains }) => {
     const accountIds = accounts.map(a => a.accountId);
-    return operations.filter(
-      tx => accountIds.includes(tx.accountId) && tx.chainId in chains && tx.status === 'pending',
-    );
+    return operations.filter(tx => accountIds.includes(tx.accountId) && tx.chainId in chains);
   },
 );
 
