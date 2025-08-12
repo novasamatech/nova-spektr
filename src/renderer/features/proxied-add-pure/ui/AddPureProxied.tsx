@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, useState } from 'react';
+import { type PropsWithChildren, useEffect, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
 import { useForm } from '@/shared/forms';
@@ -45,6 +45,12 @@ export const AddPureProxied = ({ wallet, onClose, children }: Props) => {
     addPureProxiedModel.output.flowFinished();
     onClose?.();
   };
+
+  useEffect(() => {
+    if (step === Step.NONE) {
+      setIsModalOpen(false);
+    }
+  }, [step]);
 
   const onToggle = (isOpen: boolean) => {
     if (isOpen) {
