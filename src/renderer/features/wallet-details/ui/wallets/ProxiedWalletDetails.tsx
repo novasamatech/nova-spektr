@@ -13,7 +13,7 @@ import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { WalletIcon, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
-import { AddProxy, addProxyModel } from '@/features/proxy-add';
+import { AddProxy } from '@/features/proxy-add';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -55,13 +55,14 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (!wallet || !walletUtils.isProxied(wallet)) return null;
 
-  const proxyWallets = wallet.accounts[0]?.connections.map(connection => ({
-    connection,
-    proxyWallet: walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: w => !walletUtils.isWatchOnly(w),
-      accountFn: a => connection.proxyAccountId === a.accountId,
-    }),
-  }));
+  const proxyWallets =
+    wallet.accounts[0]?.connections.map(connection => ({
+      connection,
+      proxyWallet: walletUtils.getWalletFilteredAccounts(wallets, {
+        walletFn: w => !walletUtils.isWatchOnly(w),
+        accountFn: a => connection.proxyAccountId === a.accountId,
+      }),
+    })) ?? [];
 
   const actions: WalletAction[] = [];
 
@@ -191,7 +192,6 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
               hasProxies={hasProxies}
               canCreateProxy={canCreateProxy}
               className="h-[361px]"
-              onAddProxy={addProxyModel.events.flowStarted}
             />
           </Tabs.Content>
         </Tabs>
