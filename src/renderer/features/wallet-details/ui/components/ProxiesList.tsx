@@ -25,10 +25,9 @@ type Props = {
   hasProxies: boolean;
   canCreateProxy?: boolean;
   className?: string;
-  onAddProxy?: () => void;
 };
 
-export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = true, onAddProxy }: Props) => {
+export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
@@ -103,7 +102,7 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
           </ul>
         </>
       ) : (
-        <NoProxiesAction canCreateProxy={canCreateProxy} onAddProxy={onAddProxy} />
+        <NoProxiesAction canCreateProxy={canCreateProxy} wallet={wallet} />
       )}
 
       <RemoveProxy wallet={wallet} />
