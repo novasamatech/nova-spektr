@@ -221,9 +221,7 @@ sample({
       selectedWallet.accounts.some((account) => account.accountId === signatory.accountId),
     );
 
-    console.log({ matchingSignatory });
-
-    return matchingSignatory || null;
+    return (matchingSignatory || availableSignatories.at(0)) ?? null;
   },
   target: form.fields.signatory.change,
 });
