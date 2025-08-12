@@ -41,12 +41,12 @@ const flow = createGate();
 const stepChanged = createEvent<Step>();
 const signerSelected = createEvent<AnyAccount>();
 
-const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.close);
+const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.open);
 
-const $error = createStore('').reset(flow.close);
-const $signer = restore(signerSelected, null).reset(flow.close);
+const $error = createStore('').reset(flow.open);
+const $signer = restore(signerSelected, null).reset(flow.open);
 
-const $signerWallet = createStore<Wallet | null>(null).reset(flow.close);
+const $signerWallet = createStore<Wallet | null>(null).reset(flow.open);
 
 sample({
   clock: signatoryModel.$ownedSignatoriesWallets,
