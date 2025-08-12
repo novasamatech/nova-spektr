@@ -72,7 +72,7 @@ const form: Form<FormData> = createForm<FormData>({
       }),
     },
     callData: {
-      defaultValue: `0x05030090e4c8ab9ba4ed26165638d3e96dc6853c0b4570dd825b5269eb45b66d647106050000e40b5402`,
+      defaultValue: '',
       validator: () => (callData) => {
         if (!callData) return { message: 'callData.errors.required' };
         if (!callData.startsWith('0x')) {
@@ -120,11 +120,26 @@ const { $tx: $wrappedTx } = createWrappedTxStore({
   route: $route,
 });
 
-const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
-// make 2 - one wrapped for submit, and one unwrapped for display
-const $args = combine($extrinsic, form.fields.chain.$value, (extrinsic, chain) => {
+const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
+const $hasExtrinsic = $wrappedExtrinsic.map((value) => nonNullable(value));
+
+const $wrappedArgs = combine($wrappedExtrinsic, form.fields.chain.$value, (extrinsic, chain) => {
   return extrinsic && chain ? callDataExecuteService.formatExtrinsic(extrinsic, chain) : null;
 });
+
+const $args = combine(
+  {
+    api: $api,
+    transaction: $transaction,
+    chain: form.fields.chain.$value,
+  },
+  ({ api, transaction, chain }) => {
+    if (!api || !transaction || !chain) return null;
+
+    const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
+    return callDataExecuteService.formatExtrinsic(extrinsic, chain);
+  },
+);
 
 const createExtrinsicFx = createQueuedEffect(
   ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
@@ -140,13 +155,13 @@ sample({
 
 sample({
   clock: createExtrinsicFx.doneData,
-  target: $extrinsic,
+  target: $wrappedExtrinsic,
 });
 
 sample({
   clock: createExtrinsicFx.fail,
   fn: () => null,
-  target: $extrinsic,
+  target: $wrappedExtrinsic,
 });
 
 sample({
@@ -157,7 +172,7 @@ sample({
 
 const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
   active: callDataExecuteFeature.isRunning,
-  extrinsic: $extrinsic,
+  extrinsic: $wrappedExtrinsic,
 });
 
 const $signatoryBalance = combine(
@@ -295,7 +310,7 @@ sample({
 const $canSubmit = combine(
   {
     isValid: form.$isValid,
-    extrinsic: $extrinsic,
+    extrinsic: $wrappedExtrinsic,
     fee: $fee,
   },
   ({ isValid, extrinsic, fee }) => isValid && nonNullable(extrinsic) && !fee.isZero(),
@@ -307,7 +322,7 @@ const showConfirmation = sample({
   clock: form.submit.doneData,
   source: {
     transaction: $wrappedTx,
-    args: $args,
+    args: $wrappedArgs,
     fee: $fee,
     api: $api,
   },
@@ -380,7 +395,7 @@ export const formModel = {
   $canSubmit,
   $step,
   $api,
-  $extrinsic,
+  $hasExtrinsic,
   $args,
   $fee,
   $pendingFee,
