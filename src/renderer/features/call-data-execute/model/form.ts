@@ -13,6 +13,7 @@ import { type AnyAccount, type EncodedTransaction, accountService, transactionSe
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
@@ -204,6 +205,28 @@ sample({
   target: form.fields.chain.change,
 });
 
+// Preselect signatory based on selected wallet
+sample({
+  clock: [walletSelect.$selectedWallet, $availableSignatories, flow.open],
+  source: {
+    selectedWallet: walletSelect.$selectedWallet,
+    availableSignatories: $availableSignatories,
+    currentSignatory: form.fields.signatory.$value,
+  },
+  fn: ({ selectedWallet, availableSignatories, currentSignatory }) => {
+    if (nonNullable(currentSignatory) || nullable(selectedWallet)) return currentSignatory;
+
+    const matchingSignatory = availableSignatories.find((signatory) =>
+      selectedWallet.accounts.some((account) => account.accountId === signatory.accountId),
+    );
+
+    console.log({ matchingSignatory });
+
+    return matchingSignatory || null;
+  },
+  target: form.fields.signatory.change,
+});
+
 sample({
   clock: form.fields.chain.change,
   target: form.fields.callData.resetError,
@@ -214,11 +237,8 @@ sample({
   source: form.fields.signatory.$value,
   fn: (signatory, chain) => {
     if (nullable(signatory) || nullable(chain)) return null;
-    // don't touch selected signatory if it exists on the new chain
-    if (accountService.isAccountAvailableOnChain(signatory, chain)) {
-      return signatory;
-    }
-    return null;
+
+    return signatory;
   },
   target: form.fields.signatory.change,
 });
