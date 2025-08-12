@@ -55,13 +55,14 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (!wallet || !walletUtils.isProxied(wallet)) return null;
 
-  const proxyWallets = wallet.accounts[0]?.connections.map(connection => ({
-    connection,
-    proxyWallet: walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: w => !walletUtils.isWatchOnly(w),
-      accountFn: a => connection.proxyAccountId === a.accountId,
-    }),
-  }));
+  const proxyWallets =
+    wallet.accounts[0]?.connections.map(connection => ({
+      connection,
+      proxyWallet: walletUtils.getWalletFilteredAccounts(wallets, {
+        walletFn: w => !walletUtils.isWatchOnly(w),
+        accountFn: a => connection.proxyAccountId === a.accountId,
+      }),
+    })) ?? [];
 
   const actions: WalletAction[] = [];
 
