@@ -28,9 +28,7 @@ export const Price = ({ amount, code, symbol }: Props) => {
       <Tooltip.Trigger>
         <span>{truncatePrice(priceText)}</span>
       </Tooltip.Trigger>
-      <Tooltip.Content>
-        <p>{priceText}</p>
-      </Tooltip.Content>
+      <Tooltip.Content>{priceText}</Tooltip.Content>
     </Tooltip>
   ) : (
     <span>{priceText}</span>
