@@ -17,14 +17,14 @@ import {
   withdrawableAmount,
 } from '@/shared/lib/utils';
 import { Button, CaptionText, InputHint } from '@/shared/ui';
-import { AccountSelect, Address, Identicon, SignatorySelect } from '@/shared/ui-entities';
+import { AccountSelect, Address, Identicon, SignatorySelect, WalletIcon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
-import { AccountSelectModal, DeliveryFeeAlert, WalletIcon, accountUtils, walletModel } from '@/entities/wallet';
+import { AccountSelectModal, DeliveryFeeAlert, accountUtils, walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';

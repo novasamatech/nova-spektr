@@ -1,5 +1,14 @@
-import { type ProxiedAccount } from '@/shared/core';
-import { type AnyAccount, type AnyDecodedTransaction, type Section } from '@/domains/network';
+import { type ApiPromise } from '@polkadot/api';
+
+import {
+  type CallData,
+  type DecodedTransaction,
+  type ProxiedAccount,
+  type ProxyType,
+  type Transaction,
+} from '@/shared/core';
+import { type AnyAccount, type AnyDecodedTransaction, type AnyTransaction } from '@/domains/network';
+import { decodeCallData } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 
 import { type ProxyTransaction } from './types';
@@ -108,13 +117,23 @@ import { type ProxyTransaction } from './types';
 // }
 
 function checkPermission(
+  api: ApiPromise,
   route: AnyAccount[],
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  call: Section,
-): { success: true } | { success: false; account: ProxiedAccount } {
-  const proxiedRoute = route.filter(accountUtils.isProxiedAccount);
-  if (proxiedRoute.length === 0) {
+  transaction: AnyTransaction,
+): { success: true } | { success: false; account: ProxiedAccount; proxyType: ProxyType } {
+  if (route.length === 0) {
     return { success: true };
+  }
+
+  const currentTransaction: Transaction | DecodedTransaction = transaction;
+
+  for (const account of route) {
+    if (accountUtils.isMultisigAccount(account)) {
+      const call: CallData = currentTransaction.args.call;
+      currentTransaction = decodeCallData(api, account.accountId, call);
+    }
+    if (accountUtils.isProxiedAccount(account)) {
+    }
   }
 
   // const res: Call | ProxyCall = {

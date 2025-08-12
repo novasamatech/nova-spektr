@@ -71,15 +71,13 @@ accountSDK(proxiedWalletFeature, {
       };
     }
   },
-  validateCallPermission() {
-    // ToDo: revert when validations fixed
-    // validateCallPermission({ route, call }) {
-    // const result = proxyService.checkPermission(route, call);
-    // if (result.success) return;
-    // return {
-    //   account: result.account,
-    //   message: `Proxy account ${result.account} with type ${result.account.proxyType} cannot handle ${call} call`,
-    // };
+  validateCallPermission({ route, transaction, api }) {
+    const result = proxyService.checkPermission(api, route, transaction);
+    if (result.success) return;
+    return {
+      account: result.account,
+      message: `Proxy account ${result.account} cannot handle ${transaction.type} call`,
+    };
   },
 });
 

@@ -14,13 +14,13 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
-import { Identicon } from '@/shared/ui-entities';
+import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigEvent, type MultisigOperation } from '@/domains/network';
 import { type ExtendedChain } from '@/entities/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle } from '@/entities/transaction';
-import { WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 
 import { OperationIcon } from './OperationIcon';
 

@@ -837,6 +837,18 @@
     "title": {
       "appName": "Nova Spektr",
       "inactiveNetwork": "Network is inactive, please check the connection in network settings"
+    },
+    "transactionErrors": {
+      "balance": {
+        "intro": "Wallet <wallet/> has insufficient funds to cover",
+        "message": "Please top up the balance of this wallet and try again.",
+        "required": "Total amount required:",
+        "section": "the {action} of {balance}"
+      },
+      "permission": {
+        "intro": "Some wallet in the execution route has access restrictions set by the proxy connection.",
+        "message": "Please review the proxy account permissions and adjust the settings to proceed with this operation."
+      }
     }
   },
   "governance": {

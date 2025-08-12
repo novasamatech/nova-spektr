@@ -165,7 +165,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
           height: operation.blockCreated,
           index: operation.indexCreated,
         } satisfies Timepoint,
-        callData: operation.callData,
+        call: operation.callData,
         callHash: operation.callHash,
       },
     };

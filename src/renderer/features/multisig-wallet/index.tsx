@@ -230,7 +230,7 @@ transactionSDK(multisigWalletFeature, {
             threshold: account.threshold,
             otherSignatories,
             maybeTimepoint: null,
-            callData: extrinsic.method.toHex(),
+            call: extrinsic.method.toHex(),
             callHash: extrinsic.method.hash.toHex(),
             maxWeight,
           },
