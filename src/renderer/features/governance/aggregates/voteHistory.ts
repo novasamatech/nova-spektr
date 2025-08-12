@@ -45,8 +45,8 @@ const $voteHistory = combine(
         const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
 
         return splitVotes.map((vote) => {
-          const identity = chainIdentities[vote.voter as AccountId];
-          const identityName = identity ? identityService.getFullName(identity) : null;
+          const voterIdentity = chainIdentities[vote.voter];
+          const identityName = voterIdentity ? identityService.getFullName(voterIdentity) : null;
 
           return {
             ...vote,
@@ -80,7 +80,7 @@ sample({
   source: networkSelectorModel.$governanceChainId,
   filter: nonNullable,
   fn: (chainId: ChainId, history) => {
-    const voters = new Set<string>();
+    const voters = new Set<AccountId>();
 
     for (const historyList of Object.values(history)) {
       for (const vote of historyList) {
@@ -93,7 +93,7 @@ sample({
 
     return {
       chainId,
-      accounts: Array.from(voters) as AccountId[],
+      accounts: Array.from(voters),
     };
   },
   target: identity.request,
