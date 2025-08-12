@@ -2173,6 +2173,7 @@
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",
       "forgetButton": "Remove",
       "hideButton": "Hide",
+      "hideWallet": "Hide wallet",
       "linkedWalletsWillBeRemovedDescription": "This wallet is a signatory in multisigs or as a proxy for other wallets. These related accounts will be automatically hidden. They’ll reappear if you pair this wallet again.",
       "linkedWalletsWillBeRemovedTitle": "Linked wallets will be removed",
       "nameExistsError": "This wallet name already exists",
@@ -2202,7 +2203,9 @@
       "renameWallet": "Enter wallet name",
       "title": "Wallet details",
       "viewDetails": "View details",
-      "walletRemoved": "Wallet removed"
+      "walletRemoved": "Wallet removed",
+      "walletWillBeHidden": "Wallet will be hidden",
+      "youCanRestoreIt": "You can restore it any time from Settings."
     },
     "multisig": {
       "accountGroup": "Account",
@@ -2217,6 +2220,7 @@
       "on": "on",
       "otherSignatories_one": "Other signatory { count }",
       "otherSignatories_other": "Other signatories { count }",
+      "pendingOperations": "This multisig wallet has pending operations. Hiding it won’t cancel them. You can restore it anytime from Settings.",
       "signatoriesGroup": "Signatories { amount }",
       "signatoriesTab": "Signatories",
       "singleChainTitle": "via  <wallet />  {walletName} on  <chain /> chain with threshold { threshold } out of { signatories } signatories",
