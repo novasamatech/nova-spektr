@@ -141,8 +141,8 @@ export const HiddenWalletsModal = () => {
           {content}
         </section>
       </Modal.Content>
-      <Modal.Footer>
-        <Button className="ml-auto" disabled={selectionState.selectedCount === 0} onClick={handleRestore}>
+      <Modal.Footer align="end">
+        <Button disabled={selectionState.selectedCount === 0} onClick={handleRestore}>
           {t('settings.hiddenWallets.restore')}
         </Button>
       </Modal.Footer>
