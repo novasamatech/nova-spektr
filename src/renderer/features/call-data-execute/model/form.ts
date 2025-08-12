@@ -9,7 +9,15 @@ import { createQueuedEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, nonNullableMap, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { createFeeCalculator, createSignatoriesStore } from '@/shared/transactions';
-import { type AnyAccount, type EncodedTransaction, accountService, transactionService } from '@/domains/network';
+import { createRouteStore } from '@/shared/transactions/createRouteStore';
+import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
+import {
+  type AnyAccount,
+  type AnyTransaction,
+  type EncodedTransaction,
+  accountService,
+  transactionService,
+} from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -64,7 +72,7 @@ const form: Form<FormData> = createForm<FormData>({
       }),
     },
     callData: {
-      defaultValue: '',
+      defaultValue: `0x05030090e4c8ab9ba4ed26165638d3e96dc6853c0b4570dd825b5269eb45b66d647106050000e40b5402`,
       validator: () => (callData) => {
         if (!callData) return { message: 'callData.errors.required' };
         if (!callData.startsWith('0x')) {
@@ -91,7 +99,6 @@ const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis)
 
 const $throttledCallData = restore(throttle(form.fields.callData.$value, 500), '').reset(flow.close);
 
-// build transaction
 const $transaction = $throttledCallData.map((callData): EncodedTransaction | null => {
   if (callData.length === 0) return null;
   return {
@@ -100,20 +107,34 @@ const $transaction = $throttledCallData.map((callData): EncodedTransaction | nul
   };
 });
 
+const $route = createRouteStore({
+  chain: form.fields.chain.$value,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: walletModel.$availableAccounts,
+});
+
+const { $tx: $wrappedTx } = createWrappedTxStore({
+  api: $api,
+  transaction: $transaction,
+  route: $route,
+});
+
 const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
+// make 2 - one wrapped for submit, and one unwrapped for display
 const $args = combine($extrinsic, form.fields.chain.$value, (extrinsic, chain) => {
   return extrinsic && chain ? callDataExecuteService.formatExtrinsic(extrinsic, chain) : null;
 });
 
 const createExtrinsicFx = createQueuedEffect(
-  ({ transaction, api }: { transaction: EncodedTransaction | null; api: ApiPromise | null }) => {
+  ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
     if (nullable(transaction) || nullable(api)) return null;
-    return transactionService.createSubmittableExtrinsicFromCallData(transaction.callData, api);
+    return transactionService.createSubmittableExtrinsic(transaction, api);
   },
 );
 
 sample({
-  source: { transaction: $transaction, api: $api },
+  source: { transaction: $wrappedTx, api: $api },
   target: createExtrinsicFx,
 });
 
@@ -285,7 +306,7 @@ const $canSubmit = combine(
 const showConfirmation = sample({
   clock: form.submit.doneData,
   source: {
-    transaction: $transaction,
+    transaction: $wrappedTx,
     args: $args,
     fee: $fee,
     api: $api,
@@ -317,7 +338,7 @@ const sign = sample({
   clock: confirmModel.startSigning,
   source: {
     form: form.$values,
-    transaction: $transaction,
+    transaction: $wrappedTx,
     api: $api,
   },
   fn({ form, transaction, api }) {
@@ -332,7 +353,6 @@ const sign = sample({
 
     return {
       transaction,
-      // initiator: form.initiator,
       signatory: form.signatory,
       chain: form.chain,
       api,
