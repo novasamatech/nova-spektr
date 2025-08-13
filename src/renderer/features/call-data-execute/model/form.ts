@@ -99,6 +99,13 @@ const $transaction = $throttledCallData.map((callData): EncodedTransaction | nul
   };
 });
 
+const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
+const $args = combine($extrinsic, form.fields.chain.$value, (extrinsic, chain) => {
+  if (!extrinsic || !chain) return null;
+
+  return callDataExecuteService.formatExtrinsic(extrinsic, chain);
+});
+
 const $route = createRouteStore({
   chain: form.fields.chain.$value,
   initiator: form.fields.initiator.$value,
@@ -117,20 +124,6 @@ const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(nu
 const $wrappedArgs = combine($wrappedExtrinsic, form.fields.chain.$value, (extrinsic, chain) => {
   return extrinsic && chain ? callDataExecuteService.formatExtrinsic(extrinsic, chain) : null;
 });
-
-const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
-
-const $args = combine(
-  {
-    extrinsic: $extrinsic,
-    chain: form.fields.chain.$value,
-  },
-  ({ extrinsic, chain }) => {
-    if (!extrinsic || !chain) return null;
-
-    return callDataExecuteService.formatExtrinsic(extrinsic, chain);
-  },
-);
 
 const createWrappedExtrinsicFx = createQueuedEffect(
   ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
