@@ -49,6 +49,18 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
       }
     }
 
+    if (struct.method === 'send') {
+      return {
+        type: 'Whitelist',
+      };
+    }
+
+    if (struct.method === 'spendLocal' || struct.method === 'spend') {
+      return {
+        type: 'Spend',
+      };
+    }
+
     // system.remark('RFC_APPROVE({GITHUB_PR},{DOCUMENT_HASH})') is used for rfc voting.
     if (struct.method === 'remark' || struct.method === 'remarkWithEvent') {
       const parsed = pjsSchema.uint8String.safeParse(struct.args.at(0));
@@ -74,12 +86,14 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
         }
       }
     }
+
+    return {
+      type: 'Unknown',
+    };
   } catch (e) {
     console.error(e);
     return null;
   }
-
-  return null;
 }
 
 function getEndBlock(
@@ -122,6 +136,7 @@ async function mapReferendum({
         throw new Error(`Track ${info.data.track} not found in referenda pallet`);
       }
 
+      console.log('huy', id);
       const proposal = await parseProposal(info.data.proposal, api);
       const ends = getEndBlock(info.data.deciding, info.data.submitted, track.info.decisionPeriod, undecidingTimeout);
 

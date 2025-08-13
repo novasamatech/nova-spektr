@@ -29,10 +29,18 @@ export type RfcProposal = {
 
 export type UnknownProposal = {
   type: 'Unknown';
-  description: string;
+  description?: string;
 };
 
-export type Proposal = EvidenceProposal | RfcProposal | UnknownProposal;
+export type WhitelistProposal = {
+  type: 'Whitelist';
+};
+
+export type SpendProposal = {
+  type: 'Spend';
+};
+
+export type Proposal = EvidenceProposal | RfcProposal | UnknownProposal | WhitelistProposal | SpendProposal;
 
 export type OngoingReferendum = {
   type: 'Ongoing';
