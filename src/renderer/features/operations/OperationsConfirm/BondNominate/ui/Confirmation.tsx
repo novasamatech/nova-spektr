@@ -1,7 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { AdditionalType } from '@/shared/core/types/chain';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAmount, getNativeAsset, toAccountId } from '@/shared/lib/utils';
@@ -54,7 +53,7 @@ export const Confirmation = ({
 
   const timelineApi = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirm?.meta.chain.additional?.[AdditionalType.TIMELINE_CHAIN] ?? confirm?.meta.chain?.chainId],
+    keys: [confirm?.meta.chain.additional?.timelineChain ?? confirm?.meta.chain?.chainId],
     fn: (value, [chainId]) => value?.[chainId],
   });
 
