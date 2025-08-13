@@ -106,7 +106,7 @@ const InitiatorSelect = memo(() => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const allAccounts = useUnit(formModel.$allAccounts);
+  const allAccounts = useUnit(walletModel.$availableAccounts);
   const balances = useUnit(balanceModel.$balances);
   const chain = useUnit(formModel.form.fields.chain.$value);
   const {

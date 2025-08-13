@@ -221,10 +221,6 @@ sample({
   target: stepChanged,
 });
 
-// form options
-
-const $allAccounts = walletModel.$availableAccounts;
-
 const $availableChains = combine(
   {
     chains: networkModel.$chains.map((chains) => Object.values(chains)),
@@ -239,13 +235,13 @@ const $availableChains = combine(
 );
 
 sample({
-  clock: $allAccounts,
+  clock: walletModel.$availableAccounts,
   target: balanceSubModel.fetchAccounts,
 });
 
 const $signatories = createSignatoriesStore({
   chain: form.fields.chain.$value,
-  accounts: $allAccounts,
+  accounts: walletModel.$availableAccounts,
   initiator: form.fields.initiator.$value,
 });
 
@@ -270,7 +266,7 @@ sample({
   clock: [flow.open],
   source: {
     selectedWallet: walletSelect.$selectedWallet,
-    allAccounts: $allAccounts,
+    allAccounts: walletModel.$availableAccounts,
     initiator: form.fields.initiator.$value,
   },
   fn: ({ selectedWallet, allAccounts, initiator }) => {
@@ -400,7 +396,6 @@ export const formModel = {
   $fee,
   $pendingFee,
 
-  $allAccounts: $allAccounts,
   $availableChains: $availableChains,
   $signatories: $signatories,
   $showSignatories: $showSignatories,
