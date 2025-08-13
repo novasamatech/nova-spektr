@@ -86,8 +86,8 @@
     "allAccounts": "All accounts",
     "assetsOnLabel": "Your assets on:",
     "availableNetworks": "{count} networks",
-    "availableNetworks_one": "balances.availableNetworks",
-    "availableNetworks_other": "balances.availableNetworks",
+    "availableNetworks_one": "{count} network",
+    "availableNetworks_other": "{count} networks",
     "balance": "Balance",
     "balanceTooltip": "Transferable: <amountFree /><br />Locked: <amountLocked /><br />Reserved: <amountReserved />",
     "chainCentric": "Chain-centric",
@@ -1125,7 +1125,7 @@
       "treasurySmallTips": "Treasury: Small tips",
       "vote": {
         "noVoteForReferendum": "No vote for referendum",
-        "timeoutReferendumError": "governance.referendums.vote.timeoutReferendumError"
+        "timeoutReferendumError": "Timeout referendum error"
       },
       "wishForChange": "Wish for change"
     },
