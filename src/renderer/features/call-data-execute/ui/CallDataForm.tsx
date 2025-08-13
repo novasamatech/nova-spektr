@@ -8,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Address, AssetBalance, ChainSelect } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
+import { Accordion, Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { Fee } from '@/entities/transaction';
@@ -146,53 +146,57 @@ const InitiatorSelect = memo(() => {
         }
       }
 
-      const groupTitle = (
-        <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
-          <WalletIcon type={walletFamily as WalletFamily} />
-          <FootnoteText className="font-semibold text-text-secondary uppercase">
-            {t(walletSelectFeature.constants.GROUP_LABELS[walletFamily as WalletFamily])}
-          </FootnoteText>
-        </Box>
-      );
-
       options.push(
-        <Select.Group key={walletFamily} title={groupTitle}>
-          {Array.from(uniqueAccounts.values()).map((account) => {
-            // Only show balance if the account is available on the selected chain
-            const isAvailableOnChain = accountService.isAccountAvailableOnChain(account, chain);
-            const balance = isAvailableOnChain
-              ? balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId)
-              : null;
-            const wallet = wallets.find((w) => w.id === account.walletId);
+        <Accordion key={walletFamily} initialOpen>
+          <Accordion.Trigger>
+            <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
+              <WalletIcon type={walletFamily as WalletFamily} />
+              <FootnoteText className="font-semibold text-text-secondary uppercase">
+                {t(walletSelectFeature.constants.GROUP_LABELS[walletFamily as WalletFamily])}
+              </FootnoteText>
+              <span className="text-text-tertiary">({Array.from(uniqueAccounts.values()).length})</span>
+            </Box>
+          </Accordion.Trigger>
+          <Accordion.Content>
+            <Box gap={1} padding={[1, 0, 0]}>
+              {Array.from(uniqueAccounts.values()).map((account) => {
+                // Only show balance if the account is available on the selected chain
+                const isAvailableOnChain = accountService.isAccountAvailableOnChain(account, chain);
+                const balance = isAvailableOnChain
+                  ? balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId)
+                  : null;
+                const wallet = wallets.find((w) => w.id === account.walletId);
 
-            return (
-              <Select.Item key={account.id} value={account.id} depth={1}>
-                <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
-                  <div className="min-w-0 flex-col">
-                    <div className="font-medium text-text-primary">{wallet?.name || account.name}</div>
-                    <Address
-                      showIcon
-                      canCopy={false}
-                      variant="truncate"
-                      address={toAddress(account.accountId, { prefix: chain?.addressPrefix })}
-                    />
-                  </div>
-                  {isAvailableOnChain && balance ? (
-                    <AssetBalance
-                      className="text-footnote text-text-secondary"
-                      value={transferableAmountBN(balance)}
-                      asset={asset}
-                    />
-                  ) : (
-                    <FootnoteText className="text-footnote text-text-tertiary">
-                      {isAvailableOnChain ? 'No balance' : 'Not available on chain'}
-                    </FootnoteText>
-                  )}
-                </Box>
-              </Select.Item>
-            );
-          })}
-        </Select.Group>,
+                return (
+                  <Select.Item key={account.id} value={account.id} depth={1}>
+                    <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+                      <div className="min-w-0 flex-col">
+                        <div className="font-medium text-text-primary">{wallet?.name || account.name}</div>
+                        <Address
+                          showIcon
+                          canCopy={false}
+                          variant="truncate"
+                          address={toAddress(account.accountId, { prefix: chain?.addressPrefix })}
+                        />
+                      </div>
+                      {isAvailableOnChain && balance ? (
+                        <AssetBalance
+                          className="text-footnote text-text-secondary"
+                          value={transferableAmountBN(balance)}
+                          asset={asset}
+                        />
+                      ) : (
+                        <FootnoteText className="text-footnote text-text-tertiary">
+                          {isAvailableOnChain ? 'No balance' : 'Not available on chain'}
+                        </FootnoteText>
+                      )}
+                    </Box>
+                  </Select.Item>
+                );
+              })}
+            </Box>
+          </Accordion.Content>
+        </Accordion>,
       );
     }
 
