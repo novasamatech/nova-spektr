@@ -5,7 +5,6 @@ import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useGraphql } from '@/app/providers';
 import { localStorageService } from '@/shared/api/local-storage';
 import { type Address, type ChainId, type Stake, type Validator } from '@/shared/core';
-import { AdditionalType } from '@/shared/core/types/chain';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getRelaychainAsset, toAccountId, toAddress } from '@/shared/lib/utils';
@@ -129,7 +128,7 @@ export const Staking = () => {
   const explorers = activeChain?.explorers;
 
   const timelineChainId = useMemo(() => {
-    return activeChain?.additional?.[AdditionalType.TIMELINE_CHAIN] ?? activeChain?.chainId;
+    return activeChain?.additional?.timelineChain ?? activeChain?.chainId;
   }, [activeChain]);
   const { api: timelineApi } = useNetworkData(timelineChainId);
 

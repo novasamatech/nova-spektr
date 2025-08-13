@@ -45,6 +45,9 @@ export const ScanSingleframeQr = ({
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
 
+  const isPV = account.signingType === SigningType.POLKADOT_VAULT;
+  const isMetadataProofsSupported = chain.additional?.supportsGenericLedgerApp ?? false;
+
   useEffect(() => {
     if (txPayload && qrPayload && tab === prevTab.current) return;
     prevTab.current = tab;
@@ -58,7 +61,7 @@ export const ScanSingleframeQr = ({
           ? account.derivationPath
           : undefined;
 
-      if (tab === 'new') {
+      if (tab === 'new' && isMetadataProofsSupported) {
         const { payload, metadataProof } = await transactionService.createPayloadWithProof(
           extrinsic,
           account.accountId,
@@ -99,8 +102,6 @@ export const ScanSingleframeQr = ({
     }
   };
 
-  const isPV = account.signingType === SigningType.POLKADOT_VAULT;
-
   return (
     <>
       <QrGeneratorContainer
@@ -110,14 +111,18 @@ export const ScanSingleframeQr = ({
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
         onQrReset={setupTransaction}
       >
-        <Tabs value={tab} onChange={setTab}>
-          <Box shrink={0} fitContainer>
-            <Tabs.List>
-              <Tabs.Trigger value="new">{t('signing.qrNewVaultTitle', { version: isPV ? '7.1' : '7.0' })}</Tabs.Trigger>
-              <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
-            </Tabs.List>
-          </Box>
-        </Tabs>
+        {isMetadataProofsSupported && (
+          <Tabs value={tab} onChange={setTab}>
+            <Box shrink={0} fitContainer>
+              <Tabs.List>
+                <Tabs.Trigger value="new">
+                  {t('signing.qrNewVaultTitle', { version: isPV ? '7.1' : '7.0' })}
+                </Tabs.Trigger>
+                <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
+              </Tabs.List>
+            </Box>
+          </Tabs>
+        )}
         <QrTxGenerator payload={qrPayload} />
       </QrGeneratorContainer>
 

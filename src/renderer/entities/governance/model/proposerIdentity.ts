@@ -3,7 +3,6 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { type Address, type Chain, type ChainId, type Identity, type Referendum } from '@/shared/core';
-import { AdditionalType } from '@/shared/core/types/chain';
 import { networkModel } from '@/entities/network';
 import { proposersService } from '../lib/proposersService';
 import { referendumService } from '../lib/referendumService';
@@ -28,7 +27,7 @@ sample({
   source: { apis: networkModel.$apis },
   filter: (_, { referendum }) => referendumService.isOngoing(referendum),
   fn: ({ apis }, { api, chain, referendum }) => {
-    const identityChainId = chain?.additional?.[AdditionalType.IDENTITY_CHAIN];
+    const identityChainId = chain?.additional?.identityChain;
 
     return {
       api: identityChainId ? apis[identityChainId] : api!,
@@ -50,7 +49,7 @@ sample({
     proposers: $proposers,
   },
   fn: ({ apis, proposers }, { api, chain, addresses }) => {
-    const identityChainId = chain?.additional?.[AdditionalType.IDENTITY_CHAIN];
+    const identityChainId = chain?.additional?.identityChain;
     const chainProposers = proposers[chain.chainId] ?? {};
     const filteredAddresses = addresses.filter((a) => !(a in chainProposers));
 
