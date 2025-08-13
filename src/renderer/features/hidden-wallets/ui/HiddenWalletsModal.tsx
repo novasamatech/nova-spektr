@@ -80,8 +80,7 @@ export const HiddenWalletsModal = () => {
       );
     }
 
-    const hasAnyResult = filteredWallets.length > 0;
-    if (hiddenWallets.length > 0 && !hasAnyResult && inputQuery.length > 0) {
+    if (hiddenWallets.length > 0 && filteredWallets.length === 0 && inputQuery.length > 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center px-12">
           <Icon size={64} name="empty" className="mb-6" />
