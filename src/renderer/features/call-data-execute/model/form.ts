@@ -240,11 +240,6 @@ const $availableChains = combine(
   },
 );
 
-sample({
-  clock: walletModel.$availableAccounts,
-  target: balanceSubModel.fetchAccounts,
-});
-
 const $signatories = createSignatoriesStore({
   chain: form.fields.chain.$value,
   accounts: walletModel.$availableAccounts,
@@ -252,6 +247,11 @@ const $signatories = createSignatoriesStore({
 });
 
 const $showSignatories = $signatories.map((signatories) => signatories.length > 1);
+
+sample({
+  clock: $signatories,
+  target: balanceSubModel.fetchAccounts,
+});
 
 // flow setup
 
