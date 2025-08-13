@@ -252,10 +252,7 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
-const $showSignatories = combine({
-  signatories: $signatories,
-  initiator: form.fields.initiator.$value,
-}).map(({ signatories, initiator }) => signatories.length > 1 || signatories.at(0)?.accountId !== initiator?.accountId);
+const $showSignatories = $signatories.map((signatories) => signatories.length > 1);
 
 // flow setup
 
