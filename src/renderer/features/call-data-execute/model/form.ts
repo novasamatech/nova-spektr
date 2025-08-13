@@ -83,14 +83,6 @@ const form: Form<FormData> = createForm<FormData>({
   },
 });
 
-// Clear signatory errors when initiator has permissions
-sample({
-  clock: form.fields.initiator.$value,
-  source: form.fields.initiator.$value,
-  filter: (initiator) => Boolean(initiator && accountService.hasPermissionToMakeActions(initiator)),
-  target: form.fields.signatory.resetError,
-});
-
 // extrinsic
 
 const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis) =>
@@ -253,17 +245,17 @@ const $showSignatories = combine({
 // flow setup
 
 sample({
-  clock: [$availableChains],
-  source: { availableChains: $availableChains, selectedChain: form.fields.chain.$value },
-  filter: ({ availableChains, selectedChain }) =>
+  clock: $availableChains,
+  source: { selectedChain: form.fields.chain.$value },
+  filter: ({ selectedChain }, availableChains) =>
     !selectedChain || !availableChains.some((chain) => chain.chainId === selectedChain.chainId),
-  fn: ({ availableChains }) => availableChains.at(0) ?? null,
+  fn: (_, availableChains) => availableChains.at(0) ?? null,
   target: form.fields.chain.change,
 });
 
 // Preselect initiator based on selected wallet
 sample({
-  clock: [flow.open],
+  clock: flow.open,
   source: {
     selectedWallet: walletSelect.$selectedWallet,
     allAccounts: walletModel.$availableAccounts,
