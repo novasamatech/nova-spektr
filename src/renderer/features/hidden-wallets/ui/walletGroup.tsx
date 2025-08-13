@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { AccountType, type Chain, type Wallet, WalletType } from '@/shared/core';
 import { createSlot } from '@/shared/di';
@@ -23,7 +23,7 @@ type Props = {
   selectedWallets: Wallet[];
   onGroupToggle: (wallets: Wallet[]) => void;
   onWalletToggle: (wallet: Wallet) => void;
-  setSearchResults?: (wallets: Wallet[]) => void;
+  setSearchResults?: (type: WalletType, has: boolean) => void;
 };
 
 const WALLET_TYPE_LABELS = {
@@ -39,7 +39,7 @@ const WALLET_TYPE_LABELS = {
   [WalletType.SUBWALLET_EXTENSION]: 'wallets.subWalletExtensionLabel',
 };
 
-export const WalletGroup = memo((props: Props) => {
+export const WalletGroup = (props: Props) => {
   const { wallets, walletType, query, selectedWallets, onGroupToggle, onWalletToggle, setSearchResults } = props;
   const { t } = useI18n();
 
@@ -47,20 +47,34 @@ export const WalletGroup = memo((props: Props) => {
   const chains = useUnit(networkModel.$chains);
   const balances = useUnit(hiddenWalletsBalancesModel.$balances);
 
-  const filteredWallets = performSearch({
-    query,
-    records: wallets,
-    getMeta: (wallet) => ({
-      allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
-    }),
-    weights: { name: 1, allAddresses: 0.8 },
-  });
+  const filteredWallets = useMemo(() => {
+    return performSearch({
+      query,
+      records: wallets,
+      getMeta: (wallet) => ({
+        allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
+      }),
+      weights: { name: 1, allAddresses: 0.8 },
+    });
+  }, [wallets, query, allAccounts, chains]);
+
+  const lastEmittedRef = useRef<boolean | null>(null);
+  const setSearchResultsRef = useRef<typeof setSearchResults>(setSearchResults);
 
   useEffect(() => {
-    if (setSearchResults) {
-      setSearchResults(filteredWallets);
-    }
-  }, [filteredWallets, setSearchResults]);
+    setSearchResultsRef.current = setSearchResults;
+  }, [setSearchResults]);
+
+  useEffect(() => {
+    const emit = setSearchResultsRef.current;
+    if (!emit) return;
+
+    const hasResults = filteredWallets.length > 0;
+    if (lastEmittedRef.current === hasResults) return;
+
+    lastEmittedRef.current = hasResults;
+    emit(walletType, hasResults);
+  }, [filteredWallets, walletType]);
 
   // Optimized Set for O(1) selection lookups
   const selectedWalletSet = useMemo(() => new Set(selectedWallets), [selectedWallets]);
@@ -150,4 +164,4 @@ export const WalletGroup = memo((props: Props) => {
       </Accordion>
     </Box>
   );
-});
+};

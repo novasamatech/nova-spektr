@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type Wallet, type WalletType } from '@/shared/core';
+import { type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Button, FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
@@ -23,7 +23,9 @@ export const HiddenWalletsModal = () => {
   const hiddenWallets = useUnit(hiddenWalletsModel.$hiddenWallets);
   const hiddenWalletsByType = useUnit(hiddenWalletsModel.$hiddenWalletsByType);
 
-  const [multisigSearchResults, setMultisigSearchResults] = useState<Wallet[]>([]);
+  const [groupHasResults, setGroupHasResults] = useState<Record<WalletType, boolean>>(
+    {} as Record<WalletType, boolean>,
+  );
 
   useEffect(() => {
     hiddenWalletsBalancesModel.loadBalances();
@@ -61,6 +63,10 @@ export const HiddenWalletsModal = () => {
   };
 
   const content = useMemo(() => {
+    const setGroupResult = (type: WalletType, has: boolean) => {
+      setGroupHasResults((prev) => ({ ...prev, [type]: has }));
+    };
+
     if (hiddenWallets.length === 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center px-12">
@@ -73,7 +79,7 @@ export const HiddenWalletsModal = () => {
       );
     }
 
-    if (hiddenWallets.length > 0 && multisigSearchResults.length === 0 && inputQuery.length > 0) {
+    if (hiddenWallets.length > 0 && Object.values(groupHasResults).every((v) => v === false) && inputQuery.length > 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center px-12">
           <Icon size={64} name="empty" className="mb-6" />
@@ -105,7 +111,7 @@ export const HiddenWalletsModal = () => {
               wallets={wallets}
               query={query}
               selectedWallets={selectionState.selectedWallets}
-              setSearchResults={setMultisigSearchResults}
+              setSearchResults={setGroupResult}
               onGroupToggle={hiddenWalletsModel.toggleGroupSelection}
               onWalletToggle={hiddenWalletsModel.toggleWalletSelection}
             />
@@ -115,7 +121,7 @@ export const HiddenWalletsModal = () => {
     }
 
     return null;
-  }, [inputQuery, query, hiddenWallets, selectionState, multisigSearchResults, t]);
+  }, [inputQuery, query, hiddenWallets, selectionState, groupHasResults, t]);
 
   return (
     <Modal height="full" size="md" onToggle={handleClose}>
