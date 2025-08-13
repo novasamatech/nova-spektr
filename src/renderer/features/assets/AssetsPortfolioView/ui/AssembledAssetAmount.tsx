@@ -70,7 +70,7 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
         </Tooltip.Content>
       </Tooltip>
 
-      <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
+      <AssetFiatBalance amount={totalAmount(balance)} asset={asset} className="w-full truncate text-right indent-2" />
     </div>
   );
 };
