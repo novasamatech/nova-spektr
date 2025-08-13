@@ -3,10 +3,11 @@ import { type Store, combine, createEffect, createStore, sample } from 'effector
 
 import { type Chain, type Transaction } from '@/shared/core';
 import { assert, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
-import { type AnyAccount, accountService, transactionService } from '@/domains/network';
+import { type AnyAccount, transactionService } from '@/domains/network';
 import { getExtrinsic } from '@/entities/transaction';
 
 import { createFeeCalculator } from './createFeeCalculator';
+import { createRouteStore } from './createRouteStore';
 
 type Params<T extends Transaction> = {
   active?: Store<boolean>;
@@ -29,12 +30,7 @@ export const createComplexTxStore = <T extends Transaction>({
   initiator,
   signatory,
 }: Params<T>) => {
-  const $route = combine({ accounts, initiator, signatory, chain }, (params) => {
-    if (nonNullableMap(params)) {
-      return accountService.findRoute(params.initiator, params.signatory, params.accounts, params.chain);
-    }
-    return [];
-  });
+  const $route = createRouteStore({ accounts, initiator, signatory, chain });
 
   const $tx = createStore<Transaction | null>(null);
   const $feeTx = createStore<Transaction | null>(null);
@@ -45,7 +41,7 @@ export const createComplexTxStore = <T extends Transaction>({
     route: AnyAccount[];
   };
 
-  const wrapTransactionHandler = async ({ transaction, route, api }: WrapParams) => {
+  const wrapLegacyTransactionHandler = async ({ transaction, route, api }: WrapParams) => {
     const tx = await transactionService.wrapLegacyTransaction(transaction, route, api);
     const signatory = route.at(-1);
 
@@ -58,8 +54,8 @@ export const createComplexTxStore = <T extends Transaction>({
     return tx;
   };
 
-  const wrapTransactionFx = createEffect(wrapTransactionHandler);
-  const wrapFeeTransactionFx = createEffect(wrapTransactionHandler);
+  const wrapTransactionFx = createEffect(wrapLegacyTransactionHandler);
+  const wrapFeeTransactionFx = createEffect(wrapLegacyTransactionHandler);
 
   const wrapTransaction = sample({
     clock: [transaction, api, $route],

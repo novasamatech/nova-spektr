@@ -165,12 +165,16 @@
       "signatoryRequired": "Signatory is required"
     },
     "fields": {
+      "initiator": {
+        "label": "Submit from",
+        "placeholder": "Select account..."
+      },
       "network": {
         "label": "Network",
         "placeholder": "Select network..."
       },
       "signatory": {
-        "label": "Signing from",
+        "label": "Signing with",
         "placeholder": "Select signatory..."
       }
     },
@@ -178,7 +182,7 @@
     "noDecodedTxDescription": "Operation details will appear here after call data parsed",
     "noDecodedTxTitle": "No data available",
     "placeholder": "Paste the call data here",
-    "title": "Import from call data"
+    "title": "Submit call data"
   },
   "createMultisigAccount": {
     "accountsTab": "Accounts",
@@ -1220,7 +1224,7 @@
     "addressBookLabel": "Address Book",
     "balancesLabel": "Portfolio",
     "basketLabel": "Basket",
-    "callDataLabel": "Import from call data",
+    "callDataLabel": "Submit call data",
     "fellowship": "Fellowship",
     "governance": "Governance",
     "historyLabel": "History",
