@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
 
 import { cnTw } from '@/shared/lib/utils';
-import { Shimmering } from '@/shared/ui/Shimmering/Shimmering';
 import { FootnoteText } from '@/shared/ui/Typography';
+import { Skeleton } from '@/shared/ui-kit';
 import { currencyModel } from '../model/currency-model';
 
 import { Price } from './Price';
@@ -17,7 +17,7 @@ export const FiatBalance = ({ amount, className }: Props) => {
   const currency = useUnit(currencyModel.$activeCurrency);
 
   if (!amount) {
-    return <Shimmering width={56} height={18} />;
+    return <Skeleton width="56px" height="18px" />;
   }
 
   return (
