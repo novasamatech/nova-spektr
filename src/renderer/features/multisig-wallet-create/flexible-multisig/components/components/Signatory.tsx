@@ -97,7 +97,8 @@ export const Signatory = ({
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: walletUtils.isValidSignatory,
       accountFn: account => {
-        const isCorrectAccount = !accountUtils.isVaultBaseAccount(account);
+        const isCorrectAccount = !accountUtils.isWatchOnlyAccount(account);
+
         const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
