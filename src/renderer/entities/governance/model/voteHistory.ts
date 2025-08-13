@@ -5,23 +5,23 @@ import { readonly } from 'patronum';
 import { type SubQueryVoting, votingsService } from '@/shared/api/governance';
 import {
   type AccountVote,
-  type Address,
   type Chain,
   type ChainId,
   type Conviction,
   type Referendum,
   type ReferendumId,
 } from '@/shared/core';
-import { nonNullable, setNestedValue, toAccountId, toAddress } from '@/shared/lib/utils';
+import { nonNullable, setNestedValue, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export type VoteHistoryRecord = {
   delegatorVotes: {
-    delegator: Address;
+    delegator: AccountId;
     amount: BN;
     conviction: Conviction;
   }[];
   referendumId: ReferendumId;
-  voter: Address;
+  voter: AccountId;
   vote: AccountVote;
 };
 
@@ -77,10 +77,10 @@ const requestVoteHistoryFx = createEffect(({ chain, referendum }: RequestVoteHis
         return {
           referendumId: voting.referendumId,
           // subquery somehow send address with incorrect prefix
-          voter: toAddress(toAccountId(voting.voter), { prefix: chain.addressPrefix }),
+          voter: toAccountId(voting.voter),
           vote: accountVote,
           delegatorVotes: voting.delegatorVotes.nodes.map((delegatorVote) => ({
-            delegator: toAddress(toAccountId(delegatorVote.delegator), { prefix: chain.addressPrefix }),
+            delegator: toAccountId(delegatorVote.delegator),
             amount: new BN(delegatorVote.vote.amount),
             conviction: delegatorVote.vote.conviction,
           })),
