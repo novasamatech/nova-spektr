@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
+import { t } from 'i18next';
 
 import { formatAmount } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
@@ -27,7 +28,7 @@ export const UnstakeRules = {
     }),
     noBondBalance: (source: Store<ShardsBondBalanceStore>) => ({
       name: 'noBondBalance',
-      errorText: 'staking.bond.noBondBalanceError',
+      errorText: t('staking.bond.noBondBalanceError'),
       source,
       validator: (shards: any[], form: any, { isProxy, network, accountsBalances }: ShardsBondBalanceStore) => {
         if (isProxy || shards.length === 1) return true;
@@ -41,7 +42,7 @@ export const UnstakeRules = {
   signatory: {
     noSignatorySelected: (source: Store<boolean>) => ({
       name: 'noSignatorySelected',
-      errorText: 'transfer.noSignatoryError',
+      errorText: t('transfer.noSignatoryError'),
       source,
       validator: (signatory: AnyAccount, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
@@ -51,7 +52,7 @@ export const UnstakeRules = {
     }),
     notEnoughTokens: (source: Store<SignatoryFeeStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
       source,
       validator: (_s: any, _f: any, { feeData, isMultisig, signatoryBalance }: SignatoryFeeStore) => {
         if (!isMultisig) return true;
@@ -65,18 +66,18 @@ export const UnstakeRules = {
   amount: {
     required: {
       name: 'required',
-      errorText: 'transfer.requiredAmountError',
+      errorText: t('transfer.requiredAmountError'),
       validator: Boolean,
     },
 
     notZero: {
       name: 'notZero',
-      errorText: 'transfer.notZeroAmountError',
+      errorText: t('transfer.notZeroAmountError'),
       validator: balanceValidation.isNonZeroBalance,
     },
     notEnoughBalance: (source: Store<UnstakeAmountBalanceRange>, config: Config = { withFormatAmount: true }) => ({
       name: 'notEnoughBalance',
-      errorText: 'staking.notEnoughBalanceError',
+      errorText: t('staking.notEnoughBalanceError'),
       source,
       validator: (amount: string, _: any, { network, unstakeBalanceRange }: UnstakeAmountBalanceRange) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
@@ -89,7 +90,7 @@ export const UnstakeRules = {
     }),
     insufficientBalanceForFee: (source: Store<AmountFeeStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'insufficientBalanceForFee',
-      errorText: 'transfer.notEnoughBalanceForFeeError',
+      errorText: t('transfer.notEnoughBalanceForFeeError'),
       source,
       validator: (amount: string, form: any, { network, feeData, isMultisig, accountsBalances }: AmountFeeStore) => {
         if (isMultisig) return true;
@@ -107,7 +108,7 @@ export const UnstakeRules = {
   description: {
     maxLength: {
       name: 'maxLength',
-      errorText: 'transfer.descriptionLengthError',
+      errorText: t('transfer.descriptionLengthError'),
       validator: descriptionValidation.isMaxLength,
     },
   },

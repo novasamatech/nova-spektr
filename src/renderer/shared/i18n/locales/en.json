@@ -86,6 +86,8 @@
     "allAccounts": "All accounts",
     "assetsOnLabel": "Your assets on:",
     "availableNetworks": "{count} networks",
+    "availableNetworks_one": "balances.availableNetworks",
+    "availableNetworks_other": "balances.availableNetworks",
     "balance": "Balance",
     "balanceTooltip": "Transferable: <amountFree /><br />Locked: <amountLocked /><br />Reserved: <amountReserved />",
     "chainCentric": "Chain-centric",
@@ -378,6 +380,7 @@
       "keyTypeMain": "Main account",
       "keyTypePlaceholder": "Select",
       "keyTypePublic": "Public account",
+      "keyTypeRequiredError": "Please select key type",
       "keyTypeStaking": "Staking account",
       "listKeysLabel": "Keys",
       "listNetworkLabel": "Network",
@@ -647,7 +650,8 @@
         "evidenceType": "Evidence type",
         "promote": "Promote to { rank }",
         "rank": "Rank",
-        "retain": "Retain at { rank }"
+        "retain": "Retain at { rank }",
+        "wish": "Wish"
       },
       "submitEvidenceVoteConfirm": {
         "evidence": "Evidence",
@@ -1101,6 +1105,10 @@
       "treasuryMediumSpend": "Treasury: Medium spend",
       "treasurySmallSpend": "Treasury: Small spend",
       "treasurySmallTips": "Treasury: Small tips",
+      "vote": {
+        "noVoteForReferendum": "No vote for referendum",
+        "timeoutReferendumError": "governance.referendums.vote.timeoutReferendumError"
+      },
       "wishForChange": "Wish for change"
     },
     "revokeDelegation": {
@@ -1423,6 +1431,8 @@
       "revokeAccessType": "Revoke access type",
       "revokeFor": "Revoke for",
       "sender": "Sender",
+      "senderAccount": "Sender account",
+      "senderProxiedWallet": "Sender proxied wallet",
       "timePoint": "Time Point",
       "toNetwork": "To network",
       "validators": "Validators",
@@ -1441,6 +1451,8 @@
     "multisigExistsTitle": "Same transaction already exist",
     "networkFee": "Network fee",
     "networkFeeTotal": "Total network fee",
+    "networkFee_one": "Network fee",
+    "networkFee_other": "Network fees",
     "noSignatoryErrorDescription": "The wallet<wallet />does not have an account on the {network} network. You cannot sign this opperation. Please add an account on {network} network.",
     "noSignatoryErrorTitle": "No account for {network}",
     "openOperationsButton": "Open operations",
@@ -1461,6 +1473,8 @@
       "subWalletExtension": "Sign with SubWallet extension",
       "talismanExtension": "Sign with Talisman extension",
       "title": "Sign { count } operations",
+      "title_one": "Sign operation",
+      "title_other": "Sign { count } operations",
       "walletConnect": "Sign with WalletConnect"
     },
     "signatoriesTitle": "Signatories",
@@ -1608,6 +1622,7 @@
       "noSignatoryError": "Please select operation signatory",
       "notEnoughBalanceForDepositError": "Not enough tokens to pay for the multisig deposit and/or network fee",
       "notEnoughMultisigTokens": "Not enough tokens to pay multisig deposit and network fee",
+      "notEnoughTokens": "Not enough tokens",
       "proxyAddressRequiredError": "Delegate address is required",
       "proxyTypeExistError": "The same proxy already exists, choose another access type",
       "proxyTypeLabel": "Access type",
@@ -2091,6 +2106,7 @@
     "unstake": "Unstake { amount } { asset }"
   },
   "transfer": {
+    "FIX": "Please enter amount",
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",
@@ -2152,7 +2168,9 @@
     "wallet": "Wallet"
   },
   "voteChart": {
+    "aye": "Aye",
     "good": "Good",
+    "nay": "Nay",
     "notGood": "Not Good",
     "toPass": "To pass"
   },

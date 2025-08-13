@@ -1,6 +1,7 @@
 import { type SessionTypes } from '@walletconnect/types';
 import { attach, combine, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { noop } from 'lodash';
 
 import { AccountType, CryptoType, SigningType, WalletType, type WcAccount } from '@/shared/core';
@@ -48,12 +49,12 @@ const form = createForm<WalletForm>({
       rules: [
         {
           name: 'required',
-          errorText: 'onboarding.watchOnly.walletNameRequiredError',
+          errorText: t('onboarding.watchOnly.walletNameRequiredError'),
           validator: Boolean,
         },
         {
           name: 'maxLength',
-          errorText: 'onboarding.watchOnly.walletNameMaxLenError',
+          errorText: t('onboarding.watchOnly.walletNameMaxLenError'),
           validator: value => value.length <= WALLET_NAME_MAX_LENGTH,
         },
       ],

@@ -1,3 +1,5 @@
+import { t } from 'i18next';
+
 import { customRpcUtils } from './custom-rpc-utils';
 
 const RPC_NAME_MAX_LENGTH = 50;
@@ -7,18 +9,18 @@ export const CONNECTION_TIMEOUT = 3000;
 
 export const FieldRules = {
   name: [
-    { name: 'required', errorText: 'settings.networks.requiredNameError', validator: Boolean },
+    { name: 'required', errorText: t('settings.networks.requiredNameError'), validator: Boolean },
     {
       name: 'minMaxLength',
-      errorText: 'settings.networks.maxLengthNameError',
+      errorText: t('settings.networks.maxLengthNameError'),
       validator: (value: string) => value.length <= RPC_NAME_MAX_LENGTH && value.length >= RPC_NAME_MIN_LENGTH,
     },
   ],
   url: [
-    { name: 'required', errorText: 'settings.networks.addressEmpty', validator: Boolean },
+    { name: 'required', errorText: t('settings.networks.addressEmpty'), validator: Boolean },
     {
       name: 'wsAddressValidation',
-      errorText: 'settings.networks.addressInvalidUrl',
+      errorText: t('settings.networks.addressInvalidUrl'),
       validator: customRpcUtils.validateWsAddress,
     },
   ],

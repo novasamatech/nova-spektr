@@ -1,6 +1,7 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 
 import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
@@ -87,7 +88,7 @@ const $bondForm = createForm<FormParams>({
         },
         {
           name: 'noBondBalance',
-          errorText: 'staking.bond.noBondBalanceError',
+          errorText: t('staking.bond.noBondBalanceError'),
           source: combine({
             isProxy: $isProxy,
             network: $networkStore,
@@ -108,7 +109,7 @@ const $bondForm = createForm<FormParams>({
       rules: [
         {
           name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
+          errorText: t('transfer.noSignatoryError'),
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
             if (!signatory || !isMultisig) return true;
@@ -118,7 +119,7 @@ const $bondForm = createForm<FormParams>({
         },
         {
           name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+          errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
           source: combine({
             feeData: $feeData,
             isMultisig: $isMultisig,
@@ -137,17 +138,17 @@ const $bondForm = createForm<FormParams>({
       rules: [
         {
           name: 'required',
-          errorText: 'transfer.requiredAmountError',
+          errorText: t('transfer.requiredAmountError'),
           validator: Boolean,
         },
         {
           name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
+          errorText: t('transfer.notZeroAmountError'),
           validator: (value) => value !== ZERO_BALANCE,
         },
         {
           name: 'notEnoughBalance',
-          errorText: 'staking.notEnoughBalanceError',
+          errorText: t('staking.notEnoughBalanceError'),
           source: combine({
             network: $networkStore,
             bondBalanceRange: $bondBalanceRange,
@@ -161,7 +162,7 @@ const $bondForm = createForm<FormParams>({
         },
         {
           name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
+          errorText: t('transfer.notEnoughBalanceForFeeError'),
           source: combine({
             feeData: $feeData,
             isMultisig: $isMultisig,
@@ -186,7 +187,7 @@ const $bondForm = createForm<FormParams>({
       rules: [
         {
           name: 'required',
-          errorText: 'proxy.addProxy.proxyAddressRequiredError',
+          errorText: t('proxy.addProxy.proxyAddressRequiredError'),
           source: $destinationType,
           validator: (value, _, destinationType) => {
             if (destinationType === RewardsDestination.RESTAKE) return true;

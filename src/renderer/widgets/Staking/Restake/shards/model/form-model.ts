@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { noop } from 'lodash';
 import { spread } from 'patronum';
 
@@ -106,7 +107,7 @@ const $restakeForm = createForm<FormParams>({
         },
         {
           name: 'noUnstakeBalance',
-          errorText: 'staking.unstake.noUnstakeBalanceError',
+          errorText: t('staking.unstake.noUnstakeBalanceError'),
           source: combine({
             isProxy: $isProxy,
             network: $networkStore,
@@ -127,7 +128,7 @@ const $restakeForm = createForm<FormParams>({
       rules: [
         {
           name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
+          errorText: t('transfer.noSignatoryError'),
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
             if (!signatory || !isMultisig) return true;
@@ -137,7 +138,7 @@ const $restakeForm = createForm<FormParams>({
         },
         {
           name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+          errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
           source: combine({
             fee: $fee,
             isMultisig: $isMultisig,
@@ -157,17 +158,17 @@ const $restakeForm = createForm<FormParams>({
       rules: [
         {
           name: 'required',
-          errorText: 'transfer.requiredAmountError',
+          errorText: t('transfer.requiredAmountError'),
           validator: Boolean,
         },
         {
           name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
+          errorText: t('transfer.notZeroAmountError'),
           validator: (value) => value !== ZERO_BALANCE,
         },
         {
           name: 'notEnoughBalance',
-          errorText: 'staking.notEnoughBalanceError',
+          errorText: t('staking.notEnoughBalanceError'),
           source: combine({
             network: $networkStore,
             restakeBalanceRange: $restakeBalanceRange,
@@ -181,7 +182,7 @@ const $restakeForm = createForm<FormParams>({
         },
         {
           name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
+          errorText: t('transfer.notEnoughBalanceForFeeError'),
           source: combine({
             network: $networkStore,
             accountsBalances: $accountsBalances,
