@@ -136,7 +136,6 @@ async function mapReferendum({
         throw new Error(`Track ${info.data.track} not found in referenda pallet`);
       }
 
-      console.log('huy', id);
       const proposal = await parseProposal(info.data.proposal, api);
       const ends = getEndBlock(info.data.deciding, info.data.submitted, track.info.decisionPeriod, undecidingTimeout);
 
