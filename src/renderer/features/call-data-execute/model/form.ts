@@ -246,7 +246,11 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
-const $showSignatories = $signatories.map((signatories) => signatories.length > 1);
+const $showSignatories = combine(
+  $signatories,
+  form.fields.initiator.$value,
+  (signatories, initiator) => signatories.length > 1 || signatories.at(0)?.accountId !== initiator?.accountId,
+);
 
 sample({
   clock: $signatories,
