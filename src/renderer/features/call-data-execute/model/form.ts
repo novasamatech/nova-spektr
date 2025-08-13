@@ -113,25 +113,53 @@ const { $tx: $wrappedTx } = createWrappedTxStore({
 });
 
 const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
-const $hasExtrinsic = $wrappedExtrinsic.map((value) => nonNullable(value));
 
 const $wrappedArgs = combine($wrappedExtrinsic, form.fields.chain.$value, (extrinsic, chain) => {
   return extrinsic && chain ? callDataExecuteService.formatExtrinsic(extrinsic, chain) : null;
 });
 
+const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
+
 const $args = combine(
   {
-    api: $api,
-    transaction: $transaction,
+    extrinsic: $extrinsic,
     chain: form.fields.chain.$value,
   },
-  ({ api, transaction, chain }) => {
-    if (!api || !transaction || !chain) return null;
+  ({ extrinsic, chain }) => {
+    if (!extrinsic || !chain) return null;
 
-    const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
     return callDataExecuteService.formatExtrinsic(extrinsic, chain);
   },
 );
+
+const createWrappedExtrinsicFx = createQueuedEffect(
+  ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
+    if (nullable(transaction) || nullable(api)) return null;
+    return transactionService.createSubmittableExtrinsic(transaction, api);
+  },
+);
+
+sample({
+  source: { transaction: $wrappedTx, api: $api },
+  target: createWrappedExtrinsicFx,
+});
+
+sample({
+  clock: createWrappedExtrinsicFx.doneData,
+  target: $wrappedExtrinsic,
+});
+
+sample({
+  clock: createWrappedExtrinsicFx.fail,
+  fn: () => null,
+  target: $wrappedExtrinsic,
+});
+
+sample({
+  clock: createWrappedExtrinsicFx.fail,
+  fn: () => [{ message: 'callData.errors.invalidCallData' }],
+  target: form.fields.callData.setErrors,
+});
 
 const createExtrinsicFx = createQueuedEffect(
   ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
@@ -141,25 +169,19 @@ const createExtrinsicFx = createQueuedEffect(
 );
 
 sample({
-  source: { transaction: $wrappedTx, api: $api },
+  source: { transaction: $transaction, api: $api },
   target: createExtrinsicFx,
 });
 
 sample({
   clock: createExtrinsicFx.doneData,
-  target: $wrappedExtrinsic,
+  target: $extrinsic,
 });
 
 sample({
   clock: createExtrinsicFx.fail,
   fn: () => null,
-  target: $wrappedExtrinsic,
-});
-
-sample({
-  clock: createExtrinsicFx.fail,
-  fn: () => [{ message: 'callData.errors.invalidCallData' }],
-  target: form.fields.callData.setErrors,
+  target: $extrinsic,
 });
 
 const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
@@ -383,7 +405,7 @@ export const formModel = {
   $canSubmit,
   $step,
   $api,
-  $hasExtrinsic,
+  $extrinsic,
   $args,
   $fee,
   $pendingFee,

@@ -349,7 +349,7 @@ const ActionsSection = () => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
-  const hasExtrinsic = useUnit(formModel.$hasExtrinsic);
+  const extrinsic = useUnit(formModel.$extrinsic);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
   const chain = useUnit(formModel.form.fields.chain.$value);
@@ -357,7 +357,7 @@ const ActionsSection = () => {
 
   return (
     <Modal.Footer>
-      {nonNullable(asset) && hasExtrinsic && (
+      {nonNullable(asset) && nonNullable(extrinsic) && (
         <Box direction="row" gap={2} verticalAlign="center">
           <FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>
           <Fee className="text-footnote" fee={fee} isLoading={pendingFee} asset={asset} hideFiat />
