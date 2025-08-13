@@ -1,11 +1,15 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { groupBy, performSearch } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Box, Checkbox, Modal, SearchInput, useNotification } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
+import { networkModel } from '@/entities/network';
+import { walletSelectService } from '@/aggregates/wallet-select';
 import { hiddenWalletsBalancesModel } from '../model/balances';
 import { hiddenWalletsModel } from '../model/hidden-wallets';
 
@@ -21,11 +25,9 @@ export const HiddenWalletsModal = () => {
   const selectionState = useUnit(hiddenWalletsModel.$selectionState);
 
   const hiddenWallets = useUnit(hiddenWalletsModel.$hiddenWallets);
-  const hiddenWalletsByType = useUnit(hiddenWalletsModel.$hiddenWalletsByType);
 
-  const [groupHasResults, setGroupHasResults] = useState<Record<WalletType, boolean>>(
-    {} as Record<WalletType, boolean>,
-  );
+  const allAccounts = useUnit(accounts.$list);
+  const chains = useUnit(networkModel.$chains);
 
   useEffect(() => {
     hiddenWalletsBalancesModel.loadBalances();
@@ -50,23 +52,22 @@ export const HiddenWalletsModal = () => {
     return unsubscribe;
   }, [notification, t]);
 
-  const handleRestore = () => {
-    if (hiddenWallets.length === 0) {
-      return;
-    }
+  const filteredWallets = useMemo(() => {
+    return performSearch({
+      query,
+      records: hiddenWallets,
+      getMeta: (wallet) => ({
+        allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
+      }),
+      weights: { name: 1, allAddresses: 0.8 },
+    });
+  }, [hiddenWallets, query, allAccounts, chains]);
 
-    hiddenWalletsModel.restoreWallets();
-  };
-
-  const handleClose = () => {
-    hiddenWalletsModel.clearSelection();
-  };
+  const filteredWalletsByType = useMemo(() => {
+    return groupBy(filteredWallets, (wallet) => wallet.type);
+  }, [filteredWallets]);
 
   const content = useMemo(() => {
-    const setGroupResult = (type: WalletType, has: boolean) => {
-      setGroupHasResults((prev) => ({ ...prev, [type]: has }));
-    };
-
     if (hiddenWallets.length === 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center px-12">
@@ -79,7 +80,8 @@ export const HiddenWalletsModal = () => {
       );
     }
 
-    if (hiddenWallets.length > 0 && Object.values(groupHasResults).every((v) => v === false) && inputQuery.length > 0) {
+    const hasAnyResult = filteredWallets.length > 0;
+    if (hiddenWallets.length > 0 && !hasAnyResult && inputQuery.length > 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center px-12">
           <Icon size={64} name="empty" className="mb-6" />
@@ -104,14 +106,12 @@ export const HiddenWalletsModal = () => {
             </Checkbox>
           </div>
 
-          {Object.entries(hiddenWalletsByType).map(([type, wallets]) => (
+          {Object.entries(filteredWalletsByType).map(([type, wallets]) => (
             <WalletGroup
               key={type}
               walletType={type as WalletType}
-              wallets={wallets}
-              query={query}
+              wallets={wallets ?? []}
               selectedWallets={selectionState.selectedWallets}
-              setSearchResults={setGroupResult}
               onGroupToggle={hiddenWalletsModel.toggleGroupSelection}
               onWalletToggle={hiddenWalletsModel.toggleWalletSelection}
             />
@@ -121,7 +121,19 @@ export const HiddenWalletsModal = () => {
     }
 
     return null;
-  }, [inputQuery, query, hiddenWallets, selectionState, groupHasResults, t]);
+  }, [inputQuery, query, hiddenWallets, selectionState, filteredWalletsByType, t]);
+
+  const handleRestore = () => {
+    if (hiddenWallets.length === 0) {
+      return;
+    }
+
+    hiddenWalletsModel.restoreWallets();
+  };
+
+  const handleClose = () => {
+    hiddenWalletsModel.clearSelection();
+  };
 
   return (
     <Modal height="full" size="md" onToggle={handleClose}>
