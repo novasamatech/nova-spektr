@@ -32,7 +32,7 @@ export default {
   output: 'src/renderer/shared/i18n/locales/$LOCALE.json',
   pluralSeparator: '_',
   input: ['src/renderer/**/*.{ts,tsx,js,jsx}', '!src/renderer/**/*.test.{ts,tsx,js,jsx}', '!src/renderer/**/*.d.ts'],
-  sort: true,
+  sort: false,
   verbose: true,
   failOnWarnings: false,
   failOnUpdate: true,
