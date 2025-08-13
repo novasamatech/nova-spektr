@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, createEffect, createStore, sample } from 'effector';
 
-import { assert, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, type AnyTransaction, transactionService } from '@/domains/network';
 
 type Params = {
@@ -20,12 +20,7 @@ export const createWrappedTxStore = ({ api, transaction, route }: Params) => {
   };
 
   const wrapTransactionHandler = async ({ transaction, route, api }: WrapParams) => {
-    const tx = await transactionService.wrapTransaction(transaction, route, api);
-    const signatory = route.at(-1);
-
-    assert(signatory, 'Signatory is required');
-
-    return tx;
+    return transactionService.wrapTransaction(transaction, route, api);
   };
 
   const wrapTransactionFx = createEffect(wrapTransactionHandler);
