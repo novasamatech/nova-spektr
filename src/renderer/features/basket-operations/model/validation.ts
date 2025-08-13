@@ -1,6 +1,7 @@
 import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { BN } from '@polkadot/util';
 import { attach, createEffect, createStore, sample } from 'effector';
+import { t } from 'i18next';
 import { produce } from 'immer';
 
 import { type ID } from '@/shared/core';
@@ -58,7 +59,7 @@ const validateFeeFx = attach({
         return [
           {
             name: 'insufficientBalanceForFee',
-            errorText: 'transfer.notEnoughBalanceForFeeError',
+            errorText: t('transfer.notEnoughBalanceForFeeError'),
           },
         ];
       }

@@ -1,5 +1,6 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 
 import {
@@ -52,7 +53,13 @@ const $constructorForm = createForm<FormValues>({
     },
     keyType: {
       init: null,
-      rules: [{ name: 'required', errorText: 'Please select key type', validator: nonNullable }],
+      rules: [
+        {
+          name: 'required',
+          errorText: t('dynamicDerivations.keysConstructor.keyTypeRequiredError'),
+          validator: nonNullable,
+        },
+      ],
     },
     isSharded: {
       init: false,
@@ -62,22 +69,22 @@ const $constructorForm = createForm<FormValues>({
       rules: [
         {
           name: 'required',
-          errorText: 'dynamicDerivations.keysConstructor.numberRequiredError',
+          errorText: t('dynamicDerivations.keysConstructor.numberRequiredError'),
           validator: (value, { isSharded }) => !isSharded || Boolean(value),
         },
         {
           name: 'NaN',
-          errorText: 'dynamicDerivations.keysConstructor.notNumberError',
+          errorText: t('dynamicDerivations.keysConstructor.notNumberError'),
           validator: (value, { isSharded }) => !isSharded || !Number.isNaN(Number(value)),
         },
         {
           name: 'maxAmount',
-          errorText: 'dynamicDerivations.keysConstructor.maxShardsError',
+          errorText: t('dynamicDerivations.keysConstructor.maxShardsError'),
           validator: (value, { isSharded }) => !isSharded || Number(value) <= 50,
         },
         {
           name: 'minAmount',
-          errorText: 'dynamicDerivations.keysConstructor.minShardsError',
+          errorText: t('dynamicDerivations.keysConstructor.minShardsError'),
           validator: (value, { isSharded }) => !isSharded || Number(value) >= 2,
         },
       ],
@@ -85,7 +92,11 @@ const $constructorForm = createForm<FormValues>({
     keyName: {
       init: '',
       rules: [
-        { name: 'required', errorText: 'dynamicDerivations.keysConstructor.displayNameError', validator: Boolean },
+        {
+          name: 'required',
+          errorText: t('dynamicDerivations.keysConstructor.displayNameError'),
+          validator: Boolean,
+        },
       ],
     },
     derivationPath: {
@@ -93,23 +104,23 @@ const $constructorForm = createForm<FormValues>({
       rules: [
         {
           name: 'required',
-          errorText: 'dynamicDerivations.keysConstructor.requiredDerivationError',
+          errorText: t('dynamicDerivations.keysConstructor.requiredDerivationError'),
           validator: (value, { keyType }) => keyType !== KeyType.CUSTOM || Boolean(value),
         },
         {
           name: 'hasPassword',
-          errorText: 'dynamicDerivations.keysConstructor.passwordDerivationError',
+          errorText: t('dynamicDerivations.keysConstructor.passwordDerivationError'),
           validator: (value) => !derivationHasPassword(value),
         },
         {
           name: 'badFormat',
-          errorText: 'dynamicDerivations.keysConstructor.wrongDerivationError',
+          errorText: t('dynamicDerivations.keysConstructor.wrongDerivationError'),
           validator: validateDerivation,
         },
         {
           name: 'duplicated',
           source: $keys,
-          errorText: 'dynamicDerivations.keysConstructor.duplicateDerivationError',
+          errorText: t('dynamicDerivations.keysConstructor.duplicateDerivationError'),
           validator: (value, { chainId }, keys: (VaultChainAccount | VaultShardAccount[])[]) => {
             return keys.every((key) => {
               const keyToCheck = Array.isArray(key) ? key[0] : key;
