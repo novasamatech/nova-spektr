@@ -189,8 +189,7 @@ const $signatoryBalance = combine(
     balances: balanceModel.$balances,
   },
   ({ signatory, chain, balances }) => {
-    if (nullable(chain)) return null;
-    if (nullable(signatory)) return null;
+    if (nullable(signatory) || nullable(chain)) return null;
 
     return (
       balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, getNativeAsset(chain.assets).assetId) ??

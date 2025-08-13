@@ -126,20 +126,9 @@ const InitiatorSelect = memo(() => {
     const options: ReactNode[] = [];
     if (nullable(chain) || nullable(asset)) return options;
 
-    // Group accounts by wallet
-    const walletGroups = new Map<number, typeof allAccounts>();
-
-    for (const account of allAccounts) {
-      const walletId = account.walletId;
-      if (!walletGroups.has(walletId)) {
-        walletGroups.set(walletId, []);
-      }
-      walletGroups.get(walletId)!.push(account);
-    }
-
-    for (const [walletId, walletAccounts] of walletGroups) {
-      const wallet = wallets.find((w) => w.id === walletId);
-      if (!wallet) continue;
+    for (const wallet of wallets) {
+      const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
+      if (walletAccounts.length === 0) continue;
 
       const walletTitle = (
         <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
