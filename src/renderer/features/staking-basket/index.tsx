@@ -1,4 +1,5 @@
 import { useGate, useStoreMap } from 'effector-react';
+import { t } from 'i18next';
 
 import { type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -37,13 +38,13 @@ export { stakingBasketFeature };
 
 const getOperationTitle = (transaction: Transaction): string | undefined => {
   const Title: { [key in TransactionType]?: string } = {
-    [TransactionType.BOND]: 'operations.titles.startStaking',
-    [TransactionType.NOMINATE]: 'operations.titles.nominate',
-    [TransactionType.STAKE_MORE]: 'operations.titles.stakeMore',
-    [TransactionType.REDEEM]: 'operations.titles.redeem',
-    [TransactionType.RESTAKE]: 'operations.titles.restake',
-    [TransactionType.DESTINATION]: 'operations.titles.destination',
-    [TransactionType.UNSTAKE]: 'operations.titles.unstake',
+    [TransactionType.BOND]: t('operations.titles.startStaking'),
+    [TransactionType.NOMINATE]: t('operations.titles.nominate'),
+    [TransactionType.STAKE_MORE]: t('operations.titles.stakeMore'),
+    [TransactionType.REDEEM]: t('operations.titles.redeem'),
+    [TransactionType.RESTAKE]: t('operations.titles.restake'),
+    [TransactionType.DESTINATION]: t('operations.titles.destination'),
+    [TransactionType.UNSTAKE]: t('operations.titles.unstake'),
   };
 
   return Title[transaction.type];
@@ -51,13 +52,13 @@ const getOperationTitle = (transaction: Transaction): string | undefined => {
 
 const getModalTitle = (transaction: Transaction): string | undefined => {
   const Title: { [key in TransactionType]?: string } = {
-    [TransactionType.BOND]: 'operations.modalTitles.startStakingOn',
-    [TransactionType.NOMINATE]: 'operations.modalTitles.nominateOn',
-    [TransactionType.STAKE_MORE]: 'operations.modalTitles.stakeMoreOn',
-    [TransactionType.REDEEM]: 'operations.modalTitles.redeemOn',
-    [TransactionType.RESTAKE]: 'operations.modalTitles.restakeOn',
-    [TransactionType.DESTINATION]: 'operations.modalTitles.destinationOn',
-    [TransactionType.UNSTAKE]: 'operations.modalTitles.unstakeOn',
+    [TransactionType.BOND]: t('operations.modalTitles.startStakingOn'),
+    [TransactionType.NOMINATE]: t('operations.modalTitles.nominateOn'),
+    [TransactionType.STAKE_MORE]: t('operations.modalTitles.stakeMoreOn'),
+    [TransactionType.REDEEM]: t('operations.modalTitles.redeemOn'),
+    [TransactionType.RESTAKE]: t('operations.modalTitles.restakeOn'),
+    [TransactionType.DESTINATION]: t('operations.modalTitles.destinationOn'),
+    [TransactionType.UNSTAKE]: t('operations.modalTitles.unstakeOn'),
   };
 
   return Title[transaction.type];
