@@ -2,6 +2,7 @@ import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type FormEvent, type ReactNode, memo, useMemo } from 'react';
 
+import { type WalletFamily } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
@@ -12,6 +13,8 @@ import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { Fee } from '@/entities/transaction';
 import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletSelectService } from '@/aggregates/wallet-select';
+import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form';
 
 import { JsonArgs } from './JsonArgs';
@@ -126,37 +129,65 @@ const InitiatorSelect = memo(() => {
     const options: ReactNode[] = [];
     if (nullable(chain) || nullable(asset)) return options;
 
-    for (const wallet of wallets) {
-      const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
-      if (walletAccounts.length === 0) continue;
+    // Group all accounts by wallet family using the same logic as wallet management
+    // Don't filter by chain here - show all accounts from each wallet family
+    const accountByGroup = walletSelectService.getWalletFamilyByAccounts(wallets, allAccounts);
 
-      const walletTitle = (
+    // Create options for each wallet family group
+    for (const [walletFamily, accountsGroup] of Object.entries(accountByGroup)) {
+      if (accountsGroup.length === 0) continue;
+
+      // Deduplicate accounts by accountId - show each unique account only once
+      const uniqueAccounts = new Map<string, (typeof accountsGroup)[0]>();
+
+      for (const account of accountsGroup) {
+        if (!uniqueAccounts.has(account.accountId)) {
+          uniqueAccounts.set(account.accountId, account);
+        }
+      }
+
+      const groupTitle = (
         <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
-          <WalletIcon type={wallet.type} />
-          <FootnoteText className="text-text-secondary">{wallet.name}</FootnoteText>
+          <WalletIcon type={walletFamily as WalletFamily} />
+          <FootnoteText className="font-semibold text-text-secondary uppercase">
+            {t(walletSelectFeature.constants.GROUP_LABELS[walletFamily as WalletFamily])}
+          </FootnoteText>
         </Box>
       );
 
       options.push(
-        <Select.Group key={wallet.id} title={walletTitle}>
-          {walletAccounts.map((a) => {
-            const balance = balanceUtils.getBalance(balances, a.accountId, chain.chainId, asset.assetId);
+        <Select.Group key={walletFamily} title={groupTitle}>
+          {Array.from(uniqueAccounts.values()).map((account) => {
+            // Only show balance if the account is available on the selected chain
+            const isAvailableOnChain = accountService.isAccountAvailableOnChain(account, chain);
+            const balance = isAvailableOnChain
+              ? balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId)
+              : null;
+            const wallet = wallets.find((w) => w.id === account.walletId);
 
             return (
-              <Select.Item key={a.id} value={a.id} depth={1}>
+              <Select.Item key={account.id} value={account.id} depth={1}>
                 <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
-                  <Address
-                    showIcon
-                    canCopy={false}
-                    variant="truncate"
-                    title={a.name !== wallet.name ? a.name : void 0}
-                    address={toAddress(a.accountId, { prefix: chain?.addressPrefix })}
-                  />
-                  <AssetBalance
-                    className="text-footnote text-text-secondary"
-                    value={transferableAmountBN(balance)}
-                    asset={asset}
-                  />
+                  <div className="min-w-0 flex-col">
+                    <div className="font-medium text-text-primary">{wallet?.name || account.name}</div>
+                    <Address
+                      showIcon
+                      canCopy={false}
+                      variant="truncate"
+                      address={toAddress(account.accountId, { prefix: chain?.addressPrefix })}
+                    />
+                  </div>
+                  {isAvailableOnChain && balance ? (
+                    <AssetBalance
+                      className="text-footnote text-text-secondary"
+                      value={transferableAmountBN(balance)}
+                      asset={asset}
+                    />
+                  ) : (
+                    <FootnoteText className="text-footnote text-text-tertiary">
+                      {isAvailableOnChain ? 'No balance' : 'Not available on chain'}
+                    </FootnoteText>
+                  )}
                 </Box>
               </Select.Item>
             );
@@ -166,7 +197,7 @@ const InitiatorSelect = memo(() => {
     }
 
     return options;
-  }, [wallets, balances, chain, asset, allAccounts]);
+  }, [wallets, balances, chain, asset, allAccounts, t]);
 
   const wallet = useMemo(() => {
     if (initiator.value) {
