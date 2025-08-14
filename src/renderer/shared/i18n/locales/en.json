@@ -734,7 +734,8 @@
         "retain": "Should {name} be retained at Rank {rank}?",
         "votingTitle": {
           "rank": "Is it good enough for Rank {rank}?",
-          "rfcOrWhitelist": "What do you think?"
+          "rfcOrWhitelist": "What do you think?",
+          "spend": "How do you find this payment request?"
         }
       }
     },
@@ -779,6 +780,7 @@
     },
     "votingHistory": {
       "completedVotingVoted": "You found it",
+      "default": "Other members find it to be",
       "emptyListDescription": "Members will appear here once opinions are submitted",
       "emptyListTitle": "No opinions yet",
       "level": {
@@ -789,6 +791,7 @@
       "modalTitle": "What do others think?",
       "noVotes": "No opinions have been submitted yet",
       "showHistoryButton": "View more",
+      "spend": "Other members find the payment request to be",
       "subtitle": "Other members find the evidence to be",
       "subtitlePromotionRetention": "Other members find it to be",
       "voteEnded": "Opinion collection has concluded, the fellowship oracle identified it to be",

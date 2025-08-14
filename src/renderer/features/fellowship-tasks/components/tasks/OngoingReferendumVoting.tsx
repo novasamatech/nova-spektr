@@ -61,10 +61,8 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
   const isMetaPending = useUnit(referendums.$pendingReferendumMeta);
 
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
-  const isPending = referendum && (isRFCProposal ? isRFCPending : isMetaPending);
 
-  //todo: whitelist detection might be implemented better
-  const isWhitelist = !isRFCProposal;
+  const isPending = referendum && (isRFCProposal ? isRFCPending : isMetaPending);
 
   const content = useMemo(() => {
     if (isPending) return;
@@ -93,7 +91,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
       <ReferendumDetailsModal referendum={referendum}>
         <button className="flex w-full min-w-0 appearance-none gap-2 p-4">
           <Box alignSelf="flex-start" shrink={0}>
-            <TaskBadge isRFC={isRFCProposal} isWhitelist={isWhitelist} />
+            <TaskBadge proposal={referendum.proposal} />
           </Box>
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3} grow={1}>
