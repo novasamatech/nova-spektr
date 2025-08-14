@@ -17,7 +17,14 @@ import {
   withdrawableAmount,
 } from '@/shared/lib/utils';
 import { Button, CaptionText, InputHint } from '@/shared/ui';
-import { AccountSelect, Address, Identicon, SignatorySelect, WalletIcon } from '@/shared/ui-entities';
+import {
+  AccountSelect,
+  Address,
+  Identicon,
+  SignatorySelect,
+  TransactionValidationError,
+  WalletIcon,
+} from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -47,6 +54,8 @@ type ComboboxGroup = {
 
 export const TransferForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
+  const errors = useUnit(formModel.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -65,9 +74,8 @@ export const TransferForm = ({ onGoBack }: Props) => {
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
       </div>
-      <Box>
-        <AlertForDeliveryFee />
-      </Box>
+      <AlertForDeliveryFee />
+      <TransactionValidationError errors={errors} wallets={wallets} />
       <ActionsSection onGoBack={onGoBack} />
 
       <MyselfAccountModal />

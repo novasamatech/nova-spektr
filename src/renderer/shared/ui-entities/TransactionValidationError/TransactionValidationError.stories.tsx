@@ -1,7 +1,7 @@
 import { BN_MILLION, BN_THOUSAND } from '@polkadot/util';
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 
-import { createWcWallet, dotAsset, kusamaAsset } from '@/shared/mocks';
+import { createWcAccount, createWcWallet, dotAsset, kusamaAsset } from '@/shared/mocks';
 import { Box } from '@/shared/ui-kit';
 
 import { TransactionValidationError } from './TransactionValidationError';
@@ -22,12 +22,15 @@ export default meta;
 
 type Story = StoryObj<typeof TransactionValidationError>;
 
+const account = createWcAccount('test', 0);
+const wallet = createWcWallet(0, [account]);
+
 export const Permission: Story = {
   args: {
+    wallets: [wallet],
     errors: [
       {
-        type: 'permission',
-        wallet: createWcWallet(0, []),
+        account,
         permission: 'transfer',
       },
     ],
@@ -36,17 +39,17 @@ export const Permission: Story = {
 
 export const Balance: Story = {
   args: {
+    wallets: [wallet],
     errors: [
       {
-        type: 'balance',
-        wallet: createWcWallet(0, []),
-        withdrawals: [
-          {
-            balance: BN_THOUSAND,
-            action: 'fee',
-            asset: dotAsset,
-          },
-        ],
+        account,
+        balance: {
+          success: false,
+          balance: {},
+          imbalance: BN_THOUSAND,
+        },
+        action: 'fee',
+        asset: dotAsset,
       },
     ],
   },
@@ -54,27 +57,31 @@ export const Balance: Story = {
 
 export const Multiple: Story = {
   args: {
+    wallets: [wallet],
     errors: [
       {
-        type: 'permission',
-        wallet: createWcWallet(0, []),
+        account,
         permission: 'transfer',
       },
       {
-        type: 'balance',
-        wallet: createWcWallet(0, []),
-        withdrawals: [
-          {
-            balance: BN_MILLION,
-            action: 'fee',
-            asset: dotAsset,
-          },
-          {
-            balance: BN_MILLION,
-            action: 'multisig deposit',
-            asset: kusamaAsset,
-          },
-        ],
+        account,
+        balance: {
+          success: false,
+          balance: {},
+          imbalance: BN_MILLION,
+        },
+        action: 'fee',
+        asset: dotAsset,
+      },
+      {
+        account,
+        balance: {
+          success: false,
+          balance: {},
+          imbalance: BN_MILLION,
+        },
+        action: 'multisig deposit',
+        asset: kusamaAsset,
       },
     ],
   },

@@ -1,9 +1,11 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
-import { type Chain } from '@/shared/core';
-import { formatAmount, validateAddress } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { type Asset, type Chain } from '@/shared/core';
+import { assert, formatAmount, toPrecision, validateAddress } from '@/shared/lib/utils';
+import { createTxValidator } from '@/shared/transactions';
+import { type AnyAccount, balanceService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import {
   type BalanceMap,
   type NetworkStore,
@@ -12,7 +14,7 @@ import {
   type TransferSignatoryFeeStore,
 } from '../types/types';
 
-import { balanceValidation, descriptionValidation } from './validation';
+import { balanceValidation } from './validation';
 
 export const TransferRules = {
   account: {
@@ -198,11 +200,61 @@ export const TransferRules = {
       },
     }),
   },
-  description: {
-    maxLength: {
-      name: 'maxLength',
-      errorText: 'transfer.descriptionLengthError',
-      validator: descriptionValidation.isMaxLength,
-    },
-  },
 };
+
+export const transferValidator = createTxValidator<{
+  amount: string;
+  sourceChain: Chain;
+  destinationChain: Chain;
+  destinationAsset: Asset;
+  xcmFee: string;
+  deliveryFee: string;
+}>({
+  additionalBalanceRules: [
+    // amount
+    ({ route, amount, asset, ed, destinationAsset }, balanceValidationResults) => {
+      const initiator = accountService.findInitiator(route);
+      assert(initiator, 'Initiator not found');
+
+      const desiredAmount = toPrecision(amount, destinationAsset.precision);
+
+      if (asset === destinationAsset) {
+        return accountService.mutateTransitionBalanceValidationResult(
+          balanceValidationResults,
+          asset,
+          initiator,
+          (balance, account) => ({
+            account,
+            balance: balanceService.tryWithdraw(balance, desiredAmount, ed, 'keepAlive'),
+            asset,
+            action: 'amount',
+          }),
+        );
+      }
+    },
+    // delivery fee
+    // ({ route, deliveryFee, asset, destinationAsset }, balanceValidationResults) => {
+    //   // it should be xcm transfer
+    //   if (asset === destinationAsset) {
+    //     return;
+    //   }
+    //
+    //   const initiator = accountService.findInitiator(route);
+    //   assert(initiator, 'Initiator not found');
+    //
+    //   const desiredDeliveryFee = toPrecision(deliveryFee, destinationAsset.precision);
+    //
+    //   return accountService.mutateTransitionBalanceValidationResult(
+    //     balanceValidationResults,
+    //     destinationAsset,
+    //     initiator,
+    //     (balance, account) => ({
+    //       account,
+    //       balance: balanceService.tryWithdraw(balance, desiredDeliveryFee, BN_ZERO, 'keepAlive'),
+    //       asset: destinationAsset,
+    //       action: 'delivery fee',
+    //     }),
+    //   );
+    // },
+  ],
+});

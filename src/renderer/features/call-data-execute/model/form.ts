@@ -94,7 +94,7 @@ const $args = combine($extrinsic, form.fields.chain.$value, (extrinsic, chain) =
 const createExtrinsicFx = createQueuedEffect(
   ({ transaction, api }: { transaction: EncodedTransaction | null; api: ApiPromise | null }) => {
     if (nullable(transaction) || nullable(api)) return null;
-    return transactionService.createSubmittableExtrinsicFromCallData(transaction.callData, api);
+    return transactionService.createExtrinsicFromCallData(transaction.callData, api);
   },
 );
 

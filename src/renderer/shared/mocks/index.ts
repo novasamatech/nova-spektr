@@ -203,7 +203,7 @@ export const createVaultChainAccount = (
   params: Partial<Pick<VaultChainAccount, 'accountId' | 'name' | 'chainId'>> &
     Pick<VaultChainAccount, 'walletId' | 'derivationPath'>,
 ): VaultChainAccount => {
-  const accountId = params.accountId ?? createAccountId(`Base account ${id}`);
+  const accountId = params.accountId ?? createAccountId(id);
   const chainId = params.chainId ?? polkadotChainId;
 
   return {
@@ -221,9 +221,9 @@ export const createVaultChainAccount = (
   };
 };
 
-export const createWcAccount = (id = createRandomId(), walletId = 0): WcAccount => ({
-  id,
-  accountId: createAccountId(`Wc account ${id}`),
+export const createWcAccount = (id: string | number = createRandomId(), walletId = 0): WcAccount => ({
+  id: id.toString(),
+  accountId: createAccountId(id),
   chainId: polkadotChainId,
   signingType: SigningType.POLKADOT_VAULT,
   cryptoType: CryptoType.SR25519,
@@ -234,9 +234,9 @@ export const createWcAccount = (id = createRandomId(), walletId = 0): WcAccount 
   signingExtras: {},
 });
 
-export const createProxiedAccount = (id = createRandomId(), walletId = 0): ProxiedAccount => ({
-  id,
-  accountId: createAccountId(`Proxied account ${id}`),
+export const createProxiedAccount = (id: string | number = createRandomId(), walletId = 0): ProxiedAccount => ({
+  id: id.toString(),
+  accountId: createAccountId(id),
   proxyVariant: ProxyVariant.REGULAR,
   connections: [
     {
@@ -261,7 +261,6 @@ export const createSingleShardWallet = (
     rootAccountId: AccountId;
   },
 ): SingleShardWallet => {
-  // @ts-expect-error "accounts" is deprecated
   return {
     id,
     rootAccountId: params.rootAccountId,
@@ -269,7 +268,7 @@ export const createSingleShardWallet = (
     isActive: params.isActive ?? true,
     name: params.name ?? `SingleShard ${id}`,
     signingType: SigningType.POLKADOT_VAULT,
-    ...(params.accounts && { accounts: params.accounts }),
+    accounts: params.accounts ?? [],
   };
 };
 

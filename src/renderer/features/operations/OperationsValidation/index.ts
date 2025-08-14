@@ -20,7 +20,7 @@ export { removeVoteValidateModel } from './model/remove-vote-validate-model';
 export { collectiveVoteValidateModel } from './model/collective-vote-validate-model';
 export { collectiveSetActiveValidateModel } from './model/collective-set-active-validate-model';
 
-export { TransferRules } from './lib/transfer-rules';
+export { transferValidator, TransferRules } from './lib/transfer-rules';
 
 export { AddProxyRules } from './lib/add-proxy-rules';
 export { AddPureProxiedRules } from './lib/add-pure-proxied-rules';
