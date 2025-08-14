@@ -46,59 +46,18 @@ const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     initiator: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isProxy: $isProxy,
-            proxyBalance: $proxyBalance,
-            network: $networkStore,
-            initiatorBalance: $initiatorBalance,
-          }),
-          fn: (
-            initiator: AnyAccount | null,
-            form: FormParams,
-            { fee, isProxy, proxyBalance, network, initiatorBalance },
-          ) => {
-            if (!initiator) {
-              return { message: 'staking.bond.noInitiatorError' };
-            }
-
-            if (isProxy && new BN(fee).gt(new BN(proxyBalance))) {
-              return { message: 'staking.bond.noBondBalanceError' };
-            }
-
-            if (isProxy && form.amount) {
-              const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
-
-              if (amountBN.gt(new BN(initiatorBalance))) {
-                return { message: 'staking.bond.noBondBalanceError' };
-              }
-            }
-          },
-        };
+      validator: () => (initiator) => {
+        if (!initiator) {
+          return { message: 'staking.bond.noInitiatorError' };
+        }
       },
     },
     signatory: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            isMultisig: $isMultisig,
-            fee: $fee,
-            multisigDeposit: $multisigDeposit,
-            signatoryBalance: $signatoryBalance,
-          }),
-          fn: (signatory: AnyAccount | null, _: FormParams, { isMultisig, fee, multisigDeposit, signatoryBalance }) => {
-            if (nullable(signatory)) {
-              return { message: 'transfer.noSignatoryError' };
-            }
-
-            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
-              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
-            }
-          },
-        };
+      validator: () => (signatory) => {
+        if (nullable(signatory)) {
+          return { message: 'transfer.noSignatoryError' };
+        }
       },
     },
     amount: {
@@ -171,25 +130,6 @@ const $bondBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
 
   return [ZERO_BALANCE, initiatorBalance];
 });
-
-const $signatoryBalance = combine(
-  {
-    signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  ({ signatory, balances, network }) => {
-    if (!signatory || !network) return ZERO_BALANCE;
-    const balance = balanceUtils.getBalance(
-      balances,
-      signatory.accountId,
-      network.chain.chainId,
-      network.asset.assetId,
-    );
-
-    return transferableAmount(balance);
-  },
-);
 
 const $api = combine(
   {

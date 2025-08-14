@@ -63,43 +63,13 @@ const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     initiator: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isProxy: $isProxy,
-            proxyBalance: $proxyBalance,
-          }),
-          fn: (_v, _f, { fee, isProxy, proxyBalance }) => {
-            if (isProxy && fee.gt(new BN(proxyBalance))) {
-              return { message: 'transfer.notEnoughBalanceForFeeError' };
-            }
-          },
-        };
-      },
     },
     signatory: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isMultisig: $isMultisig,
-            signatoryBalance: $signatoryBalance,
-            multisigDeposit: $multisigDeposit,
-          }),
-          fn: (signatory, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (nullable(signatory)) {
-              return { message: 'transfer.noSignatoryError' };
-            }
-
-            const isNotEnoughMultisigTokens =
-              isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance));
-            if (isNotEnoughMultisigTokens) {
-              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
-            }
-          },
-        };
+      validator: () => (signatory) => {
+        if (nullable(signatory)) {
+          return { message: 'transfer.noSignatoryError' };
+        }
       },
     },
     amount: {
@@ -192,25 +162,6 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
-
-const $signatoryBalance = combine(
-  {
-    signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  ({ signatory, balances, network }) => {
-    if (!signatory || !network) return ZERO_BALANCE;
-    const balance = balanceUtils.getBalance(
-      balances,
-      signatory.accountId,
-      network.chain.chainId,
-      network.asset.assetId,
-    );
-
-    return transferableAmount(balance);
-  },
-);
 
 const $destinationAccounts = combine(
   {

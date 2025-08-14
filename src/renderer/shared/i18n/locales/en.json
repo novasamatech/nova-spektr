@@ -841,8 +841,7 @@
     "transactionErrors": {
       "balance": {
         "intro": "Wallet <wallet/> has insufficient funds to cover",
-        "message": "Please top up the balance of this wallet and try again.",
-        "required": "Total amount required:",
+        "required": "Please top up the balance of this wallet by {balances, list} and try again.",
         "section": "the {action} of {balance}"
       },
       "permission": {

@@ -66,42 +66,13 @@ const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     initiator: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isProxy: $isProxy,
-            proxyBalance: $proxyBalance,
-            network: $networkStore,
-          }),
-          fn: (_i: AnyAccount | null, _f: FormParams, { fee, isProxy, proxyBalance }) => {
-            if (isProxy && new BN(fee).gt(new BN(proxyBalance))) {
-              return { message: 'staking.notEnoughBalanceError' };
-            }
-          },
-        };
-      },
     },
     signatory: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isMultisig: $isMultisig,
-            multisigDeposit: $multisigDeposit,
-            signatoryBalance: $signatoryBalance,
-          }),
-          fn: (signatory, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (nullable(signatory)) {
-              return { message: 'transfer.noSignatoryError' };
-            }
-
-            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
-              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
-            }
-          },
-        };
+      validator: () => (signatory) => {
+        if (nullable(signatory)) {
+          return { message: 'transfer.noSignatoryError' };
+        }
       },
     },
     amount: {
@@ -232,7 +203,7 @@ const $coreTx = combine(
   },
 );
 
-// Sigantory
+// Signatory
 
 const $signatories = createSignatoriesStore({
   chain: $chain,
@@ -246,26 +217,6 @@ sample({
   fn: (s) => s.at(0) ?? null,
   target: form.fields.signatory.change,
 });
-
-const $signatoryBalance = combine(
-  {
-    signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  ({ signatory, balances, network }) => {
-    if (nullable(signatory) || nullable(balances) || nullable(network)) return ZERO_BALANCE;
-
-    const balance = balanceUtils.getBalance(
-      balances,
-      signatory.accountId,
-      network.chain.chainId,
-      network.asset.assetId,
-    );
-
-    return transferableAmount(balance);
-  },
-);
 
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
