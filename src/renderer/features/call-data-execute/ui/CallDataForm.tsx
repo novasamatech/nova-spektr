@@ -169,7 +169,9 @@ const InitiatorSelect = memo(() => {
       const walletTypeTitle = (
         <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
           <WalletIcon type={walletGroup.walletType} />
-          <FootnoteText className="text-text-secondary">{t(walletTypesTitles[walletGroup.walletType])}</FootnoteText>
+          <FootnoteText className="text-text-secondary uppercase">
+            {t(walletTypesTitles[walletGroup.walletType])}
+          </FootnoteText>
         </Box>
       );
 
@@ -321,7 +323,9 @@ const SignatorySelect = memo(() => {
       const walletTypeTitle = (
         <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
           <WalletIcon type={walletGroup.walletType} />
-          <FootnoteText className="text-text-secondary">{walletTypesTitles[walletGroup.walletType]}</FootnoteText>
+          <FootnoteText className="text-text-secondary uppercase">
+            {walletTypesTitles[walletGroup.walletType]}
+          </FootnoteText>
         </Box>
       );
 
