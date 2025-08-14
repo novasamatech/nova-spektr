@@ -17,7 +17,7 @@ export type {
   Tally,
   TimedOutReferendum,
   RfcProposal,
-  Proposal as CollectivesProposal,
+  Proposal,
 } from './referendum/types';
 
 export { referendumMeta } from './referendumMeta/store';

@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { Compact } from '@polkadot/types';
 import { u8aToHex } from '@polkadot/util';
 
 import { type ChainId, type HexString } from '@/shared/core';
@@ -49,15 +50,41 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
       }
     }
 
-    if (struct.method === 'send') {
+    if (struct.section === 'polkadotXcm' && struct.method === 'send') {
+      //todo learn how to read arguments (multilocation chainId and call)
       return {
         type: 'Whitelist',
       };
     }
 
-    if (struct.method === 'spendLocal' || struct.method === 'spend') {
+    if (struct.method === 'spendLocal') {
+      const amountCodec = struct.args.at(0);
+      const amountU128 = amountCodec instanceof Compact ? amountCodec.unwrap() : amountCodec;
+      const amountBN = pjsSchema.u128.safeParse(amountU128);
+
+      if (!amountBN.success) {
+        throw new Error('spendLocal', amountBN.error);
+      }
+
       return {
         type: 'Spend',
+        amount: amountBN.data,
+      };
+    }
+
+    //todo learn how to read multilocation for asset and destination
+    if (struct.method === 'spend') {
+      const amountCodec = struct.args.at(1);
+      const amountU128 = amountCodec instanceof Compact ? amountCodec.unwrap() : amountCodec;
+      const amountBN = pjsSchema.u128.safeParse(amountU128);
+
+      if (!amountBN.success) {
+        throw new Error('spend', amountBN.error);
+      }
+
+      return {
+        type: 'Spend',
+        amount: amountBN.data,
       };
     }
 

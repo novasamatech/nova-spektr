@@ -38,6 +38,7 @@ export type WhitelistProposal = {
 
 export type SpendProposal = {
   type: 'Spend';
+  amount: BN;
 };
 
 export type Proposal = EvidenceProposal | RfcProposal | UnknownProposal | WhitelistProposal | SpendProposal;

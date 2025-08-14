@@ -3,13 +3,13 @@ import { memo } from 'react';
 import { nonNullable } from '@/shared/lib/utils';
 import { Icon, type IconNames } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { type CollectivesProposal, referendumService } from '@/domains/collectives';
+import { type Proposal, referendumService } from '@/domains/collectives';
 
 type Props = {
   rank?: number | null;
   isPromotion?: boolean;
   isRetention?: boolean;
-  proposal?: CollectivesProposal | null;
+  proposal?: Proposal | null;
 };
 
 export const TaskBadge = memo(({ rank, isPromotion, isRetention, proposal }: Props) => {
