@@ -22,9 +22,11 @@ export { collectiveSetActiveValidateModel } from './model/collective-set-active-
 
 export { transferValidator, TransferRules } from './lib/transfer-rules';
 
-export { AddProxyRules } from './lib/add-proxy-rules';
-export { AddPureProxiedRules } from './lib/add-pure-proxied-rules';
-export { RemoveProxyRules } from './lib/remove-proxy-rules';
+export { AddProxyRules, addProxyValidator } from './lib/add-proxy-rules';
+export { AddPureProxiedRules, addPureProxiedValidator } from './lib/add-pure-proxied-rules';
+export { RemoveProxyRules, removeProxyValidator } from './lib/remove-proxy-rules';
+export { voteValidator } from './lib/vote-rules';
+export { removeVoteValidator } from './lib/remove-vote-rules';
 export { RemovePureProxiedRules } from './lib/remove-pure-proxied-rules';
 
 export { BondNominateRules, bondNominateValidator } from './lib/bond-nominate-rules';
