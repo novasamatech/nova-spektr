@@ -16,18 +16,14 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import {
-  createComplexTxStore,
-  createSignatoriesStore,
-  createTxValidationStore,
-  createTxValidator,
-} from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { bondNominateValidator } from '@/features/operations/OperationsValidation';
 import { validatorsModel } from '@/features/staking';
 import { type WalletData } from '../lib/types';
 
@@ -287,9 +283,8 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
-const bondNominateTxValidator = createTxValidator();
 const { $errors } = createTxValidationStore({
-  validator: bondNominateTxValidator,
+  validator: bondNominateValidator,
   params: {
     api: $api,
     asset: $asset,

@@ -18,7 +18,6 @@ import {
   createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
-  createTxValidator,
 } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -26,6 +25,7 @@ import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { bondExtraValidator } from '@/features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -227,9 +227,8 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
-const bondExtraTxValidator = createTxValidator();
 const { $errors } = createTxValidationStore({
-  validator: bondExtraTxValidator,
+  validator: bondExtraValidator,
   params: {
     api: $api,
     asset: $asset,

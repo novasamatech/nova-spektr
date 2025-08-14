@@ -14,17 +14,13 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import {
-  createComplexTxStore,
-  createSignatoriesStore,
-  createTxValidationStore,
-  createTxValidator,
-} from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { payeeValidator } from '@/features/operations/OperationsValidation';
 import { type FormInput } from '../lib/types';
 
 export type FormParams = {
@@ -237,9 +233,8 @@ const $isMultisig = $multisigAccount.map((account) => nonNullable(account));
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
-const payeeTxValidator = createTxValidator();
 const { $errors } = createTxValidationStore({
-  validator: payeeTxValidator,
+  validator: payeeValidator,
   params: {
     api: $api,
     asset: $asset,

@@ -27,13 +27,13 @@ export { AddPureProxiedRules } from './lib/add-pure-proxied-rules';
 export { RemoveProxyRules } from './lib/remove-proxy-rules';
 export { RemovePureProxiedRules } from './lib/remove-pure-proxied-rules';
 
-export { BondNominateRules } from './lib/bond-nominate-rules';
-export { NominateRules } from './lib/nominate-rules';
-export { PayeeRules } from './lib/payee-rules';
-export { RestakeRules } from './lib/restake-rules';
-export { UnstakeRules } from './lib/unstake-rules';
-export { BondExtraRules } from './lib/bond-extra-rules';
-export { WithdrawRules } from './lib/withdraw-rules';
+export { BondNominateRules, bondNominateValidator } from './lib/bond-nominate-rules';
+export { NominateRules, nominateValidator } from './lib/nominate-rules';
+export { PayeeRules, payeeValidator } from './lib/payee-rules';
+export { RestakeRules, restakeValidator } from './lib/restake-rules';
+export { UnstakeRules, unstakeValidator } from './lib/unstake-rules';
+export { BondExtraRules, bondExtraValidator } from './lib/bond-extra-rules';
+export { WithdrawRules, withdrawValidator } from './lib/withdraw-rules';
 
 export * from './lib/validation';
 export * from './lib/validation-utils';

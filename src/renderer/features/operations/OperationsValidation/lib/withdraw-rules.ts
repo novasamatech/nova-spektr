@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
 import { ZERO_BALANCE } from '@/shared/lib/utils';
+import { createTxValidator } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
 import { type AmountFeeStore, type ShardsProxyFeeStore, type SignatoryFeeStore } from '../types/types';
 
@@ -88,3 +89,5 @@ export const WithdrawRules = {
     },
   },
 };
+
+export const withdrawValidator = createTxValidator();

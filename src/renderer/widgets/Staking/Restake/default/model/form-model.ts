@@ -16,12 +16,7 @@ import {
   transferableAmount,
   unlockingAmount,
 } from '@/shared/lib/utils';
-import {
-  createComplexTxStore,
-  createSignatoriesStore,
-  createTxValidationStore,
-  createTxValidator,
-} from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -29,6 +24,7 @@ import { type StakingMap, useStakingData } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { restakeValidator } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
 
 type FormParams = {
@@ -254,9 +250,8 @@ const $proxyWallet = combine(
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
-const restakeTxValidator = createTxValidator();
 const { $errors } = createTxValidationStore({
-  validator: restakeTxValidator,
+  validator: restakeValidator,
   params: {
     api: $api,
     asset: $asset,

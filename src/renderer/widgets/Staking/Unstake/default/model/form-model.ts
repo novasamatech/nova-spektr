@@ -20,7 +20,6 @@ import {
   createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
-  createTxValidator,
 } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -29,6 +28,7 @@ import { type StakingMap, useStakingData } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { unstakeValidator } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
 
 type FormParams = {
@@ -330,9 +330,8 @@ const $proxyBalance = combine(
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
-const unstakeTxValidator = createTxValidator();
 const { $errors } = createTxValidationStore({
-  validator: unstakeTxValidator,
+  validator: unstakeValidator,
   params: {
     api: $api,
     asset: $asset,

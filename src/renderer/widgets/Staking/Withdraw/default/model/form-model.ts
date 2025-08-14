@@ -22,18 +22,14 @@ import {
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
-import {
-  createComplexTxStore,
-  createSignatoriesStore,
-  createTxValidationStore,
-  createTxValidator,
-} from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { withdrawValidator } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
 
 export type FormParams = {
@@ -291,9 +287,8 @@ const $proxyWallet = combine(
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
-const withdrawTxValidator = createTxValidator();
 const { $errors } = createTxValidationStore({
-  validator: withdrawTxValidator,
+  validator: withdrawValidator,
   params: {
     api: $api,
     asset: $asset,

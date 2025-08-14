@@ -3,6 +3,7 @@ import { type Store } from 'effector';
 
 import { RewardsDestination, type VaultShardAccount } from '@/shared/core';
 import { formatAmount, validateAddress } from '@/shared/lib/utils';
+import { createTxValidator } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
 import {
   type AmountFeeStore,
@@ -134,3 +135,5 @@ export const BondNominateRules = {
     },
   },
 };
+
+export const bondNominateValidator = createTxValidator();
