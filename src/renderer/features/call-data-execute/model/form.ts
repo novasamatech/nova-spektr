@@ -282,14 +282,16 @@ sample({
 });
 
 sample({
-  clock: form.fields.initiator.change,
+  clock: flow.open,
   source: {
     allChains: $allChains,
     selectedChain: form.fields.chain.$value,
-    isOpen: flow.status,
+    initiator: form.fields.initiator.$value,
   },
-  filter: ({ isOpen, selectedChain }) => isOpen && nullable(selectedChain),
-  fn: ({ allChains }, initiator) => {
+  filter: ({ initiator, selectedChain }) =>
+    nullable(selectedChain) ||
+    (nonNullable(initiator) && accountService.isAccountAvailableOnChain(initiator, selectedChain)),
+  fn: ({ allChains, initiator }) => {
     if (nullable(initiator)) return null;
     return allChains.find((chain) => accountService.isAccountAvailableOnChain(initiator, chain)) ?? null;
   },
@@ -312,7 +314,7 @@ sample({
     const walletAccounts = accountService.filterAccountsByWallet(allAccounts, initiator.walletId);
     const matchingAccount = walletAccounts.find((account) => accountService.isAccountAvailableOnChain(account, chain));
 
-    return matchingAccount ?? null;
+    return matchingAccount ?? allAccounts?.at(0) ?? null;
   },
   target: form.fields.initiator.change,
 });
