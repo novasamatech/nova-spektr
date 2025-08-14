@@ -46,6 +46,7 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
 
   return {
     $: readonly($),
+    $pending: fx.pending,
     fx,
   };
 };

@@ -49,42 +49,13 @@ const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     initiator: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isProxy: $isProxy,
-            proxyBalance: $proxyBalance,
-            network: $networkStore,
-          }),
-          fn: (_i, _f, { fee, isProxy, proxyBalance }) => {
-            if (isProxy && new BN(fee).gt(new BN(proxyBalance))) {
-              return { message: 'staking.notEnoughBalanceError' };
-            }
-          },
-        };
-      },
     },
     signatory: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isMultisig: $isMultisig,
-            multisigDeposit: $multisigDeposit,
-            signatoryBalance: $signatoryBalance,
-          }),
-          fn: (signatory, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
-              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
-            }
-
-            if (!signatory && isMultisig) {
-              return { message: 'proxy.addProxy.noSignatoryError' };
-            }
-          },
-        };
+      validator: () => (signatory) => {
+        if (!signatory) {
+          return { message: 'proxy.addProxy.noSignatoryError' };
+        }
       },
     },
     amount: {
@@ -144,25 +115,6 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
-
-const $signatoryBalance = combine(
-  {
-    signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  ({ signatory, balances, network }) => {
-    if (!signatory || !network) return ZERO_BALANCE;
-    const balance = balanceUtils.getBalance(
-      balances,
-      signatory.accountId,
-      network.chain.chainId,
-      network.asset.assetId,
-    );
-
-    return transferableAmount(balance);
-  },
-);
 
 sample({
   clock: $signatories,

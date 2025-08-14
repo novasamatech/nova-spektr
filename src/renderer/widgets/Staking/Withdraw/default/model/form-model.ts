@@ -77,41 +77,13 @@ const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     initiator: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isProxy: $isProxy,
-            proxyBalance: $proxyBalance,
-          }),
-          fn: (_s, _f, { fee, isProxy, proxyBalance }) => {
-            if (isProxy && new BN(fee).gt(new BN(proxyBalance))) {
-              return { message: 'transfer.notEnoughBalanceForFeeError' };
-            }
-          },
-        };
-      },
     },
     signatory: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isMultisig: $isMultisig,
-            multisigDeposit: $multisigDeposit,
-            signatoryBalance: $signatoryBalance,
-          }),
-          fn: (signatory, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (nullable(signatory)) {
-              return { message: 'transfer.noSignatoryError' };
-            }
-
-            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
-              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
-            }
-          },
-        };
+      validator: () => (signatory) => {
+        if (nullable(signatory)) {
+          return { message: 'transfer.noSignatoryError' };
+        }
       },
     },
     amount: {

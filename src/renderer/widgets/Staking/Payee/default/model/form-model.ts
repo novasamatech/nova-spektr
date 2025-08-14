@@ -1,4 +1,3 @@
-import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
@@ -53,49 +52,18 @@ const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     initiator: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isProxy: $isProxy,
-            proxyBalance: $proxyBalance,
-          }),
-          fn: (initiator: AnyAccount | null, form: FormParams, { isProxy, proxyBalance, fee }: any) => {
-            if (!initiator) {
-              return { message: 'staking.bond.noAccountError' };
-            }
-
-            if (isProxy && !new BN(fee).lte(new BN(proxyBalance))) {
-              return { message: 'proxy.addProxy.notEnoughProxyTokens' };
-            }
-          },
-        };
+      validator: () => (initiator) => {
+        if (!initiator) {
+          return { message: 'staking.bond.noAccountError' };
+        }
       },
     },
     signatory: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            multisigDeposit: $multisigDeposit,
-            isMultisig: $isMultisig,
-            signatoryBalance: $signatoryBalance,
-          }),
-          fn: (
-            signatory: AnyAccount | null,
-            _form: FormParams,
-            { fee, multisigDeposit, isMultisig, signatoryBalance }: any,
-          ) => {
-            if (nullable(signatory)) {
-              return { message: 'transfer.noSignatoryError' };
-            }
-
-            if (isMultisig && !new BN(multisigDeposit).add(new BN(fee)).lte(new BN(signatoryBalance))) {
-              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
-            }
-          },
-        };
+      validator: () => (signatory) => {
+        if (nullable(signatory)) {
+          return { message: 'transfer.noSignatoryError' };
+        }
       },
     },
     destination: {
@@ -180,25 +148,6 @@ const $bondBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
 
   return ['0', initiatorBalance];
 });
-
-const $signatoryBalance = combine(
-  {
-    signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  ({ signatory, balances, network }) => {
-    if (!signatory || !network) return ZERO_BALANCE;
-    const balance = balanceUtils.getBalance(
-      balances,
-      signatory.accountId,
-      network.chain.chainId,
-      network.asset.assetId,
-    );
-
-    return transferableAmount(balance);
-  },
-);
 
 const $coreTx = combine(
   {
