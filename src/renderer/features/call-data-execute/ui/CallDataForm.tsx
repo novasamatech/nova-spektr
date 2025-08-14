@@ -138,7 +138,6 @@ const InitiatorSelect = memo(() => {
       const matchingAccount = walletAccounts.find((account) =>
         accountService.isAccountAvailableOnChain(account, chain),
       );
-      // If no matching account, use the first account from the wallet
       const accountToUse = matchingAccount ?? walletAccounts[0] ?? null;
       initiator.onChange(accountToUse);
     }
@@ -148,7 +147,6 @@ const InitiatorSelect = memo(() => {
     const options: ReactNode[] = [];
     if (nullable(chain) || nullable(asset)) return options;
 
-    // Group wallets by type (show all wallets, even without accounts on selected chain)
     const walletsByType = wallets.reduce(
       (groups, wallet) => {
         if (!groups[wallet.type]) {
@@ -160,7 +158,6 @@ const InitiatorSelect = memo(() => {
       {} as Record<string, { walletType: WalletType; wallets: Wallet[] }>,
     );
 
-    // Render each wallet type group
     for (const walletGroup of Object.values(walletsByType)) {
       const walletTypeTitle = (
         <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
@@ -278,7 +275,6 @@ const SignatorySelect = memo(() => {
     const wallet = wallets.find((w) => w.id === Number(walletId));
     if (nonNullable(wallet) && nonNullable(chain)) {
       const walletSignatories = accountService.filterAccountsByWallet(signatories, wallet.id);
-      // Find first signatory account that matches the selected network
       const matchingSignatory = walletSignatories.find((account) =>
         accountService.isAccountAvailableOnChain(account, chain),
       );
@@ -292,7 +288,6 @@ const SignatorySelect = memo(() => {
     const options: ReactNode[] = [];
     if (nullable(chain) || nullable(asset)) return options;
 
-    // Group wallets by type
     const walletsByType = wallets.reduce(
       (groups, wallet) => {
         const walletSignatories = accountService.filterAccountsByWallet(signatories, wallet.id);
@@ -310,7 +305,6 @@ const SignatorySelect = memo(() => {
       {} as Record<string, { walletType: WalletType; wallets: Wallet[] }>,
     );
 
-    // Render each wallet type group
     for (const walletGroup of Object.values(walletsByType)) {
       const walletTypeTitle = (
         <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
