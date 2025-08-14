@@ -21,6 +21,7 @@ export const permissionUtils = {
 
 function canTransfer(wallet: Wallet): boolean {
   if (walletUtils.isWatchOnly(wallet)) return false;
+  if (walletUtils.isProxied(wallet)) return accountUtils.isAnyProxyType(wallet.accounts[0]);
 
   return true;
 }
