@@ -44,7 +44,7 @@ function isDecodedTransaction(transaction: AnyTransaction): transaction is AnyDe
   return transaction.type === 'decoded';
 }
 
-async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccount[], api: ApiPromise) {
+async function wrapTransaction(transaction: AnyTransaction, route: AnyAccount[], api: ApiPromise) {
   let wrapped: AnyTransaction = transaction;
 
   for (const account of route) {

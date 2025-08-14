@@ -11,7 +11,6 @@ import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
-import { addProxyModel } from '@/features/proxy-add';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -127,7 +126,6 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
                 hasProxies={hasProxies}
                 canCreateProxy={canCreateProxy}
                 className="h-[388px]"
-                onAddProxy={addProxyModel.events.flowStarted}
               />
             </Tabs.Content>
           </Tabs>

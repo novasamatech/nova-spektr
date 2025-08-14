@@ -338,6 +338,7 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
   const bnPrecision = new BNWithConfig(precision);
   const TEN = new BNWithConfig(10);
   const bnBalance = new BNWithConfig(balance).div(TEN.pow(bnPrecision));
+  const nonZeroDigits = 1;
 
   let divider = new BNWithConfig(1);
   let suffix = '';
@@ -345,7 +346,7 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
 
   if (bnBalance.lt(1)) {
     // if number has more than 7 digits in decimal part BigNumber.toString returns number in scientific notation
-    decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnBalance.toFixed());
+    decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnBalance.toFixed(), nonZeroDigits);
   } else if (bnBalance.lt(10)) {
     decimalPlaces = Decimal.SMALL_NUMBER;
   } else if (bnBalance.lt(1_000_000)) {

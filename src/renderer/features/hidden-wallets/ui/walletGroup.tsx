@@ -1,17 +1,14 @@
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { AccountType, type Chain, type Wallet, WalletType } from '@/shared/core';
 import { createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { performSearch } from '@/shared/lib/utils';
 import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Checkbox } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { FiatBalance } from '@/entities/price';
 import { walletUtils } from '@/entities/wallet';
-import { walletSelectService } from '@/aggregates/wallet-select';
 import { hiddenWalletsBalancesModel } from '../model/balances';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
@@ -19,11 +16,9 @@ export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 type Props = {
   walletType: WalletType;
   wallets: Wallet[];
-  query: string;
   selectedWallets: Wallet[];
   onGroupToggle: (wallets: Wallet[]) => void;
   onWalletToggle: (wallet: Wallet) => void;
-  setSearchResults?: (wallets: Wallet[]) => void;
 };
 
 const WALLET_TYPE_LABELS = {
@@ -39,51 +34,35 @@ const WALLET_TYPE_LABELS = {
   [WalletType.SUBWALLET_EXTENSION]: 'wallets.subWalletExtensionLabel',
 };
 
-export const WalletGroup = memo((props: Props) => {
-  const { wallets, walletType, query, selectedWallets, onGroupToggle, onWalletToggle, setSearchResults } = props;
+export const WalletGroup = (props: Props) => {
+  const { wallets, walletType, selectedWallets, onGroupToggle, onWalletToggle } = props;
   const { t } = useI18n();
 
-  const allAccounts = useUnit(accounts.$list);
   const chains = useUnit(networkModel.$chains);
   const balances = useUnit(hiddenWalletsBalancesModel.$balances);
-
-  const filteredWallets = performSearch({
-    query,
-    records: wallets,
-    getMeta: (wallet) => ({
-      allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
-    }),
-    weights: { name: 1, allAddresses: 0.8 },
-  });
-
-  useEffect(() => {
-    if (setSearchResults) {
-      setSearchResults(filteredWallets);
-    }
-  }, [filteredWallets, setSearchResults]);
 
   // Optimized Set for O(1) selection lookups
   const selectedWalletSet = useMemo(() => new Set(selectedWallets), [selectedWallets]);
 
   // Checkbox state logic for multiple select
   const groupCheckboxState = useMemo(() => {
-    const selectedInGroup = filteredWallets.filter((wallet) => selectedWalletSet.has(wallet));
+    const selectedInGroup = wallets.filter((wallet) => selectedWalletSet.has(wallet));
 
     if (selectedInGroup.length === 0) {
       return { checked: false, semiChecked: false };
-    } else if (selectedInGroup.length === filteredWallets.length) {
+    } else if (selectedInGroup.length === wallets.length) {
       return { checked: true, semiChecked: false };
     } else {
       return { checked: false, semiChecked: true };
     }
-  }, [selectedWalletSet, filteredWallets]);
+  }, [selectedWalletSet, wallets]);
 
-  if (filteredWallets.length === 0) {
+  if (wallets.length === 0) {
     return null;
   }
 
   const handleGroupCheckboxChange = () => {
-    onGroupToggle(filteredWallets);
+    onGroupToggle(wallets);
   };
 
   const handleWalletClick = (wallet: Wallet) => {
@@ -103,12 +82,12 @@ export const WalletGroup = memo((props: Props) => {
             />
             <WalletIcon type={walletType} />
             <span>{t(WALLET_TYPE_LABELS[walletType as keyof typeof WALLET_TYPE_LABELS])}</span>
-            <span className="ml-auto text-text-tertiary">{filteredWallets.length}</span>
+            <span className="ml-auto text-text-tertiary">{wallets.length}</span>
           </div>
         </Accordion.Trigger>
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
-            {filteredWallets.map((wallet) => {
+            {wallets.map((wallet) => {
               const address = wallet.accounts[0]?.accountId;
               const isSelected = selectedWalletSet.has(wallet);
 
@@ -150,4 +129,4 @@ export const WalletGroup = memo((props: Props) => {
       </Accordion>
     </Box>
   );
-});
+};

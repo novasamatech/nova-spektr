@@ -94,7 +94,7 @@ export const Signatory = ({
     const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
       walletFn: walletUtils.isValidSignatory,
       accountFn: account => {
-        const isCorrectAccount = !accountUtils.isVaultBaseAccount(account);
+        const isCorrectAccount = !accountUtils.isWatchOnlyAccount(account);
 
         if (isOwnAccount) return isCorrectAccount;
 

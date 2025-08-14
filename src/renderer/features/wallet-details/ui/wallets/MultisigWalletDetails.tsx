@@ -14,7 +14,7 @@ import { type AnyAccount } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
-import { AddProxy, addProxyModel } from '@/features/proxy-add';
+import { AddProxy } from '@/features/proxy-add';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
@@ -212,14 +212,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
           <span className="text-text-tertiary">{proxiesCount}</span>
         </span>
       ),
-      panel: (
-        <ProxiesList
-          wallet={wallet}
-          hasProxies={hasProxies}
-          canCreateProxy={canCreateProxy}
-          onAddProxy={addProxyModel.events.flowStarted}
-        />
-      ),
+      panel: <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />,
     };
 
     TabItems.push(TabProxy);

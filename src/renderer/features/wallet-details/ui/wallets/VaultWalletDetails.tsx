@@ -20,7 +20,7 @@ import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
-import { AddProxy, addProxyModel } from '@/features/proxy-add';
+import { AddProxy } from '@/features/proxy-add';
 import { DerivationsAddressModal, ExportKeysModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
@@ -260,7 +260,6 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
                   hasProxies={hasProxies}
                   className="mt-4 h-[371px]"
                   canCreateProxy={canCreateProxy}
-                  onAddProxy={addProxyModel.events.flowStarted}
                 />
               </ScrollArea>
             </Tabs.Content>

@@ -1,15 +1,10 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { groupBy } from 'lodash';
 import { debounce } from 'patronum';
 
 import { type Wallet } from '@/shared/core';
 import { walletModel } from '@/entities/wallet';
 
 const $hiddenWallets = walletModel.$hiddenWallets;
-
-const $hiddenWalletsByType = $hiddenWallets.map((wallets) => {
-  return groupBy(wallets, (wallet) => wallet.type);
-});
 
 // Events
 const changeQuery = createEvent<string>();
@@ -103,7 +98,6 @@ sample({
 export const hiddenWalletsModel = {
   // Stores
   $hiddenWallets,
-  $hiddenWalletsByType,
   $inputQuery, // For immediate UI feedback
   $query, // Debounced query for expensive operations
   $selectedWallets,
