@@ -434,7 +434,7 @@ const FeeSection = () => {
       {nonNullable(initiator) && accountUtils.isMultisigAccount(initiator) && (
         <MultisigDepositWithLabel
           api={api}
-          asset={getNativeAsset(network.chain.assets)!}
+          asset={getNativeAsset(network.chain.assets)}
           threshold={initiator.threshold || 1}
           onDepositChange={formModel.multisigDepositChanged}
         />
@@ -458,7 +458,7 @@ const FeeSection = () => {
         />
       )}
 
-      {nonNullable(deliveryFee) && (
+      {nonNullable(deliveryFee) && deliveryFee !== '0' && (
         <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
       )}
     </div>

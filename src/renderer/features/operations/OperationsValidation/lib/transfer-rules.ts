@@ -225,9 +225,10 @@ export const transferValidator = createTxValidator<{
           initiator,
           (balance, account) => ({
             account,
+            required: desiredAmount,
             balance: balanceService.tryWithdraw(balance, desiredAmount, ed, 'keepAlive'),
             asset,
-            action: 'amount',
+            action: 'sending amount',
           }),
         );
       }
@@ -250,6 +251,7 @@ export const transferValidator = createTxValidator<{
     //     initiator,
     //     (balance, account) => ({
     //       account,
+    //       required: desiredDeliveryFee,
     //       balance: balanceService.tryWithdraw(balance, desiredDeliveryFee, BN_ZERO, 'keepAlive'),
     //       asset: destinationAsset,
     //       action: 'delivery fee',

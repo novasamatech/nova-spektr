@@ -1,3 +1,4 @@
+import { type BN } from '@polkadot/util';
 import { type ReactNode, memo } from 'react';
 import { Trans } from 'react-i18next';
 
@@ -18,6 +19,7 @@ export type TransactionValidationPermissionError = {
 export type TransactionValidationBalanceError = {
   account: AnyAccount;
   action: string;
+  required: BN;
   balance: BalanceUpdateResult;
   asset: Asset;
 };
@@ -124,9 +126,6 @@ const TransactionBalanceError = ({
         />{' '}
         {errors
           .flatMap((e, index) => {
-            const imbalance = e.balance.success ? null : e.balance.imbalance;
-            if (nullable(imbalance)) return [];
-
             return [
               <Trans
                 key={index}
@@ -134,7 +133,7 @@ const TransactionBalanceError = ({
                 i18nKey="general.transactionErrors.balance.section"
                 values={{
                   action: e.action,
-                  balance: formatAsset(imbalance, e.asset),
+                  balance: formatAsset(e.required, e.asset),
                 }}
               />,
               <span key={index + 100}>, </span>,

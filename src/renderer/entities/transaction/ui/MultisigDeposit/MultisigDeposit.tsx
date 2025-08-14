@@ -28,6 +28,8 @@ export const MultisigDeposit = memo(({ api, asset, threshold, className, onDepos
     if (api) {
       const txDeposit = transactionService.getMultisigDeposit(threshold, api);
 
+      console.log('txDeposit', txDeposit, api.runtimeChain.toString());
+
       setDeposit(txDeposit);
       setIsLoading(false);
       onDepositChange?.(txDeposit);

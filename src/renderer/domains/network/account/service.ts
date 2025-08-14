@@ -363,6 +363,7 @@ async function validateRouteBalances({ api, route, balances, asset, ed }: Balanc
         account,
         asset,
         action: '',
+        required: BN_ZERO,
         balance: {
           success: true,
           balance,
