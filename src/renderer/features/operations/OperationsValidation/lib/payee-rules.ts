@@ -3,6 +3,7 @@ import { type Store } from 'effector';
 
 import { RewardsDestination } from '@/shared/core';
 import { formatAmount, validateAddress } from '@/shared/lib/utils';
+import { createTxValidator } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
 import { type ShardsBondBalanceStore, type ShardsProxyFeeStore, type SignatoryFeeStore } from '../types/types';
 
@@ -76,3 +77,5 @@ export const PayeeRules = {
     },
   },
 };
+
+export const payeeValidator = createTxValidator();

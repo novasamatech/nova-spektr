@@ -3,9 +3,8 @@ import { TEST_IDS } from '@/shared/constants';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { WalletOnboardingCard } from '@/shared/ui-entities';
+import { WalletIcon, WalletOnboardingCard } from '@/shared/ui-entities';
 import { Dropdown } from '@/shared/ui-kit';
-import { WalletIcon } from '@/entities/wallet';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { onboardingActionsSlot } from '@/pages/Onboarding';
 

@@ -64,7 +64,7 @@ async function getTransactionFromChain({ api, callHash, blockHeight, extrinsicIn
 
     if (!callData || !validateCallData(callData, callHash)) return null;
 
-    return transactionService.createSubmittableExtrinsic({ type: 'encoded', callData }, api);
+    return transactionService.createExtrinsic({ type: 'encoded', callData }, api);
   } catch (e) {
     console.warn('Error during update call data from chain', e);
 

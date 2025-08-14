@@ -4,11 +4,11 @@ import { useMemo } from 'react';
 import { AccountType, type Chain, type Wallet, WalletType } from '@/shared/core';
 import { createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { WalletManagement } from '@/shared/ui-entities';
+import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Checkbox } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { FiatBalance } from '@/entities/price';
-import { WalletIcon, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
 import { hiddenWalletsBalancesModel } from '../model/balances';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();

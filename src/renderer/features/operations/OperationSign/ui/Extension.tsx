@@ -6,8 +6,8 @@ import { useI18n } from '@/shared/i18n';
 import { ValidationErrors } from '@/shared/lib/utils';
 import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
+import { WalletIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/entities/transaction';
-import { WalletIcon } from '@/entities/wallet';
 import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
 import { type SignResponse, polkadotExtensionSign } from '../model/polkadotExtensionSign';
@@ -118,7 +118,7 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
             <FootnoteText className="whitespace-nowrap text-text-secondary">{t('signing.signer')}</FootnoteText>
 
             <div className="flex w-full items-center gap-x-2 px-2">
-              <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />
+              <WalletIcon type={signerWallet.type} size={16} />
               <FootnoteText className="w-max text-text-secondary">{signerWallet.name}</FootnoteText>
             </div>
           </div>

@@ -1,13 +1,12 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store } from 'effector';
 
+import { ZERO_BALANCE } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import {
   type AmountFeeStore,
   type ShardsProxyFeeStore,
   type SignatoryFeeStore,
-  balanceValidation,
-  descriptionValidation,
 } from '@/features/operations/OperationsValidation';
 
 export const UnlockRules = {
@@ -41,8 +40,9 @@ export const UnlockRules = {
         if (!isMultisig) return true;
 
         const value = new BN(feeData.multisigDeposit).add(new BN(feeData.fee));
+        const balanceBN = new BN(signatoryBalance);
 
-        return balanceValidation.isLteThanBalance(value, signatoryBalance);
+        return value.lte(balanceBN);
       },
     }),
   },
@@ -56,7 +56,7 @@ export const UnlockRules = {
     notZero: {
       name: 'notZero',
       errorText: 'transfer.notZeroAmountError',
-      validator: balanceValidation.isNonZeroBalance,
+      validator: (value: string) => value.toString() !== ZERO_BALANCE,
     },
     insufficientBalanceForFee: (source: Store<AmountFeeStore>) => ({
       name: 'insufficientBalanceForFee',
@@ -80,12 +80,5 @@ export const UnlockRules = {
         return totalLock.sub(new BN(form.amount)).gte(BN_ZERO);
       },
     }),
-  },
-  description: {
-    maxLength: {
-      name: 'maxLength',
-      errorText: 'transfer.descriptionLengthError',
-      validator: descriptionValidation.isMaxLength,
-    },
   },
 };

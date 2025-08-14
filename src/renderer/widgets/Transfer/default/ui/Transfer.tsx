@@ -4,7 +4,8 @@ import { type ReactNode, useEffect } from 'react';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -61,30 +62,27 @@ export const Transfer = ({ chain, asset }: Props) => {
   };
 
   return (
-    <BaseModal
-      closeButton
-      contentClass="overflow-hidden"
-      isOpen={isModalOpen}
-      title={getModalTitle(chain, asset, xcmChain)}
-      onClose={closeModal}
-    >
-      {transferUtils.isInitStep(step) && <TransferForm onGoBack={closeModal} />}
-      {transferUtils.isConfirmStep(step) && (
-        <TransferConfirm
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => transferModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => transferModel.events.stepChanged(Step.INIT)}
-        />
-      )}
-      {transferUtils.isSignStep(step) && (
-        <OperationSign onGoBack={() => transferModel.events.stepChanged(Step.CONFIRM)} />
-      )}
-    </BaseModal>
+    <Modal size="md" isOpen={isModalOpen} onToggle={closeModal}>
+      <Modal.Title close>{getModalTitle(chain, asset, xcmChain)}</Modal.Title>
+      <Modal.Content>
+        {transferUtils.isInitStep(step) && <TransferForm onGoBack={closeModal} />}
+        {transferUtils.isConfirmStep(step) && (
+          <TransferConfirm
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => transferModel.events.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={() => transferModel.events.stepChanged(Step.INIT)}
+          />
+        )}
+        {transferUtils.isSignStep(step) && (
+          <OperationSign onGoBack={() => transferModel.events.stepChanged(Step.CONFIRM)} />
+        )}
+      </Modal.Content>
+    </Modal>
   );
 };
