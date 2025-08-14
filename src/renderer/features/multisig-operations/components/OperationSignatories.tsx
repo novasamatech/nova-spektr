@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
+import { type FlexibleMultisigAccount, type MultisigAccount, type Signatory, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
@@ -21,7 +21,7 @@ type WalletSignatory = Signatory & { wallet: Wallet };
 type Props = {
   operation: MultisigOperation;
   connection: ExtendedChain;
-  account: MultisigAccount;
+  account: MultisigAccount | FlexibleMultisigAccount;
 };
 
 export const OperationSignatories = ({ operation, connection, account }: Props) => {

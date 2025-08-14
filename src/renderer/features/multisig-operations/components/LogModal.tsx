@@ -2,7 +2,13 @@ import { useUnit } from 'effector-react';
 import { groupBy } from 'lodash';
 import { type ReactNode, useMemo } from 'react';
 
-import { type Contact, type MultisigAccount, type Wallet, type WalletsMap } from '@/shared/core';
+import {
+  type Contact,
+  type FlexibleMultisigAccount,
+  type MultisigAccount,
+  type Wallet,
+  type WalletsMap,
+} from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import {
@@ -20,13 +26,13 @@ import { type AnyAccount, type MultisigEvent, type MultisigOperation } from '@/d
 import { type ExtendedChain } from '@/entities/network';
 import { Status, operationDetailsUtils } from '@/entities/operations';
 import { TransactionTitle } from '@/entities/transaction';
-import { WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
+import { WalletIcon, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 import { OperationIcon } from './OperationIcon';
 
 type Props = {
   operation: MultisigOperation;
-  account?: MultisigAccount;
+  account: MultisigAccount | FlexibleMultisigAccount;
   connection?: ExtendedChain;
   contacts: Contact[];
   isOpen: boolean;
@@ -59,14 +65,18 @@ const getFilteredAccountsMap = (walletsMap: WalletsMap) => {
   }, {});
 };
 
-export const operationLogTitleTransformer = createTransformer<{ operation: MultisigOperation }, ReactNode>();
+export const operationLogTitleTransformer = createTransformer<
+  { operation: MultisigOperation; showCoreTransaction?: boolean },
+  ReactNode
+>();
 
 const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }: Props) => {
   const { t, formatDate } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
+  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
-  const externalTitleNode = useTransformer(operationLogTitleTransformer, { operation });
+  const externalTitleNode = useTransformer(operationLogTitleTransformer, { operation, showCoreTransaction });
   let titleNode;
 
   if (externalTitleNode) {
@@ -115,7 +125,7 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
       <Modal.Content>
         <div className="flex items-center justify-between gap-2 px-4 py-3">
           <div className="flex items-center gap-2">
-            <OperationIcon operation={operation} />
+            <OperationIcon operation={operation} account={account} />
             {titleNode}
           </div>
 

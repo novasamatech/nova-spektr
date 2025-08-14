@@ -9,8 +9,8 @@ import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
-import { WalletIcon, accountUtils, walletModel } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { WalletIcon, walletModel } from '@/entities/wallet';
+import { operationsContextModel } from '../model/context';
 
 type Props = {
   operation: MultisigOperation;
@@ -23,10 +23,9 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
-  const account = activeWallet?.accounts.find(accountUtils.isMultisigAccount);
+  const account = useUnit(operationsContextModel.$multisigAccount);
 
   const nativeAsset = getNativeAsset(chain?.assets ?? []);
   const explorers = chain?.explorers;

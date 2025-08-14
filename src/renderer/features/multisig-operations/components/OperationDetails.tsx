@@ -8,6 +8,7 @@ import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { WalletIcon } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { operationsContextModel } from '../model/context';
 
 type Props = {
   operation: MultisigOperation;
@@ -17,19 +18,18 @@ export const OperationDetails = ({ operation }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
-  const activeAccounts = useUnit(walletSelect.$selectedAccounts);
+  const initiator = useUnit(operationsContextModel.$initiator);
 
-  const accountId = activeAccounts.at(0)?.accountId;
   const chain = chains[operation.chainId];
 
-  if (!activeWallet || !accountId || !chain) return null;
+  if (!activeWallet || !initiator || !chain) return null;
 
   return (
     <DetailRow label={t('operation.details.multisigWallet')}>
       <Box direction="row" gap={2}>
         <WalletIcon className="shrink-0" type={activeWallet.type} size={16} />
         <span>{activeWallet.name}</span>
-        <AccountExplorers accountId={accountId} chain={chain} />
+        <AccountExplorers accountId={initiator.accountId} chain={chain} />
       </Box>
     </DetailRow>
   );
