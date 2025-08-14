@@ -52,6 +52,7 @@ async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPro
 
     if (struct.section === 'polkadotXcm' && struct.method === 'send') {
       //todo learn how to read arguments (multilocation chainId and call)
+
       return {
         type: 'Whitelist',
       };
