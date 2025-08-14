@@ -314,7 +314,11 @@ sample({
     const walletAccounts = accountService.filterAccountsByWallet(allAccounts, initiator.walletId);
     const matchingAccount = walletAccounts.find((account) => accountService.isAccountAvailableOnChain(account, chain));
 
-    return matchingAccount ?? allAccounts?.at(0) ?? null;
+    if (matchingAccount) {
+      return matchingAccount;
+    }
+
+    return allAccounts.filter((a) => accountService.isAccountAvailableOnChain(a, chain))?.at(0) ?? null;
   },
   target: form.fields.initiator.change,
 });
