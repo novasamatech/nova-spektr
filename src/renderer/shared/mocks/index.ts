@@ -261,6 +261,7 @@ export const createSingleShardWallet = (
     rootAccountId: AccountId;
   },
 ): SingleShardWallet => {
+  // @ts-expect-error "accounts" is deprecated
   return {
     id,
     rootAccountId: params.rootAccountId,
@@ -268,7 +269,7 @@ export const createSingleShardWallet = (
     isActive: params.isActive ?? true,
     name: params.name ?? `SingleShard ${id}`,
     signingType: SigningType.POLKADOT_VAULT,
-    accounts: params.accounts ?? [],
+    ...(params.accounts && { accounts: params.accounts }),
   };
 };
 
