@@ -7,7 +7,7 @@ import { Alert, BodyText, Button, Counter, DetailRow, Icon, IconButton, Separato
 import { Account } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
+import { FeeWithLabel } from '@/entities/transaction';
 import { WalletIcon } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm-model';
 import { flowModel } from '../model/flow-model';
@@ -22,7 +22,6 @@ export const ConfirmationStep = () => {
   const signerWallet = useUnit(flowModel.$signerWallet);
   const signer = useUnit(flowModel.$signer);
   const fee = useUnit(flowModel.$fee);
-  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
   const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
 
   const chain = useUnit(formModel.$chain);
@@ -84,8 +83,6 @@ export const ConfirmationStep = () => {
             </DetailRow>
             <Separator className="border-filter-border" />
             <div className="mb-4 flex flex-1 flex-col gap-y-4">
-              <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit.toString()} />
-
               <FeeWithLabel fee={fee.toString()} asset={asset} />
 
               <Alert variant="error" title={t('createMultisigAccount.notEnoughTokensTitle')} active={!isEnoughBalance}>
@@ -101,11 +98,6 @@ export const ConfirmationStep = () => {
             variant="text"
             onClick={() => {
               flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
-              // if ((ownedSignatories || []).length > 1) {
-              //   flowModel.stepChanged(Step.SIGNER_SELECTION);
-              // } else {
-              //   flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
-              // }
             }}
           >
             {t('createMultisigAccount.backButton')}

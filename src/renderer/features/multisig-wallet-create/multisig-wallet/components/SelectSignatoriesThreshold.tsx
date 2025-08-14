@@ -45,12 +45,6 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const signatories = useUnit(signatoryModel.$signatories);
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
 
-  // TODO: delete when indexer is ready
-  const isMultisigDepositLoading = useUnit(flowModel.$isMultisigDepositLoading);
-  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
-  const totalFee = multisigDeposit.add(fee).toString();
-  const isLoading = isFeeLoading || isMultisigDepositLoading;
-
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     submit();
@@ -180,7 +174,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                           />
                         </span>
                       ),
-                      fee: <AssetBalance value={totalFee} asset={asset} />,
+                      fee: <AssetBalance value={fee} asset={asset} />,
                       balance: <AssetBalance value={withdrawableAmount(signerBalance)} asset={asset} />,
                     }}
                   />
@@ -203,8 +197,8 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                 <FootnoteText className="text-text-tertiary">{t('createMultisigAccount.networkFee')}</FootnoteText>
                 {chain && (
                   <Fee
-                    fee={totalFee}
-                    isLoading={isLoading}
+                    fee={fee}
+                    isLoading={isFeeLoading}
                     asset={asset}
                     className={isEnoughBalance ? '' : 'text-text-negative'}
                   />
