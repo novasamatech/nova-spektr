@@ -29,13 +29,13 @@ export const NominateForm = ({ onGoBack }: Props) => {
 
   return (
     <div className="w-modal px-5 pb-4">
+      <TransactionValidationError errors={errors} wallets={wallets} />
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <Signatories />
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
       </div>
-      <TransactionValidationError errors={errors} wallets={wallets} />
       <ActionsSection onGoBack={onGoBack} />
     </div>
   );
