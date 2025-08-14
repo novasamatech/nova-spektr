@@ -14,7 +14,12 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -230,6 +235,20 @@ const $multisigAccount = $route.map(
 
 const $isMultisig = $multisigAccount.map((account) => nonNullable(account));
 
+// Transaction validation
+const $asset = $networkStore.map((network) => network?.asset ?? null);
+const payeeTxValidator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator: payeeTxValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balances,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
 const $proxyWallet = combine(
   {
     proxyAccount: $proxyAccount,
@@ -348,6 +367,7 @@ export const formModel = {
   $isMultisig,
   $multisigAccount,
   $canSubmit,
+  $errors,
 
   events: {
     formInitiated,

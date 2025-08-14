@@ -16,7 +16,12 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -280,6 +285,20 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
+// Transaction validation
+const $asset = $networkStore.map((network) => network?.asset ?? null);
+const bondNominateTxValidator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator: bondNominateTxValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balances,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
 const $canSubmit = combine(
   {
     isValid: form.$isValid,
@@ -416,6 +435,7 @@ export const formModel = {
   $networkStore,
   $isMultisig,
   $canSubmit,
+  $errors,
 
   formInitiated,
   formCleared,

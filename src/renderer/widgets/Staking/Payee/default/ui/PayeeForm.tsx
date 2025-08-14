@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { toAddress, transferableAmount } from '@/shared/lib/utils';
 import { Button, Combobox, DetailRow, FootnoteText, Icon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
-import { AssetBalance, Identicon, SignatorySelect } from '@/shared/ui-entities';
+import { AssetBalance, Identicon, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -22,6 +22,8 @@ type Props = {
 
 export const PayeeForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
+  const errors = useUnit(formModel.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -37,6 +39,7 @@ export const PayeeForm = ({ onGoBack }: Props) => {
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
       </div>
+      <TransactionValidationError errors={errors} wallets={wallets} />
       <ActionsSection onGoBack={onGoBack} />
     </div>
   );

@@ -5,7 +5,7 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
-import { SignatorySelect } from '@/shared/ui-entities';
+import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -20,6 +20,8 @@ type Props = {
 
 export const UnstakeForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
+  const errors = useUnit(formModel.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -35,6 +37,7 @@ export const UnstakeForm = ({ onGoBack }: Props) => {
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
       </div>
+      <TransactionValidationError errors={errors} wallets={wallets} />
       <ActionsSection onGoBack={onGoBack} />
     </div>
   );

@@ -22,7 +22,12 @@ import {
   toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -284,6 +289,20 @@ const $proxyWallet = combine(
   },
 );
 
+// Transaction validation
+const $asset = $networkStore.map((network) => network?.asset ?? null);
+const withdrawTxValidator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator: withdrawTxValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balances,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
 const $canSubmit = combine(
   {
     isFeeLoading: $pendingFee,
@@ -479,6 +498,7 @@ export const formModel = {
   $isStakingLoading: subscribeStakingFx.pending,
   $isEraLoading: subscribeEraFx.pending,
   $canSubmit,
+  $errors,
 
   events: {
     formInitiated,

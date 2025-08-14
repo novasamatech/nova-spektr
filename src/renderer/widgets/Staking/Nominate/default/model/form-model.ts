@@ -12,7 +12,13 @@ import {
   stakeableAmount,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -246,6 +252,20 @@ const { $multisigDeposit } = createMultisigDeposit({
   $threshold: $multisigThreshold,
 });
 
+// Transaction validation
+const $asset = $networkStore.map((network) => network?.asset ?? null);
+const nominateTxValidator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator: nominateTxValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balances,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
 const $canSubmit = combine(
   {
     isFormValid: form.$isValid,
@@ -329,6 +349,7 @@ export const formModel = {
   $networkStore,
   $tx,
   $canSubmit,
+  $errors,
 
   formInitiated,
   formSubmitted,
