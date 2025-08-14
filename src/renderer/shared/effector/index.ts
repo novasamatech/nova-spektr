@@ -8,3 +8,4 @@ export { createBuffer } from './createBuffer';
 export { createStream, zipStreamWithParams } from './createStream';
 export { createFlow, useFlow } from './createFlow';
 export { createQueuedEffect } from './createQueuedEffect';
+export { createStoreFromEffect } from './createStoreFromEffect';

@@ -1,14 +1,19 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type BN, BN_ZERO } from '@polkadot/util';
 
-import { type Asset, type Balance, type Chain, type ChainId, CryptoType } from '@/shared/core';
+import { type Asset, type AssetBalance, type Balance, type Chain, CryptoType } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
-import { nullable } from '@/shared/lib/utils';
+import { assert, nullable } from '@/shared/lib/utils';
+import {
+  type TransactionValidationBalanceError,
+  type TransactionValidationPermissionError,
+} from '@/shared/ui-entities';
+import { balanceUtils } from '@/entities/balance';
 import { networkUtils } from '@/entities/network';
-import { type Section } from '../transaction/types';
+import { type AnyTransaction } from '../transaction/types';
 
 import {
   type AccountNode,
-  type AccountValidationError,
   type AnyAccount,
   type AnyAccountDraft,
   type ChainAccount,
@@ -21,22 +26,22 @@ const accountCanSignMultipleAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCollectChildrenPipeline = createPipeline<AnyAccount[], { account: AnyAccount; accounts: AnyAccount[] }>();
 const validateRouteBalancesTransformer = createTransformer<
   {
-    route: AnyAccount[];
-    account: AnyAccount;
-    index: number;
-    balances: Balance[];
-    chainId: ChainId;
-    asset: Asset;
     api: ApiPromise;
+    balances: Map<AnyAccount, AssetBalance>;
+    account: AnyAccount;
+    route: AnyAccount[];
+    asset: Asset;
+    ed: BN;
   },
-  Promise<AccountValidationError | null> | AccountValidationError
+  Promise<TransactionValidationBalanceError> | TransactionValidationBalanceError
 >();
 const validateCallPermissionTransformer = createTransformer<
   {
+    api: ApiPromise;
     route: AnyAccount[];
-    call: Section;
+    transaction: AnyTransaction;
   },
-  AccountValidationError
+  TransactionValidationPermissionError
 >();
 
 /**
@@ -273,29 +278,123 @@ function findRoute(source: AnyAccount, destination: AnyAccount, accounts: AnyAcc
   return [];
 }
 
+function findInitiator(route: AnyAccount[]): AnyAccount | null {
+  return route.at(0) ?? null;
+}
+
+function findSignatory(route: AnyAccount[]): AnyAccount | null {
+  const account = route.at(-1);
+  if (nullable(account)) return null;
+
+  return hasPermissionToMakeActions(account) ? account : null;
+}
+
+function findNextAccount(route: AnyAccount[], account: AnyAccount): AnyAccount | null {
+  const index = route.indexOf(account);
+  if (index === -1) return null;
+
+  return route.at(index + 1) ?? null;
+}
+
+// validations
+
+function mutateTransitionBalanceValidationResult(
+  results: TransactionValidationBalanceError[],
+  asset: Asset,
+  account: AnyAccount,
+  fn: (balance: AssetBalance, account: AnyAccount) => TransactionValidationBalanceError,
+) {
+  const index = results.findLastIndex(r => r.account.accountId === account.accountId && r.asset === asset);
+  if (index === -1) {
+    results.push(
+      fn(
+        {
+          free: BN_ZERO,
+          frozen: BN_ZERO,
+          reserved: BN_ZERO,
+        },
+        account,
+      ),
+    );
+  }
+
+  return results.flatMap((r, i) => {
+    if (i === index) {
+      return [r, fn(r.balance.balance, account)];
+    }
+
+    return r;
+  });
+}
+
 type BalanceValidationParams = {
   route: AnyAccount[];
   balances: Balance[];
-  chainId: ChainId;
   asset: Asset;
   api: ApiPromise;
+  ed: BN;
 };
 
-async function validateRouteBalances({ api, route, balances, chainId, asset }: BalanceValidationParams) {
-  const errors: AccountValidationError[] = [];
+async function validateRouteBalances({ api, route, balances, asset, ed }: BalanceValidationParams) {
+  const chainId = api.genesisHash.toHex();
+  const balancesMap = new Map<AnyAccount, AssetBalance>();
 
-  for (const [index, account] of route.entries()) {
-    const error = await validateRouteBalancesTransformer({ route, account, index, balances, chainId, asset, api });
-    if (error) {
-      errors.push(error);
+  for (const account of route) {
+    const balance = balanceUtils.getBalance(balances, account.accountId, chainId, asset.assetId);
+    if (nullable(balance)) {
+      throw new Error(`Balance for ${account.accountId} not found`);
+    }
+
+    balancesMap.set(account, balance);
+  }
+
+  const results: TransactionValidationBalanceError[] = [];
+
+  for (const account of route) {
+    const result = await validateRouteBalancesTransformer({ account, route, balances: balancesMap, ed, asset, api });
+    if (result) {
+      results.push(result);
+      balancesMap.set(result.account, result.balance.balance);
+    } else {
+      const balance = balancesMap.get(account);
+      assert(balance, 'Balance not found');
+
+      results.push({
+        account,
+        asset,
+        action: '',
+        required: BN_ZERO,
+        balance: {
+          success: true,
+          balance,
+        },
+      });
     }
   }
 
-  return errors;
+  return results;
 }
 
-function validateCallPermission(route: AnyAccount[], call: Section) {
-  return validateCallPermissionTransformer({ route, call });
+type PermissionValidationParams = {
+  route: AnyAccount[];
+  transaction: AnyTransaction;
+  api: ApiPromise;
+};
+
+function validateCallPermission({ route, transaction, api }: PermissionValidationParams) {
+  const result = validateCallPermissionTransformer({ route, transaction, api });
+
+  if (result) {
+    return [result];
+  }
+
+  return [];
+}
+
+function hasTransactionValidationErrors(
+  errors: (TransactionValidationPermissionError | TransactionValidationBalanceError)[],
+) {
+  return errors.length > 0 && errors.every(e => 'permission' in e || ('balance' in e && e.balance.success === false));
 }
 
 export const accountService = {
@@ -326,10 +425,17 @@ export const accountService = {
   findSignatories,
   findInitiators,
   findRoute,
+  findInitiator,
+  findSignatory,
+  findNextAccount,
   traverseGraph,
 
   // validations
 
   validateRouteBalances,
   validateCallPermission,
+
+  mutateTransitionBalanceValidationResult,
+
+  hasTransactionValidationErrors,
 };

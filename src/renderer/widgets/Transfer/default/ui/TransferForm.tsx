@@ -17,14 +17,21 @@ import {
   withdrawableAmount,
 } from '@/shared/lib/utils';
 import { Button, CaptionText, InputHint } from '@/shared/ui';
-import { AccountSelect, Address, Identicon, SignatorySelect } from '@/shared/ui-entities';
+import {
+  AccountSelect,
+  Address,
+  Identicon,
+  SignatorySelect,
+  TransactionValidationError,
+  WalletIcon,
+} from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
-import { AccountSelectModal, DeliveryFeeAlert, WalletIcon, accountUtils, walletModel } from '@/entities/wallet';
+import { AccountSelectModal, DeliveryFeeAlert, accountUtils, walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';
@@ -47,6 +54,8 @@ type ComboboxGroup = {
 
 export const TransferForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
+  const errors = useUnit(formModel.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -54,20 +63,19 @@ export const TransferForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="px-5 pb-4">
-      <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
+    <div className="flex flex-col gap-4 px-5 py-4">
+      <TransactionValidationError errors={errors} wallets={wallets} />
+      <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
         <XcmChainSelector />
         <InitiatorSelector />
         <SignatorySelector />
         <Destination />
         <Amount />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+      <div className="flex flex-col gap-y-6">
         <FeeSection />
       </div>
-      <Box>
-        <AlertForDeliveryFee />
-      </Box>
+      <AlertForDeliveryFee />
       <ActionsSection onGoBack={onGoBack} />
 
       <MyselfAccountModal />
@@ -426,7 +434,7 @@ const FeeSection = () => {
       {nonNullable(initiator) && accountUtils.isMultisigAccount(initiator) && (
         <MultisigDepositWithLabel
           api={api}
-          asset={getNativeAsset(network.chain.assets)!}
+          asset={getNativeAsset(network.chain.assets)}
           threshold={initiator.threshold || 1}
           onDepositChange={formModel.multisigDepositChanged}
         />
@@ -450,7 +458,7 @@ const FeeSection = () => {
         />
       )}
 
-      {nonNullable(deliveryFee) && (
+      {nonNullable(deliveryFee) && deliveryFee !== '0' && (
         <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
       )}
     </div>

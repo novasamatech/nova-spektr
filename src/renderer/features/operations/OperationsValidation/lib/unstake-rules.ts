@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
 import { formatAmount } from '@/shared/lib/utils';
+import { createTxValidator } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
 import {
   type AmountFeeStore,
@@ -112,3 +113,5 @@ export const UnstakeRules = {
     },
   },
 };
+
+export const unstakeValidator = createTxValidator();

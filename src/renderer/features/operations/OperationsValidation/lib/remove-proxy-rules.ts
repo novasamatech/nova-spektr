@@ -4,6 +4,7 @@ import { type Store } from 'effector';
 import { type Chain } from '@/shared/core';
 import { getNativeAsset, transferableAmountBN, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { createTxValidator } from '@/shared/transactions';
 import { balanceUtils } from '@/entities/balance';
 import { type AccountStore, type SignatoryStore } from '../types/types';
 
@@ -63,3 +64,5 @@ export const RemoveProxyRules = {
     },
   },
 };
+
+export const removeProxyValidator = createTxValidator();

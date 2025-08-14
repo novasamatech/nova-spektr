@@ -5,7 +5,7 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button, InputHint } from '@/shared/ui';
-import { AccountSelect, ChainSelect, SignatorySelect } from '@/shared/ui-entities';
+import { AccountSelect, ChainSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -19,6 +19,8 @@ export const AddPureProxiedForm = () => {
   const { t } = useI18n();
 
   const { submit } = useForm(formModel.form);
+  const errors = useUnit(formModel.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -27,6 +29,7 @@ export const AddPureProxiedForm = () => {
 
   return (
     <div className="px-5 pb-4">
+      <TransactionValidationError errors={errors} wallets={wallets} />
       <PureProxyPopover>{t('proxy.pureProxyTooltip.button')}</PureProxyPopover>
       <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
         <NetworkSelector />

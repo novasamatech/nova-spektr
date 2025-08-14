@@ -3,7 +3,7 @@ import { type MouseEvent, type PropsWithChildren, type ReactNode } from 'react';
 import { type Wallet } from '@/shared/core';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
-import { WalletIcon } from '../WalletIcon/WalletIcon';
+import { WalletIcon } from '@/shared/ui-entities';
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
@@ -36,7 +36,7 @@ export const WalletCardMd = ({ wallet, description, meta, children, onClick }: P
         })}
         onClick={handleClick(onClick)}
       >
-        <WalletIcon type={wallet.type} size={20} className="shrink-0" />
+        <WalletIcon type={wallet.type} size={20} />
         <div className="flex min-w-0 flex-col">
           <div className="flex items-center gap-x-2">
             <BodyText

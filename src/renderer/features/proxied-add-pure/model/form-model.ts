@@ -15,11 +15,13 @@ import {
   createInitiatorsStore,
   createMultisigDeposit,
   createSignatoriesStore,
+  createTxValidationStore,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
+import { addPureProxiedValidator } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
 
 type FormParams = {
@@ -229,6 +231,19 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   signatory: form.fields.signatory.$value,
 });
 
+// Transaction validation
+const $asset = form.fields.chain.$value.map(chain => (chain ? getNativeAsset(chain.assets) : null));
+const { $errors } = createTxValidationStore({
+  validator: addPureProxiedValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balances,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
 const $isProxy = $route.map(route => nonNullable(route.find(account => accountUtils.isProxiedAccount(account))));
 const $isMultisig = $route.map(route => nonNullable(route.find(account => accountUtils.isMultisigAccount(account))));
 
@@ -368,4 +383,5 @@ export const formModel = {
   isProxyDepositLoadingChanged,
 
   formSubmitted,
+  $errors,
 };

@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 
 import { formatAmount } from '@/shared/lib/utils';
+import { createTxValidator } from '@/shared/transactions';
 import { type AnyAccount } from '@/domains/network';
 import { type ShardsBondBalanceStore, type ShardsProxyFeeStore, type SignatoryFeeStore } from '../types/types';
 
@@ -63,3 +64,5 @@ export const NominateRules = {
     },
   },
 };
+
+export const nominateValidator = createTxValidator();

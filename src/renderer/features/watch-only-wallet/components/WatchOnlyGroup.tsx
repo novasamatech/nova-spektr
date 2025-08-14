@@ -5,9 +5,8 @@ import { type Wallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
-import { WalletManagement } from '@/shared/ui-entities';
+import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
-import { WalletIcon } from '@/entities/wallet';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletsModel } from '../model/wallets';
 

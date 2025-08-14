@@ -1,6 +1,6 @@
 import { type Address, type WalletType } from '@/shared/core';
-import { WalletIcon } from '@/entities/wallet';
 import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
+import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = {
   address: Address | undefined;
