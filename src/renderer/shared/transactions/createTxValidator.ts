@@ -1,5 +1,5 @@
 import { type Transaction } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { assert, nonNullable } from '@/shared/lib/utils';
 import { type TransactionValidationBalanceError } from '@/shared/ui-entities';
 import { accountService, balanceService, transactionService } from '@/domains/network';
 import { getExtrinsic } from '@/entities/transaction';
@@ -46,6 +46,25 @@ export function createTxValidator<A>(params?: {
         }
       }
     }
+
+    const signatory = accountService.findSignatory(rest.route);
+    assert(signatory, 'Signatory not found');
+    const fee = await transactionService.getExtrinsicFee(extrinsic);
+
+    balanceValidationResults = accountService.mutateTransitionBalanceValidationResult(
+      balanceValidationResults,
+      rest.asset,
+      signatory,
+      (balance, account) => {
+        return {
+          asset: rest.asset,
+          balance: balanceService.tryWithdraw(balance, fee, ed, 'keepAlive'),
+          account,
+          required: fee,
+          action: 'fee',
+        };
+      },
+    );
 
     return [...permissionErrors, ...balanceValidationResults.filter((x) => x.balance.success === false)];
   };

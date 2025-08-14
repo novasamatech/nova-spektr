@@ -110,6 +110,23 @@ const TransactionBalanceError = ({
   const wallet = wallets.find(w => w.id === account.walletId);
   if (nullable(wallet)) return null;
 
+  const assetGroups = groupBy(errors, e => e.asset.assetId);
+
+  const imbalances: { asset: Asset; imbalance: BN }[] = [];
+
+  for (const assetGroup of Object.values(assetGroups)) {
+    if (nullable(assetGroup)) continue;
+    const lastImbalance = assetGroup.at(-1);
+    if (nullable(lastImbalance)) continue;
+
+    if (lastImbalance.balance.success === false) {
+      imbalances.push({
+        imbalance: lastImbalance.balance.imbalance,
+        asset: lastImbalance.asset,
+      });
+    }
+  }
+
   return (
     <Box as="span" gap={0.5}>
       <span>
@@ -142,23 +159,10 @@ const TransactionBalanceError = ({
           .slice(0, -1)}
       </span>
       <span>
-        {t('general.transactionErrors.balance.required')}{' '}
-        {errors
-          .flatMap((e, index) => {
-            const imbalance = e.balance.success ? null : e.balance.imbalance;
-            if (nullable(imbalance)) return [];
-
-            return [
-              <span key={index} className="whitespace-nowrap">
-                {formatAsset(imbalance, e.asset)}
-              </span>,
-              <span key={index + 100}>, </span>,
-            ];
-          })
-          .slice(0, -1)}
-        .
+        {t('general.transactionErrors.balance.required', {
+          balances: imbalances.map(({ asset, imbalance }) => formatAsset(imbalance, asset)),
+        })}
       </span>
-      <span>{t('general.transactionErrors.balance.message')}</span>
     </Box>
   );
 };

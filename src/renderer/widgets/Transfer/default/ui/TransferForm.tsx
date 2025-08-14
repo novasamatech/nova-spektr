@@ -63,19 +63,19 @@ export const TransferForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="px-5 pb-4">
-      <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
+    <div className="flex flex-col gap-4 px-5 py-4">
+      <TransactionValidationError errors={errors} wallets={wallets} />
+      <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
         <XcmChainSelector />
         <InitiatorSelector />
         <SignatorySelector />
         <Destination />
         <Amount />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+      <div className="flex flex-col gap-y-6">
         <FeeSection />
       </div>
       <AlertForDeliveryFee />
-      <TransactionValidationError errors={errors} wallets={wallets} />
       <ActionsSection onGoBack={onGoBack} />
 
       <MyselfAccountModal />
