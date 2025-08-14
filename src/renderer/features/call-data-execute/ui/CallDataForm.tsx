@@ -47,9 +47,9 @@ export const CallDataForm = () => {
   return (
     <>
       <form id="transfer-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
+        <NetworkSelect />
         <InitiatorSelect />
         {showSignatories && <SignatorySelect />}
-        <NetworkSelect />
         <CallDataInput />
       </form>
 
@@ -98,7 +98,7 @@ const CallDataInput = () => {
 const NetworkSelect = memo(() => {
   const { t } = useI18n();
 
-  const availableChains = useUnit(formModel.$availableChains);
+  const allChains = useUnit(formModel.$allChains);
   const {
     fields: { chain },
   } = useForm(formModel.form);
@@ -108,7 +108,7 @@ const NetworkSelect = memo(() => {
       <ChainSelect
         placeholder={t('callData.fields.network.placeholder')}
         value={chain.value}
-        options={availableChains}
+        options={allChains}
         onChange={chain.onChange}
       />
       <InputHint variant="error" active={chain.hasError}>
@@ -149,6 +149,13 @@ const InitiatorSelect = memo(() => {
 
     const walletsByType = wallets.reduce(
       (groups, wallet) => {
+        const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
+        const hasMatchingAccounts = walletAccounts.some((account) =>
+          accountService.isAccountAvailableOnChain(account, chain),
+        );
+
+        if (!hasMatchingAccounts) return groups;
+
         if (!groups[wallet.type]) {
           groups[wallet.type] = { walletType: wallet.type, wallets: [] };
         }
@@ -173,11 +180,14 @@ const InitiatorSelect = memo(() => {
             accountService.isAccountAvailableOnChain(account, chain),
           );
 
-          const accountToShow = firstMatchingAccount ?? walletAccounts.at(0);
+          if (!firstMatchingAccount) return null;
 
-          if (!accountToShow) return null;
-
-          const balance = balanceUtils.getBalance(balances, accountToShow.accountId, chain.chainId, asset.assetId);
+          const balance = balanceUtils.getBalance(
+            balances,
+            firstMatchingAccount.accountId,
+            chain.chainId,
+            asset.assetId,
+          );
 
           return (
             <Select.Item key={wallet.id} value={wallet.id.toString()} depth={1}>
@@ -187,7 +197,7 @@ const InitiatorSelect = memo(() => {
                   canCopy={false}
                   variant="truncate"
                   title={wallet.name}
-                  address={toAddress(accountToShow.accountId, { prefix: chain?.addressPrefix })}
+                  address={toAddress(firstMatchingAccount.accountId, { prefix: chain?.addressPrefix })}
                 />
                 <AssetBalance
                   className="text-footnote text-text-secondary"
@@ -198,13 +208,15 @@ const InitiatorSelect = memo(() => {
             </Select.Item>
           );
         })
-        .filter(Boolean);
+        .filter(nonNullable);
 
-      options.push(
-        <Select.Group key={walletGroup.walletType} title={walletTypeTitle}>
-          {walletItems}
-        </Select.Group>,
-      );
+      if (walletItems.length > 0) {
+        options.push(
+          <Select.Group key={walletGroup.walletType} title={walletTypeTitle}>
+            {walletItems}
+          </Select.Group>,
+        );
+      }
     }
 
     return options;

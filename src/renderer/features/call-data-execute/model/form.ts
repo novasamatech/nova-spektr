@@ -227,9 +227,11 @@ sample({
   target: stepChanged,
 });
 
+const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
+
 const $availableChains = combine(
   {
-    chains: networkModel.$chains.map((chains) => Object.values(chains)),
+    chains: $allChains,
     initiator: form.fields.initiator.$value,
   },
   ({ chains, initiator }) => {
@@ -259,16 +261,7 @@ sample({
 
 // flow setup
 
-sample({
-  clock: $availableChains,
-  source: { selectedChain: form.fields.chain.$value },
-  filter: ({ selectedChain }, availableChains) =>
-    !selectedChain || !availableChains.some((chain) => chain.chainId === selectedChain.chainId),
-  fn: (_, availableChains) => availableChains.at(0) ?? null,
-  target: form.fields.chain.change,
-});
-
-// Preselect initiator based on selected wallet
+// Preselect initiator on form open
 sample({
   clock: flow.open,
   source: {
@@ -284,6 +277,42 @@ sample({
     );
 
     return (matchingAccount || allAccounts.at(0)) ?? null;
+  },
+  target: form.fields.initiator.change,
+});
+
+sample({
+  clock: form.fields.initiator.change,
+  source: {
+    allChains: $allChains,
+    selectedChain: form.fields.chain.$value,
+    isOpen: flow.status,
+  },
+  filter: ({ isOpen, selectedChain }) => isOpen && nullable(selectedChain),
+  fn: ({ allChains }, initiator) => {
+    if (nullable(initiator)) return null;
+    return allChains.find((chain) => accountService.isAccountAvailableOnChain(initiator, chain)) ?? null;
+  },
+  target: form.fields.chain.change,
+});
+
+sample({
+  clock: form.fields.chain.change,
+  source: {
+    initiator: form.fields.initiator.$value,
+    allAccounts: walletModel.$availableAccounts,
+  },
+  filter: ({ initiator }, chain) => {
+    if (nullable(initiator) || nullable(chain)) return false;
+    return !accountService.isAccountAvailableOnChain(initiator, chain);
+  },
+  fn: ({ initiator, allAccounts }, chain) => {
+    if (nullable(initiator) || nullable(chain)) return null;
+
+    const walletAccounts = accountService.filterAccountsByWallet(allAccounts, initiator.walletId);
+    const matchingAccount = walletAccounts.find((account) => accountService.isAccountAvailableOnChain(account, chain));
+
+    return matchingAccount ?? null;
   },
   target: form.fields.initiator.change,
 });
@@ -403,6 +432,7 @@ export const formModel = {
   $fee,
   $pendingFee,
 
+  $allChains: $allChains,
   $availableChains: $availableChains,
   $signatories: $signatories,
   $showSignatories: $showSignatories,
