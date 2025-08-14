@@ -73,6 +73,10 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
       });
     }
 
+    if (referendum.proposal && referendumService.isSpendProposal(referendum.proposal)) {
+      return t('fellowship.tasks.titles.votingTitle.spend');
+    }
+
     return t('fellowship.tasks.titles.votingTitle.rfcOrWhitelist');
   }, [referendum, input, tracks]);
 
