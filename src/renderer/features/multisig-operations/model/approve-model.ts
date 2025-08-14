@@ -105,35 +105,6 @@ const $transaction = combine(
   },
 );
 
-// sample({
-//   clock: flow.open,
-//   source: {
-//     multisigAccount: operationsContextModel.$multisigAccount,
-//     signatory: $signatory,
-//     chain: $chain,
-//     operation: $operation,
-//     weight: $weight,
-//   },
-//   filter: ({ multisigAccount }) => nonNullable(multisigAccount),
-//   fn: ({ multisigAccount, chain, operation, signatory, weight }) => {
-//     console.log({ multisigAccount, chain, operation, signatory, weight });
-//     if (!operation || !chain || !signatory || !multisigAccount) return null;
-//     const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, signatory.accountId);
-//     const hasCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
-
-//     return transactionBuilder.buildApproveMultisigTx({
-//       chain,
-//       signerAccountId: signatory.accountId,
-//       threshold: multisigAccount.threshold,
-//       otherSignatories,
-//       tx: operation,
-//       hasCallData: !!hasCallData,
-//       weight: weight ?? MAX_WEIGHT,
-//     });
-//   },
-//   target: $transaction,
-// });
-
 const $extrinsic = combine($api, $transaction, (api, tx) => {
   if (nullable(api) || nullable(tx)) return null;
   return getExtrinsic[tx.type](tx.args, api);

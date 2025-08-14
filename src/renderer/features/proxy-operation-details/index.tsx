@@ -45,7 +45,6 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     }
   },
   title({ operation, showCoreTransaction }) {
-    console.log({ operation, showCoreTransaction });
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
     if (title) {
