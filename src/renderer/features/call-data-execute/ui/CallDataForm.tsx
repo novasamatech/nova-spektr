@@ -1,15 +1,22 @@
 import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { t } from 'i18next';
-import { type FormEvent, type ReactNode, memo, useMemo } from 'react';
+import { type FormEvent, type ReactNode, memo, useMemo, useState } from 'react';
 
 import { type Wallet, WalletType } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
+import {
+  getNativeAsset,
+  nonNullable,
+  nullable,
+  performSearch,
+  toAddress,
+  transferableAmountBN,
+} from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Address, AssetBalance, ChainSelect } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal, ScrollArea, SearchInput, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { Fee } from '@/entities/transaction';
@@ -129,7 +136,12 @@ const InitiatorSelect = memo(() => {
     fields: { initiator },
   } = useForm(formModel.form);
 
+  const [filterQuery, setFilterQuery] = useState('');
   const asset = chain ? getNativeAsset(chain.assets) : null;
+
+  const changeQuery = (query: string) => {
+    setFilterQuery(query);
+  };
 
   const onChange = (walletId: string) => {
     const wallet = wallets.find((w) => w.id === Number(walletId));
@@ -147,7 +159,26 @@ const InitiatorSelect = memo(() => {
     const options: ReactNode[] = [];
     if (nullable(chain) || nullable(asset)) return options;
 
-    const walletsByType = wallets.reduce(
+    // Filter wallets based on search query
+    const filteredWallets = filterQuery
+      ? performSearch({
+          query: filterQuery.trim(),
+          records: wallets,
+          getMeta: (wallet) => ({
+            name: wallet.name,
+            allAddresses: accountService
+              .filterAccountsByWallet(allAccounts, wallet.id)
+              .map((account) => toAddress(account.accountId, { prefix: chain.addressPrefix }))
+              .join(' '),
+          }),
+          weights: {
+            name: 1,
+            allAddresses: 0.8,
+          },
+        })
+      : wallets;
+
+    const walletsByType = filteredWallets.reduce(
       (groups, wallet) => {
         const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
         const hasMatchingAccounts = walletAccounts.some((account) =>
@@ -222,7 +253,7 @@ const InitiatorSelect = memo(() => {
     }
 
     return options;
-  }, [wallets, balances, chain, asset, allAccounts]);
+  }, [wallets, balances, chain, asset, allAccounts, filterQuery]);
 
   const selectedWallet = useMemo(() => {
     if (initiator.value) {
@@ -263,6 +294,16 @@ const InitiatorSelect = memo(() => {
         height="md"
         onChange={onChange}
       >
+        <div
+          className="p-3"
+          onKeyDown={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          onFocus={(e) => e.stopPropagation()}
+        >
+          <SearchInput value={filterQuery} placeholder={t('wallets.searchPlaceholder')} onChange={changeQuery} />
+        </div>
         {options}
       </Select>
       <InputHint variant="error" active={initiator.hasError}>
