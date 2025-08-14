@@ -1,6 +1,7 @@
 import { attach, combine, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { createGate } from 'effector-react';
+import { t } from 'i18next';
 
 import {
   AccountType,
@@ -34,12 +35,12 @@ const form = createForm<FormValues>({
       rules: [
         {
           name: 'required',
-          errorText: 'onboarding.watchOnly.walletNameRequiredError',
+          errorText: t('onboarding.watchOnly.walletNameRequiredError'),
           validator: Boolean,
         },
         {
           name: 'maxLength',
-          errorText: 'onboarding.watchOnly.walletNameMaxLenError',
+          errorText: t('onboarding.watchOnly.walletNameMaxLenError'),
           validator: value => !value || value.length <= 256,
         },
       ],
@@ -49,7 +50,7 @@ const form = createForm<FormValues>({
       rules: [
         {
           name: 'correctAddress',
-          errorText: 'onboarding.watchOnly.accountAddressError',
+          errorText: t('onboarding.watchOnly.accountAddressError'),
           validator: address => validateAddress(address),
         },
       ],

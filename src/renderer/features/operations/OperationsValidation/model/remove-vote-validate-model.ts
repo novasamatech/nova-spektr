@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { attach, createEffect } from 'effector';
+import { t } from 'i18next';
 
 import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
 import { getAssetById, transferableAmount } from '@/shared/lib/utils';
@@ -36,7 +37,7 @@ const rootValidateFx = createEffect(
     const rules: Validation<BN, { shards: unknown[] }>[] = [
       {
         name: 'insufficientBalanceForFee',
-        errorText: 'transfer.notEnoughBalanceForFeeError',
+        errorText: t('transfer.notEnoughBalanceForFeeError'),
         value: BN_ZERO,
         form: { shards: [{ accountId }] },
         source: {
@@ -57,7 +58,7 @@ const rootValidateFx = createEffect(
       },
       {
         name: 'noVoteForReferendum',
-        errorText: 'governance.referendums.vote.noVoteForReferendum',
+        errorText: t('governance.referendums.vote.noVoteForReferendum'),
         value: BN_ZERO,
         form: { shards: [{ accountId }] },
         source: isVoteExist,

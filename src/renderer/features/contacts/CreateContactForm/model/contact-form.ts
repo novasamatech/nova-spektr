@@ -1,5 +1,6 @@
 import { attach, createApi, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 
 import { type Contact } from '@/shared/core';
 import { toAccountId, validateAddress } from '@/shared/lib/utils';
@@ -19,10 +20,10 @@ const $contactForm = createForm({
     name: {
       init: '',
       rules: [
-        { name: 'required', errorText: 'addressBook.createContact.nameRequiredError', validator: Boolean },
+        { name: 'required', errorText: t('addressBook.createContact.nameRequiredError'), validator: Boolean },
         {
           name: 'exist',
-          errorText: 'addressBook.createContact.nameExistsError',
+          errorText: t('addressBook.createContact.nameExistsError'),
           source: contactModel.$contacts,
           validator: validateNameExist,
         },
@@ -31,15 +32,19 @@ const $contactForm = createForm({
     address: {
       init: '',
       rules: [
-        { name: 'required', errorText: 'addressBook.createContact.accountIdRequiredError', validator: Boolean },
+        {
+          name: 'required',
+          errorText: t('addressBook.createContact.accountIdRequiredError'),
+          validator: Boolean,
+        },
         {
           name: 'invalid',
-          errorText: 'addressBook.createContact.accountIdIncorrectError',
+          errorText: t('addressBook.createContact.accountIdIncorrectError'),
           validator: (address) => validateAddress(address),
         },
         {
           name: 'exist',
-          errorText: 'addressBook.createContact.accountIdExistsError',
+          errorText: t('addressBook.createContact.accountIdExistsError'),
           source: contactModel.$contacts,
           validator: validateAddressExist,
         },

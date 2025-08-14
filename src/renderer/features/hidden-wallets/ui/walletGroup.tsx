@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { t } from 'i18next';
 import { useMemo } from 'react';
 
 import { AccountType, type Chain, type Wallet, WalletType } from '@/shared/core';
@@ -22,16 +23,16 @@ type Props = {
 };
 
 const WALLET_TYPE_LABELS = {
-  [WalletType.MULTISIG]: 'wallets.multisigLabel',
-  [WalletType.FLEXIBLE_MULTISIG]: 'wallets.flexibleMultisigLabel',
-  [WalletType.POLKADOT_EXTENSION]: 'wallets.polkadotExtensionLabel',
-  [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
-  [WalletType.PROXIED]: 'wallets.proxiedLabel',
-  [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
-  [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
-  [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
-  [WalletType.TALISMAN_EXTENSION]: 'wallets.talismanExtensionLabel',
-  [WalletType.SUBWALLET_EXTENSION]: 'wallets.subWalletExtensionLabel',
+  [WalletType.MULTISIG]: t('wallets.multisigLabel'),
+  [WalletType.FLEXIBLE_MULTISIG]: t('wallets.flexibleMultisigLabel'),
+  [WalletType.POLKADOT_EXTENSION]: t('wallets.polkadotExtensionLabel'),
+  [WalletType.WATCH_ONLY]: t('wallets.watchOnlyLabel'),
+  [WalletType.PROXIED]: t('wallets.proxiedLabel'),
+  [WalletType.NOVA_WALLET]: t('wallets.novaWalletLabel'),
+  [WalletType.WALLET_CONNECT]: t('wallets.walletConnectLabel'),
+  [WalletType.POLKADOT_VAULT]: t('wallets.paritySignerLabel'),
+  [WalletType.TALISMAN_EXTENSION]: t('wallets.talismanExtensionLabel'),
+  [WalletType.SUBWALLET_EXTENSION]: t('wallets.subWalletExtensionLabel'),
 };
 
 export const WalletGroup = (props: Props) => {
