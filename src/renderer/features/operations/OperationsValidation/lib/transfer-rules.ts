@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
+import { t } from 'i18next';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { assert, formatAmount, toPrecision, validateAddress } from '@/shared/lib/utils';
@@ -20,7 +21,7 @@ export const TransferRules = {
   account: {
     noProxyFee: (source: Store<TransferAccountStore>) => ({
       name: 'noProxyFee',
-      errorText: 'transfer.notEnoughBalanceForFeeError',
+      errorText: t('transfer.notEnoughBalanceForFeeError'),
       source,
       validator: (_a: AnyAccount | null, _f: any, { isProxy, proxyBalance, fee }: TransferAccountStore) => {
         if (!isProxy) return true;
@@ -32,7 +33,7 @@ export const TransferRules = {
   signatory: {
     noSignatorySelected: (source: Store<boolean>) => ({
       name: 'noSignatorySelected',
-      errorText: 'transfer.noSignatoryError',
+      errorText: t('transfer.noSignatoryError'),
       source,
       validator: (signatory: AnyAccount | null, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
@@ -42,7 +43,7 @@ export const TransferRules = {
     }),
     notEnoughTokens: (source: Store<TransferSignatoryFeeStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'transfer.notEnoughBalanceForDepositError',
+      errorText: t('transfer.notEnoughBalanceForDepositError'),
       source,
       validator: (_s: any, _f: any, { fee, isMultisig, multisigDeposit, balance }: TransferSignatoryFeeStore) => {
         if (!isMultisig) return true;
@@ -56,12 +57,12 @@ export const TransferRules = {
   destination: {
     required: {
       name: 'required',
-      errorText: 'transfer.requiredRecipientError',
+      errorText: t('transfer.requiredRecipientError'),
       validator: Boolean,
     },
     incorrectRecipient: (source: Store<Chain | null>) => ({
       name: 'incorrectRecipient',
-      errorText: 'transfer.incorrectRecipientError',
+      errorText: t('transfer.incorrectRecipientError'),
       source,
       // Second argument for validator is form data, but we need chain
       validator: (destination: string, _: any, chain: Chain) => {
@@ -74,13 +75,13 @@ export const TransferRules = {
   amount: {
     required: {
       name: 'required',
-      errorText: 'transfer.requiredAmountError',
+      errorText: t('transfer.requiredAmountError'),
       validator: Boolean,
     },
 
     notZero: {
       name: 'notZero',
-      errorText: 'transfer.notZeroAmountError',
+      errorText: t('transfer.notZeroAmountError'),
       validator: balanceValidation.isNonZeroBalance,
     },
 
@@ -89,7 +90,7 @@ export const TransferRules = {
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'notEnoughBalance',
-      errorText: 'transfer.notEnoughBalanceError',
+      errorText: t('transfer.notEnoughBalanceError'),
       source,
       validator: (
         amount: string,
@@ -110,7 +111,7 @@ export const TransferRules = {
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForFee',
-      errorText: 'transfer.notEnoughBalanceForFeeError',
+      errorText: t('transfer.notEnoughBalanceForFeeError'),
       source,
       validator: (
         amount: string,
@@ -141,7 +142,7 @@ export const TransferRules = {
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForDeliveryFee',
-      errorText: 'transfer.notEnoughBalanceForDeliveryFeeError',
+      errorText: t('transfer.notEnoughBalanceForDeliveryFeeError'),
       source,
       validator: (
         amount: string,
@@ -172,7 +173,7 @@ export const TransferRules = {
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForXcmFee',
-      errorText: 'transfer.notEnoughBalanceForXcmFeeError',
+      errorText: t('transfer.notEnoughBalanceForXcmFeeError'),
       source,
       validator: (
         amount: string,

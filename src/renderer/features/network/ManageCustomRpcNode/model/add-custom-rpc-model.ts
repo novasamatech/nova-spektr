@@ -2,6 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { combine, createEffect, createEvent, createStore, merge, sample, scopeBind } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { delay, spread } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
@@ -45,7 +46,7 @@ const $addCustomRpcForm = createForm({
         ...FieldRules.url,
         {
           name: 'nodeExist',
-          errorText: 'settings.networks.nodeExist',
+          errorText: t('settings.networks.nodeExist'),
           source: $existingNodes,
           validator: (value, _, existingNodes): boolean => {
             return existingNodes.every((node: RpcNode) => node.url !== value);

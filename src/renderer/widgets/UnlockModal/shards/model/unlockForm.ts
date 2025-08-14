@@ -1,6 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 
 import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
@@ -100,7 +101,7 @@ const $unlockForm = createForm<FormParams>({
       rules: [
         {
           name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
+          errorText: t('transfer.noSignatoryError'),
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
             if (!signatory || !isMultisig) return true;
@@ -110,7 +111,7 @@ const $unlockForm = createForm<FormParams>({
         },
         {
           name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+          errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
           source: combine({
             fee: $fee,
             isMultisig: $isMultisig,
@@ -130,17 +131,17 @@ const $unlockForm = createForm<FormParams>({
       rules: [
         {
           name: 'required',
-          errorText: 'transfer.requiredAmountError',
+          errorText: t('transfer.requiredAmountError'),
           validator: Boolean,
         },
         {
           name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
+          errorText: t('transfer.notZeroAmountError'),
           validator: (value) => value !== ZERO_BALANCE,
         },
         {
           name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
+          errorText: t('transfer.notEnoughBalanceForFeeError'),
           source: combine({
             fee: $fee,
             isMultisig: $isMultisig,

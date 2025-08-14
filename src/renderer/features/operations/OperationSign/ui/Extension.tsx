@@ -1,4 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
+import { t } from 'i18next';
 import { useEffect, useState } from 'react';
 
 import { type HexString } from '@/shared/core';
@@ -13,13 +14,13 @@ import { operationSignModel } from '../model/operation-sign-model';
 import { type SignResponse, polkadotExtensionSign } from '../model/polkadotExtensionSign';
 
 const ValidationErrorLabels: Record<ValidationErrors, string> = {
-  [ValidationErrors.EXPIRED]: 'transfer.expired',
-  [ValidationErrors.INVALID_ADDRESS]: 'transfer.invalidAddress',
-  [ValidationErrors.INSUFFICIENT_BALANCE]: 'transfer.notEnoughBalanceError',
-  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: 'transfer.notEnoughBalanceForFeeError',
-  [ValidationErrors.INVALID_SIGNATURE]: 'transfer.invalidSignature',
-  [ValidationErrors.ADDRESS_REQUIRED]: 'transfer.noSignatoryError',
-  [ValidationErrors.AMOUNT_REQUIRED]: 'transfer.noAmount',
+  [ValidationErrors.EXPIRED]: t('transfer.expired'),
+  [ValidationErrors.INVALID_ADDRESS]: t('transfer.invalidAddress'),
+  [ValidationErrors.INSUFFICIENT_BALANCE]: t('transfer.notEnoughBalanceError'),
+  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: t('transfer.notEnoughBalanceForFeeError'),
+  [ValidationErrors.INVALID_SIGNATURE]: t('transfer.invalidSignature'),
+  [ValidationErrors.ADDRESS_REQUIRED]: t('transfer.noSignatoryError'),
+  [ValidationErrors.AMOUNT_REQUIRED]: t('transfer.noAmount'),
 };
 
 export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
