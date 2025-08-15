@@ -1,6 +1,6 @@
 import { type TFunction } from 'i18next';
 
-import { formatBalance, totalAmount } from '@/shared/lib/utils';
+import { formatBalance } from '@/shared/lib/utils';
 import { type AssetChain } from '@/features/assets';
 
 import { type StatusType } from './types';
@@ -11,7 +11,7 @@ export const assetTransactionUtils = {
 };
 
 function getChainBalance(t: TFunction, chain: AssetChain, precision: number): string {
-  const { value: formattedValue, decimalPlaces, suffix } = formatBalance(totalAmount(chain.balance), precision);
+  const { value: formattedValue, decimalPlaces, suffix } = formatBalance(chain.balance?.total, precision);
 
   const balanceValue = t('assetBalance.number', {
     value: formattedValue,

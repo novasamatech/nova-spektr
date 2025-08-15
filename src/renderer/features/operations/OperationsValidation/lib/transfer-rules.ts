@@ -213,11 +213,13 @@ export const transferValidator = createTxValidator<{
 }>({
   additionalBalanceRules: [
     // amount
-    ({ route, amount, asset, ed, destinationAsset }, balanceValidationResults) => {
+    ({ route, amount, asset, destinationAsset }, balanceValidationResults) => {
       const initiator = accountService.findInitiator(route);
       assert(initiator, 'Initiator not found');
 
       const desiredAmount = toPrecision(amount, destinationAsset.precision);
+
+      if (desiredAmount.isZero()) return;
 
       if (asset === destinationAsset) {
         return accountService.mutateTransitionBalanceValidationResult(
@@ -227,7 +229,7 @@ export const transferValidator = createTxValidator<{
           (balance, account) => ({
             account,
             required: desiredAmount,
-            balance: balanceService.tryWithdraw(balance, desiredAmount, ed, 'keepAlive'),
+            balance: balanceService.tryWithdraw(balance, desiredAmount, 'keepAlive'),
             asset,
             action: 'sending amount',
           }),
