@@ -78,7 +78,7 @@ function sortChainsByBalance(
   const numberchains = { withBalance: [], noBalance: [] };
   const testnets = { withBalance: [], noBalance: [] };
 
-  const balancesMap: Record<string, AssetBalance> = {};
+  const balancesMap: Record<string, Balance> = {};
   for (const balance of balances) {
     const key = `${balance.chainId}_${balance.assetId}`;
     balancesMap[key] = sumBalances(balance, balancesMap[key]);

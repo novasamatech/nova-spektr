@@ -144,7 +144,7 @@ accountSDK(multisigWalletFeature, {
         account: payer,
         action: 'multisig deposit',
         required: deposit,
-        balance: balanceService.tryReserve(balance, deposit),
+        balance: balanceService.tryReserve(balance, deposit, 'legacy'),
         asset,
       };
     }

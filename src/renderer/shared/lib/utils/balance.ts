@@ -1,7 +1,7 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 
-import { type Asset, type AssetBalance, type Balance, LockTypes, type Unlocking } from '@/shared/core';
+import { type Asset, type Balance, LockTypes, type TransferableMode, type Unlocking } from '@/shared/core';
 
 import { ZERO_BALANCE } from './constants';
 import { nullable } from './functions';
@@ -180,12 +180,12 @@ export const fromPrecision = (balance: string | BN, precision: number): string =
   return new BNWithConfig(bnBalance).decimalPlaces(decimalPlaces).toFormat();
 };
 
-export const totalAmountBN = <T extends AssetBalance>(balance: T) => {
+export const totalAmountBN = (balance: Balance) => {
   if (nullable(balance)) return BN_ZERO;
   return balance.free.add(balance.reserved);
 };
 
-export const totalAmount = <T extends AssetBalance>(balance?: T): string => {
+export const totalAmount = (balance?: Balance): string => {
   return balance ? totalAmountBN(balance).toString() : ZERO_BALANCE;
 };
 
@@ -197,16 +197,25 @@ export const lockedAmount = (balance: Balance): string => {
   return lockedAmountBN(balance).toString();
 };
 
-export const transferableAmountBN = (balance?: AssetBalance, normalize = true): BN => {
+export const transferableAmountBN = (balance?: Balance, transferableMode?: TransferableMode, normalize = true): BN => {
   if (nullable(balance)) return BN_ZERO;
 
-  const diff = BN.max(BN_ZERO, balance.frozen.sub(balance.reserved));
-  const transferable = balance.free.sub(diff);
+  switch (transferableMode ?? balance.transferableMode) {
+    case 'holdAndFreezes': {
+      const diff = BN.max(BN_ZERO, balance.frozen.sub(balance.reserved));
+      const transferable = balance.free.sub(diff);
 
-  return normalize ? BN.max(BN_ZERO, transferable) : transferable;
+      return normalize ? BN.max(BN_ZERO, transferable) : transferable;
+    }
+    case 'legacy': {
+      const transferable = balance.free.sub(balance.frozen);
+
+      return normalize ? BN.max(BN_ZERO, transferable) : transferable;
+    }
+  }
 };
 
-export const transferableAmount = (balance?: AssetBalance): string => {
+export const transferableAmount = (balance?: Balance): string => {
   return transferableAmountBN(balance).toString();
 };
 
@@ -215,16 +224,38 @@ export const transferableAmount = (balance?: AssetBalance): string => {
  * could be usefull in operations where reserved part is already taken into
  * account.
  */
-export const withdrawableAmountBN = (balance?: AssetBalance): BN => {
+export const withdrawableAmountBN = (balance?: Balance): BN => {
   if (nullable(balance)) return BN_ZERO;
   return BN.max(BN_ZERO, balance.free.sub(balance.frozen));
 };
 
-export const withdrawableAmount = (balance?: AssetBalance): string => {
+export const withdrawableAmount = (balance?: Balance): string => {
   return withdrawableAmountBN(balance).toString();
 };
 
-export const stakedAmountBN = (balance: AssetBalance) => {
+export const reservableAmountBN = (balance: Balance, transferableMode?: TransferableMode): BN => {
+  if (nullable(balance)) return BN_ZERO;
+
+  switch (transferableMode ?? balance.transferableMode) {
+    // reducible_balance (https://github.com/paritytech/polkadot-sdk/blob/b9fbf243c57939ecadc89b82ed42249703203874/substrate/frame/balances/src/impl_fungible.rs#L47)
+    // is called with Force and Protect args (https://github.com/paritytech/polkadot-sdk/blob/b9fbf243c57939ecadc89b82ed42249703203874/substrate/frame/support/src/traits/tokens/fungibles/hold.rs#L101)
+    case 'holdAndFreezes': {
+      const reservable = balance.free.sub(balance.ed);
+
+      return BN.max(BN_ZERO, reservable);
+    }
+
+    // https://github.com/paritytech/polkadot-sdk/blob/b9fbf243c57939ecadc89b82ed42249703203874/substrate/frame/balances/src/impl_currency.rs#L522
+    // free - amount >= max(ed, frozen) => max_amount = free - max(ed, frozen)
+    case 'legacy': {
+      const reservable = balance.free.sub(BN.max(balance.ed, balance.frozen));
+
+      return BN.max(BN_ZERO, reservable);
+    }
+  }
+};
+
+export const stakedAmountBN = (balance: Balance) => {
   const bnLocks = balance.locked
     .filter((lock) => lock.type === LockTypes.STAKING)
     .reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
@@ -236,7 +267,7 @@ export const stakedAmount = (balance: Balance): string => {
   return stakedAmountBN(balance).toString();
 };
 
-export const stakeableAmountBN = (balance: AssetBalance) => {
+export const stakeableAmountBN = (balance: Balance) => {
   const total = totalAmountBN(balance);
   const staked = stakedAmountBN(balance);
 

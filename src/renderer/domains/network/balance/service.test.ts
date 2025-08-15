@@ -1,6 +1,6 @@
 import { BN, BN_TEN } from '@polkadot/util';
 
-import { type Balance } from '@/shared/core';
+import { type Balance, type TransferableMode } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { balanceService } from './service';
@@ -90,15 +90,16 @@ type BalanceBoilerplate = {
   free: number;
   reserved: number;
   frozen: number;
+  transferableMode?: TransferableMode;
 };
 
-const createBalance = ({ free, reserved, frozen }: BalanceBoilerplate): Balance => ({
+const createBalance = ({ free, reserved, frozen, transferableMode }: BalanceBoilerplate): Balance => ({
   id: '0',
   accountId: '0x00' as AccountId,
   chainId: '0x00',
   assetId: 0,
   ed: TEST_ED,
-  transferableMode: 'holdAndFreezes',
+  transferableMode: transferableMode ?? 'holdAndFreezes',
   free: new BN(free),
   reserved: new BN(reserved),
   frozen: new BN(frozen),

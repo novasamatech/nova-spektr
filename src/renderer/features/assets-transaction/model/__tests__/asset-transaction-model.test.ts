@@ -24,19 +24,14 @@ const mockAsset = {
       assetId: 0,
       assetSymbol: 'DOT',
       balance: {
-        free: BN_ZERO,
-        reserved: BN_ZERO,
+        total: BN_ZERO,
         frozen: BN_ZERO,
-        locked: [],
+        locked: BN_ZERO,
+        transferable: BN_ZERO,
+        balances: [],
       },
     },
   ],
-  totalBalance: {
-    free: BN_ZERO,
-    reserved: BN_ZERO,
-    frozen: BN_ZERO,
-    locked: [],
-  },
 } as AssetByChains;
 
 describe('AssetTransactionModal/model/add-transaction-model', () => {
