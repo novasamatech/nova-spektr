@@ -181,12 +181,8 @@ export const fromPrecision = (balance: string | BN, precision: number): string =
 };
 
 export const totalAmountBN = <T extends AssetBalance>(balance: T) => {
-  if (!balance) return BN_ZERO;
-
-  const bnFree = balance.free ? new BN(balance.free) : BN_ZERO;
-  const bnReserved = balance.reserved ? new BN(balance.reserved) : BN_ZERO;
-
-  return bnFree.add(bnReserved);
+  if (nullable(balance)) return BN_ZERO;
+  return balance.free.add(balance.reserved);
 };
 
 export const totalAmount = <T extends AssetBalance>(balance?: T): string => {
@@ -194,8 +190,6 @@ export const totalAmount = <T extends AssetBalance>(balance?: T): string => {
 };
 
 export const lockedAmountBN = (balance: Balance): BN => {
-  if (!balance.locked) return BN_ZERO;
-
   return balance.locked.reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
 };
 
@@ -206,9 +200,8 @@ export const lockedAmount = (balance: Balance): string => {
 export const transferableAmountBN = (balance?: AssetBalance, normalize = true): BN => {
   if (nullable(balance)) return BN_ZERO;
 
-  const { free = BN_ZERO, frozen = BN_ZERO, reserved = BN_ZERO } = balance;
-  const diff = BN.max(BN_ZERO, frozen.sub(reserved));
-  const transferable = free.sub(diff);
+  const diff = BN.max(BN_ZERO, balance.frozen.sub(balance.reserved));
+  const transferable = balance.free.sub(diff);
 
   return normalize ? BN.max(BN_ZERO, transferable) : transferable;
 };
@@ -224,10 +217,7 @@ export const transferableAmount = (balance?: AssetBalance): string => {
  */
 export const withdrawableAmountBN = (balance?: AssetBalance): BN => {
   if (nullable(balance)) return BN_ZERO;
-
-  const { free = BN_ZERO, frozen = BN_ZERO } = balance;
-
-  return BN.max(BN_ZERO, free.sub(frozen));
+  return BN.max(BN_ZERO, balance.free.sub(balance.frozen));
 };
 
 export const withdrawableAmount = (balance?: AssetBalance): string => {
@@ -235,8 +225,6 @@ export const withdrawableAmount = (balance?: AssetBalance): string => {
 };
 
 export const stakedAmountBN = (balance: AssetBalance) => {
-  if (!balance.locked) return BN_ZERO;
-
   const bnLocks = balance.locked
     .filter((lock) => lock.type === LockTypes.STAKING)
     .reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);

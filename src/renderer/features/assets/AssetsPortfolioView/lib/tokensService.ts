@@ -1,3 +1,4 @@
+import { BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 import { concat, orderBy, sortBy } from 'lodash';
 
@@ -44,8 +45,7 @@ function sumTokenBalances(firstBalance: AssetBalance, secondBalance?: AssetBalan
   if (!secondBalance) return firstBalance;
 
   return {
-    verified: firstBalance.verified && secondBalance.verified,
-    free: firstBalance.free || secondBalance.free ? sumValues(firstBalance.free, secondBalance.free) : undefined,
+    free: firstBalance.free || secondBalance.free ? sumValues(firstBalance.free, secondBalance.free) : BN_ZERO,
     reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
     frozen: sumValues(firstBalance.frozen, secondBalance.frozen),
     locked: (firstBalance.locked || []).concat(secondBalance.locked || []),
@@ -63,25 +63,32 @@ function getSelectedAccountIds(accounts: AnyAccount[], chainId: ChainId): Accoun
 }
 
 function getChainWithBalance(balances: Balance[], chains: AssetChain[], accounts: AnyAccount[]): AssetChain[] {
+  const initialBalance: AssetBalance = {
+    free: BN_ZERO,
+    reserved: BN_ZERO,
+    frozen: BN_ZERO,
+    locked: [],
+  };
+
   return chains.reduce<AssetChain[]>((acc, chain) => {
     const selectedAccountIds = getSelectedAccountIds(accounts, chain.chainId);
 
     const accountsBalance = balanceUtils.getAssetBalances(balances, selectedAccountIds, chain.chainId, chain.assetId);
+    const assetBalance = accountsBalance.reduce((acc, balance) => sumTokenBalances(balance, acc), initialBalance);
 
-    const assetBalance = accountsBalance.reduce<AssetBalance>((acc, balance) => {
-      return sumTokenBalances(balance, acc);
-    }, {});
-
-    if (assetBalance.verified !== false) {
-      acc.push({ ...chain, balance: assetBalance });
-    }
+    acc.push({ ...chain, balance: assetBalance });
 
     return acc;
   }, [] as AssetChain[]);
 }
 
 function calculateTotalBalance(assets: AssetChain[]) {
-  let totalBalance: AssetBalance = {};
+  let totalBalance: AssetBalance = {
+    free: BN_ZERO,
+    reserved: BN_ZERO,
+    frozen: BN_ZERO,
+    locked: [],
+  };
 
   for (const { balance } of assets) {
     totalBalance = sumTokenBalances(totalBalance, balance);

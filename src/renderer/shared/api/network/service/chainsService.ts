@@ -154,7 +154,6 @@ export const sumBalances = <T extends AssetBalance>(firstBalance: T, secondBalan
 
   return {
     ...firstBalance,
-    verified: firstBalance.verified && secondBalance.verified,
     free: sumValues(firstBalance.free, secondBalance.free),
     reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
     frozen: sumValues(firstBalance.frozen, secondBalance.frozen),

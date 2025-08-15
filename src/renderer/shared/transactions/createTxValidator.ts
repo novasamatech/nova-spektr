@@ -7,13 +7,7 @@ import { getExtrinsic } from '@/entities/transaction';
 type CombinedParams = Parameters<typeof accountService.validateRouteBalances>[0] &
   Parameters<typeof accountService.validateCallPermission>[0];
 
-type ValidatorParams<A> = Omit<CombinedParams, 'transaction' | 'ed'> &
-  A & {
-    // for backward compatability
-    transaction: Transaction | AnyTransaction;
-  };
-
-type RuleParams<A> = Omit<CombinedParams, 'transaction'> &
+type ValidatorParams<A> = Omit<CombinedParams, 'transaction'> &
   A & {
     // for backward compatability
     transaction: Transaction | AnyTransaction;
@@ -21,13 +15,11 @@ type RuleParams<A> = Omit<CombinedParams, 'transaction'> &
 
 export function createTxValidator<A>(params?: {
   additionalBalanceRules?: ((
-    params: RuleParams<A>,
+    params: ValidatorParams<A>,
     balanceValidationResults: TransactionValidationBalanceError[],
   ) => TransactionValidationBalanceError[] | undefined)[];
 }) {
   return async ({ transaction, ...rest }: ValidatorParams<A>) => {
-    const ed = await balanceService.getExistentialDeposit(rest.api, rest.asset);
-
     // TODO remove this mess
     let normalizedTransaction: AnyTransaction;
     if (transaction.type === 'encoded' || transaction.type === 'decoded') {
@@ -37,12 +29,12 @@ export function createTxValidator<A>(params?: {
       normalizedTransaction = transactionService.createEncodedTransactionFromExtrinsic(extrinsic);
     }
 
-    const fixedArgs = { ...rest, transaction: normalizedTransaction, ed };
+    const fixedArgs = { ...rest, transaction: normalizedTransaction };
 
     const permissionErrors = accountService.validateCallPermission(fixedArgs);
     let balanceValidationResults = await accountService.validateRouteBalances(fixedArgs);
 
-    const ruleArgs = { ...rest, transaction, ed } as RuleParams<A>;
+    const ruleArgs = { ...rest, transaction } as ValidatorParams<A>;
 
     if (params?.additionalBalanceRules) {
       for (const rule of params.additionalBalanceRules) {
@@ -64,7 +56,7 @@ export function createTxValidator<A>(params?: {
       (balance, account) => {
         return {
           asset: rest.asset,
-          balance: balanceService.tryWithdraw(balance, fee, ed, 'keepAlive'),
+          balance: balanceService.tryWithdraw(balance, fee, 'keepAlive'),
           account,
           required: fee,
           action: 'fee',

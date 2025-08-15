@@ -13,7 +13,7 @@ const createBalance = (params: {
     free: new BN(params.free || '0'),
     frozen: new BN(params.frozen || '0'),
     reserved: new BN(params.reserved || '0'),
-    locked: params.locked,
+    locked: params.locked || [],
   };
 };
 
