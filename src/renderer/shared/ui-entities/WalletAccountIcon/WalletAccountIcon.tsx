@@ -10,7 +10,7 @@ type Props = {
   theme?: IdenticonIconTheme;
 };
 
-export const WalletAccountIcon = ({ address, size = 32, iconSize = 16, type, theme = 'polkadot' }: Props) => {
+export const WalletAccountIcon = ({ address, size = 32, iconSize = 16, type, theme }: Props) => {
   return (
     <div className="relative" style={{ width: `${size}px`, height: `${size}px` }}>
       <Identicon canCopy={false} address={address ?? ''} size={size} background={false} theme={theme} />
