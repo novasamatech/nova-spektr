@@ -132,7 +132,7 @@ export const InitiatorSelect = memo(() => {
 
           return (
             <SearchableSelectItem key={wallet.id} value={wallet.id.toString()}>
-              <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+              <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2} width="100%">
                 <Address
                   showIcon
                   canCopy={false}
@@ -185,7 +185,7 @@ export const InitiatorSelect = memo(() => {
         value={selectedWallet?.id.toString() ?? null}
         valueNode={
           nonNullable(initiator.value) && nonNullable(selectedWallet) ? (
-            <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+            <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2} width="100%">
               <Address
                 showIcon
                 canCopy={false}

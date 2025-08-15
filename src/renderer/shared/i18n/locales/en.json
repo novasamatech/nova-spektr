@@ -412,6 +412,7 @@
   "emptyState": {
     "accountDescription": "You don't have an account in that network.",
     "addAccountButton": "Add account",
+    "accountsNotFound": "Accounts not found",
     "addNewAccountButton": "Add new account",
     "createAccount": "Create a new account",
     "createFlexibleMultisig": "Create a new flexible multisig wallet",

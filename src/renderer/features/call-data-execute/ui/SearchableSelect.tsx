@@ -1,9 +1,11 @@
 import * as Ariakit from '@ariakit/react';
 import * as RadixPopover from '@radix-ui/react-popover';
-import { type ReactNode, memo, startTransition, useRef, useState } from 'react';
+import { Children, type ReactNode, memo, startTransition, useRef, useState } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { Input, ScrollArea, Surface, ThemeProvider, useTheme } from '@/shared/ui-kit';
+import { FootnoteText } from '@/shared/ui';
+import { Graphics, Input, ScrollArea, Surface, ThemeProvider, useTheme } from '@/shared/ui-kit';
 import { gridSpaceConverter } from '@/shared/ui-kit/_helpers/gridSpaceConverter';
 
 type SearchableSelectProps = {
@@ -27,6 +29,7 @@ export const SearchableSelect = ({
   onChange,
   children,
 }: SearchableSelectProps) => {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const comboboxRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
@@ -34,6 +37,10 @@ export const SearchableSelect = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [isInputMode, setIsInputMode] = useState(false);
   const { portalContainer } = useTheme();
+
+  // Check if there are any actual children (results)
+  const hasResults = Children.count(children) > 0;
+  const showEmptyState = searchQuery.length > 0 && !hasResults;
 
   const handleContainerFocus = () => {
     if (!isInputMode) {
@@ -155,6 +162,14 @@ export const SearchableSelect = ({
                     >
                       <Ariakit.ComboboxList ref={listboxRef} role="listbox">
                         {children}
+                        {showEmptyState && (
+                          <div className="flex flex-col items-center justify-center gap-2 px-2 py-6">
+                            <Graphics name="emptyList" size={64} />
+                            <FootnoteText className="text-text-tertiary">
+                              {t('emptyState.accountsNotFound')}
+                            </FootnoteText>
+                          </div>
+                        )}
                       </Ariakit.ComboboxList>
                     </Ariakit.ComboboxProvider>
                   )}
