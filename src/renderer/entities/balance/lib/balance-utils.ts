@@ -2,7 +2,7 @@ import { BN_ZERO } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
 import { type Asset, type Balance, type BalanceDraft, type ChainId, type OmitFirstArg } from '@/shared/core';
-import { nonNullableMap } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const balanceUtils = {
@@ -62,7 +62,14 @@ function getAccountsBalances(balances: Balance[], accountIds: AccountId[]): Bala
 }
 
 function isCompleteBalance(balance: Balance | BalanceDraft): balance is Balance {
-  return nonNullableMap(balance);
+  return (
+    nonNullable(balance.free) &&
+    nonNullable(balance.frozen) &&
+    nonNullable(balance.reserved) &&
+    nonNullable(balance.locked) &&
+    nonNullable(balance.ed) &&
+    nonNullable(balance.transferableMode)
+  );
 }
 
 function completeBalance(balance: Balance | BalanceDraft): Balance {

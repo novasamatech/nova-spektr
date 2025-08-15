@@ -14,7 +14,7 @@ const $balances = createStore<Balance[]>([]);
 
 const bufferedUpdate = createBuffer({
   source: sample({ clock: [balancesSet, balancesUpdated] }),
-  timeframe: 1500,
+  timeframe: 1000,
 });
 
 const insertBalancesFx = createEffect(async (balances: Balance[]) => {

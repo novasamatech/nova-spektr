@@ -661,6 +661,9 @@ async function getExistentialDeposit(api: ApiPromise, asset: Asset): Promise<BN>
       const assetId = getAssetId(asset);
 
       return await api.query[pallet].asset(assetId).then((balance) => {
+        if ((balance as Option<PalletAssetsAssetDetails>).isNone) {
+          return BN_ZERO;
+        }
         return (balance as Option<PalletAssetsAssetDetails>).value.minBalance.toBn();
       });
     }
