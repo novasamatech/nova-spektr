@@ -11,8 +11,11 @@ export const balanceMapper = {
 
 function fromDB(balance: Serializable<Balance>): Balance {
   return {
-    ...balance,
+    id: balance.id,
+    chainId: balance.chainId,
+    assetId: balance.assetId,
     accountId: pjsSchema.helpers.toAccountId(balance.accountId),
+    transferableMode: balance.transferableMode,
     free: new BN(balance.free),
     frozen: new BN(balance.frozen),
     reserved: new BN(balance.reserved),
@@ -27,7 +30,11 @@ function fromDB(balance: Serializable<Balance>): Balance {
 
 function toDB(balance: Balance): Serializable<Balance> {
   return {
-    ...balance,
+    id: balance.id,
+    accountId: balance.accountId,
+    chainId: balance.chainId,
+    assetId: balance.assetId,
+    transferableMode: balance.transferableMode,
     free: balance.free.toString(),
     frozen: balance.frozen.toString(),
     reserved: balance.reserved.toString(),
