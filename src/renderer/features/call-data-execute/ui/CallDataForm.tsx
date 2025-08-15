@@ -1,3 +1,4 @@
+import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { t } from 'i18next';
 import { type FormEvent, type ReactNode, memo, useMemo } from 'react';
@@ -6,7 +7,6 @@ import { type Wallet, WalletType } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
-import { BN_ZERO } from '@polkadot/util';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Address, AssetBalance, ChainSelect, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
