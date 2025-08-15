@@ -1,7 +1,8 @@
 import { BN_ZERO } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
-import { type Asset, type Balance, type ChainId, type OmitFirstArg } from '@/shared/core';
+import { type Asset, type Balance, type BalanceDraft, type ChainId, type OmitFirstArg } from '@/shared/core';
+import { nonNullableMap } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const balanceUtils = {
@@ -15,7 +16,7 @@ export const balanceUtils = {
   getMergeBalances,
 };
 
-function getBalanceId(balance: Omit<Balance, 'id'>) {
+function getBalanceId(balance: Balance | BalanceDraft) {
   return `${balance.accountId} ${balance.chainId} ${balance.assetId.toString()}`;
 }
 
@@ -60,39 +61,56 @@ function getAccountsBalances(balances: Balance[], accountIds: AccountId[]): Bala
   return balances.filter((balance) => accountsMap.has(balance.accountId));
 }
 
-function getMergeBalances(oldBalances: Balance[], newBalances: Balance[]): Balance[] {
-  const newBalancesMap = keyBy(newBalances, (b) => b.id);
-  const updatedBalances: Balance[] = [];
+function isCompleteBalance(balance: Balance | BalanceDraft): balance is Balance {
+  return nonNullableMap(balance);
+}
 
-  for (const balance of oldBalances) {
-    const newBalance = newBalancesMap[balance.id];
+function completeBalance(balance: Balance | BalanceDraft): Balance {
+  if (isCompleteBalance(balance)) return balance;
 
-    if (newBalance) {
-      delete newBalancesMap[balance.id];
-
-      updatedBalances.push({
-        ...balance,
-        free: newBalance.free || balance.free,
-        frozen: newBalance.frozen || balance.frozen,
-        reserved: newBalance.reserved || balance.reserved,
-        locked: newBalance.locked || balance.locked,
-      });
-    } else {
-      updatedBalances.push(balance);
-    }
-  }
-
-  const normalizedNewBalances = Object.values(newBalancesMap).map<Balance>((balance) => ({
-    id: balance.id,
+  return {
+    id: getBalanceId(balance),
     accountId: balance.accountId,
     assetId: balance.assetId,
     chainId: balance.chainId,
-    verified: balance.verified,
     free: balance.free ?? BN_ZERO,
     frozen: balance.frozen ?? BN_ZERO,
     reserved: balance.reserved ?? BN_ZERO,
-    locked: balance.locked,
-  }));
+    locked: balance.locked ?? [],
+    ed: balance.ed ?? BN_ZERO,
+    transferableMode: balance.transferableMode ?? 'legacy',
+  };
+}
+
+function getMergeBalances(oldBalances: (Balance | BalanceDraft)[], newBalances: (Balance | BalanceDraft)[]): Balance[] {
+  const newBalancesMap = keyBy(newBalances, getBalanceId);
+  const updatedBalances: Balance[] = [];
+
+  for (const balance of oldBalances) {
+    const id = getBalanceId(balance);
+    const newBalance = newBalancesMap[id];
+
+    if (newBalance) {
+      delete newBalancesMap[id];
+
+      updatedBalances.push({
+        id,
+        chainId: balance.chainId,
+        assetId: balance.assetId,
+        accountId: balance.accountId,
+        free: newBalance.free ?? balance.free ?? BN_ZERO,
+        frozen: newBalance.frozen ?? balance.frozen ?? BN_ZERO,
+        reserved: newBalance.reserved ?? balance.reserved ?? BN_ZERO,
+        locked: newBalance.locked ?? balance.locked ?? [],
+        ed: newBalance.ed ?? balance.ed ?? BN_ZERO,
+        transferableMode: newBalance.transferableMode ?? balance.transferableMode ?? 'legacy',
+      });
+    } else {
+      updatedBalances.push(completeBalance(balance));
+    }
+  }
+
+  const normalizedNewBalances = Object.values(newBalancesMap).map<Balance>(completeBalance);
 
   return updatedBalances.concat(normalizedNewBalances);
 }

@@ -4,7 +4,7 @@ import { produce } from 'immer';
 import { previous } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
-import { type Balance, type Chain, type ChainId, type Wallet } from '@/shared/core';
+import { type BalanceDraft, type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { entries, merge, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -26,7 +26,7 @@ const unsubscribeChain = createEvent<ChainId>();
 
 const fetchAccounts = createEvent<AnyAccount[]>();
 
-const updateBalances = createEvent<Omit<Balance, 'id'>[]>();
+const updateBalances = createEvent<Omit<BalanceDraft, 'id'>[]>();
 
 // actual subscriptions map
 const $subscriptions = createStore<Subscriptions>({});
@@ -45,12 +45,7 @@ const fetchAccountsFx = createEffect(async ({ api, chain, accounts }: FetchAccou
   return Promise.all([
     balanceService.fetchBalances(api, chain, accounts),
     balanceService.fetchLockBalances(api, chain, accounts),
-  ]).then(([balances, lockBalances]) =>
-    balanceUtils.getMergeBalances(
-      balances.map(balanceUtils.insertBalanceId),
-      lockBalances.map(balanceUtils.insertBalanceId),
-    ),
-  );
+  ]).then(([balances, lockBalances]) => balanceUtils.getMergeBalances(balances, lockBalances));
 });
 
 type SubscribeAccountParam = {
@@ -92,7 +87,6 @@ const unsubscribeFx = createEffect(({ keys, subscriptions }: UnsubscribeAccounts
 
 sample({
   clock: updateBalances,
-  fn: (draft) => draft.map(balanceUtils.insertBalanceId),
   target: balanceModel.events.balancesUpdated,
 });
 
