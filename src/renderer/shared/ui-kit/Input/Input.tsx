@@ -53,7 +53,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const id = useId();
 
     return (
-      <label
+      <div
         className={cnTw(
           'box-border flex cursor-text items-center gap-x-2 rounded-sm px-[11px]',
           'border border-filter-border bg-input-background',
@@ -96,7 +96,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {suffixElement ? <div className="flex shrink-0">{suffixElement}</div> : suffixElement}
-      </label>
+      </div>
     );
   },
 );
