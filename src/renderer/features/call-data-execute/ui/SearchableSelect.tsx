@@ -134,11 +134,11 @@ export const SearchableSelect = ({
 
   const handleItemSelect = (itemValue: string) => {
     startTransition(() => {
-      onChange(itemValue);
       setIsInputMode(false);
       setOpen(false);
       setSearchQuery('');
       onSearch('');
+      onChange(itemValue);
     });
   };
 
@@ -221,7 +221,6 @@ export const SearchableSelect = ({
                       setOpen={setOpen}
                       value={searchQuery}
                       defaultSelectedValue=""
-                      setValue={handleInputChange}
                       setSelectedValue={handleItemSelect}
                     >
                       <Ariakit.ComboboxList ref={listboxRef} role="listbox">
