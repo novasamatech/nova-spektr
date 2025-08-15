@@ -406,6 +406,7 @@ export const accountService = {
   isChainAccount,
   isUniversalAccount,
   isAccountAvailableOnChain,
+  isCryptoMatch,
 
   canSignMultipleTransactions,
 
