@@ -63,7 +63,7 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
   const afterWithdraw = withdrawable.sub(wanted);
 
   const updated = copyBalance(balance, {
-    free: balance.free.sub(wanted),
+    free: balance.free.sub(amount),
   });
 
   if (afterWithdraw.isNeg()) {
