@@ -160,7 +160,7 @@ const TransactionBalanceError = ({
       </span>
       <span>
         {t('general.transactionErrors.balance.required', {
-          balances: imbalances.map(({ asset, imbalance }) => formatAsset(imbalance, asset)).join(', '),
+          balances: imbalances.map(({ asset, imbalance }) => formatAsset(imbalance, asset, { round: 'up' })).join(', '),
         })}
       </span>
     </Box>
