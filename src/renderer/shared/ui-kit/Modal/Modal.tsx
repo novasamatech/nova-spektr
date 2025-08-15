@@ -2,6 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { isObject } from 'lodash';
 import { Children, type PropsWithChildren, type ReactNode } from 'react';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
@@ -61,6 +62,7 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
                 'h-modal': height === 'lg',
               },
             )}
+            data-testid={TEST_IDS.BASE_MODAL}
           >
             {hasTitle ? null : <Dialog.Title hidden />}
             {modalNodes}
