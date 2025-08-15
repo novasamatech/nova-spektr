@@ -61,7 +61,7 @@ const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inpu
   return (
     <ThemeProvider preferStaticContent>
       <Context.Provider value={ctx}>
-        <RadixPopover.Root modal open={open} onOpenChange={onOpenChange}>
+        <RadixPopover.Root open={open} onOpenChange={onOpenChange}>
           <Ariakit.ComboboxProvider
             open={open}
             setOpen={onOpenChange}
