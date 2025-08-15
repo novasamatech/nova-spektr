@@ -1,12 +1,15 @@
+import * as Ariakit from '@ariakit/react';
 import { BN_ZERO } from '@polkadot/util';
+import * as RadixPopover from '@radix-ui/react-popover';
 import { useUnit } from 'effector-react';
 import { t } from 'i18next';
-import { type FormEvent, type ReactNode, memo, useMemo, useState } from 'react';
+import { type FormEvent, type ReactNode, memo, startTransition, useMemo, useRef, useState } from 'react';
 
 import { type Wallet, WalletType } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
+  cnTw,
   getNativeAsset,
   nonNullable,
   nullable,
@@ -16,7 +19,8 @@ import {
 } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
 import { Address, AssetBalance, ChainSelect } from '@/shared/ui-entities';
-import { Box, Field, Input, Modal, ScrollArea, SearchInput, Select } from '@/shared/ui-kit';
+import { Box, Field, Input, Modal, ScrollArea, Select, Surface, ThemeProvider, useTheme } from '@/shared/ui-kit';
+import { gridSpaceConverter } from '@/shared/ui-kit/_helpers/gridSpaceConverter';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { Fee } from '@/entities/transaction';
@@ -136,12 +140,8 @@ const InitiatorSelect = memo(() => {
     fields: { initiator },
   } = useForm(formModel.form);
 
-  const [filterQuery, setFilterQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const asset = chain ? getNativeAsset(chain.assets) : null;
-
-  const changeQuery = (query: string) => {
-    setFilterQuery(query);
-  };
 
   const onChange = (walletId: string) => {
     const wallet = wallets.find((w) => w.id === Number(walletId));
@@ -160,9 +160,9 @@ const InitiatorSelect = memo(() => {
     if (nullable(chain) || nullable(asset)) return options;
 
     // Filter wallets based on search query
-    const filteredWallets = filterQuery
+    const filteredWallets = searchQuery
       ? performSearch({
-          query: filterQuery.trim(),
+          query: searchQuery.trim(),
           records: wallets,
           getMeta: (wallet) => ({
             name: wallet.name,
@@ -223,7 +223,7 @@ const InitiatorSelect = memo(() => {
           );
 
           return (
-            <Select.Item key={wallet.id} value={wallet.id.toString()} depth={1}>
+            <SearchableSelectItem key={wallet.id} value={wallet.id.toString()}>
               <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
                 <Address
                   showIcon
@@ -238,22 +238,22 @@ const InitiatorSelect = memo(() => {
                   asset={asset}
                 />
               </Box>
-            </Select.Item>
+            </SearchableSelectItem>
           );
         })
         .filter(nonNullable);
 
       if (walletItems.length > 0) {
         options.push(
-          <Select.Group key={walletGroup.walletType} title={walletTypeTitle}>
+          <SearchableSelectGroup key={walletGroup.walletType} title={walletTypeTitle}>
             {walletItems}
-          </Select.Group>,
+          </SearchableSelectGroup>,
         );
       }
     }
 
     return options;
-  }, [wallets, balances, chain, asset, allAccounts, filterQuery]);
+  }, [wallets, balances, chain, asset, allAccounts, searchQuery]);
 
   const selectedWallet = useMemo(() => {
     if (initiator.value) {
@@ -272,7 +272,7 @@ const InitiatorSelect = memo(() => {
 
   return (
     <Field text={t('callData.fields.initiator.label')}>
-      <Select
+      <SearchableSelect
         placeholder={t('callData.fields.initiator.placeholder')}
         value={selectedWallet?.id.toString() ?? null}
         valueNode={
@@ -292,26 +292,216 @@ const InitiatorSelect = memo(() => {
           ) : null
         }
         height="md"
+        onSearch={setSearchQuery}
         onChange={onChange}
       >
-        <div
-          className="p-3"
-          onKeyDown={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => e.stopPropagation()}
-          onFocus={(e) => e.stopPropagation()}
-        >
-          <SearchInput value={filterQuery} placeholder={t('wallets.searchPlaceholder')} onChange={changeQuery} />
-        </div>
         {options}
-      </Select>
+      </SearchableSelect>
       <InputHint variant="error" active={initiator.hasError}>
         {t(initiator.errorMessage)}
       </InputHint>
     </Field>
   );
 });
+
+type SearchableSelectProps = {
+  placeholder: string;
+  value: string | null;
+  valueNode: ReactNode;
+  height: 'sm' | 'md';
+  testId?: string;
+  onSearch: (query: string) => void;
+  onChange: (value: string) => void;
+  children: ReactNode;
+};
+
+const SearchableSelect = ({
+  placeholder,
+  value: _value,
+  valueNode,
+  height,
+  testId = 'SearchableSelect',
+  onSearch,
+  onChange,
+  children,
+}: SearchableSelectProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const comboboxRef = useRef<HTMLInputElement>(null);
+  const listboxRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isInputMode, setIsInputMode] = useState(false);
+  const { portalContainer } = useTheme();
+
+  const handleContainerFocus = () => {
+    if (!isInputMode) {
+      setIsInputMode(true);
+      setOpen(true);
+      // Auto focus the input when switching to input mode
+      setTimeout(() => {
+        comboboxRef.current?.focus();
+      }, 0);
+    }
+  };
+
+  const handleInputBlur = () => {
+    // Delay hiding to allow item selection
+    setTimeout(() => {
+      setIsInputMode(false);
+      setOpen(false);
+      setSearchQuery('');
+      onSearch('');
+    }, 150);
+  };
+
+  const handleInputChange = (query: string) => {
+    setSearchQuery(query);
+    onSearch(query);
+  };
+
+  const handleItemSelect = (itemValue: string) => {
+    startTransition(() => {
+      onChange(itemValue);
+      setIsInputMode(false);
+      setOpen(false);
+      setSearchQuery('');
+      onSearch('');
+    });
+  };
+
+  return (
+    <ThemeProvider preferStaticContent>
+      <RadixPopover.Root modal open={open} onOpenChange={setOpen}>
+        <RadixPopover.Anchor asChild>
+          <div ref={containerRef} className="w-full">
+            {!isInputMode ? (
+              <div
+                className={cnTw(
+                  'border-input flex w-full cursor-pointer items-center rounded-md border border-filter-border px-2 py-1 text-footnote',
+                  'hover:bg-accent hover:text-accent-foreground',
+                  'focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                )}
+                tabIndex={0}
+                onClick={handleContainerFocus}
+                onFocus={handleContainerFocus}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleContainerFocus();
+                  }
+                }}
+              >
+                {valueNode || <span className="text-muted-foreground">{placeholder}</span>}
+              </div>
+            ) : (
+              <Ariakit.ComboboxProvider
+                open={open}
+                setOpen={setOpen}
+                value={searchQuery}
+                defaultSelectedValue=""
+                setValue={handleInputChange}
+                setSelectedValue={handleItemSelect}
+              >
+                <Ariakit.Combobox
+                  autoSelect
+                  autoFocus
+                  ref={comboboxRef}
+                  placeholder={placeholder}
+                  render={({ onChange, ...props }) => <Input {...props} height={height} onChangeEvent={onChange} />}
+                  onBlur={handleInputBlur}
+                />
+              </Ariakit.ComboboxProvider>
+            )}
+          </div>
+        </RadixPopover.Anchor>
+
+        {open && containerRef.current && (
+          <RadixPopover.Portal container={portalContainer}>
+            <RadixPopover.Content
+              asChild
+              hideWhenDetached
+              data-testid={testId}
+              style={{ width: `${containerRef.current.getBoundingClientRect().width}px` }}
+              collisionPadding={gridSpaceConverter(2)}
+              sideOffset={gridSpaceConverter(2)}
+              onOpenAutoFocus={(e) => e.preventDefault()}
+              onInteractOutside={(event) => {
+                const target = event.target as Element | null;
+                const isCombobox = target === comboboxRef?.current;
+                const inListbox = target && listboxRef?.current?.contains(target);
+                if (isCombobox || inListbox) {
+                  event.preventDefault();
+                }
+              }}
+            >
+              <Surface
+                elevation={1}
+                className={cnTw(
+                  'z-50 flex h-max max-h-(--radix-popper-available-height) flex-col p-1',
+                  'overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+                )}
+              >
+                <ScrollArea>
+                  {isInputMode && (
+                    <Ariakit.ComboboxProvider
+                      open={open}
+                      setOpen={setOpen}
+                      value={searchQuery}
+                      defaultSelectedValue=""
+                      setValue={handleInputChange}
+                      setSelectedValue={handleItemSelect}
+                    >
+                      <Ariakit.ComboboxList ref={listboxRef} role="listbox">
+                        {children}
+                      </Ariakit.ComboboxList>
+                    </Ariakit.ComboboxProvider>
+                  )}
+                </ScrollArea>
+              </Surface>
+            </RadixPopover.Content>
+          </RadixPopover.Portal>
+        )}
+      </RadixPopover.Root>
+    </ThemeProvider>
+  );
+};
+
+type SearchableSelectGroupProps = {
+  title: ReactNode;
+  children: ReactNode;
+};
+
+const SearchableSelectGroup = ({ title, children }: SearchableSelectGroupProps) => {
+  return (
+    <Ariakit.ComboboxGroup className="mb-1 last:mb-0">
+      <Ariakit.ComboboxGroupLabel>
+        <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
+      </Ariakit.ComboboxGroupLabel>
+      {children}
+    </Ariakit.ComboboxGroup>
+  );
+};
+
+type SearchableSelectItemProps = {
+  value: string;
+  children: ReactNode;
+};
+
+const SearchableSelectItem = ({ value, children }: SearchableSelectItemProps) => {
+  return (
+    <Ariakit.ComboboxItem
+      focusOnHover
+      value={value}
+      className={cnTw(
+        'flex cursor-pointer rounded-sm px-2 py-1 text-footnote text-text-secondary',
+        'bg-block-background-default data-active-item:bg-block-background-hover',
+        'mb-1 last:mb-0',
+      )}
+    >
+      {children}
+    </Ariakit.ComboboxItem>
+  );
+};
 
 const SignatorySelect = memo(() => {
   const { t } = useI18n();
