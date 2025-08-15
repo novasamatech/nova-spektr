@@ -1,4 +1,3 @@
-import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type ReactNode, memo, useMemo, useState } from 'react';
 
@@ -170,35 +169,11 @@ export const InitiatorSelect = memo(() => {
     return null;
   }, [wallets, initiator.value]);
 
-  const balance = useMemo(() => {
-    if (initiator.value && chain && asset) {
-      const balance = balanceUtils.getBalance(balances, initiator.value.accountId, chain.chainId, asset.assetId);
-      return transferableAmountBN(balance);
-    }
-    return BN_ZERO;
-  }, [initiator.value, chain, asset, balances]);
-
   return (
     <Field text={t('callData.fields.initiator.label')}>
       <SearchableSelect
         placeholder={t('callData.fields.initiator.placeholder')}
         value={selectedWallet?.id.toString() ?? null}
-        valueNode={
-          nonNullable(initiator.value) && nonNullable(selectedWallet) ? (
-            <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2} width="100%">
-              <Address
-                showIcon
-                canCopy={false}
-                variant="truncate"
-                title={selectedWallet.name}
-                address={toAddress(initiator.value.accountId, { prefix: chain?.addressPrefix })}
-              />
-              {nonNullable(asset) && (
-                <AssetBalance className="text-footnote text-text-secondary" value={balance} asset={asset} />
-              )}
-            </Box>
-          ) : null
-        }
         height="md"
         onSearch={setSearchQuery}
         onChange={onChange}

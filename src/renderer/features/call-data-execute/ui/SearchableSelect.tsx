@@ -1,6 +1,16 @@
 import * as Ariakit from '@ariakit/react';
 import * as RadixPopover from '@radix-ui/react-popover';
-import { Children, type ReactNode, memo, startTransition, useRef, useState } from 'react';
+import {
+  Children,
+  type PropsWithChildren,
+  type ReactElement,
+  type ReactNode,
+  isValidElement,
+  memo,
+  startTransition,
+  useRef,
+  useState,
+} from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
@@ -8,21 +18,72 @@ import { FootnoteText } from '@/shared/ui';
 import { Graphics, Input, ScrollArea, Surface, ThemeProvider, useTheme } from '@/shared/ui-kit';
 import { gridSpaceConverter } from '@/shared/ui-kit/_helpers/gridSpaceConverter';
 
-type SearchableSelectProps = {
+type SearchableSelectItemProps = {
+  value: string;
+  children: ReactNode;
+};
+
+type SearchableSelectGroupProps = {
+  title: ReactNode;
+  children: ReactElement<SearchableSelectItemProps> | ReactElement<SearchableSelectItemProps>[];
+};
+
+type SearchableSelectProps = PropsWithChildren<{
   placeholder: string;
   value: string | null;
-  valueNode: ReactNode;
   height: 'sm' | 'md';
   testId?: string;
   onSearch: (query: string) => void;
   onChange: (value: string) => void;
-  children: ReactNode;
+}>;
+
+// Type guards for better type safety
+const isSearchableSelectItem = (element: ReactElement): element is ReactElement<SearchableSelectItemProps> => {
+  const props = element.props as Record<string, unknown>;
+  return 'value' in props && typeof props.value === 'string';
+};
+
+const isSearchableSelectGroup = (element: ReactElement): element is ReactElement<SearchableSelectGroupProps> => {
+  const props = element.props as Record<string, unknown>;
+  return 'title' in props && 'children' in props;
+};
+
+// Helper function to recursively find the selected item in children
+const findSelectedItem = (
+  children: ReactNode,
+  selectedValue: string,
+): ReactElement<SearchableSelectItemProps> | null => {
+  const childrenArray = Children.toArray(children);
+
+  for (const child of childrenArray) {
+    if (isValidElement(child)) {
+      // Check if it's a SearchableSelectItem with matching value
+      if (isSearchableSelectItem(child) && child.props.value === selectedValue) {
+        return child;
+      }
+
+      // Check if it's a SearchableSelectGroup and search within it
+      if (isSearchableSelectGroup(child)) {
+        const foundInGroup = findSelectedItem(child.props.children, selectedValue);
+        if (foundInGroup) {
+          return foundInGroup;
+        }
+      }
+    }
+  }
+
+  return null;
+};
+
+// Helper function to extract content from the selected item
+const getSelectedItemContent = (children: ReactNode, selectedValue: string): ReactNode => {
+  const selectedItem = findSelectedItem(children, selectedValue);
+  return selectedItem ? selectedItem.props.children : null;
 };
 
 export const SearchableSelect = ({
   placeholder,
   value: _value,
-  valueNode,
   height,
   testId = 'SearchableSelect',
   onSearch,
@@ -41,6 +102,9 @@ export const SearchableSelect = ({
   // Check if there are any actual children (results)
   const hasResults = Children.count(children) > 0;
   const showEmptyState = searchQuery.length > 0 && !hasResults;
+
+  // Get the content of the selected item
+  const selectedItemContent = _value ? getSelectedItemContent(children, _value) : null;
 
   const handleContainerFocus = () => {
     if (!isInputMode) {
@@ -100,7 +164,7 @@ export const SearchableSelect = ({
                   }
                 }}
               >
-                {valueNode || <span className="text-muted-foreground">{placeholder}</span>}
+                {selectedItemContent || <span className="text-muted-foreground">{placeholder}</span>}
               </div>
             ) : (
               <Ariakit.ComboboxProvider
@@ -183,25 +247,15 @@ export const SearchableSelect = ({
   );
 };
 
-type SearchableSelectGroupProps = {
-  title: ReactNode;
-  children: ReactNode;
-};
-
 export const SearchableSelectGroup = ({ title, children }: SearchableSelectGroupProps) => {
   return (
-    <Ariakit.ComboboxGroup className="mb-1 last:mb-0">
+    <Ariakit.ComboboxGroup className="mb-4 last:mb-0">
       <Ariakit.ComboboxGroupLabel>
         <div className="mb-1 px-2 py-1 text-help-text text-text-secondary">{title}</div>
       </Ariakit.ComboboxGroupLabel>
       {children}
     </Ariakit.ComboboxGroup>
   );
-};
-
-type SearchableSelectItemProps = {
-  value: string;
-  children: ReactNode;
 };
 
 export const SearchableSelectItem = memo(({ value, children }: SearchableSelectItemProps) => {
