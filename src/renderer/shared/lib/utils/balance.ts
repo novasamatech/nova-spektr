@@ -40,6 +40,11 @@ export const formatAmount = (amount: string, precision: number): string => {
 };
 
 type FormatBalanceShorthands = Record<Suffix, boolean>;
+type FormatBalanceConfig = Partial<{
+  round: 'up' | 'down';
+  shorthands: Partial<FormatBalanceShorthands>;
+}>;
+
 type FormattedBalance = {
   value: string;
   suffix: string;
@@ -55,8 +60,10 @@ const defaultBalanceShorthands: FormatBalanceShorthands = {
 export const formatBalance = (
   balance: string | BN = '0',
   precision = 0,
-  shorthands: Partial<FormatBalanceShorthands> = defaultBalanceShorthands,
+  config?: FormatBalanceConfig,
 ): FormattedBalance => {
+  const shorthands = config?.shorthands ?? defaultBalanceShorthands;
+  const round = config?.round ?? 'down';
   const mergedShorthands =
     shorthands === defaultBalanceShorthands ? defaultBalanceShorthands : { ...defaultBalanceShorthands, ...shorthands };
 
@@ -66,7 +73,7 @@ export const formatBalance = (
   BNWithConfig.config({
     // HOOK: for divide with decimal part
     DECIMAL_PLACES: precision || Decimal.SMALL_NUMBER,
-    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+    ROUNDING_MODE: round === 'down' ? BNWithConfig.ROUND_DOWN : BNWithConfig.ROUND_UP,
     FORMAT: {
       decimalSeparator: '.',
       groupSeparator: '',
@@ -119,12 +126,8 @@ export const formatBalance = (
   };
 };
 
-export const formatAsset = (
-  value: BN | string,
-  asset: Asset,
-  shorthands: Partial<FormatBalanceShorthands> = defaultBalanceShorthands,
-) => {
-  return `${formatBalance(value, asset.precision, shorthands).formatted} ${asset.symbol}`;
+export const formatAsset = (value: BN | string, asset: Asset, config?: FormatBalanceConfig) => {
+  return `${formatBalance(value, asset.precision, config).formatted} ${asset.symbol}`;
 };
 
 export const toPrecision = (balance: string | BN, precision: number): BN => {
