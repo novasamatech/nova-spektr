@@ -22,7 +22,7 @@ import {
  * hub chain, but we don't know where to read this relation is code.
  */
 function formatSalaryAmount(salary: BN) {
-  return `${formatBalance(salary, 6, { K: true }).formatted} USDT`;
+  return `${formatBalance(salary, 6, { shorthands: { K: true } }).formatted} USDT`;
 }
 
 function getCurrentPeriod(salaryCycle: SalaryCycle, currentBlock: BlockHeight): SalaryCyclePeriod {

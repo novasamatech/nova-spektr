@@ -1,4 +1,6 @@
-import { type AssetBalance } from './balance';
+import { type BN } from '@polkadot/util';
+
+import { type Balance } from './balance';
 import { type ChainId } from './general';
 
 export type Asset = {
@@ -39,6 +41,16 @@ export type OrmlExtras = {
   transfersEnabled?: boolean;
 };
 
+// TODO move into portfolio feature
+export type PortfolioTokenBalance = {
+  total: BN;
+  transferable: BN;
+  locked: BN;
+  frozen: BN;
+  balances: Balance[];
+};
+
+// TODO move into portfolio feature
 export type AssetByChains = {
   name: string;
   precision: number;
@@ -54,7 +66,7 @@ export type AssetByChains = {
     name: string;
     assetId: number;
     assetSymbol: string;
-    balance?: AssetBalance;
+    balance: PortfolioTokenBalance | null;
     type?: AssetType;
     typeExtras?: StatemineExtras | OrmlExtras;
   }[];

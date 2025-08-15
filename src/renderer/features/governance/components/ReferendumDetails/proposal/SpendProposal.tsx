@@ -28,7 +28,7 @@ export const SpendProposal = ({ proposal }: Props) => {
     return null;
   }
 
-  const amount = formatBalance(proposal.amount.toString(), nativeAsset?.precision ?? 0, { M: false });
+  const amount = formatBalance(proposal.amount.toString(), nativeAsset?.precision ?? 0, { shorthands: { M: false } });
   const formattedAddress = toAddress(proposal.beneficiary, { prefix: chain.addressPrefix });
 
   return (

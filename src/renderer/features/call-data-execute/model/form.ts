@@ -8,7 +8,12 @@ import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, nonNullableMap, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
-import { createFeeCalculator, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createFeeCalculator,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
 import {
@@ -83,11 +88,13 @@ const form: Form<FormData> = createForm<FormData>({
   },
 });
 
-// extrinsic
+const $asset = form.fields.chain.$value.map((c) => (c ? getNativeAsset(c.assets) : null));
 
 const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis) =>
   chain ? (apis[chain.chainId] ?? null) : null,
 );
+
+// extrinsic
 
 const $throttledCallData = restore(throttle(form.fields.callData.$value, 500), '').reset(flow.close);
 
@@ -197,6 +204,20 @@ const $signatoryBalance = combine(
     );
   },
 );
+
+// validations
+
+const validator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balances,
+    route: $route,
+    transaction: $wrappedTx,
+  },
+});
 
 // steps management
 
@@ -437,6 +458,7 @@ export const formModel = {
   $args,
   $fee,
   $pendingFee,
+  $errors,
 
   $allChains: $allChains,
   $availableChains: $availableChains,

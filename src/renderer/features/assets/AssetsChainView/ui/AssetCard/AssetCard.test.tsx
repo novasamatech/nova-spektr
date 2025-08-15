@@ -1,4 +1,4 @@
-import { BN_TEN, BN_TWO } from '@polkadot/util';
+import { BN_TEN, BN_TWO, BN_ZERO } from '@polkadot/util';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { fork } from 'effector';
@@ -32,6 +32,10 @@ const defaultProps = {
     accountId: TEST_ACCOUNTS[0],
     free: BN_TEN,
     frozen: BN_TWO,
+    ed: BN_ZERO,
+    reserved: BN_ZERO,
+    locked: [],
+    transferableMode: 'holdAndFreezes',
   } satisfies Balance,
   wallet: {
     walletId: 1,
