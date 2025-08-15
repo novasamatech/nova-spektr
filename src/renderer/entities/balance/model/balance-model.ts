@@ -1,13 +1,13 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { balanceMapper, storageService } from '@/shared/api/storage';
-import { type Balance } from '@/shared/core';
+import { type Balance, type BalanceDraft } from '@/shared/core';
 import { createBuffer } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '../lib/balance-utils';
 
 const balancesSet = createEvent<Balance[]>();
-const balancesUpdated = createEvent<Balance[]>();
+const balancesUpdated = createEvent<(Balance | BalanceDraft)[]>();
 const balancesRemoved = createEvent<AccountId[]>();
 
 const $balances = createStore<Balance[]>([]);
@@ -32,9 +32,7 @@ const populateFx = createEffect(async (): Promise<Balance[]> => {
 
 sample({
   clock: bufferedUpdate,
-  fn(buffer) {
-    return buffer.reduce(balanceUtils.getMergeBalances, []);
-  },
+  fn: (buffer) => buffer.reduce<Balance[]>(balanceUtils.getMergeBalances, []),
   target: insertBalancesFx,
 });
 

@@ -11,33 +11,38 @@ export const balanceMapper = {
 
 function fromDB(balance: Serializable<Balance>): Balance {
   return {
-    ...balance,
+    id: balance.id,
+    chainId: balance.chainId,
+    assetId: balance.assetId,
     accountId: pjsSchema.helpers.toAccountId(balance.accountId),
-    free: balance.free ? new BN(balance.free) : undefined,
-    frozen: balance.frozen ? new BN(balance.frozen) : undefined,
-    reserved: balance.reserved ? new BN(balance.reserved) : undefined,
+    transferableMode: balance.transferableMode,
+    free: new BN(balance.free),
+    frozen: new BN(balance.frozen),
+    reserved: new BN(balance.reserved),
+    ed: new BN(balance.ed),
 
-    locked: balance.locked
-      ? balance.locked.map((locked) => ({
-          type: locked.type,
-          amount: new BN(locked.amount || ZERO_BALANCE),
-        }))
-      : undefined,
+    locked: balance.locked.map((locked) => ({
+      type: locked.type,
+      amount: new BN(locked.amount || ZERO_BALANCE),
+    })),
   };
 }
 
 function toDB(balance: Balance): Serializable<Balance> {
   return {
-    ...balance,
-    free: balance.free?.toString(),
-    frozen: balance.frozen?.toString(),
-    reserved: balance.reserved?.toString(),
+    id: balance.id,
+    accountId: balance.accountId,
+    chainId: balance.chainId,
+    assetId: balance.assetId,
+    transferableMode: balance.transferableMode,
+    free: balance.free.toString(),
+    frozen: balance.frozen.toString(),
+    reserved: balance.reserved.toString(),
+    ed: balance.ed.toString(),
 
-    locked: balance.locked
-      ? balance.locked.map((locked) => ({
-          type: locked.type,
-          amount: locked.amount.toString(),
-        }))
-      : undefined,
+    locked: balance.locked.map((locked) => ({
+      type: locked.type,
+      amount: locked.amount.toString(),
+    })),
   };
 }

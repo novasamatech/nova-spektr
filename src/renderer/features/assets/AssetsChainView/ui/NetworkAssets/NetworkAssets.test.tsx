@@ -1,3 +1,4 @@
+import { BN, BN_ZERO } from '@polkadot/util';
 import { act, render, screen } from '@testing-library/react';
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
@@ -5,7 +6,9 @@ import { vi } from 'vitest';
 
 import {
   AccountType,
+  type Balance,
   CryptoType,
+  LockTypes,
   SigningType,
   type VaultBaseAccount,
   type VaultChainAccount,
@@ -39,21 +42,30 @@ const testWallet = {
   signingType: SigningType.POLKADOT_VAULT,
 } as Wallet;
 
-const testBalances = [
+const testBalances: Balance[] = [
   {
+    id: '0',
     assetId: testAsset.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
-    free: '10',
-    frozen: [{ type: 'test', amount: '1' }],
+    free: new BN(10),
+    locked: [{ type: LockTypes.CONVICTION_VOTE, amount: new BN(1) }],
+    frozen: BN_ZERO,
+    reserved: BN_ZERO,
+    ed: BN_ZERO,
+    transferableMode: 'holdAndFreezes',
   },
   {
+    id: '1',
     assetId: testAsset2.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
-    free: '1000000000000',
-    frozen: [{ type: 'test', amount: '1' }],
-    verified: false,
+    free: new BN(1000000000000),
+    frozen: BN_ZERO,
+    reserved: BN_ZERO,
+    ed: BN_ZERO,
+    transferableMode: 'holdAndFreezes',
+    locked: [{ type: LockTypes.CONVICTION_VOTE, amount: new BN(1) }],
   },
 ];
 
@@ -114,13 +126,6 @@ describe('features/AssetsChainView/ui/NetworkAssets', () => {
 
     const balancesAfter = screen.queryByTestId('AssetCard');
     expect(balancesAfter).not.toBeInTheDocument();
-  });
-
-  test('should show unverified badge', async () => {
-    await renderNetworkAssets();
-
-    const unverifiedBadge = screen.getByText('balances.verificationFailedLabel');
-    expect(unverifiedBadge).toBeInTheDocument();
   });
 
   test('should sort assets by balance and name', async () => {
