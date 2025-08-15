@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, toAddress, toShortAddress, transferableAmount } from '@/shared/lib/utils';
 import { Button, Combobox, DetailRow, FootnoteText, Icon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
-import { AssetBalance, Identicon, SignatorySelect } from '@/shared/ui-entities';
+import { AssetBalance, Identicon, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -23,6 +23,8 @@ type Props = {
 
 export const BondForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
+  const errors = useUnit(formModel.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -31,6 +33,7 @@ export const BondForm = ({ onGoBack }: Props) => {
 
   return (
     <div className="px-5 pb-4">
+      <TransactionValidationError errors={errors} wallets={wallets} />
       <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
         <Signatories />
         <Amount />

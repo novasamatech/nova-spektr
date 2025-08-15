@@ -13,11 +13,11 @@ import {
   transferableAmountBN,
 } from '@/shared/lib/utils';
 import { FootnoteText, InputHint } from '@/shared/ui';
-import { Address, AssetBalance } from '@/shared/ui-entities';
+import { Address, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 
 import { SearchableSelect, SearchableSelectGroup, SearchableSelectItem } from './SearchableSelect';

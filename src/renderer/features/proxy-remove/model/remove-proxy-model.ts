@@ -17,7 +17,12 @@ import {
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathType, Paths } from '@/shared/routes';
-import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxValidationStore,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -33,6 +38,7 @@ import {
   type RemoveProxyConfirm,
   removeProxyConfirmModel as confirmModel,
 } from '@/features/operations/OperationsConfirm/RemoveProxy';
+import { removeProxyValidator } from '@/features/operations/OperationsValidation';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';
 
@@ -177,6 +183,18 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   signatory: form.fields.signatory.$value,
 });
 
+// Transaction validation
+const $asset = $chain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
+const { $errors } = createTxValidationStore({
+  validator: removeProxyValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balances,
+    route: $route,
+    transaction: $tx,
+  },
+});
 const $multisigThreshold = $route.map((route) => {
   const multisig = route.find(accountUtils.isMultisigAccount);
   if (!multisig) return null;
@@ -532,4 +550,5 @@ export const removeProxyModel = {
   stepChanged,
   wentBackFromConfirm,
   txSaved,
+  $errors,
 };

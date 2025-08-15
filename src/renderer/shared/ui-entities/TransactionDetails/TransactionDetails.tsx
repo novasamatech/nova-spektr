@@ -5,15 +5,15 @@ import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { CaptionText, FootnoteText, Icon, Separator } from '@/shared/ui';
-import { DetailRow } from '@/shared/ui/DetailRow/DetailRow';
+import { CaptionText, DetailRow, FootnoteText, Icon, Separator } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { AccountsModal } from '@/entities/staking';
-import { WalletIcon, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
 // eslint-disable-next-line boundaries/element-types
 import { accountNodeConfigTransformer } from '@/sdk/account';
 import { Account as AccountComponent } from '../Account/Account';
+import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = PropsWithChildren<{
   wallets: Wallet[];

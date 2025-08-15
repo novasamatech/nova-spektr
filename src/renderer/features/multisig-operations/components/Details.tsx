@@ -16,7 +16,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
+import { Account, AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, identity } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
@@ -35,7 +35,7 @@ import {
   isUndelegateTransaction,
   isXcmTransaction,
 } from '@/entities/transaction';
-import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {

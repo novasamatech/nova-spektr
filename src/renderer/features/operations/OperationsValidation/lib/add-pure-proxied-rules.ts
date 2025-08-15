@@ -1,9 +1,11 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
+import { t } from 'i18next';
 
 import { type Chain } from '@/shared/core';
 import { getNativeAsset, transferableAmountBN, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { createTxValidator } from '@/shared/transactions';
 import { balanceUtils } from '@/entities/balance';
 import { type AccountStore, type SignatoryStore } from '../types/types';
 
@@ -14,7 +16,7 @@ export const AddPureProxiedRules = {
     notEnoughTokens: (source: Store<AccountStore>) => ({
       name: 'notEnoughTokens',
       source,
-      errorText: 'proxy.addProxy.notEnoughTokens',
+      errorText: t('proxy.addProxy.notEnoughTokens'),
       validator: (value: any, form: { chain: Chain }, { isMultisig, balances, ...params }: AccountStore) => {
         const balance = balanceUtils.getBalance(
           balances,
@@ -34,7 +36,7 @@ export const AddPureProxiedRules = {
   signatory: {
     notEnoughTokens: (source: Store<SignatoryStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
       source,
       validator: (
         value: { accountId: AccountId },
@@ -57,8 +59,10 @@ export const AddPureProxiedRules = {
   description: {
     maxLength: {
       name: 'maxLength',
-      errorText: 'transfer.descriptionLengthError',
+      errorText: t('transfer.descriptionLengthError'),
       validator: descriptionValidation.isMaxLength,
     },
   },
 };
+
+export const addPureProxiedValidator = createTxValidator();

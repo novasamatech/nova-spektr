@@ -128,7 +128,7 @@ const $wrappedArgs = combine($wrappedExtrinsic, form.fields.chain.$value, (extri
 const createWrappedExtrinsicFx = createQueuedEffect(
   ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
     if (nullable(transaction) || nullable(api)) return null;
-    return transactionService.createSubmittableExtrinsic(transaction, api);
+    return transactionService.createExtrinsic(transaction, api);
   },
 );
 
@@ -157,7 +157,7 @@ sample({
 const createExtrinsicFx = createQueuedEffect(
   ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
     if (nullable(transaction) || nullable(api)) return null;
-    return transactionService.createSubmittableExtrinsic(transaction, api);
+    return transactionService.createExtrinsic(transaction, api);
   },
 );
 

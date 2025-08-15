@@ -22,13 +22,19 @@ import {
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createInitiatorsStore,
+  createSignatoriesStore,
+  createTxValidationStore,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { transferValidator } from '@/features/operations/OperationsValidation';
 import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
 import { type NetworkStore } from '../lib/types';
 
@@ -70,6 +76,7 @@ const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCance
 const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
 
 const $chain = $networkStore.map((s) => (s ? s.chain : null));
+const $nativeAsset = $chain.map((c) => (c ? getNativeAsset(c.assets) : null));
 const $asset = $networkStore.map((s) => (s ? s.asset : null));
 
 const form: Form<FormParams> = createForm<FormParams>({
@@ -256,6 +263,23 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   feeTransaction: $feeTx,
 });
 
+const { $errors } = createTxValidationStore({
+  validator: transferValidator,
+  params: {
+    api: $api,
+    sourceChain: $chain,
+    destinationChain: form.fields.destinationChain.$value,
+    destinationAsset: $asset,
+    asset: $nativeAsset,
+    amount: form.fields.amount.$value,
+    balances: balanceModel.$balances,
+    route: $route,
+    transaction: $tx,
+    xcmFee: xcmTransferModel.$xcmFee,
+    deliveryFee: xcmTransferModel.$deliveryFee,
+  },
+});
+
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
 const $multisigAccount = $route.map((route) => route.find(accountUtils.isMultisigAccount) ?? null);
 
@@ -305,14 +329,20 @@ const $isMyselfXcmEnabled = combine(
 
 const $canSubmit = combine(
   {
+    errors: $errors,
     isXcm: $isXcm,
     isFormValid: form.$isValid,
     isFeeLoading: $pendingFee,
     isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
     isDeliveryFeeLoading: xcmTransferModel.$isDeliveryFeeLoading,
   },
-  ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
-    return isFormValid && !isFeeLoading && (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading);
+  ({ errors, isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
+    return (
+      !accountService.hasTransactionValidationErrors(errors) &&
+      isFormValid &&
+      !isFeeLoading &&
+      (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading)
+    );
   },
 );
 
@@ -506,6 +536,8 @@ export const formModel = {
   $isXcm,
   $isChainConnected,
   $canSubmit,
+
+  $errors,
 
   $xcmConfig: xcmTransferModel.$config,
   $xcmApi: xcmTransferModel.$apiDestination,
