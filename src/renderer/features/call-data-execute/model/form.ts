@@ -227,9 +227,11 @@ sample({
   target: stepChanged,
 });
 
+const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
+
 const $availableChains = combine(
   {
-    chains: networkModel.$chains.map((chains) => Object.values(chains)),
+    chains: $allChains,
     initiator: form.fields.initiator.$value,
   },
   ({ chains, initiator }) => {
@@ -246,7 +248,11 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
-const $showSignatories = $signatories.map((signatories) => signatories.length > 1);
+const $showSignatories = combine(
+  $signatories,
+  form.fields.initiator.$value,
+  (signatories, initiator) => signatories.length > 1 || signatories.at(0)?.accountId !== initiator?.accountId,
+);
 
 sample({
   clock: $signatories,
@@ -255,16 +261,7 @@ sample({
 
 // flow setup
 
-sample({
-  clock: $availableChains,
-  source: { selectedChain: form.fields.chain.$value },
-  filter: ({ selectedChain }, availableChains) =>
-    !selectedChain || !availableChains.some((chain) => chain.chainId === selectedChain.chainId),
-  fn: (_, availableChains) => availableChains.at(0) ?? null,
-  target: form.fields.chain.change,
-});
-
-// Preselect initiator based on selected wallet
+// Preselect initiator on form open
 sample({
   clock: flow.open,
   source: {
@@ -280,6 +277,48 @@ sample({
     );
 
     return (matchingAccount || allAccounts.at(0)) ?? null;
+  },
+  target: form.fields.initiator.change,
+});
+
+sample({
+  clock: flow.open,
+  source: {
+    allChains: $allChains,
+    selectedChain: form.fields.chain.$value,
+    initiator: form.fields.initiator.$value,
+  },
+  filter: ({ initiator, selectedChain }) =>
+    nullable(selectedChain) ||
+    (nonNullable(initiator) && accountService.isAccountAvailableOnChain(initiator, selectedChain)),
+  fn: ({ allChains, initiator }) => {
+    if (nullable(initiator)) return null;
+    return allChains.find((chain) => accountService.isAccountAvailableOnChain(initiator, chain)) ?? null;
+  },
+  target: form.fields.chain.change,
+});
+
+sample({
+  clock: form.fields.chain.change,
+  source: {
+    initiator: form.fields.initiator.$value,
+    allAccounts: walletModel.$availableAccounts,
+  },
+  filter: ({ initiator }, chain) => {
+    if (nullable(initiator) || nullable(chain)) return false;
+    return !accountService.isAccountAvailableOnChain(initiator, chain);
+  },
+  fn: ({ initiator, allAccounts }, chain) => {
+    if (nullable(initiator) || nullable(chain)) return null;
+
+    const walletAccounts = accountService.filterAccountsByWallet(allAccounts, initiator.walletId);
+    const matchingAccount = walletAccounts.find((account) => accountService.isAccountAvailableOnChain(account, chain));
+
+    if (matchingAccount) {
+      return matchingAccount;
+    }
+
+    return allAccounts.filter((a) => accountService.isAccountAvailableOnChain(a, chain))?.at(0) ?? null;
   },
   target: form.fields.initiator.change,
 });
@@ -399,6 +438,7 @@ export const formModel = {
   $fee,
   $pendingFee,
 
+  $allChains: $allChains,
   $availableChains: $availableChains,
   $signatories: $signatories,
   $showSignatories: $showSignatories,
