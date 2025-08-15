@@ -1,0 +1,213 @@
+import { BN_ZERO } from '@polkadot/util';
+import { useUnit } from 'effector-react';
+import { type ReactNode, memo, useMemo, useState } from 'react';
+
+import { type Wallet, WalletType } from '@/shared/core';
+import { useForm } from '@/shared/forms';
+import { useI18n } from '@/shared/i18n';
+import {
+  getNativeAsset,
+  nonNullable,
+  nullable,
+  performSearch,
+  toAddress,
+  transferableAmountBN,
+} from '@/shared/lib/utils';
+import { FootnoteText, InputHint } from '@/shared/ui';
+import { Address, AssetBalance } from '@/shared/ui-entities';
+import { Box, Field } from '@/shared/ui-kit';
+import { accountService } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
+import { WalletIcon, walletModel } from '@/entities/wallet';
+import { formModel } from '../model/form';
+
+import { SearchableSelect, SearchableSelectGroup, SearchableSelectItem } from './SearchableSelect';
+
+const walletTypesTitles: Record<WalletType, string> = {
+  [WalletType.POLKADOT_EXTENSION]: 'wallets.polkadotExtensionLabel',
+  [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
+  [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
+  [WalletType.MULTISIG]: 'wallets.multisigLabel',
+  [WalletType.FLEXIBLE_MULTISIG]: 'wallets.flexibleMultisigLabel',
+  [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
+  [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
+  [WalletType.PROXIED]: 'wallets.proxiedLabel',
+  [WalletType.TALISMAN_EXTENSION]: 'wallets.talismanExtensionLabel',
+  [WalletType.SUBWALLET_EXTENSION]: 'wallets.subWalletExtensionLabel',
+  [WalletType.SINGLE_PARITY_SIGNER]: 'wallets.paritySignerLabel',
+};
+
+export const InitiatorSelect = memo(() => {
+  const { t } = useI18n();
+
+  const wallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(walletModel.$availableAccounts);
+  const balances = useUnit(balanceModel.$balances);
+  const chain = useUnit(formModel.form.fields.chain.$value);
+  const {
+    fields: { initiator },
+  } = useForm(formModel.form);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const asset = chain ? getNativeAsset(chain.assets) : null;
+
+  const onChange = (walletId: string) => {
+    const wallet = wallets.find((w) => w.id === Number(walletId));
+    if (nonNullable(wallet) && nonNullable(chain)) {
+      const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
+      const matchingAccount = walletAccounts.find((account) =>
+        accountService.isAccountAvailableOnChain(account, chain),
+      );
+      const accountToUse = matchingAccount ?? walletAccounts[0] ?? null;
+      initiator.onChange(accountToUse);
+    }
+  };
+
+  const options = useMemo(() => {
+    const options: ReactNode[] = [];
+    if (nullable(chain) || nullable(asset)) return options;
+
+    // Filter wallets based on search query
+    const filteredWallets = searchQuery
+      ? performSearch({
+          query: searchQuery.trim(),
+          records: wallets,
+          getMeta: (wallet) => ({
+            name: wallet.name,
+            allAddresses: accountService
+              .filterAccountsByWallet(allAccounts, wallet.id)
+              .map((account) => toAddress(account.accountId, { prefix: chain.addressPrefix }))
+              .join(' '),
+          }),
+          weights: {
+            name: 1,
+            allAddresses: 0.8,
+          },
+        })
+      : wallets;
+
+    const walletsByType = filteredWallets.reduce(
+      (groups, wallet) => {
+        const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
+        const hasMatchingAccounts = walletAccounts.some((account) =>
+          accountService.isAccountAvailableOnChain(account, chain),
+        );
+
+        if (!hasMatchingAccounts) return groups;
+
+        if (!groups[wallet.type]) {
+          groups[wallet.type] = { walletType: wallet.type, wallets: [] };
+        }
+        groups[wallet.type].wallets.push(wallet);
+        return groups;
+      },
+      {} as Record<string, { walletType: WalletType; wallets: Wallet[] }>,
+    );
+
+    for (const walletGroup of Object.values(walletsByType)) {
+      const walletTypeTitle = (
+        <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
+          <WalletIcon type={walletGroup.walletType} />
+          <FootnoteText className="text-text-secondary uppercase">
+            {t(walletTypesTitles[walletGroup.walletType])}
+          </FootnoteText>
+        </Box>
+      );
+
+      const walletItems = walletGroup.wallets
+        .map((wallet) => {
+          const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
+          const firstMatchingAccount = walletAccounts.find((account) =>
+            accountService.isAccountAvailableOnChain(account, chain),
+          );
+
+          if (!firstMatchingAccount) return null;
+
+          const balance = balanceUtils.getBalance(
+            balances,
+            firstMatchingAccount.accountId,
+            chain.chainId,
+            asset.assetId,
+          );
+
+          return (
+            <SearchableSelectItem key={wallet.id} value={wallet.id.toString()}>
+              <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+                <Address
+                  showIcon
+                  canCopy={false}
+                  variant="truncate"
+                  title={wallet.name}
+                  address={toAddress(firstMatchingAccount.accountId, { prefix: chain?.addressPrefix })}
+                />
+                <AssetBalance
+                  className="text-footnote text-text-secondary"
+                  value={transferableAmountBN(balance)}
+                  asset={asset}
+                />
+              </Box>
+            </SearchableSelectItem>
+          );
+        })
+        .filter(nonNullable);
+
+      if (walletItems.length > 0) {
+        options.push(
+          <SearchableSelectGroup key={walletGroup.walletType} title={walletTypeTitle}>
+            {walletItems}
+          </SearchableSelectGroup>,
+        );
+      }
+    }
+
+    return options;
+  }, [wallets, balances, chain, asset, allAccounts, searchQuery, t]);
+
+  const selectedWallet = useMemo(() => {
+    if (initiator.value) {
+      return wallets.find((w) => w.id === initiator.value?.walletId) ?? null;
+    }
+    return null;
+  }, [wallets, initiator.value]);
+
+  const balance = useMemo(() => {
+    if (initiator.value && chain && asset) {
+      const balance = balanceUtils.getBalance(balances, initiator.value.accountId, chain.chainId, asset.assetId);
+      return transferableAmountBN(balance);
+    }
+    return BN_ZERO;
+  }, [initiator.value, chain, asset, balances]);
+
+  return (
+    <Field text={t('callData.fields.initiator.label')}>
+      <SearchableSelect
+        placeholder={t('callData.fields.initiator.placeholder')}
+        value={selectedWallet?.id.toString() ?? null}
+        valueNode={
+          nonNullable(initiator.value) && nonNullable(selectedWallet) ? (
+            <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+              <Address
+                showIcon
+                canCopy={false}
+                variant="truncate"
+                title={selectedWallet.name}
+                address={toAddress(initiator.value.accountId, { prefix: chain?.addressPrefix })}
+              />
+              {nonNullable(asset) && (
+                <AssetBalance className="text-footnote text-text-secondary" value={balance} asset={asset} />
+              )}
+            </Box>
+          ) : null
+        }
+        height="md"
+        onSearch={setSearchQuery}
+        onChange={onChange}
+      >
+        {options}
+      </SearchableSelect>
+      <InputHint variant="error" active={initiator.hasError}>
+        {t(initiator.errorMessage)}
+      </InputHint>
+    </Field>
+  );
+});
