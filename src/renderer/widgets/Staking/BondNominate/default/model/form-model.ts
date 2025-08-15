@@ -16,13 +16,14 @@ import {
   transferableAmount,
   validateAddress,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createSignatoriesStore } from '@/shared/transactions';
+import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { bondNominateValidator } from '@/features/operations/OperationsValidation';
 import { validatorsModel } from '@/features/staking';
 import { type WalletData } from '../lib/types';
 
@@ -62,43 +63,13 @@ const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     initiator: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isProxy: $isProxy,
-            proxyBalance: $proxyBalance,
-          }),
-          fn: (_v, _f, { fee, isProxy, proxyBalance }) => {
-            if (isProxy && fee.gt(new BN(proxyBalance))) {
-              return { message: 'transfer.notEnoughBalanceForFeeError' };
-            }
-          },
-        };
-      },
     },
     signatory: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isMultisig: $isMultisig,
-            signatoryBalance: $signatoryBalance,
-            multisigDeposit: $multisigDeposit,
-          }),
-          fn: (signatory, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (nullable(signatory)) {
-              return { message: 'transfer.noSignatoryError' };
-            }
-
-            const isNotEnoughMultisigTokens =
-              isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance));
-            if (isNotEnoughMultisigTokens) {
-              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
-            }
-          },
-        };
+      validator: () => (signatory) => {
+        if (nullable(signatory)) {
+          return { message: 'transfer.noSignatoryError' };
+        }
       },
     },
     amount: {
@@ -192,25 +163,6 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const $signatoryBalance = combine(
-  {
-    signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  ({ signatory, balances, network }) => {
-    if (!signatory || !network) return ZERO_BALANCE;
-    const balance = balanceUtils.getBalance(
-      balances,
-      signatory.accountId,
-      network.chain.chainId,
-      network.asset.assetId,
-    );
-
-    return transferableAmount(balance);
-  },
-);
-
 const $destinationAccounts = combine(
   {
     wallets: walletModel.$wallets,
@@ -278,6 +230,19 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: $chain,
   transaction: $coreTx,
+});
+
+// Transaction validation
+const $asset = $networkStore.map((network) => network?.asset ?? null);
+const { $errors } = createTxValidationStore({
+  validator: bondNominateValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balances,
+    route: $route,
+    transaction: $tx,
+  },
 });
 
 const $canSubmit = combine(
@@ -416,6 +381,7 @@ export const formModel = {
   $networkStore,
   $isMultisig,
   $canSubmit,
+  $errors,
 
   formInitiated,
   formCleared,

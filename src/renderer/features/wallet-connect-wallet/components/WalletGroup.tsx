@@ -3,10 +3,10 @@ import { memo } from 'react';
 
 import { type Wallet, type WalletType } from '@/shared/core';
 import { performSearch } from '@/shared/lib/utils';
+import { WalletIcon } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { WalletIcon } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
 
 import { WalletRow } from './WalletRow';

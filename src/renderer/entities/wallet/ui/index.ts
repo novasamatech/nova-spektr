@@ -1,5 +1,4 @@
 export { AccountAddress, getAddress } from './AccountAddress/AccountAddress';
-export { WalletIcon } from './WalletIcon/WalletIcon';
 export { WalletCardSm } from './Cards/WalletCardSm';
 export { WalletCardMd } from './Cards/WalletCardMd';
 export { WalletCardLg } from './Cards/WalletCardLg';

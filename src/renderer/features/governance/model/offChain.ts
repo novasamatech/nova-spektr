@@ -1,5 +1,6 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 
 import { type GovernanceApiSource } from '@/aggregates/governance-meta-provider';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
@@ -16,7 +17,7 @@ const $offChainForm = createForm({
       rules: [
         {
           name: 'required',
-          errorText: 'governance.offChainDataSource.sourceError',
+          errorText: t('governance.offChainDataSource.sourceError'),
           validator: Boolean,
         },
       ],

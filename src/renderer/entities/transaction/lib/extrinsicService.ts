@@ -43,11 +43,11 @@ export const getExtrinsic: Record<
 
     return api.tx.tokens.transfer(dest, location, value);
   },
-  [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callData, maxWeight }, api) => {
+  [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) => {
     return isOldMultisigPallet(api)
       ? // @ts-expect-error TODO fix
-        api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, callData, false, maxWeight)
-      : api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, callData, maxWeight);
+        api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, false, maxWeight)
+      : api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight);
   },
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (
     { threshold, otherSignatories, maybeTimepoint, callHash, maxWeight },

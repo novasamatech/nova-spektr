@@ -2,7 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit/Modal/Modal';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -48,35 +49,39 @@ export const BondNominate = () => {
   }
 
   return (
-    <BaseModal
-      closeButton
-      contentClass=""
-      panelClass="w-fit"
+    <Modal
       isOpen={isModalOpen}
-      title={
+      size="md"
+      onToggle={(open) => {
+        if (!open) {
+          closeModal();
+        }
+      }}
+    >
+      <Modal.Title close>
         <OperationTitle
           title={t('staking.bond.title', { asset: walletData.chain.assets[0].symbol })}
           chainId={walletData.chain.chainId}
         />
-      }
-      onClose={closeModal}
-    >
-      {bondUtils.isInitStep(step) && <BondForm onGoBack={closeModal} />}
-      {bondUtils.isValidatorsStep(step) && <Validators onGoBack={() => bondNominateModel.stepChanged(Step.INIT)} />}
-      {bondUtils.isConfirmStep(step) && (
-        <Confirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => bondNominateModel.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => bondNominateModel.stepChanged(Step.VALIDATORS)}
-        />
-      )}
-      {bondUtils.isSignStep(step) && <OperationSign onGoBack={() => bondNominateModel.stepChanged(Step.CONFIRM)} />}
-    </BaseModal>
+      </Modal.Title>
+      <Modal.Content>
+        {bondUtils.isInitStep(step) && <BondForm onGoBack={closeModal} />}
+        {bondUtils.isValidatorsStep(step) && <Validators onGoBack={() => bondNominateModel.stepChanged(Step.INIT)} />}
+        {bondUtils.isConfirmStep(step) && (
+          <Confirmation
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={() => bondNominateModel.txSaved()}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={() => bondNominateModel.stepChanged(Step.VALIDATORS)}
+          />
+        )}
+        {bondUtils.isSignStep(step) && <OperationSign onGoBack={() => bondNominateModel.stepChanged(Step.CONFIRM)} />}
+      </Modal.Content>
+    </Modal>
   );
 };

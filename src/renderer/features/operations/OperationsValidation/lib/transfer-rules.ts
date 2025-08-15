@@ -1,9 +1,12 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
+import { t } from 'i18next';
 
-import { type Chain } from '@/shared/core';
-import { formatAmount, validateAddress } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { type Asset, type Chain } from '@/shared/core';
+import { assert, formatAmount, toPrecision, validateAddress } from '@/shared/lib/utils';
+import { createTxValidator } from '@/shared/transactions';
+import { type AnyAccount, balanceService } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import {
   type BalanceMap,
   type NetworkStore,
@@ -12,13 +15,13 @@ import {
   type TransferSignatoryFeeStore,
 } from '../types/types';
 
-import { balanceValidation, descriptionValidation } from './validation';
+import { balanceValidation } from './validation';
 
 export const TransferRules = {
   account: {
     noProxyFee: (source: Store<TransferAccountStore>) => ({
       name: 'noProxyFee',
-      errorText: 'transfer.notEnoughBalanceForFeeError',
+      errorText: t('transfer.notEnoughBalanceForFeeError'),
       source,
       validator: (_a: AnyAccount | null, _f: any, { isProxy, proxyBalance, fee }: TransferAccountStore) => {
         if (!isProxy) return true;
@@ -30,7 +33,7 @@ export const TransferRules = {
   signatory: {
     noSignatorySelected: (source: Store<boolean>) => ({
       name: 'noSignatorySelected',
-      errorText: 'transfer.noSignatoryError',
+      errorText: t('transfer.noSignatoryError'),
       source,
       validator: (signatory: AnyAccount | null, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
@@ -40,7 +43,7 @@ export const TransferRules = {
     }),
     notEnoughTokens: (source: Store<TransferSignatoryFeeStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'transfer.notEnoughBalanceForDepositError',
+      errorText: t('transfer.notEnoughBalanceForDepositError'),
       source,
       validator: (_s: any, _f: any, { fee, isMultisig, multisigDeposit, balance }: TransferSignatoryFeeStore) => {
         if (!isMultisig) return true;
@@ -54,12 +57,12 @@ export const TransferRules = {
   destination: {
     required: {
       name: 'required',
-      errorText: 'transfer.requiredRecipientError',
+      errorText: t('transfer.requiredRecipientError'),
       validator: Boolean,
     },
     incorrectRecipient: (source: Store<Chain | null>) => ({
       name: 'incorrectRecipient',
-      errorText: 'transfer.incorrectRecipientError',
+      errorText: t('transfer.incorrectRecipientError'),
       source,
       // Second argument for validator is form data, but we need chain
       validator: (destination: string, _: any, chain: Chain) => {
@@ -72,13 +75,13 @@ export const TransferRules = {
   amount: {
     required: {
       name: 'required',
-      errorText: 'transfer.requiredAmountError',
+      errorText: t('transfer.requiredAmountError'),
       validator: Boolean,
     },
 
     notZero: {
       name: 'notZero',
-      errorText: 'transfer.notZeroAmountError',
+      errorText: t('transfer.notZeroAmountError'),
       validator: balanceValidation.isNonZeroBalance,
     },
 
@@ -87,7 +90,7 @@ export const TransferRules = {
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'notEnoughBalance',
-      errorText: 'transfer.notEnoughBalanceError',
+      errorText: t('transfer.notEnoughBalanceError'),
       source,
       validator: (
         amount: string,
@@ -108,7 +111,7 @@ export const TransferRules = {
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForFee',
-      errorText: 'transfer.notEnoughBalanceForFeeError',
+      errorText: t('transfer.notEnoughBalanceForFeeError'),
       source,
       validator: (
         amount: string,
@@ -139,7 +142,7 @@ export const TransferRules = {
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForDeliveryFee',
-      errorText: 'transfer.notEnoughBalanceForDeliveryFeeError',
+      errorText: t('transfer.notEnoughBalanceForDeliveryFeeError'),
       source,
       validator: (
         amount: string,
@@ -170,7 +173,7 @@ export const TransferRules = {
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'insufficientBalanceForXcmFee',
-      errorText: 'transfer.notEnoughBalanceForXcmFeeError',
+      errorText: t('transfer.notEnoughBalanceForXcmFeeError'),
       source,
       validator: (
         amount: string,
@@ -198,11 +201,63 @@ export const TransferRules = {
       },
     }),
   },
-  description: {
-    maxLength: {
-      name: 'maxLength',
-      errorText: 'transfer.descriptionLengthError',
-      validator: descriptionValidation.isMaxLength,
-    },
-  },
 };
+
+export const transferValidator = createTxValidator<{
+  amount: string;
+  sourceChain: Chain;
+  destinationChain: Chain;
+  destinationAsset: Asset;
+  xcmFee: string;
+  deliveryFee: string;
+}>({
+  additionalBalanceRules: [
+    // amount
+    ({ route, amount, asset, ed, destinationAsset }, balanceValidationResults) => {
+      const initiator = accountService.findInitiator(route);
+      assert(initiator, 'Initiator not found');
+
+      const desiredAmount = toPrecision(amount, destinationAsset.precision);
+
+      if (asset === destinationAsset) {
+        return accountService.mutateTransitionBalanceValidationResult(
+          balanceValidationResults,
+          asset,
+          initiator,
+          (balance, account) => ({
+            account,
+            required: desiredAmount,
+            balance: balanceService.tryWithdraw(balance, desiredAmount, ed, 'keepAlive'),
+            asset,
+            action: 'sending amount',
+          }),
+        );
+      }
+    },
+    // delivery fee
+    // ({ route, deliveryFee, asset, destinationAsset }, balanceValidationResults) => {
+    //   // it should be xcm transfer
+    //   if (asset === destinationAsset) {
+    //     return;
+    //   }
+    //
+    //   const initiator = accountService.findInitiator(route);
+    //   assert(initiator, 'Initiator not found');
+    //
+    //   const desiredDeliveryFee = toPrecision(deliveryFee, destinationAsset.precision);
+    //
+    //   return accountService.mutateTransitionBalanceValidationResult(
+    //     balanceValidationResults,
+    //     destinationAsset,
+    //     initiator,
+    //     (balance, account) => ({
+    //       account,
+    //       required: desiredDeliveryFee,
+    //       balance: balanceService.tryWithdraw(balance, desiredDeliveryFee, BN_ZERO, 'keepAlive'),
+    //       asset: destinationAsset,
+    //       action: 'delivery fee',
+    //     }),
+    //   );
+    // },
+  ],
+});
