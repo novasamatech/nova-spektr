@@ -5,13 +5,13 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
-import { ChainSelect } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, ScrollArea } from '@/shared/ui-kit';
 import { Fee } from '@/entities/transaction';
 import { formModel } from '../model/form';
 
 import { InitiatorSelect } from './InitiatorSelect';
 import { JsonArgs } from './JsonArgs';
+import { NetworkSelect } from './NetworkSelect';
 import { SignatorySelect } from './SignatorySelect';
 
 export const CallDataForm = () => {
@@ -72,29 +72,6 @@ const CallDataInput = () => {
       <Input height="md" value={callData.value} placeholder={t('callData.placeholder')} onChange={callData.onChange} />
       <InputHint variant="error" active={callData.hasError}>
         {t(callData.errorMessage)}
-      </InputHint>
-    </Field>
-  );
-};
-
-const NetworkSelect = () => {
-  const { t } = useI18n();
-
-  const allChains = useUnit(formModel.$allChains);
-  const {
-    fields: { chain },
-  } = useForm(formModel.form);
-
-  return (
-    <Field text={t('callData.fields.network.label')}>
-      <ChainSelect
-        placeholder={t('callData.fields.network.placeholder')}
-        value={chain.value}
-        options={allChains}
-        onChange={chain.onChange}
-      />
-      <InputHint variant="error" active={chain.hasError}>
-        {t(chain.errorMessage)}
       </InputHint>
     </Field>
   );
