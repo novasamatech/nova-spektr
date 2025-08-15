@@ -19,7 +19,7 @@ describe('balanceService', () => {
     });
 
     it('should withdraw crossing ed', () => {
-      const initial = createBalance({ free: 11, reserved: 0, frozen: 0 });
+      const initial = createBalance({ free: 10, reserved: 0, frozen: 0 });
       const actual = balanceService.tryWithdraw(initial, BN_TEN, 'allowDeath');
 
       expectBalanceToUpdated(actual, { free: 0, reserved: 0, frozen: 0 });
