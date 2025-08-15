@@ -130,7 +130,6 @@ accountSDK(multisigWalletFeature, {
   validateRouteBalances({ account, api, route, balances, asset, ed }) {
     if (accountUtils.isAnyMultisigAccount(account)) {
       const deposit = multisigService.getMultisigDeposit(account.threshold, api);
-      console.log('deposit', deposit.toString(), api.runtimeChain.toString());
       const payer = accountService.findNextAccount(route, account);
 
       if (nullable(payer)) {

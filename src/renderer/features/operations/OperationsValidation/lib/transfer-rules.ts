@@ -219,6 +219,8 @@ export const transferValidator = createTxValidator<{
 
       const desiredAmount = toPrecision(amount, destinationAsset.precision);
 
+      if (desiredAmount.isZero()) return;
+
       if (asset === destinationAsset) {
         return accountService.mutateTransitionBalanceValidationResult(
           balanceValidationResults,

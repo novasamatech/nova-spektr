@@ -8,7 +8,7 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
-import { Address, AssetBalance, ChainSelect, WalletIcon } from '@/shared/ui-entities';
+import { Address, AssetBalance, ChainSelect, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -42,11 +42,14 @@ export const CallDataForm = () => {
     submit();
   };
 
+  const wallets = useUnit(walletModel.$wallets);
+  const errors = useUnit(formModel.$errors);
   const args = useUnit(formModel.$args);
 
   return (
     <>
       <form id="transfer-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
+        <TransactionValidationError errors={errors} wallets={wallets} />
         <NetworkSelect />
         <InitiatorSelect />
         {showSignatories && <SignatorySelect />}
