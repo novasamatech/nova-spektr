@@ -43,6 +43,9 @@ export const balanceService = {
   calculateWalletBalance,
 };
 
+// constants
+const holdAndFreezesFlag = new BN('80000000000000000000000000000000', 16);
+
 // subscription
 
 /**
@@ -170,7 +173,7 @@ async function subscribeNativeAssetsChange(
         reserved: systemAccountInfo.data.reserved.toBn(),
         frozen,
         ed,
-        transferableMode: 'holdAndFreezes',
+        transferableMode: hasHoldAndFreezesFlag(systemAccountInfo.data.flags) ? 'holdAndFreezes' : 'legacy',
       });
     }
 
@@ -472,7 +475,7 @@ async function fetchNativeAssets(
       reserved: systemAccountInfo.data.reserved.toBn(),
       frozen,
       ed,
-      transferableMode: 'holdAndFreezes',
+      transferableMode: hasHoldAndFreezesFlag(systemAccountInfo.data.flags) ? 'holdAndFreezes' : 'legacy',
     });
   }
 
@@ -665,6 +668,10 @@ async function getExistentialDeposit(api: ApiPromise, asset: Asset): Promise<BN>
       return new BN((asset.typeExtras as OrmlExtras).existentialDeposit);
     }
   }
+}
+
+function hasHoldAndFreezesFlag(flags: BN) {
+  return flags.and(holdAndFreezesFlag).eq(holdAndFreezesFlag);
 }
 
 /**
