@@ -24,7 +24,7 @@ const $config = createStore<XcmConfig | null>(null);
 const $networkStore = restore(xcmStarted, null);
 const $xcmChainId = restore(xcmChainSelected, null);
 const $xcmFee = restore(xcmFeeChanged, '0');
-const $deliveryFee = createStore<string | null>(null);
+const $deliveryFee = createStore<string>('0');
 const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, true);
 const $xcmParaId = createStore<number | null>(null);
 
@@ -325,13 +325,13 @@ sample({
 
 sample({
   clock: getDeliveryFeeFx.doneData,
-  fn: (deliveryFee) => deliveryFee?.toString() || null,
+  fn: (deliveryFee) => deliveryFee?.toString() || '0',
   target: $deliveryFee,
 });
 
 sample({
   clock: [xcmChainSelected, getDeliveryFeeFx.fail],
-  fn: () => null,
+  fn: () => '0',
   target: $deliveryFee,
 });
 

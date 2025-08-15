@@ -18,34 +18,3 @@ export type AnyDecodedTransaction<Args extends NonNullable<unknown> = NonNullabl
 export type AnyTransaction = EncodedTransaction | AnyDecodedTransaction;
 
 export type Extrinsic = SubmittableExtrinsic<'promise'>;
-
-export type Section =
-  | 'Balances'
-  | 'IdentityJudgement'
-  | 'Auctions'
-  | 'Crowdloan'
-  | 'Registrar'
-  | 'Proxy'
-  | 'Staking'
-  | 'Session'
-  | 'FastUnstake'
-  | 'VoterList'
-  | 'NominationPools'
-  | 'Treasury'
-  | 'Bounties'
-  | 'ChildBounties'
-  | 'ConvictionVoting'
-  | 'Referenda'
-  | 'Whitelist'
-  | 'Utility'
-  | 'System'
-  | 'Scheduler'
-  | 'Babe'
-  | 'Timestamp'
-  | 'Indices'
-  | 'Grandpa'
-  | 'Claims'
-  | 'Vesting'
-  | 'Utility'
-  | 'Multisig'
-  | 'Slots';

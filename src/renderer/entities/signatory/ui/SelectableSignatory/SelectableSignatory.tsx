@@ -4,9 +4,9 @@ import { type Asset, type ChainId } from '@/shared/core';
 import { cnTw, toAccountId, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, Icon } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { useBalance } from '@/entities/balance';
-import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 // TODO: Fix layers
 
 type Props<T> = {

@@ -1,3 +1,5 @@
+import { t } from 'i18next';
+
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
@@ -15,13 +17,13 @@ export const stakingOperationDetailFeature = createFeature({
 
 const getOperationTitle = (transactionType: TransactionType): string | undefined => {
   const Title: { [key in TransactionType]?: string } = {
-    [TransactionType.BOND]: 'operations.titles.startStaking',
-    [TransactionType.NOMINATE]: 'operations.titles.nominate',
-    [TransactionType.STAKE_MORE]: 'operations.titles.stakeMore',
-    [TransactionType.REDEEM]: 'operations.titles.redeem',
-    [TransactionType.RESTAKE]: 'operations.titles.restake',
-    [TransactionType.DESTINATION]: 'operations.titles.destination',
-    [TransactionType.UNSTAKE]: 'operations.titles.unstake',
+    [TransactionType.BOND]: t('operations.titles.startStaking'),
+    [TransactionType.NOMINATE]: t('operations.titles.nominate'),
+    [TransactionType.STAKE_MORE]: t('operations.titles.stakeMore'),
+    [TransactionType.REDEEM]: t('operations.titles.redeem'),
+    [TransactionType.RESTAKE]: t('operations.titles.restake'),
+    [TransactionType.DESTINATION]: t('operations.titles.destination'),
+    [TransactionType.UNSTAKE]: t('operations.titles.unstake'),
   };
 
   return Title[transactionType];

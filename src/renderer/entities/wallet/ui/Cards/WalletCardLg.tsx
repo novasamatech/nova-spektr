@@ -2,7 +2,7 @@ import { type PropsWithChildren, type ReactNode } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
-import { WalletIcon } from '../WalletIcon/WalletIcon';
+import { WalletIcon } from '@/shared/ui-entities';
 
 type Props = PropsWithChildren<{
   wallet: Wallet;

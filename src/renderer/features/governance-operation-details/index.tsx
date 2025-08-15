@@ -1,3 +1,5 @@
+import { t } from 'i18next';
+
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
@@ -15,13 +17,13 @@ export const governanceOperationDetailFeature = createFeature({
 
 const getOperationTitle = (transactionType: TransactionType): string | undefined => {
   const Title: { [key in TransactionType]?: string } = {
-    [TransactionType.UNLOCK]: 'operations.titles.unlock',
-    [TransactionType.VOTE]: 'operations.titles.vote',
-    [TransactionType.REVOTE]: 'operations.titles.revote',
-    [TransactionType.REMOVE_VOTE]: 'operations.titles.removeVote',
-    [TransactionType.DELEGATE]: 'operations.titles.delegate',
-    [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
-    [TransactionType.EDIT_DELEGATION]: 'operations.titles.editDelegation',
+    [TransactionType.UNLOCK]: t('operations.titles.unlock'),
+    [TransactionType.VOTE]: t('operations.titles.vote'),
+    [TransactionType.REVOTE]: t('operations.titles.revote'),
+    [TransactionType.REMOVE_VOTE]: t('operations.titles.removeVote'),
+    [TransactionType.DELEGATE]: t('operations.titles.delegate'),
+    [TransactionType.UNDELEGATE]: t('operations.titles.undelegate'),
+    [TransactionType.EDIT_DELEGATION]: t('operations.titles.editDelegation'),
   };
 
   return Title[transactionType];

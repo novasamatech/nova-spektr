@@ -203,16 +203,17 @@ export const lockedAmount = (balance: Balance): string => {
   return lockedAmountBN(balance).toString();
 };
 
-export const transferableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
+export const transferableAmountBN = (balance?: AssetBalance, normalize = true): BN => {
   if (nullable(balance)) return BN_ZERO;
 
   const { free = BN_ZERO, frozen = BN_ZERO, reserved = BN_ZERO } = balance;
   const diff = BN.max(BN_ZERO, frozen.sub(reserved));
+  const transferable = free.sub(diff);
 
-  return BN.max(BN_ZERO, free.sub(diff));
+  return normalize ? BN.max(BN_ZERO, transferable) : transferable;
 };
 
-export const transferableAmount = <T extends AssetBalance>(balance?: T): string => {
+export const transferableAmount = (balance?: AssetBalance): string => {
   return transferableAmountBN(balance).toString();
 };
 
@@ -221,7 +222,7 @@ export const transferableAmount = <T extends AssetBalance>(balance?: T): string 
  * could be usefull in operations where reserved part is already taken into
  * account.
  */
-export const withdrawableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
+export const withdrawableAmountBN = (balance?: AssetBalance): BN => {
   if (nullable(balance)) return BN_ZERO;
 
   const { free = BN_ZERO, frozen = BN_ZERO } = balance;
@@ -229,7 +230,7 @@ export const withdrawableAmountBN = <T extends AssetBalance>(balance?: T): BN =>
   return BN.max(BN_ZERO, free.sub(frozen));
 };
 
-export const withdrawableAmount = <T extends AssetBalance>(balance?: T): string => {
+export const withdrawableAmount = (balance?: AssetBalance): string => {
   return withdrawableAmountBN(balance).toString();
 };
 

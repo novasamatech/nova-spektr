@@ -1,8 +1,9 @@
-import { WalletType } from '@/shared/core';
-import { Icon } from '@/shared/ui';
-import { type IconNames } from '@/shared/ui/Icon/data';
+import { memo } from 'react';
 
-const WalletIconNames: Record<WalletType, IconNames> = {
+import { WalletType } from '@/shared/core';
+import { Icon, type IconNames } from '@/shared/ui';
+
+const iconNames: Record<WalletType, IconNames> = {
   [WalletType.POLKADOT_VAULT]: 'vaultBackground',
   [WalletType.POLKADOT_EXTENSION]: 'polkadotExtensionBackground',
   [WalletType.TALISMAN_EXTENSION]: 'talismanExtensionBackground',
@@ -18,10 +19,9 @@ const WalletIconNames: Record<WalletType, IconNames> = {
 
 type Props = {
   type: WalletType;
-  className?: string;
   size?: number;
 };
 
-export const WalletIcon = ({ type, size = 20, className }: Props) => {
-  return <Icon name={WalletIconNames[type]} size={size} className={className} />;
-};
+export const WalletIcon = memo(({ type, size = 20 }: Props) => {
+  return <Icon name={iconNames[type]} size={size} />;
+});

@@ -1,4 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
+import { t } from 'i18next';
 import { useEffect, useState } from 'react';
 
 import { type HexString } from '@/shared/core';
@@ -6,20 +7,20 @@ import { useI18n } from '@/shared/i18n';
 import { ValidationErrors } from '@/shared/lib/utils';
 import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
+import { WalletIcon } from '@/shared/ui-entities';
 import { transactionService } from '@/entities/transaction';
-import { WalletIcon } from '@/entities/wallet';
 import { type SigningProps } from '../lib/types';
 import { operationSignModel } from '../model/operation-sign-model';
 import { type SignResponse, polkadotExtensionSign } from '../model/polkadotExtensionSign';
 
 const ValidationErrorLabels: Record<ValidationErrors, string> = {
-  [ValidationErrors.EXPIRED]: 'transfer.expired',
-  [ValidationErrors.INVALID_ADDRESS]: 'transfer.invalidAddress',
-  [ValidationErrors.INSUFFICIENT_BALANCE]: 'transfer.notEnoughBalanceError',
-  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: 'transfer.notEnoughBalanceForFeeError',
-  [ValidationErrors.INVALID_SIGNATURE]: 'transfer.invalidSignature',
-  [ValidationErrors.ADDRESS_REQUIRED]: 'transfer.noSignatoryError',
-  [ValidationErrors.AMOUNT_REQUIRED]: 'transfer.noAmount',
+  [ValidationErrors.EXPIRED]: t('transfer.expired'),
+  [ValidationErrors.INVALID_ADDRESS]: t('transfer.invalidAddress'),
+  [ValidationErrors.INSUFFICIENT_BALANCE]: t('transfer.notEnoughBalanceError'),
+  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: t('transfer.notEnoughBalanceForFeeError'),
+  [ValidationErrors.INVALID_SIGNATURE]: t('transfer.invalidSignature'),
+  [ValidationErrors.ADDRESS_REQUIRED]: t('transfer.noSignatoryError'),
+  [ValidationErrors.AMOUNT_REQUIRED]: t('transfer.noAmount'),
 };
 
 export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
@@ -118,7 +119,7 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
             <FootnoteText className="whitespace-nowrap text-text-secondary">{t('signing.signer')}</FootnoteText>
 
             <div className="flex w-full items-center gap-x-2 px-2">
-              <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />
+              <WalletIcon type={signerWallet.type} size={16} />
               <FootnoteText className="w-max text-text-secondary">{signerWallet.name}</FootnoteText>
             </div>
           </div>

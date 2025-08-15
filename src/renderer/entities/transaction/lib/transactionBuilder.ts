@@ -555,7 +555,7 @@ function buildApproveMultisigTx({
         height: tx.blockCreated,
         index: tx.indexCreated,
       },
-      callData: hasCallData ? tx.callData : undefined,
+      call: tx.callData,
       callHash: tx.callHash,
     },
   };

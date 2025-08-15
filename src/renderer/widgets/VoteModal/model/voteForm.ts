@@ -11,7 +11,12 @@ import {
 } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createInitiatorsStore,
+  createSignatoriesStore,
+  createTxValidationStore,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService, voteTransactionService } from '@/entities/governance';
@@ -24,6 +29,7 @@ import { voteValidateModel } from '@/features/governance/model/vote/voteValidate
 import { votingAssetModel } from '@/features/governance/model/votingAsset';
 import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
+import { voteValidator } from '@/features/operations/OperationsValidation';
 
 type FormFields = {
   initiator: AnyAccount | null;
@@ -192,6 +198,18 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
+// Transaction validation
+const $asset = networkSelectorModel.$governanceChain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
+const { $errors } = createTxValidationStore({
+  validator: voteValidator,
+  params: {
+    api: networkSelectorModel.$governanceChainApi,
+    asset: $asset,
+    balances: balanceModel.$balances,
+    route: $route,
+    transaction: $tx,
+  },
+});
 // balances
 
 sample({
@@ -328,4 +346,5 @@ export const voteForm = {
 
   setReferendum,
   formSubmitted,
+  $errors,
 };

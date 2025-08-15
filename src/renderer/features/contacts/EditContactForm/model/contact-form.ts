@@ -1,5 +1,6 @@
 import { attach, combine, createApi, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { not } from 'patronum';
 
 import { type Contact } from '@/shared/core';
@@ -25,10 +26,10 @@ const $contactForm = createForm({
     name: {
       init: '',
       rules: [
-        { name: 'required', errorText: 'addressBook.editContact.nameRequiredError', validator: Boolean },
+        { name: 'required', errorText: t('addressBook.editContact.nameRequiredError'), validator: Boolean },
         {
           name: 'exist',
-          errorText: 'addressBook.editContact.nameExistsError',
+          errorText: t('addressBook.editContact.nameExistsError'),
           source: combine({
             contactToEdit: $contactToEdit,
             contacts: contactModel.$contacts,
@@ -40,15 +41,15 @@ const $contactForm = createForm({
     address: {
       init: '',
       rules: [
-        { name: 'required', errorText: 'addressBook.editContact.accountIdRequiredError', validator: Boolean },
+        { name: 'required', errorText: t('addressBook.editContact.accountIdRequiredError'), validator: Boolean },
         {
           name: 'invalid',
-          errorText: 'addressBook.editContact.accountIdIncorrectError',
+          errorText: t('addressBook.editContact.accountIdIncorrectError'),
           validator: (address) => validateAddress(address),
         },
         {
           name: 'exist',
-          errorText: 'addressBook.editContact.accountIdExistsError',
+          errorText: t('addressBook.editContact.accountIdExistsError'),
           source: combine({
             contactToEdit: $contactToEdit,
             contacts: contactModel.$contacts,

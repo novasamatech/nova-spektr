@@ -4,12 +4,12 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, copyToClipboard, getNativeAsset, nonNullable, truncate } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
+import { Account, AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
-import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { operationsContextModel } from '../model/context';
 
 type Props = {
