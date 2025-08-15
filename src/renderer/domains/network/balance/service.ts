@@ -36,12 +36,17 @@ function tryFreeze(balance: AssetBalance, amount: BN): BalanceUpdateResult {
 }
 
 function tryReserve(balance: AssetBalance, amount: BN, ed: BN): BalanceUpdateResult {
-  const reservable = (balance.free ?? BN_ZERO).sub(ed);
+  const free = balance.free ?? BN_ZERO;
+  const reserved = balance.reserved ?? BN_ZERO;
+
+  // reducible_balance (https://github.com/paritytech/polkadot-sdk/blob/b9fbf243c57939ecadc89b82ed42249703203874/substrate/frame/balances/src/impl_fungible.rs#L47)
+  // is called with Force and Protect args (https://github.com/paritytech/polkadot-sdk/blob/b9fbf243c57939ecadc89b82ed42249703203874/substrate/frame/support/src/traits/tokens/fungibles/hold.rs#L101)
+  const reservable = free.sub(ed);
   const afterReservation = reservable.sub(amount);
 
   const updated = copyBalance(balance, {
-    free: (balance.free ?? BN_ZERO).sub(amount),
-    reserved: (balance.reserved ?? BN_ZERO).add(amount),
+    free: free.sub(amount),
+    reserved: reserved.add(amount),
   });
 
   if (afterReservation.isNeg()) {

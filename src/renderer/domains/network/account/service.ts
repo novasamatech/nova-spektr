@@ -304,7 +304,9 @@ function mutateTransitionBalanceValidationResult(
   account: AnyAccount,
   fn: (balance: AssetBalance, account: AnyAccount) => TransactionValidationBalanceError,
 ) {
-  const index = results.findLastIndex(r => r.account.accountId === account.accountId && r.asset === asset);
+  const index = results.findLastIndex(
+    r => r.account.accountId === account.accountId && r.asset.assetId === asset.assetId,
+  );
   if (index === -1) {
     results.push(
       fn(
@@ -338,6 +340,7 @@ type BalanceValidationParams = {
 async function validateRouteBalances({ api, route, balances, asset, ed }: BalanceValidationParams) {
   const chainId = api.genesisHash.toHex();
   const balancesMap = new Map<AnyAccount, AssetBalance>();
+  const unhandledAccounts = new Set<AnyAccount>(route);
 
   for (const account of route) {
     const balance = balanceUtils.getBalance(balances, account.accountId, chainId, asset.assetId);
@@ -355,21 +358,24 @@ async function validateRouteBalances({ api, route, balances, asset, ed }: Balanc
     if (result) {
       results.push(result);
       balancesMap.set(result.account, result.balance.balance);
-    } else {
-      const balance = balancesMap.get(account);
-      assert(balance, 'Balance not found');
-
-      results.push({
-        account,
-        asset,
-        action: '',
-        required: BN_ZERO,
-        balance: {
-          success: true,
-          balance,
-        },
-      });
+      unhandledAccounts.delete(result.account);
     }
+  }
+
+  for (const account of unhandledAccounts) {
+    const balance = balancesMap.get(account);
+    assert(balance, `Balance for ${account.accountId} not found`);
+
+    results.push({
+      account,
+      asset,
+      action: '',
+      required: BN_ZERO,
+      balance: {
+        success: true,
+        balance,
+      },
+    });
   }
 
   return results;

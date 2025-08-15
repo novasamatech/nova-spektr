@@ -149,7 +149,7 @@ accountSDK(multisigWalletFeature, {
         account: payer,
         action: 'multisig deposit',
         required: deposit,
-        balance: balanceService.tryWithdraw(balance, deposit, ed, 'keepAlive'),
+        balance: balanceService.tryReserve(balance, deposit, ed),
         asset,
       };
     }
