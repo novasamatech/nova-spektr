@@ -225,7 +225,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },
@@ -237,7 +237,7 @@ const $availableBalance = combine(
     wallet: walletSelect.$selectedWallet,
     initiator: form.fields.initiator.$value,
     staking: $staking,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, initiator, staking, balances }) => {
     if (nullable(wallet) || nullable(network) || nullable(staking) || nullable(initiator)) return null;
@@ -363,7 +363,7 @@ sample({
 sample({
   source: {
     isProxy: $isProxy,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
     proxyAccount: $realAccount,
   },

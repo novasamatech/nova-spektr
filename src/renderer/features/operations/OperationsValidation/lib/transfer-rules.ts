@@ -8,11 +8,11 @@ import { createTxValidator } from '@/shared/transactions';
 import { type AnyAccount, balanceService } from '@/domains/network';
 import { accountService } from '@/domains/network';
 import {
-  type BalanceMap,
   type NetworkStore,
   type TransferAccountStore,
   type TransferAmountFeeStore,
   type TransferSignatoryFeeStore,
+  type ValidatorBalanceMap,
 } from '../types/types';
 
 import { balanceValidation } from './validation';
@@ -86,7 +86,7 @@ export const TransferRules = {
     },
 
     notEnoughBalance: (
-      source: Store<{ network: NetworkStore | null; balance: BalanceMap | null }>,
+      source: Store<{ network: NetworkStore | null; balance: ValidatorBalanceMap | null }>,
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'notEnoughBalance',
@@ -95,7 +95,7 @@ export const TransferRules = {
       validator: (
         amount: string,
         _: any,
-        { network, balance }: { network: NetworkStore | null; balance?: BalanceMap },
+        { network, balance }: { network: NetworkStore | null; balance?: ValidatorBalanceMap },
       ) => {
         if (!network) return false;
 

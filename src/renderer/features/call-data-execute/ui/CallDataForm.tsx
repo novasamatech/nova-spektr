@@ -126,7 +126,7 @@ const InitiatorSelect = memo(() => {
 
   const wallets = useUnit(walletModel.$wallets);
   const allAccounts = useUnit(walletModel.$availableAccounts);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const chain = useUnit(formModel.form.fields.chain.$value);
   const {
     fields: { initiator },
@@ -280,7 +280,7 @@ const SignatorySelect = memo(() => {
 
   const wallets = useUnit(walletModel.$wallets);
   const signatories = useUnit(formModel.$signatories);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const chain = useUnit(formModel.form.fields.chain.$value);
   const {
     fields: { signatory },

@@ -79,7 +79,7 @@ const $availableAccounts = combine(
 const $accountsBalances = combine(
   {
     availableAccounts: $availableAccounts,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: networkSelectorModel.$network,
   },
   ({ balances, network, availableAccounts }) => {

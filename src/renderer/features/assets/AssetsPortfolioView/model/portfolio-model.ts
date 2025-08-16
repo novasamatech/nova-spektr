@@ -149,7 +149,7 @@ const $activeTokensWithBalance = combine(
   {
     activeTokens: $activeTokens,
     filteredAccounts: $filteredAccounts,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ activeTokens, balances, filteredAccounts }) => {
     const tokens: AssetByChains[] = [];

@@ -74,7 +74,7 @@ const Signatories = () => {
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
 
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
 

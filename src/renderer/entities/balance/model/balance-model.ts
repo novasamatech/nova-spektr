@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { balanceMapper, storageService } from '@/shared/api/storage';
-import { type Balance, type BalanceDraft } from '@/shared/core';
+import { type Balance, type BalanceDraft, type BalanceMap } from '@/shared/core';
 import { createBuffer } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '../lib/balance-utils';
@@ -11,6 +11,12 @@ const balancesUpdated = createEvent<(Balance | BalanceDraft)[]>();
 const balancesRemoved = createEvent<AccountId[]>();
 
 const $balances = createStore<Balance[]>([]);
+const $balanceMap = $balances.map((balances) =>
+  balances.reduce<BalanceMap>((acc, balance) => {
+    acc[balance.id] = balance;
+    return acc;
+  }, {}),
+);
 
 const bufferedUpdate = createBuffer({
   source: sample({ clock: [balancesSet, balancesUpdated] }),
@@ -22,8 +28,8 @@ const insertBalancesFx = createEffect(async (balances: Balance[]) => {
   return balances;
 });
 
-const removeBalancesFx = createEffect(async (ids: string[]) => {
-  await storageService.balances.deleteAll(ids);
+const removeBalancesFx = createEffect(async (balances: Balance[]) => {
+  await storageService.balances.deleteAll(balances.map((b) => b.id));
 });
 
 const populateFx = createEffect(async (): Promise<Balance[]> => {
@@ -46,9 +52,7 @@ sample({
 sample({
   clock: balancesRemoved,
   source: $balances,
-  fn: (balances, accounts) => {
-    return balances.filter((b) => accounts.includes(b.accountId)).map((b) => b.id);
-  },
+  fn: (balances, accounts) => balances.filter((b) => accounts.includes(b.accountId)),
   target: removeBalancesFx,
 });
 
@@ -59,6 +63,7 @@ sample({
 
 export const balanceModel = {
   $balances,
+  $balanceMap,
 
   populate: populateFx,
 

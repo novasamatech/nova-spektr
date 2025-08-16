@@ -1,4 +1,5 @@
 import { type BN } from '@polkadot/util';
+import { type z } from 'zod';
 
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
@@ -16,8 +17,10 @@ export type TransferableMode =
    */
   | 'holdAndFreezes';
 
+export type BalanceId = string & z.$brand<'BalanceId'>;
+
 export type Balance = AssetBalance & {
-  id: string;
+  id: BalanceId;
   chainId: ChainId;
   accountId: AccountId;
   assetId: Asset['assetId'];
@@ -49,3 +52,5 @@ export const enum LockTypes {
   STAKING = '0x7374616b696e6720',
   CONVICTION_VOTE = '0x7079636f6e766f74',
 }
+
+export type BalanceMap = Record<BalanceId, Balance>;

@@ -25,7 +25,7 @@ type Props = {
 };
 export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsView }: Props) => {
   const activeWallet = useUnit(walletSelect.$selectedWallet);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);

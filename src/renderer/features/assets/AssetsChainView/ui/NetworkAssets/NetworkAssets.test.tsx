@@ -7,6 +7,7 @@ import { vi } from 'vitest';
 import {
   AccountType,
   type Balance,
+  type BalanceId,
   CryptoType,
   LockTypes,
   SigningType,
@@ -44,7 +45,7 @@ const testWallet = {
 
 const testBalances: Balance[] = [
   {
-    id: '0',
+    id: '0' as BalanceId,
     assetId: testAsset.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
@@ -56,7 +57,7 @@ const testBalances: Balance[] = [
     transferableMode: 'holdAndFreezes',
   },
   {
-    id: '1',
+    id: '1' as BalanceId,
     assetId: testAsset2.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],

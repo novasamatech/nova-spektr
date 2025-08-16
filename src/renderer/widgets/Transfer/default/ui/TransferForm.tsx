@@ -92,7 +92,7 @@ const InitiatorSelector = () => {
 
   const initiators = useUnit(formModel.$initiators);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   if (initiators.length < 2) {
     return null;
@@ -134,7 +134,7 @@ const SignatorySelector = () => {
   const initiator = useUnit(formModel.form.fields.initiator.$value);
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
 

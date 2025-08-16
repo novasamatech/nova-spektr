@@ -143,7 +143,7 @@ const $accounts = combine(
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
     shards: $shards,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, shards, balances }) => {
     if (!wallet || !network) return [];
@@ -235,7 +235,7 @@ sample({
 sample({
   clock: $nominateForm.fields.signatory.onChange,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   fn: ({ balances, network }, signatory) => {
@@ -257,7 +257,7 @@ sample({
   source: {
     isProxy: $isProxy,
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   filter: ({ isProxy, network, proxyAccount }) => {

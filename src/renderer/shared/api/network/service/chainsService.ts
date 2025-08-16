@@ -3,7 +3,7 @@ import { default as BigNumber } from 'bignumber.js';
 import { concat, keyBy, orderBy, sortBy } from 'lodash';
 
 import { type PriceObject } from '@/shared/api/price-provider';
-import { type AssetBalance, type Balance, type Chain, type ChainId } from '@/shared/core';
+import { type AssetBalance, type Balance, type BalanceMap, type Chain, type ChainId } from '@/shared/core';
 import { CHAINS_CONFIG_URL, ZERO_BALANCE, getRelaychainAsset, nonNullable, totalAmount } from '@/shared/lib/utils';
 import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
 
@@ -67,7 +67,7 @@ const compareFiatBalances = (a: ChainWithFiatBalance, b: ChainWithFiatBalance) =
 
 function sortChainsByBalance(
   chains: Chain[],
-  balances: Balance[],
+  balances: BalanceMap,
   assetPrices: PriceObject | null,
   currency?: string,
 ): Chain[] {
@@ -78,8 +78,9 @@ function sortChainsByBalance(
   const numberchains = { withBalance: [], noBalance: [] };
   const testnets = { withBalance: [], noBalance: [] };
 
+  // TODO weird code, need some refactoring
   const balancesMap: Record<string, Balance> = {};
-  for (const balance of balances) {
+  for (const balance of Object.values(balances)) {
     const key = `${balance.chainId}_${balance.assetId}`;
     balancesMap[key] = sumBalances(balance, balancesMap[key]);
   }

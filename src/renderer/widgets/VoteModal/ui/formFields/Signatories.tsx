@@ -1,7 +1,7 @@
 import { BN_ZERO } from '@polkadot/util';
 import { memo, useMemo } from 'react';
 
-import { type Asset, type Balance, type Chain, type Wallet } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { SignatorySelect } from '@/shared/ui-entities';
 import { type AnyAccount } from '@/domains/network';
@@ -14,7 +14,7 @@ type Props = {
   initiator: AnyAccount | null;
   allAccounts: AnyAccount[];
   allWallets: Wallet[];
-  balances: Balance[];
+  balances: BalanceMap;
   hasError: boolean;
   errorText: string;
   asset: Asset;

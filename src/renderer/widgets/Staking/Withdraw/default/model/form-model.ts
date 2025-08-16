@@ -173,7 +173,7 @@ sample({
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ signatory, balances, network }) => {
@@ -264,7 +264,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },
@@ -366,7 +366,7 @@ sample({
 const $proxyBalance = combine(
   {
     isProxy: $isProxy,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
     proxyAccount: $proxyAccount,
   },

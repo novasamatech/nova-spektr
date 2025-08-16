@@ -193,7 +193,7 @@ const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
     chain: form.fields.chain.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ signatory, chain, balances }) => {
     if (nullable(signatory) || nullable(chain)) return null;
@@ -213,7 +213,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $wrappedTx,
   },
