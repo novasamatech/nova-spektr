@@ -112,7 +112,7 @@ sample({
 const formSubmitted = sample({
   clock: formModel.output.formSubmitted,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     fee: formModel.$fee,
     walletData: formModel.$walletData,
     tracks: formModel.$tracks,

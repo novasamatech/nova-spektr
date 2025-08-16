@@ -146,7 +146,7 @@ const $initiators = createInitiatorsStore({
 const $initiatorBalance = combine(
   {
     initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     chain: $chain,
     asset: $asset,
   },
@@ -184,7 +184,7 @@ const $signatories = createSignatoriesStore({
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     chain: $chain,
   },
   ({ signatory, balances, chain }) => {
@@ -272,7 +272,7 @@ const { $errors } = createTxValidationStore({
     destinationAsset: $asset,
     asset: $nativeAsset,
     amount: form.fields.amount.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
     xcmFee: xcmTransferModel.$xcmFee,

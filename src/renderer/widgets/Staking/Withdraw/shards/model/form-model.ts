@@ -265,7 +265,7 @@ const $accounts = combine(
     shards: $shards,
     era: $era,
     staking: $staking,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, era, shards, staking, balances }) => {
     if (!wallet || !network || !staking) return [];
@@ -480,7 +480,7 @@ sample({
 sample({
   clock: $withdrawForm.fields.signatory.onChange,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   fn: ({ balances, network }, signatory) => {
@@ -530,7 +530,7 @@ sample({
 sample({
   source: {
     isProxy: $isProxy,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
     proxyAccounts: $realAccounts,
   },

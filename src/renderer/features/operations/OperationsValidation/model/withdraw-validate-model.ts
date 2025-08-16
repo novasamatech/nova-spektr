@@ -6,7 +6,7 @@ import { combineEvents } from 'patronum';
 import {
   type Address,
   type Asset,
-  type Balance,
+  type BalanceMap,
   type Chain,
   type ChainId,
   type ID,
@@ -48,7 +48,7 @@ type ValidateParams = {
   chain: Chain;
   asset: Asset;
   transaction: Transaction;
-  balances: Balance[];
+  balances: BalanceMap;
   staking: StakingMap | null;
   era: number | null;
   signerOptions?: Partial<SignerOptions>;
@@ -100,7 +100,7 @@ sample({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     staking: $staking,
   },
   filter: ({ apis, staking }, { validation: { transaction }, era }) => {
@@ -130,7 +130,7 @@ const validateFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   async effect({ chains, balances, apis }, { id, transaction }: ValidationStartedParams) {
     const chain = chains[transaction.chainId];

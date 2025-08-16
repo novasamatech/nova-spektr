@@ -135,7 +135,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: networkSelectorModel.$governanceChainApi,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },

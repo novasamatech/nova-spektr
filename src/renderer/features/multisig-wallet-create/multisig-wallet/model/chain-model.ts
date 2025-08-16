@@ -88,7 +88,7 @@ sample({
   clock: [$chainsWithFee, flowModel.$signer],
   source: {
     signer: flowModel.$signer,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     accounts: accounts.$list,
     chains: $chainsWithFee,
   },

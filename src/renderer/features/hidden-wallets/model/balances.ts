@@ -23,7 +23,7 @@ export const $balances = combine(
   {
     wallets: hiddenWalletsModel.$hiddenWallets,
     chains: networkModel.$chains,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     currency: currencyModel.$activeCurrency,
     prices: priceProviderModel.$assetsPrices,
   },

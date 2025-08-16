@@ -1,7 +1,15 @@
 import { BN_ZERO } from '@polkadot/util';
 import { keyBy } from 'lodash';
 
-import { type Asset, type Balance, type BalanceDraft, type ChainId, type OmitFirstArg } from '@/shared/core';
+import {
+  type Asset,
+  type Balance,
+  type BalanceDraft,
+  type BalanceId,
+  type BalanceMap,
+  type ChainId,
+  type OmitFirstArg,
+} from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
@@ -11,13 +19,15 @@ export const balanceUtils = {
   getAssetBalances,
   getBalance,
   getBalanceWrapped,
-  getNetworkBalances,
-  getAccountsBalances,
   getMergeBalances,
 };
 
+function constructBalanceId(accountId: AccountId, chainId: ChainId, assetId: Asset['assetId']): BalanceId {
+  return `${accountId} ${chainId} ${assetId.toString()}` as BalanceId;
+}
+
 function getBalanceId(balance: Balance | BalanceDraft) {
-  return `${balance.accountId} ${balance.chainId} ${balance.assetId.toString()}`;
+  return constructBalanceId(balance.accountId, balance.chainId, balance.assetId);
 }
 
 function insertBalanceId(balance: Omit<Balance, 'id'>): Balance {
@@ -28,37 +38,36 @@ function insertBalanceId(balance: Omit<Balance, 'id'>): Balance {
 }
 
 function getAssetBalances(
-  balances: Balance[],
+  balances: BalanceMap,
   accountIds: AccountId[],
   chainId: ChainId,
   assetId: Asset['assetId'],
 ): Balance[] {
-  return balances.filter((balance) => {
-    return balance.chainId === chainId && balance.assetId === assetId && accountIds.includes(balance.accountId);
-  });
+  const result: Balance[] = [];
+  for (const accountId of accountIds) {
+    const key = constructBalanceId(accountId, chainId, assetId);
+    const balance = balances[key];
+    if (balance) {
+      result.push(balance);
+    }
+  }
+
+  return result;
 }
 
 function getBalance(
-  balances: Balance[],
+  balances: BalanceMap,
   accountId: AccountId,
   chainId: ChainId,
   assetId: Asset['assetId'],
-): Balance | undefined {
-  return getAssetBalances(balances, [accountId], chainId, assetId).at(0);
+): Balance | null {
+  const key = constructBalanceId(accountId, chainId, assetId);
+
+  return balances[key] ?? null;
 }
 
-function getBalanceWrapped(balances: Balance[]) {
+function getBalanceWrapped(balances: BalanceMap) {
   return (...args: Parameters<OmitFirstArg<typeof getBalance>>) => getBalance(balances, ...args);
-}
-
-function getNetworkBalances(balances: Balance[], accountIds: AccountId[], chainId: ChainId): Balance[] {
-  return balances.filter((balance) => balance.chainId === chainId && accountIds.includes(balance.accountId));
-}
-
-function getAccountsBalances(balances: Balance[], accountIds: AccountId[]): Balance[] {
-  const accountsMap = new Set(accountIds);
-
-  return balances.filter((balance) => accountsMap.has(balance.accountId));
 }
 
 function isCompleteBalance(balance: Balance | BalanceDraft): balance is Balance {
