@@ -1,5 +1,5 @@
 import { BN_ZERO } from '@polkadot/util';
-import { keyBy } from 'lodash';
+import { uniq } from 'lodash';
 
 import {
   type Asset,
@@ -8,9 +8,8 @@ import {
   type BalanceId,
   type BalanceMap,
   type ChainId,
-  type OmitFirstArg,
 } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { isEqual, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const balanceUtils = {
@@ -18,8 +17,7 @@ export const balanceUtils = {
   insertBalanceId,
   getAssetBalances,
   getBalance,
-  getBalanceWrapped,
-  getMergeBalances,
+  mergeBalanceMapWithNewBalances,
 };
 
 function constructBalanceId(accountId: AccountId, chainId: ChainId, assetId: Asset['assetId']): BalanceId {
@@ -44,7 +42,7 @@ function getAssetBalances(
   assetId: Asset['assetId'],
 ): Balance[] {
   const result: Balance[] = [];
-  for (const accountId of accountIds) {
+  for (const accountId of uniq(accountIds)) {
     const key = constructBalanceId(accountId, chainId, assetId);
     const balance = balances[key];
     if (balance) {
@@ -66,26 +64,9 @@ function getBalance(
   return balances[key] ?? null;
 }
 
-function getBalanceWrapped(balances: BalanceMap) {
-  return (...args: Parameters<OmitFirstArg<typeof getBalance>>) => getBalance(balances, ...args);
-}
-
-function isCompleteBalance(balance: Balance | BalanceDraft): balance is Balance {
-  return (
-    nonNullable(balance.free) &&
-    nonNullable(balance.frozen) &&
-    nonNullable(balance.reserved) &&
-    nonNullable(balance.locked) &&
-    nonNullable(balance.ed) &&
-    nonNullable(balance.transferableMode)
-  );
-}
-
-function completeBalance(balance: Balance | BalanceDraft): Balance {
-  if (isCompleteBalance(balance)) return balance;
-
+function completeBalance(id: BalanceId, balance: Balance | BalanceDraft): Balance {
   return {
-    id: getBalanceId(balance),
+    id,
     accountId: balance.accountId,
     assetId: balance.assetId,
     chainId: balance.chainId,
@@ -98,35 +79,71 @@ function completeBalance(balance: Balance | BalanceDraft): Balance {
   };
 }
 
-function getMergeBalances(oldBalances: (Balance | BalanceDraft)[], newBalances: (Balance | BalanceDraft)[]): Balance[] {
-  const newBalancesMap = keyBy(newBalances, getBalanceId);
-  const updatedBalances: Balance[] = [];
+function mergeTwoBalances(id: BalanceId, a: Balance | BalanceDraft, b: Balance | BalanceDraft): Balance {
+  return {
+    id,
+    chainId: a.chainId,
+    assetId: a.assetId,
+    accountId: a.accountId,
+    free: b.free ?? a.free ?? BN_ZERO,
+    frozen: b.frozen ?? a.frozen ?? BN_ZERO,
+    reserved: b.reserved ?? a.reserved ?? BN_ZERO,
+    locked: b.locked ?? a.locked ?? [],
+    ed: b.ed ?? a.ed ?? BN_ZERO,
+    transferableMode: b.transferableMode ?? a.transferableMode ?? 'legacy',
+  };
+}
 
-  for (const balance of oldBalances) {
-    const id = getBalanceId(balance);
-    const newBalance = newBalancesMap[id];
+/**
+ * ATTENTION! This method can break balance updating when new fields got
+ * introduced.
+ */
+function areValuesAreTheSame(balance: Balance, draft: BalanceDraft) {
+  return (
+    (nullable(draft.free) || balance.free.eq(draft.free)) &&
+    (nullable(draft.frozen) || balance.frozen.eq(draft.frozen)) &&
+    (nullable(draft.reserved) || balance.reserved.eq(draft.reserved)) &&
+    (nullable(draft.ed) || balance.ed.eq(draft.ed)) &&
+    (nullable(draft.transferableMode) || balance.transferableMode === draft.transferableMode) &&
+    (nullable(draft.locked) || isEqual(balance.locked, draft.locked))
+  );
+}
 
-    if (newBalance) {
-      delete newBalancesMap[id];
-
-      updatedBalances.push({
-        id,
-        chainId: balance.chainId,
-        assetId: balance.assetId,
-        accountId: balance.accountId,
-        free: newBalance.free ?? balance.free ?? BN_ZERO,
-        frozen: newBalance.frozen ?? balance.frozen ?? BN_ZERO,
-        reserved: newBalance.reserved ?? balance.reserved ?? BN_ZERO,
-        locked: newBalance.locked ?? balance.locked ?? [],
-        ed: newBalance.ed ?? balance.ed ?? BN_ZERO,
-        transferableMode: newBalance.transferableMode ?? balance.transferableMode ?? 'legacy',
-      });
-    } else {
-      updatedBalances.push(completeBalance(balance));
-    }
+function mergeBalanceMapWithNewBalances(balances: BalanceMap, newBalances: (Balance | BalanceDraft)[]) {
+  if (newBalances.length === 0) {
+    return {
+      map: balances,
+      updated: {},
+    };
   }
 
-  const normalizedNewBalances = Object.values(newBalancesMap).map<Balance>(completeBalance);
+  let hasUpdates = false;
+  const updated: BalanceMap = {};
+  const map: BalanceMap = { ...balances };
 
-  return updatedBalances.concat(normalizedNewBalances);
+  for (const newBalance of newBalances) {
+    const id = 'id' in newBalance ? newBalance.id : getBalanceId(newBalance);
+    const oldBalance = map[id];
+
+    if (oldBalance && areValuesAreTheSame(oldBalance, newBalance)) {
+      continue;
+    }
+
+    const updatedBalance = oldBalance ? mergeTwoBalances(id, oldBalance, newBalance) : completeBalance(id, newBalance);
+
+    map[id] = updated[id] = updatedBalance;
+    hasUpdates = true;
+  }
+
+  if (hasUpdates) {
+    return {
+      map,
+      updated,
+    };
+  } else {
+    return {
+      map: balances,
+      updated: {},
+    };
+  }
 }

@@ -5,7 +5,13 @@ import { concat, orderBy, sortBy } from 'lodash';
 import { isKusama, isNameStartsWithNumber, isPolkadot } from '@/shared/api/network/lib/utils';
 import { sumValues } from '@/shared/api/network/service/chainsService';
 import { type PriceObject } from '@/shared/api/price-provider';
-import { type AssetByChains, type Balance, type ChainId, type PortfolioTokenBalance } from '@/shared/core';
+import {
+  type AssetByChains,
+  type Balance,
+  type BalanceMap,
+  type ChainId,
+  type PortfolioTokenBalance,
+} from '@/shared/core';
 import {
   TOKENS_CONFIG_URL,
   getBalanceBn,
@@ -75,11 +81,7 @@ function getSelectedAccountIds(accounts: AnyAccount[], chainId: ChainId): Accoun
   }, []);
 }
 
-function getChainWithBalance(
-  balances: Record<string, Balance>,
-  chains: AssetChain[],
-  accounts: AnyAccount[],
-): AssetChain[] {
+function getChainWithBalance(balances: BalanceMap, chains: AssetChain[], accounts: AnyAccount[]): AssetChain[] {
   const initialBalance: PortfolioTokenBalance = {
     total: BN_ZERO,
     transferable: BN_ZERO,

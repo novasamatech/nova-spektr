@@ -9,7 +9,7 @@ import { series } from '@/shared/effector';
 import { entries, merge, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -45,7 +45,7 @@ const fetchAccountsFx = createEffect(async ({ api, chain, accounts }: FetchAccou
   return Promise.all([
     balanceService.fetchBalances(api, chain, accounts),
     balanceService.fetchLockBalances(api, chain, accounts),
-  ]).then(([balances, lockBalances]) => balanceUtils.getMergeBalances(balances, lockBalances));
+  ]).then(([balances, lockBalances]) => balances.concat(lockBalances));
 });
 
 type SubscribeAccountParam = {
