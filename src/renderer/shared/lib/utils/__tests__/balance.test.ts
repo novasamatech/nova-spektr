@@ -84,7 +84,7 @@ describe('shared/lib/onChainUtils/balance', () => {
 
     test('should add correct shorthands, when parametrized', () => {
       const { value, suffix, decimalPlaces } = formatBalance('5200000000000000', 12, {
-        K: true,
+        shorthands: { K: true },
       });
 
       expect(value).toEqual('5.2');
