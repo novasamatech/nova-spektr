@@ -1,4 +1,5 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
+import { readonly, spread } from 'patronum';
 
 import { balanceMapper, storageService } from '@/shared/api/storage';
 import { type Balance, type BalanceDraft, type BalanceMap } from '@/shared/core';
@@ -10,17 +11,16 @@ const balancesSet = createEvent<Balance[]>();
 const balancesUpdated = createEvent<(Balance | BalanceDraft)[]>();
 const balancesRemoved = createEvent<AccountId[]>();
 
-const $balances = createStore<Balance[]>([]);
-const $balanceMap = $balances.map((balances) =>
-  balances.reduce<BalanceMap>((acc, balance) => {
-    acc[balance.id] = balance;
-    return acc;
-  }, {}),
-);
+const $balanceMap = createStore<BalanceMap>({});
+const $balances = $balanceMap.map((m) => Object.values(m));
 
 const bufferedUpdate = createBuffer({
   source: sample({ clock: [balancesSet, balancesUpdated] }),
   timeframe: 1000,
+});
+
+const logErrorFx = createEffect(async (error: Error) => {
+  console.error('Error while working with balances', error);
 });
 
 const insertBalancesFx = createEffect(async (balances: Balance[]) => {
@@ -38,15 +38,19 @@ const populateFx = createEffect(async (): Promise<Balance[]> => {
 
 sample({
   clock: bufferedUpdate,
-  fn: (buffer) => buffer.reduce<Balance[]>(balanceUtils.getMergeBalances, []),
-  target: insertBalancesFx,
-});
+  source: $balanceMap,
+  fn: (balanceMap, buffer) => {
+    const { map, updated } = balanceUtils.mergeBalanceMapWithNewBalances(balanceMap, buffer.flat());
 
-sample({
-  clock: insertBalancesFx.doneData,
-  source: $balances,
-  fn: balanceUtils.getMergeBalances,
-  target: $balances,
+    return {
+      store: map,
+      save: Object.values(updated),
+    };
+  },
+  target: spread({
+    store: $balanceMap,
+    save: insertBalancesFx,
+  }),
 });
 
 sample({
@@ -58,12 +62,23 @@ sample({
 
 sample({
   clock: populateFx.doneData,
-  target: $balances,
+  fn: (balances) => {
+    return balances.reduce<BalanceMap>((acc, balance) => {
+      acc[balance.id] = balance;
+      return acc;
+    }, {});
+  },
+  target: $balanceMap,
+});
+
+sample({
+  clock: [populateFx.failData, insertBalancesFx.failData],
+  target: logErrorFx,
 });
 
 export const balanceModel = {
   $balances,
-  $balanceMap,
+  $balanceMap: readonly($balanceMap),
 
   populate: populateFx,
 
@@ -73,6 +88,7 @@ export const balanceModel = {
     balancesRemoved,
   },
   __test: {
+    $balanceMap,
     removeBalancesFx,
   },
 };

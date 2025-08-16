@@ -8,6 +8,7 @@ import {
   AccountType,
   type Balance,
   type BalanceId,
+  type BalanceMap,
   CryptoType,
   LockTypes,
   SigningType,
@@ -89,7 +90,10 @@ const accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
 
 describe('features/AssetsChainView/ui/NetworkAssets', () => {
   const scope = fork({
-    values: new Map().set(balanceModel.$balances, testBalances),
+    values: new Map().set(
+      balanceModel.__test.$balanceMap,
+      testBalances.reduce<BalanceMap>((acc, b) => ({ ...acc, [b.id]: b }), {}),
+    ),
   });
 
   const renderNetworkAssets = async () => {

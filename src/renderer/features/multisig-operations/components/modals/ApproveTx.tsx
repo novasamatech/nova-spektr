@@ -214,7 +214,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
       chainId: operation.chainId,
       transaction: approveTx,
       assetId: nativeAsset.assetId,
-      getBalance: balanceUtils.getBalanceWrapped(balances),
+      getBalance: (...args) => balanceUtils.getBalance(balances, ...args),
       getTransactionFee: oldTransactionService.getTransactionFee,
     });
 

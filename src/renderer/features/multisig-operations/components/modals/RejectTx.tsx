@@ -108,7 +108,7 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
       chainId: operation.chainId,
       assetId: nativeAsset.assetId,
       transaction: rejectTx ?? undefined,
-      getBalance: balanceUtils.getBalanceWrapped(balances),
+      getBalance: (...args) => balanceUtils.getBalance(balances, ...args),
       getTransactionFee: transactionService.getTransactionFee,
     });
 
