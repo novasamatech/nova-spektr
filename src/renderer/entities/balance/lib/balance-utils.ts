@@ -95,7 +95,7 @@ function mergeTwoBalances(id: BalanceId, a: Balance | BalanceDraft, b: Balance |
 }
 
 /**
- * ATTENTION! This method can brake balance updating when new fields got
+ * ATTENTION! This method can break balance updating when new fields got
  * introduced.
  */
 function areValuesAreTheSame(balance: Balance, draft: BalanceDraft) {
