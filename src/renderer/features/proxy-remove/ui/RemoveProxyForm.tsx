@@ -53,7 +53,7 @@ const Signatories = () => {
   const chain = useUnit(removeProxyModel.$chain);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!signatories || !chain) {

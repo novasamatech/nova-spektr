@@ -122,7 +122,7 @@ const $api = combine(
 const $initiatorBalance = combine(
   {
     initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ balances, initiator, network }) => {
@@ -187,7 +187,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },
@@ -209,7 +209,7 @@ const $proxyBalance = combine(
   {
     isProxy: $isProxy,
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ isProxy, proxyAccount, balances, network }) => {

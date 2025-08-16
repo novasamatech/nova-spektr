@@ -75,7 +75,11 @@ function getSelectedAccountIds(accounts: AnyAccount[], chainId: ChainId): Accoun
   }, []);
 }
 
-function getChainWithBalance(balances: Balance[], chains: AssetChain[], accounts: AnyAccount[]): AssetChain[] {
+function getChainWithBalance(
+  balances: Record<string, Balance>,
+  chains: AssetChain[],
+  accounts: AnyAccount[],
+): AssetChain[] {
   const initialBalance: PortfolioTokenBalance = {
     total: BN_ZERO,
     transferable: BN_ZERO,

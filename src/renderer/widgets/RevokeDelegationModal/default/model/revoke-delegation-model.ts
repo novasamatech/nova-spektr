@@ -154,7 +154,7 @@ sample({
 
 const dataSubmitted = sample({
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     fee: $fee,
     chain: networkSelectorModel.$governanceChain,
     revokeDelegationData: $revokeDelegationData,

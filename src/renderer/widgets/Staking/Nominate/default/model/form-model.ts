@@ -84,7 +84,7 @@ const $availableBalance = combine(
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
     initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, initiator, balances }) => {
     if (!wallet || !network || !initiator) return null;
@@ -175,7 +175,7 @@ const $proxyWallet = combine(
 const $proxyBalance = combine(
   {
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ proxyAccount, balances, network }) => {
@@ -212,7 +212,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },

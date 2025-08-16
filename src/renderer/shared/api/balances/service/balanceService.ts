@@ -11,8 +11,8 @@ import { camelCase, noop, uniq } from 'lodash';
 import {
   type Asset,
   AssetType,
-  type Balance,
   type BalanceDraft,
+  type BalanceMap,
   type Chain,
   type ChainId,
   type LockTypes,
@@ -705,11 +705,11 @@ function calculateWalletBalance({
 }: {
   wallet: Wallet | null;
   chains: Record<ChainId, Chain>;
-  balances: Balance[];
+  balances: BalanceMap;
   currency: CurrencyItem | null;
   prices: PriceObject | null;
 }) {
-  if (nullable(currency?.coingeckoId) || nullable(wallet) || nullable(prices) || balances.length === 0) {
+  if (nullable(currency?.coingeckoId) || nullable(wallet) || nullable(prices)) {
     return new BigNumber(0);
   }
 
@@ -717,7 +717,7 @@ function calculateWalletBalance({
 
   const accountMap = dictionary(wallet.accounts, 'accountId');
 
-  return balances.reduce((acc, balance) => {
+  return Object.values(balances).reduce((acc, balance) => {
     const account = accountMap[balance.accountId];
     const chain = chains[balance.chainId];
     if (nullable(account) || nullable(chain)) return acc;

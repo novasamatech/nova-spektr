@@ -137,7 +137,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 const $signerBalance = combine(
   {
     signer: $signer,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     chain: formModel.$chain,
   },
   ({ signer, balances, chain }) => {

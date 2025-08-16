@@ -29,7 +29,8 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
   });
 
   const findBalance = (accountId: AccountId): string => {
-    return stakeableAmount(balances.find((b) => b.accountId === accountId));
+    const balance = balances.find((b) => b.accountId === accountId) ?? null;
+    return stakeableAmount(balance);
   };
 
   return (

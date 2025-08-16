@@ -44,7 +44,7 @@ export { AssetType, StakingType } from './types/asset';
 export type { Asset, OrmlExtras, StatemineExtras, AssetByChains, PortfolioTokenBalance } from './types/asset';
 
 export { LockTypes } from './types/balance';
-export type { Balance, AssetBalance, BalanceDraft, TransferableMode } from './types/balance';
+export type { Balance, BalanceId, BalanceMap, AssetBalance, BalanceDraft, TransferableMode } from './types/balance';
 
 export type { ChainMetadata } from './types/metadata';
 

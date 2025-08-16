@@ -1,6 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { type AssetBalance, type Balance, LockTypes } from '@/shared/core';
+import { type AssetBalance, type Balance, type BalanceId, LockTypes } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { formatBalance, stakeableAmountBN, transferableAmountBN, withdrawableAmount } from '../balance';
 
@@ -11,7 +11,7 @@ const createBalance = (params: {
   locked?: AssetBalance['locked'];
 }): Balance => {
   return {
-    id: '0',
+    id: '0' as BalanceId,
     transferableMode: 'holdAndFreezes',
     accountId: '0x00' as AccountId,
     assetId: 0,

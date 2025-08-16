@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
 
-import { type Asset, type Balance, type Chain, CryptoType } from '@/shared/core';
+import { type Asset, type Balance, type BalanceMap, type Chain, CryptoType } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
 import { assert, nullable } from '@/shared/lib/utils';
 import {
@@ -322,7 +322,7 @@ function mutateTransitionBalanceValidationResult(
 
 type BalanceValidationParams = {
   route: AnyAccount[];
-  balances: Balance[];
+  balances: BalanceMap;
   asset: Asset;
   api: ApiPromise;
 };

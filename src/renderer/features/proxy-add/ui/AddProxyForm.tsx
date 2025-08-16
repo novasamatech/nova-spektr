@@ -105,7 +105,7 @@ const AccountSelector = () => {
   const chain = useUnit(formModel.form.fields.chain.$value);
   const availableAccounts = useUnit(formModel.$availableAccounts);
   const wallet = useUnit(walletSelect.$selectedWallet);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   if (availableAccounts.length < 2 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value || !chain) {
     return null;
@@ -169,7 +169,7 @@ const Signatories = () => {
 
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   if (!chain.value) return null;
 

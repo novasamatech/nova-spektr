@@ -188,7 +188,7 @@ export const totalAmountBN = (balance: Balance) => {
   return balance.free.add(balance.reserved);
 };
 
-export const totalAmount = (balance?: Balance): string => {
+export const totalAmount = (balance: Balance | null): string => {
   return balance ? totalAmountBN(balance).toString() : ZERO_BALANCE;
 };
 
@@ -200,7 +200,11 @@ export const lockedAmount = (balance: Balance): string => {
   return lockedAmountBN(balance).toString();
 };
 
-export const transferableAmountBN = (balance?: Balance, transferableMode?: TransferableMode, normalize = true): BN => {
+export const transferableAmountBN = (
+  balance: Balance | null,
+  transferableMode?: TransferableMode,
+  normalize = true,
+): BN => {
   if (nullable(balance)) return BN_ZERO;
 
   switch (transferableMode ?? balance.transferableMode) {
@@ -218,7 +222,7 @@ export const transferableAmountBN = (balance?: Balance, transferableMode?: Trans
   }
 };
 
-export const transferableAmount = (balance?: Balance): string => {
+export const transferableAmount = (balance: Balance | null): string => {
   return transferableAmountBN(balance).toString();
 };
 
@@ -227,12 +231,12 @@ export const transferableAmount = (balance?: Balance): string => {
  * could be usefull in operations where reserved part is already taken into
  * account.
  */
-export const withdrawableAmountBN = (balance?: Balance): BN => {
+export const withdrawableAmountBN = (balance: Balance | null): BN => {
   if (nullable(balance)) return BN_ZERO;
   return BN.max(BN_ZERO, balance.free.sub(balance.frozen));
 };
 
-export const withdrawableAmount = (balance?: Balance): string => {
+export const withdrawableAmount = (balance: Balance | null): string => {
   return withdrawableAmountBN(balance).toString();
 };
 
@@ -277,7 +281,7 @@ export const stakeableAmountBN = (balance: Balance) => {
   return BN.max(BN_ZERO, total.sub(staked));
 };
 
-export const stakeableAmount = (balance?: Balance): string => {
+export const stakeableAmount = (balance: Balance | null): string => {
   return balance ? stakeableAmountBN(balance).toString() : ZERO_BALANCE;
 };
 

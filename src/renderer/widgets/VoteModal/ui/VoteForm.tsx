@@ -44,7 +44,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
   const initiators = useUnit(voteForm.$initiators);
   const isFeeLoading = useUnit(voteForm.$pendingFee);
   const hasDelegatedTrack = useUnit(voteForm.$hasDelegatedTrack);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const allWallets = useUnit(walletModel.$wallets);
   const allAccounts = useUnit(accounts.$list);
 
