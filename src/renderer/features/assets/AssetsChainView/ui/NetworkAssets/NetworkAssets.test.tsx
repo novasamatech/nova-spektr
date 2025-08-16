@@ -89,7 +89,7 @@ const accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
 
 describe('features/AssetsChainView/ui/NetworkAssets', () => {
   const scope = fork({
-    values: new Map().set(balanceModel.$balanceMap, testBalances),
+    values: new Map().set(balanceModel.$balances, testBalances),
   });
 
   const renderNetworkAssets = async () => {
