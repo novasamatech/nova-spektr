@@ -15,7 +15,7 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { KEY_NAMES, SHARDED_KEY_NAMES } from '@/entities/wallet';
 
@@ -181,7 +181,7 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
   const chains = fileContent[rootAccountId as AccountId];
   const derivations: ImportedDerivation[] = [];
 
-  for (const [key, value] of Object.entries(chains)) {
+  for (const [key, value] of entries(chains)) {
     const chainDerivations = value.map((keyObject) => ({
       ...keyObject.key,
       chainId: key,

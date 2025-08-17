@@ -2,15 +2,10 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { and, empty, not, reset } from 'patronum';
 
-import {
-  type AccountVote,
-  type Address,
-  type Conviction,
-  type OngoingReferendum,
-  type Transaction,
-} from '@/shared/core';
+import { type AccountVote, type Conviction, type OngoingReferendum, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
-import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { entries, getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   createComplexTxStore,
   createInitiatorsStore,
@@ -51,7 +46,7 @@ type FormInput = {
 const setReferendum = createEvent<AggregatedReferendum<OngoingReferendum> | null>();
 
 const $type = createStore<'vote' | 'revote' | null>(null);
-const $voters = createStore<Address[]>([]);
+const $voters = createStore<AccountId[]>([]);
 const $existingVote = createStore<AccountVote | null>(null);
 const $referendum = restore(setReferendum, null);
 const $lockForAccount = createStore(BN_ZERO);
@@ -142,11 +137,9 @@ const $hasDelegatedTrack = combine(
       return false;
     }
 
-    const accountAddress = toAddress(initiator.accountId, { prefix: network.chain.addressPrefix });
-
     for (const delegators of Object.values(tracks)) {
-      for (const [address, tracks] of Object.entries(delegators)) {
-        if (address === accountAddress && tracks.includes(referendum.track)) {
+      for (const [delegatorAccountId, tracks] of entries(delegators)) {
+        if (delegatorAccountId === initiator.accountId && tracks.includes(referendum.track)) {
           return true;
         }
       }

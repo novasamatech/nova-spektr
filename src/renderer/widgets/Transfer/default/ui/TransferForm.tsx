@@ -6,6 +6,7 @@ import { type ChainId, type WalletFamily } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
+  entries,
   formatBalance,
   getNativeAsset,
   includesMultiple,
@@ -267,7 +268,7 @@ const Destination = () => {
     const accountByGroup = services.walletSelect.getWalletFamilyByAccounts(wallets, filteredAccounts);
     const ownAccountOptions: ComboboxGroup[] = [];
 
-    for (const [walletFamily, accountsGroup] of Object.entries(accountByGroup)) {
+    for (const [walletFamily, accountsGroup] of entries(accountByGroup)) {
       if (accountsGroup.length === 0) continue;
 
       const accountOptions: ComboboxItem[] = [];

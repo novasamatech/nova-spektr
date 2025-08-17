@@ -5,7 +5,13 @@ import { spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Chain } from '@/shared/core';
-import { addUniqueItems, formatAmount, removeItemsFromCollection, transferableAmount } from '@/shared/lib/utils';
+import {
+  addUniqueItems,
+  entries,
+  formatAmount,
+  removeItemsFromCollection,
+  transferableAmount,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createInitiatorsStore } from '@/shared/transactions';
 import { type AnyAccount, transactionService } from '@/domains/network';
@@ -135,12 +141,10 @@ sample({
 
     const votesToRemove: VotesToRemove[] = [];
 
-    for (const [voterAccountId, voteList] of Object.entries(votes)) {
-      const accountId = voterAccountId as AccountId;
+    for (const [accountId, voteList] of entries(votes)) {
+      if (!accountsIds.has(accountId)) continue;
 
-      if (!accountsIds.has(accountId as AccountId)) continue;
-
-      for (const [track, vote] of Object.entries(voteList)) {
+      for (const [track, vote] of entries(voteList)) {
         if (
           (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) ||
           votingService.isDelegating(vote)

@@ -3,7 +3,7 @@ import { uniq } from 'lodash';
 import { combineEvents } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { keys } from '@/shared/lib/utils';
+import { entries, keys } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createInitiatorsStore } from '@/shared/transactions';
 import { accountService } from '@/domains/network';
@@ -44,10 +44,8 @@ const $activeTracks = combine(
   ({ delegate, votes }) => {
     const activeTracks: Record<AccountId, Set<string>> = {};
 
-    for (const [voterAccountId, voteList] of Object.entries(votes)) {
-      const accountId = voterAccountId as AccountId;
-
-      for (const [key, vote] of Object.entries(voteList)) {
+    for (const [accountId, voteList] of entries(votes)) {
+      for (const [key, vote] of entries(voteList)) {
         if (!votingService.isDelegating(vote)) continue;
 
         if (votingService.isDelegating(vote) && vote.target === delegate?.accountId) {

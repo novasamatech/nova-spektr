@@ -1,6 +1,6 @@
 import { combine, sample } from 'effector';
 
-import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { referendumModel } from '@/entities/governance';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -29,9 +29,9 @@ sample({
   },
   filter: ({ wallet, network }) => nonNullable(wallet) && nonNullable(network),
   fn: ({ wallet, network }) => {
-    const addresses = wallet!.accounts.map((acc) => toAddress(acc.accountId, { prefix: network!.chain.addressPrefix }));
+    const accounts = wallet!.accounts.map((acc) => acc.accountId);
 
-    return { addresses, chain: network!.chain };
+    return { accounts, chain: network!.chain };
   },
   target: delegatedVotesModel.events.requestDelegatedVotes,
 });

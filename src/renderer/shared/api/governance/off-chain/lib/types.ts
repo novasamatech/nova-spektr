@@ -37,7 +37,7 @@ export interface GovernanceApi {
     callback: (data: IteratorResult<Record<ReferendumId, string>, void>) => void,
   ) => void;
   getReferendumDetails: (chain: Chain, referendumId: ReferendumId) => Promise<string | undefined>;
-  getReferendumVotes: (chain: Chain, referendumId: ReferendumId) => Promise<Address[]>;
+  getReferendumVotes: (chain: Chain, referendumId: ReferendumId) => Promise<AccountId[]>;
   getReferendumTimeline: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumTimelineRecord[]>;
   getReferendumSummary: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumSummary>;
 }
@@ -118,7 +118,7 @@ export interface DelegationApi {
   getDelegatesFromRegistry: (chain: Chain) => Promise<DelegateDetails[]>;
   getDelegatedVotesFromExternalSource: (
     chain: Chain,
-    voter: Address[],
+    accounts: AccountId[],
   ) => Promise<Record<ReferendumId, DelegateInfo[]>>;
   getDelegatesFromExternalSource: (chain: Chain, timestamp: number) => Promise<DelegateStat[]>;
   getDelegatesForAccount: (chain: Chain, accountId: AccountId) => Promise<DelegationsByAccount | null>;

@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 
-import { type Address, type Chain, ExternalType, type ReferendumId } from '@/shared/core';
+import { type Chain, ExternalType, type ReferendumId } from '@/shared/core';
 import { dictionary, nullable, toAccountId, toAddress, toPrecision } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
@@ -73,14 +73,14 @@ async function getDelegatesFromExternalSource(chain: Chain, timestamp: number): 
     .catch(() => []);
 }
 
-async function getDelegatedVotesFromExternalSource(chain: Chain, voters: Address[]) {
+async function getDelegatedVotesFromExternalSource(chain: Chain, voters: AccountId[]) {
   const client = getGraphQLClient(chain);
   if (!client) {
     return {};
   }
 
   return client
-    .request(GET_DELEGATOR, { voters })
+    .request(GET_DELEGATOR, { voters: voters.map((x) => toAddress(x, { prefix: chain.addressPrefix })) })
     .then((data: any) => {
       const result: Record<ReferendumId, DelegateInfo[]> = {};
 

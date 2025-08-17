@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 import { type Stake } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { toAccountId } from '@/shared/lib/utils';
+import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, Button, Icon, SmallTitleText } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
@@ -152,14 +152,13 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
               </Button>
             </Dropdown.Trigger>
             <Dropdown.Content>
-              {Object.entries(operationsSummary).map(([key, value]) => {
+              {entries(operationsSummary).map(([key, value]) => {
                 if (stakes.length !== value) return null;
 
-                const typedKey = key as Operations;
-                const option = OperationOptions[typedKey];
+                const option = OperationOptions[key];
 
                 return (
-                  <Dropdown.Item key={key} onSelect={() => onClickAction(typedKey, option.path)}>
+                  <Dropdown.Item key={key} onSelect={() => onClickAction(key, option.path)}>
                     <div className="flex w-full items-center gap-2">
                       <Icon name={option.icon} size={20} className="shrink-0 text-icon-accent" />
                       {t(option.title)}

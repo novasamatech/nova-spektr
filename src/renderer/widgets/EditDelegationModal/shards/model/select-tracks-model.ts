@@ -130,7 +130,7 @@ sample({
     for (const [accountId, voteList] of entries(votes)) {
       if (!accountsIds.has(accountId)) continue;
 
-      for (const [track, vote] of Object.entries(voteList)) {
+      for (const [track, vote] of entries(voteList)) {
         const isDelegateExist = votingService.isDelegating(vote) && delegate;
         const isCurrentDelegate = isDelegateExist && delegate.accountId === vote.target;
         const isOtherDelegate = isDelegateExist && delegate.accountId !== vote.target;

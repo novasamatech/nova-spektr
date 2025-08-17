@@ -60,7 +60,7 @@ const $activeTracks = votingAggregate.$activeWalletVotes.map((activeVotes) => {
   const activeTracks: DelegationTracksMap = {};
 
   for (const [voterAccountId, delegations] of entries(activeVotes)) {
-    for (const [track, delegation] of Object.entries(delegations)) {
+    for (const [track, delegation] of entries(delegations)) {
       if (!votingService.isDelegating(delegation)) continue;
 
       const target = toAccountId(delegation.target);

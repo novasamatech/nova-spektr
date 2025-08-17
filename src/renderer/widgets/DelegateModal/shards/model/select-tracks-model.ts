@@ -135,7 +135,7 @@ sample({
     for (const [accountId, voteList] of entries(votes)) {
       if (!accountsIds.has(accountId)) continue;
 
-      for (const [track, vote] of Object.entries(voteList)) {
+      for (const [track, vote] of entries(voteList)) {
         if (
           (votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) ||
           votingService.isDelegating(vote)
