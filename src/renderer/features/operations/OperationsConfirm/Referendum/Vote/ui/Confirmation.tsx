@@ -4,7 +4,6 @@ import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, HeadlineText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
@@ -12,9 +11,8 @@ import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } 
 import { SignButton } from '@/entities/operations';
 import { FeeWithDataLoading } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { getLocksForAccount, lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
-import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -56,7 +54,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     );
   }
 
-  const { asset, existingVote, tx, coreTx, api, initiator, chain } = confirm.meta;
+  const { asset, existingVote, tx, coreTx, api, initiator } = confirm.meta;
 
   if (!voteTransactionService.isVoteTransaction(coreTx) && !voteTransactionService.isRevoteTransaction(coreTx)) {
     return null;
@@ -73,8 +71,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const initialConviction = existingVote ? votingService.getAccountVoteConviction(existingVote) : 'None';
   const votingPower = votingService.calculateVotingPower(amount, conviction);
 
-  const address = toAddress(initiator.accountId, { prefix: chain.addressPrefix });
-  const locksForAddress = getLocksForAddress(address, trackLocks);
+  const locksForAddress = getLocksForAccount(initiator.accountId, trackLocks);
 
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">

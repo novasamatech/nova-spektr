@@ -433,7 +433,7 @@ module.exports = {
       excludedFiles: ['*.test.ts', '*.test.tsx', '**/mocks/*.ts'],
       rules: {
         // TODO error
-        '@typescript-eslint/consistent-type-assertions': ['off', { assertionStyle: 'never' }],
+        '@typescript-eslint/consistent-type-assertions': ['warn', { assertionStyle: 'never' }],
 
         '@typescript-eslint/no-unused-expressions': 'off',
         '@typescript-eslint/no-explicit-any': 'warn',

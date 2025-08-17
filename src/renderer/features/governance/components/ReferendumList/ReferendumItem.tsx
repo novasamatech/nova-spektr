@@ -3,7 +3,7 @@ import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type Asset } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
@@ -20,13 +20,14 @@ import { ListItem } from './ListItem';
 
 type Props = {
   api: ApiPromise;
+  chain: Chain;
   asset: Asset;
   referendum: AggregatedReferendum;
   isTitlesLoading: boolean;
   onSelect: (value: AggregatedReferendum) => void;
 };
 
-export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, onSelect }: Props) => {
+export const ReferendumItem = memo(({ api, chain, asset, referendum, isTitlesLoading, onSelect }: Props) => {
   const { t } = useI18n();
 
   const { referendumId, approvalThreshold } = referendum;
@@ -85,6 +86,7 @@ export const ReferendumItem = memo(({ api, asset, referendum, isTitlesLoading, o
       <Box width="max-content">
         <VotedBy
           direction="row"
+          chain={chain}
           asset={asset}
           identity={identity}
           delegates={referendum.votedByDelegates}

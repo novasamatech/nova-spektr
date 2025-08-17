@@ -10,7 +10,6 @@ import {
   formatAmount,
   getRelaychainAsset,
   nonNullable,
-  toAddress,
   transferableAmount,
   transferableAmountBN,
 } from '@/shared/lib/utils';
@@ -20,8 +19,7 @@ import { locksService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { locksAggregate } from '@/features/governance/aggregates/locks';
-import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
+import { getLocksForAccount, locksAggregate } from '@/features/governance';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -81,8 +79,7 @@ const $accounts = combine(
 
     return shards.map((shard) => {
       const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId);
-      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
-      const lock = getLocksForAddress(address, trackLocks);
+      const lock = getLocksForAccount(shard.accountId, trackLocks);
 
       return {
         account: shard,

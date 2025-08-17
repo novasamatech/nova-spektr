@@ -94,7 +94,7 @@ describe('Create multisig wallet form-model', () => {
   });
 
   test('should have invalid chain addresses', async () => {
-    const badAddress = '0x629C0eC6B23D0E3A2f67c2753660971faa9A1907';
+    const badAddress = 'test';
     const signatories = [
       { name: 'address_1', address: '5ERebGRitMv68YJzXdzWce3rEM9XRZdunEZYtAi69rhgcoNe', walletId: '1' },
       { name: 'address_2', address: badAddress },

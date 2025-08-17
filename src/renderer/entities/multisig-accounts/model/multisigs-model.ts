@@ -20,7 +20,7 @@ import {
 } from '@/shared/core';
 import { waitFor } from '@/shared/effector';
 import { takeLast } from '@/shared/effector/takeLast';
-import { delay, isFulfilled, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { delay, isFulfilled, nonNullable, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { identity, identityService } from '@/domains/network';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -214,7 +214,7 @@ const enrichIndexedMultisigsFx = createEffect(
             threshold,
             accountId,
             signatories,
-            name: name ?? toAddress(accountId, { chunk: 5, prefix: chain.addressPrefix }),
+            name: name ?? toShortAddress(toAddress(accountId, { prefix: chain.addressPrefix }), 5),
           }),
         ],
         chain,

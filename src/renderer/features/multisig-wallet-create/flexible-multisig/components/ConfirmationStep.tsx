@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { Step, nonNullable, nullable } from '@/shared/lib/utils';
+import { Step, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, Loader, Separator, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
@@ -9,6 +9,7 @@ import { OperationSubmit } from '@/features/operations';
 import { assignModel } from '../model/assign-model';
 import { confirmModel } from '../model/confirm-model';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
+import { formModel } from '../model/form-model';
 
 interface Props {
   onToggle: (open: boolean) => void;
@@ -20,6 +21,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
   const activeStep = useUnit(flexibleMultisigModel.$step);
   const isSubmitOpen = activeStep === Step.SUBMIT;
 
+  const chain = useUnit(formModel.$chain);
   const proxyAddress = useUnit(assignModel.$proxyAddress);
   const pendingProxyCreate = useUnit(assignModel.$pendingProxyCreate);
   const flexibleMultisigCreated = useUnit(assignModel.$flexibleMultisigCreated);
@@ -60,7 +62,12 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
                 <FootnoteText className="shrink-0">
                   {t('createMultisigAccount.flexibleMultisig.pureProxyCreated')}
                 </FootnoteText>
-                <Address variant="short" canCopy={true} showIcon address={proxyAddress} />
+                <Address
+                  variant="short"
+                  canCopy={true}
+                  showIcon
+                  address={toAddress(proxyAddress, { prefix: chain?.addressPrefix })}
+                />
               </Box>
             )}
             <Separator className="my-4" />

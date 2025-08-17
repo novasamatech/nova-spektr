@@ -3,7 +3,7 @@ import { type BN } from '@polkadot/util';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { type Asset } from './asset';
-import { type Address, type BlockHeight, type HexString } from './general';
+import { type BlockHeight, type HexString } from './general';
 import { type TrackId } from './track';
 
 export type ReferendumId = string;
@@ -99,6 +99,6 @@ export type Tally = {
 };
 
 export type Deposit = {
-  who: Address;
+  who: AccountId;
   amount: BN;
 };

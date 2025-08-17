@@ -2,7 +2,7 @@ import { type BN } from '@polkadot/util';
 
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { type Address, type BlockHeight } from './general';
+import { type BlockHeight } from './general';
 import { type ReferendumId } from './referendum';
 import { type TrackId } from './track';
 
@@ -21,7 +21,7 @@ export type DelegatingVoting = {
   track: string;
   accountId: AccountId;
   balance: BN;
-  target: Address;
+  target: AccountId;
   conviction: Conviction;
   prior: PriorLock;
 };
@@ -61,5 +61,5 @@ export type AccountVote = StandardVote | SplitVote | SplitAbstainVote;
 
 export type VotingMap = Record<AccountId, Record<TrackId, Voting>>;
 
-export type DelegationBalanceMap = Record<Address, Record<Address, { conviction: Conviction; balance: BN }>>;
-export type DelegationTracksMap = Record<Address, Record<Address, string[]>>;
+export type DelegationBalanceMap = Record<AccountId, Record<AccountId, { conviction: Conviction; balance: BN }>>;
+export type DelegationTracksMap = Record<AccountId, Record<AccountId, string[]>>;

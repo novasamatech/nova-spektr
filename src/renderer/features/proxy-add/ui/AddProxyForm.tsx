@@ -237,7 +237,7 @@ const ProxyInput = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon address={delegate.value} size={20} background={false} canCopy={false} />
+      <Identicon value={delegate.value} size={20} background={false} canCopy={false} />
     </div>
   );
 

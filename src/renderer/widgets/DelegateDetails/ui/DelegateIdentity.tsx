@@ -12,8 +12,8 @@ export const DelegateIdentity = () => {
 
   const identity = useStoreMap({
     store: proposerIdentityAggregate.$proposers,
-    keys: [delegate?.address],
-    fn: (proposers, [address]) => (address ? (proposers[address] ?? null) : null),
+    keys: [delegate?.accountId],
+    fn: (proposers, [accountId]) => (accountId ? (proposers[accountId] ?? null) : null),
   });
 
   if (!delegate || !identity) return null;

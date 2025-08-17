@@ -1,10 +1,10 @@
-import { type Address, type Unlocking } from '@/shared/core';
+import { type Unlocking } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
 export type NominatorInfo<T extends AnyAccount = AnyAccount> = {
-  address: Address;
   isSelected: boolean;
-  stash?: Address;
+  stash?: AccountId;
   account: T;
   totalReward?: string;
   totalStake?: string;

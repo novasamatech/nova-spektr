@@ -125,7 +125,7 @@ const formSubmitted = sample({
           chain: walletData.chain,
           asset,
           tracks,
-          target: target?.address || '',
+          target: target!.accountId,
           transferable,
           balance: delegateData.balance,
           conviction: delegateData.conviction,

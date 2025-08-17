@@ -3,10 +3,10 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type ChainId, type Connection, type Transaction, TransactionType } from '@/shared/core';
-import { redeemableAmount, toAddress } from '@/shared/lib/utils';
+import { redeemableAmount, toAccountId } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { eraService, useStakingData, validatorsService } from '@/entities/staking';
+import { type StakingMap, eraService, useStakingData, validatorsService } from '@/entities/staking';
 import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
@@ -52,7 +52,7 @@ const prepareBondNominateDataFx = createEffect(async ({ transaction, accounts, c
   const era = await eraService.getActiveEra(apis[chainId]);
   const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0);
 
-  const validators = nominateTx.args.targets.map((address: string) => validatorsMap[address]);
+  const validators = nominateTx.args.targets.map((address: string) => validatorsMap[toAccountId(address)]);
 
   return {
     id: transaction.id,
@@ -102,7 +102,7 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
   const era = await eraService.getActiveEra(apis[chainId]);
   const validatorsMap = await validatorsService.getValidatorsWithInfo(apis[chainId], era || 0);
 
-  const validators = transaction.coreTx.args.targets.map((address: string) => validatorsMap[address]);
+  const validators = transaction.coreTx.args.targets.map((address: string) => validatorsMap[toAccountId(address)]);
 
   return {
     id: transaction.id,
@@ -192,13 +192,12 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
     accounts,
   );
   const era = await eraService.getActiveEra(apis[chainId]);
-  const address = toAddress(transaction.coreTx.accountId, { prefix: chain.addressPrefix });
 
-  const staking = (await new Promise((resolve) => {
-    useStakingData().subscribeStaking(chainId, apis[chainId], [address], resolve);
-  })) as any;
+  const staking = await new Promise<StakingMap>((resolve) => {
+    useStakingData().subscribeStaking(chainId, apis[chainId], [transaction.coreTx.accountId], resolve);
+  });
 
-  const amount = redeemableAmount(staking?.[address]?.unlocking, era || 0);
+  const amount = redeemableAmount(staking?.[transaction.coreTx.accountId]?.unlocking, era || 0);
 
   return {
     id: transaction.id,

@@ -3,16 +3,9 @@ import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { type Store, attach, createEffect, createEvent, restore, sample } from 'effector';
 import { combineEvents } from 'patronum';
 
-import {
-  type Address,
-  type Asset,
-  type BalanceMap,
-  type Chain,
-  type ChainId,
-  type ID,
-  type Transaction,
-} from '@/shared/core';
-import { redeemableAmount, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { type Asset, type BalanceMap, type Chain, type ChainId, type ID, type Transaction } from '@/shared/core';
+import { redeemableAmount, transferableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
@@ -36,10 +29,10 @@ const getEraFx = createEffect(async ({ api }: { api: ApiPromise }): Promise<numb
 type StakingParams = {
   chainId: ChainId;
   api: ApiPromise;
-  addresses: Address[];
+  accounts: AccountId[];
 };
-const fetchStakingFx = createEffect(({ chainId, api, addresses }: StakingParams) => {
-  return useStakingData().fetchLedger(chainId, api, addresses);
+const fetchStakingFx = createEffect(({ chainId, api, accounts }: StakingParams) => {
+  return useStakingData().fetchLedger(chainId, api, accounts);
 });
 
 type ValidateParams = {
@@ -57,7 +50,6 @@ type ValidateParams = {
 const rootValidateFx = createEffect(
   async ({ id, api, chain, asset, transaction, balances, staking, era, signerOptions }: ValidateParams) => {
     const accountId = transaction.accountId;
-    const address = toAddress(accountId, { prefix: chain.addressPrefix });
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
     const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
@@ -83,7 +75,7 @@ const rootValidateFx = createEffect(
         },
         ...WithdrawRules.amount.noRedeemBalance({} as Store<AmountFeeStore>),
         source: {
-          accountsBalances: [redeemableAmount(staking?.[address]?.unlocking, era || 0)],
+          accountsBalances: [redeemableAmount(staking?.[accountId]?.unlocking, era || 0)],
         } as AmountFeeStore,
       },
     ];
@@ -139,7 +131,7 @@ const validateFx = attach({
     const era = await getEraFx({ api });
     const staking = await fetchStakingFx({
       api,
-      addresses: [toAddress(transaction.accountId, { prefix: chain.addressPrefix })],
+      accounts: [transaction.accountId],
       chainId: transaction.chainId,
     });
 

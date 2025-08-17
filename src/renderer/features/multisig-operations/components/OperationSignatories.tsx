@@ -132,7 +132,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                       wallets,
                       connection.addressPrefix,
                     )}
-                    address={toAddress(signatory.accountId)}
+                    address={toAddress(signatory.accountId, { prefix: connection.addressPrefix })}
                     variant="short"
                     canCopy={false}
                     showIcon

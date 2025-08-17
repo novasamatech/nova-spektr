@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { useI18n } from '@/shared/i18n';
-import { nullable, toAccountId } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { Button, Loader } from '@/shared/ui';
 import { Box, SearchInput, Select } from '@/shared/ui-kit';
 import { networkSelectorModel } from '@/features/governance';
@@ -78,10 +78,8 @@ export const DelegationList = ({ onClick, onAddCustomClick }: Props) => {
           <div className="scrollbar-stable flex h-full flex-col items-center overflow-y-auto pt-0.5">
             <ul className="flex w-[400px] flex-col gap-y-2">
               {delegationList.map((delegate) => {
-                const accountId = toAccountId(delegate.address);
-
                 return (
-                  <li key={accountId}>
+                  <li key={delegate.accountId}>
                     <DelegationCard asset={network.asset} delegate={delegate} onClick={() => onClick(delegate)} />
                   </li>
                 );

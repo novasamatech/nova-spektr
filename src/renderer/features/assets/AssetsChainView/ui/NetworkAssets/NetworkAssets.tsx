@@ -3,7 +3,7 @@ import { memo, useEffect, useMemo, useState } from 'react';
 
 import { sumBalances } from '@/shared/api/network/service/chainsService';
 import { type Asset, type Balance, type Chain, type Wallet } from '@/shared/core';
-import { ZERO_BALANCE, groupBy, nullable, totalAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, entries, groupBy, nullable, totalAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
@@ -54,18 +54,20 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
     const newBalancesObject: Record<string, Balance> = {};
     const groupedBalances = groupBy(chainBalances, (b) => b.assetId.toString());
 
-    for (const [assetId, accountBalances] of Object.entries(groupedBalances)) {
+    for (const [assetId, accountBalances] of entries(groupedBalances)) {
       if (nullable(accountBalances)) {
         continue;
       }
 
-      let total = {} as Balance;
+      let total = undefined;
 
       for (const balance of accountBalances) {
         total = sumBalances(balance, total);
       }
 
-      newBalancesObject[assetId] = total;
+      if (total) {
+        newBalancesObject[assetId] = total;
+      }
     }
 
     setBalancesObject(newBalancesObject);
