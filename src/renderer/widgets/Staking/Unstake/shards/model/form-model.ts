@@ -286,7 +286,7 @@ const $accounts = combine(
     wallet: walletSelect.$selectedWallet,
     shards: $shards,
     staking: $staking,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, shards, staking, balances }) => {
     if (!wallet || !network || !staking) return [];
@@ -522,7 +522,7 @@ sample({
 sample({
   clock: $unstakeForm.fields.signatory.onChange,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   fn: ({ balances, network }, signatory) => {
@@ -572,7 +572,7 @@ sample({
 sample({
   source: {
     isProxy: $isProxy,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
     proxyAccounts: $realAccounts,
   },

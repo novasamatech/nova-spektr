@@ -78,7 +78,7 @@ const AccountSelector = () => {
 
   const accounts = useUnit(formModel.$accounts);
   const wallet = useUnit(walletSelect.$selectedWallet);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   const chainValue = chain.value;
   const asset = getNativeAsset(chainValue?.assets ?? []);
@@ -113,7 +113,7 @@ const Signatories = () => {
   const signatories = useUnit(formModel.$signatories);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   const chainValue = chain.value;
 

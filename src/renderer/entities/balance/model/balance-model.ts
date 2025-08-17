@@ -1,20 +1,26 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
+import { readonly, spread } from 'patronum';
 
 import { balanceMapper, storageService } from '@/shared/api/storage';
-import { type Balance } from '@/shared/core';
+import { type Balance, type BalanceDraft, type BalanceMap } from '@/shared/core';
 import { createBuffer } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '../lib/balance-utils';
 
 const balancesSet = createEvent<Balance[]>();
-const balancesUpdated = createEvent<Balance[]>();
+const balancesUpdated = createEvent<(Balance | BalanceDraft)[]>();
 const balancesRemoved = createEvent<AccountId[]>();
 
-const $balances = createStore<Balance[]>([]);
+const $balanceMap = createStore<BalanceMap>({});
+const $balances = $balanceMap.map((m) => Object.values(m));
 
 const bufferedUpdate = createBuffer({
   source: sample({ clock: [balancesSet, balancesUpdated] }),
   timeframe: 1000,
+});
+
+const logErrorFx = createEffect(async (error: Error) => {
+  console.error('Error while working with balances', error);
 });
 
 const insertBalancesFx = createEffect(async (balances: Balance[]) => {
@@ -22,8 +28,8 @@ const insertBalancesFx = createEffect(async (balances: Balance[]) => {
   return balances;
 });
 
-const removeBalancesFx = createEffect(async (ids: string[]) => {
-  await storageService.balances.deleteAll(ids);
+const removeBalancesFx = createEffect(async (balances: Balance[]) => {
+  await storageService.balances.deleteAll(balances.map((b) => b.id));
 });
 
 const populateFx = createEffect(async (): Promise<Balance[]> => {
@@ -32,35 +38,47 @@ const populateFx = createEffect(async (): Promise<Balance[]> => {
 
 sample({
   clock: bufferedUpdate,
-  fn(buffer) {
-    return buffer.reduce(balanceUtils.getMergeBalances, []);
-  },
-  target: insertBalancesFx,
-});
+  source: $balanceMap,
+  fn: (balanceMap, buffer) => {
+    const { map, updated } = balanceUtils.mergeBalanceMapWithNewBalances(balanceMap, buffer.flat());
 
-sample({
-  clock: insertBalancesFx.doneData,
-  source: $balances,
-  fn: balanceUtils.getMergeBalances,
-  target: $balances,
+    return {
+      store: map,
+      save: Object.values(updated),
+    };
+  },
+  target: spread({
+    store: $balanceMap,
+    save: insertBalancesFx,
+  }),
 });
 
 sample({
   clock: balancesRemoved,
   source: $balances,
-  fn: (balances, accounts) => {
-    return balances.filter((b) => accounts.includes(b.accountId)).map((b) => b.id);
-  },
+  fn: (balances, accounts) => balances.filter((b) => accounts.includes(b.accountId)),
   target: removeBalancesFx,
 });
 
 sample({
   clock: populateFx.doneData,
-  target: $balances,
+  fn: (balances) => {
+    return balances.reduce<BalanceMap>((acc, balance) => {
+      acc[balance.id] = balance;
+      return acc;
+    }, {});
+  },
+  target: $balanceMap,
+});
+
+sample({
+  clock: [populateFx.failData, insertBalancesFx.failData],
+  target: logErrorFx,
 });
 
 export const balanceModel = {
   $balances,
+  $balanceMap: readonly($balanceMap),
 
   populate: populateFx,
 
@@ -70,6 +88,7 @@ export const balanceModel = {
     balancesRemoved,
   },
   __test: {
+    $balanceMap,
     removeBalancesFx,
   },
 };

@@ -156,7 +156,7 @@ const $errors = combine(
     chain: $chain,
     multisigAccount: $multisigAccount,
     selectedSignatory: $selectedSignatory,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     multisigDeposit: $multisigDeposit,
     proxyDeposit: $proxyDeposit,
     fee: $fee,

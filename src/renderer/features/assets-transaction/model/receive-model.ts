@@ -3,7 +3,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { localStorageService } from '@/shared/api/local-storage';
 import { type Chain } from '@/shared/core';
 import { createFlow } from '@/shared/effector';
-import { nullable, withdrawableAmountBN } from '@/shared/lib/utils';
+import { getNativeAsset, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { createInitiatorsStore } from '@/shared/transactions';
 import { type AnyAccount, accountService } from '@/domains/network';
@@ -27,7 +27,7 @@ const $chainAccounts = combine(
   {
     selectedAccounts: $initiators,
     chain: $selectedChain,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ selectedAccounts, chain, balances }) => {
     if (selectedAccounts.length === 0 || nullable(chain)) return [];
@@ -40,7 +40,7 @@ const $chainAccounts = combine(
     return filteredAccount.map((account) => ({
       ...account,
       balance: withdrawableAmountBN(
-        balanceUtils.getBalance(balances, account.accountId, chain.chainId, chain.assets[0]?.assetId),
+        balanceUtils.getBalance(balances, account.accountId, chain.chainId, getNativeAsset(chain.assets).assetId),
       ),
     }));
   },

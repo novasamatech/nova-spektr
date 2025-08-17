@@ -4,9 +4,9 @@ import { memo, useMemo } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { type AssetByChains } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { BodyText, FootnoteText, Icon, IconButton } from '@/shared/ui';
+import { BodyText, FootnoteText, IconButton } from '@/shared/ui';
 import { AssetIcon } from '@/shared/ui-entities';
-import { CardStack, Tooltip } from '@/shared/ui-kit';
+import { CardStack } from '@/shared/ui-kit';
 import { TokenPrice } from '@/entities/price';
 import { CheckPermission, OperationType } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -51,16 +51,6 @@ export const TokenBalanceList = memo(({ asset }: Props) => {
                 <FootnoteText className="ml-1.5 text-text-tertiary">
                   {t('balances.availableNetworks', { count: asset.chains.length })}
                 </FootnoteText>
-                {totalBalance.verified && (
-                  <Tooltip>
-                    <Tooltip.Trigger>
-                      <div tabIndex={0} className="ml-2 text-text-warning">
-                        <Icon name="warn" className="cursor-pointer text-inherit" size={14} />
-                      </div>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{t('balances.verificationTooltip')}</Tooltip.Content>
-                  </Tooltip>
-                )}
               </div>
             </div>
           </div>

@@ -30,11 +30,11 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
   const approvalCurve = approvalThreshold?.curve?.type;
   const supportCurve = supportThreshold?.curve?.type;
 
-  const electorate = formatAsset(tally.ayes.add(tally.nays).add(tally.support), asset, { M: false });
-  const deposit = decisionDeposit ? formatAsset(decisionDeposit.amount, asset, { M: false }) : null;
+  const electorate = formatAsset(tally.ayes.add(tally.nays).add(tally.support), asset, { shorthands: { M: false } });
+  const deposit = decisionDeposit ? formatAsset(decisionDeposit.amount, asset, { shorthands: { M: false } }) : null;
 
   const turnoutValue = supportThreshold ? BN.max(BN_ZERO, supportThreshold.value.sub(tally.support)) : BN_ZERO;
-  const turnout = supportThreshold ? formatAsset(turnoutValue, asset, { M: false }) : null;
+  const turnout = supportThreshold ? formatAsset(turnoutValue, asset, { shorthands: { M: false } }) : null;
 
   return (
     <Modal isOpen={isOpen} size="md" onToggle={closeModal}>

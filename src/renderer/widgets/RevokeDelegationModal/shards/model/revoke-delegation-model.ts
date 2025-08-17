@@ -255,7 +255,7 @@ sample({
 sample({
   clock: [flowStarted, $revokeDelegationData.updates],
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,

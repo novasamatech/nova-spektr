@@ -104,7 +104,7 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             fee: $fee,
             multisigDeposit: $multisigDeposit,
-            balances: balanceModel.$balances,
+            balances: balanceModel.$balanceMap,
             signatories: $signatories,
             chain: $chain,
           }),
@@ -190,7 +190,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },

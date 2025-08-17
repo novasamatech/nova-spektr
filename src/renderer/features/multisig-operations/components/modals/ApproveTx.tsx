@@ -66,7 +66,7 @@ const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
@@ -214,7 +214,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
       chainId: operation.chainId,
       transaction: approveTx,
       assetId: nativeAsset.assetId,
-      getBalance: balanceUtils.getBalanceWrapped(balances),
+      getBalance: (...args) => balanceUtils.getBalance(balances, ...args),
       getTransactionFee: oldTransactionService.getTransactionFee,
     });
 

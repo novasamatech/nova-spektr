@@ -205,7 +205,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: networkSelectorModel.$governanceChainApi,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },
@@ -232,7 +232,7 @@ const $availableBalance = combine(
     initiator: form.fields.initiator.$value,
     referendum: $referendum,
     chain: networkSelectorModel.$governanceChain,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     accounts: accounts.$list,
   },
   ({ referendum, balances, chain, initiator }) => {

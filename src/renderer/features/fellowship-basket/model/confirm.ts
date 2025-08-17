@@ -3,7 +3,14 @@ import { BN } from '@polkadot/util';
 import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type Balance, type Chain, type ChainId, type Connection, TransactionType, type Wallet } from '@/shared/core';
+import {
+  type BalanceMap,
+  type Chain,
+  type ChainId,
+  type Connection,
+  TransactionType,
+  type Wallet,
+} from '@/shared/core';
 import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
@@ -32,7 +39,7 @@ type DataParams = {
   apis: Record<ChainId, ApiPromise>;
   transaction: BasketTransaction;
   connections: Record<ChainId, Connection>;
-  balances: Balance[];
+  balances: BalanceMap;
 };
 
 const flow = createGate<BasketTransaction>();
@@ -77,7 +84,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -140,7 +147,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -203,7 +210,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -267,7 +274,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -332,7 +339,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);

@@ -400,7 +400,7 @@ sample({
 sample({
   clock: $unlockForm.fields.signatory.onChange,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: networkSelectorModel.$network,
   },
   fn: ({ balances, network }, signatory) => {
@@ -464,7 +464,7 @@ sample({
 sample({
   source: {
     isProxy: $isProxy,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: networkSelectorModel.$network,
     proxyAccounts: $realAccounts,
   },

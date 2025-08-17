@@ -336,7 +336,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     feeData: $feeData,
     walletData: $walletData,
     tracks: $tracks,

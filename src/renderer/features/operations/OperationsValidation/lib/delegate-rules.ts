@@ -5,11 +5,11 @@ import { t } from 'i18next';
 import { formatAmount } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import {
-  type BalanceMap,
   type DelegateFeeStore,
   type NetworkStore,
   type TransferAccountStore,
   type TransferSignatoryFeeStore,
+  type ValidatorBalanceMap,
 } from '../types/types';
 
 import { balanceValidation, descriptionValidation } from './validation';
@@ -65,7 +65,7 @@ export const DelegateRules = {
     },
 
     notEnoughBalance: (
-      source: Store<{ network: NetworkStore | null; balance: BalanceMap }>,
+      source: Store<{ network: NetworkStore | null; balance: ValidatorBalanceMap }>,
       config: { withFormatAmount: boolean } = { withFormatAmount: true },
     ) => ({
       name: 'notEnoughBalance',
@@ -74,7 +74,7 @@ export const DelegateRules = {
       validator: (
         amount: string,
         _: any,
-        { network, balance }: { network: NetworkStore | null; balance: BalanceMap },
+        { network, balance }: { network: NetworkStore | null; balance: ValidatorBalanceMap },
       ) => {
         if (!network) return false;
 

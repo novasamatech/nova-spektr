@@ -4,7 +4,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { attach, createEffect } from 'effector';
 import { t } from 'i18next';
 
-import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
 import { getAssetById, transferableAmount } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -19,7 +19,7 @@ type ValidateParams = {
   chain: Chain;
   asset: Asset;
   transaction: Transaction;
-  balances: Balance[];
+  balances: BalanceMap;
   signerOptions?: Partial<SignerOptions>;
 };
 
@@ -76,7 +76,7 @@ const validateFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];

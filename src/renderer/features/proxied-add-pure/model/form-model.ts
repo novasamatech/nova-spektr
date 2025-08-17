@@ -72,7 +72,7 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             fee: $fee,
             proxyDeposit: $proxyDeposit,
-            balances: balanceModel.$balances,
+            balances: balanceModel.$balanceMap,
             isMultisig: $isMultisig,
           }),
           fn: (value, form, { isMultisig, balances, fee, proxyDeposit }) => {
@@ -112,7 +112,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             multisigDeposit: $multisigDeposit,
             proxyDeposit: $proxyDeposit,
-            balances: balanceModel.$balances,
+            balances: balanceModel.$balanceMap,
             isMultisig: $isMultisig,
           }),
           fn: (value, form, { isMultisig, balances, fee, multisigDeposit }) => {
@@ -238,7 +238,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },

@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { BN_ZERO } from '@polkadot/util';
 
-import { type Asset, type AssetBalance, type Balance, type Chain, CryptoType } from '@/shared/core';
+import { type Asset, type Balance, type BalanceMap, type Chain, CryptoType } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
 import { assert, nullable } from '@/shared/lib/utils';
 import {
@@ -27,11 +27,10 @@ const accountCollectChildrenPipeline = createPipeline<AnyAccount[], { account: A
 const validateRouteBalancesTransformer = createTransformer<
   {
     api: ApiPromise;
-    balances: Map<AnyAccount, AssetBalance>;
+    balances: Map<AnyAccount, Balance>;
     account: AnyAccount;
     route: AnyAccount[];
     asset: Asset;
-    ed: BN;
   },
   Promise<TransactionValidationBalanceError> | TransactionValidationBalanceError
 >();
@@ -298,24 +297,18 @@ function findNextAccount(route: AnyAccount[], account: AnyAccount): AnyAccount |
 
 // validations
 
+// TODO pass all balances in case of xcm
 function mutateTransitionBalanceValidationResult(
   results: TransactionValidationBalanceError[],
   asset: Asset,
   account: AnyAccount,
-  fn: (balance: AssetBalance, account: AnyAccount) => TransactionValidationBalanceError,
+  fn: (balance: Balance, account: AnyAccount) => TransactionValidationBalanceError,
 ) {
-  const index = results.findLastIndex(r => r.account.accountId === account.accountId && r.asset === asset);
+  const index = results.findLastIndex(
+    r => r.account.accountId === account.accountId && r.asset.assetId === asset.assetId,
+  );
   if (index === -1) {
-    results.push(
-      fn(
-        {
-          free: BN_ZERO,
-          frozen: BN_ZERO,
-          reserved: BN_ZERO,
-        },
-        account,
-      ),
-    );
+    return results;
   }
 
   return results.flatMap((r, i) => {
@@ -329,15 +322,15 @@ function mutateTransitionBalanceValidationResult(
 
 type BalanceValidationParams = {
   route: AnyAccount[];
-  balances: Balance[];
+  balances: BalanceMap;
   asset: Asset;
   api: ApiPromise;
-  ed: BN;
 };
 
-async function validateRouteBalances({ api, route, balances, asset, ed }: BalanceValidationParams) {
+async function validateRouteBalances({ api, route, balances, asset }: BalanceValidationParams) {
   const chainId = api.genesisHash.toHex();
-  const balancesMap = new Map<AnyAccount, AssetBalance>();
+  const balancesMap = new Map<AnyAccount, Balance>();
+  const unhandledAccounts = new Set<AnyAccount>(route);
 
   for (const account of route) {
     const balance = balanceUtils.getBalance(balances, account.accountId, chainId, asset.assetId);
@@ -351,25 +344,28 @@ async function validateRouteBalances({ api, route, balances, asset, ed }: Balanc
   const results: TransactionValidationBalanceError[] = [];
 
   for (const account of route) {
-    const result = await validateRouteBalancesTransformer({ account, route, balances: balancesMap, ed, asset, api });
+    const result = await validateRouteBalancesTransformer({ account, route, balances: balancesMap, asset, api });
     if (result) {
       results.push(result);
       balancesMap.set(result.account, result.balance.balance);
-    } else {
-      const balance = balancesMap.get(account);
-      assert(balance, 'Balance not found');
-
-      results.push({
-        account,
-        asset,
-        action: '',
-        required: BN_ZERO,
-        balance: {
-          success: true,
-          balance,
-        },
-      });
+      unhandledAccounts.delete(result.account);
     }
+  }
+
+  for (const account of unhandledAccounts) {
+    const balance = balancesMap.get(account);
+    assert(balance, `Balance for ${account.accountId} not found`);
+
+    results.push({
+      account,
+      asset,
+      action: '',
+      required: BN_ZERO,
+      balance: {
+        success: true,
+        balance,
+      },
+    });
   }
 
   return results;
@@ -410,6 +406,7 @@ export const accountService = {
   isChainAccount,
   isUniversalAccount,
   isAccountAvailableOnChain,
+  isCryptoMatch,
 
   canSignMultipleTransactions,
 
