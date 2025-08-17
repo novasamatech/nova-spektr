@@ -3,6 +3,7 @@ import { createForm } from 'effector-forms';
 import { createGate } from 'effector-react';
 import { t } from 'i18next';
 
+import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
   CryptoType,
@@ -86,7 +87,7 @@ const $accountDraft = form.$values.map(({ address, walletName }): Omit<WatchOnly
 });
 
 const $chains = combine($accountDraft, networkModel.$chains, (account, chains) => {
-  const chainsList = Object.values(chains);
+  const chainsList = chainsService.sortChains(Object.values(chains));
 
   switch (account.cryptoType) {
     case CryptoType.ETHEREUM:
