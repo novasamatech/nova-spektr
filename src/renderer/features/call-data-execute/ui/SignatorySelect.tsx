@@ -7,11 +7,11 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
 import { FootnoteText, InputHint } from '@/shared/ui';
-import { Address, AssetBalance } from '@/shared/ui-entities';
+import { Address, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 
 const walletTypesTitles: Record<WalletType, string> = {
@@ -33,7 +33,7 @@ export const SignatorySelect = memo(() => {
 
   const wallets = useUnit(walletModel.$wallets);
   const signatories = useUnit(formModel.$signatories);
-  const balances = useUnit(balanceModel.$balances);
+  const balancesMap = useUnit(balanceModel.$balanceMap);
   const chain = useUnit(formModel.form.fields.chain.$value);
   const {
     fields: { signatory },
@@ -95,7 +95,7 @@ export const SignatorySelect = memo(() => {
           if (!firstMatchingSignatory) return null;
 
           const balance = balanceUtils.getBalance(
-            balances,
+            balancesMap,
             firstMatchingSignatory.accountId,
             chain.chainId,
             asset.assetId,
@@ -132,7 +132,7 @@ export const SignatorySelect = memo(() => {
     }
 
     return options;
-  }, [wallets, balances, chain, asset, signatories, t]);
+  }, [wallets, balancesMap, chain, asset, signatories, t]);
 
   const selectedSignatoryWallet = useMemo(() => {
     if (signatory.value) {
@@ -143,11 +143,11 @@ export const SignatorySelect = memo(() => {
 
   const signatoryBalance = useMemo(() => {
     if (signatory.value && chain && asset) {
-      const balance = balanceUtils.getBalance(balances, signatory.value.accountId, chain.chainId, asset.assetId);
+      const balance = balanceUtils.getBalance(balancesMap, signatory.value.accountId, chain.chainId, asset.assetId);
       return transferableAmountBN(balance);
     }
     return BN_ZERO;
-  }, [signatory.value, chain, asset, balances]);
+  }, [signatory.value, chain, asset, balancesMap]);
 
   return (
     <Field text={t('callData.fields.signatory.label')}>

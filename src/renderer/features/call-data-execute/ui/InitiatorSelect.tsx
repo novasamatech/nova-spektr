@@ -14,13 +14,11 @@ import {
 } from '@/shared/lib/utils';
 import { FootnoteText, InputHint } from '@/shared/ui';
 import { Address, AssetBalance, WalletIcon } from '@/shared/ui-entities';
-import { Box, Field } from '@/shared/ui-kit';
+import { Box, Field, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
-
-import { Select } from './SearchableSelect';
 
 const walletTypesTitles: Record<WalletType, string> = {
   [WalletType.POLKADOT_EXTENSION]: 'wallets.polkadotExtensionLabel',
@@ -41,7 +39,7 @@ export const InitiatorSelect = memo(() => {
 
   const wallets = useUnit(walletModel.$wallets);
   const allAccounts = useUnit(walletModel.$availableAccounts);
-  const balances = useUnit(balanceModel.$balanceMap);
+  const balancesMap = useUnit(balanceModel.$balanceMap);
   const chain = useUnit(formModel.form.fields.chain.$value);
   const {
     fields: { initiator },
@@ -123,7 +121,7 @@ export const InitiatorSelect = memo(() => {
           if (!firstMatchingAccount) return null;
 
           const balance = balanceUtils.getBalance(
-            balances,
+            balancesMap,
             firstMatchingAccount.accountId,
             chain.chainId,
             asset.assetId,
@@ -160,7 +158,7 @@ export const InitiatorSelect = memo(() => {
     }
 
     return options;
-  }, [wallets, balances, chain, asset, allAccounts, searchQuery, t]);
+  }, [wallets, balancesMap, chain, asset, allAccounts, searchQuery, t]);
 
   const selectedWallet = useMemo(() => {
     if (initiator.value) {
