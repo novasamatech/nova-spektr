@@ -20,7 +20,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 
-import { SearchableSelect, SearchableSelectGroup, SearchableSelectItem } from './SearchableSelect';
+import { Select } from './SearchableSelect';
 
 const walletTypesTitles: Record<WalletType, string> = {
   [WalletType.POLKADOT_EXTENSION]: 'wallets.polkadotExtensionLabel',
@@ -130,7 +130,7 @@ export const InitiatorSelect = memo(() => {
           );
 
           return (
-            <SearchableSelectItem key={wallet.id} value={wallet.id.toString()}>
+            <Select.Item key={wallet.id} value={wallet.id.toString()}>
               <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2} width="100%">
                 <Address
                   showIcon
@@ -145,16 +145,16 @@ export const InitiatorSelect = memo(() => {
                   asset={asset}
                 />
               </Box>
-            </SearchableSelectItem>
+            </Select.Item>
           );
         })
         .filter(nonNullable);
 
       if (walletItems.length > 0) {
         options.push(
-          <SearchableSelectGroup key={walletGroup.walletType} title={walletTypeTitle}>
+          <Select.Group key={walletGroup.walletType} title={walletTypeTitle}>
             {walletItems}
-          </SearchableSelectGroup>,
+          </Select.Group>,
         );
       }
     }
@@ -171,7 +171,7 @@ export const InitiatorSelect = memo(() => {
 
   return (
     <Field text={t('callData.fields.initiator.label')}>
-      <SearchableSelect
+      <Select
         placeholder={t('callData.fields.initiator.placeholder')}
         value={selectedWallet?.id.toString() ?? null}
         height="md"
@@ -179,7 +179,7 @@ export const InitiatorSelect = memo(() => {
         onChange={onChange}
       >
         {options}
-      </SearchableSelect>
+      </Select>
       <InputHint variant="error" active={initiator.hasError}>
         {t(initiator.errorMessage)}
       </InputHint>
