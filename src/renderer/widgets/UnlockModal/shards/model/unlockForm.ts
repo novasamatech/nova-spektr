@@ -6,7 +6,7 @@ import { spread } from 'patronum';
 
 import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
 import { type Asset, type Chain, type ProxiedAccount, type Transaction } from '@/shared/core';
-import { ZERO_BALANCE, dictionary, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, dictionary, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -367,7 +367,6 @@ sample({
         ...shard,
         actions: claim.actions,
         amount: claim.amount.toString(),
-        address: toAddress(claim.accountId),
       });
     }
 
