@@ -12,10 +12,10 @@ import {
   getBalanceBn,
   getRelaychainAsset,
   nonNullable,
-  toAddress,
   transferableAmount,
   transferableAmountBN,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
@@ -39,7 +39,7 @@ const formInitiated = createEvent<
   WalletData & {
     shards: AnyAccount[];
     activeDelegations: Record<
-      string,
+      AccountId,
       {
         conviction: Conviction;
         balance: BN;
@@ -309,20 +309,17 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: $networkStore,
-  filter: (network, { activeDelegations, shards }) => {
+  filter: ({ activeDelegations, shards }) => {
     const convictions = shards.map((shard) => {
-      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
-
-      return activeDelegations[address].conviction;
+      return activeDelegations[shard.accountId].conviction;
     });
 
     return allEqual(convictions);
   },
-  fn: (network, { activeDelegations, shards }) => {
-    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
+  fn: ({ activeDelegations, shards }) => {
+    const accountId = shards[0].accountId;
 
-    return { conviction: activeDelegations[address].conviction, isUnchanged: shards.length > 1 };
+    return { conviction: activeDelegations[accountId].conviction, isUnchanged: shards.length > 1 };
   },
   target: spread({
     conviction: $delegateForm.fields.conviction.onChange,
@@ -335,16 +332,14 @@ sample({
   source: $networkStore,
   filter: (network, { shards, activeDelegations }) => {
     const balances = shards.map((shard) => {
-      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
-
-      return activeDelegations[address].balance;
+      return activeDelegations[shard.accountId].balance;
     });
 
     return !!network && allEqual(balances, (a, b) => a.eq(b));
   },
   fn: (network, { shards, activeDelegations }) => {
-    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
-    const balance = activeDelegations[address].balance.toString();
+    const accountId = shards[0].accountId;
+    const balance = activeDelegations[accountId].balance.toString();
     const precision = network!.asset.precision;
 
     return getBalanceBn(balance, precision).toString();
@@ -354,11 +349,10 @@ sample({
 
 sample({
   clock: formInitiated,
-  source: $networkStore,
-  fn: (network, { activeDelegations, shards }) => {
-    const address = toAddress(shards[0].accountId, { prefix: network!.chain.addressPrefix });
+  fn: ({ activeDelegations, shards }) => {
+    const accountId = shards[0].accountId;
 
-    return activeDelegations[address].conviction;
+    return activeDelegations[accountId].conviction;
   },
   target: $previousConviction,
 });
