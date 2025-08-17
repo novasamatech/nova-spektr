@@ -78,7 +78,7 @@ export const isCorrectAccountId = (accountId?: HexString): boolean => {
   return trimmedValue.length === PUBLIC_KEY_LENGTH && /^[0-9a-fA-F]+$/.test(trimmedValue);
 };
 
-export const isSubstrateAccountId = (accountId?: HexString): boolean => {
+export const isSubstrateAccountId = (accountId?: string): boolean => {
   if (!accountId) return false;
 
   try {
