@@ -5,6 +5,7 @@ import { delay, spread } from 'patronum';
 
 import { type PartialProxiedAccount, ProxyVariant, type Timepoint } from '@/shared/core';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { systemPallet } from '@/shared/pallet/system';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type PathType, Paths } from '@/shared/routes';
 import { subscriptionService } from '@/entities/chain';
@@ -65,7 +66,7 @@ const getPureProxyFx = createEffect(
       const pureCreatedParams = {
         section: 'proxy',
         method: 'PureCreated',
-        data: [undefined, toAddress(accountId, { prefix: api.consts.system.ss58Prefix.toNumber() })],
+        data: [undefined, toAddress(accountId, { prefix: systemPallet.consts.ss58Prefix(api) })],
       };
 
       const unsubscribe: UnsubscribePromise = subscriptionService.subscribeEvents(api, pureCreatedParams, event => {

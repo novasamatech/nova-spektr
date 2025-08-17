@@ -1,9 +1,9 @@
-import { type Address, type WalletType } from '@/shared/core';
+import { type WalletType } from '@/shared/core';
 import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = {
-  address: Address | undefined;
+  address: string | undefined;
   size?: number;
   iconSize?: number;
   type: WalletType;
@@ -13,7 +13,7 @@ type Props = {
 export const WalletAccountIcon = ({ address, size = 32, iconSize = 16, type, theme }: Props) => {
   return (
     <div className="relative" style={{ width: `${size}px`, height: `${size}px` }}>
-      <Identicon canCopy={false} address={address ?? ''} size={size} background={false} theme={theme} />
+      <Identicon canCopy={false} value={address ?? ''} size={size} background={false} theme={theme} />
       <div className="absolute -right-1 -bottom-1 rounded-full border-2 border-white bg-white">
         <WalletIcon type={type} size={iconSize} />
       </div>

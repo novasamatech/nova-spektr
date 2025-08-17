@@ -3,30 +3,36 @@ import { Trans } from 'react-i18next';
 
 import { type DelegateInfo } from '@/shared/api/governance';
 import { TEST_IDS } from '@/shared/constants';
-import { type Address, type Asset, type Identity } from '@/shared/core';
+import { type Asset, type Chain, type Identity } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Address as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { locksService } from '@/entities/governance';
 
 type Props = {
+  chain: Chain;
   asset: Asset;
-  identity: Record<Address, Identity>;
+  identity: Record<AccountId, Identity>;
   delegates: DelegateInfo[];
   multiplier?: boolean;
 };
 
-export const VotedByDelegates = ({ asset, identity, delegates, multiplier }: Props) => {
+export const VotedByDelegates = ({ asset, chain, identity, delegates, multiplier }: Props) => {
   const { t } = useI18n();
 
   if (delegates.length === 1) {
     const delegate = delegates[0];
 
-    const delegateName = nonNullable(identity[delegate.delegateAddress]) ? (
-      <span className="truncate">{identity[delegate.delegateAddress].parent.name}</span>
+    const delegateName = nonNullable(identity[delegate.delegateAccount]) ? (
+      <span className="truncate">{identity[delegate.delegateAccount].parent.name}</span>
     ) : (
-      <AccountAddress showIcon={false} variant="short" address={delegate.delegateAddress} />
+      <AccountAddress
+        showIcon={false}
+        variant="short"
+        address={toAddress(delegate.delegateAccount, { prefix: chain.addressPrefix })}
+      />
     );
 
     const amount = <AssetBalance className="text-icon-alert" value={delegate.amount} asset={asset} />;

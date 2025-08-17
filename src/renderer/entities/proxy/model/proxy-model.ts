@@ -3,6 +3,7 @@ import { groupBy } from 'lodash';
 
 import { storageService } from '@/shared/api/storage';
 import { type ID, type NoID, type ProxyAccount } from '@/shared/core';
+import { entries } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 type ProxyStore = Record<AccountId, ProxyAccount[]>;
@@ -69,9 +70,7 @@ sample({
   source: $proxies,
   filter: (_, proxiesToRemove) => Boolean(proxiesToRemove),
   fn: (proxies, proxiesToRemove) => {
-    return Object.entries(proxies).reduce<ProxyStore>((acc, entry) => {
-      const [accountId, proxyAccounts] = entry as [AccountId, ProxyAccount[]];
-
+    return entries(proxies).reduce<ProxyStore>((acc, [accountId, proxyAccounts]) => {
       const filteredProxyAccounts = proxyAccounts.filter((proxyAccount) => !proxiesToRemove!.includes(proxyAccount.id));
       if (filteredProxyAccounts.length) {
         acc[accountId] = filteredProxyAccounts;

@@ -1,4 +1,4 @@
-import { type Address } from './general';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export type Identity = {
   subName: string;
@@ -9,7 +9,7 @@ export type Identity = {
 };
 
 type ParentIdentity = {
-  address: Address;
+  accountId: AccountId;
   name: string;
   // judgements: Judgement[];
 };
@@ -20,7 +20,7 @@ type ParentIdentity = {
 // };
 
 export type SubIdentity = {
-  sub: Address;
-  parent: Address;
+  sub: AccountId;
+  parent: AccountId;
   subName: string;
 };

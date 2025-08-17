@@ -1,8 +1,8 @@
 import { type ReactNode } from 'react';
 
-import { type Asset, type Explorer, type Validator } from '@/shared/core';
+import { type Asset, type Chain, type Explorer, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HelpText, IconButton } from '@/shared/ui';
 import { AssetBalance, Hash, Identicon } from '@/shared/ui-entities';
 // eslint-disable-next-line boundaries/element-types
@@ -43,53 +43,57 @@ const ValidatorsTableRoot = ({ validators, children, listClassName }: TableProps
 type RowProps = {
   validator: Validator;
   identity?: AccountIdentity;
+  chain?: Chain;
   asset?: Asset;
   explorers?: Explorer[];
 };
 
-const ValidatorRow = ({ validator, identity, asset, explorers = [] }: RowProps) => (
-  <>
-    <div className="mr-auto flex items-center gap-x-2" data-testid="validator">
-      <Identicon address={validator.address} background={false} size={20} />
-      {identity ? (
-        <div className="flex flex-col">
-          <BodyText>{identity.name}</BodyText>
-          <HelpText className="text-text-tertiary">{validator.address}</HelpText>
-        </div>
-      ) : (
-        <BodyText>{validator.address}</BodyText>
-      )}
-    </div>
-    <div className="flex flex-col px-3">
-      {asset && (
-        <>
-          <AssetBalance value={validator.ownStake || '0'} asset={asset} />
-          <AssetFiatBalance amount={validator.ownStake} asset={asset} />
-        </>
-      )}
-    </div>
-    <div className="flex flex-col px-3">
-      {asset && (
-        <>
-          <AssetBalance value={validator.totalStake || '0'} asset={asset} />
-          <AssetFiatBalance amount={validator.totalStake} asset={asset} />
-        </>
-      )}
-    </div>
+const ValidatorRow = ({ validator, identity, chain, asset, explorers = [] }: RowProps) => {
+  const address = toAddress(validator.accountId, { prefix: chain?.addressPrefix });
+  return (
+    <>
+      <div className="mr-auto flex items-center gap-x-2" data-testid="validator">
+        <Identicon value={validator.accountId} background={false} size={20} />
+        {identity ? (
+          <div className="flex flex-col">
+            <BodyText>{identity.name}</BodyText>
+            <HelpText className="text-text-tertiary">{address}</HelpText>
+          </div>
+        ) : (
+          <BodyText>{address}</BodyText>
+        )}
+      </div>
+      <div className="flex flex-col px-3">
+        {asset && (
+          <>
+            <AssetBalance value={validator.ownStake || '0'} asset={asset} />
+            <AssetFiatBalance amount={validator.ownStake} asset={asset} />
+          </>
+        )}
+      </div>
+      <div className="flex flex-col px-3">
+        {asset && (
+          <>
+            <AssetBalance value={validator.totalStake || '0'} asset={asset} />
+            <AssetFiatBalance amount={validator.totalStake} asset={asset} />
+          </>
+        )}
+      </div>
 
-    <ExplorersPopover button={<IconButton name="details" />} address={validator.address} explorers={explorers} />
-  </>
-);
+      <ExplorersPopover button={<IconButton name="details" />} address={address} explorers={explorers} />
+    </>
+  );
+};
 
-const ValidatorShortRow = ({ validator, identity }: Pick<RowProps, 'validator' | 'identity'>) => (
+const ValidatorShortRow = ({ validator, identity, chain }: Pick<RowProps, 'validator' | 'identity' | 'chain'>) => (
   <div className="mr-auto flex items-center gap-x-2">
-    <Identicon address={validator.address} background={false} size={20} />
+    <Identicon value={validator.accountId} background={false} size={20} />
     <div className="flex w-[276px] flex-col">
       {identity ? (
         <BodyText className="text-text-secondary">{identity.name}</BodyText>
       ) : (
         <BodyText className="text-text-secondary">
-          <Hash value={validator.address} variant="truncate" />
+          <Hash value={toAddress(validator.accountId, { prefix: chain?.addressPrefix })} variant="truncate" />
         </BodyText>
       )}
     </div>

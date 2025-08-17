@@ -1,9 +1,10 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { type Address, type Asset, type Chain } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon, Plate } from '@/shared/ui';
 import { AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Checkbox, Skeleton } from '@/shared/ui-kit';
@@ -19,8 +20,8 @@ type Props = {
   isStakingLoading: boolean;
   stake: NominatorInfo;
   content: ReactNode;
-  onToggleNominator: (nominator: Address, boolean: boolean) => void;
-  onCheckValidators: (stash?: Address) => void;
+  onToggleNominator: (nominator: AccountId, boolean: boolean) => void;
+  onCheckValidators: (stash?: AccountId) => void;
 };
 
 export const NominatorsItem = ({
@@ -45,7 +46,7 @@ export const NominatorsItem = ({
           <Checkbox
             disabled={isStakingLoading}
             checked={stake.isSelected}
-            onChange={(checked) => onToggleNominator(stake.address, checked)}
+            onChange={(checked) => onToggleNominator(stake.account.accountId, checked)}
           />
           <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr)_auto]">{content}</div>
         </div>

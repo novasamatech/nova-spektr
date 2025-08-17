@@ -16,7 +16,7 @@ import {
   TransactionType,
   type Wallet,
 } from '@/shared/core';
-import { dictionary, toAddress } from '@/shared/lib/utils';
+import { dictionary, toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type MultisigEvent, type MultisigOperation, accountService } from '@/domains/network';
@@ -61,7 +61,7 @@ export const getSignatoryName = (
   const fromAccount = finderFn(accounts)?.name;
   if (fromAccount) return fromAccount;
 
-  return toAddress(signatoryId, { chunk: 5, prefix: addressPrefix });
+  return toShortAddress(toAddress(signatoryId, { prefix: addressPrefix }), 5);
 };
 
 export const getSignatoryAccounts = (
@@ -196,7 +196,7 @@ export const getDelegationVotes = (tx: MultisigOperation): string | undefined =>
   return balance.mul(conviction).toString();
 };
 
-export const getDelegationTarget = (tx: MultisigOperation): string | undefined => {
+export const getDelegationTarget = (tx: MultisigOperation): AccountId | undefined => {
   const coreTxDelegate = getCoreTx(tx);
   if (!coreTxDelegate) return undefined;
 
@@ -208,7 +208,7 @@ export const getDelegationTarget = (tx: MultisigOperation): string | undefined =
     coreTx = coreTxDelegate;
   }
 
-  return coreTx?.args.target;
+  return toAccountId(coreTx?.args.target);
 };
 
 export const getDelegationTracks = (tx: MultisigOperation): string[] | undefined => {
@@ -238,7 +238,7 @@ export const getDelegationTracks = (tx: MultisigOperation): string[] | undefined
 export const getUndelegationData = (
   api: ApiPromise,
   tx: MultisigOperation,
-): Promise<{ votes: string | undefined; target: string | undefined }> => {
+): Promise<{ votes: string | undefined; target: AccountId | undefined }> => {
   const coreTxDelegate = getCoreTx(tx);
   const emptyResult = { votes: undefined, target: undefined };
 
@@ -265,7 +265,7 @@ export const getUndelegationData = (
 
     return {
       votes: votingService.calculateVotingPower(delegation.data.balance, delegation.data.conviction).toString(),
-      target: toAddress(delegation.data.target),
+      target: delegation.data.target,
     };
   });
 };

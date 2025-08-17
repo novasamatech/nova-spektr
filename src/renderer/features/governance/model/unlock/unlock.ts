@@ -4,7 +4,7 @@ import { createEffect, createStore, sample } from 'effector';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@/shared/api/governance';
 import { type Referendum, type TrackId, type TrackInfo, type TrackLocks, type VotingMap } from '@/shared/core';
-import { getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@/shared/lib/utils';
+import { entries, getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@/entities/governance';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -62,9 +62,7 @@ const getClaimScheduleFx = createEffect(
     const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
 
-    const claims = Object.entries(trackLocks).flatMap((entry) => {
-      const [accountId, trackLock] = entry as [AccountId, Record<TrackId, BN>];
-
+    const claims = entries(trackLocks).flatMap(([accountId, trackLock]) => {
       const claimSchedule = claimScheduleService.estimateClaimSchedule({
         currentBlockNumber,
         referendums,

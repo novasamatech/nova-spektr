@@ -23,7 +23,12 @@ export const AccountExplorers = memo(({ accountId, chain, children, testId }: Pr
   return (
     <Popover align="end" dialog testId="AddressExplorer">
       <Popover.Trigger>
-        <IconButton name="details" className="text-icon-default" testId={testId} onClick={e => e.stopPropagation()} />
+        <IconButton
+          name="details"
+          className="p-0 text-icon-default"
+          testId={testId}
+          onClick={e => e.stopPropagation()}
+        />
       </Popover.Trigger>
       <Popover.Content>
         <Box gap={2} padding={4} width="230px">

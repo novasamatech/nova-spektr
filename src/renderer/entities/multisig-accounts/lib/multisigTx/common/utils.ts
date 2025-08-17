@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Address, type DecodedTransaction, type Transaction } from '@/shared/core';
+import { type DecodedTransaction, type Transaction } from '@/shared/core';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type MultisigEvent, type MultisigOperation, multisigOperationService } from '@/domains/network';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
@@ -9,9 +9,9 @@ import { type PendingMultisigTransaction } from './types';
 
 export const getPendingMultisigTxs = async (
   api: ApiPromise,
-  address: Address,
+  accountId: AccountId,
 ): Promise<PendingMultisigTransaction[]> => {
-  const multisigs = await api.query.multisig.multisigs.entries(address);
+  const multisigs = await api.query.multisig.multisigs.entries(accountId);
 
   return multisigs
     .filter(([, opt]) => opt.isSome)
