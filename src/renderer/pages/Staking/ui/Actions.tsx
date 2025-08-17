@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 import { type Stake } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { entries, toAccountId } from '@/shared/lib/utils';
+import { entries } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, Button, Icon, SmallTitleText } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
@@ -65,11 +65,11 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
   const wrongOverlaps = operationsSummary.bond_nominate > 0 && otherActionsSum > 0;
 
   const isController = (stake: Stake): boolean => {
-    return !stake.controller || toAccountId(stake.accountId) === toAccountId(stake.controller);
+    return !stake.controller || stake.accountId === stake.controller;
   };
 
   const isStash = (stake: Stake): boolean => {
-    return !stake.stash || toAccountId(stake.accountId) === toAccountId(stake.stash);
+    return !stake.stash || stake.accountId === stake.stash;
   };
 
   const getIncorrectAccountType = (operation: Operations): ControllerTypes | null => {
