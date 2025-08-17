@@ -5,7 +5,7 @@ import { readonly } from 'patronum';
 
 import { type DelegateAccount, delegationService } from '@/shared/api/governance';
 import { type Chain } from '@/shared/core';
-import { MONTH, nonNullable, toAccountId } from '@/shared/lib/utils';
+import { MONTH, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identity } from '@/domains/network';
 import { networkSelectorModel } from '../model/networkSelector';
@@ -48,7 +48,7 @@ sample({
   fn: (delegates, { delegate, votes }) => {
     const newDelegates = [...delegates];
 
-    const index = newDelegates.findIndex((d) => d.address === delegate.address);
+    const index = newDelegates.findIndex((d) => d.accountId === delegate.accountId);
 
     if (index === -1) {
       newDelegates.push({ ...delegate, delegatorVotes: votes.toString(), delegators: 1 });
@@ -78,10 +78,9 @@ sample({
     for (const delegate of delegates) {
       if (nonNullable(delegate.name)) continue;
 
-      const accountId = toAccountId(delegate.address);
-      if (nonNullable(identity[chain!.chainId]?.[accountId])) continue;
+      if (nonNullable(identity[chain!.chainId]?.[delegate.accountId])) continue;
 
-      accounts.add(accountId);
+      accounts.add(delegate.accountId);
     }
 
     return {

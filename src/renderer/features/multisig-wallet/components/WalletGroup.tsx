@@ -60,7 +60,7 @@ export const WalletGroup = memo((props: Props) => {
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
-              const address = wallet.accounts[0]?.accountId;
+              const accountId = wallet.accounts[0]?.accountId;
 
               let chain: Chain | null = null;
               let label: string | null = null;
@@ -78,7 +78,7 @@ export const WalletGroup = memo((props: Props) => {
                   <div className="flex-1">
                     <WalletManagement
                       wallet={wallet}
-                      address={address}
+                      accountId={accountId}
                       description={
                         <WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />
                       }

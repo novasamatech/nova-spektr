@@ -25,7 +25,7 @@ export const SelectableRoot = ({ accountId, accountName, checked, semiChecked, o
       <Checkbox checked={checked} semiChecked={semiChecked} onChange={onChange} />
 
       <div className="flex w-full grow items-center gap-x-2 truncate">
-        <Identicon address={address} theme="jdenticon" size={20} background={false} canCopy={false} />
+        <Identicon value={address} theme="jdenticon" size={20} background={false} canCopy={false} />
         <FootnoteText
           className={cnTw('min-w-0 grow', checked || semiChecked ? 'text-text-primary' : 'text-text-secondary')}
         >

@@ -3,7 +3,7 @@ import { uniq } from 'lodash';
 import { combineEvents } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { keys } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createInitiatorsStore } from '@/shared/transactions';
 import { accountService } from '@/domains/network';
@@ -40,9 +40,8 @@ const $activeTracks = combine(
   {
     delegate: $delegate,
     votes: votingAggregate.$activeWalletVotes,
-    chain: networkSelectorModel.$governanceChain,
   },
-  ({ delegate, votes, chain }) => {
+  ({ delegate, votes }) => {
     const activeTracks: Record<AccountId, Set<string>> = {};
 
     for (const [voterAccountId, voteList] of Object.entries(votes)) {
@@ -51,9 +50,7 @@ const $activeTracks = combine(
       for (const [key, vote] of Object.entries(voteList)) {
         if (!votingService.isDelegating(vote)) continue;
 
-        const target = toAddress(toAccountId(vote.target), { prefix: chain?.addressPrefix });
-
-        if (votingService.isDelegating(vote) && target === delegate?.address) {
+        if (votingService.isDelegating(vote) && vote.target === delegate?.accountId) {
           if (!activeTracks[accountId]) {
             activeTracks[accountId] = new Set();
           }
@@ -75,11 +72,11 @@ const $activeDelegations = combine(
   ({ delegations, delegate }) => {
     if (!delegate) return {};
 
-    return delegations[delegate.address] || {};
+    return delegations[delegate.accountId] || {};
   },
 );
 
-const $activeAccounts = $activeDelegations.map(Object.keys);
+const $activeAccounts = $activeDelegations.map(keys);
 
 const $canDelegate = walletSelect.$selectedWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
 
@@ -95,9 +92,7 @@ const $isAddAvailable = combine(
 
     const filteredAccounts = accountService.filterAccountsOnChain(accounts, chain);
 
-    const freeAccounts = filteredAccounts.filter(
-      (account) => !activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
-    );
+    const freeAccounts = filteredAccounts.filter((account) => !activeAccounts.includes(account.accountId));
 
     return canDelegate && freeAccounts.length > 0;
   },
@@ -137,7 +132,7 @@ sample({
   clock: flowStarted,
   fn: (delegate) => {
     return {
-      addresses: [delegate.address],
+      accounts: [delegate.accountId],
     };
   },
   target: proposerIdentityAggregate.events.requestProposers,

@@ -159,7 +159,7 @@ function buildBondExtra({ chain, asset, accountId, amount }: Omit<BondParams, 'd
 type NominateParams = {
   chain: Chain;
   accountId: AccountId;
-  nominators: Address[];
+  nominators: AccountId[];
 };
 function buildNominate({ chain, accountId, nominators }: NominateParams): Transaction {
   return {
@@ -275,7 +275,7 @@ type DelegateParams = {
   chain: Chain;
   accountId: AccountId;
   tracks: number[];
-  target: Address;
+  target: AccountId;
   conviction: Conviction;
   balance: string;
 };
@@ -324,7 +324,7 @@ type EditDelegationParams = {
   accountId: AccountId;
   tracks: number[];
   undelegateTracks: number[];
-  target: Address;
+  target: AccountId;
   conviction: Conviction;
   previousConviction: Conviction;
   balance: string;
@@ -495,7 +495,7 @@ type RejectTxParams = {
   chain: Chain;
   signerAccountId: AccountId;
   threshold: number;
-  otherSignatories: Address[];
+  otherSignatories: AccountId[];
   tx: MultisigOperation;
 };
 

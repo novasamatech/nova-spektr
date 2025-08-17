@@ -1,7 +1,7 @@
 import { combine, sample } from 'effector';
 
-import { type Address } from '@/shared/core';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { referendumModel } from '@/entities/governance';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { delegatedVotesModel } from '../model/delegatedVotes';
@@ -39,15 +39,15 @@ sample({
 sample({
   clock: delegatedVotesModel.events.requestDelegatedVotesDone,
   fn: ({ result }) => {
-    const uniqDelegates = new Set<Address>();
+    const uniqDelegates = new Set<AccountId>();
 
     for (const referendumId of Object.keys(result)) {
       for (const delegate of result[referendumId]) {
-        uniqDelegates.add(delegate.delegateAddress);
+        uniqDelegates.add(delegate.delegateAccount);
       }
     }
 
-    return { addresses: Array.from(uniqDelegates) };
+    return { accounts: Array.from(uniqDelegates) };
   },
   target: proposerIdentityAggregate.events.requestProposers,
 });

@@ -5,13 +5,7 @@ import { spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
 import { type Chain } from '@/shared/core';
-import {
-  addUniqueItems,
-  formatAmount,
-  removeItemsFromCollection,
-  toAddress,
-  transferableAmount,
-} from '@/shared/lib/utils';
+import { addUniqueItems, formatAmount, removeItemsFromCollection, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createInitiatorsStore } from '@/shared/transactions';
 import { type AnyAccount, transactionService } from '@/domains/network';
@@ -69,10 +63,7 @@ const $availableAccounts = combine(
 
     return accountService
       .filterAccountsOnChain(accounts, network.chain)
-      .filter(
-        (account) =>
-          !delegations[delegate.address]?.[toAddress(account.accountId, { prefix: network.chain.addressPrefix })],
-      );
+      .filter((account) => !delegations[delegate.accountId]?.[account.accountId]);
   },
 );
 
@@ -118,7 +109,7 @@ const checkMaxWeightReachedFx = createEffect(
         balance: formatAmount('1', chain.assets[0].precision),
         conviction: 'Locked1x',
         accountId: '0x0000000000000000000000000000000000000000' as AccountId,
-        target: '0x0000000000000000000000000000000000000000',
+        target: '0x0000000000000000000000000000000000000000' as AccountId,
       });
 
       const extrinsic = getExtrinsic[mockTx.type](mockTx.args, api);

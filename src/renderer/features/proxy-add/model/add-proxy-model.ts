@@ -2,7 +2,7 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
-import { isStep, nonNullable, nullable } from '@/shared/lib/utils';
+import { isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
@@ -92,6 +92,7 @@ const formSubmitted = sample({
     return [
       {
         ...formData,
+        delegate: toAccountId(formData.delegate),
         chain: formData.chain,
         initiator: formData.initiator,
         signatory: formData.signatory,

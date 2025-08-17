@@ -41,7 +41,7 @@ import { type NetworkStore } from '../lib/types';
 type FormParams = {
   initiator: AnyAccount | null;
   signatory: AnyAccount | null;
-  destination: Address;
+  destination: string;
   destinationChain: Chain | null;
   amount: string;
 };
@@ -51,6 +51,7 @@ type FormSubmitEvent = FormParams & {
   tx: Transaction;
   initiator: AnyAccount;
   signatory: AnyAccount;
+  destination: Address;
   route: AnyAccount[];
   destinationChain: Chain;
   fee: string;
@@ -476,8 +477,16 @@ const formSubmitFinished = sample({
     multisigDeposit: $multisigDeposit,
   },
   fn: ({ chain, initiator, network, route, coreTx, tx, multisigDeposit, fee, xcmFee, deliveryFee }, form) => {
-    if (nullable(chain) || nullable(coreTx) || nullable(tx) || nullable(initiator) || nullable(form.signatory))
+    if (
+      nullable(chain) ||
+      nullable(coreTx) ||
+      nullable(tx) ||
+      nullable(initiator) ||
+      nullable(form.signatory) ||
+      !validateAddress(form.destination)
+    ) {
       return null;
+    }
     return {
       tx,
       coreTx,

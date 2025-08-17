@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { nullable, toAccountId } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { Button, Loader } from '@/shared/ui';
 import { Box, Modal, SearchInput } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
@@ -52,14 +52,12 @@ export const CurrentDelegationModal = () => {
               <div className="scrollbar-stable flex flex-1 flex-col items-center overflow-y-auto">
                 <ul className="flex w-[400px] flex-col gap-y-2 pt-0.5">
                   {delegationList.map((delegate) => {
-                    const accountId = toAccountId(delegate.address);
-
                     return (
-                      <li key={accountId}>
+                      <li key={delegate.accountId}>
                         <DelegationCard
                           asset={network.asset}
                           delegate={delegate}
-                          votes={Object.values(activeDelegations[delegate.address] || {})}
+                          votes={Object.values(activeDelegations[delegate.accountId] || {})}
                           onClick={() => delegateDetailsModel.events.flowStarted(delegate)}
                         />
                       </li>

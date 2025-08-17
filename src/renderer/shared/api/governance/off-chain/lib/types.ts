@@ -1,6 +1,7 @@
 import { type BN } from '@polkadot/util';
 
 import { type Address, type Chain, type Conviction, type ReferendumId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export type ReferendumTimelineRecordStatus =
   | 'All'
@@ -73,7 +74,7 @@ export type SubQueryVoting = {
 };
 
 export type DelegateDetails = {
-  address: Address;
+  accountId: AccountId;
   name: string;
   image: string;
   shortDescription: string;
@@ -82,7 +83,7 @@ export type DelegateDetails = {
 };
 
 export type DelegateStat = {
-  address: Address;
+  accountId: AccountId;
   delegators: number;
   delegatorVotes: string;
   delegateVotes: number;
@@ -90,7 +91,7 @@ export type DelegateStat = {
 };
 
 export type Delegation = {
-  delegator: Address;
+  delegator: AccountId;
   delegation: {
     amount: string;
     conviction: Conviction;
@@ -99,15 +100,15 @@ export type Delegation = {
 };
 
 export type DelegationsByAccount = {
-  address: Address;
+  accountId: AccountId;
   delegations: Delegation[];
 };
 
 export type DelegateAccount = DelegateStat & Partial<DelegateDetails>;
 
 export type DelegateInfo = {
-  delegator: Address;
-  delegateAddress: Address;
+  delegator: AccountId;
+  delegateAccount: AccountId;
   decision: 'aye' | 'nay';
   amount: BN;
   conviction: Conviction;
@@ -120,7 +121,7 @@ export interface DelegationApi {
     voter: Address[],
   ) => Promise<Record<ReferendumId, DelegateInfo[]>>;
   getDelegatesFromExternalSource: (chain: Chain, timestamp: number) => Promise<DelegateStat[]>;
-  getDelegatesForAccount: (chain: Chain, address: string) => Promise<DelegationsByAccount | null>;
+  getDelegatesForAccount: (chain: Chain, accountId: AccountId) => Promise<DelegationsByAccount | null>;
   aggregateDelegateAccounts: (accounts: DelegateDetails[], stats: DelegateStat[], chain: Chain) => DelegateAccount[];
 
   calculateTotalVotes: (votingPower: BN, tracks: number[], chain: Chain) => BN;

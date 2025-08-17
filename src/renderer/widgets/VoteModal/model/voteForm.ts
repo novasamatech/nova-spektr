@@ -23,11 +23,15 @@ import { locksService, voteTransactionService } from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { type AggregatedReferendum, delegationAggregate, networkSelectorModel } from '@/features/governance';
+import {
+  type AggregatedReferendum,
+  delegationAggregate,
+  getLocksForAccount,
+  networkSelectorModel,
+} from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
 import { votingAssetModel } from '@/features/governance/model/votingAsset';
-import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { voteValidator } from '@/features/operations/OperationsValidation';
 
@@ -218,11 +222,8 @@ sample({
     trackLocks: locksAggregate.$trackLocks,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ chain }, account) => nonNullable(account) && nonNullable(chain),
-  fn: ({ trackLocks, chain }, account) => {
-    const address = toAddress(account!.accountId, { prefix: chain!.addressPrefix });
-
-    return getLocksForAddress(address, trackLocks);
+  fn: ({ trackLocks }, account) => {
+    return account ? getLocksForAccount(account.accountId, trackLocks) : BN_ZERO;
   },
   target: $lockForAccount,
 });

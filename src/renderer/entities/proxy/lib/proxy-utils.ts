@@ -7,7 +7,7 @@ import {
   type ProxyType,
   ProxyVariant,
 } from '@/shared/core';
-import { splitCamelCaseString, toAddress } from '@/shared/lib/utils';
+import { splitCamelCaseString, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
@@ -51,7 +51,7 @@ function getProxiedName(
   { accountId, proxyVariant, connections }: PartialProxiedAccount,
   addressPrefix?: number,
 ): string {
-  const address = toAddress(accountId, { chunk: 6, prefix: addressPrefix });
+  const address = toShortAddress(toAddress(accountId, { prefix: addressPrefix }), 6);
 
   if (connections.length === 1) {
     const proxyVariantLabel = proxyVariant === ProxyVariant.PURE ? 'for pure' : 'for';

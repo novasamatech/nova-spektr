@@ -59,7 +59,7 @@ export const MemberProfile = memo(({ referendum, evidence }: Props) => {
       <Box padding={6}>
         <SmallTitleText className="mb-4">{t('fellowship.evidenceModal.member')}</SmallTitleText>
         <Box direction="row" verticalAlign="center" gap={1.25}>
-          <Identicon address={toAddress(member.accountId, { prefix: chain?.addressPrefix })} size={52} />
+          <Identicon value={toAddress(member.accountId, { prefix: chain?.addressPrefix })} size={52} />
           <Box gap={1.5}>
             <SmallTitleText>
               <Account

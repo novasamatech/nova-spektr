@@ -93,7 +93,7 @@ export const PairingModal = ({ title, extension, children }: Props) => {
                         {accounts.map((account) => (
                           <Select.Item key={account.accountId} value={account.accountId}>
                             <Box direction="row" gap={2} verticalAlign="center">
-                              <Identicon address={toAddress(account.accountId)} />
+                              <Identicon value={toAddress(account.accountId)} />
                               <span>{account.name}</span>
                             </Box>
                           </Select.Item>

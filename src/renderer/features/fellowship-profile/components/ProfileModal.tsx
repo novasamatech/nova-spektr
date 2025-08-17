@@ -46,7 +46,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
       <Modal.HeaderContent>
         <Box padding={5} gap={6}>
           <Box direction="row" verticalAlign="center" gap={2}>
-            <Identicon address={address} size={48} />
+            <Identicon value={address} size={48} />
             <Box gap={2} grow={1}>
               <HeaderTitleText>
                 <Account

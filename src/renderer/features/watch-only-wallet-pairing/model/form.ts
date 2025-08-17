@@ -5,7 +5,6 @@ import { t } from 'i18next';
 
 import {
   AccountType,
-  type Address,
   CryptoType,
   SigningType,
   WalletType,
@@ -25,7 +24,7 @@ const flow = createGate();
 
 type FormValues = {
   walletName: string;
-  address: Address;
+  address: string;
 };
 
 const form = createForm<FormValues>({

@@ -2,7 +2,7 @@ import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
+import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
@@ -31,7 +31,7 @@ type FormParams = {
   initiator: AnyAccount | null;
   signatory: AnyAccount | null;
   amount: string;
-  destination: Address;
+  destination: string;
 };
 
 const formInitiated = createEvent<WalletData>();
@@ -108,7 +108,7 @@ const form: Form<FormParams> = createForm<FormParams>({
       },
     },
     destination: {
-      defaultValue: '' as Address,
+      defaultValue: '',
       validator: () => {
         return {
           source: $destinationType,
@@ -208,9 +208,11 @@ const $coreTx = combine(
     networkStore: $networkStore,
   },
   ({ chain, signatory, amount, destination, validators, networkStore }) => {
-    if (nullable(destination) || nullable(chain) || nullable(signatory) || nullable(networkStore)) {
+    if (nullable(chain) || nullable(signatory) || nullable(networkStore) || nullable(destination)) {
       return null;
     }
+
+    if (!validateAddress(destination)) return null;
 
     return transactionBuilder.buildBondNominate({
       chain: chain,
@@ -218,7 +220,7 @@ const $coreTx = combine(
       accountId: signatory.accountId,
       amount: amount,
       destination: destination,
-      nominators: validators.map(({ address }) => address),
+      nominators: validators.map(({ accountId }) => accountId),
     });
   },
 );

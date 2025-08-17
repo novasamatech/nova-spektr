@@ -4,7 +4,7 @@ import { memo, useMemo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable, toAddress, toRomanNumeral } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
@@ -52,15 +52,15 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
   });
 
   let title = '';
-  if (isPromotion && nonNullable(member?.rank)) {
+  if (isPromotion && nonNullable(member?.rank) && nonNullable(memberIdentity)) {
     title = t('fellowship.evidenceModal.titlePromotion', {
-      name: memberIdentity?.name || toAddress(memberIdentity?.accountId, { chunk: 6 }),
+      name: memberIdentity.name || toShortAddress(toAddress(memberIdentity.accountId), 6),
       rank: toRomanNumeral(member.rank + 1),
     });
   }
-  if (isRetention) {
+  if (isRetention && nonNullable(memberIdentity)) {
     title = t('fellowship.evidenceModal.titleRetention', {
-      name: memberIdentity?.name || toAddress(memberIdentity?.accountId, { chunk: 6 }),
+      name: memberIdentity.name || toShortAddress(toAddress(memberIdentity.accountId), 6),
       rank: member?.rank && toRomanNumeral(member.rank),
     });
   }

@@ -103,9 +103,9 @@ sample({
   clock: voteHistoryModel.events.voteHistoryRequestDone,
   source: networkSelectorModel.$governanceChainId,
   filter: nonNullable,
-  fn: (chainId: ChainId, { result }: { result: { voter: string }[] }) => ({
+  fn: (chainId: ChainId, { result }) => ({
     chainId,
-    accounts: result.map((x) => x.voter as AccountId),
+    accounts: result.map((x) => x.voter),
   }),
   target: identity.request,
 });

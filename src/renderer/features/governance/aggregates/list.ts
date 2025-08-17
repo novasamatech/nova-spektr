@@ -2,9 +2,8 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { nullable } from '@/shared/lib/utils';
+import { entries, nullable } from '@/shared/lib/utils';
 import { referendaPallet } from '@/shared/pallet/referenda';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   approveThresholdModel,
   referendumModel,
@@ -111,8 +110,8 @@ const $referendums = combine(
 
     return referendums.map((referendum) => {
       const referendumVotes = votingService.getReferendumAccountVotes(referendum.referendumId, voting);
-      const votes = Object.entries(referendumVotes).map(([accountId, accountVote]) => ({
-        voter: accountId as AccountId,
+      const votes = entries(referendumVotes).map(([accountId, accountVote]) => ({
+        voter: accountId,
         vote: accountVote,
       }));
 

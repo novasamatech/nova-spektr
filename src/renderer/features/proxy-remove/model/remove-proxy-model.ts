@@ -8,6 +8,7 @@ import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } fro
 import { type Form, createForm } from '@/shared/forms';
 import {
   getNativeAsset,
+  keys,
   nonNullable,
   nullable,
   toAccountId,
@@ -228,7 +229,7 @@ const $chainProxies = combine(
     if (!wallet) return {};
 
     const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
-    return proxyUtils.getProxyAccountsOnChain(walletAccounts, Object.keys(chains) as ChainId[], proxies);
+    return proxyUtils.getProxyAccountsOnChain(walletAccounts, keys(chains), proxies);
   },
 );
 

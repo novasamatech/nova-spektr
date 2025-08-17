@@ -331,7 +331,7 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon size={20} address={destination.value} background={false} />
+      <Identicon size={20} value={destination.value} background={false} />
     </div>
   );
 

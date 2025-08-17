@@ -192,7 +192,7 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
 
   return {
     derivations,
-    root: rootAccountId,
+    root: toAccountId(rootAccountId),
   };
 }
 

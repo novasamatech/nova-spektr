@@ -43,13 +43,13 @@ export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
-              const address = wallet.accounts[0]?.accountId;
+              const accountId = wallet.accounts[0]?.accountId;
 
               return (
                 <WalletManagement
                   key={wallet.id}
                   wallet={wallet}
-                  address={address}
+                  accountId={accountId}
                   description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
                   onClick={() => onSelect(wallet)}
                 >
