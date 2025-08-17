@@ -71,19 +71,18 @@ const $customError = combine(
   {
     delegate: $customDelegate,
     votes: delegationAggregate.$activeDelegations,
-    wallet: walletSelect.$selectedWallet,
+    accounts: walletSelect.$selectedAccounts,
     network: delegationAggregate.$network,
   },
-  ({ delegate, votes, wallet, network }): DelegationErrors | null => {
-    if (!wallet || !network?.chain || !delegate || !validateAddress(delegate)) return DelegationErrors.INVALID_ADDRESS;
+  ({ delegate, votes, accounts, network }): DelegationErrors | null => {
+    if (!network?.chain || !delegate || !validateAddress(delegate)) return DelegationErrors.INVALID_ADDRESS;
 
-    const isOwnAccount = wallet.accounts.some((a) => a.accountId === toAccountId(delegate));
+    const delegateAccountId = toAccountId(delegate);
 
+    const isOwnAccount = accounts.some((a) => a.accountId === delegateAccountId);
     if (isOwnAccount) return DelegationErrors.YOUR_ACCOUNT;
 
-    // TODO fix. WTF is this comparison
-    const isAlreadyDelegated = keys(votes).some((v) => toAccountId(v) === toAccountId(delegate));
-
+    const isAlreadyDelegated = keys(votes).some((v) => v === delegateAccountId);
     if (isAlreadyDelegated) return DelegationErrors.ALREADY_DELEGATED;
 
     return null;
