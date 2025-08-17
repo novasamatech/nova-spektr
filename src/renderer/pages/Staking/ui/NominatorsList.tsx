@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HelpText, Icon } from '@/shared/ui';
-import { Address as AddressComponent } from '@/shared/ui-entities';
+import { Address } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { useStakingData } from '@/entities/staking';
@@ -84,7 +84,7 @@ export const NominatorsList = ({
 
   const getContent = (stake: NominatorInfo<AnyAccount>): ReactNode => (
     <>
-      <AddressComponent
+      <Address
         title={stake.account.name}
         variant="truncate"
         address={toAddress(stake.account.accountId, { prefix: chain.addressPrefix })}

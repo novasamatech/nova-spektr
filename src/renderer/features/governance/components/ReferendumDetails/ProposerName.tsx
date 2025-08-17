@@ -41,10 +41,10 @@ export const ProposerName = ({ referendum, addressPrefix }: Props) => {
         proposer.parent.name ||
         proposer.email ||
         proposer.twitter ||
-        toAddress(proposer.parent.accountId, { prefix: addressPrefix })
+        toShortAddress(toAddress(proposer.parent.accountId, { prefix: addressPrefix }), 6)
       }
     />
-  ) : referendumService.isOngoing(referendum) && referendum.submissionDeposit?.who ? (
+  ) : referendumService.isOngoing(referendum) && referendum.submissionDeposit ? (
     <AccountAddress
       addressFont="text-text-secondary"
       size={16}

@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountSDK } from '@/sdk/account';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
@@ -59,7 +58,7 @@ extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
 
   const accountId = wallet.accounts[0]?.accountId ?? '';
 
-  return <WalletAccountIcon address={toAddress(accountId)} type={wallet.type} size={size} />;
+  return <WalletAccountIcon address={accountId} type={wallet.type} size={size} />;
 });
 
 extensionWalletFeature.inject(walletPairingDropdownOptionsSlot, {

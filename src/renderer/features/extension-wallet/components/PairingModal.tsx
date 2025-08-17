@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, IconButton, Loader, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList, Identicon } from '@/shared/ui-entities';
@@ -93,7 +92,7 @@ export const PairingModal = ({ title, extension, children }: Props) => {
                         {accounts.map((account) => (
                           <Select.Item key={account.accountId} value={account.accountId}>
                             <Box direction="row" gap={2} verticalAlign="center">
-                              <Identicon value={toAddress(account.accountId)} />
+                              <Identicon value={account.accountId} />
                               <span>{account.name}</span>
                             </Box>
                           </Select.Item>

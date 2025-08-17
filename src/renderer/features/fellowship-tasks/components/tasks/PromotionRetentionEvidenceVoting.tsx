@@ -51,20 +51,6 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
     fn: (list, [accountId]) => list[accountId] ?? null,
   });
 
-  let title = '';
-  if (isPromotion && nonNullable(member?.rank) && nonNullable(memberIdentity)) {
-    title = t('fellowship.evidenceModal.titlePromotion', {
-      name: memberIdentity.name || toShortAddress(toAddress(memberIdentity.accountId), 6),
-      rank: toRomanNumeral(member.rank + 1),
-    });
-  }
-  if (isRetention && nonNullable(memberIdentity)) {
-    title = t('fellowship.evidenceModal.titleRetention', {
-      name: memberIdentity.name || toShortAddress(toAddress(memberIdentity.accountId), 6),
-      rank: member?.rank && toRomanNumeral(member.rank),
-    });
-  }
-
   const rank = useMemo(() => {
     if (nullable(member?.rank)) return null;
 
@@ -74,6 +60,20 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
 
     return member.rank;
   }, [member, isPromotion, isRetention]);
+
+  let title = '';
+  if (isPromotion) {
+    title = t('fellowship.evidenceModal.titlePromotion', {
+      name: memberIdentity?.name || toShortAddress(toAddress(evidence.accountId), 6),
+      rank: nonNullable(rank) ? toRomanNumeral(rank + 1) : 0,
+    });
+  }
+  if (isRetention) {
+    title = t('fellowship.evidenceModal.titleRetention', {
+      name: memberIdentity?.name || toShortAddress(toAddress(evidence.accountId), 6),
+      rank: nonNullable(rank) ? toRomanNumeral(rank) : 0,
+    });
+  }
 
   return (
     <Box direction="row" gap={2}>
