@@ -30,7 +30,7 @@ export const $balances = combine(
   ({ wallets, chains, balances, currency, prices }) => {
     return wallets.reduce<Record<string, BigNumber>>((acc, wallet) => {
       acc[wallet.id] = balanceService.calculateWalletBalance({
-        wallet,
+        accounts: wallet.accounts,
         chains,
         balances,
         currency,

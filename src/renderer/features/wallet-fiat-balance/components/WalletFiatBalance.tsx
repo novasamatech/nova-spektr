@@ -34,7 +34,7 @@ export const WalletFiatBalance = ({ wallet, className }: Props) => {
     if (!fiatFlag) return null;
 
     return balanceService.calculateWalletBalance({
-      wallet,
+      accounts: wallet.accounts,
       chains,
       balances,
       currency,

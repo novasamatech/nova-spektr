@@ -401,20 +401,21 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
   };
 };
 
+const BigNumberRoundingDown = BigNumber.clone({
+  ROUNDING_MODE: BigNumber.ROUND_DOWN,
+});
+
+// TODO refactor, terrible implementation of summarization
 export const getRoundedValue = (assetBalance = '0', price: number, precision = 0, nonZeroDigits?: number): string => {
   if (Number(assetBalance) === 0 || isNaN(Number(assetBalance))) {
     return ZERO_BALANCE;
   }
 
   const fiatBalance = new BigNumber(price).multipliedBy(new BigNumber(assetBalance));
-  const BNWithConfig = BigNumber.clone();
-  BNWithConfig.config({
-    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
-  });
 
-  const bnPrecision = new BNWithConfig(precision);
-  const TEN = new BNWithConfig(10);
-  const bnFiatBalance = new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision));
+  const bnPrecision = new BigNumberRoundingDown(precision);
+  const TEN = new BigNumberRoundingDown(10);
+  const bnFiatBalance = new BigNumberRoundingDown(fiatBalance.toString()).div(TEN.pow(bnPrecision));
 
   if (bnFiatBalance.gte(1) && bnFiatBalance.lt(10)) {
     return bnFiatBalance.decimalPlaces(Decimal.SMALL_NUMBER).toString();
