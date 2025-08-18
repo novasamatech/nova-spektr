@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode, memo, useMemo, useState } from 'react';
 
-import { type Wallet, WalletType } from '@/shared/core';
+import { type Wallet, type WalletType } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
@@ -20,19 +20,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 
-const walletTypesTitles: Record<WalletType, string> = {
-  [WalletType.POLKADOT_EXTENSION]: 'wallets.polkadotExtensionLabel',
-  [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
-  [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
-  [WalletType.MULTISIG]: 'wallets.multisigLabel',
-  [WalletType.FLEXIBLE_MULTISIG]: 'wallets.flexibleMultisigLabel',
-  [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
-  [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
-  [WalletType.PROXIED]: 'wallets.proxiedLabel',
-  [WalletType.TALISMAN_EXTENSION]: 'wallets.talismanExtensionLabel',
-  [WalletType.SUBWALLET_EXTENSION]: 'wallets.subWalletExtensionLabel',
-  [WalletType.SINGLE_PARITY_SIGNER]: 'wallets.paritySignerLabel',
-};
+import { walletTypesTitles } from './titles';
 
 export const InitiatorSelect = memo(() => {
   const { t } = useI18n();
