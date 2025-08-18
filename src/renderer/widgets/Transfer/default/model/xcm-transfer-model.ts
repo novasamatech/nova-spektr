@@ -1,35 +1,36 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 
 import { type XcmConfig, XcmTransferType, xcmService } from '@/shared/api/xcm';
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
 import { getParachainId, toLocalChainId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type Extrinsic } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { xcmModel } from '@/entities/xcm';
-import { xcmTransferUtils } from '../services/xcm-transfer-utils';
+import { xcmTransferUtils } from '../../shared/services/xcm-transfer-utils';
 
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
 const xcmConfigLoaded = createEvent();
 const xcmChainSelected = createEvent<ChainId>();
-const xcmFeeChanged = createEvent<string>();
-const deliveryFeeRequested = createEvent<SubmittableExtrinsic<'promise'>>();
+const xcmFeeChanged = createEvent<BN>();
+const deliveryFeeRequested = createEvent<Extrinsic>();
 const isXcmFeeLoadingChanged = createEvent<boolean>();
 const amountChanged = createEvent<string>();
-const destinationChanged = createEvent<AccountId>();
+const destinationChanged = createEvent<AccountId | null>();
 
 const $config = createStore<XcmConfig | null>(null);
 const $networkStore = restore(xcmStarted, null);
 const $xcmChainId = restore(xcmChainSelected, null);
-const $xcmFee = restore(xcmFeeChanged, '0');
-const $deliveryFee = createStore<string>('0');
+const $xcmFee = createStore(BN_ZERO);
+const $deliveryFee = createStore<BN>(BN_ZERO);
 const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, true);
 const $xcmParaId = createStore<number | null>(null);
 
 const $amount = restore(amountChanged, null);
-const $destination = restore<AccountId>(destinationChanged, null);
+const $destination = restore(destinationChanged, null);
 
 const getConfigFx = attach({ effect: xcmModel.effects.getConfigFx });
 const saveConfigFx = attach({ effect: xcmModel.effects.saveConfigFx });
@@ -49,12 +50,12 @@ type DeliveryFeeParams = {
 const getDeliveryFeeFx = createEffect(
   async ({ api, config, parachainId, extrinsic, destinationChain }: DeliveryFeeParams) => {
     if (!api || !config || !parachainId || !extrinsic || !destinationChain) {
-      return null;
+      return BN_ZERO;
     }
 
     const originChainId = api.genesisHash.toHex();
     if (originChainId === destinationChain.chainId) {
-      return null;
+      return BN_ZERO;
     }
 
     return xcmService.getDeliveryFeeFromConfig({
@@ -254,14 +255,14 @@ const $xcmData = combine(
     xcmBeneficiary: $txBeneficiary,
     transferDirection: $transferDirection,
   },
-  ({ api, xcmChainId, transferDirection, ...rest }) => {
+  ({ api, xcmChainId, transferDirection, deliveryFee, xcmFee, ...rest }) => {
     if (!api || !transferDirection || !xcmChainId) return undefined;
 
     const transactionType = xcmTransferUtils.getXcmTransferType(api, transferDirection.type);
 
     return {
       transactionType,
-      args: { destinationChain: xcmChainId, ...rest },
+      args: { destinationChain: xcmChainId, deliveryFee: deliveryFee.toString(), xcmFee: xcmFee.toString(), ...rest },
     };
   },
   { skipVoid: false },
@@ -325,14 +326,28 @@ sample({
 
 sample({
   clock: getDeliveryFeeFx.doneData,
-  fn: (deliveryFee) => deliveryFee?.toString() || '0',
+  source: $deliveryFee,
+  // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
+  // TODO refactor this shit
+  filter: (a, b) => !a.eq(b),
+  fn: (_, fee) => fee,
   target: $deliveryFee,
 });
 
 sample({
   clock: [xcmChainSelected, getDeliveryFeeFx.fail],
-  fn: () => '0',
+  fn: () => BN_ZERO,
   target: $deliveryFee,
+});
+
+sample({
+  clock: xcmFeeChanged,
+  source: $xcmFee,
+  // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
+  // TODO refactor this shit
+  filter: (a, b) => !a.eq(b),
+  fn: (_, fee) => fee,
+  target: $xcmFee,
 });
 
 export const xcmTransferModel = {

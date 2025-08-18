@@ -1,4 +1,5 @@
 import { type SignerOptions } from '@polkadot/api/types';
+import { type BN } from '@polkadot/util';
 
 import {
   type Asset,
@@ -100,9 +101,9 @@ export type TransferAmountFeeStore = {
   isNative: boolean;
   isMultisig: boolean;
   isProxy: boolean;
-  fee: string;
-  xcmFee: string;
-  deliveryFee: string | null;
+  fee: BN;
+  xcmFee: BN;
+  deliveryFee: BN;
 };
 
 export type TransferFeeStore = Omit<TransferAmountFeeStore, 'balance' | 'network'> & {
@@ -125,9 +126,9 @@ export type SignatoryFeeStore = {
 };
 
 export type TransferSignatoryFeeStore = {
-  fee: string;
+  fee: BN;
   isMultisig: boolean;
-  multisigDeposit: string;
+  multisigDeposit: BN;
   balance: string;
 };
 

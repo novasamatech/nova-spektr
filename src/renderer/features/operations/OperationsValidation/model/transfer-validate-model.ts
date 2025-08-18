@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
@@ -51,9 +52,9 @@ const rootValidateFx = createEffect(
         form: {},
         ...TransferRules.signatory.notEnoughTokens({} as Store<TransferSignatoryFeeStore>),
         source: {
-          fee,
+          fee: new BN(fee),
           isMultisig: false,
-          multisigDeposit: '0',
+          multisigDeposit: BN_ZERO,
           balance: '0',
         } as TransferSignatoryFeeStore,
       },
@@ -111,9 +112,9 @@ const rootValidateFx = createEffect(
           isMultisig: false,
           isProxy: false,
           multisigDeposit: '0',
-          fee,
-          xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
-          deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
+          fee: new BN(fee),
+          xcmFee: new BN(transaction.args.xcmData?.args.xcmFee || '0'),
+          deliveryFee: new BN(transaction.args.xcmData?.args.deliveryFee || '0'),
           isNative: chain.assets[0].assetId === asset.assetId,
           isXcm: Boolean(transaction.args.xcmData),
           balance: {
@@ -133,10 +134,10 @@ const rootValidateFx = createEffect(
         source: {
           network: { chain, asset },
           isMultisig: false,
-          multisigDeposit: '0',
-          fee,
-          xcmFee: transaction.args.xcmData?.args.xcmFee || '0',
-          deliveryFee: transaction.args.xcmData?.args.deliveryFee || '0',
+          multisigDeposit: BN_ZERO,
+          fee: new BN(fee),
+          xcmFee: new BN(transaction.args.xcmData?.args.xcmFee || '0'),
+          deliveryFee: new BN(transaction.args.xcmData?.args.deliveryFee || '0'),
           isProxy: false,
           isNative: chain.assets[0].assetId === asset.assetId,
           isXcm: Boolean(transaction.args.xcmData),

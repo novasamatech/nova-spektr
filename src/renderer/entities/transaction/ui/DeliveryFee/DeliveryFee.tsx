@@ -1,3 +1,4 @@
+import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
@@ -7,7 +8,7 @@ import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
-  fee: string;
+  fee: string | BN;
   loading?: boolean;
   asset: Asset;
   className?: string;
@@ -23,7 +24,7 @@ export const DeliveryFee = memo(({ fee, loading, asset, className }: Props) => {
   return (
     <div className="flex flex-col items-end gap-y-0.5">
       <AssetBalance value={fee} asset={asset} className={className} />
-      <AssetFiatBalance asset={asset} amount={fee.toString()} />
+      <AssetFiatBalance asset={asset} amount={fee} />
     </div>
   );
 });

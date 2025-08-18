@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store, attach, createEffect, sample } from 'effector';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
@@ -52,9 +53,9 @@ const rootValidateFx = createEffect(
         form: {},
         ...DelegateRules.signatory.notEnoughTokens({} as Store<TransferSignatoryFeeStore>),
         source: {
-          fee,
+          fee: new BN(fee),
           isMultisig: false,
-          multisigDeposit: '0',
+          multisigDeposit: BN_ZERO,
           balance: '0',
         } as TransferSignatoryFeeStore,
       },

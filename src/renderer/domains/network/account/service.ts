@@ -15,6 +15,7 @@ import { assert, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type TransactionValidationBalanceError,
+  type TransactionValidationFatalError,
   type TransactionValidationPermissionError,
 } from '@/shared/ui-entities';
 import { balanceUtils } from '@/entities/balance';
@@ -307,29 +308,6 @@ function findNextAccount(route: AnyAccount[], account: AnyAccount): AnyAccount |
 
 // validations
 
-// TODO pass all balances in case of xcm
-function mutateTransitionBalanceValidationResult(
-  results: TransactionValidationBalanceError[],
-  asset: Asset,
-  account: AnyAccount,
-  fn: (balance: Balance, account: AnyAccount) => TransactionValidationBalanceError,
-) {
-  const index = results.findLastIndex(
-    r => r.account.accountId === account.accountId && r.asset.assetId === asset.assetId,
-  );
-  if (index === -1) {
-    return results;
-  }
-
-  return results.flatMap((r, i) => {
-    if (i === index) {
-      return [r, fn(r.balance.balance, account)];
-    }
-
-    return r;
-  });
-}
-
 type BalanceValidationParams = {
   route: AnyAccount[];
   balances: BalanceMap;
@@ -363,7 +341,11 @@ async function validateRouteBalances({ api, route, balances, asset }: BalanceVal
     const result = await validateRouteBalancesTransformer({ account, route, getBalance, chainId, asset, api });
     if (result) {
       results.push(result);
-      const balanceId = balanceUtils.constructBalanceId(account.accountId, chainId, result.asset.assetId);
+      const balanceId = balanceUtils.constructBalanceId(
+        result.account.accountId,
+        result.balance.balance.chainId,
+        result.balance.balance.assetId,
+      );
       balancesMap[balanceId] = result.balance.balance;
       unhandledAccounts.delete(result.account);
     }
@@ -372,7 +354,7 @@ async function validateRouteBalances({ api, route, balances, asset }: BalanceVal
   for (const account of unhandledAccounts) {
     const balanceId = balanceUtils.constructBalanceId(account.accountId, chainId, asset.assetId);
     const balance = balancesMap[balanceId];
-    assert(balance, `Balance for ${account.accountId} not found`);
+    assert(balance, `Balance for account ${account.accountId} not found`);
 
     results.push({
       account,
@@ -406,7 +388,11 @@ function validateCallPermission({ route, transaction, api }: PermissionValidatio
 }
 
 function hasTransactionValidationErrors(
-  errors: (TransactionValidationPermissionError | TransactionValidationBalanceError)[],
+  errors: (
+    | TransactionValidationPermissionError
+    | TransactionValidationBalanceError
+    | TransactionValidationFatalError
+  )[],
 ) {
   return errors.length > 0 && errors.every(e => 'permission' in e || ('balance' in e && e.balance.success === false));
 }
@@ -449,8 +435,6 @@ export const accountService = {
 
   validateRouteBalances,
   validateCallPermission,
-
-  mutateTransitionBalanceValidationResult,
 
   hasTransactionValidationErrors,
 };

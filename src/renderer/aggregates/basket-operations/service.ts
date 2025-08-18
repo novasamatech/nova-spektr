@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 
 import { type Chain, type ChainId, type Transaction, TransactionType } from '@/shared/core';
 import { type AnyAccount } from '@/domains/network';
@@ -28,7 +29,7 @@ async function getTransactionData(
     a => a.accountId === transaction.initiatorAccountId && a.accountId === transaction.coreTx.accountId,
   );
 
-  return { chainId, chain, account, fee };
+  return { chainId, chain, account, fee: new BN(fee) };
 }
 
 export const basketOperationsService = {

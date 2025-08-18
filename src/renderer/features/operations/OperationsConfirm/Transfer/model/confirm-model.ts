@@ -1,3 +1,4 @@
+import { type BN } from '@polkadot/util';
 import { type Store, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { type Address, type Asset, type BalanceMap, type Chain } from '@/shared/core';
@@ -23,10 +24,10 @@ export type TransferConfirmStore = TxConfirmInfo & {
   amount: string;
   destination: Address;
 
-  fee: string;
-  xcmFee: string;
-  deliveryFee: string | null;
-  multisigDeposit: string;
+  fee: BN;
+  xcmFee: BN;
+  deliveryFee: BN;
+  multisigDeposit: BN;
 };
 
 const { $confirmMap, $confirms, $isMultisigExists, init, startSigning } =

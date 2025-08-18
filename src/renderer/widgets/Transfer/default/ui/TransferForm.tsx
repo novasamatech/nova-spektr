@@ -1,3 +1,4 @@
+import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 
@@ -357,7 +358,7 @@ const Destination = () => {
           {options.map((group) => (
             <Combobox.Group key={group.id} title={group.label}>
               {group.items.map((option) => (
-                <Combobox.Item key={option.id} value={option.value.address}>
+                <Combobox.Item key={`${option.id}-${option.value.walletId ?? 'unknown'}`} value={option.value.address}>
                   {option.label}
                 </Combobox.Item>
               ))}
@@ -437,7 +438,7 @@ const FeeSection = () => {
           api={api}
           asset={getNativeAsset(network.chain.assets)}
           threshold={initiator.threshold || 1}
-          onDepositChange={formModel.multisigDepositChanged}
+          onDepositChange={(deposit) => formModel.multisigDepositChanged(new BN(deposit))}
         />
       )}
 
@@ -459,9 +460,7 @@ const FeeSection = () => {
         />
       )}
 
-      {nonNullable(deliveryFee) && deliveryFee !== '0' && (
-        <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
-      )}
+      {isXcm && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
     </div>
   );
 };
