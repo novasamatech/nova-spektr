@@ -122,13 +122,7 @@ export const CustomValueNode: Story = {
 
     return (
       <Box width="200px">
-        <Select
-          {...params}
-          placeholder="Select a fruit"
-          value={value}
-          valueNode={value ? <span>selected: {value}</span> : null}
-          onChange={onChange}
-        >
+        <Select {...params} placeholder="Select a fruit" value={value} onChange={onChange}>
           <Select.Group title="Group 1">
             <Select.Item value="Apple">Apple</Select.Item>
             <Select.Item value="Orange">Orange</Select.Item>

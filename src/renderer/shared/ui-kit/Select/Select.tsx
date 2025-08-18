@@ -54,7 +54,6 @@ type ControlledSelectProps<T extends string> = {
   placeholder: string;
   value: T | null;
   onChange: (value: T) => void;
-  valueNode?: ReactNode;
 } & XOR<{
   open: boolean;
   onToggle: (value: boolean) => void;
@@ -124,7 +123,6 @@ const Root = <T extends string>({
   open,
   onToggle,
   placeholder,
-  valueNode,
   value: _value,
   onChange,
   onSearch,
@@ -248,7 +246,7 @@ const Root = <T extends string>({
                   }
                 >
                   <div className="flex-1 overflow-hidden text-start">
-                    {valueNode || selectedItemContent || (
+                    {selectedItemContent || (
                       <span className={cnTw('text-footnote text-text-secondary', { 'text-text-tertiary': disabled })}>
                         {placeholder}
                       </span>

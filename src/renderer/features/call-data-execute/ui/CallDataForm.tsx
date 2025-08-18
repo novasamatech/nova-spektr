@@ -1,4 +1,3 @@
-import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { t } from 'i18next';
 import { type FormEvent, type ReactNode, memo, useMemo } from 'react';
@@ -235,35 +234,11 @@ const SignatorySelect = memo(() => {
     return null;
   }, [wallets, signatory.value]);
 
-  const signatoryBalance = useMemo(() => {
-    if (signatory.value && chain && asset) {
-      const balance = balanceUtils.getBalance(balances, signatory.value.accountId, chain.chainId, asset.assetId);
-      return transferableAmountBN(balance);
-    }
-    return BN_ZERO;
-  }, [signatory.value, chain, asset, balances]);
-
   return (
     <Field text={t('callData.fields.signatory.label')}>
       <Select
         placeholder={t('callData.fields.signatory.placeholder')}
         value={selectedSignatoryWallet?.id.toString() ?? null}
-        valueNode={
-          nonNullable(signatory.value) && nonNullable(selectedSignatoryWallet) ? (
-            <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
-              <Address
-                showIcon
-                canCopy={false}
-                variant="truncate"
-                title={selectedSignatoryWallet.name}
-                address={toAddress(signatory.value.accountId, { prefix: chain?.addressPrefix })}
-              />
-              {nonNullable(asset) && (
-                <AssetBalance className="text-footnote text-text-secondary" value={signatoryBalance} asset={asset} />
-              )}
-            </Box>
-          ) : null
-        }
         height="md"
         onChange={onChange}
       >
