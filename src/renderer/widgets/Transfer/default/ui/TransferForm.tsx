@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type ChainId, type WalletFamily } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
@@ -287,9 +287,9 @@ const Destination = () => {
         id: walletFamily,
         label: (
           <div className="flex items-center gap-x-2" key={walletFamily}>
-            <WalletIcon type={walletFamily as WalletFamily} />
+            <WalletIcon type={walletFamily} />
             <CaptionText className="font-semibold text-text-secondary uppercase">
-              {t(constants.GROUP_LABELS[walletFamily as WalletFamily])}
+              {t(constants.GROUP_LABELS[walletFamily])}
             </CaptionText>
           </div>
         ),

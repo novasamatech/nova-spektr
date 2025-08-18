@@ -19,7 +19,6 @@ export type TransactionValidationPermissionError = {
 export type TransactionValidationBalanceError = {
   account: AnyAccount;
   action: string;
-  required: BN;
   balance: BalanceUpdateResult;
   asset: Asset;
 };
@@ -150,7 +149,7 @@ const TransactionBalanceError = ({
                 i18nKey="general.transactionErrors.balance.section"
                 values={{
                   action: e.action,
-                  balance: formatAsset(e.required, e.asset),
+                  balance: formatAsset(e.balance.required, e.asset),
                 }}
               />,
               <span key={index + 100}>, </span>,

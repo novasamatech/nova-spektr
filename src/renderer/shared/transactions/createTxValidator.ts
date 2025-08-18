@@ -20,11 +20,11 @@ export function createTxValidator<A>(params?: {
   ) => TransactionValidationBalanceError[] | undefined)[];
 }) {
   return async ({ transaction, ...rest }: ValidatorParams<A>) => {
-    // TODO remove this mess
     let normalizedTransaction: AnyTransaction;
     if (transaction.type === 'encoded' || transaction.type === 'decoded') {
       normalizedTransaction = transaction;
     } else {
+      // TODO remove this mess after migration to new tx system
       const extrinsic = getExtrinsic[transaction.type](transaction.args, rest.api);
       normalizedTransaction = transactionService.createEncodedTransactionFromExtrinsic(extrinsic);
     }
@@ -34,7 +34,7 @@ export function createTxValidator<A>(params?: {
     const permissionErrors = accountService.validateCallPermission(fixedArgs);
     let balanceValidationResults = await accountService.validateRouteBalances(fixedArgs);
 
-    const ruleArgs = { ...rest, transaction } as ValidatorParams<A>;
+    const ruleArgs = { ...rest, transaction: normalizedTransaction } as ValidatorParams<A>;
 
     if (params?.additionalBalanceRules) {
       for (const rule of params.additionalBalanceRules) {

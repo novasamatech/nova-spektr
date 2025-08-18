@@ -24,6 +24,7 @@ function tryFreeze(balance: Balance, amount: BN): BalanceUpdateResult {
     return {
       success: false,
       balance: updated,
+      required: amount,
       imbalance: afterFreeze.abs(),
     };
   }
@@ -31,6 +32,7 @@ function tryFreeze(balance: Balance, amount: BN): BalanceUpdateResult {
   return {
     success: true,
     balance: updated,
+    required: amount,
   };
 }
 
@@ -47,6 +49,7 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
     return {
       success: false,
       balance: updated,
+      required: amount,
       imbalance: afterReservation.abs(),
     };
   }
@@ -54,6 +57,7 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
   return {
     success: true,
     balance: updated,
+    required: amount,
   };
 }
 
@@ -70,6 +74,7 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
     return {
       success: false,
       balance: updated,
+      required: amount,
       imbalance: afterWithdraw.abs(),
     };
   }
@@ -77,6 +82,7 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
   return {
     success: true,
     balance: updated,
+    required: amount,
   };
 }
 

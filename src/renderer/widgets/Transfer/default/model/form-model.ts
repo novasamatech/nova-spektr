@@ -1,5 +1,5 @@
 /* eslint-disable import-x/max-dependencies */
-import { BN_ZERO } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
@@ -96,6 +96,12 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
     amount: {
       defaultValue: '',
+      validator: () => (amount) => {
+        const bn = new BN(amount);
+        if (bn.isZero()) {
+          return { message: 'transfer.requiredAmountError' };
+        }
+      },
     },
   },
   validateOn: ['submit'],

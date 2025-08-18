@@ -1,9 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
 
-import { type Asset, type Balance, type BalanceMap, type Chain, CryptoType } from '@/shared/core';
+import { type Asset, type Balance, type BalanceMap, type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
 import { assert, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type TransactionValidationBalanceError,
   type TransactionValidationPermissionError,
@@ -27,10 +28,11 @@ const accountCollectChildrenPipeline = createPipeline<AnyAccount[], { account: A
 const validateRouteBalancesTransformer = createTransformer<
   {
     api: ApiPromise;
-    balances: Map<AnyAccount, Balance>;
     account: AnyAccount;
     route: AnyAccount[];
+    chainId: ChainId;
     asset: Asset;
+    getBalance(accountId: AccountId, chainId: ChainId, assetId: Asset['assetId']): Balance | null;
   },
   Promise<TransactionValidationBalanceError> | TransactionValidationBalanceError
 >();
@@ -329,41 +331,49 @@ type BalanceValidationParams = {
 
 async function validateRouteBalances({ api, route, balances, asset }: BalanceValidationParams) {
   const chainId = api.genesisHash.toHex();
-  const balancesMap = new Map<AnyAccount, Balance>();
+  const balancesMap: BalanceMap = {};
   const unhandledAccounts = new Set<AnyAccount>(route);
 
   for (const account of route) {
-    const balance = balanceUtils.getBalance(balances, account.accountId, chainId, asset.assetId);
+    const id = balanceUtils.constructBalanceId(account.accountId, chainId, asset.assetId);
+    const balance = balanceUtils.getBalanceById(balances, id);
     if (nullable(balance)) {
       throw new Error(`Balance for ${account.accountId} not found`);
     }
 
-    balancesMap.set(account, balance);
+    balancesMap[id] = balance;
   }
+
+  const getBalance = (accountId: AccountId, chainId: ChainId, assetId: Asset['assetId']) => {
+    const id = balanceUtils.constructBalanceId(accountId, chainId, assetId);
+    return balancesMap[id] ?? balanceUtils.getBalanceById(balances, id);
+  };
 
   const results: TransactionValidationBalanceError[] = [];
 
   for (const account of route) {
-    const result = await validateRouteBalancesTransformer({ account, route, balances: balancesMap, asset, api });
+    const result = await validateRouteBalancesTransformer({ account, route, getBalance, chainId, asset, api });
     if (result) {
       results.push(result);
-      balancesMap.set(result.account, result.balance.balance);
+      const balanceId = balanceUtils.constructBalanceId(account.accountId, chainId, result.asset.assetId);
+      balancesMap[balanceId] = result.balance.balance;
       unhandledAccounts.delete(result.account);
     }
   }
 
   for (const account of unhandledAccounts) {
-    const balance = balancesMap.get(account);
+    const balanceId = balanceUtils.constructBalanceId(account.accountId, chainId, asset.assetId);
+    const balance = balancesMap[balanceId];
     assert(balance, `Balance for ${account.accountId} not found`);
 
     results.push({
       account,
       asset,
       action: '',
-      required: BN_ZERO,
       balance: {
         success: true,
         balance,
+        required: BN_ZERO,
       },
     });
   }
