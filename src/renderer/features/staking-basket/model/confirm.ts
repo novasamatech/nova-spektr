@@ -66,8 +66,8 @@ const prepareBondNominateDataFx = createEffect(async ({ transaction, accounts, c
     route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    fee,
-    totalFee: fee,
+    fee: fee.toString(),
+    totalFee: fee.toString(),
     multisigDeposit: '0',
   } satisfies BondNominateConfirm;
 });
@@ -81,7 +81,7 @@ const prepareBondExtraDataFx = createEffect(async ({ transaction, accounts, chai
     asset: chain.assets[0],
     amount: transaction.coreTx.args.maxAdditional,
     signatory: account!,
-    fee,
+    fee: fee.toString(),
     totalFee: fee.toString(),
     multisigDeposit: '0',
     initiator: account!,
@@ -113,8 +113,8 @@ const prepareNominateDataFx = createEffect(async ({ transaction, accounts, chain
     validators,
     route: [account!],
 
-    fee,
-    totalFee: fee,
+    fee: fee.toString(),
+    totalFee: fee.toString(),
     multisigDeposit: '0',
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
@@ -136,8 +136,8 @@ const preparePayeeDataFx = createEffect(async ({ transaction, accounts, chains, 
     tx: transaction.coreTx,
     route: transaction.route,
 
-    fee,
-    totalFee: fee,
+    fee: fee.toString(),
+    totalFee: fee.toString(),
     multisigDeposit: '0',
   } satisfies PayeeConfirm;
 });
@@ -159,8 +159,8 @@ const prepareUnstakeDataFx = createEffect(async ({ transaction, accounts, chains
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
 
-    fee,
-    totalFee: fee,
+    fee: fee.toString(),
+    totalFee: fee.toString(),
     multisigDeposit: '0',
   } satisfies UnstakeConfirm;
 });
@@ -178,7 +178,7 @@ const prepareRestakeDataFx = createEffect(async ({ transaction, accounts, chains
     route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    fee,
+    fee: fee.toString(),
     totalFee: '0',
     multisigDeposit: '0',
   } satisfies RestakeConfirm;
@@ -209,7 +209,7 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
     route: transaction.route,
     coreTx: transaction.coreTx,
     tx: transaction.coreTx,
-    fee,
+    fee: fee.toString(),
     totalFee: '0',
     multisigDeposit: '0',
   } satisfies WithdrawConfirm;
