@@ -213,6 +213,7 @@ export const transferValidator = createTxValidator<{
 }>({
   additionalBalanceRules: [
     // amount
+    // withdraws from initiator in source asset (can be any asset)
     ({ route, amount, destinationChain, sourceChain, sourceAsset, getBalance }) => {
       const isXcm = destinationChain.chainId !== sourceChain.chainId;
       const initiator = accountService.findInitiator(route);
@@ -232,7 +233,7 @@ export const transferValidator = createTxValidator<{
       };
     },
     // cross-chain fee
-    // withdraws from initiator in destination chain asset
+    // withdraws from initiator in source asset (can be any asset)
     ({ route, xcmFee, destinationChain, sourceChain, sourceAsset, getBalance }) => {
       // works only in case of xcm transfer
       if (destinationChain.chainId === sourceChain.chainId) return;
@@ -252,18 +253,18 @@ export const transferValidator = createTxValidator<{
       };
     },
     // delivery fee
-    // withdraws from signatory in selected asset
+    // withdraws from initiator in native asset
     ({ route, deliveryFee, sourceChain, asset, getBalance }) => {
       if (deliveryFee.isZero()) return;
 
-      const signatory = accountService.findSignatory(route);
-      assert(signatory, 'Signatory not found');
+      const initiator = accountService.findSignatory(route);
+      assert(initiator, 'Signatory not found');
 
-      const balance = getBalance(signatory.accountId, sourceChain.chainId, asset.assetId);
-      assert(balance, `Balance for account ${signatory.accountId} not found`);
+      const balance = getBalance(initiator.accountId, sourceChain.chainId, asset.assetId);
+      assert(balance, `Balance for account ${initiator.accountId} not found`);
 
       return {
-        account: signatory,
+        account: initiator,
         balance: balanceService.tryWithdraw(balance, deliveryFee, 'allowDeath'),
         asset: asset,
         action: 'delivery fee',
