@@ -1,10 +1,12 @@
-import { type Address, type ChainId } from './general';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+
+import { type ChainId } from './general';
 
 export type Stake = {
-  address: Address;
+  accountId: AccountId;
   chainId: ChainId;
-  controller: Address;
-  stash: Address;
+  controller: AccountId;
+  stash: AccountId;
   active: string;
   total: string;
   unlocking: Unlocking[];

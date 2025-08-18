@@ -58,7 +58,7 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
             placeholder={t('addressBook.editContact.accountIdPlaceholder')}
             invalid={address.hasError()}
             value={address.value}
-            prefixElement={<Identicon address={address.value} background={false} />}
+            prefixElement={<Identicon value={address.value} background={false} />}
             onChange={address.onChange}
           />
           <InputHint variant="hint" active>

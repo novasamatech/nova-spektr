@@ -89,7 +89,7 @@ export const WalletGroup = (props: Props) => {
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
             {wallets.map((wallet) => {
-              const address = wallet.accounts[0]?.accountId;
+              const accountId = wallet.accounts[0]?.accountId;
               const isSelected = selectedWalletSet.has(wallet);
 
               let chain: Chain | null = null;
@@ -108,7 +108,7 @@ export const WalletGroup = (props: Props) => {
                   <div className="flex-1">
                     <WalletManagement
                       wallet={wallet}
-                      address={address}
+                      accountId={accountId ?? null}
                       checkBox={
                         <Checkbox
                           checked={isSelected}

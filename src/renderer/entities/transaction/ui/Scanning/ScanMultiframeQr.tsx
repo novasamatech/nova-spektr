@@ -2,9 +2,10 @@ import { u8aConcat } from '@polkadot/util';
 import { useEffect, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type Address, type ChainId, type Wallet } from '@/shared/core';
+import { type ChainId, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
@@ -43,7 +44,7 @@ export const ScanMultiframeQr = ({
   }, []);
 
   const setupTransactions = async (): Promise<void> => {
-    const metadataMap: Record<Address, Record<ChainId, TxMetadata>> = {};
+    const metadataMap: Record<AccountId, Record<ChainId, TxMetadata>> = {};
 
     for (const signingPayload of signingPayloads) {
       const accountId = signingPayload.signatory.accountId;

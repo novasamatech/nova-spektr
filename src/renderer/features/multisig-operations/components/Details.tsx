@@ -13,7 +13,7 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, toAccountId } from '@/shared/lib/utils';
+import { cnTw, keys, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
@@ -66,7 +66,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
 
   const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
-  const [undelegationTarget, setUndelegationTarget] = useState<Address>();
+  const [undelegationTarget, setUndelegationTarget] = useState<AccountId>();
 
   const referendumId = operationDetailsUtils.getReferendumId(operation);
   const vote = operationDetailsUtils.getVote(operation);
@@ -104,7 +104,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
   const transaction = operation.transaction;
 
   useEffect(() => {
-    const accounts = Object.keys(validatorsMap).map(toAccountId) as AccountId[];
+    const accounts = keys(validatorsMap).map(toAccountId);
 
     if (accounts.length === 0) return;
 
@@ -117,7 +117,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
     [];
 
   const selectedValidators: Validator[] =
-    allValidators.filter(v => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
+    allValidators.filter(v => (transaction?.args.targets || startStakingValidators).includes(v.accountId)) || [];
 
   const proxied = useMemo((): { wallet: Wallet; account: AnyAccount } | undefined => {
     if (!transaction || !isProxyTransaction(transaction)) {

@@ -236,7 +236,7 @@ export const Signatory = ({
               invalid={isDuplicate}
               value={query}
               prefixElement={
-                <Identicon address={isInvalid ? '' : signatoryAddress} size={20} background={false} canCopy={false} />
+                <Identicon value={isInvalid ? '' : signatoryAddress} size={20} background={false} canCopy={false} />
               }
               onChange={onAddressChange}
               onInput={setQuery}

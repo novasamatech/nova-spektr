@@ -10,7 +10,7 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { PATH_ERRORS } from '../lib/constants';
@@ -143,7 +143,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
   const importedByChain = groupBy(imported, 'chainId');
   const untouchedDerivations = existingDerivations.filter((d) => !importedByChain[d.chainId]);
 
-  return Object.entries(importedByChain).reduce<MergeResult>(
+  return entries(importedByChain).reduce<MergeResult>(
     (acc, [chain, derivations]) => {
       const existingChainDerivations = existingByChain[chain];
 

@@ -1,7 +1,8 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
 
-import { type Address, type Chain, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
 import { ChainIcon } from '../ChainIcon/ChainIcon';
@@ -9,10 +10,10 @@ import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
 
 type Props = {
   wallet: Wallet;
+  accountId: AccountId | null;
   description?: string | ReactNode;
   checkBox?: ReactNode;
   meta?: ReactNode;
-  address: Address | undefined;
   theme?: IdenticonIconTheme;
   onClick: () => void;
   chain?: Chain | null;
@@ -21,7 +22,7 @@ type Props = {
 
 export const WalletManagement = ({
   wallet,
-  address,
+  accountId,
   theme,
   description,
   meta,
@@ -46,7 +47,7 @@ export const WalletManagement = ({
         )}
 
         {checkBox}
-        {address && <Identicon canCopy={false} address={address} size={16} background={false} theme={theme} />}
+        {accountId && <Identicon canCopy={false} value={accountId} size={16} background={false} theme={theme} />}
 
         <div className="flex min-w-0 flex-grow flex-col">
           <div className="flex items-center gap-x-2">

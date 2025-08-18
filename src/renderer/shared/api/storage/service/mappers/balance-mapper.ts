@@ -2,7 +2,6 @@ import { BN } from '@polkadot/util';
 
 import { type Balance, type Serializable } from '@/shared/core';
 import { ZERO_BALANCE } from '@/shared/lib/utils';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 export const balanceMapper = {
   fromDB,
@@ -14,7 +13,7 @@ function fromDB(balance: Serializable<Balance>): Balance {
     id: balance.id,
     chainId: balance.chainId,
     assetId: balance.assetId,
-    accountId: pjsSchema.helpers.toAccountId(balance.accountId),
+    accountId: balance.accountId,
     transferableMode: balance.transferableMode,
     free: new BN(balance.free),
     frozen: new BN(balance.frozen),

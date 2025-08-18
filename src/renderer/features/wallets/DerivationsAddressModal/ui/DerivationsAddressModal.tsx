@@ -2,7 +2,7 @@ import { encodeAddress } from '@polkadot/util-crypto';
 import keyBy from 'lodash/keyBy';
 import { useEffect, useMemo, useState } from 'react';
 
-import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type Address, type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, InfoLink, SmallTitleText } from '@/shared/ui';
@@ -38,7 +38,7 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
 
   const qrPayload = useMemo(() => {
     const derivations = derivationAddressUtils.createDerivationsRequest(keys);
-    const address = encodeAddress(rootAccountId);
+    const address = encodeAddress(rootAccountId) as Address;
     return createDynamicDerivationPayload(address, derivations);
   }, [rootAccountId, keys]);
 

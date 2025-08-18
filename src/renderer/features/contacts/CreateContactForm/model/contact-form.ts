@@ -3,7 +3,7 @@ import { createForm } from 'effector-forms';
 import { t } from 'i18next';
 
 import { type Contact } from '@/shared/core';
-import { toAccountId, validateAddress } from '@/shared/lib/utils';
+import { toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 
 export type Callbacks = {
@@ -72,7 +72,8 @@ const createContactFx = attach({
   effect: contactModel.effects.createContactFx,
   source: $contactForm.$values,
   mapParams: (_, data) => {
-    return { ...data, accountId: toAccountId(data.address) };
+    const address = toAddress(data.address);
+    return { ...data, address, accountId: toAccountId(address) };
   },
 });
 

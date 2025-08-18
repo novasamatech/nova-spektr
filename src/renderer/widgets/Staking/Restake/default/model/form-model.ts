@@ -4,7 +4,7 @@ import { attach, combine, createEffect, createEvent, createStore, restore, sampl
 import { noop } from 'lodash';
 import { spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, type ChainId } from '@/shared/core';
+import { type Asset, type Chain, type ChainId } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
@@ -12,10 +12,10 @@ import {
   getRelaychainAsset,
   nonNullable,
   nullable,
-  toAddress,
   transferableAmount,
   unlockingAmount,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -113,12 +113,12 @@ const form: Form<FormParams> = createForm<FormParams>({
 type StakingParams = {
   chainId: ChainId;
   api: ApiPromise;
-  addresses: Address[];
+  accounts: AccountId[];
 };
-const subscribeStakingFx = createEffect(({ chainId, api, addresses }: StakingParams): Promise<() => void> => {
+const subscribeStakingFx = createEffect(({ chainId, api, accounts }: StakingParams): Promise<() => void> => {
   const boundStakingSet = scopeBind(stakingSet, { safe: true });
 
-  return useStakingData().subscribeStaking(chainId, api, addresses, boundStakingSet);
+  return useStakingData().subscribeStaking(chainId, api, accounts, boundStakingSet);
 });
 
 const getMinNominatorBondFx = createEffect((api: ApiPromise): Promise<string> => {
@@ -245,8 +245,7 @@ const $availableBalance = combine(
     const { chain, asset } = network;
 
     const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
-    const address = toAddress(initiator.accountId, { prefix: chain.addressPrefix });
-    const activeStake = staking[address]?.active || ZERO_BALANCE;
+    const activeStake = staking[initiator.accountId]?.active || ZERO_BALANCE;
 
     return { balance: transferableAmount(balance), stake: activeStake };
   },
@@ -312,12 +311,10 @@ sample({
     return nonNullable(networkStore) && nonNullable(api) && nonNullable(initiator);
   },
   fn: ({ networkStore, api, initiator }) => {
-    const addresses = [toAddress(initiator!.accountId, { prefix: networkStore!.chain.addressPrefix })];
-
     return {
       chainId: networkStore!.chain.chainId,
       api: api!,
-      addresses,
+      accounts: [initiator!.accountId],
     };
   },
   target: subscribeStakingFx,
@@ -339,16 +336,13 @@ sample({
 sample({
   source: {
     staking: $staking,
-    networkStore: $networkStore,
     initiator: form.fields.initiator.$value,
   },
-  filter: ({ staking, networkStore }) => nonNullable(staking) && nonNullable(networkStore),
-  fn: ({ staking, networkStore, initiator }) => {
+  filter: ({ staking }) => nonNullable(staking),
+  fn: ({ staking, initiator }) => {
     if (nullable(initiator)) return ZERO_BALANCE;
 
-    const address = toAddress(initiator.accountId, { prefix: networkStore!.chain.addressPrefix });
-
-    const unstakedBalance = unlockingAmount(staking![address]?.unlocking);
+    const unstakedBalance = unlockingAmount(staking![initiator.accountId]?.unlocking);
 
     return unstakedBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, unstakedBalance];
   },

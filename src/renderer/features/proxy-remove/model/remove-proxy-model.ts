@@ -6,14 +6,7 @@ import { spread } from 'patronum';
 
 import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
-import {
-  getNativeAsset,
-  nonNullable,
-  nullable,
-  toAccountId,
-  toAddress,
-  withdrawableAmountBN,
-} from '@/shared/lib/utils';
+import { getNativeAsset, keys, nonNullable, nullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathType, Paths } from '@/shared/routes';
@@ -228,7 +221,7 @@ const $chainProxies = combine(
     if (!wallet) return {};
 
     const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
-    return proxyUtils.getProxyAccountsOnChain(walletAccounts, Object.keys(chains) as ChainId[], proxies);
+    return proxyUtils.getProxyAccountsOnChain(walletAccounts, keys(chains), proxies);
   },
 );
 
@@ -287,7 +280,7 @@ sample({
       chain,
       proxyAccount: proxy,
       proxiedAccount: proxied,
-      spawner: toAddress(proxy.accountId, { prefix: chain.addressPrefix }),
+      spawner: proxy.accountId,
       proxyType: proxy.proxyType,
     } satisfies RemoveProxyStore;
   },

@@ -22,7 +22,7 @@ import {
   type NoID,
 } from '@/shared/core';
 import { createBuffer, series } from '@/shared/effector';
-import { dictionary, nonNullable } from '@/shared/lib/utils';
+import { dictionary, keys, nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '../lib/network-utils';
 
 const chainConnected = createEvent<ChainId>();
@@ -211,9 +211,7 @@ sample({
     const connectionsMap = dictionary(connectionData, 'chainId');
     const lightClientChains = networkUtils.getLightClientChains();
 
-    return Object.keys(chains).reduce<Record<ChainId, Connection>>((acc, key) => {
-      const chainId = key as ChainId;
-
+    return keys(chains).reduce<Record<ChainId, Connection>>((acc, chainId) => {
       acc[chainId] = connectionsMap[chainId] || {
         chainId,
         customNodes: [],

@@ -12,7 +12,6 @@ import {
   type FlexibleProxiedAccount,
   type MultisigAccount,
   type MultisigSignatoryAccount,
-  type MultisigThreshold,
   type ProxiedAccount,
   ProxyVariant,
   type VaultBaseAccount,
@@ -181,8 +180,8 @@ function isEthereumBased(account: AnyAccount): boolean {
 
 // Get specific accounts
 
-function getMultisigAccountId(ids: AccountId[], threshold: MultisigThreshold, cryptoType: CryptoType): AccountId {
-  const accountId = createKeyMulti(ids, threshold);
+function getMultisigAccountId(signatories: AccountId[], threshold: number, cryptoType: CryptoType): AccountId {
+  const accountId = createKeyMulti(signatories, threshold);
   const isEthereum = cryptoType === CryptoType.ETHEREUM;
 
   // TODO WTF

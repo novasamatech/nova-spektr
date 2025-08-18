@@ -11,7 +11,7 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { toAddress, transferableAmount } from '@/shared/lib/utils';
+import { toAccountId, transferableAmount } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -214,9 +214,7 @@ const prepareRevokeDelegationDataFx = createEffect(
 
       balance: delegation ? delegation.data.balance.toString() : coreTxs[0].args.balance,
       conviction: delegation ? delegation.data.conviction : votingService.getConviction(coreTxs[0].args.conviction),
-      delegate: delegation
-        ? toAddress(delegation.data.target, { prefix: chain.addressPrefix })
-        : coreTxs[0].args.target,
+      delegate: delegation ? delegation.data.target : toAccountId(coreTxs[0].args.target),
       tracks: coreTxs.map((t: Transaction) => t.args.track),
       locks,
 

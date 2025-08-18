@@ -2,26 +2,28 @@ import { type ApiPromise } from '@polkadot/api';
 import { type PalletIdentityRegistration } from '@polkadot/types/lookup';
 import { u8aToString } from '@polkadot/util';
 
-import { type Address, type Identity, type SubIdentity } from '@/shared/core';
+import { type Identity, type SubIdentity } from '@/shared/core';
+import { toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-async function getIdentities(api: ApiPromise, addresses: Address[]) {
-  if (addresses.length === 0) {
+async function getIdentities(api: ApiPromise, accounts: AccountId[]) {
+  if (accounts.length === 0) {
     return {};
   }
 
-  const subIdentities = await getSubIdentities(api, addresses);
+  const subIdentities = await getSubIdentities(api, accounts);
 
   return getParentIdentities(api, subIdentities);
 }
 
-async function getSubIdentities(api: ApiPromise, addresses: Address[]): Promise<SubIdentity[]> {
-  const subIdentities = await api.query.identity.superOf.multi(addresses);
+async function getSubIdentities(api: ApiPromise, accounts: AccountId[]): Promise<SubIdentity[]> {
+  const subIdentities = await api.query.identity.superOf.multi(accounts);
 
   return subIdentities.map<SubIdentity>((identity, index) => {
     if (identity.isNone) {
       return {
-        sub: addresses[index],
-        parent: addresses[index],
+        sub: accounts[index],
+        parent: accounts[index],
         subName: '',
       };
     }
@@ -29,8 +31,8 @@ async function getSubIdentities(api: ApiPromise, addresses: Address[]): Promise<
     const [address, rawData] = identity.unwrap();
 
     return {
-      sub: addresses[index],
-      parent: address.toHuman(),
+      sub: accounts[index],
+      parent: toAccountId(address.toHuman()),
       subName: rawData.isRaw ? u8aToString(rawData.asRaw) : rawData.value.toString(),
     };
   });
@@ -40,7 +42,7 @@ async function getParentIdentities(api: ApiPromise, subIdentities: SubIdentity[]
   const identityAddresses = subIdentities.map((x) => x.parent);
   const parentIdentities = await api.query.identity.identityOf.multi(identityAddresses);
 
-  const result: Record<Address, Identity> = {};
+  const result: Record<AccountId, Identity> = {};
 
   for (const [index, identityOption] of parentIdentities.entries()) {
     if (identityOption.isNone) {
@@ -61,7 +63,7 @@ async function getParentIdentities(api: ApiPromise, subIdentities: SubIdentity[]
       twitter: twitter.isRaw ? u8aToString(twitter.asRaw) : twitter.value.toString(),
       website: web.isRaw ? u8aToString(web.asRaw) : web.value.toString(),
       parent: {
-        address: parent,
+        accountId: parent,
         name: display.isRaw ? u8aToString(display.asRaw) : display.value.toString(),
       },
     };

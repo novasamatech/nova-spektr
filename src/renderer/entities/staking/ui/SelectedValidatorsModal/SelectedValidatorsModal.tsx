@@ -1,6 +1,7 @@
+import { type Chain } from '@/shared/core';
 import { type Validator } from '@/shared/core/types/validator';
 import { useI18n } from '@/shared/i18n';
-import { nullable, toAccountId } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
 import { Modal } from '@/shared/ui-kit';
@@ -11,10 +12,11 @@ type Props = {
   isOpen: boolean;
   validators: Validator[];
   identities: Record<AccountId, AccountIdentity>;
+  chain?: Chain;
   onClose: () => void;
 };
 
-export const SelectedValidatorsModal = ({ isOpen, validators, identities, onClose }: Props) => {
+export const SelectedValidatorsModal = ({ isOpen, validators, identities, chain, onClose }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -23,15 +25,15 @@ export const SelectedValidatorsModal = ({ isOpen, validators, identities, onClos
       <Modal.Content>
         <ul className="flex flex-col [overflow-y:overlay]">
           {validators.map((validator) => {
-            const identity = identities[toAccountId(validator.address)];
+            const identity = identities[validator.accountId];
             if (nullable(identity)) return null;
 
             return (
               <li
-                key={validator.address}
+                key={validator.accountId}
                 className="group grid h-10 shrink-0 grid-cols-[1fr_40px] items-center pr-2 pl-5 hover:bg-hover"
               >
-                <ValidatorsTable.ShortRow validator={validator} identity={identity} />
+                <ValidatorsTable.ShortRow validator={validator} identity={identity} chain={chain} />
               </li>
             );
           })}

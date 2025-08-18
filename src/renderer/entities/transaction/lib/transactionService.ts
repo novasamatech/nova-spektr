@@ -11,7 +11,6 @@ import {
   type Address,
   type HexString,
   type MultisigAccount,
-  type MultisigThreshold,
   type MultisigTxWrapper,
   type ProxiedAccount,
   type ProxyTxWrapper,
@@ -66,15 +65,15 @@ async function getTransactionFee(
 
 async function getExtrinsicFee(
   extrinsic: SubmittableExtrinsic<'promise'>,
-  address: Address,
+  signatory: Address | AccountId,
   options?: Partial<SignerOptions>,
 ) {
-  const paymentInfo = await extrinsic.paymentInfo(address, options);
+  const paymentInfo = await extrinsic.paymentInfo(signatory, options);
 
   return paymentInfo.partialFee.toBn();
 }
 
-function getMultisigDeposit(threshold: MultisigThreshold, api: ApiPromise): string {
+function getMultisigDeposit(threshold: number, api: ApiPromise): string {
   const { depositFactor, depositBase } = api.consts.multisig;
   const deposit = depositFactor.muln(threshold).add(depositBase);
 

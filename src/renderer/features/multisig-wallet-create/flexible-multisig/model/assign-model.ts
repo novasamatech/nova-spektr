@@ -4,10 +4,11 @@ import { sortBy } from 'lodash';
 import { spread } from 'patronum';
 import { z } from 'zod';
 
-import { AccountType, type Address, CryptoType, type NoID, SigningType, WalletType } from '@/shared/core';
+import { AccountType, CryptoType, type NoID, SigningType, WalletType } from '@/shared/core';
 import { type FlexibleMultisigAccount, type FlexibleProxiedAccount } from '@/shared/core/types/account';
 import { Step, assert, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createComplexTxStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
@@ -28,14 +29,14 @@ const $api = combine(flexibleMultisigFeature.state, (state): ApiPromise | null =
   return state.data.api;
 });
 
-const $proxyAddress = createStore<Address | null>(null).reset(flexibleMultisigModel.flow.close);
+const $proxyAddress = createStore<AccountId | null>(null).reset(flexibleMultisigModel.flow.close);
 
 type SubscribePureEvent = {
   api: ApiPromise;
   signatory: AnyAccount;
 };
 
-const subscribePureEventFx = createEffect(({ api, signatory }: SubscribePureEvent): Promise<Address> => {
+const subscribePureEventFx = createEffect(({ api, signatory }: SubscribePureEvent): Promise<AccountId> => {
   return new Promise(resolve => {
     const eventSchema = z.object({
       proxyType: z.string(),
@@ -54,7 +55,7 @@ const subscribePureEventFx = createEffect(({ api, signatory }: SubscribePureEven
         if (!data || signatory.accountId !== accountId) return;
 
         unsubscribe.then(fn => fn());
-        resolve(data.pure);
+        resolve(toAccountId(data.pure));
       },
     );
   });

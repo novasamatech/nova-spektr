@@ -1,6 +1,7 @@
 import { type BN } from '@polkadot/util';
 
-import { type Address, type Chain, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
 export type WalletData = {
@@ -9,7 +10,7 @@ export type WalletData = {
 };
 
 export type RevokeDelegationData = {
-  target: Address;
+  target: AccountId;
   account: AnyAccount;
   signatory: AnyAccount | null;
   tracks: number[];

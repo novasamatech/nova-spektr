@@ -1,7 +1,7 @@
-import { type Asset, type Explorer } from '@/shared/core';
+import { type Asset, type Chain, type Explorer } from '@/shared/core';
 import { type Validator } from '@/shared/core/types/validator';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, toAccountId } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion, SmallTitleText } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
@@ -15,6 +15,7 @@ type Props = {
   notSelectedValidators: Validator[];
   identities: Record<AccountId, AccountIdentity>;
   asset?: Asset;
+  chain?: Chain;
   explorers?: Explorer[];
   onClose: () => void;
 };
@@ -25,6 +26,7 @@ export const ValidatorsModal = ({
   notSelectedValidators,
   identities,
   explorers,
+  chain,
   asset,
   onClose,
 }: Props) => {
@@ -45,11 +47,12 @@ export const ValidatorsModal = ({
             <Accordion.Content>
               <ValidatorsTable validators={selectedValidators} listClassName="max-h-none">
                 {(validator, rowStyle) => (
-                  <li key={validator.address} className={cnTw(rowStyle, 'group hover:bg-hover')}>
+                  <li key={validator.accountId} className={cnTw(rowStyle, 'group hover:bg-hover')}>
                     <ValidatorsTable.Row
                       validator={validator}
-                      identity={identities[toAccountId(validator.address) as AccountId]}
+                      identity={identities[validator.accountId]}
                       asset={asset}
+                      chain={chain}
                       explorers={explorers}
                     />
                   </li>
@@ -68,11 +71,12 @@ export const ValidatorsModal = ({
             <Accordion.Content>
               <ValidatorsTable validators={notSelectedValidators} listClassName="max-h-none">
                 {(validator, rowStyle) => (
-                  <li key={validator.address} className={cnTw(rowStyle, 'group hover:bg-hover')}>
+                  <li key={validator.accountId} className={cnTw(rowStyle, 'group hover:bg-hover')}>
                     <ValidatorsTable.Row
                       validator={validator}
-                      identity={identities[toAccountId(validator.address) as AccountId]}
+                      identity={identities[validator.accountId]}
                       asset={asset}
+                      chain={chain}
                       explorers={explorers}
                     />
                   </li>

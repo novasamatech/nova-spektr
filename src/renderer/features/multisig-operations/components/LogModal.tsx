@@ -5,13 +5,7 @@ import { type ReactNode, useMemo } from 'react';
 import { type Contact, type MultisigAccount, type Wallet, type WalletsMap } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import {
-  SS58_DEFAULT_PREFIX,
-  formatSectionAndMethod,
-  getExtrinsicExplorer,
-  sortByDateAsc,
-  toAddress,
-} from '@/shared/lib/utils';
+import { formatSectionAndMethod, getExtrinsicExplorer, sortByDateAsc } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
@@ -84,8 +78,6 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
   const { status, events } = operation;
   const approvals = events.filter(e => e.status === 'approve');
 
-  const addressPrefix = connection?.addressPrefix || SS58_DEFAULT_PREFIX;
-
   const groupedEvents = useMemo(() => {
     const groups = groupBy(events, ({ timestamp }) => formatDate(timestamp || 0, 'PP'));
     return Object.entries(groups).sort(sortByDateAsc);
@@ -142,11 +134,7 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
                           {wallet ? (
                             <WalletIcon type={wallet.type} size={16} />
                           ) : (
-                            <Identicon
-                              size={16}
-                              address={toAddress(event.accountId, { prefix: addressPrefix })}
-                              background={false}
-                            />
+                            <Identicon size={16} value={event.accountId} background={false} />
                           )}
                           <BodyText className="flex-1 text-text-secondary">{getEventMessage(event)}</BodyText>
                           <BodyText className="text-text-tertiary">{formatDate(Number(event.timestamp), 'p')}</BodyText>

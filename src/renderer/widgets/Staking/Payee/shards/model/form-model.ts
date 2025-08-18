@@ -4,7 +4,7 @@ import { createForm } from 'effector-forms';
 import { t } from 'i18next';
 import { spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
+import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import {
   formatAmount,
   getRelaychainAsset,
@@ -24,7 +24,7 @@ import { type WalletData } from '../lib/types';
 type FormParams = {
   shards: AnyAccount[];
   signatory: AnyAccount | null;
-  destination: Address;
+  destination: string;
 };
 
 const formInitiated = createEvent<WalletData>();
@@ -128,7 +128,7 @@ const $payeeForm = createForm<FormParams>({
       ],
     },
     destination: {
-      init: '' as Address,
+      init: '',
       rules: [
         {
           name: 'required',

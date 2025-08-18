@@ -64,7 +64,7 @@ const $allInitiators = combine(
     if (nullable(accounts) || Object.keys(chains).length === 0) return [];
     const result = new Set<AnyAccount>();
 
-    for (const [_, chain] of Object.entries(chains)) {
+    for (const chain of Object.values(chains)) {
       const initiators = accountService.findInitiators(accounts, chain);
       if (initiators.length > 0) {
         for (const account of initiators) {
