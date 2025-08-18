@@ -220,7 +220,7 @@ const createProxiedWalletFx = createEffect(({ identity, proxiedAccount, chains, 
       proxiedAccount.connections.some((c) => a.accountId === c.proxyAccountId),
   });
 
-  const wallet: Omit<NoID<ProxiedWallet>, 'accounts' | 'isActive'> = {
+  const wallet: Omit<NoID<ProxiedWallet>, 'accounts'> = {
     name: walletIdentity ? identityService.getFullName(walletIdentity) : proxyBasedName,
     type: WalletType.PROXIED,
     signingType: SigningType.WATCH_ONLY,

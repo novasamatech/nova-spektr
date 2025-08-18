@@ -69,7 +69,6 @@ const vaultAccounts: (VaultChainAccount | VaultShardAccount)[] = [
 
 const vaultWallet: PolkadotVaultWallet = {
   id: 1,
-  isActive: true,
   rootAccountId: '0xc6332dd72fc6d33bf202a531e66cfaf46e6161640f91864f23f82b31b38c5f11' as AccountId,
   name: 'My Vault wallet',
   signingType: SigningType.POLKADOT_VAULT,
