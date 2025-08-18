@@ -30,15 +30,15 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
     },
   });
 
-  const address = useMemo(() => {
+  const accountId = useMemo(() => {
     const mainAccount = wallet.accounts.find(account => isPolkadotChain(account.chainId)) || wallet.accounts[0];
-    return mainAccount?.accountId;
+    return mainAccount?.accountId ?? null;
   }, [wallet]);
 
   return (
     <WalletManagement
       wallet={wallet}
-      address={address}
+      accountId={accountId}
       meta={<span className={cnTw('h-1.5 w-1.5 rounded-full', connected ? 'bg-icon-positive' : 'bg-icon-default')} />}
       description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}

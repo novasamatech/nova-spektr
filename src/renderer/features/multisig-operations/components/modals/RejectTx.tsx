@@ -51,7 +51,7 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const rejectTx = useUnit(rejectModel.$transaction);
 
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
@@ -108,7 +108,7 @@ const RejectTxModal = memo(({ api, operation, account, chain, children }: Props)
       chainId: operation.chainId,
       assetId: nativeAsset.assetId,
       transaction: rejectTx ?? undefined,
-      getBalance: balanceUtils.getBalanceWrapped(balances),
+      getBalance: (...args) => balanceUtils.getBalance(balances, ...args),
       getTransactionFee: transactionService.getTransactionFee,
     });
 

@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, attach, createEffect } from 'effector';
 
-import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
 import { getAssetById, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
-import { type BalanceMap, type NetworkStore } from '@/widgets/Transfer';
+import { type NetworkStore, type BalanceMap as TransferBalanceMap } from '@/widgets/Transfer';
 import { DelegateRules } from '../lib/delegate-rules';
 import { validationUtils } from '../lib/validation-utils';
 import {
@@ -23,7 +23,7 @@ type ValidateParams = {
   chain: Chain;
   asset: Asset;
   transaction: Transaction;
-  balances: Balance[];
+  balances: BalanceMap;
   feeMap: FeeMap;
 };
 
@@ -60,9 +60,12 @@ const rootValidateFx = createEffect(
       {
         value: transaction.args.balance,
         form: {},
-        ...DelegateRules.amount.notEnoughBalance({} as Store<{ network: NetworkStore | null; balance: BalanceMap }>, {
-          withFormatAmount: false,
-        }),
+        ...DelegateRules.amount.notEnoughBalance(
+          {} as Store<{ network: NetworkStore | null; balance: TransferBalanceMap }>,
+          {
+            withFormatAmount: false,
+          },
+        ),
         source: {
           network: { chain: chain, asset: asset },
           balance: {
@@ -101,7 +104,7 @@ const validateFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];

@@ -4,7 +4,6 @@ import { createGate } from 'effector-react';
 import { sortBy } from 'lodash';
 import { delay, spread } from 'patronum';
 
-import { $features } from '@/shared/config/features';
 import {
   AccountType,
   type Contact,
@@ -12,18 +11,16 @@ import {
   type MultisigAccount,
   type NoID,
   SigningType,
-  type TxWrapper,
   type Wallet,
   WalletType,
-  WrapperKind,
 } from '@/shared/core';
 import { Step, getNativeAsset, isStep, nonNullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
-import { createComplexTxStore, createMultisigDeposit } from '@/shared/transactions';
+import { createComplexTxStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -128,70 +125,19 @@ const $coreTx = combine(
   },
 );
 
-const $transaction = combine(
-  {
-    apis: networkModel.$apis,
-    chain: formModel.$chain,
-    remarkTx: $coreTx,
-    signatories: signatoryModel.$signatories,
-    signer: $signer,
-    threshold: formModel.form.fields.threshold.$value,
-    multisigAccountId: formModel.$multisigAccountId,
-    features: $features,
-  },
-  ({ apis, chain, remarkTx, signatories, signer, threshold, multisigAccountId, features }) => {
-    if (!chain || !remarkTx || !signer || !multisigAccountId) return null;
-
-    const signatoriesWrapped = Array.from(signatories.values())
-      .filter(a => a.address !== '')
-      .map(s => ({
-        accountId: toAccountId(s.address),
-        address: s.address,
-      }));
-
-    const txWrappers: TxWrapper[] = features.multisigRemark
-      ? []
-      : [
-          {
-            kind: WrapperKind.MULTISIG,
-            multisigAccount: {
-              accountId: multisigAccountId,
-              signatories: signatoriesWrapped,
-              threshold,
-            } as unknown as MultisigAccount,
-            signatories: Array.from(signatories.values()).map(s => ({
-              accountId: toAccountId(s.address),
-            })) as AnyAccount[],
-            signer,
-          },
-        ];
-
-    return transactionService.getWrappedTransaction({
-      api: apis[chain.chainId],
-      transaction: remarkTx,
-      txWrappers,
-    });
-  },
-);
-
-const { $multisigDeposit, $pending: $pendingDeposit } = createMultisigDeposit({
-  $threshold: formModel.form.fields.threshold.$value,
-  $api: $api,
-});
-
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: $signer,
   signatory: $signer,
   accounts: accounts.$list,
   chain: formModel.$chain,
-  transaction: $transaction.map(tx => tx?.wrappedTx ?? null), // TODO: replace with coreTx after subquery support
+  transaction: $coreTx,
 });
 
 const $signerBalance = combine(
   {
     signer: $signer,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     chain: formModel.$chain,
   },
   ({ signer, balances, chain }) => {
@@ -206,13 +152,12 @@ const $signerBalance = combine(
 const $isEnoughBalance = combine(
   {
     fee: $fee,
-    multisigDeposit: $multisigDeposit,
     signerBalance: $signerBalance,
   },
-  ({ fee, multisigDeposit, signerBalance }) => {
-    if (!signerBalance || !fee || !multisigDeposit) return false;
+  ({ fee, signerBalance }) => {
+    if (!signerBalance || !fee) return false;
 
-    return new BN(fee).add(new BN(multisigDeposit)).lte(withdrawableAmountBN(signerBalance));
+    return new BN(fee).lte(withdrawableAmountBN(signerBalance));
   },
 );
 
@@ -468,8 +413,6 @@ export const flowModel = {
 
   $fee,
   $isFeeLoading: $pendingFee,
-  $isMultisigDepositLoading: $pendingDeposit,
-  $multisigDeposit,
 
   signerSelected,
   stepChanged,

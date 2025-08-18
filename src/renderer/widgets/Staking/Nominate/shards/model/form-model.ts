@@ -1,6 +1,7 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 
 import { type Asset, type Chain } from '@/shared/core';
@@ -72,7 +73,7 @@ const $nominateForm = createForm<FormParams>({
         },
         {
           name: 'noBondBalance',
-          errorText: 'staking.bond.noBondBalanceError',
+          errorText: t('staking.bond.noBondBalanceError'),
           source: combine({
             isProxy: $isProxy,
             network: $networkStore,
@@ -93,7 +94,7 @@ const $nominateForm = createForm<FormParams>({
       rules: [
         {
           name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
+          errorText: t('transfer.noSignatoryError'),
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
             if (!signatory || !isMultisig) return true;
@@ -103,7 +104,7 @@ const $nominateForm = createForm<FormParams>({
         },
         {
           name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+          errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
           source: combine({
             feeData: $feeData,
             isMultisig: $isMultisig,
@@ -142,7 +143,7 @@ const $accounts = combine(
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
     shards: $shards,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, shards, balances }) => {
     if (!wallet || !network) return [];
@@ -234,7 +235,7 @@ sample({
 sample({
   clock: $nominateForm.fields.signatory.onChange,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   fn: ({ balances, network }, signatory) => {
@@ -256,7 +257,7 @@ sample({
   source: {
     isProxy: $isProxy,
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   filter: ({ isProxy, network, proxyAccount }) => {

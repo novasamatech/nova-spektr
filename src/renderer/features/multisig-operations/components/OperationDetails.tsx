@@ -2,11 +2,10 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { DetailRow } from '@/shared/ui';
-import { AccountExplorers } from '@/shared/ui-entities';
+import { AccountExplorers, WalletIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { WalletIcon } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {
@@ -27,7 +26,7 @@ export const OperationDetails = ({ operation }: Props) => {
   return (
     <DetailRow label={t('operation.details.multisigWallet')}>
       <Box direction="row" gap={2}>
-        <WalletIcon className="shrink-0" type={activeWallet.type} size={16} />
+        <WalletIcon type={activeWallet.type} size={16} />
         <span>{activeWallet.name}</span>
         <AccountExplorers accountId={accountId} chain={chain} />
       </Box>

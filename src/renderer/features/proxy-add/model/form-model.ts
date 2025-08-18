@@ -14,6 +14,7 @@ import {
   isStringsMatchQuery,
   nonNullable,
   nullable,
+  toAccountId,
   toAddress,
   transferableAmount,
   validateAddress,
@@ -25,12 +26,14 @@ import {
   createInitiatorsStore,
   createMultisigDeposit,
   createSignatoriesStore,
+  createTxValidationStore,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { addProxyValidator } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
 
 type ProxyAccounts = {
@@ -45,7 +48,7 @@ type FormParams = {
   chain: Chain | null;
   initiator: AnyAccount | null;
   signatory: AnyAccount | null;
-  delegate: Address;
+  delegate: string;
   proxyType: ProxyType;
 };
 
@@ -54,7 +57,12 @@ type FormSubmitEvent = {
     wrappedTx: Transaction;
     coreTx: Transaction;
   };
-  formData: FormParams & {
+  formData: {
+    chain: Chain;
+    initiator: AnyAccount;
+    signatory: AnyAccount;
+    delegate: AccountId;
+    proxyType: ProxyType;
     fee: string;
     multisigDeposit: string;
     proxyDeposit: string;
@@ -107,7 +115,7 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             fee: $fee,
             proxyDeposit: $newProxyDeposit,
-            balances: balanceModel.$balances,
+            balances: balanceModel.$balanceMap,
             isMultisig: $isMultisig,
           }),
           fn: (initiator, form, { isMultisig, balances, ...params }) => {
@@ -145,7 +153,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             multisigDeposit: $multisigDeposit,
             proxyDeposit: $newProxyDeposit,
-            balances: balanceModel.$balances,
+            balances: balanceModel.$balanceMap,
             isMultisig: $isMultisig,
           }),
           fn: (signatory, form, { isMultisig, balances, ...params }) => {
@@ -176,7 +184,7 @@ const form: Form<FormParams> = createForm<FormParams>({
       },
     },
     delegate: {
-      defaultValue: '' as Address,
+      defaultValue: '',
       validator: () => {
         return {
           source: $activeProxies,
@@ -345,7 +353,7 @@ const $coreTx = combine(
     return transactionBuilder.buildAddProxy({
       chain: form.chain,
       accountId: signatory.accountId,
-      delegateAccountId: form.delegate,
+      delegateAccountId: toAccountId(form.delegate),
       type: form.proxyType,
     });
   },
@@ -359,6 +367,19 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   chain: form.fields.chain.$value,
   transaction: $coreTx,
   feeTransaction: $fakeTx,
+});
+
+// Transaction validation
+const $asset = form.fields.chain.$value.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
+const { $errors } = createTxValidationStore({
+  validator: addProxyValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
 });
 
 const $isMultisig = $route.map((route) => {
@@ -518,7 +539,7 @@ sample({
 
 // Submit
 
-sample({
+const submitCompleted = sample({
   clock: form.submit.doneData,
   source: {
     transaction: $tx,
@@ -528,9 +549,13 @@ sample({
     proxyDeposit: $newProxyDeposit,
     proxies: $activeProxies,
   },
-  filter: ({ transaction }) => nonNullable(transaction),
-  fn: ({ proxyDeposit, multisigDeposit, proxies, transaction, coreTx, fee }, formData) => {
-    const signatory = formData.signatory?.accountId ? formData.signatory : null;
+  fn: ({ proxyDeposit, multisigDeposit, proxies, transaction, coreTx, fee }, formData): FormSubmitEvent | null => {
+    const delegate = formData.delegate;
+
+    if (!validateAddress(delegate)) return null;
+    if (nullable(formData.initiator) || nullable(formData.signatory) || nullable(formData.chain)) {
+      return null;
+    }
 
     return {
       transactions: {
@@ -538,15 +563,22 @@ sample({
         coreTx: coreTx!,
       },
       formData: {
-        ...formData,
+        chain: formData.chain,
+        initiator: formData.initiator,
+        proxyType: formData.proxyType,
         fee: fee.toString(),
-        signatory,
+        delegate: toAccountId(delegate),
+        signatory: formData.signatory,
         proxyDeposit,
         multisigDeposit: multisigDeposit.toString(),
         proxyNumber: proxies.length,
       },
     };
   },
+});
+
+sample({
+  clock: submitCompleted.filter({ fn: nonNullable }),
   target: formSubmitted,
 });
 
@@ -580,4 +612,5 @@ export const formModel = {
   proxyDepositChanged,
   isProxyDepositLoadingChanged,
   formSubmitted,
+  $errors,
 };

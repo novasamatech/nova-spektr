@@ -5,11 +5,11 @@ import { AccountType, type Chain, type Wallet, type WalletType } from '@/shared/
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
-import { WalletManagement } from '@/shared/ui-entities';
+import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { WalletIcon, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 
@@ -60,7 +60,7 @@ export const WalletGroup = memo((props: Props) => {
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
-              const address = wallet.accounts[0]?.accountId;
+              const accountId = wallet.accounts[0]?.accountId;
 
               let chain: Chain | null = null;
               let label: string | null = null;
@@ -78,7 +78,7 @@ export const WalletGroup = memo((props: Props) => {
                   <div className="flex-1">
                     <WalletManagement
                       wallet={wallet}
-                      address={address}
+                      accountId={accountId}
                       description={
                         <WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />
                       }

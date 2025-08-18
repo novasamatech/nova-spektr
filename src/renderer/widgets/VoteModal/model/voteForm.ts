@@ -2,28 +2,33 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { and, empty, not, reset } from 'patronum';
 
-import {
-  type AccountVote,
-  type Address,
-  type Conviction,
-  type OngoingReferendum,
-  type Transaction,
-} from '@/shared/core';
+import { type AccountVote, type Conviction, type OngoingReferendum, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
-import { getNativeAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
+import { entries, getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import {
+  createComplexTxStore,
+  createInitiatorsStore,
+  createSignatoriesStore,
+  createTxValidationStore,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { locksService, voteTransactionService } from '@/entities/governance';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { type AggregatedReferendum, delegationAggregate, networkSelectorModel } from '@/features/governance';
+import {
+  type AggregatedReferendum,
+  delegationAggregate,
+  getLocksForAccount,
+  networkSelectorModel,
+} from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
 import { votingAssetModel } from '@/features/governance/model/votingAsset';
-import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
+import { voteValidator } from '@/features/operations/OperationsValidation';
 
 type FormFields = {
   initiator: AnyAccount | null;
@@ -41,7 +46,7 @@ type FormInput = {
 const setReferendum = createEvent<AggregatedReferendum<OngoingReferendum> | null>();
 
 const $type = createStore<'vote' | 'revote' | null>(null);
-const $voters = createStore<Address[]>([]);
+const $voters = createStore<AccountId[]>([]);
 const $existingVote = createStore<AccountVote | null>(null);
 const $referendum = restore(setReferendum, null);
 const $lockForAccount = createStore(BN_ZERO);
@@ -132,11 +137,9 @@ const $hasDelegatedTrack = combine(
       return false;
     }
 
-    const accountAddress = toAddress(initiator.accountId, { prefix: network.chain.addressPrefix });
-
     for (const delegators of Object.values(tracks)) {
-      for (const [address, tracks] of Object.entries(delegators)) {
-        if (address === accountAddress && tracks.includes(referendum.track)) {
+      for (const [delegatorAccountId, tracks] of entries(delegators)) {
+        if (delegatorAccountId === initiator.accountId && tracks.includes(referendum.track)) {
           return true;
         }
       }
@@ -192,6 +195,18 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
+// Transaction validation
+const $asset = networkSelectorModel.$governanceChain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
+const { $errors } = createTxValidationStore({
+  validator: voteValidator,
+  params: {
+    api: networkSelectorModel.$governanceChainApi,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
 // balances
 
 sample({
@@ -200,11 +215,8 @@ sample({
     trackLocks: locksAggregate.$trackLocks,
     chain: networkSelectorModel.$governanceChain,
   },
-  filter: ({ chain }, account) => nonNullable(account) && nonNullable(chain),
-  fn: ({ trackLocks, chain }, account) => {
-    const address = toAddress(account!.accountId, { prefix: chain!.addressPrefix });
-
-    return getLocksForAddress(address, trackLocks);
+  fn: ({ trackLocks }, account) => {
+    return account ? getLocksForAccount(account.accountId, trackLocks) : BN_ZERO;
   },
   target: $lockForAccount,
 });
@@ -214,7 +226,7 @@ const $availableBalance = combine(
     initiator: form.fields.initiator.$value,
     referendum: $referendum,
     chain: networkSelectorModel.$governanceChain,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     accounts: accounts.$list,
   },
   ({ referendum, balances, chain, initiator }) => {
@@ -328,4 +340,5 @@ export const voteForm = {
 
   setReferendum,
   formSubmitted,
+  $errors,
 };

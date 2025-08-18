@@ -1,8 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type UnsubscribePromise } from '@polkadot/api/types';
-import { type Vec } from '@polkadot/types';
+import { type Option, type Vec } from '@polkadot/types';
 import { type AccountData, type Balance as ChainBalance } from '@polkadot/types/interfaces';
-import { type PalletBalancesBalanceLock } from '@polkadot/types/lookup';
+import { type PalletAssetsAssetDetails, type PalletBalancesBalanceLock } from '@polkadot/types/lookup';
 import { type Codec } from '@polkadot/types/types';
 import { BN, BN_ZERO, hexToU8a } from '@polkadot/util';
 import { BigNumber } from 'bignumber.js';
@@ -11,7 +11,8 @@ import { camelCase, noop, uniq } from 'lodash';
 import {
   type Asset,
   AssetType,
-  type Balance,
+  type BalanceDraft,
+  type BalanceMap,
   type Chain,
   type ChainId,
   type LockTypes,
@@ -24,14 +25,13 @@ import {
   getRepeatedIndex,
   getRoundedValue,
   groupBy,
+  nonNullable,
   nullable,
   totalAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { type CurrencyItem, type PriceObject } from '../../price-provider/lib/types';
-
-type NoIdBalance = Omit<Balance, 'id'>;
 
 export const balanceService = {
   subscribeBalances,
@@ -42,6 +42,9 @@ export const balanceService = {
   fetchLockBalances,
   calculateWalletBalance,
 };
+
+// constants
+const holdAndFreezesFlag = new BN('80000000000000000000000000000000', 16);
 
 // subscription
 
@@ -59,7 +62,7 @@ function subscribeBalances(
   api: ApiPromise,
   chain: Chain,
   accountIds: AccountId[],
-  callback: (newBalances: NoIdBalance[]) => void,
+  callback: (newBalances: BalanceDraft[]) => void,
 ): UnsubscribePromise[] {
   const uniqueAccountIds = uniq(accountIds);
 
@@ -75,14 +78,27 @@ function subscribeBalances(
     return 'assets';
   });
 
-  return [
-    subscribeNativeAssetsChange(api, chain, nativeAsset?.assetId, uniqueAccountIds, callback),
-    subscribeOrmlAssetsChange(api, chain, ormlAssets, uniqueAccountIds, callback),
+  const subscriptions: UnsubscribePromise[] = [];
 
-    ...Object.entries(stateminePalletGroups).map(([pallet, assets = []]) => {
-      return subscribeStatemineAssetsChange(api, pallet, chain, assets, uniqueAccountIds, callback);
-    }),
-  ];
+  if (nonNullable(nativeAsset)) {
+    subscriptions.push(subscribeNativeAssetsChange(api, chain, nativeAsset, uniqueAccountIds, callback));
+  }
+
+  if (ormlAssets.length > 0) {
+    subscriptions.push(subscribeOrmlAssetsChange(api, chain, ormlAssets, uniqueAccountIds, callback));
+  }
+
+  const statemineGroups = Object.entries(stateminePalletGroups);
+
+  if (statemineGroups.length > 0) {
+    subscriptions.push(
+      ...statemineGroups.map(([pallet, assets = []]) => {
+        return subscribeStatemineAssetsChange(api, pallet, chain, assets, uniqueAccountIds, callback);
+      }),
+    );
+  }
+
+  return subscriptions;
 }
 
 /**
@@ -99,7 +115,7 @@ function subscribeLockBalances(
   api: ApiPromise,
   chain: Chain,
   accountIds: AccountId[],
-  callback: (newLocks: NoIdBalance[]) => void,
+  callback: (newLocks: BalanceDraft[]) => void,
 ): UnsubscribePromise[] {
   const { nativeAsset, ormlAssets } = chain.assets.reduce<{ nativeAsset?: Asset; ormlAssets: Asset[] }>(
     (acc, asset) => {
@@ -111,23 +127,30 @@ function subscribeLockBalances(
     { nativeAsset: undefined, ormlAssets: [] },
   );
 
-  return [
-    subscribeLockNativeAssetChange(api, chain, nativeAsset?.assetId, accountIds, callback),
-    subscribeLockOrmlAssetChange(api, chain, ormlAssets, accountIds, callback),
-  ];
+  const subscriptions: UnsubscribePromise[] = [];
+
+  if (nonNullable(nativeAsset)) {
+    subscriptions.push(subscribeLockNativeAssetChange(api, chain, nativeAsset, accountIds, callback));
+  }
+
+  if (ormlAssets.length > 0) {
+    subscriptions.push(subscribeLockOrmlAssetChange(api, chain, ormlAssets, accountIds, callback));
+  }
+
+  return subscriptions;
 }
 
-function subscribeNativeAssetsChange(
+async function subscribeNativeAssetsChange(
   api: ApiPromise,
   chain: Chain,
-  assetId: number | undefined,
+  asset: Asset,
   accountIds: AccountId[],
-  callback: (newBalances: NoIdBalance[]) => void,
+  callback: (newBalances: BalanceDraft[]) => void,
 ): UnsubscribePromise {
-  if (assetId === undefined) return Promise.resolve(noop);
+  const ed = await getExistentialDeposit(api, asset);
 
   return api.query.system.account.multi(accountIds, (data) => {
-    const newBalances: NoIdBalance[] = [];
+    const newBalances: BalanceDraft[] = [];
 
     for (const [index, systemAccountInfo] of data.entries()) {
       let frozen: BN;
@@ -145,11 +168,12 @@ function subscribeNativeAssetsChange(
       newBalances.push({
         accountId: accountIds[index],
         chainId: chain.chainId,
-        assetId: assetId,
-        verified: true,
+        assetId: asset.assetId,
         free: systemAccountInfo.data.free.toBn(),
         reserved: systemAccountInfo.data.reserved.toBn(),
         frozen,
+        ed,
+        transferableMode: hasHoldAndFreezesFlag(systemAccountInfo.data.flags) ? 'holdAndFreezes' : 'legacy',
       });
     }
 
@@ -163,7 +187,7 @@ function subscribeStatemineAssetsChange(
   chain: Chain,
   assets: Asset[],
   accountIds: AccountId[],
-  callback: (newBalances: NoIdBalance[]) => void,
+  callback: (newBalances: BalanceDraft[]) => void,
 ): UnsubscribePromise {
   if (!api || !assets.length || !accountIds.length) return Promise.resolve(noop);
 
@@ -188,8 +212,8 @@ function subscribeStatemineAssetsChange(
     return acc;
   }, []);
 
-  return api.query[pallet].account.multi(assetsTuples, (data) => {
-    const newBalances: NoIdBalance[] = [];
+  return api.query[pallet].account.multi(assetsTuples, async (data) => {
+    const newBalances: BalanceDraft[] = [];
 
     for (const [index, accountInfo] of data.entries()) {
       // @ts-expect-error it's hard to type such cases
@@ -197,14 +221,23 @@ function subscribeStatemineAssetsChange(
       const accountIndex = index % accountIds.length;
       const assetIndex = getRepeatedIndex(index, accountIds.length);
 
+      const accountId = accountIds.at(accountIndex);
+      const asset = assets.at(assetIndex);
+
+      if (nullable(accountId)) continue;
+      if (nullable(asset)) continue;
+
+      const ed = await getExistentialDeposit(api, asset);
+
       newBalances.push({
-        accountId: accountIds[accountIndex],
+        accountId,
         chainId: chain.chainId,
-        assetId: assets[assetIndex].assetId,
-        verified: true,
+        assetId: asset.assetId,
         frozen: BN_ZERO,
         reserved: BN_ZERO,
         free,
+        ed,
+        transferableMode: 'legacy',
       });
     }
 
@@ -237,7 +270,7 @@ function subscribeOrmlAssetsChange(
   chain: Chain,
   assets: Asset[],
   accountIds: AccountId[],
-  callback: (newBalances: NoIdBalance[]) => void,
+  callback: (newBalances: BalanceDraft[]) => void,
 ): UnsubscribePromise {
   if (!api || !assets.length) return Promise.resolve(noop);
 
@@ -245,21 +278,30 @@ function subscribeOrmlAssetsChange(
 
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
-  return method.multi(assetsTuples, (data) => {
-    const newBalances: NoIdBalance[] = [];
+  return method.multi(assetsTuples, async (data) => {
+    const newBalances: BalanceDraft[] = [];
 
     for (const [index, accountInfo] of (data as unknown as OrmlAccountData[]).entries()) {
       const accountIndex = index % accountIds.length;
       const assetIndex = getRepeatedIndex(index, accountIds.length);
 
+      const accountId = accountIds.at(accountIndex);
+      const asset = assets.at(assetIndex);
+
+      if (nullable(accountId)) continue;
+      if (nullable(asset)) continue;
+
+      const ed = await getExistentialDeposit(api, asset);
+
       newBalances.push({
-        accountId: accountIds[accountIndex],
+        accountId,
         chainId: chain.chainId,
-        assetId: assets[assetIndex].assetId,
-        verified: true,
+        assetId: asset.assetId,
         free: accountInfo.free.toBn(),
         frozen: accountInfo.frozen.toBn(),
         reserved: accountInfo.reserved.toBn(),
+        transferableMode: 'legacy',
+        ed,
       });
     }
 
@@ -270,14 +312,12 @@ function subscribeOrmlAssetsChange(
 function subscribeLockNativeAssetChange(
   api: ApiPromise,
   chain: Chain,
-  assetId: number | undefined,
+  asset: Asset,
   accountIds: AccountId[],
-  callback: (newLocks: NoIdBalance[]) => void,
+  callback: (newLocks: BalanceDraft[]) => void,
 ): UnsubscribePromise {
-  if (!api || assetId === undefined) return Promise.resolve(noop);
-
   return api.query.balances.locks.multi(accountIds, (data) => {
-    const newLocks: NoIdBalance[] = [];
+    const newLocks: BalanceDraft[] = [];
 
     for (const [index, balanceLocks] of data.entries()) {
       const locked = balanceLocks.map((lock) => ({
@@ -288,7 +328,7 @@ function subscribeLockNativeAssetChange(
       newLocks.push({
         accountId: accountIds[index],
         chainId: chain.chainId,
-        assetId,
+        assetId: asset.assetId,
         locked,
       });
     }
@@ -302,7 +342,7 @@ function subscribeLockOrmlAssetChange(
   chain: Chain,
   assets: Asset[],
   accountIds: AccountId[],
-  callback: (newLocks: NoIdBalance[]) => void,
+  callback: (newLocks: BalanceDraft[]) => void,
 ): UnsubscribePromise {
   if (!api || !assets.length) return Promise.resolve(noop);
 
@@ -310,7 +350,7 @@ function subscribeLockOrmlAssetChange(
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
   return method.multi(assetsTuples, (data: Vec<PalletBalancesBalanceLock>[]) => {
-    const newLocks: NoIdBalance[] = [];
+    const newLocks: BalanceDraft[] = [];
 
     for (const [index, balanceLocks] of data.entries()) {
       const accountIndex = index % accountIds.length;
@@ -345,7 +385,7 @@ function subscribeLockOrmlAssetChange(
  *
  * @returns {Promise[]}
  */
-async function fetchBalances(api: ApiPromise, chain: Chain, accountIds: AccountId[]): Promise<NoIdBalance[]> {
+async function fetchBalances(api: ApiPromise, chain: Chain, accountIds: AccountId[]): Promise<BalanceDraft[]> {
   const uniqueAccountIds = uniq(accountIds);
 
   const nativeAsset = chain.assets.find((asset) => asset.type === AssetType.NATIVE);
@@ -361,7 +401,7 @@ async function fetchBalances(api: ApiPromise, chain: Chain, accountIds: AccountI
   });
 
   const balances = await Promise.all([
-    nativeAsset ? fetchNativeAssets(api, chain, nativeAsset.assetId, uniqueAccountIds) : [],
+    nativeAsset ? fetchNativeAssets(api, chain, nativeAsset, uniqueAccountIds) : [],
     fetchOrmlAssets(api, chain, ormlAssets, uniqueAccountIds),
     ...Object.entries(stateminePalletGroups).map(([pallet, assets = []]) => {
       return fetchStatemineAssets(api, pallet, chain, assets, uniqueAccountIds);
@@ -381,7 +421,7 @@ async function fetchBalances(api: ApiPromise, chain: Chain, accountIds: AccountI
  *
  * @returns {Promise[]}
  */
-async function fetchLockBalances(api: ApiPromise, chain: Chain, accountIds: AccountId[]): Promise<NoIdBalance[]> {
+async function fetchLockBalances(api: ApiPromise, chain: Chain, accountIds: AccountId[]): Promise<BalanceDraft[]> {
   const { nativeAsset, ormlAssets } = chain.assets.reduce<{ nativeAsset?: Asset; ormlAssets: Asset[] }>(
     (acc, asset) => {
       if (asset.type === AssetType.NATIVE) acc.nativeAsset = asset;
@@ -403,11 +443,12 @@ async function fetchLockBalances(api: ApiPromise, chain: Chain, accountIds: Acco
 async function fetchNativeAssets(
   api: ApiPromise,
   chain: Chain,
-  assetId: number,
+  asset: Asset,
   accountIds: AccountId[],
-): Promise<NoIdBalance[]> {
+): Promise<BalanceDraft[]> {
   const data = await api.query.system.account.multi(accountIds);
-  const result: NoIdBalance[] = [];
+  const ed = await getExistentialDeposit(api, asset);
+  const result: BalanceDraft[] = [];
 
   for (const [index, systemAccountInfo] of data.entries()) {
     let frozen: BN;
@@ -422,14 +463,19 @@ async function fetchNativeAssets(
       frozen = systemAccountInfo.data.frozen.toBn();
     }
 
+    const accountId = accountIds.at(index);
+
+    if (nullable(accountId)) continue;
+
     result.push({
       accountId: accountIds[index],
       chainId: chain.chainId,
-      assetId: assetId,
-      verified: true,
+      assetId: asset.assetId,
       free: systemAccountInfo.data.free.toBn(),
       reserved: systemAccountInfo.data.reserved.toBn(),
       frozen,
+      ed,
+      transferableMode: hasHoldAndFreezesFlag(systemAccountInfo.data.flags) ? 'holdAndFreezes' : 'legacy',
     });
   }
 
@@ -442,7 +488,7 @@ async function fetchStatemineAssets(
   chain: Chain,
   assets: Asset[],
   accountIds: AccountId[],
-): Promise<NoIdBalance[]> {
+): Promise<BalanceDraft[]> {
   if (!assets.length || !accountIds.length) return [];
 
   if (!api.query[pallet]) {
@@ -467,22 +513,31 @@ async function fetchStatemineAssets(
   }, []);
 
   const data = await api.query[pallet].account.multi(assetsTuples);
-  const result: NoIdBalance[] = [];
+  const result: BalanceDraft[] = [];
 
   for (const [index, accountInfo] of data.entries()) {
     // @ts-expect-error it's hard to type such cases
     const free = accountInfo.isNone ? BN_ZERO : accountInfo.unwrap().balance.toBn();
+
     const accountIndex = index % accountIds.length;
     const assetIndex = getRepeatedIndex(index, accountIds.length);
+    const accountId = accountIds.at(accountIndex);
+    const asset = assets.at(assetIndex);
+
+    if (nullable(accountId)) continue;
+    if (nullable(asset)) continue;
+
+    const ed = await getExistentialDeposit(api, asset);
 
     result.push({
-      accountId: accountIds[accountIndex],
+      accountId,
       chainId: chain.chainId,
-      assetId: assets[assetIndex].assetId,
-      verified: true,
+      assetId: asset.assetId,
       frozen: BN_ZERO,
       reserved: BN_ZERO,
       free,
+      ed,
+      transferableMode: 'legacy',
     });
   }
 
@@ -494,7 +549,7 @@ async function fetchOrmlAssets(
   chain: Chain,
   assets: Asset[],
   accountIds: AccountId[],
-): Promise<NoIdBalance[]> {
+): Promise<BalanceDraft[]> {
   if (!api || !assets.length) return [];
 
   const method = api.query.tokens ? api.query.tokens.accounts : api.query.currencies.accounts;
@@ -502,20 +557,28 @@ async function fetchOrmlAssets(
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
 
   const data = await method.multi(assetsTuples);
-  const result: NoIdBalance[] = [];
+  const result: BalanceDraft[] = [];
 
   for (const [index, accountInfo] of (data as unknown as OrmlAccountData[]).entries()) {
     const accountIndex = index % accountIds.length;
     const assetIndex = getRepeatedIndex(index, accountIds.length);
+    const accountId = accountIds.at(accountIndex);
+    const asset = assets.at(assetIndex);
+
+    if (nullable(accountId)) continue;
+    if (nullable(asset)) continue;
+
+    const ed = await getExistentialDeposit(api, asset);
 
     result.push({
       accountId: accountIds[accountIndex],
       chainId: chain.chainId,
       assetId: assets[assetIndex].assetId,
-      verified: true,
       free: accountInfo.free.toBn(),
       frozen: accountInfo.frozen.toBn(),
       reserved: accountInfo.reserved.toBn(),
+      ed,
+      transferableMode: 'legacy',
     });
   }
 
@@ -527,9 +590,9 @@ async function fetchLockNativeAsset(
   chain: Chain,
   assetId: number,
   accountIds: AccountId[],
-): Promise<NoIdBalance[]> {
+): Promise<BalanceDraft[]> {
   const data = await api.query.balances.locks.multi(accountIds);
-  const result: NoIdBalance[] = [];
+  const result: BalanceDraft[] = [];
 
   for (const [index, balanceLocks] of data.entries()) {
     const locked = balanceLocks.map((lock) => ({
@@ -553,14 +616,14 @@ async function fetchLockOrmlAsset(
   chain: Chain,
   assets: Asset[],
   accountIds: AccountId[],
-): Promise<NoIdBalance[]> {
+): Promise<BalanceDraft[]> {
   if (!assets.length) return [];
 
   const method = api.query.tokens ? api.query.tokens.locks : api.query.currencies.locks;
   const assetsTuples = getOrmlAssetTuples(api, assets, accountIds);
   const data: Vec<PalletBalancesBalanceLock>[] = await method.multi(assetsTuples);
 
-  const result: NoIdBalance[] = [];
+  const result: BalanceDraft[] = [];
 
   for (const [index, balanceLocks] of data.entries()) {
     const accountIndex = index % accountIds.length;
@@ -588,12 +651,30 @@ async function getExistentialDeposit(api: ApiPromise, asset: Asset): Promise<BN>
       return api.consts.balances.existentialDeposit.toBn();
     }
     case AssetType.STATEMINE: {
-      return await api.query.assets.asset(asset.assetId).then((balance) => balance.value.minBalance.toBn());
+      let pallet;
+      if (asset.typeExtras && 'palletName' in asset.typeExtras) {
+        pallet = camelCase(asset.typeExtras.palletName);
+      } else {
+        pallet = 'assets';
+      }
+
+      const assetId = getAssetId(asset);
+
+      return await api.query[pallet].asset(assetId).then((balance) => {
+        if ((balance as Option<PalletAssetsAssetDetails>).isNone) {
+          return BN_ZERO;
+        }
+        return (balance as Option<PalletAssetsAssetDetails>).value.minBalance.toBn();
+      });
     }
     case AssetType.ORML: {
       return new BN((asset.typeExtras as OrmlExtras).existentialDeposit);
     }
   }
+}
+
+function hasHoldAndFreezesFlag(flags: BN) {
+  return flags.and(holdAndFreezesFlag).eq(holdAndFreezesFlag);
 }
 
 /**
@@ -624,11 +705,11 @@ function calculateWalletBalance({
 }: {
   wallet: Wallet | null;
   chains: Record<ChainId, Chain>;
-  balances: Balance[];
+  balances: BalanceMap;
   currency: CurrencyItem | null;
   prices: PriceObject | null;
 }) {
-  if (nullable(currency?.coingeckoId) || nullable(wallet) || nullable(prices) || balances.length === 0) {
+  if (nullable(currency?.coingeckoId) || nullable(wallet) || nullable(prices)) {
     return new BigNumber(0);
   }
 
@@ -636,7 +717,7 @@ function calculateWalletBalance({
 
   const accountMap = dictionary(wallet.accounts, 'accountId');
 
-  return balances.reduce((acc, balance) => {
+  return Object.values(balances).reduce((acc, balance) => {
     const account = accountMap[balance.accountId];
     const chain = chains[balance.chainId];
     if (nullable(account) || nullable(chain)) return acc;

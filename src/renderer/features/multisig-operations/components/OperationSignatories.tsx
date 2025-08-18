@@ -6,13 +6,13 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
-import { Address } from '@/shared/ui-entities';
+import { Address, WalletIcon } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { type ExtendedChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { SignatoryCard, signatoryUtils } from '@/entities/signatory';
-import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 
 import LogModal from './LogModal';
 
@@ -132,7 +132,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                       wallets,
                       connection.addressPrefix,
                     )}
-                    address={toAddress(signatory.accountId)}
+                    address={toAddress(signatory.accountId, { prefix: connection.addressPrefix })}
                     variant="short"
                     canCopy={false}
                     showIcon

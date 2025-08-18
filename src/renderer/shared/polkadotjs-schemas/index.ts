@@ -79,7 +79,7 @@ export const pjsSchema = {
 
   helpers: {
     toAccountId: (value: string) => {
-      if (isSubstrateAccountId(value as AccountId) || isEthereumAccountId(value as AccountId)) {
+      if (isSubstrateAccountId(value) || isEthereumAccountId(value)) {
         return value as AccountId;
       }
 

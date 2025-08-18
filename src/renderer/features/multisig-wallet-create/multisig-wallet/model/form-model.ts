@@ -1,8 +1,8 @@
 import { combine, sample } from 'effector';
 
-import { type Address, type Chain, type ChainId, CryptoType } from '@/shared/core';
+import { type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { createForm } from '@/shared/forms';
-import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { accountService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -140,15 +140,15 @@ const $invalidAddresses = combine(
   ({ chain, signatories }) => {
     if (!chain) return [];
 
-    let badSignatories: Address[] = [];
+    const badSignatories = new Set<string>();
 
     for (const signer of signatories) {
       if (!signer.address || validateAddress(signer.address, chain)) continue;
 
-      badSignatories = addUnique(badSignatories, signer.address);
+      badSignatories.add(signer.address);
     }
 
-    return badSignatories;
+    return Array.from(badSignatories);
   },
 );
 

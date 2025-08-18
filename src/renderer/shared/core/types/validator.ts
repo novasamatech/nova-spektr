@@ -1,7 +1,9 @@
-import { type Address, type ChainId } from './general';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+
+import { type ChainId } from './general';
 
 export type Validator = {
-  address: Address;
+  accountId: AccountId;
   chainId: ChainId;
   ownStake: string;
   totalStake: string;
@@ -15,6 +17,6 @@ export type Validator = {
 };
 
 type Nominator = {
-  who: Address;
+  who: AccountId;
   value: string;
 };

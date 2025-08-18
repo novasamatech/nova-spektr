@@ -4,11 +4,10 @@ import { memo } from 'react';
 import { type PolkadotVaultGroup, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { isEthereumAccountId, nullable, performSearch } from '@/shared/lib/utils';
-import { WalletManagement } from '@/shared/ui-entities';
+import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { WalletIcon } from '@/entities/wallet';
 import { walletSelectService } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 
@@ -54,17 +53,17 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
               const isSingleAccount = wallet.accounts.length === 1;
-              const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
-              if (nullable(address)) return null;
+              const accountId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+              if (nullable(accountId)) return null;
 
-              const isEthereum = isEthereumAccountId(address);
+              const isEthereum = isEthereumAccountId(accountId);
               const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
               return (
                 <WalletManagement
                   key={wallet.id}
                   wallet={wallet}
-                  address={address}
+                  accountId={accountId}
                   theme={theme}
                   description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
                   onClick={() => onSelect(wallet)}

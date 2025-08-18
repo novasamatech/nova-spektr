@@ -1,9 +1,8 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useMemo } from 'react';
 
-import { type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { groupBy, performSearch } from '@/shared/lib/utils';
+import { entries, groupBy, performSearch } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Box, Checkbox, Modal, SearchInput, useNotification } from '@/shared/ui-kit';
@@ -105,10 +104,10 @@ export const HiddenWalletsModal = () => {
             </Checkbox>
           </div>
 
-          {Object.entries(filteredWalletsByType).map(([type, wallets]) => (
+          {entries(filteredWalletsByType).map(([type, wallets]) => (
             <WalletGroup
               key={type}
-              walletType={type as WalletType}
+              walletType={type}
               wallets={wallets ?? []}
               selectedWallets={selectionState.selectedWallets}
               onGroupToggle={hiddenWalletsModel.toggleGroupSelection}

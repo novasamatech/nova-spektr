@@ -2,7 +2,7 @@ import { combine } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type ChainId, type ProxyAccount, type Wallet } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
+import { keys, nullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { accountUtils, permissionUtils } from '@/entities/wallet';
@@ -29,7 +29,7 @@ const $chainsProxies = combine(
   ({ wallet, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
     if (nullable(wallet)) return {};
 
-    return proxyUtils.getProxyAccountsOnChain(wallet.accounts, Object.keys(chains) as ChainId[], proxies);
+    return proxyUtils.getProxyAccountsOnChain(wallet.accounts, keys(chains), proxies);
   },
 );
 
