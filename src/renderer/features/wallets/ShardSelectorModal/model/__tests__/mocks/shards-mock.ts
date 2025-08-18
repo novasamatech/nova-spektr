@@ -10,7 +10,7 @@ import {
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-const vaultAccounts: (VaultChainAccount | VaultShardAccount)[] = [
+const vaultAccounts = [
   {
     id: '1',
     walletId: 1,
@@ -65,7 +65,7 @@ const vaultAccounts: (VaultChainAccount | VaultShardAccount)[] = [
     chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     derivationPath: '//polkadot//main',
   },
-];
+] satisfies (VaultChainAccount | VaultShardAccount)[];
 
 const vaultWallet: PolkadotVaultWallet = {
   id: 1,

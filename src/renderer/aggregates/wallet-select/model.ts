@@ -50,4 +50,8 @@ export const walletSelect = {
   $selectedWalletId: readonly($selectedWalletId),
   $selectedAccounts,
   select: selectWallet,
+
+  __test: {
+    $selectedWalletId,
+  },
 };
