@@ -1,11 +1,14 @@
 import { type BN } from '@polkadot/util';
+import { type z } from 'zod';
 
 import { type Balance } from './balance';
 import { type ChainId } from './general';
 
+export type AssetId = number & z.$brand<'AssetId'>;
+
 export type Asset = {
   name: string;
-  assetId: number;
+  assetId: AssetId;
   symbol: string;
   staking?: StakingType;
   precision: number;
@@ -64,7 +67,7 @@ export type AssetByChains = {
   chains: {
     chainId: ChainId;
     name: string;
-    assetId: number;
+    assetId: AssetId;
     assetSymbol: string;
     balance: PortfolioTokenBalance | null;
     type?: AssetType;

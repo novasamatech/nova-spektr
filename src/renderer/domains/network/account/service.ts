@@ -1,7 +1,15 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
 
-import { type Asset, type Balance, type BalanceMap, type Chain, type ChainId, CryptoType } from '@/shared/core';
+import {
+  type Asset,
+  type AssetId,
+  type Balance,
+  type BalanceMap,
+  type Chain,
+  type ChainId,
+  CryptoType,
+} from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
 import { assert, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -32,7 +40,7 @@ const validateRouteBalancesTransformer = createTransformer<
     route: AnyAccount[];
     chainId: ChainId;
     asset: Asset;
-    getBalance(accountId: AccountId, chainId: ChainId, assetId: Asset['assetId']): Balance | null;
+    getBalance(accountId: AccountId, chainId: ChainId, assetId: AssetId): Balance | null;
   },
   Promise<TransactionValidationBalanceError> | TransactionValidationBalanceError
 >();
@@ -344,7 +352,7 @@ async function validateRouteBalances({ api, route, balances, asset }: BalanceVal
     balancesMap[id] = balance;
   }
 
-  const getBalance = (accountId: AccountId, chainId: ChainId, assetId: Asset['assetId']) => {
+  const getBalance = (accountId: AccountId, chainId: ChainId, assetId: AssetId) => {
     const id = balanceUtils.constructBalanceId(accountId, chainId, assetId);
     return balancesMap[id] ?? balanceUtils.getBalanceById(balances, id);
   };

@@ -2,7 +2,7 @@ import { BN_ZERO } from '@polkadot/util';
 import { uniq } from 'lodash';
 
 import {
-  type Asset,
+  type AssetId,
   type Balance,
   type BalanceDraft,
   type BalanceId,
@@ -22,7 +22,7 @@ export const balanceUtils = {
   mergeBalanceMapWithNewBalances,
 };
 
-function constructBalanceId(accountId: AccountId, chainId: ChainId, assetId: Asset['assetId']): BalanceId {
+function constructBalanceId(accountId: AccountId, chainId: ChainId, assetId: AssetId): BalanceId {
   // expected type assign
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return `${accountId} ${chainId} ${assetId.toString()}` as BalanceId;
@@ -43,7 +43,7 @@ function getAssetBalances(
   balances: BalanceMap,
   accountIds: AccountId[],
   chainId: ChainId,
-  assetId: Asset['assetId'],
+  assetId: AssetId,
 ): Balance[] {
   const result: Balance[] = [];
   for (const accountId of uniq(accountIds)) {
@@ -57,15 +57,8 @@ function getAssetBalances(
   return result;
 }
 
-function getBalance(
-  balances: BalanceMap,
-  accountId: AccountId,
-  chainId: ChainId,
-  assetId: Asset['assetId'],
-): Balance | null {
-  const id = constructBalanceId(accountId, chainId, assetId);
-
-  return getBalanceById(balances, id);
+function getBalance(balances: BalanceMap, accountId: AccountId, chainId: ChainId, assetId: AssetId): Balance | null {
+  return getBalanceById(balances, constructBalanceId(accountId, chainId, assetId));
 }
 
 function getBalanceById(balances: BalanceMap, balanceId: BalanceId): Balance | null {

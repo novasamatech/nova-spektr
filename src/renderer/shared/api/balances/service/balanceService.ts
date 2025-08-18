@@ -10,6 +10,7 @@ import { camelCase, noop, uniq } from 'lodash';
 
 import {
   type Asset,
+  type AssetId,
   AssetType,
   type BalanceDraft,
   type BalanceMap,
@@ -588,7 +589,7 @@ async function fetchOrmlAssets(
 async function fetchLockNativeAsset(
   api: ApiPromise,
   chain: Chain,
-  assetId: number,
+  assetId: AssetId,
   accountIds: AccountId[],
 ): Promise<BalanceDraft[]> {
   const data = await api.query.balances.locks.multi(accountIds);

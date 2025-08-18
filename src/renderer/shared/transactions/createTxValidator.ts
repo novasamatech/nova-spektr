@@ -1,7 +1,9 @@
-import { type Transaction } from '@/shared/core';
+import { type AssetId, type Balance, type ChainId, type Transaction } from '@/shared/core';
 import { assert, nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type TransactionValidationBalanceError } from '@/shared/ui-entities';
 import { type AnyTransaction, accountService, balanceService, transactionService } from '@/domains/network';
+import { balanceUtils } from '@/entities/balance';
 import { getExtrinsic } from '@/entities/transaction';
 
 type CombinedParams = Parameters<typeof accountService.validateRouteBalances>[0] &
@@ -13,9 +15,14 @@ type ValidatorParams<A> = Omit<CombinedParams, 'transaction'> &
     transaction: Transaction | AnyTransaction;
   };
 
+type RulesParams<A> = Omit<ValidatorParams<A>, 'transaction'> & {
+  transaction: AnyTransaction;
+  getBalance(accountId: AccountId, chainId: ChainId, assetId: AssetId): Balance | null;
+};
+
 export function createTxValidator<A>(params?: {
   additionalBalanceRules?: ((
-    params: ValidatorParams<A>,
+    params: RulesParams<A>,
     balanceValidationResults: TransactionValidationBalanceError[],
   ) => TransactionValidationBalanceError[] | undefined)[];
 }) {
@@ -34,7 +41,19 @@ export function createTxValidator<A>(params?: {
     const permissionErrors = accountService.validateCallPermission(fixedArgs);
     let balanceValidationResults = await accountService.validateRouteBalances(fixedArgs);
 
-    const ruleArgs = { ...rest, transaction: normalizedTransaction } as ValidatorParams<A>;
+    const getBalance = (accountId: AccountId, chainId: ChainId, assetId: AssetId) => {
+      const validationResult = balanceValidationResults.find((r) => {
+        return (
+          r.account.accountId === accountId &&
+          r.balance.balance.chainId === chainId &&
+          r.balance.balance.assetId === assetId
+        );
+      });
+
+      return validationResult?.balance.balance ?? balanceUtils.getBalance(rest.balances, accountId, chainId, assetId);
+    };
+
+    const ruleArgs: RulesParams<A> = { ...rest, getBalance, transaction: normalizedTransaction };
 
     if (params?.additionalBalanceRules) {
       for (const rule of params.additionalBalanceRules) {
