@@ -79,7 +79,7 @@ type GroupProps = PropsWithChildren<{
   title: ReactNode;
 }>;
 
-// Type guards for better type safety
+// Type guards for finding selected item
 const isSelectItem = (element: ReactElement): element is ReactElement<ItemProps> => {
   const props = element.props as Record<string, unknown>;
   return 'value' in props && typeof props['value'] === 'string';
@@ -90,18 +90,15 @@ const isSelectGroup = (element: ReactElement): element is ReactElement<GroupProp
   return 'title' in props && 'children' in props;
 };
 
-// Helper function to recursively find the selected item in children
 const findSelectedItem = (children: ReactNode, selectedValue: string): ReactElement<ItemProps> | null => {
   const childrenArray = Children.toArray(children);
 
   for (const child of childrenArray) {
     if (isValidElement(child)) {
-      // Check if it's a SelectItem with matching value
       if (isSelectItem(child) && child.props.value === selectedValue) {
         return child;
       }
 
-      // Check if it's a SelectGroup and search within it
       if (isSelectGroup(child)) {
         const foundInGroup = findSelectedItem(child.props.children, selectedValue);
         if (foundInGroup) {
@@ -114,7 +111,6 @@ const findSelectedItem = (children: ReactNode, selectedValue: string): ReactElem
   return null;
 };
 
-// Helper function to extract content from the selected item
 const getSelectedItemContent = (children: ReactNode, selectedValue: string): ReactNode => {
   const selectedItem = findSelectedItem(children, selectedValue);
   return selectedItem ? selectedItem.props.children : null;
