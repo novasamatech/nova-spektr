@@ -44,11 +44,11 @@ const configureDomains = () => {
 };
 
 const populate = async () => {
-  await networkModel.startNetworks();
-  await accounts.populate();
-  await walletModel.populate();
+  networkModel.startNetworks();
+  accounts.populate();
+  walletModel.populate();
   multisigsModel.subscribe();
-  await proxyModel.populate();
+  proxyModel.populate();
   multisigOperation.populate();
   governanceMetaProvider.populate();
   portfolioModel.populate();

@@ -17,10 +17,8 @@ import {
   type ChainId,
   type LockTypes,
   type OrmlExtras,
-  type Wallet,
 } from '@/shared/core';
 import {
-  dictionary,
   getAssetId,
   getRepeatedIndex,
   getRoundedValue,
@@ -30,7 +28,9 @@ import {
   totalAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { accountUtils, walletUtils } from '@/entities/wallet';
+// eslint-disable-next-line boundaries/element-types
+import { type AnyAccount, accountService } from '@/domains/network';
+import { balanceUtils } from '@/entities/balance';
 import { type CurrencyItem, type PriceObject } from '../../price-provider/lib/types';
 
 export const balanceService = {
@@ -681,57 +681,59 @@ function hasHoldAndFreezesFlag(flags: BN) {
  * Calculates the total fiat balance for a wallet across all chains and assets.
  *
  * @remarks
- *   - Excludes vault base accounts for Polkadot Vault wallets
  *   - Skips balances for accounts/chains that don't exist in the provided data
  *   - Requires valid price data for each asset to include it in calculations
  *   - Uses asset precision for accurate fiat conversion calculations
- *
- * @param params - The calculation parameters
- * @param params.wallet - The wallet to calculate balance for
- * @param params.chains - Record of chain configurations indexed by chain ID
- * @param params.balances - Array of balance entries for the wallet
- * @param params.currency - The target fiat currency for calculation
- * @param params.prices - Price data mapping asset price IDs to currency prices
  *
  * @returns The total wallet balance in the specified fiat currency as
  *   BigNumber. Returns 0 if any required data is missing or invalid.
  */
 function calculateWalletBalance({
-  wallet,
+  accounts,
   chains,
   balances,
   currency,
   prices,
 }: {
-  wallet: Wallet | null;
+  accounts: AnyAccount[];
   chains: Record<ChainId, Chain>;
   balances: BalanceMap;
   currency: CurrencyItem | null;
   prices: PriceObject | null;
 }) {
-  if (nullable(currency?.coingeckoId) || nullable(wallet) || nullable(prices)) {
+  if (nullable(currency?.coingeckoId) || nullable(prices)) {
     return new BigNumber(0);
   }
 
-  const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
+  const allChains = Object.values(chains);
+  let total = new BigNumber(0);
 
-  const accountMap = dictionary(wallet.accounts, 'accountId');
+  for (const account of accounts) {
+    let accountChains;
+    if (accountService.isChainAccount(account)) {
+      const chain = chains[account.chainId];
+      accountChains = nonNullable(chain) ? [chain] : [];
+    } else {
+      accountChains = allChains.filter((c) => accountService.isAccountAvailableOnChain(account, c));
+    }
 
-  return Object.values(balances).reduce((acc, balance) => {
-    const account = accountMap[balance.accountId];
-    const chain = chains[balance.chainId];
-    if (nullable(account) || nullable(chain)) return acc;
-    if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;
+    for (const chain of accountChains) {
+      for (const asset of chain.assets) {
+        if (nullable(asset.priceId)) continue;
 
-    const asset = chain.assets.find((asset) => asset.assetId === balance.assetId);
-    if (nullable(asset?.priceId)) return acc;
-    const pricesMap = prices[asset.priceId];
-    if (nullable(pricesMap)) return acc;
-    const price = pricesMap[currency.coingeckoId];
-    if (nullable(price)) return acc;
+        const pricesMap = prices[asset.priceId];
+        if (nullable(pricesMap)) continue;
 
-    const fiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
+        const price = pricesMap[currency.coingeckoId];
+        if (nullable(price)) continue;
 
-    return acc.plus(new BigNumber(fiatBalance));
-  }, new BigNumber(0));
+        const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId);
+        const fiatBalance = getRoundedValue(totalAmount(balance), price.price, asset.precision);
+
+        total = total.plus(new BigNumber(fiatBalance));
+      }
+    }
+  }
+
+  return total;
 }
