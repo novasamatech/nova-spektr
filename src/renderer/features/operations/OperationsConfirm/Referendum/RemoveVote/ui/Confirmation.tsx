@@ -3,7 +3,6 @@ import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
 import { DetailRow, HeadlineText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
@@ -17,9 +16,8 @@ import {
 import { SignButton } from '@/entities/operations';
 import { FeeWithDataLoading } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { getLocksForAccount, lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
-import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { MultisigExistsAlert } from '../../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -73,8 +71,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton }: 
   const conviction = vote && votingService.getAccountVoteConviction(vote);
   const votingPower = vote && votingService.calculateAccountVotePower(vote);
 
-  const address = toAddress(initiator.accountId, { prefix: confirm.meta.chain.addressPrefix });
-  const locksForAddress = getLocksForAddress(address, trackLocks);
+  const locksForAddress = getLocksForAccount(initiator.accountId, trackLocks);
 
   return (
     <div className="flex w-modal flex-col items-center gap-4 px-5 py-4">

@@ -1,30 +1,30 @@
-import { type ApiPromise } from '@polkadot/api';
-import { BN, BN_ZERO } from '@polkadot/util';
+import { BN } from '@polkadot/util';
 
-import { type Asset, type AssetBalance, AssetType, type OrmlExtras } from '@/shared/core';
-import { totalAmountBN, transferableAmountBN } from '@/shared/lib/utils';
+import { type Balance, type TransferableMode } from '@/shared/core';
+import { reservableAmountBN, totalAmountBN, transferableAmountBN } from '@/shared/lib/utils';
 
 import { type BalancePreservation, type BalanceUpdateResult } from './types';
 
-function copyBalance(balance: AssetBalance, partial: Partial<AssetBalance>): AssetBalance {
+function copyBalance(balance: Balance, partial: Partial<Balance>): Balance {
   return {
     ...balance,
     ...partial,
   };
 }
 
-function tryFreeze(balance: AssetBalance, amount: BN): BalanceUpdateResult {
+function tryFreeze(balance: Balance, amount: BN): BalanceUpdateResult {
   const total = totalAmountBN(balance);
   const afterFreeze = total.sub(amount);
 
   const updated = copyBalance(balance, {
-    frozen: BN.max(balance.frozen ?? BN_ZERO, amount),
+    frozen: BN.max(balance.frozen, amount),
   });
 
   if (afterFreeze.isNeg()) {
     return {
       success: false,
       balance: updated,
+      required: amount,
       imbalance: afterFreeze.abs(),
     };
   }
@@ -32,22 +32,24 @@ function tryFreeze(balance: AssetBalance, amount: BN): BalanceUpdateResult {
   return {
     success: true,
     balance: updated,
+    required: amount,
   };
 }
 
-function tryReserve(balance: AssetBalance, amount: BN, ed: BN): BalanceUpdateResult {
-  const reservable = (balance.free ?? BN_ZERO).sub(ed);
+function tryReserve(balance: Balance, amount: BN, transferableMode?: TransferableMode): BalanceUpdateResult {
+  const reservable = reservableAmountBN(balance, transferableMode);
   const afterReservation = reservable.sub(amount);
 
   const updated = copyBalance(balance, {
-    free: (balance.free ?? BN_ZERO).sub(amount),
-    reserved: (balance.reserved ?? BN_ZERO).add(amount),
+    free: balance.free.sub(amount),
+    reserved: balance.reserved.add(amount),
   });
 
   if (afterReservation.isNeg()) {
     return {
       success: false,
       balance: updated,
+      required: amount,
       imbalance: afterReservation.abs(),
     };
   }
@@ -55,27 +57,24 @@ function tryReserve(balance: AssetBalance, amount: BN, ed: BN): BalanceUpdateRes
   return {
     success: true,
     balance: updated,
+    required: amount,
   };
 }
 
-function tryWithdraw(
-  balance: AssetBalance,
-  amount: BN,
-  ed: BN,
-  balancePreservation: BalancePreservation,
-): BalanceUpdateResult {
-  const withdrawable = transferableAmountBN(balance, false);
-  const wanted = balancePreservation === 'keepAlive' ? amount.add(ed) : BN.max(withdrawable, amount);
+function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
+  const withdrawable = transferableAmountBN(balance, balance.transferableMode, false);
+  const wanted = balancePreservation === 'keepAlive' ? amount.add(balance.ed) : amount;
   const afterWithdraw = withdrawable.sub(wanted);
 
   const updated = copyBalance(balance, {
-    free: balancePreservation === 'keepAlive' ? (balance.free ?? BN_ZERO).sub(amount) : BN_ZERO,
+    free: balance.free.sub(amount),
   });
 
   if (afterWithdraw.isNeg()) {
     return {
       success: false,
       balance: updated,
+      required: amount,
       imbalance: afterWithdraw.abs(),
     };
   }
@@ -83,27 +82,12 @@ function tryWithdraw(
   return {
     success: true,
     balance: updated,
+    required: amount,
   };
-}
-
-async function getExistentialDeposit(api: ApiPromise, asset: Asset): Promise<BN> {
-  switch (asset.type) {
-    case AssetType.NATIVE: {
-      return api.consts.balances.existentialDeposit.toBn();
-    }
-    case AssetType.STATEMINE: {
-      return await api.query.assets.asset(asset.assetId).then(balance => balance.value.minBalance.toBn());
-    }
-    case AssetType.ORML: {
-      return new BN((asset.typeExtras as OrmlExtras).existentialDeposit);
-    }
-  }
 }
 
 export const balanceService = {
   tryFreeze,
   tryWithdraw,
   tryReserve,
-
-  getExistentialDeposit,
 };

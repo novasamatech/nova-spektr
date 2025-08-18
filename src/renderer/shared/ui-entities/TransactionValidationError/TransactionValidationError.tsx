@@ -11,6 +11,10 @@ import { type AnyAccount, type BalanceUpdateResult } from '@/domains/network';
 import { ProxyTypeName } from '@/entities/proxy';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
+export type TransactionValidationFatalError = {
+  message: string;
+};
+
 export type TransactionValidationPermissionError = {
   account: AnyAccount;
   permission: string;
@@ -19,19 +23,25 @@ export type TransactionValidationPermissionError = {
 export type TransactionValidationBalanceError = {
   account: AnyAccount;
   action: string;
-  required: BN;
   balance: BalanceUpdateResult;
   asset: Asset;
 };
 
 type Props = {
-  errors: (TransactionValidationPermissionError | TransactionValidationBalanceError)[];
+  errors: (
+    | TransactionValidationPermissionError
+    | TransactionValidationBalanceError
+    | TransactionValidationFatalError
+  )[];
   wallets: Wallet[];
 };
 
 export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
+  const { t } = useI18n();
+
   if (errors.length === 0) return null;
 
+  const fatalErrors = errors.filter(e => 'message' in e);
   const permissionErrors = errors.filter(e => 'permission' in e);
   const balanceErrors = groupBy(
     errors.filter(e => 'balance' in e),
@@ -39,6 +49,18 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
   );
 
   const errorNodes: ReactNode[] = [];
+
+  if (fatalErrors.length > 0) {
+    for (const error of fatalErrors) {
+      errorNodes.push(
+        <span>
+          <span className="font-bold">{t('general.transactionErrors.fatal.intro')}</span>
+          <br />
+          <span className="break-all">{error.message}</span>
+        </span>,
+      );
+    }
+  }
 
   if (permissionErrors.length > 0) {
     errorNodes.push(<TransactionPermissionError wallets={wallets} errors={permissionErrors} />);
@@ -52,7 +74,7 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
   const renderDot = errorNodes.length > 1;
 
   return (
-    <Alert active variant="error" title="This operation cannot be completed">
+    <Alert active variant="error" title={t('general.transactionErrors.title')}>
       <Box as="span" gap={2}>
         {errorNodes.map((n, i) => (
           <Alert.Item key={i} withDot={renderDot}>
@@ -150,7 +172,7 @@ const TransactionBalanceError = ({
                 i18nKey="general.transactionErrors.balance.section"
                 values={{
                   action: e.action,
-                  balance: formatAsset(e.required, e.asset),
+                  balance: formatAsset(e.balance.required, e.asset),
                 }}
               />,
               <span key={index + 100}>, </span>,
@@ -160,7 +182,7 @@ const TransactionBalanceError = ({
       </span>
       <span>
         {t('general.transactionErrors.balance.required', {
-          balances: imbalances.map(({ asset, imbalance }) => formatAsset(imbalance, asset)).join(', '),
+          balances: imbalances.map(({ asset, imbalance }) => formatAsset(imbalance, asset, { round: 'up' })).join(', '),
         })}
       </span>
     </Box>

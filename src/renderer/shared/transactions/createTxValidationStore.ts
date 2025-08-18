@@ -3,12 +3,15 @@ import { type Store } from 'effector';
 import { createStoreFromEffect } from '@/shared/effector';
 import {
   type TransactionValidationBalanceError,
+  type TransactionValidationFatalError,
   type TransactionValidationPermissionError,
 } from '@/shared/ui-entities';
 
 type AnyValidator = (
   ...args: any[]
-) => Promise<(TransactionValidationBalanceError | TransactionValidationPermissionError)[]>;
+) => Promise<
+  (TransactionValidationBalanceError | TransactionValidationPermissionError | TransactionValidationFatalError)[]
+>;
 
 type Stores<Args> = {
   [K in keyof Args]: Store<Args[K] | null>;

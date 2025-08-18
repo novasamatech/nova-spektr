@@ -8,7 +8,12 @@ import { type CallData, type Chain } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, nonNullable, nonNullableMap, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
-import { createFeeCalculator, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createFeeCalculator,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import { createRouteStore } from '@/shared/transactions/createRouteStore';
 import { createWrappedTxStore } from '@/shared/transactions/createWrappedTxStore';
 import {
@@ -83,11 +88,13 @@ const form: Form<FormData> = createForm<FormData>({
   },
 });
 
-// extrinsic
+const $asset = form.fields.chain.$value.map((c) => (c ? getNativeAsset(c.assets) : null));
 
 const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis) =>
   chain ? (apis[chain.chainId] ?? null) : null,
 );
+
+// extrinsic
 
 const $throttledCallData = restore(throttle(form.fields.callData.$value, 500), '').reset(flow.close);
 
@@ -186,7 +193,7 @@ const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
     chain: form.fields.chain.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ signatory, chain, balances }) => {
     if (nullable(signatory) || nullable(chain)) return null;
@@ -197,6 +204,20 @@ const $signatoryBalance = combine(
     );
   },
 );
+
+// validations
+
+const validator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $wrappedTx,
+  },
+});
 
 // steps management
 
@@ -227,9 +248,11 @@ sample({
   target: stepChanged,
 });
 
+const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
+
 const $availableChains = combine(
   {
-    chains: networkModel.$chains.map((chains) => Object.values(chains)),
+    chains: $allChains,
     initiator: form.fields.initiator.$value,
   },
   ({ chains, initiator }) => {
@@ -246,7 +269,11 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
-const $showSignatories = $signatories.map((signatories) => signatories.length > 1);
+const $showSignatories = combine(
+  $signatories,
+  form.fields.initiator.$value,
+  (signatories, initiator) => signatories.length > 1 || signatories.at(0)?.accountId !== initiator?.accountId,
+);
 
 sample({
   clock: $signatories,
@@ -255,16 +282,7 @@ sample({
 
 // flow setup
 
-sample({
-  clock: $availableChains,
-  source: { selectedChain: form.fields.chain.$value },
-  filter: ({ selectedChain }, availableChains) =>
-    !selectedChain || !availableChains.some((chain) => chain.chainId === selectedChain.chainId),
-  fn: (_, availableChains) => availableChains.at(0) ?? null,
-  target: form.fields.chain.change,
-});
-
-// Preselect initiator based on selected wallet
+// Preselect initiator on form open
 sample({
   clock: flow.open,
   source: {
@@ -280,6 +298,48 @@ sample({
     );
 
     return (matchingAccount || allAccounts.at(0)) ?? null;
+  },
+  target: form.fields.initiator.change,
+});
+
+sample({
+  clock: flow.open,
+  source: {
+    allChains: $allChains,
+    selectedChain: form.fields.chain.$value,
+    initiator: form.fields.initiator.$value,
+  },
+  filter: ({ initiator, selectedChain }) =>
+    nullable(selectedChain) ||
+    (nonNullable(initiator) && accountService.isAccountAvailableOnChain(initiator, selectedChain)),
+  fn: ({ allChains, initiator }) => {
+    if (nullable(initiator)) return null;
+    return allChains.find((chain) => accountService.isAccountAvailableOnChain(initiator, chain)) ?? null;
+  },
+  target: form.fields.chain.change,
+});
+
+sample({
+  clock: form.fields.chain.change,
+  source: {
+    initiator: form.fields.initiator.$value,
+    allAccounts: walletModel.$availableAccounts,
+  },
+  filter: ({ initiator }, chain) => {
+    if (nullable(initiator) || nullable(chain)) return false;
+    return !accountService.isAccountAvailableOnChain(initiator, chain);
+  },
+  fn: ({ initiator, allAccounts }, chain) => {
+    if (nullable(initiator) || nullable(chain)) return null;
+
+    const walletAccounts = accountService.filterAccountsByWallet(allAccounts, initiator.walletId);
+    const matchingAccount = walletAccounts.find((account) => accountService.isAccountAvailableOnChain(account, chain));
+
+    if (matchingAccount) {
+      return matchingAccount;
+    }
+
+    return allAccounts.filter((a) => accountService.isAccountAvailableOnChain(a, chain))?.at(0) ?? null;
   },
   target: form.fields.initiator.change,
 });
@@ -398,7 +458,9 @@ export const formModel = {
   $args,
   $fee,
   $pendingFee,
+  $errors,
 
+  $allChains: $allChains,
   $availableChains: $availableChains,
   $signatories: $signatories,
   $showSignatories: $showSignatories,

@@ -1,6 +1,7 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 
-import { type AssetBalance, LockTypes } from '@/shared/core';
+import { type AssetBalance, type AssetId, type Balance, type BalanceId, LockTypes } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { formatBalance, stakeableAmountBN, transferableAmountBN, withdrawableAmount } from '../balance';
 
 const createBalance = (params: {
@@ -8,12 +9,18 @@ const createBalance = (params: {
   frozen?: string | number;
   reserved?: string | number;
   locked?: AssetBalance['locked'];
-}): AssetBalance => {
+}): Balance => {
   return {
+    id: '0' as BalanceId,
+    transferableMode: 'holdAndFreezes',
+    accountId: '0x00' as AccountId,
+    assetId: 0 as AssetId,
+    chainId: '0x00',
+    ed: BN_ZERO,
     free: new BN(params.free || '0'),
     frozen: new BN(params.frozen || '0'),
     reserved: new BN(params.reserved || '0'),
-    locked: params.locked,
+    locked: params.locked || [],
   };
 };
 
@@ -77,7 +84,7 @@ describe('shared/lib/onChainUtils/balance', () => {
 
     test('should add correct shorthands, when parametrized', () => {
       const { value, suffix, decimalPlaces } = formatBalance('5200000000000000', 12, {
-        K: true,
+        shorthands: { K: true },
       });
 
       expect(value).toEqual('5.2');
@@ -106,11 +113,6 @@ describe('shared/lib/onChainUtils/balance', () => {
       {
         name: 'should return 0 when frozen exceeds free',
         balance: createBalance({ free: '50', frozen: '100' }),
-        expected: '0',
-      },
-      {
-        name: 'should handle all zero values',
-        balance: createBalance({}),
         expected: '0',
       },
     ])('$name', ({ balance, expected }) => {

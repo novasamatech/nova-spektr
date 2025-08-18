@@ -23,14 +23,14 @@ export const $balances = combine(
   {
     wallets: hiddenWalletsModel.$hiddenWallets,
     chains: networkModel.$chains,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     currency: currencyModel.$activeCurrency,
     prices: priceProviderModel.$assetsPrices,
   },
   ({ wallets, chains, balances, currency, prices }) => {
     return wallets.reduce<Record<string, BigNumber>>((acc, wallet) => {
       acc[wallet.id] = balanceService.calculateWalletBalance({
-        wallet,
+        accounts: wallet.accounts,
         chains,
         balances,
         currency,

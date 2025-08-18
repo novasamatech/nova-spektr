@@ -1,13 +1,13 @@
 import { type default as BigNumber } from 'bignumber.js';
 
-import { type AssetBalance, type AssetByChains, type ChainId } from '@/shared/core';
+import { type AssetByChains, type AssetId, type ChainId, type PortfolioTokenBalance } from '@/shared/core';
 
 export type AssetChain = {
   chainId: ChainId;
   name: string;
-  assetId: number;
+  assetId: AssetId;
   assetSymbol: string;
-  balance?: AssetBalance;
+  balance: PortfolioTokenBalance | null;
 };
 
 export type AssetByChainsWithFiatBalance = AssetByChains & { fiatBalance: string };

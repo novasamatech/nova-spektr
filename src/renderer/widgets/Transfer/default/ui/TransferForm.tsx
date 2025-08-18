@@ -1,11 +1,13 @@
+import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type ChainId, type WalletFamily } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
+  entries,
   formatBalance,
   getNativeAsset,
   includesMultiple,
@@ -92,7 +94,7 @@ const InitiatorSelector = () => {
 
   const initiators = useUnit(formModel.$initiators);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   if (initiators.length < 2) {
     return null;
@@ -134,7 +136,7 @@ const SignatorySelector = () => {
   const initiator = useUnit(formModel.form.fields.initiator.$value);
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
 
@@ -267,7 +269,7 @@ const Destination = () => {
     const accountByGroup = services.walletSelect.getWalletFamilyByAccounts(wallets, filteredAccounts);
     const ownAccountOptions: ComboboxGroup[] = [];
 
-    for (const [walletFamily, accountsGroup] of Object.entries(accountByGroup)) {
+    for (const [walletFamily, accountsGroup] of entries(accountByGroup)) {
       if (accountsGroup.length === 0) continue;
 
       const accountOptions: ComboboxItem[] = [];
@@ -286,9 +288,9 @@ const Destination = () => {
         id: walletFamily,
         label: (
           <div className="flex items-center gap-x-2" key={walletFamily}>
-            <WalletIcon type={walletFamily as WalletFamily} />
+            <WalletIcon type={walletFamily} />
             <CaptionText className="font-semibold text-text-secondary uppercase">
-              {t(constants.GROUP_LABELS[walletFamily as WalletFamily])}
+              {t(constants.GROUP_LABELS[walletFamily])}
             </CaptionText>
           </div>
         ),
@@ -331,7 +333,7 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon size={20} address={destination.value} background={false} />
+      <Identicon size={20} value={destination.value} background={false} />
     </div>
   );
 
@@ -356,7 +358,7 @@ const Destination = () => {
           {options.map((group) => (
             <Combobox.Group key={group.id} title={group.label}>
               {group.items.map((option) => (
-                <Combobox.Item key={option.id} value={option.value.address}>
+                <Combobox.Item key={`${option.id}-${option.value.walletId ?? 'unknown'}`} value={option.value.address}>
                   {option.label}
                 </Combobox.Item>
               ))}
@@ -436,7 +438,7 @@ const FeeSection = () => {
           api={api}
           asset={getNativeAsset(network.chain.assets)}
           threshold={initiator.threshold || 1}
-          onDepositChange={formModel.multisigDepositChanged}
+          onDepositChange={(deposit) => formModel.multisigDepositChanged(new BN(deposit))}
         />
       )}
 
@@ -458,9 +460,7 @@ const FeeSection = () => {
         />
       )}
 
-      {nonNullable(deliveryFee) && deliveryFee !== '0' && (
-        <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
-      )}
+      {isXcm && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
     </div>
   );
 };

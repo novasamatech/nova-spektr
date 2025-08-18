@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 
-import { type AssetBalance } from '@/shared/core';
+import { type Balance } from '@/shared/core';
 
 export type BalancePreservation =
   /**
@@ -19,10 +19,12 @@ export type BalancePreservation =
 export type BalanceUpdateResult =
   | {
       success: true;
-      balance: AssetBalance;
+      required: BN;
+      balance: Balance;
     }
   | {
       success: false;
       imbalance: BN;
-      balance: AssetBalance;
+      required: BN;
+      balance: Balance;
     };

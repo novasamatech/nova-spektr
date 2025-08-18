@@ -1,6 +1,6 @@
 import { combine, sample } from 'effector';
 
-import { type Address, type Chain, type ChainId, CryptoType } from '@/shared/core';
+import { type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { createForm } from '@/shared/forms';
 import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { accountService, accounts } from '@/domains/network';
@@ -169,7 +169,7 @@ const $invalidAddresses = combine(
   ({ chain, signatories }) => {
     if (!chain) return [];
 
-    let badSignatories: Address[] = [];
+    let badSignatories: string[] = [];
 
     for (const signer of signatories) {
       if (!signer.address || validateAddress(signer.address, chain)) continue;

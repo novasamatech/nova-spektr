@@ -4,7 +4,7 @@ import { createForm } from 'effector-forms';
 import { t } from 'i18next';
 import { spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
+import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import {
   ZERO_BALANCE,
   formatAmount,
@@ -26,7 +26,7 @@ type FormParams = {
   shards: AnyAccount[];
   signatory: AnyAccount | null;
   amount: string;
-  destination: Address;
+  destination: string;
 };
 
 const formInitiated = createEvent<WalletData>();
@@ -183,7 +183,7 @@ const $bondForm = createForm<FormParams>({
       ],
     },
     destination: {
-      init: '' as Address,
+      init: '',
       rules: [
         {
           name: 'required',
@@ -221,7 +221,7 @@ const $accounts = combine(
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
     shards: $shards,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, shards, balances }) => {
     if (!wallet || !network) return [];
@@ -351,7 +351,7 @@ sample({
 sample({
   clock: $bondForm.fields.signatory.onChange,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   fn: ({ balances, network }, signatory) => {
@@ -380,7 +380,7 @@ sample({
   source: {
     isProxy: $isProxy,
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   filter: ({ isProxy, network, proxyAccount }) => {

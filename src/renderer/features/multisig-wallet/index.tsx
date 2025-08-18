@@ -1,4 +1,3 @@
-import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
@@ -127,30 +126,26 @@ accountSDK(multisigWalletFeature, {
       };
     }
   },
-  validateRouteBalances({ account, api, route, balances, asset, ed }) {
+  validateRouteBalances({ account, api, route, asset, chainId, getBalance }) {
     if (accountUtils.isAnyMultisigAccount(account)) {
       const deposit = multisigService.getMultisigDeposit(account.threshold, api);
-      console.log('deposit', deposit.toString(), api.runtimeChain.toString());
       const payer = accountService.findNextAccount(route, account);
 
       if (nullable(payer)) {
         return null;
       }
 
-      let balance = balances.get(payer) ?? null;
+      const balance = getBalance(payer.accountId, chainId, asset.assetId);
       if (nullable(balance)) {
-        balance = {
-          free: BN_ZERO,
-          frozen: BN_ZERO,
-          reserved: BN_ZERO,
-        };
+        throw new Error(`Balance for account ${payer.accountId} not found`);
       }
 
       return {
         account: payer,
         action: 'multisig deposit',
         required: deposit,
-        balance: balanceService.tryWithdraw(balance, deposit, ed, 'keepAlive'),
+        // multisig pallet calculates balance using legacy logic, to transferableMode flag should be overrided
+        balance: balanceService.tryReserve(balance, deposit, 'legacy'),
         asset,
       };
     }

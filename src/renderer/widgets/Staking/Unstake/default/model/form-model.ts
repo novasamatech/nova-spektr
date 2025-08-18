@@ -4,7 +4,7 @@ import { attach, combine, createEffect, createEvent, createStore, restore, sampl
 import { noop } from 'lodash';
 import { spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
+import { type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
@@ -12,9 +12,9 @@ import {
   getRelaychainAsset,
   nonNullable,
   nullable,
-  toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   createComplexTxStore,
   createMultisigDeposit,
@@ -118,12 +118,12 @@ const form: Form<FormParams> = createForm<FormParams>({
 type StakingParams = {
   chainId: ChainId;
   api: ApiPromise;
-  addresses: Address[];
+  accounts: AccountId[];
 };
-const subscribeStakingFx = createEffect(({ chainId, api, addresses }: StakingParams): Promise<() => void> => {
+const subscribeStakingFx = createEffect(({ chainId, api, accounts }: StakingParams): Promise<() => void> => {
   const boundStakingSet = scopeBind(stakingSet, { safe: true });
 
-  return useStakingData().subscribeStaking(chainId, api, addresses, boundStakingSet);
+  return useStakingData().subscribeStaking(chainId, api, accounts, boundStakingSet);
 });
 
 // Computed
@@ -133,7 +133,7 @@ const $availableBalance = combine(
     wallet: walletSelect.$selectedWallet,
     initiator: form.fields.initiator.$value,
     staking: $staking,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, initiator, staking, balances }) => {
     if (!wallet || !network || !staking || !initiator) return null;
@@ -141,8 +141,7 @@ const $availableBalance = combine(
     const { chain, asset } = network;
 
     const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
-    const address = toAddress(initiator.accountId, { prefix: chain.addressPrefix });
-    const activeStake = staking[address]?.active || ZERO_BALANCE;
+    const activeStake = staking[initiator.accountId]?.active || ZERO_BALANCE;
 
     return {
       balance: transferableAmount(balance),
@@ -189,8 +188,7 @@ const $coreTx = combine(
       return null;
     }
     const formattedAmount = formatAmount(amount, network.asset.precision);
-    const address = toAddress(signatory.accountId, { prefix: network.chain.addressPrefix });
-    const leftAmount = new BN(staking?.[address]?.active || ZERO_BALANCE).sub(new BN(formattedAmount));
+    const leftAmount = new BN(staking?.[signatory.accountId]?.active || ZERO_BALANCE).sub(new BN(formattedAmount));
     const withChill = leftAmount.lte(new BN(minBond));
 
     return transactionBuilder.buildUnstake({
@@ -262,7 +260,7 @@ const $proxyWallet = combine(
 const $proxyBalance = combine(
   {
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ proxyAccount, balances, network }) => {
@@ -286,7 +284,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },
@@ -360,12 +358,10 @@ sample({
     return Boolean(networkStore) && Boolean(api) && nonNullable(initiator);
   },
   fn: ({ networkStore, api, initiator }) => {
-    const address = toAddress(initiator!.accountId, { prefix: networkStore!.chain.addressPrefix });
-
     return {
       chainId: networkStore!.chain.chainId,
       api: api!,
-      addresses: [address],
+      accounts: [initiator!.accountId],
     };
   },
   target: subscribeStakingFx,

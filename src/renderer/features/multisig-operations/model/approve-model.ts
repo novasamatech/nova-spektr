@@ -119,7 +119,7 @@ const $isEnoughBalance = combine(
     api: $api,
     transaction: $transaction,
     signatory: $signatory,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     chain: $chain,
     fee: $fee,
   },

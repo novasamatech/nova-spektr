@@ -4,14 +4,7 @@ import { attach, combine, createEffect, createEvent, createStore, restore, sampl
 import { noop } from 'lodash';
 import { spread } from 'patronum';
 
-import {
-  type Address,
-  type Asset,
-  type Chain,
-  type ChainId,
-  type ProxiedAccount,
-  type Transaction,
-} from '@/shared/core';
+import { type Asset, type Chain, type ChainId, type ProxiedAccount, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
@@ -19,9 +12,9 @@ import {
   nonNullable,
   nullable,
   redeemableAmount,
-  toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -119,12 +112,12 @@ const form: Form<FormParams> = createForm<FormParams>({
 type StakingParams = {
   chainId: ChainId;
   api: ApiPromise;
-  addresses: Address[];
+  accounts: AccountId[];
 };
-const subscribeStakingFx = createEffect(({ chainId, api, addresses }: StakingParams): Promise<() => void> => {
+const subscribeStakingFx = createEffect(({ chainId, api, accounts }: StakingParams): Promise<() => void> => {
   const boundStakingSet = scopeBind(stakingSet, { safe: true });
 
-  return useStakingData().subscribeStaking(chainId, api, addresses, boundStakingSet);
+  return useStakingData().subscribeStaking(chainId, api, accounts, boundStakingSet);
 });
 
 const subscribeEraFx = createEffect((api: ApiPromise): Promise<() => void> => {
@@ -141,17 +134,14 @@ const subscribeEraFx = createEffect((api: ApiPromise): Promise<() => void> => {
 
 const $withdrawBalance = combine(
   {
-    network: $networkStore,
     initiator: form.fields.initiator.$value,
     era: $era,
     staking: $staking,
   },
-  ({ network, era, initiator, staking }) => {
-    if (!network || !staking || !initiator) return ZERO_BALANCE;
+  ({ era, initiator, staking }) => {
+    if (!staking || !initiator) return ZERO_BALANCE;
 
-    const { chain } = network;
-    const address = toAddress(initiator.accountId, { prefix: chain.addressPrefix });
-    const withdraw = redeemableAmount(staking[address]?.unlocking, era || 0);
+    const withdraw = redeemableAmount(staking[initiator.accountId]?.unlocking, era || 0);
 
     return withdraw;
   },
@@ -173,7 +163,7 @@ sample({
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ signatory, balances, network }) => {
@@ -264,7 +254,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },
@@ -322,12 +312,10 @@ sample({
     return nonNullable(networkStore) && nonNullable(api) && nonNullable(initiator);
   },
   fn: ({ networkStore, api, initiator }) => {
-    const address = toAddress(initiator!.accountId, { prefix: networkStore!.chain.addressPrefix });
-
     return {
       chainId: networkStore!.chain.chainId,
       api: api!,
-      addresses: [address],
+      accounts: [initiator!.accountId],
     };
   },
   target: subscribeStakingFx,
@@ -366,7 +354,7 @@ sample({
 const $proxyBalance = combine(
   {
     isProxy: $isProxy,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
     proxyAccount: $proxyAccount,
   },

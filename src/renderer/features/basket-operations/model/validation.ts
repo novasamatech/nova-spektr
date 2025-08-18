@@ -33,7 +33,7 @@ const validateFeeFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   async effect({ chains, apis, balances }, { transaction }: ValidationParams) {
     const chain = chains[transaction.coreTx.chainId];

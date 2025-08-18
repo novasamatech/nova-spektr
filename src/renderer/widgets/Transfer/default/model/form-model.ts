@@ -1,5 +1,5 @@
 /* eslint-disable import-x/max-dependencies */
-import { BN_ZERO } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
@@ -8,7 +8,6 @@ import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ADDRESS,
   TEST_EVM_ADDRESS,
-  ZERO_BALANCE,
   assert,
   formatAmount,
   getAssetId,
@@ -35,13 +34,14 @@ import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { transferValidator } from '@/features/operations/OperationsValidation';
-import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
 import { type NetworkStore } from '../lib/types';
+
+import { xcmTransferModel } from './xcm-transfer-model';
 
 type FormParams = {
   initiator: AnyAccount | null;
   signatory: AnyAccount | null;
-  destination: Address;
+  destination: string;
   destinationChain: Chain | null;
   amount: string;
 };
@@ -51,18 +51,19 @@ type FormSubmitEvent = FormParams & {
   tx: Transaction;
   initiator: AnyAccount;
   signatory: AnyAccount;
+  destination: Address;
   route: AnyAccount[];
   destinationChain: Chain;
-  fee: string;
-  xcmFee: string;
-  deliveryFee: string;
-  multisigDeposit: string;
+  fee: BN;
+  xcmFee: BN;
+  deliveryFee: BN;
+  multisigDeposit: BN;
 };
 
 const formInitiated = createEvent<NetworkStore>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 
-const multisigDepositChanged = createEvent<string>();
+const multisigDepositChanged = createEvent<BN>();
 
 const myselfClicked = createEvent();
 const xcmDestinationSelected = createEvent<AccountId>();
@@ -73,7 +74,7 @@ const $isNative = createStore<boolean>(false);
 
 const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCancelled);
 
-const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
+const $multisigDeposit = restore(multisigDepositChanged, BN_ZERO);
 
 const $chain = $networkStore.map((s) => (s ? s.chain : null));
 const $nativeAsset = $chain.map((c) => (c ? getNativeAsset(c.assets) : null));
@@ -95,6 +96,12 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
     amount: {
       defaultValue: '',
+      validator: () => (amount) => {
+        const bn = new BN(amount);
+        if (bn.isZero()) {
+          return { message: 'transfer.requiredAmountError' };
+        }
+      },
     },
   },
   validateOn: ['submit'],
@@ -146,7 +153,7 @@ const $initiators = createInitiatorsStore({
 const $initiatorBalance = combine(
   {
     initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     chain: $chain,
     asset: $asset,
   },
@@ -184,7 +191,7 @@ const $signatories = createSignatoriesStore({
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     chain: $chain,
   },
   ({ signatory, balances, chain }) => {
@@ -253,6 +260,19 @@ const $feeTx = combine(
   },
 );
 
+const $calculationTx = combine({ coreTx: $coreTx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
+
+const $calculationExtrinsic = combine(
+  {
+    api: $api,
+    tx: $calculationTx,
+  },
+  ({ api, tx }) => {
+    if (!api || !tx) return null;
+    return getExtrinsic[tx.type](tx.args, api);
+  },
+);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
@@ -268,13 +288,13 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     sourceChain: $chain,
+    sourceAsset: $asset,
     destinationChain: form.fields.destinationChain.$value,
-    destinationAsset: $asset,
     asset: $nativeAsset,
     amount: form.fields.amount.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
-    transaction: $tx,
+    transaction: $calculationTx,
     xcmFee: xcmTransferModel.$xcmFee,
     deliveryFee: xcmTransferModel.$deliveryFee,
   },
@@ -343,18 +363,6 @@ const $canSubmit = combine(
       !isFeeLoading &&
       (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading)
     );
-  },
-);
-
-const $extrinsic = combine(
-  {
-    api: $api,
-    coreTx: $coreTx,
-  },
-  ({ api, coreTx }) => {
-    if (!api || !coreTx) return null;
-
-    return getExtrinsic[coreTx.type](coreTx.args, api);
   },
 );
 
@@ -447,7 +455,7 @@ sample({
 
 sample({
   clock: form.fields.destination.change,
-  fn: toAccountId,
+  fn: (destination) => (validateAddress(destination) ? toAccountId(destination) : null),
   target: xcmTransferModel.events.destinationChanged,
 });
 
@@ -476,8 +484,16 @@ const formSubmitFinished = sample({
     multisigDeposit: $multisigDeposit,
   },
   fn: ({ chain, initiator, network, route, coreTx, tx, multisigDeposit, fee, xcmFee, deliveryFee }, form) => {
-    if (nullable(chain) || nullable(coreTx) || nullable(tx) || nullable(initiator) || nullable(form.signatory))
+    if (
+      nullable(chain) ||
+      nullable(coreTx) ||
+      nullable(tx) ||
+      nullable(initiator) ||
+      nullable(form.signatory) ||
+      !validateAddress(form.destination)
+    ) {
       return null;
+    }
     return {
       tx,
       coreTx,
@@ -488,9 +504,9 @@ const formSubmitFinished = sample({
       destinationChain: form.destinationChain ?? chain,
       multisigDeposit,
       route,
-      fee: fee.toString(),
+      fee,
       xcmFee,
-      deliveryFee: deliveryFee ?? ZERO_BALANCE,
+      deliveryFee: deliveryFee,
     } satisfies FormSubmitEvent;
   },
 });
@@ -501,7 +517,7 @@ sample({
 });
 
 sample({
-  clock: $extrinsic,
+  clock: $calculationExtrinsic,
   filter: nonNullable,
   target: xcmTransferModel.events.deliveryFeeRequested,
 });

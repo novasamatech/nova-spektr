@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type FormEvent, useMemo, useState } from 'react';
 
-import { type Address, RewardsDestination } from '@/shared/core';
+import { RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, toAddress, toShortAddress, transferableAmount } from '@/shared/lib/utils';
@@ -56,7 +56,7 @@ const Signatories = () => {
 
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
 
@@ -138,14 +138,14 @@ const Destination = () => {
   const destinationAccounts = useUnit(formModel.$destinationAccounts);
   const destinationQuery = useUnit(formModel.$destinationQuery);
 
-  const [payout, setPayout] = useState<Address>('');
+  const [payout, setPayout] = useState('');
   const [activeOptionId, setActiveOptionId] = useState<string>('0');
 
   if (!network) {
     return null;
   }
 
-  const options: RadioOption<{ type: RewardsDestination; value: Address }>[] = [
+  const options: RadioOption<{ type: RewardsDestination; value: string }>[] = [
     { title: t('staking.bond.restakeRewards'), value: '', rewardType: RewardsDestination.RESTAKE },
     { title: t('staking.bond.transferableRewards'), value: payout, rewardType: RewardsDestination.TRANSFERABLE },
   ].map((dest, index) => ({
@@ -177,7 +177,7 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon address={payout} size={20} background={false} canCopy={false} />
+      <Identicon value={payout} size={20} background={false} canCopy={false} />
     </div>
   );
 

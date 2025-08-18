@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
+import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
@@ -25,7 +25,7 @@ import { type FormInput } from '../lib/types';
 export type FormParams = {
   initiator: AnyAccount | null;
   signatory: AnyAccount | null;
-  destination: Address;
+  destination: string;
 };
 
 const formInitiated = createEvent<FormInput>();
@@ -63,11 +63,11 @@ const form: Form<FormParams> = createForm<FormParams>({
       },
     },
     destination: {
-      defaultValue: '' as Address,
+      defaultValue: '',
       validator: () => {
         return {
           source: $destinationType,
-          fn: (value: Address, _form: FormParams, destinationType: RewardsDestination) => {
+          fn: (value, _form: FormParams, destinationType: RewardsDestination) => {
             if (destinationType === RewardsDestination.RESTAKE) return;
 
             if (!validateAddress(value)) {
@@ -122,7 +122,7 @@ const $api = combine(
 const $initiatorBalance = combine(
   {
     initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ balances, initiator, network }) => {
@@ -152,7 +152,7 @@ const $coreTx = combine(
     chain: $chain,
   },
   ({ signatory, destination, chain }) => {
-    if (!signatory || !chain) return null;
+    if (!signatory || !chain || !validateAddress(destination)) return null;
 
     return transactionBuilder.buildSetPayee({
       chain,
@@ -187,7 +187,7 @@ const { $errors } = createTxValidationStore({
   params: {
     api: $api,
     asset: $asset,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
   },
@@ -209,7 +209,7 @@ const $proxyBalance = combine(
   {
     isProxy: $isProxy,
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ isProxy, proxyAccount, balances, network }) => {

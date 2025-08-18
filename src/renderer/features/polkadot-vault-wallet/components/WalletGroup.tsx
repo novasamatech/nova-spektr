@@ -53,17 +53,17 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
           <Box gap={1} padding={[1, 0, 0]}>
             {filteredWallets.map(wallet => {
               const isSingleAccount = wallet.accounts.length === 1;
-              const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
-              if (nullable(address)) return null;
+              const accountId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+              if (nullable(accountId)) return null;
 
-              const isEthereum = isEthereumAccountId(address);
+              const isEthereum = isEthereumAccountId(accountId);
               const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
               return (
                 <WalletManagement
                   key={wallet.id}
                   wallet={wallet}
-                  address={address}
+                  accountId={accountId}
                   theme={theme}
                   description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
                   onClick={() => onSelect(wallet)}

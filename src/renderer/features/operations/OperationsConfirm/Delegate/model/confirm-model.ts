@@ -1,6 +1,7 @@
 import { type BN } from '@polkadot/util';
 
-import { type Address, type Asset, type Conviction } from '@/shared/core';
+import { type Asset, type Conviction } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -11,7 +12,7 @@ export type DelegateConfirm = TxConfirmInfo & {
   locks: BN;
 
   tracks: number[];
-  target: Address;
+  target: AccountId;
   conviction: Conviction;
   balance: string;
 

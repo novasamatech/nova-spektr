@@ -1,6 +1,8 @@
 import { type BN } from '@polkadot/util';
 
-import { type Address, type BlockHeight } from './general';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+
+import { type BlockHeight } from './general';
 
 export type TrackId = string;
 
@@ -36,7 +38,7 @@ export interface ReciprocalCurve {
   yOffset: BN;
 }
 
-export type TrackLocks = Record<Address, Record<TrackId, BN>>;
+export type TrackLocks = Record<AccountId, Record<TrackId, BN>>;
 
 export type VotingCurve = LinearDecreasingCurve | SteppedDecreasingCurve | ReciprocalCurve;
 

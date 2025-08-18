@@ -1,6 +1,7 @@
 import { BN_MILLION, BN_THOUSAND } from '@polkadot/util';
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 
+import { type Balance as BalanceType } from '@/shared/core';
 import { createWcAccount, createWcWallet, dotAsset, kusamaAsset } from '@/shared/mocks';
 import { Box } from '@/shared/ui-kit';
 
@@ -45,10 +46,10 @@ export const Balance: Story = {
         account,
         balance: {
           success: false,
-          balance: {},
+          balance: {} as BalanceType,
+          required: BN_THOUSAND,
           imbalance: BN_THOUSAND,
         },
-        required: BN_MILLION,
         action: 'fee',
         asset: dotAsset,
       },
@@ -68,10 +69,10 @@ export const Multiple: Story = {
         account,
         balance: {
           success: false,
-          balance: {},
+          balance: {} as BalanceType,
+          required: BN_MILLION,
           imbalance: BN_MILLION,
         },
-        required: BN_MILLION,
         action: 'fee',
         asset: dotAsset,
       },
@@ -79,10 +80,10 @@ export const Multiple: Story = {
         account,
         balance: {
           success: false,
-          balance: {},
+          balance: {} as BalanceType,
+          required: BN_MILLION,
           imbalance: BN_MILLION,
         },
-        required: BN_MILLION,
         action: 'multisig deposit',
         asset: kusamaAsset,
       },

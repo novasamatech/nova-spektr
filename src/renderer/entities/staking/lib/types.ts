@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Address, type ChainId, type EraIndex, type Stake, type Unlocking, type Validator } from '@/shared/core';
+import { type ChainId, type EraIndex, type Stake, type Unlocking, type Validator } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 // =====================================================
 // ========== IStakingDataService interface ============
@@ -10,10 +11,10 @@ export interface IStakingDataService {
   subscribeStaking: (
     chainId: ChainId,
     api: ApiPromise,
-    addresses: Address[],
+    accounts: AccountId[],
     callback: (staking: StakingMap) => void,
   ) => Promise<() => void>;
-  fetchLedger: (chainId: ChainId, api: ApiPromise, addresses: Address[]) => Promise<StakingMap>;
+  fetchLedger: (chainId: ChainId, api: ApiPromise, accounts: AccountId[]) => Promise<StakingMap>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
   getUnbondingPeriod: (api: ApiPromise, timelineApi: ApiPromise) => string;
   getTotalStaked: (api: ApiPromise, era: EraIndex) => Promise<string>;
@@ -35,9 +36,9 @@ export interface IStakingRewardsService {
 // ======================= General =====================
 // =====================================================
 
-export type StakingMap = Record<Address, Stake | undefined>;
-export type ValidatorMap = Record<Address, Validator>;
-export type RewardsMap = Record<Address, string>;
+export type StakingMap = Record<AccountId, Stake | undefined>;
+export type ValidatorMap = Record<AccountId, Validator>;
+export type RewardsMap = Record<AccountId, string>;
 
 export type Payee = 'Stash' | 'Staked' | 'Controller' | { Account: string };
-export type ApyValidator = Pick<Validator, 'address' | 'totalStake' | 'commission'>;
+export type ApyValidator = Pick<Validator, 'accountId' | 'totalStake' | 'commission'>;

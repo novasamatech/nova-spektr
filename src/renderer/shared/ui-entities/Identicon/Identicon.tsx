@@ -1,7 +1,6 @@
 import { type IconTheme as IdenticonIconTheme } from '@polkadot/react-identicon/types';
 import { Suspense, type SyntheticEvent, lazy, memo } from 'react';
 
-import { type Address, type HexString } from '@/shared/core';
 import { cnTw, copyToClipboard, isEthereumAccountId, validateAddress } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { useTheme } from '@/shared/ui-kit';
@@ -9,7 +8,7 @@ import { useTheme } from '@/shared/ui-kit';
 export type { IdenticonIconTheme };
 
 type Props = {
-  address: Address;
+  value: string;
   theme?: IdenticonIconTheme;
   size?: number;
   background?: boolean;
@@ -22,17 +21,16 @@ const PolkadotIdenticon = lazy(() =>
 );
 
 export const Identicon = memo(
-  ({ theme, address, size = 24, background = true, canCopy: canCopyProp, testId = 'Identicon' }: Props) => {
+  ({ theme, value, size = 24, background = true, canCopy: canCopyProp, testId = 'Identicon' }: Props) => {
     const { preferStaticContent } = useTheme();
-    const valid = validateAddress(address);
+    const valid = validateAddress(value);
     const canCopy = typeof canCopyProp === 'undefined' ? !preferStaticContent : canCopyProp;
 
-    const defaultTheme: IdenticonIconTheme =
-      address && valid && isEthereumAccountId(address as HexString) ? 'ethereum' : 'polkadot';
+    const defaultTheme: IdenticonIconTheme = value && valid && isEthereumAccountId(value) ? 'ethereum' : 'polkadot';
 
     const onCopyToClipboard = async (e: SyntheticEvent) => {
       e.stopPropagation();
-      await copyToClipboard(address);
+      await copyToClipboard(value);
     };
 
     const emptyIcon = <Icon name="emptyIdenticon" size={background ? size * 0.75 : size} />;
@@ -41,7 +39,7 @@ export const Identicon = memo(
       <Suspense fallback={emptyIcon}>
         <PolkadotIdenticon
           theme={theme || defaultTheme}
-          value={address}
+          value={value}
           size={background ? size * 0.75 : size}
           // &>svg>circle:first-of-type - background selector
           className="pointer-events-none overflow-hidden rounded-full [&>svg>circle:first-of-type]:fill-none"

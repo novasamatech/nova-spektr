@@ -15,7 +15,7 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { formatAmount, getAssetId, toAddress } from '@/shared/lib/utils';
+import { formatAmount, getAssetId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigOperation } from '@/domains/network';
 import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
@@ -61,7 +61,7 @@ type TransferParams = {
   xcmData?: {
     args: {
       xcmFee: string;
-      deliveryFee: string | null;
+      deliveryFee: string;
       xcmAsset?: NonNullable<unknown>;
       xcmWeight: string;
       xcmDest?: NonNullable<unknown>;
@@ -133,15 +133,13 @@ type BondParams = {
   amount: string;
 };
 function buildBond({ chain, asset, accountId, destination, amount }: BondParams): Transaction {
-  const controller = toAddress(accountId, { prefix: chain.addressPrefix });
-
   return {
     chainId: chain.chainId,
     accountId: accountId,
     type: TransactionType.BOND,
     args: {
       value: formatAmount(amount, asset.precision),
-      controller,
+      controller: accountId,
       payee: destination === '' ? 'Staked' : { Account: destination },
     },
   };
@@ -161,7 +159,7 @@ function buildBondExtra({ chain, asset, accountId, amount }: Omit<BondParams, 'd
 type NominateParams = {
   chain: Chain;
   accountId: AccountId;
-  nominators: Address[];
+  nominators: AccountId[];
 };
 function buildNominate({ chain, accountId, nominators }: NominateParams): Transaction {
   return {
@@ -277,7 +275,7 @@ type DelegateParams = {
   chain: Chain;
   accountId: AccountId;
   tracks: number[];
-  target: Address;
+  target: AccountId;
   conviction: Conviction;
   balance: string;
 };
@@ -326,7 +324,7 @@ type EditDelegationParams = {
   accountId: AccountId;
   tracks: number[];
   undelegateTracks: number[];
-  target: Address;
+  target: AccountId;
   conviction: Conviction;
   previousConviction: Conviction;
   balance: string;
@@ -399,7 +397,7 @@ function buildUnlock({ chain, accountId, actions, amount: value, target }: Unloc
       type: TransactionType.UNLOCK,
       args: {
         trackId: action.trackId,
-        target: toAddress(target, { prefix: chain.addressPrefix }),
+        target,
         value,
       },
     };
@@ -497,7 +495,7 @@ type RejectTxParams = {
   chain: Chain;
   signerAccountId: AccountId;
   threshold: number;
-  otherSignatories: Address[];
+  otherSignatories: AccountId[];
   tx: MultisigOperation;
 };
 
@@ -528,7 +526,7 @@ type ApproveMultisigTxParams = {
   chain: Chain;
   signerAccountId: AccountId;
   threshold: number;
-  otherSignatories: Address[];
+  otherSignatories: AccountId[];
   tx: MultisigOperation;
   hasCallData: boolean;
   maxWeight: Weight;
@@ -622,7 +620,7 @@ function buildCreateFlexibleMultisig({
     accountId: signerAccountId,
     type: TransactionType.TRANSFER,
     args: {
-      dest: toAddress(proxyAccountId, { prefix: chain.addressPrefix }),
+      dest: proxyAccountId,
       value: proxyDeposit,
     },
   };
@@ -706,7 +704,7 @@ function buildRemark({ chainId, accountId, threshold, signatories }: RemarkParam
 type KillPureProxyParams = {
   chain: Chain;
   accountId: AccountId;
-  spawner: Address;
+  spawner: Address | AccountId;
   proxyType: ProxyType;
   index: number;
   height: number;

@@ -1,7 +1,7 @@
 import { BN_ZERO } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
-import { type AssetByChains } from '@/shared/core';
+import { type AssetByChains, type AssetId } from '@/shared/core';
 import { Step } from '@/shared/lib/utils';
 import { portfolioModel } from '@/features/assets';
 import { ModalType } from '../../lib/types';
@@ -21,22 +21,17 @@ const mockAsset = {
     {
       chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
       name: 'Polkadot',
-      assetId: 0,
+      assetId: 0 as AssetId,
       assetSymbol: 'DOT',
       balance: {
-        free: BN_ZERO,
-        reserved: BN_ZERO,
+        total: BN_ZERO,
         frozen: BN_ZERO,
-        locked: [],
+        locked: BN_ZERO,
+        transferable: BN_ZERO,
+        balances: [],
       },
     },
   ],
-  totalBalance: {
-    free: BN_ZERO,
-    reserved: BN_ZERO,
-    frozen: BN_ZERO,
-    locked: [],
-  },
 } as AssetByChains;
 
 describe('AssetTransactionModal/model/add-transaction-model', () => {

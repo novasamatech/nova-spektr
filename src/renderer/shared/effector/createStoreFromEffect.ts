@@ -17,7 +17,7 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
   const $source = combine(params.params, x => x);
   const $ = createStore<Value>(params.defaultValue);
 
-  const fx = createEffect(params.fn);
+  const fx = createEffect<Args, Value>(params.fn);
 
   sample({
     clock: $source,
@@ -35,6 +35,10 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
 
   sample({
     clock: fx.doneData,
+    source: $source,
+    // source should be still valid
+    filter: nonNullableMap,
+    fn: (_, res) => res,
     target: $,
   });
 

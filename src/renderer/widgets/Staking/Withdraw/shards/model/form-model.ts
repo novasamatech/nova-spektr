@@ -7,7 +7,6 @@ import { noop } from 'lodash';
 import { spread } from 'patronum';
 
 import {
-  type Address,
   type Asset,
   type Chain,
   type ChainId,
@@ -22,9 +21,9 @@ import {
   nonNullable,
   nullable,
   redeemableAmount,
-  toAddress,
   transferableAmount,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -178,12 +177,12 @@ const $withdrawForm = createForm<FormParams>({
 type StakingParams = {
   chainId: ChainId;
   api: ApiPromise;
-  addresses: Address[];
+  accounts: AccountId[];
 };
-const subscribeStakingFx = createEffect(({ chainId, api, addresses }: StakingParams): Promise<() => void> => {
+const subscribeStakingFx = createEffect(({ chainId, api, accounts }: StakingParams): Promise<() => void> => {
   const boundStakingSet = scopeBind(stakingSet, { safe: true });
 
-  return useStakingData().subscribeStaking(chainId, api, addresses, boundStakingSet);
+  return useStakingData().subscribeStaking(chainId, api, accounts, boundStakingSet);
 });
 
 const subscribeEraFx = createEffect((api: ApiPromise): Promise<() => void> => {
@@ -265,7 +264,7 @@ const $accounts = combine(
     shards: $shards,
     era: $era,
     staking: $staking,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, era, shards, staking, balances }) => {
     if (!wallet || !network || !staking) return [];
@@ -274,8 +273,7 @@ const $accounts = combine(
 
     return shards.map((shard) => {
       const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId);
-      const address = toAddress(shard.accountId, { prefix: chain.addressPrefix });
-      const withdraw = redeemableAmount(staking[address]?.unlocking, era || 0);
+      const withdraw = redeemableAmount(staking[shard.accountId]?.unlocking, era || 0);
 
       return {
         account: shard,
@@ -408,12 +406,12 @@ sample({
     return nonNullable(networkStore) && nonNullable(api);
   },
   fn: ({ networkStore, api, shards }) => {
-    const addresses = shards.map((shard) => toAddress(shard.accountId, { prefix: networkStore!.chain.addressPrefix }));
+    const accounts = shards.map((shard) => shard.accountId);
 
     return {
       chainId: networkStore!.chain.chainId,
       api: api!,
-      addresses,
+      accounts,
     };
   },
   target: subscribeStakingFx,
@@ -480,7 +478,7 @@ sample({
 sample({
   clock: $withdrawForm.fields.signatory.onChange,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   fn: ({ balances, network }, signatory) => {
@@ -530,7 +528,7 @@ sample({
 sample({
   source: {
     isProxy: $isProxy,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
     proxyAccounts: $realAccounts,
   },

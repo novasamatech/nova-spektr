@@ -49,7 +49,7 @@ function checkCallPermission(proxyType: ProxyType, call: string): boolean {
   }
 
   if (proxyType === 'NonTransfer') {
-    return call !== 'balances';
+    return call !== 'balances' && call !== 'assets' && call !== 'currencies' && call !== 'tokens';
   }
 
   if (proxyType === 'Staking') {

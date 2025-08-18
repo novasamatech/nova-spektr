@@ -72,6 +72,17 @@ const config: UserConfigFn = async ({ mode, command }) => {
       rollupOptions: {
         treeshake: 'recommended',
         maxParallelFileOps: Math.max(1, cpus().length - 1),
+        onLog(level, log, handler) {
+          if (log.cause) {
+            const cause = log.cause as Record<string, string>;
+
+            if (cause.message === `Can't resolve original location of error.`) {
+              return;
+            }
+          }
+
+          handler(level, log);
+        },
       },
     },
     assetsInclude: ['**/*.wasm'],

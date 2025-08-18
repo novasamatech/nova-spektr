@@ -3,11 +3,9 @@ import { memo, useEffect, useMemo, useState } from 'react';
 
 import { sumBalances } from '@/shared/api/network/service/chainsService';
 import { type Asset, type Balance, type Chain, type Wallet } from '@/shared/core';
-import { useI18n } from '@/shared/i18n';
-import { ZERO_BALANCE, groupBy, nullable, totalAmount } from '@/shared/lib/utils';
+import { ZERO_BALANCE, entries, groupBy, nullable, totalAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { CaptionText, Icon } from '@/shared/ui';
-import { Accordion, Tooltip } from '@/shared/ui-kit';
+import { Accordion } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
@@ -27,8 +25,6 @@ type Props = {
 };
 
 export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, wallet }: Props) => {
-  const { t } = useI18n();
-
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
@@ -58,18 +54,20 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
     const newBalancesObject: Record<string, Balance> = {};
     const groupedBalances = groupBy(chainBalances, (b) => b.assetId.toString());
 
-    for (const [assetId, accountBalances] of Object.entries(groupedBalances)) {
+    for (const [assetId, accountBalances] of entries(groupedBalances)) {
       if (nullable(accountBalances)) {
         continue;
       }
 
-      let total = {} as Balance;
+      let total = undefined;
 
       for (const balance of accountBalances) {
         total = sumBalances(balance, total);
       }
 
-      newBalancesObject[assetId] = total;
+      if (total) {
+        newBalancesObject[assetId] = total;
+      }
     }
 
     setBalancesObject(newBalancesObject);
@@ -81,7 +79,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
 
       const balance = balancesObject[asset.assetId];
 
-      return !hideZeroBalances || balance?.verified === false || totalAmount(balance) !== ZERO_BALANCE;
+      return !hideZeroBalances || totalAmount(balance) !== ZERO_BALANCE;
     });
 
     filteredAssets.sort((a, b) =>
@@ -95,8 +93,6 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
     return null;
   }
 
-  const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
-
   return (
     <div className="w-[736px]">
       <Accordion initialOpen>
@@ -104,21 +100,6 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
           <div className="flex w-full items-center justify-between gap-x-2">
             <div className="flex items-center gap-x-2">
               <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
-
-              {hasFailedVerification && (
-                <div className="flex items-center gap-x-2 text-text-warning">
-                  {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                  <Tooltip>
-                    <Tooltip.Trigger>
-                      <div tabIndex={0}>
-                        <Icon name="warn" className="cursor-pointer text-inherit" size={16} />
-                      </div>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{t('balances.verificationTooltip')}</Tooltip.Content>
-                  </Tooltip>
-                  <CaptionText className="text-inherit uppercase">{t('balances.verificationFailedLabel')}</CaptionText>
-                </div>
-              )}
             </div>
             <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
           </div>

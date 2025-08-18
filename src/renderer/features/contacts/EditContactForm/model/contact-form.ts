@@ -4,7 +4,7 @@ import { t } from 'i18next';
 import { not } from 'patronum';
 
 import { type Contact } from '@/shared/core';
-import { toAccountId, validateAddress } from '@/shared/lib/utils';
+import { toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { contactModel } from '@/entities/contact';
 
 export type Callbacks = {
@@ -91,7 +91,8 @@ function validateNameExist(value: string, _: unknown, params: SourceParams): boo
 function validateAddressExist(value: string, _: unknown, params: SourceParams): boolean {
   if (!value) return true;
 
-  const accountId = toAccountId(value);
+  const address = toAddress(value);
+  const accountId = toAccountId(address);
   const isSameAddress = value.toLowerCase() === params.contactToEdit.address.toLowerCase();
   const isUnique = params.contacts.every((contact) => contact.accountId !== accountId);
 
@@ -103,7 +104,8 @@ sample({
   source: $contactToEdit,
   filter: (contactToEdit) => contactToEdit !== null,
   fn: (contactToEdit, form) => {
-    return { ...form, id: contactToEdit!.id, accountId: toAccountId(form.address) };
+    const address = toAddress(form.address);
+    return { ...form, id: contactToEdit!.id, address, accountId: toAccountId(address) };
   },
   target: contactModel.effects.updateContactFx,
 });

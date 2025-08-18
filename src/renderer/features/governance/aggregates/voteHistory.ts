@@ -2,7 +2,7 @@ import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { entries, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identity, identityService } from '@/domains/network';
 import { voteHistoryModel } from '@/entities/governance';
@@ -40,7 +40,7 @@ const $voteHistory = combine(
     const result: Record<ReferendumId, AggregatedVoteHistory[]> = {};
     const chainIdentities = identities[chainId];
 
-    for (const [referendumId, historyList] of Object.entries(history)) {
+    for (const [referendumId, historyList] of entries(history)) {
       const aggregatedHistory = historyList.flatMap((vote) => {
         const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
 
@@ -103,9 +103,9 @@ sample({
   clock: voteHistoryModel.events.voteHistoryRequestDone,
   source: networkSelectorModel.$governanceChainId,
   filter: nonNullable,
-  fn: (chainId: ChainId, { result }: { result: { voter: string }[] }) => ({
+  fn: (chainId: ChainId, { result }) => ({
     chainId,
-    accounts: result.map((x) => x.voter as AccountId),
+    accounts: result.map((x) => x.voter),
   }),
   target: identity.request,
 });

@@ -1,9 +1,14 @@
-import { type AssetBalance } from './balance';
+import { type BN } from '@polkadot/util';
+import { type z } from 'zod';
+
+import { type Balance } from './balance';
 import { type ChainId } from './general';
+
+export type AssetId = number & z.$brand<'AssetId'>;
 
 export type Asset = {
   name: string;
-  assetId: number;
+  assetId: AssetId;
   symbol: string;
   staking?: StakingType;
   precision: number;
@@ -39,6 +44,16 @@ export type OrmlExtras = {
   transfersEnabled?: boolean;
 };
 
+// TODO move into portfolio feature
+export type PortfolioTokenBalance = {
+  total: BN;
+  transferable: BN;
+  locked: BN;
+  frozen: BN;
+  balances: Balance[];
+};
+
+// TODO move into portfolio feature
 export type AssetByChains = {
   name: string;
   precision: number;
@@ -52,9 +67,9 @@ export type AssetByChains = {
   chains: {
     chainId: ChainId;
     name: string;
-    assetId: number;
+    assetId: AssetId;
     assetSymbol: string;
-    balance?: AssetBalance;
+    balance: PortfolioTokenBalance | null;
     type?: AssetType;
     typeExtras?: StatemineExtras | OrmlExtras;
   }[];

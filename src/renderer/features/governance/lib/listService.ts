@@ -1,8 +1,9 @@
 import { orderBy } from 'lodash';
 
 import { type DelegateInfo } from '@/shared/api/governance';
-import { type Address, type Identity } from '@/shared/core';
+import { type Identity } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AggregatedReferendum } from '../types/structs';
 
 export const listService = {
@@ -28,13 +29,13 @@ function sortReferendumsByOngoing(referendums: AggregatedReferendum[]) {
   );
 }
 
-function getMappedIdentity(proposers: Record<Address, Identity>, delegates: DelegateInfo[]) {
-  const identity: Record<Address, Identity> = {};
+function getMappedIdentity(proposers: Record<AccountId, Identity>, delegates: DelegateInfo[]) {
+  const identity: Record<AccountId, Identity> = {};
 
-  for (const { delegateAddress } of delegates) {
-    if (nullable(proposers[delegateAddress])) continue;
+  for (const { delegateAccount } of delegates) {
+    if (nullable(proposers[delegateAccount])) continue;
 
-    identity[delegateAddress] = proposers[delegateAddress];
+    identity[delegateAccount] = proposers[delegateAccount];
   }
 
   return identity;
