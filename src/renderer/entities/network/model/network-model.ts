@@ -33,6 +33,7 @@ const disconnected = createEvent<ChainId>();
 const failed = createEvent<ChainId>();
 
 const $chains = createStore<Record<ChainId, Chain>>({});
+const $chainsList = $chains.map((chains) => chainsService.sortChains(Object.values(chains)));
 
 const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
@@ -500,6 +501,7 @@ sample({
 export const networkModel = {
   $populated,
   $chains,
+  $chainsList,
   $apis,
   $connectionStatuses,
   $connections,
