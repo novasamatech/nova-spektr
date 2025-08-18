@@ -30,6 +30,6 @@ export { CompletedReferendums, OngoingReferendums } from './components/Referendu
 export { VotingHistoryDialog } from './components/VotingHistory/VotingHistoryDialog';
 
 export { listService } from './lib/listService';
-export { getLocksForAddress } from './utils/getLocksForAddress';
+export { getLocksForAccount } from './utils/getLocksForAccount';
 
 export { type AggregatedReferendum } from './types/structs';

@@ -1,9 +1,10 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 
-import { type Address, type Chain, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { balanceSubModel } from '@/features/assets-balances';
 import { type SignatoryInfo } from '../../types';
@@ -17,7 +18,7 @@ const validateSignatories = createEvent<Chain>();
 
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
 const $duplicateSignatories = combine($signatories, signatories => {
-  const duplicates: Record<Address, number[]> = {};
+  const duplicates: Record<AccountId, number[]> = {};
 
   for (const [index, signer] of signatories.entries()) {
     if (!signer.address) continue;

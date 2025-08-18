@@ -35,7 +35,7 @@ const $walletBalance = combine(
   {
     wallet: walletDetailsModel.$wallet,
     chains: networkModel.$chains,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     currency: currencyModel.$activeCurrency,
     prices: priceProviderModel.$assetsPrices,
     accounts: accounts.$list,
@@ -43,12 +43,12 @@ const $walletBalance = combine(
   params => {
     const { wallet, chains, balances, prices, currency, accounts } = params;
 
-    if (!wallet || !prices || !balances || !currency?.coingeckoId) return new BigNumber(0);
+    if (!wallet || !prices || !currency?.coingeckoId) return new BigNumber(0);
 
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
     const accountMap = dictionary(accountService.filterAccountsByWallet(accounts, wallet.id), 'accountId');
 
-    return balances.reduce<BigNumber>((acc, balance) => {
+    return Object.values(balances).reduce<BigNumber>((acc, balance) => {
       const account = accountMap[balance.accountId];
       if (!account) return acc;
       if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;

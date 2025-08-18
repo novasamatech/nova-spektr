@@ -12,7 +12,7 @@ type Props = {
   chainId: ChainId;
   transaction: Transaction;
   assetId: Asset['assetId'];
-  getBalance: (accountId: AccountId, chainId: ChainId, assetId: Asset['assetId']) => Balance | undefined;
+  getBalance: (accountId: AccountId, chainId: ChainId, assetId: Asset['assetId']) => Balance | null;
   getTransactionFee: (tx: Transaction, api: ApiPromise) => Promise<string>;
 };
 
@@ -33,12 +33,12 @@ export const validateBalance = async (
   }
 };
 
-const getTokenBalance = ({ getBalance, transaction, assetId, chainId }: Props): Balance | undefined => {
+const getTokenBalance = ({ getBalance, transaction, assetId, chainId }: Props) => {
   return getBalance(transaction.accountId, chainId, assetId);
 };
 
-const getNativeTokenBalance = ({ assetId, transaction, chainId, getBalance }: Props): Balance | undefined => {
-  if (assetId === 0) return undefined;
+const getNativeTokenBalance = ({ assetId, transaction, chainId, getBalance }: Props) => {
+  if (assetId === 0) return null;
 
   return getBalance(transaction.accountId, chainId, 0);
 };

@@ -1,5 +1,5 @@
 import { type ReferendumId, type Voting } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { entries, toAccountId } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { type VoteHistoryRecord } from '@/entities/governance';
 import { type DecoupledVote } from '../types/structs';
@@ -19,7 +19,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
     return res;
   }
 
-  for (const [referendum, vote] of Object.entries(voting.votes)) {
+  for (const [referendum, vote] of entries(voting.votes)) {
     if (referendum !== referendumId) {
       continue;
     }

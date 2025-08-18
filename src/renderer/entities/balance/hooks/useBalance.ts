@@ -1,7 +1,9 @@
+import { useUnit } from 'effector-react';
+
 import { type Asset, type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-
-import { useAssetBalances } from './useAssetBalances';
+import { balanceUtils } from '../lib/balance-utils';
+import { balanceModel } from '../model/balance-model';
 
 type Props = {
   chainId: ChainId;
@@ -9,5 +11,7 @@ type Props = {
   assetId: Asset['assetId'];
 };
 export const useBalance = ({ chainId, accountId, assetId }: Props) => {
-  return useAssetBalances({ chainId, accountIds: [accountId], assetId }).at(0);
+  const balances = useUnit(balanceModel.$balanceMap);
+
+  return balanceUtils.getBalance(balances, accountId, chainId, assetId);
 };

@@ -15,11 +15,13 @@ import {
   createInitiatorsStore,
   createMultisigDeposit,
   createSignatoriesStore,
+  createTxValidationStore,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
+import { addPureProxiedValidator } from '@/features/operations/OperationsValidation';
 import { proxiesUtils } from '@/features/proxies';
 
 type FormParams = {
@@ -70,7 +72,7 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             fee: $fee,
             proxyDeposit: $proxyDeposit,
-            balances: balanceModel.$balances,
+            balances: balanceModel.$balanceMap,
             isMultisig: $isMultisig,
           }),
           fn: (value, form, { isMultisig, balances, fee, proxyDeposit }) => {
@@ -110,7 +112,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             multisigDeposit: $multisigDeposit,
             proxyDeposit: $proxyDeposit,
-            balances: balanceModel.$balances,
+            balances: balanceModel.$balanceMap,
             isMultisig: $isMultisig,
           }),
           fn: (value, form, { isMultisig, balances, fee, multisigDeposit }) => {
@@ -227,6 +229,19 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+});
+
+// Transaction validation
+const $asset = form.fields.chain.$value.map(chain => (chain ? getNativeAsset(chain.assets) : null));
+const { $errors } = createTxValidationStore({
+  validator: addPureProxiedValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
 });
 
 const $isProxy = $route.map(route => nonNullable(route.find(account => accountUtils.isProxiedAccount(account))));
@@ -368,4 +383,5 @@ export const formModel = {
   isProxyDepositLoadingChanged,
 
   formSubmitted,
+  $errors,
 };

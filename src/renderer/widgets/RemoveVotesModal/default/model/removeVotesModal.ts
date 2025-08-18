@@ -4,10 +4,16 @@ import { createGate } from 'effector-react';
 import { uniq } from 'lodash';
 
 import { type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
-import { Step, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { Step, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createInitiatorsStore,
+  createSignatoriesStore,
+  createTxValidationStore,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
@@ -17,6 +23,7 @@ import { type SigningPayload, signModel } from '@/features/operations/OperationS
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { removeVoteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { type RemoveVoteConfirm } from '@/features/operations/OperationsConfirm/Referendum/RemoveVote/model/confirm-model';
+import { removeVoteValidator } from '@/features/operations/OperationsValidation';
 
 const flow = createGate<{
   votes: {
@@ -121,6 +128,18 @@ const { $tx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
+// Transaction validation
+const $asset = networkSelectorModel.$governanceChain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
+const { $errors } = createTxValidationStore({
+  validator: removeVoteValidator,
+  params: {
+    api: networkSelectorModel.$governanceChainApi,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
 // Transaction save
 
 const txSaved = createEvent();
@@ -311,4 +330,5 @@ export const removeVotesModel = {
   gates: {
     flow,
   },
+  $errors,
 };

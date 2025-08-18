@@ -11,7 +11,7 @@ type Props = {
   assetId: Asset['assetId'];
 };
 export const useAssetBalances = ({ chainId, accountIds, assetId }: Props): Balance[] => {
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   return balanceUtils.getAssetBalances(balances, accountIds, chainId, assetId);
 };

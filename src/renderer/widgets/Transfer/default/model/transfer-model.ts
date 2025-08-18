@@ -2,7 +2,7 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { once, spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
-import { isStep, nonNullable, nullable } from '@/shared/lib/utils';
+import { isStep, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
@@ -100,7 +100,7 @@ const readyToConfirm = sample({
     networkStore: $networkStore,
   },
   fn: ({ networkStore }, form) => {
-    if (nullable(networkStore)) return null;
+    if (nullable(networkStore) || !validateAddress(form.destination)) return null;
 
     const event: TransferConfirmStore = {
       id: 0,

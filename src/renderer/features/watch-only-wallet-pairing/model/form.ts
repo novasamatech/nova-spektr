@@ -1,10 +1,11 @@
 import { attach, combine, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { createGate } from 'effector-react';
+import { t } from 'i18next';
 
+import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
-  type Address,
   CryptoType,
   SigningType,
   WalletType,
@@ -24,7 +25,7 @@ const flow = createGate();
 
 type FormValues = {
   walletName: string;
-  address: Address;
+  address: string;
 };
 
 const form = createForm<FormValues>({
@@ -34,12 +35,12 @@ const form = createForm<FormValues>({
       rules: [
         {
           name: 'required',
-          errorText: 'onboarding.watchOnly.walletNameRequiredError',
+          errorText: t('onboarding.watchOnly.walletNameRequiredError'),
           validator: Boolean,
         },
         {
           name: 'maxLength',
-          errorText: 'onboarding.watchOnly.walletNameMaxLenError',
+          errorText: t('onboarding.watchOnly.walletNameMaxLenError'),
           validator: value => !value || value.length <= 256,
         },
       ],
@@ -49,7 +50,7 @@ const form = createForm<FormValues>({
       rules: [
         {
           name: 'correctAddress',
-          errorText: 'onboarding.watchOnly.accountAddressError',
+          errorText: t('onboarding.watchOnly.accountAddressError'),
           validator: address => validateAddress(address),
         },
       ],
@@ -86,7 +87,7 @@ const $accountDraft = form.$values.map(({ address, walletName }): Omit<WatchOnly
 });
 
 const $chains = combine($accountDraft, networkModel.$chains, (account, chains) => {
-  const chainsList = Object.values(chains);
+  const chainsList = chainsService.sortChains(Object.values(chains));
 
   switch (account.cryptoType) {
     case CryptoType.ETHEREUM:

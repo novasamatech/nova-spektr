@@ -10,7 +10,7 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
-import { getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { getRelaychainAsset, nonNullable, nullable, validateAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -143,11 +143,16 @@ sample({
   source: $walletData,
   filter: (walletData, payeeData) => Boolean(walletData) && Boolean(payeeData),
   fn: (walletData, payeeData) => {
-    return payeeData!.shards.map((shard) => {
+    if (nullable(payeeData) || nullable(walletData)) return [];
+
+    const destination = payeeData.destination;
+    if (!validateAddress(destination)) return [];
+
+    return payeeData.shards.map((shard) => {
       return transactionBuilder.buildSetPayee({
-        chain: walletData!.chain,
+        chain: walletData.chain,
         accountId: shard.accountId,
-        destination: payeeData!.destination,
+        destination,
       });
     });
   },

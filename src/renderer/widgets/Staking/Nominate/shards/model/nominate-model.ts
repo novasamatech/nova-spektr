@@ -188,7 +188,7 @@ sample({
       return transactionBuilder.buildNominate({
         chain: walletData!.chain,
         accountId: shard.accountId,
-        nominators: nominateData!.validators.map(({ address }) => address),
+        nominators: nominateData!.validators.map(({ accountId }) => accountId),
       });
     });
   },

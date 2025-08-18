@@ -1,14 +1,15 @@
 import { useUnit } from 'effector-react';
+import { t } from 'i18next';
 import { useMemo } from 'react';
 
 import { AccountType, type Chain, type Wallet, WalletType } from '@/shared/core';
 import { createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { WalletManagement } from '@/shared/ui-entities';
+import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Checkbox } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { FiatBalance } from '@/entities/price';
-import { WalletIcon, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
 import { hiddenWalletsBalancesModel } from '../model/balances';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
@@ -22,16 +23,16 @@ type Props = {
 };
 
 const WALLET_TYPE_LABELS = {
-  [WalletType.MULTISIG]: 'wallets.multisigLabel',
-  [WalletType.FLEXIBLE_MULTISIG]: 'wallets.flexibleMultisigLabel',
-  [WalletType.POLKADOT_EXTENSION]: 'wallets.polkadotExtensionLabel',
-  [WalletType.WATCH_ONLY]: 'wallets.watchOnlyLabel',
-  [WalletType.PROXIED]: 'wallets.proxiedLabel',
-  [WalletType.NOVA_WALLET]: 'wallets.novaWalletLabel',
-  [WalletType.WALLET_CONNECT]: 'wallets.walletConnectLabel',
-  [WalletType.POLKADOT_VAULT]: 'wallets.paritySignerLabel',
-  [WalletType.TALISMAN_EXTENSION]: 'wallets.talismanExtensionLabel',
-  [WalletType.SUBWALLET_EXTENSION]: 'wallets.subWalletExtensionLabel',
+  [WalletType.MULTISIG]: t('wallets.multisigLabel'),
+  [WalletType.FLEXIBLE_MULTISIG]: t('wallets.flexibleMultisigLabel'),
+  [WalletType.POLKADOT_EXTENSION]: t('wallets.polkadotExtensionLabel'),
+  [WalletType.WATCH_ONLY]: t('wallets.watchOnlyLabel'),
+  [WalletType.PROXIED]: t('wallets.proxiedLabel'),
+  [WalletType.NOVA_WALLET]: t('wallets.novaWalletLabel'),
+  [WalletType.WALLET_CONNECT]: t('wallets.walletConnectLabel'),
+  [WalletType.POLKADOT_VAULT]: t('wallets.paritySignerLabel'),
+  [WalletType.TALISMAN_EXTENSION]: t('wallets.talismanExtensionLabel'),
+  [WalletType.SUBWALLET_EXTENSION]: t('wallets.subWalletExtensionLabel'),
 };
 
 export const WalletGroup = (props: Props) => {
@@ -88,7 +89,7 @@ export const WalletGroup = (props: Props) => {
         <Accordion.Content>
           <Box gap={1} padding={[1, 0, 0]}>
             {wallets.map((wallet) => {
-              const address = wallet.accounts[0]?.accountId;
+              const accountId = wallet.accounts[0]?.accountId;
               const isSelected = selectedWalletSet.has(wallet);
 
               let chain: Chain | null = null;
@@ -107,7 +108,7 @@ export const WalletGroup = (props: Props) => {
                   <div className="flex-1">
                     <WalletManagement
                       wallet={wallet}
-                      address={address}
+                      accountId={accountId ?? null}
                       checkBox={
                         <Checkbox
                           checked={isSelected}

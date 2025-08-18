@@ -38,6 +38,19 @@ export function nonNullableMap<T extends Record<PropertyKey, unknown>>(values: T
 }
 
 /**
+ * Oposite of nonNullableMap, but it doesn't work as type guard, simple runtime
+ * check
+ */
+export function nullableMap<T extends Record<PropertyKey, unknown>>(values: T): boolean {
+  for (const item of Object.values(values)) {
+    if (nullable(item)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Type guard that checks is value nullable
  *
  * @param value Value to be checked

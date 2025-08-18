@@ -4,10 +4,10 @@ import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 
 import { useGraphql } from '@/app/providers';
 import { localStorageService } from '@/shared/api/local-storage';
-import { type Address, type ChainId, type Stake, type Validator } from '@/shared/core';
+import { type ChainId, type Stake, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getRelaychainAsset, toAccountId, toAddress } from '@/shared/lib/utils';
+import { getRelaychainAsset, keys, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
 import { type AnyAccount, identity } from '@/domains/network';
@@ -111,8 +111,8 @@ export const Staking = () => {
   const [chainId, setChainId] = useState<ChainId | null>(null);
   const [networkIsActive, setNetworkIsActive] = useState(true);
 
-  const [selectedNominators, setSelectedNominators] = useState<Address[]>([]);
-  const [selectedStash, setSelectedStash] = useState<Address>('');
+  const [selectedNominators, setSelectedNominators] = useState<AccountId[]>([]);
+  const [selectedStash, setSelectedStash] = useState<AccountId | null>(null);
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
   const identities = useStoreMap({
@@ -148,9 +148,9 @@ export const Staking = () => {
       return accountUtils.isChainIdMatch(account, chainId);
     }) || [];
 
-  const addresses = accounts.map((a) => toAddress(a.accountId, { prefix: addressPrefix }));
+  const accountIds = accounts.map((a) => a.accountId);
 
-  const { rewards, isRewardsLoading } = useStakingRewards(addresses);
+  const { rewards, isRewardsLoading } = useStakingRewards(accountIds, activeChain);
 
   useEffect(() => {
     setChainId(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN));
@@ -181,7 +181,7 @@ export const Staking = () => {
       unsubEra = await eraService.subscribeActiveEra(api, (era) => {
         setChainEra({ [chainId]: era });
       });
-      unsubStaking = await subscribeStaking(chainId, api, addresses, (staking) => {
+      unsubStaking = await subscribeStaking(chainId, api, accountIds, (staking) => {
         setStaking(staking);
         setIsStakingLoading(false);
       });
@@ -202,8 +202,8 @@ export const Staking = () => {
     const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);
     const isProxied = walletUtils.isProxied(activeWallet);
 
-    if (isMultisig || isNovaWallet || isWalletConnect || isProxied || (isPolkadotVault && addresses.length === 1)) {
-      setSelectedNominators([addresses[0]]);
+    if (isMultisig || isNovaWallet || isWalletConnect || isProxied || (isPolkadotVault && accountIds.length === 1)) {
+      setSelectedNominators([accountIds[0]]);
     } else {
       setSelectedNominators([]);
     }
@@ -219,7 +219,7 @@ export const Staking = () => {
   }, [chainId, api, chainEra]);
 
   useEffect(() => {
-    const accounts = Object.keys(validators).map(toAccountId) as AccountId[];
+    const accounts = keys(validators).map(toAccountId);
 
     if (!chainId || accounts.length === 0) return;
 
@@ -243,7 +243,7 @@ export const Staking = () => {
     localStorageService.saveToStorage(STAKING_NETWORK, chainId);
   };
 
-  const openSelectedValidators = (stash?: Address) => {
+  const openSelectedValidators = (stash?: AccountId) => {
     if (!api || !stash) return;
 
     setSelectedStash(stash);
@@ -262,23 +262,18 @@ export const Staking = () => {
   }, [activeWallet, accounts]);
 
   const nominatorsInfo = useMemo(() => {
-    const getInfo = <T extends AnyAccount>(address: Address, account: T): NominatorInfo<T> => ({
-      address,
+    const getInfo = <T extends AnyAccount>(account: T): NominatorInfo<T> => ({
       account,
-      stash: staking[address]?.stash,
-      isSelected: selectedNominators.includes(address),
-      totalStake: isStakingLoading ? undefined : staking[address]?.total || '0',
-      totalReward: isRewardsLoading ? undefined : rewards[address],
-      unlocking: staking[address]?.unlocking,
+      stash: staking[account.accountId]?.stash,
+      isSelected: selectedNominators.includes(account.accountId),
+      totalStake: isStakingLoading ? undefined : staking[account.accountId]?.total || '0',
+      totalReward: isRewardsLoading ? undefined : rewards[account.accountId],
+      unlocking: staking[account.accountId]?.unlocking,
     });
 
     return groupedAccounts.reduce<NominatorInfo<any>[]>((acc, account) => {
       if (accountUtils.isAccountWithShards(account)) {
-        const shardsGroup = account.map((shard) => {
-          const address = toAddress(shard.accountId, { prefix: addressPrefix });
-
-          return getInfo(address, shard);
-        });
+        const shardsGroup = account.map(getInfo);
 
         // @ts-expect-error TODO fix
         acc.push(shardsGroup);
@@ -287,27 +282,26 @@ export const Staking = () => {
           return acc;
         }
 
-        const address = toAddress(account.accountId, { prefix: addressPrefix });
-        acc.push(getInfo(address, account));
+        acc.push(getInfo(account));
       }
 
       return acc;
     }, []);
   }, [groupedAccounts, addressPrefix, isStakingLoading, isRewardsLoading, staking, selectedNominators]);
 
-  const selectedStakes = selectedNominators.reduce<Stake[]>((acc, address) => {
-    const stake = staking[address];
-    acc.push(stake ?? ({ address } as Stake));
+  const selectedStakes = selectedNominators.reduce<Stake[]>((acc, accountId) => {
+    const stake = staking[accountId];
+    acc.push(stake ?? ({ accountId } as Stake));
 
     return acc;
   }, []);
 
   const [selectedValidators, notSelectedValidators] = nominators.reduce<[Validator[], Validator[]]>(
     (acc, nominator) => {
-      if (validators[nominator.address]) {
+      if (validators[nominator.accountId]) {
         acc[0].push({
           ...nominator,
-          ...validators[nominator.address],
+          ...validators[nominator.accountId],
         });
       } else {
         acc[1].push(nominator);
@@ -321,20 +315,16 @@ export const Staking = () => {
   const isMultipleAccountsSelected = selectedNominators.length > 1;
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
 
-  const navigateToStake = (operation: StakeOperations, addresses?: Address[]) => {
+  const navigateToStake = (operation: StakeOperations, as?: AccountId[]) => {
     if (!activeChain || !activeWallet) return;
 
-    if (addresses) {
-      setSelectedNominators(addresses);
+    if (as) {
+      setSelectedNominators(as);
 
       return;
     }
 
-    const shards = accounts.filter((account) => {
-      const address = toAddress(account.accountId, { prefix: addressPrefix });
-
-      return selectedNominators.includes(address);
-    });
+    const shards = accounts.filter((account) => selectedNominators.includes(account.accountId));
 
     const model = {
       [StakeOperations.UNSTAKE]: isMultipleAccountsSelected
@@ -367,13 +357,13 @@ export const Staking = () => {
 
   const relaychainAsset = getRelaychainAsset(activeChain?.assets);
 
-  const toggleSelectedNominators = (address: Address, isAllSelected?: boolean) => {
-    const isSelected = isAllSelected === undefined ? selectedNominators.includes(address) : !isAllSelected;
+  const toggleSelectedNominators = (id: AccountId, isAllSelected?: boolean) => {
+    const isSelected = isAllSelected === undefined ? selectedNominators.includes(id) : !isAllSelected;
 
     if (isSelected) {
-      setSelectedNominators((value) => value.filter((a) => a !== address));
+      setSelectedNominators((value) => value.filter((a) => a !== id));
     } else {
-      setSelectedNominators((value) => value.concat(address));
+      setSelectedNominators((value) => value.concat(id));
     }
   };
 

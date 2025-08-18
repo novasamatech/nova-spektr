@@ -11,7 +11,15 @@ import {
   type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
-import { Step, formatAmount, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
+import {
+  Step,
+  formatAmount,
+  getRelaychainAsset,
+  isStep,
+  nonNullable,
+  nullable,
+  transferableAmount,
+} from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -86,7 +94,7 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData?.chain ? apis[walletData.chain.chainId] : null;
+    return walletData?.chain ? (apis[walletData.chain.chainId] ?? null) : null;
   },
 );
 
@@ -177,13 +185,15 @@ sample({
     return nonNullable(walletData.chain) && nonNullable(target) && tracks.length > 0;
   },
   fn: ({ walletData, accounts, target, tracks }, delegateData) => {
+    if (nullable(target)) return [];
+
     return accounts.map((shard) => {
       return transactionBuilder.buildDelegate({
         chain: walletData.chain!,
         accountId: shard.accountId,
         balance: (walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision)) || '0',
         conviction: delegateData!.conviction || 'None',
-        target: target?.address || '',
+        target: target.accountId,
         tracks,
       });
     });
@@ -288,7 +298,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     feeData: $feeData,
     walletData: $walletData,
     tracks: $tracks,
@@ -308,12 +318,18 @@ sample({
       isStep(step, Step.INIT)
     );
   },
-  fn: ({ feeData, balances, walletData, txWrappers, tracks, target, shards, delegateData, coreTxs }) => {
+  fn: ({ feeData, balances, walletData, txWrappers, tracks, target, shards, delegateData, coreTxs, step }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
+    if (nullable(target)) {
+      return {
+        events: [],
+        step,
+      };
+    }
 
     return {
-      event: shards.map((shard, index) => {
+      events: shards.map((shard, index) => {
         const transferable = transferableAmount(
           balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId),
         );
@@ -322,7 +338,7 @@ sample({
           chain: walletData.chain!,
           asset: asset!,
           tracks,
-          target: target?.address || '',
+          target: target.accountId,
           transferable,
           ...delegateData!,
           ...feeData,
@@ -342,7 +358,7 @@ sample({
     };
   },
   target: spread({
-    event: confirmModel.init,
+    events: confirmModel.init,
     step: stepChanged,
   }),
 });

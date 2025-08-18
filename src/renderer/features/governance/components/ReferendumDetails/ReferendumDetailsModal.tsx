@@ -92,6 +92,7 @@ export const ReferendumDetailsModal = ({
                   <div className="grid grid-cols-[270px_auto] items-center justify-between gap-x-1">
                     <VotedBy
                       direction="column"
+                      chain={chain}
                       asset={asset}
                       identity={identity}
                       delegates={referendum.votedByDelegates}

@@ -1,6 +1,7 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
@@ -155,7 +156,7 @@ const $errors = combine(
     chain: $chain,
     multisigAccount: $multisigAccount,
     selectedSignatory: $selectedSignatory,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     multisigDeposit: $multisigDeposit,
     proxyDeposit: $proxyDeposit,
     fee: $fee,
@@ -178,10 +179,16 @@ const $errors = combine(
     );
 
     if (new BN(proxyDeposit).gte(withdrawableAmountBN(multisigBalance))) {
-      errors.push({ errorText: 'proxy.addProxy.balanceAlertMultisig', name: 'proxy.addProxy.balanceAlertTitle' });
+      errors.push({
+        errorText: t('proxy.addProxy.balanceAlertMultisig'),
+        name: 'proxy.addProxy.balanceAlertTitle',
+      });
     }
     if (multisigDeposit.add(fee).gte(withdrawableAmountBN(signerBalance))) {
-      errors.push({ errorText: 'proxy.addProxy.notEnoughMultisigTokens', name: 'proxy.addProxy.balanceAlertTitle' });
+      errors.push({
+        errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
+        name: 'proxy.addProxy.balanceAlertTitle',
+      });
     }
 
     return errors;

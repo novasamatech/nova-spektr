@@ -62,16 +62,18 @@ const $allInitiators = combine(
   },
   ({ accounts, chains }) => {
     if (nullable(accounts) || Object.keys(chains).length === 0) return [];
-    const result = [];
+    const result = new Set<AnyAccount>();
 
-    for (const [_, chain] of Object.entries(chains)) {
+    for (const chain of Object.values(chains)) {
       const initiators = accountService.findInitiators(accounts, chain);
       if (initiators.length > 0) {
-        result.push(...initiators);
+        for (const account of initiators) {
+          result.add(account);
+        }
       }
     }
 
-    return result;
+    return Array.from(result);
   },
 );
 
@@ -149,7 +151,7 @@ const $activeTokensWithBalance = combine(
   {
     activeTokens: $activeTokens,
     filteredAccounts: $filteredAccounts,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ activeTokens, balances, filteredAccounts }) => {
     const tokens: AssetByChains[] = [];

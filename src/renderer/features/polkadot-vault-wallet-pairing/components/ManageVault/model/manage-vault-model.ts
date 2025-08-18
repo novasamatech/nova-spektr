@@ -1,6 +1,7 @@
 import { u8aToHex } from '@polkadot/util';
 import { attach, combine, createApi, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 
 import {
   type DraftAccount,
@@ -64,10 +65,10 @@ const $walletForm = createForm({
     name: {
       init: '',
       rules: [
-        { name: 'required', errorText: 'onboarding.watchOnly.walletNameRequiredError', validator: Boolean },
+        { name: 'required', errorText: t('onboarding.watchOnly.walletNameRequiredError'), validator: Boolean },
         {
           name: 'maxLength',
-          errorText: 'onboarding.watchOnly.walletNameMaxLenError',
+          errorText: t('onboarding.watchOnly.walletNameMaxLenError'),
           validator: (value): boolean => value.length <= WALLET_NAME_MAX_LENGTH,
         },
       ],

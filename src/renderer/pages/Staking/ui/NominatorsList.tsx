@@ -2,11 +2,12 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Address, type Asset, type Chain, type VaultBaseAccount, type VaultShardAccount } from '@/shared/core';
+import { type Asset, type Chain, type VaultBaseAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HelpText, Icon } from '@/shared/ui';
-import { Address as AddressComponent } from '@/shared/ui-entities';
+import { Address } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { useStakingData } from '@/entities/staking';
@@ -24,8 +25,8 @@ type Props = {
   era?: number;
   asset?: Asset;
   chain: Chain;
-  onCheckValidators: (stash?: Address) => void;
-  onToggleNominator: (nominator: Address, value?: boolean) => void;
+  onCheckValidators: (stash?: AccountId) => void;
+  onToggleNominator: (nominator: AccountId, value?: boolean) => void;
 };
 
 export const NominatorsList = ({
@@ -83,7 +84,13 @@ export const NominatorsList = ({
 
   const getContent = (stake: NominatorInfo<AnyAccount>): ReactNode => (
     <>
-      <AddressComponent title={stake.account.name} variant="truncate" address={stake.address} showIcon iconSize={20} />
+      <Address
+        title={stake.account.name}
+        variant="truncate"
+        address={toAddress(stake.account.accountId, { prefix: chain.addressPrefix })}
+        showIcon
+        iconSize={20}
+      />
       <div className="ml-auto">{getUnstakeBadge(stake) || getRedeemBadge(stake)}</div>
     </>
   );

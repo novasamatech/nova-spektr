@@ -4,14 +4,14 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import {
-  type Balance,
+  type BalanceMap,
   type Chain,
   type ChainId,
   type Connection,
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { toAddress, transferableAmount } from '@/shared/lib/utils';
+import { toAccountId, transferableAmount } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -41,7 +41,7 @@ type DataParams = {
   apis: Record<ChainId, ApiPromise>;
   transaction: BasketTransaction;
   connections: Record<ChainId, Connection>;
-  balances: Balance[];
+  balances: BalanceMap;
 };
 
 const flow = createGate<BasketTransaction>();
@@ -214,9 +214,7 @@ const prepareRevokeDelegationDataFx = createEffect(
 
       balance: delegation ? delegation.data.balance.toString() : coreTxs[0].args.balance,
       conviction: delegation ? delegation.data.conviction : votingService.getConviction(coreTxs[0].args.conviction),
-      delegate: delegation
-        ? toAddress(delegation.data.target, { prefix: chain.addressPrefix })
-        : coreTxs[0].args.target,
+      delegate: delegation ? delegation.data.target : toAccountId(coreTxs[0].args.target),
       tracks: coreTxs.map((t: Transaction) => t.args.track),
       locks,
 
@@ -293,7 +291,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -324,7 +322,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -355,7 +353,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -386,7 +384,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -417,7 +415,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -448,7 +446,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);

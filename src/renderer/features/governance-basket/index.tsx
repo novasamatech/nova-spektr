@@ -1,4 +1,5 @@
 import { useGate } from 'effector-react';
+import { t } from 'i18next';
 
 import { type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -29,13 +30,13 @@ export { governanceBasketFeature };
 
 const getOperationTitle = (transaction: Transaction): string | undefined => {
   const title: { [key in TransactionType]?: string } = {
-    [TransactionType.UNLOCK]: 'operations.titles.unlock',
-    [TransactionType.VOTE]: 'operations.titles.vote',
-    [TransactionType.REVOTE]: 'operations.titles.revote',
-    [TransactionType.REMOVE_VOTE]: 'operations.titles.removeVote',
-    [TransactionType.DELEGATE]: 'operations.titles.delegate',
-    [TransactionType.UNDELEGATE]: 'operations.titles.undelegate',
-    [TransactionType.EDIT_DELEGATION]: 'operations.titles.editDelegation',
+    [TransactionType.UNLOCK]: t('operations.titles.unlock'),
+    [TransactionType.VOTE]: t('operations.titles.vote'),
+    [TransactionType.REVOTE]: t('operations.titles.revote'),
+    [TransactionType.REMOVE_VOTE]: t('operations.titles.removeVote'),
+    [TransactionType.DELEGATE]: t('operations.titles.delegate'),
+    [TransactionType.UNDELEGATE]: t('operations.titles.undelegate'),
+    [TransactionType.EDIT_DELEGATION]: t('operations.titles.editDelegation'),
   };
 
   return title[transaction.type];
@@ -57,13 +58,13 @@ const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
 
 const getModalTitle = (transaction: Transaction): string | undefined => {
   const title: { [key in TransactionType]?: string } = {
-    [TransactionType.UNLOCK]: 'operations.modalTitles.unlockOn',
-    [TransactionType.DELEGATE]: 'operations.modalTitles.delegateOn',
-    [TransactionType.EDIT_DELEGATION]: 'operations.modalTitles.editDelegationOn',
-    [TransactionType.UNDELEGATE]: 'operations.modalTitles.undelegateOn',
-    [TransactionType.VOTE]: 'operations.modalTitles.vote',
-    [TransactionType.REVOTE]: 'operations.modalTitles.revote',
-    [TransactionType.REMOVE_VOTE]: 'operations.modalTitles.removeVote',
+    [TransactionType.UNLOCK]: t('operations.modalTitles.unlockOn'),
+    [TransactionType.DELEGATE]: t('operations.modalTitles.delegateOn'),
+    [TransactionType.EDIT_DELEGATION]: t('operations.modalTitles.editDelegationOn'),
+    [TransactionType.UNDELEGATE]: t('operations.modalTitles.undelegateOn'),
+    [TransactionType.VOTE]: t('operations.modalTitles.vote'),
+    [TransactionType.REVOTE]: t('operations.modalTitles.revote'),
+    [TransactionType.REMOVE_VOTE]: t('operations.modalTitles.removeVote'),
   };
 
   return title[transaction.type];
