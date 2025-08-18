@@ -1,4 +1,11 @@
-import * as Ariakit from '@ariakit/react';
+import {
+  Combobox,
+  ComboboxGroup,
+  ComboboxGroupLabel,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxProvider,
+} from '@ariakit/react';
 import * as RadixPopover from '@radix-ui/react-popover';
 import {
   Children,
@@ -254,7 +261,7 @@ const Root = <T extends string>({
                   <Icon name="down" size={16} className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2" />
                 </div>
               ) : (
-                <Ariakit.ComboboxProvider
+                <ComboboxProvider
                   open={open}
                   setOpen={setOpen}
                   value={searchQuery}
@@ -262,7 +269,7 @@ const Root = <T extends string>({
                   setValue={handleInputChange}
                   setSelectedValue={handleItemSelect}
                 >
-                  <Ariakit.Combobox
+                  <Combobox
                     autoSelect
                     autoFocus
                     ref={comboboxRef}
@@ -270,7 +277,7 @@ const Root = <T extends string>({
                     render={({ onChange, ...props }) => <Input {...props} height={height} onChangeEvent={onChange} />}
                     onBlur={handleInputBlur}
                   />
-                </Ariakit.ComboboxProvider>
+                </ComboboxProvider>
               )}
             </div>
           </RadixPopover.Anchor>
@@ -309,14 +316,14 @@ const Root = <T extends string>({
                 >
                   <ScrollArea>
                     {onSearch && isInputMode ? (
-                      <Ariakit.ComboboxProvider
+                      <ComboboxProvider
                         open={isOpen}
                         setOpen={setOpen}
                         value={searchQuery}
                         defaultSelectedValue=""
                         setSelectedValue={handleItemSelect}
                       >
-                        <Ariakit.ComboboxList ref={listboxRef} role="listbox">
+                        <ComboboxList ref={listboxRef} role="listbox">
                           <div className="flex flex-col gap-y-1 p-1">
                             {children}
                             {showEmptyState && (
@@ -328,8 +335,8 @@ const Root = <T extends string>({
                               </div>
                             )}
                           </div>
-                        </Ariakit.ComboboxList>
-                      </Ariakit.ComboboxProvider>
+                        </ComboboxList>
+                      </ComboboxProvider>
                     ) : (
                       <div className="flex flex-col gap-y-1 p-1">{children}</div>
                     )}
@@ -356,12 +363,12 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
 
   if (isSearchMode) {
     return (
-      <Ariakit.ComboboxGroup className="mb-1 last:mb-0">
-        <Ariakit.ComboboxGroupLabel>
+      <ComboboxGroup className="mb-1 last:mb-0">
+        <ComboboxGroupLabel>
           <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
-        </Ariakit.ComboboxGroupLabel>
+        </ComboboxGroupLabel>
         {children}
-      </Ariakit.ComboboxGroup>
+      </ComboboxGroup>
     );
   }
 
@@ -395,7 +402,7 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
 
   if (isSearchMode) {
     return (
-      <Ariakit.ComboboxItem
+      <ComboboxItem
         focusOnHover
         value={value}
         className={cnTw(commonClassName, 'data-active-item:bg-action-background-hover', {
@@ -404,7 +411,7 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
         style={commonStyle}
       >
         <div className="h-full w-full truncate">{children}</div>
-      </Ariakit.ComboboxItem>
+      </ComboboxItem>
     );
   }
 
