@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store } from 'effector';
 import { t } from 'i18next';
 
@@ -98,9 +98,9 @@ export const DelegateRules = {
             amount,
             asset: network.asset,
             balance: balance.native,
-            fee,
-            xcmFee: '0',
-            deliveryFee: '0',
+            fee: new BN(fee),
+            xcmFee: BN_ZERO,
+            deliveryFee: BN_ZERO,
             isNative: true,
             isProxy: false,
             isMultisig,

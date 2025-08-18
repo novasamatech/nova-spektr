@@ -19,10 +19,12 @@ export type BalancePreservation =
 export type BalanceUpdateResult =
   | {
       success: true;
+      required: BN;
       balance: Balance;
     }
   | {
       success: false;
       imbalance: BN;
+      required: BN;
       balance: Balance;
     };

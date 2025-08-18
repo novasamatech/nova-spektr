@@ -1,7 +1,7 @@
 import { BN_ZERO } from '@polkadot/util';
 import { allSettled, fork } from 'effector';
 
-import { type AssetByChains } from '@/shared/core';
+import { type AssetByChains, type AssetId } from '@/shared/core';
 import { AssetsListView } from '@/entities/asset';
 import { portfolioModel } from '../portfolio-model';
 
@@ -20,7 +20,7 @@ const mockTokens: AssetByChains[] = [
       {
         chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
         name: 'Polkadot',
-        assetId: 0,
+        assetId: 0 as AssetId,
         assetSymbol: 'DOT',
         balance: {
           total: BN_ZERO,
@@ -46,7 +46,7 @@ const mockTokens: AssetByChains[] = [
       {
         chainId: '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
         name: 'Kusama',
-        assetId: 0,
+        assetId: 0 as AssetId,
         assetSymbol: 'KSM',
         balance: {
           total: BN_ZERO,

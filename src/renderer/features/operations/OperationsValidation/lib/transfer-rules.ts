@@ -206,60 +206,69 @@ export const TransferRules = {
 export const transferValidator = createTxValidator<{
   amount: string;
   sourceChain: Chain;
+  sourceAsset: Asset;
   destinationChain: Chain;
-  destinationAsset: Asset;
-  xcmFee: string;
-  deliveryFee: string;
+  xcmFee: BN;
+  deliveryFee: BN;
 }>({
   additionalBalanceRules: [
     // amount
-    ({ route, amount, asset, destinationAsset }, balanceValidationResults) => {
+    // withdraws from initiator in source asset (can be any asset)
+    ({ route, amount, destinationChain, sourceChain, sourceAsset, getBalance }) => {
+      const isXcm = destinationChain.chainId !== sourceChain.chainId;
       const initiator = accountService.findInitiator(route);
       assert(initiator, 'Initiator not found');
 
-      const desiredAmount = toPrecision(amount, destinationAsset.precision);
-
+      const desiredAmount = toPrecision(amount, sourceAsset.precision);
       if (desiredAmount.isZero()) return;
 
-      if (asset === destinationAsset) {
-        return accountService.mutateTransitionBalanceValidationResult(
-          balanceValidationResults,
-          asset,
-          initiator,
-          (balance, account) => ({
-            account,
-            required: desiredAmount,
-            balance: balanceService.tryWithdraw(balance, desiredAmount, 'keepAlive'),
-            asset,
-            action: 'sending amount',
-          }),
-        );
-      }
+      const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
+      assert(balance, `Balance for account ${initiator.accountId} not found`);
+
+      return {
+        account: initiator,
+        balance: balanceService.tryWithdraw(balance, desiredAmount, isXcm ? 'keepAlive' : 'allowDeath'),
+        asset: sourceAsset,
+        action: 'sending amount',
+      };
+    },
+    // cross-chain fee
+    // withdraws from initiator in source asset (can be any asset)
+    ({ route, xcmFee, destinationChain, sourceChain, sourceAsset, getBalance }) => {
+      // works only in case of xcm transfer
+      if (destinationChain.chainId === sourceChain.chainId) return;
+      if (xcmFee.isZero()) return;
+
+      const initiator = accountService.findInitiator(route);
+      assert(initiator, 'Initiator not found');
+
+      const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
+      assert(balance, `Balance for account ${initiator.accountId} not found`);
+
+      return {
+        account: initiator,
+        balance: balanceService.tryWithdraw(balance, xcmFee, 'keepAlive'),
+        asset: sourceAsset,
+        action: 'cross-chain fee',
+      };
     },
     // delivery fee
-    // ({ route, deliveryFee, asset, destinationAsset }, balanceValidationResults) => {
-    //   // it should be xcm transfer
-    //   if (asset === destinationAsset) {
-    //     return;
-    //   }
-    //
-    //   const initiator = accountService.findInitiator(route);
-    //   assert(initiator, 'Initiator not found');
-    //
-    //   const desiredDeliveryFee = toPrecision(deliveryFee, destinationAsset.precision);
-    //
-    //   return accountService.mutateTransitionBalanceValidationResult(
-    //     balanceValidationResults,
-    //     destinationAsset,
-    //     initiator,
-    //     (balance, account) => ({
-    //       account,
-    //       required: desiredDeliveryFee,
-    //       balance: balanceService.tryWithdraw(balance, desiredDeliveryFee, BN_ZERO, 'keepAlive'),
-    //       asset: destinationAsset,
-    //       action: 'delivery fee',
-    //     }),
-    //   );
-    // },
+    // withdraws from initiator in native asset
+    ({ route, deliveryFee, sourceChain, asset, getBalance }) => {
+      if (deliveryFee.isZero()) return;
+
+      const initiator = accountService.findSignatory(route);
+      assert(initiator, 'Signatory not found');
+
+      const balance = getBalance(initiator.accountId, sourceChain.chainId, asset.assetId);
+      assert(balance, `Balance for account ${initiator.accountId} not found`);
+
+      return {
+        account: initiator,
+        balance: balanceService.tryWithdraw(balance, deliveryFee, 'allowDeath'),
+        asset: asset,
+        action: 'delivery fee',
+      };
+    },
   ],
 });
