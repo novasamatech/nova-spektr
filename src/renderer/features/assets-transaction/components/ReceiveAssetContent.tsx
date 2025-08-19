@@ -52,12 +52,10 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
           title={selectedAccount.name}
           hideExplorers
         />
-        <Copy
-          value={address}
-          className="text-icon-accent hover:text-primary-button-background-hover active:text-primary-button-background-active"
-          onCopied={onAddressCopied}
-        >
-          {t('receive.copy')}
+        <Copy value={address} onCopied={onAddressCopied}>
+          <Button variant="text" size="sm">
+            {t('receive.copy')}
+          </Button>
         </Copy>
       </div>
       {(chain.explorers || []).length > 0 && (
@@ -84,12 +82,10 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
         <>
           <div className="mb-3 flex w-full items-center justify-between bg-main-app-background px-5 py-3">
             <FootnoteText className="text-text-secondary">{t('receive.exchangeAccount')}</FootnoteText>
-            <Copy
-              value={address}
-              className="text-icon-accent hover:text-primary-button-background-hover active:text-primary-button-background-active"
-              onCopied={onAddressCopied}
-            >
-              {t('receive.copyLegacyFormat')}
+            <Copy value={address} onCopied={onAddressCopied}>
+              <Button variant="text" size="sm">
+                {t('receive.copyLegacyFormat')}
+              </Button>
             </Copy>
           </div>
 
