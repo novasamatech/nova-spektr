@@ -460,7 +460,9 @@ const FeeSection = () => {
         />
       )}
 
-      {isXcm && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
+      {isXcm && !deliveryFee.isZero() && (
+        <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
+      )}
     </div>
   );
 };
