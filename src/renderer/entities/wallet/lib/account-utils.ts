@@ -42,7 +42,13 @@ export const accountUtils = {
   isFlexibleProxiedAccount,
   isPureProxiedAccount,
 
+  /**
+   * @deprecated Use accountService.isAccountAvailableOnChain instead
+   */
   isChainIdMatch,
+  /**
+   * @deprecated Use accountService.isAccountAvailableOnChain instead
+   */
   isChainAndCryptoMatch,
   isAccountWithShards,
   isNonBaseVaultAccount,
