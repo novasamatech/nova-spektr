@@ -28,12 +28,18 @@ accountSDK(polkadotVaultWalletFeature, {
       accountUtils.isVaultShardAccount(account)
     );
   },
-  availableOnChain({ account }) {
-    return (
-      accountUtils.isVaultBaseAccount(account) ||
-      accountUtils.isVaultChainAccount(account) ||
-      accountUtils.isVaultShardAccount(account)
-    );
+  availableOnChain({ account, chain }) {
+    if (accountUtils.isVaultBaseAccount(account)) {
+      return true;
+    }
+
+    if (accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)) {
+      return (
+        account.chainId === chain.chainId ||
+        // parentId check exists because of consensus mechanism in vault - all keys related to relaychain should also work in parachains
+        account.chainId === chain.parentId
+      );
+    }
   },
   canSignMultipleTransactions({ account }) {
     return (

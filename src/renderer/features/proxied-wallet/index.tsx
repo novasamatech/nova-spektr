@@ -31,8 +31,8 @@ accountSDK(proxiedWalletFeature, {
   actionPermission() {
     return false;
   },
-  availableOnChain({ account }) {
-    return accountUtils.isProxiedAccount(account);
+  availableOnChain({ account, chain }) {
+    return accountUtils.isProxiedAccount(account) && account.chainId === chain.chainId;
   },
   canSignMultipleTransactions() {
     return false;

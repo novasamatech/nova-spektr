@@ -21,8 +21,14 @@ export { extensionWalletFeature, walletActionsSlot, polkadotExtensionService };
 export type { PolkadotExtensionWallet, TalismanExtensionWallet, SubWalletExtensionWallet };
 
 accountSDK(extensionWalletFeature, {
-  availableOnChain: ({ account }) => {
-    return polkadotExtensionService.isExtensionAccount(account);
+  availableOnChain: ({ account, chain }) => {
+    if (polkadotExtensionService.isExtensionAccount(account)) {
+      if ('chainId' in account) {
+        return account.chainId === chain.chainId;
+      } else {
+        return true;
+      }
+    }
   },
   actionPermission: ({ account }) => {
     return polkadotExtensionService.isExtensionAccount(account);
