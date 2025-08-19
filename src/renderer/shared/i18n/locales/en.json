@@ -846,6 +846,10 @@
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
+    "notifications": {
+      "addressCopied": "Address copied!",
+      "copiedToClipboard": "Copied to clipboard!"
+    },
     "timeout": {
       "expired": "Expired"
     },
@@ -867,10 +871,6 @@
         "message": "Please review the proxy account permissions and adjust the settings to proceed with this operation."
       },
       "title": "This operation cannot be completed"
-    },
-    "notifications": {
-      "copiedToClipboard": "Copied to clipboard!",
-      "addressCopied": "Address copied!"
     }
   },
   "governance": {
