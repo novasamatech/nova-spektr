@@ -10,12 +10,12 @@ describe('toAddress', () => {
 
   test('should convert address to Substrate', () => {
     const address = toAddress(TEST_ACCOUNTS[0]);
-    expect(address).toEqual('5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9');
+    expect(address).toEqual('1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ');
   });
 
   test('should convert address with default prefix', () => {
     const address = toAddress(TEST_ADDRESS);
-    expect(address).toEqual('5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9');
+    expect(address).toEqual('1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ');
   });
 
   test('should convert address to specific prefix', () => {
