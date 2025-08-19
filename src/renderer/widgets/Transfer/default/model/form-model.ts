@@ -1,9 +1,9 @@
 /* eslint-disable import-x/max-dependencies */
-import { BN, BN_ZERO } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Address, type Chain, type ChainId, type Transaction } from '@/shared/core';
+import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ADDRESS,
@@ -16,6 +16,7 @@ import {
   nullable,
   toAccountId,
   toAddress,
+  toPrecision,
   transferableAmountBN,
   validateAddress,
   withdrawableAmountBN,
@@ -96,12 +97,17 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
     amount: {
       defaultValue: '',
-      validator: () => (amount) => {
-        const bn = new BN(amount);
-        if (bn.isZero()) {
-          return { message: 'transfer.requiredAmountError' };
-        }
-      },
+      validator: () => ({
+        source: $asset,
+        fn: (amount, _, asset: Asset | null) => {
+          if (nullable(asset)) return;
+
+          const bn = toPrecision(amount, asset.precision);
+          if (bn.isZero()) {
+            return { message: 'transfer.requiredAmountError' };
+          }
+        },
+      }),
     },
   },
   validateOn: ['submit'],
