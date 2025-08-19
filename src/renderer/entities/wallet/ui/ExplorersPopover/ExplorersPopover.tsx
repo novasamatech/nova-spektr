@@ -1,10 +1,12 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
+import { toast } from 'sonner';
 
 import { type Address, type Explorer } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
+import { cnTw, getAccountExplorer, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { ContextMenu, ExplorerLink, HelpText, IconButton } from '@/shared/ui';
+import { Copy } from '@/shared/ui-kit';
 
 type Props = {
   button: ReactNode;
@@ -26,13 +28,16 @@ const ExplorersPopoverRoot = ({
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
   const formattedAddress = toAddress(address, { prefix: addressPrefix });
+  const onAddressCopied = () => toast.success(t('receive.addressCopied'));
 
   return (
     <ContextMenu button={button} className={contextClassName}>
       <ContextMenu.Group title={t('general.explorers.addressTitle')}>
         <div className={cnTw('flex items-center gap-x-2', className)}>
           <HelpText className="break-all text-text-secondary">{formattedAddress}</HelpText>
-          <IconButton className="shrink-0" name="copy" size={20} onClick={() => copyToClipboard(formattedAddress)} />
+          <Copy value={formattedAddress} onCopied={onAddressCopied}>
+            <IconButton className="shrink-0" name="copy" size={20} />
+          </Copy>
         </div>
       </ContextMenu.Group>
       {children}
