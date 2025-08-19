@@ -1,13 +1,18 @@
 /* eslint-disable import-x/max-dependencies */
 import { type ApiPromise } from '@polkadot/api';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { generatePath } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { Button, IconButton, Plate } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
+import { Paths } from '@/shared/routes';
+import { getAppUrl } from '@/shared/routes/utils';
+import { Button, Icon, IconButton, Plate } from '@/shared/ui';
+import { Copy, Modal } from '@/shared/ui-kit';
 import { referendumService } from '@/entities/governance';
+import { networkUtils } from '@/entities/network';
 import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { detailsAggregate } from '../../aggregates/details';
@@ -72,9 +77,33 @@ export const ReferendumDetailsModal = ({
     onClose();
   };
 
+  const referendumPath = generatePath(Paths.GOVERNANCE_REFERENDUM, {
+    chainId: networkUtils.chainNameToUrl(chain.name),
+    referendumId: referendum.referendumId,
+  });
+  const referendumLink = getAppUrl(referendumPath);
+  const onReferendumLinkCopied = () => {
+    toast.success(t('governance.referendums.linkCopied'));
+  };
+
+  const ShareButton = (
+    <Copy value={referendumLink.href} className="flex items-center gap-1" onCopied={onReferendumLinkCopied}>
+      <Icon
+        name="export"
+        size={16}
+        className="ml-2 text-icon-accent hover:text-primary-button-background-hover active:text-primary-button-background-active"
+      />
+      <span className="text-icon-accent hover:text-primary-button-background-hover active:text-primary-button-background-active">
+        {t('governance.referendums.linkShare')}
+      </span>
+    </Copy>
+  );
+
   return (
     <Modal isOpen size="xl" onToggle={closeModal}>
-      <Modal.Title close>{t('governance.referendums.referendumTitle', { index: referendum.referendumId })}</Modal.Title>
+      <Modal.Title close action={ShareButton}>
+        {t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
+      </Modal.Title>
       <Modal.Content>
         <section className="flex h-full w-modal-xl flex-col bg-main-app-background">
           <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
