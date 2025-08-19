@@ -66,13 +66,6 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
   const wanted = balancePreservation === 'keepAlive' ? amount.add(balance.ed) : amount;
   const afterWithdraw = withdrawable.sub(wanted);
 
-  console.log('balance', balance.free.toString());
-  console.log('withdrawable', withdrawable.toString());
-  console.log('ed', balance.ed.toString());
-  console.log('wanted', wanted.toString());
-  console.log('afterWithdraw', afterWithdraw.toString());
-  console.log('----');
-
   if (afterWithdraw.isNeg()) {
     const updated = copyBalance(balance, {
       free: balancePreservation === 'keepAlive' ? balance.ed : BN_ZERO,
