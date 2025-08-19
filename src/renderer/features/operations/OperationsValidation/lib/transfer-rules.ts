@@ -257,8 +257,8 @@ export const transferValidator = createTxValidator<{
     ({ route, deliveryFee, sourceChain, asset, getBalance }) => {
       if (deliveryFee.isZero()) return;
 
-      const initiator = accountService.findSignatory(route);
-      assert(initiator, 'Signatory not found');
+      const initiator = accountService.findInitiator(route);
+      assert(initiator, 'Initiator not found');
 
       const balance = getBalance(initiator.accountId, sourceChain.chainId, asset.assetId);
       assert(balance, `Balance for account ${initiator.accountId} not found`);
