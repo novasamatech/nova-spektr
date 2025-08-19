@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type Balance, type TransferableMode } from '@/shared/core';
 import { reservableAmountBN, totalAmountBN, transferableAmountBN } from '@/shared/lib/utils';
@@ -62,15 +62,17 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
 }
 
 function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
-  const withdrawable = transferableAmountBN(balance, balance.transferableMode, false);
+  const withdrawable = transferableAmountBN(balance, balance.transferableMode);
   const wanted = balancePreservation === 'keepAlive' ? amount.add(balance.ed) : amount;
   const afterWithdraw = withdrawable.sub(wanted);
 
-  const updated = copyBalance(balance, {
-    free: balance.free.sub(amount),
-  });
+  // new
 
   if (afterWithdraw.isNeg()) {
+    const updated = copyBalance(balance, {
+      free: BN.max(BN_ZERO, balance.free.sub(wanted)),
+    });
+
     return {
       success: false,
       balance: updated,
@@ -81,7 +83,9 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
 
   return {
     success: true,
-    balance: updated,
+    balance: copyBalance(balance, {
+      free: balance.free.sub(amount),
+    }),
     required: amount,
   };
 }

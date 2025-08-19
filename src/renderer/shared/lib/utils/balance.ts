@@ -200,11 +200,7 @@ export const lockedAmount = (balance: Balance): string => {
   return lockedAmountBN(balance).toString();
 };
 
-export const transferableAmountBN = (
-  balance: Balance | null,
-  transferableMode?: TransferableMode,
-  normalize = true,
-): BN => {
+export const transferableAmountBN = (balance: Balance | null, transferableMode?: TransferableMode): BN => {
   if (nullable(balance)) return BN_ZERO;
 
   switch (transferableMode ?? balance.transferableMode) {
@@ -212,12 +208,12 @@ export const transferableAmountBN = (
       const diff = BN.max(BN_ZERO, balance.frozen.sub(balance.reserved));
       const transferable = balance.free.sub(diff);
 
-      return normalize ? BN.max(BN_ZERO, transferable) : transferable;
+      return BN.max(BN_ZERO, transferable);
     }
     case 'legacy': {
       const transferable = balance.free.sub(balance.frozen);
 
-      return normalize ? BN.max(BN_ZERO, transferable) : transferable;
+      return BN.max(BN_ZERO, transferable);
     }
   }
 };
