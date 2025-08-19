@@ -27,7 +27,7 @@ const wrapLegacyTransactionTransformer = createTransformer<
 >();
 
 const unwrapTransactionTransformer = createTransformer<
-  // currect transaction
+  // current transaction
   AnyDecodedTransaction,
   // child transaction
   AnyTransaction,

@@ -35,7 +35,7 @@ type SubscribeFn<P, V> = (params: P, callback: (value: V) => void) => Unsubscrib
  *   })
  *   ```;
  *
- * @param fn - Creates subscription. Should return unsubsribe function.
+ * @param fn - Creates subscription. Should return unsubscribe function.
  *   function.
  * @param scope - Optional scope for testing
  */

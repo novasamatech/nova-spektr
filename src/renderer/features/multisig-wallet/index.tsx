@@ -144,7 +144,7 @@ accountSDK(multisigWalletFeature, {
         account: payer,
         action: 'multisig deposit',
         required: deposit,
-        // multisig pallet calculates balance using legacy logic, to transferableMode flag should be overrided
+        // multisig pallet calculates balance using legacy logic, to transferableMode flag should be overridden
         balance: balanceService.tryReserve(balance, deposit, 'legacy'),
         asset,
       };

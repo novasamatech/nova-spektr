@@ -314,7 +314,7 @@ sample({
   target: getAccountProxiesFx,
 });
 
-//todo check whether this works fine if there are erros in form
+//todo check whether this works fine if there are errors in form
 sample({
   clock: $step,
   source: {
