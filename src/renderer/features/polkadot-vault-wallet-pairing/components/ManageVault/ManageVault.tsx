@@ -4,6 +4,7 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
+import { toast } from 'sonner';
 
 import { useStatusContext } from '@/app/providers';
 import {
@@ -18,7 +19,7 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useAltOrCtrlKeyPressed, useToggle } from '@/shared/lib/hooks';
-import { IS_MAC, copyToClipboard, toAddress } from '@/shared/lib/utils';
+import { IS_MAC, toAddress } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import {
   Button,
@@ -32,7 +33,7 @@ import {
 } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Address } from '@/shared/ui-entities';
-import { Accordion, Box, Field, Input, Popover, ScrollArea } from '@/shared/ui-kit';
+import { Accordion, Box, Copy, Field, Input, Popover, ScrollArea } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
@@ -151,6 +152,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     toggleConstructorModal();
   };
 
+  const onAddressCopied = () => toast.success(t('receive.addressCopied'));
+
   const button = IS_MAC ? (
     <>
       <HelpText as="span" className="text-text-tertiary">
@@ -239,12 +242,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                     <HelpText className="text-text-secondary">
                       <Address variant="full" address={publicKeyAddress} />
                     </HelpText>
-                    <IconButton
-                      className="shrink-0"
-                      name="copy"
-                      size={20}
-                      onClick={() => copyToClipboard(publicKeyAddress)}
-                    />
+                    <Copy value={publicKeyAddress} onCopied={onAddressCopied}>
+                      <IconButton className="shrink-0" name="copy" size={20} />
+                    </Copy>
                   </Box>
                 </Box>
               </Popover.Content>
