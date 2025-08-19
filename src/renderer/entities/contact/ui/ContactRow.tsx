@@ -17,8 +17,8 @@ export const ContactRow = ({ contact, children }: PropsWithChildren<Props>) => {
     <Plate className="flex p-0">
       <div className="flex gap-x-1 p-3">
         <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
-        <Copy value={contact.address} className="self-end" notification={t('general.notifications.addressCopied')}>
-          <IconButton className="shrink-0 text-icon-default" name="copy" />
+        <Copy value={contact.address} notification={t('general.notifications.addressCopied')}>
+          <IconButton className="shrink-0 self-end text-icon-default" name="copy" />
         </Copy>
       </div>
       <div className="ml-auto flex items-center gap-x-3 p-3">{children}</div>
