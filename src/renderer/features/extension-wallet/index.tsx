@@ -25,7 +25,7 @@ accountSDK(extensionWalletFeature, {
   availableOnChain: ({ account, chain }) => {
     if (polkadotExtensionService.isExtensionAccount(account)) {
       if (accountService.isChainAccount(account)) {
-        return account.chainId === chain.chainId;
+        return accountService.isChainMatch(account, chain);
       } else {
         return true;
       }

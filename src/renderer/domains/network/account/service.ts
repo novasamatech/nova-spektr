@@ -83,6 +83,10 @@ function isCryptoMatch(account: Pick<AnyAccount, 'cryptoType'>, chain: Chain): b
   return supportedCryptoTypes.includes(account.cryptoType);
 }
 
+function isChainMatch(account: ChainAccount, chain: Chain) {
+  return account.chainId === chain.chainId;
+}
+
 function isChainAccount(account: Pick<AnyAccount, 'type'>): account is ChainAccount {
   return account.type === 'chain';
 }
@@ -403,6 +407,7 @@ export const accountService = {
   isUniversalAccount,
   isAccountAvailableOnChain,
   isCryptoMatch,
+  isChainMatch,
 
   canSignMultipleTransactions,
 

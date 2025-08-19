@@ -18,7 +18,7 @@ accountSDK(walletConnectWalletFeature, {
     return accountUtils.isWcAccount(account);
   },
   availableOnChain({ account, chain }) {
-    return accountUtils.isWcAccount(account) && account.chainId === chain.chainId;
+    return accountUtils.isWcAccount(account) && accountService.isChainMatch(account, chain);
   },
   canSignMultipleTransactions() {
     return false;

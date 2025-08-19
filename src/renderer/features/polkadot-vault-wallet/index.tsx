@@ -6,6 +6,7 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId, nullable } from '@/shared/lib/utils';
 import { WalletAccountIcon } from '@/shared/ui-entities';
+import { accountService } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -35,7 +36,7 @@ accountSDK(polkadotVaultWalletFeature, {
 
     if (accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)) {
       return (
-        account.chainId === chain.chainId ||
+        accountService.isChainMatch(account, chain) ||
         // parentId check exists because of consensus mechanism in vault - all keys related to relaychain should also work in parachains
         account.chainId === chain.parentId
       );

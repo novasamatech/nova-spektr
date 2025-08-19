@@ -32,7 +32,7 @@ accountSDK(proxiedWalletFeature, {
     return false;
   },
   availableOnChain({ account, chain }) {
-    return accountUtils.isProxiedAccount(account) && account.chainId === chain.chainId;
+    return accountUtils.isProxiedAccount(account) && accountService.isChainMatch(account, chain);
   },
   canSignMultipleTransactions() {
     return false;
