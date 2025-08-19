@@ -7,7 +7,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceService } from './service';
 import { type BalanceUpdateResult } from './types';
 
-const TEST_ED = new BN(10);
+const TEST_ED = new BN(1);
 
 describe('balanceService', () => {
   describe('update balance', () => {
@@ -26,10 +26,10 @@ describe('balanceService', () => {
     });
 
     it('should withdraw failing to cross ed', () => {
-      const initial = createBalance({ free: 11, reserved: 0, frozen: 0 });
+      const initial = createBalance({ free: 10, reserved: 0, frozen: 0 });
       const actual = balanceService.tryWithdraw(initial, BN_TEN, 'keepAlive');
 
-      expectToImbalanced(actual, 9, { free: 0, reserved: 0, frozen: 0 });
+      expectToImbalanced(actual, 1, { free: 1, reserved: 0, frozen: 0 });
     });
 
     it('should have correct imbalance after withdraw with allowDeath', () => {
@@ -40,12 +40,36 @@ describe('balanceService', () => {
     });
 
     it('should correctly stack imbalances with keepAlive', () => {
-      const initial = createBalance({ free: 2, reserved: 0, frozen: 0, ed: 1 });
-      const first = balanceService.tryWithdraw(initial, new BN(3), 'keepAlive'); // imbalance = 2 DOT, balance = -1 DOT
-      const second = balanceService.tryWithdraw(first.balance, new BN(3), 'keepAlive'); // imbalance = abs(-1 - (2+1)) = 4 DOT, balance = -3 DOT
+      const initial = createBalance({ free: 2, reserved: 0, frozen: 0 });
 
-      expectToImbalanced(first, 2);
-      expectToImbalanced(second, 4);
+      const first = balanceService.tryWithdraw(initial, new BN(3), 'keepAlive');
+      expectToImbalanced(first, 2, { free: 1, reserved: 0, frozen: 0 });
+
+      const second = balanceService.tryWithdraw(first.balance, new BN(2), 'keepAlive');
+      expectToImbalanced(second, 2, { free: 1, reserved: 0, frozen: 0 });
+    });
+
+    it('should correctly stack imbalances with keepAlive and zero balance', () => {
+      const initial = createBalance({ free: 0, reserved: 0, frozen: 0 });
+
+      const first = balanceService.tryWithdraw(initial, new BN(3), 'keepAlive');
+      expectToImbalanced(first, 4, { free: 1, reserved: 0, frozen: 0 });
+
+      const second = balanceService.tryWithdraw(first.balance, new BN(2), 'keepAlive');
+      expectToImbalanced(second, 2, { free: 1, reserved: 0, frozen: 0 });
+    });
+
+    it('should correctly stack imbalances with keepAlive and allowDeath', () => {
+      const initial = createBalance({ free: 15, reserved: 0, frozen: 0, ed: 10 });
+
+      const first = balanceService.tryWithdraw(initial, new BN(15), 'keepAlive');
+      expectToImbalanced(first, 10, { free: 10, reserved: 0, frozen: 0 });
+
+      const second = balanceService.tryWithdraw(first.balance, new BN(15), 'allowDeath');
+      expectToImbalanced(second, 5, { free: 0, reserved: 0, frozen: 0 });
+
+      const third = balanceService.tryWithdraw(second.balance, new BN(10), 'keepAlive');
+      expectToImbalanced(third, 20, { free: 10, reserved: 0, frozen: 0 });
     });
 
     it('should do simple reserve', () => {
@@ -56,7 +80,7 @@ describe('balanceService', () => {
     });
 
     it('should fail reserve', () => {
-      const initial = createBalance({ free: 20, reserved: 0, frozen: 0 });
+      const initial = createBalance({ free: 20, reserved: 0, frozen: 0, ed: 10 });
       const actual = balanceService.tryReserve(initial, new BN(15));
 
       expectToImbalanced(actual, 5);
@@ -77,17 +101,17 @@ describe('balanceService', () => {
     });
 
     it('should combine multiple withdraws', () => {
-      const initial = createBalance({ free: 20, reserved: 0, frozen: 0 });
+      const initial = createBalance({ free: 20, reserved: 0, frozen: 0, ed: 10 });
 
-      const fee = balanceService.tryWithdraw(initial, new BN(5), 'keepAlive'); // New free is 15
+      const fee = balanceService.tryWithdraw(initial, new BN(5), 'keepAlive');
       expectBalanceToUpdated(fee, { free: 15, reserved: 0, frozen: 0 });
 
-      const transferAmount = balanceService.tryWithdraw(fee.balance, new BN(10), 'keepAlive'); // We are 5 tokens short here.
-      expectToImbalanced(transferAmount, 5, { free: 0, reserved: 0, frozen: 0 });
+      const transferAmount = balanceService.tryWithdraw(fee.balance, new BN(10), 'keepAlive');
+      expectToImbalanced(transferAmount, 5, { free: 10, reserved: 0, frozen: 0 });
 
       const deliveryFee = balanceService.tryWithdraw(transferAmount.balance, new BN(15), 'allowDeath');
 
-      expectToImbalanced(deliveryFee, 15);
+      expectToImbalanced(deliveryFee, 5, { free: 0, reserved: 0, frozen: 0 });
     });
   });
 });
