@@ -1,4 +1,4 @@
-import { type PropsWithChildren, memo } from 'react';
+import { type MouseEvent, type PropsWithChildren, memo } from 'react';
 
 import { cnTw, copyToClipboard } from '@/shared/lib/utils';
 
@@ -10,7 +10,8 @@ type Props = {
 };
 
 export const Copy = memo(({ value, onCopied, children, className, testId = 'Copy' }: PropsWithChildren<Props>) => {
-  const onCopyToClipboard = async () => {
+  const onCopyToClipboard = async (e: MouseEvent) => {
+    e.stopPropagation();
     await copyToClipboard(value);
     onCopied?.();
   };
