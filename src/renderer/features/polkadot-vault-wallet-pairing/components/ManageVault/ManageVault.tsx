@@ -4,7 +4,6 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
-import { toast } from 'sonner';
 
 import { useStatusContext } from '@/app/providers';
 import {
@@ -152,8 +151,6 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     toggleConstructorModal();
   };
 
-  const onAddressCopied = () => toast.success(t('receive.addressCopied'));
-
   const button = IS_MAC ? (
     <>
       <HelpText as="span" className="text-text-tertiary">
@@ -242,7 +239,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                     <HelpText className="text-text-secondary">
                       <Address variant="full" address={publicKeyAddress} />
                     </HelpText>
-                    <Copy value={publicKeyAddress} onCopied={onAddressCopied}>
+                    <Copy value={publicKeyAddress} notification={t('general.notifications.addressCopied')}>
                       <IconButton className="shrink-0" name="copy" size={20} />
                     </Copy>
                   </Box>

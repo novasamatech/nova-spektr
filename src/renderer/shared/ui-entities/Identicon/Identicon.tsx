@@ -1,6 +1,5 @@
 import { type IconTheme as IdenticonIconTheme } from '@polkadot/react-identicon/types';
 import { Suspense, lazy, memo } from 'react';
-import { toast } from 'sonner';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isEthereumAccountId, validateAddress } from '@/shared/lib/utils';
@@ -28,7 +27,6 @@ export const Identicon = memo(
     const { preferStaticContent } = useTheme();
     const valid = validateAddress(value);
     const canCopy = typeof canCopyProp === 'undefined' ? !preferStaticContent : canCopyProp;
-    const onAddressCopied = () => toast.success(t('receive.addressCopied'));
 
     const defaultTheme: IdenticonIconTheme = value && valid && isEthereumAccountId(value) ? 'ethereum' : 'polkadot';
 
@@ -61,7 +59,7 @@ export const Identicon = memo(
     }
 
     return (
-      <Copy value={value} onCopied={onAddressCopied}>
+      <Copy value={value} notification={t('general.notifications.addressCopied')}>
         <button
           type="button"
           className={cnTw(

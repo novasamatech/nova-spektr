@@ -1,6 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
 import {
   type Chain,
@@ -166,8 +165,6 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const isEthereum = isEthereumAccountId(address);
   const theme: IdenticonIconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
-  const onAddressCopied = () => toast.success(t('receive.addressCopied'));
-
   return (
     <>
       <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
@@ -200,7 +197,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
                             <HelpText className="text-text-secondary">
                               <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
                             </HelpText>
-                            <Copy value={wallet.rootAccountId} onCopied={onAddressCopied}>
+                            <Copy value={wallet.rootAccountId} notification={t('general.notifications.addressCopied')}>
                               <IconButton className="shrink-0 text-icon-default" name="copy" />
                             </Copy>
                           </Box>

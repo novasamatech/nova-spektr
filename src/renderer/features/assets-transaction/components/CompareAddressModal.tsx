@@ -1,6 +1,5 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
-import { toast } from 'sonner';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -9,7 +8,6 @@ import { Alert, Button, FootnoteText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Checkbox, Copy, Label, Modal } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
-import { type StatusType } from '../lib/types';
 import { assetTransactionUtils } from '../lib/utils';
 import { receiveModel } from '../model/receive-model';
 
@@ -37,10 +35,6 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
     receiveModel.saveLegacyFormatViewed(!isChecked);
   };
 
-  const onAddressCopied = (type: StatusType) => {
-    toast.success(t(assetTransactionUtils.getStatusTitle(type)));
-  };
-
   return (
     <Modal size="md" isOpen={isOpen} onToggle={closeModal}>
       <Modal.Title close>{t(title)}</Modal.Title>
@@ -60,7 +54,7 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
                 <Address showIcon={false} variant="truncate" address={address} />
               </FootnoteText>
             </Box>
-            <Copy value={address} onCopied={() => onAddressCopied('unified')}>
+            <Copy value={address} notification={t(assetTransactionUtils.getStatusTitle('unified'))}>
               <Button variant="text" size="sm">
                 {t('receive.copy')}
               </Button>
@@ -74,7 +68,7 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
                 <Address showIcon={false} variant="truncate" address={legacyAddress} />
               </FootnoteText>
             </Box>
-            <Copy value={address} onCopied={() => onAddressCopied('legacy')}>
+            <Copy value={address} notification={t(assetTransactionUtils.getStatusTitle('legacy'))}>
               <Button variant="text" size="sm">
                 {t('receive.copy')}
               </Button>

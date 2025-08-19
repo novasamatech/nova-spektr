@@ -1,5 +1,4 @@
 import { type PropsWithChildren } from 'react';
-import { toast } from 'sonner';
 
 import { type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -14,13 +13,11 @@ type Props = {
 export const ContactRow = ({ contact, children }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
 
-  const onAddressCopied = () => toast.success(t('receive.addressCopied'));
-
   return (
     <Plate className="flex p-0">
       <div className="flex gap-x-1 p-3">
         <Address address={contact.address} showIcon iconSize={20} variant="truncate" title={contact.name} />
-        <Copy value={contact.address} className="self-end" onCopied={onAddressCopied}>
+        <Copy value={contact.address} className="self-end" notification={t('general.notifications.addressCopied')}>
           <IconButton className="shrink-0 text-icon-default" name="copy" />
         </Copy>
       </div>
