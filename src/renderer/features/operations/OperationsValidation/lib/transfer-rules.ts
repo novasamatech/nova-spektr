@@ -212,25 +212,6 @@ export const transferValidator = createTxValidator<{
   deliveryFee: BN;
 }>({
   additionalBalanceRules: [
-    // amount
-    // withdraws from initiator in source asset (can be any asset)
-    ({ route, amount, sourceChain, sourceAsset, getBalance }) => {
-      const initiator = accountService.findInitiator(route);
-      assert(initiator, 'Initiator not found');
-
-      const desiredAmount = toPrecision(amount, sourceAsset.precision);
-      if (desiredAmount.isZero()) return;
-
-      const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
-      assert(balance, `Balance for account ${initiator.accountId} not found`);
-
-      return {
-        account: initiator,
-        balance: balanceService.tryWithdraw(balance, desiredAmount, 'keepAlive'),
-        asset: sourceAsset,
-        action: 'sending amount',
-      };
-    },
     // cross-chain fee
     // withdraws from initiator in source asset (can be any asset)
     ({ route, xcmFee, destinationChain, sourceChain, sourceAsset, getBalance }) => {
@@ -267,6 +248,25 @@ export const transferValidator = createTxValidator<{
         balance: balanceService.tryWithdraw(balance, deliveryFee, 'allowDeath'),
         asset: asset,
         action: 'delivery fee',
+      };
+    },
+    // amount
+    // withdraws from initiator in source asset (can be any asset)
+    ({ route, amount, sourceChain, sourceAsset, getBalance }) => {
+      const initiator = accountService.findInitiator(route);
+      assert(initiator, 'Initiator not found');
+
+      const desiredAmount = toPrecision(amount, sourceAsset.precision);
+      if (desiredAmount.isZero()) return;
+
+      const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
+      assert(balance, `Balance for account ${initiator.accountId} not found`);
+
+      return {
+        account: initiator,
+        balance: balanceService.tryWithdraw(balance, desiredAmount, 'keepAlive'),
+        asset: sourceAsset,
+        action: 'sending amount',
       };
     },
   ],

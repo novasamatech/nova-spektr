@@ -11,14 +11,14 @@ const TEST_ED = new BN(10);
 
 describe('balanceService', () => {
   describe('update balance', () => {
-    it('should withdraw without crossing ed', () => {
+    it('should withdraw without crossing ed (keepAlive)', () => {
       const initial = createBalance({ free: 100, reserved: 0, frozen: 0 });
       const actual = balanceService.tryWithdraw(initial, BN_TEN, 'keepAlive');
 
       expectBalanceToUpdated(actual, { free: 90, reserved: 0, frozen: 0 });
     });
 
-    it('should withdraw crossing ed', () => {
+    it('should withdraw crossing ed (allowDeath)', () => {
       const initial = createBalance({ free: 10, reserved: 0, frozen: 0 });
       const actual = balanceService.tryWithdraw(initial, BN_TEN, 'allowDeath');
 
@@ -29,7 +29,7 @@ describe('balanceService', () => {
       const initial = createBalance({ free: 11, reserved: 0, frozen: 0 });
       const actual = balanceService.tryWithdraw(initial, BN_TEN, 'keepAlive');
 
-      expectToImbalanced(actual, 9);
+      expectToImbalanced(actual, 9, { free: 0, reserved: 0, frozen: 0 });
     });
 
     it('should have correct imbalance after withdraw with allowDeath', () => {
@@ -39,8 +39,7 @@ describe('balanceService', () => {
       expectToImbalanced(actual, 10);
     });
 
-    // TODO  fix
-    it.skip('should correctly stack imbalances with keepAlive', () => {
+    it('should correctly stack imbalances with keepAlive', () => {
       const initial = createBalance({ free: 2, reserved: 0, frozen: 0, ed: 1 });
       const first = balanceService.tryWithdraw(initial, new BN(3), 'keepAlive'); // imbalance = 2 DOT, balance = -1 DOT
       const second = balanceService.tryWithdraw(first.balance, new BN(3), 'keepAlive'); // imbalance = abs(-1 - (2+1)) = 4 DOT, balance = -3 DOT
@@ -79,11 +78,16 @@ describe('balanceService', () => {
 
     it('should combine multiple withdraws', () => {
       const initial = createBalance({ free: 20, reserved: 0, frozen: 0 });
+
       const fee = balanceService.tryWithdraw(initial, new BN(5), 'keepAlive'); // New free is 15
-      const transferAmount = balanceService.tryWithdraw(fee.balance, new BN(20), 'keepAlive'); // We are 15 tokens short here. Fixed imbalance results in ed (10) in free
+      expectBalanceToUpdated(fee, { free: 15, reserved: 0, frozen: 0 });
+
+      const transferAmount = balanceService.tryWithdraw(fee.balance, new BN(10), 'keepAlive'); // We are 5 tokens short here.
+      expectToImbalanced(transferAmount, 5, { free: 0, reserved: 0, frozen: 0 });
+
       const deliveryFee = balanceService.tryWithdraw(transferAmount.balance, new BN(15), 'allowDeath');
 
-      expectToImbalanced(deliveryFee, 20);
+      expectToImbalanced(deliveryFee, 15);
     });
   });
 });
@@ -109,18 +113,25 @@ const createBalance = ({ free, reserved, frozen, ed, transferableMode }: Balance
   locked: [],
 });
 
-const expectBalanceToUpdated = (actual: BalanceUpdateResult, expected: BalanceBoilerplate) => {
-  expect(actual.success).toBeTruthy();
-  if (actual.success) {
-    expect(actual.balance.free?.toNumber()).toEqual(expected.free);
-    expect(actual.balance.reserved?.toNumber()).toEqual(expected.reserved);
-    expect(actual.balance.frozen?.toNumber()).toEqual(expected.frozen);
-  }
+const expectBalance = (actual: BalanceUpdateResult, expected: BalanceBoilerplate) => {
+  expect(actual.balance.free?.toNumber()).toEqual(expected.free);
+  expect(actual.balance.reserved?.toNumber()).toEqual(expected.reserved);
+  expect(actual.balance.frozen?.toNumber()).toEqual(expected.frozen);
 };
 
-const expectToImbalanced = (actual: BalanceUpdateResult, imbalance: number) => {
+const expectBalanceToUpdated = (actual: BalanceUpdateResult, expected: BalanceBoilerplate) => {
+  expect(actual.success).toBeTruthy();
+
+  expectBalance(actual, expected);
+};
+
+const expectToImbalanced = (actual: BalanceUpdateResult, imbalance: number, expected?: BalanceBoilerplate) => {
   expect(actual.success).toBeFalsy();
   if (actual.success === false) {
     expect(actual.imbalance.toNumber()).toBe(imbalance);
+  }
+
+  if (expected) {
+    expectBalance(actual, expected);
   }
 };
