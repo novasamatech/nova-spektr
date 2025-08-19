@@ -2,7 +2,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { generatePath } from 'react-router-dom';
-import { toast } from 'sonner';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -82,20 +81,13 @@ export const ReferendumDetailsModal = ({
     referendumId: referendum.referendumId,
   });
   const referendumLink = getAppUrl(referendumPath);
-  const onReferendumLinkCopied = () => {
-    toast.success(t('governance.referendums.linkCopied'));
-  };
 
   const ShareButton = (
-    <Copy value={referendumLink.href} className="flex items-center gap-1" onCopied={onReferendumLinkCopied}>
-      <Icon
-        name="export"
-        size={16}
-        className="ml-2 text-icon-accent hover:text-primary-button-background-hover active:text-primary-button-background-active"
-      />
-      <span className="text-icon-accent hover:text-primary-button-background-hover active:text-primary-button-background-active">
-        {t('governance.referendums.linkShare')}
-      </span>
+    <Copy value={referendumLink.href} notification={t('governance.referendums.linkCopied')}>
+      <div className="flex items-center gap-1 text-primary-button-background-default hover:text-primary-button-background-hover active:text-primary-button-background-active disabled:text-primary-button-background-inactive">
+        <Icon className="shrink-0 text-inherit" name="export" size={16} />
+        <span className="text-inherit">{t('governance.referendums.linkShare')}</span>
+      </div>
     </Copy>
   );
 

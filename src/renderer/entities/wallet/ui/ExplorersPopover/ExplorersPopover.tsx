@@ -1,5 +1,4 @@
 import { type PropsWithChildren, type ReactNode } from 'react';
-import { toast } from 'sonner';
 
 import { type Address, type Explorer } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -28,14 +27,13 @@ const ExplorersPopoverRoot = ({
 }: PropsWithChildren<Props>) => {
   const { t } = useI18n();
   const formattedAddress = toAddress(address, { prefix: addressPrefix });
-  const onAddressCopied = () => toast.success(t('receive.addressCopied'));
 
   return (
     <ContextMenu button={button} className={contextClassName}>
       <ContextMenu.Group title={t('general.explorers.addressTitle')}>
         <div className={cnTw('flex items-center gap-x-2', className)}>
           <HelpText className="break-all text-text-secondary">{formattedAddress}</HelpText>
-          <Copy value={formattedAddress} onCopied={onAddressCopied}>
+          <Copy value={formattedAddress} notification={t('general.notifications.addressCopied')}>
             <IconButton className="shrink-0" name="copy" size={20} />
           </Copy>
         </div>

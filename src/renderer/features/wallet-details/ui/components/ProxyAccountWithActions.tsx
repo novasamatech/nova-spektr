@@ -1,5 +1,3 @@
-import { toast } from 'sonner';
-
 import { type Chain, type ProxyAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
@@ -20,8 +18,6 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemo
 
   const proxyAddress = toAddress(account.accountId, { prefix: chain.addressPrefix });
   const proxiedAddress = toAddress(account.proxiedAccountId, { prefix: chain.addressPrefix });
-
-  const onAddressCopied = () => toast.success(t('receive.addressCopied'));
 
   return (
     <ProxyAccountComponent
@@ -58,7 +54,7 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemo
                         <HelpText className="text-text-secondary">
                           <Address address={proxyAddress} variant="full" />
                         </HelpText>
-                        <Copy value={proxyAddress} onCopied={onAddressCopied}>
+                        <Copy value={proxyAddress} notification={t('general.notifications.addressCopied')}>
                           <IconButton className="shrink-0" name="copy" size={20} />
                         </Copy>
                       </Box>
@@ -72,7 +68,7 @@ export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemo
                         <HelpText className="text-text-secondary">
                           <Address address={proxiedAddress} variant="full" />
                         </HelpText>
-                        <Copy value={proxiedAddress} onCopied={onAddressCopied}>
+                        <Copy value={proxiedAddress} notification={t('general.notifications.addressCopied')}>
                           <IconButton className="shrink-0" name="copy" size={20} />
                         </Copy>
                       </Box>

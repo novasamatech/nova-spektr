@@ -1,5 +1,4 @@
 import { useUnit } from 'effector-react';
-import { toast } from 'sonner';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -35,10 +34,6 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
   //eslint-disable-next-line i18next/no-literal-string
   const qrCodePayload = `substrate:${address}:${selectedAccount.accountId}`;
 
-  const onAddressCopied = () => {
-    toast.success(t(assetTransactionUtils.getStatusTitle(isUnifiedAddress ? 'unified' : 'regular')));
-  };
-
   return (
     <Box padding={[4, 5, 6, 5]} horizontalAlign="center" gap={2}>
       <div className="w-full justify-items-center bg-main-app-background py-5">
@@ -52,7 +47,10 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
           title={selectedAccount.name}
           hideExplorers
         />
-        <Copy value={address} onCopied={onAddressCopied}>
+        <Copy
+          value={address}
+          notification={t(assetTransactionUtils.getStatusTitle(isUnifiedAddress ? 'unified' : 'regular'))}
+        >
           <Button variant="text" size="sm">
             {t('receive.copy')}
           </Button>
@@ -82,7 +80,7 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
         <>
           <div className="mb-3 flex w-full items-center justify-between bg-main-app-background px-5 py-3">
             <FootnoteText className="text-text-secondary">{t('receive.exchangeAccount')}</FootnoteText>
-            <Copy value={address} onCopied={onAddressCopied}>
+            <Copy value={address} notification={t(assetTransactionUtils.getStatusTitle('unified'))}>
               <Button variant="text" size="sm">
                 {t('receive.copyLegacyFormat')}
               </Button>

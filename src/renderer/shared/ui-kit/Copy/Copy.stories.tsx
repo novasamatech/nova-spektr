@@ -32,14 +32,10 @@ export const WithOnCopiedCallback: Story = {
     value: '5FYxhVJjGsUxutYmaaWtm76Jhb4FNsu4yvC4prm5yDmLPozN',
   },
   render: args => {
-    const onCopied = () => {
-      alert('Copied to clipboard: ' + args.value);
-    };
-
     return (
       <div className="flex items-center gap-2">
         <span>5FYxhVJjGsUxutYmaaWtm76Jhb4FNsu4yvC4prm5yDmLPozN</span>
-        <Copy {...args} onCopied={onCopied}>
+        <Copy {...args}>
           <span className="text-blue-600 underline">Copy Address</span>
         </Copy>
       </div>
