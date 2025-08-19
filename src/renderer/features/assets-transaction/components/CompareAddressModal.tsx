@@ -60,12 +60,10 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
                 <Address showIcon={false} variant="truncate" address={address} />
               </FootnoteText>
             </Box>
-            <Copy
-              value={address}
-              className="px-2 py-1 text-icon-accent hover:text-primary-button-background-hover active:text-primary-button-background-active"
-              onCopied={() => onAddressCopied('unified')}
-            >
-              {t('receive.copy')}
+            <Copy value={address} onCopied={() => onAddressCopied('unified')}>
+              <Button variant="text" size="sm">
+                {t('receive.copy')}
+              </Button>
             </Copy>
           </div>
 
@@ -76,12 +74,10 @@ export const CompareAddressModal = ({ account, chain, asset, children }: Props) 
                 <Address showIcon={false} variant="truncate" address={legacyAddress} />
               </FootnoteText>
             </Box>
-            <Copy
-              value={address}
-              className="px-2 py-1 text-icon-accent hover:text-primary-button-background-hover active:text-primary-button-background-active"
-              onCopied={() => onAddressCopied('legacy')}
-            >
-              {t('receive.copy')}
+            <Copy value={address} onCopied={() => onAddressCopied('legacy')}>
+              <Button variant="text" size="sm">
+                {t('receive.copy')}
+              </Button>
             </Copy>
           </div>
 
