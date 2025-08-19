@@ -80,7 +80,7 @@ const mergeEvents = (oldEvents: MultisigEvent[], events: MultisigEvent[]) =>
   merge({
     a: oldEvents,
     b: events,
-    mergeBy: a => [a.blockCreated, a.indexCreated, a.accountId, a.status],
+    mergeBy: a => a.id,
     filter: (a, b) => !isEqual(a, b),
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
@@ -94,7 +94,7 @@ const mergeMultisigOperations = (a: MultisigOperation[], b: MultisigOperation[])
         return false;
       }
 
-      // Update should be skipped if the new record is in a pending state while the existing record is already completed.
+      // Update should be skipped if the new record is in a "pending" state while the existing record is already completed.
       // This can happen after operation approval, when the subquery indexer hasn't received that update yet.
       if (b.status === 'pending' && a.status !== 'pending') {
         return false;
@@ -102,8 +102,16 @@ const mergeMultisigOperations = (a: MultisigOperation[], b: MultisigOperation[])
 
       return true;
     },
-    mergeBy: a => [a.callHash, a.blockCreated, a.indexCreated, a.chainId, a.accountId],
+    mergeBy: a => a.id,
     sort: (a, b) => a.blockCreated - b.blockCreated,
+    merge: (a, b) => ({
+      ...b,
+      callData: b.callData ?? a.callData,
+      callHash: b.callHash ?? a.callHash,
+      transaction: b.transaction ?? a.transaction,
+      section: b.section ?? a.section,
+      method: b.method ?? a.method,
+    }),
   });
 };
 

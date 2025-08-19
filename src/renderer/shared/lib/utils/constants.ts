@@ -16,7 +16,7 @@ export const ADDRESS_ALLOWED_ENCODED_LENGTHS = [35, 36, 37, 38];
 
 export const DEFAULT_QR_LIFETIME = 64;
 
-export const SS58_DEFAULT_PREFIX = 42;
+export const SS58_DEFAULT_PREFIX = 0;
 export const SS58_PUBLIC_KEY_PREFIX = 1;
 
 export const TEST_ACCOUNTS: [AccountId, AccountId, AccountId, AccountId] = [
