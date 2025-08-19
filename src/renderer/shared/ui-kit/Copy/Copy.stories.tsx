@@ -1,6 +1,6 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 
-import { Icon } from '@/shared/ui';
+import { Button } from '@/shared/ui';
 
 import { Copy } from './Copy';
 
@@ -15,29 +15,21 @@ type Story = StoryObj<typeof Copy>;
 
 export const Default: Story = {
   args: {
-    value: 'Clipboard contents Default',
+    value: 'Hello, world!',
   },
   render: args => (
-    <Copy {...args}>
-      <Icon name="copy" size={16} />
-    </Copy>
-  ),
-};
-
-export const WithText: Story = {
-  args: {
-    value: 'Clipboard contents WithText',
-  },
-  render: args => (
-    <Copy {...args}>
-      <span className="text-blue-600 underline">Copy Me</span>
-    </Copy>
+    <div className="flex items-center gap-2">
+      <span>Hello, world!</span>
+      <Copy {...args}>
+        <Button size="sm">Copy Text</Button>
+      </Copy>
+    </div>
   ),
 };
 
 export const WithOnCopiedCallback: Story = {
   args: {
-    value: 'Clipboard contents WithOnCopiedCallback',
+    value: '5FYxhVJjGsUxutYmaaWtm76Jhb4FNsu4yvC4prm5yDmLPozN',
   },
   render: args => {
     const onCopied = () => {
@@ -45,11 +37,12 @@ export const WithOnCopiedCallback: Story = {
     };
 
     return (
-      <Copy {...args} onCopied={onCopied}>
-        <span className="flex items-center gap-1">
-          Copy Me <Icon name="copy" size={16} />
-        </span>
-      </Copy>
+      <div className="flex items-center gap-2">
+        <span>5FYxhVJjGsUxutYmaaWtm76Jhb4FNsu4yvC4prm5yDmLPozN</span>
+        <Copy {...args} onCopied={onCopied}>
+          <span className="text-blue-600 underline">Copy Address</span>
+        </Copy>
+      </div>
     );
   },
 };
