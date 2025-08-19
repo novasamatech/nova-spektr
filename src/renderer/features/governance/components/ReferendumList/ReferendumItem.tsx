@@ -1,13 +1,18 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
+import { generatePath } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, HeadlineText } from '@/shared/ui';
-import { Box, Skeleton } from '@/shared/ui-kit';
+import { Paths } from '@/shared/routes';
+import { getAppUrl } from '@/shared/routes/utils';
+import { FootnoteText, HeadlineText, Icon } from '@/shared/ui';
+import { Box, Copy, Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
+import { networkUtils } from '@/entities/network';
 import { listAggregate } from '../../aggregates/list';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { listService } from '../../lib/listService';
@@ -57,6 +62,15 @@ export const ReferendumItem = memo(({ api, chain, asset, referendum, isTitlesLoa
       t('governance.referendums.referendumTitle', { index: referendumId })
     ));
 
+  const referendumPath = generatePath(Paths.GOVERNANCE_REFERENDUM, {
+    chainId: networkUtils.chainNameToUrl(chain.name),
+    referendumId,
+  });
+  const referendumLink = getAppUrl(referendumPath);
+  const onReferendumLinkCopied = () => {
+    toast.success(t('governance.referendums.linkCopied'));
+  };
+
   return (
     <ListItem onClick={() => onSelect(referendum)}>
       <div className="flex w-full items-center gap-x-2">
@@ -71,6 +85,9 @@ export const ReferendumItem = memo(({ api, chain, asset, referendum, isTitlesLoa
             </FootnoteText>
           )}
           {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
+          <Copy value={referendumLink.href} onCopied={onReferendumLinkCopied}>
+            <Icon name="export" size={16} className="ml-2 hover:text-icon-hover focus:text-icon-hover" />
+          </Copy>
         </div>
       </div>
 
