@@ -214,8 +214,7 @@ export const transferValidator = createTxValidator<{
   additionalBalanceRules: [
     // amount
     // withdraws from initiator in source asset (can be any asset)
-    ({ route, amount, destinationChain, sourceChain, sourceAsset, getBalance }) => {
-      const isXcm = destinationChain.chainId !== sourceChain.chainId;
+    ({ route, amount, sourceChain, sourceAsset, getBalance }) => {
       const initiator = accountService.findInitiator(route);
       assert(initiator, 'Initiator not found');
 
@@ -227,7 +226,7 @@ export const transferValidator = createTxValidator<{
 
       return {
         account: initiator,
-        balance: balanceService.tryWithdraw(balance, desiredAmount, isXcm ? 'keepAlive' : 'allowDeath'),
+        balance: balanceService.tryWithdraw(balance, desiredAmount, 'keepAlive'),
         asset: sourceAsset,
         action: 'sending amount',
       };
