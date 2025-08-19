@@ -1,9 +1,11 @@
 import { type IconTheme as IdenticonIconTheme } from '@polkadot/react-identicon/types';
-import { Suspense, type SyntheticEvent, lazy, memo } from 'react';
+import { Suspense, lazy, memo } from 'react';
+import { toast } from 'sonner';
 
-import { cnTw, copyToClipboard, isEthereumAccountId, validateAddress } from '@/shared/lib/utils';
+import { useI18n } from '@/shared/i18n';
+import { cnTw, isEthereumAccountId, validateAddress } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
-import { useTheme } from '@/shared/ui-kit';
+import { Copy, useTheme } from '@/shared/ui-kit';
 
 export type { IdenticonIconTheme };
 
@@ -22,16 +24,13 @@ const PolkadotIdenticon = lazy(() =>
 
 export const Identicon = memo(
   ({ theme, value, size = 24, background = true, canCopy: canCopyProp, testId = 'Identicon' }: Props) => {
+    const { t } = useI18n();
     const { preferStaticContent } = useTheme();
     const valid = validateAddress(value);
     const canCopy = typeof canCopyProp === 'undefined' ? !preferStaticContent : canCopyProp;
+    const onAddressCopied = () => toast.success(t('receive.addressCopied'));
 
     const defaultTheme: IdenticonIconTheme = value && valid && isEthereumAccountId(value) ? 'ethereum' : 'polkadot';
-
-    const onCopyToClipboard = async (e: SyntheticEvent) => {
-      e.stopPropagation();
-      await copyToClipboard(value);
-    };
 
     const emptyIcon = <Icon name="emptyIdenticon" size={background ? size * 0.75 : size} />;
 
@@ -62,19 +61,20 @@ export const Identicon = memo(
     }
 
     return (
-      <button
-        type="button"
-        className={cnTw(
-          'relative flex cursor-copy appearance-none items-center justify-center rounded-full',
-          background && 'rounded-full bg-white',
-        )}
-        aria-label="Copy address"
-        style={{ width: size, height: size }}
-        data-testid={testId}
-        onClick={onCopyToClipboard}
-      >
-        {icon}
-      </button>
+      <Copy value={value} onCopied={onAddressCopied}>
+        <button
+          type="button"
+          className={cnTw(
+            'relative flex cursor-copy appearance-none items-center justify-center rounded-full',
+            background && 'rounded-full bg-white',
+          )}
+          aria-label="Copy address"
+          style={{ width: size, height: size }}
+          data-testid={testId}
+        >
+          {icon}
+        </button>
+      </Copy>
     );
   },
 );
