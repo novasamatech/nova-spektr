@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type Balance, type TransferableMode } from '@/shared/core';
 import { reservableAmountBN, totalAmountBN, transferableAmountBN } from '@/shared/lib/utils';
@@ -62,15 +62,15 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
 }
 
 function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
-  const withdrawable = transferableAmountBN(balance, balance.transferableMode, false);
+  const withdrawable = transferableAmountBN(balance);
   const wanted = balancePreservation === 'keepAlive' ? amount.add(balance.ed) : amount;
   const afterWithdraw = withdrawable.sub(wanted);
 
-  const updated = copyBalance(balance, {
-    free: balance.free.sub(amount),
-  });
-
   if (afterWithdraw.isNeg()) {
+    const updated = copyBalance(balance, {
+      free: balancePreservation === 'keepAlive' ? balance.ed : BN_ZERO,
+    });
+
     return {
       success: false,
       balance: updated,
@@ -79,9 +79,15 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
     };
   }
 
+  const free = balance.free.sub(amount);
+  // in case of exceeding the ED, we burn all tokens
+  const burnedTokens = free.lt(balance.ed) ? balance.ed : BN_ZERO;
+
   return {
     success: true,
-    balance: updated,
+    balance: copyBalance(balance, {
+      free: BN.max(free.sub(burnedTokens), BN_ZERO),
+    }),
     required: amount,
   };
 }
