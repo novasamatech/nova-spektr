@@ -3,6 +3,7 @@ import { useUnit } from 'effector-react';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { WalletAccountIcon } from '@/shared/ui-entities';
+import { accountService } from '@/domains/network';
 import { accountSDK } from '@/sdk/account';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -23,7 +24,7 @@ export type { PolkadotExtensionWallet, TalismanExtensionWallet, SubWalletExtensi
 accountSDK(extensionWalletFeature, {
   availableOnChain: ({ account, chain }) => {
     if (polkadotExtensionService.isExtensionAccount(account)) {
-      if ('chainId' in account) {
+      if (accountService.isChainAccount(account)) {
         return account.chainId === chain.chainId;
       } else {
         return true;
