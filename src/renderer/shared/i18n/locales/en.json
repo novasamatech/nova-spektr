@@ -1737,13 +1737,13 @@
     "videoError": "Your browser doesn't support video"
   },
   "receive": {
-    "addressCopied": "Address copied",
+    "addressCopied": "Address copied!",
     "compareAddressFormat": "Compare address format",
     "copy": "Copy",
     "copyLegacyFormat": "Copy legacy format",
     "exchangeAccount": "Need address for exchange?",
     "explorerLinkLabel": "Link to {name}",
-    "legacyAddressCopied": "Legacy address copied",
+    "legacyAddressCopied": "Legacy address copied!",
     "selectAccount": "Select account",
     "title": "Receive {asset} on",
     "unfiedAddress": {
@@ -1757,7 +1757,7 @@
       "newUnifiedTitle": "New unified address",
       "unifiedFormat": "Unified format"
     },
-    "unifiedAddressCopied": "Unified address copied",
+    "unifiedAddressCopied": "Unified address copied!",
     "viewInExplorers": "View in explorers"
   },
   "settings": {
