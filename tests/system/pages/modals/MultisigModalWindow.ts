@@ -83,6 +83,13 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
     });
   }
 
+  public async clickContinueNoAlertChecks(): Promise<void> {
+    await step('Click Continue button without alert checks', async () => {
+      await this.waitForContinueButtonToBeEnabled();
+      await this.page.getByRole('button', { name: 'Continue' }).click();
+    });
+  }
+
   public async openConfirmationModal(): Promise<ConfirmationModalWindow> {
     await step('Open Confirmation modal from Multisig modal', async () => {
       await this.clickContinueWithAlertChecks();
