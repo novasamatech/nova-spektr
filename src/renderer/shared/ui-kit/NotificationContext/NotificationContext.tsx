@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 
 import { type ModalNotification, type ModalNotificationProps } from '@/shared/core/types/notificationService';
 import { DEFAULT_TRANSITION, nullable } from '@/shared/lib/utils';
@@ -18,6 +18,7 @@ import { Modal } from '../Modal/Modal';
 
 type NotificationContextProps = {
   modal: (props: ModalNotificationProps) => void;
+  toast: typeof toast;
 };
 
 const NotificationContext = createContext<NotificationContextProps>({} as NotificationContextProps);
@@ -107,6 +108,7 @@ export const NotificationProvider = ({ children }: PropsWithChildren) => {
   const value = useMemo(
     () => ({
       modal,
+      toast,
     }),
     [modal],
   );
