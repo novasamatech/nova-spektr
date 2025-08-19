@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { Step, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, Loader, Separator, SmallTitleText } from '@/shared/ui';
@@ -48,6 +49,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
                 <div>
                   <Button
                     prefixElement={<Icon className="text-icon-button" name="vault" size={14} />}
+                    testId={TEST_IDS.MULTISIG.CREATE_PURE_BUTTON}
                     disabled={pendingProxyCreate || nonNullable(proxyAddress)}
                     onClick={() => confirmModel.startSigningProxy()}
                   >
@@ -88,6 +90,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
               ) : (
                 <Button
                   prefixElement={<Icon className="text-icon-button" name="vault" size={14} />}
+                  testId={TEST_IDS.MULTISIG.ASSIGN_CONTROL_BUTTON}
                   disabled={nullable(proxyAddress)}
                   onClick={() => assignModel.startSigningFlexible()}
                 >

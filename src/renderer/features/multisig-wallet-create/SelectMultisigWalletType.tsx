@@ -1,6 +1,7 @@
 import { type PropsWithChildren, useState } from 'react';
 import { Trans } from 'react-i18next';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, HeaderTitleText, Icon, InfoLink } from '@/shared/ui';
@@ -91,7 +92,7 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
           onChange={value => setWalletType(value as MultisigWalletType)}
         >
           <div className="max-w-[300px] flex-1">
-            <RadioGroup.CardOption option={flexibleMultisigOption}>
+            <RadioGroup.CardOption option={flexibleMultisigOption} testId={TEST_IDS.MULTISIG.FLEXIBLE_MULTISIG}>
               <div className="mb-8 flex items-center justify-between">
                 <div className="flex items-center gap-x-3">
                   <Icon name="flexibleMultisigBackground" className="shrink-0" size={32} />
@@ -131,7 +132,7 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
             </RadioGroup.CardOption>
           </div>
           <div className="max-w-[300px] flex-1">
-            <RadioGroup.CardOption option={regularMultisigOption}>
+            <RadioGroup.CardOption option={regularMultisigOption} testId={TEST_IDS.MULTISIG.REGULAR_MULTISIG}>
               <div className="mb-8 flex items-center justify-between">
                 <div className="flex items-center gap-x-3">
                   <Icon name="multisigBackground" className="shrink-0" size={32} />

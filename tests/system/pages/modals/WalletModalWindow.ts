@@ -24,7 +24,7 @@ export class WalletModalWindow extends BaseModal<WalletModalElements> {
     return this;
   }
 
-  public async openMultisigModalWindow(): Promise<MultisigModalWindow> {
+  public async openMultisigCreationModalWindow(): Promise<MultisigModalWindow> {
     await step('Open Multisig creation widget', async () => {
       await this.page.getByRole('button', { name: 'Add' }).click();
       await this.page.getByRole('menuitem', { name: 'Multisig' }).click();

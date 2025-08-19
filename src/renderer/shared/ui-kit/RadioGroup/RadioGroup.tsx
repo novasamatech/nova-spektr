@@ -73,9 +73,10 @@ const Root = <T extends string>({
 type CardOptionProps<T = string> = {
   option: RadioOption<T>;
   className?: string;
+  testId?: string;
 };
 
-const CardOption = <T extends string>({ option, children }: PropsWithChildren<CardOptionProps<T>>) => {
+const CardOption = <T extends string>({ option, testId, children }: PropsWithChildren<CardOptionProps<T>>) => {
   const { disabled } = useContext(Context);
   const { value, title, description } = option;
 
@@ -85,7 +86,10 @@ const CardOption = <T extends string>({ option, children }: PropsWithChildren<Ca
       disabled={disabled}
       className="flex disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <div className="flex-1 cursor-pointer rounded-sm border border-filter-border p-6 group-disabled:cursor-not-allowed data-[state=checked]:border-active-container-border">
+      <div
+        data-testid={testId}
+        className="flex-1 cursor-pointer rounded-sm border border-filter-border p-6 group-disabled:cursor-not-allowed data-[state=checked]:border-active-container-border"
+      >
         {children ? (
           children
         ) : (

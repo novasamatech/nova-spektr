@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 import { Trans } from 'react-i18next';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
@@ -92,6 +93,7 @@ export const SelectSignatoriesThreshold = () => {
                   invalid={threshold.hasError}
                   disabled={thresholdDisabled}
                   height="md"
+                  testId={TEST_IDS.MULTISIG.THRESHOLD_SELECTOR}
                   onChange={value => threshold.onChange(Number(value))}
                 >
                   {Array.from({ length: signatories.length - 1 }, (_, index) => (
