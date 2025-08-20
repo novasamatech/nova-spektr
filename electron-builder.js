@@ -45,10 +45,7 @@ export default {
     category: 'Finance',
     target: ['AppImage'],
     artifactName: 'Nova-Spektr-${version}_x86_64.AppImage',
-    desktop: {
-      mimeTypes: [`x-scheme-handler/${electronProtocol}`],
-      exec: `${electronProtocol} %U`,
-    },
+    mimeTypes: [`x-scheme-handler/${electronProtocol}`],
   },
 
   win: {
