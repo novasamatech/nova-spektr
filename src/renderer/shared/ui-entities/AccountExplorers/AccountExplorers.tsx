@@ -2,10 +2,10 @@ import { type PropsWithChildren, memo } from 'react';
 
 import { type Address, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { copyToClipboard, getAccountExplorer, toAddress } from '@/shared/lib/utils';
+import { getAccountExplorer, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { ExplorerLink, FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
-import { Box, Popover } from '@/shared/ui-kit';
+import { Box, Copy, Popover } from '@/shared/ui-kit';
 import { Hash } from '../Hash/Hash';
 
 type Props = PropsWithChildren<{
@@ -38,7 +38,9 @@ export const AccountExplorers = memo(({ accountId, chain, children, testId }: Pr
               <HelpText className="text-text-secondary">
                 <Hash value={address} variant="full" />
               </HelpText>
-              <IconButton className="shrink-0 text-icon-default" name="copy" onClick={() => copyToClipboard(address)} />
+              <Copy value={address} notification={t('general.notifications.addressCopied')}>
+                <IconButton className="shrink-0 text-icon-default" name="copy" />
+              </Copy>
             </Box>
           </Box>
 
