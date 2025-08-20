@@ -238,7 +238,7 @@ const $coreTx = combine(
   },
 );
 
-const $feeTx = combine(
+const $feeCoreTx = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
@@ -266,7 +266,17 @@ const $feeTx = combine(
   },
 );
 
-const $calculationTx = combine({ coreTx: $coreTx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
+const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
+  api: $api,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $coreTx,
+  feeTransaction: $feeCoreTx,
+});
+
+const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
 
 const $calculationExtrinsic = combine(
   {
@@ -278,16 +288,6 @@ const $calculationExtrinsic = combine(
     return getExtrinsic[tx.type](tx.args, api);
   },
 );
-
-const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
-  api: $api,
-  initiator: form.fields.initiator.$value,
-  signatory: form.fields.signatory.$value,
-  accounts: accounts.$list,
-  chain: $chain,
-  transaction: $coreTx,
-  feeTransaction: $feeTx,
-});
 
 const { $errors } = createTxValidationStore({
   validator: transferValidator,
