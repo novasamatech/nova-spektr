@@ -104,25 +104,22 @@ export const WalletGroup = (props: Props) => {
               }
 
               return (
-                <div key={wallet.id} className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <WalletManagement
-                      wallet={wallet}
-                      accountId={accountId ?? null}
-                      checkBox={
-                        <Checkbox
-                          checked={isSelected}
-                          onChange={() => handleWalletClick(wallet)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      }
-                      description={<FiatBalance amount={balances[wallet.id].toString()} />}
-                      chain={chain}
-                      label={label}
-                      onClick={() => handleWalletClick(wallet)}
+                <WalletManagement
+                  key={wallet.id}
+                  wallet={wallet}
+                  accountId={accountId ?? null}
+                  checkBox={
+                    <Checkbox
+                      checked={isSelected}
+                      onChange={() => handleWalletClick(wallet)}
+                      onClick={(e) => e.stopPropagation()}
                     />
-                  </div>
-                </div>
+                  }
+                  description={<FiatBalance amount={balances[wallet.id].toString()} />}
+                  chain={chain}
+                  label={label}
+                  onClick={() => handleWalletClick(wallet)}
+                />
               );
             })}
           </Box>
