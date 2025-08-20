@@ -40,8 +40,8 @@ sample({
 sample({
   clock: walletModel.$wallets,
   source: $selectedWalletId,
-  filter: (id, wallets) => nullable(id) || nullable(wallets.find(w => w.id === id)),
-  fn: (_, wallets) => wallets.at(0)?.id ?? null,
+  filter: (id, wallets) => nullable(id) || (wallets.length > 0 && nullable(wallets.find(w => w.id === id))),
+  fn: (id, wallets) => wallets.at(0)?.id ?? id,
   target: $selectedWalletId,
 });
 
