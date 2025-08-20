@@ -1,11 +1,11 @@
-import { type MultisigAccount } from '@/shared/core';
+import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { type MultisigOperation } from '@/domains/network';
 
 import { Status } from './Status';
 
 type Props = {
   operation: MultisigOperation;
-  account: MultisigAccount | null;
+  account: MultisigAccount | FlexibleMultisigAccount | null;
 };
 
 export const OperationTitleStatus = ({ operation, account }: Props) => {

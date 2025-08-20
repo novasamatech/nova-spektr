@@ -1,3 +1,4 @@
+import { type Weight } from '@polkadot/types/interfaces';
 import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
@@ -39,6 +40,7 @@ export const transactionBuilder = {
   buildRemoveVote,
   buildRemoveVotes,
   buildRejectMultisigTx,
+  buildApproveMultisigTx,
   buildCreatePureProxy,
   buildCreateFlexibleMultisig,
   buildRemark,
@@ -516,6 +518,43 @@ function buildRejectMultisigTx({
         height: tx.blockCreated,
         index: tx.indexCreated,
       },
+    },
+  };
+}
+
+type ApproveMultisigTxParams = {
+  chain: Chain;
+  signerAccountId: AccountId;
+  threshold: number;
+  otherSignatories: AccountId[];
+  tx: MultisigOperation;
+  hasCallData: boolean;
+  maxWeight: Weight;
+};
+
+function buildApproveMultisigTx({
+  chain,
+  signerAccountId,
+  threshold,
+  otherSignatories,
+  tx,
+  hasCallData,
+  maxWeight,
+}: ApproveMultisigTxParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    accountId: signerAccountId,
+    type: hasCallData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
+    args: {
+      threshold: threshold,
+      otherSignatories,
+      maxWeight,
+      maybeTimepoint: {
+        height: tx.blockCreated,
+        index: tx.indexCreated,
+      },
+      call: tx.callData,
+      callHash: tx.callHash,
     },
   };
 }
