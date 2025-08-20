@@ -10,7 +10,7 @@ import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Label } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { walletSelectService } from '@/aggregates/wallet-select';
+import { walletSelect, walletSelectService } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
@@ -26,6 +26,7 @@ type Props = {
 export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Props) => {
   const { t } = useI18n();
   const allAccounts = useUnit(accounts.$list);
+  const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const chains = useUnit(networkModel.$chains);
 
   const filteredWallets = performSearch({
@@ -61,6 +62,7 @@ export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Prop
               return (
                 <WalletManagement
                   key={wallet.id}
+                  active={selectedWalletId === wallet.id}
                   wallet={wallet}
                   accountId={accountId}
                   description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}

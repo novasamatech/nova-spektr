@@ -172,7 +172,6 @@ async function getWalletsAndAccounts(t: Transaction) {
         type: WalletType.POLKADOT_VAULT,
         rootAccountId: account.accountId,
         signingType: SigningType.POLKADOT_VAULT,
-        isActive: false,
       } satisfies WalletDraft<PolkadotVaultWallet>);
 
       // Singleshard
@@ -182,7 +181,6 @@ async function getWalletsAndAccounts(t: Transaction) {
         type: WalletType.SINGLE_PARITY_SIGNER,
         rootAccountId: account.accountId,
         signingType: SigningType.POLKADOT_VAULT,
-        isActive: false,
       } satisfies WalletDraft<SingleShardWallet>);
     }
   }

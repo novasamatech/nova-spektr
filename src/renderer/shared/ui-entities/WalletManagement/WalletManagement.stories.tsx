@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 import { noop } from 'lodash';
 
-import { type MultisigWallet } from '@/shared/core';
+import { createWcWallet } from '@/shared/mocks';
 import { FootnoteText, IconButton } from '@/shared/ui';
 import { ChainIcon } from '../ChainIcon/ChainIcon';
 
@@ -11,15 +11,8 @@ const meta: Meta<typeof WalletManagement> = {
   title: 'Design System/entities/WalletManagement',
   component: WalletManagement,
   args: {
-    wallet: {
-      id: 1,
-      type: 'wallet_ms',
-      name: 'WalletManagement',
-      isActive: true,
-      accounts: [],
-      isHidden: false,
-      signingType: 'signing_ms',
-    } as MultisigWallet,
+    wallet: createWcWallet(0, []),
+    active: true,
     children: <IconButton name="details" onClick={noop} />,
   },
   parameters: {
