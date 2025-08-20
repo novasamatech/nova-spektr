@@ -52,7 +52,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
 
   const asset = getNativeAsset(chain?.assets || []);
   const thresholdDisabled = signatories.length < 2 || signatories.some(s => s.address === '');
-  console.log({ signer, initiator });
+
   return (
     <>
       <Modal.Content>
