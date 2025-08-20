@@ -142,7 +142,6 @@ const RowItem = memo(({ validator, rowStyle, isChecked }: RowProps) => {
             identity={validatorIdentity}
             asset={asset || undefined}
             chain={chain || undefined}
-            explorers={chain?.explorers}
           />
         </div>
       </Checkbox>
