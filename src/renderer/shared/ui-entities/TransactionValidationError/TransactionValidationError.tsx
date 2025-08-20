@@ -1,4 +1,4 @@
-import { type BN } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { type ReactNode, memo } from 'react';
 import { Trans } from 'react-i18next';
 
@@ -138,13 +138,18 @@ const TransactionBalanceError = ({
 
   for (const assetGroup of Object.values(assetGroups)) {
     if (nullable(assetGroup)) continue;
-    const lastImbalance = assetGroup.at(-1);
-    if (nullable(lastImbalance)) continue;
 
-    if (lastImbalance.balance.success === false) {
+    const firstError = assetGroup.at(-1);
+    if (nullable(firstError)) continue;
+
+    const totalImbalance = assetGroup.reduce((acc, e) => {
+      return e.balance.success === false ? acc.add(e.balance.imbalance) : acc;
+    }, BN_ZERO);
+
+    if (!totalImbalance.isZero()) {
       imbalances.push({
-        imbalance: lastImbalance.balance.imbalance,
-        asset: lastImbalance.asset,
+        imbalance: totalImbalance,
+        asset: firstError.asset,
       });
     }
   }
