@@ -103,6 +103,7 @@ const Root = <T extends string>({
   const containerRef = useRef<HTMLDivElement>(null);
   const comboboxRef = useRef<HTMLInputElement>(null);
   const listboxRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
   const [internalOpen, setInternalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isInputMode, setIsInputMode] = useState(false);
@@ -127,7 +128,6 @@ const Root = <T extends string>({
   }, [_value]);
 
   const handleItemSelect = (itemValue: string) => {
-    console.log('🎉 handleItemSelect called with:', itemValue);
     startTransition(() => {
       if (onSearch) {
         setIsInputMode(false);
@@ -136,7 +136,11 @@ const Root = <T extends string>({
       }
       setOpen(false);
       onChange(itemValue as T);
-      console.log('✅ Item selection completed');
+
+      // Return focus to trigger after dropdown closes
+      setTimeout(() => {
+        triggerRef.current?.focus();
+      }, 100);
     });
   };
 
@@ -155,7 +159,6 @@ const Root = <T extends string>({
   };
 
   const handleContainerKeyDown = (e: React.KeyboardEvent) => {
-    console.log('🎯 CONTAINER keydown:', e.key, { isOpen, isInputMode });
     if (!isOpen && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       e.preventDefault();
       handleContainerClick();
@@ -193,57 +196,31 @@ const Root = <T extends string>({
   }, []);
 
   const handleKeyNavigation = (e: React.KeyboardEvent) => {
-    console.log('🧭 NAVIGATION keydown:', e.key, {
-      isOpen,
-      isInputMode,
-      itemsCount: availableItems.length,
-      availableItems,
-      focusedIndex,
-    });
-
     // Allow Escape key even in input mode
     if (e.key === 'Escape') {
-      console.log('🚪 Escape processing');
       e.preventDefault();
       setOpen(false);
       setFocusedIndex(-1);
       return;
     }
 
-    if (!isOpen || availableItems.length === 0) {
-      // console.log('⛔ NAVIGATION blocked:', { isOpen, itemsCount: availableItems.length });
-      // return;
-    }
-
-    // In input mode, only handle specific keys that don't interfere with typing
-    if (isInputMode && !['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(e.key)) {
-      console.log('⛔ INPUT MODE - ignoring key:', e.key);
-      return;
-    }
-
     switch (e.key) {
       case 'ArrowDown':
-        console.log('⬇️ ArrowDown processing', e, { availableItems });
-        // e.preventDefault();
+        e.preventDefault();
         setFocusedIndex(prev => (prev < availableItems.length - 1 ? prev + 1 : 0));
         break;
       case 'ArrowUp':
-        console.log('⬆️ ArrowUp processing', e);
-        // e.preventDefault();
+        e.preventDefault();
         setFocusedIndex(prev => (prev > 0 ? prev - 1 : availableItems.length - 1));
         break;
       case 'Enter':
       case ' ':
-        console.log('✅ Enter/Space processing, focusedIndex:', focusedIndex, 'availableItems:', availableItems);
         if (focusedIndex >= 0 && focusedIndex < availableItems.length) {
           e.preventDefault();
           const focusedItem = availableItems[focusedIndex];
-          console.log('🎯 Selecting focused item:', focusedItem);
           if (focusedItem) {
             handleItemSelect(focusedItem);
           }
-        } else {
-          console.log('❌ No valid item to select:', { focusedIndex, availableItemsLength: availableItems.length });
         }
         break;
     }
@@ -277,29 +254,6 @@ const Root = <T extends string>({
       return () => clearTimeout(timeoutId);
     }
   }, [isOpen]);
-
-  // Add global keyboard listener for search mode
-  useEffect(() => {
-    if (!isOpen || !isInputMode) return;
-
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      console.log('🌍 GLOBAL keydown in search mode:', e.key);
-
-      // Only handle navigation keys globally
-      if (['ArrowDown', 'ArrowUp', 'Escape'].includes(e.key)) {
-        // Create a minimal synthetic event that matches what we need
-        const syntheticEvent = {
-          key: e.key,
-          preventDefault: () => e.preventDefault(),
-          defaultPrevented: e.defaultPrevented,
-        } as React.KeyboardEvent;
-        handleKeyNavigation(syntheticEvent);
-      }
-    };
-
-    document.addEventListener('keydown', handleGlobalKeyDown);
-    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [isOpen, isInputMode, handleKeyNavigation]);
 
   const ctx = useMemo(
     () => ({
@@ -355,6 +309,7 @@ const Root = <T extends string>({
           <div ref={containerRef} className="w-full">
             {!isInputMode || !onSearch ? (
               <div
+                ref={triggerRef}
                 className={cnTw(
                   'relative flex w-full items-center pr-6 pl-[11px]',
                   'rounded-sm border text-footnote outline-offset-1',
@@ -378,7 +333,6 @@ const Root = <T extends string>({
                   disabled
                     ? undefined
                     : e => {
-                        console.log('⌨️ HOST keydown:', e.key);
                         handleContainerKeyDown(e);
                       }
                 }
@@ -409,11 +363,8 @@ const Root = <T extends string>({
                   render={({ onChange, ...props }) => <Input {...props} height={height} onChangeEvent={onChange} />}
                   onBlur={handleInputBlur}
                   onKeyDown={e => {
-                    console.log('🔤 COMBOBOX keydown:', e.key);
-                    
                     // Handle navigation and selection keys
                     if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) {
-                      console.log('🚫 COMBOBOX intercepting:', e.key);
                       e.preventDefault();
                       e.stopPropagation();
                       handleKeyNavigation(e);
@@ -492,10 +443,7 @@ const Root = <T extends string>({
                       aria-activedescendant={
                         focusedIndex >= 0 ? `select-item-${availableItems[focusedIndex]}` : undefined
                       }
-                      onKeyDown={e => {
-                        console.log('📦 LISTBOX keydown:', e.key);
-                        handleKeyNavigation(e);
-                      }}
+                      onKeyDown={handleKeyNavigation}
                     >
                       {children}
                     </div>
@@ -557,25 +505,16 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
   const currentIndex = availableItems.indexOf(value);
   const isFocused = currentIndex === focusedIndex;
 
-  // Debug focus state
-  if (isFocused) {
-    console.log('🎯 Item focused:', value, { currentIndex, focusedIndex, isFocused });
-  }
-
   // Register this item with the parent for keyboard navigation
   useEffect(() => {
-    console.log('📝 Item registering:', value, { isSearchMode });
     setAvailableItems((prev: string[]) => {
       if (!prev.includes(value)) {
-        const newItems = [...prev, value];
-        console.log('✅ Item registered, new availableItems:', newItems);
-        return newItems;
+        return [...prev, value];
       }
       return prev;
     });
 
     return () => {
-      console.log('🗑️ Item unregistering:', value);
       setAvailableItems((prev: string[]) => prev.filter((item: string) => item !== value));
     };
   }, [value, setAvailableItems]);
