@@ -52,7 +52,7 @@ export const ScanSingleframeQr = ({
     if (txPayload && qrPayload && tab === prevTab.current) return;
     prevTab.current = tab;
     setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
-  }, [extrinsic, api, tab]);
+  }, [txPayload, qrPayload, tab]);
 
   const setupTransaction = async (): Promise<void> => {
     try {
@@ -67,7 +67,7 @@ export const ScanSingleframeQr = ({
           account.accountId,
           api,
         );
-        const qrPayload = createSubstrateSignWithProofPayload(
+        const signPayload = createSubstrateSignWithProofPayload(
           encodeAddress(account.accountId, chain.addressPrefix),
           metadataProof,
           payload,
@@ -76,6 +76,7 @@ export const ScanSingleframeQr = ({
           derivationPath,
           account.cryptoType,
         );
+        const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
 
         setTxPayload(payload);
         setQrPayload(qrPayload);
@@ -96,11 +97,12 @@ export const ScanSingleframeQr = ({
         setTxPayload(payload);
         setQrPayload(qrPayload);
       }
-      onResetCountdown();
     } catch (error) {
       console.warn(error);
     }
   };
+
+  useEffect(onResetCountdown, [qrPayload]);
 
   return (
     <>

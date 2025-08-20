@@ -133,10 +133,10 @@ function hideZeroBalances(hideZeroBalance: boolean, activeTokensWithBalance: Ass
 
   for (const token of activeTokensWithBalance) {
     const totalBalance = calculateTotalBalance(token.chains);
-    if (nullable(totalBalance) || totalBalance.total.isZero()) continue;
+    if (nonNullable(totalBalance) && totalBalance.total.isZero()) continue;
 
     const filteredChains = token.chains.filter((chain) => {
-      return nonNullable(chain.balance) && !chain.balance.total.isZero();
+      return nullable(chain.balance) || !chain.balance.total.isZero();
     });
 
     result.push({ ...token, chains: filteredChains });

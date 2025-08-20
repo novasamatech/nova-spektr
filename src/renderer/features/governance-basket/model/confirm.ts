@@ -75,7 +75,7 @@ const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains,
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
 
-    fee,
+    fee: fee.toString(),
     totalLock,
     totalFee: '0',
     multisigDeposit: '0',
@@ -120,7 +120,7 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
 
-    fee,
+    fee: fee.toString(),
     totalFee: '0',
     multisigDeposit: '0',
   } satisfies DelegateConfirm;
@@ -169,8 +169,8 @@ const prepareEditDelegationDataFx = createEffect(
       coreTx: transaction.coreTx,
       initiator: account!,
 
-      fee,
-      totalFee: fee,
+      fee: fee.toString(),
+      totalFee: fee.toString(),
       multisigDeposit: '0',
     } satisfies EditDelegationConfirm;
   },
@@ -225,7 +225,7 @@ const prepareRevokeDelegationDataFx = createEffect(
       tx: transaction.coreTx,
       coreTx: transaction.coreTx,
 
-      fee,
+      fee: fee.toString(),
       totalFee: '0',
       multisigDeposit: '0',
     } satisfies RevokeDelegationConfirm;

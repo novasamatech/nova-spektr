@@ -1,4 +1,4 @@
-import { type BN } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { type ReactNode, memo } from 'react';
 import { Trans } from 'react-i18next';
 
@@ -11,6 +11,10 @@ import { type AnyAccount, type BalanceUpdateResult } from '@/domains/network';
 import { ProxyTypeName } from '@/entities/proxy';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
+export type TransactionValidationFatalError = {
+  message: string;
+};
+
 export type TransactionValidationPermissionError = {
   account: AnyAccount;
   permission: string;
@@ -19,19 +23,25 @@ export type TransactionValidationPermissionError = {
 export type TransactionValidationBalanceError = {
   account: AnyAccount;
   action: string;
-  required: BN;
   balance: BalanceUpdateResult;
   asset: Asset;
 };
 
 type Props = {
-  errors: (TransactionValidationPermissionError | TransactionValidationBalanceError)[];
+  errors: (
+    | TransactionValidationPermissionError
+    | TransactionValidationBalanceError
+    | TransactionValidationFatalError
+  )[];
   wallets: Wallet[];
 };
 
 export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
+  const { t } = useI18n();
+
   if (errors.length === 0) return null;
 
+  const fatalErrors = errors.filter(e => 'message' in e);
   const permissionErrors = errors.filter(e => 'permission' in e);
   const balanceErrors = groupBy(
     errors.filter(e => 'balance' in e),
@@ -39,6 +49,18 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
   );
 
   const errorNodes: ReactNode[] = [];
+
+  if (fatalErrors.length > 0) {
+    for (const error of fatalErrors) {
+      errorNodes.push(
+        <span>
+          <span className="font-bold">{t('general.transactionErrors.fatal.intro')}</span>
+          <br />
+          <span className="break-all">{error.message}</span>
+        </span>,
+      );
+    }
+  }
 
   if (permissionErrors.length > 0) {
     errorNodes.push(<TransactionPermissionError wallets={wallets} errors={permissionErrors} />);
@@ -52,7 +74,7 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
   const renderDot = errorNodes.length > 1;
 
   return (
-    <Alert active variant="error" title="This operation cannot be completed">
+    <Alert active variant="error" title={t('general.transactionErrors.title')}>
       <Box as="span" gap={2}>
         {errorNodes.map((n, i) => (
           <Alert.Item key={i} withDot={renderDot}>
@@ -116,13 +138,18 @@ const TransactionBalanceError = ({
 
   for (const assetGroup of Object.values(assetGroups)) {
     if (nullable(assetGroup)) continue;
-    const lastImbalance = assetGroup.at(-1);
-    if (nullable(lastImbalance)) continue;
 
-    if (lastImbalance.balance.success === false) {
+    const firstError = assetGroup.at(-1);
+    if (nullable(firstError)) continue;
+
+    const totalImbalance = assetGroup.reduce((acc, e) => {
+      return e.balance.success === false ? acc.add(e.balance.imbalance) : acc;
+    }, BN_ZERO);
+
+    if (!totalImbalance.isZero()) {
       imbalances.push({
-        imbalance: lastImbalance.balance.imbalance,
-        asset: lastImbalance.asset,
+        imbalance: totalImbalance,
+        asset: firstError.asset,
       });
     }
   }
@@ -150,7 +177,7 @@ const TransactionBalanceError = ({
                 i18nKey="general.transactionErrors.balance.section"
                 values={{
                   action: e.action,
-                  balance: formatAsset(e.required, e.asset),
+                  balance: formatAsset(e.balance.required, e.asset),
                 }}
               />,
               <span key={index + 100}>, </span>,

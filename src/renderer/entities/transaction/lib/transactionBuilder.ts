@@ -59,7 +59,7 @@ type TransferParams = {
   xcmData?: {
     args: {
       xcmFee: string;
-      deliveryFee: string | null;
+      deliveryFee: string;
       xcmAsset?: NonNullable<unknown>;
       xcmWeight: string;
       xcmDest?: NonNullable<unknown>;

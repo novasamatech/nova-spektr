@@ -29,7 +29,6 @@ import { Graphics } from '../Graphics/Graphics';
 import { Input } from '../Input/Input';
 import { ScrollArea } from '../ScrollArea/ScrollArea';
 import { Surface } from '../Surface/Surface';
-import { ThemeProvider } from '../Theme/ThemeProvider';
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
@@ -180,157 +179,155 @@ const Root = <T extends string>({
 
   return (
     <Context.Provider value={ctx}>
-      <ThemeProvider preferStaticContent>
-        {/* Hidden container for content registration - always rendered */}
-        <div className="sr-only" aria-hidden="true">
-          {onSearch ? (
-            <ComboboxProvider
-              open={false}
-              setOpen={() => {}}
-              value=""
-              defaultSelectedValue=""
-              setValue={() => {}}
-              setSelectedValue={() => {}}
-            >
-              <ComboboxList>{children}</ComboboxList>
-            </ComboboxProvider>
-          ) : (
-            children
-          )}
-        </div>
+      {/* Hidden container for content registration - always rendered */}
+      <div className="sr-only" aria-hidden="true">
+        {onSearch ? (
+          <ComboboxProvider
+            open={false}
+            setOpen={() => {}}
+            value=""
+            defaultSelectedValue=""
+            setValue={() => {}}
+            setSelectedValue={() => {}}
+          >
+            <ComboboxList>{children}</ComboboxList>
+          </ComboboxProvider>
+        ) : (
+          children
+        )}
+      </div>
 
-        <RadixPopover.Root modal open={isOpen} onOpenChange={setOpen}>
-          <RadixPopover.Anchor asChild>
-            <div ref={containerRef} className="w-full">
-              {!isInputMode || !onSearch ? (
-                <div
-                  className={cnTw(
-                    'relative flex w-full items-center pr-6 pl-[11px]',
-                    'rounded-sm border text-footnote outline-offset-1',
-                    'enabled:hover:shadow-card-shadow',
-                    'data-[state=open]:border-active-container-border',
-                    {
-                      'h-8.5': height === 'sm',
-                      'h-10.5': height === 'md',
-                      'border-filter-border bg-input-background text-text-primary': theme === 'light',
-                      'border-border-dark bg-background-dark text-white': theme === 'dark',
-                      'bg-input-background-disabled text-text-tertiary': disabled,
-                      'border-filter-border-negative': invalid,
-                      'cursor-pointer': !disabled,
-                      'cursor-not-allowed': disabled,
-                    },
-                  )}
-                  tabIndex={disabled ? -1 : 0}
-                  data-testid={testId}
-                  onClick={disabled ? undefined : handleContainerFocus}
-                  onFocus={disabled ? undefined : handleContainerFocus}
-                  onKeyDown={
-                    disabled
-                      ? undefined
-                      : e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleContainerFocus();
-                          }
-                        }
-                  }
-                >
-                  <div className="flex-1 overflow-hidden text-start">
-                    {selectedItemContent || (
-                      <span className={cnTw('text-footnote text-text-secondary', { 'text-text-tertiary': disabled })}>
-                        {placeholder}
-                      </span>
-                    )}
-                  </div>
-                  <Icon name="down" size={16} className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2" />
-                </div>
-              ) : (
-                <ComboboxProvider
-                  open={open}
-                  setOpen={setOpen}
-                  value={searchQuery}
-                  defaultSelectedValue=""
-                  setValue={handleInputChange}
-                  setSelectedValue={handleItemSelect}
-                >
-                  <Combobox
-                    autoSelect
-                    autoFocus
-                    ref={comboboxRef}
-                    placeholder={placeholder}
-                    render={({ onChange, ...props }) => <Input {...props} height={height} onChangeEvent={onChange} />}
-                    onBlur={handleInputBlur}
-                  />
-                </ComboboxProvider>
-              )}
-            </div>
-          </RadixPopover.Anchor>
-
-          {isOpen && containerRef.current && (
-            <RadixPopover.Portal container={portalContainer}>
-              <RadixPopover.Content
-                asChild
-                avoidCollisions={false}
-                hideWhenDetached
+      <RadixPopover.Root modal open={isOpen} onOpenChange={setOpen}>
+        <RadixPopover.Anchor asChild>
+          <div ref={containerRef} className="w-full">
+            {!isInputMode || !onSearch ? (
+              <div
+                className={cnTw(
+                  'relative flex w-full items-center pr-6 pl-[11px]',
+                  'rounded-sm border text-footnote outline-offset-1',
+                  'enabled:hover:shadow-card-shadow',
+                  'data-[state=open]:border-active-container-border',
+                  {
+                    'h-8.5': height === 'sm',
+                    'h-10.5': height === 'md',
+                    'border-filter-border bg-input-background text-text-primary': theme === 'light',
+                    'border-border-dark bg-background-dark text-white': theme === 'dark',
+                    'bg-input-background-disabled text-text-tertiary': disabled,
+                    'border-filter-border-negative': invalid,
+                    'cursor-pointer': !disabled,
+                    'cursor-not-allowed': disabled,
+                  },
+                )}
+                tabIndex={disabled ? -1 : 0}
                 data-testid={testId}
-                style={{ width: `${containerRef.current.getBoundingClientRect().width}px` }}
-                collisionPadding={gridSpaceConverter(2)}
-                sideOffset={gridSpaceConverter(2)}
-                align="center"
-                onOpenAutoFocus={e => e.preventDefault()}
-                onInteractOutside={event => {
-                  const target = event.target as Element | null;
-                  const isCombobox = target === comboboxRef?.current;
-                  const inListbox = target && listboxRef?.current?.contains(target);
-                  if (isCombobox || inListbox) {
-                    event.preventDefault();
-                  }
-                }}
+                onClick={disabled ? undefined : handleContainerFocus}
+                onFocus={disabled ? undefined : handleContainerFocus}
+                onKeyDown={
+                  disabled
+                    ? undefined
+                    : e => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleContainerFocus();
+                        }
+                      }
+                }
               >
-                <Surface
-                  elevation={1}
-                  className={cnTw(
-                    'z-50 flex flex-col',
-                    'h-max max-h-(--radix-popper-available-height) min-w-20',
-                    'origin-(--radix-popper-transform-origin) overflow-hidden duration-100 animate-in fade-in zoom-in-95',
-                    {
-                      'border-border-dark bg-background-dark': theme === 'dark',
-                    },
+                <div className="flex-1 overflow-hidden text-start">
+                  {selectedItemContent || (
+                    <span className={cnTw('text-footnote text-text-secondary', { 'text-text-tertiary': disabled })}>
+                      {placeholder}
+                    </span>
                   )}
-                >
-                  <ScrollArea>
-                    {onSearch && isInputMode ? (
-                      <ComboboxProvider
-                        open={isOpen}
-                        setOpen={setOpen}
-                        value={searchQuery}
-                        defaultSelectedValue=""
-                        setSelectedValue={handleItemSelect}
-                      >
-                        <ComboboxList ref={listboxRef} role="listbox">
-                          <div className="flex flex-col gap-y-1 p-1">
-                            {children}
-                            {showEmptyState && (
-                              <div className="flex flex-col items-center justify-center gap-2 px-2 py-6">
-                                <Graphics name="emptyList" size={64} />
-                                <FootnoteText className="text-text-tertiary">
-                                  {t('emptyState.accountsNotFound')}
-                                </FootnoteText>
-                              </div>
-                            )}
-                          </div>
-                        </ComboboxList>
-                      </ComboboxProvider>
-                    ) : (
-                      <div className="flex flex-col gap-y-1 p-1">{children}</div>
-                    )}
-                  </ScrollArea>
-                </Surface>
-              </RadixPopover.Content>
-            </RadixPopover.Portal>
-          )}
-        </RadixPopover.Root>
-      </ThemeProvider>
+                </div>
+                <Icon name="down" size={16} className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2" />
+              </div>
+            ) : (
+              <ComboboxProvider
+                open={open}
+                setOpen={setOpen}
+                value={searchQuery}
+                defaultSelectedValue=""
+                setValue={handleInputChange}
+                setSelectedValue={handleItemSelect}
+              >
+                <Combobox
+                  autoSelect
+                  autoFocus
+                  ref={comboboxRef}
+                  placeholder={placeholder}
+                  render={({ onChange, ...props }) => <Input {...props} height={height} onChangeEvent={onChange} />}
+                  onBlur={handleInputBlur}
+                />
+              </ComboboxProvider>
+            )}
+          </div>
+        </RadixPopover.Anchor>
+
+        {isOpen && containerRef.current && (
+          <RadixPopover.Portal container={portalContainer}>
+            <RadixPopover.Content
+              asChild
+              avoidCollisions={false}
+              hideWhenDetached
+              data-testid={testId}
+              style={{ width: `${containerRef.current.getBoundingClientRect().width}px` }}
+              collisionPadding={gridSpaceConverter(2)}
+              sideOffset={gridSpaceConverter(2)}
+              align="center"
+              onOpenAutoFocus={e => e.preventDefault()}
+              onInteractOutside={event => {
+                const target = event.target as Element | null;
+                const isCombobox = target === comboboxRef?.current;
+                const inListbox = target && listboxRef?.current?.contains(target);
+                if (isCombobox || inListbox) {
+                  event.preventDefault();
+                }
+              }}
+            >
+              <Surface
+                elevation={1}
+                className={cnTw(
+                  'z-50 flex flex-col',
+                  'h-max max-h-(--radix-popper-available-height) min-w-20',
+                  'origin-(--radix-popper-transform-origin) overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+                  {
+                    'border-border-dark bg-background-dark': theme === 'dark',
+                  },
+                )}
+              >
+                <ScrollArea>
+                  {onSearch && isInputMode ? (
+                    <ComboboxProvider
+                      open={isOpen}
+                      setOpen={setOpen}
+                      value={searchQuery}
+                      defaultSelectedValue=""
+                      setSelectedValue={handleItemSelect}
+                    >
+                      <ComboboxList ref={listboxRef} role="listbox">
+                        <div className="flex flex-col gap-y-1 p-1">
+                          {children}
+                          {showEmptyState && (
+                            <div className="flex flex-col items-center justify-center gap-2 px-2 py-6">
+                              <Graphics name="emptyList" size={64} />
+                              <FootnoteText className="text-text-tertiary">
+                                {t('emptyState.accountsNotFound')}
+                              </FootnoteText>
+                            </div>
+                          )}
+                        </div>
+                      </ComboboxList>
+                    </ComboboxProvider>
+                  ) : (
+                    <div className="flex flex-col gap-y-1 p-1">{children}</div>
+                  )}
+                </ScrollArea>
+              </Surface>
+            </RadixPopover.Content>
+          </RadixPopover.Portal>
+        )}
+      </RadixPopover.Root>
     </Context.Provider>
   );
 

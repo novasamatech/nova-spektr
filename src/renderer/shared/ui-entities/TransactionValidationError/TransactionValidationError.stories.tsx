@@ -47,9 +47,9 @@ export const Balance: Story = {
         balance: {
           success: false,
           balance: {} as BalanceType,
+          required: BN_THOUSAND,
           imbalance: BN_THOUSAND,
         },
-        required: BN_MILLION,
         action: 'fee',
         asset: dotAsset,
       },
@@ -70,9 +70,9 @@ export const Multiple: Story = {
         balance: {
           success: false,
           balance: {} as BalanceType,
+          required: BN_MILLION,
           imbalance: BN_MILLION,
         },
-        required: BN_MILLION,
         action: 'fee',
         asset: dotAsset,
       },
@@ -81,9 +81,9 @@ export const Multiple: Story = {
         balance: {
           success: false,
           balance: {} as BalanceType,
+          required: BN_MILLION,
           imbalance: BN_MILLION,
         },
-        required: BN_MILLION,
         action: 'multisig deposit',
         asset: kusamaAsset,
       },

@@ -3,6 +3,7 @@ import { createTestKeyring } from '@polkadot/keyring';
 import {
   AccountType,
   type Asset,
+  type AssetId,
   AssetType,
   type Chain,
   type ChainId,
@@ -31,7 +32,7 @@ export const polkadotChainId: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e2
 export const kusamaChainId: ChainId = '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe';
 
 export const dotAsset: Asset = {
-  assetId: 0,
+  assetId: 0 as AssetId,
   symbol: 'DOT',
   name: 'Polkadot',
   precision: 10,
@@ -70,7 +71,7 @@ export const polkadotChain: Chain = {
 
 export const kusamaAsset: Asset = {
   name: 'Kusama',
-  assetId: 0,
+  assetId: 0 as AssetId,
   symbol: 'KSM',
   precision: 12,
   type: AssetType.NATIVE,
@@ -118,7 +119,7 @@ export const polkadotAssetHubChain: Chain = {
   assets: [
     {
       name: 'Polkadot',
-      assetId: 0,
+      assetId: 0 as AssetId,
       symbol: 'DOT',
       precision: 10,
       type: AssetType.NATIVE,
@@ -132,7 +133,7 @@ export const polkadotAssetHubChain: Chain = {
     },
     {
       name: 'USD Tether',
-      assetId: 1,
+      assetId: 1 as AssetId,
       symbol: 'USDT',
       precision: 6,
       type: AssetType.STATEMINE,
@@ -149,7 +150,7 @@ export const polkadotAssetHubChain: Chain = {
     },
     {
       name: 'USD Coin',
-      assetId: 2,
+      assetId: 2 as AssetId,
       symbol: 'USDC',
       precision: 6,
       type: AssetType.STATEMINE,

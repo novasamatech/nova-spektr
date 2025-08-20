@@ -860,10 +860,14 @@
         "required": "Please top up the balance of this wallet by { balances } and try again.",
         "section": "the {action} of {balance}"
       },
+      "fatal": {
+        "intro": "Internal error:"
+      },
       "permission": {
         "intro": "Some wallet in the execution route has access restrictions set by the proxy connection.",
         "message": "Please review the proxy account permissions and adjust the settings to proceed with this operation."
-      }
+      },
+      "title": "This operation cannot be completed"
     }
   },
   "governance": {

@@ -200,11 +200,7 @@ export const lockedAmount = (balance: Balance): string => {
   return lockedAmountBN(balance).toString();
 };
 
-export const transferableAmountBN = (
-  balance: Balance | null,
-  transferableMode?: TransferableMode,
-  normalize = true,
-): BN => {
+export const transferableAmountBN = (balance: Balance | null, transferableMode?: TransferableMode): BN => {
   if (nullable(balance)) return BN_ZERO;
 
   switch (transferableMode ?? balance.transferableMode) {
@@ -212,12 +208,12 @@ export const transferableAmountBN = (
       const diff = BN.max(BN_ZERO, balance.frozen.sub(balance.reserved));
       const transferable = balance.free.sub(diff);
 
-      return normalize ? BN.max(BN_ZERO, transferable) : transferable;
+      return BN.max(BN_ZERO, transferable);
     }
     case 'legacy': {
       const transferable = balance.free.sub(balance.frozen);
 
-      return normalize ? BN.max(BN_ZERO, transferable) : transferable;
+      return BN.max(BN_ZERO, transferable);
     }
   }
 };
@@ -401,20 +397,21 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
   };
 };
 
+const BigNumberRoundingDown = BigNumber.clone({
+  ROUNDING_MODE: BigNumber.ROUND_DOWN,
+});
+
+// TODO refactor, terrible implementation of summarization
 export const getRoundedValue = (assetBalance = '0', price: number, precision = 0, nonZeroDigits?: number): string => {
   if (Number(assetBalance) === 0 || isNaN(Number(assetBalance))) {
     return ZERO_BALANCE;
   }
 
   const fiatBalance = new BigNumber(price).multipliedBy(new BigNumber(assetBalance));
-  const BNWithConfig = BigNumber.clone();
-  BNWithConfig.config({
-    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
-  });
 
-  const bnPrecision = new BNWithConfig(precision);
-  const TEN = new BNWithConfig(10);
-  const bnFiatBalance = new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision));
+  const bnPrecision = new BigNumberRoundingDown(precision);
+  const TEN = new BigNumberRoundingDown(10);
+  const bnFiatBalance = new BigNumberRoundingDown(fiatBalance.toString()).div(TEN.pow(bnPrecision));
 
   if (bnFiatBalance.gte(1) && bnFiatBalance.lt(10)) {
     return bnFiatBalance.decimalPlaces(Decimal.SMALL_NUMBER).toString();
