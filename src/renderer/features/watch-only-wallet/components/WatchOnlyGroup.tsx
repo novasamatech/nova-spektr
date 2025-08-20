@@ -7,6 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletsModel } from '../model/wallets';
 
@@ -21,6 +22,7 @@ export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletsModel.$wallets);
+  const selectedWallet = useUnit(walletSelect.$selectedWallet);
 
   const filteredWallets = performSearch({
     query,
@@ -48,6 +50,7 @@ export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
               return (
                 <WalletManagement
                   key={wallet.id}
+                  active={selectedWallet === wallet}
                   wallet={wallet}
                   accountId={accountId}
                   description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
