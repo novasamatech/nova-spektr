@@ -7,16 +7,15 @@ import {
   ComboboxProvider,
 } from '@ariakit/react';
 import * as RadixPopover from '@radix-ui/react-popover';
-import {
+import React, {
   Children,
   type PropsWithChildren,
-  type ReactElement,
   type ReactNode,
   createContext,
-  isValidElement,
   memo,
   startTransition,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -42,11 +41,14 @@ type ContextProps = {
   onSearch?: (query: string) => void;
   isInputMode: boolean;
   onItemSelect: (value: string) => void;
+  selectedValue?: string | null;
+  setSelectedItemContent: (content: ReactNode) => void;
 };
 
 const Context = createContext<ContextProps>({
   isInputMode: false,
   onItemSelect: () => {},
+  setSelectedItemContent: () => {},
 });
 
 type ControlledSelectProps<T extends string> = {
@@ -78,43 +80,6 @@ type GroupProps = PropsWithChildren<{
   title: ReactNode;
 }>;
 
-// Type guards for finding selected item
-const isSelectItem = (element: ReactElement): element is ReactElement<ItemProps> => {
-  const props = element.props as Record<string, unknown>;
-  return 'value' in props && typeof props['value'] === 'string';
-};
-
-const isSelectGroup = (element: ReactElement): element is ReactElement<GroupProps> => {
-  const props = element.props as Record<string, unknown>;
-  return 'title' in props && 'children' in props;
-};
-
-const findSelectedItem = (children: ReactNode, selectedValue: string): ReactElement<ItemProps> | null => {
-  const childrenArray = Children.toArray(children);
-
-  for (const child of childrenArray) {
-    if (isValidElement(child)) {
-      if (isSelectItem(child) && child.props.value === selectedValue) {
-        return child;
-      }
-
-      if (isSelectGroup(child)) {
-        const foundInGroup = findSelectedItem(child.props.children, selectedValue);
-        if (foundInGroup) {
-          return foundInGroup;
-        }
-      }
-    }
-  }
-
-  return null;
-};
-
-const getSelectedItemContent = (children: ReactNode, selectedValue: string): ReactNode => {
-  const selectedItem = findSelectedItem(children, selectedValue);
-  return selectedItem ? selectedItem.props.children : null;
-};
-
 const Root = <T extends string>({
   invalid,
   disabled,
@@ -135,6 +100,7 @@ const Root = <T extends string>({
   const [internalOpen, setInternalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isInputMode, setIsInputMode] = useState(false);
+  const [selectedItemContent, setSelectedItemContent] = useState<ReactNode>(null);
   const { portalContainer, theme } = useTheme();
 
   // Use controlled open state if provided, otherwise use internal state
@@ -145,8 +111,12 @@ const Root = <T extends string>({
   const hasResults = Children.count(children) > 0;
   const showEmptyState = !!onSearch && searchQuery.length > 0 && !hasResults;
 
-  // Get the content of the selected item
-  const selectedItemContent = _value ? getSelectedItemContent(children, _value) : null;
+  // Clear selected item content when value changes to null
+  useEffect(() => {
+    if (!_value) {
+      setSelectedItemContent(null);
+    }
+  }, [_value]);
 
   const handleItemSelect = (itemValue: string) => {
     startTransition(() => {
@@ -202,13 +172,33 @@ const Root = <T extends string>({
       onSearch,
       isInputMode,
       onItemSelect: handleItemSelect,
+      selectedValue: _value,
+      setSelectedItemContent,
     }),
-    [height, invalid, disabled, testId, onSearch, isInputMode, handleItemSelect],
+    [height, invalid, disabled, testId, onSearch, isInputMode, handleItemSelect, _value, setSelectedItemContent],
   );
 
   return (
     <Context.Provider value={ctx}>
       <ThemeProvider preferStaticContent>
+        {/* Hidden container for content registration - always rendered */}
+        <div className="sr-only" aria-hidden="true">
+          {onSearch ? (
+            <ComboboxProvider
+              open={false}
+              setOpen={() => {}}
+              value=""
+              defaultSelectedValue=""
+              setValue={() => {}}
+              setSelectedValue={() => {}}
+            >
+              <ComboboxList>{children}</ComboboxList>
+            </ComboboxProvider>
+          ) : (
+            children
+          )}
+        </div>
+
         <RadixPopover.Root modal open={isOpen} onOpenChange={setOpen}>
           <RadixPopover.Anchor asChild>
             <div ref={containerRef} className="w-full">
@@ -376,9 +366,17 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
 
 const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => {
   const { theme } = useTheme();
-  const { onSearch, isInputMode, onItemSelect } = useContext(Context);
+  const { onSearch, isInputMode, onItemSelect, selectedValue, setSelectedItemContent } = useContext(Context);
 
   const isSearchMode = !!onSearch && isInputMode;
+  const isSelected = selectedValue === value;
+
+  // Register this item's content if it's selected
+  useEffect(() => {
+    if (isSelected) {
+      setSelectedItemContent(children);
+    }
+  }, [isSelected, children, setSelectedItemContent]);
 
   const commonClassName = cnTw(
     'flex w-full cursor-pointer rounded-sm px-3 py-2 text-footnote text-text-secondary contain-inline-size',
