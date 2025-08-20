@@ -10,6 +10,7 @@ import { Accordion, Box, Checkbox } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { FiatBalance } from '@/entities/price';
 import { walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { hiddenWalletsBalancesModel } from '../model/balances';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
@@ -40,6 +41,7 @@ export const WalletGroup = (props: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
+  const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const balances = useUnit(hiddenWalletsBalancesModel.$balances);
 
   // Optimized Set for O(1) selection lookups
@@ -108,6 +110,7 @@ export const WalletGroup = (props: Props) => {
                   <div className="flex-1">
                     <WalletManagement
                       wallet={wallet}
+                      active={selectedWalletId === wallet.id}
                       accountId={accountId ?? null}
                       checkBox={
                         <Checkbox

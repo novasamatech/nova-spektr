@@ -60,7 +60,6 @@
             "name": "Polkadot Vault - DD",
             "type": "wallet_pv",
             "signingType": "signing_pv",
-            "isActive": true,
             "id": 1,
             "accounts": [
               {

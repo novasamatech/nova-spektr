@@ -14,9 +14,17 @@ type Props = {
   size: 'sm' | 'md' | 'mdlg' | 'lg' | 'xl' | 'xxl' | 'full' | 'fit';
   height?: 'full' | 'lg' | 'fit';
   onToggle?: (open: boolean) => void;
+  testId?: string;
 };
 
-const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: PropsWithChildren<Props>) => {
+const Root = ({
+  isOpen,
+  size = 'md',
+  height = 'fit',
+  children,
+  onToggle,
+  testId = 'Modal',
+}: PropsWithChildren<Props>) => {
   const { portalContainer } = useTheme();
 
   const arrayChildren = Children.toArray(children);
@@ -43,6 +51,7 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
         >
           <Dialog.Content
             aria-describedby={undefined}
+            data-testid={testId}
             className={cnTw(
               'ui-kit-modal-height flex max-w-full min-w-32 flex-col overflow-hidden',
               'text-left align-middle text-body',
