@@ -92,13 +92,15 @@ function checkPermission(
   // TODO redo all this parsing thing after migration to new transaction interface
   let extrinsic = transactionService.createExtrinsic(transaction, api);
 
-  for (const [index, account] of [...route].reverse().entries()) {
+  const inversedRoute = [...route].reverse();
+
+  for (const [index, account] of inversedRoute.entries()) {
     if (accountUtils.isProxiedAccount(account)) {
       if (isProxyExtrinsic(extrinsic)) {
         extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[2].toHex(), api);
       }
 
-      const proxyAccount = route.at(index + 1);
+      const proxyAccount = inversedRoute.at(index - 1);
       if (nullable(proxyAccount)) return null;
 
       const connection = account.connections.find(c => c.proxyAccountId === proxyAccount.accountId);
