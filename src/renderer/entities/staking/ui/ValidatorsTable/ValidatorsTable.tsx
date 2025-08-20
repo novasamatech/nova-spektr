@@ -1,14 +1,13 @@
 import { type ReactNode } from 'react';
 
-import { type Asset, type Chain, type Explorer, type Validator } from '@/shared/core';
+import { type Asset, type Chain, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, toAddress } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, HelpText, IconButton } from '@/shared/ui';
-import { AssetBalance, Hash, Identicon } from '@/shared/ui-entities';
+import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
+import { BodyText, FootnoteText } from '@/shared/ui';
+import { AccountExplorers, Address, AssetBalance, Hash, Identicon } from '@/shared/ui-entities';
 // eslint-disable-next-line boundaries/element-types
 import { type AccountIdentity } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
-import { ExplorersPopover } from '@/entities/wallet';
 
 const TABLE_GRID_CELLS = 'grid-cols-[1fr_128px_128px_40px]';
 
@@ -45,23 +44,14 @@ type RowProps = {
   identity?: AccountIdentity;
   chain?: Chain;
   asset?: Asset;
-  explorers?: Explorer[];
 };
 
-const ValidatorRow = ({ validator, identity, chain, asset, explorers = [] }: RowProps) => {
+const ValidatorRow = ({ validator, identity, chain, asset }: RowProps) => {
   const address = toAddress(validator.accountId, { prefix: chain?.addressPrefix });
   return (
     <>
-      <div className="mr-auto flex items-center gap-x-2" data-testid="validator">
-        <Identicon value={validator.accountId} background={false} size={20} />
-        {identity ? (
-          <div className="flex flex-col">
-            <BodyText>{identity.name}</BodyText>
-            <HelpText className="text-text-tertiary">{address}</HelpText>
-          </div>
-        ) : (
-          <BodyText>{address}</BodyText>
-        )}
+      <div className="mr-auto flex items-center gap-x-2 text-text-primary" data-testid="validator">
+        <Address showIcon iconSize={20} address={address} title={identity?.name} />
       </div>
       <div className="flex flex-col px-3">
         {asset && (
@@ -80,7 +70,7 @@ const ValidatorRow = ({ validator, identity, chain, asset, explorers = [] }: Row
         )}
       </div>
 
-      <ExplorersPopover button={<IconButton name="details" />} address={address} explorers={explorers} />
+      {nonNullable(chain) && <AccountExplorers accountId={validator.accountId} chain={chain} />}
     </>
   );
 };
