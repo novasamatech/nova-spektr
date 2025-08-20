@@ -7,7 +7,8 @@ import { Alert, BodyText, Button, Counter, DetailRow, Icon, IconButton, Separato
 import { Account, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
-import { FeeWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm-model';
 import { flowModel } from '../model/flow-model';
 import { formModel } from '../model/form-model';
@@ -18,10 +19,13 @@ import { SelectedSignatoriesModal } from './components/SelectedSignatoriesModal'
 export const ConfirmationStep = () => {
   const { t } = useI18n();
 
-  const signerWallet = useUnit(flowModel.$signerWallet);
+  const wallets = useUnit(walletModel.$wallets);
   const signer = useUnit(flowModel.$signer);
   const fee = useUnit(flowModel.$fee);
   const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
+  const route = useUnit(flowModel.$route);
+  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
+  const isDepositLoading = useUnit(flowModel.$isDepositLoading);
 
   const chain = useUnit(formModel.$chain);
   const signatories = useUnit(signatoryModel.$signatories);
@@ -29,6 +33,9 @@ export const ConfirmationStep = () => {
   const {
     fields: { name, threshold },
   } = useForm(formModel.form);
+
+  const signerWallet = wallets.find(wallet => wallet.id === signer?.walletId);
+  const multisigAccount = route.find(accountUtils.isMultisigAccount);
 
   if (!signerWallet || !signer || !chain) return;
 
@@ -80,8 +87,13 @@ export const ConfirmationStep = () => {
                 </div>
               </div>
             </DetailRow>
+
             <Separator className="border-filter-border" />
             <div className="mb-4 flex flex-1 flex-col gap-y-4">
+              {multisigAccount && (
+                <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
+              )}
+
               <FeeWithLabel fee={fee.toString()} asset={asset} />
 
               <Alert variant="error" title={t('createMultisigAccount.notEnoughTokensTitle')} active={!isEnoughBalance}>
