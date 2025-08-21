@@ -190,7 +190,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
             <Button
               key="create"
               type="submit"
-              disabled={!canSubmit || !isEnoughBalance || isFeeLoading}
+              disabled={!canSubmit || !isEnoughBalance || isFeeLoading || !!errors.length}
               onClick={onSubmit}
             >
               {t('createMultisigAccount.continueButton')}
