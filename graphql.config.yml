@@ -11,6 +11,11 @@ projects:
       - src/renderer/entities/multisig-accounts/**
       - src/renderer/entities/proxy/**
 
+  SubQuery Multi Chain Proxy:
+    schema: https://subquery-account-manager-stg.novasama-tech.org
+    include:
+      - src/renderer/domains/network/account-sync/**
+
   SubQuery History:
     schema: https://subquery-history-polkadot-prod.novasama-tech.org
     include:

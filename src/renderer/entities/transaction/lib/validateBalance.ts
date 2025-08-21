@@ -3,7 +3,7 @@ import { BN } from '@polkadot/util';
 
 import { type AssetId, type Balance, type ChainId, type PartialBy, type Transaction } from '@/shared/core';
 import { ValidationErrors, transferableAmount } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas/primitives';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { OperationError, type OperationErrorType } from './common/errors';
 
