@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, nullable, toAccountId, toAddress, withdrawableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, toAccountId, toAddress, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
 import { Address, AssetBalance } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
@@ -35,8 +35,8 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
   const chain = useUnit(formModel.$chain);
 
-  const signerWallet = useUnit(flowModel.$signerWallet);
   const signer = useUnit(flowModel.$signer);
+  const initiator = useUnit(flowModel.$initiator);
   const fee = useUnit(flowModel.$fee);
   const isFeeLoading = useUnit(flowModel.$isFeeLoading);
   const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
@@ -148,11 +148,17 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
               </Alert.Item>
             </Alert>
 
-            <Alert variant="error" active={multisigAlreadyExists} title={t('createMultisigAccount.multisigExistTitle')}>
-              <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
-            </Alert>
+            {nonNullable(initiator) && (
+              <Alert
+                variant="error"
+                active={multisigAlreadyExists}
+                title={t('createMultisigAccount.multisigExistTitle')}
+              >
+                <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
+              </Alert>
+            )}
 
-            {!nullable(signerBalance) && !nullable(chain) && !nullable(signer) && (
+            {nonNullable(signerBalance) && nonNullable(chain) && nonNullable(signer) && (
               <Alert
                 variant="error"
                 active={!isEnoughBalance}
@@ -192,7 +198,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
           </Button>
 
           <div className="flex items-center justify-end gap-x-6">
-            {signerWallet && (
+            {initiator && (
               <div className="flex items-center gap-x-2">
                 <FootnoteText className="text-text-tertiary">{t('createMultisigAccount.networkFee')}</FootnoteText>
                 {chain && (

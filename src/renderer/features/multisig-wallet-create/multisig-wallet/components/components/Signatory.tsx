@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Address as AccountAddress, type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { includesMultiple, nullable, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { includesMultiple, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { FootnoteText, IconButton, InputHint } from '@/shared/ui';
 import { Address, Identicon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Input, Select } from '@/shared/ui-kit';
@@ -52,6 +52,7 @@ export const Signatory = ({
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
   const selectedSignatories = useUnit(signatoryModel.$signatories);
+  const accountsList = useUnit(walletModel.$availableAccounts);
 
   const [query, setQuery] = useState(signatoryAddress);
 
@@ -67,7 +68,7 @@ export const Signatory = ({
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: w => walletUtils.isValidSignatory(w) && (!selectedWalletId || w.id.toString() === selectedWalletId),
+      walletFn: w => !walletUtils.isWatchOnly(w) && (!selectedWalletId || w.id.toString() === selectedWalletId),
       accountFn: a => {
         if (!chain) return false;
 
@@ -89,42 +90,40 @@ export const Signatory = ({
   }, [isOwnAccount, ownAccountName, contactAccountName]);
 
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
-    if (!chain || wallets.length === 0 || (!isOwnAccount && validateAddress(query, chain))) return [];
+    if (!chain || accountsList.length === 0 || (!isOwnAccount && validateAddress(query, chain))) return [];
 
-    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: walletUtils.isValidSignatory,
-      accountFn: account => {
-        const isCorrectAccount = !accountUtils.isWatchOnlyAccount(account);
+    const filteredAccounts = accountsList.filter(account => {
+      const isCorrectAccount =
+        !accountUtils.isWatchOnlyAccount(account) && !accountUtils.isFlexibleMultisigAccount(account);
 
-        if (isOwnAccount) return isCorrectAccount;
+      if (isOwnAccount) return isCorrectAccount;
 
-        const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
-        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-        const queryPass = includesMultiple([account.name, address], query);
+      const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
+      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+      const queryPass = includesMultiple([account.name, address], query);
 
-        return isChainMatch && isCorrectAccount && queryPass;
-      },
+      return isChainMatch && isCorrectAccount && queryPass;
     });
 
-    if (nullable(filteredWallets) || filteredWallets.length === 0) return [];
+    if (filteredAccounts.length === 0) return [];
 
     const accountOptions = new Map<string, ComboboxItem>();
 
-    for (const wallet of filteredWallets) {
-      for (const account of wallet.accounts) {
-        const address = toAddress(account.accountId, { prefix: POLKADOT_ADDRESS_PREFFIX });
+    for (const account of filteredAccounts) {
+      const address = toAddress(account.accountId, { prefix: POLKADOT_ADDRESS_PREFFIX });
 
-        if (!isOwnAccount && selectedSignatories.some(s => toAccountId(s.address) === toAccountId(address))) continue;
-        if (accountOptions.has(address)) continue;
+      if (!isOwnAccount && selectedSignatories.some(s => toAccountId(s.address) === toAccountId(address))) continue;
+      if (accountOptions.has(address)) continue;
 
-        const title = wallet.name === account.name ? account.name : `${wallet.name} (${account.name})`;
+      const wallet = wallets.find(w => w.id === account.walletId);
 
-        accountOptions.set(address, {
-          id: address,
-          value: { address, walletId: account.walletId },
-          label: <Address iconSize={20} showIcon title={title} address={address} />,
-        });
-      }
+      const title = !wallet || wallet.name === account.name ? account.name : `${wallet.name} (${account.name})`;
+
+      accountOptions.set(address, {
+        id: address,
+        value: { address, walletId: account.walletId },
+        label: <Address iconSize={20} showIcon title={title} address={address} />,
+      });
     }
 
     if (accountOptions.size === 0) return [];
