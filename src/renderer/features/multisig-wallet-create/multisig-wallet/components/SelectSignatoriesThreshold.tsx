@@ -4,9 +4,9 @@ import { Trans } from 'react-i18next';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, nullable, toAccountId, toAddress, withdrawableAmount } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
-import { Address, AssetBalance } from '@/shared/ui-entities';
+import { TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { Fee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -34,13 +34,13 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const invalidAddresses = useUnit(formModel.$invalidAddresses);
   const canSubmit = useUnit(formModel.$canSubmit);
   const chain = useUnit(formModel.$chain);
+  const wallets = useUnit(walletModel.$wallets);
 
   const signerWallet = useUnit(flowModel.$signerWallet);
-  const signer = useUnit(flowModel.$signer);
   const fee = useUnit(flowModel.$fee);
   const isFeeLoading = useUnit(flowModel.$isFeeLoading);
   const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
-  const signerBalance = useUnit(flowModel.$signerBalance);
+  const errors = useUnit(flowModel.$errors);
 
   const signatories = useUnit(signatoryModel.$signatories);
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
@@ -152,35 +152,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
               <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
             </Alert>
 
-            {!nullable(signerBalance) && !nullable(chain) && !nullable(signer) && (
-              <Alert
-                variant="error"
-                active={!isEnoughBalance}
-                title={t('createMultisigAccount.disabledError.notEnoughBalanceTitle')}
-              >
-                <Alert.Item withDot={false}>
-                  <Trans
-                    t={t}
-                    i18nKey="createMultisigAccount.disabledError.notEnoughBalanceText"
-                    components={{
-                      account: (
-                        <span className="mx-1 inline-flex w-auto align-sub">
-                          <Address
-                            address={toAddress(signer.accountId, { prefix: chain.addressPrefix })}
-                            title={signer.name}
-                            hideAddress
-                            showIcon
-                            canCopy
-                          />
-                        </span>
-                      ),
-                      fee: <AssetBalance value={fee} asset={asset} />,
-                      balance: <AssetBalance value={withdrawableAmount(signerBalance)} asset={asset} />,
-                    }}
-                  />
-                </Alert.Item>
-              </Alert>
-            )}
+            <TransactionValidationError errors={errors} wallets={wallets} />
           </div>
         </div>
       </Modal.Content>
