@@ -59,7 +59,6 @@
           "rootAccountId": "0xd4515a7508281b8dd44bf5d354c7cd673cc20b63072ec963ce12ca5e2c00793b",
           "type": "wallet_sps",
           "signingType": "signing_ps",
-          "isActive": true,
           "id": 1
         }
       ]

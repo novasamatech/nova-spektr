@@ -74,7 +74,7 @@ const $multisigAccountId = combine(
     chain: $chain,
   },
   ({ threshold, signatories, chain }) => {
-    if (!chain) return null;
+    if (!chain || !threshold) return null;
 
     const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
@@ -92,6 +92,8 @@ const $existingMultisig = combine(
     multisigAccountId: $multisigAccountId,
   },
   ({ multisigAccountId, accounts }) => {
+    if (nullable(multisigAccountId)) return null;
+
     return (
       accounts.find(a => {
         if (!accountUtils.isAnyMultisigAccount(a)) return false;

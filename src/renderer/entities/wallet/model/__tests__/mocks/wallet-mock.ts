@@ -2,7 +2,6 @@ import {
   AccountType,
   ChainType,
   CryptoType,
-  type ID,
   KeyType,
   SigningType,
   type VaultBaseAccount,
@@ -72,12 +71,11 @@ const accounts: (VaultChainAccount | VaultBaseAccount)[] = [
   } satisfies VaultBaseAccount,
 ];
 
-function getWallets(activeId: ID): Wallet[] {
+function getWallets(): Wallet[] {
   return [
     {
       id: 1,
       name: 'My first wallet',
-      isActive: false,
       type: WalletType.MULTISIG,
       signingType: SigningType.MULTISIG,
       accounts: [accounts[0], accounts[1]],
@@ -85,7 +83,6 @@ function getWallets(activeId: ID): Wallet[] {
     {
       id: 2,
       name: 'My second wallet',
-      isActive: false,
       type: WalletType.WATCH_ONLY,
       signingType: SigningType.WATCH_ONLY,
       accounts: [accounts[2], accounts[3]],
@@ -93,13 +90,12 @@ function getWallets(activeId: ID): Wallet[] {
     {
       id: 3,
       name: 'My third wallet',
-      isActive: false,
       isHidden: true,
       type: WalletType.MULTISIG,
       signingType: SigningType.MULTISIG,
       accounts: [accounts[4]],
     },
-  ].map((wallet) => ({ ...wallet, isActive: wallet.id === activeId }));
+  ];
 }
 
 const newWallet = {
@@ -107,7 +103,6 @@ const newWallet = {
   name: 'My new wallet',
   type: WalletType.SINGLE_PARITY_SIGNER,
   signingType: SigningType.PARITY_SIGNER,
-  isActive: false,
 };
 
 const newAccounts: (VaultBaseAccount | VaultChainAccount)[] = [
@@ -141,7 +136,6 @@ const newProxiedWallet = {
   name: 'Proxied Wallet',
   type: WalletType.PROXIED,
   signingType: SigningType.POLKADOT_VAULT,
-  isActive: false,
 };
 
 const newProxiedAccounts = [

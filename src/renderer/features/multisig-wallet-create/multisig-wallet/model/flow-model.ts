@@ -14,9 +14,24 @@ import {
   type Wallet,
   WalletType,
 } from '@/shared/core';
-import { Step, getNativeAsset, isStep, nonNullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
-import { createComplexTxStore, createTxValidationStore, createTxValidator } from '@/shared/transactions';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import {
+  Step,
+  TEST_ACCOUNTS,
+  getNativeAsset,
+  isStep,
+  nonNullable,
+  nullable,
+  toAccountId,
+  withdrawableAmountBN,
+} from '@/shared/lib/utils';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
+import { type AnyAccount, type ChainAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -42,33 +57,46 @@ const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.open);
 
 const $signer = restore(signerSelected, null).reset(flow.open);
 
-const $signerWallet = createStore<Wallet | null>(null).reset(flow.open);
+const $initiators = createStore<AnyAccount[] | null>(null).reset(flow.close);
+const $initiatorWallet = createStore<Wallet | null>(null).reset(flow.close);
 
 sample({
   clock: signatoryModel.$ownedSignatoriesWallets,
-  source: signatoryModel.$signatories,
-  filter: ownedSignatoriesWallets => ownedSignatoriesWallets.length > 0,
-  fn: (signatories, wallets) => {
+  source: {
+    signatories: signatoryModel.$signatories,
+    accounts: accounts.$list,
+  },
+  filter: (_, ownedSignatoriesWallets) => ownedSignatoriesWallets.length > 0,
+  fn: ({ signatories, accounts }) => {
     const ownSignatory = signatories.at(0);
     if (!ownSignatory || !ownSignatory.walletId) return null;
-
-    return wallets.find(w => w.id.toString() === ownSignatory.walletId) ?? null;
+    return (
+      accounts.filter(
+        a => a.walletId.toString() === ownSignatory.walletId && a.accountId === toAccountId(ownSignatory.address),
+      ) ?? null
+    );
   },
-  target: $signerWallet,
+  target: $initiators,
+});
+
+const $initiator = combine($initiators, formModel.$chain, (initiators, chain) => {
+  if (nullable(initiators) || nullable(chain)) return null;
+
+  return initiators.find(i => accountService.isAccountAvailableOnChain(i, chain)) ?? initiators[0];
 });
 
 sample({
-  clock: $signerWallet,
-  source: { accounts: accounts.$list, chain: formModel.$chain },
-  filter: ({ chain }, wallet) => nonNullable(wallet) && nonNullable(chain),
-  fn: ({ accounts, chain }, wallet) => {
-    return accounts.find(a => a.walletId === wallet!.id && accountService.isAccountAvailableOnChain(a, chain!)) ?? null;
+  clock: $initiators,
+  source: walletModel.$wallets,
+  filter: (_, initiators) => nonNullable(initiators),
+  fn: (wallets, initiators) => {
+    return wallets.find(w => w.id === initiators?.at(0)?.walletId) ?? null;
   },
-  target: $signer,
+  target: $initiatorWallet,
 });
 
 sample({
-  clock: $signerWallet,
+  clock: $initiatorWallet,
   filter: nonNullable,
   fn: wallet => [wallet!],
   target: signatoryModel.events.getSignatoriesBalance,
@@ -105,6 +133,44 @@ sample({
   target: formModel.form.fields.chainId.change,
 });
 
+const $signatories = createSignatoriesStore({
+  chain: formModel.$chain,
+  initiator: $initiator,
+  accounts: accounts.$list,
+});
+
+// in the current implementation, the first signatory is always the signer
+sample({
+  clock: $signatories,
+  fn: signatories => {
+    return signatories.length >= 1 ? signatories[0] : null;
+  },
+  target: $signer,
+});
+
+// when we change initiator and it's a chain account - change chain for it
+sample({
+  clock: signatoryModel.events.changeSignatory,
+  source: {
+    multisigChains: $multisigChains,
+    initiators: $initiators,
+  },
+  filter: ({ initiators }, addedSignatory) => {
+    return (
+      addedSignatory.index === 0 &&
+      nonNullable(initiators) &&
+      initiators.length === 1 &&
+      accountService.isChainAccount(initiators[0])
+    );
+  },
+  fn: ({ multisigChains, initiators }) => {
+    const initiator = initiators!.at(0)! as ChainAccount;
+
+    return multisigChains.find(i => i.chainId === initiator.chainId)?.chainId ?? multisigChains[0].chainId;
+  },
+  target: formModel.form.fields.chainId.change,
+});
+
 const $coreTx = combine(
   {
     threshold: formModel.form.fields.threshold.$value,
@@ -124,13 +190,30 @@ const $coreTx = combine(
   },
 );
 
+const $fakeTx = combine(
+  {
+    chainId: formModel.form.fields.chainId.$value,
+  },
+  ({ chainId }) => {
+    if (!chainId) return null;
+
+    return transactionBuilder.buildRemark({
+      chainId,
+      accountId: TEST_ACCOUNTS[0],
+      threshold: 2,
+      signatories: [TEST_ACCOUNTS[0], TEST_ACCOUNTS[1]],
+    });
+  },
+);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
-  initiator: $signer,
+  initiator: $initiator,
   signatory: $signer,
   accounts: accounts.$list,
   chain: formModel.$chain,
   transaction: $coreTx,
+  feeTransaction: $fakeTx,
 });
 
 const $signerBalance = combine(
@@ -161,6 +244,11 @@ const { $errors } = createTxValidationStore({
   },
 });
 
+const { $multisigDeposit, $pending: $isDepositLoading } = createMultisigDeposit({
+  $threshold: formModel.form.fields.threshold.$value,
+  $api: $api,
+});
+
 const $isEnoughBalance = combine(
   {
     fee: $fee,
@@ -187,19 +275,26 @@ const formSubmitted = sample({
     tx: $tx,
     coreTx: $coreTx,
     route: $route,
-    signer: $signer,
+    signatory: $signer,
+    initiator: $initiator,
     chain: formModel.$chain,
     threshold: formModel.form.fields.threshold.$value,
   },
-}).filterMap(({ chain, tx, coreTx, route, signer, threshold }) => {
-  if (nonNullable(coreTx) && nonNullable(chain) && nonNullable(signer) && nonNullable(tx)) {
+}).filterMap(({ chain, tx, coreTx, route, signatory, threshold, initiator }) => {
+  if (
+    nonNullable(coreTx) &&
+    nonNullable(chain) &&
+    nonNullable(signatory) &&
+    nonNullable(tx) &&
+    nonNullable(initiator)
+  ) {
     return [
       {
         tx,
         coreTx,
         route,
-        signatory: signer,
-        initiator: signer,
+        signatory,
+        initiator,
         threshold,
         chain,
       },
@@ -226,17 +321,19 @@ sample({
   source: {
     chain: formModel.$chain,
     tx: $tx,
-    signer: $signer,
+    signatory: $signer,
+    initiator: $initiator,
   },
-  filter: ({ chain, tx, signer }) => nonNullable(chain) && nonNullable(tx) && nonNullable(signer),
-  fn: ({ chain, tx, signer }) => ({
+  filter: ({ chain, tx, initiator, signatory }) =>
+    nonNullable(chain) && nonNullable(tx) && nonNullable(initiator) && nonNullable(signatory),
+  fn: ({ chain, tx, initiator, signatory }) => ({
     event: {
       signingPayloads: [
         {
           chain: chain!,
-          account: signer!,
+          account: initiator!,
           transaction: tx!,
-          signatory: signer,
+          signatory,
         },
       ],
     },
@@ -249,29 +346,12 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
-  source: {
-    chain: formModel.$chain,
-    coreTx: $coreTx,
-    tx: $tx,
-    signer: $signer,
-  },
-  filter: ({ chain, coreTx, tx, signer }) => {
-    return nonNullable(chain) && nonNullable(tx) && nonNullable(coreTx) && nonNullable(signer);
-  },
-  fn: ({ chain, coreTx, tx, signer }, signParams) => ({
-    event: {
-      ...signParams,
-      chain: chain!,
-      account: signer!,
-      signatory: signer,
-      coreTxs: [coreTx!],
-      wrappedTxs: [tx!],
-    },
-    step: Step.SUBMIT,
-  }),
+  clock: signModel.signed,
+  source: $tx,
+  filter: tx => nonNullable(tx),
+  fn: (_, payload) => ({ event: payload, step: Step.SUBMIT }),
   target: spread({
-    event: submitModel.events.formInitiated,
+    event: submitModel.init,
     step: stepChanged,
   }),
 });
@@ -411,13 +491,19 @@ sample({
 export const flowModel = {
   $errors,
   $step,
+  $initiator,
+  $initiators,
   $signer,
-  $signerWallet,
+  $initiatorWallet,
   $isEnoughBalance,
   $tx,
+  $signerBalance,
+  $route,
 
   $fee,
   $isFeeLoading: $pendingFee,
+  $multisigDeposit,
+  $isDepositLoading,
 
   signerSelected,
   stepChanged,
