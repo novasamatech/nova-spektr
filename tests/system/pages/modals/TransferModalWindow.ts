@@ -39,7 +39,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
       await this.page.goto(url);
 
       if (waitForModal) {
-        await this.page.getByTestId(TEST_IDS.BASE_MODAL).waitFor({ state: 'visible' });
+        await this.page.getByTestId(TEST_IDS.TRANSFER.MODAL).waitFor({ state: 'visible' });
       }
 
       return this;
@@ -48,14 +48,14 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
 
   public async checkFeeforAsset(): Promise<void> {
     await step('Check that transfer fee is greater than zero', async () => {
-      await this.waitForContinueButtonToBeEnabled();
       await this.expectTransferFeeNotZero();
     });
   }
 
   private async expectTransferFeeNotZero(): Promise<void> {
     const feeRow = this.page.getByTestId(TransferModalElements.feeRowLocator);
-    const feeText = await feeRow.textContent();
+    const assetBalance = feeRow.getByTestId(TransferModalElements.feeValueLocator);
+    const feeText = await assetBalance.textContent();
 
     const numericMatch = feeText?.match(/(\d+\.?\d*)/);
     const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
@@ -123,8 +123,9 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
 
   public async close(): Promise<BasePage> {
     await step('Close transfer modal', async () => {
-      await this.page.getByTestId(TEST_IDS.CLOSE_BUTTON).click();
-      await this.page.getByTestId(TEST_IDS.BASE_MODAL).waitFor({ state: 'hidden' });
+      const modal = this.page.getByTestId(TEST_IDS.TRANSFER.MODAL);
+      await modal.getByTestId(TEST_IDS.CLOSE_BUTTON).click();
+      await modal.waitFor({ state: 'hidden' });
     });
 
     return this.previousPage;

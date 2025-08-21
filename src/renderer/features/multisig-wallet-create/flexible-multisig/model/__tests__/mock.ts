@@ -29,7 +29,6 @@ export const testChain = {
 export const multisigWallet: Wallet = {
   id: 3,
   name: 'multisig Wallet',
-  isActive: false,
   type: WalletType.MULTISIG,
   signingType: SigningType.MULTISIG,
   accounts: [
@@ -51,7 +50,6 @@ export const multisigWallet: Wallet = {
 export const signerWallet: Wallet = {
   id: 2,
   name: 'Signer Wallet',
-  isActive: true,
   type: WalletType.WALLET_CONNECT,
   signingType: SigningType.WALLET_CONNECT,
   accounts: [
@@ -73,7 +71,6 @@ export const signerWallet: Wallet = {
 export const signatoryWallet: Wallet = {
   id: 5,
   name: 'Signer Wallet',
-  isActive: true,
   type: WalletType.WALLET_CONNECT,
   signingType: SigningType.WALLET_CONNECT,
   accounts: [
@@ -95,7 +92,6 @@ export const signatoryWallet: Wallet = {
 export const initiatorWallet: Wallet = {
   id: 1,
   name: 'Wallet',
-  isActive: true,
   type: WalletType.POLKADOT_VAULT,
   signingType: SigningType.POLKADOT_VAULT,
   accounts: [
@@ -117,7 +113,6 @@ export const initiatorWallet: Wallet = {
 export const wrongChainWallet: Wallet = {
   id: 4,
   name: 'Wallet Wrong Chain',
-  isActive: true,
   type: WalletType.POLKADOT_VAULT,
   signingType: SigningType.POLKADOT_VAULT,
   accounts: [

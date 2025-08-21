@@ -13,7 +13,7 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
-import { dictionary, groupBy, nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
+import { groupBy, nonNullable, toKeysRecord } from '@/shared/lib/utils';
 // TODO wallet model should be either in wallets domain or wallets feature
 // eslint-disable-next-line boundaries/element-types
 import {
@@ -21,7 +21,6 @@ import {
   type AnyAccountDraft,
   type ChainAccount,
   type UniversalAccount,
-  accountService,
   accounts,
 } from '@/domains/network';
 
@@ -50,31 +49,14 @@ const $rawWallets = createStore<DbWallet[]>([]);
 const $allWallets = combine($rawWallets, accounts.$list, (wallets, accounts) => {
   const grouped = groupBy(accounts, (a) => a.walletId);
 
-  return wallets.map((wallet) => ({ ...wallet, accounts: grouped[wallet.id] ?? [] })) as Wallet[];
+  return wallets.map<Wallet>((wallet) => ({ ...wallet, accounts: grouped[wallet.id] ?? [] }));
 });
 const $wallets = $allWallets.map((wallets) => wallets.filter((x) => !x.isHidden));
 const $hiddenWallets = $allWallets.map((wallets) => wallets.filter((x) => x.isHidden));
 
-// TODO: ideally it should be a feature
-const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive) ?? null);
-
-// TODO: ideally it should be a feature
-const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, allAccounts) => {
-  if (nullable(wallet)) return [];
-  return accountService.filterAccountsByWallet(allAccounts, wallet.id);
-});
-
-// Workaround - select event recreates wallet array every time, serialized ids are more stable.
-const $walletIds = $wallets.map((wallets) =>
-  wallets
-    .map((w) => w.id)
-    .sort()
-    .join(','),
-);
-
 // list of accounts filtered by non-hidden wallets
-const $availableAccounts = combine($walletIds, accounts.$list, (walletIds, allAccounts) => {
-  const ids = toKeysRecord(walletIds.split(','));
+const $availableAccounts = combine($wallets, accounts.$list, (wallets, allAccounts) => {
+  const ids = toKeysRecord(wallets.map((w) => w.id));
   return allAccounts.filter((a) => a.walletId in ids);
 });
 
@@ -83,27 +65,7 @@ const $populated = restore(
   false,
 );
 
-const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
-  const wallets = await storageService.wallets.readAll();
-
-  // Deactivate wallets except first one if more than one selected
-  const activeWallets = wallets.filter((wallet) => wallet.isActive);
-
-  if (activeWallets.length > 1) {
-    const inactiveWallets = activeWallets.slice(1).map((wallet) => ({ ...wallet, isActive: false }));
-    await storageService.wallets.updateAll(inactiveWallets);
-
-    const walletsMap = dictionary(wallets, 'id');
-
-    for (const wallet of inactiveWallets) {
-      walletsMap[wallet.id] = wallet;
-    }
-
-    return Object.values(walletsMap);
-  }
-
-  return wallets;
-});
+const fetchAllWalletsFx = createEffect(() => storageService.wallets.readAll());
 
 type CreateResult = {
   wallet: DbWallet;
@@ -111,7 +73,7 @@ type CreateResult = {
 };
 const createWalletFx = createEffect(
   async ({ wallet, accounts: accountDrafts }: CreateParams): Promise<CreateResult | undefined> => {
-    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+    const dbWallet = await storageService.wallets.create(wallet);
 
     if (!dbWallet) return undefined;
 
@@ -133,7 +95,7 @@ const createWalletsFx = createEffect(
     }[],
   ): Promise<CreateResult[]> => {
     const requests = drafts.map(async ({ wallet, accounts: accountDrafts }) => {
-      const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+      const dbWallet = await storageService.wallets.create(wallet);
 
       if (!dbWallet) return undefined;
 
@@ -323,14 +285,6 @@ export const walletModel = {
   $wallets,
   $allWallets: readonly($allWallets),
   $hiddenWallets,
-  /**
-   * @deprecated Use `import { walletSelect } from '@/aggregates/wallet-select'`
-   */
-  $activeWallet,
-  /**
-   * @deprecated Use `import { walletSelect } from '@/aggregates/wallet-select'`
-   */
-  $activeAccounts,
   $availableAccounts,
   $isLoadingWallets: or(not($populated), fetchAllWalletsFx.pending),
 

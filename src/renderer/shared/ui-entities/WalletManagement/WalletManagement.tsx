@@ -10,6 +10,7 @@ import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
 
 type Props = {
   wallet: Wallet;
+  active: boolean;
   accountId: AccountId | null;
   description?: string | ReactNode;
   checkBox?: ReactNode;
@@ -23,6 +24,7 @@ type Props = {
 export const WalletManagement = memo(
   ({
     wallet,
+    active,
     accountId,
     theme,
     description,
@@ -41,7 +43,7 @@ export const WalletManagement = memo(
         )}
       >
         <button className="flex w-full items-center gap-x-2 rounded py-1.5 pr-10 pl-2" onClick={onClick}>
-          {wallet.isActive ? (
+          {active ? (
             <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
           ) : (
             <div className="row-span-2 h-4 w-4 shrink-0" />
@@ -56,7 +58,7 @@ export const WalletManagement = memo(
                 className={cnTw(
                   'truncate text-text-secondary transition-colors',
                   'group-focus-within:text-text-primary group-hover:text-text-primary',
-                  { 'text-text-primary': wallet.isActive },
+                  { 'text-text-primary': active },
                 )}
               >
                 {wallet.name}
