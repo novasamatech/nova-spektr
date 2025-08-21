@@ -15,7 +15,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { Step, getNativeAsset, isStep, nonNullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
-import { createComplexTxStore } from '@/shared/transactions';
+import { createComplexTxStore, createTxValidationStore, createTxValidator } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
@@ -40,7 +40,6 @@ const signerSelected = createEvent<AnyAccount>();
 
 const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.open);
 
-const $error = createStore('').reset(flow.open);
 const $signer = restore(signerSelected, null).reset(flow.open);
 
 const $signerWallet = createStore<Wallet | null>(null).reset(flow.open);
@@ -148,6 +147,19 @@ const $signerBalance = combine(
     );
   },
 );
+
+const $asset = formModel.$chain.map(chain => (chain ? getNativeAsset(chain.assets) : null));
+const validator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
 
 const $isEnoughBalance = combine(
   {
@@ -314,12 +326,6 @@ sample({
 });
 
 sample({
-  clock: createWalletFx.fail,
-  fn: ({ error }) => error.message,
-  target: $error,
-});
-
-sample({
   clock: createWalletFx.doneData.filter({ fn: nonNullable }),
   fn: ({ wallet }) => wallet.id,
   target: walletSelect.select,
@@ -403,13 +409,12 @@ sample({
 });
 
 export const flowModel = {
-  $error,
+  $errors,
   $step,
   $signer,
   $signerWallet,
   $isEnoughBalance,
   $tx,
-  $signerBalance,
 
   $fee,
   $isFeeLoading: $pendingFee,
