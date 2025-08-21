@@ -24,7 +24,13 @@ import {
   toAccountId,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import { type AnyAccount, type ChainAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
@@ -49,8 +55,7 @@ const signerSelected = createEvent<AnyAccount>();
 
 const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.open);
 
-const $error = createStore('').reset(flow.close);
-const $signer = restore(signerSelected, null).reset(flow.close);
+const $signer = restore(signerSelected, null).reset(flow.open);
 
 const $initiators = createStore<AnyAccount[] | null>(null).reset(flow.close);
 const $initiatorWallet = createStore<Wallet | null>(null).reset(flow.close);
@@ -226,6 +231,19 @@ const $signerBalance = combine(
   },
 );
 
+const $asset = formModel.$chain.map(chain => (chain ? getNativeAsset(chain.assets) : null));
+const validator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
 const { $multisigDeposit, $pending: $isDepositLoading } = createMultisigDeposit({
   $threshold: formModel.form.fields.threshold.$value,
   $api: $api,
@@ -388,12 +406,6 @@ sample({
 });
 
 sample({
-  clock: createWalletFx.fail,
-  fn: ({ error }) => error.message,
-  target: $error,
-});
-
-sample({
   clock: createWalletFx.doneData.filter({ fn: nonNullable }),
   fn: ({ wallet }) => wallet.id,
   target: walletSelect.select,
@@ -477,7 +489,7 @@ sample({
 });
 
 export const flowModel = {
-  $error,
+  $errors,
   $step,
   $initiator,
   $initiators,
