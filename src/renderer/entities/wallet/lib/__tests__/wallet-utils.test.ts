@@ -120,26 +120,6 @@ describe('entities/wallet/lib/wallet-utils', () => {
     expect(walletUtils.isWatchOnly(wallet)).toEqual(false);
   });
 
-  test('isValidSignatory returns false if wallet is not provided', () => {
-    const result = walletUtils.isValidSignatory();
-
-    expect(result).toEqual(false);
-  });
-
-  test('isValidSignatory returns false if wallet type is not in the valid signatory wallet types', () => {
-    const wallet = { type: WalletType.MULTISIG } as Wallet;
-    const result = walletUtils.isValidSignatory(wallet);
-
-    expect(result).toEqual(false);
-  });
-
-  test('isValidSignatory returns true if wallet type is in the valid signatory wallet types', () => {
-    const wallet = { type: WalletType.SINGLE_PARITY_SIGNER } as Wallet;
-    const result = walletUtils.isValidSignatory(wallet);
-
-    expect(result).toEqual(true);
-  });
-
   test('getWalletById should return the correct wallet when found', () => {
     const wallets = [
       { id: 1, name: 'Wallet 1' },

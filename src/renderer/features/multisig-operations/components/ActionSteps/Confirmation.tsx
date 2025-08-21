@@ -88,7 +88,7 @@ export const Confirmation = ({
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
 
-        {transaction && <Slot id={confirmTransactionInfoSlot} props={{ operation: operation }} />}
+        {transaction && <Slot id={confirmTransactionInfoSlot} props={{ operation }} />}
       </div>
       {initiator && signAccount && (
         <Details api={api} operation={operation} account={initiator} chain={chain} signatory={signAccount} />

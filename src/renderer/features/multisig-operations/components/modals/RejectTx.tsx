@@ -15,7 +15,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getAssetByTypeExtras, getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigOperation, accountService, accounts } from '@/domains/network';
+import { type MultisigOperation } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
@@ -49,7 +49,6 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const accountsList = useUnit(accounts.$list);
 
   const rejectTx = useUnit(rejectModel.$transaction);
   const isEnoughBalance = useUnit(rejectModel.$isEnoughBalance);
@@ -57,6 +56,7 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   const isFeeLoading = useUnit(rejectModel.$isFeeLoading);
   const isDepositLoading = useUnit(rejectModel.$isDepositLoading);
   const multisigDeposit = useUnit(rejectModel.$multisigDeposit);
+  const signAccount = useUnit(rejectModel.$signatory);
 
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
@@ -80,10 +80,6 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
     }
   }
 
-  const signAccount = accountsList.find(
-    account => account.accountId === operation.depositor && accountService.hasPermissionToMakeActions(account),
-  );
-
   const signingPayloads = useMemo<ExtrinsicSigningPayload[]>(() => {
     if (nullable(rejectTx) || nullable(signAccount)) return [];
     return [
@@ -99,10 +95,6 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
-
-  if (!signAccount) {
-    return null;
-  }
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
