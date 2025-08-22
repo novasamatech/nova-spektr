@@ -31,7 +31,7 @@ import {
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { type AnyAccount, type ChainAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, type ChainAccount, accountService, accountSync, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -40,7 +40,6 @@ import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { proxiesModel } from '@/features/proxies';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
@@ -413,7 +412,7 @@ sample({
 
 sample({
   clock: createWalletFx.doneData,
-  target: proxiesModel.findAllProxies,
+  target: accountSync.syncAccounts,
 });
 
 // Contacts

@@ -1,8 +1,6 @@
-import { attach, createEvent, restore, sample } from 'effector';
-import { debug } from 'patronum';
+import { createEvent, restore, sample } from 'effector';
 
 import { series } from '@/shared/effector';
-import { accountSync } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { balanceSubModel } from '@/features/assets-balances';
 
@@ -27,20 +25,9 @@ sample({
   target: series(balanceSubModel.fetchWallet),
 });
 
-const syncAccountsFx = attach({
-  source: {
-    accounts: walletModel.$availableAccounts,
-  },
-  effect: accountSync.syncAccounts,
-});
-
-debug(syncAccountsFx);
-
 export const walletList = {
   $query,
 
   changeQuery,
   fetchWallets,
-
-  syncAccounts: syncAccountsFx,
 };

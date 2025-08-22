@@ -26,18 +26,18 @@ import {
 
 type DbWallet = Omit<Wallet, 'accounts'>;
 
-export type CreateParams<T extends AnyAccount = AnyAccount, W extends Wallet = Wallet> = {
-  wallet: Omit<NoID<W>, 'isActive' | 'accounts'>;
+export type WalletCreateParams<T extends AnyAccount = AnyAccount, W extends Wallet = Wallet> = {
+  wallet: Omit<NoID<W>, 'accounts'>;
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
 
 // Events - renamed to start with verbs
-const createWatchOnly = createEvent<CreateParams<WatchOnlyAccount>>();
-const createSingleshard = createEvent<CreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
-const createMultisig = createEvent<CreateParams<MultisigAccount>>();
-const createFlexibleMultisig = createEvent<CreateParams<MultisigAccount>>();
-const createWalletConnect = createEvent<CreateParams<WcAccount>>();
-const createProxied = createEvent<CreateParams<ProxiedAccount>>();
+const createWatchOnly = createEvent<WalletCreateParams<WatchOnlyAccount>>();
+const createSingleshard = createEvent<WalletCreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
+const createMultisig = createEvent<WalletCreateParams<MultisigAccount>>();
+const createFlexibleMultisig = createEvent<WalletCreateParams<MultisigAccount>>();
+const createWalletConnect = createEvent<WalletCreateParams<WcAccount>>();
+const createProxied = createEvent<WalletCreateParams<ProxiedAccount>>();
 
 const removeWallet = createEvent<ID>();
 // TODO this is temp solution, each type of wallet should update own data inside feature
@@ -68,11 +68,11 @@ const $populated = restore(
 const fetchAllWalletsFx = createEffect(() => storageService.wallets.readAll());
 
 type CreateResult = {
-  wallet: DbWallet;
+  wallet: Wallet;
   accounts: AnyAccount[];
 };
 const createWalletFx = createEffect(
-  async ({ wallet, accounts: accountDrafts }: CreateParams): Promise<CreateResult | undefined> => {
+  async ({ wallet, accounts: accountDrafts }: WalletCreateParams): Promise<CreateResult | undefined> => {
     const dbWallet = await storageService.wallets.create(wallet);
 
     if (!dbWallet) return undefined;
@@ -83,34 +83,37 @@ const createWalletFx = createEffect(
 
     const dbAccounts = await accounts.createAccounts(accountsPayload);
 
-    return { wallet: dbWallet, accounts: dbAccounts };
+    return { wallet: { ...dbWallet, accounts: [] }, accounts: dbAccounts };
   },
 );
 
-const createWalletsFx = createEffect(
-  async (
-    drafts: {
-      wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
-      accounts: Omit<AnyAccountDraft, 'walletId'>[];
-    }[],
-  ): Promise<CreateResult[]> => {
-    const requests = drafts.map(async ({ wallet, accounts: accountDrafts }) => {
-      const dbWallet = await storageService.wallets.create(wallet);
+const createWalletsFx = createEffect(async (drafts: WalletCreateParams[]): Promise<CreateResult[]> => {
+  const createdWallets = await storageService.wallets.createAll(drafts.map((d) => d.wallet));
+  if (!createdWallets) return [];
 
-      if (!dbWallet) return undefined;
+  let accountsToCreate: AnyAccountDraft[] = [];
 
-      const accountsPayload = accountDrafts.map(
-        (account) => ({ ...account, walletId: dbWallet.id }) as ChainAccount | UniversalAccount,
-      );
+  for (const [index, wallet] of createdWallets.entries()) {
+    const accounts = drafts.at(index)?.accounts;
+    if (!accounts) continue;
 
-      const dbAccounts = await accounts.createAccounts(accountsPayload);
+    accountsToCreate = accountsToCreate.concat(
+      accounts.map((account) => ({ ...account, walletId: wallet.id }) as AnyAccountDraft),
+    );
+  }
 
-      return { wallet: dbWallet, accounts: dbAccounts };
-    });
+  const dbAccounts = await accounts.createAccounts(accountsToCreate);
 
-    return Promise.all(requests).then((r) => r.filter(nonNullable));
-  },
-);
+  const results: CreateResult[] = [];
+
+  for (const wallet of createdWallets) {
+    const accounts = dbAccounts.filter((a) => a.walletId === wallet.id);
+
+    results.push({ wallet: { ...wallet, accounts: [] }, accounts });
+  }
+
+  return results;
+});
 
 const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
   await storageService.wallets.delete(wallet.id);

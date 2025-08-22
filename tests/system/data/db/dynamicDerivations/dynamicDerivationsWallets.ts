@@ -3,9 +3,7 @@ import { type IndexedDBData } from '../../../utils/interactWithDatabase';
 export const vaultDPPolkadotTestWallet: IndexedDBData = {
   database: 'spektr',
   table: 'wallets',
-  injectingData: [
-    { id: 1, isActive: true, name: 'vaultDynamicDerivationsPolkadot', signingType: 'signing_pv', type: 'wallet_pv' },
-  ],
+  injectingData: [{ id: 1, name: 'vaultDynamicDerivationsPolkadot', signingType: 'signing_pv', type: 'wallet_pv' }],
 };
 
 export const vaultDPPolkadotTestAccount: IndexedDBData = {

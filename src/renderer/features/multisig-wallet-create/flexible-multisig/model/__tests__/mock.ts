@@ -30,7 +30,6 @@ export const multisigWallet: Wallet = {
   id: 3,
   name: 'multisig Wallet',
   type: WalletType.MULTISIG,
-  signingType: SigningType.MULTISIG,
   accounts: [
     {
       id: '3',
@@ -51,7 +50,6 @@ export const signerWallet: Wallet = {
   id: 2,
   name: 'Signer Wallet',
   type: WalletType.WALLET_CONNECT,
-  signingType: SigningType.WALLET_CONNECT,
   accounts: [
     {
       id: '2',
@@ -72,7 +70,6 @@ export const signatoryWallet: Wallet = {
   id: 5,
   name: 'Signer Wallet',
   type: WalletType.WALLET_CONNECT,
-  signingType: SigningType.WALLET_CONNECT,
   accounts: [
     {
       id: '5',
@@ -93,7 +90,6 @@ export const initiatorWallet: Wallet = {
   id: 1,
   name: 'Wallet',
   type: WalletType.POLKADOT_VAULT,
-  signingType: SigningType.POLKADOT_VAULT,
   accounts: [
     {
       id: '1',
@@ -114,7 +110,6 @@ export const wrongChainWallet: Wallet = {
   id: 4,
   name: 'Wallet Wrong Chain',
   type: WalletType.POLKADOT_VAULT,
-  signingType: SigningType.POLKADOT_VAULT,
   accounts: [
     {
       id: '4',

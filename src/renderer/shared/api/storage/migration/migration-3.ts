@@ -38,6 +38,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
           chainId: old.chainId,
           cryptoType: chainType === ChainType.SUBSTRATE ? CryptoType.SR25519 : CryptoType.ETHEREUM,
           name: old.name,
+          // @ts-expect-error field was deleted
           signingType: wallet.signingType,
         };
       } else {
@@ -49,6 +50,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
           accountId: pjsSchema.helpers.toAccountId(old.accountId),
           cryptoType: chainType === ChainType.SUBSTRATE ? CryptoType.SR25519 : CryptoType.ETHEREUM,
           name: old.name,
+          // @ts-expect-error field was deleted
           signingType: wallet.signingType,
         };
       }

@@ -7,12 +7,10 @@ import { noop } from 'lodash';
 import { AccountType, CryptoType, SigningType, WalletType, type WcAccount } from '@/shared/core';
 import { createFlow, waitFor } from '@/shared/effector';
 import { isEthereumAccountId, nonNullable, nullable } from '@/shared/lib/utils';
-import { identity } from '@/domains/network';
-import { multisigsModel } from '@/entities/multisig-accounts';
+import { accountSync, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { proxiesModel } from '@/features/proxies';
 import { walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
 import { IDENTITY_CHAIN, Step, WALLET_NAME_MAX_LENGTH } from '../lib/constants';
 import { type WalletTypeName } from '../lib/types';
@@ -142,13 +140,7 @@ sample({
 
 sample({
   clock: createWalletConnectWalletFx.done,
-  target: proxiesModel.findAllProxies,
-});
-
-sample({
-  clock: createWalletConnectWalletFx.doneData.filter({ fn: nonNullable }),
-  fn: ({ accounts }) => accounts,
-  target: multisigsModel.request,
+  target: accountSync.syncAccounts,
 });
 
 sample({

@@ -8,7 +8,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
 
-import { type FetchParams, fetchIdentity } from './resource';
+import { POLKADOT_PEOPLE_CHAIN_ID } from './constants';
+import { fetchIdentity } from './resource';
 import { type AccountIdentity } from './types';
 
 const fetchPool = createAsyncTaskPool({
@@ -44,12 +45,17 @@ deriveFromResources({
   },
 });
 
+type RequestParams = {
+  accounts: AccountId[];
+  chainId?: ChainId;
+};
+
 const requestFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
   },
-  effect({ chains, apis }, { chainId, accounts }: Omit<FetchParams, 'api'>) {
+  effect({ chains, apis }, { accounts, chainId = POLKADOT_PEOPLE_CHAIN_ID }: RequestParams) {
     const bound = scopeBind(fetchIdentity.request, { safe: true });
     const identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
     const api = apis[identityChainId];
@@ -62,12 +68,10 @@ const requestFx = attach({
   },
 });
 
-const requestWithRetryFx = createEffect<Omit<FetchParams, 'api'>, Record<AccountId, AccountIdentity>>(
-  ({ chainId, accounts }) => {
-    const bound = scopeBind(requestFx, { safe: true });
-    return fetchPool.call(() => bound({ chainId, accounts }));
-  },
-);
+const requestWithRetryFx = createEffect<RequestParams, Record<AccountId, AccountIdentity>>(params => {
+  const bound = scopeBind(requestFx, { safe: true });
+  return fetchPool.call(() => bound(params));
+});
 
 export const identity = {
   $list: readonly($list),

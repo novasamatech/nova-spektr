@@ -77,14 +77,12 @@ function getWallets(): Wallet[] {
       id: 1,
       name: 'My first wallet',
       type: WalletType.MULTISIG,
-      signingType: SigningType.MULTISIG,
       accounts: [accounts[0], accounts[1]],
     },
     {
       id: 2,
       name: 'My second wallet',
       type: WalletType.WATCH_ONLY,
-      signingType: SigningType.WATCH_ONLY,
       accounts: [accounts[2], accounts[3]],
     },
     {
@@ -92,7 +90,6 @@ function getWallets(): Wallet[] {
       name: 'My third wallet',
       isHidden: true,
       type: WalletType.MULTISIG,
-      signingType: SigningType.MULTISIG,
       accounts: [accounts[4]],
     },
   ];
@@ -102,7 +99,6 @@ const newWallet = {
   id: 4,
   name: 'My new wallet',
   type: WalletType.SINGLE_PARITY_SIGNER,
-  signingType: SigningType.PARITY_SIGNER,
 };
 
 const newAccounts: (VaultBaseAccount | VaultChainAccount)[] = [

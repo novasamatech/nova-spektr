@@ -183,6 +183,8 @@ export const multisigAccountsProvider: AccountProvider<SyncedMultisigAccount> = 
     );
 
     const parsed = response.accounts.nodes.map(x => multisigSchema.parse(x));
+    // multisigs can be duplicated because each chain can provide own multisig account with same address
+    const processed = new Set<AccountId>();
 
     // actual processing
     for (const signatory of parsed) {
@@ -196,13 +198,14 @@ export const multisigAccountsProvider: AccountProvider<SyncedMultisigAccount> = 
           cryptoType,
         );
 
-        if (constructedAccountId === accountId) {
+        if (constructedAccountId === accountId && !processed.has(accountId)) {
           result.push({
             type: 'multisig',
             accountId,
             signatories,
             threshold: multisig.threshold,
           });
+          processed.add(accountId);
         }
       }
     }

@@ -7,8 +7,8 @@ import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
-import { BodyText, Icon, IconButton, Loader, SmallTitleText } from '@/shared/ui';
-import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton, Tooltip } from '@/shared/ui-kit';
+import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
+import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletList } from '../model/list';
@@ -74,7 +74,6 @@ const WalletSelectDropdown = memo(() => {
 
   const navigate = useNavigate();
   const filterQuery = useUnit(walletList.$query);
-  const pendingSync = useUnit(walletList.syncAccounts.pending);
 
   const selectWallet = useCallback(
     (wallet: Wallet) => {
@@ -89,23 +88,6 @@ const WalletSelectDropdown = memo(() => {
       <header className="flex items-center justify-between border-b border-divider px-5 py-3">
         <SmallTitleText>{t('wallets.title')}</SmallTitleText>
         <div className="flex items-center gap-2">
-          {pendingSync ? (
-            <Tooltip>
-              <Tooltip.Trigger>
-                <Box verticalAlign="center" horizontalAlign="center" height={8.5} width={8.5}>
-                  <Loader color="primary" />
-                </Box>
-              </Tooltip.Trigger>
-              <Tooltip.Content>Syncing accounts...</Tooltip.Content>
-            </Tooltip>
-          ) : (
-            <Tooltip>
-              <Tooltip.Trigger>
-                <IconButton name="refresh" onClick={() => walletList.syncAccounts()} />
-              </Tooltip.Trigger>
-              <Tooltip.Content>Sync accounts</Tooltip.Content>
-            </Tooltip>
-          )}
           <Slot id={walletSelectActionsSlot} />
         </div>
       </header>

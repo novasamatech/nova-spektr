@@ -91,7 +91,6 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
         name: walletName,
         rootAccountId: accountId,
         type: WalletType.SINGLE_PARITY_SIGNER,
-        signingType: SigningType.PARITY_SIGNER,
       },
       accounts: [
         {
