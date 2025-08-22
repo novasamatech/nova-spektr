@@ -1,12 +1,14 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { IconButton, Loader } from '@/shared/ui';
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { sync } from '../model/sync';
 
 export const UpdateButton = memo(() => {
-  const pendingSync = useUnit(sync.syncAccounts.pending);
+  const { t } = useI18n();
+  const pendingSync = useUnit(sync.$pending);
 
   return pendingSync ? (
     <Tooltip>
@@ -22,7 +24,7 @@ export const UpdateButton = memo(() => {
       <Tooltip.Trigger>
         <IconButton name="refresh" onClick={() => sync.syncAccounts()} />
       </Tooltip.Trigger>
-      <Tooltip.Content>Sync accounts</Tooltip.Content>
+      <Tooltip.Content>{t('features.account-sync.syncAccountsLabel')}</Tooltip.Content>
     </Tooltip>
   );
 });

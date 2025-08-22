@@ -1,5 +1,5 @@
-import { attach, sample } from 'effector';
-import { combineEvents, debug, spread } from 'patronum';
+import { attach, createStore, sample } from 'effector';
+import { combineEvents, spread } from 'patronum';
 
 import {
   AccountType,
@@ -35,11 +35,26 @@ import { accountSync, accountSyncService, accounts, identity, identityService } 
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyUtils } from '@/entities/proxy';
-import { type WalletCreateParams, accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { type WalletCreateParams, accountUtils, walletModel } from '@/entities/wallet';
 
 const createWalletsFx = attach({ effect: walletModel.createWallets });
 const requestIdentitiesFx = attach({ effect: identity.request });
 const requestAllIdentitiesFx = series(requestIdentitiesFx, { parallel: true, skipErrors: true });
+
+const identitiesReceived = requestAllIdentitiesFx.doneData.map((maps) => {
+  return maps.reduce((acc, map) => ({ ...acc, ...map }), {});
+});
+
+const accountsSynced = combineEvents({
+  events: [accountSync.syncAccounts.doneData, identitiesReceived],
+  reset: accountSync.syncAccounts,
+});
+
+const $pending = createStore(false)
+  .on(accountSync.syncAccounts, () => true)
+  .on(accountSync.syncAccounts.fail, () => false)
+  .on(requestAllIdentitiesFx.fail, () => false)
+  .on(accountsSynced, () => false);
 
 // TODO
 // all code bellow should be moved to specific features
@@ -64,15 +79,6 @@ sample({
     return params;
   },
   target: requestAllIdentitiesFx,
-});
-
-const identitiesReceived = requestAllIdentitiesFx.doneData.map((maps) => {
-  return maps.reduce((acc, map) => ({ ...acc, ...map }), {});
-});
-
-const accountsSynced = combineEvents({
-  events: [accountSync.syncAccounts.doneData, identitiesReceived],
-  reset: accountSync.syncAccounts,
 });
 
 // proxy sync
@@ -114,7 +120,7 @@ sample({
           .map((x) => ({
             delay: x.delay,
             proxyAccountId: x.proxyAccountId,
-            // TODO implement correct mapping
+            // TODO replace ProxyType with KitchensinkRuntimeProxyType
             proxyType: x.proxyType as ProxyType,
           }))
           .toSorted((a, b) => a.proxyAccountId.localeCompare(b.proxyAccountId));
@@ -289,7 +295,7 @@ sample({
           } satisfies NoID<MultisigCreated>;
         }
 
-        if (walletUtils.isFlexibleMultisig(wallet) && accountUtils.isFlexibleMultisigAccount(account)) {
+        if (accountUtils.isFlexibleMultisigAccount(account)) {
           return {
             read: false,
             walletId: wallet.id,
@@ -311,11 +317,7 @@ sample({
   target: notificationModel.events.notificationsAdded,
 });
 
-// debug
-
-debug(accountSync.syncAccounts);
-debug(walletModel.createWallets, walletModel.walletsRemoved, accounts.updateAccounts, requestAllIdentitiesFx);
-
 export const sync = {
   syncAccounts: accountSync.syncAccounts,
+  $pending,
 };

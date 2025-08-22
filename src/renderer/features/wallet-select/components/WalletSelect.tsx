@@ -101,7 +101,7 @@ const WalletSelectDropdown = memo(() => {
       </div>
 
       <ScrollArea>
-        <div className="flex flex-col gap-1 divide-y divide-divider px-1 pb-1 empty:p-0">
+        <div className="flex flex-col gap-1 divide-y divide-divider p-1 empty:p-0">
           <Slot
             id={walletGroupSlot}
             props={{

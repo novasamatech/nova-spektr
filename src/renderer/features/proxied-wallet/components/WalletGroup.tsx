@@ -40,33 +40,31 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
   }
 
   return (
-    <Box padding={[1, 0, 0]}>
-      <Accordion initialOpen>
-        <Accordion.Trigger>
-          <WalletIcon type={walletType} />
-          <span>{title}</span>
-          <span className="text-text-tertiary">{wallets.length}</span>
-          <Tooltip>
-            <Tooltip.Trigger>
-              <div>
-                <Icon name="questionOutline" className="hover:text-icon-hover active:text-icon-active" size={14} />
-              </div>
-            </Tooltip.Trigger>
-            <Tooltip.Content>
-              <span>{t('proxy.tooltipPart1')}</span>
-              <br />
-              <span>{t('proxy.tooltipPart2')}</span>
-            </Tooltip.Content>
-          </Tooltip>
-        </Accordion.Trigger>
-        <Accordion.Content>
-          <Box gap={1} padding={[1, 0, 0]}>
-            {filteredWallets.map(wallet => (
-              <WalletRow key={wallet.id} wallet={wallet} onSelect={onSelect} />
-            ))}
-          </Box>
-        </Accordion.Content>
-      </Accordion>
-    </Box>
+    <Accordion initialOpen>
+      <Accordion.Trigger>
+        <WalletIcon type={walletType} />
+        <span>{title}</span>
+        <span className="text-text-tertiary">{wallets.length}</span>
+        <Tooltip>
+          <Tooltip.Trigger>
+            <div>
+              <Icon name="questionOutline" className="hover:text-icon-hover active:text-icon-active" size={14} />
+            </div>
+          </Tooltip.Trigger>
+          <Tooltip.Content>
+            <span>{t('proxy.tooltipPart1')}</span>
+            <br />
+            <span>{t('proxy.tooltipPart2')}</span>
+          </Tooltip.Content>
+        </Tooltip>
+      </Accordion.Trigger>
+      <Accordion.Content>
+        <Box gap={1} padding={[1, 0, 0]}>
+          {filteredWallets.map(wallet => (
+            <WalletRow key={wallet.id} wallet={wallet} onSelect={onSelect} />
+          ))}
+        </Box>
+      </Accordion.Content>
+    </Accordion>
   );
 });
