@@ -46,33 +46,32 @@ export const Identicon = memo(
       emptyIcon
     );
 
-    if (!canCopy || !valid) {
+    const shouldCopy = canCopy && valid;
+
+    console.log({ preferStaticContent, shouldCopy });
+
+    const node = (
+      <span
+        className={cnTw(
+          'relative flex appearance-none items-center justify-center rounded-full',
+          background && 'rounded-full bg-white',
+          shouldCopy && 'cursor-copy',
+        )}
+        style={{ width: size, height: size }}
+        data-testid={testId}
+      >
+        {icon}
+      </span>
+    );
+
+    if (shouldCopy) {
       return (
-        <span
-          className={cnTw('relative flex items-center justify-center rounded-full', background && 'bg-white')}
-          style={{ width: size, height: size }}
-          data-testid={testId}
-        >
-          {icon}
-        </span>
+        <Copy value={value} notification={t('general.notifications.addressCopied')}>
+          {node}
+        </Copy>
       );
     }
 
-    return (
-      <Copy value={value} notification={t('general.notifications.addressCopied')}>
-        <button
-          type="button"
-          className={cnTw(
-            'relative flex cursor-copy appearance-none items-center justify-center rounded-full',
-            background && 'rounded-full bg-white',
-          )}
-          aria-label="Copy address"
-          style={{ width: size, height: size }}
-          data-testid={testId}
-        >
-          {icon}
-        </button>
-      </Copy>
-    );
+    return node;
   },
 );
