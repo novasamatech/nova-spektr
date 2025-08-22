@@ -4,7 +4,7 @@ import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
-import { TransactionTitle } from '@/entities/transaction';
+import { TransactionTitle, findCoreTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
 import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
@@ -44,30 +44,30 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
 };
 
 multisigOperationsSDK(governanceOperationDetailFeature, {
-  icon({ operation }) {
-    const transaction = operation.transaction;
+  icon({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const icon = transaction?.type && getOperationIcon(transaction.type);
     if (icon) {
       return icon;
     }
   },
-  title({ operation }) {
-    const transaction = operation.transaction;
+  title({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
     if (title) {
       return <GovernanceOperationTitle operation={operation} title={title} />;
     }
   },
-  logTitle({ operation }) {
+  logTitle({ operation, showCoreTransaction }) {
     const { t } = useI18n();
-    const transaction = operation.transaction;
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
     if (title) {
       return <TransactionTitle className="overflow-hidden" title={t(title || '')} />;
     }
   },
-  details({ operation }) {
-    const transaction = operation.transaction;
+  details({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
 
     if (
       transaction?.type &&

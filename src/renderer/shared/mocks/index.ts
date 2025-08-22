@@ -258,7 +258,7 @@ export const createProxiedAccount = (id: string | number = createRandomId(), wal
 
 export const createSingleShardWallet = (
   id: number,
-  params: Partial<Pick<SingleShardWallet, 'name' | 'isActive' | 'accounts'>> & {
+  params: Partial<Pick<SingleShardWallet, 'name' | 'accounts'>> & {
     rootAccountId: AccountId;
   },
 ): SingleShardWallet => {
@@ -267,7 +267,6 @@ export const createSingleShardWallet = (
     id,
     rootAccountId: params.rootAccountId,
     type: WalletType.SINGLE_PARITY_SIGNER,
-    isActive: params.isActive ?? true,
     name: params.name ?? `SingleShard ${id}`,
     signingType: SigningType.POLKADOT_VAULT,
     ...(params.accounts && { accounts: params.accounts }),
@@ -276,13 +275,12 @@ export const createSingleShardWallet = (
 
 export const createLegacyMultishardWallet = (
   id: number,
-  params?: Partial<Pick<SingleShardWallet, 'rootAccountId' | 'accounts' | 'name' | 'isActive'>>,
+  params?: Partial<Pick<SingleShardWallet, 'rootAccountId' | 'accounts' | 'name'>>,
 ): SingleShardWallet => {
   return {
     // @ts-expect-error wallet_mps is a Legacy wallet
     type: 'wallet_mps',
     id,
-    isActive: params?.isActive ?? true,
     name: params?.name ?? `MultiShard ${id}`,
     signingType: SigningType.PARITY_SIGNER,
     ...(params?.accounts && { accounts: params.accounts }),
@@ -292,15 +290,13 @@ export const createLegacyMultishardWallet = (
 
 export const createPolkadotWallet = (
   id: number,
-  params: Pick<PolkadotVaultWallet, 'rootAccountId'> &
-    Partial<Pick<PolkadotVaultWallet, 'accounts' | 'name' | 'isActive'>>,
+  params: Pick<PolkadotVaultWallet, 'rootAccountId'> & Partial<Pick<PolkadotVaultWallet, 'accounts' | 'name'>>,
 ): PolkadotVaultWallet => {
   // @ts-expect-error "accounts" is deprecated
   return {
     id,
     rootAccountId: params.rootAccountId,
     type: WalletType.POLKADOT_VAULT,
-    isActive: params.isActive ?? true,
     name: params.name ?? `Polkadot vault wallet ${id}`,
     signingType: SigningType.POLKADOT_VAULT,
     ...(params.accounts && { accounts: params.accounts }),
@@ -311,7 +307,6 @@ export const createWcWallet = (id: number, accounts: WcAccount[]): WalletConnect
   id,
   accounts,
   type: WalletType.WALLET_CONNECT,
-  isActive: true,
   name: `WalletConnect ${id}`,
   signingType: SigningType.WALLET_CONNECT,
 });
@@ -320,7 +315,6 @@ export const createProxiedWallet = (id: number, accounts: [ProxiedAccount]): Pro
   id,
   accounts,
   type: WalletType.PROXIED,
-  isActive: true,
   name: `Proxied wallet ${id}`,
   signingType: SigningType.WALLET_CONNECT,
 });

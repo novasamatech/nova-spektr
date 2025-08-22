@@ -12,10 +12,10 @@ import { KeyType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { copyToClipboard, isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
+import { isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Hash, type IdenticonIconTheme, WalletAccountIcon } from '@/shared/ui-entities';
-import { Box, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { Box, Copy, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wallet';
@@ -197,11 +197,9 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
                             <HelpText className="text-text-secondary">
                               <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
                             </HelpText>
-                            <IconButton
-                              className="shrink-0 text-icon-default"
-                              name="copy"
-                              onClick={() => copyToClipboard(wallet.rootAccountId)}
-                            />
+                            <Copy value={wallet.rootAccountId} notification={t('general.notifications.addressCopied')}>
+                              <IconButton className="shrink-0 text-icon-default" name="copy" />
+                            </Copy>
                           </Box>
                         </Box>
                       </Popover.Content>

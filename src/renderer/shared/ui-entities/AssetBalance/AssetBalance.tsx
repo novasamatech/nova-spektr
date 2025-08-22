@@ -9,9 +9,10 @@ type Props = {
   asset?: Asset | AssetByChains;
   className?: string;
   showSymbol?: boolean;
+  testId?: string;
 };
 
-export const AssetBalance = ({ value, asset, className, showSymbol = true }: Props) => {
+export const AssetBalance = ({ value, asset, className, showSymbol = true, testId = 'AssetBalance' }: Props) => {
   const { t } = useI18n();
 
   if (!asset) {
@@ -27,7 +28,7 @@ export const AssetBalance = ({ value, asset, className, showSymbol = true }: Pro
   });
 
   return (
-    <span className={cnTw('shrink-0 text-body text-text-primary', className)}>
+    <span className={cnTw('shrink-0 text-body text-text-primary', className)} data-testid={testId}>
       {balanceValue}
       {suffix} {showSymbol && symbol}
     </span>

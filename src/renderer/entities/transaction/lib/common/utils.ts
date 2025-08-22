@@ -134,6 +134,21 @@ export const findCoreBatchAll = (coreTx: Transaction | DecodedTransaction): Tran
   return supportedTransaction || coreTx.args?.transactions?.[0];
 };
 
+export const findCoreTransaction = (
+  tx: Transaction | DecodedTransaction | null,
+): Transaction | DecodedTransaction | null => {
+  if (!tx) return null;
+
+  if (isProxyTransaction(tx)) {
+    return findCoreTransaction(tx.args?.transaction) || tx;
+  }
+  if (tx.type === TransactionType.BATCH_ALL) {
+    return findCoreBatchAll(tx);
+  }
+
+  return tx;
+};
+
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {
   const txType = tx?.type;
   if (!txType) return null;

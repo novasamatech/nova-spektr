@@ -92,7 +92,6 @@ export const accounts: (WcAccount | MultisigAccount)[] = [
 export const multisigWallet = {
   id: 3,
   name: 'multisig Wallet',
-  isActive: false,
   type: WalletType.MULTISIG,
   signingType: SigningType.MULTISIG,
   accounts: [accounts[4]],
@@ -101,7 +100,6 @@ export const multisigWallet = {
 export const signerWallet = {
   id: 2,
   name: 'Signer Wallet',
-  isActive: true,
   type: WalletType.WALLET_CONNECT,
   signingType: SigningType.WALLET_CONNECT,
   accounts: [accounts[1]],
@@ -110,7 +108,6 @@ export const signerWallet = {
 export const signatoryWallet = {
   id: 5,
   name: 'Signer Wallet',
-  isActive: true,
   type: WalletType.WALLET_CONNECT,
   signingType: SigningType.WALLET_CONNECT,
   accounts: [accounts[3]],
@@ -119,7 +116,6 @@ export const signatoryWallet = {
 export const initiatorWallet = {
   id: 1,
   name: 'Wallet',
-  isActive: true,
   type: WalletType.POLKADOT_VAULT,
   signingType: SigningType.POLKADOT_VAULT,
   accounts: [accounts[0]],
@@ -128,7 +124,6 @@ export const initiatorWallet = {
 export const wrongChainWallet = {
   id: 4,
   name: 'Wallet Wrong Chain',
-  isActive: true,
   type: WalletType.POLKADOT_VAULT,
   signingType: SigningType.POLKADOT_VAULT,
   accounts: [accounts[2]],

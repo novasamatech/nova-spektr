@@ -55,7 +55,7 @@ const $ownedSignatoriesWallets = combine(
   },
   ({ wallets, signatories }) => {
     const matchWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: w => walletUtils.isValidSignatory(w),
+      walletFn: w => !walletUtils.isWatchOnly(w),
       accountFn: a => signatories.some(s => toAccountId(s.address) === a.accountId),
     });
 
