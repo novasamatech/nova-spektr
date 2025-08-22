@@ -48,7 +48,6 @@ const subscribePureEventFx = createEffect(({ api, signatory }: SubscribePureEven
       { api, section: `proxy`, methods: ['PureCreated'] },
       event => {
         if (!api) return unsubscribe.then(fn => fn());
-
         const data = eventSchema.parse(event.data.toHuman());
         const accountId = toAccountId(data.who);
 
@@ -65,21 +64,21 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: {
     api: $api,
-    signatory: flexibleMultisigModel.$signer,
+    initiator: flexibleMultisigModel.$initiator,
     proxyAddress: $proxyAddress,
   },
-  filter: ({ api, signatory, proxyAddress }, results) => {
+  filter: ({ api, initiator, proxyAddress }, results) => {
     return (
       nonNullable(api) &&
       nullable(proxyAddress) &&
-      nonNullable(signatory) &&
+      nonNullable(initiator) &&
       results.some(({ result }) => submitUtils.isSuccessResult(result))
     );
   },
-  fn: ({ api, signatory }) => {
+  fn: ({ api, initiator }) => {
     return {
       api: api!,
-      signatory: signatory!,
+      signatory: initiator!,
     };
   },
   target: subscribePureEventFx,

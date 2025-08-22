@@ -37,7 +37,6 @@ const stop = createEvent();
 const request = createEvent<AnyAccount[]>();
 
 const createWalletsFx = attach({ effect: walletModel.createWallets });
-const updateWalletFx = attach({ effect: walletModel.updateWallet });
 const requestIdentitiesFx = attach({ effect: identity.request });
 
 const $multisigAccounts = accounts.$list.map((accounts) => accounts.filter(accountUtils.isMultisigAccount));
@@ -369,23 +368,9 @@ sample({
   target: proxiesModel.findAllProxies,
 });
 
-// Convert regular multisig to flexible
-const convertRegularToFlexible = createEvent<MultisigWallet | null>();
-
-sample({
-  clock: convertRegularToFlexible,
-  filter: (wallet: MultisigWallet | null): wallet is MultisigWallet => nonNullable(wallet),
-  fn: (wallet) => ({
-    ...wallet,
-    type: WalletType.FLEXIBLE_MULTISIG,
-  }),
-  target: updateWalletFx,
-});
-
 export const multisigsModel = {
   subscribe,
   request,
-  convertRegularToFlexible,
 
   __test: {
     requestIdentitiesFx,

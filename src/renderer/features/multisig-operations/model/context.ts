@@ -1,7 +1,8 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { TransactionType } from '@/shared/core';
-import { type MultisigOperation, multisigOperation } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation, accountService, multisigOperation } from '@/domains/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import { TransferTypes, XcmTypes, findCoreBatchAll } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
@@ -53,11 +54,36 @@ const $filter = restore(setFilters, {
   type: [],
 }).reset(resetFilters);
 
-const $filteredOperations = combine(selectedWalletMultisigOperations.$list, $filter, (ops, filter) => {
-  return ops.filter(op => filterTx(op, filter));
-});
+const $initiators = combine(
+  { accounts: walletSelect.$selectedAccounts, chains: networkModel.$chains },
+  ({ accounts, chains }) => {
+    if (accounts.length === 0) return [];
 
-const $account = walletSelect.$selectedAccounts.map(x => x.find(accountUtils.isMultisigAccount) ?? null);
+    const initiators = new Map<string, AnyAccount>();
+
+    for (const chain of Object.values(chains)) {
+      if (!networkUtils.isMultisigSupported(chain.options)) continue;
+
+      const chainInitiators = accountService.findInitiators(accounts, chain);
+      for (const initiator of chainInitiators) {
+        initiators.set(initiator.accountId, initiator);
+      }
+    }
+
+    return Array.from(initiators.values());
+  },
+);
+
+const $multisigAccount = walletSelect.$selectedAccounts.map(x => x.find(accountUtils.isAnyMultisigAccount) ?? null);
+
+const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
+
+const $filteredOperations = combine(
+  { operations: selectedWalletMultisigOperations.$list, filter: $filter },
+  ({ operations, filter }) => {
+    return operations.filter(op => filterTx(op, filter));
+  },
+);
 
 sample({
   clock: multisigOperationsFeature.running,
@@ -72,7 +98,8 @@ sample({
 export const operationsContextModel = {
   $filter,
   $filteredOperations,
-  $account,
+  $multisigAccount,
+  $initiator,
 
   setFilters,
   resetFilters,

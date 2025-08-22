@@ -1,6 +1,6 @@
 import { type ReactNode, memo } from 'react';
 
-import { type MultisigAccount } from '@/shared/core';
+import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
@@ -9,20 +9,29 @@ import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
 import { TransactionTitle } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 
 import { OperationFullInfo } from './OperationFullInfo';
 import { OperationIcon } from './OperationIcon';
 
 type Props = {
   operation: MultisigOperation;
-  account: MultisigAccount;
+  account: MultisigAccount | FlexibleMultisigAccount;
 };
 
-export const operationTitleTransformer = createTransformer<{ operation: MultisigOperation }, ReactNode>();
+export const operationTitleTransformer = createTransformer<
+  { operation: MultisigOperation; showCoreTransaction?: boolean },
+  ReactNode
+>();
 
 export const Operation = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
-  const externalTitleNode = useTransformer(operationTitleTransformer, { operation });
+
+  const externalTitleNode = useTransformer(operationTitleTransformer, {
+    operation: operation,
+    showCoreTransaction: accountUtils.isFlexibleMultisigAccount(account),
+  });
+
   let titleNode;
 
   if (externalTitleNode) {
@@ -46,7 +55,7 @@ export const Operation = memo(({ operation, account }: Props) => {
         <div className="flex h-[52px] w-full items-center gap-4 overflow-hidden">
           <div className="flex w-full items-center gap-4 overflow-hidden">
             <OperationTitleDate operation={operation} />
-            <OperationIcon operation={operation} />
+            <OperationIcon operation={operation} account={account} />
             {titleNode}
           </div>
           <OperationTitleStatus operation={operation} account={account} />

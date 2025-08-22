@@ -2,15 +2,16 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, copyToClipboard, getNativeAsset, nonNullable, truncate } from '@/shared/lib/utils';
+import { cnTw, getNativeAsset, nonNullable, truncate } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
+import { Copy } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { signatoryUtils } from '@/entities/signatory';
-import { accountUtils, walletModel } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { walletModel } from '@/entities/wallet';
+import { operationsContextModel } from '../model/context';
 
 type Props = {
   operation: MultisigOperation;
@@ -23,10 +24,9 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
-  const account = activeWallet?.accounts.find(accountUtils.isMultisigAccount);
+  const account = useUnit(operationsContextModel.$multisigAccount);
 
   const nativeAsset = getNativeAsset(chain?.assets ?? []);
   const explorers = chain?.explorers;
@@ -59,27 +59,23 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
         <>
           {callHash && (
             <DetailRow label={t('operation.details.callHash')} className={valueClass}>
-              <button
-                type="button"
-                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
-                onClick={() => copyToClipboard(callHash)}
-              >
-                <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
-                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
-              </button>
+              <Copy value={callHash}>
+                <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
+                  <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
+                  <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+                </button>
+              </Copy>
             </DetailRow>
           )}
 
           {callData && (
             <DetailRow label={t('operation.details.callData')} className={valueClass}>
-              <button
-                type="button"
-                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
-                onClick={() => copyToClipboard(callData)}
-              >
-                <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
-                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
-              </button>
+              <Copy value={callData}>
+                <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
+                  <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
+                  <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+                </button>
+              </Copy>
             </DetailRow>
           )}
 

@@ -15,7 +15,6 @@ export const testChain = {
 export const initiatorWallet = {
   id: 1,
   name: 'Wallet',
-  isActive: true,
   type: WalletType.POLKADOT_VAULT,
   signingType: SigningType.POLKADOT_VAULT,
 } as Wallet;
@@ -23,7 +22,6 @@ export const initiatorWallet = {
 export const signerWallet = {
   id: 2,
   name: 'Signer Wallet',
-  isActive: true,
   type: WalletType.POLKADOT_VAULT,
   signingType: SigningType.POLKADOT_VAULT,
 } as Wallet;

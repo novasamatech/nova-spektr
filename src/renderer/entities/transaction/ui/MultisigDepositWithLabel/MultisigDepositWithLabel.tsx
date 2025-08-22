@@ -43,9 +43,10 @@ export const MultisigDepositWithLabel = ({ wrapperClassName, ...depositProps }: 
 type MultisigDepositProps = {
   asset: Asset;
   multisigDeposit: BN | string;
+  isLoading?: boolean;
 };
 
-export const MultisigDepositFee = ({ asset, multisigDeposit }: MultisigDepositProps) => {
+export const MultisigDepositFee = ({ asset, multisigDeposit, isLoading }: MultisigDepositProps) => {
   const { t } = useI18n();
 
   return (
@@ -66,7 +67,7 @@ export const MultisigDepositFee = ({ asset, multisigDeposit }: MultisigDepositPr
         </>
       }
     >
-      <Fee fee={multisigDeposit} asset={asset} />
+      <Fee fee={multisigDeposit} asset={asset} isLoading={isLoading} />
     </DetailRow>
   );
 };
