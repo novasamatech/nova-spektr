@@ -3,9 +3,7 @@ import { type IndexedDBData } from '../../../utils/interactWithDatabase';
 export const vaultAndEthereumWallet: IndexedDBData = {
   database: 'spektr',
   table: 'wallets',
-  injectingData: [
-    { id: 31, isActive: true, name: 'vaultAndEthereumWallet', signingType: 'signing_ps', type: 'wallet_sps' },
-  ],
+  injectingData: [{ id: 31, name: 'vaultAndEthereumWallet', signingType: 'signing_ps', type: 'wallet_sps' }],
 };
 
 export const vaultAndEthereumAccount: IndexedDBData = {
