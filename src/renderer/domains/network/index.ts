@@ -18,6 +18,10 @@ export type {
   AccountValidationError,
 } from './account/types';
 
+export { accountSync } from './account-sync/store';
+export { accountSyncService } from './account-sync/service';
+export type { SyncedMultisigAccount, SyncedProxyAccount, SyncedAccount } from './account-sync/types';
+
 export { balanceService } from './balance/service';
 export type { BalanceUpdateResult, BalancePreservation } from './balance/types';
 

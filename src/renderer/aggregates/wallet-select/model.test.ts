@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { SigningType, type Wallet, WalletType } from '@/shared/core';
+import { type Wallet, WalletType } from '@/shared/core';
 import { walletModel } from '@/entities/wallet';
 
 import { walletSelect } from './model';
@@ -8,14 +8,12 @@ import { walletSelect } from './model';
 const wallets: Wallet[] = [
   {
     id: 1,
-    signingType: SigningType.POLKADOT_VAULT,
     type: WalletType.POLKADOT_VAULT,
     name: 'My PV',
     accounts: [],
   },
   {
     id: 2,
-    signingType: SigningType.WALLET_CONNECT,
     type: WalletType.WALLET_CONNECT,
     name: 'My WC',
     accounts: [],
@@ -24,7 +22,6 @@ const wallets: Wallet[] = [
 
 const newWallet: Wallet = {
   id: 3,
-  signingType: SigningType.POLKADOT_VAULT,
   type: WalletType.SINGLE_PARITY_SIGNER,
   name: 'My new SPS',
   accounts: [],

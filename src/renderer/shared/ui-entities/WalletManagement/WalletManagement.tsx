@@ -42,7 +42,7 @@ export const WalletManagement = memo(
           'focus-within:bg-action-background-hover hover:bg-action-background-hover',
         )}
       >
-        <button className="flex w-full items-center gap-x-2 rounded py-1.5 pr-10 pl-2" onClick={onClick}>
+        <button className="flex w-full min-w-0 shrink items-center gap-x-2 rounded px-2 py-1.5" onClick={onClick}>
           {active ? (
             <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
           ) : (
@@ -50,7 +50,7 @@ export const WalletManagement = memo(
           )}
 
           {checkBox}
-          {accountId && <Identicon canCopy={false} value={accountId} size={16} background={false} theme={theme} />}
+          {accountId && <Identicon value={accountId} size={16} background={false} theme={theme} />}
 
           <div className="flex min-w-0 flex-grow flex-col">
             <div className="flex items-center gap-x-2">
@@ -80,7 +80,7 @@ export const WalletManagement = memo(
           </div>
         </button>
 
-        <div className="absolute top-1/2 right-2 flex -translate-y-1/2">{children}</div>
+        <div className="shrink-0 pe-2">{children}</div>
       </div>
     );
   },

@@ -1,37 +1,49 @@
 import { type ApiPromise } from '@polkadot/api';
+import { u8aToHex } from '@polkadot/util';
+import { createKeyMulti } from '@polkadot/util-crypto';
 
 import {
   type CallHash,
   type Chain,
   type ChainId,
   ChainOptions,
+  CryptoType,
   type FlexibleMultisigAccount,
   type MultisigAccount,
 } from '@/shared/core';
 import { isEqual, merge, nullable, validateCallData } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { transactionService } from '../transaction/service';
 
 import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX } from './constants';
 import { type MultisigEvent, type MultisigOperation } from './types';
 
+/**
+ * Public keys of signers' wallets are compared byte-for-byte and sorted
+ * ascending before being used to generate the multisig address. For example,
+ * consider the scenario with three addresses, A, B, and C, starting with 5FUGT,
+ * 5HMfS, and 5GhKJ. If we build the ABC multisig with the accounts in that
+ * specific order (i.e. first A, then B, and C), the real order of the accounts
+ * in the multisig will be ACB. If, in the Extrinsic tab, we initiate a multisig
+ * call with C, the order of the other signatories will be first A, then B. If
+ * we put first B, then A, the transaction will fail.
+ */
+function sortSignatories(signatories: AccountId[]) {
+  return Array.from(signatories).sort((a, b) => a.localeCompare(b));
+}
+
+function getMultisigAccountId(signatories: AccountId[], threshold: number, cryptoType: CryptoType): AccountId {
+  const accountId = createKeyMulti(sortSignatories(signatories), threshold);
+  const isEthereum = cryptoType === CryptoType.ETHEREUM;
+
+  return pjsSchema.helpers.toAccountId(u8aToHex(isEthereum ? accountId.subarray(0, 20) : accountId));
+}
+
 function getOtherSignatories(account: MultisigAccount | FlexibleMultisigAccount, signer: AccountId) {
-  return (
+  return sortSignatories(
     Array.from(account.signatories)
       .map(s => s.accountId)
-      .filter(account => account !== signer)
-      /**
-       * Public keys of signers' wallets are compared byte-for-byte and sorted
-       * ascending before being used to generate the multisig address. For
-       * example, consider the scenario with three addresses, A, B, and C,
-       * starting with 5FUGT, 5HMfS, and 5GhKJ. If we build the ABC multisig
-       * with the accounts in that specific order (i.e. first A, then B, and C),
-       * the real order of the accounts in the multisig will be ACB. If, in the
-       * Extrinsic tab, we initiate a multisig call with C, the order of the
-       * other signatories will be first A, then B. If we put first B, then A,
-       * the transaction will fail.
-       */
-      .sort((a, b) => a.localeCompare(b))
+      .filter(account => account !== signer),
   );
 }
 
@@ -119,10 +131,12 @@ export const multisigOperationService = {
   getOperationId,
   getEventId,
   getTransactionFromChain,
+  getMultisigAccountId,
 
   mergeEvents,
   mergeMultisigOperations,
 
   isMultisigSupported,
   getOtherSignatories,
+  sortSignatories,
 };
