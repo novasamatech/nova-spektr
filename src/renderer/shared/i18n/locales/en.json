@@ -430,6 +430,11 @@
     "omniLogoAlt": "Nova Spektr logo",
     "reloadButton": "Refresh"
   },
+  "features": {
+    "account-sync": {
+      "syncAccountsLabel": "Sync accounts"
+    }
+  },
   "fellowship": {
     "activityFeed": {
       "activityModal": {

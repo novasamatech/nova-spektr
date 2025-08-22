@@ -1,9 +1,8 @@
 import { attach, createEvent, createStore, sample } from 'effector';
 
 import { type Chain, type DraftAccount, type ID, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
-import { accounts } from '@/domains/network';
+import { accountSync, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { proxiesModel } from '@/features/proxies';
 
 type AccountsCreatedParams = {
   walletId: ID;
@@ -62,7 +61,7 @@ sample({
 
 sample({
   clock: createAccountsFx.done,
-  target: proxiesModel.findAllProxies,
+  target: accountSync.syncAccounts,
 });
 
 export const vaultDetailsModel = {

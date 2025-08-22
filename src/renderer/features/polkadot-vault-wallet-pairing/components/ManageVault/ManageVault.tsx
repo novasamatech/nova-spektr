@@ -112,7 +112,6 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         name: walletName.trim(),
         rootAccountId: publicKey,
         type: WalletType.POLKADOT_VAULT,
-        signingType: SigningType.POLKADOT_VAULT,
       },
       accounts: accounts.length
         ? accounts

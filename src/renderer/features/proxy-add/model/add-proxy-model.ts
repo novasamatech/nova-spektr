@@ -4,6 +4,7 @@ import { spread } from 'patronum';
 import { type Transaction } from '@/shared/core';
 import { isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
+import { accountSync } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { balanceSubModel } from '@/features/assets-balances';
@@ -14,7 +15,6 @@ import {
   type AddProxyConfirm,
   addProxyConfirmModel as confirmModel,
 } from '@/features/operations/OperationsConfirm/AddProxy';
-import { proxiesModel } from '@/features/proxies';
 import { type AddProxyStore, Step } from '../lib/types';
 
 import { formModel } from './form-model';
@@ -175,7 +175,7 @@ sample({
 
 sample({
   clock: flowFinished,
-  target: proxiesModel.findAllProxies,
+  target: accountSync.syncAccounts,
 });
 
 sample({
