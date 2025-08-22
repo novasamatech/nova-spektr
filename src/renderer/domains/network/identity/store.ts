@@ -4,6 +4,7 @@ import { readonly } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { createAsyncTaskPool, entries, fromEntries, groupBy, nullable } from '@/shared/lib/utils';
+import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
@@ -58,10 +59,18 @@ const requestFx = attach({
   effect({ chains, apis }, { accounts, chainId = POLKADOT_PEOPLE_CHAIN_ID }: RequestParams) {
     const bound = scopeBind(fetchIdentity.request, { safe: true });
     const identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
-    const api = apis[identityChainId];
+    let api = apis[identityChainId];
 
     if (nullable(api)) {
       throw new Error(`Api for chain ${identityChainId} not found`);
+    }
+
+    if (!identityPallet.supportedOn(api)) {
+      api = apis[POLKADOT_PEOPLE_CHAIN_ID];
+
+      if (nullable(api)) {
+        throw new Error(`Polkadot People chain not found`);
+      }
     }
 
     return bound({ accounts, chainId, api });
