@@ -75,23 +75,18 @@ export const WalletGroup = memo((props: Props) => {
               }
 
               return (
-                <div key={wallet.id} className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <WalletManagement
-                      active={selectedWalletId === wallet.id}
-                      wallet={wallet}
-                      accountId={accountId}
-                      description={
-                        <WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />
-                      }
-                      chain={chain}
-                      label={label}
-                      onClick={() => handleWalletClick(wallet)}
-                    >
-                      <Slot id={walletActionsSlot} props={{ wallet }} />
-                    </WalletManagement>
-                  </div>
-                </div>
+                <WalletManagement
+                  key={wallet.id}
+                  active={selectedWalletId === wallet.id}
+                  wallet={wallet}
+                  accountId={accountId}
+                  description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
+                  chain={chain}
+                  label={label}
+                  onClick={() => handleWalletClick(wallet)}
+                >
+                  <Slot id={walletActionsSlot} props={{ wallet }} />
+                </WalletManagement>
               );
             })}
           </Box>
