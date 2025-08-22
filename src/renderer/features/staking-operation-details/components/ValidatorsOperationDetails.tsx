@@ -84,7 +84,6 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
           identities={identities}
           selectedValidators={selectedValidators}
           notSelectedValidators={notSelectedValidators}
-          explorers={chain?.explorers}
           onClose={toggleValidators}
         />
       </>,

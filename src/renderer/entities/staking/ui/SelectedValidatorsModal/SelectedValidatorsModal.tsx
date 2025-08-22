@@ -1,7 +1,6 @@
 import { type Chain } from '@/shared/core';
 import { type Validator } from '@/shared/core/types/validator';
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
 import { Modal } from '@/shared/ui-kit';
@@ -26,7 +25,6 @@ export const SelectedValidatorsModal = ({ isOpen, validators, identities, chain,
         <ul className="flex flex-col [overflow-y:overlay]">
           {validators.map((validator) => {
             const identity = identities[validator.accountId];
-            if (nullable(identity)) return null;
 
             return (
               <li
