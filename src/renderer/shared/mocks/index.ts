@@ -281,7 +281,6 @@ export const createLegacyMultishardWallet = (
     type: 'wallet_mps',
     id,
     name: params?.name ?? `MultiShard ${id}`,
-    signingType: SigningType.PARITY_SIGNER,
     ...(params?.accounts && { accounts: params.accounts }),
     ...(params?.rootAccountId && { rootAccountId: params.rootAccountId }),
   };
