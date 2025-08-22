@@ -48,8 +48,6 @@ export const Identicon = memo(
 
     const shouldCopy = canCopy && valid;
 
-    console.log({ preferStaticContent, shouldCopy });
-
     const node = (
       <span
         className={cnTw(
