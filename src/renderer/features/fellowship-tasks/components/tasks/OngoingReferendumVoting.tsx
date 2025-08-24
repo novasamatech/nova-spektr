@@ -89,7 +89,7 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
   return (
     <Box direction="row" gap={2}>
       <ReferendumDetailsModal referendum={referendum}>
-        <button className="flex w-full min-w-0 appearance-none gap-2 p-4">
+        <button className="flex w-full min-w-0 cursor-pointer appearance-none gap-2 p-4">
           <Box alignSelf="flex-start" shrink={0}>
             <TaskBadge proposal={referendum.proposal} />
           </Box>
