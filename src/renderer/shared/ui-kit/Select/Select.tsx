@@ -7,13 +7,14 @@ import {
   ComboboxPopover,
   ComboboxProvider,
 } from '@ariakit/react';
-import React, {
+import {
   Children,
   type PropsWithChildren,
   type ReactNode,
   createContext,
   memo,
   startTransition,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -21,8 +22,11 @@ import React, {
 } from 'react';
 
 import { type XOR } from '@/shared/core';
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { useTheme } from '../Theme/useTheme';
+import { FootnoteText } from '@/shared/ui';
+import { useTheme } from '@/shared/ui-kit';
+import { Graphics } from '../Graphics/Graphics';
 
 type ContextProps = {
   invalid?: boolean;
@@ -33,11 +37,17 @@ type ContextProps = {
   onItemSelect: (value: string) => void;
   selectedValue?: string | null;
   setSelectedItemContent: (content: ReactNode) => void;
+  registerItem: (value: string, content: ReactNode) => void;
+  unregisterItem: (value: string) => void;
+  searchQuery: string;
 };
 
 const Context = createContext<ContextProps>({
   onItemSelect: () => {},
   setSelectedItemContent: () => {},
+  registerItem: () => {},
+  unregisterItem: () => {},
+  searchQuery: '',
 });
 
 type ControlledSelectProps<T extends string> = {
@@ -82,73 +92,112 @@ const Root = <T extends string>({
   onSearch: _onSearch,
   children: _children,
 }: RootProps<T>) => {
+  const { t } = useI18n();
+
+  const { theme } = useTheme();
   const [searchValue, setSearchValue] = useState('');
-  const list = [
-    'Apple',
-    'Bacon',
-    'Banana',
-    'Broccoli',
-    'Burger',
-    'Cake',
-    'Candy',
-    'Carrot',
-    'Cherry',
-    'Chocolate',
-    'Cookie',
-    'Cucumber',
-    'Donut',
-    'Fish',
-    'Fries',
-    'Grape',
-    'Green apple',
-    'Hot dog',
-    'Ice cream',
-    'Kiwi',
-    'Lemon',
-    'Lollipop',
-    'Onion',
-    'Orange',
-    'Pasta',
-    'Pineapple',
-    'Pizza',
-    'Potato',
-    'Salad',
-    'Sandwich',
-    'Steak',
-    'Strawberry',
-    'Tomato',
-    'Watermelon',
-  ];
-  const matches = useMemo(() => list.filter(i => i.includes(searchValue)), [searchValue]);
+  const [selectedItemContent, setSelectedItemContent] = useState<ReactNode>(null);
+  const [registeredItems, setRegisteredItems] = useState<Map<string, ReactNode>>(new Map());
+  const [isOpen, setIsOpen] = useState(false);
+
+  const registerItem = useCallback((value: string, content: ReactNode) => {
+    setRegisteredItems(prev => new Map(prev.set(value, content)));
+  }, []);
+
+  const unregisterItem = useCallback((value: string) => {
+    setRegisteredItems(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(value);
+      return newMap;
+    });
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      invalid: _invalid,
+      disabled: _disabled,
+      height: _height,
+      testId: _testId,
+      onSearch: _onSearch,
+      onItemSelect: (value: string) => {
+        _onChange?.(value as T);
+        setIsOpen(false);
+      },
+      selectedValue: _value,
+      setSelectedItemContent,
+      registerItem,
+      unregisterItem,
+      searchQuery: searchValue,
+    }),
+    [_invalid, _disabled, _height, _testId, _onSearch, _onChange, _value, searchValue, registerItem, unregisterItem],
+  );
+
+  const filteredItems = useMemo(() => {
+    if (!searchValue) return Array.from(registeredItems.entries());
+    return Array.from(registeredItems.entries()).filter(([value]) =>
+      value.toLowerCase().includes(searchValue.toLowerCase()),
+    );
+  }, [registeredItems, searchValue]);
   return (
-    <ComboboxProvider
-      setValue={value => {
-        startTransition(() => setSearchValue(value));
-      }}
-    >
-      <Combobox
-        placeholder="e.g., Apple"
-        className="h-10 w-64 rounded-md border-none bg-white pr-4 pl-4 text-base leading-6 text-black shadow-[inset_0_0_0_1px_rgba(0,0,0,0.15),inset_0_2px_5px_0_rgba(0,0,0,0.08)] outline-1 outline-offset-[-1px] outline-blue-600 placeholder:text-black/60 hover:bg-blue-50 focus-visible:outline-2 data-[active-item]:outline-2 dark:bg-slate-800 dark:text-white dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15),inset_0_-1px_0_0_rgba(255,255,255,0.05),inset_0_2px_5px_0_rgba(0,0,0,0.15)] dark:placeholder:text-white/46 dark:hover:bg-slate-900"
-      />
-      <ComboboxPopover
-        gutter={8}
-        sameWidth
-        className="relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-lg border border-slate-300 bg-white p-2 text-black shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-4px_rgba(0,0,0,0.1)] outline-2 outline-offset-2 outline-transparent dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.25),0_4px_6px_-4px_rgba(0,0,0,0.1)]"
+    <Context.Provider value={contextValue}>
+      <ComboboxProvider
+        open={isOpen}
+        setOpen={setIsOpen}
+        setValue={value => {
+          startTransition(() => setSearchValue(value));
+          if (_onSearch) {
+            _onSearch(value);
+          }
+        }}
       >
-        {matches.length ? (
-          matches.map(value => (
-            <ComboboxItem
-              key={value}
-              value={value}
-              className="flex cursor-default scroll-m-2 items-center gap-2 rounded px-2 py-2 outline-none hover:bg-blue-500/40 active:pt-[9px] active:pb-[7px] data-[active]:pt-[9px] data-[active]:pb-[7px] data-[active-item]:bg-blue-600 data-[active-item]:text-white dark:hover:bg-blue-500/25 dark:data-[active-item]:bg-blue-600"
-            />
-          ))
+        {!isOpen ? (
+          // Closed state - show selected item or placeholder
+          <div
+            className={cnTw(
+              'box-border flex items-center gap-x-2 rounded-sm border border-filter-border bg-input-background px-[11px] text-text-secondary',
+              'text-footnote focus-within:border-active-container-border hover:shadow-card-shadow',
+              {
+                'h-8.5': _height === 'sm',
+                'h-10.5': _height === 'md',
+                'border-filter-border bg-input-background text-text-primary': theme === 'light',
+                'border-border-dark bg-background-dark text-white': theme === 'dark',
+                'bg-input-background-disabled text-text-tertiary': _disabled,
+                'border-filter-border-negative': _invalid,
+              },
+            )}
+            onClick={() => !_disabled && setIsOpen(true)}
+          >
+            {selectedItemContent || <span className="text-black/60 dark:text-white/46">{_placeholder}</span>}
+          </div>
         ) : (
-          // eslint-disable-next-line i18next/no-literal-string
-          <div className="gap-2 p-2">No results found</div>
+          // Open state - show input
+          <Combobox
+            autoFocus
+            placeholder={_placeholder}
+            className={cnTw(
+              'min-h-[34px] w-full rounded-md border-none px-4 leading-6 text-black outline-1 placeholder:text-text-secondary focus-visible:outline-2 dark:text-white',
+              { 'h-8.5': _height === 'sm', 'h-10.5': _height === 'md' },
+            )}
+            onBlur={() => {
+              setIsOpen(false);
+            }}
+          />
         )}
-      </ComboboxPopover>
-    </ComboboxProvider>
+        <ComboboxPopover
+          gutter={8}
+          sameWidth
+          className="relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-lg border border-slate-300 bg-white p-2"
+        >
+          {_children}
+          {filteredItems.length === 0 && registeredItems.size > 0 && (
+            <div className="flex flex-col items-center justify-center gap-2 px-2 py-6">
+              <Graphics name="emptyList" size={64} />
+              <FootnoteText className="text-text-tertiary">{t('emptyState.accountsNotFound')}</FootnoteText>
+            </div>
+          )}
+        </ComboboxPopover>
+      </ComboboxProvider>
+    </Context.Provider>
   );
 };
 
@@ -166,17 +215,30 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
 };
 
 const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => {
-  const { theme } = useTheme();
-  const { selectedValue, setSelectedItemContent } = useContext(Context);
+  const { selectedValue, setSelectedItemContent, registerItem, unregisterItem, onItemSelect, searchQuery } =
+    useContext(Context);
 
   const isSelected = selectedValue === value;
 
-  // Register this item's content if it's selected
+  // Register this item on mount and update when children change
+  useEffect(() => {
+    registerItem(value, children);
+    return () => unregisterItem(value);
+  }, [value, children, registerItem, unregisterItem]);
+
+  // Set selected item content when selected
   useEffect(() => {
     if (isSelected) {
       setSelectedItemContent(children);
     }
   }, [isSelected, children, setSelectedItemContent]);
+
+  // Filter out items that don't match search
+  const shouldShow = !searchQuery || value.toLowerCase().includes(searchQuery.toLowerCase());
+
+  if (!shouldShow) {
+    return null;
+  }
 
   const commonStyle = depth
     ? {
@@ -188,14 +250,9 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
     <ComboboxItem
       focusOnHover
       value={value}
-      className={cnTw(
-        'flex w-full cursor-default items-center gap-2 rounded-sm px-3 py-2 text-footnote text-text-secondary',
-        'data-[focus-visible]:bg-action-background-hover data-[focus-visible]:outline-none',
-        {
-          'text-text-tertiary data-[focus-visible]:bg-background-item-hover': theme === 'dark',
-        },
-      )}
+      className="flex cursor-default scroll-m-2 items-center gap-2 rounded px-2 py-2 outline-none hover:bg-blue-500/40 active:pt-[9px] active:pb-[7px] data-[active]:pt-[9px] data-[active]:pb-[7px] data-[active-item]:bg-blue-600 data-[active-item]:text-white data-[active-item]:outline-2 dark:hover:bg-blue-500/25 dark:data-[active-item]:bg-blue-600"
       style={commonStyle}
+      onClick={() => onItemSelect(value)}
     >
       <div className="h-full w-full truncate">{children}</div>
     </ComboboxItem>
