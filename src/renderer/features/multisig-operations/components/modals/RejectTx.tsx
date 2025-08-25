@@ -51,7 +51,7 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   const wallets = useUnit(walletModel.$wallets);
 
   const rejectTx = useUnit(rejectModel.$transaction);
-  const isEnoughBalance = useUnit(rejectModel.$isEnoughBalance);
+  const errors = useUnit(rejectModel.$errors);
   const fee = useUnit(rejectModel.$fee);
   const isFeeLoading = useUnit(rejectModel.$isFeeLoading);
   const isDepositLoading = useUnit(rejectModel.$isDepositLoading);
@@ -117,7 +117,7 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   };
 
   const handleConfirm = () => {
-    if (isEnoughBalance) {
+    if (errors.length === 0) {
       setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
@@ -158,7 +158,7 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
             isDepositLoading={isDepositLoading}
             signAccount={signAccount}
             multisigDeposit={multisigDeposit}
-            isEnoughBalance={isEnoughBalance}
+            errors={errors}
             onSign={handleConfirm}
           />
         )}

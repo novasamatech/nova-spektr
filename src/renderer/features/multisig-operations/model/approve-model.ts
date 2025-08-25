@@ -1,12 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Weight } from '@polkadot/types/interfaces';
-import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain } from '@/shared/core';
-import { getNativeAsset, nonNullable, nullable, transferableAmount, validateCallData } from '@/shared/lib/utils';
-import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
+import { getNativeAsset, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -14,7 +19,7 @@ import {
   multisigOperationService,
   transactionService,
 } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
 
@@ -116,6 +121,7 @@ const $transaction = combine(
 
 const {
   $tx,
+  $route,
   $fee,
   $pendingFee: $isFeeLoading,
 } = createComplexTxStore({
@@ -131,31 +137,6 @@ const $extrinsic = combine($api, $tx, (api, tx) => {
   if (nullable(api) || nullable(tx)) return null;
   return getExtrinsic[tx.type](tx.args, api);
 });
-
-const $isEnoughBalance = combine(
-  {
-    api: $api,
-    transaction: $transaction,
-    signatory: $signatory,
-    balances: balanceModel.$balanceMap,
-    chain: $chain,
-    fee: $fee,
-  },
-  ({ signatory, balances, chain, fee }) => {
-    if (!signatory?.accountId || !chain || !fee) {
-      return false;
-    }
-
-    const nativeAsset = getNativeAsset(chain.assets);
-    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, nativeAsset.assetId);
-
-    if (!balance) {
-      return false;
-    }
-
-    return new BN(fee).lte(new BN(transferableAmount(balance)));
-  },
-);
 
 const { $multisigDeposit, $pending: $isDepositLoading } = createMultisigDeposit({
   $api: $api,
@@ -183,13 +164,25 @@ const $signingPayloads = combine(
   },
 );
 
+const validator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $chain.map(chain => (chain ? getNativeAsset(chain.assets) : null)),
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
 export const approveModel = {
   flow,
   $transaction: $tx,
   $fee,
   $isFeeLoading,
   $isDepositLoading,
-  $isEnoughBalance,
+  $errors,
   $multisigDeposit,
   $signatory,
   $signingPayloads,

@@ -1,10 +1,14 @@
-import { BN } from '@polkadot/util';
 import { combine, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type Transaction } from '@/shared/core';
-import { getNativeAsset, nonNullable, transferableAmount } from '@/shared/lib/utils';
-import { createComplexTxStore, createMultisigDeposit } from '@/shared/transactions';
+import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import {
   type AnyAccount,
   type MultisigOperation,
@@ -12,7 +16,7 @@ import {
   accounts,
   multisigOperationService,
 } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 
@@ -100,6 +104,7 @@ sample({
 const {
   $tx,
   $fee,
+  $route,
   $pendingFee: $isFeeLoading,
 } = createComplexTxStore({
   api: $api,
@@ -110,33 +115,21 @@ const {
   transaction: $transaction,
 });
 
-const $isEnoughBalance = combine(
-  {
-    api: $api,
-    transaction: $transaction,
-    signatory: $signatory,
-    balances: balanceModel.$balanceMap,
-    chain: $chain,
-    fee: $fee,
-  },
-  ({ signatory, balances, chain, fee }) => {
-    if (!signatory?.accountId || !chain || !fee) {
-      return false;
-    }
-
-    const nativeAsset = getNativeAsset(chain.assets);
-    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, nativeAsset.assetId);
-
-    if (!balance) {
-      return false;
-    }
-
-    return new BN(fee).lte(new BN(transferableAmount(balance)));
-  },
-);
 const { $multisigDeposit, $pending: $pendingMultisigDepositFee } = createMultisigDeposit({
   $api: $api,
   $threshold: operationsContextModel.$multisigAccount.map(account => account?.threshold ?? null),
+});
+
+const validator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $chain.map(chain => (chain ? getNativeAsset(chain.assets) : null)),
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
 });
 
 export const rejectModel = {
@@ -145,8 +138,8 @@ export const rejectModel = {
   $fee,
   $isFeeLoading,
   $isDepositLoading: $pendingMultisigDepositFee,
-  $isEnoughBalance,
   $multisigDeposit,
   $signatory,
   $initiator,
+  $errors,
 };

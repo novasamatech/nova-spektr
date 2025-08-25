@@ -45,7 +45,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
 
   const approveTx = useUnit(approveModel.$transaction);
-  const isEnoughBalance = useUnit(approveModel.$isEnoughBalance);
+  const errors = useUnit(approveModel.$errors);
   const signAccount = useUnit(approveModel.$signatory);
   const initiator = useUnit(approveModel.$initiator);
   const fee = useUnit(approveModel.$fee);
@@ -114,8 +114,9 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
     }
   };
 
+  // wtf do we need it?
   const handleConfirm = () => {
-    if (isEnoughBalance) {
+    if (errors.length === 0) {
       setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
@@ -164,7 +165,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
             isDepositLoading={isDepositLoading}
             signAccount={signAccount}
             multisigDeposit={multisigDeposit}
-            isEnoughBalance={isEnoughBalance}
+            errors={errors}
             onSign={handleConfirm}
           />
         )}

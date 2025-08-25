@@ -8,6 +8,12 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, getAssetByTypeExtras, getNativeAsset } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
+import {
+  type TransactionValidationBalanceError,
+  TransactionValidationError,
+  type TransactionValidationFatalError,
+  type TransactionValidationPermissionError,
+} from '@/shared/ui-entities';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
@@ -30,7 +36,11 @@ type Props = {
   api: ApiPromise;
   fee: BN;
   multisigDeposit: BN;
-  isEnoughBalance: boolean;
+  errors: (
+    | TransactionValidationBalanceError
+    | TransactionValidationPermissionError
+    | TransactionValidationFatalError
+  )[];
   isFeeLoading: boolean;
   isDepositLoading: boolean;
   onSign: () => void;
@@ -42,7 +52,7 @@ export const Confirmation = ({
   signAccount,
   fee,
   multisigDeposit,
-  isEnoughBalance,
+  errors,
   isFeeLoading,
   isDepositLoading,
   onSign,
@@ -85,6 +95,8 @@ export const Confirmation = ({
 
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
+      <TransactionValidationError errors={errors} wallets={wallets} />
+
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
 
@@ -105,7 +117,7 @@ export const Confirmation = ({
         </DetailRow>
       )}
       <SignButton
-        disabled={isFeeLoading || isDepositLoading || !isEnoughBalance}
+        disabled={isFeeLoading || isDepositLoading || errors.length !== 0}
         className="mt-3 ml-auto"
         type={signerWallet?.type}
         onClick={onSign}
