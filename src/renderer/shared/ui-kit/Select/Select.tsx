@@ -4,9 +4,9 @@ import {
   ComboboxGroupLabel,
   ComboboxItem,
   ComboboxList,
+  ComboboxPopover,
   ComboboxProvider,
 } from '@ariakit/react';
-import * as RadixPopover from '@radix-ui/react-popover';
 import React, {
   Children,
   type PropsWithChildren,
@@ -14,24 +14,15 @@ import React, {
   createContext,
   memo,
   startTransition,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 
 import { type XOR } from '@/shared/core';
-import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, Icon } from '@/shared/ui';
-import { Graphics } from '../Graphics/Graphics';
-import { Input } from '../Input/Input';
-import { ScrollArea } from '../ScrollArea/ScrollArea';
-import { Surface } from '../Surface/Surface';
 import { useTheme } from '../Theme/useTheme';
-import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 type ContextProps = {
   invalid?: boolean;
@@ -39,22 +30,14 @@ type ContextProps = {
   height?: 'sm' | 'md';
   testId?: string;
   onSearch?: (query: string) => void;
-  isInputMode: boolean;
   onItemSelect: (value: string) => void;
   selectedValue?: string | null;
   setSelectedItemContent: (content: ReactNode) => void;
-  focusedIndex: number;
-  availableItems: string[];
-  setAvailableItems: (items: string[] | ((prev: string[]) => string[])) => void;
 };
 
 const Context = createContext<ContextProps>({
-  isInputMode: false,
   onItemSelect: () => {},
   setSelectedItemContent: () => {},
-  focusedIndex: -1,
-  availableItems: [],
-  setAvailableItems: () => {},
 });
 
 type ControlledSelectProps<T extends string> = {
@@ -87,437 +70,106 @@ type GroupProps = PropsWithChildren<{
 }>;
 
 const Root = <T extends string>({
-  invalid,
-  disabled,
-  testId = 'Select',
-  height = 'sm',
-  open,
-  onToggle,
-  placeholder,
+  invalid: _invalid,
+  disabled: _disabled,
+  testId: _testId = 'Select',
+  height: _height = 'sm',
+  open: _open,
+  onToggle: _onToggle,
+  placeholder: _placeholder,
   value: _value,
-  onChange,
-  onSearch,
-  children,
+  onChange: _onChange,
+  onSearch: _onSearch,
+  children: _children,
 }: RootProps<T>) => {
-  const { t } = useI18n();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const comboboxRef = useRef<HTMLInputElement>(null);
-  const listboxRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const [internalOpen, setInternalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isInputMode, setIsInputMode] = useState(false);
-  const [selectedItemContent, setSelectedItemContent] = useState<ReactNode>(null);
-  const [focusedIndex, setFocusedIndex] = useState(-1);
-  const [availableItems, setAvailableItems] = useState<string[]>([]);
-  const { portalContainer, theme } = useTheme();
-
-  // Use controlled open state if provided, otherwise use internal state
-  const isOpen = open !== undefined ? open : internalOpen;
-  const setOpen = onToggle || setInternalOpen;
-
-  // Check if there are any actual children (results)
-  const hasResults = Children.count(children) > 0;
-  const showEmptyState = !!onSearch && searchQuery.length > 0 && !hasResults;
-
-  // Clear selected item content when value changes to null
-  useEffect(() => {
-    if (!_value) {
-      setSelectedItemContent(null);
-    }
-  }, [_value]);
-
-  const handleItemSelect = (itemValue: string) => {
-    startTransition(() => {
-      if (onSearch) {
-        setIsInputMode(false);
-        setSearchQuery('');
-        onSearch('');
-      }
-      setOpen(false);
-      onChange(itemValue as T);
-
-      // Return focus to trigger after dropdown closes
-      setTimeout(() => {
-        triggerRef.current?.focus();
-      }, 100);
-    });
-  };
-
-  const handleContainerClick = () => {
-    if (onSearch && !isInputMode) {
-      setIsInputMode(true);
-      setOpen(true);
-      // Auto focus the input when switching to input mode
-      setTimeout(() => {
-        comboboxRef.current?.focus();
-      }, 0);
-    } else if (!onSearch) {
-      // For non-searchable selects, just open the dropdown
-      setOpen(true);
-    }
-  };
-
-  const handleContainerKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOpen && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-      e.preventDefault();
-      handleContainerClick();
-    } else if (isOpen) {
-      handleKeyNavigation(e);
-    }
-  };
-
-  const handleInputBlur = () => {
-    if (!onSearch) return;
-
-    // Delay hiding to allow item selection
-    setTimeout(() => {
-      setIsInputMode(false);
-      setOpen(false);
-      setSearchQuery('');
-      onSearch('');
-    }, 150);
-  };
-
-  const handleInputChange = (query: string) => {
-    if (!onSearch) return;
-
-    setSearchQuery(query);
-    onSearch(query);
-  };
-
-  // Keyboard navigation utilities
-  const updateAvailableItems = useCallback((items: string[] | ((prev: string[]) => string[])) => {
-    setAvailableItems(items);
-    // Reset focus when items change if it's a direct array update
-    if (Array.isArray(items)) {
-      setFocusedIndex(-1);
-    }
-  }, []);
-
-  const handleKeyNavigation = (e: React.KeyboardEvent) => {
-    // Allow Escape key even in input mode
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      setOpen(false);
-      setFocusedIndex(-1);
-      return;
-    }
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setFocusedIndex(prev => (prev < availableItems.length - 1 ? prev + 1 : 0));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setFocusedIndex(prev => (prev > 0 ? prev - 1 : availableItems.length - 1));
-        break;
-      case 'Enter':
-      case ' ':
-        if (focusedIndex >= 0 && focusedIndex < availableItems.length) {
-          e.preventDefault();
-          const focusedItem = availableItems[focusedIndex];
-          if (focusedItem) {
-            handleItemSelect(focusedItem);
-          }
-        }
-        break;
-    }
-  };
-
-  // Reset focused index and manage focus when dropdown state changes
-  useEffect(() => {
-    if (isOpen && !isInputMode) {
-      // Find the currently selected item and focus it
-      const selectedIndex = availableItems.findIndex(item => item === _value);
-      setFocusedIndex(selectedIndex >= 0 ? selectedIndex : -1);
-
-      // Focus the dropdown for keyboard navigation
-      setTimeout(() => {
-        if (listboxRef.current) {
-          listboxRef.current.focus();
-        }
-      }, 0);
-    } else if (!isOpen) {
-      setFocusedIndex(-1);
-    }
-  }, [isOpen, isInputMode, availableItems, _value]);
-
-  // Clear available items when component unmounts or dropdown closes
-  useEffect(() => {
-    if (!isOpen) {
-      // Small delay to allow items to unregister naturally
-      const timeoutId = setTimeout(() => {
-        setAvailableItems([]);
-      }, 100);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isOpen]);
-
-  const ctx = useMemo(
-    () => ({
-      height,
-      invalid,
-      disabled,
-      testId,
-      onSearch,
-      isInputMode,
-      onItemSelect: handleItemSelect,
-      selectedValue: _value,
-      setSelectedItemContent,
-      focusedIndex,
-      availableItems,
-      setAvailableItems: updateAvailableItems,
-    }),
-    [
-      height,
-      invalid,
-      disabled,
-      testId,
-      onSearch,
-      isInputMode,
-      _value,
-      focusedIndex,
-      availableItems,
-      updateAvailableItems,
-    ],
-  );
-
+  const [searchValue, setSearchValue] = useState('');
+  const list = [
+    'Apple',
+    'Bacon',
+    'Banana',
+    'Broccoli',
+    'Burger',
+    'Cake',
+    'Candy',
+    'Carrot',
+    'Cherry',
+    'Chocolate',
+    'Cookie',
+    'Cucumber',
+    'Donut',
+    'Fish',
+    'Fries',
+    'Grape',
+    'Green apple',
+    'Hot dog',
+    'Ice cream',
+    'Kiwi',
+    'Lemon',
+    'Lollipop',
+    'Onion',
+    'Orange',
+    'Pasta',
+    'Pineapple',
+    'Pizza',
+    'Potato',
+    'Salad',
+    'Sandwich',
+    'Steak',
+    'Strawberry',
+    'Tomato',
+    'Watermelon',
+  ];
+  const matches = useMemo(() => list.filter(i => i.includes(searchValue)), [searchValue]);
   return (
-    <Context.Provider value={ctx}>
-      {/* Hidden container for content registration - always rendered */}
-      <div className="sr-only" aria-hidden="true">
-        {onSearch ? (
-          <ComboboxProvider
-            open={false}
-            setOpen={() => {}}
-            value=""
-            defaultSelectedValue=""
-            setValue={() => {}}
-            setSelectedValue={() => {}}
-          >
-            <ComboboxList>{children}</ComboboxList>
-          </ComboboxProvider>
+    <ComboboxProvider
+      setValue={value => {
+        startTransition(() => setSearchValue(value));
+      }}
+    >
+      <Combobox
+        placeholder="e.g., Apple"
+        className="h-10 w-64 rounded-md border-none bg-white pr-4 pl-4 text-base leading-6 text-black shadow-[inset_0_0_0_1px_rgba(0,0,0,0.15),inset_0_2px_5px_0_rgba(0,0,0,0.08)] outline-1 outline-offset-[-1px] outline-blue-600 placeholder:text-black/60 hover:bg-blue-50 focus-visible:outline-2 data-[active-item]:outline-2 dark:bg-slate-800 dark:text-white dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15),inset_0_-1px_0_0_rgba(255,255,255,0.05),inset_0_2px_5px_0_rgba(0,0,0,0.15)] dark:placeholder:text-white/46 dark:hover:bg-slate-900"
+      />
+      <ComboboxPopover
+        gutter={8}
+        sameWidth
+        className="relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-lg border border-slate-300 bg-white p-2 text-black shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-4px_rgba(0,0,0,0.1)] outline-2 outline-offset-2 outline-transparent dark:border-slate-600 dark:bg-slate-800 dark:text-white dark:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.25),0_4px_6px_-4px_rgba(0,0,0,0.1)]"
+      >
+        {matches.length ? (
+          matches.map(value => (
+            <ComboboxItem
+              key={value}
+              value={value}
+              className="flex cursor-default scroll-m-2 items-center gap-2 rounded px-2 py-2 outline-none hover:bg-blue-500/40 active:pt-[9px] active:pb-[7px] data-[active]:pt-[9px] data-[active]:pb-[7px] data-[active-item]:bg-blue-600 data-[active-item]:text-white dark:hover:bg-blue-500/25 dark:data-[active-item]:bg-blue-600"
+            />
+          ))
         ) : (
-          children
+          // eslint-disable-next-line i18next/no-literal-string
+          <div className="gap-2 p-2">No results found</div>
         )}
-      </div>
-
-      <RadixPopover.Root modal open={isOpen} onOpenChange={setOpen}>
-        <RadixPopover.Anchor asChild>
-          <div ref={containerRef} className="w-full">
-            {!isInputMode || !onSearch ? (
-              <div
-                ref={triggerRef}
-                className={cnTw(
-                  'relative flex w-full items-center pr-6 pl-[11px]',
-                  'rounded-sm border text-footnote outline-offset-1',
-                  'enabled:hover:shadow-card-shadow',
-                  'data-[state=open]:border-active-container-border',
-                  {
-                    'h-8.5': height === 'sm',
-                    'h-10.5': height === 'md',
-                    'border-filter-border bg-input-background text-text-primary': theme === 'light',
-                    'border-border-dark bg-background-dark text-white': theme === 'dark',
-                    'bg-input-background-disabled text-text-tertiary': disabled,
-                    'border-filter-border-negative': invalid,
-                    'cursor-pointer': !disabled,
-                    'cursor-not-allowed': disabled,
-                  },
-                )}
-                tabIndex={disabled ? -1 : 0}
-                data-testid={testId}
-                onClick={disabled ? undefined : handleContainerClick}
-                onKeyDown={
-                  disabled
-                    ? undefined
-                    : e => {
-                        handleContainerKeyDown(e);
-                      }
-                }
-              >
-                <div className="flex-1 overflow-hidden text-start">
-                  {selectedItemContent || (
-                    <span className={cnTw('text-footnote text-text-secondary', { 'text-text-tertiary': disabled })}>
-                      {placeholder}
-                    </span>
-                  )}
-                </div>
-                <Icon name="down" size={16} className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2" />
-              </div>
-            ) : (
-              <ComboboxProvider
-                open={open}
-                setOpen={setOpen}
-                value={searchQuery}
-                defaultSelectedValue=""
-                setValue={handleInputChange}
-                setSelectedValue={handleItemSelect}
-              >
-                <Combobox
-                  autoSelect
-                  autoFocus
-                  ref={comboboxRef}
-                  placeholder={placeholder}
-                  render={({ onChange, ...props }) => <Input {...props} height={height} onChangeEvent={onChange} />}
-                  onBlur={handleInputBlur}
-                  onKeyDown={e => {
-                    // Handle navigation and selection keys
-                    if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(e.key)) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleKeyNavigation(e);
-                      return;
-                    }
-                  }}
-                />
-              </ComboboxProvider>
-            )}
-          </div>
-        </RadixPopover.Anchor>
-
-        {isOpen && containerRef.current && (
-          <RadixPopover.Portal container={portalContainer}>
-            <RadixPopover.Content
-              asChild
-              avoidCollisions={false}
-              hideWhenDetached
-              data-testid={testId}
-              style={{ width: `${containerRef.current.getBoundingClientRect().width}px` }}
-              collisionPadding={gridSpaceConverter(2)}
-              sideOffset={gridSpaceConverter(2)}
-              align="center"
-              onOpenAutoFocus={e => {
-                e.preventDefault();
-              }}
-              onInteractOutside={event => {
-                const target = event.target as Element | null;
-                const isCombobox = target === comboboxRef?.current;
-                const inListbox = target && listboxRef?.current?.contains(target);
-                if (isCombobox || inListbox) {
-                  event.preventDefault();
-                }
-              }}
-            >
-              <Surface
-                elevation={1}
-                className={cnTw(
-                  'z-50 flex flex-col',
-                  'h-max max-h-(--radix-popper-available-height) min-w-20',
-                  'origin-(--radix-popper-transform-origin) overflow-hidden duration-100 animate-in fade-in zoom-in-95',
-                  {
-                    'border-border-dark bg-background-dark': theme === 'dark',
-                  },
-                )}
-              >
-                <ScrollArea>
-                  {onSearch && isInputMode ? (
-                    <ComboboxProvider
-                      open={isOpen}
-                      setOpen={setOpen}
-                      value={searchQuery}
-                      defaultSelectedValue=""
-                      setSelectedValue={handleItemSelect}
-                    >
-                      <ComboboxList ref={listboxRef} role="listbox">
-                        <div className="flex flex-col gap-y-1 p-1">
-                          {children}
-                          {showEmptyState && (
-                            <div className="flex flex-col items-center justify-center gap-2 px-2 py-6">
-                              <Graphics name="emptyList" size={64} />
-                              <FootnoteText className="text-text-tertiary">
-                                {t('emptyState.accountsNotFound')}
-                              </FootnoteText>
-                            </div>
-                          )}
-                        </div>
-                      </ComboboxList>
-                    </ComboboxProvider>
-                  ) : (
-                    <div
-                      ref={listboxRef}
-                      className="flex flex-col gap-y-1 p-1"
-                      tabIndex={0}
-                      role="listbox"
-                      aria-activedescendant={
-                        focusedIndex >= 0 ? `select-item-${availableItems[focusedIndex]}` : undefined
-                      }
-                      onKeyDown={handleKeyNavigation}
-                    >
-                      {children}
-                    </div>
-                  )}
-                </ScrollArea>
-              </Surface>
-            </RadixPopover.Content>
-          </RadixPopover.Portal>
-        )}
-      </RadixPopover.Root>
-    </Context.Provider>
+      </ComboboxPopover>
+    </ComboboxProvider>
   );
-
-  // value = '' resets RadixSelect to default and forces placeholder to appear again
-  // https://github.com/radix-ui/primitives/issues/1569
 };
 
 const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
-  const { onSearch, isInputMode } = useContext(Context);
-
   if (Children.count(children) === 0) return null;
 
-  const isSearchMode = !!onSearch && isInputMode;
-
-  if (isSearchMode) {
-    return (
-      <ComboboxGroup className="mb-1 last:mb-0">
-        <ComboboxGroupLabel>
-          <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
-        </ComboboxGroupLabel>
-        {children}
-      </ComboboxGroup>
-    );
-  }
-
   return (
-    <div className="mb-1 last:mb-0">
-      <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
-      {children}
-    </div>
+    <ComboboxGroup className="mb-1 last:mb-0">
+      <ComboboxGroupLabel>
+        <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
+      </ComboboxGroupLabel>
+      <ComboboxList>{children}</ComboboxList>
+    </ComboboxGroup>
   );
 };
 
 const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => {
   const { theme } = useTheme();
-  const {
-    onSearch,
-    isInputMode,
-    onItemSelect,
-    selectedValue,
-    setSelectedItemContent,
-    focusedIndex,
-    availableItems,
-    setAvailableItems,
-  } = useContext(Context);
+  const { selectedValue, setSelectedItemContent } = useContext(Context);
 
-  const isSearchMode = !!onSearch && isInputMode;
   const isSelected = selectedValue === value;
-  const currentIndex = availableItems.indexOf(value);
-  const isFocused = currentIndex === focusedIndex;
-
-  // Register this item with the parent for keyboard navigation
-  useEffect(() => {
-    setAvailableItems((prev: string[]) => {
-      if (!prev.includes(value)) {
-        return [...prev, value];
-      }
-      return prev;
-    });
-
-    return () => {
-      setAvailableItems((prev: string[]) => prev.filter((item: string) => item !== value));
-    };
-  }, [value, setAvailableItems]);
 
   // Register this item's content if it's selected
   useEffect(() => {
@@ -526,52 +178,27 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
     }
   }, [isSelected, children, setSelectedItemContent]);
 
-  const commonClassName = cnTw(
-    'flex w-full cursor-pointer rounded-sm px-3 py-2 text-footnote text-text-secondary contain-inline-size',
-    'focus:bg-action-background-hover focus:outline-hidden',
-    {
-      'text-text-tertiary focus:bg-block-background-hover': theme === 'dark',
-      'bg-action-background-hover': isFocused && theme === 'light',
-      'bg-background-item-hover': isFocused && theme === 'dark',
-    },
-  );
-
   const commonStyle = depth
     ? {
-        paddingLeft: `${gridSpaceConverter((depth + 1) * 4)}px`,
+        paddingLeft: `${(depth + 1) * 16}px`,
       }
-    : void 0;
+    : undefined;
 
-  if (isSearchMode) {
-    return (
-      <ComboboxItem
-        focusOnHover
-        value={value}
-        className={cnTw(commonClassName, 'data-active-item:bg-action-background-hover', {
-          'data-active-item:bg-background-item-hover': theme === 'dark',
-        })}
-        style={commonStyle}
-      >
-        <div className="h-full w-full truncate">{children}</div>
-      </ComboboxItem>
-    );
-  }
-
-  // For non-search mode, use a regular div with click handler
   return (
-    <div
-      id={`select-item-${value}`}
-      className={cnTw(commonClassName, 'hover:bg-action-background-hover', {
-        'hover:bg-background-item-hover': theme === 'dark',
-      })}
+    <ComboboxItem
+      focusOnHover
+      value={value}
+      className={cnTw(
+        'flex w-full cursor-default items-center gap-2 rounded-sm px-3 py-2 text-footnote text-text-secondary',
+        'data-[focus-visible]:bg-action-background-hover data-[focus-visible]:outline-none',
+        {
+          'text-text-tertiary data-[focus-visible]:bg-background-item-hover': theme === 'dark',
+        },
+      )}
       style={commonStyle}
-      role="option"
-      aria-selected={isSelected}
-      data-focused={isFocused}
-      onClick={() => onItemSelect(value)}
     >
       <div className="h-full w-full truncate">{children}</div>
-    </div>
+    </ComboboxItem>
   );
 });
 
