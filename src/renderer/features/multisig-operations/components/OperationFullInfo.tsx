@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
-import { type MultisigOperation, accountService, accounts, multisigOperation } from '@/domains/network';
+import { type MultisigOperation, accounts, multisigOperation } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { accountUtils } from '@/entities/wallet';
@@ -45,7 +45,7 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
   );
 
   const hasAccount = allAccounts.some(a => {
-    return a.accountId === operation.depositor && accountService.hasPermissionToMakeActions(a);
+    return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);
   });
 
   const isRejectAvailable = operation.status === 'pending' && hasAccount;

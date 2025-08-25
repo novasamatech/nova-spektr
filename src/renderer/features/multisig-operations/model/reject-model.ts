@@ -1,14 +1,19 @@
-import { BN } from '@polkadot/util';
 import { combine, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type Transaction } from '@/shared/core';
-import { getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
-import { createFeeCalculator, createMultisigDeposit } from '@/shared/transactions';
-import { type AnyAccount, type MultisigOperation, multisigOperationService } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
+import { type AnyAccount, type MultisigOperation, accounts, multisigOperationService } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 
 import { operationsContextModel } from './context';
 
@@ -25,7 +30,6 @@ const flow = createGate<GetMultisigType>({
 const $transaction = createStore<Transaction | null>(null).reset(flow.open);
 
 const $chain = flow.state.map(state => state.chain);
-const $signatory = flow.state.map(state => state.signer);
 const $operation = flow.state.map(state => state.operation);
 
 const $api = combine(
@@ -40,6 +44,25 @@ const $api = combine(
   },
 );
 
+const $initiator = combine(
+  {
+    operation: $operation,
+    accounts: accounts.$list,
+  },
+  ({ operation, accounts }) => {
+    if (!operation) return null;
+    return accounts.find(a => a.accountId === operation.depositor) ?? null;
+  },
+);
+
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  accounts: accounts.$list,
+  initiator: $initiator,
+});
+
+const $signatory = $signatories.map(s => s.at(0) ?? null);
+
 sample({
   clock: flow.open,
   source: {
@@ -47,11 +70,12 @@ sample({
     signatory: $signatory,
     chain: $chain,
     operation: $operation,
+    initiator: $initiator,
   },
   filter: ({ multisigAccount }) => nonNullable(multisigAccount),
-  fn: ({ multisigAccount, chain, operation, signatory }) => {
-    if (!operation || !chain || !signatory || !multisigAccount) return null;
-    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, signatory.accountId);
+  fn: ({ multisigAccount, chain, operation, signatory, initiator }) => {
+    if (!operation || !chain || !signatory || !multisigAccount || !initiator) return null;
+    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, initiator.accountId);
 
     return transactionBuilder.buildRejectMultisigTx({
       chain,
@@ -64,50 +88,45 @@ sample({
   target: $transaction,
 });
 
-const $extrinsic = combine($api, $transaction, (api, tx) => {
-  if (nullable(api) || nullable(tx)) return null;
-  return getExtrinsic[tx.type](tx.args, api);
+const {
+  $tx,
+  $fee,
+  $route,
+  $pendingFee: $isFeeLoading,
+} = createComplexTxStore({
+  api: $api,
+  initiator: $initiator,
+  signatory: $signatory,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $transaction,
 });
 
-const { $: $fee, $pending: $isFeeLoading } = createFeeCalculator({
-  extrinsic: $extrinsic,
-});
-
-const $isEnoughBalance = combine(
-  {
-    api: $api,
-    transaction: $transaction,
-    signatory: $signatory,
-    balances: balanceModel.$balanceMap,
-    chain: $chain,
-    fee: $fee,
-  },
-  ({ signatory, balances, chain, fee }) => {
-    if (!signatory?.accountId || !chain || !fee) {
-      return false;
-    }
-
-    const nativeAsset = getNativeAsset(chain.assets);
-    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, nativeAsset.assetId);
-
-    if (!balance) {
-      return false;
-    }
-
-    return new BN(fee).lte(new BN(transferableAmount(balance)));
-  },
-);
 const { $multisigDeposit, $pending: $pendingMultisigDepositFee } = createMultisigDeposit({
   $api: $api,
   $threshold: operationsContextModel.$multisigAccount.map(account => account?.threshold ?? null),
 });
 
+const validator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $chain.map(chain => (chain ? getNativeAsset(chain.assets) : null)),
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
 export const rejectModel = {
   flow,
-  $transaction,
+  $transaction: $tx,
   $fee,
   $isFeeLoading,
   $isDepositLoading: $pendingMultisigDepositFee,
-  $isEnoughBalance,
   $multisigDeposit,
+  $signatory,
+  $initiator,
+  $errors,
 };
