@@ -41,7 +41,7 @@ const EventMessage = {
 
 const getFilteredWalletsMap = (wallets: Wallet[]): WalletsMap => {
   return wallets.reduce<WalletsMap>((acc, wallet) => {
-    if (walletUtils.isValidSignSignatory(wallet)) {
+    if (!walletUtils.isWatchOnly(wallet)) {
       acc[wallet.id] = wallet;
     }
 

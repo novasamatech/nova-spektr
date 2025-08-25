@@ -8,7 +8,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type AnyAccount, type MultisigOperation, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { priceProviderModel } from '@/entities/price';
 import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entities/transaction';
@@ -42,16 +42,17 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(accounts.$list);
+  const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
 
   const approveTx = useUnit(approveModel.$transaction);
-  const isEnoughBalance = useUnit(approveModel.$isEnoughBalance);
+  const errors = useUnit(approveModel.$errors);
   const signAccount = useUnit(approveModel.$signatory);
+  const initiator = useUnit(approveModel.$initiator);
   const fee = useUnit(approveModel.$fee);
   const isFeeLoading = useUnit(approveModel.$isFeeLoading);
   const isDepositLoading = useUnit(approveModel.$isDepositLoading);
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
   const signingPayloads = useUnit(approveModel.$signingPayloads);
-  const initiator = useUnit(operationsContextModel.$initiator);
 
   const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
@@ -67,11 +68,14 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   const asset = useTransactionAsset(operation);
 
   const unsignedAccounts = useMemo(() => {
-    if (!initiator || !chain) return [];
-    const signatories = accountService.findSignatories(initiator, accountsList, chain);
+    if (!multisigAccount || !chain) return [];
+
+    const signatories = accountsList.filter(a =>
+      multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
+    );
 
     return signatories.filter(a => !operation.events.some(e => e.accountId === a.accountId));
-  }, [operation, initiator, chain, accountsList]);
+  }, [operation, multisigAccount, chain, accountsList]);
 
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
@@ -89,14 +93,14 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
 
   const setSignerAccount = () => {
     if (unsignedAccounts.length === 1) {
-      approveModel.selectSigner(unsignedAccounts[0]);
+      approveModel.selectInitiator(unsignedAccounts[0]);
     } else {
       toggleSelectAccountModal();
     }
   };
 
   const selectSignerAccount = (account: AnyAccount) => {
-    approveModel.selectSigner(account);
+    approveModel.selectInitiator(account);
     toggleSelectAccountModal();
   };
 
@@ -110,8 +114,9 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
     }
   };
 
+  // wtf do we need it?
   const handleConfirm = () => {
-    if (isEnoughBalance) {
+    if (errors.length === 0) {
       setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
@@ -128,14 +133,14 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
     return null;
   }
 
-  const isSubmitStep = activeStep === Step.SUBMIT && approveTx && signAccount && signature && txPayload;
+  const isSubmitStep = activeStep === Step.SUBMIT && approveTx && initiator && signature && txPayload;
   if (isSubmitStep && api) {
     return (
       <Submit
         tx={approveTx}
         api={api}
         operation={operation}
-        account={signAccount}
+        account={initiator}
         txPayload={txPayload}
         signature={signature}
         onClose={() => toggleModal(false)}
@@ -160,7 +165,7 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
             isDepositLoading={isDepositLoading}
             signAccount={signAccount}
             multisigDeposit={multisigDeposit}
-            isEnoughBalance={isEnoughBalance}
+            errors={errors}
             onSign={handleConfirm}
           />
         )}

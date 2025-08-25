@@ -15,7 +15,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getAssetByTypeExtras, getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigOperation, accountService, accounts } from '@/domains/network';
+import { type MultisigOperation } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
@@ -49,14 +49,15 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const accountsList = useUnit(accounts.$list);
 
   const rejectTx = useUnit(rejectModel.$transaction);
-  const isEnoughBalance = useUnit(rejectModel.$isEnoughBalance);
+  const errors = useUnit(rejectModel.$errors);
   const fee = useUnit(rejectModel.$fee);
   const isFeeLoading = useUnit(rejectModel.$isFeeLoading);
   const isDepositLoading = useUnit(rejectModel.$isDepositLoading);
   const multisigDeposit = useUnit(rejectModel.$multisigDeposit);
+  const signAccount = useUnit(rejectModel.$signatory);
+  const initiator = useUnit(rejectModel.$initiator);
 
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
@@ -80,10 +81,6 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
     }
   }
 
-  const signAccount = accountsList.find(
-    account => account.accountId === operation.depositor && accountService.hasPermissionToMakeActions(account),
-  );
-
   const signingPayloads = useMemo<ExtrinsicSigningPayload[]>(() => {
     if (nullable(rejectTx) || nullable(signAccount)) return [];
     return [
@@ -99,10 +96,6 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   useEffect(() => {
     priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
-
-  if (!signAccount) {
-    return null;
-  }
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -124,14 +117,14 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   };
 
   const handleConfirm = () => {
-    if (isEnoughBalance) {
+    if (errors.length === 0) {
       setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
     }
   };
 
-  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && txPayload;
+  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && initiator && signature && txPayload;
 
   if (isSubmitStep && api) {
     return (
@@ -140,7 +133,7 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
         tx={rejectTx}
         api={api}
         operation={operation}
-        account={signAccount}
+        account={initiator}
         txPayload={txPayload}
         signature={signature}
         onClose={() => toggleModal(false)}
@@ -165,7 +158,7 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
             isDepositLoading={isDepositLoading}
             signAccount={signAccount}
             multisigDeposit={multisigDeposit}
-            isEnoughBalance={isEnoughBalance}
+            errors={errors}
             onSign={handleConfirm}
           />
         )}

@@ -6,12 +6,10 @@ import { cnTw, getNativeAsset, nonNullable, truncate } from '@/shared/lib/utils'
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { Copy } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { signatoryUtils } from '@/entities/signatory';
 import { walletModel } from '@/entities/wallet';
-import { operationsContextModel } from '../model/context';
 
 type Props = {
   operation: MultisigOperation;
@@ -26,7 +24,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
-  const account = useUnit(operationsContextModel.$multisigAccount);
+  const allAccounts = useUnit(accounts.$list);
 
   const nativeAsset = getNativeAsset(chain?.assets ?? []);
   const explorers = chain?.explorers;
@@ -35,12 +33,10 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = operation;
 
-  const depositorSignatory = account?.signatories.find(s => s.accountId === depositor);
+  const depositorSignatory = allAccounts.find(a => a.accountId === depositor);
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
-  const valueClass = 'text-text-secondary';
-  const depositorWallet =
-    depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
+  const depositorWallet = depositorSignatory && wallets.find(w => w.id === depositorSignatory.walletId);
 
   return (
     <>
@@ -58,7 +54,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
       {isAdvancedShown && (
         <>
           {callHash && (
-            <DetailRow label={t('operation.details.callHash')} className={valueClass}>
+            <DetailRow label={t('operation.details.callHash')} className="text-text-secondary">
               <Copy value={callHash}>
                 <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
                   <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
@@ -69,7 +65,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
           )}
 
           {callData && (
-            <DetailRow label={t('operation.details.callData')} className={valueClass}>
+            <DetailRow label={t('operation.details.callData')} className="text-text-secondary">
               <Copy value={callData}>
                 <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
                   <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
@@ -82,7 +78,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
           {deposit && nativeAsset && depositorSignatory && <hr className="border-divider" />}
 
           {depositorSignatory && nonNullable(chain) && (
-            <DetailRow label={t('operation.details.depositor')} className={valueClass}>
+            <DetailRow label={t('operation.details.depositor')} className="text-text-secondary">
               {depositorWallet ? (
                 <div className="flex items-center gap-2">
                   <WalletIcon size={16} type={depositorWallet.type} />
@@ -100,7 +96,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
           )}
 
           {deposit && nativeAsset && (
-            <DetailRow label={t('operation.details.deposit')} className={valueClass}>
+            <DetailRow label={t('operation.details.deposit')} className="text-text-secondary">
               <AssetBalance
                 value={deposit}
                 asset={nativeAsset}
@@ -112,7 +108,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
           {deposit && nativeAsset && depositorSignatory && <hr className="border-divider" />}
 
           {indexCreated && blockCreated && (
-            <DetailRow label={t('operation.details.timePoint')} className={valueClass}>
+            <DetailRow label={t('operation.details.timePoint')} className="text-text-secondary">
               {extrinsicLink ? (
                 <a
                   className={cnTw('group flex items-center gap-x-1', InteractionStyle)}

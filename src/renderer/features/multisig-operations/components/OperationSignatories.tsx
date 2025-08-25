@@ -7,11 +7,11 @@ import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address, WalletIcon } from '@/shared/ui-entities';
-import { type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { type ExtendedChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { SignatoryCard, signatoryUtils } from '@/entities/signatory';
+import { SignatoryCard } from '@/entities/signatory';
 import { walletModel } from '@/entities/wallet';
 
 import LogModal from './LogModal';
@@ -28,6 +28,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
+  const accountsList = useUnit(accounts.$list);
   const contacts = useUnit(contactModel.$contacts);
 
   const [isLogModalOpen, toggleLogModal] = useToggle();
@@ -54,7 +55,8 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
   }, [account.signatories.length, approvals.length, cancellation.length]);
 
   const walletSignatories: WalletSignatory[] = signatoriesList.reduce((acc: WalletSignatory[], signatory) => {
-    const signatoryWallet = signatoryUtils.getSignatoryWallet(wallets, signatory.accountId);
+    const signatoryAccounts = accountsList.filter(account => account.accountId === signatory.accountId);
+    const signatoryWallet = wallets.find(w => signatoryAccounts.some(account => account.walletId === w.id));
 
     if (signatoryWallet) {
       acc.push({ ...signatory, wallet: signatoryWallet });
