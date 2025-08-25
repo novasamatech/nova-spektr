@@ -6,10 +6,11 @@ import { createGate } from 'effector-react';
 
 import { type Chain } from '@/shared/core';
 import { getNativeAsset, nonNullable, nullable, transferableAmount, validateCallData } from '@/shared/lib/utils';
-import { createFeeCalculator, createMultisigDeposit } from '@/shared/transactions';
+import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
 import {
   type AnyAccount,
   type MultisigOperation,
+  accounts,
   multisigOperationService,
   transactionService,
 } from '@/domains/network';
@@ -28,9 +29,9 @@ const flow = createGate<GetMultisigType>({
   defaultState: { chain: null, operation: null },
 });
 
-const selectSigner = createEvent<AnyAccount | null>();
+const selectInitiator = createEvent<AnyAccount | null>();
 
-const $signatory = restore<AnyAccount | null>(selectSigner, null).reset(flow.open);
+const $initiator = restore<AnyAccount | null>(selectInitiator, null).reset(flow.open);
 const $weight = createStore<Weight | null>(null);
 
 const $chain = flow.state.map(state => state.chain);
@@ -47,6 +48,14 @@ const $api = combine(
     return apis[chain.chainId] ?? null;
   },
 );
+
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  initiator: $initiator,
+  accounts: accounts.$list,
+});
+
+const $signatory = $signatories.map(signatories => signatories[0] ?? null);
 
 // Get weight
 type ExtrinsicSigningPayload = {
@@ -83,14 +92,14 @@ const $transaction = combine(
   {
     multisigAccount: operationsContextModel.$multisigAccount,
     signatory: $signatory,
+    initiator: $initiator,
     chain: $chain,
     operation: $operation,
     weight: $weight,
   },
-  ({ multisigAccount, chain, operation, signatory, weight }) => {
-    if (!multisigAccount || !operation || !chain || !signatory || !weight) return null;
-
-    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, signatory.accountId);
+  ({ multisigAccount, chain, operation, signatory, weight, initiator }) => {
+    if (!multisigAccount || !operation || !chain || !signatory || !weight || !initiator) return null;
+    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, initiator.accountId);
     const hasCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
 
     return transactionBuilder.buildApproveMultisigTx({
@@ -105,13 +114,22 @@ const $transaction = combine(
   },
 );
 
-const $extrinsic = combine($api, $transaction, (api, tx) => {
-  if (nullable(api) || nullable(tx)) return null;
-  return getExtrinsic[tx.type](tx.args, api);
+const {
+  $tx,
+  $fee,
+  $pendingFee: $isFeeLoading,
+} = createComplexTxStore({
+  api: $api,
+  initiator: $initiator,
+  signatory: $signatory,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $transaction,
 });
 
-const { $: $fee, $pending: $isFeeLoading } = createFeeCalculator({
-  extrinsic: $extrinsic,
+const $extrinsic = combine($api, $tx, (api, tx) => {
+  if (nullable(api) || nullable(tx)) return null;
+  return getExtrinsic[tx.type](tx.args, api);
 });
 
 const $isEnoughBalance = combine(
@@ -167,14 +185,15 @@ const $signingPayloads = combine(
 
 export const approveModel = {
   flow,
-  $transaction,
+  $transaction: $tx,
   $fee,
   $isFeeLoading,
   $isDepositLoading,
   $isEnoughBalance,
   $multisigDeposit,
   $signatory,
-
-  selectSigner,
   $signingPayloads,
+  $initiator,
+
+  selectInitiator,
 };

@@ -7,7 +7,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, Button, CaptionText, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address, WalletIcon } from '@/shared/ui-entities';
-import { accounts, type MultisigOperation } from '@/domains/network';
+import { type MultisigOperation, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { type ExtendedChain } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';

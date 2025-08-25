@@ -55,9 +55,6 @@ export const Submit = ({ api, tx, operation, account, txPayload, signature, isRe
         if (params.isFinalApprove) {
           updatedTx.status = params.multisigError ? 'error' : 'executed';
         }
-        // if (isReject) {
-        //   updatedTx.status = params.multisigError ? 'error' : 'cancelled';
-        // }
 
         if (
           params.isFinalApprove &&

@@ -1,4 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type GenericExtrinsic } from '@polkadot/types';
+import { type AnyTuple } from '@polkadot/types/types';
 
 import {
   type CallHash,
@@ -12,7 +14,7 @@ import { isEqual, merge, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { transactionService } from '../transaction/service';
 
-import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX } from './constants';
+import { DEFAULT_BLOCK_HASH, MULTISIG_EXTRINSIC_CALL_INDEX, WRAP_EXTRINSIC_CALL_INDEX } from './constants';
 import { type MultisigEvent, type MultisigOperation } from './types';
 
 function getOtherSignatories(account: MultisigAccount | FlexibleMultisigAccount, signer: AccountId) {
@@ -43,6 +45,22 @@ function getEventId(operationId: string, signer: string, status: 'approve' | 're
   return `${operationId}-${signer}-${status}`;
 }
 
+function extractInnerCallFromAsMulti(extrinsic: GenericExtrinsic<AnyTuple>) {
+  const findAsMulti = (method: any): any => {
+    if (method.toHuman().method === 'asMulti' && method.toHuman().section === 'multisig') {
+      return method.args[MULTISIG_EXTRINSIC_CALL_INDEX];
+    }
+
+    if (method.args) {
+      return findAsMulti(method.args[WRAP_EXTRINSIC_CALL_INDEX]);
+    }
+
+    return null;
+  };
+
+  return findAsMulti(extrinsic.method);
+}
+
 // Callback for not indexed transaction
 type GetCallDataParams = {
   api: ApiPromise;
@@ -60,7 +78,8 @@ async function getTransactionFromChain({ api, callHash, blockHeight, extrinsicIn
     if (nullable(extrinsic)) return null;
     if (!extrinsic.argsDef['call']) return null;
 
-    const callData = extrinsic.args[MULTISIG_EXTRINSIC_CALL_INDEX]?.toHex();
+    const innerCall = extractInnerCallFromAsMulti(extrinsic);
+    const callData = innerCall?.toHex();
 
     if (!callData || !validateCallData(callData, callHash)) return null;
 

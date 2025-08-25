@@ -79,11 +79,12 @@ sample({
     signatory: $signatory,
     chain: $chain,
     operation: $operation,
+    initiator: $initiator,
   },
   filter: ({ multisigAccount }) => nonNullable(multisigAccount),
-  fn: ({ multisigAccount, chain, operation, signatory }) => {
-    if (!operation || !chain || !signatory || !multisigAccount) return null;
-    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, signatory.accountId);
+  fn: ({ multisigAccount, chain, operation, signatory, initiator }) => {
+    if (!operation || !chain || !signatory || !multisigAccount || !initiator) return null;
+    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, initiator.accountId);
 
     return transactionBuilder.buildRejectMultisigTx({
       chain,
@@ -107,7 +108,6 @@ const {
   accounts: accounts.$list,
   chain: $chain,
   transaction: $transaction,
-  feeTransaction: $transaction,
 });
 
 const $isEnoughBalance = combine(
@@ -148,4 +148,5 @@ export const rejectModel = {
   $isEnoughBalance,
   $multisigDeposit,
   $signatory,
+  $initiator,
 };

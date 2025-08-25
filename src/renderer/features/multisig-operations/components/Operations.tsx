@@ -21,7 +21,7 @@ export const Operations = () => {
   const account = useUnit(operationsContextModel.$multisigAccount);
   const operations = useUnit(selectedWalletMultisigOperations.$list);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
-  console.log(operations);
+
   const groupedTxs = groupBy(filteredTxs, tx => {
     let date: number | undefined = tx.timestamp;
 

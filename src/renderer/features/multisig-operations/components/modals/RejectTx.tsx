@@ -57,6 +57,7 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   const isDepositLoading = useUnit(rejectModel.$isDepositLoading);
   const multisigDeposit = useUnit(rejectModel.$multisigDeposit);
   const signAccount = useUnit(rejectModel.$signatory);
+  const initiator = useUnit(rejectModel.$initiator);
 
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
@@ -123,7 +124,7 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
     }
   };
 
-  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && signAccount && signature && txPayload;
+  const isSubmitStep = activeStep === Step.SUBMIT && rejectTx && initiator && signature && txPayload;
 
   if (isSubmitStep && api) {
     return (
@@ -132,7 +133,7 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
         tx={rejectTx}
         api={api}
         operation={operation}
-        account={signAccount}
+        account={initiator}
         txPayload={txPayload}
         signature={signature}
         onClose={() => toggleModal(false)}
