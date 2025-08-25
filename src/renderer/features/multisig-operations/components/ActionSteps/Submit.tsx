@@ -11,12 +11,12 @@ import {
   type AnyAccount,
   type MultisigEvent,
   type MultisigOperation,
+  accountSync,
   multisigOperation,
   transactionService,
 } from '@/domains/network';
 import { multisigOperationService } from '@/domains/network';
 import { getExtrinsic, isProxyTypeTransaction } from '@/entities/transaction';
-import { proxiesModel } from '@/features/proxies';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
@@ -61,7 +61,7 @@ export const Submit = ({ api, tx, operation, account, txPayload, signature, isRe
           !params.multisigError &&
           isProxyTypeTransaction(operation.transaction ?? undefined)
         ) {
-          proxiesModel.findAllProxies();
+          accountSync.syncAccounts();
         }
 
         const eventStatus = isReject ? 'reject' : 'approve';

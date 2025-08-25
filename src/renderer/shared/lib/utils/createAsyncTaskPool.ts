@@ -1,7 +1,7 @@
 import { isNumber } from 'lodash';
 
 import { groupBy } from './arrays';
-import { nullable } from './functions';
+import { nullable, promiseWithResolvers } from './functions';
 
 const DEFAULT_POOL = 'default';
 
@@ -16,7 +16,7 @@ type Task<T = unknown> = {
   fn: () => T | Promise<T>;
   pool: string;
   retry: number;
-  resolve: (value: T | PromiseLike<T>) => void;
+  resolve: (value: T) => void;
   reject: (error: unknown) => void;
 };
 
@@ -26,34 +26,35 @@ type TaskParams = { pool?: string };
  * Task manager with queues, retries and named pools.
  */
 class AsyncTaskPool {
+  private awaiters: VoidFunction[] = [];
   private queue: Task[] = [];
   private activeTasks: Task[] = [];
 
   constructor(private readonly config: Params) {}
 
   call<T>(fn: () => T | Promise<T>, params?: TaskParams) {
-    let externalResolve: ((value: T | PromiseLike<T>) => void) | null = null;
-    let externalReject: ((error: unknown) => void) | null = null;
-    const promise = new Promise<T>((resolve, reject) => {
-      externalResolve = resolve;
-      externalReject = reject;
-    });
-
-    if (!externalResolve || !externalReject) {
-      throw new Error("Can't create resolvable promise");
-    }
-
-    const task: Task = {
+    const { resolve, reject, promise } = promiseWithResolvers<T>();
+    const task: Task<T> = {
       fn,
       pool: params?.pool ?? DEFAULT_POOL,
       retry: 0,
-      resolve: externalResolve,
-      reject: externalReject,
+      resolve,
+      reject,
     };
 
-    this.queue.push(task);
+    this.queue.push(task as Task);
     this.processQueue();
 
+    return promise;
+  }
+
+  settle() {
+    if (this.queue.length === 0 && this.activeTasks.length === 0) {
+      return Promise.resolve();
+    }
+
+    const { resolve, promise } = promiseWithResolvers<void>();
+    this.awaiters.push(resolve);
     return promise;
   }
 
@@ -70,7 +71,10 @@ class AsyncTaskPool {
       }
     }
 
-    if (!task) return;
+    if (!task) {
+      this.finishPool();
+      return;
+    }
     this.activeTasks.push(task);
 
     try {
@@ -94,6 +98,14 @@ class AsyncTaskPool {
       this.activeTasks = this.activeTasks.filter((x) => x !== task);
       this.processQueue();
     }
+  }
+
+  private finishPool() {
+    if (this.activeTasks.length > 0 || this.queue.length > 0) return;
+    for (const awaiter of this.awaiters) {
+      awaiter();
+    }
+    this.awaiters.length = 0;
   }
 }
 

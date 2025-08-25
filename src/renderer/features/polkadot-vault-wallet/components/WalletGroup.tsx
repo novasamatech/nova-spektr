@@ -43,40 +43,38 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
   }
 
   return (
-    <Box padding={[1, 0, 0]}>
-      <Accordion initialOpen>
-        <Accordion.Trigger>
-          <WalletIcon type={walletType} />
-          <span>{title}</span>
-          <span className="text-text-tertiary">{wallets.length}</span>
-        </Accordion.Trigger>
-        <Accordion.Content>
-          <Box gap={1} padding={[1, 0, 0]}>
-            {filteredWallets.map(wallet => {
-              const isSingleAccount = wallet.accounts.length === 1;
-              const accountId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
-              if (nullable(accountId)) return null;
+    <Accordion initialOpen>
+      <Accordion.Trigger>
+        <WalletIcon type={walletType} />
+        <span>{title}</span>
+        <span className="text-text-tertiary">{wallets.length}</span>
+      </Accordion.Trigger>
+      <Accordion.Content>
+        <Box gap={1} padding={[1, 0, 0]}>
+          {filteredWallets.map(wallet => {
+            const isSingleAccount = wallet.accounts.length === 1;
+            const accountId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+            if (nullable(accountId)) return null;
 
-              const isEthereum = isEthereumAccountId(accountId);
-              const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
+            const isEthereum = isEthereumAccountId(accountId);
+            const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
-              return (
-                <WalletManagement
-                  key={wallet.id}
-                  active={selectedWalletId === wallet.id}
-                  wallet={wallet}
-                  accountId={accountId}
-                  theme={theme}
-                  description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
-                  onClick={() => onSelect(wallet)}
-                >
-                  <Slot id={walletActionsSlot} props={{ wallet }} />
-                </WalletManagement>
-              );
-            })}
-          </Box>
-        </Accordion.Content>
-      </Accordion>
-    </Box>
+            return (
+              <WalletManagement
+                key={wallet.id}
+                active={selectedWalletId === wallet.id}
+                wallet={wallet}
+                accountId={accountId}
+                theme={theme}
+                description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
+                onClick={() => onSelect(wallet)}
+              >
+                <Slot id={walletActionsSlot} props={{ wallet }} />
+              </WalletManagement>
+            );
+          })}
+        </Box>
+      </Accordion.Content>
+    </Accordion>
   );
 });

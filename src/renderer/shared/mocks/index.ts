@@ -268,7 +268,6 @@ export const createSingleShardWallet = (
     rootAccountId: params.rootAccountId,
     type: WalletType.SINGLE_PARITY_SIGNER,
     name: params.name ?? `SingleShard ${id}`,
-    signingType: SigningType.POLKADOT_VAULT,
     ...(params.accounts && { accounts: params.accounts }),
   };
 };
@@ -282,7 +281,6 @@ export const createLegacyMultishardWallet = (
     type: 'wallet_mps',
     id,
     name: params?.name ?? `MultiShard ${id}`,
-    signingType: SigningType.PARITY_SIGNER,
     ...(params?.accounts && { accounts: params.accounts }),
     ...(params?.rootAccountId && { rootAccountId: params.rootAccountId }),
   };
@@ -298,7 +296,6 @@ export const createPolkadotWallet = (
     rootAccountId: params.rootAccountId,
     type: WalletType.POLKADOT_VAULT,
     name: params.name ?? `Polkadot vault wallet ${id}`,
-    signingType: SigningType.POLKADOT_VAULT,
     ...(params.accounts && { accounts: params.accounts }),
   };
 };
@@ -308,7 +305,6 @@ export const createWcWallet = (id: number, accounts: WcAccount[]): WalletConnect
   accounts,
   type: WalletType.WALLET_CONNECT,
   name: `WalletConnect ${id}`,
-  signingType: SigningType.WALLET_CONNECT,
 });
 
 export const createProxiedWallet = (id: number, accounts: [ProxiedAccount]): ProxiedWallet => ({
@@ -316,5 +312,4 @@ export const createProxiedWallet = (id: number, accounts: [ProxiedAccount]): Pro
   accounts,
   type: WalletType.PROXIED,
   name: `Proxied wallet ${id}`,
-  signingType: SigningType.WALLET_CONNECT,
 });

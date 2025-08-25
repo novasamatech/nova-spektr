@@ -9,6 +9,7 @@ export const walletPairingFeature = createFeature({
   name: 'wallet pairing/flow',
 });
 
-walletPairingFeature.inject(walletSelectActionsSlot, () => {
-  return <WalletPairingSelect />;
+walletPairingFeature.inject(walletSelectActionsSlot, {
+  order: 1,
+  render: () => <WalletPairingSelect />,
 });

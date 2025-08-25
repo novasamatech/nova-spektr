@@ -20,16 +20,7 @@ type Props = IconProps & {
 };
 
 export const Address = memo(
-  ({
-    title,
-    variant = 'full',
-    canCopy = true,
-    showIcon,
-    iconSize = 16,
-    address,
-    testId = 'Address',
-    hideAddress,
-  }: Props) => {
+  ({ title, variant = 'full', canCopy, showIcon, iconSize = 16, address, testId = 'Address', hideAddress }: Props) => {
     const titleNode = title ? <span className="w-fit max-w-full truncate">{title}</span> : null;
 
     const addressNode = (

@@ -13,8 +13,8 @@ type Props = {
 export const WalletAccountIcon = ({ address, size = 32, iconSize = 16, type, theme }: Props) => {
   return (
     <div className="relative" style={{ width: `${size}px`, height: `${size}px` }}>
-      <Identicon canCopy={false} value={address ?? ''} size={size} background={false} theme={theme} />
-      <div className="absolute -right-1 -bottom-1 rounded-full border-2 border-white bg-white">
+      <Identicon value={address ?? ''} size={size} background={false} theme={theme} />
+      <div className="pointer-events-none absolute -right-1 -bottom-1 rounded-full border-2 border-white bg-white">
         <WalletIcon type={type} size={iconSize} />
       </div>
     </div>

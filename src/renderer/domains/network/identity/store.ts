@@ -4,11 +4,13 @@ import { readonly } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { createAsyncTaskPool, entries, fromEntries, groupBy, nullable } from '@/shared/lib/utils';
+import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
 
-import { type FetchParams, fetchIdentity } from './resource';
+import { POLKADOT_PEOPLE_CHAIN_ID } from './constants';
+import { fetchIdentity } from './resource';
 import { type AccountIdentity } from './types';
 
 const fetchPool = createAsyncTaskPool({
@@ -44,30 +46,41 @@ deriveFromResources({
   },
 });
 
+type RequestParams = {
+  accounts: AccountId[];
+  chainId?: ChainId;
+};
+
 const requestFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
   },
-  effect({ chains, apis }, { chainId, accounts }: Omit<FetchParams, 'api'>) {
+  effect({ chains, apis }, { accounts, chainId = POLKADOT_PEOPLE_CHAIN_ID }: RequestParams) {
     const bound = scopeBind(fetchIdentity.request, { safe: true });
     const identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
-    const api = apis[identityChainId];
+    let api = apis[identityChainId];
 
     if (nullable(api)) {
       throw new Error(`Api for chain ${identityChainId} not found`);
+    }
+
+    if (!identityPallet.supportedOn(api)) {
+      api = apis[POLKADOT_PEOPLE_CHAIN_ID];
+
+      if (nullable(api)) {
+        throw new Error(`Polkadot People chain not found`);
+      }
     }
 
     return bound({ accounts, chainId, api });
   },
 });
 
-const requestWithRetryFx = createEffect<Omit<FetchParams, 'api'>, Record<AccountId, AccountIdentity>>(
-  ({ chainId, accounts }) => {
-    const bound = scopeBind(requestFx, { safe: true });
-    return fetchPool.call(() => bound({ chainId, accounts }));
-  },
-);
+const requestWithRetryFx = createEffect<RequestParams, Record<AccountId, AccountIdentity>>(params => {
+  const bound = scopeBind(requestFx, { safe: true });
+  return fetchPool.call(() => bound(params));
+});
 
 export const identity = {
   $list: readonly($list),
