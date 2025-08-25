@@ -89,8 +89,8 @@ export const SignatorySelect = memo(() => {
           );
 
           return (
-            <Select.Item key={wallet.id} value={wallet.id.toString()} depth={1}>
-              <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+            <Select.Item key={wallet.id} value={wallet.id.toString()}>
+              <Box direction="row" verticalAlign="center" horizontalAlign="space-between" width="100%">
                 <Address
                   showIcon
                   canCopy={false}

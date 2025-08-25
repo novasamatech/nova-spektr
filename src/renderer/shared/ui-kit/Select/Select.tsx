@@ -1,5 +1,6 @@
 import {
   Combobox,
+  ComboboxDisclosure,
   ComboboxGroup,
   ComboboxGroupLabel,
   ComboboxItem,
@@ -7,13 +8,13 @@ import {
   ComboboxPopover,
   ComboboxProvider,
 } from '@ariakit/react';
+import { isNil } from 'lodash';
 import {
   Children,
   type PropsWithChildren,
   type ReactNode,
   createContext,
   memo,
-  startTransition,
   useCallback,
   useContext,
   useEffect,
@@ -25,8 +26,8 @@ import { type XOR } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { useTheme } from '@/shared/ui-kit';
 import { Graphics } from '../Graphics/Graphics';
+import { useTheme } from '../Theme/useTheme';
 
 type ContextProps = {
   invalid?: boolean;
@@ -39,7 +40,6 @@ type ContextProps = {
   setSelectedItemContent: (content: ReactNode) => void;
   registerItem: (value: string, content: ReactNode) => void;
   unregisterItem: (value: string) => void;
-  searchQuery: string;
 };
 
 const Context = createContext<ContextProps>({
@@ -47,7 +47,6 @@ const Context = createContext<ContextProps>({
   setSelectedItemContent: () => {},
   registerItem: () => {},
   unregisterItem: () => {},
-  searchQuery: '',
 });
 
 type ControlledSelectProps<T extends string> = {
@@ -80,17 +79,17 @@ type GroupProps = PropsWithChildren<{
 }>;
 
 const Root = <T extends string>({
-  invalid: _invalid,
-  disabled: _disabled,
-  testId: _testId = 'Select',
-  height: _height = 'sm',
-  open: _open,
-  onToggle: _onToggle,
-  placeholder: _placeholder,
-  value: _value,
-  onChange: _onChange,
-  onSearch: _onSearch,
-  children: _children,
+  invalid,
+  disabled,
+  testId = 'Select',
+  height = 'sm',
+  open,
+  onToggle,
+  placeholder,
+  value,
+  onChange,
+  onSearch,
+  children,
 }: RootProps<T>) => {
   const { t } = useI18n();
 
@@ -99,6 +98,27 @@ const Root = <T extends string>({
   const [selectedItemContent, setSelectedItemContent] = useState<ReactNode>(null);
   const [registeredItems, setRegisteredItems] = useState<Map<string, ReactNode>>(new Map());
   const [isOpen, setIsOpen] = useState(false);
+
+  const onOpenChange = (requestedOpen: boolean) => {
+    // If external open prop is true, prevent closing
+    if (open === true && !requestedOpen) {
+      return; // Don't allow closing when controlled open is true
+    }
+
+    setSearchValue('');
+    setIsOpen(requestedOpen);
+    onToggle?.(requestedOpen);
+    onSearch?.('');
+  };
+
+  useEffect(() => {
+    if (!isNil(open)) {
+      const timeoutId = setTimeout(() => {
+        onOpenChange(open);
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [open]);
 
   const registerItem = useCallback((value: string, content: ReactNode) => {
     setRegisteredItems(prev => new Map(prev.set(value, content)));
@@ -114,72 +134,70 @@ const Root = <T extends string>({
 
   const contextValue = useMemo(
     () => ({
-      invalid: _invalid,
-      disabled: _disabled,
-      height: _height,
-      testId: _testId,
-      onSearch: _onSearch,
+      invalid,
+      disabled,
+      height,
+      testId,
+      onSearch,
       onItemSelect: (value: string) => {
-        _onChange?.(value as T);
-        setIsOpen(false);
+        onChange?.(value as T);
+        onOpenChange(false);
       },
-      selectedValue: _value,
+      selectedValue: value,
       setSelectedItemContent,
       registerItem,
       unregisterItem,
-      searchQuery: searchValue,
+      searchQuery: onSearch ? searchValue : '',
     }),
-    [_invalid, _disabled, _height, _testId, _onSearch, _onChange, _value, searchValue, registerItem, unregisterItem],
+    [invalid, disabled, height, testId, onSearch, onChange, value, searchValue, registerItem, unregisterItem],
   );
 
-  const filteredItems = useMemo(() => {
-    if (!searchValue) return Array.from(registeredItems.entries());
-    return Array.from(registeredItems.entries()).filter(([value]) =>
-      value.toLowerCase().includes(searchValue.toLowerCase()),
-    );
-  }, [registeredItems, searchValue]);
   return (
     <Context.Provider value={contextValue}>
       <ComboboxProvider
         open={isOpen}
-        setOpen={setIsOpen}
+        value={onSearch ? searchValue : ''}
         setValue={value => {
-          startTransition(() => setSearchValue(value));
-          if (_onSearch) {
-            _onSearch(value);
+          if (onSearch) {
+            setSearchValue(value);
+            onSearch(value);
           }
         }}
       >
         {!isOpen ? (
-          // Closed state - show selected item or placeholder
-          <div
-            className={cnTw(
-              'box-border flex items-center gap-x-2 rounded-sm border border-filter-border bg-input-background px-[11px] text-text-secondary',
-              'text-footnote focus-within:border-active-container-border hover:shadow-card-shadow',
-              {
-                'h-8.5': _height === 'sm',
-                'h-10.5': _height === 'md',
-                'border-filter-border bg-input-background text-text-primary': theme === 'light',
-                'border-border-dark bg-background-dark text-white': theme === 'dark',
-                'bg-input-background-disabled text-text-tertiary': _disabled,
-                'border-filter-border-negative': _invalid,
-              },
-            )}
-            onClick={() => !_disabled && setIsOpen(true)}
-          >
-            {selectedItemContent || <span className="text-black/60 dark:text-white/46">{_placeholder}</span>}
-          </div>
+          <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true}>
+            <button
+              className={cnTw(
+                'box-border flex items-center rounded-sm border border-filter-border bg-input-background px-2 text-text-secondary',
+                'w-full text-left text-footnote focus-within:border-active-container-border hover:shadow-card-shadow',
+                {
+                  'h-8.5': height === 'sm',
+                  'h-10.5': height === 'md',
+                  'border-filter-border bg-input-background text-text-primary': theme === 'light',
+                  'border-border-dark bg-background-dark text-white': theme === 'dark',
+                  'bg-input-background-disabled text-text-tertiary': disabled,
+                  'border-filter-border-negative': invalid,
+                },
+              )}
+              onClick={() => {
+                !disabled && onOpenChange(true);
+              }}
+            >
+              {selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
+            </button>
+          </ComboboxDisclosure>
         ) : (
-          // Open state - show input
           <Combobox
             autoFocus
-            placeholder={_placeholder}
+            placeholder={placeholder}
+            readOnly={!onSearch}
             className={cnTw(
-              'min-h-[34px] w-full rounded-md border-none px-4 leading-6 text-black outline-1 placeholder:text-text-secondary focus-visible:outline-2 dark:text-white',
-              { 'h-8.5': _height === 'sm', 'h-10.5': _height === 'md' },
+              'min-h-[34px] w-full rounded-md border-none px-2 leading-6 outline-1 placeholder:text-text-secondary focus-visible:outline-2 dark:text-white',
+              { 'h-8.5': height === 'sm', 'h-10.5': height === 'md' },
+              { 'cursor-default': !onSearch },
             )}
             onBlur={() => {
-              setIsOpen(false);
+              onOpenChange(false);
             }}
           />
         )}
@@ -188,8 +206,8 @@ const Root = <T extends string>({
           sameWidth
           className="relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-lg border border-slate-300 bg-white p-2"
         >
-          {_children}
-          {filteredItems.length === 0 && registeredItems.size > 0 && (
+          {children}
+          {registeredItems.size === 0 && (
             <div className="flex flex-col items-center justify-center gap-2 px-2 py-6">
               <Graphics name="emptyList" size={64} />
               <FootnoteText className="text-text-tertiary">{t('emptyState.accountsNotFound')}</FootnoteText>
@@ -207,16 +225,17 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
   return (
     <ComboboxGroup className="mb-1 last:mb-0">
       <ComboboxGroupLabel>
-        <div className="mb-1 px-3 py-1 text-help-text text-text-secondary">{title}</div>
+        <div className="px-1 pt-1 text-help-text text-text-secondary">{title}</div>
       </ComboboxGroupLabel>
-      <ComboboxList>{children}</ComboboxList>
+      <div className="pl-4">
+        <ComboboxList>{children}</ComboboxList>
+      </div>
     </ComboboxGroup>
   );
 };
 
 const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => {
-  const { selectedValue, setSelectedItemContent, registerItem, unregisterItem, onItemSelect, searchQuery } =
-    useContext(Context);
+  const { selectedValue, setSelectedItemContent, registerItem, unregisterItem, onItemSelect } = useContext(Context);
 
   const isSelected = selectedValue === value;
 
@@ -233,13 +252,6 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
     }
   }, [isSelected, children, setSelectedItemContent]);
 
-  // Filter out items that don't match search
-  const shouldShow = !searchQuery || value.toLowerCase().includes(searchQuery.toLowerCase());
-
-  if (!shouldShow) {
-    return null;
-  }
-
   const commonStyle = depth
     ? {
         paddingLeft: `${(depth + 1) * 16}px`,
@@ -249,8 +261,10 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
   return (
     <ComboboxItem
       focusOnHover
+      clickOnSpace={true}
+      clickOnEnter={true}
       value={value}
-      className="flex cursor-default scroll-m-2 items-center gap-2 rounded px-2 py-2 outline-none hover:bg-blue-500/40 active:pt-[9px] active:pb-[7px] data-[active]:pt-[9px] data-[active]:pb-[7px] data-[active-item]:bg-blue-600 data-[active-item]:text-white data-[active-item]:outline-2 dark:hover:bg-blue-500/25 dark:data-[active-item]:bg-blue-600"
+      className="flex cursor-default scroll-m-2 items-center gap-2 rounded px-2 py-2 outline-none hover:bg-blue-500/40 data-[active]:pb-[7px] data-[active-item]:bg-tab-background data-[active-item]:outline-2 dark:hover:bg-blue-500/25 dark:data-[active-item]:bg-blue-600"
       style={commonStyle}
       onClick={() => onItemSelect(value)}
     >

@@ -10,6 +10,19 @@ import { Select } from './Select';
 const meta: Meta<typeof Select> = {
   title: 'Design System/kit/Select',
   component: Select,
+  parameters: {
+    viewport: {
+      defaultViewport: 'large',
+    },
+    layout: 'centered',
+  },
+  decorators: [
+    Story => (
+      <div className="h-[400px] w-[400px] pt-[50px]">
+        <Story />
+      </div>
+    ),
+  ],
   render: params => {
     const [value, onChange] = useState('');
 
@@ -20,6 +33,10 @@ const meta: Meta<typeof Select> = {
           <Select.Item value="item_2">Orange</Select.Item>
           <Select.Item value="item_3">Watermelon</Select.Item>
           <Select.Item value="item_4">Banana-nana-nana-nana-nana-nana</Select.Item>
+          <Select.Item value="item_5">Cherry</Select.Item>
+          <Select.Item value="item_6">Grape</Select.Item>
+          <Select.Item value="item_7">Pineapple</Select.Item>
+          <Select.Item value="item_8">Strawberry</Select.Item>
         </Select>
       </Box>
     );
@@ -107,8 +124,8 @@ export const Dark: Story = {
     (Story, { args }) => {
       return (
         <ThemeProvider theme="dark">
-          <div className="flex h-[300px] w-[400px] justify-center rounded-lg bg-black pt-[50px]">
-            <Story args={args} />;
+          <div className="flex h-full w-full justify-center rounded-lg bg-black">
+            <Story args={args} />
           </div>
         </ThemeProvider>
       );
