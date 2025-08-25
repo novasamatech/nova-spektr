@@ -57,7 +57,7 @@ function getEventId(operationId: string, signer: string, status: 'approve' | 're
   return `${operationId}-${signer}-${status}`;
 }
 
-function extractInnerCallFromAsMulti(extrinsic: GenericExtrinsic<AnyTuple>) {
+function findInnerExtrinsicCall(extrinsic: GenericExtrinsic<AnyTuple>) {
   const findAsMulti = (method: any): any => {
     if (method.toHuman().method === 'asMulti' && method.toHuman().section === 'multisig') {
       return method.args[MULTISIG_EXTRINSIC_CALL_INDEX];
@@ -90,7 +90,7 @@ async function getTransactionFromChain({ api, callHash, blockHeight, extrinsicIn
     if (nullable(extrinsic)) return null;
     if (!extrinsic.argsDef['call']) return null;
 
-    const innerCall = extractInnerCallFromAsMulti(extrinsic);
+    const innerCall = findInnerExtrinsicCall(extrinsic);
     const callData = innerCall?.toHex();
 
     if (!callData || !validateCallData(callData, callHash)) return null;
