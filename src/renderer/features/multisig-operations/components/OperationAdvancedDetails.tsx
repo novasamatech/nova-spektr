@@ -24,7 +24,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
   const wallets = useUnit(walletModel.$wallets);
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
-  const allAccount = useUnit(accounts.$list);
+  const allAccounts = useUnit(accounts.$list);
 
   const nativeAsset = getNativeAsset(chain?.assets ?? []);
   const explorers = chain?.explorers;
@@ -33,7 +33,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = operation;
 
-  const depositorSignatory = allAccount.find(a => a.accountId === depositor);
+  const depositorSignatory = allAccounts.find(a => a.accountId === depositor);
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
   const depositorWallet = depositorSignatory && wallets.find(w => w.id === depositorSignatory.walletId);

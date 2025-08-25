@@ -6,16 +6,11 @@ import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
   createMultisigDeposit,
+  createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import {
-  type AnyAccount,
-  type MultisigOperation,
-  accountService,
-  accounts,
-  multisigOperationService,
-} from '@/domains/network';
+import { type AnyAccount, type MultisigOperation, accounts, multisigOperationService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
@@ -49,22 +44,6 @@ const $api = combine(
   },
 );
 
-const $signatory = combine(
-  {
-    operation: $operation,
-    chain: $chain,
-    accounts: accounts.$list,
-  },
-  ({ operation, chain, accounts }) => {
-    if (!operation || !chain) return null;
-    const depositorAccount = accounts.find(a => a.accountId === operation.depositor);
-
-    if (!depositorAccount) return null;
-
-    return accountService.findSignatories(depositorAccount, accounts, chain).at(0) ?? null;
-  },
-);
-
 const $initiator = combine(
   {
     operation: $operation,
@@ -75,6 +54,14 @@ const $initiator = combine(
     return accounts.find(a => a.accountId === operation.depositor) ?? null;
   },
 );
+
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  accounts: accounts.$list,
+  initiator: $initiator,
+});
+
+const $signatory = $signatories.map(s => s.at(0) ?? null);
 
 sample({
   clock: flow.open,
