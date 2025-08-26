@@ -1,6 +1,5 @@
 import {
   Combobox,
-  ComboboxDisclosure,
   ComboboxGroup,
   ComboboxGroupLabel,
   ComboboxItem,
@@ -165,27 +164,25 @@ const Root = <T extends string>({
         }}
       >
         {!isOpen ? (
-          <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true}>
-            <button
-              className={cnTw(
-                'box-border flex items-center rounded-sm border border-filter-border bg-input-background px-2 text-text-secondary',
-                'w-full text-left text-footnote focus-within:border-active-container-border hover:shadow-card-shadow',
-                {
-                  'h-8.5': height === 'sm',
-                  'h-10.5': height === 'md',
-                  'border-filter-border bg-input-background text-text-primary': theme === 'light',
-                  'border-border-dark bg-background-dark text-white': theme === 'dark',
-                  'bg-input-background-disabled text-text-tertiary': disabled,
-                  'border-filter-border-negative': invalid,
-                },
-              )}
-              onClick={() => {
-                !disabled && onOpenChange(true);
-              }}
-            >
-              {selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
-            </button>
-          </ComboboxDisclosure>
+          <button
+            className={cnTw(
+              'box-border flex items-center rounded-sm border border-filter-border bg-input-background px-2 text-text-secondary',
+              'w-full text-left text-footnote focus-within:border-active-container-border hover:shadow-card-shadow',
+              {
+                'h-8.5': height === 'sm',
+                'h-10.5': height === 'md',
+                'border-filter-border bg-input-background text-text-primary': theme === 'light',
+                'border-border-dark bg-background-dark text-white': theme === 'dark',
+                'bg-input-background-disabled text-text-tertiary': disabled,
+                'border-filter-border-negative': invalid,
+              },
+            )}
+            onClick={() => {
+              !disabled && onOpenChange(true);
+            }}
+          >
+            {selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
+          </button>
         ) : (
           <Combobox
             autoFocus
@@ -204,7 +201,7 @@ const Root = <T extends string>({
         <ComboboxPopover
           gutter={8}
           sameWidth
-          className="relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-lg border border-slate-300 bg-white p-2"
+          className="relative z-50 flex flex-col overflow-auto overscroll-contain rounded-lg border border-slate-300 bg-white p-2"
         >
           {children}
           {registeredItems.size === 0 && (
