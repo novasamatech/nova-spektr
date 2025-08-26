@@ -1,5 +1,6 @@
 import {
   Combobox,
+  ComboboxDisclosure,
   ComboboxGroup,
   ComboboxGroupLabel,
   ComboboxItem,
@@ -164,25 +165,27 @@ const Root = <T extends string>({
         }}
       >
         {!isOpen ? (
-          <button
-            className={cnTw(
-              'box-border flex items-center rounded-sm border border-filter-border bg-input-background px-2 text-text-secondary',
-              'w-full text-left text-footnote focus-within:border-active-container-border hover:shadow-card-shadow',
-              {
-                'h-8.5': height === 'sm',
-                'h-10.5': height === 'md',
-                'border-filter-border bg-input-background text-text-primary': theme === 'light',
-                'border-border-dark bg-background-dark text-white': theme === 'dark',
-                'bg-input-background-disabled text-text-tertiary': disabled,
-                'border-filter-border-negative': invalid,
-              },
-            )}
-            onClick={() => {
-              !disabled && onOpenChange(true);
-            }}
-          >
-            {selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
-          </button>
+          <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true}>
+            <button
+              className={cnTw(
+                'box-border flex items-center rounded-sm border border-filter-border bg-input-background px-2 text-text-secondary',
+                'w-full text-left text-footnote focus-within:border-active-container-border hover:shadow-card-shadow',
+                {
+                  'h-8.5': height === 'sm',
+                  'h-10.5': height === 'md',
+                  'border-filter-border bg-input-background text-text-primary': theme === 'light',
+                  'border-border-dark bg-background-dark text-white': theme === 'dark',
+                  'bg-input-background-disabled text-text-tertiary': disabled,
+                  'border-filter-border-negative': invalid,
+                },
+              )}
+              onClick={() => {
+                !disabled && onOpenChange(true);
+              }}
+            >
+              {selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
+            </button>
+          </ComboboxDisclosure>
         ) : (
           <Combobox
             autoFocus
