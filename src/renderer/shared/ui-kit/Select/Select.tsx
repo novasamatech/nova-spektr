@@ -201,7 +201,7 @@ const Root = <T extends string>({
         <ComboboxPopover
           gutter={8}
           sameWidth
-          className="relative z-50 flex flex-col overflow-auto overscroll-contain rounded-lg border border-slate-300 bg-white p-2"
+          className="relative z-50 flex flex-col overflow-auto overscroll-contain rounded-lg border border-filter-border bg-input-background p-2 dark:border-border-dark dark:bg-background-dark"
         >
           {children}
           {registeredItems.size === 0 && (
@@ -261,7 +261,7 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
       clickOnSpace={true}
       clickOnEnter={true}
       value={value}
-      className="flex cursor-default scroll-m-2 items-center gap-2 rounded px-2 py-2 outline-none hover:bg-blue-500/40 data-[active]:pb-[7px] data-[active-item]:bg-tab-background data-[active-item]:outline-2 dark:hover:bg-blue-500/25 dark:data-[active-item]:bg-blue-600"
+      className="flex cursor-default scroll-m-2 items-center gap-2 rounded px-2 py-2 outline-none hover:bg-action-background-hover data-[active]:pb-[7px] data-[active-item]:bg-tab-background data-[active-item]:outline-2 dark:hover:bg-background-item-hover dark:data-[active-item]:bg-tab-background"
       style={commonStyle}
       onClick={() => onItemSelect(value)}
     >
