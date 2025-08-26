@@ -25,12 +25,6 @@ export interface Wallet {
    *   walletId)`.
    */
   accounts: (AnyAccount & Record<string, any>)[];
-  isActive: boolean;
-  /**
-   * @deprecated You should use `account.signingType` field instead. Wallet
-   *   shouldn't be part of signing process.
-   */
-  signingType: SigningType;
   isHidden?: boolean;
 }
 

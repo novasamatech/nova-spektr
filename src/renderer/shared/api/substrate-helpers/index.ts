@@ -6,5 +6,5 @@ export const substrateRpcPool = createAsyncTaskPool({
    */
   poolSize: 31,
   retryCount: 5,
-  retryDelay: (retry) => 200 + retry * 50,
+  retryDelay: (retry) => 50 + retry * 50,
 });

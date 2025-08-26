@@ -16,13 +16,12 @@ import {
   TransactionType,
   type Wallet,
 } from '@/shared/core';
-import { dictionary, toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, type MultisigEvent, type MultisigOperation, accountService } from '@/domains/network';
+import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
 import { type TransactionVote, votingService } from '@/entities/governance';
 import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@/entities/transaction';
-import { accountUtils, walletUtils } from '@/entities/wallet';
 
 export const getMultisigExtrinsicLink = (
   callHash?: HexString,
@@ -62,44 +61,6 @@ export const getSignatoryName = (
   if (fromAccount) return fromAccount;
 
   return toShortAddress(toAddress(signatoryId, { prefix: addressPrefix }), 5);
-};
-
-export const getSignatoryAccounts = (
-  accounts: AnyAccount[],
-  wallets: Wallet[],
-  events: MultisigEvent[],
-  signatories: Signatory[],
-  chainId: ChainId,
-): AnyAccount[] => {
-  const walletsMap = dictionary(wallets, 'id');
-
-  const result = [];
-
-  for (const signatory of signatories) {
-    const filteredAccounts = accounts.filter(
-      (a) => a.accountId === signatory.accountId && !events.some((e) => e.accountId === a.accountId),
-    );
-
-    const signatoryAccount = filteredAccounts.find((a) => {
-      const isChainMatch = accountUtils.isChainIdMatch(a, chainId);
-      const wallet = walletsMap[a.walletId];
-
-      return isChainMatch && walletUtils.isValidSignatory(wallet);
-    });
-
-    if (signatoryAccount) {
-      result.push(signatoryAccount);
-    } else {
-      const legacySignatoryAccount = filteredAccounts.find(
-        (a) => accountService.isChainAccount(a) && accountService.isChainAccount(a) && a.chainId === chainId,
-      );
-      if (legacySignatoryAccount) {
-        result.push(legacySignatoryAccount);
-      }
-    }
-  }
-
-  return result;
 };
 
 export const getAssetId = (operation: MultisigOperation) => {

@@ -1,15 +1,16 @@
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { type CallData, type MultisigAccount } from '@/shared/core';
+import { type CallData, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
-import { type MultisigOperation, accountService, accounts, multisigOperation } from '@/domains/network';
+import { type MultisigOperation, accounts, multisigOperation } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
+import { accountUtils } from '@/entities/wallet';
 
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import { OperationDetails } from './OperationDetails';
@@ -20,11 +21,12 @@ import RejectTxModal from './modals/RejectTx';
 
 type Props = {
   operation: MultisigOperation;
-  account: MultisigAccount;
+  account: MultisigAccount | FlexibleMultisigAccount;
 };
 
 type SlotProps = {
   operation: MultisigOperation;
+  showCoreTransaction?: boolean;
 };
 
 export const operationDetailsSlot = createSlot<SlotProps>();
@@ -43,7 +45,7 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
   );
 
   const hasAccount = allAccounts.some(a => {
-    return a.accountId === operation.depositor && accountService.hasPermissionToMakeActions(a);
+    return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);
   });
 
   const isRejectAvailable = operation.status === 'pending' && hasAccount;
@@ -55,6 +57,8 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
   const setupCallData = (callData: CallData) => {
     multisigOperation.updateCallData({ operation, callData });
   };
+
+  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
   return (
     <div className="flex flex-1">
@@ -82,7 +86,7 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
         <div className="flex w-full flex-col gap-y-1">
           <OperationDetails operation={operation} />
 
-          <Slot id={operationDetailsSlot} props={{ operation: operation }} />
+          <Slot id={operationDetailsSlot} props={{ operation, showCoreTransaction }} />
 
           <OperationAdvancedDetails operation={operation} />
         </div>

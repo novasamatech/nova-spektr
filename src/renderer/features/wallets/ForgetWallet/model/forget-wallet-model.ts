@@ -5,11 +5,10 @@ import { spread } from 'patronum';
 
 import { type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
-import { accountService, accounts } from '@/domains/network';
+import { accountService, accountSync, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { proxiesModel } from '@/features/proxies';
 import { forgetService } from '../service';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
@@ -116,7 +115,7 @@ sample({
 
 sample({
   clock: walletsRemovedFx.done,
-  target: proxiesModel.findAllProxies,
+  target: accountSync.syncAccounts,
 });
 
 export const forgetWalletModel = {

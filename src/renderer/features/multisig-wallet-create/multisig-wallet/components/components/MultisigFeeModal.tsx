@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, memo, useMemo, useState } from 'react';
+import { type PropsWithChildren, memo, useEffect, useMemo, useState } from 'react';
 
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
@@ -22,6 +22,10 @@ export const MultisigFeeModal = memo(({ children }: PropsWithChildren) => {
   const [search, setSearch] = useState('');
   const [isOpen, setToggle] = useState(false);
   const [selectedChainId, setSelectedChainId] = useState<ChainId>(chainId.value);
+
+  useEffect(() => {
+    setSelectedChainId(chainId.value);
+  }, [chainId.value]);
 
   const handleApply = () => {
     formModel.form.fields.chainId.change(selectedChainId);

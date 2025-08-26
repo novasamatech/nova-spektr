@@ -1,4 +1,4 @@
-import { type Asset, type Chain, type Explorer } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { type Validator } from '@/shared/core/types/validator';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
@@ -16,7 +16,6 @@ type Props = {
   identities: Record<AccountId, AccountIdentity>;
   asset?: Asset;
   chain?: Chain;
-  explorers?: Explorer[];
   onClose: () => void;
 };
 
@@ -25,7 +24,6 @@ export const ValidatorsModal = ({
   selectedValidators,
   notSelectedValidators,
   identities,
-  explorers,
   chain,
   asset,
   onClose,
@@ -53,7 +51,6 @@ export const ValidatorsModal = ({
                       identity={identities[validator.accountId]}
                       asset={asset}
                       chain={chain}
-                      explorers={explorers}
                     />
                   </li>
                 )}
@@ -77,7 +74,6 @@ export const ValidatorsModal = ({
                       identity={identities[validator.accountId]}
                       asset={asset}
                       chain={chain}
-                      explorers={explorers}
                     />
                   </li>
                 )}

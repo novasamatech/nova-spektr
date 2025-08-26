@@ -172,6 +172,7 @@ export const merge = <T>({ a, b, mergeBy, merge, sort, filter }: MergeParams<T>)
 export const groupBy = <const T, const K extends PropertyKey>(
   iterable: Iterable<T>,
   map: (value: NoInfer<T>) => K,
+  // TODO remove this undefined
 ): Record<K, T[] | undefined> => {
   const groups: Partial<Record<K, T[]>> = {};
 

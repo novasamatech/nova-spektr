@@ -125,7 +125,6 @@ export const Staking = () => {
 
   const activeChain = chainId && chains[chainId] ? chains[chainId] : null;
   const addressPrefix = activeChain?.addressPrefix;
-  const explorers = activeChain?.explorers;
 
   const timelineChainId = useMemo(() => {
     return activeChain?.additional?.timelineChain ?? activeChain?.chainId;
@@ -196,13 +195,26 @@ export const Staking = () => {
   useEffect(() => {
     if (!activeWallet) return;
 
+    // TODO remove this check
     const isMultisig = walletUtils.isMultisig(activeWallet);
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
     const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);
+    const isPolkadotExtension = walletUtils.isPolkadotExtension(activeWallet);
+    const isTalismanExtension = walletUtils.isTalismanExtension(activeWallet);
+    const isSubWalletExtension = walletUtils.isSubWalletExtension(activeWallet);
     const isProxied = walletUtils.isProxied(activeWallet);
 
-    if (isMultisig || isNovaWallet || isWalletConnect || isProxied || (isPolkadotVault && accountIds.length === 1)) {
+    if (
+      isMultisig ||
+      isNovaWallet ||
+      isWalletConnect ||
+      isProxied ||
+      isPolkadotExtension ||
+      isTalismanExtension ||
+      isSubWalletExtension ||
+      (isPolkadotVault && accountIds.length === 1)
+    ) {
       setSelectedNominators([accountIds[0]]);
     } else {
       setSelectedNominators([]);
@@ -434,7 +446,7 @@ export const Staking = () => {
         selectedValidators={selectedValidators}
         notSelectedValidators={notSelectedValidators}
         identities={identities}
-        explorers={explorers}
+        chain={activeChain ?? undefined}
         isOpen={isShowNominators}
         onClose={toggleNominators}
       />

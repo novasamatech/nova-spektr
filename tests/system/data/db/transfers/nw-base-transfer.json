@@ -60,7 +60,6 @@
             "name": "Nova Walllet based",
             "type": "wallet_nw",
             "signingType": "signing_wc",
-            "isActive": true,
             "id": 1,
             "accounts": [
               {
@@ -762,7 +761,6 @@
             "name": "14KLy...dJEaM",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 2,
             "accounts": [
               {
@@ -797,98 +795,84 @@
             "name": "FahhU...jV1gd",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 3
           },
           {
             "name": "H1XEt...3VRfS",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 4
           },
           {
             "name": "EJ2e6...aV5e4",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 5
           },
           {
             "name": "7M4Mw...DM3X4",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 6
           },
           {
             "name": "12m3K...YHqXK",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 7
           },
           {
             "name": "5FQoR...1SpqB",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 8
           },
           {
             "name": "5CaSr...1SDA3",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 9
           },
           {
             "name": "5DHdh...ihsg4",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 10
           },
           {
             "name": "5Et4b...S1qjb",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 11
           },
           {
             "name": "5GVef...Cgwph",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 12
           },
           {
             "name": "5HWkF...ZYUog",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 13
           },
           {
             "name": "5Hosc...Tbmzw",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 14
           },
           {
             "name": "5HD7G...j25zp",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 15
           },
           {
             "name": "5GLdo...u3f4M",
             "type": "wallet_ms",
             "signingType": "signing_ms",
-            "isActive": false,
             "id": 16
           },
           {
@@ -896,7 +880,6 @@
             "type": "wallet_pxd",
             "signingType": "signing_wo",
             "isHidden": false,
-            "isActive": false,
             "id": 17
           },
           {
@@ -904,7 +887,6 @@
             "type": "wallet_pxd",
             "signingType": "signing_wo",
             "isHidden": false,
-            "isActive": false,
             "id": 18
           },
           {
@@ -912,7 +894,6 @@
             "type": "wallet_pxd",
             "signingType": "signing_wo",
             "isHidden": false,
-            "isActive": false,
             "id": 19
           },
           {
@@ -920,7 +901,6 @@
             "type": "wallet_pxd",
             "signingType": "signing_wo",
             "isHidden": false,
-            "isActive": false,
             "id": 20
           },
           {
@@ -928,7 +908,6 @@
             "type": "wallet_pxd",
             "signingType": "signing_wo",
             "isHidden": false,
-            "isActive": false,
             "id": 21
           },
           {
@@ -936,7 +915,6 @@
             "type": "wallet_pxd",
             "signingType": "signing_wo",
             "isHidden": false,
-            "isActive": false,
             "id": 22
           },
           {
@@ -944,7 +922,6 @@
             "type": "wallet_pxd",
             "signingType": "signing_wo",
             "isHidden": false,
-            "isActive": false,
             "id": 23
           }
         ]

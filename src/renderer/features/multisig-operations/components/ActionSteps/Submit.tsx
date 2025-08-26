@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { type ComponentProps, useEffect, useState } from 'react';
 
 import { type HexString, type Transaction } from '@/shared/core';
-import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -12,12 +11,12 @@ import {
   type AnyAccount,
   type MultisigEvent,
   type MultisigOperation,
+  accountSync,
   multisigOperation,
   transactionService,
 } from '@/domains/network';
 import { multisigOperationService } from '@/domains/network';
 import { getExtrinsic, isProxyTypeTransaction } from '@/entities/transaction';
-import { proxiesModel } from '@/features/proxies';
 
 type ResultProps = Pick<ComponentProps<typeof StatusModal>, 'title' | 'content' | 'description'>;
 
@@ -51,11 +50,6 @@ export const Submit = ({ api, tx, operation, account, txPayload, signature, isRe
       const { params } = result;
 
       if (operation && tx && account?.accountId) {
-        const isReject =
-          tx.type === TransactionType.BATCH_ALL
-            ? tx.args.transactions.some((tx: Transaction) => tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI)
-            : tx.type === TransactionType.MULTISIG_CANCEL_AS_MULTI;
-
         const updatedTx: MultisigOperation = { ...operation };
 
         if (params.isFinalApprove) {
@@ -67,7 +61,7 @@ export const Submit = ({ api, tx, operation, account, txPayload, signature, isRe
           !params.multisigError &&
           isProxyTypeTransaction(operation.transaction ?? undefined)
         ) {
-          proxiesModel.findAllProxies();
+          accountSync.syncAccounts();
         }
 
         const eventStatus = isReject ? 'reject' : 'approve';

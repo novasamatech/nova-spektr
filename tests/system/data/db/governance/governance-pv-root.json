@@ -60,7 +60,6 @@
             "name": "Polkadot Vault - root",
             "type": "wallet_sps",
             "signingType": "signing_ps",
-            "isActive": true,
             "id": 1,
             "accounts": [
               {

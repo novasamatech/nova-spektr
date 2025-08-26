@@ -431,6 +431,11 @@
     "omniLogoAlt": "Nova Spektr logo",
     "reloadButton": "Refresh"
   },
+  "features": {
+    "account-sync": {
+      "syncAccountsLabel": "Sync accounts"
+    }
+  },
   "fellowship": {
     "activityFeed": {
       "activityModal": {
@@ -847,6 +852,10 @@
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
     },
+    "notifications": {
+      "addressCopied": "Address copied!",
+      "copiedToClipboard": "Copied to clipboard!"
+    },
     "timeout": {
       "expired": "Expired"
     },
@@ -1115,6 +1124,8 @@
       "governanceLease": "Governance: Lease",
       "governanceRegistrar": "Governance: Registrar",
       "killed": "Killed",
+      "linkCopied": "Link copied!",
+      "linkShare": "Share",
       "mainAgenda": "Main agenda",
       "noDeposit": "Waiting for deposit",
       "ongoing": "Ongoing",
@@ -1123,6 +1134,7 @@
       "referendumTitle": "Referendum #{ index }",
       "rejectIn": "Reject in",
       "rejected": "Rejected",
+      "spendReferendumTitle": "Should we pay",
       "staking": "Staking",
       "timedOut": "Timed out",
       "timeoutIn": "Time out in",
@@ -1562,7 +1574,6 @@
       "addPureProxyOn": "Create pure proxy on",
       "approve": "Approve",
       "approveMultisig": "Approve multisig operation",
-      "convertToFlexible": "Convert to flexible multisig on",
       "createPureProxy": "Add delegated authority (pure proxy)",
       "delegateOn": "Delegate on",
       "destinationOn": "Set reward destination on",
@@ -1736,13 +1747,13 @@
     "videoError": "Your browser doesn't support video"
   },
   "receive": {
-    "addressCopied": "Address copied",
+    "addressCopied": "Address copied!",
     "compareAddressFormat": "Compare address format",
     "copy": "Copy",
     "copyLegacyFormat": "Copy legacy format",
     "exchangeAccount": "Need address for exchange?",
     "explorerLinkLabel": "Link to {name}",
-    "legacyAddressCopied": "Legacy address copied",
+    "legacyAddressCopied": "Legacy address copied!",
     "selectAccount": "Select account",
     "title": "Receive {asset} on",
     "unfiedAddress": {
@@ -1756,7 +1767,7 @@
       "newUnifiedTitle": "New unified address",
       "unifiedFormat": "Unified format"
     },
-    "unifiedAddressCopied": "Unified address copied",
+    "unifiedAddressCopied": "Unified address copied!",
     "viewInExplorers": "View in explorers"
   },
   "settings": {
@@ -2212,7 +2223,6 @@
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
       "confirmRemoveProxySubmit": "Delete",
       "confirmRemoveProxyTitle": "Revoke delegated authority?",
-      "convertToFlexibleAction": "Convert to flexible multisig",
       "doNotShowAgain": "Do not show this again",
       "emptyProxyDescription": "Add new proxies to work with them",
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",

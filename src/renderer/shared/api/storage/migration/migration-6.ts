@@ -74,7 +74,6 @@ async function updateWallets(t: Transaction) {
       toUpdate.push({
         ...cleanWallet,
         type: WalletType.POLKADOT_VAULT,
-        signingType: SigningType.POLKADOT_VAULT,
       } satisfies WalletDraft);
     } else {
       toDelete.push(wallet.id);
@@ -171,8 +170,6 @@ async function getWalletsAndAccounts(t: Transaction) {
         name: account.name ?? 'Polkadot Vault',
         type: WalletType.POLKADOT_VAULT,
         rootAccountId: account.accountId,
-        signingType: SigningType.POLKADOT_VAULT,
-        isActive: false,
       } satisfies WalletDraft<PolkadotVaultWallet>);
 
       // Singleshard
@@ -181,8 +178,6 @@ async function getWalletsAndAccounts(t: Transaction) {
         name: account.name ?? 'Polkadot Singleshard',
         type: WalletType.SINGLE_PARITY_SIGNER,
         rootAccountId: account.accountId,
-        signingType: SigningType.POLKADOT_VAULT,
-        isActive: false,
       } satisfies WalletDraft<SingleShardWallet>);
     }
   }

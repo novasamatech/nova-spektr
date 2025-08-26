@@ -91,7 +91,6 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
       createSingleShardWallet(5000, {
         name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
         rootAccountId: BASE_ACCOUNT_1,
-        isActive: false,
       }),
     ];
 
@@ -133,7 +132,6 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
       createPolkadotWallet(5000, {
         name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
         rootAccountId: BASE_ACCOUNT_1,
-        isActive: false,
       }),
     ];
 
@@ -168,7 +166,6 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
       createPolkadotWallet(5000, {
         name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
         rootAccountId: BASE_ACCOUNT_1,
-        isActive: false,
       }),
     ];
 
@@ -220,7 +217,6 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
       createPolkadotWallet(5000, {
         name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
         rootAccountId: BASE_ACCOUNT_1,
-        isActive: false,
       }),
     ];
 
@@ -270,7 +266,6 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
       createSingleShardWallet(5000, {
         name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
         rootAccountId: BASE_ACCOUNT_2,
-        isActive: false,
       }),
     ];
 
@@ -321,7 +316,6 @@ describe('Migration 6 - Convert all Multishard wallets to PolkadotVault or Singl
       createPolkadotWallet(5000, {
         name: `${db.wallets[0].name} - ${db.accounts2[2].name}`,
         rootAccountId: BASE_ACCOUNT_2,
-        isActive: false,
       }),
     ];
 

@@ -49,6 +49,8 @@ export const TEST_IDS = {
   MULTISIG: {
     SIGNATORY_COMBOBOX: 'multisig-signatory-combobox',
   },
+  TRANSFER: {
+    MODAL: 'transfer-modal',
+  },
   CLOSE_BUTTON: 'Icon:close',
-  BASE_MODAL: 'BaseModal',
 } as const;

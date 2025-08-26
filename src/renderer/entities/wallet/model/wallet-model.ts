@@ -13,7 +13,7 @@ import {
   type WatchOnlyAccount,
   type WcAccount,
 } from '@/shared/core';
-import { dictionary, groupBy, nonNullable, nullable, toKeysRecord } from '@/shared/lib/utils';
+import { groupBy, nonNullable, toKeysRecord } from '@/shared/lib/utils';
 // TODO wallet model should be either in wallets domain or wallets feature
 // eslint-disable-next-line boundaries/element-types
 import {
@@ -21,24 +21,23 @@ import {
   type AnyAccountDraft,
   type ChainAccount,
   type UniversalAccount,
-  accountService,
   accounts,
 } from '@/domains/network';
 
 type DbWallet = Omit<Wallet, 'accounts'>;
 
-export type CreateParams<T extends AnyAccount = AnyAccount, W extends Wallet = Wallet> = {
-  wallet: Omit<NoID<W>, 'isActive' | 'accounts'>;
+export type WalletCreateParams<T extends AnyAccount = AnyAccount, W extends Wallet = Wallet> = {
+  wallet: Omit<NoID<W>, 'accounts'>;
   accounts: Omit<NoID<T>, 'walletId'>[];
 };
 
 // Events - renamed to start with verbs
-const createWatchOnly = createEvent<CreateParams<WatchOnlyAccount>>();
-const createSingleshard = createEvent<CreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
-const createMultisig = createEvent<CreateParams<MultisigAccount>>();
-const createFlexibleMultisig = createEvent<CreateParams<MultisigAccount>>();
-const createWalletConnect = createEvent<CreateParams<WcAccount>>();
-const createProxied = createEvent<CreateParams<ProxiedAccount>>();
+const createWatchOnly = createEvent<WalletCreateParams<WatchOnlyAccount>>();
+const createSingleshard = createEvent<WalletCreateParams<VaultBaseAccount, PolkadotVaultGroup>>();
+const createMultisig = createEvent<WalletCreateParams<MultisigAccount>>();
+const createFlexibleMultisig = createEvent<WalletCreateParams<MultisigAccount>>();
+const createWalletConnect = createEvent<WalletCreateParams<WcAccount>>();
+const createProxied = createEvent<WalletCreateParams<ProxiedAccount>>();
 
 const removeWallet = createEvent<ID>();
 // TODO this is temp solution, each type of wallet should update own data inside feature
@@ -50,31 +49,14 @@ const $rawWallets = createStore<DbWallet[]>([]);
 const $allWallets = combine($rawWallets, accounts.$list, (wallets, accounts) => {
   const grouped = groupBy(accounts, (a) => a.walletId);
 
-  return wallets.map((wallet) => ({ ...wallet, accounts: grouped[wallet.id] ?? [] })) as Wallet[];
+  return wallets.map<Wallet>((wallet) => ({ ...wallet, accounts: grouped[wallet.id] ?? [] }));
 });
 const $wallets = $allWallets.map((wallets) => wallets.filter((x) => !x.isHidden));
 const $hiddenWallets = $allWallets.map((wallets) => wallets.filter((x) => x.isHidden));
 
-// TODO: ideally it should be a feature
-const $activeWallet = $wallets.map((wallets) => wallets.find((w) => w.isActive) ?? null);
-
-// TODO: ideally it should be a feature
-const $activeAccounts = combine($activeWallet, accounts.$list, (wallet, allAccounts) => {
-  if (nullable(wallet)) return [];
-  return accountService.filterAccountsByWallet(allAccounts, wallet.id);
-});
-
-// Workaround - select event recreates wallet array every time, serialized ids are more stable.
-const $walletIds = $wallets.map((wallets) =>
-  wallets
-    .map((w) => w.id)
-    .sort()
-    .join(','),
-);
-
 // list of accounts filtered by non-hidden wallets
-const $availableAccounts = combine($walletIds, accounts.$list, (walletIds, allAccounts) => {
-  const ids = toKeysRecord(walletIds.split(','));
+const $availableAccounts = combine($wallets, accounts.$list, (wallets, allAccounts) => {
+  const ids = toKeysRecord(wallets.map((w) => w.id));
   return allAccounts.filter((a) => a.walletId in ids);
 });
 
@@ -83,35 +65,15 @@ const $populated = restore(
   false,
 );
 
-const fetchAllWalletsFx = createEffect(async (): Promise<DbWallet[]> => {
-  const wallets = await storageService.wallets.readAll();
-
-  // Deactivate wallets except first one if more than one selected
-  const activeWallets = wallets.filter((wallet) => wallet.isActive);
-
-  if (activeWallets.length > 1) {
-    const inactiveWallets = activeWallets.slice(1).map((wallet) => ({ ...wallet, isActive: false }));
-    await storageService.wallets.updateAll(inactiveWallets);
-
-    const walletsMap = dictionary(wallets, 'id');
-
-    for (const wallet of inactiveWallets) {
-      walletsMap[wallet.id] = wallet;
-    }
-
-    return Object.values(walletsMap);
-  }
-
-  return wallets;
-});
+const fetchAllWalletsFx = createEffect(() => storageService.wallets.readAll());
 
 type CreateResult = {
-  wallet: DbWallet;
+  wallet: Wallet;
   accounts: AnyAccount[];
 };
 const createWalletFx = createEffect(
-  async ({ wallet, accounts: accountDrafts }: CreateParams): Promise<CreateResult | undefined> => {
-    const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+  async ({ wallet, accounts: accountDrafts }: WalletCreateParams): Promise<CreateResult | undefined> => {
+    const dbWallet = await storageService.wallets.create(wallet);
 
     if (!dbWallet) return undefined;
 
@@ -121,34 +83,37 @@ const createWalletFx = createEffect(
 
     const dbAccounts = await accounts.createAccounts(accountsPayload);
 
-    return { wallet: dbWallet, accounts: dbAccounts };
+    return { wallet: { ...dbWallet, accounts: [] }, accounts: dbAccounts };
   },
 );
 
-const createWalletsFx = createEffect(
-  async (
-    drafts: {
-      wallet: Omit<NoID<Wallet>, 'isActive' | 'accounts'>;
-      accounts: Omit<AnyAccountDraft, 'walletId'>[];
-    }[],
-  ): Promise<CreateResult[]> => {
-    const requests = drafts.map(async ({ wallet, accounts: accountDrafts }) => {
-      const dbWallet = await storageService.wallets.create({ ...wallet, isActive: false });
+const createWalletsFx = createEffect(async (drafts: WalletCreateParams[]): Promise<CreateResult[]> => {
+  const createdWallets = await storageService.wallets.createAll(drafts.map((d) => d.wallet));
+  if (!createdWallets) return [];
 
-      if (!dbWallet) return undefined;
+  let accountsToCreate: AnyAccountDraft[] = [];
 
-      const accountsPayload = accountDrafts.map(
-        (account) => ({ ...account, walletId: dbWallet.id }) as ChainAccount | UniversalAccount,
-      );
+  for (const [index, wallet] of createdWallets.entries()) {
+    const accounts = drafts.at(index)?.accounts;
+    if (!accounts) continue;
 
-      const dbAccounts = await accounts.createAccounts(accountsPayload);
+    accountsToCreate = accountsToCreate.concat(
+      accounts.map((account) => ({ ...account, walletId: wallet.id }) as AnyAccountDraft),
+    );
+  }
 
-      return { wallet: dbWallet, accounts: dbAccounts };
-    });
+  const dbAccounts = await accounts.createAccounts(accountsToCreate);
 
-    return Promise.all(requests).then((r) => r.filter(nonNullable));
-  },
-);
+  const results: CreateResult[] = [];
+
+  for (const wallet of createdWallets) {
+    const accounts = dbAccounts.filter((a) => a.walletId === wallet.id);
+
+    results.push({ wallet: { ...wallet, accounts: [] }, accounts });
+  }
+
+  return results;
+});
 
 const removeWalletFx = createEffect(async (wallet: Wallet): Promise<ID> => {
   await storageService.wallets.delete(wallet.id);
@@ -323,14 +288,6 @@ export const walletModel = {
   $wallets,
   $allWallets: readonly($allWallets),
   $hiddenWallets,
-  /**
-   * @deprecated Use `import { walletSelect } from '@/aggregates/wallet-select'`
-   */
-  $activeWallet,
-  /**
-   * @deprecated Use `import { walletSelect } from '@/aggregates/wallet-select'`
-   */
-  $activeAccounts,
   $availableAccounts,
   $isLoadingWallets: or(not($populated), fetchAllWalletsFx.pending),
 

@@ -4,8 +4,7 @@ import { delay, or } from 'patronum';
 import { importDb } from '@/shared/api/storage';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
-import { accounts } from '@/domains/network';
-import { multisigsModel } from '@/entities/multisig-accounts';
+import { accountSync, accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { isFileValid } from '../utils/utils';
@@ -30,9 +29,8 @@ const updateDBFx = createEffect(async (file: File) => {
   importDb(file);
 });
 
-const populateWalletsFx = attach({
-  effect: walletModel.populate,
-});
+const populateWalletsFx = attach({ effect: walletModel.populate });
+const populateAccountsFx = attach({ effect: accounts.populate });
 
 const $file = restore(parseFileContentFx.doneData, null).reset(resetValues);
 
@@ -61,7 +59,7 @@ sample({
 
 sample({
   clock: delay(updateDBFx.doneData, 1000),
-  target: [populateWalletsFx, accounts.populate],
+  target: [populateWalletsFx, populateAccountsFx],
 });
 
 sample({
@@ -71,8 +69,8 @@ sample({
 });
 
 sample({
-  clock: accounts.populate.doneData,
-  target: [multisigsModel.request],
+  clock: populateAccountsFx.doneData,
+  target: accountSync.syncAccounts,
 });
 
 export const insert = {

@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { type AnyOfIdentifier } from './createAnyOf';
 import { type PipelineIdentifier } from './createPipeline';
@@ -14,7 +14,16 @@ const useForceUpdate = () => {
   return [index, () => setState(x => (x >= Number.MAX_SAFE_INTEGER ? 0 : x + 1))] as const;
 };
 
-type SlotOptions<Props extends SlotProps> = IsVoid<Props> extends true ? { props?: void } : { props: Props };
+type SlotOptions<Props extends SlotProps> =
+  IsVoid<Props> extends true
+    ? {
+        props?: void;
+        divider?: ReactNode;
+      }
+    : {
+        props: Props;
+        divider?: ReactNode;
+      };
 
 export type UseSlotArguments<Props extends SlotProps = void> =
   IsVoid<Props> extends true
@@ -29,12 +38,16 @@ export const useSlot = <Props extends SlotProps>(...[slot, options]: UseSlotArgu
   // eslint-disable-next-line effector/no-watch
   useEffect(() => slot.updateHandlers.watch(update), []);
 
-  return useMemo(() => slot.render(props), [handlers, index, props]);
+  return useMemo(() => slot.render({ props, divider: options?.divider }), [handlers, index, props]);
 };
 
-export const Slot = <Props extends SlotProps>({ id, props }: SlotOptions<Props> & { id: SlotIdentifier<Props> }) => {
+export const Slot = <Props extends SlotProps>({
+  id,
+  props,
+  divider,
+}: SlotOptions<Props> & { id: SlotIdentifier<Props> }) => {
   // @ts-expect-error props typing
-  return <>{useSlot(id, { props })}</>;
+  return <>{useSlot(id, { props, divider })}</>;
 };
 
 export type UsePipelineArguments<Value, Meta> =
