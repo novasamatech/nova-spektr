@@ -1,3 +1,5 @@
+import { isDev, isWeb } from '@/shared/lib/utils';
+
 import { type PathType } from './paths';
 
 /**
@@ -23,4 +25,15 @@ export const createLink = (path: PathType, params: Param, query: Query = {}): st
   }, []);
 
   return Object.keys(query).length > 0 ? `${urlWithParams}?${queryParts.join('&')}` : urlWithParams;
+};
+
+export const getAppUrl = (path: string) => {
+  let base = 'https://app.novaspektr.io';
+  if (isWeb() && isDev()) {
+    base = 'https://localhost:3000';
+  }
+
+  const hashRouterPath = path.startsWith('/') ? `#${path}` : `#/${path}`;
+
+  return new URL(hashRouterPath, base);
 };

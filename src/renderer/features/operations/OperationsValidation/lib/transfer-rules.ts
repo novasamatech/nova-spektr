@@ -211,6 +211,7 @@ export const transferValidator = createTxValidator<{
   xcmFee: BN;
   deliveryFee: BN;
 }>({
+  // ATTENTION - this order is important, this is how it's calculated on chain
   additionalBalanceRules: [
     // cross-chain fee
     // withdraws from initiator in source asset (can be any asset)
@@ -232,24 +233,6 @@ export const transferValidator = createTxValidator<{
         action: 'cross-chain fee',
       };
     },
-    // delivery fee
-    // withdraws from initiator in native asset
-    ({ route, deliveryFee, sourceChain, asset, getBalance }) => {
-      if (deliveryFee.isZero()) return;
-
-      const initiator = accountService.findSignatory(route);
-      assert(initiator, 'Signatory not found');
-
-      const balance = getBalance(initiator.accountId, sourceChain.chainId, asset.assetId);
-      assert(balance, `Balance for account ${initiator.accountId} not found`);
-
-      return {
-        account: initiator,
-        balance: balanceService.tryWithdraw(balance, deliveryFee, 'allowDeath'),
-        asset: asset,
-        action: 'delivery fee',
-      };
-    },
     // amount
     // withdraws from initiator in source asset (can be any asset)
     ({ route, amount, sourceChain, sourceAsset, getBalance }) => {
@@ -267,6 +250,24 @@ export const transferValidator = createTxValidator<{
         balance: balanceService.tryWithdraw(balance, desiredAmount, 'keepAlive'),
         asset: sourceAsset,
         action: 'sending amount',
+      };
+    },
+    // delivery fee
+    // withdraws from initiator in native asset
+    ({ route, deliveryFee, sourceChain, asset, getBalance }) => {
+      if (deliveryFee.isZero()) return;
+
+      const initiator = accountService.findInitiator(route);
+      assert(initiator, 'Initiator not found');
+
+      const balance = getBalance(initiator.accountId, sourceChain.chainId, asset.assetId);
+      assert(balance, `Balance for account ${initiator.accountId} not found`);
+
+      return {
+        account: initiator,
+        balance: balanceService.tryWithdraw(balance, deliveryFee, 'allowDeath'),
+        asset: asset,
+        action: 'delivery fee',
       };
     },
   ],

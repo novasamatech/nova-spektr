@@ -28,7 +28,7 @@ describe('createFeature', () => {
 
     featureStatus.inject(slot, () => <span>feature</span>);
 
-    const screenIdle = render(<>{slot.render()}</>);
+    const screenIdle = render(<>{slot.render({ props: undefined })}</>);
     expect(screenIdle.container).toMatchInlineSnapshot(`
 <div>
   <span>
@@ -47,7 +47,7 @@ describe('createFeature', () => {
 
     featureStatus.inject(slot, () => <span>feature</span>);
 
-    render(<>{slot.render()}</>, {
+    render(<>{slot.render({ props: undefined })}</>, {
       wrapper: ({ children }) => <ScopeProvider value={scope}>{children}</ScopeProvider>,
     });
     expect(scope.getState(featureStatus.status)).toEqual('running');
@@ -65,7 +65,7 @@ describe('createFeature', () => {
 
     featureStatus.inject(slot, () => <span>feature</span>);
 
-    const screenIdle = render(<>{slot.render()}</>);
+    const screenIdle = render(<>{slot.render({ props: undefined })}</>);
     expect(screenIdle.container).toMatchInlineSnapshot(`<div />`);
   });
 });

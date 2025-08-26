@@ -3,14 +3,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import {
-  type Address,
-  type Chain,
-  type MultisigAccount,
-  type Transaction,
-  type Validator,
-  type Wallet,
-} from '@/shared/core';
+import { type Address, type Chain, type Transaction, type Validator, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, keys, toAccountId } from '@/shared/lib/utils';
@@ -40,7 +33,7 @@ import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {
   operation: MultisigOperation;
-  account?: MultisigAccount;
+  account?: AnyAccount;
   signatory?: AnyAccount;
   chain: Chain;
   api: ApiPromise;

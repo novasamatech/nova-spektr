@@ -150,11 +150,9 @@ const $fakeProxyTx = combine(
     chain: formModel.$chain,
     isConnected: formModel.$isChainConnected,
     api: $api,
-    coreTx: $coreTx,
   },
-  ({ isConnected, chain, api, coreTx }): Transaction | null => {
+  ({ isConnected, chain, api }): Transaction | null => {
     if (!chain || !isConnected || !api) return null;
-    if (coreTx) return coreTx;
 
     return transactionBuilder.buildCreatePureProxy({
       chain: chain,
@@ -219,7 +217,7 @@ const { $tx, $route } = createComplexTxStore({
   signatory: $signer,
   accounts: accounts.$list,
   chain: formModel.$chain,
-  transaction: $fakeProxyTx,
+  transaction: $coreTx,
 });
 
 const $signerBalance = combine(
@@ -419,7 +417,6 @@ export const flexibleMultisigModel = {
   $asset,
 
   $fee,
-  $pendingFee: or($pendingProxyFee, $pendingMultisigFee),
   $proxyDeposit,
   $existentialDeposit,
   $totalDeposit,

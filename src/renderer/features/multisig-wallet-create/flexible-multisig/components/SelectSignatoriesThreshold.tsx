@@ -191,6 +191,7 @@ export const SelectSignatoriesThreshold = () => {
                             hideAddress
                             showIcon
                             canCopy
+                            variant="truncate"
                           />
                         </span>
                       ),

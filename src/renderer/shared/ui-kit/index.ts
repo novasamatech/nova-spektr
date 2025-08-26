@@ -13,6 +13,7 @@ export { CardStack } from './CardStack/CardStack';
 export { InputFile } from './InputFile/InputFile';
 export { Progress } from './Progress/Progress';
 export { Markdown } from './Markdown/Markdown';
+export { Copy } from './Copy/Copy';
 export { Checkbox } from './Checkbox/Checkbox';
 export { Combobox } from './Combobox/Combobox';
 export { Dropdown } from './Dropdown/Dropdown';

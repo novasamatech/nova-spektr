@@ -3,6 +3,7 @@ import { useI18n } from '@/shared/i18n';
 import { AssetBalance } from '@/shared/ui-entities';
 import {
   TransactionTitle,
+  findCoreTransaction,
   getTransactionAmount,
   isTransferTransaction,
   isXcmTransaction,
@@ -25,8 +26,8 @@ transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }
 });
 
 multisigOperationsSDK(transferOperationDetailFeature, {
-  icon({ operation }) {
-    const transaction = operation.transaction;
+  icon({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     if (isTransferTransaction(transaction)) {
       return 'transferMst';
     }
@@ -34,8 +35,8 @@ multisigOperationsSDK(transferOperationDetailFeature, {
       return 'crossChain';
     }
   },
-  title({ operation }) {
-    const transaction = operation.transaction;
+  title({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     if (isTransferTransaction(transaction)) {
       return <TransferOperationTitle operation={operation} />;
     }
@@ -43,9 +44,9 @@ multisigOperationsSDK(transferOperationDetailFeature, {
       return <XcmTransferOperationTitle operation={operation} />;
     }
   },
-  logTitle({ operation }) {
+  logTitle({ operation, showCoreTransaction }) {
     const { t } = useI18n();
-    const transaction = operation.transaction;
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const asset = useTransactionAsset(operation);
     const amount = transaction ? getTransactionAmount(transaction) : null;
 
@@ -68,8 +69,8 @@ multisigOperationsSDK(transferOperationDetailFeature, {
       );
     }
   },
-  details({ operation }) {
-    const transaction = operation.transaction;
+  details({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
 
     if (isTransferTransaction(transaction) || isXcmTransaction(transaction)) {
       return <TransferOperationDetails operation={operation} />;

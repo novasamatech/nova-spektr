@@ -1,15 +1,13 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { copyToClipboard, toAddress } from '@/shared/lib/utils';
+import { toAddress } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { DefaultExplorer, ExplorerIcons } from '@/shared/ui/ExplorerLink/constants';
 import { Account } from '@/shared/ui-entities';
-import { Box } from '@/shared/ui-kit';
-import { OperationResult, QrTextGenerator } from '@/entities/transaction';
-import { type StatusType } from '../lib/types';
+import { Box, Copy } from '@/shared/ui-kit';
+import { QrTextGenerator } from '@/entities/transaction';
 import { assetTransactionUtils } from '../lib/utils';
 import { receiveModel } from '../model/receive-model';
 
@@ -24,7 +22,6 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
   const { t } = useI18n();
 
   const selectedAccount = useUnit(receiveModel.$selectedAccount);
-  const [statusType, setStatusType] = useState<StatusType | null>(null);
 
   if (!selectedAccount) return null;
 
@@ -33,11 +30,6 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
     prefix: chain.legacyAddressPrefix ?? chain.addressPrefix,
   });
   const isUnifiedAddress = address !== legacyAddress;
-
-  const handleCopy = (address: string, type: StatusType) => {
-    copyToClipboard(address);
-    setStatusType(type);
-  };
 
   //eslint-disable-next-line i18next/no-literal-string
   const qrCodePayload = `substrate:${address}:${selectedAccount.accountId}`;
@@ -55,9 +47,14 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
           title={selectedAccount.name}
           hideExplorers
         />
-        <Button variant="text" size="sm" onClick={() => handleCopy(address, isUnifiedAddress ? 'unified' : 'regular')}>
-          {t('receive.copy')}
-        </Button>
+        <Copy
+          value={address}
+          notification={t(assetTransactionUtils.getStatusTitle(isUnifiedAddress ? 'unified' : 'regular'))}
+        >
+          <Button variant="text" size="sm">
+            {t('receive.copy')}
+          </Button>
+        </Copy>
       </div>
       {(chain.explorers || []).length > 0 && (
         <div className="flex w-full items-center justify-between bg-main-app-background px-5 py-3">
@@ -83,9 +80,11 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
         <>
           <div className="mb-3 flex w-full items-center justify-between bg-main-app-background px-5 py-3">
             <FootnoteText className="text-text-secondary">{t('receive.exchangeAccount')}</FootnoteText>
-            <Button variant="text" size="sm" onClick={() => handleCopy(legacyAddress, 'legacy')}>
-              {t('receive.copyLegacyFormat')}
-            </Button>
+            <Copy value={address} notification={t(assetTransactionUtils.getStatusTitle('unified'))}>
+              <Button variant="text" size="sm">
+                {t('receive.copyLegacyFormat')}
+              </Button>
+            </Copy>
           </div>
 
           <CompareAddressModal account={selectedAccount} chain={chain} asset={asset}>
@@ -95,14 +94,6 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
           </CompareAddressModal>
         </>
       )}
-
-      <OperationResult
-        autoCloseTimeout={2000}
-        isOpen={Boolean(statusType)}
-        content={<Icon size={40} name="checkmarkOutline" className="m-4 text-icon-positive" />}
-        title={t(assetTransactionUtils.getStatusTitle(statusType))}
-        onClose={() => setStatusType(null)}
-      />
     </Box>
   );
 };

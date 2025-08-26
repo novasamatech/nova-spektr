@@ -16,6 +16,11 @@ type Props = {
   variant?: 'truncate' | 'short';
   addressTestId?: string;
   explorersTestId?: string;
+  /**
+   * TODO remove this prop, Account without explorers is basically Address
+   *
+   * @deprecated
+   */
   hideExplorers?: boolean;
 };
 

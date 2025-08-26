@@ -14,7 +14,7 @@ describe('createSlot', () => {
     slot.registerHandler({ body: ({ data }) => <span data-testid="1">{data}</span>, available: () => true });
     slot.registerHandler({ body: ({ data }) => <span data-testid="2">{data + 1}</span>, available: () => true });
 
-    const nodes = slot.render({ data: 1 });
+    const nodes = slot.render({ props: { data: 1 } });
 
     // eslint-disable-next-line react/jsx-no-useless-fragment
     const screen = render(<>{nodes}</>);
@@ -57,7 +57,7 @@ describe('createSlot', () => {
       },
     });
 
-    const nodes = slot.render({ data: 1 });
+    const nodes = slot.render({ props: { data: 1 } });
 
     // eslint-disable-next-line react/jsx-no-useless-fragment
     const screen = render(<>{nodes}</>);

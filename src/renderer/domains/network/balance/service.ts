@@ -62,15 +62,13 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
 }
 
 function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
-  const withdrawable = transferableAmountBN(balance, balance.transferableMode);
+  const withdrawable = transferableAmountBN(balance);
   const wanted = balancePreservation === 'keepAlive' ? amount.add(balance.ed) : amount;
   const afterWithdraw = withdrawable.sub(wanted);
 
-  // new
-
   if (afterWithdraw.isNeg()) {
     const updated = copyBalance(balance, {
-      free: BN.max(BN_ZERO, balance.free.sub(wanted)),
+      free: balancePreservation === 'keepAlive' ? balance.ed : BN_ZERO,
     });
 
     return {
@@ -81,10 +79,14 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
     };
   }
 
+  const free = balance.free.sub(amount);
+  // in case of exceeding the ED, we burn all tokens
+  const burnedTokens = free.lt(balance.ed) ? balance.ed : BN_ZERO;
+
   return {
     success: true,
     balance: copyBalance(balance, {
-      free: balance.free.sub(amount),
+      free: BN.max(free.sub(burnedTokens), BN_ZERO),
     }),
     required: amount,
   };

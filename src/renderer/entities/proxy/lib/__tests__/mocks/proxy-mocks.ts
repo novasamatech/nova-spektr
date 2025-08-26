@@ -25,9 +25,7 @@ const wallets: Wallet[] = [
   {
     id: 1,
     name: 'My first wallet',
-    isActive: false,
     type: WalletType.MULTISIG,
-    signingType: SigningType.MULTISIG,
     accounts: [
       {
         id: '1',
@@ -44,9 +42,7 @@ const wallets: Wallet[] = [
   {
     id: 2,
     name: 'My second wallet',
-    isActive: true,
     type: WalletType.WALLET_CONNECT,
-    signingType: SigningType.WALLET_CONNECT,
     accounts: [
       {
         id: '2',

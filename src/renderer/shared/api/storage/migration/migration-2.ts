@@ -31,8 +31,6 @@ const getAccountType = (account: any): AccountType => {
 };
 
 async function modifyExistingWallets(dbAccounts: any[], trans: Transaction): Promise<void> {
-  const activeAccount = dbAccounts.find((account) => account.isActive);
-
   await trans
     .table('wallets')
     .toCollection()
@@ -41,7 +39,6 @@ async function modifyExistingWallets(dbAccounts: any[], trans: Transaction): Pro
       const isMultisig = wallet.type === WalletType.MULTISIG;
       const isParitySigner = wallet.type === WalletType.SINGLE_PARITY_SIGNER || wallet.type === 'wallet_mps';
 
-      wallet.isActive = activeAccount?.walletId === wallet.id;
       wallet.signingType =
         (isWatchOnly && SigningType.WATCH_ONLY) ||
         (isMultisig && SigningType.MULTISIG) ||

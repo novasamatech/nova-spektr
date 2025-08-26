@@ -10,6 +10,7 @@ import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
 
 type Props = {
   wallet: Wallet;
+  active: boolean;
   accountId: AccountId | null;
   description?: string | ReactNode;
   checkBox?: ReactNode;
@@ -23,6 +24,7 @@ type Props = {
 export const WalletManagement = memo(
   ({
     wallet,
+    active,
     accountId,
     theme,
     description,
@@ -40,15 +42,15 @@ export const WalletManagement = memo(
           'focus-within:bg-action-background-hover hover:bg-action-background-hover',
         )}
       >
-        <button className="flex w-full items-center gap-x-2 rounded py-1.5 pr-10 pl-2" onClick={onClick}>
-          {wallet.isActive ? (
+        <button className="flex w-full min-w-0 shrink items-center gap-x-2 rounded px-2 py-1.5" onClick={onClick}>
+          {active ? (
             <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
           ) : (
             <div className="row-span-2 h-4 w-4 shrink-0" />
           )}
 
           {checkBox}
-          {accountId && <Identicon canCopy={false} value={accountId} size={16} background={false} theme={theme} />}
+          {accountId && <Identicon value={accountId} size={16} background={false} theme={theme} />}
 
           <div className="flex min-w-0 flex-grow flex-col">
             <div className="flex items-center gap-x-2">
@@ -56,7 +58,7 @@ export const WalletManagement = memo(
                 className={cnTw(
                   'truncate text-text-secondary transition-colors',
                   'group-focus-within:text-text-primary group-hover:text-text-primary',
-                  { 'text-text-primary': wallet.isActive },
+                  { 'text-text-primary': active },
                 )}
               >
                 {wallet.name}
@@ -78,7 +80,7 @@ export const WalletManagement = memo(
           </div>
         </button>
 
-        <div className="absolute top-1/2 right-2 flex -translate-y-1/2">{children}</div>
+        <div className="shrink-0 pe-2">{children}</div>
       </div>
     );
   },

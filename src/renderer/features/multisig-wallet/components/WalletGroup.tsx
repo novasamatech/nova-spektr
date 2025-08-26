@@ -10,7 +10,7 @@ import { Accordion, Box } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletUtils } from '@/entities/wallet';
-import { walletSelectService } from '@/aggregates/wallet-select';
+import { walletSelect, walletSelectService } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
@@ -28,6 +28,7 @@ export const WalletGroup = memo((props: Props) => {
   const { t } = useI18n();
 
   const allAccounts = useUnit(accounts.$list);
+  const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const chains = useUnit(networkModel.$chains);
 
   const filteredWallets = performSearch({
@@ -48,53 +49,47 @@ export const WalletGroup = memo((props: Props) => {
   };
 
   return (
-    <Box padding={[1, 0, 0]}>
-      <Accordion initialOpen>
-        <Accordion.Trigger>
-          <div className="flex w-full items-center gap-2">
-            <WalletIcon type={walletType} />
-            <span>{title}</span>
-            <span className="ml-auto text-text-tertiary">{filteredWallets.length}</span>
-          </div>
-        </Accordion.Trigger>
-        <Accordion.Content>
-          <Box gap={1} padding={[1, 0, 0]}>
-            {filteredWallets.map(wallet => {
-              const accountId = wallet.accounts[0]?.accountId;
+    <Accordion initialOpen>
+      <Accordion.Trigger>
+        <div className="flex w-full items-center gap-2">
+          <WalletIcon type={walletType} />
+          <span>{title}</span>
+          <span className="ml-auto text-text-tertiary">{filteredWallets.length}</span>
+        </div>
+      </Accordion.Trigger>
+      <Accordion.Content>
+        <Box gap={1} padding={[1, 0, 0]}>
+          {filteredWallets.map(wallet => {
+            const accountId = wallet.accounts[0]?.accountId;
 
-              let chain: Chain | null = null;
-              let label: string | null = null;
+            let chain: Chain | null = null;
+            let label: string | null = null;
 
-              if (walletUtils.isFlexibleMultisig(wallet)) {
-                const chainId = wallet.accounts.find(
-                  account => account.accountType === AccountType.FLEX_PROXIED,
-                )?.chainId;
-                chain = chainId ? chains[chainId] : null;
-                label = t('wallets.flexibleMultisigFlexLabel');
-              }
+            if (walletUtils.isFlexibleMultisig(wallet)) {
+              const chainId = wallet.accounts.find(
+                account => account.accountType === AccountType.FLEX_PROXIED,
+              )?.chainId;
+              chain = chainId ? chains[chainId] : null;
+              label = t('wallets.flexibleMultisigFlexLabel');
+            }
 
-              return (
-                <div key={wallet.id} className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <WalletManagement
-                      wallet={wallet}
-                      accountId={accountId}
-                      description={
-                        <WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />
-                      }
-                      chain={chain}
-                      label={label}
-                      onClick={() => handleWalletClick(wallet)}
-                    >
-                      <Slot id={walletActionsSlot} props={{ wallet }} />
-                    </WalletManagement>
-                  </div>
-                </div>
-              );
-            })}
-          </Box>
-        </Accordion.Content>
-      </Accordion>
-    </Box>
+            return (
+              <WalletManagement
+                key={wallet.id}
+                active={selectedWalletId === wallet.id}
+                wallet={wallet}
+                accountId={accountId}
+                description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
+                chain={chain}
+                label={label}
+                onClick={() => handleWalletClick(wallet)}
+              >
+                <Slot id={walletActionsSlot} props={{ wallet }} />
+              </WalletManagement>
+            );
+          })}
+        </Box>
+      </Accordion.Content>
+    </Accordion>
   );
 });

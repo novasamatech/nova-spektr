@@ -133,8 +133,17 @@ async function fetchOperationsHistory(
     .filter((x: MultisigOperation | null) => {
       if (nullable(x)) return false;
 
+      // we consider "pending" operations from indexer as invalid. All pending operations should be fetched from chain directly.
+      if (x.status === 'pending') {
+        return false;
+      }
+
       // filtering out existing operations
-      return !existingMultisigs.has(x.id);
+      if (existingMultisigs.has(x.id)) {
+        return false;
+      }
+
+      return true;
     });
 }
 

@@ -15,8 +15,13 @@ export type SlotHandlerExtended<Props> = {
   render: FunctionComponent<Props>;
 };
 
+type SlotRenderParameters<Props> = {
+  props: Props;
+  divider?: ReactNode;
+};
+
 export type SlotIdentifier<Props> = Identifier<Props, ReactNode[], SlotHandler<Props>, SlotHandlerExtended<Props>> & {
-  render: (props: Props) => ReactNode[];
+  render: (params: SlotRenderParameters<Props>) => ReactNode[];
 };
 
 export type SlotProps = Record<string, unknown> | void;
@@ -40,14 +45,14 @@ export const createSlot = <Props extends SlotProps = void>(config?: { name: stri
 
   return {
     ...identifier,
-    render(props: Props) {
+    render({ props, divider }: SlotRenderParameters<Props>) {
       // Implementation is similar to syncApplyImpl but have additional login inside for loop,
       //   so it's better to keep it separated
 
       // eslint-disable-next-line effector/no-getState
       const handlers = identifier.$handlers.getState();
-      const result: ReactNode[] = [];
       const order = new Map<ReactNode, number>();
+      let result: ReactNode[] = [];
       let shouldReorder = false;
       let handler, node;
 
@@ -77,7 +82,11 @@ export const createSlot = <Props extends SlotProps = void>(config?: { name: stri
       }
 
       if (shouldReorder) {
-        return result.sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
+        result = result.sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0));
+      }
+
+      if (divider) {
+        result = result.flatMap((n, index) => (index === 0 ? n : [divider, n]));
       }
 
       return result;

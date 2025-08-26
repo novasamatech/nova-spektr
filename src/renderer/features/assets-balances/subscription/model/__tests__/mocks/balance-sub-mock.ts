@@ -40,14 +40,11 @@ const accounts = [
 ] as unknown as AnyAccount[];
 
 const wallets = [
-  { id: 1, isActive: true, name: 'My active wallet', accounts: [accounts[0], accounts[1]] },
-  { id: 2, isActive: false, name: 'My inactive wallet', accounts: [accounts[2], accounts[3]] },
+  { id: 1, name: 'My active wallet', accounts: [accounts[0], accounts[1]] },
+  { id: 2, name: 'My inactive wallet', accounts: [accounts[2], accounts[3]] },
 ] as Wallet[];
 
-const newWallets = [
-  { ...wallets[0], isActive: false },
-  { ...wallets[1], isActive: true },
-];
+const newWallets = [{ ...wallets[0] }, { ...wallets[1] }];
 
 const chains = {
   '0x01': { name: 'My chain 1', chainId: '0x01' },
