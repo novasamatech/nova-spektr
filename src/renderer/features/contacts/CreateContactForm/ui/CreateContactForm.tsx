@@ -3,7 +3,8 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
+import { Button, InputHint } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { type Callbacks, createFormModel } from '../model/contact-form';
 
@@ -32,8 +33,6 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
     submit();
   };
 
-  const canShowIdenticon = address.value && !address.hasError();
-
   return (
     <form onSubmit={submitForm}>
       <Box padding={[4, 5]} gap={4}>
@@ -56,13 +55,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
             placeholder={t('addressBook.createContact.accountIdPlaceholder')}
             invalid={address.hasError()}
             value={address.value}
-            prefixElement={
-              canShowIdenticon ? (
-                <Identicon address={address.value} background={false} />
-              ) : (
-                <Icon name="emptyIdenticon" />
-              )
-            }
+            prefixElement={<Identicon value={address.value} background={false} />}
             onChange={address.onChange}
           />
           <InputHint variant="error" active={address.hasError()}>

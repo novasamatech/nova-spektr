@@ -1,24 +1,30 @@
+import { BN, BN_ZERO } from '@polkadot/util';
 import { act, render, screen } from '@testing-library/react';
 import { fork } from 'effector';
 import { Provider } from 'effector-react';
 import { vi } from 'vitest';
 
-import chains from '@/shared/config/chains/chains.json';
 import {
   AccountType,
-  type Chain,
+  type Balance,
+  type BalanceId,
+  type BalanceMap,
   CryptoType,
+  LockTypes,
   SigningType,
   type VaultBaseAccount,
   type VaultChainAccount,
   type VaultShardAccount,
+  type Wallet,
+  WalletType,
 } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { polkadotAssetHubChain } from '@/shared/mocks';
 import { balanceModel } from '@/entities/balance';
 
 import { NetworkAssets } from './NetworkAssets';
 
-const testChain = chains.find((chain) => chain.assets.length > 1) as Chain;
+const testChain = polkadotAssetHubChain;
 const testAsset = testChain.assets[0];
 const testAsset2 = testChain.assets[1];
 
@@ -28,21 +34,40 @@ vi.mock('@/shared/i18n', () => ({
   }),
 }));
 
-const testBalances = [
+const testWallet = {
+  walletId: 1,
+  id: 1,
+  type: WalletType.POLKADOT_VAULT,
+  isActive: true,
+  name: 'test',
+  accounts: [],
+  signingType: SigningType.POLKADOT_VAULT,
+} as Wallet;
+
+const testBalances: Balance[] = [
   {
-    assetId: testAsset.assetId.toString(),
+    id: '0' as BalanceId,
+    assetId: testAsset.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
-    free: '10',
-    frozen: [{ type: 'test', amount: '1' }],
+    free: new BN(10),
+    locked: [{ type: LockTypes.CONVICTION_VOTE, amount: new BN(1) }],
+    frozen: BN_ZERO,
+    reserved: BN_ZERO,
+    ed: BN_ZERO,
+    transferableMode: 'holdAndFreezes',
   },
   {
-    assetId: testAsset2.assetId.toString(),
+    id: '1' as BalanceId,
+    assetId: testAsset2.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
-    free: '1000000000000',
-    frozen: [{ type: 'test', amount: '1' }],
-    verified: false,
+    free: new BN(1000000000000),
+    frozen: BN_ZERO,
+    reserved: BN_ZERO,
+    ed: BN_ZERO,
+    transferableMode: 'holdAndFreezes',
+    locked: [{ type: LockTypes.CONVICTION_VOTE, amount: new BN(1) }],
   },
 ];
 
@@ -65,14 +90,17 @@ const accounts: (VaultBaseAccount | VaultChainAccount | VaultShardAccount)[] = [
 
 describe('features/AssetsChainView/ui/NetworkAssets', () => {
   const scope = fork({
-    values: new Map().set(balanceModel.$balances, testBalances),
+    values: new Map().set(
+      balanceModel.__test.$balanceMap,
+      testBalances.reduce<BalanceMap>((acc, b) => ({ ...acc, [b.id]: b }), {}),
+    ),
   });
 
   const renderNetworkAssets = async () => {
     await act(async () => {
       render(
         <Provider value={scope}>
-          <NetworkAssets chain={testChain} accounts={accounts} hideZeroBalances={false} query="" />
+          <NetworkAssets chain={testChain} accounts={accounts} hideZeroBalances={false} query="" wallet={testWallet} />
         </Provider>,
       );
     });
@@ -105,13 +133,6 @@ describe('features/AssetsChainView/ui/NetworkAssets', () => {
     expect(balancesAfter).not.toBeInTheDocument();
   });
 
-  test('should show unverified badge', async () => {
-    await renderNetworkAssets();
-
-    const unverifiedBadge = screen.getByText('balances.verificationFailedLabel');
-    expect(unverifiedBadge).toBeInTheDocument();
-  });
-
   test('should sort assets by balance and name', async () => {
     await renderNetworkAssets();
 
@@ -119,6 +140,8 @@ describe('features/AssetsChainView/ui/NetworkAssets', () => {
 
     expect(assetsNames[0]).toHaveTextContent(testAsset2.name);
     expect(assetsNames[1]).toHaveTextContent(testAsset.name);
-    expect((assetsNames[2]?.textContent || '').localeCompare(assetsNames[3]?.textContent || '')).toEqual(-1);
+    expect((assetsNames[1]?.textContent || '').localeCompare(assetsNames[2]?.textContent || '')).toBeLessThanOrEqual(
+      -1,
+    );
   });
 });

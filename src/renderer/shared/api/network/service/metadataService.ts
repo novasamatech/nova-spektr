@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type UnsubscribePromise } from '@polkadot/api/types';
+
+import { type ChainId } from '@/shared/core';
 
 export const metadataService = {
   subscribeRuntimeVersion,
@@ -7,22 +8,14 @@ export const metadataService = {
 
 type SubscribeParams = {
   api: ApiPromise;
-  cachedRuntimeVersion: number | null;
-  callback: (api: ApiPromise) => void;
+  callback: (params: { chainId: ChainId; receivedVersion: number }) => void;
 };
 
-async function subscribeRuntimeVersion({ api, cachedRuntimeVersion, callback }: SubscribeParams): UnsubscribePromise {
-  let currentVersion = cachedRuntimeVersion ?? null;
-
-  await api.isReady;
+async function subscribeRuntimeVersion({ api, callback }: SubscribeParams) {
+  const chainId = api.genesisHash.toHex();
 
   return api.rpc.state.subscribeRuntimeVersion((version) => {
     const receivedVersion = version.specVersion.toNumber();
-    if (!currentVersion || receivedVersion > currentVersion) {
-      console.info(`Runtime version upgrade: ${currentVersion ?? 'empty'} -> ${receivedVersion}`);
-
-      currentVersion = receivedVersion;
-      callback(api);
-    }
+    callback({ chainId, receivedVersion });
   });
 }

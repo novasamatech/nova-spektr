@@ -1,32 +1,76 @@
+import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { AssetBalance } from '@/shared/ui-entities';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import {
   TransactionTitle,
+  findCoreTransaction,
   getTransactionAmount,
   isTransferTransaction,
   isXcmTransaction,
+  useTransactionAsset,
 } from '@/entities/transaction';
-import {
-  confirmTransactionInfoSlot,
-  logTitleSlot,
-  operationDetailsSlot,
-  operationTitleSlot,
-} from '@/features/multisig-operations';
+import { multisigOperationsSDK } from '@/sdk/multisig-operations';
+import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
 
 import { TransactionAmount } from './components/TransactionAmount';
 import { TransferOperationDetails } from './components/TransferOperationDetails';
 import { TransferOperationTitle } from './components/TransferOperationTitle';
 import { XcmTransferOperationTitle } from './components/XcmTransferOperationTitle';
-import { useTransactionAsset } from './hooks/useTransactionAsset';
-import { transferOperationDetailFeature } from './model/feature';
 
-export { transferOperationDetailFeature };
+export const transferOperationDetailFeature = createFeature({
+  name: 'transfer/operations',
+});
 
-transferOperationDetailFeature.inject(operationDetailsSlot, {
-  order: 1,
-  render: ({ operation }) => {
-    const transaction = getTransactionFromMultisigTx(operation);
+transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
+  return <TransactionAmount operation={operation} />;
+});
+
+multisigOperationsSDK(transferOperationDetailFeature, {
+  icon({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+    if (isTransferTransaction(transaction)) {
+      return 'transferMst';
+    }
+    if (isXcmTransaction(transaction)) {
+      return 'crossChain';
+    }
+  },
+  title({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+    if (isTransferTransaction(transaction)) {
+      return <TransferOperationTitle operation={operation} />;
+    }
+    if (isXcmTransaction(transaction)) {
+      return <XcmTransferOperationTitle operation={operation} />;
+    }
+  },
+  logTitle({ operation, showCoreTransaction }) {
+    const { t } = useI18n();
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+    const asset = useTransactionAsset(operation);
+    const amount = transaction ? getTransactionAmount(transaction) : null;
+
+    if (isTransferTransaction(transaction)) {
+      return (
+        <TransactionTitle className="overflow-hidden" title={t('operations.titles.transfer', { asset: asset?.symbol })}>
+          {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
+        </TransactionTitle>
+      );
+    }
+
+    if (isXcmTransaction(transaction)) {
+      return (
+        <TransactionTitle
+          className="overflow-hidden"
+          title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
+        >
+          {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
+        </TransactionTitle>
+      );
+    }
+  },
+  details({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
 
     if (isTransferTransaction(transaction) || isXcmTransaction(transaction)) {
       return <TransferOperationDetails operation={operation} />;
@@ -34,55 +78,4 @@ transferOperationDetailFeature.inject(operationDetailsSlot, {
 
     return null;
   },
-});
-
-transferOperationDetailFeature.inject(operationTitleSlot, ({ operation }) => {
-  const transaction = getTransactionFromMultisigTx(operation);
-
-  if (isTransferTransaction(transaction)) {
-    return <TransferOperationTitle operation={operation} />;
-  }
-
-  if (isXcmTransaction(transaction)) {
-    return <XcmTransferOperationTitle operation={operation} />;
-  }
-
-  return null;
-});
-
-transferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
-  return <TransactionAmount operation={operation} />;
-});
-
-transferOperationDetailFeature.inject(logTitleSlot, ({ operation }) => {
-  const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
-  const asset = useTransactionAsset(operation);
-  const amount = transaction ? getTransactionAmount(transaction) : null;
-
-  if (isTransferTransaction(transaction)) {
-    return (
-      <TransactionTitle
-        className="overflow-hidden"
-        title={t('operations.titles.transfer', { asset: asset?.symbol })}
-        icon="transferMst"
-      >
-        {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
-      </TransactionTitle>
-    );
-  }
-
-  if (isXcmTransaction(transaction)) {
-    return (
-      <TransactionTitle
-        className="overflow-hidden"
-        title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
-        icon="transferMst"
-      >
-        {asset && amount && <AssetBalance value={amount} asset={asset} className="truncate" />}
-      </TransactionTitle>
-    );
-  }
-
-  return null;
 });

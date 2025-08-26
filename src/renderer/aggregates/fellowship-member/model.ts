@@ -13,7 +13,7 @@ const $chainMembers = combine(fellowshipNetwork.$network, $fellowshipMembers, (n
 });
 
 const $accounts = combine(fellowshipNetwork.$network, walletModel.$availableAccounts, (network, accounts) => {
-  return network ? accountService.filterAccountOnChain(accounts, network.chain) : [];
+  return network ? accountService.filterAccountsOnChain(accounts, network.chain) : [];
 });
 
 const $currentMember = combine(

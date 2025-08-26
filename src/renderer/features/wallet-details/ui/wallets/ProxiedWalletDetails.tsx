@@ -2,29 +2,25 @@ import { useGate, useUnit } from 'effector-react';
 import { useState } from 'react';
 
 import { type ProxiedWallet, type ProxyType } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { FootnoteText, Icon, IconButton } from '@/shared/ui';
-import { type IconNames } from '@/shared/ui/Icon/data';
-import { ChainAccountsList } from '@/shared/ui-entities';
-import { Box, Dropdown, Modal, Tabs } from '@/shared/ui-kit';
+import { isEthereumAccountId } from '@/shared/lib/utils';
+import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
+import { ChainAccountsList, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
+import { Box, Modal, Tabs } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { WalletCardLg, WalletIcon, walletModel, walletUtils } from '@/entities/wallet';
-import { proxyAddFeature } from '@/features/proxy-add';
-import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { AddPureProxied } from '@/features/proxied-add-pure';
+import { AddProxy } from '@/features/proxy-add';
+import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
+import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
+import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
 
-const {
-  models: { addProxy },
-  views: { AddProxy },
-} = proxyAddFeature;
-
-const {
-  views: { AddPureProxied },
-} = proxyAddPureFeature;
+export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 const ProxyTypeOperation: Record<ProxyType, string> = {
   Any: 'proxy.operations.any',
@@ -35,6 +31,7 @@ const ProxyTypeOperation: Record<ProxyType, string> = {
   Governance: 'proxy.operations.governance',
   IdentityJudgement: 'proxy.operations.identityJudgement',
   NominationPools: 'proxy.operations.nominationPools',
+  SudoBalances: 'proxy.operations.sudoBalances',
 };
 
 type Props = {
@@ -44,58 +41,59 @@ type Props = {
 
 export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
+
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
   const wallets = useUnit(walletModel.$wallets);
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
+  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
 
-  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
+  const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [tab, setTab] = useState('accounts');
 
   if (!wallet || !walletUtils.isProxied(wallet)) return null;
 
-  const proxyWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-    walletFn: w => !walletUtils.isWatchOnly(w),
-    accountFn: a => a.accountId === wallet.accounts[0]?.proxyAccountId,
-  });
+  const proxyWallets =
+    wallet.accounts[0]?.connections.map(connection => ({
+      connection,
+      proxyWallet: walletUtils.getWalletFilteredAccounts(wallets, {
+        walletFn: w => !walletUtils.isWatchOnly(w),
+        accountFn: a => connection.proxyAccountId === a.accountId,
+      }),
+    })) ?? [];
 
-  if (!proxyWallet) {
-    return null;
-  }
-
-  const options = [
-    {
-      icon: 'rename' as IconNames,
-      title: t('walletDetails.common.renameButton'),
-      onClick: toggleIsRenameModalOpen,
-    },
-  ];
+  const actions: WalletAction[] = [];
 
   if (canCreateProxy) {
-    options.push({
-      icon: 'addCircle' as IconNames,
-      title: t('walletDetails.common.addProxyAction'),
-      onClick: addProxy.events.flowStarted,
+    actions.push({
+      component: (
+        <AddProxy wallet={wallet}>
+          <Action title={t('walletDetails.common.addProxyAction')} icon="delegate" />
+        </AddProxy>
+      ),
     });
   }
 
-  const ActionButton = (
-    <Dropdown align="end">
-      <Dropdown.Trigger>
-        <IconButton name="more" />
-      </Dropdown.Trigger>
-      <Dropdown.Content>
-        {options.map(option => (
-          <Dropdown.Item key={option.title} onSelect={option.onClick}>
-            <Icon name={option.icon} size={20} className="text-icon-accent" />
-            <span className="text-text-secondary">{option.title}</span>
-          </Dropdown.Item>
-        ))}
-      </Dropdown.Content>
-    </Dropdown>
-  );
+  if (permissionUtils.canCreateAnyProxy(wallet)) {
+    actions.push({
+      component: (
+        <AddPureProxied wallet={wallet}>
+          <Action title={t('walletDetails.common.addPureProxiedAction')} icon="createPureProxy" />
+        </AddPureProxied>
+      ),
+    });
+  }
+
+  //todo uncomment when we can hide proxied wallets
+  // actions.push({
+  //   component: (
+  //     <ForgetWalletConfirm wallet={wallet} onForget={onClose}>
+  //       <Action title={t('walletDetails.common.forgetButton')} icon="forget" variant="danger" />
+  //     </ForgetWalletConfirm>
+  //   ),
+  // });
 
   const account = wallet.accounts.at(0);
   const chain = account ? chains[account.chainId] : null;
@@ -108,55 +106,98 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
   };
 
   return (
-    <Modal size="md" height="lg" isOpen={true} onToggle={handleToggle}>
-      <Modal.Title close action={ActionButton}>
-        {t('walletDetails.common.title')}
-      </Modal.Title>
+    <Modal size="mdlg" height="full" isOpen={true} onToggle={handleToggle}>
+      <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="mb-4 flex flex-col gap-y-2.5 border-b border-divider px-5 pb-6 pt-4">
-          <WalletCardLg wallet={wallet} />
-          <div className="flex items-center">
-            <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-            <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
-            <WalletIcon type={proxyWallet.type} size={16} className="mx-1" />
-            <FootnoteText className="truncate">{proxyWallet.name}</FootnoteText>
-            &nbsp;
-            <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
-            &nbsp;
-            <FootnoteText className="whitespace-nowrap">
-              {t(ProxyTypeOperation[wallet.accounts[0].proxyType])}
-            </FootnoteText>
+        <div className="flex flex-col gap-y-2.5 px-5 pb-6">
+          <div className="flex items-center justify-between">
+            <Box direction="row" verticalAlign="center" gap={2}>
+              <div className="mr-1">
+                <WalletAccountIcon
+                  address={account?.accountId}
+                  type={wallet.type}
+                  size={42}
+                  theme={isEthereumAccountId(account?.accountId) ? 'ethereum' : 'polkadot'}
+                />
+              </div>
+              {!isRenameInputOpen && (
+                <>
+                  <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
+                    {wallet.name}
+                  </HeadlineText>
+                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                    <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
+                    <WalletFiatBalance />
+                  </div>
+                </>
+              )}
+            </Box>
+
+            <RenameWallet wallet={wallet} isOpen={isRenameInputOpen} onClose={toggleIsRenameInputOpen} />
+
+            {account && !isRenameInputOpen && (
+              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
+                <Slot id={overviewSlot} props={{ walletAccounts: [account] }} />
+              </div>
+            )}
           </div>
+
+          {proxyWallets.map(
+            ({ connection, proxyWallet }) =>
+              proxyWallet && (
+                <div className="flex items-center pl-4" key={`${connection.proxyType}-${connection.proxyAccountId}`}>
+                  <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
+                  <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
+                  <span className="mx-1">
+                    <WalletIcon type={proxyWallet.type} size={16} />
+                  </span>
+                  <FootnoteText className="truncate">{proxyWallet.name}</FootnoteText>
+                  &nbsp;
+                  <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
+                  &nbsp;
+                  <FootnoteText className="whitespace-nowrap">
+                    {t(ProxyTypeOperation[connection.proxyType])}
+                  </FootnoteText>
+                </div>
+              ),
+          )}
         </div>
+
+        <WalletActions actions={actions} />
+
+        <Separator className="my-6" />
       </Modal.HeaderContent>
       <Modal.Content>
         <Tabs value={tab} onChange={setTab}>
           <Box padding={[0, 5]} shrink={0}>
             <Tabs.List>
-              <Tabs.Trigger value="accounts">{t('walletDetails.common.accountTabTitle')}</Tabs.Trigger>
-              <Tabs.Trigger value="proxies">{t('walletDetails.common.proxiesTabTitle')}</Tabs.Trigger>
+              <Tabs.Trigger value="accounts">
+                <span className="flex items-center gap-1">
+                  {t('walletDetails.common.accountTabTitle')}
+                  <span className="text-text-tertiary">{accounts.length}</span>
+                </span>
+              </Tabs.Trigger>
+              <Tabs.Trigger value="proxies">
+                <span className="flex items-center gap-1">
+                  {t('walletDetails.common.proxiesTabTitle')}
+                  <span className="text-text-tertiary">{proxiesCount}</span>
+                </span>
+              </Tabs.Trigger>
             </Tabs.List>
           </Box>
           <Tabs.Content value="accounts">
             <ChainAccountsList accounts={accounts} />
           </Tabs.Content>
           <Tabs.Content value="proxies">
-            {hasProxies ? (
-              <ProxiesList canCreateProxy={canCreateProxy} wallet={wallet} className="h-[361px]" />
-            ) : (
-              <NoProxiesAction
-                className="h-[361px]"
-                canCreateProxy={canCreateProxy}
-                onAddProxy={addProxy.events.flowStarted}
-              />
-            )}
+            <ProxiesList
+              wallet={wallet}
+              hasProxies={hasProxies}
+              canCreateProxy={canCreateProxy}
+              className="h-[361px]"
+            />
           </Tabs.Content>
         </Tabs>
       </Modal.Content>
-
-      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
-      <AddProxy wallet={wallet} />
-      <AddPureProxied wallet={wallet} />
     </Modal>
   );
 };

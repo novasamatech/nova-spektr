@@ -14,18 +14,14 @@ import {
 import { truncate } from './strings';
 
 /**
- * Format address or accountId with prefix and chunk size Example: chunk = 6,
- * would produce address like 1ChFWe...X7iTVZ.
- *
- * Use it only for ui formatting.
+ * Format address or accountId with prefix. Use it only for ui purposes.
  *
  * @param value Account address or accountId
  * @param params Chunk and prefix (default is 42)
  *
  * @returns {String}
  */
-export const toAddress = (value: string, params?: { chunk?: number; prefix?: number }): Address => {
-  const chunkValue = params?.chunk;
+export const toAddress = (value: string, params?: { prefix?: number }): Address => {
   const prefixValue = params?.prefix ?? SS58_DEFAULT_PREFIX;
 
   let address = '';
@@ -35,7 +31,7 @@ export const toAddress = (value: string, params?: { chunk?: number; prefix?: num
     address = value;
   }
 
-  return chunkValue ? toShortAddress(address, chunkValue) : address;
+  return address as Address;
 };
 
 /**
@@ -47,7 +43,7 @@ export const toAddress = (value: string, params?: { chunk?: number; prefix?: num
  *
  * @returns {String}
  */
-export const toShortAddress = (address: Address, chunk = 6): string => {
+export const toShortAddress = (address: string, chunk = 6): string => {
   return address.length < 13 ? address : truncate(address, chunk, chunk);
 };
 
@@ -58,9 +54,9 @@ export const toShortAddress = (address: Address, chunk = 6): string => {
  *
  * @returns {String}
  */
-export const toAccountId = (address: Address): AccountId => {
+export const toAccountId = (value: string): AccountId => {
   try {
-    return u8aToHex(decodeAddress(address)) as AccountId;
+    return u8aToHex(decodeAddress(value)) as AccountId;
   } catch {
     // TODO WTF
     return '0x00' as AccountId;
@@ -82,7 +78,7 @@ export const isCorrectAccountId = (accountId?: HexString): boolean => {
   return trimmedValue.length === PUBLIC_KEY_LENGTH && /^[0-9a-fA-F]+$/.test(trimmedValue);
 };
 
-export const isSubstrateAccountId = (accountId?: HexString): boolean => {
+export const isSubstrateAccountId = (accountId?: string): boolean => {
   if (!accountId) return false;
 
   try {
@@ -92,7 +88,7 @@ export const isSubstrateAccountId = (accountId?: HexString): boolean => {
   }
 };
 
-export const isEthereumAccountId = (accountId?: HexString): boolean => {
+export const isEthereumAccountId = (accountId?: string): boolean => {
   if (!accountId) return false;
 
   try {
@@ -121,7 +117,7 @@ export function isEvmChain(chain: Chain): boolean {
  *
  * @returns {Boolean}
  */
-export const validateAddress = (address: Address | AccountId, chain?: Chain): boolean => {
+export const validateAddress = (address: string, chain?: Chain): address is Address => {
   // TODO: Only to support previous version. Make `chain` mandatory after refactoring all places of use
   if (!chain) {
     return validateEvmAddress(address) || validateSubstrateAddress(address);
@@ -130,7 +126,7 @@ export const validateAddress = (address: Address | AccountId, chain?: Chain): bo
   return isEvmChain(chain) ? validateEvmAddress(address) : validateSubstrateAddress(address);
 };
 
-const validateSubstrateAddress = (address: Address | AccountId): boolean => {
+const validateSubstrateAddress = (address: string): boolean => {
   if (isU8a(address) || isHex(address)) {
     return u8aToU8a(address).length === PUBLIC_KEY_LENGTH_BYTES;
   }
@@ -147,7 +143,7 @@ const validateSubstrateAddress = (address: Address | AccountId): boolean => {
   }
 };
 
-const validateEvmAddress = (address: Address | AccountId): boolean => {
+const validateEvmAddress = (address: string): boolean => {
   if (!isU8a(address) && !isHex(address)) return false;
 
   return u8aToU8a(address).length === ETHEREUM_PUBLIC_KEY_LENGTH_BYTES;

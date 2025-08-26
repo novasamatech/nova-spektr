@@ -1,8 +1,10 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
+import { t } from 'i18next';
 
-import { type Account } from '@/shared/core';
 import { formatAmount } from '@/shared/lib/utils';
+import { createTxValidator } from '@/shared/transactions';
+import { type AnyAccount } from '@/domains/network';
 import {
   type AmountFeeStore,
   type BondAmountBalanceStore,
@@ -27,7 +29,7 @@ export const BondExtraRules = {
     }),
     noBondBalance: (source: Store<ShardsBondBalanceStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'noBondBalance',
-      errorText: 'staking.bond.noBondBalanceError',
+      errorText: t('staking.bond.noBondBalanceError'),
       source,
       validator: (shards: any[], form: any, { isProxy, network, accountsBalances }: ShardsBondBalanceStore) => {
         if (isProxy || shards.length === 1) return true;
@@ -42,9 +44,9 @@ export const BondExtraRules = {
   signatory: {
     noSignatorySelected: (source: Store<boolean>) => ({
       name: 'noSignatorySelected',
-      errorText: 'transfer.noSignatoryError',
+      errorText: t('transfer.noSignatoryError'),
       source,
-      validator: (signatory: Account, _: any, isMultisig: boolean) => {
+      validator: (signatory: AnyAccount, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
 
         return Object.keys(signatory).length > 0;
@@ -52,7 +54,7 @@ export const BondExtraRules = {
     }),
     notEnoughTokens: (source: Store<SignatoryFeeStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
       source,
       validator: (_s: any, _f: any, { feeData, isMultisig, signatoryBalance }: SignatoryFeeStore) => {
         if (!isMultisig) return true;
@@ -66,18 +68,18 @@ export const BondExtraRules = {
   amount: {
     required: {
       name: 'required',
-      errorText: 'transfer.requiredAmountError',
+      errorText: t('transfer.requiredAmountError'),
       validator: Boolean,
     },
 
     notZero: {
       name: 'notZero',
-      errorText: 'transfer.notZeroAmountError',
+      errorText: t('transfer.notZeroAmountError'),
       validator: balanceValidation.isNonZeroBalance,
     },
     notEnoughBalance: (source: Store<BondAmountBalanceStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'notEnoughBalance',
-      errorText: 'staking.notEnoughBalanceError',
+      errorText: t('staking.notEnoughBalanceError'),
       source,
       validator: (amount: string, _: any, { network, bondBalanceRange }: BondAmountBalanceStore) => {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
@@ -90,7 +92,7 @@ export const BondExtraRules = {
     }),
     insufficientBalanceForFee: (source: Store<AmountFeeStore>, config: Config = { withFormatAmount: true }) => ({
       name: 'insufficientBalanceForFee',
-      errorText: 'transfer.notEnoughBalanceForFeeError',
+      errorText: t('transfer.notEnoughBalanceForFeeError'),
       source,
       validator: (amount: string, form: any, { network, feeData, isMultisig, accountsBalances }: AmountFeeStore) => {
         if (isMultisig) return true;
@@ -99,7 +101,7 @@ export const BondExtraRules = {
         const value = config?.withFormatAmount ? formatAmount(amount, network.asset.precision) : amount;
         const amountBN = new BN(value);
 
-        return form.shards.every((_: Account, index: number) => {
+        return form.shards.every((_: AnyAccount, index: number) => {
           return amountBN.add(feeBN).lte(new BN(accountsBalances[index]));
         });
       },
@@ -108,8 +110,10 @@ export const BondExtraRules = {
   description: {
     maxLength: {
       name: 'maxLength',
-      errorText: 'transfer.descriptionLengthError',
+      errorText: t('transfer.descriptionLengthError'),
       validator: descriptionValidation.isMaxLength,
     },
   },
 };
+
+export const bondExtraValidator = createTxValidator();

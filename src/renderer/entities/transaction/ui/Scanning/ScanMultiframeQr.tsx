@@ -1,24 +1,28 @@
-import { type ApiPromise } from '@polkadot/api';
 import { u8aConcat } from '@polkadot/util';
-import init, { Encoder } from 'raptorq/raptorq';
-import { useEffect, useState } from 'react';
+import { encodeAddress } from '@polkadot/util-crypto';
+import { useEffect, useRef, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type Address, type ChainId, type Wallet } from '@/shared/core';
+import { type ChainId, SigningType, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { type TxMetadata, createTxMetadata, toAddress, upgradeNonce } from '@/shared/lib/utils';
+import { type TxMetadata, createTxMetadata, upgradeNonce } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
+import { Box, Tabs } from '@/shared/ui-kit';
 import { accountUtils, walletUtils } from '@/entities/wallet';
-import { type SigningPayload } from '@/features/operations/OperationSign';
+import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
 import { transactionService } from '../../lib';
-import { QrMultiframeGenerator } from '../QrCode/QrGenerator/QrMultiframeTxGenerator';
-import { createMultipleSignPayload, createSubstrateSignPayload } from '../QrCode/QrGenerator/common/utils';
+import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
+import {
+  createMultipleSignPayload,
+  createSubstrateSignPayload,
+  createSubstrateSignWithProofPayload,
+} from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
 
 type Props = {
-  apis: Record<ChainId, ApiPromise>;
-  signingPayloads: SigningPayload[];
+  signingPayloads: ExtrinsicSigningPayload[];
   countdown: number;
   signerWallet: Wallet;
   onGoBack: () => void;
@@ -27,7 +31,6 @@ type Props = {
 };
 
 export const ScanMultiframeQr = ({
-  apis,
   signingPayloads,
   signerWallet,
   countdown,
@@ -36,72 +39,99 @@ export const ScanMultiframeQr = ({
   onResult,
 }: Props) => {
   const { t } = useI18n();
+  const [tab, setTab] = useState('new');
+  const prevTab = useRef<string>(null);
 
-  const [encoder, setEncoder] = useState<Encoder>();
-  const [bulkTransactions, setBulkTransactions] = useState<Uint8Array>();
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
+  const [qrPayload, setQrPayload] = useState<Uint8Array>();
+
+  const isPV = signingPayloads[0].signatory.signingType === SigningType.POLKADOT_VAULT;
+  const isMetadataProofsSupported = signingPayloads[0].chain.additional?.supportsGenericLedgerApp ?? false;
 
   useEffect(() => {
-    if (txPayloads.length) return;
+    if (txPayloads.length && qrPayload && tab === prevTab.current) return;
+    prevTab.current = tab;
 
     setupTransactions().catch(() => console.warn('ScanMultiQr | setupTransactions() failed'));
-  }, []);
+  }, [txPayloads, qrPayload, tab]);
 
   const setupTransactions = async (): Promise<void> => {
-    const metadataMap: Record<Address, Record<ChainId, TxMetadata>> = {};
+    const metadataMap: Record<AccountId, Record<ChainId, TxMetadata>> = {};
 
     for (const signingPayload of signingPayloads) {
-      const accountId = signingPayload.account.accountId;
+      const accountId = signingPayload.signatory.accountId;
+      const chainId = signingPayload.chain.chainId;
 
       if (!metadataMap[accountId]) {
         metadataMap[accountId] = {};
       }
 
-      if (!metadataMap[accountId][signingPayload.chain.chainId]) {
-        metadataMap[accountId][signingPayload.chain.chainId] = await createTxMetadata(
-          signingPayload.account.accountId,
-          apis[signingPayload.chain.chainId],
+      if (!metadataMap[accountId][chainId]) {
+        metadataMap[accountId][chainId] = await createTxMetadata(
+          signingPayload.signatory.accountId,
+          signingPayload.api,
         );
       }
     }
 
-    const transactionPromises = signingPayloads.map((signingPayload) => {
-      const chainId = signingPayload.chain.chainId;
-      const api = apis[chainId];
-      const accountId = signingPayload.account.accountId;
-
-      const info = transactionService.createPayloadWithMetadata(
-        signingPayload.transaction,
-        api,
-        metadataMap[accountId][chainId],
-      );
-
-      metadataMap[accountId][chainId] = upgradeNonce(metadataMap[accountId][chainId], 1);
-
+    const transactionPromises = signingPayloads.map(async (signingPayload, nonceIncrement) => {
+      const signatory = signingPayload.signatory;
       const address = walletUtils.isPolkadotVault(signerWallet)
-        ? toAddress(signerWallet.rootAccountId, { prefix: 1 })
-        : toAddress(signingPayload.account.accountId, { prefix: signingPayload.chain.addressPrefix });
+        ? encodeAddress(signerWallet.rootAccountId)
+        : encodeAddress(signatory.accountId, signingPayload.chain.addressPrefix);
 
       const derivationPath =
-        accountUtils.isVaultShardAccount(signingPayload.account) ||
-        accountUtils.isVaultChainAccount(signingPayload.account)
-          ? signingPayload.account.derivationPath
+        accountUtils.isVaultShardAccount(signatory) || accountUtils.isVaultChainAccount(signatory)
+          ? signatory.derivationPath
           : undefined;
 
-      const signPayload = createSubstrateSignPayload(
-        address,
-        info.payload,
-        chainId,
-        signingPayload.account.signingType,
-        derivationPath,
-        signingPayload.account.cryptoType,
-      );
+      if (tab === 'new' && isMetadataProofsSupported) {
+        const info = await transactionService.createPayloadWithProof(
+          signingPayload.extrinsic,
+          signatory.accountId,
+          signingPayload.api,
+          nonceIncrement,
+        );
+        const signPayload = createSubstrateSignWithProofPayload(
+          encodeAddress(signatory.accountId, signingPayload.chain.addressPrefix),
+          info.metadataProof,
+          info.payload,
+          signingPayload.chain.chainId,
+          signatory.signingType,
+          derivationPath,
+          signatory.cryptoType,
+        );
 
-      return {
-        info,
-        signPayload,
-        transactionData: signingPayload.transaction,
-      };
+        return {
+          info,
+          signPayload,
+        };
+      } else {
+        const chainId = signingPayload.chain.chainId;
+        const accountId = signatory.accountId;
+
+        const info = transactionService.createPayloadWithMetadata(
+          signingPayload.extrinsic,
+          signingPayload.api,
+          metadataMap[accountId][chainId],
+        );
+
+        metadataMap[accountId][chainId] = upgradeNonce(metadataMap[accountId][chainId], 1);
+
+        const signPayload = createSubstrateSignPayload(
+          address,
+          info.payload,
+          chainId,
+          signatory.signingType,
+          derivationPath,
+          signatory.cryptoType,
+        );
+
+        return {
+          info,
+          signPayload,
+        };
+      }
     });
 
     const txRequests = await Promise.all(transactionPromises);
@@ -110,38 +140,46 @@ export const ScanMultiframeQr = ({
 
     transactionService.logPayload(txRequests.map(({ info }) => info));
 
-    await init();
-
     const transactionsEncoded = u8aConcat(
       TRANSACTION_BULK.encode({ TransactionBulk: 'V1', payload: txRequests.map((t) => t.signPayload) }),
     );
     const bulk = createMultipleSignPayload(transactionsEncoded);
 
-    setBulkTransactions(bulk);
+    setQrPayload(bulk);
     setTxPayloads(txRequests.map((t) => t.info.payload));
-    setEncoder(Encoder.with_defaults(bulk, 128));
   };
 
-  useEffect(onResetCountdown, [bulkTransactions]);
-
-  const bulkTxExist = bulkTransactions && bulkTransactions.length > 0;
+  useEffect(onResetCountdown, [qrPayload]);
 
   return (
     <>
       <QrGeneratorContainer
         countdown={countdown}
         chainId={signingPayloads[0].chain.chainId}
+        isLegacyQR={tab === 'legacy'}
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
         onQrReset={setupTransactions}
       >
-        {bulkTxExist && encoder && <QrMultiframeGenerator payload={bulkTransactions} size={200} encoder={encoder} />}
+        {isMetadataProofsSupported && (
+          <Tabs value={tab} onChange={setTab}>
+            <Box shrink={0} fitContainer>
+              <Tabs.List>
+                <Tabs.Trigger value="new">
+                  {t('signing.qrNewVaultTitle', { version: isPV ? '7.1' : '7.0' })}
+                </Tabs.Trigger>
+                <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
+              </Tabs.List>
+            </Box>
+          </Tabs>
+        )}
+        <QrTxGenerator payload={qrPayload} size="200px" />
       </QrGeneratorContainer>
 
       <div className="mt-3 flex w-full justify-between">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
-        <Button disabled={!bulkTxExist || countdown === 0} onClick={() => onResult(txPayloads)}>
+        <Button disabled={!qrPayload || countdown === 0} onClick={() => onResult(txPayloads)}>
           {t('signing.continueButton')}
         </Button>
       </div>

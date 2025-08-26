@@ -1,35 +1,32 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { BN } from '@polkadot/util';
+import { combine, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type Chain, type Transaction } from '@/shared/core';
-import { nonNullable, nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createTxStore } from '@/shared/transactions';
-import { type AnyAccount } from '@/domains/network';
-import { multisigUtils } from '@/entities/multisig';
+import { getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
+import { createFeeCalculator, createMultisigDeposit } from '@/shared/transactions';
+import { type AnyAccount, type MultisigOperation, multisigOperationService } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
-import { walletModel, walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 
 import { operationsContextModel } from './context';
 
 type GetMultisigType = {
-  signerAccountId: AccountId;
-  chain: Chain;
-  tx: MultisigTransactionDS;
+  signer: AnyAccount | null;
+  chain: Chain | null;
+  operation: MultisigOperation | null;
 };
 
-const flow = createGate<{ chain: Chain | null; signer: AnyAccount | null }>({
-  defaultState: { chain: null, signer: null },
+const flow = createGate<GetMultisigType>({
+  defaultState: { chain: null, signer: null, operation: null },
 });
 
-const getMultisigTx = createEvent<GetMultisigType>();
-
 const $transaction = createStore<Transaction | null>(null).reset(flow.open);
-const $chain = flow.state.map(({ chain }) => chain);
-const $signer = flow.state.map(({ signer }) => signer);
+
+const $chain = flow.state.map(state => state.chain);
+const $signatory = flow.state.map(state => state.signer);
+const $operation = flow.state.map(state => state.operation);
 
 const $api = combine(
   {
@@ -37,85 +34,80 @@ const $api = combine(
     chain: $chain,
   },
   ({ apis, chain }) => {
-    if (!chain) return null;
+    if (!chain?.chainId) return null;
 
     return apis[chain.chainId] ?? null;
   },
 );
 
-const $transferTx = combine(
-  {
-    account: operationsContextModel.$account,
-    wallet: walletSelect.$selectedWallet,
-    chain: $chain,
-    signer: $signer,
-  },
-  ({ account, signer, chain, wallet }) => {
-    if (nullable(account) || walletUtils.isFlexibleMultisig(wallet) || nullable(chain) || nullable(signer)) {
-      return null;
-    }
-
-    return transactionBuilder.buildTransfer({
-      chain,
-      asset: chain.assets.at(0)!,
-      accountId: account!.accountId,
-      destination: signer.accountId,
-      transferAll: true,
-      amount: '0',
-    });
-  },
-);
-
-const { $wrappedTx } = createTxStore({
-  $api,
-  $chain,
-  $activeWallet: walletModel.$activeWallet,
-  $wallets: walletModel.$wallets,
-  $signatory: $signer,
-  $account: operationsContextModel.$account,
-  $coreTx: $transferTx,
-});
-
 sample({
-  clock: getMultisigTx,
+  clock: flow.open,
   source: {
-    account: operationsContextModel.$account,
-    wallet: walletSelect.$selectedWallet,
-    wrappedTx: $wrappedTx,
+    multisigAccount: operationsContextModel.$multisigAccount,
+    signatory: $signatory,
+    chain: $chain,
+    operation: $operation,
   },
-  filter: ({ account }) => nonNullable(account),
-  fn: ({ account, wrappedTx, wallet }, { signerAccountId, chain, tx }) => {
-    const otherSignatories = multisigUtils.getOtherSignatories(account!, signerAccountId);
-
-    if (walletUtils.isFlexibleMultisig(wallet) && !wallet.activated && wrappedTx) {
-      return transactionBuilder.buildRejectFlexibleMultisigTx({
-        chain,
-        signerAccountId,
-        threshold: account!.threshold,
-        accountId: account!.accountId,
-        transaction: wrappedTx.wrappedTx,
-        otherSignatories,
-        tx,
-      });
-    }
+  filter: ({ multisigAccount }) => nonNullable(multisigAccount),
+  fn: ({ multisigAccount, chain, operation, signatory }) => {
+    if (!operation || !chain || !signatory || !multisigAccount) return null;
+    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, signatory.accountId);
 
     return transactionBuilder.buildRejectMultisigTx({
       chain,
-      signerAccountId,
-      threshold: account!.threshold,
+      signerAccountId: signatory.accountId,
+      threshold: multisigAccount.threshold,
       otherSignatories,
-      tx,
+      tx: operation,
     });
   },
   target: $transaction,
 });
 
+const $extrinsic = combine($api, $transaction, (api, tx) => {
+  if (nullable(api) || nullable(tx)) return null;
+  return getExtrinsic[tx.type](tx.args, api);
+});
+
+const { $: $fee, $pending: $isFeeLoading } = createFeeCalculator({
+  extrinsic: $extrinsic,
+});
+
+const $isEnoughBalance = combine(
+  {
+    api: $api,
+    transaction: $transaction,
+    signatory: $signatory,
+    balances: balanceModel.$balanceMap,
+    chain: $chain,
+    fee: $fee,
+  },
+  ({ signatory, balances, chain, fee }) => {
+    if (!signatory?.accountId || !chain || !fee) {
+      return false;
+    }
+
+    const nativeAsset = getNativeAsset(chain.assets);
+    const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, nativeAsset.assetId);
+
+    if (!balance) {
+      return false;
+    }
+
+    return new BN(fee).lte(new BN(transferableAmount(balance)));
+  },
+);
+const { $multisigDeposit, $pending: $pendingMultisigDepositFee } = createMultisigDeposit({
+  $api: $api,
+  $threshold: operationsContextModel.$multisigAccount.map(account => account?.threshold ?? null),
+});
+
 export const rejectModel = {
   flow,
   $transaction,
-  $wrappedTx,
-
-  events: {
-    getMultisigTx,
-  },
+  $fee,
+  $isFeeLoading,
+  $isDepositLoading: $pendingMultisigDepositFee,
+  $isEnoughBalance,
+  $multisigDeposit,
 };

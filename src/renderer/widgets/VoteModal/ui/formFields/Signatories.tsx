@@ -1,44 +1,70 @@
 import { BN_ZERO } from '@polkadot/util';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
-import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { SignatorySelect } from '@/shared/ui-entities';
+import { type AnyAccount } from '@/domains/network';
+import { balanceUtils } from '@/entities/balance';
 import { locksService } from '@/entities/governance';
-import { SignatorySelector } from '@/entities/operations';
 
 type Props = {
-  value: Account | null;
-  signatories: { account: Account; balance: Balance | null }[];
+  value: AnyAccount | null;
+  signatories: AnyAccount[];
+  initiator: AnyAccount | null;
+  allAccounts: AnyAccount[];
+  allWallets: Wallet[];
+  balances: BalanceMap;
   hasError: boolean;
   errorText: string;
   asset: Asset;
   chain: Chain;
-  onChange: (value: Account) => void;
+  onChange: (value: AnyAccount) => void;
 };
 
-export const Signatories = ({ value, asset, chain, signatories, hasError, errorText, onChange }: Props) => {
-  const { t } = useI18n();
+export const Signatories = memo(
+  ({
+    value,
+    asset,
+    chain,
+    balances,
+    signatories,
+    hasError,
+    errorText,
+    onChange,
+    allAccounts,
+    allWallets,
+    initiator,
+  }: Props) => {
+    const { t } = useI18n();
 
-  const fixedSignatories = useMemo(() => {
-    return signatories.map(({ account, balance }) => {
-      const availableBalance = balance ? locksService.getAvailableBalance(balance) : BN_ZERO;
+    const fixedSignatories = useMemo(() => {
+      return signatories.map((account) => {
+        const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId);
+        const availableBalance = balance ? locksService.getAvailableBalance(balance).toString() : BN_ZERO.toString();
 
-      return {
-        signer: account,
-        balance: availableBalance,
-      };
-    });
-  }, [signatories]);
+        return {
+          account: account,
+          balance: availableBalance,
+        };
+      });
+    }, [signatories]);
 
-  return (
-    <SignatorySelector
-      signatory={value}
-      signatories={fixedSignatories}
-      asset={asset}
-      addressPrefix={chain.addressPrefix}
-      hasError={hasError}
-      errorText={t(errorText)}
-      onChange={onChange}
-    />
-  );
-};
+    return (
+      <SignatorySelect
+        network={{
+          chain,
+          asset,
+        }}
+        signatory={value}
+        allAccounts={allAccounts}
+        allWallets={allWallets}
+        initiator={initiator}
+        signatories={fixedSignatories}
+        hasError={hasError}
+        errorText={t(errorText)}
+        onChange={onChange}
+      />
+    );
+  },
+);

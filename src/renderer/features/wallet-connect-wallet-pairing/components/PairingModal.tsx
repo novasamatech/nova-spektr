@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { type PropsWithChildren, memo, useEffect } from 'react';
 
 import { type StatusModalProps, useStatusContext } from '@/app/providers';
@@ -31,9 +31,9 @@ const showCompleteStatus = (t: TFunction, showStatus: (props: StatusModalProps) 
       content: (
         <div className="flex h-20 items-center justify-center gap-1">
           <Icon name="logo" size={56} />
-          <div className="h-0 w-3 rounded border-[1.5px] border-text-positive"></div>
+          <div className="h-0 w-3 rounded-sm border-[1.5px] border-text-positive"></div>
           <Icon name="checkmarkOutline" className="text-text-positive" size={18} />
-          <div className="h-0 w-3 rounded border-[1.5px] border-text-positive"></div>
+          <div className="h-0 w-3 rounded-sm border-[1.5px] border-text-positive"></div>
           <Icon name={WalletLogo[type]} size={56} />
         </div>
       ),
@@ -109,7 +109,7 @@ export const PairingModal = memo(({ variant, children }: Props) => {
         <Carousel item={step.toString()} fixedHeight>
           <Carousel.Item id={Step.SCAN.toString()} index={0}>
             <div className="flex h-full w-full">
-              <div className="flex w-full min-w-96 max-w-[472px] flex-col rounded-l-lg bg-white px-5 py-4">
+              <div className="flex w-full max-w-[472px] min-w-96 flex-col rounded-l-lg bg-white px-5 py-4">
                 <HeaderTitleText className="mb-10">{header}</HeaderTitleText>
                 <SmallTitleText className="mb-6">{scanTitle}</SmallTitleText>
 

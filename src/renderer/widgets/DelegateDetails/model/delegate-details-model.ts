@@ -1,12 +1,15 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import uniq from 'lodash/uniq';
+import { uniq } from 'lodash';
 import { combineEvents } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { entries, keys } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { createInitiatorsStore } from '@/shared/transactions';
+import { accountService } from '@/domains/network';
 import { votingService } from '@/entities/governance';
-import { accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
+import { permissionUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import {
   delegateRegistryAggregate,
   delegationAggregate,
@@ -28,24 +31,24 @@ const $delegate = restore(flowStarted, null).reset(flowStarted);
 const closeModal = $isModalOpen.reinit;
 const closeDelegationsModal = $isDelegationsOpen.reinit;
 
+const $initiators = createInitiatorsStore({
+  chain: networkSelectorModel.$governanceChain,
+  accounts: walletSelect.$selectedAccounts,
+});
+
 const $activeTracks = combine(
   {
     delegate: $delegate,
     votes: votingAggregate.$activeWalletVotes,
-    chain: networkSelectorModel.$governanceChain,
   },
-  ({ delegate, votes, chain }) => {
+  ({ delegate, votes }) => {
     const activeTracks: Record<AccountId, Set<string>> = {};
 
-    for (const [voterAccountId, voteList] of Object.entries(votes)) {
-      const accountId = voterAccountId as AccountId;
-
-      for (const [key, vote] of Object.entries(voteList)) {
+    for (const [accountId, voteList] of entries(votes)) {
+      for (const [key, vote] of entries(voteList)) {
         if (!votingService.isDelegating(vote)) continue;
 
-        const target = toAddress(toAccountId(vote.target), { prefix: chain?.addressPrefix });
-
-        if (votingService.isDelegating(vote) && target === delegate?.accountId) {
+        if (votingService.isDelegating(vote) && vote.target === delegate?.accountId) {
           if (!activeTracks[accountId]) {
             activeTracks[accountId] = new Set();
           }
@@ -71,30 +74,23 @@ const $activeDelegations = combine(
   },
 );
 
-const $activeAccounts = $activeDelegations.map(Object.keys);
+const $activeAccounts = $activeDelegations.map(keys);
 
-const $canDelegate = walletModel.$activeWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
+const $canDelegate = walletSelect.$selectedWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
 
 const $isAddAvailable = combine(
   {
     activeAccounts: $activeAccounts,
-    activeWallet: walletModel.$activeWallet,
+    accounts: walletSelect.$selectedAccounts,
     chain: networkSelectorModel.$governanceChain,
     canDelegate: $canDelegate,
   },
-  ({ canDelegate, activeAccounts, activeWallet, chain }) => {
-    if (!chain || !activeWallet) return false;
+  ({ canDelegate, activeAccounts, accounts, chain }) => {
+    if (!chain) return false;
 
-    const accounts = activeWallet?.accounts.filter((account) => {
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, chain);
-      const isNonBaseVaultAccount = accountUtils.isNonBaseVaultAccount(account, activeWallet);
+    const filteredAccounts = accountService.filterAccountsOnChain(accounts, chain);
 
-      return isChainAndCryptoMatch && isNonBaseVaultAccount;
-    });
-
-    const freeAccounts = accounts.filter(
-      (account) => !activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
-    );
+    const freeAccounts = filteredAccounts.filter((account) => !activeAccounts.includes(account.accountId));
 
     return canDelegate && freeAccounts.length > 0;
   },
@@ -134,7 +130,7 @@ sample({
   clock: flowStarted,
   fn: (delegate) => {
     return {
-      addresses: [delegate.accountId],
+      accounts: [delegate.accountId],
     };
   },
   target: proposerIdentityAggregate.events.requestProposers,
@@ -170,6 +166,7 @@ export const delegateDetailsModel = {
   $activeTracks,
   $uniqueTracks,
   $activeDelegations,
+  $initiators,
 
   $isAddAvailable,
   $isEditAvailable: $isRevokeAvailable,

@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, toAccountId } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { Alert, Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
 import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
@@ -28,31 +28,14 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
   const error = useUnit(confirmModel.$error);
 
-  const confirmStore = useStoreMap({
-    store: confirmModel.$confirmStore,
+  const confirms = useUnit(confirmModel.$confirms);
+  const confirm = useStoreMap({
+    store: confirmModel.$confirmMap,
     keys: [id],
-    fn: (value, [id]) => value?.[id],
+    fn: (value, [id]) => value[id],
   });
 
-  const initiatorWallet = useStoreMap({
-    store: confirmModel.$initiatorWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
-  const signerWallet = useStoreMap({
-    store: confirmModel.$signerWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
-  const isXcm = useStoreMap({
-    store: confirmModel.$isXcm,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
-  if (!confirmStore) {
+  if (!confirm) {
     return (
       <Box verticalAlign="center" horizontalAlign="center" height="200px">
         <Loader color="primary" />
@@ -60,55 +43,50 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     );
   }
 
-  if (!initiatorWallet) {
-    return null;
-  }
+  const {
+    meta,
+    wallets: { signatory },
+  } = confirm;
+  const isXcm = meta.destinationChain.chainId !== meta.chain.chainId;
+  const multisigAccount = meta.route.find(accountUtils.isMultisigAccount) ?? null;
+  const initiators = confirms.map((confirm) => confirm.meta.initiator);
+  const nativeAsset = getNativeAsset(meta.chain.assets);
 
   return (
-    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+    <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={isXcm ? 'crossChainConfirm' : 'transferConfirm'} size={60} />
 
         <div className="flex flex-col items-center gap-y-1">
           <AssetBalance
-            value={confirmStore.amount}
-            asset={confirmStore.asset}
-            className="font-manrope text-[32px] font-bold leading-[36px] text-text-primary"
+            value={meta.amount}
+            asset={meta.asset}
+            className="font-manrope text-[32px] leading-[36px] font-bold text-text-primary"
           />
-          <AssetFiatBalance asset={confirmStore.asset} amount={confirmStore.amount} className="text-headline" />
+          <AssetFiatBalance asset={meta.asset} amount={meta.amount} className="text-headline" />
         </div>
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />
 
-      <TransactionDetails
-        chain={confirmStore.chain}
-        wallets={wallets}
-        initiator={[confirmStore.account]}
-        signatory={confirmStore.signatory}
-        proxied={confirmStore.proxiedAccount}
-      >
+      <TransactionDetails chain={meta.chain} wallets={wallets} initiators={initiators} signatory={meta.signatory}>
         {isXcm && (
           <DetailRow label={t('operation.details.destinationChain')}>
             <ChainTitle
               className="px-2"
               fontClass="text-text-primary text-footnote"
-              chainId={confirmStore.xcmChain.chainId}
+              chainId={meta.destinationChain.chainId}
             />
           </DetailRow>
         )}
 
         <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
-          <Account
-            accountId={toAccountId(confirmStore.destination)}
-            chain={confirmStore.xcmChain || confirmStore.chain}
-            variant="short"
-          />
+          <Account accountId={toAccountId(meta.destination)} chain={meta.destinationChain} variant="short" />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />
 
-        {accountUtils.isMultisigAccount(confirmStore.account) && (
+        {multisigAccount && (
           <DetailRow
             className="text-text-primary"
             label={
@@ -127,8 +105,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.multisigDeposit} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.multisigDeposit} />
+              <AssetBalance value={meta.multisigDeposit} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={meta.multisigDeposit} />
             </div>
           </DetailRow>
         )}
@@ -139,8 +117,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
-            <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
+            <AssetBalance value={meta.fee} asset={nativeAsset} />
+            <AssetFiatBalance asset={nativeAsset} amount={meta.fee} />
           </div>
         </DetailRow>
 
@@ -150,20 +128,20 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             className="text-text-primary"
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.xcmFee} asset={confirmStore.xcmAsset} />
-              <AssetFiatBalance asset={confirmStore.xcmAsset} amount={confirmStore.xcmFee} />
+              <AssetBalance value={meta.xcmFee} asset={meta.asset} />
+              <AssetFiatBalance asset={meta.asset} amount={meta.xcmFee} />
             </div>
           </DetailRow>
         )}
 
-        {isXcm && nonNullable(confirmStore.deliveryFee) && (
+        {isXcm && nonNullable(meta.deliveryFee) && (
           <DetailRow
             label={<FootnoteText className="text-text-tertiary">{t('operation.deliveryFee')}</FootnoteText>}
             className="text-text-primary"
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.deliveryFee} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.deliveryFee} />
+              <AssetBalance value={meta.deliveryFee} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={meta.deliveryFee} />
             </div>
           </DetailRow>
         )}
@@ -185,8 +163,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(signerWallet || initiatorWallet).type}
-              onClick={confirmModel.events.confirmed}
+              type={signatory.type}
+              onClick={confirmModel.startSigning}
             />
           )}
         </div>

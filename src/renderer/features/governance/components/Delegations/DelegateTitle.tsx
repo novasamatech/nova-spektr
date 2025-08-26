@@ -1,7 +1,7 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { cnTw, nullable, toAccountId } from '@/shared/lib/utils';
+import { cnTw, nullable } from '@/shared/lib/utils';
 import { HeadlineText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { identity } from '@/domains/network';
@@ -17,11 +17,11 @@ export const DelegateTitle = ({ delegate, className }: Props) => {
 
   const delegateName = useStoreMap({
     store: identity.$list,
-    keys: [chain?.chainId, delegate.accountId, delegate.address],
-    fn: (identity, [chainId, accountId, address]) => {
+    keys: [chain?.chainId, delegate.accountId],
+    fn: (identity, [chainId, accountId]) => {
       if (nullable(chainId)) return null;
 
-      return delegate.name ?? identity[chainId]?.[toAccountId(address ?? accountId)]?.name ?? null;
+      return delegate.name ?? identity[chainId]?.[accountId]?.name ?? null;
     },
   });
 

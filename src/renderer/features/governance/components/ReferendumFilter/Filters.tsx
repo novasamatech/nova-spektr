@@ -22,7 +22,7 @@ export const Filters = () => {
 
   return (
     <Box direction="row" horizontalAlign="space-between" verticalAlign="center" shrink={0}>
-      <div className="grid grid-cols-[200px,104px] gap-x-4">
+      <div className="grid grid-cols-[200px_104px] gap-x-4">
         <MultiSelect
           placeholder={t('governance.filters.tracks')}
           multiPlaceholder={t('governance.filters.tracks')}

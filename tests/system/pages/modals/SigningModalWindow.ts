@@ -1,4 +1,5 @@
 import { type Page, expect } from '@playwright/test';
+import { step } from 'allure-js-commons';
 
 import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
@@ -13,10 +14,15 @@ export class SigningModalWindow extends BaseModal<SigningModalElements> {
   }
 
   public async checkQRCode(): Promise<void> {
-    expect(this.page.getByTestId(SigningModalElements.qrCodeContainerLocator)).toBeVisible();
+    await step('Check that QR Code is visible', async () => {
+      await expect(this.page.getByTestId(SigningModalElements.qrCodeContainerLocator)).toBeVisible();
+    });
   }
 
   public async checkSignReadyWalletConnect(): Promise<void> {
-    expect(this.page.getByText(SigningModalElements.signReadyWalletConnectLocator)).toBeVisible();
+    await step('Check that we are on signing page', async () => {
+      await this.checkForAlerts();
+      await expect(this.page.getByText(SigningModalElements.signReadyWalletConnectLocator)).toBeVisible();
+    });
   }
 }

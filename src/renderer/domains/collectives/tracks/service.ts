@@ -82,7 +82,6 @@ function getVoteWeight({
   track: TrackId;
 }) {
   const excessRank = getExcessRank(rank, maxRank, track);
-
   return calculateVoteWeightPipeline(0, { pallet, excessRank });
 }
 
@@ -222,11 +221,26 @@ function originNameFromTrack(track: Track): string {
   return capitalize(track.name);
 }
 
+export const getProposalTrack = (tracks: Track[], proposerMember: Member, wish: 'Promotion' | 'Retention'): number => {
+  if (wish === 'Retention') {
+    const currentTrack = tracks.find(t => t.id === proposerMember.rank);
+    return currentTrack?.id ?? 0;
+  }
+
+  if (wish === 'Promotion') {
+    const nextTrack = tracks.find(t => t.id === proposerMember.rank + 1);
+    return nextTrack?.id ?? 0;
+  }
+
+  return 0;
+};
+
 export const trackService = {
   isRetentionTrack,
   isPromotionTrack,
 
   getMinimumRank,
+  getExcessRank,
   getLinearVoteWeight,
   getGeometricVoteWeight,
   getVoteWeight,
@@ -236,4 +250,5 @@ export const trackService = {
   rankSatisfiesVotingThreshold,
   getReferendumTrackFromRank,
   originNameFromTrack,
+  getProposalTrack,
 };

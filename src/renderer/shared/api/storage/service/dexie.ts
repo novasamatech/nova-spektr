@@ -2,8 +2,6 @@ import { default as Dexie } from 'dexie';
 import { exportDB, importInto } from 'dexie-export-import';
 
 import {
-  type DataStorage,
-  type IStorage,
   type TAccount,
   type TAccount2,
   type TBalance,
@@ -11,24 +9,22 @@ import {
   type TConnection,
   type TContact,
   type TMetadata,
-  type TMultisigEvent,
-  type TMultisigTransaction,
+  type TMultisigOperations,
   type TNotification,
   type TProxy,
-  type TProxyGroup,
   type TWallet,
 } from '../lib/types';
 import {
   migrateAccounts,
+  migrateCASBasket,
+  migrateEVMAccountsCryptoType,
   migrateEvents,
   migrateMultishardAccounts,
   migrateMultisigAccounts,
   migratePVAccounts,
   migrateWallets,
+  removeDeprecatedProxiedAccounts,
 } from '../migration';
-
-import { useMultisigEventStorage } from './multisigEventStorage';
-import { useTransactionStorage } from './transactionStorage';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -41,12 +37,10 @@ class DexieStorage extends Dexie {
   accounts: TAccount;
   accounts2: TAccount2;
   contacts: TContact;
-  multisigTransactions: TMultisigTransaction;
-  multisigEvents: TMultisigEvent;
+  multisigOperations: TMultisigOperations;
   notifications: TNotification;
   metadata: TMetadata;
   proxies: TProxy;
-  proxyGroups: TProxyGroup;
   basketTransactions: TBasketTransaction;
 
   constructor() {
@@ -80,7 +74,6 @@ class DexieStorage extends Dexie {
 
     this.version(21).stores({
       proxies: '++id',
-      proxyGroups: '++id',
       connections: '++id',
       notifications: '++id',
       metadata: null,
@@ -118,38 +111,31 @@ class DexieStorage extends Dexie {
     this.version(28).upgrade(migratePVAccounts);
     this.version(29).upgrade(migrateMultishardAccounts);
 
+    this.version(30).stores({
+      multisigOperations: 'id',
+    });
+
+    this.version(31).upgrade(migrateCASBasket);
+
+    this.version(32).upgrade(migrateEVMAccountsCryptoType);
+
+    this.version(33).upgrade((t) => t.table('balances').clear());
+
+    this.version(34).upgrade(removeDeprecatedProxiedAccounts);
+
+    this.version(35).upgrade((t) => t.table('balances').clear());
+
     this.connections = this.table('connections');
     this.balances = this.table('balances');
     this.wallets = this.table('wallets');
     this.accounts = this.table('accounts');
     this.accounts2 = this.table('accounts2');
     this.contacts = this.table('contacts');
-    this.multisigTransactions = this.table('multisigTransactions');
-    this.multisigEvents = this.table('multisigEvents');
+    this.multisigOperations = this.table('multisigOperations');
     this.notifications = this.table('notifications');
     this.metadata = this.table('metadata');
     this.proxies = this.table('proxies');
-    this.proxyGroups = this.table('proxyGroups');
     this.basketTransactions = this.table('basketTransactions');
-  }
-}
-
-class StorageFactory implements IStorage {
-  private dexieDB: DexieStorage;
-
-  constructor(dexie: DexieStorage) {
-    this.dexieDB = dexie;
-  }
-
-  public connectTo<T extends keyof DataStorage>(name: T): DataStorage[T] | undefined {
-    switch (name) {
-      case 'multisigTransactions':
-        return useTransactionStorage(this.dexieDB.multisigTransactions) as DataStorage[T];
-      case 'multisigEvents':
-        return useMultisigEventStorage(this.dexieDB.multisigEvents) as DataStorage[T];
-      default:
-        return undefined;
-    }
   }
 }
 
@@ -158,7 +144,7 @@ const dexie = new DexieStorage();
 export const exportDb = async () => {
   const blob = await exportDB(dexie, {
     prettyJson: true,
-    skipTables: ['metadata', 'balances', 'proxies', 'proxyGroups', 'basketTransactions'],
+    skipTables: ['metadata', 'balances', 'proxies', 'basketTransactions'],
   });
 
   return { blob, fileName: 'spektr-database.json' };
@@ -172,8 +158,6 @@ export const deleteDb = async () => {
   await dexie.delete();
 };
 
-export const storage = new StorageFactory(dexie);
-
 export const dexieStorage = {
   wallets: dexie.wallets,
   accounts: dexie.accounts,
@@ -181,9 +165,9 @@ export const dexieStorage = {
   contacts: dexie.contacts,
   connections: dexie.connections,
   proxies: dexie.proxies,
-  proxyGroups: dexie.proxyGroups,
   notifications: dexie.notifications,
   metadata: dexie.metadata,
   balances: dexie.balances,
   basketTransactions: dexie.basketTransactions,
+  multisigOperations: dexie.multisigOperations,
 };

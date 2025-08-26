@@ -1,20 +1,22 @@
 import { BN_ZERO } from '@polkadot/util';
-import { useForm } from 'effector-forms';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
 import { type Asset, type Chain } from '@/shared/core';
+import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAsset } from '@/shared/lib/utils';
 import { Alert, ButtonCard, ConfirmModal, DetailRow, FootnoteText, LabelHelpBox, SmallTitleText } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
 import { Popover, Skeleton } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { LockPeriodDiff, LockValueDiff, votingService } from '@/entities/governance';
-import { walletUtils } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { walletModel } from '@/entities/wallet';
 import { locksPeriodsAggregate } from '@/features/governance';
-import { voteModalAggregate } from '../aggregates/voteModal';
+import { voteForm } from '../model/voteForm';
+import { voteModal } from '../model/voteModal';
 
 import { AboutVoting } from './AboutVoting';
 import { AccountsSelector } from './formFields/AccountsSelector';
@@ -30,21 +32,24 @@ type Props = {
 export const VoteForm = ({ chain, asset }: Props) => {
   const { t } = useI18n();
 
-  const lock = useUnit(voteModalAggregate.$lock);
+  const lock = useUnit(voteModal.$lock);
 
-  const existingVote = useUnit(voteModalAggregate.$existingVote);
-  const fee = useUnit(voteModalAggregate.transaction.$fee);
+  const existingVote = useUnit(voteModal.$existingVote);
+  const fee = useUnit(voteForm.$fee);
+  const errors = useUnit(voteForm.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
-  const availableBalance = useUnit(voteModalAggregate.$availableBalance);
-  const signatories = useUnit(voteModalAggregate.signatory.$available);
-  const accounts = useUnit(voteModalAggregate.accounts.$available);
-  const isMultisig = useUnit(voteModalAggregate.transaction.$isMultisig);
-  const isFeeLoading = useUnit(voteModalAggregate.transaction.$pendingFee);
-  const hasDelegatedTrack = useUnit(voteModalAggregate.$hasDelegatedTrack);
-  const wallet = useUnit(walletSelect.$selectedWallet);
+  const availableBalance = useUnit(voteForm.$availableBalance);
+  const signatories = useUnit(voteForm.$signatories);
+  const initiators = useUnit(voteForm.$initiators);
+  const isFeeLoading = useUnit(voteForm.$pendingFee);
+  const hasDelegatedTrack = useUnit(voteForm.$hasDelegatedTrack);
+  const balances = useUnit(balanceModel.$balanceMap);
+  const allWallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(accounts.$list);
 
   const lockPeriods = useStoreMap({
-    store: voteModalAggregate.$lockPeriods,
+    store: voteModal.$lockPeriods,
     keys: [chain.chainId],
     fn: (periods, [chainId]) => periods[chainId] ?? null,
   });
@@ -53,8 +58,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
 
   const {
     submit,
-    fields: { account, signatory, conviction, amount, decision },
-  } = useForm(voteModalAggregate.form);
+    fields: { initiator, signatory, conviction, amount, decision },
+  } = useForm(voteForm.form);
 
   const [showAbstainConfirm, toggleAbstainConfirm] = useToggle();
 
@@ -71,6 +76,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
   return (
     <>
       <div className="flex flex-col gap-6 px-5 py-4">
+        <TransactionValidationError errors={errors} wallets={wallets} />
         <div className="flex">
           <Popover align="start">
             <Popover.Trigger>
@@ -86,25 +92,30 @@ export const VoteForm = ({ chain, asset }: Props) => {
           </Popover>
         </div>
         <div className="flex flex-col gap-4">
-          {accounts.length > 1 && !walletUtils.isFlexibleMultisig(wallet) && (
+          {initiators.length > 1 && (
             <AccountsSelector
-              value={account.value}
+              value={initiator.value}
               asset={asset}
               chain={chain}
-              accounts={accounts}
-              hasError={account.hasError()}
-              errorText={t(account.errorText())}
-              onChange={account.onChange}
+              accounts={initiators}
+              balances={balances}
+              hasError={initiator.hasError}
+              errorText={t(initiator.errorMessage)}
+              onChange={initiator.onChange}
             />
           )}
-          {isMultisig && (
+          {signatories.length > 1 && (
             <Signatories
+              initiator={initiator.value}
+              allAccounts={allAccounts}
+              allWallets={allWallets}
               value={signatory.value}
               asset={asset}
               chain={chain}
+              balances={balances}
               signatories={signatories}
-              errorText={signatory.errorText()}
-              hasError={signatory.hasError()}
+              errorText={signatory.errorMessage}
+              hasError={signatory.hasError}
               onChange={signatory.onChange}
             />
           )}
@@ -112,8 +123,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
             value={amount.value}
             asset={asset}
             availableBalance={availableBalance}
-            hasError={amount.hasError()}
-            errorText={amount.errorText()}
+            hasError={amount.hasError}
+            errorText={amount.errorMessage}
             onChange={amount.onChange}
           />
           <ConvictionSelect

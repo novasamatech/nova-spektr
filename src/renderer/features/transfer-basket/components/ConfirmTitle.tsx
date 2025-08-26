@@ -1,12 +1,11 @@
 import { useUnit } from 'effector-react';
 
-import { type BasketTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
 import { OperationTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { isTransferTransaction, isXcmTransaction } from '@/entities/transaction';
-import { basketOperationsService } from '@/aggregates/basket-operations';
+import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 
 type Props = {
   transaction: BasketTransaction;

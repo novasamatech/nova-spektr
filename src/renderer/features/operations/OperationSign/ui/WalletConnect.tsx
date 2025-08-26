@@ -16,7 +16,7 @@ import { operationSignModel } from '../model/operation-sign-model';
 import { walletConnectSign } from '../model/walletConnectSign';
 
 export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, onGoBack, onResult }: SigningProps) => {
-  useGate(walletConnectSign.flow, { payloads: signingPayloads });
+  useGate(walletConnectSign.flow, { payloads: signingPayloads, accounts: signerWallet?.accounts ?? [] });
 
   const { t } = useI18n();
   const payload = signingPayloads[0];
@@ -28,7 +28,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
-  const account = payload.signatory || payload.account;
+  const account = payload.signatory;
 
   useGate(operationSignModel.SignerGate, account);
 
@@ -52,7 +52,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
       isVerified =
         transaction &&
-        transactionService.verifySignature(transaction.payload, signature as HexString, payload.account.accountId);
+        transactionService.verifySignature(transaction.payload, signature as HexString, payload.signatory.accountId);
       balanceValidationError = validateBalance && (await validateBalance());
     }
 
@@ -127,8 +127,8 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
         {validationError === ValidationErrors.EXPIRED && (
           <>
-            <div className="absolute bottom-0 left-0 right-0 top-0 bg-white opacity-70" />
-            <div className="absolute bottom-0 left-0 right-0 top-0 flex flex-col items-center justify-center gap-4">
+            <div className="absolute top-0 right-0 bottom-0 left-0 bg-white opacity-70" />
+            <div className="absolute top-0 right-0 bottom-0 left-0 flex flex-col items-center justify-center gap-4">
               <FootnoteText>{t('operation.walletConnect.expiredDescription')}</FootnoteText>
               <Button size="sm" onClick={onGoBack}>
                 {t('operation.walletConnect.tryAgainButton')}
@@ -138,7 +138,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
         )}
       </div>
 
-      <div className="mt-5 flex w-full justify-between">
+      <div className="flex w-full justify-between">
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>

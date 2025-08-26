@@ -3,9 +3,10 @@ import { combine, createEvent, sample } from 'effector';
 import { type TrackId, type VotingMap } from '@/shared/core';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { identity } from '@/domains/network';
+import { accountService, identity } from '@/domains/network';
 import { votingModel, votingService } from '@/entities/governance';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { networkSelectorModel } from '../model/networkSelector';
 
 import { tracksAggregate } from './tracks';
@@ -15,7 +16,7 @@ const requestVoting = createEvent<{ accounts: AccountId[]; tracks?: TrackId[] }>
 const $activeWalletVotes = combine(
   {
     voting: votingModel.$voting,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chain: networkSelectorModel.$governanceChain,
   },
   ({ voting, wallet, chain }): VotingMap => {
@@ -38,27 +39,29 @@ const $activeWalletVotes = combine(
 
 const $possibleAccountsForVoting = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chain: networkSelectorModel.$governanceChain,
   },
   ({ wallet, chain }) => {
     if (nullable(wallet) || nullable(chain)) return [];
 
     if (!walletUtils.isPolkadotVault(wallet)) {
-      return wallet.accounts.filter((a) => accountUtils.isChainAndCryptoMatch(a, chain));
+      return wallet.accounts.filter((a) => accountService.isAccountAvailableOnChain(a, chain));
     }
 
     const accounts = wallet.accounts.filter((a) => {
       return (
-        accountUtils.isChainAndCryptoMatch(a, chain) &&
-        (accountUtils.isVaultShardAccount(a) || accountUtils.isVaultChainAccount(a))
+        accountService.isAccountAvailableOnChain(a, chain) &&
+        (accountUtils.isVaultShardAccount(a) ||
+          accountUtils.isVaultChainAccount(a) ||
+          accountUtils.isFlexibleMultisigAccount(a))
       );
     });
 
     if (accounts.length > 0) return accounts;
 
     return wallet.accounts.filter((a) => {
-      return accountUtils.isVaultBaseAccount(a) && accountUtils.isChainAndCryptoMatch(a, chain);
+      return accountUtils.isVaultBaseAccount(a) && accountService.isAccountAvailableOnChain(a, chain);
     });
   },
 );
@@ -79,9 +82,9 @@ sample({
 });
 
 sample({
-  clock: [tracksAggregate.$tracks, walletModel.$activeWallet],
+  clock: [tracksAggregate.$tracks, walletSelect.$selectedWallet],
   source: {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chain: networkSelectorModel.$governanceChain,
   },
   filter: ({ wallet, chain }) => nonNullable(wallet) && nonNullable(chain),

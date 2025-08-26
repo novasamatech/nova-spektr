@@ -2,8 +2,9 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { Step, isStep, validateAddress } from '@/shared/lib/utils';
-import { BaseModal, Button, Icon, Identicon, InputHint } from '@/shared/ui';
+import { Step, isStep } from '@/shared/lib/utils';
+import { BaseModal, Button, InputHint } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 import { Field, Input } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { networkSelectorModel } from '@/features/governance';
@@ -18,8 +19,6 @@ export const AddCustomDelegationModel = () => {
   const customDelegate = useUnit(delegationModel.$customDelegate);
   const error = useUnit(delegationModel.$customError);
 
-  const isValidAddress = validateAddress(customDelegate);
-
   const [isModalOpen, closeModal] = useModalClose(
     isStep(step, Step.CUSTOM_DELEGATION),
     delegationModel.events.closeCustomModal,
@@ -27,11 +26,7 @@ export const AddCustomDelegationModel = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      {isValidAddress ? (
-        <Identicon size={20} address={customDelegate} background={false} />
-      ) : (
-        <Icon size={20} name="emptyIdenticon" />
-      )}
+      <Identicon size={20} value={customDelegate} background={false} />
     </div>
   );
 

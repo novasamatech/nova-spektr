@@ -1,313 +1,405 @@
 import { type ApiPromise } from '@polkadot/api';
-import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
-import mapValues from 'lodash/mapValues';
-import { combineEvents, once, previous, spread } from 'patronum';
+import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { produce } from 'immer';
+import { previous } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
-import { balanceMapper, storageService } from '@/shared/api/storage';
-import { type Balance, type Chain, type ChainId, type ConnectionStatus, type ID, type Wallet } from '@/shared/core';
-import { isFulfilled, nonNullable } from '@/shared/lib/utils';
+import { type BalanceDraft, type Chain, type ChainId, type Wallet } from '@/shared/core';
+import { series } from '@/shared/effector';
+import { entries, merge, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { accountService, accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { type AnyAccount, accountService } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubUtils } from '../lib/balance-sub-utils';
-import { type SubAccounts, type Subscriptions } from '../lib/types';
+import { type SubscriptionKey, type Subscriptions } from '../lib/types';
 
-const walletToUnsubSet = createEvent<Wallet>();
-const walletToSubSet = createEvent<Wallet>();
-const balancesUpdated = createEvent<Omit<Balance, 'id'>[]>();
+const subscribeWallet = createEvent<Wallet>();
+const unsubscribeWallet = createEvent<Wallet>();
+const fetchWallet = createEvent<Wallet>();
 
+const subscribeAccounts = createEvent<AnyAccount[]>();
+const unsubscribeAccounts = createEvent<AnyAccount[]>();
+const unsubscribeChain = createEvent<ChainId>();
+
+const fetchAccounts = createEvent<AnyAccount[]>();
+
+const updateBalances = createEvent<Omit<BalanceDraft, 'id'>[]>();
+
+// actual subscriptions map
 const $subscriptions = createStore<Subscriptions>({});
-const $subAccounts = createStore<SubAccounts>({});
-const $balancesBucket = createStore<Balance[]>([]);
+// subscribed accounts. this array exists because some chain can be in disconnected status and $subscriptions
+// doesn't represent subscription intention.
+const $subscribedAccounts = createStore<AnyAccount[]>([]);
 
-const $previousWallet = previous(walletModel.$activeWallet);
+// effects
 
-const populateBalancesFx = createEffect(async (accountIds: Set<AccountId>): Promise<Balance[]> => {
-  if (accountIds.size === 0) return Promise.resolve([]);
-
-  const balances = await storageService.balances.readAll();
-
-  return balances.filter((balance) => accountIds.has(balance.accountId)).map(balanceMapper.fromDB);
+type FetchAccountParam = {
+  api: ApiPromise;
+  chain: Chain;
+  accounts: AccountId[];
+};
+const fetchAccountsFx = createEffect(async ({ api, chain, accounts }: FetchAccountParam) => {
+  return Promise.all([
+    balanceService.fetchBalances(api, chain, accounts),
+    balanceService.fetchLockBalances(api, chain, accounts),
+  ]).then(([balances, lockBalances]) => balances.concat(lockBalances));
 });
 
-type UnsubWalletParams = {
-  walletId: ID;
-  subscriptions: Subscriptions;
+type SubscribeAccountParam = {
+  api: ApiPromise;
+  chain: Chain;
+  accountId: AccountId;
 };
-const unsubscribeWalletFx = createEffect(({ walletId, subscriptions }: UnsubWalletParams): Subscriptions => {
-  return Object.entries(subscriptions).reduce<Subscriptions>((acc, [chainId, walletMap]) => {
-    if (!walletMap || !walletMap[walletId]) {
-      acc[chainId as ChainId] = walletMap;
-    } else {
-      const { [walletId]: walletToUnsub, ...rest } = walletMap;
-      acc[chainId as ChainId] = Object.keys(rest).length > 0 ? rest : undefined;
+const subscribeAccountsFx = createEffect((subscriptions: SubscribeAccountParam[]) => {
+  const boundUpdate = scopeBind(updateBalances, { safe: true });
+  const result: Record<SubscriptionKey, VoidFunction> = {};
 
-      Promise.allSettled(walletToUnsub)
-        .then((fns) => {
-          for (const unsub of fns) {
-            if (isFulfilled(unsub)) unsub.value();
-          }
-        })
-        .catch((error) => {
-          console.log(`Error while unsubscribing from balances for walletId - ${walletId}`, error);
-        });
-    }
+  for (const { api, chain, accountId } of subscriptions) {
+    const key = balanceSubUtils.getSubscriptionKey(accountId, chain.chainId);
+    const unsubscribe = [
+      ...balanceService.subscribeBalances(api, chain, [accountId], boundUpdate),
+      ...balanceService.subscribeLockBalances(api, chain, [accountId], boundUpdate),
+    ];
 
-    return acc;
-  }, {});
-});
-
-type UnsubChainParams = {
-  chainId: ChainId;
-  subscriptions: Subscriptions;
-};
-const unsubscribeChainFx = createEffect(({ chainId, subscriptions }: UnsubChainParams) => {
-  const chainSubscription = subscriptions[chainId];
-  if (!chainSubscription) return subscriptions;
-
-  for (const unsubFn of Object.values(chainSubscription)) {
-    Promise.allSettled(unsubFn)
-      .then((fns) => {
-        for (const unsub of fns) {
-          if (isFulfilled(unsub)) unsub.value();
-        }
-      })
-      .catch((error) => {
-        console.log(`Error while unsubscribing from balances for chainId - ${chainId}`, error);
-      });
+    result[key] = () => unsubscribe.map((u) => u.then((u) => u()));
   }
 
-  return { ...subscriptions, [chainId]: undefined };
+  return result;
 });
 
-type SubChainsParams = {
-  apis: Record<ChainId, ApiPromise>;
-  chains: Chain[];
-  walletId?: ID;
-  subAccounts: SubAccounts;
+type UnsubscribeAccountsParams = {
+  keys: SubscriptionKey[];
   subscriptions: Subscriptions;
 };
-const pureSubscribeChainsFx = createEffect(
-  ({ apis, chains, walletId, subAccounts, subscriptions }: SubChainsParams): Subscriptions => {
-    if (chains.length === 0) return subscriptions;
+const unsubscribeFx = createEffect(({ keys, subscriptions }: UnsubscribeAccountsParams) => {
+  for (const key of keys) {
+    const unsubscribe = subscriptions[key];
+    if (unsubscribe) {
+      unsubscribe();
+    }
+  }
+});
 
-    const boundUpdate = scopeBind(balancesUpdated, { safe: true });
+// balances updating
 
-    return chains.reduce<Subscriptions>(
-      (acc, chain) => {
-        for (const [id, accountIds] of Object.entries(subAccounts[chain.chainId])) {
-          if (walletId && Number(id) !== walletId) continue;
+sample({
+  clock: updateBalances,
+  target: balanceModel.events.balancesUpdated,
+});
 
-          const unsubPromises = [
-            ...balanceService.subscribeBalances(apis[chain.chainId], chain, accountIds, boundUpdate),
-            ...balanceService.subscribeLockBalances(apis[chain.chainId], chain, accountIds, boundUpdate),
-          ];
+// subscriptions updating
 
-          if (acc[chain.chainId]) {
-            acc[chain.chainId]![Number(id)] = unsubPromises;
-          } else {
-            acc[chain.chainId] = { [Number(id)]: unsubPromises };
-          }
+sample({
+  clock: subscribeAccountsFx.doneData,
+  source: $subscriptions,
+  fn(subscriptions, result) {
+    return produce(subscriptions, (draft) => {
+      for (const [key, unsubscribe] of entries(result)) {
+        const chainSubscription = draft[key];
+        // @ts-expect-error weird type error
+        if (chainSubscription) {
+          console.error('subscription already exists:', key);
         }
 
-        return acc;
-      },
-      { ...subscriptions },
-    );
+        draft[key] = unsubscribe;
+      }
+    });
   },
-);
+  target: $subscriptions,
+});
 
-const subscribeChainsFx = attach({
-  effect: pureSubscribeChainsFx,
-  source: $subscriptions,
-  mapParams: (data: Omit<SubChainsParams, 'subscriptions'>, subscriptions) => {
-    return { ...data, subscriptions };
+const accountsUnsubscribed = sample({
+  clock: unsubscribeAccounts,
+  source: {
+    chains: networkModel.$chains,
+    subscriptions: $subscriptions,
+  },
+  fn({ subscriptions, chains }, accounts) {
+    const keys = Object.values(chains).flatMap((chain) => {
+      return accounts.map((account) => balanceSubUtils.getSubscriptionKey(account.accountId, chain.chainId));
+    });
+
+    return {
+      keys,
+      subscriptions,
+    };
+  },
+});
+
+const chainUnsubscribed = sample({
+  clock: unsubscribeChain,
+  source: {
+    subscriptions: $subscriptions,
+    subscribedAccounts: $subscribedAccounts,
+  },
+  fn({ subscribedAccounts, subscriptions }, chainId) {
+    const keys = subscribedAccounts.map((account) => balanceSubUtils.getSubscriptionKey(account.accountId, chainId));
+
+    return {
+      keys,
+      subscriptions,
+    };
   },
 });
 
 sample({
-  clock: [unsubscribeWalletFx.doneData, unsubscribeChainFx.doneData, subscribeChainsFx.doneData],
+  clock: [accountsUnsubscribed, chainUnsubscribed],
+  source: $subscriptions,
+  fn(subscriptions, params) {
+    return produce(subscriptions, (draft) => {
+      for (const key of params.keys) {
+        delete draft[key];
+      }
+    });
+  },
   target: $subscriptions,
 });
 
 sample({
-  clock: once(combineEvents([walletSelect.$selectedWallet.updates, networkModel.$chains.updates])),
-  filter: ([wallet]) => Boolean(wallet),
-  fn: ([wallet, chains]) => ({
-    subAccounts: mapValues(chains, () => ({ [wallet!.id]: [] })),
-    walletToSub: wallet!,
-  }),
-  target: spread({
-    subAccounts: $subAccounts,
-    walletToSub: walletToSubSet,
-  }),
+  clock: [accountsUnsubscribed, chainUnsubscribed],
+  target: unsubscribeFx,
 });
 
-sample({
-  clock: $subAccounts,
-  fn: (subAccounts) => {
-    return Object.values(subAccounts).reduce<Set<AccountId>>((acc, walletMap) => {
-      for (const accountId of Object.values(walletMap).flat()) {
-        acc.add(accountId);
-      }
+// wallet subscriptions
 
-      return acc;
-    }, new Set());
-  },
-  target: populateBalancesFx,
-});
+const $previousWallet = previous(walletSelect.$selectedWallet);
 
 sample({
-  clock: populateBalancesFx.doneData,
-  source: $balancesBucket,
-  fn: (balancesBucket, oldBalances) => {
-    if (balancesBucket.length === 0) return { set: oldBalances };
-
-    return {
-      bucket: [],
-      set: balanceUtils.getMergeBalances(oldBalances, balancesBucket),
-    };
-  },
-  target: spread({
-    bucket: $balancesBucket,
-    set: balanceModel.events.balancesSet,
-  }),
-});
-
-sample({
-  clock: balancesUpdated,
+  clock: subscribeWallet,
   source: {
-    balancesBucket: $balancesBucket,
-    isPending: populateBalancesFx.pending,
-  },
-  fn: ({ balancesBucket, isPending }, newBalances) => {
-    const updatedBalances = balanceUtils.getMergeBalances(balancesBucket, newBalances as Balance[]);
-
-    return {
-      bucket: isPending ? updatedBalances : [],
-      update: updatedBalances,
-    };
-  },
-  target: spread({
-    bucket: $balancesBucket,
-    update: balanceModel.events.balancesUpdated,
-  }),
-});
-
-sample({
-  clock: [walletToUnsubSet, $previousWallet],
-  source: $subAccounts,
-  filter: (_, wallet) => Boolean(wallet),
-  fn: (subAccounts, wallet) => {
-    return Object.entries(subAccounts).reduce<SubAccounts>((acc, [chainId, walletMap]) => {
-      const { [wallet!.id]: _, ...rest } = walletMap;
-      acc[chainId as ChainId] = rest;
-
-      return acc;
-    }, {});
-  },
-  target: $subAccounts,
-});
-
-sample({
-  clock: [walletToUnsubSet, $previousWallet],
-  source: $subscriptions,
-  filter: (_, wallet) => Boolean(wallet),
-  fn: (subscriptions, wallet) => ({ walletId: wallet!.id, subscriptions }),
-  target: unsubscribeWalletFx,
-});
-
-sample({
-  clock: [walletToSubSet, walletSelect.$selectedWallet],
-  source: {
-    subAccounts: $subAccounts,
+    accounts: walletModel.$availableAccounts,
     chains: networkModel.$chains,
-    acccounts: accounts.$list,
   },
-  filter: (wallet) => nonNullable(wallet),
-  fn: ({ subAccounts, acccounts, chains }, wallet) => {
-    const selectedAccounts = accountService.filterAccountsByWallet(acccounts, wallet!.id);
-    const accountsToSub = balanceSubUtils.getSiblingAccounts(selectedAccounts, acccounts, chains);
-
-    return balanceSubUtils.formSubAccounts(wallet!.id, accountsToSub, subAccounts, chains);
+  fn({ accounts, chains }, wallet) {
+    const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
+    return balanceSubUtils.getSiblingAccounts(walletAccounts, accounts, Object.values(chains));
   },
-  target: $subAccounts,
+  target: subscribeAccounts,
 });
 
 sample({
-  clock: [walletToSubSet, walletSelect.$selectedWallet],
+  clock: unsubscribeWallet,
+  source: {
+    accounts: walletModel.$availableAccounts,
+    chains: networkModel.$chains,
+  },
+  fn({ accounts, chains }, wallet) {
+    const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
+    return balanceSubUtils.getSiblingAccounts(walletAccounts, accounts, Object.values(chains));
+  },
+  target: unsubscribeAccounts,
+});
+
+sample({
+  clock: $previousWallet,
+  filter: nonNullable,
+  target: unsubscribeWallet,
+});
+
+sample({
+  clock: walletSelect.$selectedWallet,
+  filter: nonNullable,
+  target: subscribeWallet,
+});
+
+// fetch balances when a wallet is created
+sample({
+  clock: walletModel.createWallet.doneData.filter({ fn: nonNullable }),
+  fn: ({ wallet }) => wallet as Wallet,
+  target: fetchWallet,
+});
+
+// account subscriptions
+
+sample({
+  clock: subscribeAccounts,
+  source: {
+    subscriptions: $subscriptions,
+    apis: networkModel.$apis,
+    chains: networkModel.$chains,
+    statuses: networkModel.$connectionStatuses,
+  },
+  fn({ subscriptions, chains, apis, statuses }, accounts) {
+    if (accounts.length === 0) return [];
+
+    const params: Record<string, SubscribeAccountParam> = {};
+
+    for (const [chainId, status] of entries(statuses)) {
+      if (!networkUtils.isConnectedStatus(status)) continue;
+
+      const api = apis[chainId];
+      const chain = chains[chainId];
+      if (nullable(api) || nullable(chain)) continue;
+
+      for (const account of accounts) {
+        if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
+
+        const key = balanceSubUtils.getSubscriptionKey(account.accountId, chainId);
+        if (params[key] || subscriptions[key]) {
+          continue;
+        }
+
+        params[key] = {
+          api,
+          chain,
+          accountId: account.accountId,
+        };
+      }
+    }
+
+    return Object.values(params);
+  },
+  target: subscribeAccountsFx,
+});
+
+// $subscribedAccounts management
+// WARNING! should follow account subscriptions because of race condition
+
+sample({
+  clock: unsubscribeAccounts,
+  source: $subscribedAccounts,
+  fn(subscribed, removed) {
+    const removedIds = removed.map((a) => a.id);
+    return subscribed.filter((s) => !removedIds.includes(s.id));
+  },
+  target: $subscribedAccounts,
+});
+
+sample({
+  clock: subscribeAccounts,
+  source: $subscribedAccounts,
+  fn(subscribed, accounts) {
+    return merge({
+      a: subscribed,
+      b: accounts,
+      mergeBy: (a) => a.id,
+    });
+  },
+  target: $subscribedAccounts,
+});
+
+// connection status management
+
+sample({
+  clock: networkModel.output.connectionStatusChanged,
+  source: {
+    apis: networkModel.$apis,
+    chains: networkModel.$chains,
+    subscriptions: $subscriptions,
+    subscribedAccounts: $subscribedAccounts,
+  },
+  filter: (_, { status }) => networkUtils.isConnectedStatus(status),
+  fn: ({ apis, chains, subscribedAccounts, subscriptions }, { chainId }) => {
+    const chain = chains[chainId];
+    const api = apis[chainId];
+
+    if (nullable(chain) || nullable(api)) return [];
+
+    const params: SubscribeAccountParam[] = [];
+
+    for (const account of subscribedAccounts) {
+      const key = balanceSubUtils.getSubscriptionKey(account.accountId, chainId);
+      if (nonNullable(subscriptions[key])) continue;
+
+      if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
+
+      params.push({
+        api,
+        chain,
+        accountId: account.accountId,
+      });
+    }
+
+    return params;
+  },
+  target: subscribeAccountsFx,
+});
+
+sample({
+  clock: networkModel.output.connectionStatusChanged,
+  filter: ({ status }) => !networkUtils.isConnectedStatus(status),
+  fn: ({ chainId }) => chainId,
+  target: unsubscribeChain,
+});
+
+// account fetching
+
+sample({
+  clock: fetchWallet,
+  source: {
+    accounts: walletModel.$availableAccounts,
+    chains: networkModel.$chains,
+  },
+  fn({ accounts, chains }, wallet) {
+    const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
+    return balanceSubUtils.getSiblingAccounts(walletAccounts, accounts, Object.values(chains));
+  },
+  target: fetchAccounts,
+});
+
+sample({
+  clock: fetchAccounts,
   source: {
     apis: networkModel.$apis,
     chains: networkModel.$chains,
     statuses: networkModel.$connectionStatuses,
-    subAccounts: $subAccounts,
   },
-  filter: ({ statuses }, wallet) => {
-    return Boolean(wallet) && Object.values(statuses).some(networkUtils.isConnectedStatus);
+  fn({ chains, apis, statuses }, accounts) {
+    if (accounts.length === 0) return [];
+
+    const params: FetchAccountParam[] = [];
+
+    for (const [chainId, status] of entries(statuses)) {
+      if (!networkUtils.isConnectedStatus(status)) continue;
+
+      const api = apis[chainId];
+      const chain = chains[chainId];
+      if (nullable(api) || nullable(chain)) continue;
+
+      const accountIds: AccountId[] = [];
+
+      for (const account of accounts) {
+        if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
+
+        accountIds.push(account.accountId);
+      }
+
+      if (accountIds.length > 0) {
+        params.push({
+          api,
+          chain,
+          accounts: accountIds,
+        });
+      }
+    }
+
+    return params;
   },
-  fn: ({ subAccounts, statuses, ...params }, wallet) => {
-    const { apis, chains } = Object.entries(statuses).reduce(
-      (acc, entry) => {
-        const [chainId, status] = entry as [ChainId, ConnectionStatus];
-        if (!networkUtils.isConnectedStatus(status)) return acc;
-
-        acc.apis[chainId] = params.apis[chainId];
-        acc.chains.push(params.chains[chainId]);
-
-        return acc;
-      },
-      { apis: {} as Record<ChainId, ApiPromise>, chains: [] as Chain[] },
-    );
-
-    return { apis, chains, walletId: wallet!.id, subAccounts };
-  },
-  target: subscribeChainsFx,
+  target: series(fetchAccountsFx, { parallel: true, skipErrors: true }),
 });
 
 sample({
-  clock: networkModel.output.connectionStatusChanged,
-  source: $subscriptions,
-  filter: (subscriptions, { chainId, status }) => {
-    const isDisabled = networkUtils.isDisconnectedStatus(status);
-    const isError = networkUtils.isErrorStatus(status);
-
-    return (isDisabled || isError) && Boolean(subscriptions[chainId]);
-  },
-  fn: (subscriptions, { chainId }) => ({ chainId, subscriptions }),
-  target: unsubscribeChainFx,
-});
-
-sample({
-  clock: networkModel.output.connectionStatusChanged,
-  source: {
-    apis: networkModel.$apis,
-    chains: networkModel.$chains,
-    subAccounts: $subAccounts,
-    subscriptions: $subscriptions,
-  },
-  filter: ({ subscriptions }, { chainId, status }) => {
-    return networkUtils.isConnectedStatus(status) && !subscriptions[chainId];
-  },
-  fn: (params, { chainId }) => ({
-    apis: params.apis,
-    chains: [params.chains[chainId]],
-    subAccounts: params.subAccounts,
-  }),
-  target: subscribeChainsFx,
+  clock: fetchAccountsFx.doneData,
+  target: updateBalances,
 });
 
 export const balanceSubModel = {
-  events: {
-    walletToSubSet,
-    walletToUnsubSet,
-  },
+  subscribeWallet,
+  unsubscribeWallet,
 
-  _test: {
+  subscribeAccounts,
+  unsubscribeAccounts,
+
+  fetchAccounts,
+  fetchWallet,
+
+  __test: {
+    subscribeAccountsFx,
+    unsubscribeFx,
+    $subscribedAccounts,
     $subscriptions,
-    $subAccounts,
   },
 };

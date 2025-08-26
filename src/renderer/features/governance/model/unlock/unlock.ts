@@ -4,17 +4,49 @@ import { createEffect, createStore, sample } from 'effector';
 
 import { type ClaimTimeAt, type UnlockChunk, UnlockChunkType } from '@/shared/api/governance';
 import { type Referendum, type TrackId, type TrackInfo, type TrackLocks, type VotingMap } from '@/shared/core';
-import { getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@/shared/lib/utils';
+import { entries, getCreatedDateFromApi, getCurrentBlockNumber, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { claimScheduleService, referendumModel, tracksModel, votingModel } from '@/entities/governance';
-import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { unlockService } from '../../lib/unlockService';
 import { locksModel } from '../locks';
 import { networkSelectorModel } from '../networkSelector';
 
 const $claimSchedule = createStore<UnlockChunk[] | null>(null);
-const $totalUnlock = createStore<BN>(BN_ZERO);
 const $isLoading = createStore(true);
+
+const $claimable = $claimSchedule.map((claimSchedule) => {
+  if (nullable(claimSchedule)) {
+    return null;
+  }
+
+  const record: Record<AccountId, BN> = {};
+
+  for (const claim of claimSchedule) {
+    if (claim.type !== UnlockChunkType.CLAIMABLE) continue;
+
+    const accountSum = record[claim.accountId] || BN_ZERO;
+    record[claim.accountId] = accountSum.add(claim.amount);
+  }
+
+  return record;
+});
+
+const $totalUnlock = $claimSchedule.map((claimSchedule) => {
+  if (nullable(claimSchedule)) {
+    return BN_ZERO;
+  }
+
+  let total = BN_ZERO;
+
+  for (const claim of claimSchedule) {
+    if (claim.type !== UnlockChunkType.CLAIMABLE) continue;
+
+    total = total.add(claim.amount);
+  }
+
+  return total;
+});
 
 type Props = {
   api: ApiPromise;
@@ -30,9 +62,7 @@ const getClaimScheduleFx = createEffect(
     const undecidingTimeout = api.consts.referenda.undecidingTimeout.toNumber();
     const voteLockingPeriod = api.consts.convictionVoting.voteLockingPeriod.toNumber();
 
-    const claims = Object.entries(trackLocks).flatMap((entry) => {
-      const [accountId, trackLock] = entry as [AccountId, Record<TrackId, BN>];
-
+    const claims = entries(trackLocks).flatMap(([accountId, trackLock]) => {
       const claimSchedule = claimScheduleService.estimateClaimSchedule({
         currentBlockNumber,
         referendums,
@@ -60,8 +90,8 @@ const getClaimScheduleFx = createEffect(
 );
 
 sample({
-  clock: [networkSelectorModel.$network, walletModel.$activeWallet],
-  target: [$claimSchedule.reinit, $totalUnlock.reinit],
+  clock: [networkSelectorModel.$network, walletSelect.$selectedWallet],
+  target: [$claimSchedule.reinit],
 });
 
 sample({
@@ -106,26 +136,10 @@ sample({
   target: $claimSchedule,
 });
 
-sample({
-  clock: $claimSchedule.updates,
-  filter: (claimSchedule: UnlockChunk[] | null): claimSchedule is UnlockChunk[] => nonNullable(claimSchedule),
-  fn: (claimSchedule) => {
-    let total = BN_ZERO;
-
-    for (const claim of claimSchedule) {
-      if (claim.type !== UnlockChunkType.CLAIMABLE) continue;
-
-      total = total.add(claim.amount);
-    }
-
-    return total;
-  },
-  target: $totalUnlock,
-});
-
 export const unlockModel = {
   $isLoading,
   $totalUnlock,
+  $claimable,
   $claimSchedule,
   $isUnlockable: $totalUnlock.map((total) => !total.isZero()),
 };

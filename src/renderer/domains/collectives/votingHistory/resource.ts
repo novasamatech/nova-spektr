@@ -33,22 +33,6 @@ const mapChainVote = (
   };
 };
 
-type VotingRequestParams = {
-  chainId: ChainId;
-  palletType: CollectivePalletsType;
-  referendums: ReferendumId[];
-  accounts: AccountId[];
-};
-
-const requestFromChain = async ({ palletType, chainId, referendums, accounts }: VotingRequestParams) => {
-  const keys = referendums.map(r => accounts.map(a => [r, a] as [ReferendumId, AccountId])).flat();
-
-  const papi = getChainRegistry().getApi(chainId);
-  const votes = await collectivePallet.storage.voting(palletType, papi, keys);
-
-  return votes.map(vote => mapChainVote(palletType, chainId, vote)).filter(nonNullable);
-};
-
 const GET_VOTES_QUERY = gql`
   query VotingHistory($referendums: [String!]) {
     votes(filter: { referendumId: { in: $referendums } }) {
@@ -124,12 +108,16 @@ export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>(
   async fn({ palletType, chain, referendums, accounts }) {
     if (referendums.length === 0) return [];
 
-    try {
-      if (getChainRegistry().getApi(chain.chainId)) {
-        return requestFromChain({ palletType, chainId: chain.chainId, referendums, accounts });
+    if (api) {
+      try {
+        const chainId = api.genesisHash.toHex();
+        const keys = referendums.flatMap(r => accounts.map(a => [r, a] as const));
+        const votes = await collectivePallet.storage.voting(palletType, api, keys);
+        return votes.map(vote => mapChainVote(palletType, chainId, vote)).filter(nonNullable);
+      } catch (e) {
+        /* skip */
+        console.error(e);
       }
-    } catch (e) {
-      console.error(e);
     }
 
     const externalApi = chain.externalApi?.[ExternalType.COLLECTIVES]?.at(0);
@@ -138,6 +126,24 @@ export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>(
     if (!sourceUrl) return [];
 
     return requestFromSubQuery(sourceUrl, palletType, chain.chainId, referendums);
+  },
+});
+
+type RequestAllVotesParams = {
+  palletType: CollectivePalletsType;
+  chain: Chain;
+  api: ApiPromise;
+};
+
+export const requestAllResource = createRemoteResource<RequestAllVotesParams, Vote[]>({
+  pool: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
+  cache: {
+    key: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
+    ttl: 60 * 1000,
+  },
+  async fn({ palletType, api, chain }) {
+    const votes = await collectivePallet.storage.voting(palletType, api);
+    return votes.map(vote => mapChainVote(palletType, chain.chainId, vote)).filter(nonNullable);
   },
 });
 

@@ -33,10 +33,11 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.ADD_PROXY]: 'proxyConfirm',
   [TransactionType.CREATE_PURE_PROXY]: 'proxyConfirm',
   [TransactionType.REMOVE_PROXY]: 'proxyConfirm',
-  [TransactionType.REMOVE_PURE_PROXY]: 'proxyConfirm',
+  [TransactionType.KILL_PURE_PROXY]: 'proxyConfirm',
   [TransactionType.PROXY]: 'unknownConfirm',
   // Remark
   [TransactionType.REMARK]: 'unknownConfirm',
+  [TransactionType.REMARK_WITH_EVENT]: 'unknownConfirm',
   // Governance
   [TransactionType.UNLOCK]: 'unlockMst',
   [TransactionType.VOTE]: 'voteMst',
@@ -57,7 +58,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
 };
 
 // TODO remove
-export const getIconName = (transaction?: Transaction | DecodedTransaction): IconNames => {
+export const getIconName = (transaction: Transaction | DecodedTransaction | null): IconNames => {
   if (!transaction?.type) return 'unknownConfirm';
 
   if (isEditDelegationTransaction(transaction)) {

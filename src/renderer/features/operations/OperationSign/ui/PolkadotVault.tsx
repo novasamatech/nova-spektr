@@ -1,26 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
-import { ValidationErrors, nullable, toAddress } from '@/shared/lib/utils';
+import { ValidationErrors, nullable } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
+import { WalletIcon } from '@/shared/ui-entities';
 import { QrReaderWrapper, ScanMultiframeQr, ScanSingleframeQr, transactionService } from '@/entities/transaction';
-import { WalletIcon, walletUtils } from '@/entities/wallet';
 import { operationSignUtils } from '../lib/operation-sign-utils';
 import { type SigningProps } from '../lib/types';
 
-export const PolkadotVault = ({
-  apis,
-  signingPayloads,
-  signerWallet,
-  validateBalance,
-  onGoBack,
-  onResult,
-}: SigningProps) => {
+export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, onGoBack, onResult }: SigningProps) => {
   const { t } = useI18n();
 
-  const [countdown, resetCountdown] = useCountdown(Object.values(apis));
+  const apis = useMemo(() => signingPayloads.map((s) => s.api), [signingPayloads]);
+  const [countdown, resetCountdown] = useCountdown(apis);
   const [txPayloads, setTxPayloads] = useState<Uint8Array[]>([]);
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
@@ -39,7 +33,7 @@ export const PolkadotVault = ({
       ? scanResult.map(operationSignUtils.transformEcdsaSignature)
       : [scanResult].map(operationSignUtils.transformEcdsaSignature);
 
-    const accountIds = signingPayloads.map((p) => p.signatory?.accountId ?? p.account.accountId);
+    const accountIds = signingPayloads.map((p) => p.signatory.accountId);
 
     let isVerified = false;
 
@@ -71,14 +65,6 @@ export const PolkadotVault = ({
     }
   };
 
-  const getSignerAccountId = () => {
-    if (walletUtils.isPolkadotVault(signerWallet)) {
-      return signerWallet.rootAccountId;
-    }
-
-    return signingPayloads[0].transaction.accountId;
-  };
-
   const scanAgain = () => {
     setTxPayloads([]);
   };
@@ -90,10 +76,10 @@ export const PolkadotVault = ({
           {signerWallet && (
             <div className="mb-1 flex h-8 w-full items-center justify-center">
               <div className="flex h-full items-center justify-center gap-x-0.5">
-                <FootnoteText className="text-text-secondary">{t('signing.signer')}</FootnoteText>
+                <FootnoteText className="whitespace-nowrap text-text-secondary">{t('signing.signer')}</FootnoteText>
 
                 <div className="flex w-full items-center gap-x-2 px-2">
-                  <WalletIcon className="shrink-0" type={signerWallet.type} size={16} />
+                  <WalletIcon type={signerWallet.type} size={16} />
                   <FootnoteText className="w-max text-text-secondary">{signerWallet.name}</FootnoteText>
                 </div>
               </div>
@@ -102,7 +88,6 @@ export const PolkadotVault = ({
 
           {isMultiframe ? (
             <ScanMultiframeQr
-              apis={apis}
               countdown={countdown}
               signerWallet={signerWallet!}
               signingPayloads={signingPayloads}
@@ -113,11 +98,10 @@ export const PolkadotVault = ({
           ) : (
             <ScanSingleframeQr
               chain={chain}
-              api={apis[chain.chainId]}
-              address={toAddress(getSignerAccountId(), { prefix: chain.addressPrefix })}
+              api={signingPayloads[0].api}
               countdown={countdown}
-              account={signingPayloads[0].signatory || signingPayloads[0].account}
-              transaction={signingPayloads[0].transaction}
+              account={signingPayloads[0].signatory}
+              extrinsic={signingPayloads[0].extrinsic}
               onGoBack={onGoBack}
               onResetCountdown={resetCountdown}
               onResult={(payload) => setTxPayloads([payload])}

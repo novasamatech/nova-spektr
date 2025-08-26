@@ -81,7 +81,7 @@ sample({
       }
 
       for (const accountToDelete of accountsToDelete) {
-        if (accountToDelete.accountId === accountId) {
+        if (accountToDelete.chainId === chain.chainId) {
           accountsToDelete.delete(accountToDelete);
           break;
         }

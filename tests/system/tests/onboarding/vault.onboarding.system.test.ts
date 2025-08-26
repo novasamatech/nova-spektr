@@ -24,7 +24,12 @@ test.describe('Polkadot Vault onboarding', { tag: '@regress' }, () => {
     const hideZeroBalancesStatus = await settingsWidget.getHideZeroBalancesStatus();
     const pageViewStatus = await settingsWidget.getpageViewStatus();
 
-    expect(hideZeroBalancesStatus).toBe(false);
-    expect(pageViewStatus).toBe(settingsWidget.pageElements.tokenCentric);
+    await allure.step('Verify "Hide zero balances" is disabled', async () => {
+      expect(hideZeroBalancesStatus).toBe(false);
+    });
+
+    await allure.step('Verify page view is set to "Token centric"', async () => {
+      expect(pageViewStatus).toBe(settingsWidget.pageElements.tokenCentric);
+    });
   });
 });

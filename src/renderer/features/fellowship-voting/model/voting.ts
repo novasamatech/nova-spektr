@@ -2,11 +2,10 @@ import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { reshape, spread } from 'patronum';
 
-import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { votingService } from '@/domains/collectives';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -56,7 +55,7 @@ const $votingWallet = combine($wallets, votingStatus.$votingAccount, (wallets, a
   return wallets.find(w => w.id === account.walletId) ?? null;
 });
 
-const { $fee, $wrappedTx, $txWrappers } = createTxStore({
+const { $fee, $wrappedTx } = createTxStore({
   $active: flow.status,
   $api,
   $activeWallet: $votingWallet,
@@ -119,7 +118,6 @@ sample({
       account: account!,
       wrappedTxs: [transactions!.wrappedTx],
       coreTxs: [transactions!.coreTx],
-      multisigTxs: transactions!.multisigTx ? [transactions!.multisigTx] : [],
     };
   },
   target: submitModel.events.formInitiated,
@@ -135,10 +133,9 @@ sample({
   source: {
     existing: basketOperations.$list,
     account: votingStatus.$votingAccount,
-    txWrappers: $txWrappers,
     coreTx: $coreTx,
   },
-  fn: ({ existing, account, txWrappers, coreTx }) => {
+  fn: ({ existing, account, coreTx }) => {
     if (nullable(account) || nullable(coreTx)) {
       return {
         add: [],
@@ -155,11 +152,11 @@ sample({
 
     const isSameTransaction = existingTransactions.some(t => coreTx.args.aye === t.coreTx.args.aye);
 
-    // @ts-expect-error TODO fix id field
-    const newTransaction: BasketTransaction = {
+    const newTransaction: BasketTransactionDraft = {
       initiatorAccountId: account.accountId,
       coreTx,
-      txWrappers,
+      route: [],
+      createdAt: Date.now(),
     };
 
     return {
@@ -201,7 +198,6 @@ export const voting = {
   flow,
   $fee,
   $wrappedTx,
-  $txWrappers,
   sign,
   saveToBasket,
   removeFromBasket,

@@ -1,2 +1,2 @@
 export { RemoveVotesModal } from './ui/RemoveVotesModal';
-export { removeVotesModalAggregate } from './aggregates/removeVotesModal';
+export { removeVotesModel } from './default/model/removeVotesModal';

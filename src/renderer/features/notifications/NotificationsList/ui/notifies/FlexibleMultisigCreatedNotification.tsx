@@ -4,8 +4,8 @@ import { type FlexibleMultisigCreated } from '@/shared/core';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Button } from '@/shared/ui';
+import { WalletIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { WalletIcon } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {
@@ -25,7 +25,7 @@ export const FlexibleMultisigCreatedNotification = ({
     <Box gap={2} direction="row">
       <div className="relative">
         <WalletIcon type={WalletType.FLEXIBLE_MULTISIG} />
-        <div className="absolute -right-[1px] top-[13px] h-2 w-2 rounded-full border border-white bg-icon-positive" />
+        <div className="absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white bg-icon-positive" />
       </div>
 
       <Box gap={4}>

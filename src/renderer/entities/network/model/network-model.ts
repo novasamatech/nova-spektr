@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { persist } from 'effector-storage/local';
 import { combineEvents, spread } from 'patronum';
 
 import {
@@ -17,11 +18,10 @@ import {
   type Connection,
   ConnectionStatus,
   ConnectionType,
-  type ID,
   type NoID,
 } from '@/shared/core';
 import { createBuffer, series } from '@/shared/effector';
-import { dictionary, nonNullable } from '@/shared/lib/utils';
+import { dictionary, keys, nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '../lib/network-utils';
 
 const chainConnected = createEvent<ChainId>();
@@ -32,10 +32,12 @@ const disconnected = createEvent<ChainId>();
 const failed = createEvent<ChainId>();
 
 const $chains = createStore<Record<ChainId, Chain>>({});
+const $chainsList = $chains.map((chains) => chainsService.sortChains(Object.values(chains)));
 
 const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
 
+const $connectionData = createStore<Connection[]>([]);
 const $connections = createStore<Record<ChainId, Connection>>({});
 const $connectionStatuses = createStore<Record<ChainId, ConnectionStatus>>({});
 
@@ -44,8 +46,9 @@ const $metadataSubscriptions = createStore<Record<ChainId, VoidFunction>>({});
 
 const $populated = createStore(false);
 
-const populateChainsFx = createEffect((): Record<ChainId, Chain> => {
-  return chainsService.getChainsMap();
+const populateChainsFx = createEffect(async (): Promise<Record<ChainId, Chain> | null> => {
+  const chains = await chainsService.getChainsData();
+  return nonNullable(chains) ? chainsService.getChainsMap(chains) : null;
 });
 
 const populateMetadataFx = createEffect((): Promise<ChainMetadata[]> => {
@@ -60,32 +63,38 @@ const getDefaultStatusesFx = createEffect((chains: Record<ChainId, Chain>): Reco
   return dictionary(Object.values(chains), 'chainId', () => ConnectionStatus.DISCONNECTED);
 });
 
+persist({
+  key: 'chains_map',
+  store: $chains,
+  sync: true,
+});
+
 type MetadataSubResult = {
   chainId: ChainId;
   unsubscribe: VoidFunction;
 };
-const subscribeRuntimeVersionFx = createEffect(
-  async ({ api, cachedVersion }: { api: ApiPromise; cachedVersion: number | null }): Promise<MetadataSubResult> => {
-    const unsubscribe = await metadataService.subscribeRuntimeVersion({
-      api,
-      cachedRuntimeVersion: cachedVersion,
-      callback: removeMetadata,
-    });
+const subscribeRuntimeVersionFx = createEffect(async (api: ApiPromise): Promise<MetadataSubResult> => {
+  const callback = scopeBind(removeOldMetadata, { safe: true });
 
-    return { chainId: api.genesisHash.toHex(), unsubscribe };
-  },
-);
+  const unsubscribe = await metadataService.subscribeRuntimeVersion({
+    api,
+    callback,
+  });
+
+  return { chainId: api.genesisHash.toHex(), unsubscribe };
+});
 
 const unsubscribeMetadataFx = createEffect((unsubscribe: VoidFunction) => {
   unsubscribe();
 });
 
-const saveMetadataFx = createEffect((metadata: NoID<ChainMetadata>[]): Promise<ChainMetadata[] | undefined> => {
+const saveMetadataFx = createEffect((metadata: NoID<ChainMetadata>[]) => {
   return storageService.metadata.createAll(metadata);
 });
 
-const removeMetadataFx = createEffect((ids: ID[]): Promise<ID[] | undefined> => {
-  return storageService.metadata.deleteAll(ids);
+const removeMetadataFx = createEffect((metadata: ChainMetadata[]) => {
+  if (metadata.length === 0) return [];
+  return storageService.metadata.deleteAll(metadata.map((m) => m.id));
 });
 
 type CreateProviderParams = {
@@ -174,6 +183,7 @@ const startNetworksFx = createEffect(() => {
 
 sample({
   clock: populateChainsFx.doneData,
+  filter: (data) => nonNullable(data),
   target: [$chains, getDefaultStatusesFx],
 });
 
@@ -189,14 +199,19 @@ sample({
 
 sample({
   clock: populateConnectionsFx.doneData,
-  source: $chains,
-  fn: (chains, connections) => {
-    const connectionsMap = dictionary(connections, 'chainId');
+  target: $connectionData,
+});
+
+sample({
+  source: {
+    chains: $chains,
+    connectionData: $connectionData,
+  },
+  fn: ({ chains, connectionData }) => {
+    const connectionsMap = dictionary(connectionData, 'chainId');
     const lightClientChains = networkUtils.getLightClientChains();
 
-    return Object.keys(chains).reduce<Record<ChainId, Connection>>((acc, key) => {
-      const chainId = key as ChainId;
-
+    return keys(chains).reduce<Record<ChainId, Connection>>((acc, chainId) => {
       acc[chainId] = connectionsMap[chainId] || {
         chainId,
         customNodes: [],
@@ -225,12 +240,15 @@ sample({
 const readyToConnect = combineEvents({
   events: [populateConnectionsFx.doneData, populateMetadataFx.doneData, populateChainsFx.doneData],
   reset: startNetworksFx,
-}).map(([connections, metadata, chains]) => {
-  return { connections, metadata, chains };
 });
 
 sample({
   clock: readyToConnect,
+  source: {
+    chains: $chains,
+    connections: $connectionData,
+    metadata: $metadata,
+  },
   fn: ({ connections, metadata, chains }) => {
     return Object.values(chains)
       .filter((chain) => {
@@ -394,28 +412,19 @@ sample({
 
 const metadataReceived = createEvent<NoID<ChainMetadata>>();
 const saveMetadata = createBuffer({ source: metadataReceived, timeframe: 2000 });
-const removeMetadata = createEvent<ApiPromise>();
+const removeOldMetadata = createEvent<{ chainId: ChainId; receivedVersion: number }>();
 
 sample({
-  clock: removeMetadata,
+  clock: removeOldMetadata,
   source: $metadata,
-  fn: (list, removed) => {
-    return list.filter((x) => x.chainId === removed.genesisHash.toHex()).map((x) => x.id);
+  fn: (metadata, { chainId, receivedVersion }) => {
+    return metadata.filter((x) => x.chainId === chainId && x.runtimeVersion < receivedVersion);
   },
   target: removeMetadataFx,
 });
 
 sample({
-  clock: createApiFx.done,
-  source: $metadata,
-  fn: (metadata, { params, result }) => {
-    const cachedVersion = metadata.find((m) => m.chainId === params.chainId)?.runtimeVersion ?? null;
-
-    return {
-      api: result,
-      cachedVersion,
-    };
-  },
+  clock: createApiFx.doneData,
   target: subscribeRuntimeVersionFx,
 });
 
@@ -477,7 +486,7 @@ sample({
 
     return {
       metadata: cleanMetadata.concat(newMetadata!),
-      oldMetadata: oldMetadata.map((x) => x.id),
+      oldMetadata: oldMetadata,
     };
   },
   target: spread({
@@ -489,6 +498,7 @@ sample({
 export const networkModel = {
   $populated,
   $chains,
+  $chainsList,
   $apis,
   $connectionStatuses,
   $connections,

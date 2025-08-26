@@ -7,7 +7,7 @@ import { type Chain, type ChainId, type TrackLocks } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createSubscriber, governanceService, governanceSubscribeService } from '@/entities/governance';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 import { networkSelectorModel } from './networkSelector';
@@ -15,7 +15,7 @@ import { networkSelectorModel } from './networkSelector';
 const requestLocks = createEvent<{ api: ApiPromise; chain: Chain; accounts: AccountId[] }>();
 const subscribeLocks = createEvent();
 
-const $trackLocks = createStore<Record<ChainId, TrackLocks>>({}).reset(walletModel.$activeWallet);
+const $trackLocks = createStore<Record<ChainId, TrackLocks>>({}).reset(walletSelect.$selectedWallet);
 
 const $totalLock = combine(
   {

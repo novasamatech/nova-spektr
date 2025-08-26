@@ -6,7 +6,6 @@ import { type FormEvent, useEffect, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useStatusContext } from '@/app/providers';
-import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
   type ChainId,
@@ -19,7 +18,7 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useAltOrCtrlKeyPressed, useToggle } from '@/shared/lib/hooks';
-import { IS_MAC, copyToClipboard, dictionary, toAddress } from '@/shared/lib/utils';
+import { IS_MAC, toAddress } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import {
   Button,
@@ -33,8 +32,9 @@ import {
 } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Address } from '@/shared/ui-entities';
-import { Accordion, Box, Field, Input, Popover, ScrollArea } from '@/shared/ui-kit';
+import { Accordion, Box, Copy, Field, Input, Popover, ScrollArea } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
 import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
@@ -59,6 +59,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   const keys = useUnit(manageVaultModel.$keys);
   const keysGroups = useUnit(manageVaultModel.$keysGroups);
   const hasKeys = useUnit(manageVaultModel.$hasKeys);
+  const chains = useUnit(networkModel.$chains);
 
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
@@ -84,8 +85,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   }, [onComplete]);
 
   useEffect(() => {
-    const chains = chainsService.getChainsData();
-    const chainsMap = dictionary(chains, 'chainId', () => [] as (VaultChainAccount | VaultShardAccount[])[]);
+    const chainsMap = Object.fromEntries(
+      Object.keys(chains).map(chainId => [chainId, [] as (VaultChainAccount | VaultShardAccount[])[]]),
+    );
 
     for (const account of keysGroups) {
       const chainId = accountUtils.isAccountWithShards(account) ? account[0].chainId : account.chainId;
@@ -110,7 +112,6 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         name: walletName.trim(),
         rootAccountId: publicKey,
         type: WalletType.POLKADOT_VAULT,
-        signingType: SigningType.POLKADOT_VAULT,
       },
       accounts: accounts.length
         ? accounts
@@ -197,9 +198,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       </div>
 
       <div className="relative flex h-full w-[472px] flex-col overflow-hidden rounded-r-lg border-l pt-4">
-        <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={onClose} />
+        <IconButton name="close" size={20} className="absolute top-3 right-3 m-1" onClick={onClose} />
 
-        <div className="mb-6 mt-[52px] flex items-center justify-between px-5">
+        <div className="mt-[52px] mb-6 flex items-center justify-between px-5">
           <div className="flex items-center gap-x-1.5">
             <SmallTitleText>{t('onboarding.vault.vaultTitle')}</SmallTitleText>
             <VaultInfoPopover />
@@ -220,7 +221,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
           </HelpText>
         </div>
 
-        <div className="min-h-0 pl-3 pr-3.5">
+        <div className="flex min-h-0 flex-col pr-3.5 pb-3 pl-3">
           <div className="flex w-full items-center justify-between gap-2 pb-4">
             <Popover align="end">
               <Popover.Trigger>
@@ -237,12 +238,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                     <HelpText className="text-text-secondary">
                       <Address variant="full" address={publicKeyAddress} />
                     </HelpText>
-                    <IconButton
-                      className="shrink-0"
-                      name="copy"
-                      size={20}
-                      onClick={() => copyToClipboard(publicKeyAddress)}
-                    />
+                    <Copy value={publicKeyAddress} notification={t('general.notifications.addressCopied')}>
+                      <IconButton className="shrink-0" name="copy" size={20} />
+                    </Copy>
                   </Box>
                 </Box>
               </Popover.Content>
@@ -252,7 +250,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
           <FootnoteText className="ml-9 pl-2 text-text-tertiary">{t('onboarding.vault.accountTitle')}</FootnoteText>
 
           <ScrollArea>
-            <div className="ml-9 flex flex-col gap-2 divide-y">
+            <div className="mr-1 ml-9 flex flex-col gap-2">
               {chainElements.map(([chainId, chainAccounts]) => {
                 if (chainAccounts.length === 0) return;
 

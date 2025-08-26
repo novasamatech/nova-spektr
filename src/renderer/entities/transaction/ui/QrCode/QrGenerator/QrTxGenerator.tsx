@@ -1,46 +1,60 @@
-import { u8aConcat } from '@polkadot/util';
+import init, { Encoder } from 'raptorq/raptorq';
+import { useEffect, useState } from 'react';
 
-import { type ChainId, type CryptoType, type SigningType } from '@/shared/core';
+import { QrCode, Skeleton } from '@/shared/ui-kit';
 
-import { DEFAULT_FRAME_DELAY, SUBSTRATE_ID } from './common/constants';
-import useGenerator from './common/useGenerator';
-import { createSubstrateSignPayload } from './common/utils';
+import { DEFAULT_FRAME_DELAY, DEFAULT_MAX_FRAME_DELAY } from './common/constants';
+import { createFrames } from './common/utils';
 
 type Props = {
-  address: string;
-  signingType: SigningType;
-  cryptoType: CryptoType;
-  genesisHash: Uint8Array | ChainId;
-  payload: Uint8Array | string;
-  derivationPath?: string;
-  size?: number;
-  skipEncoding?: boolean;
+  payload?: Uint8Array;
+  enableRaptorQ?: boolean;
+  size?: string;
   bgColor?: string;
-  delay?: number;
+  qrColor?: string;
+  className?: string;
+  testId?: string;
 };
 
 export const QrTxGenerator = ({
-  address,
-  signingType,
-  genesisHash,
   payload,
-  derivationPath,
-  size,
-  skipEncoding = false,
-  bgColor = 'none',
-  delay = DEFAULT_FRAME_DELAY,
-  cryptoType,
+  enableRaptorQ = true,
+  size = '240px',
+  bgColor,
+  qrColor,
+  className,
+  testId,
 }: Props) => {
-  const signPayload = u8aConcat(
-    SUBSTRATE_ID,
-    createSubstrateSignPayload(address, payload, genesisHash, signingType, derivationPath, cryptoType),
-  );
+  const [frames, setFrames] = useState<Uint8Array[] | null>(null);
 
-  const image = useGenerator(signPayload, skipEncoding, delay, bgColor);
+  useEffect(() => {
+    if (!payload) return;
 
-  if (!signPayload || !image) {
-    return null;
+    if (enableRaptorQ) {
+      const currentPayload = payload;
+      init().then(() => {
+        const encoder = Encoder.with_defaults(payload, 128);
+        setFrames(createFrames(currentPayload, encoder));
+      });
+    } else {
+      setFrames(createFrames(payload));
+    }
+  }, [enableRaptorQ, payload]);
+
+  if (!frames) {
+    return <Skeleton height={size} width={size} />;
   }
 
-  return <div style={{ width: size, height: size }} dangerouslySetInnerHTML={{ __html: image }} />;
+  return (
+    <QrCode
+      payload={frames}
+      size={size}
+      bgColor={bgColor}
+      qrColor={qrColor}
+      className={className}
+      delay={DEFAULT_FRAME_DELAY}
+      maxDelay={DEFAULT_MAX_FRAME_DELAY}
+      testId={testId}
+    />
+  );
 };

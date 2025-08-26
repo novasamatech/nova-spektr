@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 
 import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { constructorModel } from '../model/constructor-model';
 
 import { KeyForm } from './KeyForm';
@@ -49,30 +50,27 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
   };
 
   return (
-    <BaseModal
-      closeButton
-      contentClass="flex flex-col h-[calc(100%-46px)]"
-      panelClass="w-[784px] h-[678px]"
-      title={t('dynamicDerivations.constructor.title', { title })}
-      isOpen={isOpen}
-      onClose={closeConstructor}
-    >
-      <div className="border-b border-divider px-5 pb-6 pt-4">
-        <KeyForm />
-      </div>
-      <div className="mt-4 flex-1 overflow-y-auto">
-        <KeysList />
-      </div>
-      <div className="flex justify-between px-5 pb-4 pt-3">
-        <Button variant="text" onClick={closeConstructor}>
-          {t('dynamicDerivations.constructor.backButton')}
-        </Button>
+    <Modal isOpen={isOpen} size="lg" height="full" onToggle={closeConstructor}>
+      <Modal.Title close>{t('dynamicDerivations.keysConstructor.title', { title })}</Modal.Title>
+
+      <Modal.Content disableScroll>
+        <div className="flex h-full flex-col">
+          <div className="border-b border-divider px-5 pt-4 pb-6">
+            <KeyForm />
+          </div>
+          <div className="mt-4 flex-1 overflow-y-auto">
+            <KeysList />
+          </div>
+        </div>
+      </Modal.Content>
+
+      <Modal.Footer align="end">
         <Button onClick={() => onConfirm(keysToAdd, keysToRemove)}>
-          {t('dynamicDerivations.constructor.saveButton')}
+          {t('dynamicDerivations.keysConstructor.saveButton')}
         </Button>
-      </div>
+      </Modal.Footer>
 
       <WarningModal isOpen={isWarningOpen} onClose={() => setIsWarningOpen(false)} onConfirm={confirmConstructor} />
-    </BaseModal>
+    </Modal>
   );
 };

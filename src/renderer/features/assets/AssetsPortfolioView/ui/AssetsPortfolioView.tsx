@@ -8,7 +8,8 @@ import { FootnoteText, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { priceProviderModel } from '@/entities/price';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { portfolioModel } from '../model/portfolio-model';
 
 import { TokenBalance } from './TokenBalance';
@@ -19,10 +20,10 @@ const getColStyle = (wallet: Wallet | null): string => {
     return '';
   }
   if (walletUtils.isWatchOnly(wallet)) {
-    return 'grid-cols-[1fr,100px,105px,10px]';
+    return 'grid-cols-[1fr_100px_105px_10px]';
   }
 
-  return 'grid-cols-[1fr,100px,108px,60px]';
+  return 'grid-cols-[1fr_100px_108px_60px]';
 };
 
 export const AssetsPortfolioView = () => {
@@ -33,7 +34,7 @@ export const AssetsPortfolioView = () => {
   const tokensPopulated = useUnit(portfolioModel.$tokensPopulated);
   const accounts = useUnit(portfolioModel.$accounts);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const wallet = useUnit(walletModel.$activeWallet);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
   const { list, isLoading } = useDeferredList({
     list: sortedTokens,
@@ -48,7 +49,7 @@ export const AssetsPortfolioView = () => {
   return (
     <div className="flex min-h-full w-full flex-col items-center gap-y-2 py-4">
       {list.length > 0 && (
-        <div className={cnTw('grid w-[736px] items-center pl-9.5 pr-4', getColStyle(wallet))}>
+        <div className={cnTw('grid w-[736px] items-center px-9', getColStyle(wallet))}>
           <FootnoteText className="text-text-tertiary">{t('balances.token')}</FootnoteText>
           <FootnoteText className="text-text-tertiary" align="right">
             {fiatFlag && t('balances.price')}

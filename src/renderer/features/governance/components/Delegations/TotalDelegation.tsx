@@ -7,7 +7,8 @@ import { useConfirmContext } from '@/shared/providers';
 import { FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { EmptyAccountMessage } from '@/features/emptyList';
 import { WalletDetails } from '@/features/wallet-details';
 import { delegationAggregate } from '../../aggregates/delegation';
@@ -26,7 +27,7 @@ export const TotalDelegation = ({ onClick }: Props) => {
   const canDelegate = useUnit(delegationAggregate.$canDelegate);
   const delegatedVotingPower = useUnit(delegationAggregate.$delegatedVotingPower);
 
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeWallet = useUnit(walletSelect.$selectedWallet);
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
 
@@ -66,7 +67,7 @@ export const TotalDelegation = ({ onClick }: Props) => {
   return (
     <>
       <button onClick={handleClick}>
-        <Plate className="flex h-[90px] w-[240px] items-center justify-between px-4 pb-4.5 pt-3">
+        <Plate className="flex h-[90px] w-[240px] items-center justify-between px-4 pt-3 pb-4.5">
           <div className="flex flex-col items-start gap-y-2">
             <div className="flex items-center gap-x-1">
               <Icon size={16} name="opengovDelegations" />

@@ -1,32 +1,47 @@
-import { useStoreMap } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
-import { FootnoteText, Markdown, SmallTitleText } from '@/shared/ui';
-import { Box } from '@/shared/ui-kit';
-import { type OngoingReferendum, type Referendum } from '@/domains/collectives';
+import { FootnoteText, SmallTitleText } from '@/shared/ui';
+import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
+import { type OngoingReferendum, referendumService } from '@/domains/collectives';
+import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { referendums } from '../../model/referendums';
-import { votes } from '../../model/voting';
+import { rfcModel } from '../../model/rfc';
 import { tasksService } from '../../service';
+import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
-import { VoteBadge } from '../VoteBadge';
+
+export interface DateThresholds {
+  urgent: number;
+  warning: number;
+}
+
+export const DefaultDateThresholds: DateThresholds = {
+  urgent: 5,
+  warning: 14,
+};
+
+export const LooseDateThresholds: DateThresholds = {
+  urgent: 2,
+  warning: 8,
+};
 
 export const referendumVotingTaskActionSlot = createSlot<{
   referendum: OngoingReferendum;
   transaction: Transaction | null;
+  dateThresholds: DateThresholds;
 }>();
 
 type Props = {
   referendum: OngoingReferendum;
   transaction: Transaction | null;
   tags: string[];
-  onReferendumSelect(referendum: Referendum): void;
 };
 
-export const OngoingReferendumVoting = ({ referendum, tags, transaction, onReferendumSelect }: Props) => {
+export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props) => {
   const { t } = useI18n();
 
   const meta = useStoreMap({
@@ -34,42 +49,69 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction, onRefer
     keys: [referendum.id],
     fn: (meta, [id]) => meta[id] ?? null,
   });
-  const vote = useStoreMap({
-    store: votes.$memberVotes,
-    keys: [referendum.id],
-    fn: (votes, [id]) => votes.find(v => v.referendumId === id) ?? null,
+
+  const rfc = useStoreMap({
+    store: rfcModel.$rfcSummary,
+    keys: [referendum.proposal],
+    fn: (summary, [proposal]) =>
+      summary && proposal && referendumService.isRfcProposal(proposal) ? summary[proposal.pullRequest] : null,
   });
 
-  const voted = nonNullable(vote);
+  const isRFCPending = useUnit(rfcModel.$isPending);
+  const isMetaPending = useUnit(referendums.$pendingReferendumMeta);
 
-  const content = useMemo(
-    () =>
-      meta?.description ? (
+  const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
+
+  const isPending = referendum && (isRFCProposal ? isRFCPending : isMetaPending);
+
+  const content = useMemo(() => {
+    if (isPending) return;
+
+    if (rfc?.summary) {
+      return (
+        <Markdown cut="150px" compact>
+          {tasksService.cutMarkdown(rfc.summary)}
+        </Markdown>
+      );
+    }
+
+    if (meta?.description) {
+      return (
         <Markdown cut="150px" compact>
           {tasksService.cutMarkdown(meta.description)}
         </Markdown>
-      ) : (
-        t('fellowship.tasks.task.anyReferendum.noDescription')
-      ),
-    [meta],
-  );
+      );
+    }
+
+    return t('fellowship.tasks.task.anyReferendum.noDescription');
+  }, [meta, rfc, isPending]);
 
   return (
     <Box direction="row" gap={2}>
-      <button className="flex w-full min-w-0 appearance-none p-4" onClick={() => onReferendumSelect(referendum)}>
-        <Box gap={3}>
-          <Box direction="row" gap={3} grow={1}>
-            <SmallTitleText className="truncate">
-              {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
-            </SmallTitleText>
-            <TaskLabels tags={tags} />
-            {voted && <VoteBadge active />}
+      <ReferendumDetailsModal referendum={referendum}>
+        <button className="flex w-full min-w-0 appearance-none gap-2 p-4">
+          <Box alignSelf="flex-start" shrink={0}>
+            <TaskBadge proposal={referendum.proposal} />
           </Box>
-          <FootnoteText as="div">{content}</FootnoteText>
-        </Box>
-      </button>
-      <Box alignSelf="flex-end" gap={3} padding={4} horizontalAlign="end" shrink={0}>
-        <Slot id={referendumVotingTaskActionSlot} props={{ referendum, transaction }} />
+          <Box fillContainer gap={3} grow={1}>
+            <Box direction="row" gap={3} grow={1}>
+              <SmallTitleText className="truncate">
+                {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
+              </SmallTitleText>
+              <TaskLabels tags={tags} />
+            </Box>
+            <Box width="90%">
+              {isPending && <Skeleton height="2.5lh" width="95%" />}
+              <FootnoteText as="div">{content}</FootnoteText>
+            </Box>
+          </Box>
+        </button>
+      </ReferendumDetailsModal>
+      <Box height="auto" horizontalAlign="end" gap={3} padding={4} shrink={0}>
+        <Slot
+          id={referendumVotingTaskActionSlot}
+          props={{ referendum, transaction, dateThresholds: DefaultDateThresholds }}
+        />
       </Box>
     </Box>
   );

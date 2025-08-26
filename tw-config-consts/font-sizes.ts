@@ -1,4 +1,4 @@
-import { type Config } from 'tailwindcss';
+import { type Config } from 'tailwindcss/dist/lib.mjs';
 
 const fontSizes: Required<Config>['theme']['fontSize'] = {
   // EXTRA BOLD

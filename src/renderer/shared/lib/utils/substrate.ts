@@ -47,6 +47,8 @@ export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): P
   return { signerPayloadBase };
 };
 
+export const getCallHash = (callData: HexString) => blake2AsHex(hexToU8a(callData));
+
 /**
  * Check that callData correctly resembles callHash
  *
@@ -59,7 +61,7 @@ export const validateCallData = <T extends string = CallData, K extends string =
   callData: T,
   callHash: K,
 ): boolean => {
-  return isHex(callData) && callHash === blake2AsHex(hexToU8a(callData));
+  return isHex(callData) && callHash === getCallHash(callData);
 };
 
 export const getCurrentBlockNumber = async (api: ApiPromise): Promise<BlockHeight> => {
@@ -81,11 +83,9 @@ export async function getParachainId(api: ApiPromise): Promise<number> {
 }
 
 export const getExpectedBlockTime = (api: ApiPromise): BN => {
-  const substrateBlockTime = api.consts.babe?.expectedBlockTime;
-  const proofOfWorkBlockTime = api.consts.difficulty?.targetBlockTime;
-  const subspaceBlockTime = api.consts.subspace?.expectedBlockTime;
+  const substrateBlockTime = api.consts.babe?.expectedBlockTime || api.consts.aura?.slotDuration;
 
-  const blockTime = substrateBlockTime || proofOfWorkBlockTime || subspaceBlockTime;
+  const blockTime = substrateBlockTime;
   if (blockTime) {
     return bnMin(ONE_DAY, blockTime);
   }
@@ -162,12 +162,11 @@ export const getTypeVersion = (api: ApiPromise, typeName: string): string => {
 
 export const getProxyTypes = (api: ApiPromise): ProxyType[] => {
   const type = api.tx.proxy.addProxy.meta.args[1].type.toString();
-  const excludedTypes = ['SudoBalances'];
 
   return getTypeEnumValues<ProxyType>(api, type).filter((value) => {
     const isUnused = value.toLowerCase().includes(UNUSED_LABEL);
 
-    return !isUnused && !excludedTypes.includes(value);
+    return !isUnused;
   });
 };
 
@@ -217,7 +216,7 @@ export const upgradeNonce = (metadata: TxMetadata, index: number): TxMetadata =>
     ...metadata,
     signerPayloadBase: {
       ...metadata.signerPayloadBase,
-      nonce: numberToScaleEncoded(scaleEncodedToNumber(metadata.signerPayloadBase.nonce) + index),
+      nonce: numberToScaleEncoded(parseInt(metadata.signerPayloadBase.nonce) + index),
     },
   };
 };

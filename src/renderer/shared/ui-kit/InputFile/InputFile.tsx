@@ -34,7 +34,7 @@ export const InputFile = forwardRef<HTMLInputElement, Props>(
     return (
       <label
         className={cnTw(
-          'flex h-full w-full items-center justify-center rounded p-3',
+          'flex h-full w-full items-center justify-center rounded-sm p-3',
           'cursor-pointer border border-dashed border-filter-border',
           'focus-within:border-active-container-border hover:border-active-container-border active:border-active-container-border',
           invalid && 'border-filter-border-negative',

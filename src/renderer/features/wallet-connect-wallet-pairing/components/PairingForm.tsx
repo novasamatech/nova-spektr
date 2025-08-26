@@ -72,6 +72,7 @@ export const PairingForm = ({ type, onBack }: Props) => {
           <form className="flex h-full flex-col gap-4" onSubmit={submitForm}>
             <Field text={t('onboarding.walletNameLabel')}>
               <Input
+                autoFocus
                 placeholder={t('onboarding.walletNamePlaceholder')}
                 invalid={fields.walletName.hasError()}
                 value={fields.walletName.value}

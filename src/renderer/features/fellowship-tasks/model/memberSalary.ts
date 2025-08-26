@@ -4,19 +4,14 @@ import { combine, sample } from 'effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { salary as salaryModel, salaryService } from '@/domains/collectives';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
-import { block } from './block';
 import { fellowshipTasksFeature } from './feature';
+import { fellowship } from './fellowship';
 
 const $member = fellowshipTasksFeature.input.map(store => (store ? store.member : null));
-const $statuses = salaryModel.$status.map(s => s['fellowship'] ?? {});
+const $status = fellowship.$store.map(s => s?.salaryStatus ?? null);
 const $fellowshipClaimantStatuses = salaryModel.$claimantStatus.map(s => s['fellowship'] ?? {});
-
-const $status = combine(fellowshipTasksFeature.input, $statuses, (featureInput, statuses) => {
-  if (nullable(featureInput)) return null;
-
-  return statuses[featureInput.chainId] ?? null;
-});
 
 const $chainClaimantStatuses = combine(
   fellowshipTasksFeature.input,
@@ -55,8 +50,8 @@ const $memberClaimStatus = combine($member, $chainClaimantStatuses, (member, sta
   return statuses?.[member.accountId] ?? null;
 });
 
-const $currentPeriod = combine($status, block.$currentBlock, (status, currentBlock) => {
-  if (nullable(status)) return null;
+const $currentPeriod = combine($status, fellowshipNetwork.$currentBlock, (status, currentBlock) => {
+  if (nullable(status) || nullable(currentBlock)) return null;
   return salaryService.getCurrentPeriod(status, currentBlock);
 });
 

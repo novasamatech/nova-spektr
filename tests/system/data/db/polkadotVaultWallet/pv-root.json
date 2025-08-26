@@ -3,12 +3,17 @@
   "formatVersion": 1,
   "data": {
     "databaseName": "spektr",
-    "databaseVersion": 26,
+    "databaseVersion": 32,
     "tables": [
+      {
+        "name": "connections",
+        "schema": "++id",
+        "rowCount": 0
+      },
       {
         "name": "wallets",
         "schema": "++id",
-        "rowCount": 140
+        "rowCount": 1
       },
       {
         "name": "accounts",
@@ -28,7 +33,7 @@
       {
         "name": "notifications",
         "schema": "++id",
-        "rowCount": 134
+        "rowCount": 0
       },
       {
         "name": "multisigEvents",
@@ -38,79 +43,69 @@
       {
         "name": "accounts2",
         "schema": "id",
-        "rowCount": 140
+        "rowCount": 1
+      },
+      {
+        "name": "multisigOperations",
+        "schema": "id",
+        "rowCount": 0
       }
     ],
-    "data": [
-      {
-        "tableName": "wallets",
-        "inbound": true,
-        "rows": [
-          {
-            "name": "Polkadot Vault - root",
-            "type": "wallet_sps",
-            "signingType": "signing_ps",
-            "isActive": true,
-            "id": 1,
-            "accounts": [
-              {
-                "id": "1 0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c universal",
-                "accountId": "0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c",
-                "name": "Polkadot Vault - root",
-                "cryptoType": 0,
-                "signingType": "signing_ps",
-                "accountType": "base",
-                "type": "universal",
-                "walletId": 1
-              }
-            ],
-            "$types": {
-              "accounts": "arrayNonindexKeys"
-            }
-          }
-        ]
-      },
-      {
-        "tableName": "accounts",
-        "inbound": true,
-        "rows": []
-      },
-      {
-        "tableName": "contacts",
-        "inbound": true,
-        "rows": []
-      },
-      {
-        "tableName": "multisigTransactions",
-        "inbound": true,
-        "rows": []
-      },
-      {
-        "tableName": "notifications",
-        "inbound": true,
-        "rows": []
-      },
-      {
-        "tableName": "multisigEvents",
-        "inbound": true,
-        "rows": []
-      },
-      {
-        "tableName": "accounts2",
-        "inbound": true,
-        "rows": [
-          {
-            "accountId": "0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c",
-            "name": "Polkadot Vault - root",
-            "cryptoType": 0,
-            "signingType": "signing_ps",
-            "accountType": "base",
-            "type": "universal",
-            "walletId": 1,
-            "id": "1 0x7a28037947ecebe0dd86dc0e910911cb33185fd0714b37b75943f67dcf9b6e7c universal"
-          }
-        ]
-      }
-    ]
+    "data": [{
+      "tableName": "connections",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "wallets",
+      "inbound": true,
+      "rows": [
+        {
+          "name": "pv-root-fee",
+          "rootAccountId": "0x9a777713c9086608f2bca7d568cf454de6aadc55719b4867cff9114b63f9a051",
+          "type": "wallet_sps",
+          "signingType": "signing_ps",
+          "id": 1
+        }
+      ]
+    },{
+      "tableName": "accounts",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "contacts",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "multisigTransactions",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "notifications",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "multisigEvents",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "accounts2",
+      "inbound": true,
+      "rows": [
+        {
+          "accountId": "0x9a777713c9086608f2bca7d568cf454de6aadc55719b4867cff9114b63f9a051",
+          "name": "pv-root-fee",
+          "cryptoType": 0,
+          "signingType": "signing_ps",
+          "accountType": "base",
+          "type": "universal",
+          "walletId": 1,
+          "id": "1 0x9a777713c9086608f2bca7d568cf454de6aadc55719b4867cff9114b63f9a051 universal"
+        }
+      ]
+    },{
+      "tableName": "multisigOperations",
+      "inbound": true,
+      "rows": []
+    }]
   }
 }

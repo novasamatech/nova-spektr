@@ -5,13 +5,13 @@ import { Trans } from 'react-i18next';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { nullable, toAccountId } from '@/shared/lib/utils';
+import { entries, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { votingService } from '@/entities/governance';
-import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { detailsAggregate } from '../../aggregates/details';
 import { votingListService } from '../../lib/votingListService';
 import { type AggregatedReferendum } from '../../types/structs';
@@ -28,7 +28,7 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
 
   const [isOpen, closeModal] = useModalClose(true, onClose);
 
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeWallet = useUnit(walletSelect.$selectedWallet);
 
   const votes = useStoreMap({
     store: detailsAggregate.$votes,
@@ -37,10 +37,10 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
   });
 
   const votesList = useMemo(() => {
-    return Object.entries(votes).flatMap(([address, vote]) => {
+    return entries(votes).flatMap(([accountId, vote]) => {
       return votingListService
         .getDecoupledVotesFromVote(referendum.referendumId, vote)
-        .map((vote) => ({ address, vote }));
+        .map((vote) => ({ accountId, vote }));
     });
   }, [votes, referendum]);
 
@@ -52,14 +52,13 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
       addressMap[account.accountId] = account.name;
     }
 
-    const addresses = [
-      ...votesList.map((vote) => vote.address),
+    const accounts = [
+      ...votesList.map((vote) => vote.accountId),
       ...referendum.votedByDelegates.map((delegate) => delegate.delegator),
     ];
 
     const votedAccounts: Record<AccountId, string> = {};
-    for (const address of addresses) {
-      const accountId = toAccountId(address);
+    for (const accountId of accounts) {
       if (nullable(addressMap[accountId])) continue;
 
       votedAccounts[accountId] = addressMap[accountId];
@@ -75,7 +74,7 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
       <Modal.Title close>{t('governance.walletVotes.title')}</Modal.Title>
       <Modal.Content>
         <div className="grid grid-cols-12 items-center px-5 pb-4">
-          <FootnoteText className="col-span-5 pb-1 pr-2 text-text-tertiary">
+          <FootnoteText className="col-span-5 pr-2 pb-1 text-text-tertiary">
             {t('governance.walletVotes.listColumnAccount')}
           </FootnoteText>
           <FootnoteText className="col-span-2 basis-16 px-2 pb-1 text-text-tertiary">
@@ -84,16 +83,16 @@ export const MyVotesModal = ({ referendum, asset, chain, onClose }: Props) => {
           <FootnoteText className="col-span-5 px-2 pb-1 text-end text-text-tertiary">
             {t('governance.walletVotes.listColumnVotingPower')}
           </FootnoteText>
-          {votesList.map(({ address, vote }) => (
-            <Fragment key={address}>
+          {votesList.map(({ accountId, vote }) => (
+            <Fragment key={accountId}>
               <div className="col-span-5">
                 <BodyText className="text-text-secondary">
                   <Account
                     hideAddress
                     variant="short"
                     iconSize={16}
-                    title={accountsNames[toAccountId(address)]}
-                    accountId={toAccountId(address)}
+                    title={accountsNames[accountId]}
+                    accountId={accountId}
                     chain={chain}
                   />
                 </BodyText>

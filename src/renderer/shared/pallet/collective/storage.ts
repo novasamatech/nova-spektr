@@ -12,6 +12,7 @@ import { type PolkadotApi } from '@/domains/network';
 import { getPalletName } from './helpers';
 import { collectiveVoteRecord } from './schemas';
 import { type PalletType } from './types';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 
 const getQuery = (type: PalletType, papi: PolkadotApi) => {
   return papiHelpers.getTypedApis(papi, ['dot_col'], ({ api }) => {
@@ -115,7 +116,7 @@ export const storage = {
     const votingResponseSchema = z.array(z.optional(collectiveVoteRecord));
 
     const typedKeys = keys.map(
-      ([referendumId, accountId]) => [referendumId, toAddress(accountId)] as [number, SS58String],
+      ([referendumId, accountId]) => [referendumId, toAddress(accountId)],
     );
 
     return substrateRpcPool

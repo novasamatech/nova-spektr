@@ -1,4 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
+import { useEffect } from 'react';
 
 import { type Asset, type Chain, type OngoingReferendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -11,7 +12,8 @@ import { OperationResult } from '@/entities/transaction';
 import { type AggregatedReferendum } from '@/features/governance';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { VoteConfirmation } from '@/features/operations/OperationsConfirm';
-import { voteModalAggregate } from '../aggregates/voteModal';
+import { voteForm } from '../model/voteForm';
+import { voteModal } from '../model/voteModal';
 
 import { VoteForm } from './VoteForm';
 
@@ -20,18 +22,26 @@ type Props = {
   chain: Chain;
   asset: Asset;
   onClose: VoidFunction;
+  onVoteSuccess?: VoidFunction;
 };
 
-export const RevoteModal = ({ referendum, asset, chain, onClose }: Props) => {
+export const RevoteModal = ({ referendum, asset, chain, onClose, onVoteSuccess }: Props) => {
   const { t } = useI18n();
 
-  useGate(voteModalAggregate.gates.flow, { type: 'revote', referendum });
+  useGate(voteModal.gates.flow, { type: 'revote', referendum });
 
-  const step = useUnit(voteModalAggregate.$step);
-  const initiatorWallet = useUnit(voteModalAggregate.accounts.$initiatorWallet);
+  const step = useUnit(voteModal.$step);
+  const voteSuccess = useUnit(voteModal.$voteSuccess);
+  const initiatorWallet = useUnit(voteForm.$initiatorWallet);
 
   const [isModalOpen, closeModal] = useModalClose(step !== Step.NONE, onClose);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(step === Step.BASKET, onClose);
+
+  useEffect(() => {
+    if (voteSuccess) {
+      onVoteSuccess?.();
+    }
+  }, [voteSuccess, onVoteSuccess]);
 
   if (isStep(step, Step.SUBMIT)) {
     return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
@@ -65,15 +75,15 @@ export const RevoteModal = ({ referendum, asset, chain, onClose }: Props) => {
           secondaryActionButton={
             initiatorWallet &&
             basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => voteModalAggregate.events.txSaved()}>
+              <Button pallet="secondary" onClick={() => voteModal.events.txSaved()}>
                 {t('operation.addToBasket')}
               </Button>
             )
           }
-          onGoBack={() => voteModalAggregate.events.setStep(Step.INIT)}
+          onGoBack={() => voteModal.events.setStep(Step.INIT)}
         />
       )}
-      {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => voteModalAggregate.events.setStep(Step.CONFIRM)} />}
+      {isStep(step, Step.SIGN) && <OperationSign onGoBack={() => voteModal.events.setStep(Step.CONFIRM)} />}
     </BaseModal>
   );
 };

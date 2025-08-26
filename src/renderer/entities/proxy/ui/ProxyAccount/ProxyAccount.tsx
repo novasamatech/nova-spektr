@@ -4,7 +4,8 @@ import { type ProxyType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, HelpText, Identicon, Truncate } from '@/shared/ui';
+import { BodyText, HelpText, Truncate } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 import { proxyUtils } from '../../lib/proxy-utils';
 
 type Props = {
@@ -41,7 +42,7 @@ export const ProxyAccount = ({
 
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
-      <Identicon className="inline-block" address={address} size={20} background={false} canCopy={canCopy} />
+      <Identicon value={address} size={20} background={false} canCopy={canCopy} />
       <div className="grid gap-y-0.5">
         <BodyText className="truncate text-text-secondary">{name ?? addressContent}</BodyText>
         {name && <HelpText className="truncate text-text-tertiary">{addressContent}</HelpText>}
@@ -50,7 +51,7 @@ export const ProxyAccount = ({
           <HelpText className="text-tab-text-accent">{t(proxyUtils.getProxyTypeName(proxyType))}</HelpText>
         </div>
       </div>
-      {suffix}
+      <div className="ml-auto">{suffix}</div>
     </div>
   );
 };

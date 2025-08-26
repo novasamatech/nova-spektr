@@ -71,7 +71,7 @@ describe('pages/Governance/lib/governancePageUtils', () => {
     { referendums, query: '222', expected: referendums.filter(({ referendumId }) => referendumId === '222') },
     { referendums, query: 'none', expected: [] },
   ])('should return correct referendums if query is "$query"', ({ referendums, query, expected }) => {
-    const result = governancePageUtils.filteredByQuery({ referendums, query });
+    const result = governancePageUtils.filteredByQuery({ referendums, query, titles: {} });
     expect(result).toEqual(expected);
   });
 

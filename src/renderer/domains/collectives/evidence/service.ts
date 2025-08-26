@@ -28,7 +28,7 @@ function getEvidenceIpfsUrl(evidence: HexString) {
 }
 
 function getEvidenceUploadIpfsUrl() {
-  return new URL(`/api/nova/ipfs/files`, 'https://collectives.subsquare.io');
+  return new URL(`/nova/ipfs/files`, 'https://collectives-api.subsquare.io');
 }
 
 function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {

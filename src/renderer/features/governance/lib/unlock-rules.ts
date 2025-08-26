@@ -1,13 +1,13 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { type Store } from 'effector';
+import { t } from 'i18next';
 
-import { type Account } from '@/shared/core';
+import { ZERO_BALANCE } from '@/shared/lib/utils';
+import { type AnyAccount } from '@/domains/network';
 import {
   type AmountFeeStore,
   type ShardsProxyFeeStore,
   type SignatoryFeeStore,
-  balanceValidation,
-  descriptionValidation,
 } from '@/features/operations/OperationsValidation';
 
 export const UnlockRules = {
@@ -25,9 +25,9 @@ export const UnlockRules = {
   signatory: {
     noSignatorySelected: (source: Store<boolean>) => ({
       name: 'noSignatorySelected',
-      errorText: 'transfer.noSignatoryError',
+      errorText: t('transfer.noSignatoryError'),
       source,
-      validator: (signatory: Account, _: any, isMultisig: boolean) => {
+      validator: (signatory: AnyAccount, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
 
         return Object.keys(signatory).length > 0;
@@ -35,57 +35,51 @@ export const UnlockRules = {
     }),
     notEnoughTokens: (source: Store<SignatoryFeeStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
       source,
       validator: (_s: any, _f: any, { feeData, isMultisig, signatoryBalance }: SignatoryFeeStore) => {
         if (!isMultisig) return true;
 
         const value = new BN(feeData.multisigDeposit).add(new BN(feeData.fee));
+        const balanceBN = new BN(signatoryBalance);
 
-        return balanceValidation.isLteThanBalance(value, signatoryBalance);
+        return value.lte(balanceBN);
       },
     }),
   },
   amount: {
     required: {
       name: 'required',
-      errorText: 'transfer.requiredAmountError',
+      errorText: t('transfer.requiredAmountError'),
       validator: Boolean,
     },
 
     notZero: {
       name: 'notZero',
-      errorText: 'transfer.notZeroAmountError',
-      validator: balanceValidation.isNonZeroBalance,
+      errorText: t('transfer.notZeroAmountError'),
+      validator: (value: string) => value.toString() !== ZERO_BALANCE,
     },
     insufficientBalanceForFee: (source: Store<AmountFeeStore>) => ({
       name: 'insufficientBalanceForFee',
-      errorText: 'transfer.notEnoughBalanceForFeeError',
+      errorText: t('transfer.notEnoughBalanceForFeeError'),
       source,
       validator: (_v: string, form: any, { feeData, isMultisig, accountsBalances }: AmountFeeStore) => {
         if (isMultisig) return true;
 
         const feeBN = new BN(feeData.fee);
 
-        return form.shards.every((_: Account, index: number) => {
+        return form.shards.every((_: AnyAccount, index: number) => {
           return feeBN.lte(new BN(accountsBalances[index]));
         });
       },
     }),
     noLockedAmount: (source: Store<BN>) => ({
       name: 'noLockedAmount',
-      errorText: 'governance.locks.noLockedAmount',
+      errorText: t('governance.locks.noLockedAmount'),
       source,
       validator: (_v: string, form: any, totalLock: BN) => {
         return totalLock.sub(new BN(form.amount)).gte(BN_ZERO);
       },
     }),
-  },
-  description: {
-    maxLength: {
-      name: 'maxLength',
-      errorText: 'transfer.descriptionLengthError',
-      validator: descriptionValidation.isMaxLength,
-    },
   },
 };

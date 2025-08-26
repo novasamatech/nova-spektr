@@ -1,4 +1,5 @@
 import { type Page } from '@playwright/test';
+import { step } from 'allure-js-commons';
 
 import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
@@ -16,8 +17,11 @@ export class ConfirmationModalWindow extends BaseModal<ConfirmationModalElements
   }
 
   public async confirm(): Promise<SigningModalWindow> {
-    await this.page.getByRole('button', { name: ConfirmationModalElements.confirmButton }).click();
-
-    return new SigningModalWindow(this.page, new SigningModalElements(), this.previousPage);
+    return await step('Confirm transaction', async () => {
+      await this.checkForAlerts();
+      await this.page.getByRole('button', { name: ConfirmationModalElements.confirmButton }).click();
+      await this.checkForAlerts();
+      return new SigningModalWindow(this.page, new SigningModalElements(), this.previousPage);
+    });
   }
 }

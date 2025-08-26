@@ -1,6 +1,6 @@
 import { type Locale } from 'date-fns';
+import { type FormatDistanceToken } from 'date-fns/locale';
 import { enGB } from 'date-fns/locale/en-GB';
-import { type FormatDistanceToken } from 'date-fns/locale/types';
 
 import { type LanguageItem, type SupportedLocale } from './types';
 

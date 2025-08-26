@@ -1,4 +1,4 @@
-import { hexToU8a, isHex } from '@polkadot/util';
+import { hexToU8a, isHex, u8aToHex } from '@polkadot/util';
 import { decodeAddress, encodeAddress, ethereumEncode } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
@@ -105,6 +105,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
             publicKey: {
               MultiSigner: addressInfo.publicKey.MultiSigner,
               public: isEthereum ? ethereumEncode(publicKey) : encodeAddress(publicKey),
+              publicHex: isEthereum ? u8aToHex(publicKey) : undefined,
             },
           };
         });
@@ -138,7 +139,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           {cameraState === CameraState.INVALID_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
+              <p className="mt-5 text-xl leading-6 font-semibold text-neutral">
                 {t('onboarding.paritySigner.wrongQRCodeLabel')}
               </p>
               <p className="max-w-[395px] text-sm text-neutral-variant">
@@ -149,7 +150,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           {cameraState === CameraState.UNKNOWN_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
+              <p className="mt-5 text-xl leading-6 font-semibold text-neutral">
                 {t('onboarding.paritySigner.notWorkingLabel')}
               </p>
               <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.notWorkingDescription')}</p>
@@ -158,7 +159,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           {cameraState === CameraState.DECODE_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
+              <p className="mt-5 text-xl leading-6 font-semibold text-neutral">
                 {t('onboarding.paritySigner.decodeErrorLabel')}
               </p>
               <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.decodeErrorDescription')}</p>
@@ -167,7 +168,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
           {cameraState === CameraState.DENY_ERROR && (
             <>
               <Icon className="text-alert" name="warnCutout" size={70} />
-              <p className="mt-5 text-xl font-semibold leading-6 text-neutral">
+              <p className="mt-5 text-xl leading-6 font-semibold text-neutral">
                 {t('onboarding.paritySigner.accessDeniedLabel')}
               </p>
               <p className="text-sm text-neutral-variant">{t('onboarding.paritySigner.accessDeniedDescription')}</p>
@@ -259,7 +260,7 @@ export const DdKeyQrReader = ({ size = 300, className, onGoBack, onResult }: Pro
                 <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
                 <CaptionText
                   as="span"
-                  className="rounded-[26px] bg-label-background-gray px-2 py-1 uppercase text-white"
+                  className="rounded-[26px] bg-label-background-gray px-2 py-1 text-white uppercase"
                 >
                   {t('signing.parsingCount', { current: decoded, total: total })}
                 </CaptionText>

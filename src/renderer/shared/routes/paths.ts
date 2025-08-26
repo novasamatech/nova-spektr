@@ -23,6 +23,7 @@ export const Paths = {
   // Settings
   SETTINGS: '/settings',
   NETWORK: '/settings/network',
+  HIDDEN_WALLETS: '/settings/hidden-wallets',
   CURRENCY: '/settings/currency',
   REFERENDUM_DATA: '/settings/referendum',
 
@@ -35,13 +36,15 @@ export const Paths = {
   // Fellowship
   FELLOWSHIP: '/fellowship',
   FELLOWSHIP_LIST: '/fellowship/:chainId',
-  FELLOWSHIP_REFERENDUM: '/fellowship/:chainId/referendum/:referendumId',
 
   // Staking
   STAKING: '/staking',
 
   // Basket
   BASKET: '/basket',
+
+  // Call data
+  CALL_DATA: '/call-data',
 } as const;
 
 type ReplaceDynamicParts<T extends string> = T extends `${infer Start}/:${string}/${infer End}`

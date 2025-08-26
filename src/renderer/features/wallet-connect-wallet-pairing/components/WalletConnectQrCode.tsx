@@ -43,7 +43,7 @@ export const WalletConnectQrCode = ({ uri, type, size = 300 }: Props) => {
 
   return (
     <div className="relative flex flex-col items-center justify-center" style={{ height: size }}>
-      <div className="absolute left-[50%] top-[50%] z-0 -translate-x-1/2 -translate-y-1/2">
+      <div className="absolute top-[50%] left-[50%] z-0 -translate-x-1/2 -translate-y-1/2">
         <Loader color="primary" size={24} />
       </div>
 

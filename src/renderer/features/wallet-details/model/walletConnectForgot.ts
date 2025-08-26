@@ -57,7 +57,7 @@ sample({
 sample({
   clock: forget,
   fn: wallet => wallet.accounts[0]?.walletId,
-  target: walletModel.events.walletRemoved,
+  target: walletModel.events.removeWallet,
 });
 
 sample({

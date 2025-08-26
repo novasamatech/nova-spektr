@@ -1,6 +1,6 @@
-import { type Meta, type StoryFn } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react-vite';
 
-import { Identicon } from '../../Identicon/Identicon';
+import { Identicon } from '@/shared/ui-entities';
 
 import { Select } from './Select';
 
@@ -48,7 +48,7 @@ const customOptions = data.map((d, index) => ({
   value: d,
   element: (
     <div className="flex items-center gap-x-2.5">
-      <Identicon address={d.address} background={false} size={24} canCopy={false} />
+      <Identicon value={d.address} background={false} size={24} canCopy={false} />
       <p>{d.value}</p>
     </div>
   ),

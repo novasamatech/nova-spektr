@@ -1,6 +1,6 @@
 import { BN, BN_THOUSAND, BN_TWO } from '@polkadot/util';
 
-import { type ChainId } from '@/shared/core';
+import { type Address, type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const ZERO_BALANCE = '0';
@@ -16,18 +16,19 @@ export const ADDRESS_ALLOWED_ENCODED_LENGTHS = [35, 36, 37, 38];
 
 export const DEFAULT_QR_LIFETIME = 64;
 
-export const SS58_DEFAULT_PREFIX = 42;
+export const SS58_DEFAULT_PREFIX = 0;
 export const SS58_PUBLIC_KEY_PREFIX = 1;
 
-export const TEST_ACCOUNTS: AccountId[] = [
+export const TEST_ACCOUNTS: [AccountId, AccountId, AccountId, AccountId] = [
   '0x08eb319467ea54784cd9edfbd03bbcc53f7a021ed8d9ed2ca97b6ae46b3f6014' as AccountId,
   '0x83e0844510ede3aea6953c9886d9a51abdd944b6395de7b83bbce6dffce0c765' as AccountId,
   '0x3b8318a62a8f84e86ef55432ef5c029be966b840a1f070175d8a92df6e08e99b' as AccountId,
   '0x6871a0a8984a068b69e853a0a9b221dc7876d141547fea7c1cf6457c55fba20b' as AccountId,
 ];
 
-export const TEST_ADDRESS = '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ';
-export const TEST_SUBSTRATE_ADDRESS = '5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9';
+export const TEST_ADDRESS = '1ChFWeNRLarAPRCTM3bfJmncJbSAbSS9yqjueWz7jX7iTVZ' as Address;
+export const TEST_EVM_ADDRESS = '0xaE55781508185aEF188D34c69C0eb03B51a1aD0b' as Address;
+export const TEST_SUBSTRATE_ADDRESS = '5CGQ7BPJZZKNirQgVhzbX9wdkgbnUHtJ5V7FkMXdZeVbXyr9' as Address;
 
 export const TEST_CHAIN_ID = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 export const TEST_HASH = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
@@ -58,3 +59,8 @@ export const DEFAULT_TIME = new BN(6_000);
 export const ONE_DAY = new BN(24 * 60 * 60 * 1000);
 
 export const MONTH = 30 * 24 * 60 * 60 * 1000;
+
+const CHAINS_CONFIG_VERSION = 'v1';
+const TOKENS_CONFIG_VERSION = 'v1';
+export const CHAINS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/chains/${CHAINS_CONFIG_VERSION}/${process.env.CHAINS_FILE + '.json'}`;
+export const TOKENS_CONFIG_URL = `https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/tokens/${TOKENS_CONFIG_VERSION}/${process.env.TOKENS_FILE + '.json'}`;

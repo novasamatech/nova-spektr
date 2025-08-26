@@ -1,5 +1,6 @@
-export { transferModel } from './model/transfer-model';
-export { xcmTransferModel } from './model/xcm-transfer-model';
-export { Transfer } from './ui/Transfer';
+export { transferModel as defaultTransferModel } from './default/model/transfer-model';
+export { Transfer as DefaultTransfer } from './default/ui/Transfer';
 
-export type { BalanceMap, NetworkStore, TransferStore } from './lib/types';
+export { xcmTransferModel } from './default/model/xcm-transfer-model';
+
+export type { BalanceMap, NetworkStore, TransferStore } from './default/lib/types';

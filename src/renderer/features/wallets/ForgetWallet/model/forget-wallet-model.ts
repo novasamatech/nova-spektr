@@ -1,161 +1,131 @@
-import { attach, createApi, createEffect, createEvent, createStore, sample, split } from 'effector';
-import uniq from 'lodash/uniq';
+import { attach, createEvent, createStore, restore, sample } from 'effector';
+import { createGate } from 'effector-react';
+import { persist } from 'effector-storage/local';
 import { spread } from 'patronum';
 
-import { type MultisigAccount, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type Wallet } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
+import { accountService, accountSync, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
-import { useForgetMultisig } from '@/entities/multisig';
-import { proxyModel } from '@/entities/proxy';
+import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { proxiesModel } from '@/features/proxies';
+import { forgetService } from '../service';
 
-const { deleteMultisigTxs } = useForgetMultisig();
+const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
-export type Callbacks = {
-  onDeleteFinished: () => void;
-};
+const $wallet = flow.state.map(({ wallet }) => wallet);
 
-const forgetWallet = createEvent<Wallet>();
-const forgetSimpleWallet = createEvent<Wallet>();
-const forgetMultisigWallet = createEvent<Wallet>();
-const forgetWcWallet = createEvent<Wallet>();
+const changeConnectedAccountsDoNotShowAgain = createEvent<boolean>();
 
-const $callbacks = createStore<Callbacks | null>(null);
-const callbacksApi = createApi($callbacks, {
-  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
+const $connectedAccountsDoNotShowAgain = restore(changeConnectedAccountsDoNotShowAgain, false);
+
+persist({
+  key: 'forget_wallet_is_do_not_show_again',
+  store: $connectedAccountsDoNotShowAgain,
+  sync: true,
 });
 
-const deleteMultisigOperationsFx = createEffect(async (account: MultisigAccount): Promise<void> => {
-  try {
-    await deleteMultisigTxs(account.accountId);
-  } catch (e) {
-    console.error(`Error while deleting multisig wallet with id ${account.walletId}`, e);
-  }
+const changeHideWalletDoNotShowAgain = createEvent<boolean>();
+const $hideWalletDoNotShowAgain = restore(changeHideWalletDoNotShowAgain, false);
+
+persist({
+  key: 'hide_wallet_do_not_show_again',
+  store: $hideWalletDoNotShowAgain,
+  sync: true,
 });
 
-type CheckForProxiedWalletsParams = {
-  wallet: Wallet;
-  wallets: Wallet[];
-  proxies: Record<AccountId, ProxyAccount[]>;
-  walletsProxyGroups: Record<Wallet['id'], ProxyGroup[]>;
-};
-type CheckForProxiedWalletsResult = {
-  proxiedWalletsToDelete: number[];
-  proxiedAccountsToDelete: AccountId[];
-  proxiesToDelete: ProxyAccount[];
-  proxyGroupsToDelete: ProxyGroup[];
-};
-const findProxiedWalletsFx = createEffect(
-  ({ wallet, wallets, proxies, walletsProxyGroups }: CheckForProxiedWalletsParams): CheckForProxiedWalletsResult => {
-    const walletAccountsIds = wallet.accounts.map((a) => a.accountId);
+const remove = createEvent();
 
-    const proxiedAccountsToDelete = walletUtils.getAccountsBy(wallets, (a) => {
-      return accountUtils.isProxiedAccount(a) && walletAccountsIds.includes(a.proxyAccountId);
-    });
-    const proxiedWalletsToDelete = uniq(proxiedAccountsToDelete.map((a) => a.walletId));
+const $walletToHide = createStore<number | null>(null);
+const $walletsToRemove = createStore<number[]>([]);
 
-    const proxiesToDelete = proxiedAccountsToDelete
-      .map((a) => a.accountId)
-      .concat(walletAccountsIds)
-      .reduce<ProxyAccount[]>((acc, accountId) => {
-        if (proxies[accountId]) {
-          acc.push(...proxies[accountId]);
+const $isConnectedAccountsAlertNeeded = $walletsToRemove.map((walletsToRemove) => walletsToRemove.length > 1);
+
+sample({
+  clock: $wallet,
+  source: {
+    accounts: accounts.$list,
+    chains: networkModel.$chains,
+  },
+  fn: ({ accounts, chains }, wallet) => {
+    if (nullable(wallet)) return { walletToHidden: null, walletsToRemove: [] };
+    const accountsToDelete = accountService.filterAccountsByWallet(accounts, wallet.id);
+
+    const walletIdFromGraph = new Set<number>();
+
+    for (const chain of Object.values(chains)) {
+      const filteredAccounts = accounts.filter((a) => !accountUtils.isWatchOnlyAccount(a));
+      const graph = accountService.createAccountGraphs(filteredAccounts, chain);
+
+      for (const account of accountsToDelete) {
+        if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
+
+        const accountsList = forgetService.findParentAccounts(graph, account);
+
+        for (const a of accountsList) {
+          walletIdFromGraph.add(a.walletId);
         }
-
-        return acc;
-      }, []);
-
-    const proxyGroupsToDelete = proxiedWalletsToDelete.reduce((acc, walletId) => {
-      if (walletsProxyGroups[walletId]) {
-        acc.push(...walletsProxyGroups[walletId]);
       }
+    }
 
-      return acc;
-    }, [] as ProxyGroup[]);
+    const walletsToRemove = [...Array.from(walletIdFromGraph)];
+
+    if (!walletUtils.isRegularMultisig(wallet)) {
+      walletsToRemove.push(wallet.id);
+    }
 
     return {
-      proxiedWalletsToDelete,
-      proxiesToDelete,
-      proxiedAccountsToDelete: proxiedAccountsToDelete.map((a) => a.accountId),
-      proxyGroupsToDelete,
+      walletToHidden: walletUtils.isRegularMultisig(wallet) ? wallet.id : null,
+      walletsToRemove,
     };
   },
-);
-
-split({
-  source: forgetWallet,
-  match: {
-    multisigWallet: (wallet: Wallet) => walletUtils.isMultisig(wallet),
-  },
-  cases: {
-    multisigWallet: forgetMultisigWallet,
-    __: forgetSimpleWallet,
-  },
-});
-
-sample({
-  clock: [forgetWallet, forgetWcWallet],
-  source: {
-    proxies: proxyModel.$proxies,
-    wallets: walletModel.$allWallets,
-    walletsProxyGroups: proxyModel.$walletsProxyGroups,
-  },
-  fn: (params, wallet) => ({ ...params, wallet }),
-  target: findProxiedWalletsFx,
-});
-
-sample({
-  clock: findProxiedWalletsFx.doneData,
   target: spread({
-    proxiesToDelete: proxyModel.events.proxiesRemoved,
-    proxiedWalletsToDelete: walletModel.events.walletsRemoved,
-    proxiedAccountsToDelete: balanceModel.events.balancesRemoved,
-    proxyGroupsToDelete: proxyModel.events.proxyGroupsRemoved,
+    walletToHidden: $walletToHide,
+    walletsToRemove: $walletsToRemove,
+  }),
+});
+
+const walletsRemovedFx = attach({
+  effect: walletModel.walletsRemoved,
+});
+
+sample({
+  clock: remove,
+  source: {
+    walletToHide: $walletToHide,
+    walletsToRemove: $walletsToRemove,
+  },
+  fn: ({ walletToHide, walletsToRemove }) => {
+    return { walletToHide: walletToHide ?? undefined, walletsToRemove };
+  },
+  target: spread({
+    walletToHide: walletModel.walletHidden,
+    walletsToRemove: walletsRemovedFx,
   }),
 });
 
 sample({
-  clock: [forgetSimpleWallet, forgetMultisigWallet],
-  fn: (wallet) => wallet.accounts.map((a) => a.accountId),
+  clock: walletsRemovedFx,
+  source: accounts.$list,
+  fn: (accounts, walletIds) => {
+    return accounts.filter((a) => walletIds.includes(a.walletId)).map((a) => a.accountId);
+  },
   target: balanceModel.events.balancesRemoved,
 });
 
 sample({
-  clock: forgetMultisigWallet,
-  fn: (wallet) => wallet.accounts[0] as MultisigAccount,
-  target: deleteMultisigOperationsFx,
-});
-
-sample({
-  clock: forgetMultisigWallet,
-  target: walletModel.events.walletHidden,
-});
-
-sample({
-  clock: forgetSimpleWallet,
-  fn: (wallet) => wallet.id,
-  target: walletModel.events.walletRemoved,
-});
-
-sample({
-  clock: [walletModel.events.walletRemovedSuccess, walletModel.events.walletHiddenSuccess],
-  target: attach({
-    source: $callbacks,
-    effect: (state) => state?.onDeleteFinished(),
-  }),
-});
-
-// TODO this connection is dirty, we should decouple wallet delete logic and proxy manipulation.
-sample({
-  clock: [walletModel.events.walletRemovedSuccess, walletModel.events.walletHiddenSuccess],
-  target: proxiesModel.findAllProxies,
+  clock: walletsRemovedFx.done,
+  target: accountSync.syncAccounts,
 });
 
 export const forgetWalletModel = {
-  events: {
-    forgetWallet,
-    forgetWcWallet,
-    callbacksChanged: callbacksApi.callbacksChanged,
-  },
+  flow,
+
+  $wallet,
+  $isConnectedAccountsAlertNeeded,
+  $connectedAccountsDoNotShowAgain,
+  $hideWalletDoNotShowAgain,
+  remove,
+  changeConnectedAccountsDoNotShowAgain,
+  changeHideWalletDoNotShowAgain,
 };

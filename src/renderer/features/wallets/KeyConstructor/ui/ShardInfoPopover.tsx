@@ -14,12 +14,12 @@ export const ShardInfoPopover = () => {
         <Box direction="column" gap={4} padding={4} width="360px">
           <section className="flex flex-col gap-y-2">
             <FootnoteText className="text-text-secondary">
-              {t('dynamicDerivations.constructor.shardInfoOne')}
+              {t('dynamicDerivations.keysConstructor.shardInfoOne')}
             </FootnoteText>
           </section>
           <section className="flex flex-col gap-y-2">
             <FootnoteText className="text-text-secondary">
-              {t('dynamicDerivations.constructor.shardInfoTwo')}
+              {t('dynamicDerivations.keysConstructor.shardInfoTwo')}
             </FootnoteText>
           </section>
 
@@ -29,7 +29,7 @@ export const ShardInfoPopover = () => {
               iconName="link"
               iconPosition="right"
             >
-              {t('dynamicDerivations.constructor.shardInfoLink')}
+              {t('dynamicDerivations.keysConstructor.shardInfoLink')}
             </InfoLink>
           </section>
         </Box>

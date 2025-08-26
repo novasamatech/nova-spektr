@@ -41,7 +41,7 @@ export const MultiAccountsList = ({ accounts, className, headerClassName }: Prop
                 <ChainTitle className="w-[214px]" fontClass="text-text-primary" chain={chain} />
 
                 <div className="flex w-[214px]">
-                  <FootnoteText className="w-[180px] text-text-secondary">
+                  <FootnoteText as="div" className="w-[180px] text-text-secondary">
                     <Address address={toAddress(accountId, { prefix: addressPrefix })} variant="truncate" showIcon />
                   </FootnoteText>
                   <AccountExplorers accountId={accountId} chain={chain} />

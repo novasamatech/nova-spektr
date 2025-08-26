@@ -1,19 +1,17 @@
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { cnTw } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { type MultisigOperation } from '@/domains/network';
 import { AssetFiatBalance } from '@/entities/price';
-import { getTransactionAmount } from '@/entities/transaction';
-import { useTransactionAsset } from '../hooks/useTransactionAsset';
+import { getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 
 type Props = {
-  operation: MultisigTransactionDS;
+  operation: MultisigOperation;
   className?: string;
 };
 
 // TODO it should be separated into multiple components for each set of operations (transfer/staking)
 export const TransactionAmount = ({ operation, className }: Props) => {
-  const transaction = getTransactionFromMultisigTx(operation);
+  const transaction = operation.transaction;
   const value = transaction ? getTransactionAmount(transaction) : null;
   const asset = useTransactionAsset(operation);
 
@@ -26,7 +24,7 @@ export const TransactionAmount = ({ operation, className }: Props) => {
       <AssetBalance
         value={value}
         asset={asset}
-        className={cnTw('font-manrope text-[32px] font-bold leading-[36px] text-text-primary', className)}
+        className={cnTw('font-manrope text-[32px] leading-[36px] font-bold text-text-primary', className)}
       />
       <AssetFiatBalance asset={asset} amount={value} className="text-headline" />
     </div>

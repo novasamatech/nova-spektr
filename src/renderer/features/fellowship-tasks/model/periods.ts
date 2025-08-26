@@ -2,8 +2,8 @@ import { combine, sample } from 'effector';
 
 import { nullable } from '@/shared/lib/utils';
 import { evidence, evidenceService, memberService } from '@/domains/collectives';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
-import { block } from './block';
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 import { memberProfile } from './memberProfile';
@@ -13,9 +13,10 @@ import { memberProfile } from './memberProfile';
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 
 const $leftToPromotion = combine(
-  { periods: $periods, currentBlock: block.$currentBlock, member: memberProfile.$member },
+  { periods: $periods, currentBlock: fellowshipNetwork.$currentBlock, member: memberProfile.$member },
   ({ periods, currentBlock, member }) => {
-    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member) || nullable(currentBlock))
+      return null;
 
     return evidenceService.getBlockUntilNextPromotion(member, periods, currentBlock);
   },
@@ -28,10 +29,10 @@ const $endDemotionPeriod = combine(memberProfile.$member, $periods, (member, per
 });
 
 const $leftToDemotion = combine(
-  { periods: $periods, currentBlock: block.$currentBlock, member: memberProfile.$member },
+  { periods: $periods, currentBlock: fellowshipNetwork.$currentBlock, member: memberProfile.$member },
   ({ periods, currentBlock, member }) => {
-    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member) || nullable(currentBlock))
+      return null;
     return evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
   },
 );

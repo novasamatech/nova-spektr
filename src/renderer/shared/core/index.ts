@@ -22,26 +22,29 @@ export type {
   ProxiedWallet,
   SignableWalletFamily,
 } from './types/wallet';
-export { WalletType, WalletIconType, SigningType } from './types/wallet';
+export { WalletType, SigningType } from './types/wallet';
 
 export { AccountType, KeyType } from './types/account';
 export type {
-  Account,
   WatchOnlyAccount,
   VaultBaseAccount,
   VaultChainAccount,
   MultisigAccount,
+  MultisigSignatoryAccount,
   WcAccount,
   ProxiedAccount,
+  ProxiedConnection,
   VaultShardAccount,
   DraftAccount,
+  FlexibleMultisigAccount,
+  FlexibleProxiedAccount,
 } from './types/account';
 
 export { AssetType, StakingType } from './types/asset';
-export type { Asset, OrmlExtras, StatemineExtras, AssetByChains } from './types/asset';
+export type { AssetId, Asset, OrmlExtras, StatemineExtras, AssetByChains, PortfolioTokenBalance } from './types/asset';
 
 export { LockTypes } from './types/balance';
-export type { Balance, AssetBalance } from './types/balance';
+export type { Balance, BalanceId, BalanceMap, AssetBalance, BalanceDraft, TransferableMode } from './types/balance';
 
 export type { ChainMetadata } from './types/metadata';
 
@@ -58,21 +61,14 @@ export type { Validator } from './types/validator';
 export { RewardsDestination } from './types/stake';
 export type { Stake, Unlocking } from './types/stake';
 
-export type {
-  ProxyAccount,
-  PartialProxyAccount,
-  PartialProxiedAccount,
-  ProxyDeposits,
-  ProxyGroup,
-  ProxyType,
-} from './types/proxy';
+export type { ProxyAccount, PartialProxyAccount, PartialProxiedAccount, ProxyType } from './types/proxy';
 export { ProxyVariant } from './types/proxy';
 
 export type {
   Notification,
   MultisigCreated,
   FlexibleMultisigCreated,
-  MultisigOperation,
+  MultisigOperationNotification,
   ProxyAction,
 } from './types/notification';
 export { NotificationType } from './types/notification';
@@ -85,10 +81,6 @@ export type {
   SigningStatus,
   MultisigTxStatus,
   DecodedTransaction,
-  MultisigEvent,
-  MultisigTransaction,
-  FlexibleMultisigTransaction,
-  MultisigTransactionKey,
   ProxyTransaction,
   TxWrapper,
   TxWrappers_OLD,
@@ -96,8 +88,6 @@ export type {
   ProxyTxWrapper,
   WrapAsMulti,
 } from './types/transaction';
-
-export type { BasketTransaction } from './types/basket';
 
 export type {
   TrackId,
@@ -124,6 +114,8 @@ export type {
   CancelledReferendum,
   CompletedReferendum,
   Referendum,
+  Proposal,
+  SpendProposal,
 } from './types/referendum';
 
 export type {
@@ -139,3 +131,12 @@ export type {
   DelegationBalanceMap,
   DelegationTracksMap,
 } from './types/voting';
+
+export type {
+  ToastPosition,
+  ToastVariant,
+  ToastNotificationProps,
+  ModalNotificationProps,
+  ToastNotification,
+  ModalNotification,
+} from './types/notificationService';

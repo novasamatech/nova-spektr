@@ -1,8 +1,10 @@
 import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type Referendum, type ReferendumId } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
+import { entries, nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { identity, identityService } from '@/domains/network';
 import { voteHistoryModel } from '@/entities/governance';
 import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
@@ -11,7 +13,6 @@ import { type AggregatedVoteHistory } from '../types/structs';
 import { votingPowerSorting } from '../utils/votingPowerSorting';
 
 import { listAggregate } from './list';
-import { proposerIdentityAggregate } from './proposerIdentity';
 
 const flow = createGate<{ referendum: Referendum }>();
 
@@ -31,21 +32,27 @@ const $voteHistory = combine(
   {
     history: $chainVoteHistory,
     chainId: networkSelectorModel.$governanceChainId,
-    proposers: proposerIdentityAggregate.$proposers,
+    identities: identity.$list,
   },
-  ({ history, proposers, chainId }) => {
+  ({ history, identities, chainId }) => {
     if (!chainId) return {};
 
     const result: Record<ReferendumId, AggregatedVoteHistory[]> = {};
+    const chainIdentities = identities[chainId];
 
-    for (const [referendumId, historyList] of Object.entries(history)) {
+    for (const [referendumId, historyList] of entries(history)) {
       const aggregatedHistory = historyList.flatMap((vote) => {
         const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
 
-        return splitVotes.map((vote) => ({
-          ...vote,
-          name: proposers[vote.voter]?.parent.name ?? null,
-        }));
+        return splitVotes.map((vote) => {
+          const voterIdentity = chainIdentities[vote.voter];
+          const identityName = voterIdentity ? identityService.getFullName(voterIdentity) : null;
+
+          return {
+            ...vote,
+            name: identityName,
+          };
+        });
       });
 
       result[referendumId] = aggregatedHistory.sort(votingPowerSorting);
@@ -69,11 +76,38 @@ sample({
 });
 
 sample({
+  clock: $chainVoteHistory,
+  source: networkSelectorModel.$governanceChainId,
+  filter: nonNullable,
+  fn: (chainId: ChainId, history) => {
+    const voters = new Set<AccountId>();
+
+    for (const historyList of Object.values(history)) {
+      for (const vote of historyList) {
+        const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
+        for (const vote1 of splitVotes) {
+          voters.add(vote1.voter);
+        }
+      }
+    }
+
+    return {
+      chainId,
+      accounts: Array.from(voters),
+    };
+  },
+  target: identity.request,
+});
+
+sample({
   clock: voteHistoryModel.events.voteHistoryRequestDone,
-  fn: ({ result }) => ({
-    addresses: result.map((x) => x.voter),
+  source: networkSelectorModel.$governanceChainId,
+  filter: nonNullable,
+  fn: (chainId: ChainId, { result }) => ({
+    chainId,
+    accounts: result.map((x) => x.voter),
   }),
-  target: proposerIdentityAggregate.events.requestProposers,
+  target: identity.request,
 });
 
 sample({

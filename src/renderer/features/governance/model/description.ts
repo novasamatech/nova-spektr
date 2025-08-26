@@ -1,9 +1,12 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { type GovernanceApi } from '@/shared/api/governance';
 import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { identity } from '@/domains/network';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
+
+import { networkSelectorModel } from './networkSelector';
 
 const $descriptions = createStore<Record<ChainId, Record<ReferendumId, string>>>({});
 
@@ -35,6 +38,31 @@ sample({
   target: requestDescriptionsFx,
 });
 
+//Identities for governance chain
+const $identities = combine(identity.$list, networkSelectorModel.$governanceChainId, (list, chainId) =>
+  chainId ? (list[chainId] ?? {}) : {},
+);
+
+const requestIdentity = sample({
+  clock: requestDescription,
+  source: networkSelectorModel.$governanceChainId,
+  fn: (chainId, { referendum }) => {
+    return {
+      chainId,
+      referendum,
+    };
+  },
+}).filterMap(({ chainId, referendum }) => {
+  if (chainId && referendum.type === 'Ongoing' && referendum.proposal?.type === 'Spend') {
+    return { chainId, accounts: [referendum.proposal.beneficiary] };
+  }
+});
+
+sample({
+  clock: requestIdentity,
+  target: identity.request,
+});
+
 sample({
   clock: requestDescriptionsFx.done,
   source: $descriptions,
@@ -45,7 +73,7 @@ sample({
 export const descriptionsModel = {
   $descriptions,
   $isDescriptionLoading: requestDescriptionsFx.pending,
-
+  $identities,
   events: {
     requestDescription,
   },

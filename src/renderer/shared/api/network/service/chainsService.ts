@@ -1,61 +1,41 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
-import concat from 'lodash/concat';
-import keyBy from 'lodash/keyBy';
-import orderBy from 'lodash/orderBy';
-import sortBy from 'lodash/sortBy';
+import { concat, keyBy, orderBy, sortBy } from 'lodash';
 
 import { type PriceObject } from '@/shared/api/price-provider';
-import chainsProd from '@/shared/config/chains/chains.json';
-import chainsDev from '@/shared/config/chains/chains_dev.json';
-import { type AssetBalance, type Balance, type Chain, type ChainId } from '@/shared/core';
-import { ZERO_BALANCE, getRelaychainAsset, nonNullable, nullable, totalAmount } from '@/shared/lib/utils';
+import { type AssetBalance, type Balance, type BalanceMap, type Chain, type ChainId } from '@/shared/core';
+import { CHAINS_CONFIG_URL, ZERO_BALANCE, getRelaychainAsset, nonNullable, totalAmount } from '@/shared/lib/utils';
 import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
 
 type ChainWithFiatBalance = Chain & {
   fiatBalance: string;
 };
 
-const CHAINS: Record<string, Chain[]> = {
-  chains: chainsProd as Chain[],
-  'chains-dev': chainsDev as Chain[],
-};
-
 export const chainsService = {
   getChainsData,
   getChainsMap,
-  getChainById,
   getStakingChainsData,
   sortChains,
   sortChainsByBalance,
 };
 
-function getChainsData(): Chain[] {
-  const chains = CHAINS[process.env.CHAINS_FILE || 'chains'];
+async function getChainsData(): Promise<Chain[] | null> {
+  const response = await fetch(CHAINS_CONFIG_URL);
 
-  if (nullable(chains)) {
-    throw new Error(`Chains config named "${process.env.CHAINS_FILE}" not found`);
+  if (!response.ok) {
+    console.error(`Failed to fetch chains config: ${response.status} ${response.statusText}`);
+    return null;
   }
 
-  return sortChains(chains);
+  return response.json();
 }
 
-function getChainsMap(): Record<ChainId, Chain> {
-  return keyBy(getChainsData(), 'chainId');
+function getChainsMap(chains: Chain[]): Record<ChainId, Chain> {
+  return keyBy(chains, 'chainId');
 }
 
-function getChainById(chainId: ChainId): Chain | undefined {
-  return getChainsData().find((chain) => chain.chainId === chainId);
-}
-
-function getStakingChainsData(): Chain[] {
-  return getChainsData().reduce<Chain[]>((acc, chain) => {
-    if (getRelaychainAsset(chain.assets)) {
-      acc.push(chain);
-    }
-
-    return acc;
-  }, []);
+function getStakingChainsData(chains: Record<ChainId, Chain>): Chain[] {
+  return Object.values(chains).filter((chain) => getRelaychainAsset(chain.assets));
 }
 
 function sortChains<T extends Pick<Chain, 'name' | 'options'>>(chains: T[]): T[] {
@@ -87,7 +67,7 @@ const compareFiatBalances = (a: ChainWithFiatBalance, b: ChainWithFiatBalance) =
 
 function sortChainsByBalance(
   chains: Chain[],
-  balances: Balance[],
+  balances: BalanceMap,
   assetPrices: PriceObject | null,
   currency?: string,
 ): Chain[] {
@@ -98,8 +78,9 @@ function sortChainsByBalance(
   const numberchains = { withBalance: [], noBalance: [] };
   const testnets = { withBalance: [], noBalance: [] };
 
-  const balancesMap: Record<string, AssetBalance> = {};
-  for (const balance of balances) {
+  // TODO weird code, need some refactoring
+  const balancesMap: Record<string, Balance> = {};
+  for (const balance of Object.values(balances)) {
     const key = `${balance.chainId}_${balance.assetId}`;
     balancesMap[key] = sumBalances(balance, balancesMap[key]);
   }
@@ -174,7 +155,6 @@ export const sumBalances = <T extends AssetBalance>(firstBalance: T, secondBalan
 
   return {
     ...firstBalance,
-    verified: firstBalance.verified && secondBalance.verified,
     free: sumValues(firstBalance.free, secondBalance.free),
     reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
     frozen: sumValues(firstBalance.frozen, secondBalance.frozen),

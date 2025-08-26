@@ -3,8 +3,8 @@ import { type PropsWithChildren, memo, useEffect, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, getRelativeTimeFromApi, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, Button, Duration, FootnoteText, Icon, Identicon, SmallTitleText } from '@/shared/ui';
-import { CollectiveRank, Hash } from '@/shared/ui-entities';
+import { BodyText, Button, Duration, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { CollectiveRank, Hash, Identicon } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
@@ -128,13 +128,12 @@ const Member = () => {
   const member = useUnit(profile.$member);
   const identity = useUnit(profile.$identity);
   const input = useUnit(fellowshipProfileFeature.input);
-  const pendingActivityInfo = useUnit(profile.$pendingActivityInfo);
 
   if (nullable(member)) return null;
 
   return (
     <Card padding={false}>
-      <div className="divider flex h-11 items-center justify-between border-b border-filter-border pl-4 pr-1">
+      <div className="divider flex h-11 items-center justify-between border-b border-filter-border pr-1 pl-4">
         <span className="text-button-small">{t('fellowship.members.myProfile')}</span>
 
         <ProfileModal>
@@ -146,11 +145,7 @@ const Member = () => {
 
       <Box direction="column" gap={5} padding={4}>
         <Box direction="row" verticalAlign="center" gap={2}>
-          <Identicon
-            size={32}
-            background={false}
-            address={toAddress(member.accountId, { prefix: input?.chain.addressPrefix })}
-          />
+          <Identicon size={32} background={false} value={member.accountId} />
           <Box direction="column" gap={1} width="100%">
             <Box direction="row" horizontalAlign="space-between" gap={2}>
               <BodyText>
@@ -177,8 +172,12 @@ const Member = () => {
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
           <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
-          <SmallTitleText>{pendingActivityInfo ? <Skeleton height="1lh" /> : <Activity />}</SmallTitleText>
-          <SmallTitleText>{pendingActivityInfo ? <Skeleton height="1lh" /> : <Agreement />}</SmallTitleText>
+          <SmallTitleText>
+            <Activity />
+          </SmallTitleText>
+          <SmallTitleText>
+            <Agreement />
+          </SmallTitleText>
           <SmallTitleText>
             <NextRankTimeout />
           </SmallTitleText>
@@ -192,14 +191,22 @@ const Activity = () => {
   const { t } = useI18n();
   const activityInfo = useUnit(profile.$activityInfo);
 
-  return <span>{nonNullable(activityInfo?.activity) ? `${activityInfo.activity}%` : t('fellowship.n/a')}</span>;
+  if (nullable(activityInfo)) {
+    return <Skeleton height="1lh" />;
+  }
+
+  return <span>{nonNullable(activityInfo.activity) ? `${activityInfo.activity}%` : t('fellowship.n/a')}</span>;
 };
 
 const Agreement = () => {
   const { t } = useI18n();
   const activityInfo = useUnit(profile.$activityInfo);
 
-  return <span>{nonNullable(activityInfo?.agreement) ? `${activityInfo.agreement}%` : t('fellowship.n/a')}</span>;
+  if (nullable(activityInfo)) {
+    return <Skeleton height="1lh" />;
+  }
+
+  return <span>{nonNullable(activityInfo.agreement) ? `${activityInfo.agreement}%` : t('fellowship.n/a')}</span>;
 };
 
 const NextRankTimeout = () => {

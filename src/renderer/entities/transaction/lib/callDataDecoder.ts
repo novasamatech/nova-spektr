@@ -5,7 +5,7 @@ import { type Call } from '@polkadot/types/interfaces';
 import { type HexString } from '@polkadot/util/types';
 
 import { xcmService } from '@/shared/api/xcm';
-import { type CallData, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
+import { type CallData, type Chain, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import {
@@ -51,18 +51,23 @@ export const getTxFromCallData = (api: ApiPromise, callData: CallData): Submitta
   return getDataFromCallData(api, callData).decoded;
 };
 
-export const decodeCallData = (api: ApiPromise, accountId: AccountId, callData: CallData): DecodedTransaction => {
+export const decodeCallData = (
+  api: ApiPromise,
+  accountId: AccountId,
+  callData: CallData,
+  chains: Record<ChainId, Chain>,
+): DecodedTransaction => {
   const { decoded, method, section } = getDataFromCallData(api, callData);
 
   if (isBatchExtrinsic(method, section)) {
-    return parseBatch(method, section, accountId, decoded, api);
+    return parseBatch(method, section, accountId, decoded, api, chains);
   }
 
   if (isProxyExtrinsic(method, section)) {
-    return parseProxy(method, section, accountId, decoded, api);
+    return parseProxy(method, section, accountId, decoded, api, chains);
   }
 
-  return parseSingle(method, section, accountId, decoded, api.genesisHash.toHex());
+  return parseSingle(method, section, accountId, decoded, api.genesisHash.toHex(), chains);
 };
 
 const parseBatch = (
@@ -71,6 +76,7 @@ const parseBatch = (
   accountId: AccountId,
   decoded: SubmittableExtrinsic<'promise'>,
   api: ApiPromise,
+  chains: Record<ChainId, Chain>,
 ): DecodedTransaction => {
   let transactionType: TransactionType | undefined;
   if (['batchAll', 'batch', 'forceBatch'].includes(method) && section === 'utility') {
@@ -83,10 +89,11 @@ const parseBatch = (
     method,
     section,
     api.genesisHash.toHex(),
+    chains,
     transactionType,
   );
   const calls = api.createType('Vec<Call>', batchTransaction.args.calls);
-  batchTransaction.args.transactions = calls.map((call) => decodeCallData(api, accountId, call.toHex()));
+  batchTransaction.args.transactions = calls.map((call) => decodeCallData(api, accountId, call.toHex(), chains));
 
   return batchTransaction;
 };
@@ -97,6 +104,7 @@ const parseProxy = (
   accountId: AccountId,
   decoded: SubmittableExtrinsic<'promise'>,
   api: ApiPromise,
+  chains: Record<ChainId, Chain>,
 ): DecodedTransaction => {
   const proxyTransaction = getDecodedTransaction(
     accountId,
@@ -104,10 +112,11 @@ const parseProxy = (
     method,
     section,
     api.genesisHash.toHex(),
+    chains,
     TransactionType.PROXY,
   );
   const call = api.createType('Call', proxyTransaction.args.call);
-  proxyTransaction.args.transaction = decodeCallData(api, accountId, call.toHex());
+  proxyTransaction.args.transaction = decodeCallData(api, accountId, call.toHex(), chains);
 
   return proxyTransaction;
 };
@@ -118,12 +127,10 @@ const parseSingle = (
   accountId: AccountId,
   decoded: SubmittableExtrinsic<'promise'>,
   genesisHash: HexString,
+  chains: Record<ChainId, Chain>,
 ): DecodedTransaction => {
-  console.log(`Start parsing call data for section ${section} and method ${method}`);
-
   const transactionType = getTransactionType(method, section);
-
-  return getDecodedTransaction(accountId, decoded, method, section, genesisHash, transactionType);
+  return getDecodedTransaction(accountId, decoded, method, section, genesisHash, chains, transactionType);
 };
 
 const getDecodedTransaction = (
@@ -132,11 +139,10 @@ const getDecodedTransaction = (
   method: string,
   section: string,
   genesisHash: HexString,
+  chains: Record<ChainId, Chain>,
   transactionType?: TransactionType,
 ): DecodedTransaction => {
   if (!transactionType) {
-    console.log(`Unknown transaction type with section ${section} and method ${method}`);
-
     return {
       accountId,
       method,
@@ -175,7 +181,7 @@ const getDecodedTransaction = (
     chainId: genesisHash,
     args: {
       ...additionalArgs,
-      ...parser(decoded, genesisHash),
+      ...parser(decoded, genesisHash, chains),
     },
     type: transactionType,
   };
@@ -183,7 +189,7 @@ const getDecodedTransaction = (
 
 const getCallDataParser: Record<
   TransactionType,
-  (decoded: SubmittableExtrinsic<'promise'>, chainId: ChainId) => Record<string, any>
+  (decoded: SubmittableExtrinsic<'promise'>, chainId: ChainId, chains: Record<ChainId, Chain>) => Record<string, any>
 > = {
   [TransactionType.TRANSFER]: (decoded): Record<string, any> => {
     return { dest: decoded.args[0].toString(), value: decoded.args[1].toString() };
@@ -205,58 +211,58 @@ const getCallDataParser: Record<
       value: decoded.args[2].toString(),
     };
   },
-  [TransactionType.XCM_LIMITED_TRANSFER]: (decoded, chainId): Record<string, any> => {
+  [TransactionType.XCM_LIMITED_TRANSFER]: (decoded, chainId, chains): Record<string, any> => {
     const parsedData = xcmService.parseXcmPalletExtrinsic({
       dest: decoded.args[0].toHuman(),
       beneficiary: decoded.args[1].toHuman(),
       assets: decoded.args[2].toHuman(),
     });
 
-    return xcmService.decodeXcm(chainId, parsedData);
+    return xcmService.decodeXcm(chainId, chains, parsedData);
   },
-  [TransactionType.XCM_TELEPORT]: (decoded, chainId): Record<string, any> => {
+  [TransactionType.XCM_TELEPORT]: (decoded, chainId, chains): Record<string, any> => {
     const parsedData = xcmService.parseXcmPalletExtrinsic({
       dest: decoded.args[0].toHuman(),
       beneficiary: decoded.args[1].toHuman(),
       assets: decoded.args[2].toHuman(),
     });
 
-    return xcmService.decodeXcm(chainId, parsedData);
+    return xcmService.decodeXcm(chainId, chains, parsedData);
   },
-  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (decoded, chainId): Record<string, any> => {
+  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (decoded, chainId, chains): Record<string, any> => {
     const parsedData = xcmService.parseXcmPalletExtrinsic({
       dest: decoded.args[0].toHuman(),
       beneficiary: decoded.args[1].toHuman(),
       assets: decoded.args[2].toHuman(),
     });
 
-    return xcmService.decodeXcm(chainId, parsedData);
+    return xcmService.decodeXcm(chainId, chains, parsedData);
   },
-  [TransactionType.POLKADOT_XCM_TELEPORT]: (decoded, chainId): Record<string, any> => {
+  [TransactionType.POLKADOT_XCM_TELEPORT]: (decoded, chainId, chains): Record<string, any> => {
     const parsedData = xcmService.parseXcmPalletExtrinsic({
       dest: decoded.args[0].toHuman(),
       beneficiary: decoded.args[1].toHuman(),
       assets: decoded.args[2].toHuman(),
     });
 
-    return xcmService.decodeXcm(chainId, parsedData);
+    return xcmService.decodeXcm(chainId, chains, parsedData);
   },
-  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: (decoded, chainId): Record<string, any> => {
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: (decoded, chainId, chains): Record<string, any> => {
     const parsedData = xcmService.parseXcmPalletExtrinsic({
       dest: decoded.args[0].toHuman(),
       beneficiary: decoded.args[1].toHuman(),
       assets: decoded.args[2].toHuman(),
     });
 
-    return xcmService.decodeXcm(chainId, parsedData);
+    return xcmService.decodeXcm(chainId, chains, parsedData);
   },
-  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (decoded, chainId): Record<string, any> => {
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (decoded, chainId, chains): Record<string, any> => {
     const parsedData = xcmService.parseXTokensExtrinsic({
       asset: decoded.args[0].toHuman(),
       dest: decoded.args[1].toHuman(),
     });
 
-    return xcmService.decodeXcm(chainId, parsedData);
+    return xcmService.decodeXcm(chainId, chains, parsedData);
   },
   [TransactionType.BOND]: (decoded): Record<string, any> => {
     const args: Record<string, any> = {};
@@ -270,9 +276,8 @@ const getCallDataParser: Record<
 
     try {
       args.payee = JSON.parse(payee);
-    } catch (e) {
+    } catch {
       args.payee = payee;
-      console.warn(e);
     }
 
     if (typeof args.payee === 'object') {
@@ -376,7 +381,7 @@ const getCallDataParser: Record<
       delay: decoded.args[2].toString(),
     };
   },
-  [TransactionType.REMOVE_PURE_PROXY]: (decoded): Record<string, any> => {
+  [TransactionType.KILL_PURE_PROXY]: (decoded): Record<string, any> => {
     return {
       spawner: decoded.args[0].toString(),
       proxyType: decoded.args[1].toString(),
@@ -393,6 +398,9 @@ const getCallDataParser: Record<
     };
   },
   [TransactionType.REMARK]: (decoded): Record<string, any> => {
+    return { remark: decoded.args[0].toString() };
+  },
+  [TransactionType.REMARK_WITH_EVENT]: (decoded): Record<string, any> => {
     return { remark: decoded.args[0].toString() };
   },
   [TransactionType.UNLOCK]: (decoded): Record<string, any> => {
@@ -481,7 +489,7 @@ const isProxyExtrinsic = (method: string, section: string): boolean => {
   return section === 'proxy' && method === 'proxy';
 };
 
-const getTransactionType = (method: string, section: string): TransactionType | undefined => {
+export const getTransactionType = (method: string, section: string): TransactionType | undefined => {
   const transferType = getTransferTxType(method, section);
   const stakingType = getStakingTxType(method, section);
   const xcmType = getXcmTxType(method, section);
@@ -553,7 +561,7 @@ const getProxyTxType = (method: string, section: string): TransactionType | unde
     removeProxy: TransactionType.REMOVE_PROXY,
     proxy: TransactionType.PROXY,
     createPure: TransactionType.CREATE_PURE_PROXY,
-    killPure: TransactionType.REMOVE_PURE_PROXY,
+    killPure: TransactionType.KILL_PURE_PROXY,
   }[method];
 };
 

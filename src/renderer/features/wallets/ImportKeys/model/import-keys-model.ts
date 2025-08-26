@@ -1,11 +1,18 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
-import groupBy from 'lodash/groupBy';
+import { groupBy } from 'lodash';
 import { reset } from 'patronum';
 import { parse } from 'yaml';
 
-import { type ChainId, type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import {
+  type Chain,
+  type ChainId,
+  type DraftAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
+import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { networkModel } from '@/entities/network';
 import { PATH_ERRORS } from '../lib/constants';
 import { DerivationImportError, type ErrorDetails } from '../lib/derivation-import-error';
 import { importKeysUtils } from '../lib/import-keys-utils';
@@ -66,9 +73,13 @@ const parseFileContentFx = createEffect<File, ParsedImportFile, DerivationImport
   throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
 });
 
-type ValidateDerivationsParams = { fileContent: ParsedImportFile; existingDerivations: ExistingDerivations };
+type ValidateDerivationsParams = {
+  fileContent: ParsedImportFile;
+  existingDerivations: ExistingDerivations;
+  chains: Record<ChainId, Chain>;
+};
 const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImportedDerivation[], DerivationImportError>(
-  ({ fileContent, existingDerivations }) => {
+  ({ fileContent, existingDerivations, chains }) => {
     const parsed = importKeysUtils.getDerivationsFromFile(fileContent);
     if (!parsed) {
       throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
@@ -82,7 +93,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
     }
 
     const filteredDerivations = derivations.filter(
-      (d) => !importKeysUtils.shouldIgnoreDerivation(d),
+      (d) => !importKeysUtils.shouldIgnoreDerivation(d, chains),
     ) as DerivationWithPath[];
 
     const errorsDetails = filteredDerivations.reduce<ErrorDetails>(
@@ -132,7 +143,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
   const importedByChain = groupBy(imported, 'chainId');
   const untouchedDerivations = existingDerivations.filter((d) => !importedByChain[d.chainId]);
 
-  return Object.entries(importedByChain).reduce<MergeResult>(
+  return entries(importedByChain).reduce<MergeResult>(
     (acc, [chain, derivations]) => {
       const existingChainDerivations = existingByChain[chain];
 
@@ -180,6 +191,12 @@ sample({
 });
 
 sample({
+  source: parseFileContentFx.done,
+  fn: () => null,
+  target: $validationError,
+});
+
+sample({
   source: parseFileContentFx.fail,
   fn: ({ error }: SampleFnError) => ({ error: error.error }),
   target: $validationError,
@@ -187,9 +204,16 @@ sample({
 
 sample({
   clock: parseFileContentFx.doneData,
-  source: $existingDerivations,
-  filter: (existingDerivations, fileContent) => Boolean(fileContent),
-  fn: (existingDerivations, fileContent) => ({ fileContent, existingDerivations: existingDerivations! }),
+  source: {
+    existingDerivations: $existingDerivations,
+    chains: networkModel.$chains,
+  },
+  filter: (_, fileContent) => Boolean(fileContent),
+  fn: ({ existingDerivations, chains }, fileContent) => ({
+    fileContent,
+    existingDerivations: existingDerivations!,
+    chains,
+  }),
   target: validateDerivationsFx,
 });
 

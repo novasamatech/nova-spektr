@@ -1,7 +1,6 @@
 /* eslint-disable import-x/max-dependencies */
 
 import FlexibleMultisigBackgroundIcon from '@/shared/assets/images/walletTypes/flexibleMultisigBackground.svg?jsx';
-import FlexibleMultisigInactiveBackground from '@/shared/assets/images/walletTypes/flexibleMultisigInactiveBackground.svg?jsx';
 import LedgerOnboardingIcon from '@/shared/assets/images/walletTypes/ledgerOnboarding.svg?jsx';
 import MultisigBackgroundIcon from '@/shared/assets/images/walletTypes/multisigBackground.svg?jsx';
 import NovaWalletIcon from '@/shared/assets/images/walletTypes/novaWallet.svg?jsx';
@@ -32,7 +31,6 @@ const WalletTypeImages = {
   watchOnlyOnboarding: { svg: WatchOnlyOnboardingIcon },
   multisigBackground: { svg: MultisigBackgroundIcon },
   flexibleMultisigBackground: { svg: FlexibleMultisigBackgroundIcon },
-  flexibleMultisigBackgroundInactive: { svg: FlexibleMultisigInactiveBackground },
   vault: { svg: VaultIcon },
   vaultBackground: { svg: VaultBackgroundIcon },
   vaultOnboarding: { svg: VaultOnboardingIcon },

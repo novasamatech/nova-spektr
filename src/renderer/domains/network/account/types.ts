@@ -49,3 +49,5 @@ export type AccountNode = {
   account: AnyAccount;
   children: AccountNode[];
 };
+
+export type AccountValidationError = { account: AnyAccount; message: string };

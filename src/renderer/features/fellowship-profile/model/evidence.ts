@@ -3,8 +3,8 @@ import { persist } from 'effector-storage/local';
 
 import { nullable } from '@/shared/lib/utils';
 import { evidence, evidenceService, memberService } from '@/domains/collectives';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
-import { block } from './block';
 import { fellowshipProfileFeature } from './feature';
 import { fellowship } from './fellowship';
 import { profile } from './profile';
@@ -24,9 +24,11 @@ const $hasPromotionEvidence = $memberEvidence.map(x => x?.wish === 'Promotion');
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 
 const $leftToPromotion = combine(
-  { periods: $periods, currentBlock: block.$currentBlock, member: profile.$member },
+  { periods: $periods, currentBlock: fellowshipNetwork.$currentBlock, member: profile.$member },
   ({ periods, currentBlock, member }) => {
-    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member) || nullable(currentBlock)) {
+      return null;
+    }
 
     return evidenceService.getBlockUntilNextPromotion(member, periods, currentBlock);
   },

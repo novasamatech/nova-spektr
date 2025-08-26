@@ -1,14 +1,16 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { type Address, type Asset, type Chain } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon, Plate } from '@/shared/ui';
 import { AccountExplorers, AssetBalance } from '@/shared/ui-entities';
 import { Checkbox, Skeleton } from '@/shared/ui-kit';
 import { AssetFiatBalance } from '@/entities/price';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { type NominatorInfo } from '../lib/types';
 
 type Props = {
@@ -18,8 +20,8 @@ type Props = {
   isStakingLoading: boolean;
   stake: NominatorInfo;
   content: ReactNode;
-  onToggleNominator: (nominator: Address, boolean: boolean) => void;
-  onCheckValidators: (stash?: Address) => void;
+  onToggleNominator: (nominator: AccountId, boolean: boolean) => void;
+  onCheckValidators: (stash?: AccountId) => void;
 };
 
 export const NominatorsItem = ({
@@ -35,21 +37,21 @@ export const NominatorsItem = ({
 }: Props) => {
   const { t } = useI18n();
 
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const activeWallet = useUnit(walletSelect.$selectedWallet);
 
   return (
-    <Plate className="grid grid-cols-[1fr,104px,104px,20px] items-center gap-x-6 py-2.5">
+    <Plate className="grid grid-cols-[1fr_104px_104px_20px] items-center gap-x-6 py-2.5">
       {activeWallet && !walletUtils.isWatchOnly(activeWallet) && nominatorsLength > 1 ? (
         <div className="flex w-full gap-x-2">
           <Checkbox
             disabled={isStakingLoading}
             checked={stake.isSelected}
-            onChange={(checked) => onToggleNominator(stake.address, checked)}
+            onChange={(checked) => onToggleNominator(stake.account.accountId, checked)}
           />
-          <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr),auto]">{content}</div>
+          <div className="grid w-full max-w-[207px] grid-cols-[minmax(10px,1fr)_auto]">{content}</div>
         </div>
       ) : (
-        <div className="grid max-w-[222px] grid-cols-[minmax(10px,1fr),auto] items-center gap-x-2">{content}</div>
+        <div className="grid max-w-[222px] grid-cols-[minmax(10px,1fr)_auto] items-center gap-x-2">{content}</div>
       )}
 
       {!stake.totalStake || !asset ? (
@@ -81,7 +83,7 @@ export const NominatorsItem = ({
           <button
             type="button"
             className={cnTw(
-              'group -mx-2 flex select-none items-center gap-x-1.5 rounded-md px-1.5 py-[3px] transition-colors',
+              'group -mx-2 flex items-center gap-x-1.5 rounded-md px-1.5 py-[3px] transition-colors select-none',
               'hover:bg-action-background-hover focus:bg-action-background-hover',
             )}
             onClick={() => onCheckValidators(stake.stash)}

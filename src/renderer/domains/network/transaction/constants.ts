@@ -1,0 +1,1 @@
+export const LEAVE_SOME_SPACE_MULTIPLIER = 0.9;

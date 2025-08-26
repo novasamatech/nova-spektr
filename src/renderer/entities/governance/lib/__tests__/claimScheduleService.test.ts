@@ -670,7 +670,7 @@ describe('claimScheduleService', () => {
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         balance: BN_ONE,
-        target: '123',
+        target: TEST_ACCOUNTS[1],
         conviction: 'None',
       },
     };
@@ -702,7 +702,7 @@ describe('claimScheduleService', () => {
         accountId: TEST_ACCOUNTS[0],
         prior: { amount: BN_TEN, unlockAt: 1100 },
         balance: BN_ONE,
-        target: '123',
+        target: TEST_ACCOUNTS[1],
         conviction: 'None',
       },
     };
@@ -739,7 +739,7 @@ describe('claimScheduleService', () => {
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         balance: BN_ONE,
-        target: '123',
+        target: TEST_ACCOUNTS[1],
         conviction: 'None',
       },
     };
@@ -779,7 +779,7 @@ describe('claimScheduleService', () => {
         track: '0',
         prior: { amount: BN_ZERO, unlockAt: 0 },
         balance: BN_ONE,
-        target: '123',
+        target: TEST_ACCOUNTS[1],
         conviction: 'None',
       },
       1: {

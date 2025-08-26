@@ -1,6 +1,6 @@
 import { BN_MILLION } from '@polkadot/util';
-import { type Meta, type StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import { type Meta, type StoryObj } from '@storybook/react-vite';
+import { fn } from 'storybook/test';
 
 import { createVaultBaseAccount, createWcAccount, dotAsset, polkadotChain } from '@/shared/mocks';
 

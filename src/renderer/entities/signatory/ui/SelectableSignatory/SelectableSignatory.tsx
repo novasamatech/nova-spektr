@@ -4,9 +4,9 @@ import { type Asset, type ChainId } from '@/shared/core';
 import { cnTw, toAccountId, toAddress, transferableAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, Icon } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { useBalance } from '@/entities/balance';
-import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 // TODO: Fix layers
 
 type Props<T> = {
@@ -36,7 +36,7 @@ export const SelectableSignatory = <T,>({
   const balance = useBalance({
     accountId: toAccountId(address),
     chainId,
-    assetId: asset.assetId.toString(),
+    assetId: asset.assetId,
   });
 
   if (!signatoryWallet) {
@@ -45,7 +45,7 @@ export const SelectableSignatory = <T,>({
 
   return (
     <button
-      className="group flex w-full cursor-pointer items-center rounded px-2 py-1.5 text-text-secondary hover:bg-action-background-hover hover:text-text-primary"
+      className="group flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-text-secondary hover:bg-action-background-hover hover:text-text-primary"
       onClick={() => onSelected(value)}
     >
       <WalletIcon type={signatoryWallet.type} />
@@ -54,7 +54,7 @@ export const SelectableSignatory = <T,>({
         <AssetBalance
           value={transferableAmount(balance)}
           asset={asset}
-          className="ml-auto mr-6 text-body text-inherit"
+          className="mr-6 ml-auto text-body text-inherit"
         />
       )}
       <Icon name="right" className={cnTw('group-hover:text-icon-active', !balance && 'ml-auto')} size={16} />

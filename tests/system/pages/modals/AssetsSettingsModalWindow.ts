@@ -1,4 +1,5 @@
 import { type Page } from '@playwright/test';
+import { step } from 'allure-js-commons';
 
 import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
@@ -13,14 +14,18 @@ export class AssetsSettingsModalWindow extends BaseModal<AssetsSettingsModalElem
   }
 
   public async getHideZeroBalancesStatus(): Promise<boolean> {
-    const status = this.page.getByLabel(this.pageElements.hideZeroBalances);
+    return await step('Check "Hide Zero Balances" status', async () => {
+      const status = this.page.getByLabel(this.pageElements.hideZeroBalances);
 
-    return status.isChecked();
+      return status.isChecked();
+    });
   }
 
   public async getpageViewStatus(): Promise<string> {
-    const status = await this.page.getByLabel(this.pageElements.pageView).innerText();
+    return await step('Get current Page View status', async () => {
+      const status = await this.page.getByLabel(this.pageElements.pageView).innerText();
 
-    return status;
+      return status;
+    });
   }
 }

@@ -1,14 +1,12 @@
 import { useUnit } from 'effector-react';
-import groupBy from 'lodash/groupBy';
 import { memo, useEffect, useMemo, useState } from 'react';
 
 import { sumBalances } from '@/shared/api/network/service/chainsService';
-import { type Account, type Asset, type Balance, type Chain } from '@/shared/core';
-import { useI18n } from '@/shared/i18n';
-import { ZERO_BALANCE, totalAmount } from '@/shared/lib/utils';
+import { type Asset, type Balance, type Chain, type Wallet } from '@/shared/core';
+import { ZERO_BALANCE, entries, groupBy, nullable, totalAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { CaptionText, Icon } from '@/shared/ui';
-import { Accordion, Tooltip } from '@/shared/ui-kit';
+import { Accordion } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { type ExtendedChain } from '@/entities/network';
@@ -20,14 +18,13 @@ import { NetworkFiatBalance } from '../NetworkFiatBalance';
 
 type Props = {
   chain: Chain | ExtendedChain;
-  accounts: Account[];
+  accounts: AnyAccount[];
   query: string;
   hideZeroBalances: boolean;
+  wallet: Wallet | null;
 };
 
-export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }: Props) => {
-  const { t } = useI18n();
-
+export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, wallet }: Props) => {
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const currency = useUnit(currencyModel.$activeCurrency);
@@ -55,16 +52,22 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }:
 
   useEffect(() => {
     const newBalancesObject: Record<string, Balance> = {};
-    const groupedBalances = Object.values(groupBy(chainBalances, 'assetId'));
+    const groupedBalances = groupBy(chainBalances, (b) => b.assetId.toString());
 
-    for (const accountBalances of groupedBalances) {
-      let total = {} as Balance;
+    for (const [assetId, accountBalances] of entries(groupedBalances)) {
+      if (nullable(accountBalances)) {
+        continue;
+      }
+
+      let total = undefined;
 
       for (const balance of accountBalances) {
         total = sumBalances(balance, total);
       }
 
-      newBalancesObject[accountBalances[0].assetId] = total;
+      if (total) {
+        newBalancesObject[assetId] = total;
+      }
     }
 
     setBalancesObject(newBalancesObject);
@@ -76,7 +79,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }:
 
       const balance = balancesObject[asset.assetId];
 
-      return !hideZeroBalances || balance?.verified === false || totalAmount(balance) !== ZERO_BALANCE;
+      return !hideZeroBalances || totalAmount(balance) !== ZERO_BALANCE;
     });
 
     filteredAssets.sort((a, b) =>
@@ -90,8 +93,6 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }:
     return null;
   }
 
-  const hasFailedVerification = balances?.some((b) => b.verified !== undefined && !b.verified);
-
   return (
     <div className="w-[736px]">
       <Accordion initialOpen>
@@ -99,21 +100,6 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }:
           <div className="flex w-full items-center justify-between gap-x-2">
             <div className="flex items-center gap-x-2">
               <ChainTitle chain={chain} fontClass="text-caption uppercase" as="h2" iconSize={20} />
-
-              {hasFailedVerification && (
-                <div className="flex items-center gap-x-2 text-text-warning">
-                  {/* FIXME: tooltip not visible when first displayed network invalid. For now just render it below icon */}
-                  <Tooltip>
-                    <Tooltip.Trigger>
-                      <div tabIndex={0}>
-                        <Icon name="warn" className="cursor-pointer text-inherit" size={16} />
-                      </div>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{t('balances.verificationTooltip')}</Tooltip.Content>
-                  </Tooltip>
-                  <CaptionText className="uppercase text-inherit">{t('balances.verificationFailedLabel')}</CaptionText>
-                </div>
-              )}
             </div>
             <NetworkFiatBalance balances={balancesObject} assets={filteredAssets} />
           </div>
@@ -126,6 +112,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances }:
                 chainId={chain.chainId}
                 asset={asset}
                 balance={balancesObject[asset.assetId.toString()]}
+                wallet={wallet}
               />
             ))}
           </ul>

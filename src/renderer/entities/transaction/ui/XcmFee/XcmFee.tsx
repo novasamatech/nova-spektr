@@ -1,5 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
@@ -17,7 +17,7 @@ type Props = {
   config: XcmConfig;
   transaction?: Transaction | DecodedTransaction | null;
   className?: string;
-  onFeeChange?: (fee: string) => void;
+  onFeeChange?: (fee: BN) => void;
   onFeeLoading?: (loading: boolean) => void;
 };
 
@@ -25,10 +25,10 @@ export const XcmFee = memo(
   ({ api, multiply = 1, config, asset, transaction, className, onFeeChange, onFeeLoading }: Props) => {
     const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-    const [fee, setFee] = useState('0');
+    const [fee, setFee] = useState(BN_ZERO);
     const [isLoading, setIsLoading] = useState(false);
 
-    const updateFee = (fee: string) => {
+    const updateFee = (fee: BN) => {
       setFee(fee);
       onFeeChange?.(fee);
     };
@@ -38,14 +38,14 @@ export const XcmFee = memo(
     }, [isLoading]);
 
     useEffect(() => {
-      const handleFee = (fee: string) => {
+      const handleFee = (fee: BN) => {
         updateFee(fee);
         setIsLoading(false);
       };
 
       setIsLoading(true);
       if (!transaction?.accountId) {
-        handleFee('0');
+        handleFee(BN_ZERO);
 
         return;
       }
@@ -67,10 +67,9 @@ export const XcmFee = memo(
             transaction.args.xcmAsset,
             transaction.args.xcmDest,
           )
-          .then((fee) => fee.toString())
           .then(handleFee);
       } else {
-        handleFee('0');
+        handleFee(BN_ZERO);
       }
     }, [transaction]);
 

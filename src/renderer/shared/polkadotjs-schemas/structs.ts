@@ -1,14 +1,14 @@
 import { Enum, Option } from '@polkadot/types';
-import { ZodOptional, z } from 'zod';
+import { type RefinementCtx, ZodOptional, z } from 'zod';
 
-const safeParse = <T extends z.ZodTypeAny>(schema: T, value: unknown, ctx: z.RefinementCtx): z.infer<T> | never => {
+const safeParse = <T extends z.ZodType>(schema: T, value: unknown, ctx: RefinementCtx): z.infer<T> | never => {
   const result = schema.safeParse(value);
 
   if (result.success) {
     return result.data;
   } else {
     for (const issue of result.error.issues) {
-      ctx.addIssue(issue);
+      ctx.addIssue(issue.message);
     }
 
     return z.NEVER;
@@ -17,7 +17,7 @@ const safeParse = <T extends z.ZodTypeAny>(schema: T, value: unknown, ctx: z.Ref
 
 export const vecSchema = <T extends z.ZodTypeAny>(schema: T) => z.array(schema);
 
-export const objectSchema = <const T extends z.ZodRawShape>(v: T) => {
+export const objectSchema = <const T extends Record<string, z.ZodType>>(v: T) => {
   const description = `{\n${Object.keys(v).join(',\n')}\n}`;
 
   return z
@@ -86,13 +86,13 @@ export const objectSchema = <const T extends z.ZodRawShape>(v: T) => {
     .describe(description);
 };
 
-export const optionalSchema = <const Value>(schema: z.ZodType<Value, z.ZodTypeDef, unknown>) => {
+export const optionalSchema = <const V extends z.ZodType>(schema: V) => {
   return z.instanceof(Option).transform((value, ctx) => {
     if (value.isNone) {
       return null;
     }
 
-    return safeParse(schema, value.unwrap(), ctx) as Value extends z.ZodType ? z.infer<Value> : Value;
+    return safeParse(schema, value.unwrap(), ctx) as z.infer<V>;
   });
 };
 
@@ -102,7 +102,7 @@ export const enumTypeLooseSchema = <const Value extends string[]>(...args: Value
     if (valid) {
       return value.type as Value[number];
     } else {
-      console.warn(`Enum should be (${args.join(' | ')}), got ${value.type}. Value is fallback as a string`);
+      console.warn(`Enum should be (${args.join(' | ')}), got ${value.type}.`);
       return value.type as string & {};
     }
   });

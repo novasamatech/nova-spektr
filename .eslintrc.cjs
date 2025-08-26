@@ -24,6 +24,7 @@ const boundaries = boundaryTypes.map((type) => ({
 
 module.exports = {
   root: true,
+  ignorePatterns: ['scripts/*'],
   env: {
     browser: true,
     es6: true,
@@ -335,11 +336,25 @@ module.exports = {
             rules: [
               {
                 from: 'app',
-                allow: ['app', /* TODO fix */ 'shared', /* TODO fix */ 'entities', /* TODO fix */ 'features'],
+                allow: [
+                  'app',
+                  /* TODO fix */ 'shared',
+                  /* TODO fix */ 'entities',
+                  /* TODO fix */ 'features',
+                  'aggregates',
+                  'domains',
+                ],
               },
               {
                 from: 'shared',
-                allow: ['app', 'shared', 'domains', 'entities'],
+                allow: ['app', 'shared', 'entities'],
+              },
+              {
+                from: [
+                  ['shared', { package: 'ui-entities' }],
+                  ['shared', { package: 'transactions' }],
+                ],
+                allow: ['domains'],
               },
               {
                 from: 'sdk',
@@ -418,10 +433,11 @@ module.exports = {
       excludedFiles: ['*.test.ts', '*.test.tsx', '**/mocks/*.ts'],
       rules: {
         // TODO error
-        '@typescript-eslint/consistent-type-assertions': ['off', { assertionStyle: 'never' }],
+        '@typescript-eslint/consistent-type-assertions': ['warn', { assertionStyle: 'never' }],
 
         '@typescript-eslint/no-unused-expressions': 'off',
         '@typescript-eslint/no-explicit-any': 'warn',
+        '@typescript-eslint/require-await': 'warn',
 
         'no-restricted-syntax': [
           'error',

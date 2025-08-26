@@ -4,17 +4,15 @@ import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
 import { Button, DetailRow, HeadlineText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { LockPeriodDiff, LockValueDiff, voteTransactionService, votingService } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
-import { Fee } from '@/entities/transaction';
+import { FeeWithDataLoading } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
-import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { getLocksForAccount, lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
-import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm/common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -56,16 +54,13 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     );
   }
 
-  const { asset, existingVote, wrappedTransactions, api } = confirm.meta;
+  const { asset, existingVote, tx, coreTx, api, initiator } = confirm.meta;
 
-  if (
-    !voteTransactionService.isVoteTransaction(wrappedTransactions.coreTx) &&
-    !voteTransactionService.isRevoteTransaction(wrappedTransactions.coreTx)
-  ) {
+  if (!voteTransactionService.isVoteTransaction(coreTx) && !voteTransactionService.isRevoteTransaction(coreTx)) {
     return null;
   }
 
-  const vote = voteTransactionService.getVote(wrappedTransactions.coreTx);
+  const vote = voteTransactionService.getVote(coreTx);
 
   const decision = voteTransactionService.isStandardVote(vote) ? (vote.Standard.vote.aye ? 'aye' : 'nay') : 'abstain';
   const conviction = voteTransactionService.isStandardVote(vote) ? vote.Standard.vote.conviction : 'None';
@@ -76,8 +71,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const initialConviction = existingVote ? votingService.getAccountVoteConviction(existingVote) : 'None';
   const votingPower = votingService.calculateVotingPower(amount, conviction);
 
-  const address = toAddress(confirm.meta.account.accountId, { prefix: confirm.meta.chain.addressPrefix });
-  const locksForAddress = getLocksForAddress(address, trackLocks);
+  const locksForAddress = getLocksForAccount(initiator.accountId, trackLocks);
 
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">
@@ -111,9 +105,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
       <TransactionDetails
         chain={confirm.meta.chain}
         wallets={wallets}
-        initiator={[confirm.accounts.initiator]}
-        signatory={confirm.accounts.signer}
-        proxied={confirm.accounts.proxied || undefined}
+        initiators={[confirm.meta.initiator]}
+        signatory={confirm.meta.signatory}
       >
         <DetailRow label={t('governance.vote.field.decision')}>{t(`governance.referendum.${decision}`)}</DetailRow>
         <DetailRow label={t('governance.vote.field.governanceLock')} wrapperClassName="items-start">
@@ -124,7 +117,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         </DetailRow>
         <hr className="w-full border-filter-border pr-2" />
         <DetailRow label={t('governance.vote.field.networkFee')}>
-          <Fee api={api} asset={asset} transaction={wrappedTransactions.wrappedTx} />
+          <FeeWithDataLoading api={api} asset={asset} transaction={tx} />
         </DetailRow>
       </TransactionDetails>
 
@@ -141,10 +134,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(confirm.wallets.signer || confirm.wallets.initiator)?.type}
-              onClick={() => {
-                confirmModel.events.sign();
-              }}
+              type={confirm.wallets.signatory.type}
+              onClick={confirmModel.startSigning}
             />
           )}
         </div>

@@ -1,18 +1,15 @@
 import { type PropsWithChildren } from 'react';
 
-import { type Explorer, type SigningStatus } from '@/shared/core';
+import { type Explorer } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Icon, type IconNames } from '@/shared/ui';
+import { type MultisigEvent } from '@/domains/network';
 import { ExplorersPopover } from '@/entities/wallet';
 
-const IconProps: Record<SigningStatus, { className: string; name: IconNames }> = {
-  SIGNED: { className: 'text-text-positive', name: 'checkmarkOutline' },
-  CANCELLED: { className: 'text-text-negative', name: 'closeOutline' },
-  ERROR_SIGNED: { className: 'text-text-negative', name: 'checkmarkOutline' },
-  ERROR_CANCELLED: { className: 'text-text-negative', name: 'closeOutline' },
-  PENDING_CANCELLED: { className: 'text-text-warning', name: 'closeOutline' },
-  PENDING_SIGNED: { className: 'text-text-warning', name: 'checkmarkOutline' },
+const IconProps: Record<MultisigEvent['status'], { className: string; name: IconNames }> = {
+  approve: { className: 'text-text-positive', name: 'checkmarkOutline' },
+  reject: { className: 'text-text-negative', name: 'closeOutline' },
 };
 
 type Props = {
@@ -20,7 +17,7 @@ type Props = {
   accountId: AccountId;
   explorers?: Explorer[];
   addressPrefix?: number;
-  status?: SigningStatus | null;
+  status: MultisigEvent['status'] | null;
 };
 
 export const SignatoryCard = ({
@@ -36,7 +33,7 @@ export const SignatoryCard = ({
   const button = (
     <div
       className={cnTw(
-        'group flex flex-1 cursor-pointer items-center justify-between gap-x-2 rounded px-2 py-1.5 text-text-secondary',
+        'group flex flex-1 cursor-pointer items-center justify-between gap-x-2 rounded-sm px-2 py-1.5 text-text-secondary',
         'transition-colors hover:bg-action-background-hover hover:text-text-primary',
         className,
       )}

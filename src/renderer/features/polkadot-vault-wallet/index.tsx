@@ -5,7 +5,7 @@ import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { isEthereumAccountId, nullable } from '@/shared/lib/utils';
-import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -42,8 +42,17 @@ accountSDK(polkadotVaultWalletFeature, {
       accountUtils.isVaultShardAccount(account)
     );
   },
-  collectAccountChildren(children) {
-    return children;
+  visualGraphNode({ account }) {
+    if (
+      accountUtils.isVaultBaseAccount(account) ||
+      accountUtils.isVaultChainAccount(account) ||
+      accountUtils.isVaultShardAccount(account)
+    ) {
+      return {
+        title: 'Polkadot Vault',
+        color: '#EC007D',
+      };
+    }
   },
 });
 
@@ -54,7 +63,7 @@ polkadotVaultWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
   if (nullable(address)) return null;
   const isEthereum = isEthereumAccountId(address);
-  const theme: IconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
+  const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
   return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
 });

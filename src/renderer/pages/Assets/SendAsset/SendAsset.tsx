@@ -1,17 +1,18 @@
 import { useUnit } from 'effector-react';
 
 import { Paths } from '@/shared/routes';
-import { CheckPermission, OperationType, walletModel } from '@/entities/wallet';
+import { CheckPermission, OperationType } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { AssetRouteGuard } from '@/features/assets';
-import { Transfer } from '@/widgets/Transfer';
+import { DefaultTransfer } from '@/widgets/Transfer';
 
 export const SendAsset = () => {
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const wallet = useUnit(walletSelect.$selectedWallet);
 
   return (
-    <CheckPermission operationType={OperationType.TRANSFER} wallet={activeWallet} redirectPath={Paths.ASSETS}>
+    <CheckPermission operationType={OperationType.TRANSFER} wallet={wallet} redirectPath={Paths.ASSETS}>
       <AssetRouteGuard redirectPath={Paths.ASSETS}>
-        {(chain, asset) => <Transfer chain={chain} asset={asset} />}
+        {(chain, asset) => <DefaultTransfer chain={chain} asset={asset} />}
       </AssetRouteGuard>
     </CheckPermission>
   );

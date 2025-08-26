@@ -11,6 +11,7 @@ import { useStakingData } from '@/entities/staking';
 
 type Props = {
   api?: ApiPromise;
+  timelineApi?: ApiPromise;
   era?: EraIndex;
   asset?: Asset;
   validators: Validator[];
@@ -22,7 +23,7 @@ type Props = {
 //   return (monthly * 100).toFixed(2);
 // };
 
-export const AboutStaking = ({ api, era, asset, validators }: Props) => {
+export const AboutStaking = ({ api, timelineApi, era, asset, validators }: Props) => {
   const { t } = useI18n();
 
   const { getMinNominatorBond, getUnbondingPeriod, getTotalStaked } = useStakingData();
@@ -33,10 +34,10 @@ export const AboutStaking = ({ api, era, asset, validators }: Props) => {
   // const [averageApy, setAverageApy] = useState('');
 
   useEffect(() => {
-    if (!api?.isConnected) return;
+    if (!api?.isConnected || !timelineApi?.isConnected) return;
 
     getMinNominatorBond(api).then(setMinimumStake);
-    setUnstakingPeriod(getUnbondingPeriod(api));
+    setUnstakingPeriod(getUnbondingPeriod(api, timelineApi));
 
     return () => {
       setMinimumStake('');

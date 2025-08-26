@@ -1,4 +1,4 @@
-import { type Meta, type StoryObj } from '@storybook/react';
+import { type Meta, type StoryObj } from '@storybook/react-vite';
 
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { polkadotChain } from '@/shared/mocks';

@@ -30,7 +30,7 @@ export const NotificationRow = ({ notification }: Props) => {
   const { formatDate } = useI18n();
 
   return (
-    <li className="flex justify-between rounded bg-block-background-default p-4">
+    <li className="flex justify-between rounded-sm bg-block-background-default p-4">
       {Notifications[notification.type](notification)}
       <FootnoteText className="text-text-tertiary">
         {formatDate(new Date(notification.dateCreated || 0), 'p')}

@@ -1,7 +1,7 @@
 import { type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-export type RootTuple = [rootAccountId: AccountId, ChainTuple[]];
+export type RootTuple = [rootAccountId: AccountId, rootAccountName: string, ChainTuple[]];
 export type ChainTuple = [ChainId, (VaultChainAccount | VaultShardAccount[])[]];
 
 export type RootToggleParams = { root: AccountId; value: boolean };

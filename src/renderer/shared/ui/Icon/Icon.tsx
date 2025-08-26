@@ -30,8 +30,10 @@ const LazyIcon = lazy(async () => {
 
     return (
       <IconComponent
+        aria-label={name}
+        aria-roledescription="icon"
         ref={innerRef}
-        className={cnTw('pointer-events-none select-none text-icon-default', className)}
+        className={cnTw('shrink-0 text-icon-default select-none', className)}
         width={size}
         height={size}
         role="img"

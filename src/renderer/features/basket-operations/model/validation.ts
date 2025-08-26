@@ -1,17 +1,19 @@
 import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { BN } from '@polkadot/util';
 import { attach, createEffect, createStore, sample } from 'effector';
+import { t } from 'i18next';
 import { produce } from 'immer';
-import { uniq } from 'lodash';
 
-import { type BasketTransaction, type ID } from '@/shared/core';
+import { type ID } from '@/shared/core';
 import { createAsyncPipeline } from '@/shared/di';
 import { series } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
-import { nonNullable, nullable, transferableAmountBN } from '@/shared/lib/utils';
+import { nullable, transferableAmountBN } from '@/shared/lib/utils';
+import { transactionService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionService } from '@/entities/transaction';
+import { getExtrinsic } from '@/entities/transaction';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { type ValidationResult } from '@/features/operations/OperationsValidation';
 
 import { basketOperationsFeature } from './feature';
@@ -31,9 +33,9 @@ const validateFeeFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
-  async effect({ chains, apis, balances }, { transaction, signerOptions }: ValidationParams) {
+  async effect({ chains, apis, balances }, { transaction }: ValidationParams) {
     const chain = chains[transaction.coreTx.chainId];
     const api = apis[transaction.coreTx.chainId];
     const asset = chain.assets.at(0);
@@ -42,34 +44,28 @@ const validateFeeFx = attach({
 
     await api.isReady;
 
-    const wrapped = transactionService.getWrappedTransaction({
-      api,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    });
+    const wrapped = await transactionService.wrapLegacyTransaction(transaction.coreTx, transaction.route, api);
+    const extrinsic = getExtrinsic[wrapped.type](wrapped.args, api);
 
-    // TODO switch to account traverse
-    const transactions = uniq([wrapped.coreTx, wrapped.multisigTx, wrapped.wrappedTx].filter(nonNullable));
+    const accountId = wrapped.accountId;
+    const fee = await transactionService.getExtrinsicFee(extrinsic);
+    const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
 
-    const validations = transactions.map<Promise<ValidationResult>>(async transaction => {
-      const accountId = transaction.accountId;
-      const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
-      const balance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+    const feeBN = new BN(fee);
 
-      const feeBN = new BN(fee);
-
-      // what should we do when balance is empty?
-      if (balance) {
-        if (transferableAmountBN(balance).lte(feeBN)) {
-          return {
+    // what should we do when balance is empty?
+    if (balance) {
+      if (transferableAmountBN(balance).lte(feeBN)) {
+        return [
+          {
             name: 'insufficientBalanceForFee',
-            errorText: 'transfer.notEnoughBalanceForFeeError',
-          };
-        }
+            errorText: t('transfer.notEnoughBalanceForFeeError'),
+          },
+        ];
       }
-    });
+    }
 
-    return Promise.all(validations).then(list => list.filter(nonNullable));
+    return [];
   },
 });
 

@@ -6,6 +6,7 @@ import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { memberSalary } from '../../model/memberSalary';
+import { BadgeIcon } from '../TaskBadge';
 
 export const requestSalaryInductTaskActionSlot = createSlot();
 
@@ -15,8 +16,11 @@ export const RequestSalaryInduct = () => {
   const salary = useUnit(memberSalary.$memberSalary);
 
   return (
-    <Box direction="row" fillContainer padding={4} gap={5} verticalAlign="flex-end">
-      <Box gap={3} width="100%">
+    <Box direction="row" fillContainer padding={4} gap={2} verticalAlign="flex-end">
+      <Box alignSelf="flex-start" shrink={0}>
+        <BadgeIcon iconName="requestSalary" />
+      </Box>
+      <Box gap={3} width="100%" alignSelf="flex-start">
         <SmallTitleText>{t('fellowship.tasks.task.requestSalaryInduct.title')}</SmallTitleText>
         <FootnoteText>
           {t('fellowship.tasks.task.requestSalaryInduct.description', {

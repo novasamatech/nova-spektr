@@ -18,7 +18,7 @@ export const createAnyOf = <Value = void>(config?: { name?: string }): AnyOfIden
   const identifier = createAbstractIdentifier<Value, boolean, AnyOfHandler<Value>>({
     type: 'anyOf',
     name: config?.name ?? 'unknownAnyOf',
-    processHandler: (handler) => ({
+    processHandler: handler => ({
       key: handler.key,
       available: handler.available,
       body: ({ acc, input }) => (acc || handler.body(input)) ?? acc,

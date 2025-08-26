@@ -22,7 +22,9 @@ function getReferendumsSinceLastProof(referendums: ReferendumMeta[], member: Cor
   return referendums.filter(r => r.created >= member.lastProof);
 }
 
-function getActivityInfo(referendums: ReferendumMeta[], member: Member, maxRank: number, votes: Vote[]) {
+function getActivityInfo(referendums: ReferendumMeta[] | null, member: Member, maxRank: number, votes: Vote[] | null) {
+  if (!referendums || !votes) return null;
+
   if (referendums.length === 0) return { activity: null, agreement: null };
 
   const possibleReferendums = referendums.filter(r =>
@@ -30,13 +32,14 @@ function getActivityInfo(referendums: ReferendumMeta[], member: Member, maxRank:
   );
 
   if (referendums.length > 0 && possibleReferendums.length === 0) {
-    return { activity: 100, agreement: null };
+    return { activity: 100, agreement: 100 };
   }
 
   let voted = 0;
   let agreementVote = 0;
 
-  const memberVotesMap = dictionary(votes, 'referendumId');
+  const memberVotes = votes.filter(v => v.accountId === member.accountId);
+  const memberVotesMap = dictionary(memberVotes, 'referendumId');
 
   for (const referendum of possibleReferendums) {
     const memberVote = memberVotesMap[referendum.referendumId];

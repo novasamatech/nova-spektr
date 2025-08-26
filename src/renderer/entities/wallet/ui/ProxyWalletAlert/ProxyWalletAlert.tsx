@@ -3,7 +3,7 @@ import { Trans } from 'react-i18next';
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Alert, FootnoteText } from '@/shared/ui';
-import { WalletIcon } from '../WalletIcon/WalletIcon';
+import { WalletIcon } from '@/shared/ui-entities';
 
 type Props = {
   wallet: Wallet;
@@ -18,7 +18,7 @@ export const ProxyWalletAlert = ({ wallet, fee, balance, symbol, onClose }: Prop
 
   const component = (
     <span className="mx-1 inline-flex max-w-[200px] items-center gap-x-1 align-bottom">
-      <WalletIcon className="shrink-0" type={wallet.type} size={16} />
+      <WalletIcon type={wallet.type} size={16} />
       <FootnoteText as="span" className="truncate text-text-secondary transition-colors">
         {wallet.name}
       </FootnoteText>

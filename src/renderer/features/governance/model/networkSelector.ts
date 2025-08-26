@@ -1,9 +1,10 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type ChainId, type ConnectionStatus } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 const selectNetwork = createEvent<ChainId>();
 const resetNetwork = createEvent();
@@ -23,6 +24,8 @@ const $governanceChain = combine(
     return chains.find((chain) => chain.chainId === chainId) ?? null;
   },
 );
+
+const $nativeAsset = combine($governanceChain, (chain) => (chain?.assets ? getNativeAsset(chain.assets) : null));
 
 const $governanceChainApi = combine(
   {
@@ -82,7 +85,7 @@ const $isConnectionActive = combine(
 const $hasAccount = combine(
   {
     chain: $governanceChain,
-    activeWallet: walletModel.$activeWallet,
+    activeWallet: walletSelect.$selectedWallet,
   },
   ({ chain, activeWallet }) => {
     if (!activeWallet || !chain) return false;
@@ -103,6 +106,7 @@ export const networkSelectorModel = {
   $governanceChain,
   $governanceChains,
   $governanceChainApi,
+  $nativeAsset,
 
   $network,
   $hasAccount,

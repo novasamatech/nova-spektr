@@ -1,9 +1,9 @@
 import { combine, sample } from 'effector';
 
-import { type Address } from '@/shared/core';
-import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { referendumModel } from '@/entities/governance';
-import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { delegatedVotesModel } from '../model/delegatedVotes';
 import { networkSelectorModel } from '../model/networkSelector';
 
@@ -22,16 +22,16 @@ const $delegatedVotesInChain = combine(
 );
 
 sample({
-  clock: [referendumModel.events.referendumsReceived, networkSelectorModel.$network, walletModel.$activeWallet],
+  clock: [referendumModel.events.referendumsReceived, networkSelectorModel.$network, walletSelect.$selectedWallet],
   source: {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     network: networkSelectorModel.$network,
   },
   filter: ({ wallet, network }) => nonNullable(wallet) && nonNullable(network),
   fn: ({ wallet, network }) => {
-    const addresses = wallet!.accounts.map((acc) => toAddress(acc.accountId, { prefix: network!.chain.addressPrefix }));
+    const accounts = wallet!.accounts.map((acc) => acc.accountId);
 
-    return { addresses, chain: network!.chain };
+    return { accounts, chain: network!.chain };
   },
   target: delegatedVotesModel.events.requestDelegatedVotes,
 });
@@ -39,15 +39,15 @@ sample({
 sample({
   clock: delegatedVotesModel.events.requestDelegatedVotesDone,
   fn: ({ result }) => {
-    const uniqDelegates = new Set<Address>();
+    const uniqDelegates = new Set<AccountId>();
 
     for (const referendumId of Object.keys(result)) {
       for (const delegate of result[referendumId]) {
-        uniqDelegates.add(delegate.delegateId);
+        uniqDelegates.add(delegate.delegateAccount);
       }
     }
 
-    return { addresses: Array.from(uniqDelegates) };
+    return { accounts: Array.from(uniqDelegates) };
   },
   target: proposerIdentityAggregate.events.requestProposers,
 });

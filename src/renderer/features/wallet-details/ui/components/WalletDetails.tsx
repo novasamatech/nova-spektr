@@ -8,6 +8,7 @@ import { ProxiedWalletDetails } from '../wallets/ProxiedWalletDetails';
 import { SimpleWalletDetails } from '../wallets/SimpleWalletDetails';
 import { VaultWalletDetails } from '../wallets/VaultWalletDetails';
 import { WalletConnectDetails } from '../wallets/WalletConnectDetails';
+import { WatchOnlyWalletDetails } from '../wallets/WatchOnlyWalletDetails';
 
 type Props = {
   wallet: Wallet | null;
@@ -20,8 +21,8 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
     return null;
   }
 
-  if (walletUtils.isWatchOnly(wallet) || walletUtils.isSingleShard(wallet)) {
-    return <SimpleWalletDetails wallet={wallet} onClose={onClose} />;
+  if (walletUtils.isWatchOnly(wallet)) {
+    return <WatchOnlyWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
   if (walletUtils.isRegularMultisig(wallet)) {
@@ -44,7 +45,7 @@ export const WalletDetails = ({ isOpen, wallet, onClose }: Props) => {
     return <ProxiedWalletDetails wallet={wallet} onClose={onClose} />;
   }
 
-  if (polkadotExtensionService.isExtensionWallet(wallet)) {
+  if (polkadotExtensionService.isExtensionWallet(wallet) || walletUtils.isSingleShard(wallet)) {
     return <SimpleWalletDetails wallet={wallet} onClose={onClose} />;
   }
 

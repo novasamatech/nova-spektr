@@ -1,14 +1,15 @@
 import { type BN } from '@polkadot/util';
 import { type ReactNode } from 'react';
 
-import { type Account, type Asset, type Chain } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { cnTw, formatBalance, toAddress } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
 
-type AccountOption = { account: Account; balance?: BN; title?: string };
+type AccountOption = { account: AnyAccount; balance?: BN; title?: string };
 
 type Props = {
   isOpen: boolean;
@@ -18,7 +19,7 @@ type Props = {
   asset: Asset;
   options: AccountOption[];
   onToggle: (open: boolean) => void;
-  onSelect: (account: Account) => void;
+  onSelect: (account: AnyAccount) => void;
 };
 
 export const AccountSelectModal = ({
@@ -54,12 +55,12 @@ export const AccountSelectModal = ({
 };
 
 type ItemProps = {
-  account: Account;
+  account: AnyAccount;
   title?: string;
   balance?: BN;
   asset: Asset;
   chain: Chain;
-  onSelect: (value: Account) => void;
+  onSelect: (value: AnyAccount) => void;
 };
 
 const AccountItem = ({ asset, account, chain, title, balance, onSelect }: ItemProps) => {
@@ -67,7 +68,7 @@ const AccountItem = ({ asset, account, chain, title, balance, onSelect }: ItemPr
 
   return (
     <button
-      className="group flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded px-2 py-1.5 text-left text-body text-text-secondary hover:bg-action-background-hover hover:text-text-primary"
+      className="group flex w-full cursor-pointer items-center gap-2 overflow-hidden rounded-sm px-2 py-1.5 text-left text-body text-text-secondary hover:bg-action-background-hover hover:text-text-primary"
       onClick={() => onSelect(account)}
     >
       <div className="w-full min-w-0 shrink truncate">

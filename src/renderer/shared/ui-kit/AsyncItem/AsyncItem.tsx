@@ -1,8 +1,7 @@
 import { type PropsWithChildren, type ReactNode, useEffect, useState } from 'react';
 
 type AsyncItemProps = PropsWithChildren<{
-  sync?: boolean;
-  delay?: number;
+  strategy?: 'async' | 'idle' | 'sync';
   fallback?: ReactNode;
 }>;
 
@@ -10,19 +9,27 @@ type AsyncItemProps = PropsWithChildren<{
  * Renders children asynchronously using requestIdleCallback with setTimeout as
  * a fallback
  */
-export const AsyncItem = ({ children, sync = false, delay, fallback }: AsyncItemProps) => {
-  const [isRendered, setIsRendered] = useState(sync);
+export const AsyncItem = ({ children, strategy = 'async', fallback }: AsyncItemProps) => {
+  const isSync = strategy === 'sync';
+  const isAsync = strategy === 'async';
+
+  const [isRendered, setIsRendered] = useState(isSync);
+  const renderCallback = () => setIsRendered(true);
 
   useEffect(() => {
-    if (sync) return;
+    if (isRendered) return;
 
     let timeoutId: ReturnType<typeof setTimeout>;
     let idleCallbackId: number;
+    let animationFrameId: number;
 
-    if (!window.requestIdleCallback || delay) {
-      timeoutId = setTimeout(() => setIsRendered(true), delay || 1);
+    if (isAsync) {
+      animationFrameId = requestAnimationFrame(renderCallback);
+    } else if (!window.requestIdleCallback) {
+      // fallback for idle callback
+      timeoutId = setTimeout(renderCallback, 1);
     } else {
-      idleCallbackId = window.requestIdleCallback(() => setIsRendered(true));
+      idleCallbackId = window.requestIdleCallback(renderCallback);
     }
 
     return () => {
@@ -30,8 +37,9 @@ export const AsyncItem = ({ children, sync = false, delay, fallback }: AsyncItem
       if (idleCallbackId && window.cancelIdleCallback) {
         window.cancelIdleCallback(idleCallbackId);
       }
+      animationFrameId && cancelAnimationFrame(animationFrameId);
     };
-  }, [children, sync]);
+  }, [children, strategy]);
 
   if (isRendered) return children;
 

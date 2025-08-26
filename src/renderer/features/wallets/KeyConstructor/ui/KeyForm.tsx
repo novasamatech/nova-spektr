@@ -53,10 +53,10 @@ export const KeyForm = () => {
     <form ref={formRef} onSubmit={submitForm}>
       <div className="mb-4 flex items-start gap-x-6">
         <Box width="228px">
-          <Field text={t('dynamicDerivations.constructor.networkLabel')}>
+          <Field text={t('dynamicDerivations.keysConstructor.networkLabel')}>
             <Select
               name={chainId.name}
-              placeholder={t('dynamicDerivations.constructor.networkPlaceholder')}
+              placeholder={t('dynamicDerivations.keysConstructor.networkPlaceholder')}
               value={chainId.value}
               onChange={chainId.onChange}
             >
@@ -75,18 +75,18 @@ export const KeyForm = () => {
         </Box>
 
         <Box width="256px">
-          <Field text={t('dynamicDerivations.constructor.keyTypeLabel')}>
+          <Field text={t('dynamicDerivations.keysConstructor.keyTypeLabel')}>
             <Select
               name={keyType.name}
-              placeholder={t('dynamicDerivations.constructor.keyTypePlaceholder')}
+              placeholder={t('dynamicDerivations.keysConstructor.keyTypePlaceholder')}
               value={keyType.value}
               invalid={keyType.hasError()}
               onChange={keyType.onChange}
             >
-              <Select.Item value={KeyType.MAIN}>{t('dynamicDerivations.constructor.keyTypeMain')}</Select.Item>
-              <Select.Item value={KeyType.HOT}>{t('dynamicDerivations.constructor.keyTypeHot')}</Select.Item>
-              <Select.Item value={KeyType.PUBLIC}>{t('dynamicDerivations.constructor.keyTypePublic')}</Select.Item>
-              <Select.Item value={KeyType.CUSTOM}>{t('dynamicDerivations.constructor.keyTypeCustom')}</Select.Item>
+              <Select.Item value={KeyType.MAIN}>{t('dynamicDerivations.keysConstructor.keyTypeMain')}</Select.Item>
+              <Select.Item value={KeyType.HOT}>{t('dynamicDerivations.keysConstructor.keyTypeHot')}</Select.Item>
+              <Select.Item value={KeyType.PUBLIC}>{t('dynamicDerivations.keysConstructor.keyTypePublic')}</Select.Item>
+              <Select.Item value={KeyType.CUSTOM}>{t('dynamicDerivations.keysConstructor.keyTypeCustom')}</Select.Item>
             </Select>
             <InputHint variant="error" active={keyType.hasError()}>
               {t(keyType.errorText())}
@@ -96,16 +96,16 @@ export const KeyForm = () => {
 
         <div className="mt-6.5 flex items-center gap-x-1 py-2">
           <Checkbox disabled={!isKeyTypeSharded} checked={isSharded.value} onChange={isSharded.onChange}>
-            {t('dynamicDerivations.constructor.shardedLabel')}
+            {t('dynamicDerivations.keysConstructor.shardedLabel')}
           </Checkbox>
           <ShardInfoPopover />
         </div>
 
         <Box width="80px">
-          <Field text={t('dynamicDerivations.constructor.shardsLabel')}>
+          <Field text={t('dynamicDerivations.keysConstructor.shardsLabel')}>
             <Input
               name={shards.name}
-              placeholder={t('dynamicDerivations.constructor.shardsPlaceholder')}
+              placeholder={t('dynamicDerivations.keysConstructor.shardsPlaceholder')}
               invalid={shards.hasError()}
               disabled={!isKeyTypeSharded || !isSharded.value}
               value={shards.value}
@@ -119,10 +119,10 @@ export const KeyForm = () => {
       </div>
       <div className="flex items-start gap-x-6">
         <Box width="228px">
-          <Field text={t('dynamicDerivations.constructor.keyNameLabel')}>
+          <Field text={t('dynamicDerivations.keysConstructor.keyNameLabel')}>
             <Input
               name={keyName.name}
-              placeholder={t('dynamicDerivations.constructor.keyNamePlaceholder')}
+              placeholder={t('dynamicDerivations.keysConstructor.keyNamePlaceholder')}
               invalid={keyName.hasError()}
               value={keyName.value}
               onChange={keyName.onChange}
@@ -134,10 +134,10 @@ export const KeyForm = () => {
         </Box>
 
         <Box width="354px">
-          <Field text={t('dynamicDerivations.constructor.derivationLabel')}>
+          <Field text={t('dynamicDerivations.keysConstructor.derivationLabel')}>
             <Input
               name={derivationPath.name}
-              placeholder={t('dynamicDerivations.constructor.derivationPlaceholder')}
+              placeholder={t('dynamicDerivations.keysConstructor.derivationPlaceholder')}
               invalid={derivationPath.hasError()}
               value={derivationPath.value}
               disabled={!derivationEnabled}
@@ -149,8 +149,8 @@ export const KeyForm = () => {
           </Field>
         </Box>
 
-        <Button className="mb-1 mt-7.5" type="submit" pallet="secondary" size="sm" disabled={!isValid}>
-          {t('dynamicDerivations.constructor.newKeyButton')}
+        <Button className="mt-7.5 mb-1" type="submit" pallet="secondary" size="sm" disabled={!isValid}>
+          {t('dynamicDerivations.keysConstructor.newKeyButton')}
         </Button>
       </div>
     </form>

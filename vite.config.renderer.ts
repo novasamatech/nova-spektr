@@ -29,8 +29,10 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const { default: favicons } = await import('@peterek/vite-plugin-favicons');
   const { default: react } = await import('@vitejs/plugin-react-swc');
   const { default: mkcert } = await import('vite-plugin-mkcert');
-  const { compression } = await import('vite-plugin-compression2');
+  const { compression, defineAlgorithm } = await import('vite-plugin-compression2');
   const { nodePolyfills } = await import('vite-plugin-node-polyfills');
+  // @ts-expect-error unresolved import type
+  const { default: tailwindcss } = await import('@tailwindcss/vite');
 
   const isDev = mode === 'development';
   const isProd = mode === 'production';
@@ -70,6 +72,17 @@ const config: UserConfigFn = async ({ mode, command }) => {
       rollupOptions: {
         treeshake: 'recommended',
         maxParallelFileOps: Math.max(1, cpus().length - 1),
+        onLog(level, log, handler) {
+          if (log.cause) {
+            const cause = log.cause as Record<string, string>;
+
+            if (cause.message === `Can't resolve original location of error.`) {
+              return;
+            }
+          }
+
+          handler(level, log);
+        },
       },
     },
     assetsInclude: ['**/*.wasm'],
@@ -82,10 +95,13 @@ const config: UserConfigFn = async ({ mode, command }) => {
 
       command === 'serve' && mkcert(),
 
+      tailwindcss(),
+
       react({
-        plugins: !isProd
-          ? [['@effector/swc-plugin', { addNames: true, addLoc: true, factories: ['@/shared/di'] }]]
-          : [],
+        plugins:
+          command === 'serve'
+            ? [['@effector/swc-plugin', { addNames: true, addLoc: true, factories: ['@/shared/di'] }]]
+            : [],
       }),
       svgr({
         include: '**/*.svg?jsx',
@@ -129,13 +145,10 @@ const config: UserConfigFn = async ({ mode, command }) => {
       isProd &&
         command === 'build' &&
         compression({
-          algorithm: 'gzip',
+          algorithms: [defineAlgorithm('gzip', { level: 9 })],
           include: /.+/,
           skipIfLargerOrEqual: true,
           threshold: 0,
-          compressionOptions: {
-            level: 9,
-          },
         }),
     ],
 

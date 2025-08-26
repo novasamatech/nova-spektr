@@ -42,7 +42,7 @@ type GetNotificationParams = {
 };
 function getNotification({ wallets, proxiedAccounts, chains, type }: GetNotificationParams): NoID<ProxyAction>[] {
   const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-    accountFn: (a) => proxiedAccounts.some((p) => p.proxyAccountId === a.accountId),
+    accountFn: (a) => proxiedAccounts.some((p) => p.connections.some((c) => c.proxyAccountId === a.accountId)),
   });
 
   if (!filteredWallets) return [];
@@ -55,25 +55,30 @@ function getNotification({ wallets, proxiedAccounts, chains, type }: GetNotifica
     return acc;
   }, {});
 
-  return proxiedAccounts.map((proxied) => {
-    const addressPrefix = chains[proxied.chainId].addressPrefix;
+  return proxiedAccounts
+    .map((proxied) =>
+      proxied.connections.map((connection) => {
+        const addressPrefix = chains[proxied.chainId].addressPrefix;
+        const proxyAccount = accountsMap[connection.proxyAccountId];
 
-    return {
-      chainId: proxied.chainId,
-      dateCreated: Date.now(),
-      proxyType: proxied.proxyType,
-      proxyAccountId: proxied.proxyAccountId,
-      proxyVariant: proxied.proxyVariant,
-      proxyWalletName: accountsMap[proxied.proxyAccountId].name,
-      proxyWalletType: accountsMap[proxied.proxyAccountId].type,
-      proxiedAccountId: proxied.accountId,
-      proxiedWalletName: proxyUtils.getProxiedName(proxied, addressPrefix),
-      read: false,
-      type,
-    };
-  });
+        return {
+          chainId: proxied.chainId,
+          dateCreated: Date.now(),
+          proxyType: connection.proxyType,
+          proxyAccountId: connection.proxyAccountId,
+          proxyVariant: proxied.proxyVariant,
+          proxyWalletName: proxyAccount.name,
+          proxyWalletType: proxyAccount.type,
+          proxiedAccountId: proxied.accountId,
+          proxiedWalletName: proxyUtils.getProxiedName(proxied, addressPrefix),
+          read: false,
+          type,
+        };
+      }),
+    )
+    .flat();
 }
 
 function isProxiedAvailable(account: AnyAccount): boolean {
-  return !accountUtils.isWatchOnlyAccount(account) && !accountUtils.isProxiedAccount(account);
+  return !accountUtils.isWatchOnlyAccount(account);
 }

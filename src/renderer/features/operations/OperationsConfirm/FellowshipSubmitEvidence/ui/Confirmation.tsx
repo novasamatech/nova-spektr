@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { SignButton } from '@/entities/operations';
-import { SubmitEvidenceConfirmation } from '@/features/fellowship-evidence-salary';
+import { SubmitEvidenceConfirmation } from '@/features/fellowship-evidence';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -31,7 +31,7 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
   return (
     <div className="flex flex-col items-center gap-4 px-5 py-4">
       <SubmitEvidenceConfirmation
-        account={confirm.accounts.initiator}
+        account={confirm.meta.initiator}
         asset={confirm.meta.asset}
         chain={confirm.meta.chain}
         wallets={confirm.meta.wallets}
@@ -53,10 +53,8 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
           {!hideSignButton && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(confirm.wallets.signer || confirm.wallets.initiator)?.type}
-              onClick={() => {
-                confirmModel.events.sign();
-              }}
+              type={confirm.wallets.signatory.type}
+              onClick={confirmModel.startSigning}
             />
           )}
         </div>

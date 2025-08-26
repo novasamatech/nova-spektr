@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import orderBy from 'lodash/orderBy';
+import { orderBy } from 'lodash';
 import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -37,6 +37,8 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
   const clearSearch = () => setQuery('');
 
+  const now = Date.now();
+
   const records = useMemo(
     () =>
       feed.map(record => {
@@ -45,6 +47,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
           ...record,
           name: identity ? identityService.getFullName(identity) : undefined,
           description: getDescription(record, t),
+          duration: (now - record.at.getTime()) / 1000,
         };
       }),
     [identities, feed, t],
@@ -67,12 +70,11 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   }, [deferredQuery, records]);
 
   const isNothingFound = !!records.length && !filteredList.length;
-  const orderVariant = orderKey ? orderVariants[orderKey] : null;
 
-  const sortedList = useMemo(
-    () => (orderVariant ? orderBy(filteredList, orderVariant.field, orderVariant.direction) : filteredList),
-    [filteredList, orderVariant],
-  );
+  const sortedList = useMemo(() => {
+    const orderVariant = orderVariants[orderKey];
+    return orderVariant ? orderBy(filteredList, orderVariant.field, orderVariant.direction) : filteredList;
+  }, [filteredList, orderKey]);
 
   if (nullable(input)) return children;
 

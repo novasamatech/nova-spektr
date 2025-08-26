@@ -1,31 +1,16 @@
-import { attach, combine, createEvent, sample } from 'effector';
+import { combine } from 'effector';
 
-import { attachToFeatureInput } from '@/shared/feature';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { nullable } from '@/shared/lib/utils';
 import { identity } from '@/domains/network';
 
 import { fellowshipTasksFeature } from './feature';
 
-const requestIdentityFx = attach({ effect: identity.request });
-const $identities = combine(fellowshipTasksFeature.input, identity.$list, (input, identities) => {
-  if (!input) return {};
-  return identities[input.chainId] ?? {};
+const $identities = combine(fellowshipTasksFeature.input, identity.$list, (featureInput, list) => {
+  if (nullable(featureInput)) return {};
+
+  return list[featureInput.chainId] ?? {};
 });
 
-const request = createEvent<{ accountId: AccountId }>();
-
-sample({
-  clock: attachToFeatureInput(fellowshipTasksFeature, request),
-  fn({ input, data: { accountId } }) {
-    return {
-      accounts: [accountId],
-      chainId: input.chainId,
-    };
-  },
-  target: requestIdentityFx,
-});
-
-export const identities = {
+export const identityModel = {
   $identities,
-  request,
 };

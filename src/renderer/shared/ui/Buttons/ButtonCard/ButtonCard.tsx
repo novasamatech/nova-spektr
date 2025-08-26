@@ -1,4 +1,4 @@
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { type MouseEvent, type PropsWithChildren, forwardRef } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
@@ -8,20 +8,32 @@ import { type IconNames } from '../../Icon/data';
 type Props = {
   className?: string;
   type?: 'button' | 'submit';
-  icon: IconNames;
+  icon?: IconNames;
   fullWidth?: boolean;
   pallet?: 'positive' | 'secondary' | 'negative';
   disabled?: boolean;
   tabIndex?: number;
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+  size?: 'sm' | 'lg';
 };
 
 export const ButtonCard = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
   (
-    { pallet = 'secondary', type = 'button', fullWidth, icon, className, disabled, tabIndex, children, onClick = noop },
+    {
+      pallet = 'secondary',
+      type = 'button',
+      fullWidth,
+      icon,
+      className,
+      disabled,
+      tabIndex,
+      children,
+      onClick = noop,
+      size = 'lg',
+    },
     ref,
   ) => {
-    const iconNode = (
+    const iconNode = icon ? (
       <Icon
         name={icon}
         size={16}
@@ -32,7 +44,7 @@ export const ButtonCard = forwardRef<HTMLButtonElement, PropsWithChildren<Props>
           'text-chip-icon': pallet === 'secondary' && !disabled,
         })}
       />
-    );
+    ) : null;
 
     return (
       <button
@@ -51,6 +63,7 @@ export const ButtonCard = forwardRef<HTMLButtonElement, PropsWithChildren<Props>
             'bg-secondary-button-background text-text-primary hover:bg-secondary-button-background-hover active:bg-secondary-button-background-active':
               pallet === 'secondary',
             'w-full': fullWidth,
+            'py-3': size === 'sm',
           },
           className,
         )}

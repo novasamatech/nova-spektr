@@ -2,8 +2,9 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { attach, createEffect } from 'effector';
+import { t } from 'i18next';
 
-import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
 import { getAssetById, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService, referendumService } from '@/entities/governance';
@@ -22,7 +23,7 @@ type ValidateParams = {
   chain: Chain;
   asset: Asset;
   transaction: Transaction;
-  balances: Balance[];
+  balances: BalanceMap;
   signerOptions?: Partial<SignerOptions>;
 };
 
@@ -33,12 +34,12 @@ const rootValidateFx = createEffect(
     const referendum = await governanceService.getReferendums(api, [transaction.args.referendum]);
     const isOngoing = referendumService.isOngoing(referendum[0]);
 
-    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+    const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
 
     const rules: Validation<BN, { shards: unknown[] }>[] = [
       {
         name: 'insufficientBalanceForFee',
-        errorText: 'transfer.notEnoughBalanceForFeeError',
+        errorText: t('transfer.notEnoughBalanceForFeeError'),
         value: BN_ZERO,
         form: { shards: [{ accountId }] },
         source: {
@@ -59,7 +60,7 @@ const rootValidateFx = createEffect(
       },
       {
         name: 'timeoutReferendum',
-        errorText: 'governance.referendums.vote.timeoutReferendumError',
+        errorText: t('governance.referendums.vote.timeoutReferendumError'),
         value: BN_ZERO,
         form: { shards: [{ accountId }] },
         source: isOngoing,
@@ -77,7 +78,7 @@ const validateFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];

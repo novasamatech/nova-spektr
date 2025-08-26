@@ -55,7 +55,7 @@ export const Root = ({ children, footer, count }: PropsWithChildren<Props>) => {
           </div>
         </Carousel>
       </ScrollArea>
-      <div className="flex shrink-0 justify-between bg-white px-5 pb-4 pt-3">
+      <div className="flex shrink-0 justify-between bg-white px-5 pt-3 pb-4">
         <div className="flex gap-2">
           <IconButton
             size={20}

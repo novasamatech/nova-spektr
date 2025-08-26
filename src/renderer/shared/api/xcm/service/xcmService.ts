@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
-import { BN, BN_TEN } from '@polkadot/util';
+import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { camelCase, get } from 'lodash';
 
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
@@ -8,7 +8,6 @@ import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/share
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
-import { chainsService } from '../../network';
 import { FACTOR_MULTIPLIER, SET_TOPIC_SIZE, XCM_KEY, XCM_URL } from '../lib/constants';
 import {
   type AssetLocation,
@@ -306,13 +305,17 @@ type DecodedPayload = {
   dest: string;
 };
 
-function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): DecodedPayload {
+function decodeXcm(
+  chainId: ChainId,
+  chains: Record<ChainId, Chain>,
+  data: XcmPalletPayload | XTokensPayload,
+): DecodedPayload {
   const config = getXcmConfig();
   if (!config) return {} as DecodedPayload;
 
   let destinationChain: HexString | undefined;
   if (data.toRelayChain) {
-    destinationChain = chainsService.getChainById(chainId)?.parentId;
+    destinationChain = chains[chainId]?.parentId;
   } else {
     const destination = Object.values(config.assetsLocation).find(({ multiLocation }) => {
       return multiLocation.parachainId === data.destParachain;
@@ -346,9 +349,7 @@ function decodeXcm(chainId: ChainId, data: XcmPalletPayload | XTokensPayload): D
     });
 
     if (assetKeyVal) {
-      const assetFromChain = chainsService
-        .getChainById(chainId)
-        ?.assets.find((asset) => asset.assetId === assetKeyVal[0]);
+      const assetFromChain = chains[chainId]?.assets.find((asset) => asset.assetId === assetKeyVal[0]);
       if (assetFromChain) {
         assetId = getAssetId(assetFromChain);
       }
@@ -379,12 +380,12 @@ async function getDeliveryFeeFromConfig({
   originApi: ApiPromise;
   destinationChainId: number;
   extrinsic: SubmittableExtrinsic<'promise'>;
-}): Promise<BN | null> {
+}): Promise<BN> {
   const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
 
-  if (!deliveryFeeConfig) return null;
+  if (!deliveryFeeConfig) return BN_ZERO;
 
   const query = originApi.query[camelCase(deliveryFeeConfig.factorPallet)];
   const directionFactor = {

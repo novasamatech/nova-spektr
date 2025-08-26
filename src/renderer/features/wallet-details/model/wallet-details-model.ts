@@ -1,11 +1,11 @@
 import { combine } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type ChainId, type ProxyAccount, type ProxyGroup, type Wallet } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
+import { type ChainId, type ProxyAccount, type Wallet } from '@/shared/core';
+import { keys, nullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
-import { permissionUtils } from '@/entities/wallet';
+import { accountUtils, permissionUtils } from '@/entities/wallet';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
@@ -29,47 +29,38 @@ const $chainsProxies = combine(
   ({ wallet, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
     if (nullable(wallet)) return {};
 
-    return proxyUtils.getProxyAccountsOnChain(wallet.accounts, Object.keys(chains) as ChainId[], proxies);
+    return proxyUtils.getProxyAccountsOnChain(wallet.accounts, keys(chains), proxies);
   },
 );
 
-const $walletProxyGroups = combine(
-  {
-    wallet: $wallet,
-    chainsProxies: $chainsProxies,
-    groups: proxyModel.$walletsProxyGroups,
-  },
-  ({ wallet, groups }): ProxyGroup[] => {
-    if (nullable(wallet) || nullable(groups[wallet.id])) return [];
+const $walletProxyGroups = $wallet.map(wallet => {
+  if (nullable(wallet)) return [];
 
-    // TODO: Find why it can be doubled sometimes https://github.com/novasamatech/nova-spektr/issues/1655
-    const walletGroups = groups[wallet.id];
-    const filteredGroups = walletGroups.reduceRight(
-      (acc, group) => {
-        const id = `${group.chainId}_${group.proxiedAccountId}_${group.walletId}`;
-
-        if (!acc[id]) {
-          acc[id] = group;
-        }
-
-        return acc;
-      },
-      {} as Record<string, ProxyGroup>,
-    );
-
-    return Object.values(filteredGroups);
-  },
-);
+  return wallet.accounts.filter(accountUtils.isProxiedAccount).map(account => {
+    return {
+      chainId: account.chainId,
+      proxiedAccountId: account.accountId,
+      walletId: account.walletId,
+      totalDeposit: account.deposit,
+    };
+  });
+});
 
 const $hasProxies = combine($chainsProxies, chainsProxies => {
   return Object.values(chainsProxies).some(accounts => accounts.length > 0);
 });
 
+const $proxiesCount = combine($chainsProxies, chainsProxies => {
+  return Object.values(chainsProxies).reduce((acc, accounts) => acc + accounts.length, 0);
+});
+
 export const walletDetailsModel = {
   flow,
 
+  $wallet,
   $chainsProxies,
   $walletProxyGroups,
   $hasProxies,
+  $proxiesCount,
   $canCreateProxy,
 };

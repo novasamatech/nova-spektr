@@ -51,7 +51,7 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
     }
 
     return result;
-  }, [voteHistory.length]);
+  }, [voteHistory]);
 
   return (
     <Modal isOpen={showModal} size="md" height="lg" onToggle={closeModal}>

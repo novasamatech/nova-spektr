@@ -1,63 +1,67 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type BN } from '@polkadot/util';
 import { useStoreMap, useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-import {
-  type Account,
-  type Asset,
-  type Chain,
-  type FlexibleMultisigTransaction,
-  type MultisigAccount,
-  type MultisigTransaction,
-  type Transaction,
-} from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
+import { getAssetById, getAssetByTypeExtras, getNativeAsset } from '@/shared/lib/utils';
 import { DetailRow, Icon } from '@/shared/ui';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
-import { priceProviderModel } from '@/entities/price';
-import { Fee, FeeLoader, MultisigDepositWithLabel, XcmFee, isXcmTransaction } from '@/entities/transaction';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { FeeWithLabel, MultisigDepositFee, XcmFee, isXcmTransaction } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { xcmTransferModel } from '@/widgets/Transfer';
+import { operationsContextModel } from '../../model/context';
 import { Details } from '../Details';
 
 import { getIconName } from './transactionConfirmIcon';
 
 export const confirmTransactionInfoSlot = createSlot<{
-  operation: MultisigTransaction | FlexibleMultisigTransaction;
+  operation: MultisigOperation;
 }>();
 
 type Props = {
-  tx: MultisigTransaction | FlexibleMultisigTransaction;
-  account: MultisigAccount;
-  signAccount?: Account;
+  operation: MultisigOperation;
+  signAccount?: AnyAccount | null;
   chain: Chain;
   api: ApiPromise;
-  feeTx?: Transaction | null;
+  fee: BN;
+  multisigDeposit: BN;
+  isEnoughBalance: boolean;
+  isFeeLoading: boolean;
+  isDepositLoading: boolean;
   onSign: () => void;
 };
-export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSign }: Props) => {
+export const Confirmation = ({
+  api,
+  operation,
+  chain,
+  signAccount,
+  fee,
+  multisigDeposit,
+  isEnoughBalance,
+  isFeeLoading,
+  isDepositLoading,
+  onSign,
+}: Props) => {
   const { t } = useI18n();
-  const [isFeeLoaded, setIsFeeLoaded] = useState(false);
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
   const wallets = useUnit(walletModel.$wallets);
-  const signerWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-    walletFn: walletUtils.isValidSignatory,
-    accountFn: acc => signAccount?.accountId === acc.accountId,
-  });
+  const initiator = useUnit(operationsContextModel.$initiator);
+
+  const signerWallet = wallets.find(w => w.id === signAccount?.walletId);
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
-  const transaction = getTransactionFromMultisigTx(tx);
+  const transaction = operation.transaction;
   let asset: Asset | null = null;
   if (transaction) {
     if (transaction.args.assetId) {
-      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId) ?? chain.assets[0];
+      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId) ?? getNativeAsset(chain.assets);
     } else {
-      asset = getAssetById(transaction.args.asset, chain.assets) ?? chain.assets[0];
+      asset = getAssetById(transaction.args.asset, chain.assets) ?? getNativeAsset(chain.assets);
     }
   }
 
@@ -84,40 +88,28 @@ export const Confirmation = ({ api, tx, account, chain, signAccount, feeTx, onSi
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
 
-        {transaction && <Slot id={confirmTransactionInfoSlot} props={{ operation: tx }} />}
+        {transaction && <Slot id={confirmTransactionInfoSlot} props={{ operation: operation }} />}
       </div>
-
-      <Details api={api} tx={tx} account={account} chain={chain} signatory={signAccount} />
-      {signAccount && api && (
-        <MultisigDepositWithLabel
-          api={api}
-          asset={chain.assets[0]}
-          className="text-footnote"
-          threshold={(account as MultisigAccount).threshold}
-        />
+      {initiator && signAccount && (
+        <Details api={api} operation={operation} account={initiator} chain={chain} signatory={signAccount} />
       )}
-
-      <DetailRow label={t('operation.networkFee')} className="text-text-primary">
-        {api && feeTx ? (
-          <Fee
-            className="text-footnote"
-            api={api}
-            asset={chain.assets[0]}
-            transaction={feeTx}
-            onFeeChange={fee => setIsFeeLoaded(Boolean(fee))}
-          />
-        ) : (
-          <FeeLoader fiatFlag={!!fiatFlag} />
-        )}
-      </DetailRow>
-
+      {asset && (
+        <>
+          <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
+          <FeeWithLabel fee={fee} asset={asset} isLoading={isFeeLoading} />
+        </>
+      )}
       {isXcmTransaction(transaction) && xcmConfig && xcmApi && asset && (
         <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
           <XcmFee api={xcmApi} transaction={transaction} asset={asset} config={xcmConfig} />
         </DetailRow>
       )}
-
-      <SignButton disabled={!isFeeLoaded} className="ml-auto mt-3" type={signerWallet?.type} onClick={onSign} />
+      <SignButton
+        disabled={isFeeLoading || isDepositLoading || !isEnoughBalance}
+        className="mt-3 ml-auto"
+        type={signerWallet?.type}
+        onClick={onSign}
+      />
     </div>
   );
 };

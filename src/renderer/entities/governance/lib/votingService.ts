@@ -1,9 +1,8 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import isEmpty from 'lodash/isEmpty';
+import { isEmpty } from 'lodash';
 
 import {
   type AccountVote,
-  type Address,
   type CastingVoting,
   type Chain,
   type Conviction,
@@ -16,6 +15,7 @@ import {
   type Voting,
   type VotingMap,
 } from '@/shared/core';
+import { entries } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 enum ConvictionMultiplier {
@@ -113,13 +113,13 @@ const isReferendumVoted = (referendumId: ReferendumId, voting: VotingMap) => {
 const getReferendumAccountVotes = (referendumId: ReferendumId, voting: VotingMap) => {
   const result: Record<AccountId, AccountVote> = {};
 
-  for (const [accountId, votingMap] of Object.entries(voting)) {
+  for (const [accountId, votingMap] of entries(voting)) {
     for (const voting of Object.values(votingMap)) {
       if (!isCasting(voting)) continue;
 
       const referendumVote = voting.votes[referendumId];
       if (referendumVote) {
-        result[accountId as AccountId] = referendumVote;
+        result[accountId] = referendumVote;
       }
     }
   }
@@ -130,12 +130,12 @@ const getReferendumAccountVotes = (referendumId: ReferendumId, voting: VotingMap
 const getReferendumVoting = (referendumId: ReferendumId, voting: VotingMap) => {
   const result: Record<AccountId, Voting> = {};
 
-  for (const [accountId, votingMap] of Object.entries(voting)) {
+  for (const [accountId, votingMap] of entries(voting)) {
     for (const voting of Object.values(votingMap)) {
       if (!isCasting(voting)) continue;
 
       if (referendumId in voting.votes) {
-        result[accountId as AccountId] = voting;
+        result[accountId] = voting;
       }
     }
   }
@@ -143,9 +143,9 @@ const getReferendumVoting = (referendumId: ReferendumId, voting: VotingMap) => {
   return result;
 };
 
-const getReferendumVote = (referendumId: ReferendumId, address: Address, voting: VotingMap) => {
-  for (const [votingAddress, votingMap] of Object.entries(voting)) {
-    if (votingAddress !== address) {
+const getReferendumVote = (referendumId: ReferendumId, accountId: AccountId, voting: VotingMap) => {
+  for (const [votingAccount, votingMap] of entries(voting)) {
+    if (votingAccount !== accountId) {
       continue;
     }
 

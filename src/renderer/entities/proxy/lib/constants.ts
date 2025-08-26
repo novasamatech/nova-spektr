@@ -9,4 +9,5 @@ export const ProxyTypeName: Record<ProxyType, string> = {
   Governance: 'proxy.names.governance',
   IdentityJudgement: 'proxy.names.identityJudgement',
   NominationPools: 'proxy.names.nominationPools',
+  SudoBalances: 'proxy.names.sudoBalances',
 };

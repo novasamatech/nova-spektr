@@ -10,8 +10,10 @@ import {
   type Referendum,
   type RejectedReferendum,
   type RfcProposal,
+  type SpendProposal,
   type TimedOutReferendum,
   type UnknownProposal,
+  type WhitelistProposal,
 } from './types';
 
 const isOngoing = (referendum: Referendum): referendum is OngoingReferendum => referendum.type === 'Ongoing';
@@ -27,6 +29,8 @@ const getCompletedReferendums = (referendums: Referendum[]) => referendums.filte
 const isEvidenceProposal = (proposal: Proposal): proposal is EvidenceProposal => proposal.type === 'Evidence';
 const isRfcProposal = (proposal: Proposal): proposal is RfcProposal => proposal.type === 'Rfc';
 const isUnknownProposal = (proposal: Proposal): proposal is UnknownProposal => proposal.type === 'Unknown';
+const isWhitelistProposal = (proposal: Proposal): proposal is WhitelistProposal => proposal.type === 'Whitelist';
+const isSpendProposal = (proposal: Proposal): proposal is SpendProposal => proposal.type === 'Spend';
 
 function isReferendumInTrack(selectedTrackIds: TrackId[], referendum: Referendum) {
   if (selectedTrackIds.length === 0) {
@@ -49,8 +53,10 @@ function getOperationStatus(referendum: OngoingReferendum) {
   return 'deciding';
 }
 
-function getProposer(referendum: OngoingReferendum) {
-  if (referendum.proposal?.type === 'Evidence') {
+function getProposer(referendum: Referendum) {
+  if (isKilled(referendum)) return null;
+
+  if (isOngoing(referendum) && referendum.proposal?.type === 'Evidence') {
     return referendum.proposal.accountId;
   }
 
@@ -68,6 +74,8 @@ export const referendumService = {
   isEvidenceProposal,
   isRfcProposal,
   isUnknownProposal,
+  isWhitelistProposal,
+  isSpendProposal,
 
   isReferendumInTrack,
 

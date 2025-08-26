@@ -1,4 +1,4 @@
-import { type Address, type ChainId, type CryptoType, type CryptoTypeString } from '@/shared/core';
+import { type ChainId, type CryptoType, type CryptoTypeString } from '@/shared/core';
 import { type QrReaderError } from '@/shared/ui-kit';
 
 import { type VaultFeature } from './constants';
@@ -17,6 +17,7 @@ export type Progress = {
 export type MultiSigner<T extends string | Uint8Array> = {
   MultiSigner: Exclude<CryptoTypeString, CryptoTypeString.ETHEREUM>;
   public: T;
+  publicHex?: string;
 };
 
 export type SeedInfo = {
@@ -32,8 +33,7 @@ export type DdSeedInfo = {
 };
 
 export type AddressInfo = {
-  // TODO: Eth would have HexString
-  address: Address;
+  address: string;
   derivationPath: string | undefined;
   encryption: CryptoType;
   genesisHash: Uint8Array;

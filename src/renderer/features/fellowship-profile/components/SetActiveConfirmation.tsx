@@ -20,7 +20,7 @@ export const SetActiveConfirmation = ({ fee, account, wallets, chain, asset, isA
   const { t } = useI18n();
 
   return (
-    <TransactionDetails wallets={wallets} chain={chain} initiator={[account]} signatory={null}>
+    <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={account}>
       <DetailRow label={t('fellowship.profile.setActive.active')}>
         {isActive ? t('fellowship.profile.setActive.activeTrue') : t('fellowship.profile.setActive.activeFalse')}
       </DetailRow>

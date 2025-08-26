@@ -1,50 +1,60 @@
 import { useGate, useUnit } from 'effector-react';
 
-import { type Chain, type Wallet } from '@/shared/core';
+import { type ChainId, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { BaseModal, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
+import { Modal } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { RemoveProxyConfirm as Confirmation } from '@/features/operations/OperationsConfirm/RemoveProxy';
+import { RemoveProxyConfirmation as Confirmation } from '@/features/operations/OperationsConfirm/RemoveProxy';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { Step } from '../lib/types';
-import { formModel } from '../model/form-model';
 import { removeProxyModel } from '../model/remove-proxy-model';
 
 import { RemoveProxyForm } from './RemoveProxyForm';
+import { Warning } from './Warning';
 
 type Props = {
   wallet: Wallet;
 };
 
 export const RemoveProxy = ({ wallet }: Props) => {
-  useGate(formModel.flow, { wallet });
+  useGate(removeProxyModel.flow, { wallet });
 
   const { t } = useI18n();
 
   const step = useUnit(removeProxyModel.$step);
-  const chain = useUnit(removeProxyModel.$chain);
-  const initiatorWallet = useUnit(removeProxyModel.$initiatorWallet);
+  const chainId = useUnit(removeProxyModel.$proxiedAccount.map((account) => account?.chainId ?? null));
+  const initiatorWallet = useUnit(removeProxyModel.$wallet);
+  const isPureProxiedNeedToBeKilled = useUnit(removeProxyModel.$isPureProxiedNeedToBeKilled);
 
-  const [isModalOpen, closeModal] = useModalClose(
-    !removeProxyUtils.isNoneStep(step),
-    removeProxyModel.output.flowFinished,
-  );
+  const [isModalOpen, closeModal] = useModalClose(!removeProxyUtils.isNoneStep(step), removeProxyModel.flowFinished);
 
   const [isBasketModalOpen, closeBasketModal] = useModalClose(
     removeProxyUtils.isBasketStep(step),
-    removeProxyModel.output.flowFinished,
+    removeProxyModel.flowFinished,
   );
 
-  const getModalTitle = (step: Step, chain?: Chain) => {
-    if (removeProxyUtils.isInitStep(step) || !chain) {
-      return t('operations.modalTitles.removeProxy');
+  const getModalTitle = (step: Step, chainId: ChainId | null) => {
+    if (removeProxyUtils.isInitStep(step) || !chainId) {
+      return t(
+        isPureProxiedNeedToBeKilled ? 'operations.modalTitles.removePureProxy' : 'operations.modalTitles.removeProxy',
+      );
     }
 
-    return <OperationTitle title={t('operations.modalTitles.removeProxyOn')} chainId={chain.chainId} />;
+    return (
+      <OperationTitle
+        title={t(
+          isPureProxiedNeedToBeKilled
+            ? 'operations.modalTitles.removePureProxyOn'
+            : 'operations.modalTitles.removeProxyOn',
+        )}
+        chainId={chainId}
+      />
+    );
   };
 
   if (removeProxyUtils.isSubmitStep(step)) {
@@ -64,24 +74,34 @@ export const RemoveProxy = ({ wallet }: Props) => {
   }
 
   return (
-    <BaseModal closeButton contentClass="" isOpen={isModalOpen} title={getModalTitle(step, chain)} onClose={closeModal}>
-      {removeProxyUtils.isInitStep(step) && <RemoveProxyForm onGoBack={closeModal} />}
-      {removeProxyUtils.isConfirmStep(step) && (
-        <Confirmation
-          secondaryActionButton={
-            initiatorWallet &&
-            basketUtils.isBasketAvailable(initiatorWallet) && (
-              <Button pallet="secondary" onClick={() => removeProxyModel.events.txSaved()}>
-                {t('operation.addToBasket')}
-              </Button>
-            )
-          }
-          onGoBack={() => removeProxyModel.events.wentBackFromConfirm()}
-        />
+    <Modal
+      isOpen={isModalOpen}
+      size={removeProxyUtils.isWarningStep(step) && !isPureProxiedNeedToBeKilled ? 'fit' : 'md'}
+      onToggle={closeModal}
+    >
+      {removeProxyUtils.isWarningStep(step) && !isPureProxiedNeedToBeKilled ? null : (
+        <Modal.Title close>{getModalTitle(step, chainId)}</Modal.Title>
       )}
-      {removeProxyUtils.isSignStep(step) && (
-        <OperationSign onGoBack={() => removeProxyModel.events.stepChanged(Step.CONFIRM)} />
-      )}
-    </BaseModal>
+      <Modal.Content>
+        {removeProxyUtils.isWarningStep(step) && <Warning onGoBack={closeModal} />}
+        {removeProxyUtils.isInitStep(step) && <RemoveProxyForm onGoBack={closeModal} />}
+        {removeProxyUtils.isConfirmStep(step) && (
+          <Confirmation
+            secondaryActionButton={
+              initiatorWallet &&
+              basketUtils.isBasketAvailable(initiatorWallet) && (
+                <Button pallet="secondary" onClick={void removeProxyModel.txSaved}>
+                  {t('operation.addToBasket')}
+                </Button>
+              )
+            }
+            onGoBack={removeProxyModel.wentBackFromConfirm}
+          />
+        )}
+        {removeProxyUtils.isSignStep(step) && (
+          <OperationSign onGoBack={() => removeProxyModel.stepChanged(Step.CONFIRM)} />
+        )}
+      </Modal.Content>
+    </Modal>
   );
 };

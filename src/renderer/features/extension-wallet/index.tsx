@@ -2,8 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { isEthereumAccountId } from '@/shared/lib/utils';
-import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountSDK } from '@/sdk/account';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -29,17 +28,37 @@ accountSDK(extensionWalletFeature, {
     return polkadotExtensionService.isExtensionAccount(account);
   },
   canSignMultipleTransactions: () => false,
-  collectAccountChildren: () => [],
+  visualGraphNode: ({ account }) => {
+    if (polkadotExtensionService.isExtensionAccount(account)) {
+      if (polkadotExtensionService.isPolkadotExtensionAccount(account)) {
+        return {
+          title: 'Polkadot.js',
+          color: '#FF8C00',
+        };
+      }
+      if (polkadotExtensionService.isTalismanExtensionAccount(account)) {
+        return {
+          title: 'Talisman',
+          color: '#D5FF5C',
+        };
+      }
+      if (polkadotExtensionService.isSubWalletExtensionAccount(account)) {
+        return {
+          title: 'SubWallet',
+          color: '#004BFF',
+          background: 'linear-gradient(180deg, #004BFF 0%, #4CEAAC 100%)',
+        };
+      }
+    }
+  },
 });
 
 extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!polkadotExtensionService.isExtensionWallet(wallet)) return null;
 
-  const address = wallet.accounts[0]?.accountId;
-  const isEthereum = isEthereumAccountId(address);
-  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
+  const accountId = wallet.accounts[0]?.accountId ?? '';
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
+  return <WalletAccountIcon address={accountId} type={wallet.type} size={size} />;
 });
 
 extensionWalletFeature.inject(walletPairingDropdownOptionsSlot, {

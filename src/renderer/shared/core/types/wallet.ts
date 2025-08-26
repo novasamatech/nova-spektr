@@ -3,6 +3,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
 import {
+  type FlexibleMultisigAccount,
+  type FlexibleProxiedAccount,
   type MultisigAccount,
   type ProxiedAccount,
   type VaultBaseAccount,
@@ -23,12 +25,6 @@ export interface Wallet {
    *   walletId)`.
    */
   accounts: (AnyAccount & Record<string, any>)[];
-  isActive: boolean;
-  /**
-   * @deprecated You should use `account.signingType` field instead. Wallet
-   *   shouldn't be part of signing process.
-   */
-  signingType: SigningType;
   isHidden?: boolean;
 }
 
@@ -54,16 +50,14 @@ export interface MultisigWallet extends Wallet {
   accounts: MultisigAccount[];
 }
 
-// TODO: try to move signatories data out of account
 export interface FlexibleMultisigWallet extends Wallet {
   type: WalletType.FLEXIBLE_MULTISIG;
-  activated: boolean;
-  accounts: (MultisigAccount | ProxiedAccount)[];
+  accounts: (FlexibleMultisigAccount | FlexibleProxiedAccount)[];
 }
 
 export interface ProxiedWallet extends Wallet {
   type: WalletType.PROXIED;
-  accounts: ProxiedAccount[];
+  accounts: [ProxiedAccount];
 }
 
 export interface WalletConnectWallet extends Wallet {
@@ -78,7 +72,7 @@ export interface NovaWalletWallet extends Wallet {
 
 export type WalletsMap = Record<ID, Wallet>;
 
-export const enum WalletType {
+export enum WalletType {
   WATCH_ONLY = 'wallet_wo',
   POLKADOT_VAULT = 'wallet_pv',
   MULTISIG = 'wallet_ms',
@@ -124,8 +118,4 @@ export const enum SigningType {
   POLKADOT_VAULT = 'signing_pv',
   EXTENSION = 'signing_ext',
   WALLET_CONNECT = 'signing_wc',
-}
-
-export enum WalletIconType {
-  FLEXIBLE_MULTISIG_INACTIVE = 'wallet_fxms_inactive',
 }

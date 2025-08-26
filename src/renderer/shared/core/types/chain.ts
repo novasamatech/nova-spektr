@@ -12,14 +12,19 @@ export type Chain = {
   explorers?: Explorer[];
   icon: string;
   addressPrefix: number;
-  externalApi?: Record<ExternalType, ExternalValue[]>;
+  legacyAddressPrefix?: number;
+  externalApi?: Partial<Record<ExternalType, ExternalValue[]>>;
   options?: ChainOptions[];
-  additional?: Record<AdditionalType, `0x${string}`>;
+  additional?: ChainAdditional;
 };
 
-export const enum AdditionalType {
-  IDENTITY_CHAIN = 'identityChain',
-}
+export type ChainAdditional = {
+  identityChain: ChainId;
+  timelineChain: ChainId;
+
+  // Supports metadata proofs
+  supportsGenericLedgerApp: boolean;
+};
 
 export const enum ChainOptions {
   TESTNET = 'testnet',

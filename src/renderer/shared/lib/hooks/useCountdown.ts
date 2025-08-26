@@ -11,17 +11,17 @@ import { DEFAULT_QR_LIFETIME, getExpectedBlockTime } from '../utils';
  *
  * @returns {Array}
  */
-export function useCountdown(apis?: ApiPromise[]): [number, () => void] {
+export function useCountdown(apis: ApiPromise[]): [number, () => void] {
   const [countdown, setCountdown] = useState(DEFAULT_QR_LIFETIME);
 
   const resetCountdown = useCallback(() => {
-    if (!apis || apis.length === 0) return;
+    if (apis.length === 0) return;
 
     // Find minimal expected block time
-    const expectedBlockTime = apis.map((api) => getExpectedBlockTime(api)).reduce((acc, cur) => BN.min(acc, cur));
+    const expectedBlockTime = apis.map(getExpectedBlockTime).reduce((acc, cur) => BN.min(acc, cur));
 
     setCountdown(expectedBlockTime.mul(new BN(DEFAULT_QR_LIFETIME)).div(BN_THOUSAND).toNumber() || 0);
-  }, [apis?.length]);
+  }, [apis]);
 
   useEffect(() => {
     if (countdown > 0) {

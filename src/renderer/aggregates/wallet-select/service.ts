@@ -1,50 +1,89 @@
-import { type Wallet, type WalletFamily, WalletType } from '@/shared/core';
-import { includes } from '@/shared/lib/utils';
+import { type Chain, type Wallet, type WalletFamily, WalletType } from '@/shared/core';
+import { includes, toAddress } from '@/shared/lib/utils';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { walletUtils } from '@/entities/wallet';
 
+const getWalletFamily = (wallet: Wallet): WalletFamily | null => {
+  if (walletUtils.isPolkadotVaultGroup(wallet)) {
+    return WalletType.POLKADOT_VAULT;
+  }
+
+  return Object.values(WalletType).includes(wallet.type) ? (wallet.type as WalletFamily) : null;
+};
+
+// TODO this logic will skip new types on wallets. Let's redo it later
 const getWalletByGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, Wallet[]> => {
   const accumulator: Record<WalletFamily, Wallet[]> = {
     [WalletType.POLKADOT_VAULT]: [],
-    [WalletType.MULTISIG]: [],
-    [WalletType.FLEXIBLE_MULTISIG]: [],
     [WalletType.NOVA_WALLET]: [],
     [WalletType.WALLET_CONNECT]: [],
     [WalletType.POLKADOT_EXTENSION]: [],
     [WalletType.TALISMAN_EXTENSION]: [],
     [WalletType.SUBWALLET_EXTENSION]: [],
-    [WalletType.WATCH_ONLY]: [],
+    [WalletType.MULTISIG]: [],
+    [WalletType.FLEXIBLE_MULTISIG]: [],
     [WalletType.PROXIED]: [],
+    [WalletType.WATCH_ONLY]: [],
   };
 
   return wallets.reduce<Record<WalletFamily, Wallet[]>>((acc, wallet) => {
-    let groupIndex: WalletFamily | undefined;
+    const family = getWalletFamily(wallet);
 
-    if (walletUtils.isPolkadotVaultGroup(wallet)) groupIndex = WalletType.POLKADOT_VAULT;
-    if (walletUtils.isRegularMultisig(wallet)) groupIndex = WalletType.MULTISIG;
-    if (walletUtils.isFlexibleMultisig(wallet)) groupIndex = WalletType.FLEXIBLE_MULTISIG;
-    if (walletUtils.isWatchOnly(wallet)) groupIndex = WalletType.WATCH_ONLY;
-    if (walletUtils.isWalletConnect(wallet)) groupIndex = WalletType.WALLET_CONNECT;
-    if (walletUtils.isNovaWallet(wallet)) groupIndex = WalletType.NOVA_WALLET;
-    if (walletUtils.isProxied(wallet)) groupIndex = WalletType.PROXIED;
-    if (walletUtils.isPolkadotExtension(wallet)) groupIndex = WalletType.POLKADOT_EXTENSION;
-    if (walletUtils.isTalismanExtension(wallet)) groupIndex = WalletType.TALISMAN_EXTENSION;
-    if (walletUtils.isSubWalletExtension(wallet)) groupIndex = WalletType.SUBWALLET_EXTENSION;
-
-    if (groupIndex && includes(wallet.name, query)) {
-      acc[groupIndex].push(wallet);
+    if (family && includes(wallet.name, query)) {
+      acc[family].push(wallet);
     }
 
     return acc;
   }, accumulator);
 };
 
-const getFirstWallet = (wallets: Wallet[]) => {
-  const groups = Object.values(getWalletByGroups(wallets));
+const getWalletFamilyByAccounts = (wallets: Wallet[], accounts: AnyAccount[]): Record<WalletFamily, AnyAccount[]> => {
+  const accumulator: Record<WalletFamily, AnyAccount[]> = {
+    [WalletType.POLKADOT_VAULT]: [],
+    [WalletType.NOVA_WALLET]: [],
+    [WalletType.WALLET_CONNECT]: [],
+    [WalletType.POLKADOT_EXTENSION]: [],
+    [WalletType.TALISMAN_EXTENSION]: [],
+    [WalletType.SUBWALLET_EXTENSION]: [],
+    [WalletType.MULTISIG]: [],
+    [WalletType.FLEXIBLE_MULTISIG]: [],
+    [WalletType.PROXIED]: [],
+    [WalletType.WATCH_ONLY]: [],
+  };
 
-  return groups.find(g => g.length > 0)?.at(0) ?? null;
+  return accounts.reduce<Record<WalletFamily, AnyAccount[]>>((acc, account) => {
+    const wallet = wallets.find(w => w.id === account.walletId);
+    if (!wallet) return acc;
+
+    const family = getWalletFamily(wallet);
+    if (family) {
+      acc[family].push(account);
+    }
+
+    return acc;
+  }, accumulator);
+};
+
+const composeWalletMeta = (wallet: Wallet, accounts: AnyAccount[], chains: Record<string, Chain>) => {
+  const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
+
+  return walletAccounts
+    .map(account => {
+      if (accountService.isUniversalAccount(account)) {
+        return Object.values(chains)
+          .filter(chain => accountService.isAccountAvailableOnChain(account, chain))
+          .map(chain => toAddress(account.accountId, { prefix: chain.addressPrefix }))
+          .join(' ');
+      }
+
+      const chain = chains[account.chainId];
+      return toAddress(account.accountId, { prefix: chain?.addressPrefix });
+    })
+    .join(' ');
 };
 
 export const walletSelectService = {
   getWalletByGroups,
-  getFirstWallet,
+  getWalletFamilyByAccounts,
+  composeWalletMeta,
 };

@@ -2,12 +2,11 @@ import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { nullable, toAddress } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { allTracks, locksService } from '@/entities/governance';
-import { accountUtils, walletModel } from '@/entities/wallet';
 import { delegationModel } from '@/widgets/DelegationModal';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
@@ -20,25 +19,22 @@ export const YourDelegation = () => {
   const uniqueTracks = useUnit(delegateDetailsModel.$uniqueTracks);
   const activeDelegations = useUnit(delegateDetailsModel.$activeDelegations);
   const chain = useUnit(delegateDetailsModel.$chain);
-  const wallet = useUnit(walletModel.$activeWallet);
 
   const isAddAvailable = useUnit(delegateDetailsModel.$isAddAvailable);
   const isEditAvailable = useUnit(delegateDetailsModel.$isEditAvailable);
   const isViewAvailable = useUnit(delegateDetailsModel.$isViewAvailable);
   const isRevokeAvailable = useUnit(delegateDetailsModel.$isRevokeAvailable);
   const delegate = useUnit(delegateDetailsModel.$delegate);
-
-  const accounts =
-    wallet?.accounts.filter(
-      (account) =>
-        chain &&
-        accountUtils.isChainAndCryptoMatch(account, chain) &&
-        activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix })),
-    ) ?? [];
+  const initiators = useUnit(delegateDetailsModel.$initiators);
 
   if (nullable(chain)) {
     return null;
   }
+
+  const accounts =
+    initiators.filter((account) => {
+      return activeAccounts.includes(account.accountId);
+    }) || [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -122,7 +118,7 @@ export const YourDelegation = () => {
             pallet="secondary"
             onClick={() => {
               if (delegate) {
-                revokeDelegationModel.events.flowStarted({ delegate: delegate.accountId, accounts: [accounts[0]] });
+                revokeDelegationModel.flowStarted({ delegate: delegate.accountId, accounts: [accounts[0]] });
               }
             }}
           >

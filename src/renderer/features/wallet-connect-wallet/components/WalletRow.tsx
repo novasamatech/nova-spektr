@@ -3,16 +3,13 @@ import { useMemo } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
-import { cnTw, isEthereumAccountId, isPolkadotChain } from '@/shared/lib/utils';
-import { type IconTheme, WalletManagement } from '@/shared/ui-entities';
+import { cnTw, isPolkadotChain } from '@/shared/lib/utils';
+import { WalletManagement } from '@/shared/ui-entities';
 import { accountService, accounts as accountsDomainModel } from '@/domains/network';
-import { walletsFiatBalanceFeature } from '@/features/wallet-fiat-balance';
+import { walletSelect } from '@/aggregates/wallet-select';
+import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletConnectService } from '../lib/service';
 import { walletConnect } from '../model/connect';
-
-const {
-  views: { WalletFiatBalance },
-} = walletsFiatBalanceFeature;
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
 
@@ -22,6 +19,7 @@ type Props = {
 };
 export const WalletRow = ({ wallet, onSelect }: Props) => {
   const sessions = useUnit(walletConnect.$sessions);
+  const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
 
   const connected = useStoreMap({
     store: accountsDomainModel.$list,
@@ -34,20 +32,18 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
     },
   });
 
-  const address = useMemo(() => {
+  const accountId = useMemo(() => {
     const mainAccount = wallet.accounts.find(account => isPolkadotChain(account.chainId)) || wallet.accounts[0];
-    return mainAccount?.accountId;
+    return mainAccount?.accountId ?? null;
   }, [wallet]);
-  const isEthereum = isEthereumAccountId(address);
-  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
 
   return (
     <WalletManagement
       wallet={wallet}
-      address={address}
-      theme={theme}
+      active={selectedWalletId === wallet.id}
+      accountId={accountId}
       meta={<span className={cnTw('h-1.5 w-1.5 rounded-full', connected ? 'bg-icon-positive' : 'bg-icon-default')} />}
-      description={<WalletFiatBalance walletId={wallet.id} className="max-w-[215px] truncate text-help-text" />}
+      description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}
     >
       <Slot id={walletActionsSlot} props={{ wallet }} />

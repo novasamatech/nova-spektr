@@ -1,26 +1,17 @@
-import { combine, createEffect, createEvent, createStore, sample } from 'effector';
-import groupBy from 'lodash/groupBy';
+import { createEffect, createEvent, createStore, sample } from 'effector';
+import { groupBy } from 'lodash';
 
 import { storageService } from '@/shared/api/storage';
-import { type ID, type NoID, type ProxyAccount, type ProxyGroup } from '@/shared/core';
+import { type ID, type NoID, type ProxyAccount } from '@/shared/core';
+import { entries } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { proxyUtils } from '../lib/proxy-utils';
 
 type ProxyStore = Record<AccountId, ProxyAccount[]>;
 
 const proxiesAdded = createEvent<NoID<ProxyAccount>[]>();
 const proxiesRemoved = createEvent<ProxyAccount[]>();
 
-const proxyGroupsAdded = createEvent<NoID<ProxyGroup>[]>();
-const proxyGroupsUpdated = createEvent<NoID<ProxyGroup>[]>();
-const proxyGroupsRemoved = createEvent<ProxyGroup[]>();
-
 const $proxies = createStore<ProxyStore>({});
-const $proxyGroups = createStore<ProxyGroup[]>([]);
-
-const $walletsProxyGroups = combine($proxyGroups, (groups) => {
-  return groupBy(groups, 'walletId');
-});
 
 const populateProxiesFx = createEffect((): Promise<ProxyAccount[]> => {
   return storageService.proxies.readAll();
@@ -34,36 +25,14 @@ const removeProxiesFx = createEffect((proxies: ProxyAccount[]): Promise<ID[] | u
   return storageService.proxies.deleteAll(proxies.map((p) => p.id));
 });
 
-const populateProxyGroupsFx = createEffect((): Promise<ProxyGroup[]> => {
-  return storageService.proxyGroups.readAll();
-});
-
-const addProxyGroupsFx = createEffect((groups: NoID<ProxyGroup>[]): Promise<ProxyGroup[] | undefined> => {
-  return storageService.proxyGroups.createAll(groups);
-});
-
-const updateProxyGroupsFx = createEffect((groups: ProxyGroup[]) => {
-  return storageService.proxyGroups.updateAll(groups);
-});
-
-const removeProxyGroupsFx = createEffect((groups: ProxyGroup[]): Promise<ID[] | undefined> => {
-  return storageService.proxyGroups.deleteAll(groups.map((p) => p.id));
-});
-
 const proxyStartFx = createEffect(async () => {
   await populateProxiesFx();
-  await populateProxyGroupsFx();
 });
 
 sample({
   clock: populateProxiesFx.doneData,
   fn: (proxies) => groupBy(proxies, 'proxiedAccountId'),
   target: $proxies,
-});
-
-sample({
-  clock: populateProxyGroupsFx.doneData,
-  target: $proxyGroups,
 });
 
 sample({
@@ -101,9 +70,7 @@ sample({
   source: $proxies,
   filter: (_, proxiesToRemove) => Boolean(proxiesToRemove),
   fn: (proxies, proxiesToRemove) => {
-    return Object.entries(proxies).reduce<ProxyStore>((acc, entry) => {
-      const [accountId, proxyAccounts] = entry as [AccountId, ProxyAccount[]];
-
+    return entries(proxies).reduce<ProxyStore>((acc, [accountId, proxyAccounts]) => {
       const filteredProxyAccounts = proxyAccounts.filter((proxyAccount) => !proxiesToRemove!.includes(proxyAccount.id));
       if (filteredProxyAccounts.length) {
         acc[accountId] = filteredProxyAccounts;
@@ -115,82 +82,13 @@ sample({
   target: $proxies,
 });
 
-sample({
-  clock: proxyGroupsAdded,
-  target: addProxyGroupsFx,
-});
-
-sample({
-  clock: addProxyGroupsFx.doneData,
-  source: $proxyGroups,
-  filter: (_, newProxyGroups) => Boolean(newProxyGroups) && newProxyGroups!.length > 0,
-  fn: (groups, newProxyGroups) => {
-    return groups.concat(newProxyGroups!);
-  },
-  target: $proxyGroups,
-});
-
-sample({
-  clock: proxyGroupsUpdated,
-  source: $proxyGroups,
-  filter: (_, proxyGroups) => Boolean(proxyGroups),
-  fn: (groups, proxyGroups) => {
-    return proxyGroups.reduce<ProxyGroup[]>((acc, g) => {
-      const group = groups.find((p) => proxyUtils.isSameProxyGroup(p, g));
-      if (group) {
-        acc.push(group);
-      }
-
-      return acc;
-    }, []);
-  },
-  target: updateProxyGroupsFx,
-});
-
-sample({
-  clock: updateProxyGroupsFx.done,
-  source: $proxyGroups,
-  filter: (_, { params: proxyGroups }) => Boolean(proxyGroups),
-  fn: (groups, { params: proxyGroups }) => {
-    return groups
-      .filter((g) => {
-        return !proxyGroups!.some((p) => proxyUtils.isSameProxyGroup(g, p));
-      })
-      .concat(proxyGroups);
-  },
-  target: $proxyGroups,
-});
-
-sample({
-  clock: proxyGroupsRemoved,
-  target: removeProxyGroupsFx,
-});
-
-sample({
-  clock: removeProxyGroupsFx.doneData,
-  source: $proxyGroups,
-  filter: (_, proxyGroups) => Boolean(proxyGroups),
-  fn: (groups, proxyGroups) => {
-    const proxySet = new Set(proxyGroups);
-
-    return groups.filter((g) => !proxySet.has(g.id));
-  },
-  target: $proxyGroups,
-});
-
 export const proxyModel = {
   $proxies,
-  $proxyGroups,
-  $walletsProxyGroups,
 
   populate: proxyStartFx,
 
   events: {
     proxiesAdded,
     proxiesRemoved,
-
-    proxyGroupsAdded,
-    proxyGroupsUpdated,
-    proxyGroupsRemoved,
   },
 };

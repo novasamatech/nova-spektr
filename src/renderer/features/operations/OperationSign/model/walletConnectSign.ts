@@ -1,17 +1,18 @@
-import { type ApiPromise } from '@polkadot/api';
 import { type SignerPayloadJSON } from '@polkadot/types/types';
 import { type SessionTypes } from '@walletconnect/types';
 import { attach, createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { combineEvents } from 'patronum';
+import { nanoid } from 'nanoid';
+import { combineEvents, spread } from 'patronum';
 
-import { type ChainId, type HexString } from '@/shared/core';
+import { type HexString, type WcAccount } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { assert, createTxMetadata, nonNullable, upgradeNonce } from '@/shared/lib/utils';
+import { type AnyAccount, type AnyAccountDraft, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
 import { DEFAULT_POLKADOT_METHODS, walletConnect, walletConnectService } from '@/features/wallet-connect-wallet';
-import { type SigningPayload } from '../lib/types';
+import { type ExtrinsicSigningPayload } from '../lib/types';
 
 type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
 
@@ -19,33 +20,40 @@ type SignResponse = {
   signature: HexString;
 };
 
-const flow = createGate<{ payloads: SigningPayload[] }>({ defaultState: { payloads: [] } });
+const flow = createGate<{ payloads: ExtrinsicSigningPayload[]; accounts: AnyAccount[] }>({
+  defaultState: { payloads: [], accounts: [] },
+});
+const $step = createStore<Step>('idle');
 
 const $signingPayloads = flow.state.map(({ payloads }) => payloads);
+const $accounts = flow.state.map(({ accounts }) => accounts);
+
 const $transactions = createStore<ReturnType<typeof transactionService.createPayloadWithMetadata>[]>([]);
-const $step = createStore<Step>('idle');
+
+/**
+ * Uniq id for current request. If user cancel signing and try to sign again -
+ * previous signing request will be skipped.
+ */
+const $pending = createStore<string | null>(null);
+/**
+ * Array of signatures. Used in react part for correct flow finish.
+ */
 const $signed = createStore<SignResponse[]>([]).reset(flow.close);
 
 const gotFirstPayload = $signingPayloads.updates.map((payloads) => payloads.at(0)).filter({ fn: nonNullable });
 
-type SetupParams = {
-  payloads: SigningPayload[];
-  apis: Record<ChainId, ApiPromise>;
-};
-
-const setupTransactionFx = createEffect(async ({ payloads, apis }: SetupParams) => {
+const setupTransactionFx = createEffect(async (payloads: ExtrinsicSigningPayload[]) => {
   const payload = payloads.at(0);
   assert(payload, "Can't prepare empty payload");
 
-  const account = payload.signatory || payload.account;
-  const api = apis[payload.chain.chainId];
+  const account = payload.signatory;
 
-  let metadata = await createTxMetadata(account.accountId, api);
+  let metadata = await createTxMetadata(account.accountId, payload.api);
 
   const result: ReturnType<typeof transactionService.createPayloadWithMetadata>[] = [];
 
-  for (const { transaction } of payloads) {
-    const payload = transactionService.createPayloadWithMetadata(transaction, api, metadata);
+  for (const { api, extrinsic } of payloads) {
+    const payload = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
     result.push(payload);
     metadata = upgradeNonce(metadata, 1);
   }
@@ -58,13 +66,14 @@ const setupTransactionFx = createEffect(async ({ payloads, apis }: SetupParams) 
 const getSessionFx = attach({ effect: walletConnect.restoreSession });
 
 type SignParams = {
+  id: string;
   session: SessionTypes.Struct;
   payload: SignerPayloadJSON;
 };
 
 const signFx = attach({
   source: walletConnect.$client,
-  async effect(client, { payload, session }: SignParams) {
+  async effect(client, { payload, session, id }: SignParams) {
     assert(client, 'Wallet Connect client not found.');
 
     const response = await walletConnect.request({
@@ -80,7 +89,10 @@ const signFx = attach({
       },
     });
 
-    return response as SignResponse;
+    return {
+      ...(response as SignResponse),
+      id,
+    };
   },
 });
 
@@ -112,14 +124,20 @@ sample({
   target: $step,
 });
 
+// Signing
+
 sample({
-  clock: signAllFx.fail,
+  clock: signFx.fail,
+  source: $pending,
+  filter: (id, { params }) => params.id === id,
   fn: () => 'failed' as const,
   target: $step,
 });
 
 sample({
-  clock: signAllFx.done,
+  clock: signAllFx.doneData,
+  source: $pending,
+  filter: (id, response) => response.every((r) => r.id === id),
   fn: () => 'success' as const,
   target: $step,
 });
@@ -134,12 +152,11 @@ sample({
 sample({
   clock: gotFirstPayload,
   source: networkModel.$chains,
-  fn: (chains, { account, signatory }) => {
-    // TODO remove this hardcode
-    const ac = signatory || account;
-
+  fn: (chains, { signatory }) => {
     return {
-      pairingTopic: walletConnectService.isWalletConnectAccount(ac) ? ac.signingExtras.pairingTopic : undefined,
+      pairingTopic: walletConnectService.isWalletConnectAccount(signatory)
+        ? signatory.signingExtras.pairingTopic
+        : undefined,
       chains: Object.values(chains).map((c) => c.chainId),
     };
   },
@@ -148,9 +165,7 @@ sample({
 
 sample({
   clock: $signingPayloads,
-  source: networkModel.$apis,
-  filter: (_, payloads) => payloads.length > 0,
-  fn: (apis, payloads) => ({ apis, payloads }),
+  filter: (payloads) => payloads.length > 0,
   target: setupTransactionFx,
 });
 
@@ -169,18 +184,107 @@ sample({
   fn(client, { transactions, session }) {
     assert(client, 'WC client not found');
 
-    return transactions.map<SignParams>(({ unsigned }) => ({
-      client,
-      session,
-      payload: unsigned,
-    }));
+    const id = nanoid();
+
+    return {
+      id,
+      transactions: transactions.map<SignParams>(({ unsigned }) => ({
+        id,
+        client,
+        session,
+        payload: unsigned,
+      })),
+    };
   },
-  target: signAllFx,
+  target: spread({
+    id: $pending,
+    transactions: signAllFx,
+  }),
 });
 
 sample({
   clock: signAllFx.doneData,
+  source: $pending,
+  filter: (id, response) => response.every((r) => r.id === id),
+  fn: (_, response) => response,
   target: $signed,
+});
+
+// Pending management
+
+sample({
+  clock: signAllFx.doneData,
+  source: $pending,
+  filter: (id, response) => response.every((r) => r.id === id),
+  fn: () => null,
+  target: $pending,
+});
+
+sample({
+  clock: $step,
+  filter: (step) => step === 'idle',
+  fn: () => null,
+  target: $pending,
+});
+
+// updating accounts
+
+sample({
+  clock: getSessionFx.done,
+  source: {
+    accounts: $accounts,
+    chains: networkModel.$chains,
+  },
+  fn: ({ accounts, chains }, { result: session }) => {
+    const wcAccounts = accounts.filter(walletConnectService.isWalletConnectAccount);
+    const accountsFromSession = walletConnectService.getAccountsFromSession(session, Object.values(chains));
+    const accountsToCreate = new Set<AnyAccountDraft<WcAccount>>();
+    const accountsToUpdate = new Set<WcAccount>();
+    const accountsToDelete = new Set(wcAccounts);
+
+    const name = wcAccounts.map((a) => a.name).at(0) ?? 'unknown';
+    const walletId = wcAccounts.map((a) => a.walletId).at(0);
+
+    assert(walletId, "Can't get walletId from accounts");
+
+    for (const { accountId, chain } of accountsFromSession) {
+      const account = wcAccounts.find((a) => a.accountId === accountId && a.chainId === chain.chainId);
+
+      if (account) {
+        if (!walletConnectService.hasSameTopic(account, session)) {
+          accountsToUpdate.add(walletConnectService.updateAccount(account, session));
+        }
+      } else {
+        accountsToCreate.add(
+          walletConnectService.createAccount({
+            walletId,
+            name,
+            accountId,
+            chainId: chain.chainId,
+            session,
+          }),
+        );
+      }
+
+      for (const accountToDelete of accountsToDelete) {
+        if (accountToDelete.chainId === chain.chainId) {
+          accountsToDelete.delete(accountToDelete);
+          break;
+        }
+      }
+    }
+
+    return {
+      create: Array.from(accountsToCreate),
+      update: Array.from(accountsToUpdate),
+      delete: Array.from(accountsToDelete),
+    };
+  },
+  target: spread({
+    create: accounts.createAccounts,
+    update: accounts.updateAccounts,
+    delete: accounts.deleteAccounts,
+  }),
 });
 
 export const walletConnectSign = {

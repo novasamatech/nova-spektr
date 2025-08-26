@@ -6,6 +6,7 @@ import { feed } from './feed/store';
 import { member } from './member/store';
 import { referendum } from './referendum/store';
 import { referendumMeta } from './referendumMeta/store';
+import { rfcDetails } from './rfc/store';
 import { salary } from './salary/store';
 import { track } from './tracks/store';
 import { voting } from './votingHistory/store';
@@ -25,6 +26,7 @@ export const $collectiveStore = combine(
     evidencePeriods: evidence.$periods,
     evidenceSummary: evidence.$summary,
     feed: feed.$list,
+    rfcSummary: rfcDetails.$list,
   },
   combineStores,
 );

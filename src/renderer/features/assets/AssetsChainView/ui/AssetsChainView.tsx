@@ -2,28 +2,30 @@ import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { chainsService } from '@/shared/api/network';
-import { type Account, type Asset, type Chain } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { includesMultiple, nullable } from '@/shared/lib/utils';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 
 type Props = {
   query: string;
-  activeShards: Account[];
+  activeShards: AnyAccount[];
   hideZeroBalances: boolean;
   assetsView: AssetsListView;
 };
 export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsView }: Props) => {
-  const activeWallet = useUnit(walletModel.$activeWallet);
-  const balances = useUnit(balanceModel.$balances);
+  const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
@@ -71,7 +73,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     );
 
     setSortedChains(sortedChains);
-  }, [activeWallet, balances, assetsPrices, assetsView, activeShards]);
+  }, [activeWallet, balances, assetsPrices, assetsView, connections, activeShards]);
 
   useEffect(() => {
     let filteredChains: Chain[] = [];
@@ -130,6 +132,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
             accounts={activeShards}
             hideZeroBalances={hideZeroBalances}
             query={query}
+            wallet={activeWallet}
           />
         ))}
         <EmptyAssetsState />

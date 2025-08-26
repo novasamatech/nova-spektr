@@ -1,8 +1,8 @@
 import { combine } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type ChainId, type Contact, type MultisigAccount, type ProxyAccount, type Wallet } from '@/shared/core';
-import { dictionary, nullable } from '@/shared/lib/utils';
+import { type ChainId, type Contact, type ProxyAccount, type Wallet } from '@/shared/core';
+import { dictionary, keys, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
@@ -16,7 +16,9 @@ const $wallet = flow.state.map(({ wallet }) => wallet);
 const $multisigAccount = $wallet.map(wallet => {
   if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
 
-  return (wallet.accounts.find(accountUtils.isMultisigAccount) as MultisigAccount | undefined) ?? null;
+  return wallet.accounts
+    .filter(account => accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account))
+    .at(0);
 });
 
 const $signatories = combine(
@@ -34,8 +36,6 @@ const $signatories = combine(
 
     const walletSignatories: [Wallet, AccountId][] = [];
     for (const wallet of wallets) {
-      if (!walletUtils.isValidSignatory(wallet)) continue;
-
       for (const account of wallet.accounts) {
         if (!signatoriesMap[account.accountId]) continue;
 
@@ -55,7 +55,7 @@ const $signatories = combine(
     return {
       wallets: walletSignatories,
       contacts: contactSignatories,
-      people: Object.keys(signatoriesMap) as AccountId[],
+      people: keys(signatoriesMap),
     };
   },
 );
@@ -69,7 +69,7 @@ const $chainsProxies = combine(
   ({ wallet, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
     if (nullable(wallet)) return {};
 
-    return proxyUtils.getProxyAccountsOnChain(wallet.accounts, Object.keys(chains) as ChainId[], proxies);
+    return proxyUtils.getProxyAccountsOnChain(wallet.accounts, keys(chains), proxies);
   },
 );
 

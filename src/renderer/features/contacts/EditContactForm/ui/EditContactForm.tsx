@@ -4,7 +4,8 @@ import { type FormEvent, useEffect } from 'react';
 
 import { type Contact } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { Button, Icon, Identicon, InputHint } from '@/shared/ui';
+import { Button, InputHint } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { type Callbacks, editFormModel } from '../model/contact-form';
 
@@ -35,8 +36,6 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
     submit();
   };
 
-  const canShowIdenticon = address?.value && !address?.hasError();
-
   return (
     <form onSubmit={submitForm}>
       <Box gap={4} padding={[4, 5]}>
@@ -57,16 +56,10 @@ export const EditContactForm = ({ contactToEdit, onSubmit }: Props) => {
           <Input
             name="address"
             placeholder={t('addressBook.editContact.accountIdPlaceholder')}
-            invalid={address?.hasError()}
-            value={address?.value}
-            prefixElement={
-              canShowIdenticon ? (
-                <Identicon address={address?.value} background={false} />
-              ) : (
-                <Icon name="emptyIdenticon" />
-              )
-            }
-            onChange={address?.onChange}
+            invalid={address.hasError()}
+            value={address.value}
+            prefixElement={<Identicon value={address.value} background={false} />}
+            onChange={address.onChange}
           />
           <InputHint variant="hint" active>
             {t('addressBook.editContact.editWarning')}

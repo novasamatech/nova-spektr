@@ -15,6 +15,9 @@ const $store = combine($fellowshipStore, fellowshipVotingHistoryFeature.state, (
   return fellowshipStore[state.data.chainId] ?? null;
 });
 
+const $referendumMeta = $store.map(store => store?.referendumMeta ?? {});
+
 export const fellowshipModel = {
   $store,
+  $referendumMeta,
 };

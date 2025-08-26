@@ -11,12 +11,20 @@ import './Modal.css';
 
 type Props = {
   isOpen?: boolean;
-  size: 'sm' | 'md' | 'lg' | 'xl' | 'full' | 'fit';
+  size: 'sm' | 'md' | 'mdlg' | 'lg' | 'xl' | 'xxl' | 'full' | 'fit';
   height?: 'full' | 'lg' | 'fit';
   onToggle?: (open: boolean) => void;
+  testId?: string;
 };
 
-const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: PropsWithChildren<Props>) => {
+const Root = ({
+  isOpen,
+  size = 'md',
+  height = 'fit',
+  children,
+  onToggle,
+  testId = 'Modal',
+}: PropsWithChildren<Props>) => {
   const { portalContainer } = useTheme();
 
   const arrayChildren = Children.toArray(children);
@@ -43,14 +51,16 @@ const Root = ({ isOpen, size = 'md', height = 'fit', children, onToggle }: Props
         >
           <Dialog.Content
             aria-describedby={undefined}
+            data-testid={testId}
             className={cnTw(
-              'ui-kit-modal-height flex min-w-32 max-w-full flex-col overflow-hidden',
+              'ui-kit-modal-height flex max-w-full min-w-32 flex-col overflow-hidden',
               'text-left align-middle text-body',
               'transform rounded-lg bg-white shadow-modal transition-transform',
               'duration-200 animate-in fade-in zoom-in-95',
               {
                 'w-modal-sm': size === 'sm',
                 'w-modal': size === 'md',
+                'w-148': size === 'mdlg',
                 'w-modal-lg': size === 'lg',
                 'w-modal-xl': size === 'xl',
                 'w-full': size === 'full',
@@ -80,7 +90,7 @@ const Title = ({ action, close, children }: TitleProps) => {
 
   return (
     <Dialog.Title asChild hidden={!headerExist} className={!headerExist ? 'hidden' : ''}>
-      <header className="flex w-full items-center justify-between py-3 pe-3 ps-5 contain-inline-size">
+      <header className="flex w-full items-center justify-between py-3 ps-5 pe-3 contain-inline-size">
         <h1 className="truncate py-1 font-manrope text-header-title font-bold text-text-primary">{children}</h1>
 
         <div className="z-20 flex h-7.5 items-center gap-x-4">
@@ -107,7 +117,7 @@ const HeaderContent = ({ children }: PropsWithChildren) => {
 
 const Content = ({ disableScroll, children }: PropsWithChildren<{ disableScroll?: boolean }>) => {
   return disableScroll ? (
-    <div className="flex h-full min-h-0 flex-grow flex-col overflow-hidden">{children}</div>
+    <div className="flex h-full min-h-0 grow flex-col overflow-hidden">{children}</div>
   ) : (
     <ScrollArea>{children}</ScrollArea>
   );
@@ -124,7 +134,7 @@ const Trigger = ({ disabled, children }: PropsWithChildren<{ disabled?: boolean 
 const Footer = ({ children, align = 'end' }: PropsWithChildren<{ align?: 'start' | 'end' | 'between' }>) => {
   return (
     <footer
-      className={cnTw('flex h-fit items-center gap-2 px-5 pb-4 pt-3', {
+      className={cnTw('flex h-fit items-center gap-2 px-5 pt-3 pb-4', {
         'justify-end': align === 'end',
         'justify-start': align === 'start',
         'justify-between': align === 'between',

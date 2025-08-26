@@ -1,8 +1,9 @@
 import { default as BigNumber } from 'bignumber.js';
-import capitalize from 'lodash/capitalize';
+import { capitalize } from 'lodash';
 
 import { type Delegation } from '@/shared/api/governance/off-chain/lib/types';
 import { type Identity } from '@/shared/core';
+import { entries } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 
 type IdentityListParam = {
@@ -12,7 +13,7 @@ type IdentityListParam = {
 };
 
 export const getIdentityList = (identity: Identity) => {
-  return Object.entries(identity).reduce<IdentityListParam[]>((acc, [key, value]) => {
+  return entries(identity).reduce<IdentityListParam[]>((acc, [key, value]) => {
     if (typeof value !== 'string' || !value) return acc;
     const capitalizedKey = capitalize(key);
 

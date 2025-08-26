@@ -4,35 +4,36 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import {
-  type Balance,
-  type BasketTransaction,
+  type BalanceMap,
   type Chain,
   type ChainId,
   type Connection,
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { toAddress, transferableAmount } from '@/shared/lib/utils';
+import { toAccountId, transferableAmount } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { governanceService, votingService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
-import { transactionService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperationsService } from '@/aggregates/basket-operations';
-import { type UnlockFormData } from '@/features/governance/types/structs';
 import {
+  type DelegateConfirm,
+  type EditDelegationConfirm,
   type RemoveVoteConfirm,
+  type UnlockConfirm,
   type VoteConfirm,
   delegateConfirmModel,
   editDelegationConfirmModel,
   removeVoteConfirmModel,
   revokeDelegationConfirmModel,
+  unlockConfirmModel,
   voteConfirmModel,
 } from '@/features/operations/OperationsConfirm';
-import { unlockConfirmAggregate } from '@/widgets/UnlockModal';
-import { type DelegateInput, type RevokeDelegationInput } from '../types/confirm';
+import { type RevokeDelegationConfirm } from '@/features/operations/OperationsConfirm/RevokeDelegation/model/confirm-model';
 
 type DataParams = {
   accounts: AnyAccount[];
@@ -40,7 +41,7 @@ type DataParams = {
   apis: Record<ChainId, ApiPromise>;
   transaction: BasketTransaction;
   connections: Record<ChainId, Connection>;
-  balances: Balance[];
+  balances: BalanceMap;
 };
 
 const flow = createGate<BasketTransaction>();
@@ -66,16 +67,19 @@ const prepareUnlockDataFx = createEffect(async ({ transaction, accounts, chains,
   return {
     chain,
     id: transaction.id,
-    shards: [account!],
     amount: coreTx.args.value,
     asset: chain.assets[0],
-    signatory: null,
+    initiator: account!,
+    signatory: account!,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
 
-    fee,
+    fee: fee.toString(),
     totalLock,
     totalFee: '0',
     multisigDeposit: '0',
-  } satisfies UnlockFormData;
+  } satisfies UnlockConfirm;
 });
 
 const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chains, apis, balances }: DataParams) => {
@@ -88,7 +92,7 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
   const asset = chain.assets[0];
 
   const transferable = transferableAmount(
-    balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
+    balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
   );
 
   const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
@@ -105,19 +109,21 @@ const prepareDelegateDataFx = createEffect(async ({ transaction, accounts, chain
     asset,
     transferable,
 
-    shards: [account!],
     balance: coreTxs[0].args.balance,
     conviction: votingService.getConviction(coreTxs[0].args.conviction),
     target: coreTxs[0].args.target,
     tracks: coreTxs.map((t: Transaction) => t.args.track),
-    description: '',
     locks,
-    signatory: null,
+    signatory: account!,
+    initiator: account!,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
 
-    fee,
+    fee: fee.toString(),
     totalFee: '0',
     multisigDeposit: '0',
-  } satisfies DelegateInput;
+  } satisfies DelegateConfirm;
 });
 
 const prepareEditDelegationDataFx = createEffect(
@@ -131,7 +137,7 @@ const prepareEditDelegationDataFx = createEffect(
     const asset = chain.assets[0];
 
     const transferable = transferableAmount(
-      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
+      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
     );
 
     const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
@@ -150,21 +156,23 @@ const prepareEditDelegationDataFx = createEffect(
       asset,
       transferable,
 
-      shards: [account!],
       balance: coreTxs[0].args.balance,
       conviction: coreTxs[0].args.conviction,
       // TODO: Previous conviction should be received from chain
       previousConviction: coreTxs[0].args.previousConviction || 'None',
       target: coreTxs[0].args.target,
       tracks: coreTxs.map((t: Transaction) => t.args.track),
-      description: '',
       locks,
-      signatory: null,
+      signatory: account!,
+      route: [account!],
+      tx: transaction.coreTx,
+      coreTx: transaction.coreTx,
+      initiator: account!,
 
-      fee,
-      totalFee: '0',
+      fee: fee.toString(),
+      totalFee: fee.toString(),
       multisigDeposit: '0',
-    } satisfies DelegateInput;
+    } satisfies EditDelegationConfirm;
   },
 );
 
@@ -176,10 +184,13 @@ const prepareRevokeDelegationDataFx = createEffect(
       chains,
       accounts,
     );
+
+    assert(account, 'Signing account not found');
+
     const asset = chain.assets[0];
 
     const transferable = transferableAmount(
-      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId.toString()),
+      balanceUtils.getBalance(balances, account!.accountId, chainId, asset.assetId),
     );
     const locks = await governanceService.getTrackLocks(apis[chainId], [transaction.coreTx.accountId]).then((data) => {
       const lock = data[transaction.coreTx.accountId];
@@ -201,20 +212,23 @@ const prepareRevokeDelegationDataFx = createEffect(
       asset,
       transferable,
 
-      account: account!,
       balance: delegation ? delegation.data.balance.toString() : coreTxs[0].args.balance,
       conviction: delegation ? delegation.data.conviction : votingService.getConviction(coreTxs[0].args.conviction),
-      target: delegation ? toAddress(delegation.data.target, { prefix: chain.addressPrefix }) : coreTxs[0].args.target,
+      delegate: delegation ? delegation.data.target : toAccountId(coreTxs[0].args.target),
       tracks: coreTxs.map((t: Transaction) => t.args.track),
-      description: '',
       locks,
 
-      signatory: null,
+      initiator: account,
+      signatory: account,
+      route: [account],
 
-      fee,
+      tx: transaction.coreTx,
+      coreTx: transaction.coreTx,
+
+      fee: fee.toString(),
       totalFee: '0',
       multisigDeposit: '0',
-    } satisfies RevokeDelegationInput;
+    } satisfies RevokeDelegationConfirm;
   },
 );
 
@@ -235,14 +249,12 @@ const prepareVoteDataFx = createEffect(async ({ transaction, accounts, chains, a
     api,
     chain,
     asset: chain.assets[0],
-    account: account!,
+    initiator: account!,
     existingVote: coreTx.args.vote,
-    signatory: null,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
+    signatory: account!,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
   } satisfies VoteConfirm;
 });
 
@@ -262,15 +274,13 @@ const prepareRemoveVoteDataFx = createEffect(async ({ transaction, accounts, cha
     api,
     chain,
     id: transaction.id,
-    account: account!,
+    initiator: account!,
     asset: chain.assets[0],
     votes: coreTxs.map((t: Transaction) => t.args),
-    signatory: null,
-    wrappedTransactions: transactionService.getWrappedTransaction({
-      api,
-      transaction: transaction.coreTx,
-      txWrappers: transaction.txWrappers,
-    }),
+    signatory: account!,
+    route: [account!],
+    tx: transaction.coreTx,
+    coreTx: transaction.coreTx,
   } satisfies RemoveVoteConfirm;
 });
 
@@ -281,7 +291,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -302,7 +312,7 @@ sample({
 sample({
   clock: prepareVoteDataFx.doneData,
   fn: (data) => [data],
-  target: voteConfirmModel.events.fillConfirm,
+  target: voteConfirmModel.init,
 });
 
 sample({
@@ -312,7 +322,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -333,7 +343,7 @@ sample({
 sample({
   clock: prepareRemoveVoteDataFx.doneData,
   fn: (data) => [data],
-  target: removeVoteConfirmModel.events.fillConfirm,
+  target: removeVoteConfirmModel.init,
 });
 
 sample({
@@ -343,7 +353,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -364,7 +374,7 @@ sample({
 sample({
   clock: prepareUnlockDataFx.doneData,
   fn: (data) => [data],
-  target: unlockConfirmAggregate.events.formInitiated,
+  target: unlockConfirmModel.init,
 });
 
 sample({
@@ -374,7 +384,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -395,7 +405,7 @@ sample({
 sample({
   clock: prepareDelegateDataFx.doneData,
   fn: (data) => [data],
-  target: delegateConfirmModel.events.formInitiated,
+  target: delegateConfirmModel.init,
 });
 
 sample({
@@ -405,7 +415,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -426,7 +436,7 @@ sample({
 sample({
   clock: prepareEditDelegationDataFx.doneData,
   fn: (data) => [data],
-  target: editDelegationConfirmModel.events.formInitiated,
+  target: editDelegationConfirmModel.init,
 });
 
 sample({
@@ -436,7 +446,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     connections: networkModel.$connections,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: (_, operation) => {
     const transaction = basketOperationsService.getCoreTx(operation);
@@ -457,7 +467,7 @@ sample({
 sample({
   clock: prepareRevokeDelegationDataFx.doneData,
   fn: (data) => [data],
-  target: revokeDelegationConfirmModel.events.formInitiated,
+  target: revokeDelegationConfirmModel.init,
 });
 
 export const confirm = {

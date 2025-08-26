@@ -44,7 +44,7 @@ export const Switch = ({
             ? 'border border-transparent bg-switch-background-active'
             : 'border border-container-border bg-switch-background-inactive',
           disabled && 'opacity-50',
-          'relative inline-flex w-7.5 transform items-center rounded-full p-[1px] transition',
+          'relative inline-flex w-7.5 transform items-center rounded-full p-px transition',
           switchClassName,
         )}
         onChange={onChange}

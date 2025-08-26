@@ -3,12 +3,17 @@
   "formatVersion": 1,
   "data": {
     "databaseName": "spektr",
-    "databaseVersion": 26,
+    "databaseVersion": 32,
     "tables": [
+      {
+        "name": "connections",
+        "schema": "++id",
+        "rowCount": 0
+      },
       {
         "name": "wallets",
         "schema": "++id",
-        "rowCount": 3
+        "rowCount": 1
       },
       {
         "name": "accounts",
@@ -23,296 +28,84 @@
       {
         "name": "multisigTransactions",
         "schema": "[accountId+chainId+callHash+blockCreated+indexCreated],[accountId+status],[accountId+callHash],[callHash+status+chainId],accountId,status,callHash",
-        "rowCount": 1
+        "rowCount": 0
       },
       {
         "name": "notifications",
         "schema": "++id",
-        "rowCount": 2
+        "rowCount": 0
       },
       {
         "name": "multisigEvents",
         "schema": "++id,[txAccountId+txChainId+txCallHash+txBlock+txIndex],status,accountId",
-        "rowCount": 1
+        "rowCount": 0
       },
       {
         "name": "accounts2",
         "schema": "id",
-        "rowCount": 3
+        "rowCount": 1
+      },
+      {
+        "name": "multisigOperations",
+        "schema": "id",
+        "rowCount": 0
       }
     ],
-    "data": [
-      {
-        "tableName": "wallets",
-        "inbound": true,
-        "rows": [
-          {
-            "name": "PV-ROOT-ONLY_ETH",
-            "type": "wallet_sps",
-            "signingType": "signing_ps",
-            "isActive": true,
-            "id": 1,
-            "accounts": [
-              {
-                "accountId": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab",
-                "name": "PV-ROOT-ONLY_ETH",
-                "cryptoType": 3,
-                "signingType": "signing_ps",
-                "accountType": "base",
-                "type": "universal",
-                "walletId": 1,
-                "id": "1 0xc60efe26b9b92380d1b2c479472323ec35f0f0ab universal"
-              }
-            ],
-            "$types": {
-              "accounts": "arrayNonindexKeys"
-            }
-          },
-          {
-            "name": "0xb4e...ee057",
-            "type": "wallet_ms",
-            "signingType": "signing_ms",
-            "isActive": false,
-            "id": 2,
-            "accounts": [
-              {
-                "threshold": 2,
-                "accountId": "0xb4e55b61678623fd5ece9c24e79d6c0532bee057",
-                "signatories": [
-                  {
-                    "accountId": "0x61d8c5647f4181f2c35996c62a6272967f5739a8",
-                    "address": "0x61d8c5647f4181f2c35996c62a6272967f5739a8"
-                  },
-                  {
-                    "accountId": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab",
-                    "address": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab"
-                  },
-                  {
-                    "accountId": "0xaccace4056a930745218328bf086369fbd61c212",
-                    "address": "0xaccace4056a930745218328bf086369fbd61c212"
-                  }
-                ],
-                "name": "0xb4e...ee057",
-                "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-                "cryptoType": 3,
-                "signingType": "signing_ms",
-                "accountType": "multisig",
-                "type": "chain",
-                "walletId": 2,
-                "id": "2 0xb4e55b61678623fd5ece9c24e79d6c0532bee057 0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d"
-              }
-            ],
-            "$types": {
-              "accounts": "arrayNonindexKeys",
-              "accounts.0.signatories": "arrayNonindexKeys"
-            }
-          },
-          {
-            "name": "0x0fa...ce9b4",
-            "type": "wallet_ms",
-            "signingType": "signing_ms",
-            "isActive": false,
-            "id": 3,
-            "accounts": [
-              {
-                "threshold": 2,
-                "accountId": "0x0faf79704f00265d83f9930898dbb576796ce9b4",
-                "signatories": [
-                  {
-                    "accountId": "0xaccace4056a930745218328bf086369fbd61c212",
-                    "address": "0xaccace4056a930745218328bf086369fbd61c212"
-                  },
-                  {
-                    "accountId": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab",
-                    "address": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab"
-                  }
-                ],
-                "name": "0x0fa...ce9b4",
-                "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-                "cryptoType": 3,
-                "signingType": "signing_ms",
-                "accountType": "multisig",
-                "type": "chain",
-                "walletId": 3,
-                "id": "3 0x0faf79704f00265d83f9930898dbb576796ce9b4 0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d"
-              }
-            ],
-            "$types": {
-              "accounts": "arrayNonindexKeys",
-              "accounts.0.signatories": "arrayNonindexKeys"
-            }
-          }
-        ]
-      },
-      {
-        "tableName": "accounts",
-        "inbound": true,
-        "rows": []
-      },
-      {
-        "tableName": "contacts",
-        "inbound": true,
-        "rows": []
-      },
-      {
-        "tableName": "multisigTransactions",
-        "inbound": true,
-        "rows": [
-          {
-            "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-            "dateCreated": 1716189870547,
-            "blockCreated": 5723285,
-            "indexCreated": 4,
-            "status": "SIGNING",
-            "callHash": "0x78b8a348690f565efe3730cd8189f7388c0a896b6fd090276639c9130c0eba47",
-            "signatories": [
-              {
-                "accountId": "0x61d8c5647f4181f2c35996c62a6272967f5739a8",
-                "address": "0x61d8c5647f4181f2c35996c62a6272967f5739a8"
-              },
-              {
-                "accountId": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab",
-                "address": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab"
-              },
-              {
-                "accountId": "0xaccace4056a930745218328bf086369fbd61c212",
-                "address": "0xaccace4056a930745218328bf086369fbd61c212"
-              }
-            ],
-            "deposit": "11360000000000000000",
-            "depositor": "0x61d8c5647f4181f2c35996c62a6272967f5739a8",
-            "accountId": "0xb4e55b61678623fd5ece9c24e79d6c0532bee057",
-            "$types": {
-              "signatories": "arrayNonindexKeys"
-            }
-          }
-        ]
-      },
-      {
-        "tableName": "notifications",
-        "inbound": true,
-        "rows": [
-          {
-            "read": false,
-            "type": "MultisigCreatedNotification",
-            "dateCreated": 1740577158844,
-            "multisigAccountId": "0xb4e55b61678623fd5ece9c24e79d6c0532bee057",
-            "multisigAccountName": "0xb4e...ee057",
-            "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-            "signatories": [
-              "0x61d8c5647f4181f2c35996c62a6272967f5739a8",
-              "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab",
-              "0xaccace4056a930745218328bf086369fbd61c212"
-            ],
-            "threshold": 2,
-            "id": 1,
-            "$types": {
-              "signatories": "arrayNonindexKeys"
-            }
-          },
-          {
-            "read": false,
-            "type": "MultisigCreatedNotification",
-            "dateCreated": 1740577158844,
-            "multisigAccountId": "0x0faf79704f00265d83f9930898dbb576796ce9b4",
-            "multisigAccountName": "0x0fa...ce9b4",
-            "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-            "signatories": ["0xaccace4056a930745218328bf086369fbd61c212", "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab"],
-            "threshold": 2,
-            "id": 2,
-            "$types": {
-              "signatories": "arrayNonindexKeys"
-            }
-          }
-        ]
-      },
-      {
-        "tableName": "multisigEvents",
-        "inbound": true,
-        "rows": [
-          {
-            "txAccountId": "0xb4e55b61678623fd5ece9c24e79d6c0532bee057",
-            "txChainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-            "txCallHash": "0x78b8a348690f565efe3730cd8189f7388c0a896b6fd090276639c9130c0eba47",
-            "txBlock": 5723285,
-            "txIndex": 4,
-            "status": "SIGNED",
-            "accountId": "0x61d8c5647f4181f2c35996c62a6272967f5739a8",
-            "dateCreated": 1716189870548,
-            "id": 1
-          }
-        ]
-      },
-      {
-        "tableName": "accounts2",
-        "inbound": true,
-        "rows": [
-          {
-            "accountId": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab",
-            "name": "PV-ROOT-ONLY_ETH",
-            "cryptoType": 3,
-            "signingType": "signing_ps",
-            "accountType": "base",
-            "type": "universal",
-            "walletId": 1,
-            "id": "1 0xc60efe26b9b92380d1b2c479472323ec35f0f0ab universal"
-          },
-          {
-            "threshold": 2,
-            "accountId": "0xb4e55b61678623fd5ece9c24e79d6c0532bee057",
-            "signatories": [
-              {
-                "accountId": "0x61d8c5647f4181f2c35996c62a6272967f5739a8",
-                "address": "0x61d8c5647f4181f2c35996c62a6272967f5739a8"
-              },
-              {
-                "accountId": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab",
-                "address": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab"
-              },
-              {
-                "accountId": "0xaccace4056a930745218328bf086369fbd61c212",
-                "address": "0xaccace4056a930745218328bf086369fbd61c212"
-              }
-            ],
-            "name": "0xb4e...ee057",
-            "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-            "cryptoType": 3,
-            "signingType": "signing_ms",
-            "accountType": "multisig",
-            "type": "chain",
-            "walletId": 2,
-            "id": "2 0xb4e55b61678623fd5ece9c24e79d6c0532bee057 0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-            "$types": {
-              "signatories": "arrayNonindexKeys"
-            }
-          },
-          {
-            "threshold": 2,
-            "accountId": "0x0faf79704f00265d83f9930898dbb576796ce9b4",
-            "signatories": [
-              {
-                "accountId": "0xaccace4056a930745218328bf086369fbd61c212",
-                "address": "0xaccace4056a930745218328bf086369fbd61c212"
-              },
-              {
-                "accountId": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab",
-                "address": "0xc60efe26b9b92380d1b2c479472323ec35f0f0ab"
-              }
-            ],
-            "name": "0x0fa...ce9b4",
-            "chainId": "0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-            "cryptoType": 3,
-            "signingType": "signing_ms",
-            "accountType": "multisig",
-            "type": "chain",
-            "walletId": 3,
-            "id": "3 0x0faf79704f00265d83f9930898dbb576796ce9b4 0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d",
-            "$types": {
-              "signatories": "arrayNonindexKeys"
-            }
-          }
-        ]
-      }
-    ]
+    "data": [{
+      "tableName": "connections",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "wallets",
+      "inbound": true,
+      "rows": [
+        {
+          "name": "pv-root-eth",
+          "rootAccountId": "0x73a210f49ca8a31d02793da33ec7156fb7a67271",
+          "type": "wallet_sps",
+          "signingType": "signing_ps",
+          "id": 1
+        }
+      ]
+    },{
+      "tableName": "accounts",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "contacts",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "multisigTransactions",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "notifications",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "multisigEvents",
+      "inbound": true,
+      "rows": []
+    },{
+      "tableName": "accounts2",
+      "inbound": true,
+      "rows": [
+        {
+          "accountId": "0x73a210f49ca8a31d02793da33ec7156fb7a67271",
+          "name": "pv-root-eth",
+          "cryptoType": 3,
+          "signingType": "signing_ps",
+          "accountType": "base",
+          "type": "universal",
+          "walletId": 1,
+          "id": "1 0x73a210f49ca8a31d02793da33ec7156fb7a67271 universal"
+        }
+      ]
+    },{
+      "tableName": "multisigOperations",
+      "inbound": true,
+      "rows": []
+    }]
   }
 }

@@ -18,6 +18,7 @@ type ContextProps = {
   width?: 'auto' | 'trigger';
   keepOpen?: boolean;
   testId?: string;
+  avoidCollisions?: boolean;
 };
 
 const Context = createContext<ContextProps>({});
@@ -39,11 +40,12 @@ const Root = ({
   width = 'auto',
   keepOpen = false,
   testId = 'Dropdown',
+  avoidCollisions = false,
   children,
 }: RootProps) => {
   const ctx = useMemo(
-    () => ({ side, sideOffset, align, alignOffset, width, keepOpen, testId }),
-    [side, sideOffset, align, alignOffset, width, keepOpen, testId],
+    () => ({ side, sideOffset, align, alignOffset, width, keepOpen, testId, avoidCollisions }),
+    [side, sideOffset, align, alignOffset, width, keepOpen, testId, avoidCollisions],
   );
 
   return (
@@ -65,7 +67,7 @@ const Trigger = ({ disabled, children }: PropsWithChildren<{ disabled?: boolean 
 
 const Separator = () => {
   return (
-    <DropdownMenu.Separator className="h-[1px] w-full px-2">
+    <DropdownMenu.Separator className="h-px w-full px-2">
       <div className="h-full w-full bg-divider" />
     </DropdownMenu.Separator>
   );
@@ -73,7 +75,7 @@ const Separator = () => {
 
 const Content = ({ children }: PropsWithChildren) => {
   const { portalContainer } = useTheme();
-  const { side, sideOffset, align, alignOffset, width, testId } = useContext(Context);
+  const { side, sideOffset, align, alignOffset, width, testId, avoidCollisions } = useContext(Context);
 
   const calculatedWidth = width === 'trigger' ? 'var(--radix-dropdown-menu-trigger-width)' : undefined;
 
@@ -83,7 +85,7 @@ const Content = ({ children }: PropsWithChildren) => {
         <DropdownMenu.Content
           loop
           asChild
-          avoidCollisions={false}
+          avoidCollisions={avoidCollisions}
           side={side}
           align={align}
           style={{ width: calculatedWidth }}
@@ -96,8 +98,8 @@ const Content = ({ children }: PropsWithChildren) => {
             elevation={1}
             className={cnTw(
               'z-50 flex flex-col',
-              'h-max max-h-[--radix-popper-available-height] min-w-20',
-              'origin-[--radix-popper-transform-origin] overflow-hidden duration-100 animate-in fade-in zoom-in-95',
+              'h-max max-h-(--radix-popper-available-height) min-w-20',
+              'origin-(--radix-popper-transform-origin) overflow-hidden duration-100 animate-in fade-in zoom-in-95',
               {
                 'max-w-60': width === 'auto',
               },
@@ -148,7 +150,7 @@ const Item = ({ onSelect, onClick, disabled, children }: ItemProps) => {
     <DropdownMenu.Item
       asChild
       className={cnTw(
-        'flex items-center gap-2 rounded px-3 py-2 text-footnote text-text-secondary',
+        'flex items-center gap-2 rounded-sm px-3 py-2 text-footnote text-text-secondary',
         'cursor-default bg-block-background-default',
         {
           'cursor-pointer hover:bg-block-background-hover': !disabled,

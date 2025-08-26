@@ -1,8 +1,10 @@
 import { type Transaction } from 'dexie';
 
-import { type Account, ChainType, CryptoType, type Wallet } from '@/shared/core';
+import { ChainType, CryptoType, type Wallet } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
+// eslint-disable-next-line boundaries/element-types
+import { type AnyAccount } from '@/domains/network';
 
 /**
  * Migrate accounts table to accounts2 for supporting new format
@@ -12,11 +14,11 @@ import { pjsSchema } from '@/shared/polkadotjs-schemas';
  * @returns {Promise}
  */
 export async function migrateAccounts(t: Transaction): Promise<void> {
-  const oldAccounts = await t.db.table<Account>('accounts').toArray();
+  const oldAccounts = await t.db.table<AnyAccount>('accounts').toArray();
   const wallets = await t.db.table<Wallet>('wallets').toArray();
 
   const newAccounts = oldAccounts
-    .map<Account | null>((old) => {
+    .map<AnyAccount | null>((old) => {
       const wallet = wallets.find((x) => x.id === old.walletId);
       if (!wallet) return null;
       // @ts-expect-error old types
@@ -24,7 +26,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
       const baseAccountId = nonNullable(baseId) ? oldAccounts.find((x) => x.id === baseId) : null;
 
       const finalType = wallet.type === 'wallet_wo' ? 'watch_only' : type;
-      let res: Account;
+      let res: AnyAccount;
 
       if ('chainId' in old) {
         res = {
@@ -36,6 +38,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
           chainId: old.chainId,
           cryptoType: chainType === ChainType.SUBSTRATE ? CryptoType.SR25519 : CryptoType.ETHEREUM,
           name: old.name,
+          // @ts-expect-error field was deleted
           signingType: wallet.signingType,
         };
       } else {
@@ -47,6 +50,7 @@ export async function migrateAccounts(t: Transaction): Promise<void> {
           accountId: pjsSchema.helpers.toAccountId(old.accountId),
           cryptoType: chainType === ChainType.SUBSTRATE ? CryptoType.SR25519 : CryptoType.ETHEREUM,
           name: old.name,
+          // @ts-expect-error field was deleted
           signingType: wallet.signingType,
         };
       }

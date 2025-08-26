@@ -19,6 +19,7 @@ export interface VaultChainAccount extends ChainAccount {
   accountType: AccountType.CHAIN;
   keyType: KeyType;
   derivationPath: string;
+  publicKey?: string;
 }
 
 export interface VaultShardAccount extends ChainAccount {
@@ -26,12 +27,23 @@ export interface VaultShardAccount extends ChainAccount {
   groupId: string;
   keyType: KeyType;
   derivationPath: string;
+  publicKey?: string;
 }
 
 export interface MultisigAccount extends UniversalAccount {
   accountType: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: number;
+}
+
+export interface FlexibleMultisigAccount extends ChainAccount {
+  accountType: AccountType.FLEX_MULTISIG;
+  signatories: Signatory[];
+  threshold: number;
+}
+
+export interface MultisigSignatoryAccount extends UniversalAccount {
+  accountType: AccountType.MULTISIG_SIGNATORY;
 }
 
 export interface WcAccount extends ChainAccount {
@@ -44,21 +56,29 @@ export interface WcAccount extends ChainAccount {
 
 export interface ProxiedAccount extends ChainAccount {
   accountType: AccountType.PROXIED;
-  proxyAccountId: AccountId;
-  delay: number;
-  proxyType: ProxyType;
+  connections: ProxiedConnection[];
   proxyVariant: ProxyVariant;
+  deposit: string;
   blockNumber?: number;
   extrinsicIndex?: number;
 }
 
-/**
- * @deprecated Use `import { type AnyAccount } from '@/domains/network'`
- *   instead.
- */
-export type Account = AnyAccount;
+export interface ProxiedConnection {
+  proxyAccountId: AccountId;
+  delay: number;
+  proxyType: ProxyType;
+}
 
-export type DraftAccount<T extends Account> = Omit<NoID<T>, 'accountId' | 'walletId'>;
+export interface FlexibleProxiedAccount extends ChainAccount {
+  accountType: AccountType.FLEX_PROXIED;
+  proxyAccountId: AccountId;
+  delay: number;
+  deposit: string;
+  blockNumber: number;
+  extrinsicIndex: number;
+}
+
+export type DraftAccount<T extends AnyAccount> = Omit<NoID<T>, 'accountId' | 'walletId'>;
 
 export const enum AccountType {
   WATCH_ONLY = 'watch_only',
@@ -66,9 +86,11 @@ export const enum AccountType {
   CHAIN = 'chain',
   SHARD = 'shard',
   MULTISIG = 'multisig',
-  FLEXIBLE_MULTISIG = 'flexible_multisig',
   WALLET_CONNECT = 'wallet_connect',
   PROXIED = 'proxied',
+  MULTISIG_SIGNATORY = 'multisig_signatory',
+  FLEX_MULTISIG = 'flex_multisig',
+  FLEX_PROXIED = 'flex_proxied',
 }
 
 export const enum KeyType {

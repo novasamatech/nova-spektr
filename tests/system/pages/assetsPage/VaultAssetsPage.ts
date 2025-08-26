@@ -1,3 +1,5 @@
+import { step } from 'allure-js-commons';
+
 import { TEST_IDS } from '@/shared/constants';
 import { type ChainModel } from '../../data/chains/testChainModel';
 import { readConfig } from '../../utils/readConfig';
@@ -10,28 +12,35 @@ import { BaseAssetsPage } from './BaseAssetsPage';
 
 export class VaultAssetsPage extends BaseAssetsPage {
   public async goToGovernancePage(): Promise<GovernancePage> {
-    return new GovernancePage(this.page, new GovernancePageElements()).gotoMain();
+    return await step('Navigate to Governance page', async () => {
+      return new GovernancePage(this.page, new GovernancePageElements()).gotoMain();
+    });
   }
 
   public async openSettingsWidget(): Promise<AssetsSettingsModalWindow> {
-    await this.page.getByTestId(TEST_IDS.ASSETS.SETTINGS_WIDGET).click();
+    return await step('Open settings widget', async () => {
+      await this.page.getByTestId(TEST_IDS.ASSETS.SETTINGS_WIDGET).click();
 
-    return new AssetsSettingsModalWindow(this.page, new AssetsSettingsModalElements(), this);
+      return new AssetsSettingsModalWindow(this.page, new AssetsSettingsModalElements(), this);
+    });
   }
 
   public async checkTransferFee(chain: ChainModel): Promise<VaultAssetsPage> {
-    const config = await readConfig();
-    const targetChain = config.find((config_chain: any) => config_chain.name === chain.name);
+    return await step(`Check transfer fee for each asset on chain: ${chain.name}`, async () => {
+      const config = await readConfig();
+      const targetChain = config.find((config_chain) => config_chain.name === chain.name);
 
-    if (targetChain) {
-      for (const asset of targetChain.assets) {
-        await (await this.openTransfer(chain, asset.assetId)).checkFeeforAsset();
-        await this.page.getByTestId(TEST_IDS.CLOSE_BUTTON).click();
-        // TODO: need to wait before open another transfer modal
-        await this.page.waitForTimeout(500);
+      if (targetChain) {
+        for (const asset of targetChain.assets) {
+          // TODO: need to wait before open another transfer modal
+          await this.page.waitForTimeout(1000);
+          const transferModal = await this.openTransfer(chain, asset.assetId);
+          await transferModal.checkFeeforAsset();
+          await transferModal.close();
+        }
       }
-    }
 
-    return this;
+      return this;
+    });
   }
 }

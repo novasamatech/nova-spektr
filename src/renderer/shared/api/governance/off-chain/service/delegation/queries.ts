@@ -5,7 +5,7 @@ import { gql } from '@apollo/client';
 // TODO: Add generated types
 
 export const GET_DELEGATE_LIST = gql`
-  query DelegateList($activityStartBlock: Int) {
+  query DelegateList($timestamp: Int) {
     delegates {
       nodes {
         accountId
@@ -14,7 +14,7 @@ export const GET_DELEGATE_LIST = gql`
         delegateVotes {
           totalCount
         }
-        delegateVotesMonth: delegateVotes(filter: { at: { greaterThanOrEqualTo: $activityStartBlock } }) {
+        delegateVotesMonth: delegateVotes(filter: { timestamp: { greaterThanOrEqualTo: $timestamp } }) {
           totalCount
         }
       }

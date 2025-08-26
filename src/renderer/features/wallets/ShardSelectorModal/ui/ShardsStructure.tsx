@@ -1,9 +1,10 @@
 import { useUnit } from 'effector-react';
 
 import { type ChainId } from '@/shared/core';
+import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Accordion, FootnoteText } from '@/shared/ui';
-import { Checkbox } from '@/shared/ui-kit';
+import { HelpText } from '@/shared/ui';
+import { Accordion, Checkbox } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
@@ -28,65 +29,77 @@ export const ShardsStructure = () => {
   };
 
   return (
-    <ul className="max-h-[470px] overflow-y-scroll pr-3">
-      {shardsStructure.map(([rootAccountId, chainTuple]) => (
+    <ul className="max-h-[470px]">
+      {shardsStructure.map(([rootAccountId, rootAccountName, chainTuple]) => (
         <li key={rootAccountId}>
           <SelectableRoot
             accountId={rootAccountId}
+            accountName={rootAccountName}
             checked={selectorUtils.isChecked(selectedStructure[rootAccountId])}
             semiChecked={selectorUtils.isSemiChecked(selectedStructure[rootAccountId])}
             onChange={(value) => shardsModel.events.rootToggled({ root: rootAccountId, value })}
           />
 
-          <ul>
-            {chainTuple.map(([chainId, accounts]) => (
-              <li key={chainId}>
-                <Accordion isDefaultOpen className="ml-6 w-auto rounded">
-                  <div className="flex hover:bg-action-background-hover">
-                    <div className="w-full p-2">
-                      <Checkbox
-                        checked={selectorUtils.isChecked(selectedStructure[rootAccountId][chainId])}
-                        semiChecked={selectorUtils.isSemiChecked(selectedStructure[rootAccountId][chainId])}
-                        onChange={(checked) => toggleChain(rootAccountId, chainId, checked)}
-                      >
-                        <ChainTitle chain={chains[chainId]} fontClass="text-text-primary" />
-                        <FootnoteText className="text-text-tertiary">
-                          {/* eslint-disable-next-line i18next/no-literal-string */}
-                          {selectedStructure[rootAccountId][chainId].checked} /{' '}
-                          {selectedStructure[rootAccountId][chainId].total}
-                        </FootnoteText>
-                      </Checkbox>
-                    </div>
-                    <Accordion.Button buttonClass="ml-auto w-auto p-2" />
-                  </div>
-                  <Accordion.Content as="ul">
-                    {accounts.map((account) => {
-                      if (accountUtils.isAccountWithShards(account)) {
-                        return (
-                          <ShardedGroup
-                            key={account[0].groupId}
-                            rootAccountId={rootAccountId}
-                            accounts={account}
-                            chain={chains[chainId]}
-                          />
-                        );
-                      }
+          <ul className="ml-6">
+            {chainTuple.map(([chainId, accounts]) => {
+              const isChecked = selectorUtils.isChecked(selectedStructure[rootAccountId][chainId]);
+              const isSemiChecked = selectorUtils.isSemiChecked(selectedStructure[rootAccountId][chainId]);
 
-                      return (
-                        <li key={account.id} className="ml-6">
-                          <SelectableShard
-                            account={account}
-                            chain={chains[chainId]}
-                            checked={selectedStructure[rootAccountId][chainId].accounts[account.accountId]}
-                            onChange={(value) => toggleAccount(rootAccountId, chainId, account.accountId, value)}
-                          />
-                        </li>
-                      );
-                    })}
-                  </Accordion.Content>
-                </Accordion>
-              </li>
-            ))}
+              return (
+                <li key={chainId} className="mt-2">
+                  <Accordion initialOpen>
+                    <Accordion.Trigger>
+                      <div className="w-full" onClick={(e) => e.stopPropagation()}>
+                        <Checkbox
+                          checked={isChecked}
+                          semiChecked={isSemiChecked}
+                          onChange={(checked) => toggleChain(rootAccountId, chainId, checked)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <ChainTitle
+                              chain={chains[chainId]}
+                              fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
+                            />
+                            <HelpText className="text-text-tertiary">
+                              {selectedStructure[rootAccountId][chainId].checked} /{' '}
+                              {selectedStructure[rootAccountId][chainId].total}
+                            </HelpText>
+                          </div>
+                        </Checkbox>
+                      </div>
+                    </Accordion.Trigger>
+                    <Accordion.Content>
+                      <div className="ml-6">
+                        {accounts.map((account) => {
+                          if (accountUtils.isAccountWithShards(account)) {
+                            return (
+                              <div key={account[0].groupId} className="mt-2">
+                                <ShardedGroup
+                                  rootAccountId={rootAccountId}
+                                  accounts={account}
+                                  chain={chains[chainId]}
+                                />
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div key={account.id} className="mt-2">
+                              <SelectableShard
+                                account={account}
+                                chain={chains[chainId]}
+                                checked={selectedStructure[rootAccountId][chainId].accounts[account.accountId]}
+                                onChange={(value) => toggleAccount(rootAccountId, chainId, account.accountId, value)}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </Accordion.Content>
+                  </Accordion>
+                </li>
+              );
+            })}
           </ul>
         </li>
       ))}

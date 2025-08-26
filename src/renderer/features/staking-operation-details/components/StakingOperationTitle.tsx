@@ -1,31 +1,32 @@
-import { chainsService } from '@/shared/api/network';
-import { type MultisigTransaction } from '@/shared/core';
+import { useUnit } from 'effector-react';
+
 import { useI18n } from '@/shared/i18n';
 import { getAssetById } from '@/shared/lib/utils';
-import { type IconNames } from '@/shared/ui';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
+import { networkModel } from '@/entities/network';
 import { TransactionTitle, getTransactionAmount } from '@/entities/transaction';
 
 type Props = {
   title: string;
-  icon?: IconNames;
-  operation: MultisigTransaction;
+  operation: MultisigOperation;
 };
 
-export const StakingOperationTitle = ({ operation, title, icon }: Props) => {
+export const StakingOperationTitle = ({ operation, title }: Props) => {
   const { t } = useI18n();
-  const transaction = getTransactionFromMultisigTx(operation);
 
-  const asset =
-    transaction && getAssetById(transaction.args.asset, chainsService.getChainById(operation.chainId)?.assets);
+  const chains = useUnit(networkModel.$chains);
+
+  const transaction = operation.transaction;
+
+  const asset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
   const amount = transaction && getTransactionAmount(transaction);
 
   return (
     <>
-      <TransactionTitle className="flex-1 overflow-hidden" title={t(title || '')} icon={icon} />
+      <TransactionTitle className="flex-1 overflow-hidden" title={t(title || '')} />
 
       {asset && amount && (
         <Box width="160px" direction="row" gap={2} verticalAlign="center">

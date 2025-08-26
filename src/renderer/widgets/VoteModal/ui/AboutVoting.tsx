@@ -7,7 +7,7 @@ export const AboutVoting = () => {
   const { t } = useI18n();
 
   return (
-    <div className="flex flex-col gap-2 whitespace-pre-line p-4">
+    <div className="flex flex-col gap-2 p-4 whitespace-pre-line">
       <div>
         <Trans
           t={t}

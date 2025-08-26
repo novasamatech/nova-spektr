@@ -1,8 +1,5 @@
 import { BN, BN_ZERO } from '@polkadot/util';
-import isEqual from 'lodash/isEqual';
-import orderBy from 'lodash/orderBy';
-import sortBy from 'lodash/sortBy';
-import uniqWith from 'lodash/uniqWith';
+import { isEqual, orderBy, sortBy, uniqWith } from 'lodash';
 
 import {
   type Chunks,

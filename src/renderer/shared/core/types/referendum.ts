@@ -1,15 +1,33 @@
 import { type BN } from '@polkadot/util';
 
-import { type Address, type BlockHeight } from './general';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+
+import { type Asset } from './asset';
+import { type BlockHeight, type HexString } from './general';
 import { type TrackId } from './track';
 
 export type ReferendumId = string;
+
+export type UnknownProposal = {
+  type: 'Unknown';
+  description: string;
+};
+
+export type SpendProposal = {
+  type: 'Spend';
+  beneficiary: AccountId;
+  amount: BN;
+  asset?: Asset;
+};
+
+export type Proposal = UnknownProposal | SpendProposal;
 
 export type OngoingReferendum = {
   type: 'Ongoing';
   referendumId: ReferendumId;
   track: TrackId;
-  proposal: string | NonNullable<unknown>;
+  proposal: Proposal | null;
+  rawProposal: HexString | null;
   submitted: BlockHeight;
   submissionDeposit: Deposit | null;
   decisionDeposit: Deposit | null;
@@ -81,6 +99,6 @@ export type Tally = {
 };
 
 export type Deposit = {
-  who: Address;
+  who: AccountId;
   amount: BN;
 };

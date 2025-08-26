@@ -13,6 +13,8 @@ type BoxPadding =
 type BoxMargin = BoxPadding;
 
 type BoxProps = PropsWithChildren<{
+  as?: 'div' | 'span';
+  inline?: boolean;
   width?: CSS.Property.Width | number;
   height?: CSS.Property.Height | number;
   verticalAlign?: CSS.Property.AlignItems | CSS.Property.JustifyContent;
@@ -60,6 +62,8 @@ const getBoxSize = <T extends string | number | void>(size: SpacingUnit | string
 export const Box = forwardRef<HTMLDivElement, BoxProps>(
   (
     {
+      as = 'div',
+      inline,
       children,
       gap,
       wrap,
@@ -116,10 +120,14 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
       [isHorizontal, calculatedPadding, calculatedMargin, width, height, verticalAlign, horizontalAlign, gap],
     );
 
+    const Component = as;
+
     return (
-      <div
+      <Component
         ref={ref}
-        className={cnTw('relative flex h-fit min-h-0 min-w-0', {
+        className={cnTw('relative h-fit min-h-0 min-w-0', {
+          flex: !inline,
+          'inline-flex': inline,
           'flex-col': direction === 'column',
           'flex-col-reverse': direction === 'column-reverse',
           'flex-row': direction === 'row',
@@ -133,7 +141,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
         data-testid={testId}
       >
         {children}
-      </div>
+      </Component>
     );
   },
 );

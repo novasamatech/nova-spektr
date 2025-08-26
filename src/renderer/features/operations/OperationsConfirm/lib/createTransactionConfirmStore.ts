@@ -1,16 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Store, combine, createEvent, createStore, sample } from 'effector';
 
-import {
-  type Account,
-  type Chain,
-  type ChainId,
-  type ID,
-  type MultisigTransaction,
-  type ProxiedAccount,
-  type Wallet,
-} from '@/shared/core';
-import { type AnyAccount } from '@/domains/network';
+import { type Chain, type ChainId, type ID, type ProxiedAccount, type Wallet } from '@/shared/core';
+import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { operationsUtils } from '@/entities/operations';
 import { type WrappedTransactions, isProxyTransaction } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -31,16 +23,16 @@ export type ConfirmItem<Input extends ConfirmInfo = ConfirmInfo> = {
     signer: Wallet | null;
   };
   accounts: {
-    initiator: Account;
+    initiator: AnyAccount;
     proxied?: ProxiedAccount | null;
-    signer: Account | null;
+    signer: AnyAccount | null;
   };
 };
 
 type Params = {
   $wallets: Store<Wallet[]>;
   $apis: Store<Record<ChainId, ApiPromise> | null>;
-  $multisigTransactions: Store<MultisigTransaction[]>;
+  $multisigTransactions: Store<MultisigOperation[]>;
 };
 
 export const createTransactionConfirmStore = <Input extends ConfirmInfo>({
@@ -60,32 +52,32 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({
   const $confirmMap = combine($store, $wallets, (store, wallets) => {
     if (!wallets.length) return {};
 
-    return store.reduce<ConfirmMap>((acc, meta, index) => {
+    return store.reduce<ConfirmMap>((confirmMap, meta, index) => {
       const { wrappedTransactions, account } = meta;
       const { wrappedTx, coreTx } = wrappedTransactions;
 
       const isProxyTx = isProxyTransaction(wrappedTx) || isProxyTransaction(coreTx);
-      const initiatorAccount = walletUtils.getAccountBy(wallets, (acc) => {
+      const initiatorAccount = walletUtils.getAccountBy(wallets, (accountItem) => {
         if (accountUtils.isProxiedAccount(account)) {
-          return acc.accountId == account.proxyAccountId;
+          return account.connections.some((c) => accountItem.accountId === c.proxyAccountId);
         }
 
-        const isSameAccount = coreTx.accountId === acc.accountId;
+        const isSameAccount = coreTx.accountId === accountItem.accountId;
 
         return isSameAccount;
       });
 
-      if (!initiatorAccount) return acc;
+      if (!initiatorAccount) return confirmMap;
 
       const initiatorWallet = walletUtils.getWalletById(wallets, initiatorAccount.walletId);
-      if (!initiatorWallet) return acc;
+      if (!initiatorWallet) return confirmMap;
 
       const signerWallet = meta.signatory && walletUtils.getWalletById(wallets, meta.signatory?.walletId);
 
       const proxiedAccount = isProxyTx && accountUtils.isProxiedAccount(account) ? account : null;
       const proxiedWallet = proxiedAccount && walletUtils.getWalletById(wallets, proxiedAccount.walletId);
 
-      acc[meta.id ?? index] = {
+      confirmMap[meta.id ?? index] = {
         meta,
         wallets: {
           signer: signerWallet || null,
@@ -99,7 +91,7 @@ export const createTransactionConfirmStore = <Input extends ConfirmInfo>({
         },
       };
 
-      return acc;
+      return confirmMap;
     }, {});
   });
 

@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { memo } from 'react';
 
-import { type Asset } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable } from '@/shared/lib/utils';
 import { CaptionText } from '@/shared/ui';
-import { Accordion, Skeleton } from '@/shared/ui-kit';
+import { Accordion, AsyncItem, Skeleton } from '@/shared/ui-kit';
 import { type AggregatedReferendum } from '../../types/structs';
 
 import { ListItemPlaceholder } from './ListItemPlaceholder';
@@ -14,6 +14,7 @@ import { ReferendumItem } from './ReferendumItem';
 
 type Props = {
   api?: ApiPromise;
+  chain?: Chain;
   asset?: Asset;
   referendums: AggregatedReferendum[];
   isLoading: boolean;
@@ -31,7 +32,7 @@ const createPlaceholders = (size: number) => {
 };
 
 export const CompletedReferendums = memo(
-  ({ api, asset, referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }: Props) => {
+  ({ api, chain, asset, referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }: Props) => {
     const { t } = useI18n();
 
     const { isLoading: isLoadingState, list: deferredReferendums } = useDeferredList({
@@ -45,14 +46,15 @@ export const CompletedReferendums = memo(
 
     if (!isLoading && referendums.length === 0) return null;
 
-    const showList = (!isLoadingState || mixLoadingWithData) && nonNullable(api) && nonNullable(asset);
+    const showList =
+      (!isLoadingState || mixLoadingWithData) && nonNullable(api) && nonNullable(asset) && nonNullable(chain);
     const showPlaceholders = isLoadingState || mixLoadingWithData;
 
     return (
       <Accordion initialOpen>
         <Accordion.Trigger>
           <div className="flex w-full items-center gap-x-2">
-            <CaptionText className="font-semibold uppercase tracking-[0.75px] text-text-secondary">
+            <CaptionText className="font-semibold tracking-[0.75px] text-text-secondary uppercase">
               {t('governance.referendums.completed')}
             </CaptionText>
             <CaptionText className="font-semibold text-text-tertiary">
@@ -67,13 +69,16 @@ export const CompletedReferendums = memo(
             {showList &&
               deferredReferendums.map((referendum) => (
                 <li key={referendum.referendumId}>
-                  <ReferendumItem
-                    api={api}
-                    asset={asset}
-                    referendum={referendum}
-                    isTitlesLoading={isTitlesLoading}
-                    onSelect={onSelect}
-                  />
+                  <AsyncItem fallback={<ListItemPlaceholder />}>
+                    <ReferendumItem
+                      api={api}
+                      chain={chain}
+                      asset={asset}
+                      referendum={referendum}
+                      isTitlesLoading={isTitlesLoading}
+                      onSelect={onSelect}
+                    />
+                  </AsyncItem>
                 </li>
               ))}
           </ul>

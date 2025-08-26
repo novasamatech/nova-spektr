@@ -1,11 +1,11 @@
 import { Controller, type SubmitHandler, useForm } from 'react-hook-form';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import { type CallData } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, validateCallData } from '@/shared/lib/utils';
 import { BaseModal, Button, InputHint } from '@/shared/ui';
 import { TextArea } from '@/shared/ui-kit';
+import { type MultisigOperation } from '@/domains/network';
 
 type CallDataForm = {
   callData: string;
@@ -13,12 +13,12 @@ type CallDataForm = {
 
 type Props = {
   isOpen: boolean;
-  tx?: MultisigTransactionDS;
+  operation?: MultisigOperation;
   onClose: () => void;
   onSubmit: (callData: CallData) => void;
 };
 
-const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
+const CallDataModal = ({ isOpen, operation, onClose, onSubmit }: Props) => {
   const { t } = useI18n();
 
   const {
@@ -34,7 +34,7 @@ const CallDataModal = ({ isOpen, tx, onClose, onSubmit }: Props) => {
   });
 
   const validateCallDataValue = (callData: string): boolean => {
-    return validateCallData(callData, tx?.callHash || '0x0');
+    return validateCallData(callData, operation?.callHash || '0x0');
   };
 
   const closeHandler = () => {

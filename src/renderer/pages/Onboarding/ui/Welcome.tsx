@@ -1,4 +1,4 @@
-import throttle from 'lodash/throttle';
+import { throttle } from 'lodash';
 import { useLayoutEffect, useRef, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
@@ -38,7 +38,7 @@ export const Welcome = () => {
   return (
     <div className="flex h-full w-full animate-in fade-in">
       <div className="flex h-full w-[512px] flex-col">
-        <TitleText className="px-10 pb-4 pt-10">{t('onboarding.welcome.title')}</TitleText>
+        <TitleText className="px-10 pt-10 pb-4">{t('onboarding.welcome.title')}</TitleText>
 
         <ScrollArea>
           <Box direction="column" gap={4} padding={[4, 10]}>
@@ -46,7 +46,7 @@ export const Welcome = () => {
           </Box>
         </ScrollArea>
 
-        <div className="flex flex-1 items-end px-10 pb-10 pt-4">
+        <div className="flex flex-1 items-end px-10 pt-4 pb-10">
           <PrivacyPolicy />
         </div>
       </div>

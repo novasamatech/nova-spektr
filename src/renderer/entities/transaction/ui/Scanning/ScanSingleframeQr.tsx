@@ -1,22 +1,26 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useEffect, useState } from 'react';
+import { u8aConcat } from '@polkadot/util';
+import { encodeAddress } from '@polkadot/util-crypto';
+import { useEffect, useRef, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants/testIds';
-import { type Address, type Chain, type Transaction } from '@/shared/core';
-import { CryptoType } from '@/shared/core';
+import { type Chain, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { createTxMetadata } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { type AnyAccount } from '@/domains/network';
+import { Box, Tabs } from '@/shared/ui-kit';
+import { type AnyAccount, type Extrinsic } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 import { transactionService } from '../../lib';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
+import { SUBSTRATE_ID } from '../QrCode/QrGenerator/common/constants';
+import { createSubstrateSignPayload, createSubstrateSignWithProofPayload } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 
 type Props = {
   api: ApiPromise;
   chain: Chain;
-  address: Address;
-  transaction: Transaction;
+  extrinsic: Extrinsic;
   account: AnyAccount;
   countdown: number;
   onGoBack: () => void;
@@ -27,8 +31,7 @@ type Props = {
 export const ScanSingleframeQr = ({
   api,
   chain,
-  transaction,
-  address,
+  extrinsic,
   account,
   countdown,
   onGoBack,
@@ -36,52 +39,93 @@ export const ScanSingleframeQr = ({
   onResult,
 }: Props) => {
   const { t } = useI18n();
+  const [tab, setTab] = useState('new');
+  const prevTab = useRef<string>(null);
 
   const [txPayload, setTxPayload] = useState<Uint8Array>();
+  const [qrPayload, setQrPayload] = useState<Uint8Array>();
+
+  const isPV = account.signingType === SigningType.POLKADOT_VAULT;
+  const isMetadataProofsSupported = chain.additional?.supportsGenericLedgerApp ?? false;
 
   useEffect(() => {
-    if (txPayload) return;
-
+    if (txPayload && qrPayload && tab === prevTab.current) return;
+    prevTab.current = tab;
     setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
-  }, [transaction, api]);
+  }, [txPayload, qrPayload, tab]);
 
   const setupTransaction = async (): Promise<void> => {
     try {
-      const { payload } = await transactionService.createPayload(transaction, api);
+      const derivationPath =
+        accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)
+          ? account.derivationPath
+          : undefined;
 
-      setTxPayload(payload);
+      if (tab === 'new' && isMetadataProofsSupported) {
+        const { payload, metadataProof } = await transactionService.createPayloadWithProof(
+          extrinsic,
+          account.accountId,
+          api,
+        );
+        const signPayload = createSubstrateSignWithProofPayload(
+          encodeAddress(account.accountId, chain.addressPrefix),
+          metadataProof,
+          payload,
+          chain.chainId,
+          account.signingType,
+          derivationPath,
+          account.cryptoType,
+        );
+        const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
 
-      if (payload) {
-        onResetCountdown();
+        setTxPayload(payload);
+        setQrPayload(qrPayload);
+      } else {
+        const metadata = await createTxMetadata(account.accountId, api);
+        const { payload } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
+
+        const signPayload = createSubstrateSignPayload(
+          encodeAddress(account.accountId, chain.addressPrefix),
+          payload,
+          chain.chainId,
+          account.signingType,
+          derivationPath,
+          account.cryptoType,
+        );
+        const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
+
+        setTxPayload(payload);
+        setQrPayload(qrPayload);
       }
     } catch (error) {
       console.warn(error);
     }
   };
 
-  const derivationPath =
-    accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)
-      ? account.derivationPath
-      : undefined;
+  useEffect(onResetCountdown, [qrPayload]);
 
   return (
     <>
       <QrGeneratorContainer
         countdown={countdown}
         chainId={chain.chainId}
+        isLegacyQR={tab === 'legacy'}
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
         onQrReset={setupTransaction}
       >
-        {txPayload && (
-          <QrTxGenerator
-            payload={txPayload}
-            address={address}
-            genesisHash={chain.chainId}
-            derivationPath={derivationPath}
-            signingType={account.signingType}
-            cryptoType={account.cryptoType || CryptoType.SR25519}
-          />
+        {isMetadataProofsSupported && (
+          <Tabs value={tab} onChange={setTab}>
+            <Box shrink={0} fitContainer>
+              <Tabs.List>
+                <Tabs.Trigger value="new">
+                  {t('signing.qrNewVaultTitle', { version: isPV ? '7.1' : '7.0' })}
+                </Tabs.Trigger>
+                <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
+              </Tabs.List>
+            </Box>
+          </Tabs>
         )}
+        <QrTxGenerator payload={qrPayload} />
       </QrGeneratorContainer>
 
       <div className="mt-3 flex w-full justify-between pl-2">

@@ -1,15 +1,16 @@
 import { type ComponentProps, forwardRef } from 'react';
 
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, tw } from '@/shared/lib/utils';
 import { Icon } from '../../Icon/Icon';
 import './IconButton.css';
 
 type IconProps = ComponentProps<typeof Icon>;
 
-const IconButtonStyle =
-  'relative w-max justify-center rounded-full outline-offset-1 text-icon-default transition-colors shrink-0 h-fit w-fit' +
-  'hover:text-icon-hover hover:bg-hover active:bg-hover active:text-tab-icon-active ' +
-  'focus:text-icon-hover focus:bg-hover';
+const getIconButtonStyle = (disabled?: boolean) =>
+  tw`relative h-fit w-fit w-max shrink-0 justify-center rounded-full text-icon-default outline-offset-1 transition-colors` +
+  (disabled
+    ? ''
+    : tw` hover:bg-hover hover:text-icon-hover focus:bg-hover focus:text-icon-hover active:bg-hover active:text-tab-icon-active`);
 
 type HTMLButtonProps = Pick<
   ComponentProps<'button'>,
@@ -51,8 +52,8 @@ export const IconButton = forwardRef<HTMLButtonElement, Props>(
     <button
       ref={ref}
       type="button"
-      className={cnTw('spektr-icon-button', IconButtonStyle, className)}
-      aria-label={ariaLabel}
+      className={cnTw('spektr-icon-button p-1.5', getIconButtonStyle(disabled), className)}
+      aria-label={ariaLabel || `icon button: ${iconProps.name}`}
       disabled={disabled}
       data-testid={testId}
       onClick={onClick}

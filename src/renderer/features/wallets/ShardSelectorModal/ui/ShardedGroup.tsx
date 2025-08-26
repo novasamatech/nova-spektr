@@ -1,9 +1,10 @@
 import { useUnit } from 'effector-react';
 
 import { type Chain, type VaultShardAccount } from '@/shared/core';
+import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Accordion, CaptionText, FootnoteText } from '@/shared/ui';
-import { Checkbox } from '@/shared/ui-kit';
+import { CaptionText, FootnoteText } from '@/shared/ui';
+import { Accordion, Checkbox } from '@/shared/ui-kit';
 import { selectorUtils } from '../lib/selector-utils';
 import { shardsModel } from '../model/shards-model';
 
@@ -41,27 +42,28 @@ export const ShardedGroup = ({ rootAccountId, accounts, chain }: Props) => {
     });
   };
 
+  const isChecked = selectorUtils.isChecked(shardedGroup);
+  const isSemiChecked = selectorUtils.isSemiChecked(shardedGroup);
+
   return (
-    <Accordion className="ml-6 w-auto rounded">
-      <div className="flex rounded hover:bg-action-background-hover">
-        <div className="w-full p-2">
-          <Checkbox
-            checked={selectorUtils.isChecked(shardedGroup)}
-            semiChecked={selectorUtils.isSemiChecked(shardedGroup)}
-            onChange={toggleSharded}
-          >
+    <Accordion initialOpen>
+      <Accordion.Trigger>
+        <div className="w-full" onClick={(e) => e.stopPropagation()}>
+          <Checkbox checked={isChecked} semiChecked={isSemiChecked} onChange={toggleSharded}>
             <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
               <CaptionText className="text-text-secondary">{accounts.length}</CaptionText>
             </div>
-            <FootnoteText className="text-text-tertiary">{account.name}</FootnoteText>
+            <FootnoteText
+              className={cnTw('normal-case', isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
+            >
+              {account.name}
+            </FootnoteText>
           </Checkbox>
         </div>
-
-        <Accordion.Button buttonClass="ml-auto w-auto p-2" />
-      </div>
-      <Accordion.Content as="ul">
+      </Accordion.Trigger>
+      <Accordion.Content>
         {accounts.map((shard) => (
-          <li key={shard.accountId} className="ml-6">
+          <li key={shard.accountId} className="mt-2 ml-6">
             <SelectableShard
               account={shard}
               chain={chain}

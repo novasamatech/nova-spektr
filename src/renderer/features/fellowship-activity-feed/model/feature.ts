@@ -20,7 +20,7 @@ const $input = combine(
     return {
       ...network,
       connected,
-      accounts: accountService.filterAccountOnChain(accounts, network.chain),
+      accounts: accountService.filterAccountsOnChain(accounts, network.chain),
     };
   },
 );

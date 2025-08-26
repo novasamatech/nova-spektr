@@ -1,45 +1,24 @@
 import { hexToU8a, u8aConcat, u8aToU8a } from '@polkadot/util';
-import { decodeAddress } from '@polkadot/util-crypto';
+import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { str } from 'parity-scale-codec';
-import qrcode from 'qrcode-generator';
 import { type Encoder } from 'raptorq/raptorq';
 
-import { type Address, type ChainId } from '@/shared/core';
-import { CryptoType, CryptoTypeString, SigningType } from '@/shared/core';
-import { DYNAMIC_DERIVATIONS_REQUEST } from '../../common/constants';
+import {
+  type Address,
+  type Chain,
+  type ChainId,
+  SigningType,
+  type VaultChainAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
+import { CryptoType, CryptoTypeString } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { DYNAMIC_DERIVATIONS_REQUEST, EXPORT_ADDRESS } from '../../common/constants';
 import { type DynamicDerivationRequestInfo } from '../../common/types';
 
-import {
-  CRYPTO_ECDSA,
-  CRYPTO_ETHEREUM,
-  CRYPTO_SR25519,
-  CRYPTO_STUB,
-  Command,
-  FRAME_SIZE,
-  SUBSTRATE_ID,
-} from './constants';
+import { CRYPTO_STUB, Command, FRAME_SIZE, SUBSTRATE_ID } from './constants';
 
 const MULTIPART = new Uint8Array([0]);
-
-// HACK The default function take string -> number[], the Uint8array is compatible
-// with that signature and the use thereof
-// @ts-expect-error hack
-qrcode.stringToBytes = (data: Uint8Array): Uint8Array => data;
-
-export const getSvgString = (value: Uint8Array, bgColor = 'none'): string => {
-  const qr = qrcode(0, 'M');
-
-  // This will only work for the case where we actually pass `Bytes` in here
-  qr.addData(value as unknown as string, 'Byte');
-  qr.make();
-
-  const svgTag = qr.createSvgTag(2, 0);
-
-  return svgTag
-    .replace(/width="\d+px"/, 'width="100%"')
-    .replace(/height="\d+px"/, 'height="100%"')
-    .replace(/white/, bgColor);
-};
 
 export const encodeNumber = (value: number): Uint8Array => new Uint8Array([value >> 8, value & 0xff]);
 
@@ -52,31 +31,21 @@ export const createSubstrateSignPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   if (signingType === SigningType.POLKADOT_VAULT) {
-    return createDynamicDerivationsSignPayload(
-      address,
-      Command.DynamicDerivationsTransaction,
-      payload,
-      genesisHash,
-      derivationPath,
-      cryptoType,
-    );
+    return createDynamicDerivationsSignPayload(address, payload, genesisHash, derivationPath, cryptoType);
   }
 
-  return createSignPayload(address, Command.Transaction, payload, genesisHash, cryptoType);
+  return createSignPayload(address, payload, genesisHash, cryptoType);
 };
 
 export const createSignPayload = (
   address: string,
-  cmd: number,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
-  const isEthereum = cryptoType === CryptoType.ETHEREUM;
-
   return u8aConcat(
-    isEthereum ? CRYPTO_ETHEREUM : CRYPTO_SR25519,
-    new Uint8Array([cmd]),
+    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
+    new Uint8Array([Command.Transaction]),
     decodeAddress(address),
     u8aToU8a(payload),
     u8aToU8a(genesisHash),
@@ -85,17 +54,75 @@ export const createSignPayload = (
 
 export const createDynamicDerivationsSignPayload = (
   address: string,
-  cmd: number,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
   derivationPath: string,
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   return u8aConcat(
-    cryptoType === CryptoType.SR25519 ? CRYPTO_SR25519 : CRYPTO_ECDSA,
-    new Uint8Array([cmd]),
+    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
+    new Uint8Array([Command.DynamicDerivationsTransaction]),
     decodeAddress(address),
     str.encode(derivationPath),
+    u8aToU8a(payload),
+    u8aToU8a(genesisHash),
+  );
+};
+
+export const createSubstrateSignWithProofPayload = (
+  address: string,
+  metadataProof: Uint8Array,
+  payload: Uint8Array,
+  genesisHash: ChainId | Uint8Array,
+  signingType: SigningType,
+  derivationPath = '',
+  cryptoType = CryptoType.SR25519,
+): Uint8Array => {
+  if (signingType === SigningType.POLKADOT_VAULT) {
+    return createDynamicDerivationsSignWithProofPayload(
+      address,
+      metadataProof,
+      payload,
+      genesisHash,
+      derivationPath,
+      cryptoType,
+    );
+  }
+
+  return createSignWithProofPayload(address, metadataProof, payload, genesisHash, cryptoType);
+};
+
+export const createSignWithProofPayload = (
+  address: string,
+  metadataProof: Uint8Array,
+  payload: Uint8Array,
+  genesisHash: ChainId | Uint8Array,
+  cryptoType = CryptoType.SR25519,
+): Uint8Array => {
+  return u8aConcat(
+    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
+    new Uint8Array([Command.TransactionWithProof]),
+    decodeAddress(address),
+    u8aToU8a(metadataProof),
+    u8aToU8a(payload),
+    u8aToU8a(genesisHash),
+  );
+};
+
+export const createDynamicDerivationsSignWithProofPayload = (
+  address: string,
+  metadataProof: Uint8Array,
+  payload: string | Uint8Array,
+  genesisHash: ChainId | Uint8Array,
+  derivationPath: string,
+  cryptoType = CryptoType.SR25519,
+): Uint8Array => {
+  return u8aConcat(
+    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
+    new Uint8Array([Command.DynamicDerivationsTransactionWithProof]),
+    decodeAddress(address),
+    str.encode(derivationPath),
+    u8aToU8a(metadataProof),
     u8aToU8a(payload),
     u8aToU8a(genesisHash),
   );
@@ -134,12 +161,17 @@ export const createFrames = (input: Uint8Array, encoder?: Encoder): Uint8Array[]
  *
  * @returns {Number}
  */
-export const cryptoTypeToMultisignerIndex = (cryptoType: CryptoType): number => {
+export const cryptoTypeToMultisignerIndex = (cryptoType: CryptoType | CryptoTypeString): number => {
   return {
     [CryptoType.ED25519]: 0,
     [CryptoType.SR25519]: 1,
     [CryptoType.ECDSA]: 2,
     [CryptoType.ETHEREUM]: 3,
+
+    [CryptoTypeString.ED25519]: 0,
+    [CryptoTypeString.SR25519]: 1,
+    [CryptoTypeString.ECDSA]: 2,
+    [CryptoTypeString.ETHEREUM]: 3,
   }[cryptoType];
 };
 
@@ -149,7 +181,7 @@ export const createDynamicDerivationPayload = (publicKey: Address, derivations: 
     payload: {
       multisigner: {
         MultiSigner: CryptoTypeString.SR25519,
-        public: decodeAddress(publicKey, false, 1),
+        public: decodeAddress(publicKey),
       },
       dynamicDerivations: derivations.map((d) => ({
         derivationPath: d.derivationPath,
@@ -165,4 +197,46 @@ export const createDynamicDerivationPayload = (publicKey: Address, derivations: 
     new Uint8Array([Command.DynamicDerivationsRequestV1]),
     dynamicDerivationsRequest,
   );
+};
+
+export const createDynamicDerivationExportPayload = (
+  walletName: string,
+  publicKey: Address,
+  derivations: (VaultChainAccount | VaultShardAccount)[],
+  chains: Record<ChainId, Chain>,
+) => {
+  const payload = EXPORT_ADDRESS.encode({
+    ExportAddrs: 'V1',
+    payload: [
+      {
+        name: walletName,
+        multiSigner: {
+          MultiSigner: CryptoTypeString.SR25519,
+          public: decodeAddress(publicKey),
+        },
+        derivedKeys: derivations
+          .map((d) => {
+            const chain = chains[d.chainId];
+            const address =
+              d.cryptoType === CryptoType.ETHEREUM
+                ? (d.publicKey ?? null)
+                : chain
+                  ? encodeAddress(d.accountId, chain.addressPrefix)
+                  : null;
+
+            if (nullable(address)) return null;
+
+            return {
+              address,
+              derivationPath: d.derivationPath,
+              genesisHash: hexToU8a(d.chainId),
+              encryption: cryptoTypeToMultisignerIndex(d.cryptoType),
+            };
+          })
+          .filter(nonNullable),
+      },
+    ],
+  });
+
+  return u8aConcat(SUBSTRATE_ID, CRYPTO_STUB, new Uint8Array([Command.DynamicDerivationsExport]), payload);
 };

@@ -1,10 +1,10 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { type ReferendumId } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
-import { Box } from '@/shared/ui-kit';
+import { AsyncItem, Box } from '@/shared/ui-kit';
 import { InactiveNetwork } from '@/entities/network';
 import { CompletedReferendums, Filters, OngoingReferendums, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
@@ -13,7 +13,6 @@ import { governancePageAggregate } from '../aggregates/governancePage';
 import { EmptyGovernance } from './EmptyGovernance';
 
 export const GovernanceReferendumList = () => {
-  useGate(governancePageAggregate.gates.flow);
   const { chainId } = useParams<'chainId'>();
 
   const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
@@ -22,7 +21,7 @@ export const GovernanceReferendumList = () => {
   const isLoading = useUnit(governancePageAggregate.$isLoading);
   const isTitlesLoading = useUnit(governancePageAggregate.$isTitlesLoading);
   const isSearching = useUnit(governancePageAggregate.$isSearching);
-  const all = useUnit(governancePageAggregate.$all);
+  const displayedReferendums = useUnit(governancePageAggregate.$displayedReferendums);
   const ongoing = useUnit(governancePageAggregate.$ongoing);
   const completed = useUnit(governancePageAggregate.$completed);
 
@@ -35,13 +34,13 @@ export const GovernanceReferendumList = () => {
   };
 
   const isLoadingState = isLoading || (isSearching && isTitlesLoading);
-  const isNetworkDisabled = !isApiConnected && !isLoadingState && all.length === 0;
-  const isEmptyState = isApiConnected && !isLoadingState && all.length === 0;
+  const isNetworkDisabled = !isApiConnected && !isLoadingState && displayedReferendums.length === 0;
+  const isEmptyState = isApiConnected && !isLoadingState && displayedReferendums.length === 0;
   const isRegularState = isLoadingState || (!isEmptyState && !isNetworkDisabled);
 
   return (
     <Box gap={4} grow={1}>
-      <Filters />
+      {isApiConnected && <Filters />}
 
       {isEmptyState && <EmptyGovernance />}
 
@@ -51,6 +50,7 @@ export const GovernanceReferendumList = () => {
         <Box direction="column" gap={3} padding={[0, 0, 10]}>
           <OngoingReferendums
             api={network?.api}
+            chain={network?.chain}
             asset={network?.asset}
             referendums={ongoing}
             isLoading={isLoading}
@@ -58,15 +58,18 @@ export const GovernanceReferendumList = () => {
             mixLoadingWithData={isLoadingState}
             onSelect={({ referendumId }) => navigate(referendumId)}
           />
-          <CompletedReferendums
-            api={network?.api}
-            asset={network?.asset}
-            referendums={completed}
-            isLoading={isLoading}
-            isTitlesLoading={isTitlesLoading}
-            mixLoadingWithData={isLoadingState}
-            onSelect={({ referendumId }) => navigate(referendumId)}
-          />
+          <AsyncItem>
+            <CompletedReferendums
+              api={network?.api}
+              chain={network?.chain}
+              asset={network?.asset}
+              referendums={completed}
+              isLoading={isLoading}
+              isTitlesLoading={isTitlesLoading}
+              mixLoadingWithData={isLoadingState}
+              onSelect={({ referendumId }) => navigate(referendumId)}
+            />
+          </AsyncItem>
         </Box>
       )}
 

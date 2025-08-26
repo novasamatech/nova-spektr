@@ -1,10 +1,10 @@
 import { useUnit } from 'effector-react';
 
-import { type BasketTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperations } from '@/aggregates/basket-operations';
 import { list } from '../model/list';
 import { signOperations } from '../model/sign';
@@ -37,7 +37,7 @@ export const BasketList = () => {
   };
 
   return (
-    <div className="flex flex-grow flex-col gap-4 pt-4">
+    <div className="flex grow flex-col gap-4 pt-4">
       <BasketFilter />
 
       {operations.length > 0 && (

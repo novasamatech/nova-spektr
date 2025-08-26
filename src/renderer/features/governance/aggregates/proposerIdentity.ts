@@ -1,7 +1,8 @@
 import { combine, createEvent, sample } from 'effector';
 
-import { type Address, type Referendum } from '@/shared/core';
+import { type Referendum } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { proposerIdentityModel } from '@/entities/governance';
 import { networkSelectorModel } from '../model/networkSelector';
 
@@ -16,7 +17,7 @@ const $proposers = combine(
 );
 
 const requestReferendumProposer = createEvent<{ referendum: Referendum }>();
-const requestProposers = createEvent<{ addresses: Address[] }>();
+const requestProposers = createEvent<{ accounts: AccountId[] }>();
 
 sample({
   clock: requestReferendumProposer,
@@ -34,10 +35,10 @@ sample({
   clock: requestProposers,
   source: networkSelectorModel.$network,
   filter: nonNullable,
-  fn: (network, { addresses }) => ({
+  fn: (network, { accounts }) => ({
     api: network!.api,
     chain: network!.chain,
-    addresses,
+    accounts,
   }),
   target: proposerIdentityModel.events.requestProposers,
 });

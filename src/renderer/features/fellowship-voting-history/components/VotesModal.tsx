@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import orderBy from 'lodash/orderBy';
+import { orderBy } from 'lodash';
 import { type PropsWithChildren, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -40,8 +40,8 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
       id: 'ayes',
       title: (
         <span className="flex items-center gap-1">
-          <Icon name="thumbUp" size={16} className={cnTw(selectedTab === 0 && 'text-icon-positive')} />
-          <span>{t('governance.referendum.ayes')}</span>
+          <Icon name="positive" size={16} className={cnTw(selectedTab === 0 && 'text-icon-positive')} />
+          <span>{t('fellowship.voting.good')}</span>
           <FootnoteText as="span" className="text-text-tertiary">
             {ayes.length.toString()}
           </FootnoteText>
@@ -53,8 +53,8 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
       id: 'nays',
       title: (
         <span className="flex items-center gap-1">
-          <Icon name="thumbDown" size={16} className={cnTw(selectedTab === 1 && 'text-icon-negative')} />
-          <span>{t('governance.referendum.nays')}</span>
+          <Icon name="negative" size={16} className={cnTw(selectedTab === 1 && 'text-icon-negative')} />
+          <span>{t('fellowship.voting.notGood')}</span>
           {nays.length.toString()}
         </span>
       ),

@@ -9,12 +9,15 @@ import CheckIcon from '@/shared/assets/images/functionals/checkmark.svg?jsx';
 import CloseOutlineIcon from '@/shared/assets/images/functionals/close-outline.svg?jsx';
 import CloseIcon from '@/shared/assets/images/functionals/close.svg?jsx';
 import CopyIcon from '@/shared/assets/images/functionals/copy.svg?jsx';
+import CreatePureProxyIcon from '@/shared/assets/images/functionals/createpureproxy.svg?jsx';
 import CurrencyIcon from '@/shared/assets/images/functionals/currency.svg?jsx';
+import DelegateIcon from '@/shared/assets/images/functionals/delegate.svg?jsx';
 import DeleteIcon from '@/shared/assets/images/functionals/delete.svg?jsx';
 import DetailsIcon from '@/shared/assets/images/functionals/details.svg?jsx';
 import EditKeysIcon from '@/shared/assets/images/functionals/edit-keys.svg?jsx';
 import EditIcon from '@/shared/assets/images/functionals/edit.svg?jsx';
 import EmptyIdenticonIcon from '@/shared/assets/images/functionals/empty-identicon.svg?jsx';
+import EmptyIcon from '@/shared/assets/images/functionals/empty.svg?jsx';
 import EvidenceIcon from '@/shared/assets/images/functionals/evidence.svg?jsx';
 import ExportIcon from '@/shared/assets/images/functionals/export.svg?jsx';
 import EyeSlashedIcon from '@/shared/assets/images/functionals/eye-slashed.svg?jsx';
@@ -27,13 +30,17 @@ import MagicIcon from '@/shared/assets/images/functionals/magic.svg?jsx';
 import MinusCircleIcon from '@/shared/assets/images/functionals/minus-circle.svg?jsx';
 import MoreIcon from '@/shared/assets/images/functionals/more.svg?jsx';
 import MultisigOutlineIcon from '@/shared/assets/images/functionals/multisig-outline.svg?jsx';
+import NegativeIcon from '@/shared/assets/images/functionals/negative.svg?jsx';
 import OpenGovDelegationsIcon from '@/shared/assets/images/functionals/opengov-delegations.svg?jsx';
 import OpenGovLockIcon from '@/shared/assets/images/functionals/opengov-lock.svg?jsx';
 import OpenGovVotingLockIcon from '@/shared/assets/images/functionals/opengov-voting-lock.svg?jsx';
+import PositiveIcon from '@/shared/assets/images/functionals/positive.svg?jsx';
+import PromoteVotingIcon from '@/shared/assets/images/functionals/promote-voting.svg?jsx';
 import PromoteIcon from '@/shared/assets/images/functionals/promote.svg?jsx';
 import QuestionIcon from '@/shared/assets/images/functionals/question.svg?jsx';
 import ReferendumIcon from '@/shared/assets/images/functionals/referendum.svg?jsx';
 import RefreshIcon from '@/shared/assets/images/functionals/refresh.svg?jsx';
+import RenameUnderlineIcon from '@/shared/assets/images/functionals/rename-underlined.svg?jsx';
 import RenameIcon from '@/shared/assets/images/functionals/rename.svg?jsx';
 import RequestSalaryIcon from '@/shared/assets/images/functionals/request salary.svg?jsx';
 import RetainIcon from '@/shared/assets/images/functionals/retain.svg?jsx';
@@ -52,6 +59,7 @@ import VotingCheckFilled from '@/shared/assets/images/functionals/voting-check-f
 import WarnCutoutIcon from '@/shared/assets/images/functionals/warning-cutout.svg?jsx';
 import WhitelistVotingIcon from '@/shared/assets/images/functionals/whitelist-voting.svg?jsx';
 import WithdrawIcon from '@/shared/assets/images/functionals/withdraw.svg?jsx';
+import ChangeSignatoriesIcon from '@/shared/assets/images/functionals/сhangesignatories.svg?jsx';
 
 const FunctionalImages = {
   copy: { svg: CopyIcon },
@@ -85,6 +93,7 @@ const FunctionalImages = {
   editKeys: { svg: EditKeysIcon },
   more: { svg: MoreIcon },
   rename: { svg: RenameIcon },
+  renameUnderline: { svg: RenameUnderlineIcon },
   forget: { svg: ForgetIcon },
   update: { svg: UpdateIcon },
   opengovLock: { svg: OpenGovLockIcon },
@@ -106,6 +115,13 @@ const FunctionalImages = {
   salary: { svg: SalaryIcon },
   withdraw: { svg: WithdrawIcon },
   requestSalary: { svg: RequestSalaryIcon },
+  promoteVoting: { svg: PromoteVotingIcon },
+  positive: { svg: PositiveIcon },
+  negative: { svg: NegativeIcon },
+  empty: { svg: EmptyIcon },
+  createPureProxy: { svg: CreatePureProxyIcon },
+  delegate: { svg: DelegateIcon },
+  changeSignatories: { svg: ChangeSignatoriesIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

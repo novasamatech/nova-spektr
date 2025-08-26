@@ -35,4 +35,14 @@ export default defineConfig({
       ],
     }),
   ],
+  vite: {
+    ssr: {
+      noExternal: [
+        // incompatible with zod 4
+        'zod',
+        // nanoid doesn't have a default export
+        'nanoid',
+      ],
+    },
+  },
 });

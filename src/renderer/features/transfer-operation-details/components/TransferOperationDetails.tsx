@@ -1,25 +1,23 @@
 import { useUnit } from 'effector-react';
 
-import { type MultisigTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { DetailRow } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
+import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { isXcmTransaction } from '@/entities/transaction';
 
 type Props = {
-  operation: MultisigTransaction;
+  operation: MultisigOperation;
 };
 
 export const TransferOperationDetails = ({ operation }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
 
-  const transaction = getTransactionFromMultisigTx(operation);
-
+  const transaction = operation.transaction ?? undefined;
   const result = [];
 
   const destination = operationDetailsUtils.getDestinationAccountId(operation);

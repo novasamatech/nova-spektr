@@ -5,7 +5,8 @@ import { createGate } from 'effector-react';
 import { type Chain } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { locksModel } from '../model/locks';
 import { networkSelectorModel } from '../model/networkSelector';
 
@@ -40,7 +41,7 @@ sample({
 
 sample({
   clock: flow.open,
-  source: { apis: networkModel.$apis, wallet: walletModel.$activeWallet },
+  source: { apis: networkModel.$apis, wallet: walletSelect.$selectedWallet },
   filter: ({ apis, wallet }, { chain }) => {
     return nonNullable(chain) && chain.chainId in apis && nonNullable(wallet);
   },

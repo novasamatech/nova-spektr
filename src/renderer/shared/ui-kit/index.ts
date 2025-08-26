@@ -1,4 +1,5 @@
 export { useResizeObserver } from './hooks/useResizeObserver';
+export { useIntersectionObserver } from './hooks/useIntersectionObserver';
 export { useTheme } from './Theme/useTheme';
 
 export { FilledIconButton } from './FilledIconButton/FilledIconButton';
@@ -11,6 +12,8 @@ export { AsyncItem } from './AsyncItem/AsyncItem';
 export { CardStack } from './CardStack/CardStack';
 export { InputFile } from './InputFile/InputFile';
 export { Progress } from './Progress/Progress';
+export { Markdown } from './Markdown/Markdown';
+export { Copy } from './Copy/Copy';
 export { Checkbox } from './Checkbox/Checkbox';
 export { Combobox } from './Combobox/Combobox';
 export { Dropdown } from './Dropdown/Dropdown';
@@ -28,9 +31,13 @@ export { Label, type LabelVariant } from './Label/Label';
 export { Modal } from './Modal/Modal';
 export { Field } from './Field/Field';
 export { Input } from './Input/Input';
+export { Json } from './Json/Json';
 export { Tabs } from './Tabs/Tabs';
 export { Box } from './Box/Box';
 export { QrReader, type QrScanResult } from './QrReader/QrReader';
+export { QrCode } from './QrCode/QrCode';
+export { ConfirmModal } from './ConfirmModal/ConfirmModal';
+export { NotificationProvider, useNotification } from './NotificationContext';
 
 export { QR_READER_ERRORS } from './QrReader/errors';
 export { QrReaderErrorCode, type QrReaderCamera, type QrReaderError } from './QrReader/types';

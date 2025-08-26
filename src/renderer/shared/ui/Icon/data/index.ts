@@ -4,6 +4,7 @@ import ChevronImages, { type Chevron } from './chevron';
 import ConfirmImages, { type Confirm } from './confirm';
 import CurrencyImages, { type Currency } from './currency';
 import ExplorerImages, { type Explorer } from './explorer';
+import FellowshipImages, { type Fellowship } from './fellowship';
 import FlagImages, { type Flag } from './flag';
 import FunctionalImages, { type Functional } from './functionals';
 import KeyTypeImages, { type KeyImages } from './keyType';
@@ -30,6 +31,7 @@ const AllIcons = {
   ...MstImages,
   ...KeyTypeImages,
   ...ConfirmImages,
+  ...FellowshipImages,
 };
 
 export type IconNames =
@@ -47,6 +49,7 @@ export type IconNames =
   | WalletImages
   | Mst
   | KeyImages
-  | Confirm;
+  | Confirm
+  | Fellowship;
 
 export default AllIcons;

@@ -16,12 +16,11 @@ type Props = {
 export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
   useGate(signModel.gates.flow);
 
-  const apis = useUnit(signModel.$apis);
   const signStore = useUnit(signModel.$signStore);
   const signerWallet = useUnit(signModel.$signerWallet);
 
-  if (!apis || !signStore || !signerWallet) {
-    const height = walletUtils.isWalletConnectGroup(signerWallet) ? '430px' : '490px';
+  if (!signStore || !signerWallet) {
+    const height = signerWallet && walletUtils.isWalletConnectGroup(signerWallet) ? '430px' : '490px';
 
     return (
       <Box width="440px" height={height} verticalAlign="center" horizontalAlign="center">
@@ -30,16 +29,23 @@ export const OperationSign = ({ onSuccess, onGoBack }: Props) => {
     );
   }
 
-  const onSignResult = (signatures: HexString[], txPayloads: Uint8Array[]) => {
-    signModel.events.dataReceived({ signatures, txPayloads });
+  const onSignResult = (signatures: HexString[], payloads: Uint8Array[]) => {
+    const payload = signStore.map(({ api, signatory, extrinsic }, index) => ({
+      api,
+      extrinsic,
+      signatory: signatory.accountId,
+      signature: signatures[index],
+      payload: payloads[index],
+    }));
+
+    signModel.signed(payload);
     onSuccess?.();
   };
 
   return (
     <SigningSwitch
-      apis={apis}
       signerWallet={signerWallet}
-      signingPayloads={signStore.signingPayloads}
+      signingPayloads={signStore}
       onGoBack={onGoBack}
       onResult={onSignResult}
     />

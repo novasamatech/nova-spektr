@@ -5,6 +5,7 @@ import ClockIcon from '@/shared/assets/images/aesthetics/clock.svg?jsx';
 import FellowshipIcon from '@/shared/assets/images/aesthetics/fellowship.svg?jsx';
 import FireIcon from '@/shared/assets/images/aesthetics/fire.svg?jsx';
 import GlobeIcon from '@/shared/assets/images/aesthetics/globe.svg?jsx';
+import HiddenWalletIcon from '@/shared/assets/images/aesthetics/hiddenwallet.svg?jsx';
 import HotkeyCtrlIcon from '@/shared/assets/images/aesthetics/hotkey-ctrl.svg?jsx';
 import HotkeyOptionIcon from '@/shared/assets/images/aesthetics/hotkey-option.svg?jsx';
 import IndividualIcon from '@/shared/assets/images/aesthetics/individual.svg?jsx';
@@ -42,6 +43,7 @@ const AestheticImages = {
   organization: { svg: OrganizationIcon },
   members: { svg: MembersIcon },
   profile: { svg: ProfileIcon },
+  hiddenWallet: { svg: HiddenWalletIcon },
 } as const;
 
 export type Aesthetic = keyof typeof AestheticImages;

@@ -6,6 +6,7 @@ export { listAggregate } from './aggregates/list';
 export { delegationAggregate } from './aggregates/delegation';
 export { delegateRegistryAggregate } from './aggregates/delegateRegistry';
 export { locksPeriodsAggregate } from './aggregates/locksPeriod';
+export { locksAggregate } from './aggregates/locks';
 
 export { titleModel } from './model/title';
 export { filterModel } from './model/filter';
@@ -29,5 +30,6 @@ export { CompletedReferendums, OngoingReferendums } from './components/Referendu
 export { VotingHistoryDialog } from './components/VotingHistory/VotingHistoryDialog';
 
 export { listService } from './lib/listService';
+export { getLocksForAccount } from './utils/getLocksForAccount';
 
 export { type AggregatedReferendum } from './types/structs';

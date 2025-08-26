@@ -1,15 +1,15 @@
-import fs from 'fs';
-import url from 'node:url';
+import { type Chain } from '@/shared/core';
+import { CHAINS_CONFIG_URL } from '../BaseTestConfig';
 
-export async function readConfig(): Promise<any> {
-  const chainsJsonURL = new URL('../../../src/renderer/shared/config/chains/chains.json', import.meta.url);
-  const chainsFilePath = url.fileURLToPath(chainsJsonURL);
-  const chainsData = JSON.parse(fs.readFileSync(chainsFilePath, 'utf-8'));
-
-  return chainsData;
+export async function readConfig(): Promise<Chain[]> {
+  const response = await fetch(CHAINS_CONFIG_URL);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch chains config: ${response.status} ${response.statusText}`);
+  }
+  return response.json();
 }
 
-export function getChainByName(chains: any[], name: string) {
+export function getChainByName(chains: Pick<Chain, 'name'>[], name: string) {
   const chain = chains.find((chain) => chain.name === name);
   if (!chain) {
     throw new Error(`Chain with name "${name}" not found`);

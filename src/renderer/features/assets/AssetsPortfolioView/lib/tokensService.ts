@@ -1,23 +1,31 @@
+import { BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 import { concat, orderBy, sortBy } from 'lodash';
 
 import { isKusama, isNameStartsWithNumber, isPolkadot } from '@/shared/api/network/lib/utils';
 import { sumValues } from '@/shared/api/network/service/chainsService';
 import { type PriceObject } from '@/shared/api/price-provider';
-import tokensProd from '@/shared/config/tokens/tokens.json';
-import tokensDev from '@/shared/config/tokens/tokens_dev.json';
-import { type Account, type AssetBalance, type AssetByChains, type Balance, type ChainId } from '@/shared/core';
-import { ZERO_BALANCE, getBalanceBn, nonNullable, totalAmount, totalAmountBN } from '@/shared/lib/utils';
+import {
+  type AssetByChains,
+  type Balance,
+  type BalanceMap,
+  type ChainId,
+  type PortfolioTokenBalance,
+} from '@/shared/core';
+import {
+  TOKENS_CONFIG_URL,
+  getBalanceBn,
+  nonNullable,
+  nullable,
+  totalAmountBN,
+  transferableAmountBN,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type AnyAccount } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
 import { accountUtils } from '@/entities/wallet';
 
 import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type AssetChain } from './types';
-
-const TOKENS: Record<string, any> = {
-  tokens: tokensProd,
-  'tokens-dev': tokensDev,
-};
 
 export const tokensService = {
   getTokensData,
@@ -28,23 +36,42 @@ export const tokensService = {
   calculateTotalBalance,
 };
 
-function getTokensData(): AssetByChains[] {
-  return TOKENS[process.env.TOKENS_FILE || 'tokens'];
+async function getTokensData(): Promise<AssetByChains[] | null> {
+  const response = await fetch(TOKENS_CONFIG_URL);
+
+  if (!response.ok) {
+    console.error(`Failed to fetch tokens config: ${response.status} ${response.statusText}`);
+    return null;
+  }
+
+  return response.json();
 }
 
-function sumTokenBalances(firstBalance: AssetBalance, secondBalance?: AssetBalance | null): AssetBalance {
-  if (!secondBalance) return firstBalance;
-
+function getTokenBalance(balance: Balance): PortfolioTokenBalance {
   return {
-    verified: firstBalance.verified && secondBalance.verified,
-    free: firstBalance.free || secondBalance.free ? sumValues(firstBalance.free, secondBalance.free) : undefined,
-    reserved: sumValues(firstBalance.reserved, secondBalance.reserved),
-    frozen: sumValues(firstBalance.frozen, secondBalance.frozen),
-    locked: (firstBalance.locked || []).concat(secondBalance.locked || []),
+    total: totalAmountBN(balance),
+    transferable: transferableAmountBN(balance),
+    locked: balance.frozen,
+    frozen: balance.reserved,
+    balances: [balance],
   };
 }
 
-function getSelectedAccountIds(accounts: Account[], chainId: ChainId): AccountId[] {
+function sumTokenBalanceWithBalance(tokenBalance: PortfolioTokenBalance, balance: Balance): PortfolioTokenBalance {
+  return sumTokenBalances(tokenBalance, getTokenBalance(balance));
+}
+
+function sumTokenBalances(a: PortfolioTokenBalance, b: PortfolioTokenBalance): PortfolioTokenBalance {
+  return {
+    total: sumValues(a.total, b.total),
+    transferable: sumValues(a.transferable, b.transferable),
+    locked: sumValues(a.locked, b.locked),
+    frozen: sumValues(a.frozen, b.frozen),
+    balances: a.balances.concat(b.balances),
+  };
+}
+
+function getSelectedAccountIds(accounts: AnyAccount[], chainId: ChainId): AccountId[] {
   return accounts.reduce<AccountId[]>((acc, account) => {
     if (accountUtils.isChainIdMatch(account, chainId)) {
       acc.push(account.accountId);
@@ -54,37 +81,47 @@ function getSelectedAccountIds(accounts: Account[], chainId: ChainId): AccountId
   }, []);
 }
 
-function getChainWithBalance(balances: Balance[], chains: AssetChain[], accounts: Account[]): AssetChain[] {
+function getChainWithBalance(balances: BalanceMap, chains: AssetChain[], accounts: AnyAccount[]): AssetChain[] {
+  const initialBalance: PortfolioTokenBalance = {
+    total: BN_ZERO,
+    transferable: BN_ZERO,
+    locked: BN_ZERO,
+    frozen: BN_ZERO,
+    balances: [],
+  };
+
   return chains.reduce<AssetChain[]>((acc, chain) => {
     const selectedAccountIds = getSelectedAccountIds(accounts, chain.chainId);
 
-    const accountsBalance = balanceUtils.getAssetBalances(
-      balances,
-      selectedAccountIds,
-      chain.chainId,
-      chain.assetId.toString(),
-    );
+    const accountsBalance = balanceUtils.getAssetBalances(balances, selectedAccountIds, chain.chainId, chain.assetId);
+    const assetBalance =
+      accountsBalance.length > 0 ? accountsBalance.reduce(sumTokenBalanceWithBalance, initialBalance) : null;
 
-    const assetBalance = accountsBalance.reduce<AssetBalance>((acc, balance) => {
-      return sumTokenBalances(balance, acc);
-    }, {});
-
-    if (assetBalance.verified !== false) {
-      acc.push({ ...chain, balance: assetBalance });
-    }
+    acc.push({ ...chain, balance: assetBalance });
 
     return acc;
-  }, [] as AssetChain[]);
+  }, []);
 }
 
 function calculateTotalBalance(assets: AssetChain[]) {
-  let totalBalance: AssetBalance = {};
+  let totalBalance: PortfolioTokenBalance = {
+    total: BN_ZERO,
+    transferable: BN_ZERO,
+    locked: BN_ZERO,
+    frozen: BN_ZERO,
+    balances: [],
+  };
+
+  let hasBalances = false;
 
   for (const { balance } of assets) {
-    totalBalance = sumTokenBalances(totalBalance, balance);
+    if (nonNullable(balance)) {
+      hasBalances = true;
+      totalBalance = sumTokenBalances(totalBalance, balance);
+    }
   }
 
-  return totalBalance;
+  return hasBalances ? totalBalance : null;
 }
 
 function hideZeroBalances(hideZeroBalance: boolean, activeTokensWithBalance: AssetByChains[]): AssetByChains[] {
@@ -95,10 +132,11 @@ function hideZeroBalances(hideZeroBalance: boolean, activeTokensWithBalance: Ass
   const result: AssetByChains[] = [];
 
   for (const token of activeTokensWithBalance) {
-    if (totalAmountBN(calculateTotalBalance(token.chains)).isZero()) continue;
+    const totalBalance = calculateTotalBalance(token.chains);
+    if (nonNullable(totalBalance) && totalBalance.total.isZero()) continue;
 
     const filteredChains = token.chains.filter((chain) => {
-      return nonNullable(chain.balance) && !totalAmountBN(chain.balance).isZero();
+      return nullable(chain.balance) || !chain.balance.total.isZero();
     });
 
     result.push({ ...token, chains: filteredChains });
@@ -119,12 +157,13 @@ function sortTokensByBalance(
   const testnets = { withBalance: [], noBalance: [] };
 
   for (const token of tokens) {
-    const tokenTotal = totalAmount(calculateTotalBalance(token.chains));
-    const tokenBalance = getBalanceBn(tokenTotal, token.precision);
+    const totalBalance = calculateTotalBalance(token.chains);
+    const tokenTotal = totalBalance?.total ?? BN_ZERO;
+    const tokenBalance = getBalanceBn(tokenTotal.toString(), token.precision);
     const tokenAssetPrice = token.priceId && currency && assetsPrices?.[token.priceId]?.[currency]?.price;
     const fiatBalance = new BigNumber(tokenAssetPrice || 0).multipliedBy(tokenBalance);
 
-    const hasBalance = tokenTotal !== ZERO_BALANCE;
+    const hasBalance = !tokenTotal.isZero();
     let collection: AssetByChainsWithBalance[] = [];
 
     token.chains.sort((a, b) => chainBalanceSorter(a, b, assetsPrices, token, currency));
@@ -183,17 +222,14 @@ function chainBalanceSorter(
   if (isFirstPolkadotOrKusama && !isSecondPolkadotOrKusama) return -1;
   if (!isFirstPolkadotOrKusama && isSecondPolkadotOrKusama) return 1;
 
-  const firstTotal = totalAmount(first.balance);
-  const secondTotal = totalAmount(second.balance);
-
-  const firstBalance = getBalanceBn(firstTotal, asset.precision);
-  const secondBalance = getBalanceBn(secondTotal, asset.precision);
+  const firstBalance = first.balance?.total ?? BN_ZERO;
+  const secondBalance = second.balance?.total ?? BN_ZERO;
 
   const firstAssetPrice = asset.priceId && currency && assetsPrices?.[asset.priceId]?.[currency]?.price;
   const secondAssetPrice = asset.priceId && currency && assetsPrices?.[asset.priceId]?.[currency]?.price;
 
-  const firstFiatBalance = new BigNumber(firstAssetPrice || 0).multipliedBy(firstBalance);
-  const secondFiatBalance = new BigNumber(secondAssetPrice || 0).multipliedBy(secondBalance);
+  const firstFiatBalance = new BigNumber(firstAssetPrice || 0).multipliedBy(firstBalance.toString());
+  const secondFiatBalance = new BigNumber(secondAssetPrice || 0).multipliedBy(secondBalance.toString());
 
   if (firstFiatBalance.gt(secondFiatBalance)) return -1;
   if (firstFiatBalance.lt(secondFiatBalance)) return 1;

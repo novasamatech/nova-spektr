@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { type ComponentProps, useState } from 'react';
 
 import { type HexString } from '@/shared/core';
@@ -11,13 +12,12 @@ import { type ErrorObject, type Progress } from '../common/types';
 import { QrMultiframeSignatureReader } from './QrMultiframeSignatureReader';
 import { QrSignatureReader } from './QrSignatureReader';
 import { SignatureReaderError } from './SignatureReaderError';
-
 import './style.css';
 
 const ValidationErrorLabels = {
-  [ValidationErrors.INSUFFICIENT_BALANCE]: 'transfer.notEnoughBalanceError',
-  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: 'transfer.notEnoughBalanceForFeeError',
-  [ValidationErrors.INVALID_SIGNATURE]: 'transfer.invalidSignature',
+  [ValidationErrors.INSUFFICIENT_BALANCE]: t('transfer.notEnoughBalanceError'),
+  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: t('transfer.notEnoughBalanceForFeeError'),
+  [ValidationErrors.INVALID_SIGNATURE]: t('transfer.invalidSignature'),
 };
 
 type ScanResult = HexString | HexString[];
@@ -115,7 +115,7 @@ export const QrReaderWrapper = ({ onResult, countdown, validationError, isMultiF
             </div>
           </div>
         </div>
-        <div className="absolute bottom-0 top-auto z-10 flex w-full flex-col items-center">
+        <div className="absolute top-auto bottom-0 z-10 flex w-full flex-col items-center">
           <div className="w-[240px]">
             {availableCameras.length > 1 && (
               <Select
@@ -140,7 +140,7 @@ export const QrReaderWrapper = ({ onResult, countdown, validationError, isMultiF
             )}
           </div>
 
-          <footer className="z-10 flex w-full items-center justify-between px-5 pb-4 pt-3">
+          <footer className="z-10 flex w-full items-center justify-between px-5 pt-3 pb-4">
             {onGoBack && (
               <Button
                 variant="text"
@@ -156,7 +156,7 @@ export const QrReaderWrapper = ({ onResult, countdown, validationError, isMultiF
                 <FootnoteText className="text-text-tertiary">{t('signing.parsingLabel')}</FootnoteText>
                 <CaptionText
                   as="span"
-                  className="rounded-[26px] bg-label-background-gray px-2 py-1 uppercase text-white"
+                  className="rounded-[26px] bg-label-background-gray px-2 py-1 text-white uppercase"
                 >
                   {t('signing.parsingCount', { current: progress.decoded, total: progress.total })}
                 </CaptionText>

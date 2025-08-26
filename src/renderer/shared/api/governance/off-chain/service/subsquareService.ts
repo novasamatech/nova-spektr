@@ -6,7 +6,7 @@ import {
   type SubsquareTimelineRecord,
   subsquareApiService,
 } from '@/shared/api/subsquare';
-import { dictionary } from '@/shared/lib/utils';
+import { dictionary, toAccountId } from '@/shared/lib/utils';
 import { type SubsquareTimelineRecordStatus } from '../../../subsquare/lib/types';
 import { type GovernanceApi, type ReferendumTimelineRecord, type ReferendumTimelineRecordStatus } from '../lib/types';
 
@@ -43,7 +43,7 @@ const getReferendumDetails: GovernanceApi['getReferendumDetails'] = async (chain
 const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId) => {
   const network = chain.specName;
 
-  const mapVote = (vote: SubsquareReferendumVote) => vote.account;
+  const mapVote = (vote: SubsquareReferendumVote) => toAccountId(vote.account);
 
   return subsquareApiService
     .fetchReferendumVotes({ network, referendumType: 'gov2', referendumId })

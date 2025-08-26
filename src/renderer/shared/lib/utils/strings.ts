@@ -168,6 +168,10 @@ const romanNumbersLookup = [
 ] as const;
 
 export const toRomanNumeral = (num: number) => {
+  if (num === 0) {
+    return '0';
+  }
+
   return romanNumbersLookup.reduce((acc, [k, v]) => {
     acc += k.repeat(Math.floor(num / v));
     num = num % v;

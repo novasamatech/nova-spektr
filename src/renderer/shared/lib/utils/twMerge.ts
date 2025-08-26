@@ -12,6 +12,7 @@ const fonts = Object.keys(fontSizes as Record<string, unknown>);
 const colors = Object.keys(additionalColors as Record<string, unknown>);
 
 const twMerge = extendTailwindMerge({
+  cacheSize: 5_000,
   extend: {
     classGroups: {
       w: [{ w: ['90', '92', 'modal', 'modal-sm', 'modal-xl'] }],
@@ -36,3 +37,5 @@ const twMerge = extendTailwindMerge({
  * @returns {String}
  */
 export const cnTw = (...args: CnArgs): string => twMerge(cn(args));
+
+export const tw = (strings: TemplateStringsArray, ...values: any[]) => String.raw({ raw: strings }, ...values);

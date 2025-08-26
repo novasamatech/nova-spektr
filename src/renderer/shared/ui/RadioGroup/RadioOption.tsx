@@ -21,7 +21,7 @@ export const Option = ({ option, children }: PropsWithChildren<Props>) => {
       {({ checked }) => (
         <div
           className={cnTw(
-            'mb-2 cursor-pointer rounded border border-filter-border last:mb-0',
+            'mb-2 cursor-pointer rounded-sm border border-filter-border last:mb-0',
             checked && 'border-active-container-border',
           )}
         >

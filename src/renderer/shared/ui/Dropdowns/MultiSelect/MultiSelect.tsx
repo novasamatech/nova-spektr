@@ -1,5 +1,5 @@
 import { Listbox, Transition } from '@headlessui/react';
-import { Fragment, useId } from 'react';
+import { Fragment, useId, useMemo } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Checkbox } from '@/shared/ui-kit';
@@ -45,7 +45,10 @@ export const MultiSelect = ({
   theme = 'light',
 }: Props) => {
   const id = useId();
-  const selectedOptions = options.filter((option) => selectedIds?.includes(option.id));
+  const selectedOptions = useMemo(
+    () => options.filter((option) => selectedIds?.includes(option.id)),
+    [options, selectedIds],
+  );
 
   const getSelectButtonElement = () => {
     // if one option selected we show that option
@@ -90,7 +93,7 @@ export const MultiSelect = ({
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
               'inline-flex w-full items-center justify-between gap-x-2 py-2 pr-2 text-start',
-              'rounded border bg-input-background px-3 py-[7px]',
+              'rounded-sm border bg-input-background px-3 py-[7px]',
               'text-footnote text-text-primary outline-offset-1',
             )}
             tabIndex={tabIndex}
@@ -112,6 +115,22 @@ export const MultiSelect = ({
                   key={id}
                   value={{ id, value }}
                   className={({ active }) => cnTw(OptionStyle, OptionStyleTheme[theme](active, false))}
+                  onClick={(e) => {
+                    /**
+                     * A workaround against the bug in headlessui that triggers
+                     * a synthetic click on input with an old value and causes
+                     * an infinite loop of changes
+                     *
+                     * https://github.com/tailwindlabs/headlessui/issues/3476
+                     * https://github.com/tailwindlabs/headlessui/issues/3507
+                     * https://github.com/tailwindlabs/headlessui/issues/3520
+                     * https://github.com/tailwindlabs/headlessui/issues/3562
+                     * https://github.com/tailwindlabs/headlessui/issues/3655
+                     */
+                    if (e.target instanceof HTMLInputElement) {
+                      e.preventDefault();
+                    }
+                  }}
                 >
                   {({ selected }) => (
                     <div

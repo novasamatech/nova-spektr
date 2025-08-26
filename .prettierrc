@@ -12,10 +12,10 @@
     "prettier-plugin-css-order",
     "prettier-plugin-tailwindcss"
   ],
-  "tailwindConfig": "./tailwind.config.ts",
+  "tailwindStylesheet": "./src/renderer/app/index.css",
   "tailwindFunctions": [
     "cnTw",
-    "cn"
+    "tw"
   ],
   "jsdocCommentLineStrategy": "keep",
   "jsdocPreferCodeFences": true,
@@ -23,6 +23,12 @@
   "jsdocPrintWidth": 80,
   "proseWrap": "always",
   "overrides": [
+    {
+      "files": ["./src/renderer/app/bootstrap/*.ts"],
+      "options": {
+        "printWidth": 160
+      }
+    },
     {
       "files": [
         "./src/renderer/domains/**/*.ts",

@@ -1,6 +1,7 @@
 import { type DelegateAccount } from '@/shared/api/governance';
 import { cnTw } from '@/shared/lib/utils';
-import { Icon, Identicon } from '@/shared/ui';
+import { Icon } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 
 const isDefaultImage = (image?: string) => !image || image.includes('default');
 
@@ -10,7 +11,7 @@ type Props = {
 };
 
 export const DelegateIcon = ({ delegate, className }: Props) => {
-  if (!delegate.name) return <Identicon background={false} address={delegate.accountId} size={46} />;
+  if (!delegate.name) return <Identicon background={false} value={delegate.accountId} size={46} />;
 
   if (isDefaultImage(delegate.image)) {
     return (

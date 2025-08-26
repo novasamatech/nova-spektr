@@ -1,8 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 
-import { type BasketTransaction, type Chain, type ChainId, type Transaction, TransactionType } from '@/shared/core';
+import { type Chain, type ChainId, type Transaction, TransactionType } from '@/shared/core';
 import { type AnyAccount } from '@/domains/network';
 import { findCoreBatchAll, isEditDelegationTransaction, transactionService } from '@/entities/transaction';
+
+import { type BasketTransaction } from './types';
 
 const getCoreTx = (tx: BasketTransaction): Transaction => {
   if (isEditDelegationTransaction(tx.coreTx)) {
@@ -26,7 +29,7 @@ async function getTransactionData(
     a => a.accountId === transaction.initiatorAccountId && a.accountId === transaction.coreTx.accountId,
   );
 
-  return { chainId, chain, account, fee };
+  return { chainId, chain, account, fee: new BN(fee) };
 }
 
 export const basketOperationsService = {

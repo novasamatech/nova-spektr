@@ -1,41 +1,22 @@
-import { combine, sample } from 'effector';
-import { and, or } from 'patronum';
+import { sample } from 'effector';
 
 import { attachToFeatureInput } from '@/shared/feature';
-import { nonNullable, nullable } from '@/shared/lib/utils';
 import { member, track } from '@/domains/collectives';
-import { accountService, identity } from '@/domains/network';
+import { identity } from '@/domains/network';
 
-import { fellowshipSalaryFeature } from './feature';
+import { fellowshipEvidenceSalaryFeature } from './feature';
 
-const $member = fellowshipSalaryFeature.input.map(store => (store ? store.member : null));
-const $account = fellowshipSalaryFeature.input.map(store => (store ? store.account : null));
+const $member = fellowshipEvidenceSalaryFeature.input.map(store => (store ? store.member : null));
 
-const $identities = combine(fellowshipSalaryFeature.input, identity.$list, (featureInput, list) => {
-  if (nullable(featureInput)) return {};
-
-  return list[featureInput.chainId] ?? {};
-});
-
-const $identity = combine($member, $identities, (member, identities) => {
-  if (nullable(member)) return null;
-
-  return identities[member.accountId] ?? null;
-});
-
-const $canVote = $account.map(a => nonNullable(a) && accountService.hasPermissionToMakeActions(a));
-
-const $pendingMember = and(or(member.pending, identity.request.pending), $member.map(nullable));
-
-const memberUpdate = attachToFeatureInput(fellowshipSalaryFeature, $member);
+const memberUpdate = attachToFeatureInput(fellowshipEvidenceSalaryFeature, $member);
 
 sample({
-  clock: fellowshipSalaryFeature.running,
+  clock: fellowshipEvidenceSalaryFeature.running,
   target: [member.subscribe, track.request],
 });
 
 sample({
-  clock: fellowshipSalaryFeature.stopped,
+  clock: fellowshipEvidenceSalaryFeature.stopped,
   target: member.unsubscribe,
 });
 
@@ -50,8 +31,4 @@ sample({
 
 export const profile = {
   $member,
-  $account,
-  $identity,
-  $canVote,
-  $pending: or($pendingMember, fellowshipSalaryFeature.isStarting),
 };

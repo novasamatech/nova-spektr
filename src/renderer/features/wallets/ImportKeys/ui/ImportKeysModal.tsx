@@ -5,8 +5,8 @@ import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } fro
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Alert, BaseModal, Button, InfoLink, InputHint } from '@/shared/ui';
-import { InputFile } from '@/shared/ui-kit';
+import { Alert, Button, InfoLink, InputHint } from '@/shared/ui';
+import { InputFile, Modal } from '@/shared/ui-kit';
 import { TEMPLATE_GITHUB_LINK } from '../lib/constants';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import { importKeysModel } from '../model/import-keys-model';
@@ -59,49 +59,48 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   };
 
   return (
-    <BaseModal isOpen={isOpen} title={t('dynamicDerivations.importKeys.modalTitle')} onClose={onClose}>
-      <div className="mt-4 flex flex-col items-start gap-y-4">
-        <div className="flex w-full flex-col gap-y-2">
-          <div className="h-[126px]">
-            <InputFile
-              accept=".yaml,.txt"
-              placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
-              invalid={nonNullable(validationError?.error)}
-              onChange={handleFileUpload}
-            />
+    <Modal isOpen={isOpen} size="md" onToggle={(open) => !open && onClose()}>
+      <Modal.Title close>{t('dynamicDerivations.importKeys.modalTitle')}</Modal.Title>
+      <Modal.Content>
+        <div className="mt-4 flex flex-col items-start gap-y-4 px-5">
+          <div className="flex w-full flex-col gap-y-2">
+            <div className="h-[126px]">
+              <InputFile
+                accept=".yaml,.txt"
+                placeholder={t('dynamicDerivations.importKeys.fileInputPlaceholder')}
+                invalid={nonNullable(validationError?.error)}
+                onChange={handleFileUpload}
+              />
+            </div>
+
+            <InputHint active={nonNullable(validationError)} variant="error">
+              {validationError && importKeysUtils.getErrorsText(t, validationError.error, validationError.details)}
+            </InputHint>
           </div>
 
-          <InputHint active={nonNullable(validationError)} variant="error">
-            {validationError && importKeysUtils.getErrorsText(t, validationError.error, validationError.details)}
-          </InputHint>
+          <Alert
+            active={nonNullable(successReport)}
+            title={t('dynamicDerivations.importKeys.report.title')}
+            variant="success"
+          >
+            <Alert.Item withDot={false}>{getReportText()}</Alert.Item>
+            {(successReport?.ignoredNetworks || []).map((chainId) => (
+              <Alert.Item className="break-all" key={chainId}>
+                {chainId}
+              </Alert.Item>
+            ))}
+          </Alert>
+
+          <InfoLink url={TEMPLATE_GITHUB_LINK} className="ml-2" iconName="import" iconPosition="right">
+            {t('dynamicDerivations.importKeys.downloadTemplateButton')}
+          </InfoLink>
         </div>
-
-        <Alert
-          active={nonNullable(successReport)}
-          title={t('dynamicDerivations.importKeys.report.title')}
-          variant="success"
-        >
-          <Alert.Item withDot={false}>{getReportText()}</Alert.Item>
-          {(successReport?.ignoredNetworks || []).map((chainId) => (
-            <Alert.Item className="break-all" key={chainId}>
-              {chainId}
-            </Alert.Item>
-          ))}
-        </Alert>
-
-        <InfoLink url={TEMPLATE_GITHUB_LINK} className="ml-2" iconName="import" iconPosition="right">
-          {t('dynamicDerivations.importKeys.downloadTemplateButton')}
-        </InfoLink>
-      </div>
-
-      <div className="flex items-center justify-between pt-3">
-        <Button variant="text" onClick={onClose}>
-          {t('dynamicDerivations.importKeys.backButton')}
-        </Button>
-        <Button disabled={Boolean(validationError?.error) || !successReport} onClick={() => onConfirm(mergedKeys)}>
+      </Modal.Content>
+      <Modal.Footer align="end">
+        <Button disabled={nonNullable(validationError?.error) || !successReport} onClick={() => onConfirm(mergedKeys)}>
           {t('dynamicDerivations.importKeys.continueButton')}
         </Button>
-      </div>
-    </BaseModal>
+      </Modal.Footer>
+    </Modal>
   );
 };

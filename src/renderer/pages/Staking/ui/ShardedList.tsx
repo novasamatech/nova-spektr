@@ -1,9 +1,10 @@
 import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Address, type Asset, type Chain, type Explorer } from '@/shared/core';
+import { type Asset, type Chain, type Explorer } from '@/shared/core';
 import { type VaultShardAccount } from '@/shared/core/types/account';
 import { useI18n } from '@/shared/i18n';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { CardStack, Checkbox, Skeleton, Tooltip } from '@/shared/ui-kit';
@@ -22,8 +23,8 @@ type Props = {
   chain: Chain;
   explorers?: Explorer[];
   addressPrefix?: number;
-  onCheckValidators: (stash?: Address) => void;
-  onToggleNominator: (nominator: Address, value?: boolean) => void;
+  onCheckValidators: (stash?: AccountId) => void;
+  onToggleNominator: (nominator: AccountId, value?: boolean) => void;
   getContent: (stake: NominatorInfo<VaultShardAccount>) => ReactNode;
 };
 
@@ -42,7 +43,7 @@ export const ShardedList = ({
 
   const selectAllShards = (isChecked: boolean) => {
     for (const shard of shardsStake) {
-      onToggleNominator(shard.address, isChecked);
+      onToggleNominator(shard.account.accountId, isChecked);
     }
   };
 
@@ -76,7 +77,7 @@ export const ShardedList = ({
             onChange={selectAllShards}
             onClick={(event) => event.stopPropagation()}
           />
-          <div className="grid grid-cols-[174px,104px,104px] items-center gap-x-6">
+          <div className="grid grid-cols-[174px_104px_104px] items-center gap-x-6">
             <div className="flex items-center gap-x-2">
               <FootnoteText className="h-5 rounded-full bg-input-background-disabled px-2 py-px text-text-secondary">
                 {shardsStake.length}

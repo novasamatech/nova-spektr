@@ -1,8 +1,9 @@
 import { BN } from '@polkadot/util';
 import { GraphQLClient } from 'graphql-request';
 
-import { type Address, type Chain, ExternalType, type ReferendumId } from '@/shared/core';
-import { dictionary, nullable, toPrecision } from '@/shared/lib/utils';
+import { type Chain, ExternalType, type ReferendumId } from '@/shared/core';
+import { dictionary, nullable, toAccountId, toAddress, toPrecision } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type DelegateAccount,
   type DelegateDetails,
@@ -39,22 +40,28 @@ async function getDelegatesFromRegistry(chain: Chain): Promise<DelegateDetails[]
 
   return fetch(`${DELEGATE_REGISTRY_URL}/${normalizedName}.json`)
     .then((res) => res.json())
+    .then((list: any[]) =>
+      list.map(({ address, ...x }) => ({
+        ...x,
+        accountId: toAccountId(address),
+      })),
+    )
     .catch(() => []);
 }
 
-async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number): Promise<DelegateStat[]> {
+async function getDelegatesFromExternalSource(chain: Chain, timestamp: number): Promise<DelegateStat[]> {
   const client = getGraphQLClient(chain);
   if (!client) {
     return [];
   }
 
   return client
-    .request(GET_DELEGATE_LIST, { activityStartBlock: blockNumber })
+    .request(GET_DELEGATE_LIST, { timestamp })
     .then((data) => {
       return (
         (data as any)?.delegates?.nodes?.map(
-          ({ accountId, delegators, delegatorVotes, delegateVotes, delegateVotesMonth }: any) => ({
-            accountId,
+          ({ accountId, delegators, delegatorVotes, delegateVotes, delegateVotesMonth }: any): DelegateStat => ({
+            accountId: toAccountId(accountId),
             delegators,
             delegatorVotes,
             delegateVotes: delegateVotes.totalCount,
@@ -66,14 +73,14 @@ async function getDelegatesFromExternalSource(chain: Chain, blockNumber: number)
     .catch(() => []);
 }
 
-async function getDelegatedVotesFromExternalSource(chain: Chain, voters: Address[]) {
+async function getDelegatedVotesFromExternalSource(chain: Chain, voters: AccountId[]) {
   const client = getGraphQLClient(chain);
   if (!client) {
     return {};
   }
 
   return client
-    .request(GET_DELEGATOR, { voters })
+    .request(GET_DELEGATOR, { voters: voters.map((x) => toAddress(x, { prefix: chain.addressPrefix })) })
     .then((data: any) => {
       const result: Record<ReferendumId, DelegateInfo[]> = {};
 
@@ -81,8 +88,8 @@ async function getDelegatedVotesFromExternalSource(chain: Chain, voters: Address
         if (nullable(parent.delegateId)) continue;
 
         const info: DelegateInfo = {
-          delegator,
-          delegateId: parent.delegateId,
+          delegator: toAccountId(delegator),
+          delegateAccount: toAccountId(parent.delegateId),
           decision: parent.standardVote.aye ? 'aye' : 'nay',
           amount: new BN(vote.amount),
           conviction: vote.conviction,
@@ -104,25 +111,25 @@ function aggregateDelegateAccounts(accounts: DelegateDetails[], stats: DelegateS
   const accountsMap = dictionary(stats, 'accountId');
 
   for (const account of accounts) {
-    accountsMap[account.address] = { ...accountsMap[account.address], ...account };
+    accountsMap[account.accountId] = { ...accountsMap[account.accountId], ...account };
   }
 
   return Object.values(accountsMap);
 }
 
-async function getDelegatesForAccount(chain: Chain, accountId: string): Promise<DelegationsByAccount | null> {
+async function getDelegatesForAccount(chain: Chain, accountId: AccountId): Promise<DelegationsByAccount | null> {
   const client = getGraphQLClient(chain);
   if (!client) {
     return null;
   }
 
   return client
-    .request(GET_DELEGATES_FOR_ACCOUNT, { accountId })
+    .request(GET_DELEGATES_FOR_ACCOUNT, { accountId: toAddress(accountId, { prefix: chain.addressPrefix }) }) // Address is expected
     .then((data) => {
       const result = (data as any)?.delegates?.nodes?.[0];
 
       return {
-        accountId: result.accountId,
+        accountId: toAccountId(result.accountId),
         delegations: result.delegations.nodes.map((x: Delegation) => x),
       };
     })

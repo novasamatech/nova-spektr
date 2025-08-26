@@ -1,4 +1,4 @@
-import { type Meta, type StoryObj } from '@storybook/react';
+import { type Meta, type StoryObj } from '@storybook/react-vite';
 
 import { Box } from '../Box/Box';
 
@@ -23,7 +23,7 @@ export const Default: Story = {
             <CardStack.Content>
               <ul className="flex flex-col gap-y-4">
                 {Array.from({ length: 7 }).map((_, index) => (
-                  <li key={index} className="flex justify-between rounded p-2">
+                  <li key={index} className="flex justify-between rounded-sm p-2">
                     <span>My text</span>
                     <button type="button" className="rounded-md bg-gray-100 p-1">
                       Click me
@@ -50,7 +50,7 @@ export const StickyTrigger: Story = {
               <ul className="flex flex-col gap-y-4 bg-green-100">
                 <ul className="flex flex-col gap-y-4">
                   {Array.from({ length: 7 }).map((_, index) => (
-                    <li key={index} className="flex justify-between rounded p-2">
+                    <li key={index} className="flex justify-between rounded-sm p-2">
                       <span>My text</span>
                       <button type="button" className="rounded-md bg-gray-100 p-1">
                         Click me

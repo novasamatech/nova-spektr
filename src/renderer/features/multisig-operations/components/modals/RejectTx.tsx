@@ -1,25 +1,28 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useMemo, useState } from 'react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type Account, type Asset, type Chain, type HexString, type MultisigAccount } from '@/shared/core';
+import {
+  type Asset,
+  type Chain,
+  type FlexibleMultisigAccount,
+  type HexString,
+  type MultisigAccount,
+} from '@/shared/core';
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getAssetById, getAssetByTypeExtras, getNativeAsset, nullable, transferableAmount } from '@/shared/lib/utils';
+import { getAssetByTypeExtras, getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { type MultisigOperation, accountService, accounts } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
-import { getTransactionFromMultisigTx } from '@/entities/multisig';
-import { networkModel } from '@/entities/network';
+import { operationDetailsUtils } from '@/entities/operations';
 import { priceProviderModel } from '@/entities/price';
-import { OperationResult, isXcmTransaction, transactionService, validateBalance } from '@/entities/transaction';
-import { walletModel, walletUtils } from '@/entities/wallet';
+import { OperationResult, getExtrinsic, isXcmTransaction } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
-import { type SigningPayload } from '@/features/operations/OperationSign';
+import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
 import { rejectModel } from '../../model/reject-model';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
@@ -27,8 +30,8 @@ import { Submit } from '../ActionSteps/Submit';
 import { getMultisigSignOperationTitle } from './getMultisigSignOperationTitle';
 
 type Props = {
-  tx: MultisigTransactionDS;
-  account: MultisigAccount;
+  operation: MultisigOperation;
+  account: MultisigAccount | FlexibleMultisigAccount;
   chain: Chain;
   api: ApiPromise;
   children: React.ReactNode;
@@ -42,13 +45,18 @@ const enum Step {
 
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-const RejectTxModal = memo(({ api, tx, account, chain, children }: Props) => {
+const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
-  const apis = useUnit(networkModel.$apis);
+  const accountsList = useUnit(accounts.$list);
+
   const rejectTx = useUnit(rejectModel.$transaction);
+  const isEnoughBalance = useUnit(rejectModel.$isEnoughBalance);
+  const fee = useUnit(rejectModel.$fee);
+  const isFeeLoading = useUnit(rejectModel.$isFeeLoading);
+  const isDepositLoading = useUnit(rejectModel.$isDepositLoading);
+  const multisigDeposit = useUnit(rejectModel.$multisigDeposit);
 
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
@@ -56,36 +64,33 @@ const RejectTxModal = memo(({ api, tx, account, chain, children }: Props) => {
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [signature, setSignature] = useState<HexString>();
 
-  const transaction = getTransactionFromMultisigTx(tx);
+  const transaction = operation.transaction;
   const transactionTitle = getMultisigSignOperationTitle(
     isXcmTransaction(transaction),
     t,
     TransactionType.MULTISIG_CANCEL_AS_MULTI,
-    tx,
+    operation,
   );
 
-  const nativeAsset = getNativeAsset(chain.assets);
-  let asset: Asset | null = null;
-  if (transaction && chain) {
-    if (transaction.args.assetId && api) {
-      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId);
-    } else {
-      asset = getAssetById(transaction.args.asset, chain?.assets) ?? null;
+  let asset: Asset | null = getNativeAsset(chain.assets);
+  if (chain) {
+    const assetId = operationDetailsUtils.getAssetId(operation);
+    if (assetId && api) {
+      asset = getAssetByTypeExtras(api, chain.assets, assetId);
     }
   }
 
-  const signAccount = walletUtils.getWalletFilteredAccounts(wallets, {
-    walletFn: walletUtils.isValidSignatory,
-    accountFn: account => account.accountId === tx.depositor,
-  })?.accounts[0];
+  const signAccount = accountsList.find(
+    account => account.accountId === operation.depositor && accountService.hasPermissionToMakeActions(account),
+  );
 
-  const signingPayloads = useMemo<SigningPayload[]>(() => {
+  const signingPayloads = useMemo<ExtrinsicSigningPayload[]>(() => {
     if (nullable(rejectTx) || nullable(signAccount)) return [];
     return [
       {
+        api,
         chain: chain,
-        account: signAccount,
-        transaction: rejectTx,
+        extrinsic: getExtrinsic[rejectTx.type](rejectTx.args, api),
         signatory: signAccount,
       },
     ];
@@ -99,16 +104,6 @@ const RejectTxModal = memo(({ api, tx, account, chain, children }: Props) => {
     return null;
   }
 
-  const checkBalance = () =>
-    validateBalance({
-      api,
-      chainId: tx.chainId,
-      assetId: nativeAsset.assetId.toString(),
-      transaction: rejectTx ?? undefined,
-      getBalance: balanceUtils.getBalanceWrapped(balances),
-      getTransactionFee: transactionService.getTransactionFee,
-    });
-
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
   };
@@ -121,38 +116,15 @@ const RejectTxModal = memo(({ api, tx, account, chain, children }: Props) => {
 
   const toggleModal = (open: boolean) => {
     if (open) {
-      rejectModel.flow.open({ chain, signer: signAccount });
-      rejectModel.events.getMultisigTx({ signerAccountId: signAccount.accountId, chain, tx });
+      rejectModel.flow.open({ chain, signer: signAccount, operation });
     } else {
-      rejectModel.flow.close({ chain: null, signer: null });
+      rejectModel.flow.close({ chain: null, signer: null, operation: null });
       setActiveStep(Step.CONFIRMATION);
     }
   };
 
-  const validateBalanceForFee = async (signAccount: Account): Promise<boolean> => {
-    if (!api || !rejectTx || !signAccount.accountId || !nativeAsset) {
-      return false;
-    }
-
-    const fee = await transactionService.getTransactionFee(rejectTx, api);
-    const balance = balanceUtils.getBalance(
-      balances,
-      signAccount.accountId,
-      chain.chainId,
-      nativeAsset.assetId.toString(),
-    );
-
-    if (!balance) {
-      return false;
-    }
-
-    return new BN(fee).lte(new BN(transferableAmount(balance)));
-  };
-
-  const handleConfirm = async () => {
-    const isValid = await validateBalanceForFee(signAccount);
-
-    if (isValid) {
+  const handleConfirm = () => {
+    if (isEnoughBalance) {
       setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
@@ -167,7 +139,7 @@ const RejectTxModal = memo(({ api, tx, account, chain, children }: Props) => {
         isReject
         tx={rejectTx}
         api={api}
-        multisigTx={tx}
+        operation={operation}
         account={signAccount}
         txPayload={txPayload}
         signature={signature}
@@ -180,26 +152,27 @@ const RejectTxModal = memo(({ api, tx, account, chain, children }: Props) => {
     <Modal size="md" onToggle={toggleModal}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>
-        <OperationTitle title={t(transactionTitle, { asset: asset?.symbol })} chainId={tx.chainId} />
+        <OperationTitle title={t(transactionTitle || '', { asset: asset?.symbol })} chainId={operation.chainId} />
       </Modal.Title>
       <Modal.Content>
         {activeStep === Step.CONFIRMATION && (
           <Confirmation
-            tx={tx}
-            account={account}
+            operation={operation}
             api={api}
             chain={chain}
-            feeTx={rejectTx}
+            fee={fee}
+            isFeeLoading={isFeeLoading}
+            isDepositLoading={isDepositLoading}
             signAccount={signAccount}
+            multisigDeposit={multisigDeposit}
+            isEnoughBalance={isEnoughBalance}
             onSign={handleConfirm}
           />
         )}
         {activeStep === Step.SIGNING && rejectTx && api && signAccount && (
           <SigningSwitch
             signerWallet={wallets.find(w => w.id === signAccount.walletId)}
-            apis={apis}
             signingPayloads={signingPayloads}
-            validateBalance={checkBalance}
             onGoBack={goBack}
             onResult={onSignResult}
           />

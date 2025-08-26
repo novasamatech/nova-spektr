@@ -2,11 +2,10 @@ import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { reshape } from 'patronum';
 
-import { type BasketTransaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { memberService } from '@/domains/collectives';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -47,7 +46,7 @@ const $coreTx = combine(
   },
 );
 
-const { $fee, $wrappedTx, $txWrappers } = createTxStore({
+const { $fee, $wrappedTx } = createTxStore({
   $active: flow.status,
   $api,
   $activeWallet: $wallet,
@@ -110,7 +109,6 @@ sample({
       account: account!,
       wrappedTxs: [transactions!.wrappedTx],
       coreTxs: [transactions!.coreTx],
-      multisigTxs: transactions!.multisigTx ? [transactions!.multisigTx] : [],
     };
   },
   target: submitModel.events.formInitiated,
@@ -119,35 +117,24 @@ sample({
 // Basket
 
 const saveToBasket = createEvent();
-const basketSaveRequestCreated = createEvent<BasketTransaction | null>();
 
 sample({
   clock: saveToBasket,
-  source: {
-    transactions: $wrappedTx,
-    account: $account,
-    txWrappers: $txWrappers,
-  },
-  fn: ({ account, transactions, txWrappers }) => {
-    if (nullable(account) || nullable(transactions)) {
-      return null;
+  source: $wrappedTx,
+  fn: transactions => {
+    if (nullable(transactions)) {
+      return [];
     }
 
-    // @ts-expect-error TODO fix id field
-    const tx: BasketTransaction = {
-      initiatorAccountId: account.accountId,
+    const tx: BasketTransactionDraft = {
+      initiatorAccountId: transactions.coreTx.accountId,
       coreTx: transactions.coreTx,
-      txWrappers,
+      route: [],
+      createdAt: Date.now(),
     };
 
-    return tx;
+    return [tx];
   },
-  target: basketSaveRequestCreated,
-});
-
-sample({
-  clock: basketSaveRequestCreated.filter({ fn: nonNullable }),
-  fn: tx => [tx],
   target: basketOperations.addTransactions,
 });
 
@@ -158,7 +145,6 @@ export const setActive = {
   $wallet,
   $account,
   $wrappedTx,
-  $txWrappers,
   sign,
   saveToBasket,
 };

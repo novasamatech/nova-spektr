@@ -1,13 +1,18 @@
+import { encodeAddress } from '@polkadot/util-crypto';
 import keyBy from 'lodash/keyBy';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type Address, type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, InfoLink, SmallTitleText } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type DdAddressInfoDecoded, QrDerivationsGenerator, TROUBLESHOOTING_URL } from '@/entities/transaction';
+import {
+  type DdAddressInfoDecoded,
+  QrTxGenerator,
+  TROUBLESHOOTING_URL,
+  createDynamicDerivationPayload,
+} from '@/entities/transaction';
 import { derivationAddressUtils } from '../lib/utils';
 
 import { DdKeyQrReader } from './DdKeyQrReader';
@@ -30,6 +35,12 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
   const { t } = useI18n();
 
   const [step, setStep] = useState<Step>(Step.GENERATE_QR);
+
+  const qrPayload = useMemo(() => {
+    const derivations = derivationAddressUtils.createDerivationsRequest(keys);
+    const address = encodeAddress(rootAccountId) as Address;
+    return createDynamicDerivationPayload(address, derivations);
+  }, [rootAccountId, keys]);
 
   useEffect(() => {
     if (isOpen) {
@@ -61,12 +72,8 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
         {step === Step.GENERATE_QR && (
           <div className="flex flex-col items-center px-5 py-4">
             <SmallTitleText className="mb-6">{t('signing.scanQrTitle')}</SmallTitleText>
-            <QrDerivationsGenerator
-              size={240}
-              address={toAddress(rootAccountId, { prefix: 1 })}
-              derivations={derivationAddressUtils.createDerivationsRequest(keys)}
-            />
-            <InfoLink url={TROUBLESHOOTING_URL} className="mb-8.5 mt-10.5">
+            <QrTxGenerator payload={qrPayload} />
+            <InfoLink url={TROUBLESHOOTING_URL} className="mt-10.5 mb-8.5">
               {t('signing.troubleshootingLink')}
             </InfoLink>
             <div className="mt-3 flex w-full justify-between pl-2">

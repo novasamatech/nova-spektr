@@ -2,18 +2,19 @@ import { useStoreMap } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon } from '@/shared/ui';
-import { Box } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { memberService, referendumMetaService } from '@/domains/collectives';
 import { fellowship } from '../model/fellowship';
 import { members } from '../model/members';
-import { tasksService } from '../service';
 
 type Props = {
   accountId: AccountId;
 };
+
+const DEFAULT_VALUE = '100/100%';
 
 export const MemberActivity = memo(({ accountId }: Props) => {
   const { t } = useI18n();
@@ -23,61 +24,102 @@ export const MemberActivity = memo(({ accountId }: Props) => {
     keys: [accountId],
     fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
   });
-  const { meta, votes, maxRank } = useStoreMap({
+
+  const { meta, isMetaLoaded, votes, maxRank } = useStoreMap({
     store: fellowship.$store,
     keys: [],
-    fn: store => ({
-      meta: Object.values(store?.referendumMeta ?? {}),
-      votes: store?.voting ?? [],
-      maxRank: store?.maxRank ?? 0,
-    }),
+    fn: store => {
+      return {
+        meta: Object.values(store?.referendumMeta ?? {}),
+        isMetaLoaded: nonNullable(store?.referendumMeta),
+        votes: store?.voting ?? [],
+        maxRank: store?.maxRank ?? 0,
+      };
+    },
   });
 
-  if (nullable(member) || !memberService.isCoreMember(member)) return null;
+  const notMemberOrNotCoreMember = nullable(member) || !memberService.isCoreMember(member);
 
   const referendums = useMemo(() => {
-    return referendumMetaService.getReferendumsSinceLastProof(meta, member);
-  }, [meta, member]);
-  const activity = useMemo(() => {
-    return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
-  }, [referendums, member, maxRank, votes]);
+    if (notMemberOrNotCoreMember) return [];
 
-  const { activity: activityThreshold, agreement: agreementThreshold } = tasksService.getActivityAndAgreementThresholds(
-    member.rank,
-  );
+    return referendumMetaService.getReferendumsSinceLastProof(meta, member);
+  }, [meta, member, notMemberOrNotCoreMember]);
+  const activity = useMemo(() => {
+    if (notMemberOrNotCoreMember) {
+      return { activity: null, agreement: null };
+    }
+
+    return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
+  }, [referendums, member, maxRank, votes, notMemberOrNotCoreMember]);
+
+  if (notMemberOrNotCoreMember) return null;
+
+  const { activity: activityThreshold, agreement: agreementThreshold } =
+    memberService.getActivityAndAgreementThresholds(member.rank);
+
+  const isActivityLoaded = isMetaLoaded && nonNullable(activity);
 
   const isActivityFit =
-    nonNullable(activity.activity) && nonNullable(activityThreshold) ? activity.activity >= activityThreshold : false;
+    nullable(activityThreshold) || (nonNullable(activity?.activity) && activity?.activity >= activityThreshold);
   const isAgreementFit =
-    nonNullable(activity.agreement) && nonNullable(agreementThreshold)
-      ? activity.agreement >= agreementThreshold
-      : false;
+    nullable(agreementThreshold) || (nonNullable(activity?.agreement) && activity?.agreement >= agreementThreshold);
 
   return (
     <Box direction="row" gap={4}>
       <Box direction="row" gap={2} verticalAlign="center">
-        <Icon size={16} name="checkmarkCutout" className={isActivityFit ? 'text-icon-positive' : 'text-icon-default'} />
+        <Icon
+          size={16}
+          name={isActivityFit ? 'positive' : 'negative'}
+          className={cnTw({
+            'text-icon-positive': isActivityFit,
+            'text-icon-negative': !isActivityFit,
+          })}
+        />
         <Box direction="row" gap={1} verticalAlign="center">
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText>
-            {nonNullable(activity.activity) && nonNullable(activityThreshold)
-              ? `${activity.activity}/${activityThreshold}%`
-              : t('fellowship.n/a')}
+            {isActivityLoaded ? (
+              nonNullable(activity.activity) ? (
+                nonNullable(activityThreshold) ? (
+                  `${Math.min(activity.activity, activityThreshold)}/${activityThreshold}%`
+                ) : (
+                  DEFAULT_VALUE
+                )
+              ) : (
+                t('fellowship.n/a')
+              )
+            ) : (
+              <Skeleton width="8ch" height="1lh" />
+            )}
           </FootnoteText>
         </Box>
       </Box>
       <Box direction="row" gap={2} verticalAlign="center">
         <Icon
           size={16}
-          name="checkmarkCutout"
-          className={isAgreementFit ? 'text-icon-positive' : 'text-icon-default'}
+          name={isAgreementFit ? 'positive' : 'negative'}
+          className={cnTw({
+            'text-icon-positive': isAgreementFit,
+            'text-icon-negative': !isAgreementFit,
+          })}
         />
         <Box direction="row" gap={1} verticalAlign="center">
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
           <FootnoteText>
-            {nonNullable(activity.agreement) && nonNullable(agreementThreshold)
-              ? `${activity.agreement}/${agreementThreshold}%`
-              : t('fellowship.n/a')}
+            {isActivityLoaded ? (
+              nonNullable(activity.agreement) ? (
+                nonNullable(agreementThreshold) ? (
+                  `${Math.min(activity.agreement, agreementThreshold)}/${agreementThreshold}%`
+                ) : (
+                  DEFAULT_VALUE
+                )
+              ) : (
+                t('fellowship.n/a')
+              )
+            ) : (
+              <Skeleton width="8ch" height="1lh" />
+            )}
           </FootnoteText>
         </Box>
       </Box>

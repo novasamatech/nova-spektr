@@ -1,29 +1,26 @@
-import { type ApiPromise } from '@polkadot/api';
+import { type Weight } from '@polkadot/types/interfaces';
 import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
 import {
-  type Account,
   type Address,
   type Asset,
   type Chain,
   type ChainId,
   type Conviction,
-  type MultisigAccount,
+  type ProxyType,
   type ReferendumId,
   type Signatory,
   type TrackId,
   type Transaction,
   TransactionType,
-  WrapperKind,
 } from '@/shared/core';
-import { formatAmount, getAssetId, toAddress } from '@/shared/lib/utils';
+import { formatAmount, getAssetId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type MultisigOperation } from '@/domains/network';
 import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
-import { transactionService } from './transactionService';
 
 export const transactionBuilder = {
   buildTransfer,
@@ -43,12 +40,15 @@ export const transactionBuilder = {
   buildRemoveVote,
   buildRemoveVotes,
   buildRejectMultisigTx,
-  buildRejectFlexibleMultisigTx,
+  buildApproveMultisigTx,
   buildCreatePureProxy,
   buildCreateFlexibleMultisig,
+  buildRemark,
+  buildAddProxy,
+  buildKillPureProxy,
+  buildRemoveProxy,
 
   buildBatchAll,
-  splitBatchAll,
 };
 
 type TransferParams = {
@@ -61,7 +61,7 @@ type TransferParams = {
   xcmData?: {
     args: {
       xcmFee: string;
-      deliveryFee: string | null;
+      deliveryFee: string;
       xcmAsset?: NonNullable<unknown>;
       xcmWeight: string;
       xcmDest?: NonNullable<unknown>;
@@ -133,15 +133,13 @@ type BondParams = {
   amount: string;
 };
 function buildBond({ chain, asset, accountId, destination, amount }: BondParams): Transaction {
-  const controller = toAddress(accountId, { prefix: chain.addressPrefix });
-
   return {
     chainId: chain.chainId,
     accountId: accountId,
     type: TransactionType.BOND,
     args: {
       value: formatAmount(amount, asset.precision),
-      controller,
+      controller: accountId,
       payee: destination === '' ? 'Staked' : { Account: destination },
     },
   };
@@ -161,7 +159,7 @@ function buildBondExtra({ chain, asset, accountId, amount }: Omit<BondParams, 'd
 type NominateParams = {
   chain: Chain;
   accountId: AccountId;
-  nominators: Address[];
+  nominators: AccountId[];
 };
 function buildNominate({ chain, accountId, nominators }: NominateParams): Transaction {
   return {
@@ -273,23 +271,11 @@ function buildBatchAll({ chain, accountId, transactions }: BatchParams): Transac
   };
 }
 
-type SplitBatchAllParams = { transaction: Transaction; chain: Chain; api: ApiPromise };
-
-async function splitBatchAll({ transaction, chain, api }: SplitBatchAllParams): Promise<Transaction[] | Transaction> {
-  if (transaction.type !== TransactionType.BATCH_ALL) {
-    return transaction;
-  }
-
-  const splittedTxs = await transactionService.splitTxsByWeight(api, transaction.args.transactions);
-
-  return splittedTxs.map((transactions) => buildBatchAll({ chain, accountId: transaction.accountId, transactions }));
-}
-
 type DelegateParams = {
   chain: Chain;
   accountId: AccountId;
   tracks: number[];
-  target: Address;
+  target: AccountId;
   conviction: Conviction;
   balance: string;
 };
@@ -338,7 +324,7 @@ type EditDelegationParams = {
   accountId: AccountId;
   tracks: number[];
   undelegateTracks: number[];
-  target: Address;
+  target: AccountId;
   conviction: Conviction;
   previousConviction: Conviction;
   balance: string;
@@ -384,9 +370,10 @@ type UnlockParams = {
   accountId: AccountId;
   actions: ClaimAction[];
   amount: string;
+  target: AccountId;
 };
 
-function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams): Transaction {
+function buildUnlock({ chain, accountId, actions, amount: value, target }: UnlockParams): Transaction {
   const unlockTxs = actions.map((action) => {
     const transaction = {
       chainId: chain.chainId,
@@ -410,7 +397,7 @@ function buildUnlock({ chain, accountId, actions, amount: value }: UnlockParams)
       type: TransactionType.UNLOCK,
       args: {
         trackId: action.trackId,
-        target: toAddress(accountId, { prefix: chain.addressPrefix }),
+        target,
         value,
       },
     };
@@ -508,8 +495,8 @@ type RejectTxParams = {
   chain: Chain;
   signerAccountId: AccountId;
   threshold: number;
-  otherSignatories: Address[];
-  tx: MultisigTransactionDS;
+  otherSignatories: AccountId[];
+  tx: MultisigOperation;
 };
 
 function buildRejectMultisigTx({
@@ -535,35 +522,41 @@ function buildRejectMultisigTx({
   };
 }
 
-type RejectFlexibleTxParams = RejectTxParams & {
-  accountId: AccountId;
-  transaction: Transaction;
+type ApproveMultisigTxParams = {
+  chain: Chain;
+  signerAccountId: AccountId;
+  threshold: number;
+  otherSignatories: AccountId[];
+  tx: MultisigOperation;
+  hasCallData: boolean;
+  maxWeight: Weight;
 };
 
-function buildRejectFlexibleMultisigTx({
+function buildApproveMultisigTx({
   chain,
   signerAccountId,
-  otherSignatories,
-  transaction,
   threshold,
+  otherSignatories,
   tx,
-}: RejectFlexibleTxParams): Transaction {
-  const asset = chain.assets.at(0);
-  if (!asset) throw new Error('Asset not found');
-
-  const rejectTx = buildRejectMultisigTx({
-    chain,
-    signerAccountId,
-    threshold,
-    otherSignatories,
-    tx,
-  });
-
-  return buildBatchAll({
-    chain,
+  hasCallData,
+  maxWeight,
+}: ApproveMultisigTxParams): Transaction {
+  return {
+    chainId: chain.chainId,
     accountId: signerAccountId,
-    transactions: [rejectTx, transaction],
-  });
+    type: hasCallData ? TransactionType.MULTISIG_AS_MULTI : TransactionType.MULTISIG_APPROVE_AS_MULTI,
+    args: {
+      threshold: threshold,
+      otherSignatories,
+      maxWeight,
+      maybeTimepoint: {
+        height: tx.blockCreated,
+        index: tx.indexCreated,
+      },
+      call: tx.callData,
+      callHash: tx.callHash,
+    },
+  };
 }
 
 type CreateProxyPureParams = {
@@ -580,60 +573,184 @@ function buildCreatePureProxy({ chain, accountId }: CreateProxyPureParams): Tran
   };
 }
 
+type AddProxyParams = {
+  chain: Chain;
+  accountId: AccountId;
+  delegateAccountId: AccountId | Address;
+  type: ProxyType;
+};
+
+function buildAddProxy({ chain, accountId, delegateAccountId, type }: AddProxyParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    accountId: accountId,
+    type: TransactionType.ADD_PROXY,
+    args: {
+      delegate: delegateAccountId,
+      proxyType: type,
+      delay: 0,
+    },
+  };
+}
+
 type CreateFlexibleMultisigParams = {
   chain: Chain;
-  signer: Account;
-  api: ApiPromise;
+  signerAccountId: AccountId;
   multisigAccountId: AccountId;
+  proxyAccountId: AccountId;
   threshold: number;
   proxyDeposit: string;
   signatories: Signatory[];
+  isMultisigExists?: boolean;
 };
 
 function buildCreateFlexibleMultisig({
-  api,
   chain,
   multisigAccountId,
+  proxyAccountId,
   threshold,
   signatories,
-  signer,
+  signerAccountId,
   proxyDeposit,
+  isMultisigExists,
 }: CreateFlexibleMultisigParams): Transaction {
-  const proxyTransaction = transactionBuilder.buildCreatePureProxy({
-    chain: chain,
-    accountId: signer.accountId,
-  });
-
-  const wrappedTransaction = transactionService.getWrappedTransaction({
-    api: api,
-    transaction: proxyTransaction,
-    txWrappers: [
-      {
-        kind: WrapperKind.MULTISIG,
-        multisigAccount: {
-          accountId: multisigAccountId,
-          signatories,
-          threshold,
-        } as MultisigAccount,
-        signatories: signatories.map((s) => ({
-          accountId: s.accountId,
-        })) as Account[],
-        signer,
-      },
-    ],
-  });
-
+  // transfer deposit to proxy account
   const transferTransaction = {
     chainId: chain.chainId,
-    accountId: signer.accountId,
+    accountId: signerAccountId,
     type: TransactionType.TRANSFER,
     args: {
-      dest: toAddress(multisigAccountId, { prefix: chain.addressPrefix }),
+      dest: proxyAccountId,
       value: proxyDeposit,
     },
   };
 
-  const transactions = [wrappedTransaction.wrappedTx, transferTransaction];
+  // reassign proxy to multisig account
+  const addProxyTx = transactionBuilder.buildAddProxy({
+    chain,
+    accountId: signerAccountId,
+    delegateAccountId: multisigAccountId,
+    type: 'Any',
+  });
 
-  return buildBatchAll({ chain, accountId: signer.accountId, transactions });
+  const wrapperAdd = {
+    chainId: chain.chainId,
+    accountId: signerAccountId,
+    type: TransactionType.PROXY,
+    args: {
+      real: proxyAccountId,
+      forceProxyType: 'Any',
+      transaction: addProxyTx,
+    },
+  };
+
+  const removeProxyTx = transactionBuilder.buildRemoveProxy({
+    chain,
+    accountId: signerAccountId,
+    delegate: signerAccountId,
+    proxyType: 'Any',
+    delay: 0,
+  });
+
+  const wrapperRemove = {
+    chainId: chain.chainId,
+    accountId: signerAccountId,
+    type: TransactionType.PROXY,
+    args: {
+      real: proxyAccountId,
+      forceProxyType: 'Any',
+      transaction: removeProxyTx,
+    },
+  };
+
+  let transactions;
+  if (isMultisigExists) {
+    transactions = [transferTransaction, wrapperAdd, wrapperRemove];
+  } else {
+    const remarkTx = transactionBuilder.buildRemark({
+      chainId: chain.chainId,
+      accountId: signerAccountId,
+      threshold,
+      signatories: signatories.map((s) => s.accountId),
+    });
+
+    transactions = [remarkTx, transferTransaction, wrapperAdd, wrapperRemove];
+  }
+
+  return buildBatchAll({ chain, accountId: signerAccountId, transactions });
+}
+
+type RemarkParams = {
+  chainId: ChainId;
+  accountId: AccountId;
+  threshold: number;
+  signatories: AccountId[];
+};
+
+function buildRemark({ chainId, accountId, threshold, signatories }: RemarkParams): Transaction {
+  return {
+    chainId,
+    accountId,
+    type: TransactionType.REMARK_WITH_EVENT,
+    args: {
+      remark: JSON.stringify({
+        signatories,
+        threshold,
+      }),
+    },
+  };
+}
+
+type KillPureProxyParams = {
+  chain: Chain;
+  accountId: AccountId;
+  spawner: Address | AccountId;
+  proxyType: ProxyType;
+  index: number;
+  height: number;
+  extIndex: number;
+};
+
+function buildKillPureProxy({
+  chain,
+  accountId,
+  spawner,
+  proxyType,
+  index,
+  height,
+  extIndex,
+}: KillPureProxyParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    accountId: accountId,
+    type: TransactionType.KILL_PURE_PROXY,
+    args: {
+      spawner,
+      proxyType,
+      index,
+      height,
+      extIndex,
+    },
+  };
+}
+
+type RemoveProxyParams = {
+  chain: Chain;
+  accountId: AccountId;
+  delegate: AccountId;
+  proxyType: ProxyType;
+  delay: number;
+};
+
+function buildRemoveProxy({ chain, accountId, delegate, proxyType, delay }: RemoveProxyParams): Transaction {
+  return {
+    chainId: chain.chainId,
+    accountId: accountId,
+    type: TransactionType.REMOVE_PROXY,
+    args: {
+      delegate,
+      proxyType,
+      delay,
+    },
+  };
 }

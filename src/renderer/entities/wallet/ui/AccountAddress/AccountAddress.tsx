@@ -3,7 +3,8 @@ import { hexToU8a } from '@polkadot/util';
 import { type Address } from '@/shared/core';
 import { cnTw, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Identicon, Truncate } from '@/shared/ui';
+import { Truncate } from '@/shared/ui';
+import { Identicon } from '@/shared/ui-entities';
 
 type AddressType = 'full' | 'short' | 'adaptive';
 
@@ -36,7 +37,7 @@ export const getAddress = (props: WithAccountId | WithAddress): Address => {
   const { accountId, addressPrefix } = props as WithAccountId;
 
   if (hexToU8a(accountId).length === 20) {
-    return accountId;
+    return accountId as unknown as Address;
   }
 
   return toAddress(accountId, { prefix: addressPrefix });
@@ -76,16 +77,14 @@ export const AccountAddress = ({
       text={addressToShow}
     />
   ) : (
-    <span className={cnTw('inline-block truncate break-all text-footnote text-inherit transition-colors', addressFont)}>
+    <span className={cnTw('inline-block truncate text-footnote break-all text-inherit transition-colors', addressFont)}>
       {addressToShow}
     </span>
   );
 
   return (
     <span className={cnTw('flex items-center gap-x-2', className)}>
-      {showIcon && (
-        <Identicon className="inline-block" address={currentAddress} size={size} background={false} canCopy={canCopy} />
-      )}
+      {showIcon && <Identicon value={currentAddress} size={size} background={false} canCopy={canCopy} />}
       {nameContent || addressContent}
     </span>
   );

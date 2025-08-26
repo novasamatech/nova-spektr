@@ -3,6 +3,7 @@ import { type BN } from '@polkadot/util';
 
 import {
   type AccountVote,
+  type HexString,
   type Referendum,
   type ReferendumId,
   type TrackId,
@@ -10,7 +11,6 @@ import {
   TransactionType,
   type VotingMap,
 } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
@@ -23,6 +23,8 @@ export const governanceSubscribeService = {
   subscribeTrackLocks,
   subscribeVotingFor,
 };
+
+export type PreimageMap = Map<string, HexString>;
 
 function subscribeTrackLocks(api: ApiPromise, accounts: AccountId[], callback: (res?: TrackLocks) => void): () => void {
   const unsubscribe = api.query.convictionVoting.classLocksFor.multi(accounts, (tuples) => {
@@ -75,7 +77,7 @@ function subscribeVotingFor(
             track: trackId,
             balance: convictionVoting.data.balance,
             conviction: convictionVoting.data.conviction,
-            target: toAddress(convictionVoting.data.target),
+            target: convictionVoting.data.target,
             prior: convictionVoting.data.prior,
           };
           break;
@@ -139,10 +141,13 @@ function subscribeReferendums(api: ApiPromise, callback: (referendums: IteratorR
         break;
       }
 
+      const proposalsToFetch = governanceService.getLookupProposalsFromPage(page);
+      const preimageMap = await governanceService.createPreimageMap(api, proposalsToFetch);
+
       const value: Referendum[] = [];
       for (const { id, info } of page) {
         if (!info) continue;
-        value.push(governanceService.mapReferendum(id.toString(), info));
+        value.push(await governanceService.mapReferendum(id.toString(), info, api, preimageMap));
       }
       callback({ done: false, value });
     }

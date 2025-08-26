@@ -22,18 +22,18 @@ type Props = {
 
 export const RetentionEndTimer = ({ endBlock, shortDateFormat }: Props) => {
   const input = useUnit(fellowshipTasksFeature.input);
-  const [endTime, setEndTime] = useState<number>();
+  const [secondsToEnd, setSecondsToEnd] = useState<number>();
 
   useEffect(() => {
     if (endBlock && input) {
       getTimeToBlock(endBlock, input.api).then(date => {
-        setEndTime(date / 1000);
+        setSecondsToEnd(date / 1000);
       });
     }
   }, [endBlock, input]);
 
-  if (!endTime || !input) return null;
-  const variant = getTimerColor(endTime);
+  if (!secondsToEnd || !input) return null;
+  const variant = getTimerColor(secondsToEnd);
 
-  return <Timeout at={endTime} variant={variant} shortDateFormat={shortDateFormat} />;
+  return <Timeout secondsToEnd={secondsToEnd} variant={variant} shortDateFormat={shortDateFormat} />;
 };

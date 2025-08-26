@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import {
   type Chain,
@@ -9,41 +9,36 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import { KeyType } from '@/shared/core';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { copyToClipboard, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, HelpText, Icon, IconButton } from '@/shared/ui';
-import { type IconNames } from '@/shared/ui/Icon/data';
-import { Hash } from '@/shared/ui-entities';
-import { Box, Dropdown, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
+import { FootnoteText, HeadlineText, HelpText, IconButton, Separator } from '@/shared/ui';
+import { Hash, type IdenticonIconTheme, WalletAccountIcon } from '@/shared/ui-entities';
+import { Box, Copy, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { RootAccountLg, VaultAccountsList, WalletCardLg, accountUtils, permissionUtils } from '@/entities/wallet';
-import { proxyAddFeature } from '@/features/proxy-add';
-import { proxyAddPureFeature } from '@/features/proxy-add-pure';
-import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
-import { ForgetWalletModal } from '@/features/wallets/ForgetWallet';
-import { RenameWalletModal } from '@/features/wallets/RenameWallet';
+import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wallet';
+import { AddPureProxied } from '@/features/proxied-add-pure';
+import { AddProxy } from '@/features/proxy-add';
+import { DerivationsAddressModal, ExportKeysModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
+import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
+import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsModel } from '../../model/wallet-details-model';
-import { NoProxiesAction } from '../components/NoProxiesAction';
+import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
 import { ShardsList } from '../components/ShardsList';
+import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
 
-const {
-  models: { addProxy },
-  views: { AddProxy },
-} = proxyAddFeature;
-
-const {
-  models: { addPureProxied },
-  views: { AddPureProxied },
-} = proxyAddPureFeature;
+export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 
 type Props = {
   wallet: PolkadotVaultWallet;
   onClose: () => void;
 };
+
 export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
   const { t } = useI18n();
@@ -52,19 +47,24 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
-
-  const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
+  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
-  const [isRenameModalOpen, toggleIsRenameModalOpen] = useToggle();
+  const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
   const [isImportModalOpen, toggleImportModal] = useToggle();
   const [isScanModalOpen, toggleScanModal] = useToggle();
-  const [isConfirmForgetOpen, toggleConfirmForget] = useToggle();
 
   const [tab, setTab] = useState('accounts');
   const [chains, setChains] = useState<Chain[]>([]);
+
+  const accountsMap = useMemo(() => {
+    const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
+    //todo sort these accounts
+
+    return accountsMap;
+  }, [wallet.accounts]);
 
   useEffect(() => {
     const filteredChains = Object.values(allChains).filter(c => {
@@ -110,114 +110,141 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
     toggleScanModal();
   };
 
-  const options = [
+  const actions: WalletAction[] = [
     {
-      icon: 'rename' as IconNames,
-      title: t('walletDetails.common.renameButton'),
-      onClick: toggleIsRenameModalOpen,
-    },
-    {
-      icon: 'editKeys' as IconNames,
+      icon: 'rename',
       title: t('walletDetails.vault.editKeys'),
       onClick: toggleConstructorModal,
     },
     {
-      icon: 'import' as IconNames,
+      icon: 'import',
       title: t('walletDetails.vault.import'),
       onClick: toggleImportModal,
-    },
-    {
-      icon: 'export' as IconNames,
-      title: t('walletDetails.vault.export'),
-      onClick: () => walletDetailsUtils.exportVaultWallet(wallet, wallet.rootAccountId, accountsMap),
-    },
-    {
-      icon: 'forget' as IconNames,
-      title: t('walletDetails.common.forgetButton'),
-      onClick: toggleConfirmForget,
     },
   ];
 
   if (permissionUtils.canCreateAnyProxy(wallet) || permissionUtils.canCreateNonAnyProxy(wallet)) {
-    options.push({
-      icon: 'addCircle' as IconNames,
-      title: t('walletDetails.common.addProxyAction'),
-      onClick: addProxy.events.flowStarted,
+    actions.push({
+      component: (
+        <AddProxy wallet={wallet}>
+          <Action title={t('walletDetails.common.addProxyAction')} icon="delegate" />
+        </AddProxy>
+      ),
     });
   }
 
   if (permissionUtils.canCreateAnyProxy(wallet)) {
-    options.push({
-      icon: 'addCircle' as IconNames,
-      title: t('walletDetails.common.addPureProxiedAction'),
-      onClick: addPureProxied.events.flowStarted,
+    actions.push({
+      component: (
+        <AddPureProxied wallet={wallet}>
+          <Action title={t('walletDetails.common.addPureProxiedAction')} icon="createPureProxy" />
+        </AddPureProxied>
+      ),
     });
   }
 
+  actions.push({
+    component: (
+      <ForgetWalletConfirm wallet={wallet} onForget={onClose}>
+        <Action title={t('walletDetails.common.forgetButton')} icon="forget" variant="danger" />
+      </ForgetWalletConfirm>
+    ),
+  });
+
   const ActionButton = (
-    <Dropdown align="end">
-      <Dropdown.Trigger>
-        <IconButton name="more" />
-      </Dropdown.Trigger>
-      <Dropdown.Content>
-        {options.map(option => (
-          <Dropdown.Item key={option.title} onSelect={option.onClick}>
-            <Icon name={option.icon} size={20} className="text-icon-accent" />
-            <span className="text-text-secondary">{option.title}</span>
-          </Dropdown.Item>
-        ))}
-      </Dropdown.Content>
-    </Dropdown>
+    <ExportKeysModal wallet={wallet}>
+      <IconButton name="export" />
+    </ExportKeysModal>
   );
+
+  const accountsCount = Object.values(accountsMap).flat(2).length;
+
+  const isSingleAccount = wallet.accounts.length === 1;
+  const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+  if (nullable(address)) return null;
+  const isEthereum = isEthereumAccountId(address);
+  const theme: IdenticonIconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
   return (
     <>
-      <Modal size="md" height="lg" isOpen={isModalOpen} onToggle={closeModal}>
+      <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
         <Modal.Title close action={ActionButton}>
           {t('walletDetails.common.title')}
         </Modal.Title>
         <Modal.HeaderContent>
-          <div className="mb-4 border-b border-divider px-5 pb-6 pt-4">
-            <WalletCardLg wallet={wallet} />
+          <div className="mb-6 flex items-center justify-between px-5">
+            <Box direction="row" verticalAlign="center" gap={2}>
+              <div className="mr-1">
+                <WalletAccountIcon address={address} type={wallet.type} size={42} theme={theme} />
+              </div>
+              {!isRenameInputOpen && (
+                <>
+                  <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
+                    {wallet.name}
+                  </HeadlineText>
+                  <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
+                    <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />
+                    <Popover side="bottom" align="center">
+                      <Popover.Trigger>
+                        <IconButton name="details" />
+                      </Popover.Trigger>
+                      <Popover.Content>
+                        <Box gap={0.5} padding={4} width="230px">
+                          <FootnoteText className="text-text-tertiary">
+                            {t('general.explorers.publicKeyTitle')}
+                          </FootnoteText>
+                          <Box direction="row" verticalAlign="center" gap={3}>
+                            <HelpText className="text-text-secondary">
+                              <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
+                            </HelpText>
+                            <Copy value={wallet.rootAccountId} notification={t('general.notifications.addressCopied')}>
+                              <IconButton className="shrink-0 text-icon-default" name="copy" />
+                            </Copy>
+                          </Box>
+                        </Box>
+                      </Popover.Content>
+                    </Popover>
+                    <WalletFiatBalance />
+                  </div>
+                </>
+              )}
+            </Box>
+
+            <RenameWallet wallet={wallet} isOpen={isRenameInputOpen} onClose={toggleIsRenameInputOpen} />
+
+            {!isRenameInputOpen && (
+              <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
+                <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
+              </div>
+            )}
           </div>
+
+          <WalletActions actions={actions} />
+
+          <Separator className="my-6" />
         </Modal.HeaderContent>
         <Modal.Content disableScroll>
           <Tabs value={tab} onChange={setTab}>
             <Box padding={[0, 5]} shrink={0}>
               <Tabs.List>
-                <Tabs.Trigger value="accounts">{t('walletDetails.common.accountTabTitle')}</Tabs.Trigger>
-                <Tabs.Trigger value="proxies">{t('walletDetails.common.proxiesTabTitle')}</Tabs.Trigger>
+                <Tabs.Trigger value="accounts">
+                  <span className="flex items-center gap-1">
+                    {t('walletDetails.common.accountTabTitle')}
+                    <span className="text-text-tertiary">{accountsCount}</span>
+                  </span>
+                </Tabs.Trigger>
+                <Tabs.Trigger value="proxies">
+                  <span className="flex items-center gap-1">
+                    {t('walletDetails.common.proxiesTabTitle')}
+                    <span className="text-text-tertiary">{proxiesCount}</span>
+                  </span>
+                </Tabs.Trigger>
               </Tabs.List>
             </Box>
             <Tabs.Content value="accounts">
               <ScrollArea>
-                <RootAccountLg name={wallet.name} accountId={wallet.rootAccountId} className="mt-3 px-5">
-                  <Popover side="bottom" align="end">
-                    <Popover.Trigger>
-                      <IconButton name="details" />
-                    </Popover.Trigger>
-                    <Popover.Content>
-                      <Box gap={0.5} padding={4} width="230px">
-                        <FootnoteText className="text-text-tertiary">
-                          {t('general.explorers.publicKeyTitle')}
-                        </FootnoteText>
-                        <Box direction="row" verticalAlign="center" gap={3}>
-                          <HelpText className="text-text-secondary">
-                            <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
-                          </HelpText>
-                          <IconButton
-                            className="shrink-0 text-icon-default"
-                            name="copy"
-                            onClick={() => copyToClipboard(wallet.rootAccountId)}
-                          />
-                        </Box>
-                      </Box>
-                    </Popover.Content>
-                  </Popover>
-                </RootAccountLg>
-
                 <VaultAccountsList
-                  className="mt-4 px-5 pb-4"
+                  className="mt-4 px-3 pb-4"
                   chains={Object.values(chains)}
                   accountsMap={accountsMap}
                   onShardClick={vaultDetailsModel.events.shardsSelected}
@@ -226,15 +253,12 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             </Tabs.Content>
             <Tabs.Content value="proxies">
               <ScrollArea>
-                {hasProxies ? (
-                  <ProxiesList className="mt-4" wallet={wallet} canCreateProxy={canCreateProxy} />
-                ) : (
-                  <NoProxiesAction
-                    className="mt-4 h-[371px]"
-                    canCreateProxy={canCreateProxy}
-                    onAddProxy={addProxy.events.flowStarted}
-                  />
-                )}
+                <ProxiesList
+                  wallet={wallet}
+                  hasProxies={hasProxies}
+                  className="mt-4 h-[371px]"
+                  canCreateProxy={canCreateProxy}
+                />
               </ScrollArea>
             </Tabs.Content>
           </Tabs>
@@ -243,7 +267,6 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
 
       <ShardsList />
 
-      <RenameWalletModal wallet={wallet} isOpen={isRenameModalOpen} onClose={toggleIsRenameModalOpen} />
       <KeyConstructor
         isOpen={isConstructorModalOpen}
         title={wallet.name}
@@ -265,16 +288,6 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
         onClose={toggleScanModal}
         onComplete={handleVaultKeys}
       />
-
-      <ForgetWalletModal
-        wallet={wallet}
-        isOpen={isConfirmForgetOpen}
-        onClose={toggleConfirmForget}
-        onForget={onClose}
-      />
-
-      <AddProxy wallet={wallet} />
-      <AddPureProxied wallet={wallet} />
     </>
   );
 };

@@ -5,7 +5,7 @@ import { type Chain, type Transaction, type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount } from '@/domains/network';
-import { transactionService } from '@/entities/transaction';
+import { getExtrinsic, transactionService } from '@/entities/transaction';
 import { walletUtils } from '@/entities/wallet';
 
 import { createFeeCalculator } from './createFeeCalculator';
@@ -74,10 +74,15 @@ export const createTxStore = ({
   const $isMultisig = $txWrappers.map(transactionService.hasMultisig);
   const $isProxy = $txWrappers.map(transactionService.hasProxy);
 
+  const $mergedExtrinsic = combine($api, $wrappedTx, (api, tx) => {
+    if (nullable(api)) return null;
+    if (nullable(tx)) return null;
+    return getExtrinsic[tx.wrappedTx.type](tx.wrappedTx.args, api);
+  });
+
   const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
-    $active,
-    $api,
-    $transaction: $wrappedTx.map((x) => x?.wrappedTx ?? null),
+    active: $active,
+    extrinsic: $mergedExtrinsic,
   });
 
   return {

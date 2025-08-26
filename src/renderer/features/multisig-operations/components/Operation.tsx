@@ -1,39 +1,69 @@
-import { memo } from 'react';
+import { type ReactNode, memo } from 'react';
 
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type MultisigAccount } from '@/shared/core';
-import { Slot, createSlot } from '@/shared/di';
+import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { createTransformer, useTransformer } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
+import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { Accordion } from '@/shared/ui';
+import { type MultisigOperation } from '@/domains/network';
+import { ChainTitle } from '@/entities/chain';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
+import { TransactionTitle } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 
 import { OperationFullInfo } from './OperationFullInfo';
+import { OperationIcon } from './OperationIcon';
 
 type Props = {
-  tx: MultisigTransactionDS;
-  account: MultisigAccount | null;
+  operation: MultisigOperation;
+  account: MultisigAccount | FlexibleMultisigAccount;
 };
 
-type SlotProps = {
-  operation: MultisigTransactionDS;
-};
+export const operationTitleTransformer = createTransformer<
+  { operation: MultisigOperation; showCoreTransaction?: boolean },
+  ReactNode
+>();
 
-export const operationTitleSlot = createSlot<SlotProps>();
+export const Operation = memo(({ operation, account }: Props) => {
+  const { t } = useI18n();
 
-const Operation = memo(({ tx, account }: Props) => {
+  const externalTitleNode = useTransformer(operationTitleTransformer, {
+    operation: operation,
+    showCoreTransaction: accountUtils.isFlexibleMultisigAccount(account),
+  });
+
+  let titleNode;
+
+  if (externalTitleNode) {
+    titleNode = externalTitleNode;
+  } else {
+    const title =
+      operation.section && operation.method
+        ? formatSectionAndMethod(operation.section, operation.method)
+        : t('operations.titles.unknown');
+    titleNode = (
+      <>
+        <TransactionTitle className="flex-1" title={title} />
+        <ChainTitle chainId={operation.chainId} className="w-[114px]" />
+      </>
+    );
+  }
+
   return (
     <Accordion className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow">
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
-        <div className="flex h-[52px] w-full items-center gap-x-4 overflow-hidden">
-          <OperationTitleDate operation={tx} />
-          <Slot id={operationTitleSlot} props={{ operation: tx }} />
-          <OperationTitleStatus operation={tx} />
+        <div className="flex h-[52px] w-full items-center gap-4 overflow-hidden">
+          <div className="flex w-full items-center gap-4 overflow-hidden">
+            <OperationTitleDate operation={operation} />
+            <OperationIcon operation={operation} account={account} />
+            {titleNode}
+          </div>
+          <OperationTitleStatus operation={operation} account={account} />
         </div>
       </Accordion.Button>
       <Accordion.Content className="border-t border-divider">
-        <OperationFullInfo tx={tx} account={account} />
+        <OperationFullInfo operation={operation} account={account} />
       </Accordion.Content>
     </Accordion>
   );
 });
-
-export default Operation;

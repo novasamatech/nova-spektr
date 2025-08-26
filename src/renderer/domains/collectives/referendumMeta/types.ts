@@ -1,3 +1,4 @@
+import { type HexString } from '@/shared/core';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 
 export type ReferendumMetaProvider = 'subsquare' | 'polkassembly';
@@ -9,4 +10,5 @@ export type ReferendumMeta = {
   track: number;
   created: number;
   status: string;
+  blockHash?: HexString;
 };

@@ -1,7 +1,7 @@
 import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, HelpText } from '@/shared/ui';
+import { FootnoteText, HelpText, Separator } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
@@ -20,14 +20,11 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
 
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>
-      <FootnoteText className="mb-1 pl-10 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
-
-      {chains.map((chain) => {
+      {chains.map((chain, index) => {
         if (!accountsMap[chain.chainId]) return;
-
         return (
-          <div key={chain.chainId} className="pe-1 ps-8">
-            <Accordion initialOpen>
+          <>
+            <Accordion initialOpen key={chain.chainId}>
               <Accordion.Trigger>
                 <span className="normal-case">
                   <ChainTitle fontClass="text-text-primary" chain={chain} />
@@ -49,26 +46,27 @@ export const VaultAccountsList = ({ chains, accountsMap, className, onShardClick
                           addressPrefix={chain.addressPrefix}
                           onClick={isSharded ? () => onShardClick?.(account) : undefined}
                         >
-                          <AccountExplorers accountId={accountId} chain={chain}>
-                            <Box gap={0.5}>
-                              <FootnoteText className="text-text-tertiary">
-                                {t('general.explorers.derivationTitle')}
-                              </FootnoteText>
-                              <HelpText className="break-all text-text-secondary">
-                                {accountUtils.getDerivationPath(account)}
-                              </HelpText>
-                            </Box>
-                          </AccountExplorers>
+                          {!isSharded && (
+                            <AccountExplorers accountId={accountId} chain={chain}>
+                              <Box gap={0.5}>
+                                <FootnoteText className="text-text-tertiary">
+                                  {t('general.explorers.derivationTitle')}
+                                </FootnoteText>
+                                <HelpText className="break-all text-text-secondary">
+                                  {accountUtils.getDerivationPath(account)}
+                                </HelpText>
+                              </Box>
+                            </AccountExplorers>
+                          )}
                         </DerivedAccount>
                       </li>
                     );
                   })}
                 </ul>
-
-                <hr className="my-1 w-full border-divider" />
               </Accordion.Content>
             </Accordion>
-          </div>
+            {index !== chains.length - 1 && <Separator className="my-1 w-full" />}
+          </>
         );
       })}
     </div>

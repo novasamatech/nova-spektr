@@ -1,3 +1,5 @@
+import { t } from 'i18next';
+
 import { type SignableWalletFamily, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, Icon } from '@/shared/ui';
@@ -14,13 +16,13 @@ const WalletIcon: Record<SignableWalletFamily, IconNames> = {
 };
 
 const WalletText: Record<SignableWalletFamily, string> = {
-  [WalletType.POLKADOT_VAULT]: 'operation.sign.polkadotVault',
-  [WalletType.POLKADOT_EXTENSION]: 'operation.sign.polkadotExtension',
-  [WalletType.TALISMAN_EXTENSION]: 'operation.sign.talismanExtension',
-  [WalletType.SUBWALLET_EXTENSION]: 'operation.sign.subWalletExtension',
-  [WalletType.WALLET_CONNECT]: 'operation.sign.walletConnect',
-  [WalletType.NOVA_WALLET]: 'operation.sign.novaWallet',
-  [WalletType.SINGLE_PARITY_SIGNER]: 'operation.sign.polkadotVault',
+  [WalletType.POLKADOT_VAULT]: t('operation.sign.polkadotVault'),
+  [WalletType.POLKADOT_EXTENSION]: t('operation.sign.polkadotExtension'),
+  [WalletType.TALISMAN_EXTENSION]: t('operation.sign.talismanExtension'),
+  [WalletType.SUBWALLET_EXTENSION]: t('operation.sign.subWalletExtension'),
+  [WalletType.WALLET_CONNECT]: t('operation.sign.walletConnect'),
+  [WalletType.NOVA_WALLET]: t('operation.sign.novaWallet'),
+  [WalletType.SINGLE_PARITY_SIGNER]: t('operation.sign.polkadotVault'),
 };
 
 const DefaultSignButton = 'operation.sign.default';

@@ -1,4 +1,5 @@
 import { type ReferendumId, type Voting } from '@/shared/core';
+import { entries, toAccountId } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { type VoteHistoryRecord } from '@/entities/governance';
 import { type DecoupledVote } from '../types/structs';
@@ -9,7 +10,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
   if (votingService.isDelegating(voting)) {
     res.push({
       decision: 'abstain',
-      voter: voting.target,
+      voter: toAccountId(voting.target),
       votingPower: votingService.calculateVotingPower(voting.balance, voting.conviction),
       conviction: votingService.getConvictionMultiplier(voting.conviction),
       balance: voting.balance,
@@ -18,7 +19,7 @@ const getDecoupledVotesFromVote = (referendumId: ReferendumId, voting: Voting) =
     return res;
   }
 
-  for (const [referendum, vote] of Object.entries(voting.votes)) {
+  for (const [referendum, vote] of entries(voting.votes)) {
     if (referendum !== referendumId) {
       continue;
     }

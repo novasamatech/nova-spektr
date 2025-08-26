@@ -23,34 +23,5 @@
   }
 }
 
-.card-stack-content[data-state="open"] {
-  animation: cardStackSlideDown 0.3s cubic-bezier(0.8, 0, 0.2, 1);
-}
-
-.card-stack-content[data-state="closed"] {
-  animation: cardStackSlideUp 0.3s cubic-bezier(0.8, 0, 0.2, 1);
-}
-
-@keyframes cardStackSlideDown {
-  from {
-    height: 0;
-    opacity: 0;
-  }
-  to {
-    height: var(--radix-accordion-content-height);
-    opacity: 1;
-  }
-}
-
-@keyframes cardStackSlideUp {
-  from {
-    height: var(--radix-accordion-content-height);
-    opacity: 1;
-  }
-  to {
-    height: 0;
-    opacity: 0;
-  }
-}
 
 

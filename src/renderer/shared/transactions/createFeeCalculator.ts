@@ -1,54 +1,41 @@
-import { type ApiPromise } from '@polkadot/api';
-import { type SignerOptions } from '@polkadot/api/types/submittable';
+import { type SubmittableExtrinsic } from '@polkadot/api/types/submittable';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { type Store, type UnitValue, combine, createEffect, createStore, sample } from 'effector';
+import { type Store, type UnitValue, createEffect, createStore, restore, sample } from 'effector';
 
-import { type Transaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { transactionService } from '@/entities/transaction';
+import { transactionService } from '@/domains/network';
 
 type Params = {
-  $active?: Store<boolean>;
-  $transaction: Store<Transaction | null>;
-  $api: Store<ApiPromise | null>;
+  active?: Store<boolean>;
+  extrinsic: Store<SubmittableExtrinsic<'promise'> | null>;
 };
 
-export const createFeeCalculator = ({ $active = createStore(true), $transaction, $api }: Params) => {
-  type RequestParams = {
-    api: ApiPromise;
-    transaction: Transaction;
-    signerOptions?: Partial<SignerOptions>;
-  };
-
-  const $source = combine({ transaction: $transaction, api: $api }, ({ transaction, api }) => {
-    if (nullable(transaction) || nullable(api)) return null;
-
-    return { transaction, api };
-  });
-
+export const createFeeCalculator = ({ active = createStore(true), extrinsic }: Params) => {
   const $fee = createStore(BN_ZERO);
 
-  const fetchFeeFx = createEffect(({ api, transaction, signerOptions }: RequestParams) => {
-    return transactionService.getTransactionFee(transaction, api, signerOptions).then((x) => new BN(x));
+  const fetchFeeFx = createEffect((extrinsic: SubmittableExtrinsic<'promise'>) => {
+    return transactionService.getExtrinsicFee(extrinsic).then((x) => new BN(x));
   });
+
+  const $pending = restore(fetchFeeFx.pending.updates, true);
 
   const logErrorFx = createEffect((res: UnitValue<typeof fetchFeeFx.fail>) => {
     console.error('fee calculation faied', res);
   });
 
   sample({
-    clock: $source,
+    clock: extrinsic,
     filter: nullable,
     fn: () => BN_ZERO,
     target: $fee,
   });
 
   const feeRequested = sample({
-    clock: [$source.updates, $active.updates],
-    source: { active: $active, source: $source },
-  }).filterMap(({ active, source }) => {
+    clock: [extrinsic.updates, active.updates],
+    source: { active, extrinsic },
+  }).filterMap(({ active, extrinsic }) => {
     if (!active) return undefined;
-    if (source) return source;
+    if (extrinsic) return extrinsic;
   });
 
   sample({
@@ -58,7 +45,7 @@ export const createFeeCalculator = ({ $active = createStore(true), $transaction,
 
   sample({
     clock: fetchFeeFx.doneData,
-    source: $transaction,
+    source: extrinsic,
     filter: nonNullable,
     fn: (_, fee) => fee,
     target: $fee,
@@ -66,7 +53,7 @@ export const createFeeCalculator = ({ $active = createStore(true), $transaction,
 
   sample({
     clock: fetchFeeFx.fail,
-    source: $transaction,
+    source: extrinsic,
     filter: nonNullable,
     fn: (_) => BN_ZERO,
     target: $fee,
@@ -79,6 +66,6 @@ export const createFeeCalculator = ({ $active = createStore(true), $transaction,
 
   return {
     $: $fee,
-    $pending: fetchFeeFx.pending,
+    $pending,
   };
 };

@@ -21,7 +21,7 @@ export const DelegationModal = () => {
   const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), delegationModel.output.flowFinished);
 
   return (
-    <Modal isOpen={isModalOpen} size="md" height="lg" onToggle={closeModal}>
+    <Modal isOpen={isModalOpen} size="md" height="full" onToggle={closeModal}>
       <Modal.Title close>
         {chain && <OperationTitle title={t('governance.addDelegation.title')} chainId={chain.chainId} />}
       </Modal.Title>

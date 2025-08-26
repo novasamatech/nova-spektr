@@ -25,7 +25,6 @@ export { InfoLink } from './InfoLink/InfoLink';
 export { RadioGroup } from './RadioGroup/RadioGroup';
 export { Accordion } from './Accordion/Accordion';
 export { Alert } from './Alert/Alert';
-export { Identicon, type IconTheme } from './Identicon/Identicon';
 export { Counter } from './Counter/Counter';
 export { StatusLabel } from './StatusLabel/StatusLabel';
 export { Switch } from './Switch/Switch';
@@ -43,9 +42,8 @@ export { LabelHelpBox } from './LabelHelpbox/LabelHelpBox';
 export { Truncate } from './Truncate/Truncate';
 export { Countdown } from './Countdown/Countdown';
 export { Tabs } from './Tabs/Tabs';
-export { Markdown } from './Markdown/Markdown';
 export { BlockExplorer } from './BlockExplorer/BlockExplorer';
-export { EmptyList } from './EmptyList/EmptyList';
+export { EmptyList, EmptyListWithIcon } from './EmptyList/EmptyList';
 export { Animation } from './Animation/Animation';
 
 export { type IconNames } from './Icon/data';

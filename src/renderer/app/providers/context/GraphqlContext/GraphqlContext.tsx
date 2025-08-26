@@ -7,6 +7,7 @@ import {
   from,
 } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
+import { useUnit } from 'effector-react';
 import {
   type PropsWithChildren,
   createContext,
@@ -21,6 +22,7 @@ import {
 import { localStorageService } from '@/shared/api/local-storage';
 import { chainsService } from '@/shared/api/network';
 import { type ChainId, ExternalType } from '@/shared/core';
+import { networkModel } from '@/entities/network';
 import { DEFAULT_STAKING_CHAIN, STAKING_NETWORK } from '@/entities/staking';
 
 type GraphqlContextProps = {
@@ -48,6 +50,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 export const GraphqlProvider = ({ children }: PropsWithChildren) => {
   const chainUrls = useRef<Record<ChainId, string>>({});
   const [apolloClient, setApolloClient] = useState<ApolloClient<NormalizedCacheObject>>();
+  const chains = useUnit(networkModel.$chains);
 
   const changeClient = useCallback((chainId: ChainId) => {
     const httpLink = new HttpLink({ uri: chainUrls.current[chainId] });
@@ -61,7 +64,7 @@ export const GraphqlProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   useEffect(() => {
-    const chainsData = chainsService.getStakingChainsData();
+    const chainsData = chainsService.getStakingChainsData(chains);
 
     const result: Record<ChainId, string> = {};
 

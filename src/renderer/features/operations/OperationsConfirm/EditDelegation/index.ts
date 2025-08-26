@@ -1,2 +1,4 @@
 export { confirmModel as editDelegationConfirmModel } from './model/confirm-model';
 export { Confirmation as EditDelegationConfirmation } from './ui/Confirmation';
+
+export { type EditDelegationConfirm } from './model/confirm-model';

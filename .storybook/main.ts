@@ -7,18 +7,13 @@ const config: StorybookConfig = {
     options: {
       builder: {
         viteConfigPath: resolve('vite.config.renderer.ts'),
-      }
-    }
+      },
+    },
   },
 
   stories: ['./intro/*.mdx', '../src/**/*.mdx', '../src/renderer/**/*.stories.@(ts|tsx)'],
 
-  addons: [
-    '@storybook/addon-a11y',
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-  ],
+  addons: ['@storybook/addon-a11y', '@storybook/addon-links', '@storybook/addon-docs'],
 
   docs: {},
 

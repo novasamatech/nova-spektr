@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type KeyboardEvent, memo, useMemo } from 'react';
 
-import { type Asset, type Balance, type ChainId } from '@/shared/core';
+import { type Asset, type Balance, type ChainId, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { KeyboardKey, cnTw, totalAmount, transferableAmountBN } from '@/shared/lib/utils';
@@ -13,10 +13,11 @@ import { AssetFiatBalance, TokenPrice, priceProviderModel } from '@/entities/pri
 type Props = {
   chainId: ChainId;
   asset: Asset;
-  balance?: Balance;
+  balance: Balance | null;
+  wallet: Wallet | null;
 };
 
-export const AssetCard = memo(({ chainId, asset, balance }: Props) => {
+export const AssetCard = memo(({ chainId, asset, balance, wallet }: Props) => {
   const { t } = useI18n();
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
@@ -41,7 +42,7 @@ export const AssetCard = memo(({ chainId, asset, balance }: Props) => {
       tabIndex={0}
       aria-expanded={isExpanded}
       className={cnTw(
-        'group flex cursor-pointer flex-col rounded bg-block-background-default',
+        'group flex cursor-pointer flex-col rounded-sm bg-block-background-default',
         'transition-shadow hover:shadow-card-shadow focus:shadow-card-shadow',
       )}
       onClick={toggleExpanded}
@@ -68,11 +69,11 @@ export const AssetCard = memo(({ chainId, asset, balance }: Props) => {
             </div>
           )}
         </div>
-        <AssetLinks assetId={asset.assetId} chainId={chainId} />
+        <AssetLinks assetId={asset.assetId} chainId={chainId} wallet={wallet} />
       </div>
 
       {isExpanded && (
-        <dl className="flex gap-x-4 divide-x border-t border-divider py-4 pr-4">
+        <dl className="flex gap-x-4 divide-x divide-divider border-t border-divider py-4 pr-4">
           <AssetDetails asset={asset} value={transferableBalance} label={t('assetBalance.transferable')} />
           <AssetDetails asset={asset} value={balance?.frozen} label={t('assetBalance.locked')} />
           <AssetDetails asset={asset} value={balance?.reserved} label={t('assetBalance.reserved')} />

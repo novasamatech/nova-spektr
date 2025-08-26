@@ -3,9 +3,14 @@ import { type ApiPromise } from '@polkadot/api';
 import { type Asset, AssetType, type OrmlExtras, StakingType, type StatemineExtras } from '@/shared/core/types/asset';
 import { assert } from '@/shared/lib/utils';
 
-export const getNativeAsset = (assets: Asset[]) => {
+export const getNativeAsset = (assets: Asset[]): Asset => {
   const nativeAsset = assets.find((asset) => asset.type === AssetType.NATIVE);
-  assert(nativeAsset, 'Native assets not found');
+  if (!nativeAsset) {
+    // some networks use orml assets as native (cringe)
+    const firstAsset = assets.at(0);
+    assert(firstAsset, 'Native asset is not found');
+    return firstAsset;
+  }
 
   return nativeAsset;
 };

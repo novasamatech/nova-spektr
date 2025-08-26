@@ -1,6 +1,7 @@
 import { webcrypto } from 'node:crypto';
 
 import { AccountType, type DraftAccount, KeyType, type VaultShardAccount } from '@/shared/core';
+import { polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { importKeysUtils } from '../import-keys-utils';
 import { importKeysMocks } from '../mocks/import-keys-utils.mock';
 
@@ -16,8 +17,11 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
   });
 
   describe('entities/dynamicDerivations/import-keys-utils/shouldIgnoreDerivation', () => {
+    const mockChains = {
+      [polkadotChainId]: polkadotChain,
+    };
     test.each(importKeysMocks.shouldIgnoreDerivationTestData)('$testName', ({ derivation, shouldIgnore }) => {
-      expect(importKeysUtils.shouldIgnoreDerivation(derivation)).toEqual(shouldIgnore);
+      expect(importKeysUtils.shouldIgnoreDerivation(derivation, mockChains)).toEqual(shouldIgnore);
     });
   });
 

@@ -5,9 +5,9 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
+import { entries, isStringsMatchQuery, keys, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 import { type ChainTuple, type ChainsMap, type RootTuple, type SelectedStruct } from './types';
@@ -37,8 +37,8 @@ function getFilteredAccounts(
 }
 
 function getChainsMap<T>(chains: Record<ChainId, Chain>): ChainsMap<T> {
-  return Object.keys(chains).reduce<ChainsMap<T>>((acc, chainId) => {
-    acc[chainId as ChainId] = {};
+  return keys(chains).reduce<ChainsMap<T>>((acc, chainId) => {
+    acc[chainId] = {};
 
     return acc;
   }, {});
@@ -78,8 +78,8 @@ function getVaultChainsCounter(
 }
 
 function getChainCounter(chains: Record<ChainId, Chain>) {
-  return Object.keys(chains).reduce<any>((acc, chainId) => {
-    acc[chainId as ChainId] = {
+  return keys(chains).reduce<any>((acc, chainId) => {
+    acc[chainId] = {
       accounts: {},
       sharded: {},
       checked: 0,
@@ -92,6 +92,7 @@ function getChainCounter(chains: Record<ChainId, Chain>) {
 
 function getStructForVault(
   rootAccountId: AccountId,
+  rootAccountName: string,
   accounts: AnyAccount[],
   chainsMap: ChainsMap<AnyAccount>,
 ): RootTuple[] {
@@ -115,36 +116,57 @@ function getStructForVault(
     }
   }
 
-  const chainsTuples = Object.entries(chainsMap).reduce<ChainTuple[]>((acc, entries) => {
+  const chainsTuples = entries(chainsMap).reduce<ChainTuple[]>((acc, entries) => {
     const [chainId, { accounts = [], ...sharded }] = entries;
     const accountsGroup = [...accounts, ...Object.values(sharded)] as (VaultChainAccount | VaultShardAccount[])[];
 
     if (accountsGroup.length > 0) {
-      acc.push([chainId as ChainId, accountsGroup]);
+      acc.push([chainId, accountsGroup]);
     }
 
     return acc;
   }, []);
 
-  return [[rootAccountId, chainsTuples]];
+  return [[rootAccountId, rootAccountName, chainsTuples]];
 }
 
 function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {
-  const selectedMap = Object.values(struct).reduce<Record<AccountId, boolean>>((acc, chainMap) => {
-    const { total: _total, checked: _checked, ...chains } = chainMap;
+  const selectedByChain = new Map<ChainId, Set<AccountId>>();
 
-    for (const chain of Object.values(chains)) {
-      const { accounts, sharded = {} } = chain;
-      Object.assign(acc, accounts);
+  for (const rootData of Object.values(struct)) {
+    const { total: _total, checked: _checked, ...chains } = rootData;
+    for (const [chainId, chainData] of entries(chains)) {
+      const selected = new Set<AccountId>();
 
-      for (const shard of Object.values(sharded)) {
-        const { total: _total, checked: _checked, ...shards } = shard;
-        Object.assign(acc, shards);
+      for (const [accountId, isSelected] of entries(chainData.accounts)) {
+        if (isSelected) {
+          selected.add(accountId);
+        }
       }
+
+      for (const shardData of Object.values(chainData.sharded)) {
+        const { total: _total, checked: _checked, ...shards } = shardData;
+
+        for (const [accountId, isSelected] of entries(shards)) {
+          if (isSelected) {
+            selected.add(accountId);
+          }
+        }
+      }
+
+      selectedByChain.set(chainId as ChainId, selected);
+    }
+  }
+
+  const selectedAccounts = Array.from(selectedByChain.values()).reduce((set, item) => {
+    return new Set<AccountId>([...set, ...item]);
+  }, new Set<AccountId>());
+
+  return accounts.filter((account) => {
+    if (accountService.isChainAccount(account)) {
+      return selectedByChain.get(account.chainId)?.has(account.accountId) ?? false;
     }
 
-    return acc;
-  }, {});
-
-  return accounts.filter((account) => selectedMap[account.accountId]);
+    return selectedAccounts.has(account.accountId);
+  });
 }

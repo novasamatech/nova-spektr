@@ -1,87 +1,64 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { useMultisigChainContext } from '@/app/providers';
-import { type MultisigTransactionDS } from '@/shared/api/storage';
-import { type CallData, type MultisigAccount } from '@/shared/core';
+import { type CallData, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
-import { useMultisigTx } from '@/entities/multisig';
+import { type MultisigOperation, accountService, accounts, multisigOperation } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
-import { operationDetailsUtils, operationsModel } from '@/entities/operations';
-import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { operationDetailsUtils } from '@/entities/operations';
+import { accountUtils } from '@/entities/wallet';
 
+import { OperationAdvancedDetails } from './OperationAdvancedDetails';
+import { OperationDetails } from './OperationDetails';
 import { OperationSignatories } from './OperationSignatories';
 import ApproveTxModal from './modals/ApproveTx';
 import CallDataModal from './modals/CallDataModal';
 import RejectTxModal from './modals/RejectTx';
 
 type Props = {
-  tx: MultisigTransactionDS;
-  account: MultisigAccount | null;
+  operation: MultisigOperation;
+  account: MultisigAccount | FlexibleMultisigAccount;
 };
 
 type SlotProps = {
-  operation: MultisigTransactionDS;
+  operation: MultisigOperation;
+  showCoreTransaction?: boolean;
 };
 
 export const operationDetailsSlot = createSlot<SlotProps>();
 
-export const OperationFullInfo = memo(({ tx, account }: Props) => {
+export const OperationFullInfo = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
-  const { api, chain, connection, extendedChain } = useNetworkData(tx.chainId);
-
-  const wallets = useUnit(walletModel.$wallets);
-  const activeWallet = useUnit(walletModel.$activeWallet);
-
-  const events = useStoreMap({
-    store: operationsModel.$multisigEvents,
-    keys: [tx],
-    fn: (events, [tx]) => {
-      return events.filter(e => {
-        return (
-          e.txAccountId === tx.accountId &&
-          e.txChainId === tx.chainId &&
-          e.txCallHash === tx.callHash &&
-          e.txBlock === tx.blockCreated &&
-          e.txIndex === tx.indexCreated &&
-          e.status === 'SIGNED'
-        );
-      });
-    },
-  });
-
-  const { addTask } = useMultisigChainContext();
-  const { updateCallData } = useMultisigTx({ addTask });
-
+  const { api, chain, connection, extendedChain } = useNetworkData(operation.chainId);
+  const allAccounts = useUnit(accounts.$list);
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
 
   const explorerLink = operationDetailsUtils.getMultisigExtrinsicLink(
-    tx.callHash,
-    tx.indexCreated,
-    tx.blockCreated,
+    operation.callHash,
+    operation.indexCreated,
+    operation.blockCreated,
     chain?.explorers,
   );
 
-  const setupCallData = async (callData: CallData) => {
-    if (!api || !tx) return;
-
-    updateCallData(api, tx, callData as CallData);
-  };
-
-  const isRejectAvailable = wallets.some(wallet => {
-    const hasDepositor = wallet.accounts?.some(account => account.accountId === tx.depositor);
-
-    return hasDepositor && permissionUtils.canRejectMultisigTx(wallet) && tx.status === 'SIGNING';
+  const hasAccount = allAccounts.some(a => {
+    return a.accountId === operation.depositor && accountService.hasPermissionToMakeActions(a);
   });
 
-  if (!walletUtils.isMultisig(activeWallet)) return null;
+  const isRejectAvailable = operation.status === 'pending' && hasAccount;
 
-  const isFinalSigning = account && events.length === account.threshold - 1;
-  const isApproveAvailable = !isFinalSigning || (tx.callData && validateCallData(tx.callData, tx.callHash));
+  const isFinalSigning = account && operation.events.length === account.threshold - 1;
+  const isApproveAvailable =
+    !isFinalSigning || (operation.callData && validateCallData(operation.callData, operation.callHash));
+
+  const setupCallData = (callData: CallData) => {
+    multisigOperation.updateCallData({ operation, callData });
+  };
+
+  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
   return (
     <div className="flex flex-1">
@@ -89,9 +66,9 @@ export const OperationFullInfo = memo(({ tx, account }: Props) => {
         <div className="mb-4 flex items-center justify-between py-1">
           <SmallTitleText className="mr-auto">{t('operation.detailsTitle')}</SmallTitleText>
 
-          {(!tx.callData || explorerLink) && (
+          {(!operation.callData || explorerLink) && (
             <div className="flex items-center">
-              {!tx.callData && (
+              {!operation.callData && (
                 <Button pallet="primary" variant="text" size="sm" onClick={toggleCallDataModal}>
                   {t('operation.addCallDataButton')}
                 </Button>
@@ -107,28 +84,37 @@ export const OperationFullInfo = memo(({ tx, account }: Props) => {
         </div>
 
         <div className="flex w-full flex-col gap-y-1">
-          <Slot id={operationDetailsSlot} props={{ operation: tx }} />{' '}
+          <OperationDetails operation={operation} />
+
+          <Slot id={operationDetailsSlot} props={{ operation, showCoreTransaction }} />
+
+          <OperationAdvancedDetails operation={operation} />
         </div>
 
         <div className="mt-3 flex items-center">
           {connection && isRejectAvailable && account && (
-            <RejectTxModal api={api} tx={tx} account={account} chain={chain}>
+            <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
               <Button pallet="error" variant="fill">
                 {t('operation.rejectButton')}
               </Button>
             </RejectTxModal>
           )}
           {account && isApproveAvailable && connection && (
-            <ApproveTxModal api={api} tx={tx} account={account} chain={chain}>
+            <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
               <Button className="ml-auto">{t('operation.approveButton')}</Button>
             </ApproveTxModal>
           )}
         </div>
       </div>
 
-      {account && <OperationSignatories tx={tx} connection={extendedChain} account={account} />}
+      {account && <OperationSignatories operation={operation} connection={extendedChain} account={account} />}
 
-      <CallDataModal isOpen={isCallDataModalOpen} tx={tx} onSubmit={setupCallData} onClose={toggleCallDataModal} />
+      <CallDataModal
+        isOpen={isCallDataModalOpen}
+        operation={operation}
+        onSubmit={setupCallData}
+        onClose={toggleCallDataModal}
+      />
     </div>
   );
 });

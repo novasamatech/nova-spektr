@@ -3,30 +3,36 @@ import { Trans } from 'react-i18next';
 
 import { type DelegateInfo } from '@/shared/api/governance';
 import { TEST_IDS } from '@/shared/constants';
-import { type Address, type Asset, type Identity } from '@/shared/core';
+import { type Asset, type Chain, type Identity } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Address as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { locksService } from '@/entities/governance';
 
 type Props = {
+  chain: Chain;
   asset: Asset;
-  identity: Record<Address, Identity>;
+  identity: Record<AccountId, Identity>;
   delegates: DelegateInfo[];
   multiplier?: boolean;
 };
 
-export const VotedByDelegates = ({ asset, identity, delegates, multiplier }: Props) => {
+export const VotedByDelegates = ({ asset, chain, identity, delegates, multiplier }: Props) => {
   const { t } = useI18n();
 
   if (delegates.length === 1) {
     const delegate = delegates[0];
 
-    const delegateName = nonNullable(identity[delegate.delegateId]) ? (
-      <span className="truncate">{identity[delegate.delegateId].parent.name}</span>
+    const delegateName = nonNullable(identity[delegate.delegateAccount]) ? (
+      <span className="truncate">{identity[delegate.delegateAccount].parent.name}</span>
     ) : (
-      <AccountAddress showIcon={false} variant="short" address={delegate.delegateId} />
+      <AccountAddress
+        showIcon={false}
+        variant="short"
+        address={toAddress(delegate.delegateAccount, { prefix: chain.addressPrefix })}
+      />
     );
 
     const amount = <AssetBalance className="text-icon-alert" value={delegate.amount} asset={asset} />;
@@ -41,7 +47,7 @@ export const VotedByDelegates = ({ asset, identity, delegates, multiplier }: Pro
     return (
       <div className="flex w-full items-center gap-x-1" data-testid={TEST_IDS.GOVERNANCE.PROPOSAL_VOTE_DETAILS}>
         <Icon name="voted" size={16} className="shrink-0 text-icon-alert" />
-        <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-alert">
+        <FootnoteText className="flex items-center gap-x-0.5 truncate text-nowrap whitespace-nowrap text-icon-alert">
           <Trans
             t={t}
             i18nKey={i18nKey[delegate.decision]}
@@ -62,7 +68,7 @@ export const VotedByDelegates = ({ asset, identity, delegates, multiplier }: Pro
     return (
       <div className="flex w-full items-center gap-x-1">
         <Icon name="voted" size={16} className="shrink-0 text-icon-alert" />
-        <FootnoteText className="flex items-center gap-x-0.5 truncate whitespace-nowrap text-nowrap text-icon-alert">
+        <FootnoteText className="flex items-center gap-x-0.5 truncate text-nowrap whitespace-nowrap text-icon-alert">
           <Trans
             t={t}
             i18nKey={`governance.${isDelegatesAye ? 'votedAyeByDelegates' : 'votedNayByDelegates'}`}

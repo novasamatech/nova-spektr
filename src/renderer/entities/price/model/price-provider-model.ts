@@ -1,9 +1,9 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
-import { chainsService } from '@/shared/api/network';
 import { type PriceAdapter, type PriceObject, coingekoService, fiatService } from '@/shared/api/price-provider';
-import { kernelModel } from '@/shared/core';
+import { type Chain, kernelModel } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
+import { networkModel } from '@/entities/network';
 import { DEFAULT_ASSETS_PRICES, DEFAULT_FIAT_FLAG, DEFAULT_FIAT_PROVIDER } from '../lib/constants';
 import { PriceApiProvider } from '../lib/types';
 
@@ -34,21 +34,17 @@ const savePriceProviderFx = createEffect((provider: PriceApiProvider): PriceApiP
 });
 
 type FetchPrices = {
+  chains: Chain[];
   provider: PriceApiProvider;
   currencies: string[];
   includeRates: boolean;
 };
-const fetchAssetsPricesFx = createEffect<FetchPrices, PriceObject>(({ provider, currencies, includeRates }) => {
+const fetchAssetsPricesFx = createEffect<FetchPrices, PriceObject>(({ chains, provider, currencies, includeRates }) => {
   const ProvidersMap: Record<PriceApiProvider, PriceAdapter> = {
     [PriceApiProvider.COINGEKO]: coingekoService,
   };
 
-  const priceIds = chainsService.getChainsData().reduce<string[]>((acc, chain) => {
-    const ids = chain.assets.map((asset) => asset.priceId).filter(nonNullable);
-    acc.push(...ids);
-
-    return acc;
-  }, []);
+  const priceIds = chains.flatMap((chain) => chain.assets.map((asset) => asset.priceId).filter(nonNullable));
 
   return ProvidersMap[provider].getPrice(priceIds, currencies, includeRates);
 });
@@ -83,10 +79,15 @@ sample({
 
 sample({
   clock: [assetsPricesRequested, $priceProvider, currencyModel.$activeCurrency],
-  source: { provider: $priceProvider, currency: currencyModel.$activeCurrency },
+  source: { chains: networkModel.$chains, provider: $priceProvider, currency: currencyModel.$activeCurrency },
   filter: ({ provider, currency }) => provider !== null && currency !== null,
-  fn: ({ provider, currency }) => {
-    return { provider: provider!, currencies: [currency!.coingeckoId], includeRates: true };
+  fn: ({ chains, provider, currency }) => {
+    return {
+      chains: Object.values(chains),
+      provider: provider!,
+      currencies: [currency!.coingeckoId],
+      includeRates: true,
+    };
   },
   target: fetchAssetsPricesFx,
 });

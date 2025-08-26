@@ -1,15 +1,25 @@
-import { attach, combine, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
+import { persist } from 'effector-storage/local';
+import { readonly } from 'patronum';
 
 import { type ID } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { accountService, accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 
-const $selectedWallet = walletModel.$wallets.map(wallets => {
-  return wallets.find(wallet => wallet.isActive) ?? null;
+const selectWallet = createEvent<ID | null>();
+const $selectedWalletId = createStore<ID | null>(null);
+
+persist({
+  key: 'selected_wallet',
+  store: $selectedWalletId,
+  sync: true,
 });
 
-const $selectedWalletId = $selectedWallet.map(w => w?.id ?? null);
+const $selectedWallet = combine(walletModel.$wallets, $selectedWalletId, (wallets, id) => {
+  if (nullable(id)) return null;
+  return wallets.find(wallet => wallet.id === id) ?? null;
+});
 
 const $selectedAccounts = combine($selectedWallet, accounts.$list, (wallet, accounts) => {
   if (nullable(wallet)) return [];
@@ -17,45 +27,31 @@ const $selectedAccounts = combine($selectedWallet, accounts.$list, (wallet, acco
   return accountService.filterAccountsByWallet(accounts, wallet.id);
 });
 
-const selectWalletFx = attach({
-  source: walletModel.$allWallets,
-  async effect(wallets, id: ID | null) {
-    if (nullable(id)) {
-      return;
-    }
-
-    const currentSelectedWallets = wallets.filter(w => w.isActive);
-    const walletToSelect = wallets.find(w => w.id === id);
-
-    // wallet not found
-    if (nullable(walletToSelect)) {
-      return;
-    }
-
-    // wallet is already selected
-    if (walletToSelect.isActive) {
-      return;
-    }
-
-    await walletModel.updateWallet({ ...walletToSelect, isActive: true });
-    await Promise.all(
-      currentSelectedWallets.map(w => {
-        return walletModel.updateWallet({ ...w, isActive: false });
-      }),
-    );
-  },
+// direct selection
+sample({
+  clock: selectWallet,
+  source: walletModel.$wallets,
+  filter: (wallets, id) => nonNullable(wallets.find(w => w.id === id)),
+  fn: (_, id) => id,
+  target: $selectedWalletId,
 });
 
+// setting default selection if something went wrong
 sample({
   clock: walletModel.$wallets,
-  filter: wallets => wallets.every(wallet => !wallet.isActive),
-  fn: wallets => wallets.at(0)?.id ?? null,
-  target: selectWalletFx,
+  source: $selectedWalletId,
+  filter: (id, wallets) => nullable(id) || (wallets.length > 0 && nullable(wallets.find(w => w.id === id))),
+  fn: (id, wallets) => wallets.at(0)?.id ?? id,
+  target: $selectedWalletId,
 });
 
 export const walletSelect = {
   $selectedWallet,
-  $selectedWalletId,
+  $selectedWalletId: readonly($selectedWalletId),
   $selectedAccounts,
-  select: selectWalletFx,
+  select: selectWallet,
+
+  __test: {
+    $selectedWalletId,
+  },
 };

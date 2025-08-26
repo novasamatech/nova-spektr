@@ -3,7 +3,7 @@ import { or } from 'patronum';
 
 import { type ChainId, ConnectionStatus } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
-import { getChainRegistry, registry, registryService } from '@/domains/network';
+import { block, getChainRegistry, registry, registryService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
 const selectCollective = createEvent<{ chainId: ChainId }>();
@@ -58,6 +58,12 @@ const $network = combine({ chain: $fellowshipChain, api: $fellowshipChainApi }, 
   };
 });
 
+const $currentBlock = combine(block.$currentBlock, $network, (currentBlock, network) => {
+  if (nullable(network?.chainId)) return null;
+
+  return currentBlock[network.chainId] ?? null;
+});
+
 export const fellowshipNetwork = {
   $network,
   $selectedChainId,
@@ -68,4 +74,6 @@ export const fellowshipNetwork = {
   $isDisconnected,
 
   selectCollective,
+
+  $currentBlock,
 };

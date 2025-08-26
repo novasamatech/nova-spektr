@@ -44,6 +44,7 @@ export const referendumMetaResource = createRemoteResource<RequestParams, Refere
             track: x.track,
             status: x.state.name,
             created: x.indexer.blockHeight,
+            blockHash: x.indexer.blockHash,
           })),
         );
       }

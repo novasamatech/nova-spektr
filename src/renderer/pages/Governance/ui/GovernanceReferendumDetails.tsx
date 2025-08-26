@@ -1,4 +1,4 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 import { generatePath, useParams } from 'react-router-dom';
 
@@ -14,7 +14,6 @@ import { governancePageAggregate } from '../aggregates/governancePage';
 import { DEFAULT_GOVERNANCE_CHAIN } from '../lib/constants';
 
 export const GovernanceReferendumDetails = () => {
-  useGate(governancePageAggregate.gates.flow);
   const { chainId, referendumId } = useParams<'chainId' | 'referendumId'>();
 
   const [showVoteModal, setShowVoteModal] = useState(false);
@@ -22,7 +21,7 @@ export const GovernanceReferendumDetails = () => {
   const [showRemoveVoteModal, setShowRemoveVoteModal] = useState(false);
 
   const network = useUnit(networkSelectorModel.$network);
-  const all = useUnit(governancePageAggregate.$all);
+  const currentReferendums = useUnit(governancePageAggregate.$currentReferendums);
 
   if (!referendumId) {
     return null;
@@ -33,12 +32,12 @@ export const GovernanceReferendumDetails = () => {
   const selectedReferendum = useMemo(() => {
     if (!selectedReferendumId) return null;
 
-    const referendum = all.find(({ referendumId }) => {
+    const referendum = currentReferendums.find(({ referendumId }) => {
       return referendaPallet.helpers.toReferendumId(parseInt(referendumId)) === selectedReferendumId;
     });
 
     return referendum ?? null;
-  }, [all, selectedReferendumId]);
+  }, [currentReferendums, selectedReferendumId]);
 
   useEffect(() => {
     if (nonNullable(selectedReferendum) && referendumService.isCompleted(selectedReferendum)) {
@@ -91,6 +90,7 @@ export const GovernanceReferendumDetails = () => {
             chain={network.chain}
             asset={network.asset}
             onClose={() => setShowVoteModal(false)}
+            onSuccess={() => setShowVoteModal(false)}
           />
         )}
 
@@ -103,6 +103,7 @@ export const GovernanceReferendumDetails = () => {
             chain={network.chain}
             asset={network.asset}
             onClose={() => setShowRevoteModal(false)}
+            onVoteSuccess={() => setShowRevoteModal(false)}
           />
         )}
 

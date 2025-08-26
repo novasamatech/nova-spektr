@@ -2,16 +2,16 @@ import { useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type AssetByChains, type AssetBalance as Balance } from '@/shared/core';
+import { type AssetByChains, type PortfolioTokenBalance } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, totalAmount, transferableAmount } from '@/shared/lib/utils';
+import { cnTw } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton, Tooltip } from '@/shared/ui-kit';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 
 type Props = PropsWithChildren & {
   asset: AssetByChains;
-  balance?: Balance;
+  balance: PortfolioTokenBalance | null;
 };
 
 export const AssembledAssetAmount = ({ balance, asset }: Props) => {
@@ -19,7 +19,7 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-  if (!balance?.free) {
+  if (!balance) {
     return (
       <div className="flex w-[100px] flex-col items-end gap-y-1">
         <Skeleton width={20} height={4} />
@@ -35,12 +35,12 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
           <div
             tabIndex={0}
             className={cnTw(
-              'border-b border-filter-border px-[1px] transition-colors',
+              'border-b border-filter-border px-px transition-colors',
               'hover:rounded-md hover:border-transparent hover:bg-switch-background-inactive',
               'focus:rounded-md focus:border-transparent focus:bg-switch-background-inactive',
             )}
           >
-            <AssetBalance value={totalAmount(balance)} asset={asset} showSymbol={false} />
+            <AssetBalance value={balance.total} asset={asset} showSymbol={false} />
           </div>
         </Tooltip.Trigger>
         <Tooltip.Content>
@@ -49,28 +49,18 @@ export const AssembledAssetAmount = ({ balance, asset }: Props) => {
             i18nKey="balances.balanceTooltip"
             components={{
               amountFree: (
-                <AssetBalance value={transferableAmount(balance)} asset={asset} className="text-help-text text-white" />
+                <AssetBalance value={balance.transferable} asset={asset} className="text-help-text text-white" />
               ),
-              amountLocked: balance.frozen ? (
+              amountLocked: <AssetBalance value={balance.locked} asset={asset} className="text-help-text text-white" />,
+              amountReserved: (
                 <AssetBalance value={balance.frozen} asset={asset} className="text-help-text text-white" />
-              ) : (
-                <div className="inline-block rounded-2lg bg-white">
-                  <Skeleton width={12} height={1.5} />
-                </div>
-              ),
-              amountReserved: balance.reserved ? (
-                <AssetBalance value={balance.reserved} asset={asset} className="text-help-text text-white" />
-              ) : (
-                <div className="inline-block rounded-2lg bg-white">
-                  <Skeleton width={12} height={1.5} />
-                </div>
               ),
             }}
           />
         </Tooltip.Content>
       </Tooltip>
 
-      <AssetFiatBalance amount={totalAmount(balance)} asset={asset} />
+      <AssetFiatBalance amount={balance.total} asset={asset} className="w-full truncate text-right indent-2" />
     </div>
   );
 };

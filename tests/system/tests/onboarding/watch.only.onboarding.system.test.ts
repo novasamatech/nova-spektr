@@ -1,3 +1,4 @@
+import { type Page } from '@playwright/test';
 import * as allure from 'allure-js-commons';
 
 import { baseTestConfig } from '../../BaseTestConfig';
@@ -27,13 +28,23 @@ test.describe(
       await watchOnlyPage
         .fillAccountAddress(baseTestConfig.test_address)
         .then((account) => account.clickFirstInfoButton());
-      const [newPage] = await Promise.all([
-        context.waitForEvent('page'),
-        page.getByRole('link', { name: watchOnlyPage.pageElements.subscanLabel }).click(),
-      ]);
-      await newPage.waitForLoadState('domcontentloaded');
 
-      expect(newPage.url()).toContain('subscan.io');
+      let newPage: Page;
+
+      await allure.step('Click on Subscan link', async () => {
+        [newPage] = await Promise.all([
+          context.waitForEvent('page'),
+          page.getByRole('link', { name: watchOnlyPage.pageElements.subscanLabel }).click(),
+        ]);
+      });
+
+      await allure.step('Wait for the new page to load', async () => {
+        await newPage.waitForLoadState('domcontentloaded');
+      });
+
+      await allure.step('Verify the new page URL contains "subscan.io"', async () => {
+        expect(newPage.url()).toContain('subscan.io');
+      });
     });
   },
 );

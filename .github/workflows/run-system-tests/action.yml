@@ -27,7 +27,6 @@ runs:
         echo '{}' > .allure/testplan.json
 
     - shell: bash
-      if: always()
       run: |
         allurectl job-run env >> $GITHUB_ENV
         COMMIT_INFO="Commit: [${{ github.sha }}](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
@@ -41,7 +40,6 @@ runs:
         fi
 
     - name: Notify Telegram channel
-      if: always()
       uses: appleboy/telegram-action@master
       with:
         to: ${{ inputs.telegram_to }}

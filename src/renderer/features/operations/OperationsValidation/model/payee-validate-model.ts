@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { type Store, attach, createEffect } from 'effector';
 
-import { type Asset, type Balance, type Chain, type ID, type Transaction } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
 import { getAssetById, stakeableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -16,13 +16,13 @@ type ValidateParams = {
   chain: Chain;
   asset: Asset;
   transaction: Transaction;
-  balances: Balance[];
+  balances: BalanceMap;
   signerOptions?: Partial<SignerOptions>;
 };
 
 const rootValidateFx = createEffect(async ({ id, chain, asset, transaction, balances }: ValidateParams) => {
   const accountId = transaction.accountId;
-  const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId.toString());
+  const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
 
   const rules = [
     {
@@ -46,7 +46,7 @@ const validateFx = attach({
   source: {
     chains: networkModel.$chains,
     apis: networkModel.$apis,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];

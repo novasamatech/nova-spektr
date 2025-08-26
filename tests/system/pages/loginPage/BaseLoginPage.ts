@@ -1,6 +1,8 @@
 import { join } from 'path';
 import { cwd } from 'process';
 
+import { step } from 'allure-js-commons';
+
 import { baseTestConfig } from '../../BaseTestConfig';
 import {
   vaultDPPolkadotTestAccount,
@@ -26,31 +28,39 @@ import { WatchOnlyOnboardingPage } from './WatchOnlyLoginPage';
 
 export class BaseLoginPage extends BasePage<LoginPageElements> {
   public async gotoOnboarding(): Promise<BaseLoginPage> {
-    await this.goto(this.pageElements.url);
-    await this.page.getByText(this.pageElements.onboardingLabel).waitFor();
+    await step('Go to the onboarding page', async () => {
+      await this.goto(this.pageElements.url);
+      await this.page.getByText(this.pageElements.onboardingLabel).waitFor();
+    });
 
     return this;
   }
 
   public async clickWatchOnlyButton(): Promise<WatchOnlyOnboardingPage> {
-    await this.click(this.pageElements.watchOnlyButton);
+    await step('Click "Watch Only" button', async () => {
+      await this.click(this.pageElements.watchOnlyButton);
+    });
 
     return new WatchOnlyOnboardingPage(this.page, this.pageElements);
   }
 
   public async clickPolkadotVaultButton(): Promise<PolkadotVaultLoginPage> {
-    await this.click(this.pageElements.polkadotVaultButton);
+    await step('Click "Polkadot Vault" button', async () => {
+      await this.click(this.pageElements.polkadotVaultButton);
+    });
 
     return new PolkadotVaultLoginPage(this.page, this.pageElements);
   }
 
   public async createBaseWatchOnlyWallet(): Promise<WatchOnlyAssetsPage> {
-    await this.gotoOnboarding();
+    return await step('Create base Watch Only wallet', async () => {
+      await this.gotoOnboarding();
 
-    return (await this.clickWatchOnlyButton()).createWatchOnlyAccount(
-      baseTestConfig.test_name,
-      baseTestConfig.test_address,
-    );
+      return (await this.clickWatchOnlyButton()).createWatchOnlyAccount(
+        baseTestConfig.test_name,
+        baseTestConfig.test_address,
+      );
+    });
   }
 
   public async createDDPolkadotVaultWallet(): Promise<VaultAssetsPage> {
@@ -66,31 +76,35 @@ export class BaseLoginPage extends BasePage<LoginPageElements> {
   }
 
   public async importDatabase(dbFileName: string): Promise<VaultAssetsPage> {
-    await this.gotoOnboarding();
-    await this.page.getByTestId(this.pageElements.importDatabaseButton).click();
+    return await step(`Import database from ${dbFileName}`, async () => {
+      await this.gotoOnboarding();
+      await this.page.getByTestId(this.pageElements.importDatabaseButton).click();
 
-    const projectRoot = cwd();
-    const dbFilePath = join(projectRoot, 'tests/system/data/db/', dbFileName);
+      const projectRoot = cwd();
+      const dbFilePath = join(projectRoot, 'tests/system/data/db/', dbFileName);
 
-    const fileInput = this.page.locator('input[type="file"]');
-    await fileInput.setInputFiles(dbFilePath);
-    await this.click('Button');
+      const fileInput = this.page.locator('input[type="file"]');
+      await fileInput.setInputFiles(dbFilePath);
+      await this.click('Button');
 
-    return new VaultAssetsPage(this.page, new AssetsPageElements());
+      return new VaultAssetsPage(this.page, new AssetsPageElements());
+    });
   }
 
   private async injectWalletInDatabase(
     walletData: IndexedDBData,
     accountData: IndexedDBData,
   ): Promise<VaultAssetsPage> {
-    await this.gotoOnboarding();
+    return await step('Inject wallet into IndexedDB', async () => {
+      await this.gotoOnboarding();
 
-    await injectDataInDatabase(this.page, walletData);
-    await injectDataInDatabase(this.page, accountData);
+      await injectDataInDatabase(this.page, walletData);
+      await injectDataInDatabase(this.page, accountData);
 
-    await this.page.waitForTimeout(2000); // waiting for database update
-    await this.page.reload();
+      await this.page.waitForTimeout(2000); // waiting for database update
+      await this.page.reload();
 
-    return new VaultAssetsPage(this.page, new AssetsPageElements());
+      return new VaultAssetsPage(this.page, new AssetsPageElements());
+    });
   }
 }

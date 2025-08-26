@@ -1,14 +1,14 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { persist } from 'effector-storage/local';
 import { once } from 'patronum';
 
 import { type AssetByChains } from '@/shared/core';
-import { includesMultiple, nullable } from '@/shared/lib/utils';
+import { includesMultiple, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { AssetsListView } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { shardsModel, shardsUtils } from '@/features/wallets';
 import { tokensService } from '../lib/tokensService';
@@ -22,41 +22,85 @@ const transferStarted = createEvent<AssetByChains>();
 const receiveStarted = createEvent<AssetByChains>();
 
 const $hideZeroBalances = restore(hideZeroBalancesChanged, false);
-const $accounts = walletSelect.$selectedAccounts;
 const $activeView = restore<AssetsListView | null>(activeViewChanged, null);
 const $query = restore<string>(queryChanged, '');
 
-const $defaultTokens = createStore(tokensService.getTokensData());
+const $defaultTokens = createStore<AssetByChains[] | null>(null);
 
-const $activeShards = createStore<AnyAccount[] | null>(null);
+const $filteredAccounts = createStore<AnyAccount[] | null>(null);
+
+const populateFx = createEffect((): Promise<AssetByChains[] | null> => {
+  return tokensService.getTokensData();
+});
+
+persist({
+  key: 'assets_with_chains',
+  store: $defaultTokens,
+  sync: true,
+});
 
 sample({
-  clock: [shardsModel.events.shardsConfirmed, walletSelect.$selectedAccounts],
+  clock: populateFx.doneData,
+  filter: (data) => nonNullable(data),
+  target: $defaultTokens,
+});
+
+sample({
+  clock: shardsModel.events.shardsConfirmed,
   source: {
     struct: shardsModel.$selectedStructure,
     selectedAccounts: walletSelect.$selectedAccounts,
   },
   fn: ({ struct, selectedAccounts }) => shardsUtils.getSelectedShards(struct, selectedAccounts),
-  target: $activeShards,
+  target: $filteredAccounts,
+});
+
+const $allInitiators = combine(
+  {
+    accounts: walletSelect.$selectedAccounts,
+    chains: networkModel.$chains,
+  },
+  ({ accounts, chains }) => {
+    if (nullable(accounts) || Object.keys(chains).length === 0) return [];
+    const result = new Set<AnyAccount>();
+
+    for (const chain of Object.values(chains)) {
+      const initiators = accountService.findInitiators(accounts, chain);
+      if (initiators.length > 0) {
+        for (const account of initiators) {
+          result.add(account);
+        }
+      }
+    }
+
+    return Array.from(result);
+  },
+);
+
+sample({
+  clock: $allInitiators,
+  target: $filteredAccounts,
 });
 
 const $tokens = combine(
   {
     defaultTokens: $defaultTokens,
     activeView: $activeView,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     chains: networkModel.$chains,
-    accounts: $accounts,
+    accounts: $allInitiators,
   },
   ({ defaultTokens, activeView, wallet, chains, accounts }) => {
     if (activeView !== AssetsListView.TOKEN_CENTRIC) return DEFAULT_LIST;
-    if (nullable(wallet)) return DEFAULT_LIST;
+    if (nullable(wallet) || nullable(defaultTokens)) return DEFAULT_LIST;
 
     const tokens: AssetByChains[] = [];
 
     for (const token of defaultTokens) {
-      const filteredChains = token.chains.filter((chain) => {
-        return accountService.filterAccountOnChain(accounts, chains[chain.chainId]);
+      const filteredChains = token.chains.filter((tokenChain) => {
+        const chain = chains[tokenChain.chainId];
+        if (!chain) return false;
+        return accountService.filterAccountsOnChain(accounts, chain).length > 0;
       });
 
       if (filteredChains.length === 0) continue;
@@ -70,34 +114,28 @@ const $tokens = combine(
 
 const $activeTokens = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
     connections: networkModel.$connections,
     chains: networkModel.$chains,
     tokens: $tokens,
-    selectedAccounts: walletSelect.$selectedAccounts,
-    activeShards: $activeShards,
+    filteredAccounts: $filteredAccounts,
     isShardsAccessDenied: shardsModel.$isAccessDenied,
   },
-  ({ connections, chains, tokens, wallet, selectedAccounts, activeShards, isShardsAccessDenied }) => {
-    if (nullable(wallet) || Object.keys(connections).length === 0 || nullable(activeShards)) return DEFAULT_LIST;
+  ({ connections, chains, tokens, wallet, filteredAccounts }) => {
+    if (nullable(wallet) || Object.keys(connections).length === 0 || nullable(filteredAccounts)) return DEFAULT_LIST;
 
-    const filteredAccounts = isShardsAccessDenied ? selectedAccounts : activeShards;
-
-    const isMultisigWallet = walletUtils.isMultisig(wallet);
     const activeTokens: AssetByChains[] = [];
 
     for (const token of tokens) {
       const filteredChains = token.chains.filter((c) => {
         const connection = connections[c.chainId];
+        const chain = chains[c.chainId];
 
         if (nullable(connection)) return false;
+        if (nullable(chain)) return false;
         if (networkUtils.isDisabledConnection(connection)) return false;
-        if (nullable(chains[c.chainId])) return false;
-        if (isMultisigWallet) {
-          return networkUtils.isMultisigSupported(chains[c.chainId].options);
-        }
 
-        return filteredAccounts.some((acc) => accountService.isUniversalAccount(acc) || acc.chainId === c.chainId);
+        return accountService.filterAccountsOnChain(filteredAccounts, chain).length > 0;
       });
 
       if (filteredChains.length === 0) continue;
@@ -112,14 +150,15 @@ const $activeTokens = combine(
 const $activeTokensWithBalance = combine(
   {
     activeTokens: $activeTokens,
-    accounts: $accounts,
-    balances: balanceModel.$balances,
+    filteredAccounts: $filteredAccounts,
+    balances: balanceModel.$balanceMap,
   },
-  ({ activeTokens, balances, accounts }) => {
+  ({ activeTokens, balances, filteredAccounts }) => {
     const tokens: AssetByChains[] = [];
+    if (nullable(filteredAccounts)) return tokens;
 
     for (const token of activeTokens) {
-      const chainsWithBalance = tokensService.getChainWithBalance(balances, token.chains, accounts);
+      const chainsWithBalance = tokensService.getChainWithBalance(balances, token.chains, filteredAccounts);
 
       if (chainsWithBalance.length === 0) {
         continue;
@@ -177,16 +216,16 @@ const $sortedTokens = combine(
   {
     query: $query,
     activeTokensWithBalance: $activeTokensWithBalance,
-    $hideZeroBalances: $hideZeroBalances,
+    hideZeroBalances: $hideZeroBalances,
     filteredTokens: $filteredTokensWithBalance,
     assetsPrices: priceProviderModel.$assetsPrices,
     fiatFlag: priceProviderModel.$fiatFlag,
     currency: currencyModel.$activeCurrency,
   },
-  ({ query, activeTokensWithBalance, filteredTokens, $hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
+  ({ query, activeTokensWithBalance, filteredTokens, hideZeroBalances, assetsPrices, fiatFlag, currency }) => {
     const tokenList = query
       ? filteredTokens
-      : tokensService.hideZeroBalances($hideZeroBalances, activeTokensWithBalance);
+      : tokensService.hideZeroBalances(hideZeroBalances, activeTokensWithBalance);
 
     return tokensService.sortTokensByBalance(tokenList, assetsPrices, fiatFlag ? currency?.coingeckoId : undefined);
   },
@@ -196,9 +235,12 @@ const $tokensPopulated = createStore(false).on(once($sortedTokens.updates), () =
 
 export const portfolioModel = {
   $activeView,
-  $accounts,
+  $accounts: $allInitiators,
   $sortedTokens,
   $tokensPopulated,
+
+  populate: populateFx,
+
   events: {
     activeViewChanged,
     hideZeroBalancesChanged,

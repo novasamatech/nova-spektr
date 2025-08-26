@@ -12,6 +12,7 @@ type Props = Pick<ComponentProps<'a'>, 'onClick'> & {
   className?: string;
   tabIndex?: number;
   download?: boolean;
+  withLinkIcon?: boolean;
 };
 
 export const InfoLink = ({
@@ -24,6 +25,7 @@ export const InfoLink = ({
   tabIndex,
   download,
   onClick,
+  withLinkIcon,
 }: PropsWithChildren<Props>) => (
   <a
     href={url}
@@ -46,5 +48,6 @@ export const InfoLink = ({
     {iconPosition === 'left' && iconName && <Icon name={iconName} size={16} className="text-inherit" />}
     {children}
     {iconPosition === 'right' && iconName && <Icon name={iconName} size={16} className="text-inherit" />}
+    {withLinkIcon && <Icon name="link" size={16} className="text-icon-default" />}
   </a>
 );

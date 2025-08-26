@@ -6,6 +6,11 @@
     "databaseVersion": 26,
     "tables": [
       {
+        "name": "connections",
+        "schema": "++id",
+        "rowCount": 0
+      },
+      {
         "name": "wallets",
         "schema": "++id",
         "rowCount": 78
@@ -43,6 +48,11 @@
     ],
     "data": [
       {
+        "tableName": "connections",
+        "inbound": true,
+        "rows": []
+      },
+      {
         "tableName": "wallets",
         "inbound": true,
         "rows": [
@@ -50,7 +60,6 @@
             "name": "Polkadot Vault - DD",
             "type": "wallet_pv",
             "signingType": "signing_pv",
-            "isActive": true,
             "id": 1,
             "accounts": [
               {

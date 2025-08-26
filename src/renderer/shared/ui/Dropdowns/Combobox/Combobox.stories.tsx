@@ -1,7 +1,7 @@
-import { type Meta, type StoryFn } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react-vite';
 
+import { Identicon } from '@/shared/ui-entities';
 import { Icon } from '../../Icon/Icon';
-import { Identicon } from '../../Identicon/Identicon';
 
 import { Combobox } from './Combobox';
 
@@ -37,7 +37,7 @@ const customOptions = data.map((d, index) => ({
   value: d.value,
   element: (
     <div className="flex items-center gap-x-2.5">
-      <Identicon address={d.address} background={false} size={24} canCopy={false} />
+      <Identicon value={d.address} background={false} size={24} canCopy={false} />
       <p>{d.value}</p>
     </div>
   ),
@@ -55,6 +55,6 @@ Custom.args = {
   placeholder: 'Select an option',
   value: customOptions[2],
   options: customOptions,
-  suffixElement: <Icon name="warnCutout" className="absolute right-2 top-[9px] text-alert" size={16} />,
+  suffixElement: <Icon name="warnCutout" className="absolute top-[9px] right-2 text-alert" size={16} />,
   onChange: () => {},
 };

@@ -16,7 +16,7 @@ export const ProxyDepositLabel = ({ children }: PropsWithChildren) => {
           <Tooltip>
             <Tooltip.Trigger>
               <div tabIndex={0}>
-                <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                <Icon name="info" className="hover:text-icon-hover" size={16} />
               </div>
             </Tooltip.Trigger>
             <Tooltip.Content>{t('proxy.proxyDepositHint')} </Tooltip.Content>

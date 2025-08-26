@@ -1,34 +1,59 @@
 import { default as BigNumber } from 'bignumber.js';
-import { combine } from 'effector';
+import { combine, sample } from 'effector';
 
-import { dictionary, getRoundedValue, totalAmount } from '@/shared/lib/utils';
+import { dictionary, getRoundedValue, nonNullable, totalAmount } from '@/shared/lib/utils';
+import { accountService, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
+import { balanceSubModel } from '@/features/assets-balances';
+
+import { walletDetailsModel } from './wallet-details-model';
+
+const $isLoading = combine(
+  {
+    wallet: walletDetailsModel.$wallet,
+    balances: balanceModel.$balances,
+    accounts: accounts.$list,
+  },
+  ({ wallet, balances, accounts }) => {
+    if (!wallet || !balances || !accounts) return true;
+
+    const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
+
+    return !walletAccounts.some(account => balances.some(balance => balance.accountId === account.accountId));
+  },
+);
+
+sample({
+  clock: walletDetailsModel.$wallet.updates.filter({ fn: nonNullable }),
+  target: balanceSubModel.fetchWallet,
+});
 
 const $walletBalance = combine(
   {
-    wallet: walletModel.$activeWallet,
+    wallet: walletDetailsModel.$wallet,
     chains: networkModel.$chains,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     currency: currencyModel.$activeCurrency,
     prices: priceProviderModel.$assetsPrices,
+    accounts: accounts.$list,
   },
   params => {
-    const { wallet, chains, balances, prices, currency } = params;
+    const { wallet, chains, balances, prices, currency, accounts } = params;
 
-    if (!wallet || !prices || !balances || !currency?.coingeckoId) return new BigNumber(0);
+    if (!wallet || !prices || !currency?.coingeckoId) return new BigNumber(0);
 
     const isPolkadotVault = walletUtils.isPolkadotVault(wallet);
-    const accountMap = dictionary(wallet.accounts, 'accountId');
+    const accountMap = dictionary(accountService.filterAccountsByWallet(accounts, wallet.id), 'accountId');
 
-    return balances.reduce<BigNumber>((acc, balance) => {
+    return Object.values(balances).reduce<BigNumber>((acc, balance) => {
       const account = accountMap[balance.accountId];
       if (!account) return acc;
       if (accountUtils.isVaultBaseAccount(account) && isPolkadotVault) return acc;
 
-      const asset = chains[balance.chainId]?.assets?.find(asset => asset.assetId.toString() === balance.assetId);
+      const asset = chains[balance.chainId]?.assets?.find(asset => asset.assetId === balance.assetId);
 
       if (!asset?.priceId || !prices[asset.priceId]) return acc;
 
@@ -45,4 +70,5 @@ const $walletBalance = combine(
 
 export const walletBalanceModel = {
   $walletBalance,
+  $isLoading,
 };

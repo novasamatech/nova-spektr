@@ -4,8 +4,8 @@ import { memo, useEffect, useState } from 'react';
 
 import { proxyService } from '@/shared/api/proxy';
 import { type Asset } from '@/shared/core';
-import { AssetBalance } from '@/shared/ui-entities';
-import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
+import { priceProviderModel } from '@/entities/price';
+import { Fee } from '../Fee/Fee';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
@@ -45,11 +45,6 @@ export const ProxyDeposit = memo(
       return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
     }
 
-    return (
-      <div className="flex flex-col items-end gap-y-0.5">
-        <AssetBalance value={proxyDeposit} asset={asset} className={className} />
-        <AssetFiatBalance asset={asset} amount={proxyDeposit} />
-      </div>
-    );
+    return <Fee className={className} fee={proxyDeposit} asset={asset} />;
   },
 );

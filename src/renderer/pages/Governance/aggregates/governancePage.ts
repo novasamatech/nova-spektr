@@ -4,7 +4,8 @@ import { either, readonly } from 'patronum';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { referendumModel, votingModel } from '@/entities/governance';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { filterModel, listAggregate, listService, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { locksModel } from '@/features/governance/model/locks';
 import { governancePageUtils } from '../lib/governancePageUtils';
@@ -19,6 +20,7 @@ const $referendumsFilteredByQuery = combine(
   {
     referendums: $currentReferendums,
     query: filterModel.$debouncedQuery,
+    titles: listAggregate.$titles,
   },
   governancePageUtils.filteredByQuery,
 );
@@ -67,7 +69,7 @@ sample({
   clock: flow.open,
   source: {
     network: networkSelectorModel.$network,
-    wallet: walletModel.$activeWallet,
+    wallet: walletSelect.$selectedWallet,
   },
   filter: ({ network, wallet }) => nonNullable(network) && nonNullable(wallet),
   fn: ({ network, wallet }) => ({
@@ -98,7 +100,8 @@ sample({
 });
 
 export const governancePageAggregate = {
-  $all: $displayedCurrentReferendums,
+  $currentReferendums: readonly($currentReferendums),
+  $displayedReferendums: readonly($displayedCurrentReferendums),
   $ongoing: readonly($ongoing),
   $completed: readonly($completed),
   $isSearching: filterModel.$query.map((x) => x.length > 0),

@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { vi } from 'vitest';
 
 import { OperationResult } from './OperationResult';

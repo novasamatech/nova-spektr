@@ -28,7 +28,7 @@ inputs:
   pr-reviewer:
     description: "Reviewers for creating PR, support comma delimiter"
     required: false
-    default: "stepanLav,tuul-wq,johnthecat,sokolova-an"
+    default: "novasamatech/nova-spektr"
 outputs:
   pr-url:
     description: "The URL of the created pull request"

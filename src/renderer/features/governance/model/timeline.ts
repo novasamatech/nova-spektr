@@ -5,7 +5,7 @@ import { readonly } from 'patronum';
 
 import { type GovernanceApi, type ReferendumTimelineRecord } from '@/shared/api/governance';
 import { type Chain, type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
-import { getCreatedDateFromApi, nonNullable } from '@/shared/lib/utils';
+import { getCreatedDateFromApi, nonNullable, pickNestedValue } from '@/shared/lib/utils';
 import { referendumService } from '@/entities/governance';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
@@ -48,8 +48,10 @@ sample({
   source: {
     chain: networkSelectorModel.$governanceChain,
     api: governanceMetaProvider.$metaProvider,
+    timelines: $timelines,
   },
-  filter: ({ chain, api }) => nonNullable(chain) && nonNullable(api),
+  filter: ({ chain, api, timelines }, { referendum }) =>
+    nonNullable(chain) && nonNullable(api) && !pickNestedValue(timelines, chain.chainId, referendum.referendumId),
   fn: ({ chain, api }, { referendum }) => ({
     service: api!.service,
     chain: chain!,
@@ -120,9 +122,15 @@ const requestOnChainTimelineFx = createEffect<RequestOnTimelineParams, Referendu
 
 sample({
   clock: requestTimeline,
-  source: networkSelectorModel.$network,
-  filter: (network, { referendum }) => nonNullable(network) && !referendumService.isKilled(referendum),
-  fn: (network, { referendum }) => ({
+  source: {
+    network: networkSelectorModel.$network,
+    timelines: $timelines,
+  },
+  filter: ({ network, timelines }, { referendum }) =>
+    nonNullable(network) &&
+    !pickNestedValue(timelines, network.chain.chainId, referendum.referendumId) &&
+    !referendumService.isKilled(referendum),
+  fn: ({ network }, { referendum }) => ({
     api: network!.api,
     chain: network!.chain,
     referendum,

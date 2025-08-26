@@ -86,12 +86,11 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
   const createWallet: SubmitHandler<WalletForm> = ({ walletName }) => {
     if (!accountId || accountId.length === 0) return;
 
-    walletModel.events.singleshardCreated({
+    walletModel.events.createSingleshard({
       wallet: {
         name: walletName,
         rootAccountId: accountId,
         type: WalletType.SINGLE_PARITY_SIGNER,
-        signingType: SigningType.PARITY_SIGNER,
       },
       accounts: [
         {
@@ -191,7 +190,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
       </div>
 
       <div className="relative flex w-[472px] flex-col gap-y-6 rounded-r-lg bg-input-background-disabled pt-4">
-        <IconButton name="close" size={20} className="absolute right-3 top-3 m-1" onClick={onClose} />
+        <IconButton name="close" size={20} className="absolute top-3 right-3 m-1" onClick={onClose} />
 
         <SmallTitleText className="mt-15 px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
         <ChainAccountsList accounts={accounts} />

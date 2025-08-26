@@ -3,10 +3,10 @@ import { type PropsWithChildren } from 'react';
 import { type Chain } from '@/shared/core';
 import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Identicon } from '@/shared/ui';
 import { AccountExplorers } from '../AccountExplorers/AccountExplorers';
 import { Address } from '../Address/Address';
 import { CollectiveRank } from '../CollectiveRank/CollectiveRank';
+import { Identicon } from '../Identicon/Identicon';
 
 type Props = {
   name?: string;
@@ -14,9 +14,18 @@ type Props = {
   isActive: boolean;
   accountId: AccountId;
   chain: Chain;
+  hideExplorers?: boolean;
 };
 
-export const RankedAccount = ({ name, rank, isActive, accountId, chain, children }: PropsWithChildren<Props>) => {
+export const RankedAccount = ({
+  name,
+  rank,
+  isActive,
+  accountId,
+  chain,
+  children,
+  hideExplorers,
+}: PropsWithChildren<Props>) => {
   const address = toAddress(accountId, { prefix: chain.addressPrefix });
 
   return (
@@ -28,14 +37,14 @@ export const RankedAccount = ({ name, rank, isActive, accountId, chain, children
         <div className="relative flex min-w-0 shrink grow items-center gap-2">
           <div className="min-w-0">
             <div className="flex grow items-center gap-4.5">
-              <Identicon address={address} size={20} canCopy background={false} />
+              <Identicon value={address} size={20} canCopy background={false} />
               <Address title={name} address={address} showIcon={false} hideAddress variant="truncate" />
             </div>
             <div className="pointer-events-none absolute inset-y-0 left-3 my-auto h-fit w-fit">
               <Indicator active={isActive} />
             </div>
           </div>
-          <AccountExplorers accountId={accountId} chain={chain} />
+          {!hideExplorers && <AccountExplorers accountId={accountId} chain={chain} />}
         </div>
       </div>
       {children}

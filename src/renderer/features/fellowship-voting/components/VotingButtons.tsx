@@ -1,32 +1,36 @@
 import { useStoreMap, useUnit } from 'effector-react';
-import { type PropsWithChildren, memo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { type ReferendumId } from '@/shared/pallet/referenda';
-import { ButtonCard, FootnoteText, type IconNames } from '@/shared/ui';
-import { Box, Tooltip } from '@/shared/ui-kit';
-import { referendumService, trackService } from '@/domains/collectives';
+import { FootnoteText, SmallTitleText } from '@/shared/ui';
+import { Box } from '@/shared/ui-kit';
+import { type Evidence, type Referendum, referendumService, track, trackService } from '@/domains/collectives';
+import { Card } from '@/features/fellowship-referendum-details';
 import { tasksService } from '@/features/fellowship-tasks';
 import { fellowshipVotingFeature } from '../model/feature';
+import { members } from '../model/members';
 import { votingStatus } from '../model/votingStatus';
-import { categorizeImpact } from '../utils';
 
+import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
 import { VotingModal } from './VotingModal';
 
 type Props = {
-  referendumId: ReferendumId;
-  onHighlight: (value: 'Aye' | 'Nay' | null) => void;
+  referendum?: Referendum | null;
+  evidence?: Evidence | null;
 };
 
-export const VotingButtons = memo(({ referendumId, onHighlight }: Props) => {
-  useFlow(votingStatus.flow, { referendumId });
+export const VotingButtons = memo(({ referendum, evidence }: Props) => {
+  useFlow(votingStatus.flow, { referendumId: referendum?.id ?? null });
 
   const { t } = useI18n();
 
+  const input = useUnit(fellowshipVotingFeature.input);
+  const tracks = useUnit(track.$list);
+
   const chain = useStoreMap(fellowshipVotingFeature.input, input => input?.chain ?? null);
-  const referendum = useUnit(votingStatus.$referendum);
+
   const canVote = useUnit(votingStatus.$canVote);
   const hasRequiredRank = useUnit(votingStatus.$hasRequiredRank);
   const voting = useUnit(votingStatus.$referendumVoting);
@@ -35,6 +39,46 @@ export const VotingButtons = memo(({ referendumId, onHighlight }: Props) => {
   const maxRank = useUnit(votingStatus.$maxRank);
 
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
+
+  const proposerMember = useStoreMap({
+    store: members.$list,
+    keys: [referendum, evidence],
+    fn: (members, [referendum, evidence]) => {
+      if (nonNullable(referendum) && referendumService.isOngoing(referendum)) {
+        const proposer = referendumService.getProposer(referendum);
+        return members.find(m => m.accountId === proposer) ?? null;
+      }
+
+      if (nonNullable(evidence)) {
+        return members.find(m => m.accountId === evidence?.accountId) ?? null;
+      }
+
+      return null;
+    },
+  });
+
+  const title = useMemo(() => {
+    if (!referendum || !referendumService.isOngoing(referendum)) return '';
+
+    const relatedTracks = input ? tracks.fellowship?.[input.chainId] : null;
+    const isPromotion = evidence?.wish === 'Promotion' || trackService.isPromotionTrack(referendum.track);
+
+    if (!relatedTracks || !proposerMember) return '';
+
+    const trackName = isPromotion ? 'Promotion' : 'Retention';
+
+    if (referendum.proposal && referendumService.isEvidenceProposal(referendum.proposal)) {
+      return t('fellowship.tasks.titles.votingTitle.rank', {
+        rank: trackService.getProposalTrack(relatedTracks, proposerMember, trackName),
+      });
+    }
+
+    if (referendum.proposal && referendumService.isSpendProposal(referendum.proposal)) {
+      return t('fellowship.tasks.titles.votingTitle.spend');
+    }
+
+    return t('fellowship.tasks.titles.votingTitle.rfcOrWhitelist');
+  }, [referendum, input, tracks]);
 
   if (nullable(chain) || nullable(referendum) || referendumService.isCompleted(referendum) || nullable(currentMember)) {
     return null;
@@ -45,8 +89,8 @@ export const VotingButtons = memo(({ referendumId, onHighlight }: Props) => {
 
   const buttonDiabled = !canVote || !hasRequiredRank;
 
-  const renderAyeButton = nullable(voting) || voting.decision !== 'Aye';
-  const renderNayButton = nullable(voting) || voting.decision !== 'Nay';
+  const alreadyVotedNay = nonNullable(voting) && voting.decision === 'Nay';
+  const alreadyVotedAye = nonNullable(voting) && voting.decision === 'Aye';
 
   const memberVoteWeight = trackService.getVoteWeight({
     pallet: 'fellowship',
@@ -62,97 +106,47 @@ export const VotingButtons = memo(({ referendumId, onHighlight }: Props) => {
     ) * 100;
 
   return (
-    <>
-      <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+    <Card>
+      <Box padding={6} gap={6}>
+        <SmallTitleText>{title}</SmallTitleText>
+        <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
 
-      <Box gap={4}>
-        <Box direction="row" gap={4}>
-          {renderNayButton ? (
-            <ButtonWithTooltip
-              pallet="negative"
-              icon="thumbDown"
+        <Box gap={4}>
+          <Box direction="row" gap={4}>
+            <VotingButtonWithTooltip
+              variant="negative"
+              icon="negative"
               disabled={buttonDiabled}
               votes={memberVoteWeight}
               voteImpact={userVotesImpact}
-              onClick={() => setDecision('nay')}
-              onHighlight={onHighlight}
+              isVoted={alreadyVotedNay}
+              checked={alreadyVotedNay}
+              fullWidth
+              onClick={() => !alreadyVotedNay && setDecision('nay')}
             >
-              {t('fellowship.voting.nay')}
-            </ButtonWithTooltip>
-          ) : null}
+              {t('fellowship.voting.notGood')}
+            </VotingButtonWithTooltip>
 
-          {renderAyeButton ? (
-            <ButtonWithTooltip
-              pallet="positive"
-              icon="thumbUp"
+            <VotingButtonWithTooltip
+              variant="positive"
+              icon="positive"
               disabled={buttonDiabled}
               votes={memberVoteWeight}
               voteImpact={userVotesImpact}
-              onClick={() => setDecision('aye')}
-              onHighlight={onHighlight}
+              isVoted={alreadyVotedAye}
+              checked={alreadyVotedAye}
+              fullWidth
+              onClick={() => !alreadyVotedAye && setDecision('aye')}
             >
-              {t('fellowship.voting.aye')}
-            </ButtonWithTooltip>
+              {t('fellowship.voting.good')}
+            </VotingButtonWithTooltip>
+          </Box>
+
+          {canVote && !hasRequiredRank ? (
+            <FootnoteText className="text-center">{t('fellowship.voting.errors.rankThreshold')}</FootnoteText>
           ) : null}
         </Box>
-
-        {canVote && !hasRequiredRank ? (
-          <FootnoteText className="text-center">{t('fellowship.voting.errors.rankThreshold')}</FootnoteText>
-        ) : null}
       </Box>
-    </>
+    </Card>
   );
 });
-
-type ButtonTooltips = {
-  pallet: 'positive' | 'negative';
-  disabled: boolean;
-  votes: number;
-  voteImpact: number;
-  icon: IconNames;
-  onClick: () => void;
-  onHighlight: (value: 'Aye' | 'Nay' | null) => void;
-};
-
-export const ButtonWithTooltip = ({
-  pallet,
-  disabled,
-  onClick,
-  onHighlight,
-  votes,
-  voteImpact,
-  icon,
-  children,
-}: PropsWithChildren<ButtonTooltips>) => {
-  const { t } = useI18n();
-
-  const tooltipText = pallet === 'positive' ? t('voteChart.aye') : t('voteChart.nay');
-  const impact = categorizeImpact(voteImpact);
-
-  return (
-    <Tooltip>
-      <Tooltip.Trigger>
-        <div
-          className="w-full"
-          onMouseOver={() => onHighlight(pallet === 'positive' ? 'Aye' : 'Nay')}
-          onMouseLeave={() => onHighlight(null)}
-        >
-          <ButtonCard pallet={pallet} icon={icon} disabled={disabled} fullWidth onClick={onClick}>
-            {children}
-          </ButtonCard>
-        </div>
-      </Tooltip.Trigger>
-      <Tooltip.Content>
-        <p>
-          <span>
-            {tooltipText}: {t('fellowship.votingHistory.votes', { count: votes })}
-          </span>
-          <br />
-          <span>
-            {t('fellowship.voting.voteImpact.impact')} {t(`fellowship.voting.voteImpact.${impact}`)}
-          </span>
-        </p>
-      </Tooltip.Content>
-    </Tooltip>
-  );
-};

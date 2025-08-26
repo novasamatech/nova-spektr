@@ -1,8 +1,10 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
+import { t } from 'i18next';
 
-import { type Account } from '@/shared/core';
 import { formatAmount } from '@/shared/lib/utils';
+import { createTxValidator } from '@/shared/transactions';
+import { type AnyAccount } from '@/domains/network';
 import { type ShardsBondBalanceStore, type ShardsProxyFeeStore, type SignatoryFeeStore } from '../types/types';
 
 import { balanceValidation, descriptionValidation } from './validation';
@@ -20,7 +22,7 @@ export const NominateRules = {
     }),
     noBondBalance: (source: Store<ShardsBondBalanceStore>) => ({
       name: 'noBondBalance',
-      errorText: 'staking.bond.noBondBalanceError',
+      errorText: t('staking.bond.noBondBalanceError'),
       source,
       validator: (shards: any[], form: any, { isProxy, network, accountsBalances }: ShardsBondBalanceStore) => {
         if (isProxy || shards.length === 1) return true;
@@ -34,9 +36,9 @@ export const NominateRules = {
   signatory: {
     noSignatorySelected: (source: Store<boolean>) => ({
       name: 'noSignatorySelected',
-      errorText: 'transfer.noSignatoryError',
+      errorText: t('transfer.noSignatoryError'),
       source,
-      validator: (signatory: Account, _: any, isMultisig: boolean) => {
+      validator: (signatory: AnyAccount, _: any, isMultisig: boolean) => {
         if (!isMultisig) return true;
 
         return Object.keys(signatory).length > 0;
@@ -44,7 +46,7 @@ export const NominateRules = {
     }),
     notEnoughTokens: (source: Store<SignatoryFeeStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
       source,
       validator: (_s: any, _f: any, { feeData, isMultisig, signatoryBalance }: SignatoryFeeStore) => {
         if (!isMultisig) return true;
@@ -58,8 +60,10 @@ export const NominateRules = {
   description: {
     maxLength: {
       name: 'maxLength',
-      errorText: 'transfer.descriptionLengthError',
+      errorText: t('transfer.descriptionLengthError'),
       validator: descriptionValidation.isMaxLength,
     },
   },
 };
+
+export const nominateValidator = createTxValidator();

@@ -40,7 +40,7 @@ export type FlexibleMultisigCreated = MultisigBaseNotification & {
   multisigAccountName: string;
 };
 
-export type MultisigOperation = MultisigBaseNotification & {
+export type MultisigOperationNotification = MultisigBaseNotification & {
   callHash: CallHash;
   callTimepoint: Timepoint;
   chainId: ChainId;
@@ -57,4 +57,4 @@ export type ProxyAction = BaseNotification & {
   proxiedWalletName: string;
 };
 
-export type Notification = MultisigCreated | MultisigOperation | ProxyAction;
+export type Notification = MultisigCreated | MultisigOperationNotification | ProxyAction;

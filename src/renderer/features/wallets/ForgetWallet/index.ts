@@ -1,2 +1,2 @@
 export { forgetWalletModel } from './model/forget-wallet-model';
-export { ForgetWalletModal } from './ui/ForgetWalletModal';
+export { ForgetWalletConfirm } from './ui/ForgetWalletConfirm';

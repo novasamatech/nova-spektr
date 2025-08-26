@@ -35,13 +35,20 @@ function isSameProxy(oldProxy: NoID<ProxyAccount>, newProxy: NoID<ProxyAccount>)
   );
 }
 
-function isSameProxied(oldProxy: PartialProxiedAccount, newProxy: PartialProxiedAccount): boolean {
+function isSameProxied(oldProxied: PartialProxiedAccount, newProxied: PartialProxiedAccount): boolean {
   return (
-    oldProxy.accountId === newProxy.accountId &&
-    oldProxy.proxyAccountId === newProxy.proxyAccountId &&
-    oldProxy.chainId === newProxy.chainId &&
-    oldProxy.proxyType === newProxy.proxyType &&
-    oldProxy.delay === newProxy.delay
+    oldProxied.accountId === newProxied.accountId &&
+    oldProxied.chainId === newProxied.chainId &&
+    oldProxied.connections.length === newProxied.connections.length &&
+    oldProxied.connections.every((existingConnection, index) => {
+      const newConnection = newProxied.connections.at(index);
+      return (
+        newConnection &&
+        existingConnection.proxyAccountId === newConnection.proxyAccountId &&
+        existingConnection.proxyType === newConnection.proxyType &&
+        existingConnection.delay === newConnection.delay
+      );
+    })
   );
 }
 
@@ -51,7 +58,7 @@ function isApiConnected(apis: Record<ChainId, ApiPromise>, chainId: ChainId): bo
   return Boolean(api?.isConnected);
 }
 
-function isDelayedProxy(proxy: NoID<ProxyAccount>): boolean {
+function isDelayedProxy(proxy: Pick<ProxyAccount, 'delay'>): boolean {
   return proxy.delay !== 0;
 }
 

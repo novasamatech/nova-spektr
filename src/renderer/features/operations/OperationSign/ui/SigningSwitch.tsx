@@ -22,7 +22,7 @@ export const SigningSwitch = (props: SigningProps) => {
   // TODO show empty payload error
   if (!firstPayload) return null;
 
-  const signingType = firstPayload.signatory?.signingType ?? firstPayload.account?.signingType;
+  const signingType = firstPayload.signatory.signingType;
 
   return SigningFlow[signingType](props);
 };

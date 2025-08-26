@@ -1,8 +1,9 @@
 import { type TFunction } from 'i18next';
 
-import { type BasketTransaction, type Chain, TransactionType } from '@/shared/core';
+import { type Chain, TransactionType } from '@/shared/core';
 import { type DropdownOption, type DropdownResult } from '@/shared/ui/types';
 import { XcmTypes, findCoreBatchAll } from '@/entities/transaction';
+import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { type SelectedFilters } from '../model/filter';
 
 import { TransferTypes, TxStatus, UNKNOWN_TYPE } from './constants';
@@ -90,8 +91,8 @@ export const getTransactionOptions = (t: TFunction) => {
       element: t('operations.titles.createPureProxy'),
     },
     {
-      id: TransactionType.REMOVE_PURE_PROXY,
-      value: TransactionType.REMOVE_PURE_PROXY,
+      id: TransactionType.KILL_PURE_PROXY,
+      value: TransactionType.KILL_PURE_PROXY,
       element: t('operations.titles.removePureProxy'),
     },
     {

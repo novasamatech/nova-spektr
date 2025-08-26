@@ -16,7 +16,7 @@ describe('basketOperationsService', () => {
       id: 0,
       initiatorAccountId: '0x00' as AccountId,
       coreTx: neededCoreTx,
-      txWrappers: [],
+      route: [],
       createdAt: Date.now(),
     };
 

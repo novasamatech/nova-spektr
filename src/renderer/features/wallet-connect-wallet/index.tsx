@@ -2,8 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { isEthereumAccountId, isPolkadotChain } from '@/shared/lib/utils';
-import { type IconTheme, WalletAccountIcon } from '@/shared/ui-entities';
+import { isPolkadotChain } from '@/shared/lib/utils';
+import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountService, accounts } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
@@ -24,8 +24,21 @@ accountSDK(walletConnectWalletFeature, {
   canSignMultipleTransactions() {
     return false;
   },
-  collectAccountChildren(children) {
-    return children;
+  visualGraphNode({ account, wallet }) {
+    if (accountUtils.isWcAccount(account)) {
+      if (walletUtils.isNovaWallet(wallet)) {
+        return {
+          title: 'Nova Wallet',
+          color: '#305CE7',
+          background: 'linear-gradient(180deg, #225FE7 50%, #D7D3E9 80%)',
+        };
+      }
+
+      return {
+        title: 'WalletConnect',
+        color: '#3B99FC',
+      };
+    }
   },
 });
 
@@ -40,10 +53,7 @@ walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
     walletAccounts.at(0);
   const address = mainAccount?.accountId;
 
-  const isEthereum = isEthereumAccountId(address);
-  const theme: IconTheme = isEthereum ? 'ethereum' : 'polkadot';
-
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
+  return <WalletAccountIcon address={address} type={wallet.type} size={size} />;
 });
 
 walletConnectWalletFeature.inject(walletGroupSlot, {

@@ -31,9 +31,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
 
   test('should go through the process of proxy create', async () => {
     jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
-    jest.spyOn(storageService.proxyGroups, 'createAll').mockResolvedValue([]);
     jest.spyOn(storageService.proxies, 'updateAll').mockResolvedValue([]);
-    jest.spyOn(storageService.proxyGroups, 'updateAll').mockResolvedValue([]);
 
     const scope = fork({
       values: new Map()
@@ -43,12 +41,13 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet]),
     });
 
-    await allSettled(addProxyModel.events.flowStarted, { scope });
+    await allSettled(addProxyModel.events.flowStarted, { scope, params: initiatorWallet });
 
-    expect(scope.getState(addProxyModel.$chain)).toEqual(undefined);
+    expect(scope.getState(addProxyModel.$chain)).toEqual(null);
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.INIT);
 
-    await allSettled(formModel.output.formSubmitted, {
+    const account = createVaultBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] });
+    await allSettled(formModel.formSubmitted, {
       scope,
       params: {
         transactions: {
@@ -57,8 +56,8 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
         },
         formData: {
           chain: testChain,
-          signatory: null,
-          account: createVaultBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] }),
+          signatory: account,
+          initiator: account,
           delegate: TEST_ACCOUNTS[0],
           proxyType: 'Any',
           proxyDeposit: '1',
@@ -71,7 +70,7 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.CONFIRM);
 
-    await allSettled(confirmModel.output.formSubmitted, { scope });
+    await allSettled(confirmModel.startSigning, { scope });
 
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.SIGN);
 

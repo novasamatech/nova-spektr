@@ -3,8 +3,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
 import { type MultisigAccount, type ProxiedAccount } from './account';
-import { type CallData, type CallHash, type ChainId, type HexString } from './general';
-import { type Signatory } from './signatory';
+import { type ChainId } from './general';
 import { type PartialBy } from './utility';
 
 export const enum TransactionType {
@@ -38,9 +37,11 @@ export const enum TransactionType {
   REMOVE_PROXY = 'remove_proxy',
   PROXY = 'proxy',
   CREATE_PURE_PROXY = 'create_pure_proxy',
-  REMOVE_PURE_PROXY = 'kill_pure_proxy',
+  KILL_PURE_PROXY = 'kill_pure_proxy',
 
   REMARK = 'remark',
+
+  REMARK_WITH_EVENT = 'remark_with_event',
 
   UNLOCK = 'unlock',
   VOTE = 'vote',
@@ -94,45 +95,6 @@ export type DecodedTransaction = PartialBy<Transaction, 'type'> & {
   method: string;
   section: string;
 };
-
-export type MultisigEvent = {
-  txAccountId: AccountId;
-  txChainId: ChainId;
-  txCallHash: CallHash;
-  txBlock: number;
-  txIndex: number;
-  accountId: AccountId;
-  status: SigningStatus;
-  multisigOutcome?: MultisigTxStatus;
-  extrinsicHash?: HexString;
-  eventBlock?: number;
-  eventIndex?: number;
-  dateCreated?: number;
-};
-
-export type MultisigTransaction = {
-  accountId: AccountId;
-  chainId: ChainId;
-  callData?: CallData;
-  callHash: CallHash;
-  status: MultisigTxStatus;
-  signatories: Signatory[];
-  deposit?: string;
-  depositor?: AccountId;
-  blockCreated: number;
-  indexCreated: number;
-  dateCreated?: number;
-  transaction?: Transaction | DecodedTransaction;
-};
-
-export type FlexibleMultisigTransaction = MultisigTransaction & {
-  proxiedAccount: ProxiedAccount;
-};
-
-export type MultisigTransactionKey = Pick<
-  MultisigTransaction,
-  'accountId' | 'callHash' | 'chainId' | 'indexCreated' | 'blockCreated'
->;
 
 export const enum WrapperKind {
   MULTISIG = 'multisig',

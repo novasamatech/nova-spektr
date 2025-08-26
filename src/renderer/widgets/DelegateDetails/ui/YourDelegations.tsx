@@ -3,18 +3,17 @@ import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
+import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { Account as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { Box, Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { allTracks, locksService } from '@/entities/governance';
-import { accountUtils, walletModel } from '@/entities/wallet';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
-const GRID_TEMPLATE = 'grid-cols-[40px,412px,166px,62px,44px,44px]';
+const GRID_TEMPLATE = 'grid-cols-[40px_412px_166px_62px_44px_44px]';
 
 export const YourDelegations = () => {
   const { t } = useI18n();
@@ -25,18 +24,15 @@ export const YourDelegations = () => {
   const activeDelegations = useUnit(delegateDetailsModel.$activeDelegations);
   const activeTracks = useUnit(delegateDetailsModel.$activeTracks);
   const delegate = useUnit(delegateDetailsModel.$delegate);
-  const wallet = useUnit(walletModel.$activeWallet);
+  const initiators = useUnit(delegateDetailsModel.$initiators);
 
   const [selectedAccounts, setSelectedAccounts] = useState<AnyAccount[]>([]);
 
   if (!chain) return null;
 
   const accounts =
-    wallet?.accounts.filter((account) => {
-      const isChainMatch = accountUtils.isChainAndCryptoMatch(account, chain);
-      const accountExist = activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix }));
-
-      return isChainMatch && accountExist;
+    initiators.filter((account) => {
+      return activeAccounts.includes(account.accountId);
     }) || [];
 
   const toggleAccount = (account: AnyAccount) => {
@@ -51,9 +47,7 @@ export const YourDelegations = () => {
     if (selectedAccounts.length === activeAccounts.length) {
       setSelectedAccounts([]);
     } else {
-      const selectableAccounts = activeAccounts.map((address) => {
-        return wallet?.accounts.find((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === address);
-      });
+      const selectableAccounts = activeAccounts.map((accountId) => accounts.find((a) => a.accountId === accountId));
 
       setSelectedAccounts(selectableAccounts.filter(nonNullable));
     }
@@ -70,7 +64,7 @@ export const YourDelegations = () => {
     >
       <Modal.Title close>{t('governance.delegationDetails.yourDelegationsTitle')}</Modal.Title>
       <Modal.Content>
-        <div className={cnTw('mx-2 mb-2 mt-4 grid grid-flow-row items-center', GRID_TEMPLATE)}>
+        <div className={cnTw('mx-2 mt-4 mb-2 grid grid-flow-row items-center', GRID_TEMPLATE)}>
           <Box direction="row" horizontalAlign="center" verticalAlign="center">
             <Checkbox
               checked={selectedAccounts.length === activeAccounts.length}
@@ -88,17 +82,17 @@ export const YourDelegations = () => {
         </div>
 
         <ul className="mx-2 mb-4 flex flex-col gap-y-2">
-          {activeAccounts.map((address, index) => {
-            const activeDelegation = activeDelegations[address];
+          {activeAccounts.map((accountId, index) => {
+            const activeDelegation = activeDelegations[accountId];
 
-            const account = wallet?.accounts.find((a) => {
-              return toAddress(a.accountId, { prefix: chain.addressPrefix }) === address;
+            const account = accounts.find((a) => {
+              return a.accountId === accountId;
             });
 
             if (!account || !activeDelegation || !activeTracks[account.accountId]) return null;
 
             return (
-              <li key={address} className={cnTw('grid h-13 grid-flow-row items-center', GRID_TEMPLATE)}>
+              <li key={accountId} className={cnTw('grid h-13 grid-flow-row items-center', GRID_TEMPLATE)}>
                 <Box horizontalAlign="center">
                   <Checkbox checked={selectedAccounts.includes(account)} onChange={() => toggleAccount(account)} />
                 </Box>
@@ -164,7 +158,7 @@ export const YourDelegations = () => {
                       name="delete"
                       onClick={() =>
                         delegate &&
-                        revokeDelegationModel.events.flowStarted({
+                        revokeDelegationModel.flowStarted({
                           delegate: delegate.accountId,
                           accounts: [accounts[index]],
                         })
@@ -188,7 +182,7 @@ export const YourDelegations = () => {
               disabled={!selectedAccounts.length}
               onClick={() =>
                 delegate &&
-                revokeDelegationModel.events.flowStarted({
+                revokeDelegationModel.flowStarted({
                   delegate: delegate.accountId,
                   accounts: selectedAccounts,
                 })

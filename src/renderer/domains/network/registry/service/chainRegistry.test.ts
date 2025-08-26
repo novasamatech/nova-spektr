@@ -39,8 +39,17 @@ describe('ChainRegistry', () => {
     });
   });
 
-  it('should create a singleton instance', () => {
-    expect(getChainRegistry()).toEqual(getChainRegistry());
+  it('should create a singleton instance', async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(chainsMock),
+      } as Response),
+    );
+    const instanceA = await getChainRegistry();
+    const instanceB = await getChainRegistry();
+    expect(instanceA).toEqual(instanceB);
   });
 
   it('should initialize with provided chains', () => {

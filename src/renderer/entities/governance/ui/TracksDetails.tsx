@@ -12,8 +12,8 @@ export const TracksDetails = ({ tracks }: Props) => {
   const { t } = useI18n();
 
   return (
-    <div className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover">
-      <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
+    <div className="group flex items-center gap-x-1 rounded-sm px-2 py-1 hover:bg-action-background-hover">
+      <div className="rounded-[30px] bg-icon-accent px-1.5 py-px">
         <CaptionText className="text-white">{tracks.length}</CaptionText>
       </div>
 

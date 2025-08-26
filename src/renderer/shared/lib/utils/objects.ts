@@ -70,12 +70,14 @@ export const toSerializable = <T>(value: T): Serializable<T> => {
   return res as never;
 };
 
-export const isEqual = (a: unknown, b: unknown) => {
-  return isEqualWith(a, b, (a, b) => {
-    if (BN.isBN(a) && BN.isBN(b)) {
-      return a.eq(b);
-    }
+function compareBN(a: unknown, b: unknown) {
+  const isAbn = BN.isBN(a);
+  const isBbn = BN.isBN(b);
 
-    if (BN.isBN(a) || BN.isBN(b)) return false;
-  });
-};
+  if (isAbn && isBbn) return a.eq(b);
+  if (isAbn || isBbn) return false;
+}
+
+export function isEqual(a: unknown, b: unknown): boolean {
+  return isEqualWith(a, b, compareBN);
+}

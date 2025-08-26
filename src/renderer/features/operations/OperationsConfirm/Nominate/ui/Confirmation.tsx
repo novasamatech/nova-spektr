@@ -4,12 +4,12 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { Button, CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
-import { AssetFiatBalance } from '@/entities/price';
-import { AccountsModal, SelectedValidatorsModal, StakingPopover } from '@/entities/staking';
+import { SelectedValidatorsModal, StakingPopover } from '@/entities/staking';
+import { Fee, FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -24,6 +24,7 @@ type Props = {
 export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, onGoBack }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
+  const confirms = useUnit(confirmModel.$confirms);
 
   const confirmStore = useStoreMap({
     store: confirmModel.$confirmStore,
@@ -31,36 +32,27 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     fn: (value, [id]) => value?.[id],
   });
 
-  const initiatorWallet = useStoreMap({
-    store: confirmModel.$initiatorWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
-  const signerWallet = useStoreMap({
-    store: confirmModel.$signerWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
   const identities = useStoreMap({
     store: identity.$list,
-    keys: [confirmStore?.chain?.chainId],
+    keys: [confirmStore?.meta?.chain?.chainId],
     fn: (value, [chainId]) => value[chainId] ?? {},
   });
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const [isAccountsOpen, toggleAccounts] = useToggle();
   const [isValidatorsOpen, toggleValidators] = useToggle();
 
-  if (!confirmStore || !initiatorWallet) {
+  if (!confirmStore) {
     return null;
   }
 
+  const { chain, asset, route, validators, signatory, fee, totalFee, multisigDeposit } = confirmStore.meta;
+
+  const multisigAccount = route.find(accountUtils.isMultisigAccount);
+
   return (
     <>
-      <div className="flex w-modal flex-col items-center gap-y-4 px-5 pb-4 pt-4">
+      <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
         <div className="mb-2 flex flex-col items-center gap-y-3">
           <Icon className="text-icon-default" name="changeValidatorsConfirm" size={60} />
         </div>
@@ -68,20 +60,19 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <MultisigExistsAlert active={isMultisigExists} />
 
         <TransactionDetails
-          chain={confirmStore.chain}
+          chain={chain}
           wallets={wallets}
-          initiator={confirmStore.shards}
-          signatory={confirmStore.signatory}
-          proxied={confirmStore.proxiedAccount}
+          initiators={confirms.map((c) => c.meta.initiator)}
+          signatory={signatory}
         >
           <DetailRow label={t('staking.confirmation.validatorsLabel')}>
             <button
               type="button"
-              className="group flex items-center gap-x-1 rounded px-2 py-1 hover:bg-action-background-hover"
+              className="group flex items-center gap-x-1 rounded-sm px-2 py-1 hover:bg-action-background-hover"
               onClick={toggleValidators}
             >
-              <div className="rounded-[30px] bg-icon-accent px-1.5 py-[1px]">
-                <CaptionText className="text-white">{confirmStore.validators.length}</CaptionText>
+              <div className="rounded-[30px] bg-icon-accent px-1.5 py-px">
+                <CaptionText className="text-white">{validators.length}</CaptionText>
               </div>
               <Icon className="group-hover:text-icon-hover" name="info" size={16} />
             </button>
@@ -89,7 +80,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
           <hr className="w-full border-filter-border pr-2" />
 
-          {confirmStore.shards?.[0] && accountUtils.isMultisigAccount(confirmStore.shards[0]) && (
+          {multisigAccount && (
             <DetailRow
               className="text-text-primary"
               label={
@@ -107,38 +98,13 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
                 </>
               }
             >
-              <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.multisigDeposit} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.multisigDeposit} />
-              </div>
+              <Fee fee={multisigDeposit} asset={asset} />
             </DetailRow>
           )}
 
-          <DetailRow
-            className="text-text-primary"
-            label={
-              <FootnoteText className="text-text-tertiary">
-                {t('staking.networkFee', { count: confirmStore.shards.length || 1 })}
-              </FootnoteText>
-            }
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
-            </div>
-          </DetailRow>
+          <FeeWithLabel fee={fee} asset={asset} label={t('staking.networkFee', { count: confirms.length || 1 })} />
 
-          {confirmStore.shards.length > 1 && (
-            <DetailRow
-              className="text-text-primary"
-              label={<FootnoteText className="text-text-tertiary">{t('staking.networkFeeTotal')}</FootnoteText>}
-            >
-              <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={confirmStore.totalFee} asset={confirmStore.chain.assets[0]} />
-                <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.totalFee} />
-              </div>
-            </DetailRow>
-          )}
+          {confirms.length > 1 && <FeeWithLabel fee={totalFee} asset={asset} label={t('staking.networkFeeTotal')} />}
 
           <StakingPopover labelText={t('staking.confirmation.hintTitle')}>
             <StakingPopover.Item>{t('staking.confirmation.hintNewValidators')}</StakingPopover.Item>
@@ -158,26 +124,17 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             {!hideSignButton && !isMultisigExists && (
               <SignButton
                 isDefault={Boolean(secondaryActionButton)}
-                type={(signerWallet || initiatorWallet).type}
-                onClick={confirmModel.output.formSubmitted}
+                type={confirmStore.wallets.signatory?.type}
+                onClick={confirmModel.startSigning}
               />
             )}
           </div>
         </div>
       </div>
 
-      <AccountsModal
-        isOpen={isAccountsOpen}
-        accounts={confirmStore.shards}
-        chainId={confirmStore.chain.chainId}
-        asset={confirmStore.asset}
-        addressPrefix={confirmStore.chain.addressPrefix}
-        onClose={toggleAccounts}
-      />
-
       <SelectedValidatorsModal
         isOpen={isValidatorsOpen}
-        validators={confirmStore.validators}
+        validators={validators}
         identities={identities}
         onClose={toggleValidators}
       />

@@ -14,7 +14,7 @@ describe('entities/wallet/model/wallet-model', () => {
   });
 
   test('should set $allWallets, $activeWallets with data on appStarted', async () => {
-    const wallets = walletMock.getWallets(1);
+    const wallets = walletMock.getWallets();
 
     const scope = fork({
       handlers: [
@@ -26,11 +26,10 @@ describe('entities/wallet/model/wallet-model', () => {
     await allSettled(accounts.populate, { scope });
     await allSettled(walletModel.populate, { scope });
     expect(scope.getState(walletModel.$allWallets)).toEqual(wallets);
-    expect(scope.getState(walletModel.$activeWallet)).toEqual(wallets[0]);
   });
 
   test('should update $allWallets on walletRemoved', async () => {
-    const wallets = walletMock.getWallets(0);
+    const wallets = walletMock.getWallets();
     const [removedWallet, ...remainingWallets] = wallets;
 
     jest.spyOn(storageService.wallets, 'delete').mockResolvedValue(1);
@@ -43,13 +42,13 @@ describe('entities/wallet/model/wallet-model', () => {
       handlers: [[accounts.deleteAccounts, (accounts: AnyAccount[]) => accounts]],
     });
 
-    await allSettled(walletModel.events.walletRemoved, { scope, params: removedWallet.id });
+    await allSettled(walletModel.events.removeWallet, { scope, params: removedWallet.id });
 
     expect(scope.getState(walletModel.$allWallets)).toEqual(remainingWallets);
   });
 
   test('should update $allWallets on walletsRemoved', async () => {
-    const wallets = walletMock.getWallets(0);
+    const wallets = walletMock.getWallets();
     const [removedWallet, ...remainingWallets] = wallets;
 
     const removedAccounts = walletMock.accounts.filter((a) => a.walletId === removedWallet.id);
@@ -65,14 +64,14 @@ describe('entities/wallet/model/wallet-model', () => {
       handlers: [[accounts.deleteAccounts, accoutsDeleteSpy]],
     });
 
-    await allSettled(walletModel.events.walletsRemoved, { scope, params: [removedWallet.id] });
+    await allSettled(walletModel.walletsRemoved, { scope, params: [removedWallet.id] });
 
     expect(accoutsDeleteSpy).toHaveBeenCalledWith(removedAccounts);
     expect(scope.getState(walletModel.__test.$rawWallets)).toEqual(remainingWallets);
   });
 
   test('should update $wallets and $hiddenWallets when $rawWallets is updated', async () => {
-    const wallets = walletMock.getWallets(0);
+    const wallets = walletMock.getWallets();
     const hiddenWallet = wallets[2];
     const visibleWallets = wallets.filter((wallet) => !wallet?.isHidden);
 

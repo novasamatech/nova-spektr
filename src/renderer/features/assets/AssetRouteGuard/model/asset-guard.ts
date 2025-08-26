@@ -1,8 +1,8 @@
 import { attach, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import { type NavigateFunction } from 'react-router-dom';
 
-import { chainsService } from '@/shared/api/network';
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
+import { networkModel } from '@/entities/network';
 
 const validateUrlParams = createEvent<URLSearchParams>();
 const storeCleared = createEvent();
@@ -22,11 +22,12 @@ const navigationApi = createApi($navigation, {
 type ValidateParams = {
   chainId: string | null;
   assetId: string | null;
+  chains: Record<ChainId, Chain>;
 };
-const getChainAndAssetFx = createEffect(({ chainId, assetId }: ValidateParams) => {
+const getChainAndAssetFx = createEffect(({ chainId, assetId, chains }: ValidateParams) => {
   if (!chainId || !assetId) return undefined;
 
-  const chain = chainsService.getChainById(chainId as ChainId);
+  const chain = chains[chainId as ChainId];
   const asset = chain?.assets.find((a) => a.assetId === Number(assetId));
 
   return { chain, asset };
@@ -34,9 +35,11 @@ const getChainAndAssetFx = createEffect(({ chainId, assetId }: ValidateParams) =
 
 sample({
   clock: validateUrlParams,
-  fn: (urlParams) => ({
+  source: networkModel.$chains,
+  fn: (chains, urlParams) => ({
     chainId: urlParams.get('chainId'),
     assetId: urlParams.get('assetId'),
+    chains,
   }),
   target: getChainAndAssetFx,
 });

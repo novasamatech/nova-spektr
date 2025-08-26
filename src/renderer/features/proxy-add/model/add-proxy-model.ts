@@ -1,35 +1,37 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
 import { type Transaction } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
+import { accountSync } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
-import { basketOperations } from '@/aggregates/basket-operations';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { balanceSubModel } from '@/features/assets-balances';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { addProxyConfirmModel as confirmModel } from '@/features/operations/OperationsConfirm/AddProxy';
-import { proxiesModel } from '@/features/proxies';
+import {
+  type AddProxyConfirm,
+  addProxyConfirmModel as confirmModel,
+} from '@/features/operations/OperationsConfirm/AddProxy';
 import { type AddProxyStore, Step } from '../lib/types';
 
 import { formModel } from './form-model';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent();
 const flowFinished = createEvent();
 const flowClosed = createEvent();
 const txSaved = createEvent();
 
-const $step = createStore<Step>(Step.NONE);
+const $step = restore(stepChanged, Step.NONE);
 
 const $addProxyStore = createStore<AddProxyStore | null>(null).reset(flowFinished);
 const $wrappedTx = createStore<Transaction | null>(null).reset(flowFinished);
 const $coreTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $multisigTx = createStore<Transaction | null>(null).reset(flowFinished);
-const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(flowStarted);
+const $redirectAfterSubmitPath = createStore<PathType | null>(null).reset(formModel.flowStarted);
+const $chain = $addProxyStore.map((store) => store?.chain ?? null);
 
 const $initiatorWallet = combine(
   {
@@ -37,82 +39,93 @@ const $initiatorWallet = combine(
     wallets: walletModel.$wallets,
   },
   ({ store, wallets }) => {
-    if (!store) return undefined;
+    if (!store?.initiator) return null;
 
-    return walletUtils.getWalletById(wallets, store.account.walletId);
+    return walletUtils.getWalletById(wallets, store.initiator.walletId);
   },
-  { skipVoid: false },
 );
 
-sample({ clock: stepChanged, target: $step });
-
 sample({
-  clock: flowStarted,
+  clock: formModel.flowStarted,
   fn: () => Step.INIT,
   target: stepChanged,
 });
 
 sample({
-  clock: flowStarted,
-  source: {
-    activeWallet: walletModel.$activeWallet,
-    walletDetails: formModel.$wallet,
-  },
-  filter: ({ activeWallet, walletDetails }) => {
-    if (!activeWallet || !walletDetails) return false;
-
-    return activeWallet !== walletDetails;
-  },
-  fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.events.walletToSubSet,
+  clock: formModel.flowStarted,
+  source: formModel.$wallet,
+  filter: (wallet) => nonNullable(wallet),
+  target: balanceSubModel.fetchWallet,
 });
 
 sample({
-  clock: flowStarted,
-  target: formModel.events.formInitiated,
-});
-
-sample({
-  clock: formModel.output.formSubmitted,
+  clock: formModel.formSubmitted,
   fn: ({ transactions, formData }) => ({
     wrappedTx: transactions.wrappedTx,
-    multisigTx: transactions.multisigTx || null,
     coreTx: transactions.coreTx,
     store: formData,
   }),
   target: spread({
     wrappedTx: $wrappedTx,
-    multisigTx: $multisigTx,
     coreTx: $coreTx,
     store: $addProxyStore,
   }),
 });
 
+const formSubmitted = sample({
+  clock: formModel.formSubmitted,
+  source: {
+    route: formModel.$route,
+    step: $step,
+  },
+  fn: (source, formData) => ({ source, formData }),
+}).filterMap(({ formData: { formData, transactions }, source: { route, step } }) => {
+  if (
+    nonNullable(transactions.coreTx) &&
+    nonNullable(transactions.wrappedTx) &&
+    nonNullable(formData.chain) &&
+    nonNullable(formData.initiator) &&
+    nonNullable(formData.signatory) &&
+    nonNullable(route) &&
+    isStep(step, Step.INIT)
+  ) {
+    return [
+      {
+        ...formData,
+        delegate: toAccountId(formData.delegate),
+        chain: formData.chain,
+        initiator: formData.initiator,
+        signatory: formData.signatory,
+        tx: transactions.wrappedTx,
+        coreTx: transactions.coreTx,
+        route,
+      } satisfies AddProxyConfirm,
+    ];
+  }
+});
+
 sample({
-  clock: formModel.output.formSubmitted,
-  fn: ({ formData, transactions }) => ({
-    event: [{ ...formData, transaction: transactions.wrappedTx, coreTx: transactions.coreTx }],
-    step: Step.CONFIRM,
-  }),
+  clock: formSubmitted,
+  fn: (event) => ({ event, step: Step.CONFIRM }),
   target: spread({
-    event: confirmModel.events.formInitiated,
+    event: confirmModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: confirmModel.output.formSubmitted,
+  clock: confirmModel.startSigning,
   source: {
     addProxyStore: $addProxyStore,
     wrappedTx: $wrappedTx,
   },
-  filter: ({ addProxyStore, wrappedTx }) => Boolean(addProxyStore) && Boolean(wrappedTx),
+  filter: ({ addProxyStore, wrappedTx }) => nonNullable(addProxyStore) && nonNullable(wrappedTx),
   fn: ({ addProxyStore, wrappedTx }) => ({
     event: {
       signingPayloads: [
         {
-          chain: addProxyStore!.chain,
-          account: addProxyStore!.account,
+          chain: addProxyStore!.chain!,
+          account: addProxyStore!.initiator!,
           signatory: addProxyStore!.signatory,
           transaction: wrappedTx!,
         },
@@ -132,20 +145,18 @@ sample({
     addProxyStore: $addProxyStore,
     coreTx: $coreTx,
     wrappedTx: $wrappedTx,
-    multisigTx: $multisigTx,
   },
   filter: (proxyData) => {
-    return Boolean(proxyData.addProxyStore) && Boolean(proxyData.wrappedTx) && Boolean(proxyData.coreTx);
+    return nonNullable(proxyData.addProxyStore) && nonNullable(proxyData.wrappedTx) && nonNullable(proxyData.coreTx);
   },
   fn: (proxyData, signParams) => ({
     event: {
       ...signParams,
-      chain: proxyData.addProxyStore!.chain,
-      account: proxyData.addProxyStore!.account,
+      chain: proxyData.addProxyStore!.chain!,
+      account: proxyData.addProxyStore!.initiator!,
       signatory: proxyData.addProxyStore!.signatory,
       coreTxs: [proxyData.coreTx!],
       wrappedTxs: [proxyData.wrappedTx!],
-      multisigTxs: proxyData.multisigTx ? [proxyData.multisigTx] : [],
     },
     step: Step.SUBMIT,
   }),
@@ -164,22 +175,7 @@ sample({
 
 sample({
   clock: flowFinished,
-  source: {
-    activeWallet: walletModel.$activeWallet,
-    walletDetails: formModel.$wallet,
-  },
-  filter: ({ activeWallet, walletDetails }) => {
-    if (!activeWallet || !walletDetails) return false;
-
-    return activeWallet !== walletDetails;
-  },
-  fn: ({ walletDetails }) => walletDetails!,
-  target: balanceSubModel.events.walletToUnsubSet,
-});
-
-sample({
-  clock: flowFinished,
-  target: proxiesModel.findAllProxies,
+  target: accountSync.syncAccounts,
 });
 
 sample({
@@ -200,18 +196,15 @@ sample({
 sample({
   clock: txSaved,
   source: {
-    store: $addProxyStore,
     coreTx: $coreTx,
-    txWrappers: formModel.$txWrappers,
   },
-  filter: ({ store, coreTx, txWrappers }) => {
-    return Boolean(store) && Boolean(coreTx) && Boolean(txWrappers);
-  },
-  fn: ({ store, coreTx, txWrappers }) => {
-    const tx = {
-      initiatorAccountId: store!.account.accountId,
-      coreTx: coreTx!,
-      txWrappers,
+  fn: ({ coreTx }) => {
+    if (nullable(coreTx)) return [];
+
+    const tx: BasketTransactionDraft = {
+      initiatorAccountId: coreTx.accountId,
+      coreTx,
+      route: [],
       createdAt: Date.now(),
     };
 
@@ -234,11 +227,11 @@ sample({
 
 export const addProxyModel = {
   $step,
-  $chain: $addProxyStore.map((store) => store?.chain, { skipVoid: false }),
+  $chain,
   $initiatorWallet,
 
   events: {
-    flowStarted,
+    flowStarted: formModel.flowStarted,
     stepChanged,
     txSaved,
   },

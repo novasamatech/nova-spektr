@@ -1,5 +1,4 @@
 export { OperationSign, SigningSwitch } from './OperationSign';
-export { OperationsFilter } from './OperationsFilter';
 export { OperationSubmit } from './OperationSubmit';
 /**
  * TODO: if "signModel" & "submitModel" are exported here, jest goes into

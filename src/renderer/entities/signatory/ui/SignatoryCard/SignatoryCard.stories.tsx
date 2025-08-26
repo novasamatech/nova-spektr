@@ -1,4 +1,4 @@
-import { type Meta, type StoryFn } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react-vite';
 
 import { TEST_ADDRESS } from '@/shared/lib/utils';
 
@@ -15,5 +15,5 @@ const Template: StoryFn<typeof SignatoryCard> = (args) => <SignatoryCard {...arg
 export const Primary = Template.bind({});
 Primary.args = {
   children: TEST_ADDRESS,
-  status: 'SIGNED',
+  status: 'approve',
 };

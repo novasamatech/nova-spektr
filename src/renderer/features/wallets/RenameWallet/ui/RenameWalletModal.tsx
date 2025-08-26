@@ -1,34 +1,49 @@
-import { useForm } from 'effector-forms';
-import { type FormEvent, useEffect } from 'react';
+import { type FormEvent, type PropsWithChildren, useEffect, useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
+import { useForm } from '@/shared/forms/useForm';
 import { useI18n } from '@/shared/i18n';
-import { BaseModal, Button, InputHint } from '@/shared/ui';
-import { Field, Input } from '@/shared/ui-kit';
+import { Button, InputHint } from '@/shared/ui';
+import { Input, Modal } from '@/shared/ui-kit';
 import { renameWalletModel } from '../model/rename-wallet-model';
 
-type Props = {
+type Props = PropsWithChildren<{
   wallet: Wallet;
-  isOpen: boolean;
-  onClose: () => void;
-};
+  onClose?: () => void;
+}>;
 
-export const RenameWalletModal = ({ wallet, isOpen, onClose }: Props) => {
+export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
   const { t } = useI18n();
+
+  const [isOpen, setIsOpen] = useState(false);
 
   const {
     submit,
-    isValid,
     fields: { name },
   } = useForm(renameWalletModel.$walletForm);
 
-  useEffect(() => {
-    renameWalletModel.events.formInitiated(wallet);
-  }, [wallet]);
+  const handleClose = () => {
+    setIsOpen(false);
+    onClose?.();
+  };
+
+  const onToggle = (isOpen: boolean) => {
+    if (isOpen) {
+      setIsOpen(true);
+      return;
+    }
+    handleClose();
+  };
 
   useEffect(() => {
-    renameWalletModel.events.callbacksChanged({ onSubmit: onClose });
-  }, [onClose]);
+    if (isOpen) {
+      renameWalletModel.formInitiated(wallet);
+    }
+  }, [wallet, isOpen]);
+
+  useEffect(() => {
+    renameWalletModel.callbackChanged({ onSubmit: handleClose });
+  }, [handleClose]);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -36,19 +51,32 @@ export const RenameWalletModal = ({ wallet, isOpen, onClose }: Props) => {
   };
 
   return (
-    <BaseModal isOpen={isOpen} closeButton title={t('walletDetails.common.renameTitle')} onClose={onClose}>
-      <form className="flex flex-col gap-4 pt-4" onSubmit={submitForm}>
-        <Field text={t('walletDetails.common.renameLabel')}>
-          <Input name="name" invalid={name?.hasError()} value={name?.value} onChange={name?.onChange} />
-          <InputHint variant="error" active={name?.hasError()}>
-            {t(name.errorText())}
-          </InputHint>
-        </Field>
+    <Modal size="sm" height="fit" isOpen={isOpen} onToggle={onToggle}>
+      <Modal.Trigger>{children}</Modal.Trigger>
+      <Modal.Title close>{t('walletDetails.common.renameWallet')}</Modal.Title>
+      <Modal.Content>
+        <form className="flex flex-col gap-4 p-4" onSubmit={submitForm}>
+          <div className="flex flex-col gap-2">
+            <Input
+              autoFocus
+              name="name"
+              width="full"
+              height="sm"
+              placeholder={t('walletDetails.common.renameWallet')}
+              invalid={name.hasError}
+              value={name.value}
+              onChange={name.onChange}
+            />
+            <InputHint variant="error" active={name.hasError}>
+              {t(name.errorMessage)}
+            </InputHint>
+          </div>
 
-        <Button className="ml-auto" type="submit" disabled={!isValid}>
-          {t('walletDetails.common.renameSaveButton')}
-        </Button>
-      </form>
-    </BaseModal>
+          <Button className="ml-auto" size="sm" type="submit" disabled={name.value.trim() === ''}>
+            {t('walletDetails.common.renameSaveButton')}
+          </Button>
+        </form>
+      </Modal.Content>
+    </Modal>
   );
 };

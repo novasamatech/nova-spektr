@@ -15,7 +15,7 @@ test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }
     const proxyWallet = await loginPage.importDatabase('transfers/proxy-transfer-wallet.json');
     const assetsPage = await proxyWallet.gotoMain();
 
-    const chain = getChainByName(substrateChains, 'Westend');
+    const chain = getChainByName(substrateChains, 'Westend Asset Hub (TESTNET)');
     const transferModal = await assetsPage.openTransfer(chain, 0);
 
     await transferModal.fillAmount('0.01');

@@ -1,11 +1,11 @@
 import { type TFunction } from 'i18next';
-import groupBy from 'lodash/groupBy';
-import unionBy from 'lodash/unionBy';
+import { t } from 'i18next';
+import { groupBy, unionBy } from 'lodash';
 
-import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
   type Address,
+  type Chain,
   type ChainId,
   CryptoType,
   type DraftAccount,
@@ -15,7 +15,7 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { KEY_NAMES, SHARDED_KEY_NAMES } from '@/entities/wallet';
 
@@ -181,7 +181,7 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
   const chains = fileContent[rootAccountId as AccountId];
   const derivations: ImportedDerivation[] = [];
 
-  for (const [key, value] of Object.entries(chains)) {
+  for (const [key, value] of entries(chains)) {
     const chainDerivations = value.map((keyObject) => ({
       ...keyObject.key,
       chainId: key,
@@ -192,16 +192,16 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
 
   return {
     derivations,
-    root: rootAccountId,
+    root: toAccountId(rootAccountId),
   };
 }
 
-function shouldIgnoreDerivation(derivation: ImportedDerivation): boolean {
+function shouldIgnoreDerivation(derivation: ImportedDerivation, chains: Record<ChainId, Chain>): boolean {
   if (!derivation.derivationPath) return true;
 
   const AllKeyTypes = [KeyType.MAIN, KeyType.PUBLIC, KeyType.HOT, KeyType.CUSTOM];
 
-  const isChainParamValid = derivation.chainId && chainsService.getChainById(derivation.chainId as ChainId);
+  const isChainParamValid = derivation.chainId && chains[derivation.chainId as ChainId];
   const isTypeParamValid = derivation.type && Object.values(AllKeyTypes).includes(derivation.type as KeyType);
   const isShardedAllowedForType =
     !derivation.sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.HOT);
@@ -310,10 +310,10 @@ function renameDerivationPathKeyReviver(key: unknown, value: unknown) {
 }
 
 const DERIVATION_ERROR_LABEL = {
-  [DerivationValidationError.INVALID_PATH]: 'dynamicDerivations.importKeys.error.invalidPath',
-  [DerivationValidationError.PASSWORD_PATH]: 'dynamicDerivations.importKeys.error.invalidPasswordPath',
-  [DerivationValidationError.MISSING_NAME]: 'dynamicDerivations.importKeys.error.missingName',
-  [DerivationValidationError.WRONG_SHARDS_NUMBER]: 'dynamicDerivations.importKeys.error.wrongShardsNumber',
+  [DerivationValidationError.INVALID_PATH]: t('dynamicDerivations.importKeys.error.invalidPath'),
+  [DerivationValidationError.PASSWORD_PATH]: t('dynamicDerivations.importKeys.error.invalidPasswordPath'),
+  [DerivationValidationError.MISSING_NAME]: t('dynamicDerivations.importKeys.error.missingName'),
+  [DerivationValidationError.WRONG_SHARDS_NUMBER]: t('dynamicDerivations.importKeys.error.wrongShardsNumber'),
 };
 
 function getErrorsText(t: TFunction, error: ValidationError, details?: ErrorDetails): string {

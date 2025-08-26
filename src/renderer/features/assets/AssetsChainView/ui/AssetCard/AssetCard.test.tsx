@@ -1,4 +1,4 @@
-import { BN_TEN, BN_TWO } from '@polkadot/util';
+import { BN_TEN, BN_TWO, BN_ZERO } from '@polkadot/util';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { fork } from 'effector';
@@ -6,9 +6,9 @@ import { Provider } from 'effector-react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 
-import chains from '@/shared/config/chains/chains.json';
-import { type Asset, type Balance, type Chain, WalletType } from '@/shared/core';
+import { type Asset, type Balance, type BalanceId, SigningType, type Wallet, WalletType } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
+import { polkadotChain } from '@/shared/mocks';
 import { walletModel } from '@/entities/wallet';
 
 import { AssetCard } from './AssetCard';
@@ -19,20 +19,33 @@ vi.mock('@/shared/i18n', () => ({
   }),
 }));
 
-const testChain = chains[0] as Chain;
+const testChain = polkadotChain;
 const testAsset = testChain.assets[0];
 
 const defaultProps = {
   asset: testAsset as Asset,
   chainId: testChain.chainId,
   balance: {
-    id: 1,
-    assetId: testAsset.assetId.toString(),
+    id: '1' as BalanceId,
+    assetId: testAsset.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
     free: BN_TEN,
     frozen: BN_TWO,
-  } as Balance,
+    ed: BN_ZERO,
+    reserved: BN_ZERO,
+    locked: [],
+    transferableMode: 'holdAndFreezes',
+  } satisfies Balance,
+  wallet: {
+    walletId: 1,
+    id: 1,
+    type: WalletType.POLKADOT_VAULT,
+    isActive: true,
+    name: 'test',
+    accounts: [],
+    signingType: SigningType.POLKADOT_VAULT,
+  } as Wallet,
 };
 
 describe('pages/Assets/AssetCard', () => {
@@ -49,7 +62,7 @@ describe('pages/Assets/AssetCard', () => {
     const textHidden = screen.queryByText('assetBalance.transferable');
     expect(textHidden).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole('button'));
+    await userEvent.click(screen.getAllByRole('button')[0]);
 
     const text = screen.queryByText('assetBalance.transferable');
     expect(text).toBeInTheDocument();
@@ -59,7 +72,7 @@ describe('pages/Assets/AssetCard', () => {
     render(<AssetCard {...defaultProps} />, { wrapper: BrowserRouter });
 
     const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toEqual(1);
+    expect(buttons.length).toEqual(3);
   });
 
   test('should navigate to receive asset modal', async () => {
@@ -87,13 +100,13 @@ describe('pages/Assets/AssetCard', () => {
 
     expect(window.location.href).toEqual(new URL('/assets', origin).toString());
 
-    const link = screen.getAllByRole('link')[1];
-    act(() => link.click());
+    const button = screen.getAllByRole('button')[1];
+    act(() => button.click());
 
     const chainId = defaultProps.chainId;
     const assetId = defaultProps.asset.assetId;
     expect(window.location.href).toEqual(
-      new URL(`/assets/receive?chainId=${chainId}&assetId=${assetId}`, origin).toString(),
+      new URL(`/assets/transfer?chainId=${chainId}&assetId=${assetId}`, origin).toString(),
     );
   });
 });

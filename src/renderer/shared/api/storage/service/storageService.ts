@@ -1,4 +1,4 @@
-import { type IndexableType, type Table } from 'dexie';
+import { type IndexableType, type Table, type UpdateSpec } from 'dexie';
 
 import { type NoID } from '@/shared/core';
 
@@ -26,6 +26,9 @@ export class StorageService<T extends { id: K }, K extends IndexableType> {
   }
 
   async createAll(items: NoID<T>[]): Promise<T[] | undefined> {
+    if (items.length === 0) {
+      return undefined;
+    }
     try {
       const ids = await this.dexieTable.bulkAdd(items as T[], { allKeys: true });
       if (!ids) return undefined;
@@ -71,7 +74,7 @@ export class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  async update(id: K, item: Partial<NoID<T>>): Promise<K | undefined> {
+  async update(id: K, item: UpdateSpec<T>): Promise<K | undefined> {
     try {
       const isUpdated = await this.dexieTable.update(id, item);
 
@@ -83,7 +86,10 @@ export class StorageService<T extends { id: K }, K extends IndexableType> {
     }
   }
 
-  async updateAll(items: (Partial<T> & { id: K })[]): Promise<number[] | undefined> {
+  async updateAll(items: (UpdateSpec<T> & { id: K })[]): Promise<number[] | undefined> {
+    if (items.length === 0) {
+      return undefined;
+    }
     try {
       const updates = items.map((item) => {
         return this.dexieTable.update(item.id, item);
@@ -138,9 +144,9 @@ export const storageService = {
   contacts: new StorageService(dexieStorage.contacts),
   connections: new StorageService(dexieStorage.connections),
   proxies: new StorageService(dexieStorage.proxies),
-  proxyGroups: new StorageService(dexieStorage.proxyGroups),
   notifications: new StorageService(dexieStorage.notifications),
   metadata: new StorageService(dexieStorage.metadata),
   balances: new StorageService(dexieStorage.balances),
   basketTransactions: new StorageService(dexieStorage.basketTransactions),
+  multisigOperations: new StorageService(dexieStorage.multisigOperations),
 };

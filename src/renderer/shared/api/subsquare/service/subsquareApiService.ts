@@ -14,7 +14,7 @@ const subsquareRequestPool = createAsyncTaskPool({
 });
 
 const createURL = (network: string, href: string, query?: Record<string, string | number | undefined>) => {
-  const url = new URL(href, `https://${network}.subsquare.io`);
+  const url = new URL(href, `https://${network}-api.subsquare.io`);
   if (query) {
     for (const [name, value] of Object.entries(query)) {
       if (typeof value !== 'undefined') {
@@ -42,7 +42,7 @@ async function* fetchReferendumList({
   const getApiUrl = (page: number, size: number) => {
     return createURL(
       network,
-      `/api/${referendumType === 'fellowship' ? `${referendumType}/referenda` : `${referendumType}/referendums`}`,
+      `/${referendumType === 'fellowship' ? `${referendumType}/referenda` : `${referendumType}/referendums`}`,
       {
         page,
         page_size: size,
@@ -79,7 +79,7 @@ const fetchReferendum = async ({
 }: FetchReferendumParams): Promise<SubsquareFullReferendum> => {
   const url = createURL(
     network,
-    `/api/${referendumType === 'fellowship' ? `${referendumType}/referenda/${referendumId}` : `${referendumType}/referendums/${referendumId}`}`,
+    `/${referendumType === 'fellowship' ? `${referendumType}/referenda/${referendumId}` : `${referendumType}/referendums/${referendumId}`}`,
   );
 
   return subsquareRequestPool.call(() => fetch(url, { method: 'GET' }).then((r) => r.json()));
@@ -96,7 +96,7 @@ const fetchReferendumVotes = async ({
   referendumType,
   referendumId,
 }: FetchVotesParams): Promise<SubsquareReferendumVote[]> => {
-  const url = createURL(network, `/api/${referendumType}/referenda/${referendumId}/votes`);
+  const url = createURL(network, `/${referendumType}/referenda/${referendumId}/votes`);
 
   return subsquareRequestPool.call(() => fetch(url, { method: 'GET' }).then((r) => r.json()));
 };

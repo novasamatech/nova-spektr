@@ -182,12 +182,12 @@ export const Networks = () => {
     <Modal size="lg" isOpen={isNetworksModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('settings.networks.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="px-5 pb-5 pt-1">
+        <div className="px-5 pt-1 pb-5">
           <NetworksFilter />
         </div>
       </Modal.HeaderContent>
       <Modal.Content>
-        <div className="flex h-[454px] flex-col gap-y-4 px-3 pb-5 pt-1">
+        <div className="flex h-[454px] flex-col gap-y-4 px-3 pt-1 pb-5">
           <NetworkList
             query={filterQuery}
             title={t('settings.networks.disabledNetworksLabel')}

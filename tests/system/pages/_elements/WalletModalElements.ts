@@ -1,4 +1,4 @@
 export class WalletModalElements {
-  addButton = 'Add';
-  multisigButton = 'Multisig';
+  addButton = 'text=Add';
+  multisigButton = 'text=Multisig';
 }

@@ -105,6 +105,9 @@ export const AccountsMultiSelector = ({
     );
   };
 
+  const areAllOptionsSelected = optionsFlat.every((option) => selectedIds?.includes(option.id));
+  const areSomeOptionsSelected = optionsFlat.some((option) => selectedIds?.includes(option.id));
+
   const selectElement = (
     <Listbox multiple by="id" disabled={disabled} value={selectedOptions} onChange={onChange}>
       {({ open }) => (
@@ -117,7 +120,7 @@ export const AccountsMultiSelector = ({
               invalid && SelectButtonStyle[theme].invalid,
               SelectButtonStyle[theme].disabled,
               'bg-input-background text-text-primary',
-              'rounded border text-footnote outline-offset-1',
+              'rounded-sm border text-footnote outline-offset-1',
               'inline-flex w-full items-center justify-between gap-2 px-2 py-2',
             )}
             tabIndex={tabIndex}
@@ -137,19 +140,20 @@ export const AccountsMultiSelector = ({
               <li
                 key="all"
                 className={cnTw(
-                  'mb-1 rounded p-2 hover:bg-action-background-hover',
-                  OptionStyleTheme[theme](
-                    false,
-                    optionsFlat.every((option) => selectedIds.includes(option.id)),
-                  ),
+                  'mb-1 rounded-sm p-2 hover:bg-action-background-hover',
+                  OptionStyleTheme[theme](false, areAllOptionsSelected),
                 )}
               >
                 <Checkbox
-                  checked={optionsFlat.every((option) => selectedIds.includes(option.id))}
-                  semiChecked={optionsFlat.some((option) => selectedIds.includes(option.id))}
+                  checked={areAllOptionsSelected}
+                  semiChecked={areSomeOptionsSelected}
                   onChange={(checked) => toggleAll(checked)}
                 >
-                  <FootnoteText className="text-body text-text-secondary">{t('balances.allAccounts')}</FootnoteText>
+                  <FootnoteText
+                    className={cnTw('text-body', areSomeOptionsSelected ? 'text-text-primary' : 'text-text-secondary')}
+                  >
+                    {t('balances.allAccounts')}
+                  </FootnoteText>
                 </Checkbox>
               </li>
 
@@ -222,6 +226,7 @@ type PropsGroup = {
 const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGroup) => {
   const { list, groupName, groupValue } = group;
   const isChecked = list.every(({ id }) => selectedIds.includes(id));
+  const isSemiChecked = list.some(({ id }) => selectedIds.includes(id));
 
   const toggleGroup = (checked: boolean) => {
     if (checked) {
@@ -237,20 +242,18 @@ const Group = ({ group, selectedIds, selectedOptions, theme, onChange }: PropsGr
     <>
       <div
         className={cnTw(
-          'my-1 flex rounded hover:bg-action-background-hover',
+          'my-1 flex rounded-sm hover:bg-action-background-hover',
           OptionStyleTheme[theme](false, isChecked),
         )}
       >
         <div className="w-full p-2 pl-6">
-          <Checkbox
-            checked={isChecked}
-            semiChecked={list.some(({ id }) => selectedIds.includes(id))}
-            onChange={(checked) => toggleGroup(checked)}
-          >
+          <Checkbox checked={isChecked} semiChecked={isSemiChecked} onChange={(checked) => toggleGroup(checked)}>
             <div className="flex h-5 w-7.5 items-center justify-center rounded-2lg bg-input-background-disabled">
               <CaptionText className="text-text-secondary">{list.length}</CaptionText>
             </div>
-            <FootnoteText className="flex-1 text-text-tertiary">{groupName}</FootnoteText>
+            <FootnoteText className={cnTw('flex-1', isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}>
+              {groupName}
+            </FootnoteText>
             <FootnoteText className="text-text-secondary">{groupValue}</FootnoteText>
           </Checkbox>
         </div>

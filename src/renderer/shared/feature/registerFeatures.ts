@@ -1,12 +1,16 @@
-import { type Feature } from './createFeature';
+import { type Feature, isFeature } from './createFeature';
 
-export const registerFeatures = (features: Feature<unknown>[]) => {
+export const registerFeatures = (features: (Feature<unknown> | Promise<Feature<unknown>>)[]) => {
   for (const feature of features) {
-    feature.startIfNecessary();
+    if (feature instanceof Promise) {
+      feature.then(f => f.startIfNecessary());
+    } else {
+      feature.startIfNecessary();
+    }
   }
 
   // Basically groupBy
-  const domains = features.reduce<Record<string, Feature<unknown>[]>>((acc, feature) => {
+  const domains = features.filter(isFeature).reduce<Record<string, Feature<unknown>[]>>((acc, feature) => {
     const name = feature.name.split('/').at(0) ?? 'unknown';
 
     if (!acc[name]) {

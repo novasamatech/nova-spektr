@@ -1,4 +1,4 @@
-import { type Meta, type StoryFn } from '@storybook/react';
+import { type Meta, type StoryFn } from '@storybook/react-vite';
 import { enGB } from 'date-fns/locale/en-GB';
 
 import { shortDateLocaleEnGB } from '@/shared/i18n/lib/constants';

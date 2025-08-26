@@ -19,6 +19,10 @@ type Params<T> = Partial<StatusParams<T, Reasons>> & {
 
 export type Feature<T> = ReturnType<typeof createFeature<T>>;
 
+export const isFeature = (x: unknown): x is Feature<unknown> => {
+  return typeof x === 'object' && x !== null && (x as Feature<unknown>).__BRAND === 'Feature';
+};
+
 export const createFeature = <T = object>({
   name,
   filter,
@@ -180,6 +184,8 @@ export const createFeature = <T = object>({
   // Combine
 
   return {
+    __BRAND: 'Feature',
+
     name,
 
     status: readonly($status),

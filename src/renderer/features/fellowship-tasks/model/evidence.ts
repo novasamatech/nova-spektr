@@ -1,25 +1,19 @@
 import { attach, combine, sample } from 'effector';
-import { createGate } from 'effector-react';
 
 import { populated, series } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { type Evidence, evidence, referendumService, trackService } from '@/domains/collectives';
+import { evidence, referendumService, trackService } from '@/domains/collectives';
 
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 import { memberProfile } from './memberProfile';
 import { referendums } from './referendums';
 
-// flow
-
-const evidenceContentFlow = createGate<{ evidence: Evidence | null }>({ defaultState: { evidence: null } });
-
 // evidences
 
 const $members = fellowship.$store.map(s => s?.members ?? []);
 const $evidences = fellowship.$store.map(s => s?.evidence ?? []);
-const $evidencesContent = fellowship.$store.map(s => s?.evidenceContent ?? []);
 const $evidencesSummary = fellowship.$store.map(s => s?.evidenceSummary ?? []);
 
 const $memberEvidence = combine(memberProfile.$member, $evidences, (member, evidences) => {
@@ -34,7 +28,6 @@ const $hasRetentionEvidence = $memberEvidence.map(x => x?.wish === 'Retention');
 const $hasPromotionEvidence = $memberEvidence.map(x => x?.wish === 'Promotion');
 
 const requestEvidenceFx = attach({ effect: evidence.request });
-const requestEvidenceContentFx = attach({ effect: evidence.requestContent });
 const requestEvidenceSummaryFx = attach({ effect: evidence.requestSummary });
 
 const $summaryPopulated = populated(requestEvidenceSummaryFx);
@@ -59,24 +52,6 @@ const $evidencesWithoutReferendums = combine(
 );
 
 // requesting data
-
-const evidenceContentRequested = attachToFeatureInput(fellowshipTasksFeature, evidenceContentFlow.open).filterMap(
-  ({ input, data: { evidence } }) => {
-    if (nullable(evidence)) return;
-
-    return {
-      api: input.api,
-      chainId: input.chainId,
-      palletType: input.palletType,
-      accountId: evidence?.accountId,
-    };
-  },
-);
-
-sample({
-  clock: evidenceContentRequested,
-  target: requestEvidenceContentFx,
-});
 
 sample({
   clock: attachToFeatureInput(fellowshipTasksFeature, $members),
@@ -103,10 +78,7 @@ sample({
 });
 
 export const evidenceModel = {
-  evidenceContentFlow,
-
   $evidences,
-  $evidencesContent,
   $evidencesSummary,
   $evidencesWithoutReferendums,
   $memberEvidence,
@@ -114,7 +86,6 @@ export const evidenceModel = {
   $hasRetentionEvidence,
   $hasPromotionEvidence,
   requestEvidence: requestEvidenceFx,
-  requestEvidenceContent: requestEvidenceContentFx,
   requestEvidenceSummary: requestEvidenceSummaryFx,
   $summaryPopulated,
 };

@@ -1,4 +1,4 @@
-import noop from 'lodash/noop';
+import { noop } from 'lodash';
 import { type ComponentProps, type PropsWithChildren, type ReactNode, forwardRef } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
@@ -53,7 +53,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       form={form}
       disabled={disabled}
       className={cnTw(
-        'flex select-none items-center justify-center gap-x-2 outline-offset-1 transition-colors',
+        'flex items-center justify-center gap-x-2 outline-offset-1 transition-colors select-none',
         {
           'justify-between': prefixElement || suffixElement || isLoading,
         },

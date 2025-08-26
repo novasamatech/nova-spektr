@@ -4,7 +4,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
-import { multisigUtils } from '@/entities/multisig';
+import { multisigOperationService } from '@/domains/network';
 
 import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
 import { hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
@@ -43,11 +43,11 @@ export const getExtrinsic: Record<
 
     return api.tx.tokens.transfer(dest, location, value);
   },
-  [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callData, maxWeight }, api) => {
+  [TransactionType.MULTISIG_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, call, maxWeight }, api) => {
     return isOldMultisigPallet(api)
       ? // @ts-expect-error TODO fix
-        api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, callData, false, maxWeight)
-      : api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, callData, maxWeight);
+        api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, false, maxWeight)
+      : api.tx.multisig.asMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight);
   },
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: (
     { threshold, otherSignatories, maybeTimepoint, callHash, maxWeight },
@@ -109,20 +109,21 @@ export const getExtrinsic: Record<
   [TransactionType.REMOVE_PROXY]: ({ delegate, proxyType, delay }, api) => {
     return api.tx.proxy.removeProxy(delegate, proxyType, delay);
   },
-  [TransactionType.REMOVE_PURE_PROXY]: ({ spawner, proxyType, index, height, extIndex }, api) => {
+  [TransactionType.KILL_PURE_PROXY]: ({ spawner, proxyType, index, height, extIndex }, api) => {
     return api.tx.proxy.killPure(spawner, proxyType, index, height, extIndex);
   },
   // TODO: Check that this method works correctly
-  [TransactionType.PROXY]: ({ real, forceProxyType, transaction }, api) => {
+  [TransactionType.PROXY]: ({ real, forceProxyType, transaction, call }, api) => {
     const tx = transaction as Transaction;
-    const call = getExtrinsic[tx.type](tx.args, api).method;
+    const proxyCall = call ?? getExtrinsic[tx.type](tx.args, api).method;
 
-    return api.tx.proxy.proxy(real, forceProxyType, call);
+    return api.tx.proxy.proxy(real, forceProxyType, proxyCall);
   },
   [TransactionType.CREATE_PURE_PROXY]: ({ proxyType, delay, index }, api) => {
     return api.tx.proxy.createPure(proxyType, delay, index);
   },
   [TransactionType.REMARK]: ({ remark }, api) => api.tx.system.remark(remark),
+  [TransactionType.REMARK_WITH_EVENT]: ({ remark }, api) => api.tx.system.remarkWithEvent(remark),
   [TransactionType.UNLOCK]: ({ target, trackId }, api) => {
     return api.tx.convictionVoting.unlock(trackId, target);
   },
@@ -210,7 +211,10 @@ export const wrapAsMulti = <T extends Transaction = Transaction>({
     console.log(`🟡 ${transaction.type} - not enough data to construct Extrinsic`);
   }
 
-  const otherSignatories = multisigUtils.getOtherSignatories(txWrapper.multisigAccount, txWrapper.signer.accountId);
+  const otherSignatories = multisigOperationService.getOtherSignatories(
+    txWrapper.multisigAccount,
+    txWrapper.signer.accountId,
+  );
 
   return {
     chainId: transaction.chainId,
@@ -231,13 +235,18 @@ type WrapAsProxyParams = {
   txWrapper: ProxyTxWrapper;
 };
 export const wrapAsProxy = ({ transaction, txWrapper }: WrapAsProxyParams): Transaction => {
+  const connection = txWrapper.proxiedAccount.connections.find(
+    (c) => c.proxyAccountId === txWrapper.proxyAccount.accountId,
+  );
+  assert(connection);
+
   return {
     chainId: transaction.chainId,
     accountId: txWrapper.proxyAccount.accountId,
     type: TransactionType.PROXY,
     args: {
       real: txWrapper.proxiedAccount.accountId,
-      forceProxyType: txWrapper.proxiedAccount.proxyType,
+      forceProxyType: connection.proxyType,
       transaction,
     },
   };

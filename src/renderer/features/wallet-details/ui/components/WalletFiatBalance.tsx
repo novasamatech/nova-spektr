@@ -1,12 +1,10 @@
 import { default as BigNumber } from 'bignumber.js';
 import { useUnit } from 'effector-react';
 
-import { type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatFiatBalance } from '@/shared/lib/utils';
-import { Shimmering } from '@/shared/ui';
+import { formatFiatBalance, nullable } from '@/shared/lib/utils';
+import { Skeleton } from '@/shared/ui-kit';
 import { FiatBalance, priceProviderModel } from '@/entities/price';
-import { walletModel } from '@/entities/wallet';
 import { walletBalanceModel } from '../../model/wallet-balance';
 
 BigNumber.config({
@@ -14,23 +12,22 @@ BigNumber.config({
 });
 
 type Props = {
-  walletId: ID;
   className?: string;
 };
 
-export const WalletFiatBalance = ({ walletId, className }: Props) => {
+export const WalletFiatBalance = ({ className }: Props) => {
   const { t } = useI18n();
 
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
   const walletBalances = useUnit(walletBalanceModel.$walletBalance);
-  const activeWallet = useUnit(walletModel.$activeWallet);
+  const isLoading = useUnit(walletBalanceModel.$isLoading);
 
-  if (!fiatFlag || walletId !== activeWallet?.id) {
+  if (!fiatFlag) {
     return null;
   }
 
-  if (!walletBalances) {
-    return <Shimmering width={56} height={18} />;
+  if (nullable(walletBalances) || isLoading) {
+    return <Skeleton width={14} height={4} />;
   }
 
   const { value: formattedValue, suffix } = formatFiatBalance(walletBalances.toString());

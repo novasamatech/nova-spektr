@@ -1,22 +1,20 @@
-import { referendumDetalsPageRouteSlot } from '@/pages/Fellowship/ui/FellowshipReferendumDetails';
-
 import { Card } from './components/Card';
+import { EvidenceDetailsModal, evidenceActionsSlot } from './components/EvidenceDetailsModal/EvidenceDetailsModal';
 import {
   ReferendumDetailsModal,
   referendumActionsSlot,
   referendumAdditionalHighPriorityInfoSlot,
-  referendumAdditionalLowPriorityInfoSlot,
+  referendumAdditionalInfoSlot,
 } from './components/ReferendumDetailsModal';
 import { fellowshipReferendumsDetailsFeature } from './model/feature';
 
 export {
   fellowshipReferendumsDetailsFeature,
   referendumAdditionalHighPriorityInfoSlot,
-  referendumAdditionalLowPriorityInfoSlot,
+  referendumAdditionalInfoSlot,
   referendumActionsSlot,
+  evidenceActionsSlot,
   Card,
+  ReferendumDetailsModal,
+  EvidenceDetailsModal,
 };
-
-fellowshipReferendumsDetailsFeature.inject(referendumDetalsPageRouteSlot, ({ referendumId, isOpen, onToggle }) => {
-  return <ReferendumDetailsModal referendumId={referendumId} isOpen={isOpen} onToggle={onToggle} />;
-});

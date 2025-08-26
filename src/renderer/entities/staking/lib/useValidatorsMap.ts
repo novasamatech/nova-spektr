@@ -5,7 +5,7 @@ import { eraService, validatorsService } from '../api';
 
 import { type ValidatorMap } from './types';
 
-export const useValidatorsMap = (api?: ApiPromise, isLightClient?: boolean): ValidatorMap => {
+export const useValidatorsMap = (api?: ApiPromise): ValidatorMap => {
   const [era, setEra] = useState<number>();
   const [validators, setValidators] = useState<ValidatorMap>({});
 
@@ -26,7 +26,7 @@ export const useValidatorsMap = (api?: ApiPromise, isLightClient?: boolean): Val
   useEffect(() => {
     if (!era || !api) return;
 
-    validatorsService.getValidatorsWithInfo(api, era, isLightClient).then(setValidators);
+    validatorsService.getValidatorsWithInfo(api, era).then(setValidators);
   }, [era]);
 
   return validators;

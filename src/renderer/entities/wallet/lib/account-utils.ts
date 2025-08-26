@@ -1,6 +1,6 @@
 import { u8aToHex } from '@polkadot/util';
 import { createKeyMulti } from '@polkadot/util-crypto';
-import keyBy from 'lodash/keyBy';
+import { keyBy } from 'lodash';
 
 // TODO: resolve cross import
 import {
@@ -8,8 +8,10 @@ import {
   type Chain,
   type ChainId,
   CryptoType,
+  type FlexibleMultisigAccount,
+  type FlexibleProxiedAccount,
   type MultisigAccount,
-  type MultisigThreshold,
+  type MultisigSignatoryAccount,
   type ProxiedAccount,
   ProxyVariant,
   type VaultBaseAccount,
@@ -21,8 +23,6 @@ import {
 } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-// TODO all this type checks should be defined in features with own context
-// eslint-disable-next-line boundaries/element-types
 import { type AnyAccount, accountService } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 
@@ -34,8 +34,12 @@ export const accountUtils = {
   isVaultChainAccount,
   isVaultShardAccount,
   isMultisigAccount,
+  isFlexibleMultisigAccount,
+  isAnyMultisigAccount,
+  isMultisigSignatoryAccount,
   isWcAccount,
   isProxiedAccount,
+  isFlexibleProxiedAccount,
   isPureProxiedAccount,
 
   isChainIdMatch,
@@ -103,10 +107,31 @@ function isMultisigAccount(account: Partial<AnyAccount>): account is MultisigAcc
   return 'accountType' in account && account.accountType === AccountType.MULTISIG;
 }
 
+function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is FlexibleMultisigAccount {
+  return 'accountType' in account && account.accountType === AccountType.FLEX_MULTISIG;
+}
+
+function isAnyMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount | FlexibleMultisigAccount {
+  return isMultisigAccount(account) || isFlexibleMultisigAccount(account);
+}
+
+function isMultisigSignatoryAccount(account: Partial<AnyAccount>): account is MultisigSignatoryAccount {
+  return 'accountType' in account && account.accountType === AccountType.MULTISIG_SIGNATORY;
+}
+
 function isProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {
   return (
     // @ts-expect-error Partial type breaks required type field usage
     accountService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.PROXIED
+  );
+}
+
+function isFlexibleProxiedAccount(account: Partial<AnyAccount>): account is FlexibleProxiedAccount {
+  return (
+    // @ts-expect-error Partial type breaks required type field usage
+    accountService.isChainAccount(account) &&
+    'accountType' in account &&
+    account.accountType === AccountType.FLEX_PROXIED
   );
 }
 
@@ -126,6 +151,11 @@ function isChainIdMatch(account: AnyAccount, chainId: ChainId): boolean {
   return account.chainId === chainId;
 }
 
+/**
+ * Checks if account is available on chain
+ *
+ * @deprecated Use accountService.isAccountAvailableOnChain instead
+ */
 function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
   return accountService.isChainAccount(account)
     ? isChainIdMatch(account, chain.chainId)
@@ -150,8 +180,8 @@ function isEthereumBased(account: AnyAccount): boolean {
 
 // Get specific accounts
 
-function getMultisigAccountId(ids: AccountId[], threshold: MultisigThreshold, cryptoType: CryptoType): AccountId {
-  const accountId = createKeyMulti(ids, threshold);
+function getMultisigAccountId(signatories: AccountId[], threshold: number, cryptoType: CryptoType): AccountId {
+  const accountId = createKeyMulti(signatories, threshold);
   const isEthereum = cryptoType === CryptoType.ETHEREUM;
 
   // TODO WTF
@@ -202,19 +232,19 @@ function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): str
 // Proxied accounts
 
 function isAnyProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'Any';
+  return account.connections.some((c) => c.proxyType === 'Any');
 }
 
 function isNonTransferProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'NonTransfer';
+  return account.connections.some((c) => c.proxyType === 'NonTransfer');
 }
 
 function isStakingProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'Staking';
+  return account.connections.some((c) => c.proxyType === 'Staking');
 }
 
 function isGovernanceProxyType(account: ProxiedAccount): boolean {
-  return account.proxyType === 'Governance';
+  return account.connections.some((c) => c.proxyType === 'Governance');
 }
 
 /**

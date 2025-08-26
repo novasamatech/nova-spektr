@@ -1,11 +1,10 @@
-import { combine, createEvent, createStore, sample } from 'effector';
-import { persist } from 'effector-storage/local';
+import { combine, sample } from 'effector';
 
 import { nullable } from '@/shared/lib/utils';
 import { evidence, evidenceService, memberService } from '@/domains/collectives';
+import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
-import { block } from './block';
-import { fellowshipSalaryFeature } from './feature';
+import { fellowshipEvidenceSalaryFeature } from './feature';
 import { fellowship } from './fellowship';
 import { profile } from './profile';
 
@@ -18,56 +17,24 @@ const $memberEvidence = combine(profile.$member, $evidences, (member, evidences)
 });
 
 const $hasRetentionEvidence = $memberEvidence.map(x => x?.wish === 'Retention');
-const $hasPromotionEvidence = $memberEvidence.map(x => x?.wish === 'Promotion');
 
 // periods
 
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 
-const $leftToPromotion = combine(
-  { periods: $periods, currentBlock: block.$currentBlock, member: profile.$member },
-  ({ periods, currentBlock, member }) => {
-    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-
-    return evidenceService.getBlockUntilNextPromotion(member, periods, currentBlock);
-  },
-);
-
-const $demotionPeriod = combine(profile.$member, $periods, (member, periods) => {
-  if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-
-  return evidenceService.getDemotionPeriod(member, periods);
-});
-
 const $leftToDemotion = combine(
-  { periods: $periods, currentBlock: block.$currentBlock, member: profile.$member },
+  { periods: $periods, currentBlock: fellowshipNetwork.$currentBlock, member: profile.$member },
   ({ periods, currentBlock, member }) => {
-    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
-
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member) || nullable(currentBlock)) {
+      return null;
+    }
     return evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
   },
 );
 
-// tracks
-
-const $tracks = fellowship.$store.map(store => store?.tracks ?? []);
-
-const $nextTrack = combine(profile.$member, $tracks, (member, tracks) => {
-  if (nullable(member)) return null;
-  const index = tracks.findIndex(t => t.id === member.rank);
-
-  return tracks.at(index + 1) ?? null;
-});
-
-const $track = combine(profile.$member, $tracks, (member, tracks) => {
-  if (nullable(member)) return null;
-
-  return tracks.find(t => t.id === member.rank) ?? null;
-});
-
 // requesting data
 
-const evidenceRequested = fellowshipSalaryFeature.running.filterMap(({ api, palletType, chainId, member }) => {
+const evidenceRequested = fellowshipEvidenceSalaryFeature.running.filterMap(({ api, palletType, chainId, member }) => {
   if (nullable(member)) return;
 
   return {
@@ -83,7 +50,7 @@ sample({
   target: evidence.request,
 });
 
-const evidencePeriodsRequested = fellowshipSalaryFeature.running.filterMap(({ palletType, chain }) => {
+const evidencePeriodsRequested = fellowshipEvidenceSalaryFeature.running.filterMap(({ palletType, chain }) => {
   return {
     palletType,
     chainId: chain.chainId,
@@ -95,35 +62,7 @@ sample({
   target: evidence.requestPeriods,
 });
 
-// attention message
-
-const $showAttention = createStore(true);
-const hideAttention = createEvent();
-
-persist({
-  key: 'fellowship-evidence-show-attention',
-  store: $showAttention,
-  sync: true,
-});
-
-sample({
-  clock: hideAttention,
-  fn: () => false,
-  target: $showAttention,
-});
-
 export const evidenceInfo = {
-  $currentBlock: block.$currentBlock,
-  $track,
-  $nextTrack,
-  $periods,
-  $leftToPromotion,
-  $demotionPeriod,
   $leftToDemotion,
-  $memberEvidence,
   $hasRetentionEvidence,
-  $hasPromotionEvidence,
-
-  $showAttention,
-  hideAttention,
 };

@@ -3,7 +3,7 @@ import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, toAccountId } from '@/shared/lib/utils';
+import { formatAmount, getNativeAsset, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
@@ -11,7 +11,7 @@ import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails } from '@/ent
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { getLocksForAccount, lockPeriodsModel, locksAggregate, locksPeriodsAggregate } from '@/features/governance';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -36,35 +36,29 @@ export const Confirmation = ({
 
   const wallets = useUnit(walletModel.$wallets);
 
+  const confirms = useUnit(confirmModel.$confirms);
+
   const confirmStore = useStoreMap({
     store: confirmModel.$confirmStore,
     keys: [id],
     fn: (value, [id]) => value?.[id],
   });
 
-  const initiatorWallet = useStoreMap({
-    store: confirmModel.$initiatorWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
-  const signerWallet = useStoreMap({
-    store: confirmModel.$signerWallets,
-    keys: [id],
-    fn: (value, [id]) => value?.[id],
-  });
-
   const lockPeriods = useStoreMap({
     store: lockPeriodsModel.$lockPeriods,
-    keys: [confirmStore?.chain],
+    keys: [confirmStore.meta.chain],
     fn: (locks, [chain]) => (chain ? (locks[chain.chainId] ?? null) : null),
   });
 
-  useGate(locksPeriodsAggregate.gates.flow, { chain: confirmStore?.chain });
+  useGate(locksPeriodsAggregate.gates.flow, { chain: confirmStore.meta.chain });
+  useGate(locksAggregate.gates.flow, { chain: confirmStore.meta.chain });
 
+  const trackLocks = useUnit(locksAggregate.$trackLocks);
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
+  const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
+  const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
-  if (!confirmStore || !initiatorWallet) {
+  if (!confirmStore) {
     return (
       <Box width="440px" height="430px" verticalAlign="center" horizontalAlign="center">
         <Loader color="primary" />
@@ -72,9 +66,13 @@ export const Confirmation = ({
     );
   }
 
+  const signerWallet = confirmStore.wallets.signatory;
+
   const amountValue = config.withFormatAmount
-    ? formatAmount(confirmStore.balance, confirmStore.asset.precision)
-    : confirmStore.balance;
+    ? formatAmount(confirmStore.meta.balance, confirmStore.meta.asset.precision)
+    : confirmStore.meta.balance;
+
+  const locksForAddress = getLocksForAccount(confirmStore.meta.initiator.accountId, trackLocks);
 
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">
@@ -83,49 +81,52 @@ export const Confirmation = ({
 
         <LargeTitleText as="p" className="font-manrope">
           {'-'}
-          <AssetBalance className="text-large-title" value={amountValue} asset={confirmStore.asset} />
+          <AssetBalance className="text-large-title" value={amountValue} asset={confirmStore.meta.asset} />
         </LargeTitleText>
       </div>
 
       <MultisigExistsAlert active={isMultisigExists} />
 
       <TransactionDetails
-        chain={confirmStore.chain}
+        chain={confirmStore.meta.chain}
         wallets={wallets}
-        initiator={[confirmStore.account]}
-        signatory={confirmStore.signatory}
-        proxied={confirmStore.proxiedAccount}
+        initiators={initiators}
+        signatory={confirmStore.meta.signatory}
       >
         <DetailRow label={t('governance.addDelegation.confirmation.target')}>
-          <Account variant="short" chain={confirmStore.chain} accountId={toAccountId(confirmStore.target)} />
+          <Account
+            variant="short"
+            chain={confirmStore.meta.chain}
+            accountId={toAccountId(confirmStore.meta.delegate)}
+          />
         </DetailRow>
 
         <DetailRow label={t('governance.addDelegation.confirmation.tracks')}>
-          <TracksDetails tracks={confirmStore.tracks} />
+          <TracksDetails tracks={confirmStore.meta.tracks} />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />
 
         <DetailRow label={t('governance.operations.transferable')} wrapperClassName="items-start">
           <BalanceDiff
-            from={confirmStore.transferable}
-            to={new BN(confirmStore.transferable).add(new BN(amountValue))}
-            asset={confirmStore.asset}
-            lock={confirmStore.locks}
+            from={confirmStore.meta.transferable}
+            to={new BN(confirmStore.meta.transferable).add(new BN(amountValue))}
+            asset={confirmStore.meta.asset}
+            lock={locksForAddress}
           />
         </DetailRow>
 
         <DetailRow label={t('governance.locks.governanceLock')} wrapperClassName="items-start">
-          <LockValueDiff from={confirmStore.balance} to="0" asset={confirmStore.asset} />
+          <LockValueDiff from={locksForAddress} to="0" asset={confirmStore.meta.asset} />
         </DetailRow>
 
         <DetailRow label={t('governance.locks.undelegatePeriod')} wrapperClassName="items-start">
-          <LockPeriodDiff unlock from={confirmStore.conviction} to="None" lockPeriods={lockPeriods} />
+          <LockPeriodDiff unlock from={confirmStore.meta.conviction} to="None" lockPeriods={lockPeriods} />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />
 
-        {accountUtils.isMultisigAccount(confirmStore.account) && (
+        {accountUtils.isMultisigAccount(confirmStore.meta.initiator) && (
           <DetailRow
             className="text-text-primary"
             label={
@@ -144,8 +145,8 @@ export const Confirmation = ({
             }
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={confirmStore.multisigDeposit} asset={confirmStore.chain.assets[0]} />
-              <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.multisigDeposit} />
+              <AssetBalance value={confirmStore.meta.multisigDeposit} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.multisigDeposit} />
             </div>
           </DetailRow>
         )}
@@ -155,8 +156,8 @@ export const Confirmation = ({
           label={<FootnoteText className="text-text-tertiary">{t('staking.networkFee', { count: 1 })}</FootnoteText>}
         >
           <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={confirmStore.fee} asset={confirmStore.chain.assets[0]} />
-            <AssetFiatBalance asset={confirmStore.chain.assets[0]} amount={confirmStore.fee} />
+            <AssetBalance value={confirmStore.meta.fee} asset={nativeAsset} />
+            <AssetFiatBalance asset={nativeAsset} amount={confirmStore.meta.fee} />
           </div>
         </DetailRow>
       </TransactionDetails>
@@ -174,8 +175,8 @@ export const Confirmation = ({
           {!hideSignButton && !isMultisigExists && (
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
-              type={(signerWallet || initiatorWallet).type}
-              onClick={confirmModel.output.formSubmitted}
+              type={signerWallet.type}
+              onClick={confirmModel.startSigning}
             />
           )}
         </div>

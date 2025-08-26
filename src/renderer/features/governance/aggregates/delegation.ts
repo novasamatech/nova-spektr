@@ -1,11 +1,11 @@
 import { type BN, BN_ZERO } from '@polkadot/util';
-import { combine } from 'effector';
-import uniq from 'lodash/uniq';
+import { uniq } from 'lodash';
 
 import { type DelegationBalanceMap, type DelegationTracksMap } from '@/shared/core';
-import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { entries, toAccountId } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
-import { permissionUtils, walletModel } from '@/entities/wallet';
+import { permissionUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { networkSelectorModel } from '../model/networkSelector';
 
 import { votingAggregate } from './voting';
@@ -33,68 +33,52 @@ const $delegatedVotingPower = votingAggregate.$activeWalletVotes.map((voting) =>
   return total;
 });
 
-const $activeDelegations = combine(
-  {
-    activeVotes: votingAggregate.$activeWalletVotes,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  ({ activeVotes, chain }) => {
-    const activeBalances: DelegationBalanceMap = {};
+const $activeDelegations = votingAggregate.$activeWalletVotes.map((activeVotes) => {
+  const activeBalances: DelegationBalanceMap = {};
 
-    for (const [voterAccountId, delegations] of Object.entries(activeVotes)) {
-      const voterAddress = toAddress(voterAccountId, { prefix: chain?.addressPrefix });
+  for (const [voterAccountId, delegations] of entries(activeVotes)) {
+    for (const delegation of Object.values(delegations)) {
+      if (!votingService.isDelegating(delegation)) continue;
 
-      for (const delegation of Object.values(delegations)) {
-        if (!votingService.isDelegating(delegation)) continue;
+      const target = toAccountId(delegation.target);
 
-        const target = toAddress(toAccountId(delegation.target), { prefix: chain?.addressPrefix });
-
-        if (!activeBalances[target]) {
-          activeBalances[target] = {};
-        }
-
-        activeBalances[target][voterAddress] = {
-          conviction: delegation.conviction,
-          balance: delegation.balance,
-        };
+      if (!activeBalances[target]) {
+        activeBalances[target] = {};
       }
+
+      activeBalances[target][voterAccountId] = {
+        conviction: delegation.conviction,
+        balance: delegation.balance,
+      };
     }
+  }
 
-    return activeBalances;
-  },
-);
+  return activeBalances;
+});
 
-const $activeTracks = combine(
-  {
-    activeVotes: votingAggregate.$activeWalletVotes,
-    chain: networkSelectorModel.$governanceChain,
-  },
-  ({ activeVotes, chain }) => {
-    const activeTracks: DelegationTracksMap = {};
+const $activeTracks = votingAggregate.$activeWalletVotes.map((activeVotes) => {
+  const activeTracks: DelegationTracksMap = {};
 
-    for (const [voterAccountId, delegations] of Object.entries(activeVotes)) {
-      const voterAddress = toAddress(voterAccountId, { prefix: chain?.addressPrefix });
+  for (const [voterAccountId, delegations] of entries(activeVotes)) {
+    for (const [track, delegation] of entries(delegations)) {
+      if (!votingService.isDelegating(delegation)) continue;
 
-      for (const [track, delegation] of Object.entries(delegations)) {
-        if (!votingService.isDelegating(delegation)) continue;
+      const target = toAccountId(delegation.target);
 
-        const target = toAddress(toAccountId(delegation.target), { prefix: chain?.addressPrefix });
-
-        if (!activeTracks[target]) {
-          activeTracks[target] = {};
-        }
-
-        if (!activeTracks[target][voterAddress]) {
-          activeTracks[target][voterAddress] = [];
-        }
-
-        activeTracks[target][voterAddress].push(track);
+      if (!activeTracks[target]) {
+        activeTracks[target] = {};
       }
-    }
 
-    return activeTracks;
-  },
-);
+      if (!activeTracks[target][voterAccountId]) {
+        activeTracks[target][voterAccountId] = [];
+      }
+
+      activeTracks[target][voterAccountId].push(track);
+    }
+  }
+
+  return activeTracks;
+});
 
 const $activeWalletDelegatedTracks = $activeTracks.map((tracks) => {
   return uniq(Object.values(tracks).flatMap((map) => Object.values(map).flat()));
@@ -102,7 +86,7 @@ const $activeWalletDelegatedTracks = $activeTracks.map((tracks) => {
 
 const $hasDelegations = $activeDelegations.map((delegations) => Object.values(delegations).length > 0);
 
-const $canDelegate = walletModel.$activeWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
+const $canDelegate = walletSelect.$selectedWallet.map((wallet) => !!wallet && permissionUtils.canDelegate(wallet));
 
 export const delegationAggregate = {
   $isLoading: votingAggregate.$isLoading,

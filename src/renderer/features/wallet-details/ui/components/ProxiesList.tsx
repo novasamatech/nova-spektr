@@ -1,152 +1,111 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 
-import { type ProxiedAccount, type ProxyAccount, ProxyVariant, type Wallet } from '@/shared/core';
+import { type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
-import { ConfirmModal, FootnoteText, HelpText, SmallTitleText } from '@/shared/ui';
+import { FootnoteText, HelpText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Accordion } from '@/shared/ui-kit';
+import { accountService, accounts } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { accountUtils } from '@/entities/wallet';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
-import { proxyRemovePureFeature } from '@/features/proxy-remove-pure';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 
+import { NoProxiesAction } from './NoProxiesAction';
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 
 const {
-  models: { removeProxy },
+  models: { removeProxyModel },
   views: { RemoveProxy },
 } = proxyRemoveFeature;
 
-const {
-  models: { removePureProxy },
-  views: { RemovePureProxy },
-} = proxyRemovePureFeature;
-
 type Props = {
   wallet: Wallet;
+  hasProxies: boolean;
   canCreateProxy?: boolean;
   className?: string;
 };
 
-export const ProxiesList = ({ className, wallet, canCreateProxy = true }: Props) => {
+export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
 
   const chainsProxies = useUnit(walletDetailsModel.$chainsProxies);
   const walletProxyGroups = useUnit(walletDetailsModel.$walletProxyGroups);
-  const proxyForRemoval = useUnit(removeProxy.$proxyForRemoval);
 
-  const [isRemoveConfirmOpen, toggleIsRemoveConfirmOpen] = useToggle();
+  const walletAccounts = useStoreMap({
+    store: accounts.$list,
+    keys: [wallet],
+    fn: (accounts, [wallet]) => {
+      return accountService.filterAccountsByWallet(accounts, wallet.id);
+    },
+  });
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    const chainProxies = chainsProxies[proxyAccount.chainId] || [];
-    const anyProxies = chainProxies.filter(proxy => proxy.proxyType === 'Any');
-    const isPureProxy = (wallet?.accounts[0] as ProxiedAccount).proxyVariant === ProxyVariant.PURE;
-
-    const shouldRemovePureProxy = isPureProxy && anyProxies.length === 1;
-
-    if (shouldRemovePureProxy) {
-      const account = wallet?.accounts.at(0);
-      if (account) {
-        removePureProxy.events.flowStarted({
-          account: wallet?.accounts[0] as ProxiedAccount,
-          proxy: proxyAccount,
-        });
-      }
-    } else {
-      removeProxy.events.removeProxy(proxyAccount);
-      toggleIsRemoveConfirmOpen();
-    }
-  };
-
-  const handleConfirm = () => {
-    toggleIsRemoveConfirmOpen();
-
-    if (!proxyForRemoval || !wallet) return;
-
-    const account = wallet.accounts.find(a => {
-      return (
-        accountUtils.isNonBaseVaultAccount(a, wallet) &&
-        accountUtils.isChainAndCryptoMatch(a, chains[proxyForRemoval.chainId])
-      );
+    removeProxyModel.flowStarted({
+      proxied: walletAccounts[0] as ProxiedAccount,
+      proxy: proxyAccount,
     });
-
-    removeProxy.events.flowStarted({ account: account!, proxy: proxyForRemoval });
   };
 
   return (
     <div className={cnTw('flex flex-col', className)}>
-      <div className="flex items-center px-5 py-2">
-        <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
-      </div>
+      {hasProxies ? (
+        <>
+          <div className="flex items-center px-5 py-2">
+            <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
+          </div>
 
-      <ul className="flex h-full flex-col divide-y divide-divider overflow-y-auto overflow-x-hidden px-5">
-        {walletProxyGroups.map(({ chainId, totalDeposit }) => {
-          if (!chainsProxies[chainId]?.length) {
-            return null;
-          }
+          <ul className="flex h-full flex-col divide-y divide-divider overflow-x-hidden overflow-y-auto px-5">
+            {walletProxyGroups.map(({ chainId, totalDeposit }) => {
+              if (!chainsProxies[chainId]?.length) {
+                return null;
+              }
 
-          return (
-            <li key={chainId} className="flex items-center py-2">
-              <Accordion initialOpen>
-                <Accordion.Trigger>
-                  <div className="flex items-center justify-between gap-x-2 pr-2 normal-case">
-                    <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chains[chainId]} />
-                    <HelpText className="text-text-tertiary">
-                      {t('walletDetails.common.proxyDeposit')}
-                      &nbsp;
-                      <AssetBalance
-                        value={totalDeposit.replaceAll(',', '')}
-                        asset={chains[chainId].assets[0]}
-                        className="text-help-text"
-                      />
-                    </HelpText>
-                  </div>
-                </Accordion.Trigger>
-                <Accordion.Content>
-                  <ul className="flex flex-col gap-y-2">
-                    {chainsProxies[chainId].map(proxy => (
-                      <li className="px-2 py-1.5" key={`${proxy.id}_${proxy.proxyType}`}>
-                        <ProxyAccountWithActions
-                          account={proxy}
-                          chain={chains[chainId]}
-                          canCreateProxy={canCreateProxy}
-                          onRemoveProxy={handleDeleteProxy}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                </Accordion.Content>
-              </Accordion>
-            </li>
-          );
-        })}
-      </ul>
-
-      <ConfirmModal
-        isOpen={isRemoveConfirmOpen}
-        cancelText={t('walletDetails.common.confirmRemoveProxyCancel')}
-        confirmText={t('walletDetails.common.confirmRemoveProxySubmit')}
-        confirmPallet="error"
-        panelClass="w-[240px]"
-        onClose={toggleIsRemoveConfirmOpen}
-        onConfirm={handleConfirm}
-      >
-        <SmallTitleText align="center" className="mb-2">
-          {t('walletDetails.common.confirmRemoveProxyTitle')}
-        </SmallTitleText>
-        <FootnoteText className="text-text-tertiary" align="center">
-          {t('walletDetails.common.confirmRemoveProxyDescription')}
-        </FootnoteText>
-      </ConfirmModal>
+              return (
+                <li key={chainId} className="flex items-center py-2">
+                  <Accordion initialOpen>
+                    <Accordion.Trigger>
+                      <div className="flex items-center justify-between gap-x-2 pr-2 normal-case">
+                        <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chains[chainId]} />
+                        <HelpText className="text-text-tertiary">
+                          {t('walletDetails.common.proxyDeposit')}
+                          &nbsp;
+                          <AssetBalance
+                            value={totalDeposit.replaceAll(',', '')}
+                            asset={chains[chainId].assets[0]}
+                            className="text-help-text"
+                          />
+                        </HelpText>
+                      </div>
+                    </Accordion.Trigger>
+                    <Accordion.Content>
+                      <ul className="flex flex-col gap-y-2">
+                        {chainsProxies[chainId].map(proxy => (
+                          <li className="px-2 py-1.5" key={`${proxy.id}_${proxy.proxyType}`}>
+                            <ProxyAccountWithActions
+                              account={proxy}
+                              chain={chains[chainId]}
+                              canCreateProxy={canCreateProxy}
+                              onRemoveProxy={handleDeleteProxy}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    </Accordion.Content>
+                  </Accordion>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      ) : (
+        <NoProxiesAction canCreateProxy={canCreateProxy} wallet={wallet} />
+      )}
 
       <RemoveProxy wallet={wallet} />
-      <RemovePureProxy wallet={wallet} />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { type DelegateInfo } from '@/shared/api/governance';
 import { TEST_IDS } from '@/shared/constants';
-import { type AccountVote, type Address, type Asset, type Identity } from '@/shared/core';
+import { type AccountVote, type Asset, type Chain, type Identity } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon } from '@/shared/ui';
@@ -12,8 +12,9 @@ import { VotedByDelegates } from './VotedByDelegates';
 
 type Props = {
   direction: 'column' | 'row';
+  chain: Chain;
   asset: Asset;
-  identity: Record<Address, Identity>;
+  identity: Record<AccountId, Identity>;
   delegates: DelegateInfo[];
   multiplier?: boolean;
   castingVotes: {
@@ -22,7 +23,7 @@ type Props = {
   }[];
 };
 
-export const VotedCombined = ({ direction, asset, identity, delegates, multiplier, castingVotes }: Props) => {
+export const VotedCombined = ({ direction, chain, asset, identity, delegates, multiplier, castingVotes }: Props) => {
   const { t } = useI18n();
 
   const accountsVotes = castingVotes.map(({ vote }) => vote);
@@ -40,7 +41,13 @@ export const VotedCombined = ({ direction, asset, identity, delegates, multiplie
     return (
       <Box direction={direction} gap={2}>
         <VotedByAccounts asset={asset} castingVotes={castingVotes} multiplier={multiplier} />
-        <VotedByDelegates asset={asset} delegates={delegates} identity={identity} multiplier={multiplier} />
+        <VotedByDelegates
+          chain={chain}
+          asset={asset}
+          delegates={delegates}
+          identity={identity}
+          multiplier={multiplier}
+        />
       </Box>
     );
   }

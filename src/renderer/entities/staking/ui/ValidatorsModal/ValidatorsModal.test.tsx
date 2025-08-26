@@ -3,6 +3,7 @@ import { vi } from 'vitest';
 
 import { type Asset } from '@/shared/core';
 import { type Validator } from '@/shared/core/types/validator';
+import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 
 import { ValidatorsModal } from './ValidatorsModal';
 
@@ -19,9 +20,9 @@ describe('pages/Staking/components/ValidatorsModal', () => {
     asset: { symbol: 'DOT', precision: 10 } as Asset,
     identities: {},
     selectedValidators: [
-      { address: '12QkLhnKL5vXsa7e74CC45RUSqA5fRqc8rKHzXYZb82ppZap' },
-      { address: 'EGSgCCMmg5vePv611bmJpgdy7CaXaHayqPH8XwgD1jetWjN' },
-      { address: '5H46Nxu6sJvTYe4rSUxYTUU6pG5dh6jZq66je2g7SLE3RCj6' },
+      { accountId: TEST_ACCOUNTS[0] },
+      { accountId: TEST_ACCOUNTS[1] },
+      { accountId: TEST_ACCOUNTS[2] },
     ] as Validator[],
     notSelectedValidators: [],
     onClose: () => {},
