@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, memo } from 'react';
+import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -32,17 +32,27 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
 
   const referendumId = referendum?.id;
 
-  let baseTitle = t('governance.referendums.referendumTitle', { index: referendumId });
-  if (referendum && referendumService.isOngoing(referendum)) {
-    if (trackService.isPromotionTrack(referendum.track) || trackService.isRetentionTrack(referendum.track)) {
-      baseTitle = detailsService.getRankTitle(referendum.track, tracks) || baseTitle;
+  const modalTitle = useMemo(() => {
+    if (title) {
+      return title;
     }
-  }
+
+    if (referendum && referendumService.isOngoing(referendum)) {
+      if (trackService.isPromotionTrack(referendum.track) || trackService.isRetentionTrack(referendum.track)) {
+        const rankTitle = detailsService.getRankTitle(referendum.track, tracks);
+        if (rankTitle) {
+          return rankTitle;
+        }
+      }
+    }
+
+    return t('governance.referendums.referendumTitle', { index: referendumId });
+  }, [title, referendum, tracks, referendumId]);
 
   return (
     <Modal size="xl" height="full">
       <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>{title || baseTitle}</Modal.Title>
+      <Modal.Title close>{modalTitle}</Modal.Title>
       <Modal.Content disableScroll>
         <div className="flex h-full bg-main-app-background">
           <ScrollArea>
