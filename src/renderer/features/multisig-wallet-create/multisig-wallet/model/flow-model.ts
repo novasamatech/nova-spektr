@@ -1,4 +1,3 @@
-import { BN } from '@polkadot/util';
 import { attach, combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { sortBy } from 'lodash';
@@ -22,7 +21,6 @@ import {
   nonNullable,
   nullable,
   toAccountId,
-  withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
@@ -32,7 +30,7 @@ import {
   createTxValidator,
 } from '@/shared/transactions';
 import { type AnyAccount, type ChainAccount, accountService, accountSync, accounts } from '@/domains/network';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { balanceModel } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
@@ -215,22 +213,8 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   feeTransaction: $fakeTx,
 });
 
-const $signerBalance = combine(
-  {
-    signer: $signer,
-    balances: balanceModel.$balanceMap,
-    chain: formModel.$chain,
-  },
-  ({ signer, balances, chain }) => {
-    if (!signer || !chain) return null;
-
-    return (
-      balanceUtils.getBalance(balances, signer.accountId, chain.chainId, getNativeAsset(chain.assets).assetId) ?? null
-    );
-  },
-);
-
 const $asset = formModel.$chain.map(chain => (chain ? getNativeAsset(chain.assets) : null));
+
 const validator = createTxValidator();
 const { $errors } = createTxValidationStore({
   validator,
@@ -247,18 +231,6 @@ const { $multisigDeposit, $pending: $isDepositLoading } = createMultisigDeposit(
   $threshold: formModel.form.fields.threshold.$value,
   $api: $api,
 });
-
-const $isEnoughBalance = combine(
-  {
-    fee: $fee,
-    signerBalance: $signerBalance,
-  },
-  ({ fee, signerBalance }) => {
-    if (!signerBalance || !fee) return false;
-
-    return new BN(fee).lte(withdrawableAmountBN(signerBalance));
-  },
-);
 
 sample({
   clock: formModel.formSubmitted,
@@ -372,7 +344,11 @@ sample({
   },
   fn: ({ signatories, chain, name, threshold }) => {
     const sortedSignatories = sortBy(
-      Array.from(signatories.values()).map(a => ({ address: a.address, accountId: toAccountId(a.address) })),
+      Array.from(signatories.values()).map(a => ({
+        address: a.address,
+        accountId: toAccountId(a.address),
+        walletId: a.walletId,
+      })),
       'accountId',
     );
 
@@ -425,10 +401,12 @@ sample({
   },
   fn: ({ signatories, contacts }) => {
     const signatoriesWithoutSigner = signatories.slice(1);
+    const filtredSignatories = signatoriesWithoutSigner.filter(s => !s.walletId);
+
     const contactMap = new Map(contacts.map(c => [c.accountId, c]));
     const updatedContacts: Contact[] = [];
 
-    for (const { address, name } of signatoriesWithoutSigner) {
+    for (const { address, name } of filtredSignatories) {
       const contact = contactMap.get(toAccountId(address));
 
       if (!contact) continue;
@@ -457,7 +435,7 @@ sample({
 
     return signatories
       .slice(1)
-      .filter(signatory => !contactsSet.has(toAccountId(signatory.address)))
+      .filter(signatory => !signatory.walletId && !contactsSet.has(toAccountId(signatory.address)))
       .map(
         ({ address, name }) =>
           ({
@@ -494,9 +472,7 @@ export const flowModel = {
   $initiators,
   $signer,
   $initiatorWallet,
-  $isEnoughBalance,
   $tx,
-  $signerBalance,
   $route,
 
   $fee,
