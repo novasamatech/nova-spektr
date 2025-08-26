@@ -1138,6 +1138,7 @@
       "referendumTitle": "Referendum #{ index }",
       "rejectIn": "Reject in",
       "rejected": "Rejected",
+      "spendReferendumTitle": "Should we pay",
       "staking": "Staking",
       "timedOut": "Timed out",
       "timeoutIn": "Time out in",
