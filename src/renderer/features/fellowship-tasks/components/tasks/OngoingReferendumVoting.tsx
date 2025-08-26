@@ -5,12 +5,13 @@ import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
-import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService } from '@/domains/collectives';
 import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { referendums } from '../../model/referendums';
 import { rfcModel } from '../../model/rfc';
 import { tasksService } from '../../service';
+import { ReferendumTaskMarkdown } from '../ReferendumTaskMarkdown';
 import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
 
@@ -64,23 +65,17 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
 
   const isPending = referendum && (isRFCProposal ? isRFCPending : isMetaPending);
 
+  console.log({ meta });
+
   const content = useMemo(() => {
     if (isPending) return;
 
     if (rfc?.summary) {
-      return (
-        <Markdown cut="150px" compact>
-          {tasksService.cutMarkdown(rfc.summary)}
-        </Markdown>
-      );
+      return <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(rfc.summary)}</ReferendumTaskMarkdown>;
     }
 
     if (meta?.description) {
-      return (
-        <Markdown cut="150px" compact>
-          {tasksService.cutMarkdown(meta.description)}
-        </Markdown>
-      );
+      return <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(meta.description)}</ReferendumTaskMarkdown>;
     }
 
     return t('fellowship.tasks.task.anyReferendum.noDescription');
