@@ -43,6 +43,7 @@ export const transactionBuilder = {
   buildApproveMultisigTx,
   buildCreatePureProxy,
   buildCreateFlexibleMultisig,
+  buildProxyReassign,
   buildRemark,
   buildAddProxy,
   buildKillPureProxy,
@@ -678,6 +679,36 @@ function buildCreateFlexibleMultisig({
   }
 
   return buildBatchAll({ chain, accountId: signerAccountId, transactions });
+}
+
+type ProxyReassignParams = {
+  chain: Chain;
+  signerAccountId: AccountId;
+  newAccountId: AccountId;
+  oldAccountId: AccountId;
+};
+
+function buildProxyReassign({ chain, newAccountId, oldAccountId, signerAccountId }: ProxyReassignParams): Transaction {
+  const addProxyTx = transactionBuilder.buildAddProxy({
+    chain,
+    accountId: oldAccountId,
+    delegateAccountId: newAccountId,
+    type: 'Any',
+  });
+
+  const removeProxyTx = transactionBuilder.buildRemoveProxy({
+    chain,
+    accountId: oldAccountId,
+    delegate: oldAccountId,
+    proxyType: 'Any',
+    delay: 0,
+  });
+
+  return buildBatchAll({
+    chain,
+    accountId: signerAccountId,
+    transactions: [addProxyTx, removeProxyTx],
+  });
 }
 
 type RemarkParams = {
