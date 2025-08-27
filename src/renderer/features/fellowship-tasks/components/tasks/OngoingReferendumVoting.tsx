@@ -87,15 +87,12 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
   }, [meta, rfc, isPending]);
 
   const title = useMemo(() => {
-    if (meta?.title) {
-      return meta?.title;
-    }
     const isSpendProposal = referendum.proposal ? referendumService.isSpendProposal(referendum.proposal) : false;
 
     return isSpendProposal
       ? t('governance.referendums.spendReferendumTitle')
       : t('governance.referendums.referendumTitle', { index: referendum.id });
-  }, [referendum.proposal, meta?.title]);
+  }, [referendum.proposal]);
 
   return (
     <Box direction="row" gap={2}>
