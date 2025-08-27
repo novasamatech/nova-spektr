@@ -22,7 +22,7 @@ import {
   type NoID,
 } from '@/shared/core';
 import { createBuffer, series } from '@/shared/effector';
-import { dictionary, nonNullable } from '@/shared/lib/utils';
+import { dictionary, keys, nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '../lib/network-utils';
 
 const chainConnected = createEvent<ChainId>();
@@ -33,6 +33,7 @@ const disconnected = createEvent<ChainId>();
 const failed = createEvent<ChainId>();
 
 const $chains = createStore<Record<ChainId, Chain>>({});
+const $chainsList = $chains.map((chains) => chainsService.sortChains(Object.values(chains)));
 
 const $providers = createStore<Record<ChainId, ProviderWithMetadata>>({});
 const $apis = createStore<Record<ChainId, ApiPromise>>({});
@@ -211,9 +212,7 @@ sample({
     const connectionsMap = dictionary(connectionData, 'chainId');
     const lightClientChains = networkUtils.getLightClientChains();
 
-    return Object.keys(chains).reduce<Record<ChainId, Connection>>((acc, key) => {
-      const chainId = key as ChainId;
-
+    return keys(chains).reduce<Record<ChainId, Connection>>((acc, chainId) => {
       acc[chainId] = connectionsMap[chainId] || {
         chainId,
         customNodes: [],
@@ -502,6 +501,7 @@ sample({
 export const networkModel = {
   $populated,
   $chains,
+  $chainsList,
   $apis,
   $connectionStatuses,
   $connections,

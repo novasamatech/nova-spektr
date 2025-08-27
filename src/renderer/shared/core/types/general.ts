@@ -1,3 +1,5 @@
+import { type z } from 'zod';
+
 export type ID = number;
 export type NoID<T extends NonNullable<unknown>> = Omit<T, 'id'>;
 export type WithID<T, K = ID> = T & { id: K };
@@ -7,8 +9,7 @@ export type Metadata = HexString;
 export type ChainId = HexString;
 export type BlockHeight = number;
 
-export type Address = string;
-export type MultisigThreshold = number;
+export type Address = string & z.$brand<'Address'>;
 
 export type CallData = HexString;
 export type CallHash = HexString;

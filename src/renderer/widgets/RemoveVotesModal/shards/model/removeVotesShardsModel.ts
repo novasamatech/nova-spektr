@@ -4,7 +4,7 @@ import { createGate } from 'effector-react';
 import { uniq } from 'lodash';
 
 import { type AccountVote, type Asset, type Chain, type ReferendumId, type TrackId } from '@/shared/core';
-import { Step, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { Step, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { transactionBuilder } from '@/entities/transaction';
 import { walletModel, walletUtils } from '@/entities/wallet';
@@ -54,9 +54,9 @@ const $initiatorWallet = combine($availableAccounts, walletModel.$wallets, (acco
   return walletUtils.getWalletById(wallets, account.walletId) ?? null;
 });
 
-const $votesList = combine($availableAccounts, flow.state, (accounts, { votes, chain }) => {
+const $votesList = combine($availableAccounts, flow.state, (accounts, { votes }) => {
   return accounts.map((account) => {
-    return votes.filter((vote) => vote.voter === toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+    return votes.filter((vote) => vote.voter === account.accountId);
   });
 });
 

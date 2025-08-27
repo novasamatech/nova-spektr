@@ -1,4 +1,5 @@
 import { useGate } from 'effector-react';
+import { t } from 'i18next';
 
 import { type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -25,10 +26,10 @@ export { proxyBasketFeature };
 
 const getOperationTitle = (transaction: Transaction): string | undefined => {
   const Title: { [key in TransactionType]?: string } = {
-    [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
-    [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
-    [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
-    [TransactionType.KILL_PURE_PROXY]: 'operations.titles.removePureProxy',
+    [TransactionType.ADD_PROXY]: t('operations.titles.addProxy'),
+    [TransactionType.CREATE_PURE_PROXY]: t('operations.titles.createPureProxy'),
+    [TransactionType.REMOVE_PROXY]: t('operations.titles.removeProxy'),
+    [TransactionType.KILL_PURE_PROXY]: t('operations.titles.removePureProxy'),
   };
 
   return Title[transaction.type];
@@ -36,10 +37,10 @@ const getOperationTitle = (transaction: Transaction): string | undefined => {
 
 const getModalTitle = (transaction: Transaction): string | undefined => {
   const Title: { [key in TransactionType]?: string } = {
-    [TransactionType.ADD_PROXY]: 'operations.modalTitles.addProxyOn',
-    [TransactionType.REMOVE_PROXY]: 'operations.modalTitles.removeProxyOn',
-    [TransactionType.CREATE_PURE_PROXY]: 'operations.modalTitles.addPureProxyOn',
-    [TransactionType.KILL_PURE_PROXY]: 'operations.modalTitles.removePureProxyOn',
+    [TransactionType.ADD_PROXY]: t('operations.modalTitles.addProxyOn'),
+    [TransactionType.REMOVE_PROXY]: t('operations.modalTitles.removeProxyOn'),
+    [TransactionType.CREATE_PURE_PROXY]: t('operations.modalTitles.addPureProxyOn'),
+    [TransactionType.KILL_PURE_PROXY]: t('operations.modalTitles.removePureProxyOn'),
   };
 
   return Title[transaction.type];

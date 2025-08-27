@@ -35,7 +35,7 @@ export const SelectableShard = ({ account, chain, checked, semiChecked, onChange
             {isChain ? (
               <>
                 <div className="flex flex-row">
-                  <Identicon address={address} size={20} background={false} canCopy={false} />
+                  <Identicon value={account.accountId} size={20} background={false} canCopy={false} />
                   <Icon
                     className="z-10 -ml-2.5 rounded-full border bg-white text-text-secondary"
                     size={20}
@@ -55,7 +55,7 @@ export const SelectableShard = ({ account, chain, checked, semiChecked, onChange
               </>
             ) : (
               <>
-                <Identicon address={address} size={20} background={false} canCopy={false} />
+                <Identicon value={account.accountId} size={20} background={false} canCopy={false} />
                 <FootnoteText
                   className={cnTw('min-w-0', checked || semiChecked ? 'text-text-primary' : 'text-text-secondary')}
                 >

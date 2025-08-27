@@ -3,7 +3,7 @@ import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
 import { type OngoingReferendum } from '@/shared/core';
-import { Step, isStep, nonNullable, nonNullableMap, nullable, toAddress } from '@/shared/lib/utils';
+import { Step, isStep, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { votingService } from '@/entities/governance';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -122,14 +122,9 @@ sample({
 
 sample({
   clock: flow.open,
-  source: networkSelectorModel.$network,
-  filter: (network, { referendum }) => {
-    return nonNullable(network) && nonNullable(referendum);
-  },
-  fn: (network, { type, referendum }) => {
-    const voters = referendum!.voting.votes.map((vote) =>
-      toAddress(vote.voter, { prefix: network?.chain.addressPrefix }),
-    );
+  filter: ({ referendum }) => nonNullable(referendum),
+  fn: ({ type, referendum }) => {
+    const voters = referendum!.voting.votes.map((vote) => vote.voter);
 
     return { type, referendum, voters };
   },
@@ -200,13 +195,7 @@ sample({
 
 sample({
   clock: flow.state,
-  source: networkSelectorModel.$network,
-  filter: (network, { referendum }) => {
-    return nonNullable(network) && nonNullable(referendum);
-  },
-  fn: (network, { referendum }) => {
-    return referendum!.voting.votes.map((vote) => toAddress(vote.voter, { prefix: network?.chain.addressPrefix }));
-  },
+  fn: ({ referendum }) => referendum?.voting.votes.map((vote) => vote.voter) ?? [],
   target: voteForm.$voters,
 });
 

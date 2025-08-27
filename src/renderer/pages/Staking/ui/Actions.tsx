@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import { type Address, type Stake } from '@/shared/core';
+import { type Stake } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { toAccountId } from '@/shared/lib/utils';
+import { entries } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BaseModal, Button, Icon, SmallTitleText } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
 import { ControllerOperations, OperationOptions, StashOperations } from '../lib/constants';
@@ -14,7 +15,7 @@ type Props = {
   canInteract: boolean;
   stakes: Stake[];
   isStakingLoading: boolean;
-  onNavigate: (operation: Operations, addresses?: Address[]) => void;
+  onNavigate: (operation: Operations, accounts?: AccountId[]) => void;
 };
 
 export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: Props) => {
@@ -64,11 +65,11 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
   const wrongOverlaps = operationsSummary.bond_nominate > 0 && otherActionsSum > 0;
 
   const isController = (stake: Stake): boolean => {
-    return !stake.controller || toAccountId(stake.address) === toAccountId(stake.controller);
+    return !stake.controller || stake.accountId === stake.controller;
   };
 
   const isStash = (stake: Stake): boolean => {
-    return !stake.stash || toAccountId(stake.address) === toAccountId(stake.stash);
+    return !stake.stash || stake.accountId === stake.stash;
   };
 
   const getIncorrectAccountType = (operation: Operations): ControllerTypes | null => {
@@ -82,7 +83,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     return null;
   };
 
-  const getStakeAddresses = (accountType: ControllerTypes): Address[] => {
+  const getStakeAccounts = (accountType: ControllerTypes): AccountId[] => {
     let filterFn: (value?: any) => boolean = () => true;
     if (accountType === ControllerTypes.STASH) {
       filterFn = isStash;
@@ -91,7 +92,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
       filterFn = isController;
     }
 
-    return stakes.filter(filterFn).map((s) => s.address);
+    return stakes.filter(filterFn).map((s) => s.accountId);
   };
 
   const onClickAction = (operation: Operations, path: Operations) => {
@@ -117,7 +118,7 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
     const incorrectType = getIncorrectAccountType(operation);
 
     if (incorrectType) {
-      onNavigate(operation, getStakeAddresses(incorrectType));
+      onNavigate(operation, getStakeAccounts(incorrectType));
     } else {
       onNavigate(operation);
     }
@@ -151,14 +152,13 @@ export const Actions = ({ canInteract, stakes, isStakingLoading, onNavigate }: P
               </Button>
             </Dropdown.Trigger>
             <Dropdown.Content>
-              {Object.entries(operationsSummary).map(([key, value]) => {
+              {entries(operationsSummary).map(([key, value]) => {
                 if (stakes.length !== value) return null;
 
-                const typedKey = key as Operations;
-                const option = OperationOptions[typedKey];
+                const option = OperationOptions[key];
 
                 return (
-                  <Dropdown.Item key={key} onSelect={() => onClickAction(typedKey, option.path)}>
+                  <Dropdown.Item key={key} onSelect={() => onClickAction(key, option.path)}>
                     <div className="flex w-full items-center gap-2">
                       <Icon name={option.icon} size={20} className="shrink-0 text-icon-accent" />
                       {t(option.title)}

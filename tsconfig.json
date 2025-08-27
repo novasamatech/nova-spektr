@@ -13,7 +13,7 @@
     "target": "es2022",
     "module": "es2022",
     "moduleResolution": "node",
-    "lib": ["es2022", "dom"],
+    "lib": ["es2023", "dom"],
     "jsx": "preserve",
     "pretty": true,
     "importHelpers": true,

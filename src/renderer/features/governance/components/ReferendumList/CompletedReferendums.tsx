@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { memo } from 'react';
 
-import { type Asset } from '@/shared/core';
+import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable } from '@/shared/lib/utils';
@@ -14,6 +14,7 @@ import { ReferendumItem } from './ReferendumItem';
 
 type Props = {
   api?: ApiPromise;
+  chain?: Chain;
   asset?: Asset;
   referendums: AggregatedReferendum[];
   isLoading: boolean;
@@ -31,7 +32,7 @@ const createPlaceholders = (size: number) => {
 };
 
 export const CompletedReferendums = memo(
-  ({ api, asset, referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }: Props) => {
+  ({ api, chain, asset, referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }: Props) => {
     const { t } = useI18n();
 
     const { isLoading: isLoadingState, list: deferredReferendums } = useDeferredList({
@@ -45,7 +46,8 @@ export const CompletedReferendums = memo(
 
     if (!isLoading && referendums.length === 0) return null;
 
-    const showList = (!isLoadingState || mixLoadingWithData) && nonNullable(api) && nonNullable(asset);
+    const showList =
+      (!isLoadingState || mixLoadingWithData) && nonNullable(api) && nonNullable(asset) && nonNullable(chain);
     const showPlaceholders = isLoadingState || mixLoadingWithData;
 
     return (
@@ -70,6 +72,7 @@ export const CompletedReferendums = memo(
                   <AsyncItem fallback={<ListItemPlaceholder />}>
                     <ReferendumItem
                       api={api}
+                      chain={chain}
                       asset={asset}
                       referendum={referendum}
                       isTitlesLoading={isTitlesLoading}

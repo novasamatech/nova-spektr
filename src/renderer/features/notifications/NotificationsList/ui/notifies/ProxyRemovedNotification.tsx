@@ -5,10 +5,9 @@ import { type ProxyAction, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { BodyText } from '@/shared/ui';
-import { Identicon } from '@/shared/ui-entities';
+import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { WalletIcon } from '@/entities/wallet';
 import { ProxyTypeOperation } from '../../lib/constants';
 
 type Props = {
@@ -43,7 +42,7 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
             components={{
               identicon: (
                 <div className="mx-1 inline-flex">
-                  <Identicon address={address} size={16} background={false} canCopy={true} />
+                  <Identicon value={address} size={16} background={false} canCopy={true} />
                 </div>
               ),
               address: <p className="inline-flex" />,
@@ -60,7 +59,11 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
             }}
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
-              walletIcon: <WalletIcon size={16} type={notification.proxyWalletType} className="mx-1" />,
+              walletIcon: (
+                <span className="mx-1">
+                  <WalletIcon size={16} type={notification.proxyWalletType} />
+                </span>
+              ),
               wallet: <p className="inline-flex" />,
             }}
           />

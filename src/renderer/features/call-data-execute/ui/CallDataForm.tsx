@@ -1,37 +1,58 @@
 import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
+import { t } from 'i18next';
 import { type FormEvent, type ReactNode, memo, useMemo } from 'react';
 
+import { type Wallet, WalletType } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, toAddress, transferableAmountBN } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, InputHint, Separator, SmallTitleText } from '@/shared/ui';
-import { Address, AssetBalance, ChainSelect } from '@/shared/ui-entities';
+import { Address, AssetBalance, ChainSelect, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, ScrollArea, Select } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { Fee } from '@/entities/transaction';
-import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 
 import { JsonArgs } from './JsonArgs';
 
+const walletTypesTitles: Record<WalletType, string> = {
+  [WalletType.POLKADOT_EXTENSION]: t('wallets.polkadotExtensionLabel'),
+  [WalletType.WATCH_ONLY]: t('wallets.watchOnlyLabel'),
+  [WalletType.POLKADOT_VAULT]: t('wallets.paritySignerLabel'),
+  [WalletType.MULTISIG]: t('wallets.multisigLabel'),
+  [WalletType.FLEXIBLE_MULTISIG]: t('wallets.flexibleMultisigLabel'),
+  [WalletType.WALLET_CONNECT]: t('wallets.walletConnectLabel'),
+  [WalletType.NOVA_WALLET]: t('wallets.novaWalletLabel'),
+  [WalletType.PROXIED]: t('wallets.proxiedLabel'),
+  [WalletType.TALISMAN_EXTENSION]: t('wallets.talismanExtensionLabel'),
+  [WalletType.SUBWALLET_EXTENSION]: t('wallets.subWalletExtensionLabel'),
+  [WalletType.SINGLE_PARITY_SIGNER]: t('wallets.paritySignerLabel'),
+};
+
 export const CallDataForm = () => {
   const { t } = useI18n();
   const { submit } = useForm(formModel.form);
+  const showSignatories = useUnit(formModel.$showSignatories);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
     submit();
   };
 
+  const wallets = useUnit(walletModel.$wallets);
+  const errors = useUnit(formModel.$errors);
   const args = useUnit(formModel.$args);
 
   return (
     <>
       <form id="transfer-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
+        <TransactionValidationError errors={errors} wallets={wallets} />
         <NetworkSelect />
-        <SignatorySelect />
+        <InitiatorSelect />
+        {showSignatories && <SignatorySelect />}
         <CallDataInput />
       </form>
 
@@ -80,7 +101,7 @@ const CallDataInput = () => {
 const NetworkSelect = memo(() => {
   const { t } = useI18n();
 
-  const availableChains = useUnit(formModel.$availableChains);
+  const allChains = useUnit(formModel.$allChains);
   const {
     fields: { chain },
   } = useForm(formModel.form);
@@ -90,11 +111,165 @@ const NetworkSelect = memo(() => {
       <ChainSelect
         placeholder={t('callData.fields.network.placeholder')}
         value={chain.value}
-        options={availableChains}
+        options={allChains}
         onChange={chain.onChange}
       />
       <InputHint variant="error" active={chain.hasError}>
         {t(chain.errorMessage)}
+      </InputHint>
+    </Field>
+  );
+});
+
+const InitiatorSelect = memo(() => {
+  const { t } = useI18n();
+
+  const wallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(walletModel.$availableAccounts);
+  const balances = useUnit(balanceModel.$balanceMap);
+  const chain = useUnit(formModel.form.fields.chain.$value);
+  const {
+    fields: { initiator },
+  } = useForm(formModel.form);
+
+  const asset = chain ? getNativeAsset(chain.assets) : null;
+
+  const onChange = (walletId: string) => {
+    const wallet = wallets.find((w) => w.id === Number(walletId));
+    if (nonNullable(wallet) && nonNullable(chain)) {
+      const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
+      const matchingAccount = walletAccounts.find((account) =>
+        accountService.isAccountAvailableOnChain(account, chain),
+      );
+      const accountToUse = matchingAccount ?? walletAccounts[0] ?? null;
+      initiator.onChange(accountToUse);
+    }
+  };
+
+  const options = useMemo(() => {
+    const options: ReactNode[] = [];
+    if (nullable(chain) || nullable(asset)) return options;
+
+    const walletsByType = wallets.reduce(
+      (groups, wallet) => {
+        const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
+        const hasMatchingAccounts = walletAccounts.some((account) =>
+          accountService.isAccountAvailableOnChain(account, chain),
+        );
+
+        if (!hasMatchingAccounts) return groups;
+
+        if (!groups[wallet.type]) {
+          groups[wallet.type] = { walletType: wallet.type, wallets: [] };
+        }
+        groups[wallet.type].wallets.push(wallet);
+        return groups;
+      },
+      {} as Record<string, { walletType: WalletType; wallets: Wallet[] }>,
+    );
+
+    for (const walletGroup of Object.values(walletsByType)) {
+      const walletTypeTitle = (
+        <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
+          <WalletIcon type={walletGroup.walletType} />
+          <FootnoteText className="text-text-secondary uppercase">
+            {t(walletTypesTitles[walletGroup.walletType])}
+          </FootnoteText>
+        </Box>
+      );
+
+      const walletItems = walletGroup.wallets
+        .map((wallet) => {
+          const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
+          const firstMatchingAccount = walletAccounts.find((account) =>
+            accountService.isAccountAvailableOnChain(account, chain),
+          );
+
+          if (!firstMatchingAccount) return null;
+
+          const balance = balanceUtils.getBalance(
+            balances,
+            firstMatchingAccount.accountId,
+            chain.chainId,
+            asset.assetId,
+          );
+
+          return (
+            <Select.Item key={wallet.id} value={wallet.id.toString()} depth={1}>
+              <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+                <Address
+                  showIcon
+                  canCopy={false}
+                  variant="truncate"
+                  title={wallet.name}
+                  address={toAddress(firstMatchingAccount.accountId, { prefix: chain?.addressPrefix })}
+                />
+                <AssetBalance
+                  className="text-footnote text-text-secondary"
+                  value={transferableAmountBN(balance)}
+                  asset={asset}
+                />
+              </Box>
+            </Select.Item>
+          );
+        })
+        .filter(nonNullable);
+
+      if (walletItems.length > 0) {
+        options.push(
+          <Select.Group key={walletGroup.walletType} title={walletTypeTitle}>
+            {walletItems}
+          </Select.Group>,
+        );
+      }
+    }
+
+    return options;
+  }, [wallets, balances, chain, asset, allAccounts]);
+
+  const selectedWallet = useMemo(() => {
+    if (initiator.value) {
+      return wallets.find((w) => w.id === initiator.value?.walletId) ?? null;
+    }
+    return null;
+  }, [wallets, initiator.value]);
+
+  const balance = useMemo(() => {
+    if (initiator.value && chain && asset) {
+      const balance = balanceUtils.getBalance(balances, initiator.value.accountId, chain.chainId, asset.assetId);
+      return transferableAmountBN(balance);
+    }
+    return BN_ZERO;
+  }, [initiator.value, chain, asset, balances]);
+
+  return (
+    <Field text={t('callData.fields.initiator.label')}>
+      <Select
+        placeholder={t('callData.fields.initiator.placeholder')}
+        value={selectedWallet?.id.toString() ?? null}
+        valueNode={
+          nonNullable(initiator.value) && nonNullable(selectedWallet) ? (
+            <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+              <Address
+                showIcon
+                canCopy={false}
+                variant="truncate"
+                title={selectedWallet.name}
+                address={toAddress(initiator.value.accountId, { prefix: chain?.addressPrefix })}
+              />
+              {nonNullable(asset) && (
+                <AssetBalance className="text-footnote text-text-secondary" value={balance} asset={asset} />
+              )}
+            </Box>
+          ) : null
+        }
+        height="md"
+        onChange={onChange}
+      >
+        {options}
+      </Select>
+      <InputHint variant="error" active={initiator.hasError}>
+        {t(initiator.errorMessage)}
       </InputHint>
     </Field>
   );
@@ -105,7 +280,7 @@ const SignatorySelect = memo(() => {
 
   const wallets = useUnit(walletModel.$wallets);
   const signatories = useUnit(formModel.$signatories);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const chain = useUnit(formModel.form.fields.chain.$value);
   const {
     fields: { signatory },
@@ -113,10 +288,16 @@ const SignatorySelect = memo(() => {
 
   const asset = chain ? getNativeAsset(chain.assets) : null;
 
-  const onChange = (id: string) => {
-    const v = signatories.find((c) => c.id === id);
-    if (nonNullable(v)) {
-      signatory.onChange(v);
+  const onChange = (walletId: string) => {
+    const wallet = wallets.find((w) => w.id === Number(walletId));
+    if (nonNullable(wallet) && nonNullable(chain)) {
+      const walletSignatories = accountService.filterAccountsByWallet(signatories, wallet.id);
+      const matchingSignatory = walletSignatories.find((account) =>
+        accountService.isAccountAvailableOnChain(account, chain),
+      );
+      if (matchingSignatory) {
+        signatory.onChange(matchingSignatory);
+      }
     }
   };
 
@@ -124,53 +305,86 @@ const SignatorySelect = memo(() => {
     const options: ReactNode[] = [];
     if (nullable(chain) || nullable(asset)) return options;
 
-    for (const wallet of wallets) {
-      const walletAccounts = accountService.filterAccountsByWallet(signatories, wallet.id);
-      if (walletAccounts.length === 0) continue;
+    const walletsByType = wallets.reduce(
+      (groups, wallet) => {
+        const walletSignatories = accountService.filterAccountsByWallet(signatories, wallet.id);
+        const hasMatchingSignatories = walletSignatories.some((account) =>
+          accountService.isAccountAvailableOnChain(account, chain),
+        );
+        if (!hasMatchingSignatories) return groups;
 
-      const walletTitle = (
+        if (!groups[wallet.type]) {
+          groups[wallet.type] = { walletType: wallet.type, wallets: [] };
+        }
+        groups[wallet.type].wallets.push(wallet);
+        return groups;
+      },
+      {} as Record<string, { walletType: WalletType; wallets: Wallet[] }>,
+    );
+
+    for (const walletGroup of Object.values(walletsByType)) {
+      const walletTypeTitle = (
         <Box direction="row" gap={2} padding={[1, 0]} verticalAlign="center">
-          <WalletIcon type={wallet.type} />
-          <FootnoteText className="text-text-secondary">{wallet.name}</FootnoteText>
+          <WalletIcon type={walletGroup.walletType} />
+          <FootnoteText className="text-text-secondary uppercase">
+            {walletTypesTitles[walletGroup.walletType]}
+          </FootnoteText>
         </Box>
       );
 
-      options.push(
-        <Select.Group key={wallet.id} title={walletTitle}>
-          {walletAccounts.map((a) => {
-            const balance = balanceUtils.getBalance(balances, a.accountId, chain.chainId, asset.assetId);
+      const walletItems = walletGroup.wallets
+        .map((wallet) => {
+          const walletSignatories = accountService.filterAccountsByWallet(signatories, wallet.id);
+          const firstMatchingSignatory = walletSignatories.find((account) =>
+            accountService.isAccountAvailableOnChain(account, chain),
+          );
 
-            return (
-              <Select.Item key={a.id} value={a.id} depth={1}>
-                <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
-                  <Address
-                    showIcon
-                    canCopy={false}
-                    variant="truncate"
-                    title={a.name !== wallet.name ? a.name : void 0}
-                    address={toAddress(a.accountId, { prefix: chain?.addressPrefix })}
-                  />
-                  <AssetBalance
-                    className="text-footnote text-text-secondary"
-                    value={transferableAmountBN(balance)}
-                    asset={asset}
-                  />
-                </Box>
-              </Select.Item>
-            );
-          })}
-        </Select.Group>,
-      );
+          if (!firstMatchingSignatory) return null;
+
+          const balance = balanceUtils.getBalance(
+            balances,
+            firstMatchingSignatory.accountId,
+            chain.chainId,
+            asset.assetId,
+          );
+
+          return (
+            <Select.Item key={wallet.id} value={wallet.id.toString()} depth={1}>
+              <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
+                <Address
+                  showIcon
+                  canCopy={false}
+                  variant="truncate"
+                  title={wallet.name}
+                  address={toAddress(firstMatchingSignatory.accountId, { prefix: chain?.addressPrefix })}
+                />
+                <AssetBalance
+                  className="text-footnote text-text-secondary"
+                  value={transferableAmountBN(balance)}
+                  asset={asset}
+                />
+              </Box>
+            </Select.Item>
+          );
+        })
+        .filter(Boolean);
+
+      if (walletItems.length > 0) {
+        options.push(
+          <Select.Group key={walletGroup.walletType} title={walletTypeTitle}>
+            {walletItems}
+          </Select.Group>,
+        );
+      }
     }
 
     return options;
   }, [wallets, balances, chain, asset, signatories]);
 
-  const signatoryWallet = useMemo(() => {
+  const selectedSignatoryWallet = useMemo(() => {
     if (signatory.value) {
       return wallets.find((w) => w.id === signatory.value?.walletId) ?? null;
     }
-
     return null;
   }, [wallets, signatory.value]);
 
@@ -179,23 +393,22 @@ const SignatorySelect = memo(() => {
       const balance = balanceUtils.getBalance(balances, signatory.value.accountId, chain.chainId, asset.assetId);
       return transferableAmountBN(balance);
     }
-
     return BN_ZERO;
-  }, [wallets, signatory.value, chain, asset]);
+  }, [signatory.value, chain, asset, balances]);
 
   return (
     <Field text={t('callData.fields.signatory.label')}>
       <Select
         placeholder={t('callData.fields.signatory.placeholder')}
-        value={signatory.value?.id ?? null}
+        value={selectedSignatoryWallet?.id.toString() ?? null}
         valueNode={
-          nonNullable(signatory.value) && nonNullable(signatoryWallet) ? (
+          nonNullable(signatory.value) && nonNullable(selectedSignatoryWallet) ? (
             <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2}>
               <Address
                 showIcon
                 canCopy={false}
                 variant="truncate"
-                title={signatoryWallet.name}
+                title={selectedSignatoryWallet.name}
                 address={toAddress(signatory.value.accountId, { prefix: chain?.addressPrefix })}
               />
               {nonNullable(asset) && (

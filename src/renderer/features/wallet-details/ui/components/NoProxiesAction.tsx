@@ -1,15 +1,17 @@
+import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { ProxyPopover } from '@/entities/proxy';
+import { AddProxy } from '@/features/proxy-add';
 
 type Props = {
   canCreateProxy?: boolean;
   className?: string;
-  onAddProxy?: () => void;
+  wallet: Wallet;
 };
 
-export const NoProxiesAction = ({ className, canCreateProxy = true, onAddProxy }: Props) => {
+export const NoProxiesAction = ({ className, canCreateProxy = true, wallet }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -24,9 +26,9 @@ export const NoProxiesAction = ({ className, canCreateProxy = true, onAddProxy }
           <FootnoteText className="mb-4 text-text-tertiary">
             {t('walletDetails.common.emptyProxyDescription')}
           </FootnoteText>
-          <Button size="sm" onClick={onAddProxy}>
-            {t('walletDetails.common.addProxyButton')}
-          </Button>
+          <AddProxy wallet={wallet}>
+            <Button size="sm">{t('walletDetails.common.addProxyButton')}</Button>
+          </AddProxy>
         </>
       )}
     </div>

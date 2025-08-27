@@ -7,9 +7,9 @@ import { type DelegateAccount } from '@/shared/api/governance';
 import { type Chain, type Wallet } from '@/shared/core';
 import {
   addUniqueItems,
+  entries,
   formatAmount,
   removeItemsFromCollection,
-  toAccountId,
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -51,7 +51,7 @@ const $availableTracks = combine(tracksAggregate.$tracks, (tracks) => {
 const $accountsBalances = combine(
   {
     availableAccounts: $availableAccounts,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: networkSelectorModel.$network,
   },
   ({ balances, network, availableAccounts }) => {
@@ -90,7 +90,7 @@ const checkMaxWeightReachedFx = createEffect(
         balance: formatAmount('1', chain.assets[0].precision),
         conviction: 'Locked1x',
         accountId: '0x0000000000000000000000000000000000000000' as AccountId,
-        target: '0x0000000000000000000000000000000000000000',
+        target: '0x0000000000000000000000000000000000000000' as AccountId,
       });
 
       const extrinsic = getExtrinsic[mockTx.type](mockTx.args, api);
@@ -127,15 +127,13 @@ sample({
 
     const votesToRemove: VotesToRemove[] = [];
 
-    for (const [voterAccountId, voteList] of Object.entries(votes)) {
-      const accountId = voterAccountId as AccountId;
+    for (const [accountId, voteList] of entries(votes)) {
+      if (!accountsIds.has(accountId)) continue;
 
-      if (!accountsIds.has(accountId as AccountId)) continue;
-
-      for (const [track, vote] of Object.entries(voteList)) {
+      for (const [track, vote] of entries(voteList)) {
         const isDelegateExist = votingService.isDelegating(vote) && delegate;
-        const isCurrentDelegate = isDelegateExist && toAccountId(delegate.address) === toAccountId(vote.target);
-        const isOtherDelegate = isDelegateExist && toAccountId(delegate.address) !== toAccountId(vote.target);
+        const isCurrentDelegate = isDelegateExist && delegate.accountId === vote.target;
+        const isOtherDelegate = isDelegateExist && delegate.accountId !== vote.target;
 
         if ((votingService.isCasting(vote) && !votingService.isUnlockingDelegation(vote)) || isOtherDelegate) {
           activeTracks.add(track);

@@ -45,11 +45,14 @@ export const ScanSingleframeQr = ({
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [qrPayload, setQrPayload] = useState<Uint8Array>();
 
+  const isPV = account.signingType === SigningType.POLKADOT_VAULT;
+  const isMetadataProofsSupported = chain.additional?.supportsGenericLedgerApp ?? false;
+
   useEffect(() => {
     if (txPayload && qrPayload && tab === prevTab.current) return;
     prevTab.current = tab;
     setupTransaction().catch(() => console.warn('ScanSingleframeQr | setupTransaction() failed'));
-  }, [extrinsic, api, tab]);
+  }, [txPayload, qrPayload, tab]);
 
   const setupTransaction = async (): Promise<void> => {
     try {
@@ -58,13 +61,13 @@ export const ScanSingleframeQr = ({
           ? account.derivationPath
           : undefined;
 
-      if (tab === 'new') {
+      if (tab === 'new' && isMetadataProofsSupported) {
         const { payload, metadataProof } = await transactionService.createPayloadWithProof(
           extrinsic,
           account.accountId,
           api,
         );
-        const qrPayload = createSubstrateSignWithProofPayload(
+        const signPayload = createSubstrateSignWithProofPayload(
           encodeAddress(account.accountId, chain.addressPrefix),
           metadataProof,
           payload,
@@ -73,6 +76,7 @@ export const ScanSingleframeQr = ({
           derivationPath,
           account.cryptoType,
         );
+        const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
 
         setTxPayload(payload);
         setQrPayload(qrPayload);
@@ -93,13 +97,12 @@ export const ScanSingleframeQr = ({
         setTxPayload(payload);
         setQrPayload(qrPayload);
       }
-      onResetCountdown();
     } catch (error) {
       console.warn(error);
     }
   };
 
-  const isPV = account.signingType === SigningType.POLKADOT_VAULT;
+  useEffect(onResetCountdown, [qrPayload]);
 
   return (
     <>
@@ -110,14 +113,18 @@ export const ScanSingleframeQr = ({
         testId={TEST_IDS.OPERATIONS.QR_CODE_CONTAINER}
         onQrReset={setupTransaction}
       >
-        <Tabs value={tab} onChange={setTab}>
-          <Box shrink={0} fitContainer>
-            <Tabs.List>
-              <Tabs.Trigger value="new">{t('signing.qrNewVaultTitle', { version: isPV ? '7.1' : '7.0' })}</Tabs.Trigger>
-              <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
-            </Tabs.List>
-          </Box>
-        </Tabs>
+        {isMetadataProofsSupported && (
+          <Tabs value={tab} onChange={setTab}>
+            <Box shrink={0} fitContainer>
+              <Tabs.List>
+                <Tabs.Trigger value="new">
+                  {t('signing.qrNewVaultTitle', { version: isPV ? '7.1' : '7.0' })}
+                </Tabs.Trigger>
+                <Tabs.Trigger value="legacy">{t('signing.qrLegacyVaultTitle')}</Tabs.Trigger>
+              </Tabs.List>
+            </Box>
+          </Tabs>
+        )}
         <QrTxGenerator payload={qrPayload} />
       </QrGeneratorContainer>
 

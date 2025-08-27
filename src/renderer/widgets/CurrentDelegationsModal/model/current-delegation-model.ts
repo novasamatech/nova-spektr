@@ -3,8 +3,8 @@ import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Address } from '@/shared/core';
-import { includesMultiple, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { includesMultiple, nonNullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { votingService } from '@/entities/governance';
 import { delegateRegistryAggregate, networkSelectorModel, votingAggregate } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
@@ -28,31 +28,24 @@ const $delegateList = combine(
     query: $query,
   },
   ({ list, activeVotes, query, chain }) => {
-    const activeDelegationsSet = new Set<Address>();
+    const activeDelegationsSet = new Set<AccountId>();
 
     for (const voteList of Object.values(activeVotes)) {
       for (const vote of Object.values(voteList)) {
         if (votingService.isDelegating(vote)) {
-          activeDelegationsSet.add(toAddress(toAccountId(vote.target), { prefix: chain?.addressPrefix }));
+          activeDelegationsSet.add(vote.target);
         }
       }
     }
 
-    const activeDelegationsList = [...activeDelegationsSet];
-    const addresses = new Set(list.map((d) => d.address));
-
-    const delegationsList = [
-      ...list,
-      ...activeDelegationsList
-        .filter((d) => !addresses.has(toAddress(toAccountId(d), { prefix: chain?.addressPrefix })))
-        .map((d) => ({ address: d }) as DelegateAccount),
-    ];
-
-    const delegatedList = delegationsList.filter((delegate) => activeDelegationsList.includes(delegate.address));
+    const delegatedList = list.filter((delegate) => activeDelegationsSet.has(delegate.accountId));
 
     const searched = query
       ? delegatedList.filter((delegate) =>
-          includesMultiple([delegate.address, delegate.address, delegate.name, delegate.shortDescription], query),
+          includesMultiple(
+            [toAddress(delegate.accountId, { prefix: chain?.addressPrefix }), delegate.name, delegate.shortDescription],
+            query,
+          ),
         )
       : delegatedList;
 

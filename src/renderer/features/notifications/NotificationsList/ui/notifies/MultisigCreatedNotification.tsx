@@ -4,7 +4,7 @@ import { type MultisigCreated } from '@/shared/core';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText } from '@/shared/ui';
-import { WalletIcon } from '@/entities/wallet';
+import { WalletIcon } from '@/shared/ui-entities';
 
 type Props = {
   notification: MultisigCreated;

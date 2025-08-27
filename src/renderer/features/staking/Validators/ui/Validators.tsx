@@ -3,8 +3,7 @@ import { memo } from 'react';
 
 import { type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nullable, toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { cnTw, nullable } from '@/shared/lib/utils';
 import { BodyText, Button, Loader, Shimmering, SmallTitleText } from '@/shared/ui';
 import { Checkbox, Graphics, SearchInput } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
@@ -101,10 +100,10 @@ const ValidatorsList = () => {
     <ValidatorsTable validators={validators}>
       {(validator, rowStyle) => (
         <RowItem
-          key={validator.address}
+          key={validator.accountId}
           validator={validator}
           rowStyle={rowStyle}
-          isChecked={Boolean(selectedValidators[validator.address])}
+          isChecked={Boolean(selectedValidators[validator.accountId])}
         />
       )}
     </ValidatorsTable>
@@ -126,7 +125,7 @@ const RowItem = memo(({ validator, rowStyle, isChecked }: RowProps) => {
     fn: (value, [chainId, validator]) => {
       if (nullable(chainId) || nullable(value[chainId])) return undefined;
 
-      return value[chainId][toAccountId(validator.address) as AccountId];
+      return value[chainId][validator.accountId];
     },
   });
 
@@ -142,7 +141,7 @@ const RowItem = memo(({ validator, rowStyle, isChecked }: RowProps) => {
             validator={validator}
             identity={validatorIdentity}
             asset={asset || undefined}
-            explorers={chain?.explorers}
+            chain={chain || undefined}
           />
         </div>
       </Checkbox>

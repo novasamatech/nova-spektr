@@ -61,10 +61,8 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
   const isMetaPending = useUnit(referendums.$pendingReferendumMeta);
 
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
-  const isPending = referendum && (isRFCProposal ? isRFCPending : isMetaPending);
 
-  //todo: whitelist detection might be implemented better
-  const isWhitelist = !isRFCProposal;
+  const isPending = referendum && (isRFCProposal ? isRFCPending : isMetaPending);
 
   const content = useMemo(() => {
     if (isPending) return;
@@ -88,18 +86,24 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     return t('fellowship.tasks.task.anyReferendum.noDescription');
   }, [meta, rfc, isPending]);
 
+  const title = useMemo(() => {
+    const isSpendProposal = referendum.proposal ? referendumService.isSpendProposal(referendum.proposal) : false;
+
+    return isSpendProposal
+      ? t('governance.referendums.spendReferendumTitle')
+      : t('governance.referendums.referendumTitle', { index: referendum.id });
+  }, [referendum.proposal]);
+
   return (
     <Box direction="row" gap={2}>
-      <ReferendumDetailsModal referendum={referendum}>
-        <button className="flex w-full min-w-0 appearance-none gap-2 p-4">
+      <ReferendumDetailsModal referendum={referendum} title={title}>
+        <button className="flex w-full min-w-0 cursor-pointer appearance-none gap-2 p-4">
           <Box alignSelf="flex-start" shrink={0}>
-            <TaskBadge isRFC={isRFCProposal} isWhitelist={isWhitelist} />
+            <TaskBadge proposal={referendum.proposal} />
           </Box>
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3} grow={1}>
-              <SmallTitleText className="truncate">
-                {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
-              </SmallTitleText>
+              <SmallTitleText className="truncate">{title}</SmallTitleText>
               <TaskLabels tags={tags} />
             </Box>
             <Box width="90%">

@@ -1,6 +1,7 @@
+import { type BN } from '@polkadot/util';
 import { type Store, createEffect, createEvent, createStore, sample } from 'effector';
 
-import { type Address, type Asset, type Balance, type Chain } from '@/shared/core';
+import { type Address, type Asset, type BalanceMap, type Chain } from '@/shared/core';
 import { getNativeAsset, nonNullable, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -8,12 +9,12 @@ import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import {
-  type BalanceMap,
   type NetworkStore,
   type TransferAccountStore,
   type TransferAmountFeeStore,
   TransferRules,
   type TransferSignatoryFeeStore,
+  type ValidatorBalanceMap,
   validationUtils,
 } from '@/features/operations/OperationsValidation';
 
@@ -23,10 +24,10 @@ export type TransferConfirmStore = TxConfirmInfo & {
   amount: string;
   destination: Address;
 
-  fee: string;
-  xcmFee: string;
-  deliveryFee: string | null;
-  multisigDeposit: string;
+  fee: BN;
+  xcmFee: BN;
+  deliveryFee: BN;
+  multisigDeposit: BN;
 };
 
 const { $confirmMap, $confirms, $isMultisigExists, init, startSigning } =
@@ -42,7 +43,7 @@ const $error = createStore<Error | null>(null);
 
 type ValidateParams = {
   store: TransferConfirmStore;
-  balances: Balance[];
+  balances: BalanceMap;
 };
 
 const validateFx = createEffect(({ store, balances }: ValidateParams) => {
@@ -94,9 +95,12 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
     {
       value: store.amount,
       form: {},
-      ...TransferRules.amount.notEnoughBalance({} as Store<{ network: NetworkStore | null; balance: BalanceMap }>, {
-        withFormatAmount: false,
-      }),
+      ...TransferRules.amount.notEnoughBalance(
+        {} as Store<{ network: NetworkStore | null; balance: ValidatorBalanceMap }>,
+        {
+          withFormatAmount: false,
+        },
+      ),
       source: {
         network: { chain: store.chain, asset: store.asset },
         balance: {
@@ -112,7 +116,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
             balanceUtils.getBalance(balances, store.initiator.accountId, store.chain.chainId, store.asset.assetId),
           ),
         },
-      } as { network: NetworkStore | null; balance: BalanceMap },
+      } as { network: NetworkStore | null; balance: ValidatorBalanceMap },
     },
     {
       value: store.amount,
@@ -223,7 +227,7 @@ sample({
   clock: startSigning,
   source: {
     store: $confirmMap,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   filter: ({ store }) => nonNullable(store),
   fn: ({ store, balances }) => ({

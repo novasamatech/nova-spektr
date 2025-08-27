@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { assert, nonNullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { WalletAccountIcon } from '@/shared/ui-entities';
-import { transactionService } from '@/domains/network';
+import { accountService, transactionService } from '@/domains/network';
 import { getExtrinsic } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
@@ -17,10 +17,10 @@ import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 import { WalletGroup } from './components/WalletGroup';
 import { walletActionsSlot } from './components/WalletRow';
 import { walletsModel } from './model/wallets';
-import { proxyService } from './service';
+import { proxiedService } from './service';
 import { type ProxyTransaction } from './types';
 
-export { walletActionsSlot };
+export { walletActionsSlot, type ProxyTransaction };
 
 export const proxiedWalletFeature = createFeature({
   name: 'wallet/proxied',
@@ -31,8 +31,8 @@ accountSDK(proxiedWalletFeature, {
   actionPermission() {
     return false;
   },
-  availableOnChain({ account }) {
-    return accountUtils.isProxiedAccount(account);
+  availableOnChain({ account, chain }) {
+    return accountUtils.isProxiedAccount(account) && accountService.isChainMatch(account, chain);
   },
   canSignMultipleTransactions() {
     return false;
@@ -71,21 +71,14 @@ accountSDK(proxiedWalletFeature, {
       };
     }
   },
-  validateCallPermission() {
-    // ToDo: revert when validations fixed
-    // validateCallPermission({ route, call }) {
-    // const result = proxyService.checkPermission(route, call);
-    // if (result.success) return;
-    // return {
-    //   account: result.account,
-    //   message: `Proxy account ${result.account} with type ${result.account.proxyType} cannot handle ${call} call`,
-    // };
+  validateCallPermission({ route, transaction, api }) {
+    return proxiedService.checkPermission(api, route, transaction);
   },
 });
 
 transactionSDK(proxiedWalletFeature, {
   encode(transaction, { api }) {
-    if (proxyService.isProxyTransaction(transaction)) {
+    if (proxiedService.isProxyTransaction(transaction)) {
       const { real, forceProxyType, call } = transaction.args;
       const extrinsic = api.tx.proxy.proxy(
         real,
@@ -97,7 +90,7 @@ transactionSDK(proxiedWalletFeature, {
     }
   },
   decode(extrinsic) {
-    if (extrinsic.method.section === 'proxy' && extrinsic.method.method === 'proxy') {
+    if (proxiedService.isProxyExtrinsic(extrinsic)) {
       const transaction: ProxyTransaction = {
         type: 'decoded',
         section: 'proxy',
@@ -113,13 +106,13 @@ transactionSDK(proxiedWalletFeature, {
       return transaction;
     }
   },
-  wrap(transition, { api, account, route, index }) {
+  wrap(transition, { api, account, route }) {
     if (accountUtils.isProxiedAccount(account) || accountUtils.isPureProxiedAccount(account)) {
       const encodedTransaction = transactionService.encodeTransaction(transition, api);
-      const proxyAccount = route.at(index + 1);
+      const proxyAccount = accountService.findNextAccount(route, account);
       assert(proxyAccount, `Proxy for ${account.accountId} is not found`);
 
-      const proxyConnection = account.connections.find(c => c.proxyAccountId === proxyAccount.accountId);
+      const proxyConnection = proxiedService.findProxyConnection(account, proxyAccount);
       assert(proxyConnection, `Proxy connection for ${proxyAccount.accountId} is not found`);
 
       const proxyTransaction: ProxyTransaction = {
@@ -137,21 +130,21 @@ transactionSDK(proxiedWalletFeature, {
     }
   },
   unwrap(transaction) {
-    if (proxyService.isProxyTransaction(transaction)) {
+    if (proxiedService.isProxyTransaction(transaction)) {
       return {
         type: 'encoded',
         callData: transaction.args.call,
       };
     }
   },
-  wrapLegacy(transaction, { api, account, route, index }) {
+  wrapLegacy(transaction, { api, account, route }) {
     if (accountUtils.isProxiedAccount(account) || accountUtils.isPureProxiedAccount(account)) {
       const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
-      const proxyAccount = route.at(index + 1);
+      const proxyAccount = accountService.findNextAccount(route, account);
       assert(proxyAccount, `Proxy for ${account.accountId} is not found`);
 
-      const proxyConnection = account.connections.find(c => c.proxyAccountId === proxyAccount.accountId);
+      const proxyConnection = proxiedService.findProxyConnection(account, proxyAccount);
       assert(proxyConnection, `Proxy connection for ${proxyAccount.accountId} is not found`);
 
       const proxyTransaction: Transaction = {

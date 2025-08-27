@@ -114,7 +114,7 @@ const $availableBalance = combine(
   {
     initiator: form.fields.initiator.$value,
     chain: networkSelectorModel.$governanceChain,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     accounts: accounts.$list,
   },
   ({ balances, chain, initiator }) => {
@@ -195,7 +195,7 @@ const $proxyBalance = combine(
   {
     isProxy: $isProxy,
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: networkSelectorModel.$network,
   },
   ({ isProxy, proxyAccount, balances, network }) => {
@@ -265,7 +265,7 @@ sample({
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: networkSelectorModel.$network,
   },
   ({ signatory, balances, network }) => {

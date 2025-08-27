@@ -10,8 +10,8 @@ import { metadata } from './service.mocks';
 import { type AnyDecodedTransaction, type DecodedTransaction, type EncodedTransaction } from './types';
 
 type TransferDecodedTransaction = DecodedTransaction<{
-  destination: AccountId;
-  amount: string;
+  dest: AccountId;
+  value: string;
 }>;
 
 const isTransferTransaction = (t: AnyDecodedTransaction): t is TransferDecodedTransaction => {
@@ -63,8 +63,8 @@ describe('Transaction service', () => {
         section: 'balances',
         method: 'transferKeepAlive',
         args: {
-          amount: '1000000000000',
-          destination: '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242' as AccountId,
+          value: '1000000000000',
+          dest: '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242' as AccountId,
         },
       };
 
@@ -72,16 +72,16 @@ describe('Transaction service', () => {
         available: () => true,
         body(extrinsic) {
           if (extrinsic.method.section === 'balances' && extrinsic.method.method === 'transferKeepAlive') {
-            const destination = extrinsic.args[0]?.toHex();
-            const amount = extrinsic.args[1]?.toString();
+            const dest = extrinsic.args[0]?.toHex();
+            const value = extrinsic.args[1]?.toString();
 
             return {
               type: 'decoded',
               section: extrinsic.method.section,
               method: extrinsic.method.method,
               args: {
-                destination,
-                amount,
+                dest,
+                value,
               },
             };
           }
@@ -113,8 +113,8 @@ describe('Transaction service', () => {
         section: 'balances',
         method: 'transferKeepAlive',
         args: {
-          amount: '1000000000000',
-          destination: '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242' as AccountId,
+          value: '1000000000000',
+          dest: '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242' as AccountId,
         },
       };
 
@@ -122,7 +122,7 @@ describe('Transaction service', () => {
         available: () => true,
         body(transaction) {
           if (isTransferTransaction(transaction)) {
-            const extrinsic = api.tx.balances.transferKeepAlive(transaction.args.destination, transaction.args.amount);
+            const extrinsic = api.tx.balances.transferKeepAlive(transaction.args.dest, transaction.args.value);
             return extrinsic.method.toHex();
           }
         },
@@ -142,14 +142,53 @@ describe('Transaction service', () => {
         section: 'balances',
         method: 'transferKeepAlive',
         args: {
-          amount: '1000000000000',
-          destination: '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242' as AccountId,
+          value: '1000000000000',
+          dest: '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242' as AccountId,
         },
       };
 
       expect(() => transactionService.encodeTransaction(decodedTransaction, api)).toThrowErrorMatchingInlineSnapshot(
         `[Error: Serializer for transaction balances.transferKeepAlive not found]`,
       );
+    });
+
+    it('should create extrinsic from any decoded transaction with special unsafe method (arg names should match with metadata)', async () => {
+      const api = await createMockApi();
+      const decodedTransaction: TransferDecodedTransaction = {
+        type: 'decoded',
+        section: 'balances',
+        method: 'transferKeepAlive',
+        args: {
+          value: '1000000000000',
+          dest: '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242' as AccountId,
+        },
+      };
+
+      const extrinsic = transactionService.unsafe_createExtrinsicFromAnyTransaction(decodedTransaction, api);
+      const encodedTransaction = transactionService.createEncodedTransactionFromExtrinsic(extrinsic);
+
+      expect(encodedTransaction).toEqual({
+        type: 'encoded',
+        callData: '0x04030068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242070010a5d4e8',
+      });
+    });
+
+    it('should fail to craete extrinsic from any decoded transaction with special unsafe method (invalid arg name)', async () => {
+      const api = await createMockApi();
+      const decodedTransaction: AnyDecodedTransaction<{ value: string; destination: AccountId }> = {
+        type: 'decoded',
+        section: 'balances',
+        method: 'transferKeepAlive',
+        args: {
+          value: '1000000000000',
+          // actual field name is `dest`
+          destination: '0x0068161e62bc8d7cf1bef225fd2ed12857889718d97c687256cb4b8794cef1a242' as AccountId,
+        },
+      };
+
+      expect(() =>
+        transactionService.unsafe_createExtrinsicFromAnyTransaction(decodedTransaction, api),
+      ).toThrowErrorMatchingInlineSnapshot(`[Error: Missing argument dest for transaction balances.transferKeepAlive]`);
     });
   });
 });

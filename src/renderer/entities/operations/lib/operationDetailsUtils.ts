@@ -16,13 +16,12 @@ import {
   TransactionType,
   type Wallet,
 } from '@/shared/core';
-import { dictionary, toAddress } from '@/shared/lib/utils';
+import { toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, type MultisigEvent, type MultisigOperation, accountService } from '@/domains/network';
+import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
 import { type TransactionVote, votingService } from '@/entities/governance';
 import { isDelegateTransaction, isProxyTransaction, isUndelegateTransaction } from '@/entities/transaction';
-import { accountUtils, walletUtils } from '@/entities/wallet';
 
 export const getMultisigExtrinsicLink = (
   callHash?: HexString,
@@ -61,45 +60,7 @@ export const getSignatoryName = (
   const fromAccount = finderFn(accounts)?.name;
   if (fromAccount) return fromAccount;
 
-  return toAddress(signatoryId, { chunk: 5, prefix: addressPrefix });
-};
-
-export const getSignatoryAccounts = (
-  accounts: AnyAccount[],
-  wallets: Wallet[],
-  events: MultisigEvent[],
-  signatories: Signatory[],
-  chainId: ChainId,
-): AnyAccount[] => {
-  const walletsMap = dictionary(wallets, 'id');
-
-  const result = [];
-
-  for (const signatory of signatories) {
-    const filteredAccounts = accounts.filter(
-      (a) => a.accountId === signatory.accountId && !events.some((e) => e.accountId === a.accountId),
-    );
-
-    const signatoryAccount = filteredAccounts.find((a) => {
-      const isChainMatch = accountUtils.isChainIdMatch(a, chainId);
-      const wallet = walletsMap[a.walletId];
-
-      return isChainMatch && walletUtils.isValidSignatory(wallet);
-    });
-
-    if (signatoryAccount) {
-      result.push(signatoryAccount);
-    } else {
-      const legacySignatoryAccount = filteredAccounts.find(
-        (a) => accountService.isChainAccount(a) && accountService.isChainAccount(a) && a.chainId === chainId,
-      );
-      if (legacySignatoryAccount) {
-        result.push(legacySignatoryAccount);
-      }
-    }
-  }
-
-  return result;
+  return toShortAddress(toAddress(signatoryId, { prefix: addressPrefix }), 5);
 };
 
 export const getAssetId = (operation: MultisigOperation) => {
@@ -196,7 +157,7 @@ export const getDelegationVotes = (tx: MultisigOperation): string | undefined =>
   return balance.mul(conviction).toString();
 };
 
-export const getDelegationTarget = (tx: MultisigOperation): string | undefined => {
+export const getDelegationTarget = (tx: MultisigOperation): AccountId | undefined => {
   const coreTxDelegate = getCoreTx(tx);
   if (!coreTxDelegate) return undefined;
 
@@ -208,7 +169,7 @@ export const getDelegationTarget = (tx: MultisigOperation): string | undefined =
     coreTx = coreTxDelegate;
   }
 
-  return coreTx?.args.target;
+  return toAccountId(coreTx?.args.target);
 };
 
 export const getDelegationTracks = (tx: MultisigOperation): string[] | undefined => {
@@ -238,7 +199,7 @@ export const getDelegationTracks = (tx: MultisigOperation): string[] | undefined
 export const getUndelegationData = (
   api: ApiPromise,
   tx: MultisigOperation,
-): Promise<{ votes: string | undefined; target: string | undefined }> => {
+): Promise<{ votes: string | undefined; target: AccountId | undefined }> => {
   const coreTxDelegate = getCoreTx(tx);
   const emptyResult = { votes: undefined, target: undefined };
 
@@ -265,7 +226,7 @@ export const getUndelegationData = (
 
     return {
       votes: votingService.calculateVotingPower(delegation.data.balance, delegation.data.conviction).toString(),
-      target: toAddress(delegation.data.target),
+      target: delegation.data.target,
     };
   });
 };

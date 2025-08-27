@@ -1,3 +1,5 @@
+import { type BN } from '@polkadot/util';
+
 import { type Address, type Asset, type Chain } from '@/shared/core';
 import { type AnyAccount } from '@/domains/network';
 
@@ -22,9 +24,9 @@ export type TransferStore = {
   destination: Address;
   destinationChain: Chain;
 
-  fee: string;
-  xcmFee: string;
-  multisigDeposit: string;
+  fee: BN;
+  xcmFee: BN;
+  multisigDeposit: BN;
 };
 
 export type BalanceMap = Record<'balance' | 'native', string>;

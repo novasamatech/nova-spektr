@@ -11,7 +11,6 @@ import {
   type Address,
   type HexString,
   type MultisigAccount,
-  type MultisigThreshold,
   type MultisigTxWrapper,
   type ProxiedAccount,
   type ProxyTxWrapper,
@@ -20,7 +19,7 @@ import {
   type Wallet,
   WrapperKind,
 } from '@/shared/core';
-import { type TxMetadata, createTxMetadata, dictionary, nullable } from '@/shared/lib/utils';
+import { type TxMetadata, createTxMetadata, dictionary, nullable, upgradeNonce } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
@@ -66,15 +65,15 @@ async function getTransactionFee(
 
 async function getExtrinsicFee(
   extrinsic: SubmittableExtrinsic<'promise'>,
-  address: Address,
+  signatory: Address | AccountId,
   options?: Partial<SignerOptions>,
 ) {
-  const paymentInfo = await extrinsic.paymentInfo(address, options);
+  const paymentInfo = await extrinsic.paymentInfo(signatory, options);
 
   return paymentInfo.partialFee.toBn();
 }
 
-function getMultisigDeposit(threshold: MultisigThreshold, api: ApiPromise): string {
+function getMultisigDeposit(threshold: number, api: ApiPromise): string {
   const { depositFactor, depositBase } = api.consts.multisig;
   const deposit = depositFactor.muln(threshold).add(depositBase);
 
@@ -234,8 +233,17 @@ function getWrappedTransaction({ api, transaction, txWrappers }: WrapperParams):
   );
 }
 
-async function createPayloadWithProof(extrinsic: Extrinsic, signatory: AccountId, api: ApiPromise) {
-  const { signerPayloadBase } = await createTxMetadata(signatory, api);
+async function createPayloadWithProof(
+  extrinsic: Extrinsic,
+  signatory: AccountId,
+  api: ApiPromise,
+  nonceIncrement?: number,
+) {
+  let metadata = await createTxMetadata(signatory, api);
+  if (nonceIncrement) {
+    metadata = upgradeNonce(metadata, nonceIncrement);
+  }
+  const { signerPayloadBase } = metadata;
 
   if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
     signerPayloadBase.assetId = undefined;
@@ -282,7 +290,8 @@ async function createPayloadWithProof(extrinsic: Extrinsic, signatory: AccountId
   return {
     extrinsic,
     metadataProof,
-    signingPayload,
+    unsigned: signingPayload,
+    hexPayload: extrinsicPayload.toHex(),
     payload,
   };
 }
@@ -354,7 +363,7 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
   }
 }
 
-function logPayload(info: Awaited<ReturnType<typeof createPayloadWithMetadata>>[]) {
+function logPayload(info: Awaited<ReturnType<typeof createPayloadWithMetadata | typeof createPayloadWithProof>>[]) {
   console.groupCollapsed('Transactions');
   for (const [index, log] of info.entries()) {
     console.groupCollapsed(`Operation ${index}: ${log.extrinsic.method.section}.${log.extrinsic.method.method}`);

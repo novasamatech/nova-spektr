@@ -11,7 +11,6 @@ import {
   getRelaychainAsset,
   nonNullable,
   nullable,
-  toAddress,
   transferableAmount,
   transferableAmountBN,
 } from '@/shared/lib/utils';
@@ -24,9 +23,8 @@ import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { networkSelectorModel } from '@/features/governance';
+import { getLocksForAccount, networkSelectorModel } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
-import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
 import { type DelegateData, type WalletData } from '../lib/types';
 
 export const flowFinished = createEvent();
@@ -179,7 +177,7 @@ const $account = combine(
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
     initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     trackLocks: locksAggregate.$trackLocks,
   },
   ({ network, wallet, initiator, balances, trackLocks }) => {
@@ -188,8 +186,7 @@ const $account = combine(
     const { chain, asset } = network;
 
     const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
-    const address = toAddress(initiator.accountId, { prefix: network.chain.addressPrefix });
-    const lock = getLocksForAddress(address, trackLocks);
+    const lock = getLocksForAccount(initiator.accountId, trackLocks);
 
     return {
       account: initiator,
@@ -226,7 +223,7 @@ const $coreTx = combine(
       accountId: signatory.accountId,
       balance: (walletData.chain && formatAmount(delegateData.balance, walletData.chain.assets[0].precision)) || '0',
       conviction: delegateData.conviction || 'None',
-      target: target.address || '',
+      target: target.accountId,
       tracks,
     });
   },
@@ -268,7 +265,7 @@ const $proxyBalance = combine(
   {
     isProxy: $isProxy,
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ isProxy, proxyAccount, balances, network }) => {
@@ -288,7 +285,7 @@ const $proxyBalance = combine(
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ signatory, balances, network }) => {

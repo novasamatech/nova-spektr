@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { type ComponentProps, useState } from 'react';
 
 import { type HexString } from '@/shared/core';
@@ -11,13 +12,12 @@ import { type ErrorObject, type Progress } from '../common/types';
 import { QrMultiframeSignatureReader } from './QrMultiframeSignatureReader';
 import { QrSignatureReader } from './QrSignatureReader';
 import { SignatureReaderError } from './SignatureReaderError';
-
 import './style.css';
 
 const ValidationErrorLabels = {
-  [ValidationErrors.INSUFFICIENT_BALANCE]: 'transfer.notEnoughBalanceError',
-  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: 'transfer.notEnoughBalanceForFeeError',
-  [ValidationErrors.INVALID_SIGNATURE]: 'transfer.invalidSignature',
+  [ValidationErrors.INSUFFICIENT_BALANCE]: t('transfer.notEnoughBalanceError'),
+  [ValidationErrors.INSUFFICIENT_BALANCE_FOR_FEE]: t('transfer.notEnoughBalanceForFeeError'),
+  [ValidationErrors.INVALID_SIGNATURE]: t('transfer.invalidSignature'),
 };
 
 type ScanResult = HexString | HexString[];

@@ -49,7 +49,7 @@ export const Nominate = () => {
   }
 
   return (
-    <Modal size="fit" isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size={nominateUtils.isValidatorsStep(step) ? 'fit' : 'md'} isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>
         {<OperationTitle title={t('staking.validators.title')} chainId={walletData.chain.chainId} />}
       </Modal.Title>

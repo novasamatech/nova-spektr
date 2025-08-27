@@ -12,7 +12,6 @@ import {
   type FlexibleProxiedAccount,
   type MultisigAccount,
   type MultisigSignatoryAccount,
-  type MultisigThreshold,
   type ProxiedAccount,
   ProxyVariant,
   type VaultBaseAccount,
@@ -43,7 +42,13 @@ export const accountUtils = {
   isFlexibleProxiedAccount,
   isPureProxiedAccount,
 
+  /**
+   * @deprecated Use accountService.isAccountAvailableOnChain instead
+   */
   isChainIdMatch,
+  /**
+   * @deprecated Use accountService.isAccountAvailableOnChain instead
+   */
   isChainAndCryptoMatch,
   isAccountWithShards,
   isNonBaseVaultAccount,
@@ -164,6 +169,7 @@ function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
 }
 
 function isCryptoTypeMatch(account: AnyAccount, chain: Chain): boolean {
+  // TODO check this logic, should be incorrect
   if (isWcAccount(account)) {
     return true;
   }
@@ -181,8 +187,8 @@ function isEthereumBased(account: AnyAccount): boolean {
 
 // Get specific accounts
 
-function getMultisigAccountId(ids: AccountId[], threshold: MultisigThreshold, cryptoType: CryptoType): AccountId {
-  const accountId = createKeyMulti(ids, threshold);
+function getMultisigAccountId(signatories: AccountId[], threshold: number, cryptoType: CryptoType): AccountId {
+  const accountId = createKeyMulti(signatories, threshold);
   const isEthereum = cryptoType === CryptoType.ETHEREUM;
 
   // TODO WTF

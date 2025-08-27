@@ -33,7 +33,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
   const shouldRenderEvidenceAlert = canHaveEvidence && nullable(evidence) && !pendingEvidence;
 
   return (
-    <>
+    <div className="flex h-full flex-col">
       {shouldRenderEvidencePending ? <Skeleton height="16lh" width="100%" /> : null}
       {shouldRenderEvidence ? (
         <Card>
@@ -45,8 +45,10 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
 
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
-      <AdditionalContext />
-    </>
+      <div className="flex-1">
+        <AdditionalContext />
+      </div>
+    </div>
   );
 });
 

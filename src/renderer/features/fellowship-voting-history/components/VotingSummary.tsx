@@ -56,18 +56,26 @@ export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
     return { levelTextKey: 'fellowship.votingHistory.level.good', levelClassName: 'text-text-positive' };
   }, [totalAyes, totalNays]);
 
-  let title = null;
+  let title = t('fellowship.votingHistory.default');
 
-  if (nobodyVoted) {
-    title = t('fellowship.votingHistory.noVotes');
-  } else if (referendumService.isCompleted(referendum)) {
+  if (referendumService.isCompleted(referendum)) {
     title = isPromotionRetentionReferendum
       ? t('fellowship.votingHistory.voteEndedPromotionRetention')
       : t('fellowship.votingHistory.voteEnded');
-  } else {
+  }
+
+  if (referendumService.isOngoing(referendum)) {
     title = isPromotionRetentionReferendum
       ? t('fellowship.votingHistory.subtitlePromotionRetention')
       : t('fellowship.votingHistory.subtitle');
+
+    if (referendum.proposal && referendumService.isSpendProposal(referendum.proposal)) {
+      title = t('fellowship.votingHistory.spend');
+    }
+  }
+
+  if (nobodyVoted) {
+    title = t('fellowship.votingHistory.noVotes');
   }
 
   let voteLevel = null;

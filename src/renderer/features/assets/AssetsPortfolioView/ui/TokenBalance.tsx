@@ -3,10 +3,8 @@ import { memo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type AssetByChains } from '@/shared/core';
-import { useI18n } from '@/shared/i18n';
-import { BodyText, CaptionText, FootnoteText, Icon, Plate } from '@/shared/ui';
+import { BodyText, FootnoteText, Plate } from '@/shared/ui';
 import { AssetIcon, ChainIcon } from '@/shared/ui-entities';
-import { Tooltip } from '@/shared/ui-kit';
 import { AssetLinks } from '@/entities/asset';
 import { networkModel } from '@/entities/network';
 import { TokenPrice } from '@/entities/price';
@@ -19,12 +17,10 @@ type Props = {
 };
 
 export const TokenBalance = memo(({ asset }: Props) => {
-  const { t } = useI18n();
   const wallet = useUnit(walletSelect.$selectedWallet);
+  const chains = useUnit(networkModel.$chains);
 
   const chain = asset.chains[0];
-
-  const chains = useUnit(networkModel.$chains);
 
   return (
     <Plate className="z-10 flex h-[52px] w-full items-center p-0 pr-2 pl-[36px]">
@@ -36,19 +32,6 @@ export const TokenBalance = memo(({ asset }: Props) => {
             <div className="mr-3 flex items-center gap-x-1.5">
               <ChainIcon chain={chains[chain.chainId]} size={18} />
               <FootnoteText className="text-text-tertiary">{chain.name}</FootnoteText>
-              {chain.balance?.verified && (
-                <div className="flex items-center gap-x-2 text-text-warning">
-                  <Tooltip>
-                    <Tooltip.Trigger>
-                      <div tabIndex={0}>
-                        <Icon name="warn" className="cursor-pointer text-inherit" size={16} />
-                      </div>
-                    </Tooltip.Trigger>
-                    <Tooltip.Content>{t('balances.verificationTooltip')}</Tooltip.Content>
-                  </Tooltip>
-                  <CaptionText className="text-inherit uppercase">{t('balances.verificationFailedLabel')}</CaptionText>
-                </div>
-              )}
             </div>
           </div>
         </div>

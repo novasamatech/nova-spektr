@@ -36,8 +36,6 @@ export const walletUtils = {
   isTalismanExtension,
   isSubWalletExtension,
 
-  isValidSignatory,
-  isValidSignSignatory,
   getWalletById,
 
   getAccountBy,
@@ -104,28 +102,6 @@ function isPolkadotVaultGroup(wallet?: Wallet): wallet is PolkadotVaultGroup {
 
 function isWalletConnectGroup(wallet?: Wallet): wallet is WalletConnectGroup {
   return isNovaWallet(wallet) || isWalletConnect(wallet);
-}
-
-const VALID_SIGNATORY_WALLET_TYPES = [
-  WalletType.POLKADOT_VAULT,
-  WalletType.POLKADOT_EXTENSION,
-  WalletType.TALISMAN_EXTENSION,
-  WalletType.SUBWALLET_EXTENSION,
-  WalletType.SINGLE_PARITY_SIGNER,
-  WalletType.WALLET_CONNECT,
-  WalletType.NOVA_WALLET,
-];
-
-function isValidSignatory(wallet?: Wallet): boolean {
-  if (!wallet) return false;
-
-  return VALID_SIGNATORY_WALLET_TYPES.includes(wallet.type);
-}
-
-function isValidSignSignatory(wallet?: Wallet): boolean {
-  if (!wallet) return false;
-
-  return isValidSignatory(wallet) || isPolkadotVault(wallet);
 }
 
 function getWalletById(wallets: Wallet[], id: ID): Wallet | undefined {

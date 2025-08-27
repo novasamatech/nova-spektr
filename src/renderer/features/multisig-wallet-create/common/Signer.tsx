@@ -4,10 +4,9 @@ import { type FormEvent } from 'react';
 import { type Chain, type Wallet } from '@/shared/core';
 import { getNativeAsset, transferableAmount } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
-import { AccountExplorers, AssetBalance } from '@/shared/ui-entities';
+import { AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { type AnyAccount } from '@/domains/network';
 import { useBalance } from '@/entities/balance';
-import { WalletIcon } from '@/entities/wallet';
 
 interface Props {
   onSubmit: (event: FormEvent, account: AnyAccount) => void;
@@ -31,7 +30,7 @@ export const Signer = ({ account, wallet, onSubmit, chain }: Props) => {
       onClick={e => onSubmit(e, account)}
     >
       <div className="flex items-center gap-x-2 truncate">
-        <WalletIcon type={wallet.type} className="shrink-0" />
+        <WalletIcon type={wallet.type} />
         {wallet.name && <BodyText className="truncate text-inherit">{wallet.name}</BodyText>}
         <AccountExplorers accountId={account.accountId} chain={chain} />
       </div>

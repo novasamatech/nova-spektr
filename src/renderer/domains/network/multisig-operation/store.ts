@@ -1,9 +1,8 @@
-import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
 import { type HexString } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
-import { isEqual } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
@@ -15,8 +14,6 @@ import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
 
 const $list = createStore<MultisigOperation[]>([]);
-
-const operationsReceived = createEvent<MultisigOperation[]>();
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
@@ -37,28 +34,7 @@ const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
 });
 
 const syncOperationsFx = createQueuedEffect(async (operations: MultisigOperation[]) => {
-  const existing = await storageService.multisigOperations.readAll();
-  const toAdd: MultisigOperation[] = [];
-  const toUpdate: MultisigOperation[] = [];
-
-  for (const newOperation of operations) {
-    const existingOperation = existing.find(o => o.id === newOperation.id);
-    if (existingOperation) {
-      if (!isEqual(existingOperation, newOperation)) {
-        toUpdate.push(newOperation);
-      }
-    } else {
-      toAdd.push(newOperation);
-    }
-  }
-
-  if (toAdd.length > 0) {
-    await storageService.multisigOperations.createAll(toAdd.map(serializeOperation));
-  }
-
-  if (toUpdate.length > 0) {
-    await storageService.multisigOperations.updateAll(toUpdate.map(serializeOperation));
-  }
+  await storageService.multisigOperations.updateAll(operations.map(serializeOperation));
 });
 
 type UpdateCallDataParams = {
@@ -105,7 +81,6 @@ const removeOperationsForAccountFx = attach({
 
 deriveFromResources({
   store: $list,
-  onReceive: operationsReceived,
   resources: [fetchResource, subscribeResource],
   map(state, operations) {
     return multisigOperationService.mergeMultisigOperations(state, operations);
@@ -114,7 +89,6 @@ deriveFromResources({
 
 deriveFromResources({
   store: $list,
-  onReceive: operationsReceived,
   resources: [subscribeEventsResource],
   map: (state, { chainId, operationId, event }) => {
     const operation = state.find(x => x.id === operationId && x.chainId === chainId);
@@ -123,7 +97,7 @@ deriveFromResources({
     const newOperation = {
       ...operation,
       status: event.status === 'reject' ? 'cancelled' : operation.status,
-      events: multisigOperationService.mergeEvents(operation?.events, [event]),
+      events: multisigOperationService.mergeEvents(operation.events, [event]),
     };
 
     return multisigOperationService.mergeMultisigOperations(state, [newOperation]);
@@ -159,7 +133,7 @@ sample({
 });
 
 sample({
-  clock: operationsReceived,
+  clock: $list,
   target: syncOperationsFx,
 });
 

@@ -5,7 +5,7 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, toAddress, toShortAddress, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button, Combobox, InputHint, Select } from '@/shared/ui';
-import { AssetBalance, Identicon, SignatorySelect } from '@/shared/ui-entities';
+import { AssetBalance, Identicon, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -20,6 +20,8 @@ export const AddProxyForm = () => {
   const { t } = useI18n();
 
   const { submit } = useForm(formModel.form);
+  const errors = useUnit(formModel.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -28,6 +30,7 @@ export const AddProxyForm = () => {
 
   return (
     <div className="px-5 pb-4">
+      <TransactionValidationError errors={errors} wallets={wallets} />
       <ProxyPopover>{t('proxy.proxyTooltip')}</ProxyPopover>
       <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
         <NetworkSelector />
@@ -102,7 +105,7 @@ const AccountSelector = () => {
   const chain = useUnit(formModel.form.fields.chain.$value);
   const availableAccounts = useUnit(formModel.$availableAccounts);
   const wallet = useUnit(walletSelect.$selectedWallet);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   if (availableAccounts.length < 2 || walletUtils.isFlexibleMultisig(wallet) || !initiator.value || !chain) {
     return null;
@@ -166,7 +169,7 @@ const Signatories = () => {
 
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   if (!chain.value) return null;
 
@@ -234,7 +237,7 @@ const ProxyInput = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon address={delegate.value} size={20} background={false} canCopy={false} />
+      <Identicon value={delegate.value} size={20} background={false} canCopy={false} />
     </div>
   );
 

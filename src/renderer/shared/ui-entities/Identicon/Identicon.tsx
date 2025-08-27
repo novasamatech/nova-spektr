@@ -1,15 +1,15 @@
 import { type IconTheme as IdenticonIconTheme } from '@polkadot/react-identicon/types';
-import { Suspense, type SyntheticEvent, lazy, memo } from 'react';
+import { Suspense, lazy, memo } from 'react';
 
-import { type Address, type HexString } from '@/shared/core';
-import { cnTw, copyToClipboard, isEthereumAccountId, validateAddress } from '@/shared/lib/utils';
+import { useI18n } from '@/shared/i18n';
+import { cnTw, isEthereumAccountId, validateAddress } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
-import { useTheme } from '@/shared/ui-kit';
+import { Copy, useTheme } from '@/shared/ui-kit';
 
 export type { IdenticonIconTheme };
 
 type Props = {
-  address: Address;
+  value: string;
   theme?: IdenticonIconTheme;
   size?: number;
   background?: boolean;
@@ -22,18 +22,13 @@ const PolkadotIdenticon = lazy(() =>
 );
 
 export const Identicon = memo(
-  ({ theme, address, size = 24, background = true, canCopy: canCopyProp, testId = 'Identicon' }: Props) => {
+  ({ theme, value, size = 24, background = true, canCopy: canCopyProp, testId = 'Identicon' }: Props) => {
+    const { t } = useI18n();
     const { preferStaticContent } = useTheme();
-    const valid = validateAddress(address);
+    const valid = validateAddress(value);
     const canCopy = typeof canCopyProp === 'undefined' ? !preferStaticContent : canCopyProp;
 
-    const defaultTheme: IdenticonIconTheme =
-      address && valid && isEthereumAccountId(address as HexString) ? 'ethereum' : 'polkadot';
-
-    const onCopyToClipboard = async (e: SyntheticEvent) => {
-      e.stopPropagation();
-      await copyToClipboard(address);
-    };
+    const defaultTheme: IdenticonIconTheme = value && valid && isEthereumAccountId(value) ? 'ethereum' : 'polkadot';
 
     const emptyIcon = <Icon name="emptyIdenticon" size={background ? size * 0.75 : size} />;
 
@@ -41,7 +36,7 @@ export const Identicon = memo(
       <Suspense fallback={emptyIcon}>
         <PolkadotIdenticon
           theme={theme || defaultTheme}
-          value={address}
+          value={value}
           size={background ? size * 0.75 : size}
           // &>svg>circle:first-of-type - background selector
           className="pointer-events-none overflow-hidden rounded-full [&>svg>circle:first-of-type]:fill-none"
@@ -51,32 +46,30 @@ export const Identicon = memo(
       emptyIcon
     );
 
-    if (!canCopy || !valid) {
+    const shouldCopy = canCopy && valid;
+
+    const node = (
+      <span
+        className={cnTw(
+          'relative flex appearance-none items-center justify-center rounded-full',
+          background && 'rounded-full bg-white',
+          shouldCopy && 'cursor-copy',
+        )}
+        style={{ width: size, height: size }}
+        data-testid={testId}
+      >
+        {icon}
+      </span>
+    );
+
+    if (shouldCopy) {
       return (
-        <span
-          className={cnTw('relative flex items-center justify-center rounded-full', background && 'bg-white')}
-          style={{ width: size, height: size }}
-          data-testid={testId}
-        >
-          {icon}
-        </span>
+        <Copy value={value} notification={t('general.notifications.addressCopied')}>
+          {node}
+        </Copy>
       );
     }
 
-    return (
-      <button
-        type="button"
-        className={cnTw(
-          'relative flex cursor-copy appearance-none items-center justify-center rounded-full',
-          background && 'rounded-full bg-white',
-        )}
-        aria-label="Copy address"
-        style={{ width: size, height: size }}
-        data-testid={testId}
-        onClick={onCopyToClipboard}
-      >
-        {icon}
-      </button>
-    );
+    return node;
   },
 );

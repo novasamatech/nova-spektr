@@ -28,7 +28,7 @@ describe('entities/proxy/lib/proxy-utils', () => {
 
     const result = proxyUtils.getProxiedName(proxiedAccount);
 
-    expect(result).toEqual('Any for 5CGQ7B...VbXyr9');
+    expect(result).toEqual('Any for 1ChFWe...X7iTVZ');
   });
 
   test('should sort proxy accounts by type', () => {

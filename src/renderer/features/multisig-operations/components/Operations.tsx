@@ -18,7 +18,7 @@ import { OperationsFilter } from './OperationsFilter';
 export const Operations = () => {
   const { formatDate } = useI18n();
 
-  const account = useUnit(operationsContextModel.$account);
+  const account = useUnit(operationsContextModel.$multisigAccount);
   const operations = useUnit(selectedWalletMultisigOperations.$list);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
 

@@ -2,15 +2,7 @@ import { createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, spread } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import {
-  Step,
-  getBalanceBn,
-  getRelaychainAsset,
-  isStep,
-  nonNullable,
-  toAddress,
-  transferableAmount,
-} from '@/shared/lib/utils';
+import { Step, getBalanceBn, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -112,7 +104,7 @@ sample({
 const formSubmitted = sample({
   clock: formModel.output.formSubmitted,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     fee: formModel.$fee,
     walletData: formModel.$walletData,
     tracks: formModel.$tracks,
@@ -147,6 +139,7 @@ const formSubmitted = sample({
       nonNullable(walletData.wallet) &&
       nonNullable(walletData.chain) &&
       nonNullable(initiator) &&
+      nonNullable(target) &&
       nonNullable(tx) &&
       nonNullable(coreTx) &&
       nonNullable(delegateData.signatory) &&
@@ -154,26 +147,26 @@ const formSubmitted = sample({
     ) {
       const asset = getRelaychainAsset(walletData.chain.assets)!;
 
-      const address = toAddress(initiator.accountId, { prefix: walletData.chain.addressPrefix });
-
       const transferable = transferableAmount(
         balanceUtils.getBalance(balances, initiator.accountId, walletData.chain.chainId, asset.assetId),
       );
+
+      const activeDelegation = activeDelegations[initiator.accountId];
 
       return [
         {
           chain: walletData.chain,
           asset: asset!,
           tracks,
-          target: target?.address || '',
+          target: target.accountId,
           transferable,
           ...delegateData,
           signatory: delegateData.signatory,
           ...(isUnchanged && {
-            balance: getBalanceBn(activeDelegations[address].balance.toString(), asset.precision).toString(),
-            conviction: activeDelegations[address].conviction,
+            balance: getBalanceBn(activeDelegation.balance.toString(), asset.precision).toString(),
+            conviction: activeDelegation.conviction,
           }),
-          previousConviction: activeDelegations[address].conviction,
+          previousConviction: activeDelegation.conviction,
           fee: fee.toString(),
           totalFee: fee.toString(),
           multisigDeposit: multisigDeposit.toString(),

@@ -2,25 +2,25 @@ import { type ApiPromise } from '@polkadot/api';
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
-import { type Address, type Chain, type ChainId, type Identity, type Referendum } from '@/shared/core';
-import { AdditionalType } from '@/shared/core/types/chain';
+import { type Chain, type ChainId, type Identity, type Referendum } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { proposersService } from '../lib/proposersService';
 import { referendumService } from '../lib/referendumService';
 
-const $proposers = createStore<Record<ChainId, Record<Address, Identity>>>({});
+const $proposers = createStore<Record<ChainId, Record<AccountId, Identity>>>({});
 
 type GetProposersParams = {
   api: ApiPromise;
   chain: Chain;
-  addresses: Address[];
+  accounts: AccountId[];
 };
 
 const requestReferendumProposer = createEvent<{ referendum: Referendum; chain: Chain; api: ApiPromise }>();
 const requestProposers = createEvent<GetProposersParams>();
 
-const requestProposersFx = createEffect(({ api, addresses }: GetProposersParams) => {
-  return proposersService.getIdentities(api, addresses);
+const requestProposersFx = createEffect(({ api, accounts }: GetProposersParams) => {
+  return proposersService.getIdentities(api, accounts);
 });
 
 sample({
@@ -28,12 +28,12 @@ sample({
   source: { apis: networkModel.$apis },
   filter: (_, { referendum }) => referendumService.isOngoing(referendum),
   fn: ({ apis }, { api, chain, referendum }) => {
-    const identityChainId = chain?.additional?.[AdditionalType.IDENTITY_CHAIN];
+    const identityChainId = chain?.additional?.identityChain;
 
     return {
       api: identityChainId ? apis[identityChainId] : api!,
       chain,
-      addresses:
+      accounts:
         referendumService.isOngoing(referendum) && referendum.submissionDeposit
           ? [referendum.submissionDeposit.who]
           : [],
@@ -49,15 +49,15 @@ sample({
     apis: networkModel.$apis,
     proposers: $proposers,
   },
-  fn: ({ apis, proposers }, { api, chain, addresses }) => {
-    const identityChainId = chain?.additional?.[AdditionalType.IDENTITY_CHAIN];
+  fn: ({ apis, proposers }, { api, chain, accounts }) => {
+    const identityChainId = chain?.additional?.identityChain;
     const chainProposers = proposers[chain.chainId] ?? {};
-    const filteredAddresses = addresses.filter((a) => !(a in chainProposers));
+    const filteredAccounts = accounts.filter((a) => !(a in chainProposers));
 
     return {
       api: identityChainId ? (apis[identityChainId] ?? api!) : api!,
       chain,
-      addresses: filteredAddresses,
+      accounts: filteredAccounts,
     };
   },
   target: requestProposersFx,

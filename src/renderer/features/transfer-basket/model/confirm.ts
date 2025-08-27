@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { BN_ZERO } from '@polkadot/util';
 import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
@@ -43,9 +44,9 @@ const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis 
 
     fee,
     // TODO: Calculate delivery fee
-    deliveryFee: null,
+    deliveryFee: BN_ZERO,
     xcmFee: transaction.coreTx.args.xcmFee || '0',
-    multisigDeposit: '0',
+    multisigDeposit: BN_ZERO,
   } satisfies TransferConfirmStore;
 });
 

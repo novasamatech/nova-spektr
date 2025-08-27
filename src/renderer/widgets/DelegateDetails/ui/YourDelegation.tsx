@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { nullable, toAddress } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -33,7 +33,7 @@ export const YourDelegation = () => {
 
   const accounts =
     initiators.filter((account) => {
-      return activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix }));
+      return activeAccounts.includes(account.accountId);
     }) || [];
 
   return (
@@ -118,7 +118,7 @@ export const YourDelegation = () => {
             pallet="secondary"
             onClick={() => {
               if (delegate) {
-                revokeDelegationModel.flowStarted({ delegate: delegate.address, accounts: [accounts[0]] });
+                revokeDelegationModel.flowStarted({ delegate: delegate.accountId, accounts: [accounts[0]] });
               }
             }}
           >

@@ -1,238 +1,139 @@
-import { type ProxiedAccount } from '@/shared/core';
-import { type AnyAccount, type AnyDecodedTransaction, type Section } from '@/domains/network';
+import { type ApiPromise } from '@polkadot/api';
+
+import { type ProxiedAccount, type ProxyType } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
+import { type TransactionValidationPermissionError } from '@/shared/ui-entities';
+import {
+  type AnyAccount,
+  type AnyDecodedTransaction,
+  type AnyTransaction,
+  type Extrinsic,
+  transactionService,
+} from '@/domains/network';
 import { accountUtils } from '@/entities/wallet';
 
 import { type ProxyTransaction } from './types';
 
-// type Call = {
-//   type: 'call';
-//   name: Section;
-// };
-//
-// type ProxyCall = {
-//   type: 'proxy';
-//   name: ProxyType;
-// };
+/**
+ * Check if call can be executed with given proxy type
+ *
+ * TODO can be replaced with papi view function call after adoption
+ *
+ * ```ts
+ * const res = await api.view.Proxy.check_permissions(
+ *   extrinsic.decodedCall,
+ *   { type: proxyType, value: undefined },
+ * );
+ * ```
+ */
+function checkCallPermission(proxyType: ProxyType, call: string): boolean {
+  // known pallets that can be checked by hand.
+  // this list may extend later, but it will be perfect if polkadot sdk will implement permission checks with query
+  const Staking: string[] = ['utility', 'staking', 'session', 'fastUnstake', 'voterList', 'nominationPools'];
+  const NominationPools: string[] = ['utility', 'nominationPools'];
+  const CancelProxy: string[] = ['proxy'];
+  const Auction: string[] = ['auctions', 'crowdloan', 'registrar', 'slots'];
+  const IdentityJudgement: string[] = ['identityJudgement'];
+  const Governance: string[] = [
+    'utility',
+    'treasury',
+    'bounties',
+    'childBounties',
+    'convictionVoting',
+    'referenda',
+    'whitelist',
+  ];
 
-// function createProxyCall(proxyType: ProxyType, call: Section): ProxyCall | null {
-//   const Staking: Section[] = ['Utility', 'Staking', 'Session', 'FastUnstake', 'VoterList', 'NominationPools'];
-//   const NominationPools: Section[] = ['Utility', 'NominationPools'];
-//   const CancelProxy: Section[] = ['Proxy'];
-//   const Auction: Section[] = ['Auctions', 'Crowdloan', 'Registrar', 'Slots'];
-//   const IdentityJudgement: Section[] = ['IdentityJudgement'];
-//   const Governance: Section[] = [
-//     'Utility',
-//     'Treasury',
-//     'Bounties',
-//     'ChildBounties',
-//     'ConvictionVoting',
-//     'Referenda',
-//     'Whitelist',
-//   ];
-//
-//   if (proxyType === 'Any') {
-//     return {
-//       type: 'proxy',
-//       name: 'Any',
-//     };
-//   }
-//
-//   if (proxyType === 'NonTransfer' && call !== 'Balances') {
-//     return {
-//       type: 'proxy',
-//       name: 'NonTransfer',
-//     };
-//   }
-//
-//   if (proxyType === 'Staking' && Staking.includes(call)) {
-//     return {
-//       type: 'proxy',
-//       name: 'Staking',
-//     };
-//   }
-//
-//   if (proxyType === 'NominationPools' && NominationPools.includes(call)) {
-//     return {
-//       type: 'proxy',
-//       name: 'NominationPools',
-//     };
-//   }
-//
-//   if (proxyType === 'Auction' && Auction.includes(call)) {
-//     return {
-//       type: 'proxy',
-//       name: 'Auction',
-//     };
-//   }
-//
-//   if (proxyType === 'Governance' && Governance.includes(call)) {
-//     return {
-//       type: 'proxy',
-//       name: 'Governance',
-//     };
-//   }
-//
-//   if (proxyType === 'CancelProxy' && CancelProxy.includes(call)) {
-//     return {
-//       type: 'proxy',
-//       name: 'CancelProxy',
-//     };
-//   }
-//
-//   if (proxyType === 'IdentityJudgement' && IdentityJudgement.includes(call)) {
-//     return {
-//       type: 'proxy',
-//       name: 'IdentityJudgement',
-//     };
-//   }
-//
-//   return null;
-// }
-
-// function narrowProxyCall(proxyCall: ProxyCall, proxyType: ProxyType): ProxyCall | null {
-//   if (isSuperset(proxyCall.name, proxyType)) {
-//     return {
-//       type: 'proxy',
-//       name: proxyType,
-//     };
-//   }
-//   return null;
-// }
-
-// function isSuperset(x: ProxyType, y: ProxyType) {
-//   if (x === y) return true;
-//   if (x === 'Any') return true;
-//   if (y === 'Any') return false;
-//   if (x === 'NonTransfer') return true;
-//   return false;
-// }
-
-function checkPermission(
-  route: AnyAccount[],
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  call: Section,
-): { success: true } | { success: false; account: ProxiedAccount } {
-  const proxiedRoute = route.filter(accountUtils.isProxiedAccount);
-  if (proxiedRoute.length === 0) {
-    return { success: true };
+  if (proxyType === 'Any') {
+    return true;
   }
 
-  // const res: Call | ProxyCall = {
-  //   type: 'call',
-  //   name: call,
-  // };
+  if (proxyType === 'NonTransfer') {
+    return call !== 'balances' && call !== 'assets' && call !== 'currencies' && call !== 'tokens';
+  }
 
-  // for (const account of proxiedRoute) {
-  //   if (res.type === 'call') {
-  //     const proxyCall = createProxyCall(account.proxyType, call);
-  //     if (!proxyCall) return { success: false, account };
-  //
-  //     res = proxyCall;
-  //     continue;
-  //   } else {
-  //     const proxyCall = narrowProxyCall(res, account.proxyType);
-  //     if (!proxyCall) {
-  //       return { success: false, account };
-  //     }
-  //     res = proxyCall;
-  //   }
-  // }
+  if (proxyType === 'Staking') {
+    return Staking.includes(call);
+  }
 
-  return { success: true };
+  if (proxyType === 'NominationPools') {
+    return NominationPools.includes(call);
+  }
+
+  if (proxyType === 'Auction') {
+    return Auction.includes(call);
+  }
+
+  if (proxyType === 'Governance') {
+    return Governance.includes(call);
+  }
+
+  if (proxyType === 'CancelProxy') {
+    return CancelProxy.includes(call);
+  }
+
+  if (proxyType === 'IdentityJudgement') {
+    return IdentityJudgement.includes(call);
+  }
+
+  // escape hatch for non standart calls
+  return true;
+}
+
+function checkPermission(
+  api: ApiPromise,
+  route: AnyAccount[],
+  transaction: AnyTransaction,
+): TransactionValidationPermissionError | null {
+  if (route.length === 0) {
+    return null;
+  }
+
+  // TODO redo all this parsing thing after migration to new transaction interface
+  let extrinsic = transactionService.createExtrinsic(transaction, api);
+
+  const inversedRoute = [...route].reverse();
+
+  for (const [index, account] of inversedRoute.entries()) {
+    if (accountUtils.isProxiedAccount(account)) {
+      if (isProxyExtrinsic(extrinsic)) {
+        extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[2].toHex(), api);
+      }
+
+      const proxyAccount = inversedRoute.at(index - 1);
+      if (nullable(proxyAccount)) return null;
+
+      const connection = account.connections.find(c => c.proxyAccountId === proxyAccount.accountId);
+      if (nullable(connection)) return null;
+
+      if (checkCallPermission(connection.proxyType, extrinsic.method.section) === false) {
+        return { account, permission: connection.proxyType };
+      }
+    } else {
+      if (extrinsic.method.section === 'multisig' && extrinsic.method.method === 'asMulti') {
+        extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[3].toHex(), api);
+      }
+    }
+  }
+
+  return null;
+}
+
+function findProxyConnection(proxiedAccount: ProxiedAccount, proxyAccount: AnyAccount) {
+  return proxiedAccount.connections.find(c => c.proxyAccountId === proxyAccount.accountId) ?? null;
 }
 
 function isProxyTransaction(transaction: AnyDecodedTransaction): transaction is ProxyTransaction {
   return transaction.section === 'proxy' && transaction.method === 'proxy';
 }
 
-export const proxyService = {
-  isProxyTransaction,
-  checkPermission,
-};
+function isProxyExtrinsic(extrinsic: Extrinsic): boolean {
+  return extrinsic.method.section === 'proxy' && extrinsic.method.method === 'proxy';
+}
 
-// function filterProxyCall(proxyType: ProxyType, call: CallType): boolean {
-//   const Staking: CallType[] = ['Utility', 'Staking', 'Session', 'FastUnstake', 'VoterList', 'NominationPools'];
-//   const NominationPools: CallType[] = ['Utility', 'NominationPools'];
-//   const CancelProxy: CallType[] = ['Proxy'];
-//   const Auction: CallType[] = ['Auctions', 'Crowdloan', 'Registrar', 'Slots'];
-//   const IdentityJudgement: CallType[] = ['IdentityJudgement'];
-//   const Governance: CallType[] = [
-//     'Utility',
-//     'Treasury',
-//     'Bounties',
-//     'ChildBounties',
-//     'ConvictionVoting',
-//     'Referenda',
-//     'Whitelist',
-//   ];
-//
-//   if (proxyType === 'Any') {
-//     return true;
-//   }
-//
-//   if (proxyType === 'NonTransfer' && call !== 'Transfer') {
-//     return true;
-//   }
-//
-//   if (proxyType === 'Staking' && Staking.includes(call)) {
-//     return true;
-//   }
-//
-//   if (proxyType === 'NominationPools' && NominationPools.includes(call)) {
-//     return true;
-//   }
-//
-//   if (proxyType === 'Auction' && Auction.includes(call)) {
-//     return true;
-//   }
-//
-//   if (proxyType === 'Governance' && Governance.includes(call)) {
-//     return true;
-//   }
-//
-//   if (proxyType === 'CancelProxy' && CancelProxy.includes(call)) {
-//     return true;
-//   }
-//
-//   if (proxyType === 'IdentityJudgement' && IdentityJudgement.includes(call)) {
-//     return true;
-//   }
-//
-//   return false;
-// }
-//
-// function checkPermission2(
-//   route: AnyAccount[],
-//   call: CallType,
-// ): { success: true } | { success: false; account: AnyAccount } {
-//   if (route.length === 0) {
-//     return { success: true };
-//   }
-//
-//   let res: Call | ProxyCall = {
-//     type: 'call',
-//     name: call,
-//   };
-//
-//   for (const account of route) {
-//     if (accountUtils.isMultisigAccount(account)) {
-//       res = {
-//         type: 'call',
-//         name: 'Multisig',
-//       };
-//       continue;
-//     }
-//
-//     if (accountUtils.isProxiedAccount(account)) {
-//       if (!filterProxyCall(account.proxyType, res)) {
-//         return { success: false, account };
-//       }
-//
-//       res = {
-//         type: 'proxy',
-//       };
-//     }
-//   }
-//
-//   return { success: true };
-// }
+export const proxiedService = {
+  isProxyTransaction,
+  isProxyExtrinsic,
+  checkPermission,
+  findProxyConnection,
+};

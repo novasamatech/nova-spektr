@@ -27,7 +27,7 @@ type Props = {
 export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButton, onGoBack }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const confirms = useUnit(unlockConfirmModel.$confirms);
 
   const confirmStore = useStoreMap({

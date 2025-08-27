@@ -2,8 +2,8 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { isEthereumAccountId } from '@/shared/lib/utils';
 import { WalletAccountIcon } from '@/shared/ui-entities';
+import { accountService } from '@/domains/network';
 import { accountSDK } from '@/sdk/account';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -22,8 +22,14 @@ export { extensionWalletFeature, walletActionsSlot, polkadotExtensionService };
 export type { PolkadotExtensionWallet, TalismanExtensionWallet, SubWalletExtensionWallet };
 
 accountSDK(extensionWalletFeature, {
-  availableOnChain: ({ account }) => {
-    return polkadotExtensionService.isExtensionAccount(account);
+  availableOnChain: ({ account, chain }) => {
+    if (polkadotExtensionService.isExtensionAccount(account)) {
+      if (accountService.isChainAccount(account)) {
+        return accountService.isChainMatch(account, chain);
+      } else {
+        return true;
+      }
+    }
   },
   actionPermission: ({ account }) => {
     return polkadotExtensionService.isExtensionAccount(account);
@@ -57,11 +63,9 @@ accountSDK(extensionWalletFeature, {
 extensionWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!polkadotExtensionService.isExtensionWallet(wallet)) return null;
 
-  const address = wallet.accounts[0]?.accountId;
-  const isEthereum = isEthereumAccountId(address);
-  const theme = isEthereum ? 'ethereum' : 'polkadot';
+  const accountId = wallet.accounts[0]?.accountId ?? '';
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
+  return <WalletAccountIcon address={accountId} type={wallet.type} size={size} />;
 });
 
 extensionWalletFeature.inject(walletPairingDropdownOptionsSlot, {

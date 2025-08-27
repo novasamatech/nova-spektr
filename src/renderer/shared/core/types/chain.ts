@@ -15,13 +15,16 @@ export type Chain = {
   legacyAddressPrefix?: number;
   externalApi?: Partial<Record<ExternalType, ExternalValue[]>>;
   options?: ChainOptions[];
-  additional?: Record<AdditionalType, `0x${string}`>;
+  additional?: ChainAdditional;
 };
 
-export const enum AdditionalType {
-  IDENTITY_CHAIN = 'identityChain',
-  TIMELINE_CHAIN = 'timelineChain',
-}
+export type ChainAdditional = {
+  identityChain: ChainId;
+  timelineChain: ChainId;
+
+  // Supports metadata proofs
+  supportsGenericLedgerApp: boolean;
+};
 
 export const enum ChainOptions {
   TESTNET = 'testnet',

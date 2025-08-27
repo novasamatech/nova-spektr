@@ -2,15 +2,14 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, copyToClipboard, getNativeAsset, nonNullable, truncate } from '@/shared/lib/utils';
+import { cnTw, getNativeAsset, nonNullable, truncate } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
-import { type MultisigOperation } from '@/domains/network';
+import { Account, AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
+import { Copy } from '@/shared/ui-kit';
+import { type MultisigOperation, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { signatoryUtils } from '@/entities/signatory';
-import { WalletIcon, accountUtils, walletModel } from '@/entities/wallet';
-import { walletSelect } from '@/aggregates/wallet-select';
+import { walletModel } from '@/entities/wallet';
 
 type Props = {
   operation: MultisigOperation;
@@ -23,10 +22,9 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const activeWallet = useUnit(walletSelect.$selectedWallet);
   const chains = useUnit(networkModel.$chains);
   const chain = chains[operation.chainId];
-  const account = activeWallet?.accounts.find(accountUtils.isMultisigAccount);
+  const allAccounts = useUnit(accounts.$list);
 
   const nativeAsset = getNativeAsset(chain?.assets ?? []);
   const explorers = chain?.explorers;
@@ -35,12 +33,10 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
 
   const { indexCreated, blockCreated, deposit, depositor, callHash, callData } = operation;
 
-  const depositorSignatory = account?.signatories.find(s => s.accountId === depositor);
+  const depositorSignatory = allAccounts.find(a => a.accountId === depositor);
   const extrinsicLink = operationDetailsUtils.getMultisigExtrinsicLink(callHash, indexCreated, blockCreated, explorers);
 
-  const valueClass = 'text-text-secondary';
-  const depositorWallet =
-    depositorSignatory && signatoryUtils.getSignatoryWallet(wallets, depositorSignatory.accountId);
+  const depositorWallet = depositorSignatory && wallets.find(w => w.id === depositorSignatory.walletId);
 
   return (
     <>
@@ -58,35 +54,31 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
       {isAdvancedShown && (
         <>
           {callHash && (
-            <DetailRow label={t('operation.details.callHash')} className={valueClass}>
-              <button
-                type="button"
-                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
-                onClick={() => copyToClipboard(callHash)}
-              >
-                <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
-                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
-              </button>
+            <DetailRow label={t('operation.details.callHash')} className="text-text-secondary">
+              <Copy value={callHash}>
+                <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
+                  <FootnoteText className="text-inherit">{truncate(callHash, 7, 8)}</FootnoteText>
+                  <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+                </button>
+              </Copy>
             </DetailRow>
           )}
 
           {callData && (
-            <DetailRow label={t('operation.details.callData')} className={valueClass}>
-              <button
-                type="button"
-                className={cnTw('group flex items-center gap-x-1', InteractionStyle)}
-                onClick={() => copyToClipboard(callData)}
-              >
-                <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
-                <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
-              </button>
+            <DetailRow label={t('operation.details.callData')} className="text-text-secondary">
+              <Copy value={callData}>
+                <button type="button" className={cnTw('group flex items-center gap-x-1', InteractionStyle)}>
+                  <FootnoteText className="text-inherit">{truncate(callData, 7, 8)}</FootnoteText>
+                  <Icon name="copy" size={16} className="group-hover:text-icon-hover" />
+                </button>
+              </Copy>
             </DetailRow>
           )}
 
           {deposit && nativeAsset && depositorSignatory && <hr className="border-divider" />}
 
           {depositorSignatory && nonNullable(chain) && (
-            <DetailRow label={t('operation.details.depositor')} className={valueClass}>
+            <DetailRow label={t('operation.details.depositor')} className="text-text-secondary">
               {depositorWallet ? (
                 <div className="flex items-center gap-2">
                   <WalletIcon size={16} type={depositorWallet.type} />
@@ -104,7 +96,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
           )}
 
           {deposit && nativeAsset && (
-            <DetailRow label={t('operation.details.deposit')} className={valueClass}>
+            <DetailRow label={t('operation.details.deposit')} className="text-text-secondary">
               <AssetBalance
                 value={deposit}
                 asset={nativeAsset}
@@ -116,7 +108,7 @@ export const OperationAdvancedDetails = ({ operation }: Props) => {
           {deposit && nativeAsset && depositorSignatory && <hr className="border-divider" />}
 
           {indexCreated && blockCreated && (
-            <DetailRow label={t('operation.details.timePoint')} className={valueClass}>
+            <DetailRow label={t('operation.details.timePoint')} className="text-text-secondary">
               {extrinsicLink ? (
                 <a
                   className={cnTw('group flex items-center gap-x-1', InteractionStyle)}

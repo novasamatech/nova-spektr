@@ -1,11 +1,14 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 
-import { type Wallet, type WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { entries, groupBy, performSearch } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Box, Checkbox, Modal, SearchInput, useNotification } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
+import { networkModel } from '@/entities/network';
+import { walletSelectService } from '@/aggregates/wallet-select';
 import { hiddenWalletsBalancesModel } from '../model/balances';
 import { hiddenWalletsModel } from '../model/hidden-wallets';
 
@@ -21,9 +24,9 @@ export const HiddenWalletsModal = () => {
   const selectionState = useUnit(hiddenWalletsModel.$selectionState);
 
   const hiddenWallets = useUnit(hiddenWalletsModel.$hiddenWallets);
-  const hiddenWalletsByType = useUnit(hiddenWalletsModel.$hiddenWalletsByType);
 
-  const [multisigSearchResults, setMultisigSearchResults] = useState<Wallet[]>([]);
+  const allAccounts = useUnit(accounts.$list);
+  const chains = useUnit(networkModel.$chains);
 
   useEffect(() => {
     hiddenWalletsBalancesModel.loadBalances();
@@ -48,17 +51,20 @@ export const HiddenWalletsModal = () => {
     return unsubscribe;
   }, [notification, t]);
 
-  const handleRestore = () => {
-    if (hiddenWallets.length === 0) {
-      return;
-    }
+  const filteredWallets = useMemo(() => {
+    return performSearch({
+      query,
+      records: hiddenWallets,
+      getMeta: (wallet) => ({
+        allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
+      }),
+      weights: { name: 1, allAddresses: 0.8 },
+    });
+  }, [hiddenWallets, query, allAccounts, chains]);
 
-    hiddenWalletsModel.restoreWallets();
-  };
-
-  const handleClose = () => {
-    hiddenWalletsModel.clearSelection();
-  };
+  const filteredWalletsByType = useMemo(() => {
+    return groupBy(filteredWallets, (wallet) => wallet.type);
+  }, [filteredWallets]);
 
   const content = useMemo(() => {
     if (hiddenWallets.length === 0) {
@@ -73,7 +79,7 @@ export const HiddenWalletsModal = () => {
       );
     }
 
-    if (hiddenWallets.length > 0 && multisigSearchResults.length === 0 && inputQuery.length > 0) {
+    if (hiddenWallets.length > 0 && filteredWallets.length === 0 && inputQuery.length > 0) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center px-12">
           <Icon size={64} name="empty" className="mb-6" />
@@ -98,14 +104,12 @@ export const HiddenWalletsModal = () => {
             </Checkbox>
           </div>
 
-          {Object.entries(hiddenWalletsByType).map(([type, wallets]) => (
+          {entries(filteredWalletsByType).map(([type, wallets]) => (
             <WalletGroup
               key={type}
-              walletType={type as WalletType}
-              wallets={wallets}
-              query={query}
+              walletType={type}
+              wallets={wallets ?? []}
               selectedWallets={selectionState.selectedWallets}
-              setSearchResults={setMultisigSearchResults}
               onGroupToggle={hiddenWalletsModel.toggleGroupSelection}
               onWalletToggle={hiddenWalletsModel.toggleWalletSelection}
             />
@@ -115,7 +119,19 @@ export const HiddenWalletsModal = () => {
     }
 
     return null;
-  }, [inputQuery, query, hiddenWallets, selectionState, multisigSearchResults, t]);
+  }, [inputQuery, query, hiddenWallets, selectionState, filteredWalletsByType, t]);
+
+  const handleRestore = () => {
+    if (hiddenWallets.length === 0) {
+      return;
+    }
+
+    hiddenWalletsModel.restoreWallets();
+  };
+
+  const handleClose = () => {
+    hiddenWalletsModel.clearSelection();
+  };
 
   return (
     <Modal height="full" size="md" onToggle={handleClose}>
@@ -139,12 +155,13 @@ export const HiddenWalletsModal = () => {
           )}
 
           {content}
-
-          <Button className="mt-3 ml-auto" disabled={selectionState.selectedCount === 0} onClick={handleRestore}>
-            {t('settings.hiddenWallets.restore')}
-          </Button>
         </section>
       </Modal.Content>
+      <Modal.Footer align="end">
+        <Button disabled={selectionState.selectedCount === 0} onClick={handleRestore}>
+          {t('settings.hiddenWallets.restore')}
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 };

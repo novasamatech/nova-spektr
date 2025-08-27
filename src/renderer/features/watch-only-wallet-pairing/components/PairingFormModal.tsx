@@ -71,7 +71,7 @@ export const PairingFormModal = ({ children }: Props) => {
                   invalid={address.hasError()}
                   placeholder={t('onboarding.watchOnly.accountAddressPlaceholder')}
                   value={address.value}
-                  prefixElement={<Identicon address={address.value} background={false} />}
+                  prefixElement={<Identicon value={address.value} background={false} />}
                   testId={TEST_IDS.ONBOARDING.WALLET_ADDRESS_INPUT}
                   onChange={address.onChange}
                 />

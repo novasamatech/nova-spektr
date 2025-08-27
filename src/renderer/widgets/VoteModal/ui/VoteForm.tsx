@@ -8,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAsset } from '@/shared/lib/utils';
 import { Alert, ButtonCard, ConfirmModal, DetailRow, FootnoteText, LabelHelpBox, SmallTitleText } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
 import { Popover, Skeleton } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
@@ -36,13 +36,15 @@ export const VoteForm = ({ chain, asset }: Props) => {
 
   const existingVote = useUnit(voteModal.$existingVote);
   const fee = useUnit(voteForm.$fee);
+  const errors = useUnit(voteForm.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const availableBalance = useUnit(voteForm.$availableBalance);
   const signatories = useUnit(voteForm.$signatories);
   const initiators = useUnit(voteForm.$initiators);
   const isFeeLoading = useUnit(voteForm.$pendingFee);
   const hasDelegatedTrack = useUnit(voteForm.$hasDelegatedTrack);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const allWallets = useUnit(walletModel.$wallets);
   const allAccounts = useUnit(accounts.$list);
 
@@ -74,6 +76,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
   return (
     <>
       <div className="flex flex-col gap-6 px-5 py-4">
+        <TransactionValidationError errors={errors} wallets={wallets} />
         <div className="flex">
           <Popover align="start">
             <Popover.Trigger>

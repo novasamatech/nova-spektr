@@ -2,12 +2,11 @@ import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, IconButton, Loader, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList, Identicon } from '@/shared/ui-entities';
 import { Box, Carousel, Field, Input, Modal, Select } from '@/shared/ui-kit';
-import { accountService } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { pairingForm } from '../model/pairingForm';
 import { type ExtensionType } from '../types';
@@ -39,7 +38,10 @@ export const PairingModal = ({ title, extension, children }: Props) => {
   const list = useMemo(() => {
     if (!account || step === 'idle') return [];
 
-    const filteredChains = Object.values(chains).filter((c) => accountService.isAccountAvailableOnChain(account, c));
+    const filteredChains = Object.values(chains).filter((c) => {
+      // TODO fix it somehow
+      return accountService.isAccountAvailableOnChain(account as unknown as AnyAccount, c);
+    });
 
     return filteredChains.map((chain) => [chain, account.accountId] as const);
   }, [chains, account, step]);
@@ -93,7 +95,7 @@ export const PairingModal = ({ title, extension, children }: Props) => {
                         {accounts.map((account) => (
                           <Select.Item key={account.accountId} value={account.accountId}>
                             <Box direction="row" gap={2} verticalAlign="center">
-                              <Identicon address={toAddress(account.accountId)} />
+                              <Identicon value={account.accountId} />
                               <span>{account.name}</span>
                             </Box>
                           </Select.Item>

@@ -84,7 +84,7 @@ const splitExtrinsicsFx = createEffect(async (input: TransactionSigningPayload[]
   let splitted: ExtrinsicSigningPayload[] = [];
 
   for (const { api, chain, signatory, transaction } of input) {
-    const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
+    const extrinsic = transactionService.createExtrinsic(transaction, api);
     const extrinsics = await transactionService.splitExtrinsic(extrinsic, api);
 
     splitted = splitted.concat(

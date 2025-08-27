@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { TEST_ADDRESS, getRelaychainAsset, nonNullable, nullable } from '@/shared/lib/utils';
+import { TEST_ADDRESS, getRelaychainAsset, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
 import { validatorsService } from '@/entities/staking';
@@ -96,7 +96,7 @@ sample({
       initiator: data!.initiator!,
       signatory: data!.signatory!,
       amount: data!.amount,
-      destination: data!.destination,
+      destination: toAddress(data!.destination),
       validators: bondData?.validators ?? [],
     };
   },

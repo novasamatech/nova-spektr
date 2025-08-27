@@ -12,7 +12,13 @@ import {
   stakeableAmount,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -43,42 +49,13 @@ const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     initiator: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isProxy: $isProxy,
-            proxyBalance: $proxyBalance,
-            network: $networkStore,
-          }),
-          fn: (_i, _f, { fee, isProxy, proxyBalance }) => {
-            if (isProxy && new BN(fee).gt(new BN(proxyBalance))) {
-              return { message: 'staking.notEnoughBalanceError' };
-            }
-          },
-        };
-      },
     },
     signatory: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isMultisig: $isMultisig,
-            multisigDeposit: $multisigDeposit,
-            signatoryBalance: $signatoryBalance,
-          }),
-          fn: (signatory, _f, { fee, isMultisig, signatoryBalance, multisigDeposit }) => {
-            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
-              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
-            }
-
-            if (!signatory && isMultisig) {
-              return { message: 'proxy.addProxy.noSignatoryError' };
-            }
-          },
-        };
+      validator: () => (signatory) => {
+        if (!signatory) {
+          return { message: 'proxy.addProxy.noSignatoryError' };
+        }
       },
     },
     amount: {
@@ -107,7 +84,7 @@ const $availableBalance = combine(
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
     initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, initiator, balances }) => {
     if (!wallet || !network || !initiator) return null;
@@ -138,25 +115,6 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
-
-const $signatoryBalance = combine(
-  {
-    signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  ({ signatory, balances, network }) => {
-    if (!signatory || !network) return ZERO_BALANCE;
-    const balance = balanceUtils.getBalance(
-      balances,
-      signatory.accountId,
-      network.chain.chainId,
-      network.asset.assetId,
-    );
-
-    return transferableAmount(balance);
-  },
-);
 
 sample({
   clock: $signatories,
@@ -217,7 +175,7 @@ const $proxyWallet = combine(
 const $proxyBalance = combine(
   {
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ proxyAccount, balances, network }) => {
@@ -244,6 +202,20 @@ const $multisigThreshold = $route.map((route) => {
 const { $multisigDeposit } = createMultisigDeposit({
   $api: $api,
   $threshold: $multisigThreshold,
+});
+
+// Transaction validation
+const $asset = $networkStore.map((network) => network?.asset ?? null);
+const nominateTxValidator = createTxValidator();
+const { $errors } = createTxValidationStore({
+  validator: nominateTxValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
 });
 
 const $canSubmit = combine(
@@ -329,6 +301,7 @@ export const formModel = {
   $networkStore,
   $tx,
   $canSubmit,
+  $errors,
 
   formInitiated,
   formSubmitted,

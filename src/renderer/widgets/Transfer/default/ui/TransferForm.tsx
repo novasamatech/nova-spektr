@@ -1,11 +1,13 @@
+import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type ChainId, type WalletFamily } from '@/shared/core';
+import { type ChainId, type Wallet } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
+  entries,
   formatBalance,
   getNativeAsset,
   includesMultiple,
@@ -17,14 +19,21 @@ import {
   withdrawableAmount,
 } from '@/shared/lib/utils';
 import { Button, CaptionText, InputHint } from '@/shared/ui';
-import { AccountSelect, Address, Identicon, SignatorySelect } from '@/shared/ui-entities';
+import {
+  AccountSelect,
+  Address,
+  Identicon,
+  SignatorySelect,
+  TransactionValidationError,
+  WalletIcon,
+} from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
-import { AccountSelectModal, DeliveryFeeAlert, WalletIcon, accountUtils, walletModel } from '@/entities/wallet';
+import { AccountSelectModal, DeliveryFeeAlert, accountUtils, walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';
@@ -47,6 +56,8 @@ type ComboboxGroup = {
 
 export const TransferForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
+  const errors = useUnit(formModel.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -54,20 +65,19 @@ export const TransferForm = ({ onGoBack }: Props) => {
   };
 
   return (
-    <div className="px-5 pb-4">
-      <form id="transfer-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitForm}>
+    <div className="flex flex-col gap-4 px-5 py-4">
+      <TransactionValidationError errors={errors} wallets={wallets} />
+      <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
         <XcmChainSelector />
         <InitiatorSelector />
         <SignatorySelector />
         <Destination />
         <Amount />
       </form>
-      <div className="flex flex-col gap-y-6 pt-6 pb-4">
+      <div className="flex flex-col gap-y-6">
         <FeeSection />
       </div>
-      <Box>
-        <AlertForDeliveryFee />
-      </Box>
+      <AlertForDeliveryFee />
       <ActionsSection onGoBack={onGoBack} />
 
       <MyselfAccountModal />
@@ -84,7 +94,7 @@ const InitiatorSelector = () => {
 
   const initiators = useUnit(formModel.$initiators);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   if (initiators.length < 2) {
     return null;
@@ -126,7 +136,7 @@ const SignatorySelector = () => {
   const initiator = useUnit(formModel.form.fields.initiator.$value);
   const signatories = useUnit(formModel.$signatories);
   const network = useUnit(formModel.$networkStore);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
 
@@ -225,6 +235,13 @@ const Destination = () => {
   const accountsList = useUnit(walletModel.$availableAccounts);
   const network = useUnit(formModel.$networkStore);
 
+  const walletsMap = useMemo(() => {
+    return wallets.reduce<Record<number, Wallet>>((acc, wallet) => {
+      acc[wallet.id] = wallet;
+      return acc;
+    }, {});
+  }, [wallets]);
+
   const [query, setQuery] = useState('');
 
   const isMyselfXcmEnabled = useUnit(formModel.$isMyselfXcmEnabled);
@@ -248,7 +265,7 @@ const Destination = () => {
 
     const filteredAccounts = accountsList.filter((account) => {
       const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
-      const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
+      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
       const queryPass = includesMultiple([account.name, address], query);
       const isMyself = nonNullable(initiator.value) && initiator.value.accountId === account.accountId;
       const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(account);
@@ -259,18 +276,25 @@ const Destination = () => {
     const accountByGroup = services.walletSelect.getWalletFamilyByAccounts(wallets, filteredAccounts);
     const ownAccountOptions: ComboboxGroup[] = [];
 
-    for (const [walletFamily, accountsGroup] of Object.entries(accountByGroup)) {
+    for (const [walletFamily, accountsGroup] of entries(accountByGroup)) {
       if (accountsGroup.length === 0) continue;
 
       const accountOptions: ComboboxItem[] = [];
 
       for (const account of accountsGroup) {
-        const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
+        const wallet = walletsMap[account.walletId];
+        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+
+        const title = nonNullable(wallet)
+          ? account.name === wallet.name
+            ? account.name
+            : `${account.name} (${wallet.name})`
+          : account.name;
 
         accountOptions.push({
           id: address,
           value: { address, walletId: account.walletId },
-          label: <Address showIcon title={account.name} address={address} />,
+          label: <Address showIcon title={title} address={address} />,
         });
       }
 
@@ -278,9 +302,9 @@ const Destination = () => {
         id: walletFamily,
         label: (
           <div className="flex items-center gap-x-2" key={walletFamily}>
-            <WalletIcon type={walletFamily as WalletFamily} />
+            <WalletIcon type={walletFamily} />
             <CaptionText className="font-semibold text-text-secondary uppercase">
-              {t(constants.GROUP_LABELS[walletFamily as WalletFamily])}
+              {t(constants.GROUP_LABELS[walletFamily])}
             </CaptionText>
           </div>
         ),
@@ -323,7 +347,7 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon size={20} address={destination.value} background={false} />
+      <Identicon size={20} value={destination.value} background={false} />
     </div>
   );
 
@@ -348,7 +372,7 @@ const Destination = () => {
           {options.map((group) => (
             <Combobox.Group key={group.id} title={group.label}>
               {group.items.map((option) => (
-                <Combobox.Item key={option.id} value={option.value.address}>
+                <Combobox.Item key={`${option.id}-${option.value.walletId ?? 'unknown'}`} value={option.value.address}>
                   {option.label}
                 </Combobox.Item>
               ))}
@@ -426,9 +450,9 @@ const FeeSection = () => {
       {nonNullable(initiator) && accountUtils.isMultisigAccount(initiator) && (
         <MultisigDepositWithLabel
           api={api}
-          asset={getNativeAsset(network.chain.assets)!}
+          asset={getNativeAsset(network.chain.assets)}
           threshold={initiator.threshold || 1}
-          onDepositChange={formModel.multisigDepositChanged}
+          onDepositChange={(deposit) => formModel.multisigDepositChanged(new BN(deposit))}
         />
       )}
 
@@ -450,7 +474,7 @@ const FeeSection = () => {
         />
       )}
 
-      {nonNullable(deliveryFee) && (
+      {isXcm && !deliveryFee.isZero() && (
         <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
       )}
     </div>

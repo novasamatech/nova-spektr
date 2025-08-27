@@ -1,9 +1,9 @@
 import { combine, sample } from 'effector';
 
-import { type Address, type Chain, type ChainId, CryptoType } from '@/shared/core';
+import { type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { createForm } from '@/shared/forms';
-import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
-import { accountService } from '@/domains/network';
+import { nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
@@ -111,44 +111,32 @@ const $hiddenMultisig = combine(
   },
 );
 
-const $availableAccounts = combine(
-  {
-    chain: $chain,
-    wallets: walletModel.$wallets,
-  },
-  ({ chain, wallets }) => {
-    if (!chain) return [];
-
-    const filteredAccounts = walletUtils.getAccountsBy(wallets, (a, w) => {
-      const isValidWallet = !walletUtils.isWatchOnly(w) && !walletUtils.isProxied(w) && !walletUtils.isMultisig(w);
-      const isChainMatch = accountService.isAccountAvailableOnChain(a, chain);
-
-      return isValidWallet && isChainMatch;
-    });
-
-    const baseAccounts = filteredAccounts.filter(a => accountUtils.isVaultBaseAccount(a) && a.name);
-
-    return [...filteredAccounts, ...baseAccounts];
-  },
-);
-
 const $invalidAddresses = combine(
   {
     chain: $chain,
     signatories: signatoryModel.$signatories,
+    accounts: accounts.$list,
   },
-  ({ chain, signatories }) => {
+  ({ chain, signatories, accounts }) => {
     if (!chain) return [];
 
-    let badSignatories: Address[] = [];
-
+    const badSignatories = new Set<string>();
     for (const signer of signatories) {
-      if (!signer.address || validateAddress(signer.address, chain)) continue;
+      const account = accounts.find(
+        a => a.accountId === toAccountId(signer.address) && a.walletId.toString() === signer.walletId,
+      );
 
-      badSignatories = addUnique(badSignatories, signer.address);
+      if (
+        !signer.address ||
+        validateAddress(signer.address, chain) ||
+        (account && accountService.isAccountAvailableOnChain(account, chain))
+      )
+        continue;
+
+      badSignatories.add(signer.address);
     }
 
-    return badSignatories;
+    return Array.from(badSignatories);
   },
 );
 
@@ -191,7 +179,6 @@ export const formModel = {
   $multisigAccountId,
   $multisigAlreadyExists,
   $hiddenMultisig,
-  $availableAccounts,
   $invalidAddresses,
   $canSubmit,
   $isChainConnected,

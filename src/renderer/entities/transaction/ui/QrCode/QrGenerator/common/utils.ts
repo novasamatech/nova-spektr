@@ -100,7 +100,6 @@ export const createSignWithProofPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   return u8aConcat(
-    SUBSTRATE_ID,
     new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
     new Uint8Array([Command.TransactionWithProof]),
     decodeAddress(address),
@@ -119,7 +118,6 @@ export const createDynamicDerivationsSignWithProofPayload = (
   cryptoType = CryptoType.SR25519,
 ): Uint8Array => {
   return u8aConcat(
-    SUBSTRATE_ID,
     new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
     new Uint8Array([Command.DynamicDerivationsTransactionWithProof]),
     decodeAddress(address),

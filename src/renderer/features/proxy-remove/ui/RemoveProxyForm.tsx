@@ -5,7 +5,7 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
 import { Alert, Button } from '@/shared/ui';
-import { SignatorySelect } from '@/shared/ui-entities';
+import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
@@ -17,6 +17,8 @@ type Props = {
 };
 export const RemoveProxyForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(removeProxyModel.form);
+  const errors = useUnit(removeProxyModel.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const submitProxy = (event: FormEvent) => {
     event.preventDefault();
@@ -25,6 +27,7 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
 
   return (
     <div className="px-5 pb-4">
+      <TransactionValidationError errors={errors} wallets={wallets} />
       <form id="add-proxy-form" className="mt-4 flex flex-col gap-y-4" onSubmit={submitProxy}>
         <Signatories />
       </form>
@@ -50,7 +53,7 @@ const Signatories = () => {
   const chain = useUnit(removeProxyModel.$chain);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!signatories || !chain) {

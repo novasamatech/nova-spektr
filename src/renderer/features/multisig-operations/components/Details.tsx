@@ -3,20 +3,13 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
-import {
-  type Address,
-  type Chain,
-  type MultisigAccount,
-  type Transaction,
-  type Validator,
-  type Wallet,
-} from '@/shared/core';
+import { type Address, type Chain, type Transaction, type Validator, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, toAccountId } from '@/shared/lib/utils';
+import { cnTw, keys, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AccountExplorers, AssetBalance } from '@/shared/ui-entities';
+import { Account, AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, identity } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
@@ -35,12 +28,12 @@ import {
   isUndelegateTransaction,
   isXcmTransaction,
 } from '@/entities/transaction';
-import { WalletIcon, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {
   operation: MultisigOperation;
-  account?: MultisigAccount;
+  account?: AnyAccount;
   signatory?: AnyAccount;
   chain: Chain;
   api: ApiPromise;
@@ -66,7 +59,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
 
   const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
-  const [undelegationTarget, setUndelegationTarget] = useState<Address>();
+  const [undelegationTarget, setUndelegationTarget] = useState<AccountId>();
 
   const referendumId = operationDetailsUtils.getReferendumId(operation);
   const vote = operationDetailsUtils.getVote(operation);
@@ -104,7 +97,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
   const transaction = operation.transaction;
 
   useEffect(() => {
-    const accounts = Object.keys(validatorsMap).map(toAccountId) as AccountId[];
+    const accounts = keys(validatorsMap).map(toAccountId);
 
     if (accounts.length === 0) return;
 
@@ -117,7 +110,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
     [];
 
   const selectedValidators: Validator[] =
-    allValidators.filter(v => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
+    allValidators.filter(v => (transaction?.args.targets || startStakingValidators).includes(v.accountId)) || [];
 
   const proxied = useMemo((): { wallet: Wallet; account: AnyAccount } | undefined => {
     if (!transaction || !isProxyTransaction(transaction)) {

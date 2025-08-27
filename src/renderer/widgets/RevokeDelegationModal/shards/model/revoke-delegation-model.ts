@@ -4,14 +4,14 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { combineEvents, delay, spread } from 'patronum';
 
 import {
-  type Address,
   type MultisigTxWrapper,
   type ProxyTxWrapper,
   type Transaction,
   type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
-import { Step, getRelaychainAsset, isStep, nonNullable, toAddress, transferableAmount } from '@/shared/lib/utils';
+import { Step, getRelaychainAsset, isStep, nonNullable, transferableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { votingModel } from '@/entities/governance';
@@ -29,7 +29,7 @@ import { type FeeData, type RevokeDelegationData } from '../lib/types';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent<{ delegate: Address; accounts: AnyAccount[] }>();
+const flowStarted = createEvent<{ delegate: AccountId; accounts: AnyAccount[] }>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 const txsConfirmed = createEvent();
@@ -70,7 +70,7 @@ const $api = combine(
     walletData: $walletData,
   },
   ({ apis, walletData }) => {
-    return walletData?.chain ? apis[walletData.chain.chainId] : null;
+    return walletData?.chain ? (apis[walletData.chain.chainId] ?? null) : null;
   },
 );
 
@@ -150,12 +150,10 @@ sample({
   clock: flowStarted,
   source: {
     activeTracks: delegationAggregate.$activeTracks,
-    walletData: $walletData,
   },
-  fn: ({ activeTracks, walletData }, { delegate, accounts }) => {
+  fn: ({ activeTracks }, { delegate, accounts }) => {
     return accounts.map((account) => {
-      const address = toAddress(account.accountId, { prefix: walletData.chain?.addressPrefix });
-      const tracksNumber = Object.keys(activeTracks[delegate][address]).map(Number);
+      const tracksNumber = Object.keys(activeTracks[delegate][account.accountId]).map(Number);
 
       return {
         account,
@@ -193,10 +191,7 @@ sample({
       transactionBuilder.buildUndelegate({
         chain: walletData.chain!,
         accountId: data.account!.accountId,
-        tracks:
-          activeTracks[data.target][toAddress(data.account.accountId, { prefix: walletData.chain?.addressPrefix })].map(
-            Number,
-          ),
+        tracks: activeTracks[data.target][data.account.accountId].map(Number),
       }),
     );
   },
@@ -255,7 +250,7 @@ sample({
 sample({
   clock: [flowStarted, $revokeDelegationData.updates],
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     feeData: $feeData,
     walletData: $walletData,
     txWrappers: $txWrappers,

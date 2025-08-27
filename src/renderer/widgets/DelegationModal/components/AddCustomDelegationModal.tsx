@@ -26,7 +26,7 @@ export const AddCustomDelegationModel = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon size={20} address={customDelegate} background={false} />
+      <Identicon size={20} value={customDelegate} background={false} />
     </div>
   );
 

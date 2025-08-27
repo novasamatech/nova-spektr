@@ -1,4 +1,4 @@
-import { BN_TEN, BN_TWO } from '@polkadot/util';
+import { BN_TEN, BN_TWO, BN_ZERO } from '@polkadot/util';
 import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { fork } from 'effector';
@@ -6,7 +6,7 @@ import { Provider } from 'effector-react';
 import { BrowserRouter } from 'react-router-dom';
 import { vi } from 'vitest';
 
-import { type Asset, type Balance, SigningType, type Wallet, WalletType } from '@/shared/core';
+import { type Asset, type Balance, type BalanceId, SigningType, type Wallet, WalletType } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { polkadotChain } from '@/shared/mocks';
 import { walletModel } from '@/entities/wallet';
@@ -26,12 +26,16 @@ const defaultProps = {
   asset: testAsset as Asset,
   chainId: testChain.chainId,
   balance: {
-    id: '1',
+    id: '1' as BalanceId,
     assetId: testAsset.assetId,
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
     free: BN_TEN,
     frozen: BN_TWO,
+    ed: BN_ZERO,
+    reserved: BN_ZERO,
+    locked: [],
+    transferableMode: 'holdAndFreezes',
   } satisfies Balance,
   wallet: {
     walletId: 1,

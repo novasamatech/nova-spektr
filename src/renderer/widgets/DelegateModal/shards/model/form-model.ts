@@ -1,6 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 
 import { type Asset, type Chain, type Conviction } from '@/shared/core';
@@ -9,7 +10,6 @@ import {
   formatAmount,
   getRelaychainAsset,
   nonNullable,
-  toAddress,
   transferableAmount,
   transferableAmountBN,
 } from '@/shared/lib/utils';
@@ -19,8 +19,7 @@ import { locksService } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { locksAggregate } from '@/features/governance/aggregates/locks';
-import { getLocksForAddress } from '@/features/governance/utils/getLocksForAddress';
+import { getLocksForAccount, locksAggregate } from '@/features/governance';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -70,7 +69,7 @@ const $accounts = combine(
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
     shards: $shards,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     trackLocks: locksAggregate.$trackLocks,
   },
   ({ network, wallet, shards, balances, trackLocks }) => {
@@ -80,8 +79,7 @@ const $accounts = combine(
 
     return shards.map((shard) => {
       const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId);
-      const address = toAddress(shard.accountId, { prefix: network!.chain.addressPrefix });
-      const lock = getLocksForAddress(address, trackLocks);
+      const lock = getLocksForAccount(shard.accountId, trackLocks);
 
       return {
         account: shard,
@@ -117,7 +115,7 @@ const $delegateForm = createForm<FormParams>({
         },
         {
           name: 'noBondBalance',
-          errorText: 'staking.bond.noBondBalanceError',
+          errorText: t('staking.bond.noBondBalanceError'),
           source: combine({
             isProxy: $isProxy,
             network: $networkStore,
@@ -138,7 +136,7 @@ const $delegateForm = createForm<FormParams>({
       rules: [
         {
           name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
+          errorText: t('transfer.noSignatoryError'),
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
             if (!signatory || !isMultisig) return true;
@@ -148,7 +146,7 @@ const $delegateForm = createForm<FormParams>({
         },
         {
           name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+          errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
           source: combine({
             feeData: $feeData,
             isMultisig: $isMultisig,
@@ -167,17 +165,17 @@ const $delegateForm = createForm<FormParams>({
       rules: [
         {
           name: 'required',
-          errorText: 'transfer.requiredAmountError',
+          errorText: t('transfer.requiredAmountError'),
           validator: Boolean,
         },
         {
           name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
+          errorText: t('transfer.notZeroAmountError'),
           validator: (value) => value !== ZERO_BALANCE,
         },
         {
           name: 'notEnoughBalance',
-          errorText: 'staking.notEnoughBalanceError',
+          errorText: t('staking.notEnoughBalanceError'),
           source: combine({
             network: $networkStore,
             delegateBalanceRange: $delegateBalanceRange,
@@ -193,7 +191,7 @@ const $delegateForm = createForm<FormParams>({
         },
         {
           name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
+          errorText: t('transfer.notEnoughBalanceForFeeError'),
           source: combine({
             feeData: $feeData,
             isMultisig: $isMultisig,
@@ -319,7 +317,7 @@ sample({
 sample({
   clock: $delegateForm.fields.signatory.onChange,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   fn: ({ balances, network }, signatory) => {
@@ -351,7 +349,7 @@ sample({
   source: {
     isProxy: $isProxy,
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   filter: ({ isProxy, network, proxyAccount }) => {

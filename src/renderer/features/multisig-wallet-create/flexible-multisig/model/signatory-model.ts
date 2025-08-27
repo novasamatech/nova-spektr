@@ -1,9 +1,10 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 
-import { type Address, type Chain, type Wallet } from '@/shared/core';
+import { type Wallet } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { balanceSubModel } from '@/features/assets-balances';
 import { type SignatoryInfo } from '../../types';
@@ -13,11 +14,10 @@ const changeSignatory = createEvent<SignatoryInfo>();
 const deleteSignatory = createEvent<number>();
 const getSignatoriesBalance = createEvent<Wallet[]>();
 const resetSignatories = createEvent();
-const validateSignatories = createEvent<Chain>();
 
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ name: '', address: '', walletId: '' }]);
 const $duplicateSignatories = combine($signatories, signatories => {
-  const duplicates: Record<Address, number[]> = {};
+  const duplicates: Record<AccountId, number[]> = {};
 
   for (const [index, signer] of signatories.entries()) {
     if (!signer.address) continue;
@@ -52,7 +52,7 @@ const $ownedSignatoriesWallets = combine(
   },
   ({ wallets, signatories }) => {
     const matchWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: w => walletUtils.isValidSignatory(w),
+      walletFn: w => !walletUtils.isWatchOnly(w),
       accountFn: a => signatories.some(s => toAccountId(s.address) === a.accountId),
     });
 
@@ -121,6 +121,5 @@ export const signatoryModel = {
     deleteSignatory,
     getSignatoriesBalance,
     resetSignatories,
-    validateSignatories,
   },
 };

@@ -8,9 +8,10 @@ import { nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { Alert, FootnoteText, InputHint } from '@/shared/ui';
 import { Field, Select } from '@/shared/ui-kit';
 import { type AnyAccount, accountService } from '@/domains/network';
-import { WalletIcon, accountUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { Address } from '../Address/Address';
 import { AssetBalance } from '../AssetBalance/AssetBalance';
+import { WalletIcon } from '../WalletIcon/WalletIcon';
 
 type Props = {
   signatory: AnyAccount | null;
@@ -126,7 +127,7 @@ const NoSignatoryAlert = ({ initiator, allAccounts, chain, allWallets }: NoSigna
 
   const component = (
     <span className="mx-1 inline-flex max-w-[200px] items-center gap-x-1 align-bottom">
-      {found && <WalletIcon className="shrink-0" type={found.type} size={16} />}
+      {found && <WalletIcon type={found.type} size={16} />}
       <FootnoteText as="span" className="truncate text-text-secondary transition-colors">
         {found?.name}
       </FootnoteText>

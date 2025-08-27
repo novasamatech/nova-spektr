@@ -1,5 +1,19 @@
 import { type PropsWithChildren } from 'react';
 
-export const Card = ({ children }: PropsWithChildren) => {
-  return <div className="rounded-lg border border-filter-border bg-card-background shadow-shadow-1">{children}</div>;
+import { cnTw } from '@/shared/lib/utils';
+
+type Props = PropsWithChildren<{
+  height?: 'auto' | 'full';
+}>;
+
+export const Card = ({ children, height = 'auto' }: Props) => {
+  return (
+    <div
+      className={cnTw('rounded-lg border border-filter-border bg-card-background shadow-shadow-1', {
+        'h-full': height === 'full',
+      })}
+    >
+      {children}
+    </div>
+  );
 };

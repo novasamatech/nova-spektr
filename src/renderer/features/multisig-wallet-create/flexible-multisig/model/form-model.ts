@@ -1,6 +1,6 @@
 import { combine, sample } from 'effector';
 
-import { type Address, type Chain, type ChainId, CryptoType } from '@/shared/core';
+import { type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { createForm } from '@/shared/forms';
 import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { accountService, accounts } from '@/domains/network';
@@ -74,7 +74,7 @@ const $multisigAccountId = combine(
     chain: $chain,
   },
   ({ threshold, signatories, chain }) => {
-    if (!chain) return null;
+    if (!chain || !threshold) return null;
 
     const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
 
@@ -92,6 +92,8 @@ const $existingMultisig = combine(
     multisigAccountId: $multisigAccountId,
   },
   ({ multisigAccountId, accounts }) => {
+    if (nullable(multisigAccountId)) return null;
+
     return (
       accounts.find(a => {
         if (!accountUtils.isAnyMultisigAccount(a)) return false;
@@ -169,7 +171,7 @@ const $invalidAddresses = combine(
   ({ chain, signatories }) => {
     if (!chain) return [];
 
-    let badSignatories: Address[] = [];
+    let badSignatories: string[] = [];
 
     for (const signer of signatories) {
       if (!signer.address || validateAddress(signer.address, chain)) continue;

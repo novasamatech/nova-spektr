@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, useState } from 'react';
+import { type PropsWithChildren, useEffect, useState } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -41,6 +41,12 @@ export const AddProxy = ({ wallet, onClose, children }: Props) => {
     addProxyModel.output.flowClosed();
     onClose?.();
   };
+
+  useEffect(() => {
+    if (step === Step.NONE) {
+      setIsModalOpen(false);
+    }
+  }, [step]);
 
   const onToggle = (isOpen: boolean) => {
     if (isOpen) {

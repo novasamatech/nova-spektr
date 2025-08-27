@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
+import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, IconButton } from '@/shared/ui';
 import { Account as AccountAddress, AssetBalance } from '@/shared/ui-entities';
 import { Box, Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
@@ -32,7 +32,7 @@ export const YourDelegations = () => {
 
   const accounts =
     initiators.filter((account) => {
-      return activeAccounts.includes(toAddress(account.accountId, { prefix: chain.addressPrefix }));
+      return activeAccounts.includes(account.accountId);
     }) || [];
 
   const toggleAccount = (account: AnyAccount) => {
@@ -47,9 +47,7 @@ export const YourDelegations = () => {
     if (selectedAccounts.length === activeAccounts.length) {
       setSelectedAccounts([]);
     } else {
-      const selectableAccounts = activeAccounts.map((address) => {
-        return accounts.find((a) => toAddress(a.accountId, { prefix: chain.addressPrefix }) === address);
-      });
+      const selectableAccounts = activeAccounts.map((accountId) => accounts.find((a) => a.accountId === accountId));
 
       setSelectedAccounts(selectableAccounts.filter(nonNullable));
     }
@@ -84,17 +82,17 @@ export const YourDelegations = () => {
         </div>
 
         <ul className="mx-2 mb-4 flex flex-col gap-y-2">
-          {activeAccounts.map((address, index) => {
-            const activeDelegation = activeDelegations[address];
+          {activeAccounts.map((accountId, index) => {
+            const activeDelegation = activeDelegations[accountId];
 
             const account = accounts.find((a) => {
-              return toAddress(a.accountId, { prefix: chain.addressPrefix }) === address;
+              return a.accountId === accountId;
             });
 
             if (!account || !activeDelegation || !activeTracks[account.accountId]) return null;
 
             return (
-              <li key={address} className={cnTw('grid h-13 grid-flow-row items-center', GRID_TEMPLATE)}>
+              <li key={accountId} className={cnTw('grid h-13 grid-flow-row items-center', GRID_TEMPLATE)}>
                 <Box horizontalAlign="center">
                   <Checkbox checked={selectedAccounts.includes(account)} onChange={() => toggleAccount(account)} />
                 </Box>
@@ -161,7 +159,7 @@ export const YourDelegations = () => {
                       onClick={() =>
                         delegate &&
                         revokeDelegationModel.flowStarted({
-                          delegate: delegate.address,
+                          delegate: delegate.accountId,
                           accounts: [accounts[index]],
                         })
                       }
@@ -185,7 +183,7 @@ export const YourDelegations = () => {
               onClick={() =>
                 delegate &&
                 revokeDelegationModel.flowStarted({
-                  delegate: delegate.address,
+                  delegate: delegate.accountId,
                   accounts: selectedAccounts,
                 })
               }

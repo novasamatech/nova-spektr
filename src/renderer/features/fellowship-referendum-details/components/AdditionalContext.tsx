@@ -44,8 +44,8 @@ export const AdditionalContext = () => {
 
   if (!description?.trim())
     return (
-      <Card>
-        <Box padding={6} gap={4} horizontalAlign="center" verticalAlign="center">
+      <Card height="full">
+        <Box padding={6} gap={4} horizontalAlign="center" verticalAlign="center" direction="column" fillContainer>
           <Icon size={64} name="empty" />
           <SmallTitleText>{t('fellowship.evidenceModal.noAdditionalContext')}</SmallTitleText>
         </Box>

@@ -1,3 +1,5 @@
+import { t } from 'i18next';
+
 import { type DelegateStat } from '@/shared/api/governance/off-chain/lib/types';
 
 export const enum SortType {
@@ -21,7 +23,7 @@ export const enum DelegationErrors {
 }
 
 export const DelegationErrorMessages: Record<DelegationErrors, string> = {
-  [DelegationErrors.INVALID_ADDRESS]: 'governance.addDelegation.invalidAddressError',
-  [DelegationErrors.ALREADY_DELEGATED]: 'governance.addDelegation.alreadyDelegatedError',
-  [DelegationErrors.YOUR_ACCOUNT]: 'governance.addDelegation.yourAccountError',
+  [DelegationErrors.INVALID_ADDRESS]: t('governance.addDelegation.invalidAddressError'),
+  [DelegationErrors.ALREADY_DELEGATED]: t('governance.addDelegation.alreadyDelegatedError'),
+  [DelegationErrors.YOUR_ACCOUNT]: t('governance.addDelegation.yourAccountError'),
 };

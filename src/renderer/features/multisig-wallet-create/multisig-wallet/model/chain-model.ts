@@ -6,7 +6,7 @@ import { spread } from 'patronum';
 import { type Asset, type Chain, type Transaction } from '@/shared/core';
 import { series } from '@/shared/effector/series';
 import { TEST_ACCOUNTS, getNativeAsset, merge, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
-import { accountService, accounts } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -45,7 +45,7 @@ const calculateFeeForChainFx = createEffect(
 const calculateFeesSeriesFx = series(calculateFeeForChainFx, { parallel: true });
 
 sample({
-  clock: flowModel.$tx,
+  clock: [flowModel.$tx, flowModel.$initiator],
   source: {
     multisigChains: $multisigChains,
     apis: networkModel.$apis,
@@ -88,26 +88,26 @@ sample({
   clock: [$chainsWithFee, flowModel.$signer],
   source: {
     signer: flowModel.$signer,
-    balances: balanceModel.$balances,
-    accounts: accounts.$list,
+    initiators: flowModel.$initiators,
+    balances: balanceModel.$balanceMap,
     chains: $chainsWithFee,
   },
-  filter: ({ signer, chains }) => nonNullable(signer) && chains.length !== 0,
-  fn: ({ signer, balances, accounts, chains }) => {
+  filter: ({ chains, initiators }) => chains.length > 0 && nonNullable(initiators),
+  fn: ({ signer, balances, chains, initiators }) => {
     const availableChains = [];
     const unavailableChains = [];
-    const accountList = accountService.filterAccountsByWallet(accounts, signer!.walletId);
 
     for (const { chain, fee } of chains) {
       const asset = getNativeAsset(chain.assets);
-      const signerForChain = accountList.find(account => accountService.isAccountAvailableOnChain(account, chain));
+      const initiator =
+        initiators && initiators.find(initiator => accountService.isAccountAvailableOnChain(initiator, chain));
 
-      if (!signerForChain) {
+      if (!signer || !initiator) {
         unavailableChains.push({ chain, fee: fee ?? '0', asset, balance: '0' });
         continue;
       }
 
-      const balance = balanceUtils.getBalance(balances, signerForChain.accountId, chain.chainId, asset.assetId);
+      const balance = balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId);
       const withdrawable = withdrawableAmountBN(balance);
 
       if (nullable(fee)) {

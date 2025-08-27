@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { Step, isStep, totalAmount } from '@/shared/lib/utils';
+import { Step, formatBalance, isStep } from '@/shared/lib/utils';
 import { type PathType, Paths, createLink } from '@/shared/routes';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { ChainIcon } from '@/shared/ui-entities';
@@ -12,7 +12,6 @@ import { EmptyAssetsState } from '@/entities/asset';
 import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { ModalType } from '../lib/types';
-import { assetTransactionUtils } from '../lib/utils';
 import { assetTransactionModel } from '../model/asset-transaction-model';
 
 type ModalDetailsProps = { title: string; path: PathType };
@@ -80,9 +79,10 @@ export const AssetTransactionModal = () => {
                     </div>
                     <div className="flex flex-col items-end">
                       <BodyText className="text-inherit">
-                        {assetTransactionUtils.getChainBalance(t, chain, assetWithChains.precision)}
+                        {formatBalance(chain.balance?.transferable, assetWithChains.precision).formatted}&nbsp;
+                        {assetWithChains.symbol}
                       </BodyText>
-                      <AssetFiatBalance amount={totalAmount(chain.balance)} asset={assetWithChains} />
+                      <AssetFiatBalance amount={chain.balance?.transferable} asset={assetWithChains} />
                     </div>
                   </div>
                 </Link>

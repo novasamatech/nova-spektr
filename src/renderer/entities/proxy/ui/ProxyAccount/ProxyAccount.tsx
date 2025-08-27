@@ -42,7 +42,7 @@ export const ProxyAccount = ({
 
   return (
     <div className={cnTw('flex items-center gap-x-2', className)}>
-      <Identicon address={address} size={20} background={false} canCopy={canCopy} />
+      <Identicon value={address} size={20} background={false} canCopy={canCopy} />
       <div className="grid gap-y-0.5">
         <BodyText className="truncate text-text-secondary">{name ?? addressContent}</BodyText>
         {name && <HelpText className="truncate text-text-tertiary">{addressContent}</HelpText>}

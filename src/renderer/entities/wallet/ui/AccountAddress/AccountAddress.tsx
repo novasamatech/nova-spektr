@@ -37,7 +37,7 @@ export const getAddress = (props: WithAccountId | WithAddress): Address => {
   const { accountId, addressPrefix } = props as WithAccountId;
 
   if (hexToU8a(accountId).length === 20) {
-    return accountId;
+    return accountId as unknown as Address;
   }
 
   return toAddress(accountId, { prefix: addressPrefix });
@@ -84,7 +84,7 @@ export const AccountAddress = ({
 
   return (
     <span className={cnTw('flex items-center gap-x-2', className)}>
-      {showIcon && <Identicon address={currentAddress} size={size} background={false} canCopy={canCopy} />}
+      {showIcon && <Identicon value={currentAddress} size={size} background={false} canCopy={canCopy} />}
       {nameContent || addressContent}
     </span>
   );

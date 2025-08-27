@@ -16,7 +16,13 @@ import {
   toAccountId,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createFeeCalculator, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createFeeCalculator,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
@@ -150,11 +156,9 @@ const $fakeProxyTx = combine(
     chain: formModel.$chain,
     isConnected: formModel.$isChainConnected,
     api: $api,
-    coreTx: $coreTx,
   },
-  ({ isConnected, chain, api, coreTx }): Transaction | null => {
+  ({ isConnected, chain, api }): Transaction | null => {
     if (!chain || !isConnected || !api) return null;
-    if (coreTx) return coreTx;
 
     return transactionBuilder.buildCreatePureProxy({
       chain: chain,
@@ -171,8 +175,9 @@ const $fakeFinalTx = combine(
     signatories: signatoryModel.$signatories,
     threshold: formModel.form.fields.threshold.$value,
     totalDeposit: $totalDeposit,
+    signer: $signer,
   },
-  ({ isConnected, chain, api, signatories, threshold, totalDeposit }): Transaction | null => {
+  ({ isConnected, chain, api, signatories, threshold, totalDeposit, signer }): Transaction | null => {
     if (!chain || !isConnected || !api) return null;
 
     const signatoriesWrapped = signatories
@@ -181,7 +186,7 @@ const $fakeFinalTx = combine(
 
     return transactionBuilder.buildCreateFlexibleMultisig({
       chain,
-      signerAccountId: TEST_ACCOUNTS[0],
+      signerAccountId: signer?.accountId || TEST_ACCOUNTS[0],
       signatories: signatoriesWrapped,
       multisigAccountId: TEST_ACCOUNTS[0],
       threshold: threshold || 2,
@@ -219,13 +224,36 @@ const { $tx, $route } = createComplexTxStore({
   signatory: $signer,
   accounts: accounts.$list,
   chain: formModel.$chain,
-  transaction: $fakeProxyTx,
+  transaction: $coreTx,
+});
+
+const validator = createTxValidator();
+const { $errors: $firstErrors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
+const { $errors: $secondErrors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $fakeFinalTx,
+  },
 });
 
 const $signerBalance = combine(
   {
     signer: $signer,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     chain: formModel.$chain,
   },
   ({ signer, balances, chain }) => {
@@ -343,10 +371,12 @@ sample({
   },
   fn: ({ signatories, contacts }) => {
     const signatoriesWithoutSigner = signatories.slice(1);
+    const filtredSignatories = signatoriesWithoutSigner.filter(s => !s.walletId);
+
     const contactMap = new Map(contacts.map(c => [c.accountId, c]));
     const updatedContacts: Contact[] = [];
 
-    for (const { address, name } of signatoriesWithoutSigner) {
+    for (const { address, name } of filtredSignatories) {
       const contact = contactMap.get(toAccountId(address));
 
       if (!contact) continue;
@@ -373,7 +403,7 @@ sample({
 
     return signatories
       .slice(1)
-      .filter(signatory => !contactsSet.has(toAccountId(signatory.address)))
+      .filter(signatory => !signatory.walletId && !contactsSet.has(toAccountId(signatory.address)))
       .map(
         ({ address, name }) =>
           ({
@@ -418,8 +448,8 @@ export const flexibleMultisigModel = {
   $signerBalance,
   $asset,
 
+  $errors: combine($firstErrors, $secondErrors, (first, second) => [...first, ...second]),
   $fee,
-  $pendingFee: or($pendingProxyFee, $pendingMultisigFee),
   $proxyDeposit,
   $existentialDeposit,
   $totalDeposit,

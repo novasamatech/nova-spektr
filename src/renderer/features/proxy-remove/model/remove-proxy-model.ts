@@ -6,18 +6,16 @@ import { spread } from 'patronum';
 
 import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
-import {
-  getNativeAsset,
-  nonNullable,
-  nullable,
-  toAccountId,
-  toAddress,
-  withdrawableAmountBN,
-} from '@/shared/lib/utils';
+import { getNativeAsset, keys, nonNullable, nullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathType, Paths } from '@/shared/routes';
-import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxValidationStore,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -33,6 +31,7 @@ import {
   type RemoveProxyConfirm,
   removeProxyConfirmModel as confirmModel,
 } from '@/features/operations/OperationsConfirm/RemoveProxy';
+import { removeProxyValidator } from '@/features/operations/OperationsValidation';
 import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';
 
@@ -98,7 +97,7 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             fee: $fee,
             multisigDeposit: $multisigDeposit,
-            balances: balanceModel.$balances,
+            balances: balanceModel.$balanceMap,
             signatories: $signatories,
             chain: $chain,
           }),
@@ -177,6 +176,18 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   signatory: form.fields.signatory.$value,
 });
 
+// Transaction validation
+const $asset = $chain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
+const { $errors } = createTxValidationStore({
+  validator: removeProxyValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
 const $multisigThreshold = $route.map((route) => {
   const multisig = route.find(accountUtils.isMultisigAccount);
   if (!multisig) return null;
@@ -210,7 +221,7 @@ const $chainProxies = combine(
     if (!wallet) return {};
 
     const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
-    return proxyUtils.getProxyAccountsOnChain(walletAccounts, Object.keys(chains) as ChainId[], proxies);
+    return proxyUtils.getProxyAccountsOnChain(walletAccounts, keys(chains), proxies);
   },
 );
 
@@ -269,7 +280,7 @@ sample({
       chain,
       proxyAccount: proxy,
       proxiedAccount: proxied,
-      spawner: toAddress(proxy.accountId, { prefix: chain.addressPrefix }),
+      spawner: proxy.accountId,
       proxyType: proxy.proxyType,
     } satisfies RemoveProxyStore;
   },
@@ -532,4 +543,5 @@ export const removeProxyModel = {
   stepChanged,
   wentBackFromConfirm,
   txSaved,
+  $errors,
 };

@@ -39,9 +39,9 @@ accountSDK(watchOnlyWalletFeature, {
 watchOnlyWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isWatchOnly(wallet)) return null;
 
-  const address = wallet.accounts[0]?.accountId;
+  const accountId = wallet.accounts[0]?.accountId;
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} />;
+  return <WalletAccountIcon address={accountId} type={wallet.type} size={size} />;
 });
 
 watchOnlyWalletFeature.inject(walletGroupSlot, {

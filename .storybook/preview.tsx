@@ -3,7 +3,7 @@ import '@/app/styles/theme/default.css';
 import './theme/root.css';
 
 import { I18Provider } from '@/shared/i18n';
-import { ThemeProvider } from '@/shared/ui-kit';
+import { ThemeProvider, NotificationProvider } from '@/shared/ui-kit';
 
 import type { Preview } from '@storybook/react-vite';
 import type { ThemeContextTheme } from '@/shared/ui-kit/Theme/ThemeContext';
@@ -54,6 +54,13 @@ const preview: Preview = {
         <I18Provider>
           <Story />
         </I18Provider>
+      );
+    },
+    (Story) => {
+      return (
+        <NotificationProvider>
+          <Story />
+        </NotificationProvider>
       );
     },
     (Story, context) => {

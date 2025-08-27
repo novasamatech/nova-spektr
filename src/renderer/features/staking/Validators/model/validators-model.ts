@@ -3,8 +3,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { pending, spread } from 'patronum';
 
 import { type Asset, type Chain, type EraIndex, type Validator } from '@/shared/core';
-import { includesMultiple, nonNullable, toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { includesMultiple, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { type ValidatorMap, eraService, validatorsService } from '@/entities/staking';
@@ -75,8 +74,8 @@ const $filteredValidators = combine(
     if (!query) return validators;
 
     return validators.filter((validator) => {
-      const address = validator.address.toLowerCase();
-      const identityName = identity[toAccountId(validator.address) as AccountId]?.name || '';
+      const address = toAddress(validator.accountId);
+      const identityName = identity[validator.accountId]?.name || '';
 
       return includesMultiple([address, identityName], query);
     });
@@ -158,7 +157,7 @@ sample({
   source: $chain,
   filter: (chain, validators) => nonNullable(chain) && validators.length > 0,
   fn: (chain, validators) => {
-    const accounts = validators.map((validator) => toAccountId(validator.address)) as AccountId[];
+    const accounts = validators.map((validator) => toAccountId(validator.accountId));
 
     return { accounts, chainId: chain!.chainId };
   },
@@ -170,9 +169,9 @@ sample({
   source: $selectedValidators,
   filter: (_, validator) => !validator.blocked,
   fn: (selectedValidators, validator) => {
-    const { [validator.address]: validatorToRemove, ...rest } = selectedValidators;
+    const { [validator.accountId]: validatorToRemove, ...rest } = selectedValidators;
 
-    return validatorToRemove ? rest : { ...rest, [validator.address]: validator };
+    return validatorToRemove ? rest : { ...rest, [validator.accountId]: validator };
   },
   target: $selectedValidators,
 });

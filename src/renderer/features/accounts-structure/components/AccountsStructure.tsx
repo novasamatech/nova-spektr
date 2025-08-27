@@ -14,11 +14,13 @@ import {
 } from '@xyflow/react';
 import { useUnit } from 'effector-react';
 import ELK from 'elkjs/lib/elk.bundled.js';
+import { type TFunction } from 'i18next';
 import { memo, useCallback, useEffect, useRef } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { useClickOutside } from '@/shared/lib/hooks';
 import { type AccountNode, type AnyAccount } from '@/domains/network';
-import { accountUtils } from '@/entities/wallet';
+import { accountConnectionTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
 
 import { AccountStructureNode } from './AccountStructureNode';
@@ -59,7 +61,11 @@ const elk = new ELK({
   },
 });
 
-function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccountId: string) {
+function createGraphElements(
+  graph: Map<AnyAccount, AccountNode>,
+  selectedAccountId: string,
+  t: TFunction<'translation'>,
+) {
   const nodes: Node<AccountNodeData>[] = [];
   const edges: Edge[] = [];
   const processedNodes = new Set<string>();
@@ -81,6 +87,8 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
     });
 
     for (const child of node.children) {
+      const connection = accountConnectionTransformer({ source: child.account, target: node.account, t });
+
       edges.push({
         id: `e${child.account.id}-${node.account.id}`,
         source: child.account.id,
@@ -90,11 +98,7 @@ function createGraphElements(graph: Map<AnyAccount, AccountNode>, selectedAccoun
           target: node.account,
         },
         markerEnd: {
-          color: accountUtils.isFlexibleProxiedAccount(node.account)
-            ? '#E85649'
-            : accountUtils.isAnyMultisigAccount(node.account)
-              ? '#05B199'
-              : '#2A1FD5',
+          color: connection?.color || '#2A1FD5',
           type: MarkerType.Arrow,
           width: 20,
           height: 20,
@@ -119,10 +123,12 @@ const useGraphLayout = (
   setEdges: (edges: Edge[]) => void,
   fitView: ReturnType<typeof useReactFlow>['fitView'],
 ) => {
+  const { t } = useI18n();
+
   return useCallback(async () => {
     if (!graph || !selectedAccount) return;
 
-    const { nodes, edges } = createGraphElements(graph, selectedAccount.id);
+    const { nodes, edges } = createGraphElements(graph, selectedAccount.id, t);
 
     const layoutGraph = await elk.layout({
       id: 'root',

@@ -2,7 +2,7 @@ import { useStoreMap } from 'effector-react';
 
 import { type Referendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, Shimmering } from '@/shared/ui';
 import { referendumService } from '@/entities/governance';
 import { AccountAddress } from '@/entities/wallet';
@@ -36,15 +36,20 @@ export const ProposerName = ({ referendum, addressPrefix }: Props) => {
     <AccountAddress
       addressFont="text-text-secondary"
       size={16}
-      address={proposer.parent.address}
-      name={proposer.parent.name || proposer.email || proposer.twitter || proposer.parent.address}
+      address={toAddress(proposer.parent.accountId, { prefix: addressPrefix })}
+      name={
+        proposer.parent.name ||
+        proposer.email ||
+        proposer.twitter ||
+        toShortAddress(toAddress(proposer.parent.accountId, { prefix: addressPrefix }), 6)
+      }
     />
-  ) : referendumService.isOngoing(referendum) && referendum.submissionDeposit?.who ? (
+  ) : referendumService.isOngoing(referendum) && referendum.submissionDeposit ? (
     <AccountAddress
       addressFont="text-text-secondary"
       size={16}
-      address={referendum.submissionDeposit.who}
-      name={toAddress(referendum.submissionDeposit!.who, { chunk: 6, prefix: addressPrefix })}
+      address={toAddress(referendum.submissionDeposit.who, { prefix: addressPrefix })}
+      name={toShortAddress(toAddress(referendum.submissionDeposit.who, { prefix: addressPrefix }), 6)}
     />
   ) : null;
 

@@ -1,7 +1,7 @@
 import { BN_ZERO } from '@polkadot/util';
 import { memo } from 'react';
 
-import { type Asset, type Balance, type Chain } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { InputHint } from '@/shared/ui';
@@ -14,7 +14,7 @@ import { locksService } from '@/entities/governance';
 type Props = {
   value: AnyAccount | null;
   accounts: AnyAccount[];
-  balances: Balance[];
+  balances: BalanceMap;
   hasError: boolean;
   errorText: string;
   asset: Asset;

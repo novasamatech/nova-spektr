@@ -39,7 +39,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
   let callData: string;
   try {
-    const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
+    const extrinsic = transactionService.createExtrinsic(transaction, api);
     callData = extrinsic.method.toHex();
   } catch {
     const encodedTransaction = transactionService.encodeTransaction(transaction, api);

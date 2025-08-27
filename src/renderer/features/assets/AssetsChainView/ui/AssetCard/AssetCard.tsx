@@ -13,7 +13,7 @@ import { AssetFiatBalance, TokenPrice, priceProviderModel } from '@/entities/pri
 type Props = {
   chainId: ChainId;
   asset: Asset;
-  balance?: Balance;
+  balance: Balance | null;
   wallet: Wallet | null;
 };
 

@@ -1,15 +1,14 @@
 import { type PropsWithChildren } from 'react';
 
-import { type Address, type KeyType } from '@/shared/core';
+import { type KeyType } from '@/shared/core';
 import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, HelpText, Icon } from '@/shared/ui';
 import { Hash, Identicon } from '@/shared/ui-entities';
 import { KeyIcon } from '../../lib/constants';
 
 type Props = PropsWithChildren<{
   name?: string;
-  address: Address | AccountId;
+  address: string;
   addressPrefix?: number;
   keyType?: KeyType;
   iconSize?: number;
@@ -37,7 +36,7 @@ export const ContactItem = ({
     >
       <div className={cnTw('flex w-full items-center gap-x-2 overflow-hidden py-1.5 pl-2', children ? 'pr-9' : 'pr-3')}>
         <div className="flex">
-          <Identicon address={formattedAddress} size={iconSize} background={false} />
+          <Identicon value={formattedAddress} size={iconSize} background={false} />
 
           {keyType && (
             <Icon

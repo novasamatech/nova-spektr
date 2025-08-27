@@ -50,7 +50,7 @@ const Signatories = () => {
 
   const signatories = useUnit(unlockFormAggregate.$signatories);
   const network = useUnit(networkSelectorModel.$network);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
 

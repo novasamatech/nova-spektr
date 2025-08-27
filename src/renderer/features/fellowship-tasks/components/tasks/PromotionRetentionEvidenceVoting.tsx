@@ -4,7 +4,7 @@ import { memo, useMemo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable, toAddress, toRomanNumeral } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
@@ -51,20 +51,6 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
     fn: (list, [accountId]) => list[accountId] ?? null,
   });
 
-  let title = '';
-  if (isPromotion && nonNullable(member?.rank)) {
-    title = t('fellowship.evidenceModal.titlePromotion', {
-      name: memberIdentity?.name || toAddress(memberIdentity?.accountId, { chunk: 6 }),
-      rank: toRomanNumeral(member.rank + 1),
-    });
-  }
-  if (isRetention) {
-    title = t('fellowship.evidenceModal.titleRetention', {
-      name: memberIdentity?.name || toAddress(memberIdentity?.accountId, { chunk: 6 }),
-      rank: member?.rank && toRomanNumeral(member.rank),
-    });
-  }
-
   const rank = useMemo(() => {
     if (nullable(member?.rank)) return null;
 
@@ -74,6 +60,20 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
 
     return member.rank;
   }, [member, isPromotion, isRetention]);
+
+  let title = '';
+  if (isPromotion) {
+    title = t('fellowship.evidenceModal.titlePromotion', {
+      name: memberIdentity?.name || toShortAddress(toAddress(evidence.accountId), 6),
+      rank: nonNullable(rank) ? toRomanNumeral(rank + 1) : 0,
+    });
+  }
+  if (isRetention) {
+    title = t('fellowship.evidenceModal.titleRetention', {
+      name: memberIdentity?.name || toShortAddress(toAddress(evidence.accountId), 6),
+      rank: nonNullable(rank) ? toRomanNumeral(rank) : 0,
+    });
+  }
 
   return (
     <Box direction="row" gap={2}>

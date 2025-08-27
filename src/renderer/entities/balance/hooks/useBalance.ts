@@ -1,13 +1,17 @@
-import { type Asset, type ChainId } from '@/shared/core';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { useUnit } from 'effector-react';
 
-import { useAssetBalances } from './useAssetBalances';
+import { type AssetId, type ChainId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { balanceUtils } from '../lib/balance-utils';
+import { balanceModel } from '../model/balance-model';
 
 type Props = {
   chainId: ChainId;
   accountId: AccountId;
-  assetId: Asset['assetId'];
+  assetId: AssetId;
 };
 export const useBalance = ({ chainId, accountId, assetId }: Props) => {
-  return useAssetBalances({ chainId, accountIds: [accountId], assetId }).at(0);
+  const balances = useUnit(balanceModel.$balanceMap);
+
+  return balanceUtils.getBalance(balances, accountId, chainId, assetId);
 };

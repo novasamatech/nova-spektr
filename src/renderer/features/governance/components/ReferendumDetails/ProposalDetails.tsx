@@ -29,7 +29,7 @@ export const ProposalDetails = ({ proposal }: Props) => {
     return null;
   }
 
-  const amount = formatBalance(proposal.amount.toString(), nativeAsset?.precision ?? 0, { M: false });
+  const amount = formatBalance(proposal.amount.toString(), nativeAsset?.precision ?? 0, { shorthands: { M: false } });
   return (
     <>
       <DetailRow className="text-right text-text-secondary" label={t('governance.advanced.fields.beneficiary')}>

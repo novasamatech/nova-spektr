@@ -13,13 +13,19 @@ import {
   stakeableAmount,
   transferableAmount,
 } from '@/shared/lib/utils';
-import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createMultisigDeposit,
+  createSignatoriesStore,
+  createTxValidationStore,
+} from '@/shared/transactions';
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { bondExtraValidator } from '@/features/operations/OperationsValidation';
 import { type WalletData } from '../lib/types';
 
 type FormParams = {
@@ -40,59 +46,18 @@ const form: Form<FormParams> = createForm<FormParams>({
   fields: {
     initiator: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            fee: $fee,
-            isProxy: $isProxy,
-            proxyBalance: $proxyBalance,
-            network: $networkStore,
-            initiatorBalance: $initiatorBalance,
-          }),
-          fn: (
-            initiator: AnyAccount | null,
-            form: FormParams,
-            { fee, isProxy, proxyBalance, network, initiatorBalance },
-          ) => {
-            if (!initiator) {
-              return { message: 'staking.bond.noInitiatorError' };
-            }
-
-            if (isProxy && new BN(fee).gt(new BN(proxyBalance))) {
-              return { message: 'staking.bond.noBondBalanceError' };
-            }
-
-            if (isProxy && form.amount) {
-              const amountBN = new BN(formatAmount(form.amount, network.asset.precision));
-
-              if (amountBN.gt(new BN(initiatorBalance))) {
-                return { message: 'staking.bond.noBondBalanceError' };
-              }
-            }
-          },
-        };
+      validator: () => (initiator) => {
+        if (!initiator) {
+          return { message: 'staking.bond.noInitiatorError' };
+        }
       },
     },
     signatory: {
       defaultValue: null,
-      validator: () => {
-        return {
-          source: combine({
-            isMultisig: $isMultisig,
-            fee: $fee,
-            multisigDeposit: $multisigDeposit,
-            signatoryBalance: $signatoryBalance,
-          }),
-          fn: (signatory: AnyAccount | null, _: FormParams, { isMultisig, fee, multisigDeposit, signatoryBalance }) => {
-            if (nullable(signatory)) {
-              return { message: 'transfer.noSignatoryError' };
-            }
-
-            if (isMultisig && new BN(multisigDeposit).add(new BN(fee)).gt(new BN(signatoryBalance))) {
-              return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
-            }
-          },
-        };
+      validator: () => (signatory) => {
+        if (nullable(signatory)) {
+          return { message: 'transfer.noSignatoryError' };
+        }
       },
     },
     amount: {
@@ -147,7 +112,7 @@ const $initiatorBalance = combine(
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
     initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, initiator, balances }) => {
     if (!wallet || !network || !initiator) return ZERO_BALANCE;
@@ -165,25 +130,6 @@ const $bondBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
 
   return [ZERO_BALANCE, initiatorBalance];
 });
-
-const $signatoryBalance = combine(
-  {
-    signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
-    network: $networkStore,
-  },
-  ({ signatory, balances, network }) => {
-    if (!signatory || !network) return ZERO_BALANCE;
-    const balance = balanceUtils.getBalance(
-      balances,
-      signatory.accountId,
-      network.chain.chainId,
-      network.asset.assetId,
-    );
-
-    return transferableAmount(balance);
-  },
-);
 
 const $api = combine(
   {
@@ -219,6 +165,19 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
+// Transaction validation
+const $asset = $networkStore.map((network) => network?.asset ?? null);
+const { $errors } = createTxValidationStore({
+  validator: bondExtraValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
 const $proxiedAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
 const $multisigAccount = $route.map((route) => route.find(accountUtils.isMultisigAccount) ?? null);
 const $isProxy = $proxiedAccount.map(nonNullable);
@@ -240,7 +199,7 @@ const $proxyBalance = combine(
   {
     isProxy: $isProxy,
     proxyAccount: $proxiedAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   ({ isProxy, network, proxyAccount, balances }) => {
@@ -361,6 +320,7 @@ export const formModel = {
   $multisigAccount,
   $isMultisig,
   $canSubmit,
+  $errors,
 
   events: {
     formInitiated,

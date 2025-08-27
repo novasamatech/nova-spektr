@@ -1,8 +1,9 @@
 import { type SignerOptions } from '@polkadot/api/types';
+import { type BN } from '@polkadot/util';
 
 import {
   type Asset,
-  type Balance,
+  type BalanceMap,
   type Chain,
   type ChainId,
   type ID,
@@ -10,7 +11,7 @@ import {
   type TransactionType,
 } from '@/shared/core';
 
-export type BalanceMap = Record<'balance' | 'native', string>;
+export type ValidatorBalanceMap = Record<'balance' | 'native', string>;
 
 export type Validation<Value = any, Form = any, Source = any> = {
   value: Value;
@@ -31,21 +32,21 @@ export type ValidationResult =
 export type AccountStore = {
   fee: string;
   proxyDeposit: string;
-  balances: Balance[];
+  balances: BalanceMap;
   isMultisig: boolean;
 };
 
 export type TransferAccountStore = {
   fee: string;
   isProxy: boolean;
-  proxyBalance: BalanceMap;
+  proxyBalance: ValidatorBalanceMap;
 };
 
 export type SignatoryStore = {
   fee: string;
   proxyDeposit: string;
   multisigDeposit: string;
-  balances: Balance[];
+  balances: BalanceMap;
   isMultisig: boolean;
 };
 
@@ -94,15 +95,15 @@ export type AmountFeeStore = {
 };
 
 export type TransferAmountFeeStore = {
-  balance: BalanceMap | null;
+  balance: ValidatorBalanceMap | null;
   network: NetworkStore | null;
   isXcm: boolean;
   isNative: boolean;
   isMultisig: boolean;
   isProxy: boolean;
-  fee: string;
-  xcmFee: string;
-  deliveryFee: string | null;
+  fee: BN;
+  xcmFee: BN;
+  deliveryFee: BN;
 };
 
 export type TransferFeeStore = Omit<TransferAmountFeeStore, 'balance' | 'network'> & {
@@ -125,9 +126,9 @@ export type SignatoryFeeStore = {
 };
 
 export type TransferSignatoryFeeStore = {
-  fee: string;
+  fee: BN;
   isMultisig: boolean;
-  multisigDeposit: string;
+  multisigDeposit: BN;
   balance: string;
 };
 
@@ -142,7 +143,7 @@ export type ChainProxyStore = {
 
 export type DelegateFeeStore = {
   fee: string;
-  balance: BalanceMap;
+  balance: ValidatorBalanceMap;
   network: NetworkStore | null;
   isMultisig: boolean;
 };

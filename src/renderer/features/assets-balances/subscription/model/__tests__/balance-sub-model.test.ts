@@ -5,6 +5,7 @@ import { type EffectParams, type EffectResult, allSettled, fork } from 'effector
 
 import { balanceService } from '@/shared/api/balances';
 import { storageService } from '@/shared/api/storage';
+import { keys } from '@/shared/lib/utils';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -38,7 +39,7 @@ const setupScope = () => {
   };
 
   const { chains, wallets, accountMocks } = balanceSubMock;
-  const apis = Object.keys(chains).reduce((acc, id) => ({ ...acc, [id]: createApi() }), {});
+  const apis = keys(chains).reduce((acc, id) => ({ ...acc, [id]: createApi() }), {});
   const scope = fork({
     values: [
       [networkModel.$apis, apis],

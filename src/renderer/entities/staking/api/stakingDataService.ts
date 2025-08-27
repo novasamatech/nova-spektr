@@ -1,27 +1,28 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Address, type ChainId, type EraIndex, type Unlocking } from '@/shared/core';
-import { ZERO_BALANCE, getExpectedBlockTime, redeemableAmount } from '@/shared/lib/utils';
+import { type ChainId, type EraIndex, type Unlocking } from '@/shared/core';
+import { ZERO_BALANCE, getExpectedBlockTime, redeemableAmount, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type IStakingDataService, type StakingMap } from '../lib/types';
 
 export const useStakingData = (): IStakingDataService => {
   const subscribeStaking = async (
     chainId: ChainId,
     api: ApiPromise,
-    addresses: Address[],
+    accounts: AccountId[],
     callback: (staking: StakingMap) => void,
   ): Promise<() => void> => {
-    const controllers = await getControllers(api, addresses);
+    const controllers = await getControllers(api, accounts);
 
-    return listenToLedger(chainId, api, controllers, addresses, callback);
+    return listenToLedger(chainId, api, controllers, accounts, callback);
   };
 
-  const getControllers = async (api: ApiPromise, addresses: Address[]): Promise<Address[]> => {
+  const getControllers = async (api: ApiPromise, accounts: AccountId[]) => {
     try {
-      const controllers = await api.query.staking.bonded.multi(addresses);
+      const controllers = await api.query.staking.bonded.multi(accounts);
 
       return controllers.map((controller, index) =>
-        controller.isNone ? addresses[index] : controller.unwrap().toString(),
+        controller.isNone ? accounts[index] : toAccountId(controller.unwrap().toString()),
       );
     } catch (error) {
       console.warn(error);
@@ -33,17 +34,17 @@ export const useStakingData = (): IStakingDataService => {
   const listenToLedger = async (
     chainId: ChainId,
     api: ApiPromise,
-    controllers: Address[],
-    addresses: Address[],
+    controllers: AccountId[],
+    accounts: AccountId[],
     callback: (data: StakingMap) => void,
   ): Promise<() => void> => {
     return api.query.staking.ledger.multi(controllers, (data) => {
       try {
         const staking = data.reduce<StakingMap>((acc, ledger, index) => {
-          const address = addresses[index] as Address;
+          const account = accounts[index];
 
           if (ledger.isNone) {
-            acc[address] = undefined;
+            acc[account] = undefined;
           } else {
             const { active, stash, total, unlocking } = ledger.unwrap();
 
@@ -52,11 +53,11 @@ export const useStakingData = (): IStakingDataService => {
               era: unlock.era.toString(),
             }));
 
-            acc[address] = {
-              address,
+            acc[account] = {
+              accountId: account,
               chainId,
-              controller: controllers[index] || stash.toHuman(),
-              stash: stash.toHuman(),
+              controller: controllers[index] || toAccountId(stash.toHuman()),
+              stash: toAccountId(stash.toHuman()),
               active: active.toString(),
               total: total.toString(),
               unlocking: formattedUnlocking,
@@ -74,16 +75,16 @@ export const useStakingData = (): IStakingDataService => {
     });
   };
 
-  const fetchLedger = async (chainId: ChainId, api: ApiPromise, addresses: Address[]): Promise<StakingMap> => {
-    const controllers = await getControllers(api, addresses);
+  const fetchLedger = async (chainId: ChainId, api: ApiPromise, accounts: AccountId[]): Promise<StakingMap> => {
+    const controllers = await getControllers(api, accounts);
     const data = await api.query.staking.ledger.multi(controllers);
 
     try {
       const staking = data.reduce<StakingMap>((acc, ledger, index) => {
-        const address = addresses[index] as Address;
+        const account = accounts[index];
 
         if (ledger.isNone) {
-          acc[address] = undefined;
+          acc[account] = undefined;
         } else {
           const { active, stash, total, unlocking } = ledger.unwrap();
 
@@ -92,11 +93,11 @@ export const useStakingData = (): IStakingDataService => {
             era: unlock.era.toString(),
           }));
 
-          acc[address] = {
-            address,
+          acc[account] = {
+            accountId: account,
             chainId,
-            controller: controllers[index] || stash.toHuman(),
-            stash: stash.toHuman(),
+            controller: controllers[index] || toAccountId(stash.toHuman()),
+            stash: toAccountId(stash.toHuman()),
             active: active.toString(),
             total: total.toString(),
             unlocking: formattedUnlocking,

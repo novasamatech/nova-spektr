@@ -3,12 +3,12 @@ import { useUnit } from 'effector-react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step, getNativeAsset } from '@/shared/lib/utils';
-import { Alert, BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
+import { BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
+import { Account, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { WalletIcon } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm-model';
 import { flowModel } from '../model/flow-model';
 import { formModel } from '../model/form-model';
@@ -19,11 +19,13 @@ import { SelectedSignatoriesModal } from './components/SelectedSignatoriesModal'
 export const ConfirmationStep = () => {
   const { t } = useI18n();
 
-  const signerWallet = useUnit(flowModel.$signerWallet);
+  const wallets = useUnit(walletModel.$wallets);
   const signer = useUnit(flowModel.$signer);
   const fee = useUnit(flowModel.$fee);
+  const route = useUnit(flowModel.$route);
+  const errors = useUnit(flowModel.$errors);
   const multisigDeposit = useUnit(flowModel.$multisigDeposit);
-  const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
+  const isDepositLoading = useUnit(flowModel.$isDepositLoading);
 
   const chain = useUnit(formModel.$chain);
   const signatories = useUnit(signatoryModel.$signatories);
@@ -31,6 +33,9 @@ export const ConfirmationStep = () => {
   const {
     fields: { name, threshold },
   } = useForm(formModel.form);
+
+  const signerWallet = wallets.find(wallet => wallet.id === signer?.walletId);
+  const multisigAccount = route.find(accountUtils.isMultisigAccount);
 
   if (!signerWallet || !signer || !chain) return;
 
@@ -82,15 +87,16 @@ export const ConfirmationStep = () => {
                 </div>
               </div>
             </DetailRow>
+
             <Separator className="border-filter-border" />
             <div className="mb-4 flex flex-1 flex-col gap-y-4">
-              <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit.toString()} />
+              {multisigAccount && (
+                <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
+              )}
 
               <FeeWithLabel fee={fee.toString()} asset={asset} />
 
-              <Alert variant="error" title={t('createMultisigAccount.notEnoughTokensTitle')} active={!isEnoughBalance}>
-                <Alert.Item withDot={false}>{t('createMultisigAccount.notEnoughMultisigTokens')}</Alert.Item>
-              </Alert>
+              <TransactionValidationError errors={errors} wallets={wallets} />
             </div>
           </div>
         </section>
@@ -101,17 +107,12 @@ export const ConfirmationStep = () => {
             variant="text"
             onClick={() => {
               flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
-              // if ((ownedSignatories || []).length > 1) {
-              //   flowModel.stepChanged(Step.SIGNER_SELECTION);
-              // } else {
-              //   flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
-              // }
             }}
           >
             {t('createMultisigAccount.backButton')}
           </Button>
 
-          <SignButton disabled={!isEnoughBalance} type={signerWallet.type} onClick={confirmModel.startSigning} />
+          <SignButton disabled={errors.length > 0} type={signerWallet.type} onClick={confirmModel.startSigning} />
         </Box>
       </Modal.Footer>
     </>

@@ -176,7 +176,7 @@ sample({
   filter: ({ step, bondData }, data) => {
     return (!bondUtils.isNoneStep(step) && Boolean(bondData)) || typeof data !== 'number';
   },
-  fn: ({ bondData }, data) => {
+  fn: ({ bondData }, data): BondNominateData => {
     if (typeof data === 'number') {
       return { ...(bondData || ({} as BondNominateData)), validators: Array(data).fill({ address: TEST_ADDRESS }) };
     }
@@ -185,6 +185,7 @@ sample({
       return { ...bondData!, validators: data! };
     }
 
+    // @ts-expect-error destination should be address
     return { ...data!, validators: bondData?.validators || [] };
   },
   target: $bondNominateData,
@@ -202,7 +203,7 @@ sample({
         accountId: shard.accountId,
         amount: bondData!.amount,
         destination: bondData!.destination,
-        nominators: bondData!.validators.map(({ address }) => address),
+        nominators: bondData!.validators.map(({ accountId }) => accountId),
       });
     });
   },

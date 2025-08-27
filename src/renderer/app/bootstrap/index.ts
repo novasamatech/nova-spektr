@@ -6,7 +6,6 @@ import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, trackService } from '@/domains/collectives';
 import { accounts, multisigOperation } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
-import { multisigsModel } from '@/entities/multisig-accounts';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
@@ -21,7 +20,6 @@ import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
-import { proxiesModel } from '@/features/proxies';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
 
@@ -44,11 +42,10 @@ const configureDomains = () => {
 };
 
 const populate = async () => {
-  await networkModel.startNetworks();
-  await accounts.populate();
-  await walletModel.populate();
-  multisigsModel.subscribe();
-  await proxyModel.populate();
+  networkModel.startNetworks();
+  accounts.populate();
+  walletModel.populate();
+  proxyModel.populate();
   multisigOperation.populate();
   governanceMetaProvider.populate();
   portfolioModel.populate();
@@ -58,7 +55,6 @@ const populate = async () => {
   kernelModel.events.appStarted();
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
-  proxiesModel.findAllProxies();
 };
 
 export const bootstrap = () => {
@@ -81,6 +77,8 @@ export const bootstrap = () => {
     import('@/features/wallet-select').then(({ walletSelectFeature }) => walletSelectFeature.feature),
     import('@/features/wallet-details').then(({ walletDetailsFeature }) => walletDetailsFeature),
     import('@/features/wallet-pairing').then(({ walletPairingFeature }) => walletPairingFeature),
+
+    import('@/features/account-sync').then(({ accountSyncFeature }) => accountSyncFeature),
 
     import('@/features/multisig-wallet').then(({ multisigWalletFeature }) => multisigWalletFeature),
     import('@/features/multisig-wallet-create').then(({ multisigWalletPairingFeature }) => multisigWalletPairingFeature),

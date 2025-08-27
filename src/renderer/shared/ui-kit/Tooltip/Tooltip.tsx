@@ -1,5 +1,5 @@
 import * as RadixTooltip from '@radix-ui/react-tooltip';
-import { type PropsWithChildren, createContext, useContext, useMemo } from 'react';
+import { type PropsWithChildren, type ReactElement, createContext, useContext, useMemo } from 'react';
 
 import { useTheme } from '../Theme/useTheme';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
@@ -51,7 +51,7 @@ const Root = ({
   );
 };
 
-const Trigger = ({ children }: PropsWithChildren) => {
+const Trigger = ({ children }: { children: ReactElement }) => {
   return <RadixTooltip.Trigger asChild>{children}</RadixTooltip.Trigger>;
 };
 

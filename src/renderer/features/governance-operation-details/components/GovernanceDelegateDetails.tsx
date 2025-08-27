@@ -1,9 +1,8 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
@@ -29,7 +28,7 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
 
   const [isUndelegationLoading, setIsUndelegationLoading] = useState(false);
   const [undelegationVotes, setUndelegationVotes] = useState<string>();
-  const [undelegationTarget, setUndelegationTarget] = useState<Address>();
+  const [undelegationTarget, setUndelegationTarget] = useState<AccountId>();
 
   const result = [];
 
@@ -69,7 +68,7 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
   if (delegationTarget) {
     result.push(
       <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-        <Account accountId={toAccountId(delegationTarget)} variant="short" chain={chain} />
+        <Account accountId={delegationTarget} variant="short" chain={chain} />
       </DetailRow>,
     );
   }
@@ -77,7 +76,7 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
   if (!delegationTarget && undelegationTarget) {
     result.push(
       <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-        <Account accountId={toAccountId(undelegationTarget)} variant="short" chain={chain} />
+        <Account accountId={undelegationTarget} variant="short" chain={chain} />
       </DetailRow>,
     );
   }

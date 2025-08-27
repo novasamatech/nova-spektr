@@ -7,13 +7,13 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { isEthereumAccountId } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
-import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
+import { ChainAccountsList, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { WalletIcon, permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
-import { AddProxy, addProxyModel } from '@/features/proxy-add';
+import { AddProxy } from '@/features/proxy-add';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -55,13 +55,14 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
 
   if (!wallet || !walletUtils.isProxied(wallet)) return null;
 
-  const proxyWallets = wallet.accounts[0]?.connections.map(connection => ({
-    connection,
-    proxyWallet: walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: w => !walletUtils.isWatchOnly(w),
-      accountFn: a => connection.proxyAccountId === a.accountId,
-    }),
-  }));
+  const proxyWallets =
+    wallet.accounts[0]?.connections.map(connection => ({
+      connection,
+      proxyWallet: walletUtils.getWalletFilteredAccounts(wallets, {
+        walletFn: w => !walletUtils.isWatchOnly(w),
+        accountFn: a => connection.proxyAccountId === a.accountId,
+      }),
+    })) ?? [];
 
   const actions: WalletAction[] = [];
 
@@ -147,7 +148,9 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
                 <div className="flex items-center pl-4" key={`${connection.proxyType}-${connection.proxyAccountId}`}>
                   <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
                   <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
-                  <WalletIcon type={proxyWallet?.type} size={16} className="mx-1" />
+                  <span className="mx-1">
+                    <WalletIcon type={proxyWallet.type} size={16} />
+                  </span>
                   <FootnoteText className="truncate">{proxyWallet.name}</FootnoteText>
                   &nbsp;
                   <FootnoteText className="whitespace-nowrap">{t('walletDetails.common.proxyToControl')}</FootnoteText>
@@ -191,7 +194,6 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
               hasProxies={hasProxies}
               canCreateProxy={canCreateProxy}
               className="h-[361px]"
-              onAddProxy={addProxyModel.events.flowStarted}
             />
           </Tabs.Content>
         </Tabs>

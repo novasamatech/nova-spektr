@@ -2,16 +2,8 @@ import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { combineEvents, delay, spread } from 'patronum';
 
-import { type Address } from '@/shared/core';
-import {
-  Step,
-  getRelaychainAsset,
-  isStep,
-  nonNullable,
-  nullable,
-  toAddress,
-  transferableAmount,
-} from '@/shared/lib/utils';
+import { Step, getRelaychainAsset, isStep, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createComplexTxStore, createMultisigDeposit, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -30,7 +22,7 @@ import { type RevokeDelegationData } from '../lib/types';
 
 const stepChanged = createEvent<Step>();
 
-const flowStarted = createEvent<{ delegate: Address; accounts: AnyAccount[] }>();
+const flowStarted = createEvent<{ delegate: AccountId; accounts: AnyAccount[] }>();
 const flowFinished = createEvent();
 const txSaved = createEvent();
 
@@ -42,25 +34,23 @@ const $api = combine(
     chain: networkSelectorModel.$governanceChain,
   },
   ({ apis, chain }) => {
-    return chain ? apis[chain.chainId] : null;
+    return chain ? (apis[chain.chainId] ?? null) : null;
   },
 );
 
 const $initiator = createStore<AnyAccount | null>(null);
-const $delegate = createStore<Address | null>(null);
+const $delegate = createStore<AccountId | null>(null);
 
 const $revokeDelegationData = combine(
   {
     initiator: $initiator,
     delegate: $delegate,
     activeTracks: delegationAggregate.$activeTracks,
-    chain: networkSelectorModel.$governanceChain,
   },
-  ({ initiator, delegate, activeTracks, chain }) => {
+  ({ initiator, delegate, activeTracks }) => {
     if (nullable(initiator) || nullable(delegate)) return null;
 
-    const address = toAddress(initiator.accountId, { prefix: chain?.addressPrefix });
-    const tracks = activeTracks[delegate][address].map(Number);
+    const tracks = activeTracks[delegate][initiator.accountId].map(Number);
 
     return {
       tracks,
@@ -154,7 +144,7 @@ sample({
 
 const dataSubmitted = sample({
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     fee: $fee,
     chain: networkSelectorModel.$governanceChain,
     revokeDelegationData: $revokeDelegationData,

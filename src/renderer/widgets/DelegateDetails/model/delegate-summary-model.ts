@@ -3,8 +3,9 @@ import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { delegationService, votingsService } from '@/shared/api/governance';
-import { type Address, type Chain, type ChainId } from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
 import { MONTH, getBlockTimeAgo, nonNullable, nullable, setNestedValue } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { votingService } from '@/entities/governance';
 import {
   type AggregatedReferendum,
@@ -18,11 +19,11 @@ import { getDelegationsList } from '../lib/utils';
 import { delegateDetailsModel } from './delegate-details-model';
 
 type RequestParams = {
-  address: string;
+  accountId: AccountId;
   chain: Chain;
 };
 
-type Delegation = [Address, { tracks: number[]; amount: BN }];
+type Delegation = [AccountId, { tracks: number[]; amount: BN }];
 type Voted = {
   votedAt: number;
   voted: {
@@ -35,8 +36,8 @@ export type VotedReferendum = AggregatedReferendum & Voted;
 const openSummaryModal = createEvent();
 
 const $isModalOpen = createStore(false);
-const $delegations = createStore<Record<ChainId, Record<Address, Delegation[]>>>({});
-const $referendumsList = createStore<Record<ChainId, Record<Address, VotedReferendum[]>>>({});
+const $delegations = createStore<Record<ChainId, Record<AccountId, Delegation[]>>>({});
+const $referendumsList = createStore<Record<ChainId, Record<AccountId, VotedReferendum[]>>>({});
 const $votedReferendumsMonth = createStore<VotedReferendum[]>([]);
 
 const closeModal = $isModalOpen.reinit;
@@ -45,12 +46,12 @@ const $currentReferendums = listAggregate.$referendums.map((referendums) => {
   return listService.sortReferendumsByOngoing(referendums ?? []);
 });
 
-const getDelegatesFx = createEffect(({ address, chain }: RequestParams) => {
-  return delegationService.getDelegatesForAccount(chain, address);
+const getDelegatesFx = createEffect(({ accountId, chain }: RequestParams) => {
+  return delegationService.getDelegatesForAccount(chain, accountId);
 });
 
-const getReferendumsForVoterFx = createEffect(({ address, chain }: RequestParams) => {
-  return votingsService.getVotingsForVoter(chain, address);
+const getReferendumsForVoterFx = createEffect(({ accountId, chain }: RequestParams) => {
+  return votingsService.getVotingsForVoter(chain, accountId);
 });
 
 const getMonthBlockFx = createEffect((api: ApiPromise) => {
@@ -71,7 +72,7 @@ sample({
   },
   filter: ({ delegate, chain }) => nonNullable(delegate) && nonNullable(chain),
   fn: ({ delegate, chain }) => ({
-    address: delegate!.address,
+    accountId: delegate!.accountId,
     chain: chain!,
   }),
   target: [getDelegatesFx, getReferendumsForVoterFx],
@@ -84,7 +85,7 @@ sample({
   fn: (delegations, { params, result }) => {
     const delegationsList = getDelegationsList(result!.delegations);
 
-    return setNestedValue(delegations, params.chain.chainId, params.address, delegationsList);
+    return setNestedValue(delegations, params.chain.chainId, params.accountId, delegationsList);
   },
   target: $delegations,
 });
@@ -134,7 +135,7 @@ sample({
       });
     }
 
-    return setNestedValue(referendumsList, params.chain.chainId, params.address, referendums);
+    return setNestedValue(referendumsList, params.chain.chainId, params.accountId, referendums);
   },
   target: $referendumsList,
 });
@@ -150,7 +151,7 @@ const $currentDelegations = combine(
       return [];
     }
 
-    return delegations[chain.chainId]?.[delegate.address] ?? [];
+    return delegations[chain.chainId]?.[delegate.accountId] ?? [];
   },
 );
 
@@ -165,7 +166,7 @@ const $votedReferendums = combine(
       return [];
     }
 
-    return referendumsList[chain.chainId]?.[delegate.address] ?? [];
+    return referendumsList[chain.chainId]?.[delegate.accountId] ?? [];
   },
 );
 
@@ -191,7 +192,7 @@ sample({
 sample({
   clock: $currentDelegations,
   fn: (delegations) => ({
-    addresses: delegations.map(([address]) => address),
+    accounts: delegations.map(([accountId]) => accountId),
   }),
   target: proposerIdentityAggregate.events.requestProposers,
 });

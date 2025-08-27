@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
-import { type Asset, type MultisigThreshold } from '@/shared/core';
+import { type Asset } from '@/shared/core';
 import { AssetBalance } from '@/shared/ui-entities';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { transactionService } from '../../lib';
@@ -11,7 +11,7 @@ import { FeeLoader } from '../FeeLoader/FeeLoader';
 type Props = {
   api: ApiPromise | null;
   asset: Asset;
-  threshold: MultisigThreshold;
+  threshold: number;
   className?: string;
   onDepositChange?: (deposit: string) => void;
 };

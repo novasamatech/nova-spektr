@@ -6,13 +6,13 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Step, isStep, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
-import { AccountSelectModal } from '@/shared/ui-entities';
+import { AccountSelectModal, TransactionValidationError } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
-import { walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { SignatorySelectModal } from '@/features/multisig-operations';
 import { OperationSign, OperationSubmit } from '@/features/operations';
@@ -34,6 +34,8 @@ export const RemoveVotesDefaultModal = ({ single, chain, asset, onClose }: Props
   const step = useUnit(removeVotesModel.$step);
   const initiatorWallet = useUnit(removeVotesModel.$initiatorWallet);
   const votesList = useUnit(removeVotesModel.$votesList);
+  const errors = useUnit(removeVotesModel.$errors);
+  const wallets = useUnit(walletModel.$wallets);
 
   const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), onClose);
   const [isBasketModalOpen, closeBasketModal] = useModalClose(isStep(step, Step.BASKET), onClose);
@@ -56,11 +58,12 @@ export const RemoveVotesDefaultModal = ({ single, chain, asset, onClose }: Props
 
   return (
     <>
-      <Modal isOpen={isModalOpen} size="fit" height="fit" onToggle={onClose}>
+      <Modal isOpen={isModalOpen} size="md" height="fit" onToggle={onClose}>
         <Modal.Title close>
           <OperationTitle title={t('operations.modalTitles.removeVoteOn')} chainId={chain.chainId}></OperationTitle>
         </Modal.Title>
         <Modal.Content>
+          <TransactionValidationError errors={errors} wallets={wallets} />
           {isStep(step, Step.CONFIRM) && votesList.length === 1 && (
             <RemoveVoteConfirmation
               secondaryActionButton={

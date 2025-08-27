@@ -1,19 +1,13 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 
 import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
-import {
-  type Asset,
-  type Chain,
-  type MultisigTxWrapper,
-  type ProxiedAccount,
-  type ProxyTxWrapper,
-  type Transaction,
-} from '@/shared/core';
+import { type Asset, type Chain, type ProxiedAccount, type Transaction } from '@/shared/core';
 import { ZERO_BALANCE, dictionary, nonNullable, transferableAmount } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -100,7 +94,7 @@ const $unlockForm = createForm<FormParams>({
       rules: [
         {
           name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
+          errorText: t('transfer.noSignatoryError'),
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
             if (!signatory || !isMultisig) return true;
@@ -110,7 +104,7 @@ const $unlockForm = createForm<FormParams>({
         },
         {
           name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+          errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
           source: combine({
             fee: $fee,
             isMultisig: $isMultisig,
@@ -130,26 +124,30 @@ const $unlockForm = createForm<FormParams>({
       rules: [
         {
           name: 'required',
-          errorText: 'transfer.requiredAmountError',
+          errorText: t('transfer.requiredAmountError'),
           validator: Boolean,
         },
         {
           name: 'notZero',
-          errorText: 'transfer.notZeroAmountError',
+          errorText: t('transfer.notZeroAmountError'),
           validator: (value) => value !== ZERO_BALANCE,
         },
         {
           name: 'insufficientBalanceForFee',
-          errorText: 'transfer.notEnoughBalanceForFeeError',
+          errorText: t('transfer.notEnoughBalanceForFeeError'),
           source: combine({
             fee: $fee,
             isMultisig: $isMultisig,
             accounts: $accounts,
           }),
-          validator: (value, form, { fee, isMultisig, accounts }) => {
+          validator: (
+            value,
+            form,
+            { fee, isMultisig, accounts }: { fee: string; isMultisig: boolean; accounts: Accounts[] },
+          ) => {
             if (isMultisig) return true;
 
-            const accountsBalances = (accounts as Accounts[]).reduce<string[]>((acc, { account, balance }) => {
+            const accountsBalances = accounts.reduce<string[]>((acc, { account, balance }) => {
               if (form.shards.includes(account)) {
                 acc.push(balance);
               }
@@ -171,10 +169,10 @@ const $unlockForm = createForm<FormParams>({
 const $shards = combine(
   {
     activeWallet: walletSelect.$selectedWallet,
-    chainId: networkSelectorModel.$governanceChainId,
+    chain: networkSelectorModel.$governanceChain,
   },
-  ({ activeWallet, chainId }) => {
-    if (!chainId || !activeWallet) return [];
+  ({ activeWallet, chain }) => {
+    if (!chain || !activeWallet) return [];
 
     return (
       activeWallet.accounts.filter((account, _, collection) => {
@@ -186,7 +184,7 @@ const $shards = combine(
           return false;
         }
 
-        return accountUtils.isChainIdMatch(account, chainId);
+        return accountService.isAccountAvailableOnChain(account, chain);
       }) || []
     );
   },
@@ -231,11 +229,13 @@ const $realAccounts = combine(
     if (shards.length === 0) return [];
     if (txWrappers.length === 0) return shards;
 
-    if (transactionService.hasMultisig([txWrappers[0]])) {
-      return [(txWrappers[0] as MultisigTxWrapper).multisigAccount];
+    const firstWrapper = txWrappers[0];
+
+    if (transactionService.isMultisig(firstWrapper)) {
+      return [firstWrapper.multisigAccount];
     }
 
-    return [(txWrappers[0] as ProxyTxWrapper).proxyAccount];
+    return [firstWrapper.proxyAccount];
   },
 );
 
@@ -262,9 +262,9 @@ const $signatories = combine(
     if (!network || !txWrappers) return [];
 
     return txWrappers.reduce<AnyAccount[][]>((acc, wrapper) => {
-      if (!transactionService.hasMultisig([wrapper])) return acc;
+      if (!transactionService.isMultisig(wrapper)) return acc;
 
-      acc.push((wrapper as MultisigTxWrapper).signatories);
+      acc.push(wrapper.signatories);
 
       return acc;
     }, []);
@@ -367,7 +367,6 @@ sample({
         ...shard,
         actions: claim.actions,
         amount: claim.amount.toString(),
-        address: claim.accountId,
       });
     }
 
@@ -399,7 +398,7 @@ sample({
 sample({
   clock: $unlockForm.fields.signatory.onChange,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: networkSelectorModel.$network,
   },
   fn: ({ balances, network }, signatory) => {
@@ -463,7 +462,7 @@ sample({
 sample({
   source: {
     isProxy: $isProxy,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: networkSelectorModel.$network,
     proxyAccounts: $realAccounts,
   },

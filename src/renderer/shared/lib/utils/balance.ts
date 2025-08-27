@@ -1,7 +1,7 @@
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { default as BigNumber } from 'bignumber.js';
 
-import { type Asset, type AssetBalance, type Balance, LockTypes, type Unlocking } from '@/shared/core';
+import { type Asset, type Balance, LockTypes, type TransferableMode, type Unlocking } from '@/shared/core';
 
 import { ZERO_BALANCE } from './constants';
 import { nullable } from './functions';
@@ -40,6 +40,11 @@ export const formatAmount = (amount: string, precision: number): string => {
 };
 
 type FormatBalanceShorthands = Record<Suffix, boolean>;
+type FormatBalanceConfig = Partial<{
+  round: 'up' | 'down';
+  shorthands: Partial<FormatBalanceShorthands>;
+}>;
+
 type FormattedBalance = {
   value: string;
   suffix: string;
@@ -55,8 +60,10 @@ const defaultBalanceShorthands: FormatBalanceShorthands = {
 export const formatBalance = (
   balance: string | BN = '0',
   precision = 0,
-  shorthands: Partial<FormatBalanceShorthands> = defaultBalanceShorthands,
+  config?: FormatBalanceConfig,
 ): FormattedBalance => {
+  const shorthands = config?.shorthands ?? defaultBalanceShorthands;
+  const round = config?.round ?? 'down';
   const mergedShorthands =
     shorthands === defaultBalanceShorthands ? defaultBalanceShorthands : { ...defaultBalanceShorthands, ...shorthands };
 
@@ -66,7 +73,7 @@ export const formatBalance = (
   BNWithConfig.config({
     // HOOK: for divide with decimal part
     DECIMAL_PLACES: precision || Decimal.SMALL_NUMBER,
-    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
+    ROUNDING_MODE: round === 'down' ? BNWithConfig.ROUND_DOWN : BNWithConfig.ROUND_UP,
     FORMAT: {
       decimalSeparator: '.',
       groupSeparator: '',
@@ -119,12 +126,8 @@ export const formatBalance = (
   };
 };
 
-export const formatAsset = (
-  value: BN | string,
-  asset: Asset,
-  shorthands: Partial<FormatBalanceShorthands> = defaultBalanceShorthands,
-) => {
-  return `${formatBalance(value, asset.precision, shorthands).formatted} ${asset.symbol}`;
+export const formatAsset = (value: BN | string, asset: Asset, config?: FormatBalanceConfig) => {
+  return `${formatBalance(value, asset.precision, config).formatted} ${asset.symbol}`;
 };
 
 export const toPrecision = (balance: string | BN, precision: number): BN => {
@@ -180,22 +183,16 @@ export const fromPrecision = (balance: string | BN, precision: number): string =
   return new BNWithConfig(bnBalance).decimalPlaces(decimalPlaces).toFormat();
 };
 
-export const totalAmountBN = <T extends AssetBalance>(balance: T) => {
-  if (!balance) return BN_ZERO;
-
-  const bnFree = balance.free ? new BN(balance.free) : BN_ZERO;
-  const bnReserved = balance.reserved ? new BN(balance.reserved) : BN_ZERO;
-
-  return bnFree.add(bnReserved);
+export const totalAmountBN = (balance: Balance) => {
+  if (nullable(balance)) return BN_ZERO;
+  return balance.free.add(balance.reserved);
 };
 
-export const totalAmount = <T extends AssetBalance>(balance?: T): string => {
+export const totalAmount = (balance: Balance | null): string => {
   return balance ? totalAmountBN(balance).toString() : ZERO_BALANCE;
 };
 
 export const lockedAmountBN = (balance: Balance): BN => {
-  if (!balance.locked) return BN_ZERO;
-
   return balance.locked.reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
 };
 
@@ -203,16 +200,25 @@ export const lockedAmount = (balance: Balance): string => {
   return lockedAmountBN(balance).toString();
 };
 
-export const transferableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
+export const transferableAmountBN = (balance: Balance | null, transferableMode?: TransferableMode): BN => {
   if (nullable(balance)) return BN_ZERO;
 
-  const { free = BN_ZERO, frozen = BN_ZERO, reserved = BN_ZERO } = balance;
-  const diff = BN.max(BN_ZERO, frozen.sub(reserved));
+  switch (transferableMode ?? balance.transferableMode) {
+    case 'holdAndFreezes': {
+      const diff = BN.max(BN_ZERO, balance.frozen.sub(balance.reserved));
+      const transferable = balance.free.sub(diff);
 
-  return BN.max(BN_ZERO, free.sub(diff));
+      return BN.max(BN_ZERO, transferable);
+    }
+    case 'legacy': {
+      const transferable = balance.free.sub(balance.frozen);
+
+      return BN.max(BN_ZERO, transferable);
+    }
+  }
 };
 
-export const transferableAmount = <T extends AssetBalance>(balance?: T): string => {
+export const transferableAmount = (balance: Balance | null): string => {
   return transferableAmountBN(balance).toString();
 };
 
@@ -221,21 +227,38 @@ export const transferableAmount = <T extends AssetBalance>(balance?: T): string 
  * could be usefull in operations where reserved part is already taken into
  * account.
  */
-export const withdrawableAmountBN = <T extends AssetBalance>(balance?: T): BN => {
+export const withdrawableAmountBN = (balance: Balance | null): BN => {
   if (nullable(balance)) return BN_ZERO;
-
-  const { free = BN_ZERO, frozen = BN_ZERO } = balance;
-
-  return BN.max(BN_ZERO, free.sub(frozen));
+  return BN.max(BN_ZERO, balance.free.sub(balance.frozen));
 };
 
-export const withdrawableAmount = <T extends AssetBalance>(balance?: T): string => {
+export const withdrawableAmount = (balance: Balance | null): string => {
   return withdrawableAmountBN(balance).toString();
 };
 
-export const stakedAmountBN = (balance: AssetBalance) => {
-  if (!balance.locked) return BN_ZERO;
+export const reservableAmountBN = (balance: Balance, transferableMode?: TransferableMode): BN => {
+  if (nullable(balance)) return BN_ZERO;
 
+  switch (transferableMode ?? balance.transferableMode) {
+    // reducible_balance (https://github.com/paritytech/polkadot-sdk/blob/b9fbf243c57939ecadc89b82ed42249703203874/substrate/frame/balances/src/impl_fungible.rs#L47)
+    // is called with Force and Protect args (https://github.com/paritytech/polkadot-sdk/blob/b9fbf243c57939ecadc89b82ed42249703203874/substrate/frame/support/src/traits/tokens/fungibles/hold.rs#L101)
+    case 'holdAndFreezes': {
+      const reservable = balance.free.sub(balance.ed);
+
+      return BN.max(BN_ZERO, reservable);
+    }
+
+    // https://github.com/paritytech/polkadot-sdk/blob/b9fbf243c57939ecadc89b82ed42249703203874/substrate/frame/balances/src/impl_currency.rs#L522
+    // free - amount >= max(ed, frozen) => max_amount = free - max(ed, frozen)
+    case 'legacy': {
+      const reservable = balance.free.sub(BN.max(balance.ed, balance.frozen));
+
+      return BN.max(BN_ZERO, reservable);
+    }
+  }
+};
+
+export const stakedAmountBN = (balance: Balance) => {
   const bnLocks = balance.locked
     .filter((lock) => lock.type === LockTypes.STAKING)
     .reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
@@ -247,14 +270,14 @@ export const stakedAmount = (balance: Balance): string => {
   return stakedAmountBN(balance).toString();
 };
 
-export const stakeableAmountBN = (balance: AssetBalance) => {
+export const stakeableAmountBN = (balance: Balance) => {
   const total = totalAmountBN(balance);
   const staked = stakedAmountBN(balance);
 
   return BN.max(BN_ZERO, total.sub(staked));
 };
 
-export const stakeableAmount = (balance?: Balance): string => {
+export const stakeableAmount = (balance: Balance | null): string => {
   return balance ? stakeableAmountBN(balance).toString() : ZERO_BALANCE;
 };
 
@@ -337,6 +360,7 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
   const bnPrecision = new BNWithConfig(precision);
   const TEN = new BNWithConfig(10);
   const bnBalance = new BNWithConfig(balance).div(TEN.pow(bnPrecision));
+  const nonZeroDigits = 1;
 
   let divider = new BNWithConfig(1);
   let suffix = '';
@@ -344,7 +368,7 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
 
   if (bnBalance.lt(1)) {
     // if number has more than 7 digits in decimal part BigNumber.toString returns number in scientific notation
-    decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnBalance.toFixed());
+    decimalPlaces = getDecimalPlaceForFirstNonZeroChar(bnBalance.toFixed(), nonZeroDigits);
   } else if (bnBalance.lt(10)) {
     decimalPlaces = Decimal.SMALL_NUMBER;
   } else if (bnBalance.lt(1_000_000)) {
@@ -373,20 +397,21 @@ export const formatFiatBalance = (balance = '0', precision = 0): FormattedBalanc
   };
 };
 
+const BigNumberRoundingDown = BigNumber.clone({
+  ROUNDING_MODE: BigNumber.ROUND_DOWN,
+});
+
+// TODO refactor, terrible implementation of summarization
 export const getRoundedValue = (assetBalance = '0', price: number, precision = 0, nonZeroDigits?: number): string => {
   if (Number(assetBalance) === 0 || isNaN(Number(assetBalance))) {
     return ZERO_BALANCE;
   }
 
   const fiatBalance = new BigNumber(price).multipliedBy(new BigNumber(assetBalance));
-  const BNWithConfig = BigNumber.clone();
-  BNWithConfig.config({
-    ROUNDING_MODE: BNWithConfig.ROUND_DOWN,
-  });
 
-  const bnPrecision = new BNWithConfig(precision);
-  const TEN = new BNWithConfig(10);
-  const bnFiatBalance = new BNWithConfig(fiatBalance.toString()).div(TEN.pow(bnPrecision));
+  const bnPrecision = new BigNumberRoundingDown(precision);
+  const TEN = new BigNumberRoundingDown(10);
+  const bnFiatBalance = new BigNumberRoundingDown(fiatBalance.toString()).div(TEN.pow(bnPrecision));
 
   if (bnFiatBalance.gte(1) && bnFiatBalance.lt(10)) {
     return bnFiatBalance.decimalPlaces(Decimal.SMALL_NUMBER).toString();

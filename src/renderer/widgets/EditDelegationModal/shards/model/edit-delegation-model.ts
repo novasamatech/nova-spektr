@@ -18,7 +18,7 @@ import {
   getRelaychainAsset,
   isStep,
   nonNullable,
-  toAddress,
+  nullable,
   transferableAmount,
 } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
@@ -80,7 +80,7 @@ const $activeDelegations = combine(
   ({ delegations, delegate }) => {
     if (!delegate) return {};
 
-    return delegations[delegate.address] || {};
+    return delegations[delegate.accountId] || {};
   },
 );
 
@@ -207,11 +207,14 @@ sample({
     return Boolean(walletData.chain) && Boolean(target) && Boolean(tracks.length);
   },
   fn: ({ walletData, accounts, target, tracks, activeTracks, activeDelegations }, delegateData) => {
+    if (nullable(target)) return [];
+
     return accounts.map((shard) => {
-      const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
-      const conviction = delegateData!.isUnchanged ? activeDelegations[address].conviction : delegateData!.conviction;
+      const conviction = delegateData!.isUnchanged
+        ? activeDelegations[shard.accountId].conviction
+        : delegateData!.conviction;
       const amount = delegateData!.isUnchanged
-        ? activeDelegations[address].balance.toString()
+        ? activeDelegations[shard.accountId].balance.toString()
         : walletData.chain && formatAmount(delegateData!.amount, walletData.chain?.assets[0].precision);
 
       return transactionBuilder.buildEditDelegation({
@@ -219,13 +222,10 @@ sample({
         accountId: shard.accountId,
         balance: amount || '0',
         conviction: conviction || 'None',
-        previousConviction: activeDelegations[address].conviction || 'None',
-        target: target?.address || '',
+        previousConviction: activeDelegations[shard.accountId].conviction || 'None',
+        target: target.accountId,
         tracks,
-        undelegateTracks:
-          activeTracks[target!.address]?.[toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix })].map(
-            Number,
-          ) || [],
+        undelegateTracks: activeTracks[target!.accountId]?.[shard.accountId].map(Number) || [],
       });
     });
   },
@@ -336,7 +336,7 @@ sample({
 sample({
   clock: formModel.output.formSubmitted,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     feeData: $feeData,
     walletData: $walletData,
     tracks: $tracks,
@@ -369,26 +369,27 @@ sample({
   }) => {
     const wrapper = txWrappers.find(({ kind }) => kind === WrapperKind.PROXY) as ProxyTxWrapper;
     const asset = getRelaychainAsset(walletData.chain!.assets)!;
-
-    return {
-      event: shards.map((shard, index) => {
-        const address = toAddress(shard.accountId, { prefix: walletData.chain!.addressPrefix });
+    const events = shards
+      .map((shard, index) => {
+        if (nullable(target?.accountId)) {
+          return null;
+        }
 
         return {
           chain: walletData.chain!,
           asset: asset!,
           tracks,
-          target: target?.address || '',
+          target: target.accountId,
           transferable: transferableAmount(
             balanceUtils.getBalance(balances, shard.accountId, walletData.chain!.chainId, asset.assetId),
           ),
           ...delegateData!,
           signatory: delegateData!.signatory!,
           ...(isUnchanged && {
-            balance: getBalanceBn(activeDelegations[address].balance.toString(), asset.precision).toString(),
-            conviction: activeDelegations[address].conviction,
+            balance: getBalanceBn(activeDelegations[shard.accountId].balance.toString(), asset.precision).toString(),
+            conviction: activeDelegations[shard.accountId].conviction,
           }),
-          previousConviction: activeDelegations[address].conviction,
+          previousConviction: activeDelegations[shard.accountId].conviction,
           ...feeData,
           ...(wrapper && { proxiedAccount: wrapper.proxiedAccount }),
           ...(wrapper ? { shards: [wrapper.proxyAccount] } : { shards: [shard] }),
@@ -398,12 +399,16 @@ sample({
           tx: transactions![index].wrappedTx,
           initiator: shard,
         } satisfies EditDelegationConfirm;
-      }),
+      })
+      .filter(nonNullable);
+
+    return {
+      events: events,
       step: Step.CONFIRM,
     };
   },
   target: spread({
-    event: confirmModel.init,
+    events: confirmModel.init,
     step: stepChanged,
   }),
 });

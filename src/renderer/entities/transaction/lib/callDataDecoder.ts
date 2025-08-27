@@ -37,6 +37,7 @@ const getDataFromCallData = (
   }
 
   const { method, section } = api.registry.findMetaCall(extrinsicCall.callIndex);
+
   const extrinsicFn = api.tx[section][method];
   const extrinsic = extrinsicFn(...extrinsicCall.args);
 

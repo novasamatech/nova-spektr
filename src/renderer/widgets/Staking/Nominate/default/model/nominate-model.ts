@@ -105,7 +105,7 @@ const $coreTx = combine(
     return transactionBuilder.buildNominate({
       chain: walletData.chain,
       accountId: signatory.accountId,
-      nominators: validators.map(({ address }) => address),
+      nominators: validators.map(({ accountId }) => accountId),
     });
   },
 );

@@ -30,7 +30,7 @@ export const ChainAccountsList = memo(({ accounts }: Props) => {
 
 const ListItem = memo(({ chain, accountId }: { chain: Chain; accountId: AccountId }) => {
   return (
-    <li className="flex min-w-0 items-center gap-1 py-2 text-footnote">
+    <li className="flex min-w-0 items-center gap-2 py-4 text-footnote">
       <div className="flex-1 basis-1/3">
         <ChainTitle fontClass="text-text-primary" chain={chain} />
       </div>

@@ -3,7 +3,6 @@ import { type BN } from '@polkadot/util';
 import { type DelegateInfo } from '@/shared/api/governance';
 import {
   type AccountVote,
-  type Address,
   type BlockHeight,
   type Referendum,
   type ReferendumStatus,
@@ -28,7 +27,7 @@ export type AggregatedReferendum<T extends Referendum = Referendum> = T & {
 
 export type DecoupledVote = {
   decision: 'aye' | 'nay' | 'abstain';
-  voter: Address;
+  voter: AccountId;
   balance: BN;
   votingPower: BN;
   conviction: number;

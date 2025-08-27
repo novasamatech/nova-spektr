@@ -23,7 +23,7 @@ import { Box, Modal, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { permissionUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
-import { AddProxy, addProxyModel } from '@/features/proxy-add';
+import { AddProxy } from '@/features/proxy-add';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { ForgetStep } from '../../lib/constants';
@@ -182,7 +182,6 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
                 hasProxies={hasProxies}
                 className="h-[379px]"
                 canCreateProxy={canCreateProxy}
-                onAddProxy={addProxyModel.events.flowStarted}
               />
             </Tabs.Content>
           </Tabs>

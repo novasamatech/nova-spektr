@@ -11,7 +11,6 @@ import {
   TransactionType,
   type VotingMap,
 } from '@/shared/core';
-import { toAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
@@ -78,7 +77,7 @@ function subscribeVotingFor(
             track: trackId,
             balance: convictionVoting.data.balance,
             conviction: convictionVoting.data.conviction,
-            target: toAddress(convictionVoting.data.target),
+            target: convictionVoting.data.target,
             prior: convictionVoting.data.prior,
           };
           break;

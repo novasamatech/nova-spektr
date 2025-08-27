@@ -39,7 +39,7 @@ const universalAccount: UniversalAccount = {
   cryptoType: CryptoType.SR25519,
 };
 
-describe('accounts service', () => {
+describe('account service', () => {
   afterEach(() => {
     accountService.accountAvailabilityOnChainAnyOf.resetHandlers();
     accountService.accountActionPermissionAnyOf.resetHandlers();
@@ -55,25 +55,16 @@ describe('accounts service', () => {
   });
 
   it('should filter accounts by chainId', async () => {
+    accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+      body: ({ account, chain }) => (accountService.isChainAccount(account) ? account.chainId === chain.chainId : true),
+      available: () => true,
+    });
     const filtered = accountService.filterAccountsOnChain(
       [chainAccount, kusamaChainAccount, universalAccount],
       polkadotChain,
     );
 
-    expect(filtered).toEqual([chainAccount]);
-  });
-
-  it('should filter accounts by chainId', async () => {
-    const spy = jest.fn().mockReturnValue(true);
-    accountService.accountAvailabilityOnChainAnyOf.registerHandler({ body: spy, available: () => true });
-
-    const filtered = accountService.filterAccountsOnChain(
-      [kusamaChainAccount, chainAccount, universalAccount],
-      polkadotChain,
-    );
-
     expect(filtered).toEqual([chainAccount, universalAccount]);
-    expect(spy).toBeCalledWith({ account: universalAccount, chain: polkadotChain });
   });
 
   describe('graph', () => {
@@ -81,7 +72,7 @@ describe('accounts service', () => {
       proxiedAccountId: AccountId;
     }
 
-    const isProxyAccount = (a: AnyAccount): a is ProxyAccount => {
+    const isProxiedAccount = (a: AnyAccount): a is ProxyAccount => {
       return 'proxiedAccountId' in a;
     };
 
@@ -123,13 +114,17 @@ describe('accounts service', () => {
 
       const accounts = [leafAccount, secondProxyAccount, firstProxyAccount];
 
+      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+        body: () => true,
+        available: () => true,
+      });
       accountService.accountActionPermissionAnyOf.registerHandler({
         body: () => true,
         available: () => true,
       });
       accountService.accountCollectChildrenPipeline.registerHandler({
         body(children, { account, accounts }) {
-          if (isProxyAccount(account)) {
+          if (isProxiedAccount(account)) {
             return accounts.filter(a => a.accountId === account.proxiedAccountId);
           }
           return children;
@@ -190,13 +185,18 @@ describe('accounts service', () => {
 
       const accounts = [leafAccount, secondProxyAccount, firstProxyAccount];
 
+      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+        body: ({ account, chain }) =>
+          accountService.isChainAccount(account) ? account.chainId === chain.chainId : true,
+        available: () => true,
+      });
       accountService.accountActionPermissionAnyOf.registerHandler({
         body: () => true,
         available: () => true,
       });
       accountService.accountCollectChildrenPipeline.registerHandler({
         body(children, { account, accounts }) {
-          if (isProxyAccount(account)) {
+          if (isProxiedAccount(account)) {
             return accounts.filter(a => a.accountId === account.proxiedAccountId);
           }
           return children;
@@ -248,13 +248,18 @@ describe('accounts service', () => {
 
       const accounts = [proxy, extensionAccount, wcAccount];
 
+      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+        body: ({ account, chain }) =>
+          accountService.isChainAccount(account) ? account.chainId === chain.chainId : true,
+        available: () => true,
+      });
       accountService.accountActionPermissionAnyOf.registerHandler({
         body: () => true,
         available: () => true,
       });
       accountService.accountCollectChildrenPipeline.registerHandler({
         body(children, { account, accounts }) {
-          if (isProxyAccount(account)) {
+          if (isProxiedAccount(account)) {
             return accounts.filter(a => a.accountId === account.proxiedAccountId);
           }
           return children;
@@ -291,13 +296,18 @@ describe('accounts service', () => {
 
       const accounts = [proxy, pvAccount];
 
+      accountService.accountAvailabilityOnChainAnyOf.registerHandler({
+        body: ({ account, chain }) =>
+          accountService.isChainAccount(account) ? account.chainId === chain.chainId : true,
+        available: () => true,
+      });
       accountService.accountActionPermissionAnyOf.registerHandler({
         body: () => true,
         available: () => true,
       });
       accountService.accountCollectChildrenPipeline.registerHandler({
         body(children, { account, accounts }) {
-          if (isProxyAccount(account)) {
+          if (isProxiedAccount(account)) {
             return accounts.filter(a => a.accountId === account.proxiedAccountId);
           }
           return children;

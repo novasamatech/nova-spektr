@@ -106,7 +106,7 @@ const Signatories = () => {
   const isMultisig = useUnit(formModel.$isMultisig);
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
-  const balances = useUnit(balanceModel.$balances);
+  const balances = useUnit(balanceModel.$balanceMap);
 
   const signatoriesWithBalance = useMemo(() => {
     if (!network) {

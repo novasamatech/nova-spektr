@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
+import { t } from 'i18next';
 
 import { type Chain } from '@/shared/core';
 import { getNativeAsset, withdrawableAmountBN } from '@/shared/lib/utils';
@@ -13,7 +14,7 @@ export const RemovePureProxiedRules = {
   account: {
     notEnoughTokens: (source: Store<SignatoryStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'proxy.addProxy.notEnoughTokens',
+      errorText: t('proxy.addProxy.notEnoughTokens'),
       source,
       validator: (value: any, form: { chain: Chain }, { balances, ...params }: SignatoryStore) => {
         const balance = balanceUtils.getBalance(
@@ -30,7 +31,7 @@ export const RemovePureProxiedRules = {
   signatory: {
     notEnoughTokens: (source: Store<SignatoryStore>) => ({
       name: 'notEnoughTokens',
-      errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+      errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
       source,
       validator: (
         value: { accountId: AccountId },
@@ -53,7 +54,7 @@ export const RemovePureProxiedRules = {
   description: {
     maxLength: {
       name: 'maxLength',
-      errorText: 'transfer.descriptionLengthError',
+      errorText: t('transfer.descriptionLengthError'),
       validator: descriptionValidation.isMaxLength,
     },
   },

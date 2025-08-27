@@ -1,4 +1,5 @@
-import { type Address, type ProxyType } from '@/shared/core';
+import { type ProxyType } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -6,7 +7,7 @@ import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-m
 
 export type AddProxyConfirm = TxConfirmInfo & {
   proxyType: ProxyType;
-  delegate: Address;
+  delegate: AccountId;
 
   fee: string;
   multisigDeposit: string;

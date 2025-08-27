@@ -50,8 +50,8 @@ export const consts = {
    * is that the runtime should know about the prefix in order to make use of it
    * as an identifier of the chain.
    */
-  ss58Prefix(_api: ApiPromise) {
-    throw new Error('Not implemented');
+  ss58Prefix(api: ApiPromise) {
+    return pjsSchema.u16.parse(getPallet(api)['ss58Prefix']);
   },
 
   /**

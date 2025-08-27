@@ -1,0 +1,22 @@
+name: Check i18n keys
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  i18n:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⚙️Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: 🔪 Check by typescript
+        run: pnpm run i18n:check:strict

@@ -17,13 +17,13 @@ import { type AnyDecodedTransaction, type AnyTransaction, type EncodedTransactio
 const wrapTransactionTransformer = createTransformer<
   AnyTransaction,
   AnyTransaction | Promise<AnyTransaction>,
-  { account: AnyAccount; route: AnyAccount[]; index: number; api: ApiPromise }
+  { account: AnyAccount; route: AnyAccount[]; api: ApiPromise }
 >();
 
 const wrapLegacyTransactionTransformer = createTransformer<
   DeprecatedTransaction,
   DeprecatedTransaction | Promise<DeprecatedTransaction>,
-  { account: AnyAccount; route: AnyAccount[]; index: number; api: ApiPromise }
+  { account: AnyAccount; route: AnyAccount[]; api: ApiPromise }
 >();
 
 const unwrapTransactionTransformer = createTransformer<
@@ -44,11 +44,11 @@ function isDecodedTransaction(transaction: AnyTransaction): transaction is AnyDe
   return transaction.type === 'decoded';
 }
 
-async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccount[], api: ApiPromise) {
+async function wrapTransaction(transaction: AnyTransaction, route: AnyAccount[], api: ApiPromise) {
   let wrapped: AnyTransaction = transaction;
 
-  for (const [index, account] of Array.from(route).entries()) {
-    const result: AnyTransaction | null = await wrapTransactionTransformer(wrapped, { account, route, index, api });
+  for (const account of route) {
+    const result: AnyTransaction | null = await wrapTransactionTransformer(wrapped, { account, route, api });
     if (nonNullable(result)) {
       wrapped = result;
     }
@@ -64,11 +64,10 @@ async function wrapTransaction(transaction: EncodedTransaction, route: AnyAccoun
 async function wrapLegacyTransaction(transaction: DeprecatedTransaction, route: AnyAccount[], api: ApiPromise) {
   let wrapped: DeprecatedTransaction = transaction;
 
-  for (const [index, account] of Array.from(route).entries()) {
+  for (const account of route) {
     const result: DeprecatedTransaction | null = await wrapLegacyTransactionTransformer(wrapped, {
       account,
       route,
-      index,
       api,
     });
     if (nonNullable(result)) {
@@ -95,7 +94,7 @@ async function unwrapTransaction(transaction: AnyTransaction, api: ApiPromise) {
   return list;
 }
 
-function createSubmittableExtrinsicFromCallData(callData: string, api: ApiPromise): Extrinsic {
+function createExtrinsicFromCallData(callData: string, api: ApiPromise): Extrinsic {
   try {
     return api.tx(callData);
   } catch {
@@ -113,9 +112,50 @@ function createSubmittableExtrinsicFromCallData(callData: string, api: ApiPromis
   }
 }
 
-function createSubmittableExtrinsic(transaction: AnyTransaction, api: ApiPromise): Extrinsic {
-  const encodedExtrinsic = encodeTransaction(transaction, api);
-  return createSubmittableExtrinsicFromCallData(encodedExtrinsic.callData, api);
+function createExtrinsic(transaction: AnyTransaction, api: ApiPromise): Extrinsic {
+  try {
+    const encodedExtrinsic = encodeTransaction(transaction, api);
+    return createExtrinsicFromCallData(encodedExtrinsic.callData, api);
+  } catch (error) {
+    try {
+      // fail-safe for transactions that are not supported yet. not the best solution, but it works for now.
+      return unsafe_createExtrinsicFromAnyTransaction(transaction, api);
+    } catch {
+      throw error;
+    }
+  }
+}
+
+function unsafe_createExtrinsicFromAnyTransaction(transaction: AnyTransaction, api: ApiPromise): Extrinsic {
+  if (isEncodedTransaction(transaction)) {
+    return createExtrinsicFromCallData(transaction.callData, api);
+  }
+
+  const sectionConstructor = api.tx[transaction.section];
+  if (nullable(sectionConstructor)) {
+    throw new Error(`Section ${transaction.section} not found in api for chain ${api.genesisHash.toHex()}`);
+  }
+
+  const extrinsicConstructor = sectionConstructor[transaction.method];
+  if (nullable(extrinsicConstructor)) {
+    throw new Error(
+      `Method ${transaction.section}.${transaction.method} not found in api for chain ${api.genesisHash.toHex()}`,
+    );
+  }
+
+  const constructorArguments: unknown[] = [];
+
+  for (const arg of extrinsicConstructor.meta.args) {
+    const key = arg.name.toString();
+    const value = (transaction.args as Record<string, unknown>)[key];
+    if (value === undefined) {
+      throw new Error(`Missing argument ${key} for transaction ${transaction.section}.${transaction.method}`);
+    }
+
+    constructorArguments.push(api.createType(arg.type.toString(), value));
+  }
+
+  return extrinsicConstructor(...constructorArguments);
 }
 
 function createEncodedTransactionFromExtrinsic(extrinsic: Extrinsic): EncodedTransaction {
@@ -148,7 +188,7 @@ function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDec
     return transaction;
   }
 
-  const decoded = createSubmittableExtrinsic(transaction, api);
+  const decoded = createExtrinsic(transaction, api);
   const result = decodeTransactionTransformer(decoded);
   if (nullable(result)) {
     const error = new Error("Can't decode extrinsic");
@@ -160,6 +200,12 @@ function decodeTransaction(transaction: AnyTransaction, api: ApiPromise): AnyDec
 }
 
 async function getExtrinsicFee(extrinsic: Extrinsic) {
+  const { partialFee } = await extrinsic.paymentInfo(extrinsic.signer);
+  return partialFee.toBn();
+}
+
+async function getTransactionFee(transaction: AnyTransaction, api: ApiPromise) {
+  const extrinsic = createExtrinsic(transaction, api);
   const { partialFee } = await extrinsic.paymentInfo(extrinsic.signer);
   return partialFee.toBn();
 }
@@ -371,11 +417,13 @@ export const transactionService = {
   encodeTransaction,
   decodeTransaction,
 
+  unsafe_createExtrinsicFromAnyTransaction,
   createEncodedTransactionFromExtrinsic,
-  createSubmittableExtrinsicFromCallData,
-  createSubmittableExtrinsic,
+  createExtrinsicFromCallData,
+  createExtrinsic,
 
   getExtrinsicFee,
+  getTransactionFee,
   getExtrinsicWeight,
 
   splitExtrinsic,

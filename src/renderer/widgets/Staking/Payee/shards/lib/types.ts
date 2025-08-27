@@ -1,4 +1,4 @@
-import { type Address, type Chain, type Wallet } from '@/shared/core';
+import { type Chain, type Wallet } from '@/shared/core';
 import { type AnyAccount } from '@/domains/network';
 
 export const enum Step {
@@ -19,7 +19,7 @@ export type WalletData = {
 export type PayeeData = {
   shards: AnyAccount[];
   signatory: AnyAccount | null;
-  destination: Address;
+  destination: string;
 };
 
 export type FeeData = {

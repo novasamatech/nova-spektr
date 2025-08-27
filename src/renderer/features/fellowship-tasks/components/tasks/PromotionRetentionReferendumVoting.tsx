@@ -4,7 +4,7 @@ import { memo, useMemo } from 'react';
 import { type Transaction } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { toAddress, toRomanNumeral, truncate } from '@/shared/lib/utils';
+import { toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService, track, trackService } from '@/domains/collectives';
@@ -113,9 +113,13 @@ const useTitle = ({ referendum }: { referendum: OngoingReferendum }) => {
     const string = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';
     const trackName = isPromotionTrack ? 'Promotion' : 'Retention';
 
+    const rank = trackService.getProposalTrack(relatedTracks, proposerMember, trackName);
+
     return t(string, {
-      name: proposerIdentity?.name ?? truncate(toAddress(proposerMember.accountId, { prefix: chain?.addressPrefix })),
-      rank: toRomanNumeral(trackService.getProposalTrack(relatedTracks, proposerMember, trackName)),
+      name:
+        proposerIdentity?.name ??
+        toShortAddress(toAddress(proposerMember.accountId, { prefix: chain?.addressPrefix }), 5),
+      rank: toRomanNumeral(rank),
     });
   }, [proposerIdentity, isPromotionTrack, isRetentionTrack, t, currentTrack, relatedTracks, proposerMember, chain]);
 };

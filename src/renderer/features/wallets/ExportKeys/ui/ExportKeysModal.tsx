@@ -2,7 +2,7 @@ import { encodeAddress } from '@polkadot/util-crypto';
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useMemo, useState } from 'react';
 
-import { type PolkadotVaultWallet } from '@/shared/core';
+import { type Address, type PolkadotVaultWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, SmallTitleText } from '@/shared/ui';
 import { Box, Modal } from '@/shared/ui-kit';
@@ -49,7 +49,7 @@ export const ExportKeysModal = ({ wallet, onClose, children }: Props) => {
   }, [wallet]);
 
   const qrPayload = useMemo(() => {
-    const address = encodeAddress(wallet.rootAccountId);
+    const address = encodeAddress(wallet.rootAccountId) as Address;
     return createDynamicDerivationExportPayload(wallet.name, address, accounts.flat(), chains);
   }, [wallet.name, wallet.rootAccountId, accounts, chains]);
 

@@ -1,6 +1,7 @@
 import { type BN } from '@polkadot/util';
 
 import { type Address, type Chain, type Conviction, type ReferendumId } from '@/shared/core';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export type ReferendumTimelineRecordStatus =
   | 'All'
@@ -36,7 +37,7 @@ export interface GovernanceApi {
     callback: (data: IteratorResult<Record<ReferendumId, string>, void>) => void,
   ) => void;
   getReferendumDetails: (chain: Chain, referendumId: ReferendumId) => Promise<string | undefined>;
-  getReferendumVotes: (chain: Chain, referendumId: ReferendumId) => Promise<Address[]>;
+  getReferendumVotes: (chain: Chain, referendumId: ReferendumId) => Promise<AccountId[]>;
   getReferendumTimeline: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumTimelineRecord[]>;
   getReferendumSummary: (chain: Chain, referendumId: ReferendumId) => Promise<ReferendumSummary>;
 }
@@ -73,7 +74,7 @@ export type SubQueryVoting = {
 };
 
 export type DelegateDetails = {
-  address: Address;
+  accountId: AccountId;
   name: string;
   image: string;
   shortDescription: string;
@@ -82,7 +83,7 @@ export type DelegateDetails = {
 };
 
 export type DelegateStat = {
-  address: Address;
+  accountId: AccountId;
   delegators: number;
   delegatorVotes: string;
   delegateVotes: number;
@@ -90,7 +91,7 @@ export type DelegateStat = {
 };
 
 export type Delegation = {
-  delegator: Address;
+  delegator: AccountId;
   delegation: {
     amount: string;
     conviction: Conviction;
@@ -99,15 +100,15 @@ export type Delegation = {
 };
 
 export type DelegationsByAccount = {
-  address: Address;
+  accountId: AccountId;
   delegations: Delegation[];
 };
 
 export type DelegateAccount = DelegateStat & Partial<DelegateDetails>;
 
 export type DelegateInfo = {
-  delegator: Address;
-  delegateAddress: Address;
+  delegator: AccountId;
+  delegateAccount: AccountId;
   decision: 'aye' | 'nay';
   amount: BN;
   conviction: Conviction;
@@ -117,10 +118,10 @@ export interface DelegationApi {
   getDelegatesFromRegistry: (chain: Chain) => Promise<DelegateDetails[]>;
   getDelegatedVotesFromExternalSource: (
     chain: Chain,
-    voter: Address[],
+    accounts: AccountId[],
   ) => Promise<Record<ReferendumId, DelegateInfo[]>>;
   getDelegatesFromExternalSource: (chain: Chain, timestamp: number) => Promise<DelegateStat[]>;
-  getDelegatesForAccount: (chain: Chain, address: string) => Promise<DelegationsByAccount | null>;
+  getDelegatesForAccount: (chain: Chain, accountId: AccountId) => Promise<DelegationsByAccount | null>;
   aggregateDelegateAccounts: (accounts: DelegateDetails[], stats: DelegateStat[], chain: Chain) => DelegateAccount[];
 
   calculateTotalVotes: (votingPower: BN, tracks: number[], chain: Chain) => BN;

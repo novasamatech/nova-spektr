@@ -1,8 +1,8 @@
 import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
+import { WalletIcon } from '@/shared/ui-entities';
 import { Dropdown } from '@/shared/ui-kit';
-import { WalletIcon } from '@/entities/wallet';
 import { walletPairingDropdownOptionsSlot } from '@/features/wallet-pairing';
 
 import { SelectMultisigWalletType } from './SelectMultisigWalletType';

@@ -4,8 +4,7 @@ import { useEffect } from 'react';
 import { type Address, type Transaction, TransactionType, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, getAssetById, toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { cnTw, getAssetById, keys, toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { type MultisigOperation, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -40,7 +39,7 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
   });
 
   useEffect(() => {
-    const accounts = Object.keys(validatorsMap).map(toAccountId) as AccountId[];
+    const accounts = keys(validatorsMap).map(toAccountId);
 
     if (accounts.length === 0) return;
 
@@ -55,9 +54,9 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
     [];
 
   const selectedValidators: Validator[] =
-    allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.address)) || [];
-  const selectedValidatorsAddress = selectedValidators.map((validator) => validator.address);
-  const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.address));
+    allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.accountId)) || [];
+  const selectedValidatorsAddress = selectedValidators.map((validator) => validator.accountId);
+  const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.accountId));
   const validatorsAsset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
 
   if (Boolean(selectedValidators?.length) && defaultAsset) {
@@ -85,7 +84,6 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
           identities={identities}
           selectedValidators={selectedValidators}
           notSelectedValidators={notSelectedValidators}
-          explorers={chain?.explorers}
           onClose={toggleValidators}
         />
       </>,

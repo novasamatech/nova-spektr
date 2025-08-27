@@ -13,7 +13,7 @@ import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
-import { AddProxy, addProxyModel } from '@/features/proxy-add';
+import { AddProxy } from '@/features/proxy-add';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -164,7 +164,6 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
                 hasProxies={hasProxies}
                 canCreateProxy={canCreateProxy}
                 className="h-[388px]"
-                onAddProxy={addProxyModel.events.flowStarted}
               />
             </Tabs.Content>
           </Tabs>

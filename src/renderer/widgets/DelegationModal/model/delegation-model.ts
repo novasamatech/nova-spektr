@@ -4,8 +4,16 @@ import { groupBy, sortBy } from 'lodash';
 import { combineEvents, readonly } from 'patronum';
 
 import { type DelegateAccount } from '@/shared/api/governance';
-import { type Address } from '@/shared/core';
-import { Step, includesMultiple, isStep, nonNullable, toAccountId, validateAddress } from '@/shared/lib/utils';
+import {
+  Step,
+  includesMultiple,
+  isStep,
+  keys,
+  nonNullable,
+  toAccountId,
+  toAddress,
+  validateAddress,
+} from '@/shared/lib/utils';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { delegateRegistryAggregate, delegationAggregate, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
@@ -19,7 +27,7 @@ const stepChanged = createEvent<Step>();
 const queryChanged = createEvent<string>();
 const sortTypeChanged = createEvent<SortType>();
 const selectDelegate = createEvent<DelegateAccount>();
-const customDelegateChanged = createEvent<Address>();
+const customDelegateChanged = createEvent<string>();
 const openCustomModal = createEvent();
 const closeCustomModal = createEvent();
 const createCustomDelegate = createEvent();
@@ -38,7 +46,7 @@ const $delegateList = combine(
   },
   ({ activeWallet, delegationsList, query, sortType }) => {
     const accounts = activeWallet?.accounts.map((a) => a.accountId) || [];
-    const list = delegationsList.filter((d) => !accounts.includes(toAccountId(d.address)));
+    const list = delegationsList.filter((d) => !accounts.includes(d.accountId));
 
     if (!sortType && !query) {
       const grouped = groupBy(list, (delegate) => !!delegate.name);
@@ -50,7 +58,7 @@ const $delegateList = combine(
     }
 
     const searched = list.filter((delegate) =>
-      includesMultiple([delegate.address, delegate.address, delegate.name, delegate.shortDescription], query),
+      includesMultiple([toAddress(delegate.accountId), delegate.name, delegate.shortDescription], query),
     );
 
     const sortProp = SortProp[sortType || SortType.DELEGATIONS];
@@ -63,18 +71,18 @@ const $customError = combine(
   {
     delegate: $customDelegate,
     votes: delegationAggregate.$activeDelegations,
-    wallet: walletSelect.$selectedWallet,
+    accounts: walletSelect.$selectedAccounts,
     network: delegationAggregate.$network,
   },
-  ({ delegate, votes, wallet, network }): DelegationErrors | null => {
-    if (!wallet || !network?.chain || !delegate || !validateAddress(delegate)) return DelegationErrors.INVALID_ADDRESS;
+  ({ delegate, votes, accounts, network }): DelegationErrors | null => {
+    if (!network?.chain || !delegate || !validateAddress(delegate)) return DelegationErrors.INVALID_ADDRESS;
 
-    const isOwnAccount = wallet.accounts.some((a) => a.accountId === toAccountId(delegate));
+    const delegateAccountId = toAccountId(delegate);
 
+    const isOwnAccount = accounts.some((a) => a.accountId === delegateAccountId);
     if (isOwnAccount) return DelegationErrors.YOUR_ACCOUNT;
 
-    const isAlreadyDelegated = Object.keys(votes).some((v) => toAccountId(v) === toAccountId(delegate));
-
+    const isAlreadyDelegated = keys(votes).some((v) => v === delegateAccountId);
     if (isAlreadyDelegated) return DelegationErrors.ALREADY_DELEGATED;
 
     return null;
@@ -121,8 +129,9 @@ sample({
   clock: createCustomDelegate,
   source: $customDelegate,
   fn: (delegate) =>
+    // TODO add delegate validation before set
     ({
-      address: delegate,
+      accountId: toAccountId(delegate),
       delegators: 0,
       delegatorVotes: '0',
       delegateVotes: 0,

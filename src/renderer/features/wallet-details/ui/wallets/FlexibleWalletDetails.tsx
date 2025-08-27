@@ -1,5 +1,4 @@
 import { useGate, useUnit } from 'effector-react';
-import { noop } from 'lodash';
 import { type ReactNode, useMemo, useState } from 'react';
 
 import { type FlexibleMultisigWallet, type MultisigWallet, WalletType } from '@/shared/core';
@@ -7,14 +6,15 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { assert, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, type IconNames, Separator } from '@/shared/ui';
-import { AccountExplorers, Address, ChainIcon, WalletAccountIcon } from '@/shared/ui-entities';
+import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
+import { AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { ContactItem, WalletCardMd, WalletIcon, accountUtils, permissionUtils } from '@/entities/wallet';
+import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
+import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { AddPureProxied } from '@/features/proxied-add-pure';
-import { AddProxy, addProxyModel } from '@/features/proxy-add';
+import { AddProxy } from '@/features/proxy-add';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -68,9 +68,11 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   const actions: WalletAction[] = [
     {
-      icon: 'changeSignatories' as IconNames,
-      title: t('walletDetails.multisig.changeSignatories'),
-      onClick: noop,
+      component: (
+        <ChangeSignatories wallet={wallet}>
+          <Action title={t('walletDetails.multisig.changeSignatories')} icon="changeSignatories" />
+        </ChangeSignatories>
+      ),
     },
   ];
 
@@ -169,14 +171,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
     const TabProxy = {
       id: '3',
       title: t('walletDetails.common.proxiesTabTitle'),
-      panel: (
-        <ProxiesList
-          wallet={wallet}
-          hasProxies={hasProxies}
-          canCreateProxy={canCreateProxy}
-          onAddProxy={addProxyModel.events.flowStarted}
-        />
-      ),
+      panel: <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />,
     };
 
     TabItems.push(TabProxy);
@@ -191,10 +186,10 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
-                  address={multisigAccount?.accountId}
+                  address={proxiedAccount?.accountId}
                   type={wallet.type}
                   size={42}
-                  theme={isEthereumAccountId(multisigAccount?.accountId) ? 'ethereum' : 'polkadot'}
+                  theme={isEthereumAccountId(proxiedAccount?.accountId) ? 'ethereum' : 'polkadot'}
                 />
               </div>
               {!isRenameInputOpen && (

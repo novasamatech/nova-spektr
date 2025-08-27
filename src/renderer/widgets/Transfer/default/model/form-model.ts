@@ -1,14 +1,13 @@
 /* eslint-disable import-x/max-dependencies */
-import { BN_ZERO } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Address, type Chain, type ChainId, type Transaction } from '@/shared/core';
+import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ADDRESS,
   TEST_EVM_ADDRESS,
-  ZERO_BALANCE,
   assert,
   formatAmount,
   getAssetId,
@@ -17,25 +16,33 @@ import {
   nullable,
   toAccountId,
   toAddress,
+  toPrecision,
   transferableAmountBN,
   validateAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createComplexTxStore, createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
+import {
+  createComplexTxStore,
+  createInitiatorsStore,
+  createSignatoriesStore,
+  createTxValidationStore,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
-import { xcmTransferModel } from '../../shared/model/xcm-transfer-model';
+import { transferValidator } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
+
+import { xcmTransferModel } from './xcm-transfer-model';
 
 type FormParams = {
   initiator: AnyAccount | null;
   signatory: AnyAccount | null;
-  destination: Address;
+  destination: string;
   destinationChain: Chain | null;
   amount: string;
 };
@@ -45,18 +52,19 @@ type FormSubmitEvent = FormParams & {
   tx: Transaction;
   initiator: AnyAccount;
   signatory: AnyAccount;
+  destination: Address;
   route: AnyAccount[];
   destinationChain: Chain;
-  fee: string;
-  xcmFee: string;
-  deliveryFee: string;
-  multisigDeposit: string;
+  fee: BN;
+  xcmFee: BN;
+  deliveryFee: BN;
+  multisigDeposit: BN;
 };
 
 const formInitiated = createEvent<NetworkStore>();
 const formSubmitted = createEvent<FormSubmitEvent>();
 
-const multisigDepositChanged = createEvent<string>();
+const multisigDepositChanged = createEvent<BN>();
 
 const myselfClicked = createEvent();
 const xcmDestinationSelected = createEvent<AccountId>();
@@ -67,9 +75,10 @@ const $isNative = createStore<boolean>(false);
 
 const $isMyselfXcmOpened = createStore<boolean>(false).reset(xcmDestinationCancelled);
 
-const $multisigDeposit = restore(multisigDepositChanged, ZERO_BALANCE);
+const $multisigDeposit = restore(multisigDepositChanged, BN_ZERO);
 
 const $chain = $networkStore.map((s) => (s ? s.chain : null));
+const $nativeAsset = $chain.map((c) => (c ? getNativeAsset(c.assets) : null));
 const $asset = $networkStore.map((s) => (s ? s.asset : null));
 
 const form: Form<FormParams> = createForm<FormParams>({
@@ -88,6 +97,17 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
     amount: {
       defaultValue: '',
+      validator: () => ({
+        source: $asset,
+        fn: (amount, _, asset: Asset | null) => {
+          if (nullable(asset)) return;
+
+          const bn = toPrecision(amount, asset.precision);
+          if (bn.isZero()) {
+            return { message: 'transfer.requiredAmountError' };
+          }
+        },
+      }),
     },
   },
   validateOn: ['submit'],
@@ -139,7 +159,7 @@ const $initiators = createInitiatorsStore({
 const $initiatorBalance = combine(
   {
     initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     chain: $chain,
     asset: $asset,
   },
@@ -177,7 +197,7 @@ const $signatories = createSignatoriesStore({
 const $signatoryBalance = combine(
   {
     signatory: form.fields.signatory.$value,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     chain: $chain,
   },
   ({ signatory, balances, chain }) => {
@@ -218,7 +238,7 @@ const $coreTx = combine(
   },
 );
 
-const $feeTx = combine(
+const $feeCoreTx = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
@@ -246,14 +266,44 @@ const $feeTx = combine(
   },
 );
 
-const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
+const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
   accounts: accounts.$list,
   chain: $chain,
   transaction: $coreTx,
-  feeTransaction: $feeTx,
+  feeTransaction: $feeCoreTx,
+});
+
+const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
+
+const $calculationExtrinsic = combine(
+  {
+    api: $api,
+    tx: $calculationTx,
+  },
+  ({ api, tx }) => {
+    if (!api || !tx) return null;
+    return getExtrinsic[tx.type](tx.args, api);
+  },
+);
+
+const { $errors } = createTxValidationStore({
+  validator: transferValidator,
+  params: {
+    api: $api,
+    sourceChain: $chain,
+    sourceAsset: $asset,
+    destinationChain: form.fields.destinationChain.$value,
+    asset: $nativeAsset,
+    amount: form.fields.amount.$value,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $calculationTx,
+    xcmFee: xcmTransferModel.$xcmFee,
+    deliveryFee: xcmTransferModel.$deliveryFee,
+  },
 });
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
@@ -305,26 +355,20 @@ const $isMyselfXcmEnabled = combine(
 
 const $canSubmit = combine(
   {
+    errors: $errors,
     isXcm: $isXcm,
     isFormValid: form.$isValid,
     isFeeLoading: $pendingFee,
     isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
     isDeliveryFeeLoading: xcmTransferModel.$isDeliveryFeeLoading,
   },
-  ({ isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
-    return isFormValid && !isFeeLoading && (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading);
-  },
-);
-
-const $extrinsic = combine(
-  {
-    api: $api,
-    coreTx: $coreTx,
-  },
-  ({ api, coreTx }) => {
-    if (!api || !coreTx) return null;
-
-    return getExtrinsic[coreTx.type](coreTx.args, api);
+  ({ errors, isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
+    return (
+      !accountService.hasTransactionValidationErrors(errors) &&
+      isFormValid &&
+      !isFeeLoading &&
+      (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading)
+    );
   },
 );
 
@@ -417,7 +461,7 @@ sample({
 
 sample({
   clock: form.fields.destination.change,
-  fn: toAccountId,
+  fn: (destination) => (validateAddress(destination) ? toAccountId(destination) : null),
   target: xcmTransferModel.events.destinationChanged,
 });
 
@@ -446,8 +490,16 @@ const formSubmitFinished = sample({
     multisigDeposit: $multisigDeposit,
   },
   fn: ({ chain, initiator, network, route, coreTx, tx, multisigDeposit, fee, xcmFee, deliveryFee }, form) => {
-    if (nullable(chain) || nullable(coreTx) || nullable(tx) || nullable(initiator) || nullable(form.signatory))
+    if (
+      nullable(chain) ||
+      nullable(coreTx) ||
+      nullable(tx) ||
+      nullable(initiator) ||
+      nullable(form.signatory) ||
+      !validateAddress(form.destination)
+    ) {
       return null;
+    }
     return {
       tx,
       coreTx,
@@ -458,9 +510,9 @@ const formSubmitFinished = sample({
       destinationChain: form.destinationChain ?? chain,
       multisigDeposit,
       route,
-      fee: fee.toString(),
+      fee,
       xcmFee,
-      deliveryFee: deliveryFee ?? ZERO_BALANCE,
+      deliveryFee: deliveryFee,
     } satisfies FormSubmitEvent;
   },
 });
@@ -471,7 +523,7 @@ sample({
 });
 
 sample({
-  clock: $extrinsic,
+  clock: $calculationExtrinsic,
   filter: nonNullable,
   target: xcmTransferModel.events.deliveryFeeRequested,
 });
@@ -506,6 +558,8 @@ export const formModel = {
   $isXcm,
   $isChainConnected,
   $canSubmit,
+
+  $errors,
 
   $xcmConfig: xcmTransferModel.$config,
   $xcmApi: xcmTransferModel.$apiDestination,

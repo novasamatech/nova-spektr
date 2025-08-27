@@ -4,8 +4,8 @@ import { type FlexibleMultisigCreated } from '@/shared/core';
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { BodyText, Button } from '@/shared/ui';
+import { WalletIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { WalletIcon } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 type Props = {

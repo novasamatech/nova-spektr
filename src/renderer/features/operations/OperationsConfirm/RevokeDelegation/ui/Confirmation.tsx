@@ -11,7 +11,7 @@ import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails } from '@/ent
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { accountUtils, walletModel } from '@/entities/wallet';
-import { getLocksForAddress, lockPeriodsModel, locksAggregate, locksPeriodsAggregate } from '@/features/governance';
+import { getLocksForAccount, lockPeriodsModel, locksAggregate, locksPeriodsAggregate } from '@/features/governance';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -72,7 +72,7 @@ export const Confirmation = ({
     ? formatAmount(confirmStore.meta.balance, confirmStore.meta.asset.precision)
     : confirmStore.meta.balance;
 
-  const locksForAddress = getLocksForAddress(confirmStore.meta.initiator.accountId, trackLocks);
+  const locksForAddress = getLocksForAccount(confirmStore.meta.initiator.accountId, trackLocks);
 
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 py-4">

@@ -1,5 +1,6 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 
 import { type HexString } from '@/shared/core';
 import { createFlow } from '@/shared/effector';
@@ -60,7 +61,7 @@ const form = createForm<Form>({
       rules: [
         {
           name: 'required',
-          errorText: 'fellowship.salary.evidenceForm.areas.required',
+          errorText: t('fellowship.salary.evidenceForm.areas.required'),
           validator: v => v.trim().length > 0,
         },
       ],
@@ -70,7 +71,7 @@ const form = createForm<Form>({
       rules: [
         {
           name: 'required',
-          errorText: 'fellowship.salary.evidenceForm.evidence.required',
+          errorText: t('fellowship.salary.evidenceForm.evidence.required'),
           validator: v => v.trim().length > 0,
         },
       ],
@@ -80,7 +81,7 @@ const form = createForm<Form>({
       rules: [
         {
           name: 'required',
-          errorText: 'fellowship.salary.evidenceForm.comments.required',
+          errorText: t('fellowship.salary.evidenceForm.comments.required'),
           validator: v => v.trim().length > 0,
         },
       ],

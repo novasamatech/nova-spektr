@@ -120,13 +120,13 @@ const DelegationsList = () => {
           {t('governance.addDelegation.summary.delegatedLabel')}
         </FootnoteText>
       </div>
-      {currentDelegations.map(([address, delegation]) => (
-        <div key={address} className="flex items-center justify-between py-2">
+      {currentDelegations.map(([accountId, delegation]) => (
+        <div key={accountId} className="flex items-center justify-between py-2">
           <Account
             hideAddress
             iconSize={20}
-            title={proposers[address]?.parent.name}
-            accountId={address}
+            title={proposers[accountId]?.parent.name}
+            accountId={accountId}
             chain={chain}
           />
           <Box direction="column" horizontalAlign="end">

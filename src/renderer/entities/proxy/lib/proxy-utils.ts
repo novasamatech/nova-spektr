@@ -1,13 +1,7 @@
 import { sortBy, uniqBy } from 'lodash';
 
-import {
-  type ChainId,
-  type PartialProxiedAccount,
-  type ProxyAccount,
-  type ProxyType,
-  ProxyVariant,
-} from '@/shared/core';
-import { splitCamelCaseString, toAddress } from '@/shared/lib/utils';
+import { type ChainId, type ProxiedAccount, type ProxyAccount, type ProxyType, ProxyVariant } from '@/shared/core';
+import { splitCamelCaseString, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 
@@ -48,10 +42,10 @@ function sortAccountsByProxyType(accounts: ProxyAccount[]): ProxyAccount[] {
 
 // TODO: Add i18n for wallet name
 function getProxiedName(
-  { accountId, proxyVariant, connections }: PartialProxiedAccount,
+  { accountId, proxyVariant, connections }: Pick<ProxiedAccount, 'connections' | 'accountId' | 'proxyVariant'>,
   addressPrefix?: number,
 ): string {
-  const address = toAddress(accountId, { chunk: 6, prefix: addressPrefix });
+  const address = toShortAddress(toAddress(accountId, { prefix: addressPrefix }), 6);
 
   if (connections.length === 1) {
     const proxyVariantLabel = proxyVariant === ProxyVariant.PURE ? 'for pure' : 'for';
@@ -63,7 +57,7 @@ function getProxiedName(
 }
 
 function getProxyTypeName(proxyType: ProxyType | string): string {
-  return ProxyTypeName[proxyType as ProxyType] || splitCamelCaseString(proxyType as string);
+  return ProxyTypeName[proxyType as ProxyType] || splitCamelCaseString(proxyType);
 }
 
 function getProxyAccountsOnChain(

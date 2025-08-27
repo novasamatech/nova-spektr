@@ -29,7 +29,8 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
   });
 
   const findBalance = (accountId: AccountId): string => {
-    return stakeableAmount(balances.find((b) => b.accountId === accountId));
+    const balance = balances.find((b) => b.accountId === accountId) ?? null;
+    return stakeableAmount(balance);
   };
 
   return (
@@ -42,7 +43,7 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
             return (
               <li key={account.accountId} className="flex items-center justify-between" data-testid="account">
                 <div className="flex items-center gap-x-2">
-                  <Identicon address={address} size={20} background={false} />
+                  <Identicon value={address} size={20} background={false} />
                   <div className="flex w-[175px] flex-col">
                     <BodyText className="text-text-secondary">{account.name}</BodyText>
                     <HelpText className="text-text-tertiary">

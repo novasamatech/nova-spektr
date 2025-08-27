@@ -5,6 +5,7 @@ import { debounce } from 'patronum';
 import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
+import { accountService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -43,32 +44,24 @@ const $input = combine(
     const input = [];
 
     for (const account of wallet.accounts) {
+      let availableChains;
       if (accountUtils.isFlexibleProxiedAccount(account)) {
-        const api = apis[account.chainId];
         const chain = chains[account.chainId];
+        availableChains = chain ? [chain] : [];
+      } else {
+        availableChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
+      }
 
-        if (api && chain) {
+      for (const chain of availableChains) {
+        const api = apis[chain.chainId];
+
+        if (api && accountService.isCryptoMatch(account, chain)) {
           input.push({
             api,
             chains,
             chain,
             accountId: account.accountId,
           });
-        }
-      } else {
-        const multisigChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
-
-        for (const chain of multisigChains) {
-          const api = apis[chain.chainId];
-
-          if (api) {
-            input.push({
-              api,
-              chains,
-              chain,
-              accountId: account.accountId,
-            });
-          }
         }
       }
     }

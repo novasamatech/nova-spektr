@@ -3,6 +3,7 @@ import { createTestKeyring } from '@polkadot/keyring';
 import {
   AccountType,
   type Asset,
+  type AssetId,
   AssetType,
   type Chain,
   type ChainId,
@@ -31,7 +32,7 @@ export const polkadotChainId: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e2
 export const kusamaChainId: ChainId = '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe';
 
 export const dotAsset: Asset = {
-  assetId: 0,
+  assetId: 0 as AssetId,
   symbol: 'DOT',
   name: 'Polkadot',
   precision: 10,
@@ -70,7 +71,7 @@ export const polkadotChain: Chain = {
 
 export const kusamaAsset: Asset = {
   name: 'Kusama',
-  assetId: 0,
+  assetId: 0 as AssetId,
   symbol: 'KSM',
   precision: 12,
   type: AssetType.NATIVE,
@@ -118,7 +119,7 @@ export const polkadotAssetHubChain: Chain = {
   assets: [
     {
       name: 'Polkadot',
-      assetId: 0,
+      assetId: 0 as AssetId,
       symbol: 'DOT',
       precision: 10,
       type: AssetType.NATIVE,
@@ -132,7 +133,7 @@ export const polkadotAssetHubChain: Chain = {
     },
     {
       name: 'USD Tether',
-      assetId: 1,
+      assetId: 1 as AssetId,
       symbol: 'USDT',
       precision: 6,
       type: AssetType.STATEMINE,
@@ -149,7 +150,7 @@ export const polkadotAssetHubChain: Chain = {
     },
     {
       name: 'USD Coin',
-      assetId: 2,
+      assetId: 2 as AssetId,
       symbol: 'USDC',
       precision: 6,
       type: AssetType.STATEMINE,
@@ -203,7 +204,7 @@ export const createVaultChainAccount = (
   params: Partial<Pick<VaultChainAccount, 'accountId' | 'name' | 'chainId'>> &
     Pick<VaultChainAccount, 'walletId' | 'derivationPath'>,
 ): VaultChainAccount => {
-  const accountId = params.accountId ?? createAccountId(`Base account ${id}`);
+  const accountId = params.accountId ?? createAccountId(id);
   const chainId = params.chainId ?? polkadotChainId;
 
   return {
@@ -221,9 +222,9 @@ export const createVaultChainAccount = (
   };
 };
 
-export const createWcAccount = (id = createRandomId(), walletId = 0): WcAccount => ({
-  id,
-  accountId: createAccountId(`Wc account ${id}`),
+export const createWcAccount = (id: string | number = createRandomId(), walletId = 0): WcAccount => ({
+  id: id.toString(),
+  accountId: createAccountId(id),
   chainId: polkadotChainId,
   signingType: SigningType.POLKADOT_VAULT,
   cryptoType: CryptoType.SR25519,
@@ -234,9 +235,9 @@ export const createWcAccount = (id = createRandomId(), walletId = 0): WcAccount 
   signingExtras: {},
 });
 
-export const createProxiedAccount = (id = createRandomId(), walletId = 0): ProxiedAccount => ({
-  id,
-  accountId: createAccountId(`Proxied account ${id}`),
+export const createProxiedAccount = (id: string | number = createRandomId(), walletId = 0): ProxiedAccount => ({
+  id: id.toString(),
+  accountId: createAccountId(id),
   proxyVariant: ProxyVariant.REGULAR,
   connections: [
     {
@@ -257,7 +258,7 @@ export const createProxiedAccount = (id = createRandomId(), walletId = 0): Proxi
 
 export const createSingleShardWallet = (
   id: number,
-  params: Partial<Pick<SingleShardWallet, 'name' | 'isActive' | 'accounts'>> & {
+  params: Partial<Pick<SingleShardWallet, 'name' | 'accounts'>> & {
     rootAccountId: AccountId;
   },
 ): SingleShardWallet => {
@@ -266,24 +267,20 @@ export const createSingleShardWallet = (
     id,
     rootAccountId: params.rootAccountId,
     type: WalletType.SINGLE_PARITY_SIGNER,
-    isActive: params.isActive ?? true,
     name: params.name ?? `SingleShard ${id}`,
-    signingType: SigningType.POLKADOT_VAULT,
     ...(params.accounts && { accounts: params.accounts }),
   };
 };
 
 export const createLegacyMultishardWallet = (
   id: number,
-  params?: Partial<Pick<SingleShardWallet, 'rootAccountId' | 'accounts' | 'name' | 'isActive'>>,
+  params?: Partial<Pick<SingleShardWallet, 'rootAccountId' | 'accounts' | 'name'>>,
 ): SingleShardWallet => {
   return {
     // @ts-expect-error wallet_mps is a Legacy wallet
     type: 'wallet_mps',
     id,
-    isActive: params?.isActive ?? true,
     name: params?.name ?? `MultiShard ${id}`,
-    signingType: SigningType.PARITY_SIGNER,
     ...(params?.accounts && { accounts: params.accounts }),
     ...(params?.rootAccountId && { rootAccountId: params.rootAccountId }),
   };
@@ -291,17 +288,14 @@ export const createLegacyMultishardWallet = (
 
 export const createPolkadotWallet = (
   id: number,
-  params: Pick<PolkadotVaultWallet, 'rootAccountId'> &
-    Partial<Pick<PolkadotVaultWallet, 'accounts' | 'name' | 'isActive'>>,
+  params: Pick<PolkadotVaultWallet, 'rootAccountId'> & Partial<Pick<PolkadotVaultWallet, 'accounts' | 'name'>>,
 ): PolkadotVaultWallet => {
   // @ts-expect-error "accounts" is deprecated
   return {
     id,
     rootAccountId: params.rootAccountId,
     type: WalletType.POLKADOT_VAULT,
-    isActive: params.isActive ?? true,
     name: params.name ?? `Polkadot vault wallet ${id}`,
-    signingType: SigningType.POLKADOT_VAULT,
     ...(params.accounts && { accounts: params.accounts }),
   };
 };
@@ -310,16 +304,12 @@ export const createWcWallet = (id: number, accounts: WcAccount[]): WalletConnect
   id,
   accounts,
   type: WalletType.WALLET_CONNECT,
-  isActive: true,
   name: `WalletConnect ${id}`,
-  signingType: SigningType.WALLET_CONNECT,
 });
 
 export const createProxiedWallet = (id: number, accounts: [ProxiedAccount]): ProxiedWallet => ({
   id,
   accounts,
   type: WalletType.PROXIED,
-  isActive: true,
   name: `Proxied wallet ${id}`,
-  signingType: SigningType.WALLET_CONNECT,
 });

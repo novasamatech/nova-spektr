@@ -3,7 +3,7 @@ import { type MouseEvent, type PropsWithChildren } from 'react';
 import { type Wallet } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { WalletIcon } from '../WalletIcon/WalletIcon';
+import { WalletIcon } from '@/shared/ui-entities';
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
@@ -28,7 +28,7 @@ export const WalletCardSm = ({ wallet, onClick, children }: Props) => {
       )}
     >
       <button className="flex w-full items-center gap-x-2 rounded-sm py-[3px] pr-7 pl-2" onClick={handleClick(onClick)}>
-        <WalletIcon className="shrink-0" type={wallet.type} size={16} />
+        <WalletIcon type={wallet.type} size={16} />
         <FootnoteText
           className={cnTw(
             'truncate text-text-secondary transition-colors',

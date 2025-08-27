@@ -1,7 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { AdditionalType } from '@/shared/core/types/chain';
 import { useI18n } from '@/shared/i18n';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
@@ -38,7 +37,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const timelineApi = useStoreMap({
     store: confirmModel.$apis,
-    keys: [confirmStore?.meta.chain.additional?.[AdditionalType.TIMELINE_CHAIN] ?? confirmStore?.meta.chain.chainId],
+    keys: [confirmStore?.meta.chain.additional?.timelineChain ?? confirmStore?.meta.chain.chainId],
     fn: (value, [chainId]) => value?.[chainId],
   });
 

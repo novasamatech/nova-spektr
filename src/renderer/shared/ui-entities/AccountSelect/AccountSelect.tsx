@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { type Asset, type Balance, type Chain } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain } from '@/shared/core';
 import { nonNullable, toAddress, transferableAmountBN, withdrawableAmountBN } from '@/shared/lib/utils';
 import { Select } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
@@ -15,7 +15,7 @@ type Props = {
   options: AnyAccount[];
   chain: Chain;
   asset: Asset;
-  balances: Balance[];
+  balances: BalanceMap;
   balanceType: 'withdrawable' | 'transferable';
   testId?: string;
   invalid?: boolean;

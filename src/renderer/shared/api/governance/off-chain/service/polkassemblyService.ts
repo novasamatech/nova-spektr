@@ -6,7 +6,7 @@ import {
   type PolkassembyPostStatus,
   polkassemblyApiService,
 } from '@/shared/api/polkassembly';
-import { dictionary } from '@/shared/lib/utils';
+import { dictionary, toAccountId } from '@/shared/lib/utils';
 import { type GovernanceApi, type ReferendumTimelineRecord } from '../lib/types';
 
 const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, callback) => {
@@ -35,7 +35,7 @@ const getReferendumList: GovernanceApi['getReferendumList'] = async (chain, call
 };
 
 const getReferendumVotes: GovernanceApi['getReferendumVotes'] = (chain, referendumId) => {
-  const mapVote = (votes: PolkassemblyPostVote[]) => votes.map((vote) => vote.voter);
+  const mapVote = (votes: PolkassemblyPostVote[]) => votes.map((vote) => toAccountId(vote.voter));
 
   return polkassemblyApiService
     .fetchPostVotes({

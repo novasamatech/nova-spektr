@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { t } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
@@ -11,6 +12,7 @@ import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import {
   TransactionTitle,
+  findCoreTransaction,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isProxyTypeTransaction,
@@ -27,40 +29,40 @@ export const proxyOperationDetailFeature = createFeature({
 
 const getOperationTitle = (transactionType: TransactionType): string | undefined => {
   const Title: { [key in TransactionType]?: string } = {
-    [TransactionType.ADD_PROXY]: 'operations.titles.addProxy',
-    [TransactionType.CREATE_PURE_PROXY]: 'operations.titles.createPureProxy',
-    [TransactionType.REMOVE_PROXY]: 'operations.titles.removeProxy',
-    [TransactionType.KILL_PURE_PROXY]: 'operations.titles.removePureProxy',
+    [TransactionType.ADD_PROXY]: t('operations.titles.addProxy'),
+    [TransactionType.CREATE_PURE_PROXY]: t('operations.titles.createPureProxy'),
+    [TransactionType.REMOVE_PROXY]: t('operations.titles.removeProxy'),
+    [TransactionType.KILL_PURE_PROXY]: t('operations.titles.removePureProxy'),
   };
 
   return Title[transactionType];
 };
 
 multisigOperationsSDK(proxyOperationDetailFeature, {
-  icon({ operation }) {
-    const transaction = operation.transaction;
+  icon({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     if (isProxyTypeTransaction(transaction)) {
       return 'proxyMst';
     }
   },
-  title({ operation }) {
-    const transaction = operation.transaction;
+  title({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
     if (title) {
       return <ProxyOperationTitle operation={operation} title={title} />;
     }
   },
-  logTitle({ operation }) {
+  logTitle({ operation, showCoreTransaction }) {
     const { t } = useI18n();
-    const transaction = operation.transaction;
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
     if (title) {
       return <TransactionTitle className="overflow-hidden" title={t(title || '')} />;
     }
   },
-  details({ operation }) {
+  details({ operation, showCoreTransaction }) {
     const { t } = useI18n();
-    const transaction = operation.transaction;
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const chains = useUnit(networkModel.$chains);
     const chain = chains[operation.chainId];
 

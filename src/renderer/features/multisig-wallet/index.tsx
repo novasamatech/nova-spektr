@@ -1,6 +1,5 @@
 import { useUnit } from 'effector-react';
 
-import { balanceService } from '@/shared/api/balances';
 import { $features } from '@/shared/config/features';
 import {
   AccountType,
@@ -11,15 +10,16 @@ import {
 } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { assert, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
+import { assert, nullable } from '@/shared/lib/utils';
 import { WalletAccountIcon } from '@/shared/ui-entities';
-import { multisigOperationService, transactionService } from '@/domains/network';
-import { balanceUtils } from '@/entities/balance';
+import { accountService, balanceService, multisigOperationService, transactionService } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 import { getExtrinsic } from '@/entities/transaction';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { transactionSDK } from '@/sdk/transaction';
+// TODO cringe remove it please
+import { type ProxyTransaction } from '@/features/proxied-wallet';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 
 import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
@@ -39,12 +39,17 @@ accountSDK(multisigWalletFeature, {
     return false;
   },
   availableOnChain({ account, chain }) {
-    return (
-      (accountUtils.isMultisigAccount(account) ||
-        accountUtils.isMultisigSignatoryAccount(account) ||
-        (accountUtils.isFlexibleMultisigAccount(account) && networkUtils.isPureProxySupported(chain.options))) &&
-      networkUtils.isMultisigSupported(chain.options)
-    );
+    if (accountUtils.isMultisigAccount(account) || accountUtils.isMultisigSignatoryAccount(account)) {
+      return networkUtils.isMultisigSupported(chain.options);
+    }
+
+    if (accountUtils.isFlexibleMultisigAccount(account)) {
+      return networkUtils.isMultisigSupported(chain.options) && networkUtils.isPureProxySupported(chain.options);
+    }
+
+    if (accountUtils.isFlexibleProxiedAccount(account)) {
+      return accountService.isChainMatch(account, chain) && networkUtils.isPureProxySupported(chain.options);
+    }
   },
   canSignMultipleTransactions() {
     return false;
@@ -77,7 +82,9 @@ accountSDK(multisigWalletFeature, {
     }
 
     if (accountUtils.isFlexibleProxiedAccount(account)) {
-      return accounts.filter(a => a.accountId === account.proxyAccountId).concat(children);
+      return accounts
+        .filter(a => a.walletId === account.walletId && a.accountId === account.proxyAccountId)
+        .concat(children);
     }
 
     return children;
@@ -124,26 +131,28 @@ accountSDK(multisigWalletFeature, {
       };
     }
   },
-  validateRouteBalances({ account, api, route, balances, chainId, asset, index }) {
+  validateRouteBalances({ account, api, route, asset, chainId, getBalance }) {
     if (accountUtils.isAnyMultisigAccount(account)) {
       const deposit = multisigService.getMultisigDeposit(account.threshold, api);
-      const payer = route.at(index + 1);
+      const payer = accountService.findNextAccount(route, account);
 
       if (nullable(payer)) {
-        return { account, message: 'Multisig signatory payer not found' };
-      }
-      const balance = balanceUtils.getBalance(balances, payer.accountId, chainId, asset.assetId);
-      if (nullable(balance)) {
-        return { account, message: 'Balance not found' };
+        return null;
       }
 
-      return balanceService.getExistentialDeposit(api, asset).then(existentialDeposit => {
-        const spend = existentialDeposit.add(deposit);
-        if (withdrawableAmountBN(balance).lt(spend)) {
-          return { account, message: 'Insufficient funds for multisig deposit' };
-        }
-        return null;
-      });
+      const balance = getBalance(payer.accountId, chainId, asset.assetId);
+      if (nullable(balance)) {
+        throw new Error(`Balance for account ${payer.accountId} not found`);
+      }
+
+      return {
+        account: payer,
+        action: 'multisig deposit',
+        required: deposit,
+        // multisig pallet calculates balance using legacy logic, to transferableMode flag should be overrided
+        balance: balanceService.tryReserve(balance, deposit, 'legacy'),
+        asset,
+      };
     }
   },
 });
@@ -176,14 +185,14 @@ transactionSDK(multisigWalletFeature, {
       return transaction;
     }
   },
-  wrap(transaction, { api, account, route, index }) {
+  wrap(transaction, { api, account, route }) {
     if (accountUtils.isAnyMultisigAccount(account)) {
-      const signatory = route.at(index + 1);
+      const signatory = accountService.findNextAccount(route, account);
       assert(signatory, 'Signatory not found');
 
       const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const encodedTransaction = transactionService.encodeTransaction(transaction, api);
-      const extrinsic = transactionService.createSubmittableExtrinsic(transaction, api);
+      const extrinsic = transactionService.createExtrinsic(transaction, api);
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
         const multisigTransaction: MultisigTransaction = {
@@ -202,6 +211,23 @@ transactionSDK(multisigWalletFeature, {
         return multisigTransaction;
       });
     }
+
+    if (accountUtils.isFlexibleProxiedAccount(account)) {
+      const encodedTransaction = transactionService.encodeTransaction(transaction, api);
+
+      const proxyTransaction: ProxyTransaction = {
+        type: 'decoded',
+        section: 'proxy',
+        method: 'proxy',
+        args: {
+          real: account.accountId,
+          forceProxyType: 'Any',
+          call: encodedTransaction.callData,
+        },
+      };
+
+      return proxyTransaction;
+    }
   },
   unwrap(transaction) {
     if (multisigService.isMultisigTransaction(transaction)) {
@@ -211,9 +237,9 @@ transactionSDK(multisigWalletFeature, {
       };
     }
   },
-  wrapLegacy(transaction, { api, account, route, index }) {
+  wrapLegacy(transaction, { api, account, route }) {
     if (accountUtils.isAnyMultisigAccount(account)) {
-      const signatory = route.at(index + 1);
+      const signatory = accountService.findNextAccount(route, account);
       assert(signatory, 'Signatory not found');
 
       const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
@@ -228,7 +254,7 @@ transactionSDK(multisigWalletFeature, {
             threshold: account.threshold,
             otherSignatories,
             maybeTimepoint: null,
-            callData: extrinsic.method.toHex(),
+            call: extrinsic.method.toHex(),
             callHash: extrinsic.method.hash.toHex(),
             maxWeight,
           },
@@ -259,9 +285,12 @@ transactionSDK(multisigWalletFeature, {
 
 multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isMultisig(wallet)) return null;
-  const address = wallet.accounts[0]?.accountId;
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} />;
+  const accountId = walletUtils.isRegularMultisig(wallet)
+    ? wallet.accounts.find(a => accountUtils.isMultisigAccount(a))?.accountId
+    : wallet.accounts.find(a => accountUtils.isFlexibleProxiedAccount(a))?.accountId;
+
+  return <WalletAccountIcon address={accountId} type={wallet.type} size={size} />;
 });
 
 multisigWalletFeature.inject(walletGroupSlot, {

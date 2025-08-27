@@ -11,6 +11,7 @@ const getWalletFamily = (wallet: Wallet): WalletFamily | null => {
   return Object.values(WalletType).includes(wallet.type) ? (wallet.type as WalletFamily) : null;
 };
 
+// TODO this logic will skip new types on wallets. Let's redo it later
 const getWalletByGroups = (wallets: Wallet[], query = ''): Record<WalletFamily, Wallet[]> => {
   const accumulator: Record<WalletFamily, Wallet[]> = {
     [WalletType.POLKADOT_VAULT]: [],

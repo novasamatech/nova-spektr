@@ -1,13 +1,17 @@
 /* eslint-disable import-x/max-dependencies */
 import { type ApiPromise } from '@polkadot/api';
 import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { generatePath } from 'react-router-dom';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { Button, IconButton, Plate } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
+import { Paths } from '@/shared/routes';
+import { getAppUrl } from '@/shared/routes/utils';
+import { Button, Icon, IconButton, Plate } from '@/shared/ui';
+import { Copy, Modal } from '@/shared/ui-kit';
 import { referendumService } from '@/entities/governance';
+import { networkUtils } from '@/entities/network';
 import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { detailsAggregate } from '../../aggregates/details';
@@ -72,9 +76,26 @@ export const ReferendumDetailsModal = ({
     onClose();
   };
 
+  const referendumPath = generatePath(Paths.GOVERNANCE_REFERENDUM, {
+    chainId: networkUtils.chainNameToUrl(chain.name),
+    referendumId: referendum.referendumId,
+  });
+  const referendumLink = getAppUrl(referendumPath);
+
+  const ShareButton = (
+    <Copy value={referendumLink.href} notification={t('governance.referendums.linkCopied')}>
+      <div className="flex cursor-default items-center gap-1 text-primary-button-background-default hover:text-primary-button-background-hover active:text-primary-button-background-active">
+        <Icon className="shrink-0 text-inherit" name="export" size={16} />
+        <span className="text-inherit">{t('governance.referendums.linkShare')}</span>
+      </div>
+    </Copy>
+  );
+
   return (
     <Modal isOpen size="xl" onToggle={closeModal}>
-      <Modal.Title close>{t('governance.referendums.referendumTitle', { index: referendum.referendumId })}</Modal.Title>
+      <Modal.Title close action={ShareButton}>
+        {t('governance.referendums.referendumTitle', { index: referendum.referendumId })}
+      </Modal.Title>
       <Modal.Content>
         <section className="flex h-full w-modal-xl flex-col bg-main-app-background">
           <div className="flex min-h-full flex-wrap-reverse items-end gap-4 p-6">
@@ -92,6 +113,7 @@ export const ReferendumDetailsModal = ({
                   <div className="grid grid-cols-[270px_auto] items-center justify-between gap-x-1">
                     <VotedBy
                       direction="column"
+                      chain={chain}
                       asset={asset}
                       identity={identity}
                       delegates={referendum.votedByDelegates}

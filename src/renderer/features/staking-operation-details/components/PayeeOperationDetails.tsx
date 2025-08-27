@@ -1,8 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { DetailRow } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
@@ -31,7 +30,7 @@ export const PayeeOperationDetails = ({ operation }: Props) => {
         {typeof payee === 'string' ? (
           t('staking.confirmation.restakeRewards')
         ) : (
-          <Account accountId={payee.Account as AccountId} variant="short" chain={chains[operation.chainId]} />
+          <Account accountId={toAccountId(payee.Account)} variant="short" chain={chains[operation.chainId]} />
         )}
       </DetailRow>,
     );

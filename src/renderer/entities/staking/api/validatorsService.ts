@@ -1,7 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 import { merge } from 'lodash';
 
-import { type Address, type EraIndex, type Validator } from '@/shared/core';
+import { type EraIndex, type Validator } from '@/shared/core';
+import { keys, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DEFAULT_MAX_NOMINATORS, KUSAMA_MAX_NOMINATORS } from '../lib/constants';
 import { stakingUtils } from '../lib/staking-utils';
 import { type ValidatorMap } from '../lib/types';
@@ -31,7 +33,7 @@ async function getValidatorsWithInfo(api: ApiPromise, era: EraIndex): Promise<Va
   const mergedValidators = merge(stake, prefs);
 
   try {
-    const slashes = await getSlashingSpans(api, Object.keys(stake), era);
+    const slashes = await getSlashingSpans(api, keys(stake), era);
 
     return merge(mergedValidators, slashes);
   } catch {
@@ -51,43 +53,46 @@ function getValidatorFunction(api: ApiPromise) {
  *
  * @deprecated Will become deprecated after runtime upgrade for DOT/KSM
  */
-async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<ValidatorMap> {
+async function getValidatorsStake_OLD(api: ApiPromise, era: EraIndex): Promise<Record<AccountId, ValidatorStake>> {
   // HINT: uncomment if we need full list of nominators (even those who doesn't get rewards)
   // const data = await api.query.staking.erasStakers.entries(era);
   const data = await api.query.staking.erasStakersClipped.entries(era);
   const maxNominatorRewarded = getMaxNominatorRewarded(api);
 
-  return data.reduce<ValidatorMap>((acc, [storageKey, type]) => {
-    const address = storageKey.args[1].toString();
-    const nominators = type.others.map((n) => ({ who: n.who.toString(), value: n.value.toString() }));
+  return data.reduce<Record<AccountId, ValidatorStake>>((acc, [storageKey, type]) => {
+    const accountId = toAccountId(storageKey.args[1].toString());
+    const nominators = type.others.map((n) => ({
+      who: toAccountId(n.who.toString()),
+      value: n.value.toString(),
+    }));
 
-    acc[address] = {
-      address,
+    acc[accountId] = {
+      accountId,
       nominators,
       totalStake: type.total.toString(),
       oversubscribed: type.others.length >= maxNominatorRewarded,
       ownStake: type.own.toString(),
-    } as Validator;
+    };
 
     return acc;
   }, {});
 }
 
-type ValidatorStake = Pick<Validator, 'address' | 'totalStake' | 'oversubscribed' | 'ownStake' | 'nominators'>;
+type ValidatorStake = Pick<Validator, 'accountId' | 'totalStake' | 'oversubscribed' | 'ownStake' | 'nominators'>;
 
-async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<Record<Address, ValidatorStake>> {
+async function getValidatorsStake(api: ApiPromise, era: EraIndex): Promise<Record<AccountId, ValidatorStake>> {
   // HINT: to get full list of nominators uncomment code below to paginate for each validator
   const data = await api.query.staking.erasStakersOverview.entries(era);
 
-  return data.reduce<Record<Address, ValidatorStake>>((acc, [storageKey, type]) => {
-    const address = storageKey.args[1].toString();
+  return data.reduce<Record<AccountId, ValidatorStake>>((acc, [storageKey, type]) => {
+    const accountId = toAccountId(storageKey.args[1].toString());
 
     // const pageCount = type.value.pageCount.toNumber();
     // const pagedRequests = Array.from({ length: pageCount }, (_, index) => [era, address, index]);
     // acc.requests.push(api.query.staking.erasStakersPaged.multi(pagedRequests));
 
-    acc[address] = {
-      address,
+    acc[accountId] = {
+      accountId,
       totalStake: type.value.total.toString(),
       oversubscribed: false,
       ownStake: type.value.own.toString(),
@@ -113,10 +118,10 @@ async function getValidatorsPrefs(api: ApiPromise, era: EraIndex): Promise<Valid
   const data = await api.query.staking.erasValidatorPrefs.entries(era);
 
   return data.reduce<ValidatorMap>((acc, [storageKey, type]) => {
-    const address = storageKey.args[1].toString();
+    const accountId = toAccountId(storageKey.args[1].toString());
 
-    acc[address] = {
-      address,
+    acc[accountId] = {
+      accountId,
       commission: parseFloat(type.commission.toHuman() as string),
       blocked: type.blocked.toHuman(),
     } as Validator;
@@ -149,7 +154,7 @@ function getMaxValidators(api: ApiPromise): number {
 //   }, {});
 // }
 
-async function getNominators(api: ApiPromise, stash: Address): Promise<ValidatorMap> {
+async function getNominators(api: ApiPromise, stash: AccountId): Promise<ValidatorMap> {
   try {
     const data = await api.query.staking.nominators(stash);
 
@@ -158,8 +163,8 @@ async function getNominators(api: ApiPromise, stash: Address): Promise<Validator
     const nominatorsUnwraped = data.unwrap();
 
     return nominatorsUnwraped.targets.toArray().reduce<ValidatorMap>((acc, nominator) => {
-      const address = nominator.toString();
-      acc[address] = { address } as Validator;
+      const accountId = toAccountId(nominator.toString());
+      acc[accountId] = { accountId } as Validator;
 
       return acc;
     }, {});
@@ -182,16 +187,16 @@ function getMaxNominatorRewarded(api: ApiPromise): number {
 
 async function getSlashingSpans(
   api: ApiPromise,
-  addresses: Address[],
+  accounts: AccountId[],
   era: EraIndex,
-): Promise<Record<Address, { slashed: boolean }>> {
+): Promise<Record<AccountId, { slashed: boolean }>> {
   const unappliedSlashes = await api.query.staking.unappliedSlashes(era);
 
   if (!unappliedSlashes.length) {
-    return Object.fromEntries(addresses.map((address) => [address, { slashed: false }]));
+    return Object.fromEntries(accounts.map((account) => [account, { slashed: false }]));
   }
 
-  const slashedSet = new Set(unappliedSlashes.map((slash) => slash.validator.toString()));
+  const slashedSet = new Set(unappliedSlashes.map((slash) => toAccountId(slash.validator.toString())));
 
-  return Object.fromEntries(addresses.map((address) => [address, { slashed: slashedSet.has(address) }]));
+  return Object.fromEntries(accounts.map((account) => [account, { slashed: slashedSet.has(account) }]));
 }

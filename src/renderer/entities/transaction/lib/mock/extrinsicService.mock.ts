@@ -5,7 +5,7 @@ export const extrinsicTests = [
   {
     testName: 'should create extrinsic for multisig tx and get call data',
     args: {
-      callData: '0x1e0100379b3f5dc547e92c7bf2b9837b8801954b9a68f7deadb3411400511f66adbe140000000000',
+      call: '0x1e0100379b3f5dc547e92c7bf2b9837b8801954b9a68f7deadb3411400511f66adbe140000000000',
       callHash: '0x24f1e9461e13804834b856a6cbc243b56fa4800b9739450ef75230d2290740b8',
       maybeTimepoint: null,
       otherSignatories: ['5F3cpq3CLZo77U6g6fHtSbpuhWfdXajs8DnBg9mBPBaPDtMB'],

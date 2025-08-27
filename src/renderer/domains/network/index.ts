@@ -4,7 +4,6 @@ export type {
   AnyDecodedTransaction,
   DecodedTransaction,
   EncodedTransaction,
-  Section,
   Extrinsic,
 } from './transaction/types';
 
@@ -18,6 +17,13 @@ export type {
   AccountNode,
   AccountValidationError,
 } from './account/types';
+
+export { accountSync } from './account-sync/store';
+export { accountSyncService } from './account-sync/service';
+export type { SyncedMultisigAccount, SyncedProxyAccount, SyncedAccount } from './account-sync/types';
+
+export { balanceService } from './balance/service';
+export type { BalanceUpdateResult, BalancePreservation } from './balance/types';
 
 export { identity } from './identity/store';
 export { identityService } from './identity/service';

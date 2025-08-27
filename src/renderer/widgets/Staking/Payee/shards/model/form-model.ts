@@ -1,9 +1,10 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { t } from 'i18next';
 import { spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, RewardsDestination } from '@/shared/core';
+import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import {
   formatAmount,
   getRelaychainAsset,
@@ -23,7 +24,7 @@ import { type WalletData } from '../lib/types';
 type FormParams = {
   shards: AnyAccount[];
   signatory: AnyAccount | null;
-  destination: Address;
+  destination: string;
 };
 
 const formInitiated = createEvent<WalletData>();
@@ -81,7 +82,7 @@ const $payeeForm = createForm<FormParams>({
         },
         {
           name: 'noBondBalance',
-          errorText: 'staking.bond.noBondBalanceError',
+          errorText: t('staking.bond.noBondBalanceError'),
           source: combine({
             isProxy: $isProxy,
             network: $networkStore,
@@ -102,7 +103,7 @@ const $payeeForm = createForm<FormParams>({
       rules: [
         {
           name: 'noSignatorySelected',
-          errorText: 'transfer.noSignatoryError',
+          errorText: t('transfer.noSignatoryError'),
           source: $isMultisig,
           validator: (signatory, _, isMultisig) => {
             if (!signatory || !isMultisig) return true;
@@ -112,7 +113,7 @@ const $payeeForm = createForm<FormParams>({
         },
         {
           name: 'notEnoughTokens',
-          errorText: 'proxy.addProxy.notEnoughMultisigTokens',
+          errorText: t('proxy.addProxy.notEnoughMultisigTokens'),
           source: combine({
             feeData: $feeData,
             isMultisig: $isMultisig,
@@ -127,11 +128,11 @@ const $payeeForm = createForm<FormParams>({
       ],
     },
     destination: {
-      init: '' as Address,
+      init: '',
       rules: [
         {
           name: 'required',
-          errorText: 'proxy.addProxy.proxyAddressRequiredError',
+          errorText: t('proxy.addProxy.proxyAddressRequiredError'),
           source: $destinationType,
           validator: (value, _, destinationType) => {
             if (destinationType === RewardsDestination.RESTAKE) return true;
@@ -165,7 +166,7 @@ const $accounts = combine(
     network: $networkStore,
     wallet: walletSelect.$selectedWallet,
     shards: $shards,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, shards, balances }) => {
     if (!wallet || !network) return [];
@@ -292,7 +293,7 @@ sample({
 sample({
   clock: $payeeForm.fields.signatory.onChange,
   source: {
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   filter: ({ network }) => Boolean(network),
@@ -315,7 +316,7 @@ sample({
   source: {
     isProxy: $isProxy,
     proxyAccount: $proxyAccount,
-    balances: balanceModel.$balances,
+    balances: balanceModel.$balanceMap,
     network: $networkStore,
   },
   filter: ({ isProxy, network, proxyAccount }) => {
