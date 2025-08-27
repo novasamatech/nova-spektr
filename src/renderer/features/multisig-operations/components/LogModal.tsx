@@ -70,7 +70,18 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
   const wallets = useUnit(walletModel.$wallets);
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
+  const { status, events } = operation;
+  const groupedEvents = useMemo(() => {
+    const groups = groupBy(events, ({ timestamp }) => formatDate(timestamp || 0, 'PP'));
+    return Object.entries(groups).sort(sortByDateAsc);
+  }, [events]);
+
   const externalTitleNode = useTransformer(operationLogTitleTransformer, { operation, showCoreTransaction });
+
+  const filteredWalletsMap = getFilteredWalletsMap(wallets);
+  const filteredAccountMap = getFilteredAccountsMap(filteredWalletsMap);
+  const approvals = events.filter(e => e.status === 'approve');
+
   let titleNode;
 
   if (externalTitleNode) {
@@ -82,16 +93,6 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
         : t('operations.titles.unknown');
     titleNode = <TransactionTitle className="flex-1" title={title} />;
   }
-
-  const filteredWalletsMap = getFilteredWalletsMap(wallets);
-  const filteredAccountMap = getFilteredAccountsMap(filteredWalletsMap);
-  const { status, events } = operation;
-  const approvals = events.filter(e => e.status === 'approve');
-
-  const groupedEvents = useMemo(() => {
-    const groups = groupBy(events, ({ timestamp }) => formatDate(timestamp || 0, 'PP'));
-    return Object.entries(groups).sort(sortByDateAsc);
-  }, [events]);
 
   const getEventMessage = (event: MultisigEvent): string => {
     const isCreatedEvent = event.accountId === operation.depositor && event.status === 'approve';
