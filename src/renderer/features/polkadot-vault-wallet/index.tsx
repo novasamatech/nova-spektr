@@ -35,11 +35,10 @@ accountSDK(polkadotVaultWalletFeature, {
     }
 
     if (accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)) {
-      return (
-        accountService.isChainMatch(account, chain) ||
-        // parentId check exists because of consensus mechanism in vault - all keys related to relaychain should also work in parachains
-        account.chainId === chain.parentId
-      );
+      return accountService.isChainMatch(account, chain);
+      // TODO uncomment when design will be ready
+      // parentId check exists because of consensus mechanism in vault - all keys related to relaychain should also work in parachains
+      // account.chainId === chain.parentId
     }
   },
   canSignMultipleTransactions({ account }) {
