@@ -107,7 +107,7 @@ export const SignatorySelect = memo(() => {
             </Select.Item>
           );
         })
-        .filter(Boolean);
+        .filter(nonNullable);
 
       if (walletItems.length > 0) {
         options.push(

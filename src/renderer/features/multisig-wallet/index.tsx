@@ -285,9 +285,12 @@ transactionSDK(multisigWalletFeature, {
 
 multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isMultisig(wallet)) return null;
-  const address = wallet.accounts[0]?.accountId;
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} />;
+  const accountId = walletUtils.isRegularMultisig(wallet)
+    ? wallet.accounts.find(a => accountUtils.isMultisigAccount(a))?.accountId
+    : wallet.accounts.find(a => accountUtils.isFlexibleProxiedAccount(a))?.accountId;
+
+  return <WalletAccountIcon address={accountId} type={wallet.type} size={size} />;
 });
 
 multisigWalletFeature.inject(walletGroupSlot, {

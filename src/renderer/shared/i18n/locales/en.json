@@ -815,6 +815,11 @@
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     }
   },
+  "flexibleMultisig": {
+    "editSubtitle": "Change the signatories and set the signatory threshold for your flexible multisig.",
+    "editTitleOn": "Edit flexible multisig on",
+    "thresholdDescription": "Minimum signatories needed to approve."
+  },
   "general": {
     "actions": {
       "duration": "<balance /> for { duration } days",

@@ -216,7 +216,7 @@ sample({
 
     const timepoint = (successResult.params as ExtrinsicResultParams).timepoint;
     const sortedSignatories = sortBy(
-      signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address) })),
+      signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address), walletId: a.walletId })),
       'accountId',
     );
 

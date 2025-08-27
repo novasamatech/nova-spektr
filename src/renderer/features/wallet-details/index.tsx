@@ -8,6 +8,7 @@ import { Icon, IconButton, type IconNames } from '@/shared/ui';
 import { Dropdown } from '@/shared/ui-kit';
 import { permissionUtils, walletUtils } from '@/entities/wallet';
 import { walletActionsSlot as extensionActionsSlot } from '@/features/extension-wallet';
+import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { walletActionsSlot as multisigActionsSlot } from '@/features/multisig-wallet';
 import { walletActionsSlot as polkadotVaultActionsSlot } from '@/features/polkadot-vault-wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
@@ -20,6 +21,7 @@ import { RenameWalletModal } from '@/features/wallets/RenameWallet';
 import { walletActionsSlot as watchOnlyActionsSlot } from '@/features/watch-only-wallet';
 
 export { walletDetailsUtils } from './lib/utils';
+
 import { WalletDetails } from './ui/components';
 
 export { overviewSlot as simpleOverviewSlot } from './ui/wallets/SimpleWalletDetails';
@@ -134,12 +136,14 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
   if (walletUtils.isFlexibleMultisig(wallet)) {
     items.push({
       component: (
-        <Dropdown.Item disabled>
-          <div className="flex items-center gap-2">
-            <Icon name="changeSignatories" size={20} className="text-icon-accent" />
-            {t('walletDetails.multisig.changeSignatories')}
-          </div>
-        </Dropdown.Item>
+        <ChangeSignatories wallet={wallet} onClose={createModalCloseHandler()}>
+          <Dropdown.Item>
+            <div className="flex items-center gap-2">
+              <Icon name="changeSignatories" size={20} className="text-icon-accent" />
+              {t('walletDetails.multisig.changeSignatories')}
+            </div>
+          </Dropdown.Item>
+        </ChangeSignatories>
       ),
     });
   }
