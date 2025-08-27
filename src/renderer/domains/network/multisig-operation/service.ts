@@ -13,7 +13,7 @@ import {
   type FlexibleMultisigAccount,
   type MultisigAccount,
 } from '@/shared/core';
-import { isEqual, merge, nullable, validateCallData } from '@/shared/lib/utils';
+import { isEqual, merge, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { transactionService } from '../transaction/service';
 
@@ -59,8 +59,19 @@ function getEventId(operationId: string, signer: string, status: 'approve' | 're
 
 function findInnerExtrinsicCall(extrinsic: GenericExtrinsic<AnyTuple>) {
   const findAsMulti = (method: any): any => {
+    if (!method) return null;
+
     if (method.toHuman().method === 'asMulti' && method.toHuman().section === 'multisig') {
       return method.args[MULTISIG_EXTRINSIC_CALL_INDEX];
+    }
+
+    if (method.toHuman().method === 'batchAll') {
+      for (const arg of method.args[0]) {
+        const result = findAsMulti(arg);
+        if (nonNullable(result)) {
+          return result;
+        }
+      }
     }
 
     if (method.args) {
@@ -88,9 +99,11 @@ async function getTransactionFromChain({ api, callHash, blockHeight, extrinsicIn
     const { block } = await api.rpc.chain.getBlock(blockHash);
     const extrinsic = block.extrinsics[extrinsicIndex];
     if (nullable(extrinsic)) return null;
-    if (!extrinsic.argsDef['call']) return null;
 
     const innerCall = findInnerExtrinsicCall(extrinsic);
+
+    if (nullable(innerCall)) return null;
+
     const callData = innerCall?.toHex();
 
     if (!callData || !validateCallData(callData, callHash)) return null;

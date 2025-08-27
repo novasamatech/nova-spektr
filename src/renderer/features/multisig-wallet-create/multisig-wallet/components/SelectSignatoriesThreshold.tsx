@@ -39,7 +39,6 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const initiator = useUnit(flowModel.$initiator);
   const fee = useUnit(flowModel.$fee);
   const isFeeLoading = useUnit(flowModel.$isFeeLoading);
-  const isEnoughBalance = useUnit(flowModel.$isEnoughBalance);
   const errors = useUnit(flowModel.$errors);
 
   const signatories = useUnit(signatoryModel.$signatories);
@@ -178,7 +177,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                     fee={fee}
                     isLoading={isFeeLoading}
                     asset={asset}
-                    className={isEnoughBalance ? '' : 'text-text-negative'}
+                    className={errors.length === 0 ? '' : 'text-text-negative'}
                   />
                 )}
 
@@ -190,7 +189,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
             <Button
               key="create"
               type="submit"
-              disabled={!canSubmit || !isEnoughBalance || isFeeLoading || !!errors.length}
+              disabled={!canSubmit || errors.length !== 0 || isFeeLoading || !!errors.length}
               onClick={onSubmit}
             >
               {t('createMultisigAccount.continueButton')}

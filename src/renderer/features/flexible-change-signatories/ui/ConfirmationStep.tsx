@@ -1,16 +1,15 @@
 import { useUnit } from 'effector-react';
 
-import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step, getNativeAsset } from '@/shared/lib/utils';
 import { BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
-import { Account, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
+import { Account, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
-import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { Fee, FeeWithLabel, MultisigDepositFee, ProxyDepositLabel } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
+import { changeSignatoriesModel } from '../model/change-signatories-model';
 import { confirmModel } from '../model/confirm-model';
-import { flowModel } from '../model/flow-model';
 import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';
 
@@ -20,24 +19,20 @@ export const ConfirmationStep = () => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
-  const signer = useUnit(flowModel.$signer);
-  const fee = useUnit(flowModel.$fee);
-  const route = useUnit(flowModel.$route);
-  const errors = useUnit(flowModel.$errors);
-  const multisigDeposit = useUnit(flowModel.$multisigDeposit);
-  const isDepositLoading = useUnit(flowModel.$isDepositLoading);
+  const signer = useUnit(changeSignatoriesModel.$signer);
+  const fee = useUnit(changeSignatoriesModel.$fee);
+  const chain = useUnit(changeSignatoriesModel.$chain);
+  const initiatorWallet = useUnit(changeSignatoriesModel.$initiatorWallet);
 
-  const chain = useUnit(formModel.$chain);
+  const threshold = useUnit(formModel.$threshold);
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
+  const proxyDeposit = useUnit(formModel.$proxyDeposit);
+
   const signatories = useUnit(signatoryModel.$signatories);
 
-  const {
-    fields: { name, threshold },
-  } = useForm(formModel.form);
+  const signerWallet = wallets.find((wallet) => wallet.id === signer?.walletId);
 
-  const signerWallet = wallets.find(wallet => wallet.id === signer?.walletId);
-  const multisigAccount = route.find(accountUtils.isMultisigAccount);
-
-  if (!signerWallet || !signer || !chain) return;
+  if (!signerWallet || !initiatorWallet || !signer || !chain) return;
 
   const asset = getNativeAsset(chain.assets);
 
@@ -49,7 +44,7 @@ export const ConfirmationStep = () => {
             <div className="mb-2 flex flex-col items-center">
               <Icon className="text-icon-default" name="multisigCreationConfirm" size={60} />
             </div>
-            <DetailRow label={t('createMultisigAccount.walletName')}>{name.value}</DetailRow>
+            <DetailRow label={t('createMultisigAccount.walletName')}>{initiatorWallet.name}</DetailRow>
             <DetailRow label={t('createMultisigAccount.signatoriesLabel')}>
               {chain && (
                 <SelectedSignatoriesModal signatories={signatories} chain={chain}>
@@ -64,7 +59,7 @@ export const ConfirmationStep = () => {
             </DetailRow>
             <DetailRow label={t('createMultisigAccount.thresholdName')}>
               {t('createMultisigAccount.thresholdOutOf', {
-                threshold: threshold.value,
+                threshold: threshold,
                 signatoriesLength: signatories.length,
               })}
             </DetailRow>
@@ -90,13 +85,12 @@ export const ConfirmationStep = () => {
 
             <Separator className="border-filter-border" />
             <div className="mb-4 flex flex-1 flex-col gap-y-4">
-              {multisigAccount && (
-                <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
-              )}
+              <ProxyDepositLabel>
+                <Fee fee={proxyDeposit ?? ''} asset={asset} />
+              </ProxyDepositLabel>
+              <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />
 
               <FeeWithLabel fee={fee.toString()} asset={asset} />
-
-              <TransactionValidationError errors={errors} wallets={wallets} />
             </div>
           </div>
         </section>
@@ -106,13 +100,13 @@ export const ConfirmationStep = () => {
           <Button
             variant="text"
             onClick={() => {
-              flowModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
+              changeSignatoriesModel.stepChanged(Step.SIGNATORIES_THRESHOLD);
             }}
           >
             {t('createMultisigAccount.backButton')}
           </Button>
 
-          <SignButton disabled={errors.length > 0} type={signerWallet.type} onClick={confirmModel.startSigning} />
+          <SignButton type={signerWallet.type} onClick={confirmModel.startSigning} />
         </Box>
       </Modal.Footer>
     </>
