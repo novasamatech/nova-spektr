@@ -9,6 +9,7 @@ import {
   type AssetByChains,
   type Balance,
   type BalanceMap,
+  type Chain,
   type ChainId,
   type PortfolioTokenBalance,
 } from '@/shared/core';
@@ -21,9 +22,8 @@ import {
   transferableAmountBN,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
-import { accountUtils } from '@/entities/wallet';
 
 import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type AssetChain } from './types';
 
@@ -71,9 +71,9 @@ function sumTokenBalances(a: PortfolioTokenBalance, b: PortfolioTokenBalance): P
   };
 }
 
-function getSelectedAccountIds(accounts: AnyAccount[], chainId: ChainId): AccountId[] {
+function getSelectedAccountIds(accounts: AnyAccount[], chain: Chain): AccountId[] {
   return accounts.reduce<AccountId[]>((acc, account) => {
-    if (accountUtils.isChainIdMatch(account, chainId)) {
+    if (accountService.isAccountAvailableOnChain(account, chain)) {
       acc.push(account.accountId);
     }
 
@@ -81,7 +81,12 @@ function getSelectedAccountIds(accounts: AnyAccount[], chainId: ChainId): Accoun
   }, []);
 }
 
-function getChainWithBalance(balances: BalanceMap, chains: AssetChain[], accounts: AnyAccount[]): AssetChain[] {
+function getChainWithBalance(
+  balances: BalanceMap,
+  assetChains: AssetChain[],
+  accounts: AnyAccount[],
+  chains: Record<ChainId, Chain>,
+): AssetChain[] {
   const initialBalance: PortfolioTokenBalance = {
     total: BN_ZERO,
     transferable: BN_ZERO,
@@ -90,14 +95,22 @@ function getChainWithBalance(balances: BalanceMap, chains: AssetChain[], account
     balances: [],
   };
 
-  return chains.reduce<AssetChain[]>((acc, chain) => {
-    const selectedAccountIds = getSelectedAccountIds(accounts, chain.chainId);
+  return assetChains.reduce<AssetChain[]>((acc, assetChain) => {
+    const chain = chains[assetChain.chainId];
+    if (nullable(chain)) return acc;
 
-    const accountsBalance = balanceUtils.getAssetBalances(balances, selectedAccountIds, chain.chainId, chain.assetId);
+    const selectedAccountIds = getSelectedAccountIds(accounts, chain);
+
+    const accountsBalance = balanceUtils.getAssetBalances(
+      balances,
+      selectedAccountIds,
+      assetChain.chainId,
+      assetChain.assetId,
+    );
     const assetBalance =
       accountsBalance.length > 0 ? accountsBalance.reduce(sumTokenBalanceWithBalance, initialBalance) : null;
 
-    acc.push({ ...chain, balance: assetBalance });
+    acc.push({ ...assetChain, balance: assetBalance });
 
     return acc;
   }, []);

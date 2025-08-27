@@ -39,12 +39,17 @@ accountSDK(multisigWalletFeature, {
     return false;
   },
   availableOnChain({ account, chain }) {
-    return (
-      (accountUtils.isMultisigAccount(account) ||
-        accountUtils.isMultisigSignatoryAccount(account) ||
-        (accountUtils.isFlexibleMultisigAccount(account) && networkUtils.isPureProxySupported(chain.options))) &&
-      networkUtils.isMultisigSupported(chain.options)
-    );
+    if (accountUtils.isMultisigAccount(account) || accountUtils.isMultisigSignatoryAccount(account)) {
+      return networkUtils.isMultisigSupported(chain.options);
+    }
+
+    if (accountUtils.isFlexibleMultisigAccount(account)) {
+      return networkUtils.isMultisigSupported(chain.options) && networkUtils.isPureProxySupported(chain.options);
+    }
+
+    if (accountUtils.isFlexibleProxiedAccount(account)) {
+      return accountService.isChainMatch(account, chain) && networkUtils.isPureProxySupported(chain.options);
+    }
   },
   canSignMultipleTransactions() {
     return false;

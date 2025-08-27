@@ -3,6 +3,7 @@ import { allSettled, fork } from 'effector';
 import { ConnectionStatus } from '@/shared/core';
 import { toAddress } from '@/shared/lib/utils';
 import * as networkDomain from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../form-model';
@@ -12,6 +13,8 @@ import { accounts, initiatorWallet, multisigWallet, signatoryWallet, signerWalle
 
 describe('Create multisig wallet form-model', () => {
   beforeEach(() => {
+    // @ts-expect-error unknown error
+    accountService.accountAvailabilityOnChainAnyOf.registerHandler();
     jest.restoreAllMocks();
   });
 
