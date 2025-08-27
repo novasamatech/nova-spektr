@@ -169,7 +169,7 @@ const Root = <T extends string>({
             <button
               className={cnTw(
                 'box-border flex items-center rounded-sm border border-filter-border bg-input-background px-2 text-text-secondary',
-                'w-full text-left text-footnote focus-within:border-active-container-border hover:shadow-card-shadow',
+                'w-full text-left text-footnote hover:shadow-card-shadow',
                 {
                   'h-8.5': height === 'sm',
                   'h-10.5': height === 'md',
@@ -204,7 +204,7 @@ const Root = <T extends string>({
         <ComboboxPopover
           gutter={8}
           sameWidth
-          className="relative z-50 flex flex-col overflow-auto overscroll-contain rounded-lg border border-filter-border bg-input-background p-2 dark:border-border-dark dark:bg-background-dark"
+          className="relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-lg border border-filter-border bg-input-background p-2 dark:border-border-dark dark:bg-background-dark"
         >
           {children}
           {registeredItems.size === 0 && (
