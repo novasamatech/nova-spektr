@@ -6,12 +6,11 @@ import { type Asset, type Balance, type Chain, type Wallet } from '@/shared/core
 import { ZERO_BALANCE, entries, groupBy, nullable, totalAmount } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Accordion } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { type ExtendedChain } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { accountUtils } from '@/entities/wallet';
 import { balanceSorter } from '../../lib/utils';
 import { AssetCard } from '../AssetCard/AssetCard';
 import { NetworkFiatBalance } from '../NetworkFiatBalance';
@@ -37,7 +36,7 @@ export const NetworkAssets = memo(({ chain, accounts, query, hideZeroBalances, w
 
   const accountIds = useMemo(() => {
     return accounts.reduce<AccountId[]>((acc, account) => {
-      if (accountUtils.isChainIdMatch(account, chain.chainId)) {
+      if (accountService.isAccountAvailableOnChain(account, chain)) {
         acc.push(account.accountId);
       }
 

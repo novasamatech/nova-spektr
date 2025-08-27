@@ -7,7 +7,7 @@ import { spread } from 'patronum';
 import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
 import { type Asset, type Chain, type ProxiedAccount, type Transaction } from '@/shared/core';
 import { ZERO_BALANCE, dictionary, nonNullable, transferableAmount } from '@/shared/lib/utils';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
@@ -169,10 +169,10 @@ const $unlockForm = createForm<FormParams>({
 const $shards = combine(
   {
     activeWallet: walletSelect.$selectedWallet,
-    chainId: networkSelectorModel.$governanceChainId,
+    chain: networkSelectorModel.$governanceChain,
   },
-  ({ activeWallet, chainId }) => {
-    if (!chainId || !activeWallet) return [];
+  ({ activeWallet, chain }) => {
+    if (!chain || !activeWallet) return [];
 
     return (
       activeWallet.accounts.filter((account, _, collection) => {
@@ -184,7 +184,7 @@ const $shards = combine(
           return false;
         }
 
-        return accountUtils.isChainIdMatch(account, chainId);
+        return accountService.isAccountAvailableOnChain(account, chain);
       }) || []
     );
   },

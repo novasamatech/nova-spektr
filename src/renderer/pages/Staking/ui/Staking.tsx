@@ -10,7 +10,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getRelaychainAsset, keys, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
-import { type AnyAccount, identity } from '@/domains/network';
+import { type AnyAccount, accountService, identity } from '@/domains/network';
 import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
 import { priceProviderModel } from '@/entities/price';
 import {
@@ -133,7 +133,7 @@ export const Staking = () => {
 
   const accounts =
     selectedAccounts.filter((account, _, collection) => {
-      if (!chainId) return false;
+      if (!activeChain) return false;
 
       const isBaseAccount = accountUtils.isVaultBaseAccount(account);
       const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
@@ -144,7 +144,7 @@ export const Staking = () => {
         return false;
       }
 
-      return accountUtils.isChainIdMatch(account, chainId);
+      return accountService.isAccountAvailableOnChain(account, activeChain);
     }) || [];
 
   const accountIds = accounts.map((a) => a.accountId);
