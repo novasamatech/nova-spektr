@@ -42,7 +42,13 @@ export const accountUtils = {
   isFlexibleProxiedAccount,
   isPureProxiedAccount,
 
+  /**
+   * @deprecated Use accountService.isAccountAvailableOnChain instead
+   */
   isChainIdMatch,
+  /**
+   * @deprecated Use accountService.isAccountAvailableOnChain instead
+   */
   isChainAndCryptoMatch,
   isAccountWithShards,
   isNonBaseVaultAccount,
@@ -163,6 +169,7 @@ function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
 }
 
 function isCryptoTypeMatch(account: AnyAccount, chain: Chain): boolean {
+  // TODO check this logic, should be incorrect
   if (isWcAccount(account)) {
     return true;
   }

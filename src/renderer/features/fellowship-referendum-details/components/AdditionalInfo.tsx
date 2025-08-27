@@ -1,5 +1,6 @@
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
+import { nullable } from '@/shared/lib/utils';
 import { InfoLink, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type Referendum, evidenceService } from '@/domains/collectives';
@@ -13,6 +14,10 @@ type Props = {
 
 export const AdditionalInfo = ({ referendumId, evidenceHash }: Props) => {
   const { t } = useI18n();
+
+  if (nullable(referendumId) && nullable(evidenceHash)) {
+    return null;
+  }
 
   return (
     <Card>
