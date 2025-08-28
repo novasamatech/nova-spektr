@@ -1,6 +1,6 @@
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { type IconNames } from '@/shared/ui/Icon/data';
-import { isEditDelegationTransaction } from '@/entities/transaction';
+import { isEditDelegationTransaction, isEditFlexibleTransaction } from '@/entities/transaction';
 
 const TransactionIcons: Record<TransactionType, IconNames> = {
   // Transfer
@@ -63,6 +63,10 @@ export const getIconName = (transaction: Transaction | DecodedTransaction | null
 
   if (isEditDelegationTransaction(transaction)) {
     return 'editDelegationConfirm';
+  }
+
+  if (isEditFlexibleTransaction(transaction)) {
+    return 'multisigCreationConfirm';
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
