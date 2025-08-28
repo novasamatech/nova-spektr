@@ -28,3 +28,18 @@ export const Cut: Story = {
     cut: '500px',
   },
 };
+
+export const OverrideElements: Story = {
+  args: {
+    overrideElements: {
+      h1: () => null,
+      h2: ({ children }) => <div className="text-alert-icon-negative font-bold">{children}</div>,
+      a: ({ href, children }) => (
+        <span className="text-primary-button-background-default underline">
+          [LINK: {children}, HREF: {href}]
+        </span>
+      ),
+      code: ({ children }) => <strong className="rounded bg-yellow-200 px-1">{children}</strong>,
+    },
+  },
+};
