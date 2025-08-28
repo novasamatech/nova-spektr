@@ -9,7 +9,8 @@ import { TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { walletModel } from '@/entities/wallet';
-import { OperationSign, OperationSubmit } from '@/features/operations';
+import { OperationSign } from '@/features/operations';
+import { OperationSubmitWithAction } from '@/features/operations/OperationSubmit';
 import { changeSignatoriesModel } from '../model/change-signatories-model';
 import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';
@@ -70,8 +71,13 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
     closeModal();
   };
 
+  const onSubmit = () => {
+    changeSignatoriesModel.viewOperation();
+    closeModal();
+  };
+
   if (isStep(step, Step.SUBMIT)) {
-    return <OperationSubmit isOpen={isModalOpen} onClose={closeModal} />;
+    return <OperationSubmitWithAction isOpen={isModalOpen} onClose={closeModal} onSubmit={onSubmit} />;
   }
 
   return (

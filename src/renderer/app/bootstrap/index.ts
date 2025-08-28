@@ -125,6 +125,8 @@ export const bootstrap = () => {
     import('@/features/staking-operation-details').then(({ stakingOperationDetailFeature }) => stakingOperationDetailFeature),
     import('@/features/staking-basket').then(({ stakingBasketFeature }) => stakingBasketFeature),
 
+    import('@/features/flexible-operation-details').then(({ flexibleOperationDetailFeature }) => flexibleOperationDetailFeature),
+
     import('@/features/proxy-operation-details').then(({ proxyOperationDetailFeature }) => proxyOperationDetailFeature),
     import('@/features/proxy-basket').then(({ proxyBasketFeature }) => proxyBasketFeature),
 
