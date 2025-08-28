@@ -149,56 +149,57 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   }
 
   return (
-    <Modal size="md" onToggle={toggleModal}>
-      <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>
-        <OperationTitle title={t(transactionTitle || '', { asset: asset?.symbol })} chainId={operation.chainId} />
-      </Modal.Title>
-      <Modal.Content>
-        {activeStep === Step.CONFIRMATION && (
-          <Confirmation
-            operation={operation}
-            api={api}
-            chain={chain}
-            fee={fee}
-            isFeeLoading={isFeeLoading}
-            isDepositLoading={isDepositLoading}
-            signAccount={signAccount}
-            multisigDeposit={multisigDeposit}
-            errors={errors}
-            onSign={handleConfirm}
-          />
-        )}
+    <>
+      <Modal size="md" onToggle={toggleModal}>
+        <Modal.Trigger>{children}</Modal.Trigger>
+        <Modal.Title close>
+          <OperationTitle title={t(transactionTitle || '', { asset: asset?.symbol })} chainId={operation.chainId} />
+        </Modal.Title>
+        <Modal.Content>
+          {activeStep === Step.CONFIRMATION && (
+            <Confirmation
+              operation={operation}
+              api={api}
+              chain={chain}
+              fee={fee}
+              isFeeLoading={isFeeLoading}
+              isDepositLoading={isDepositLoading}
+              signAccount={signAccount}
+              multisigDeposit={multisigDeposit}
+              errors={errors}
+              onSign={handleConfirm}
+            />
+          )}
 
-        {activeStep === Step.SIGNING && signingPayloads && signAccount && (
-          <SigningSwitch
-            signerWallet={wallets.find(w => w.id === signAccount.walletId)}
-            signingPayloads={signingPayloads}
-            onGoBack={goBack}
-            onResult={onSignResult}
-          />
-        )}
+          {activeStep === Step.SIGNING && signingPayloads && signAccount && (
+            <SigningSwitch
+              signerWallet={wallets.find(w => w.id === signAccount.walletId)}
+              signingPayloads={signingPayloads}
+              onGoBack={goBack}
+              onResult={onSignResult}
+            />
+          )}
 
-        <SignatorySelectModal
-          isOpen={isSelectAccountModalOpen}
-          accounts={unsignedAccounts}
-          chain={chain}
-          nativeAsset={nativeAsset}
-          onClose={toggleSelectAccountModal}
-          onSelect={selectSignerAccount}
-        />
-
-        <OperationResult
-          isOpen={isFeeModalOpen}
-          variant="error"
-          title={t('operation.feeErrorTitle')}
-          description={t('operation.feeErrorMessage')}
-          onClose={toggleFeeModal}
-        >
-          <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
-        </OperationResult>
-      </Modal.Content>
-    </Modal>
+          <OperationResult
+            isOpen={isFeeModalOpen}
+            variant="error"
+            title={t('operation.feeErrorTitle')}
+            description={t('operation.feeErrorMessage')}
+            onClose={toggleFeeModal}
+          >
+            <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
+          </OperationResult>
+        </Modal.Content>
+      </Modal>
+      <SignatorySelectModal
+        isOpen={isSelectAccountModalOpen}
+        accounts={unsignedAccounts}
+        chain={chain}
+        nativeAsset={nativeAsset}
+        onClose={toggleSelectAccountModal}
+        onSelect={selectSignerAccount}
+      />
+    </>
   );
 });
 

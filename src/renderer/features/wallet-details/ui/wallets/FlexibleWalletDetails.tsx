@@ -207,7 +207,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
             {multisigAccount && !isRenameInputOpen && (
               <div className="ml-auto shrink-0 duration-300 animate-in fade-in-0">
-                <Slot id={overviewSlot} props={{ walletAccounts: walletAccounts }} />
+                <Slot id={overviewSlot} props={{ walletAccounts: [proxiedAccount] }} />
               </div>
             )}
           </Box>
