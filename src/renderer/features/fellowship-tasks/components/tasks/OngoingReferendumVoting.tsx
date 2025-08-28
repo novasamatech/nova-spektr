@@ -65,8 +65,6 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
 
   const isPending = referendum && (isRFCProposal ? isRFCPending : isMetaPending);
 
-  console.log({ meta });
-
   const content = useMemo(() => {
     if (isPending) return;
 

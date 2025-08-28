@@ -1,20 +1,23 @@
-import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { delay, spread } from 'patronum';
 
 import { type Wallet } from '@/shared/core';
 import { Step, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import {
   createComplexTxStore,
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { accountService, accounts } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
+import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -28,7 +31,6 @@ const stepChanged = createEvent<Step>();
 
 const $step = restore(stepChanged, Step.SIGNATORIES_THRESHOLD).reset(flow.close);
 
-const $selectedInitiator = createStore<AnyAccount | null>(null).reset(flow.close);
 const $initiatorWallet = flow.state.map((state) => state.wallet ?? null);
 
 const $walletAccounts = combine($initiatorWallet, accounts.$list, (wallet, accountList) => {
@@ -36,14 +38,12 @@ const $walletAccounts = combine($initiatorWallet, accounts.$list, (wallet, accou
   return accountService.filterAccountsByWallet(accountList, wallet.id);
 });
 
-const $flexProxiedAccount = $walletAccounts.map(
-  (acc) => acc.find((a) => accountUtils.isFlexibleProxiedAccount(a)) ?? null,
-);
+const $initiator = $walletAccounts.map((acc) => acc.find((a) => accountUtils.isFlexibleProxiedAccount(a)) ?? null);
 const $multisigAccount = $walletAccounts.map(
   (acc) => acc.find((a) => accountUtils.isFlexibleMultisigAccount(a)) ?? null,
 );
 
-const $chainId = $flexProxiedAccount.map((acc) => acc?.chainId ?? null);
+const $chainId = $initiator.map((acc) => acc?.chainId ?? null);
 const $chain = combine($chainId, networkModel.$chains, (chainId, chains) => (chainId ? chains[chainId] : null));
 
 const $walletSignatories = combine($multisigAccount, accounts.$list, (account, accounts) => {
@@ -92,39 +92,20 @@ sample({
 });
 
 sample({
-  clock: signatoryModel.$signatories,
-  source: accounts.$list,
-  filter: (_, signatories) => nonNullable(signatories),
-  fn: (accounts, signatories) => {
-    const signatory = signatories.at(0);
-    if (!signatory) return null;
-
-    return (
-      accounts.find(
-        (a) =>
-          toAccountId(signatory.address) === a.accountId &&
-          (signatory.walletId ? signatory.walletId === a.walletId.toString() : true),
-      ) ?? null
-    );
-  },
-  target: $selectedInitiator,
-});
-
-const $signatories = createSignatoriesStore({
-  chain: $chain,
-  initiator: $flexProxiedAccount,
-  accounts: accounts.$list,
-});
-
-// in the current implementation, the first signatory is always the signer
-const $signatory = $signatories.map((signatories) => signatories.at(0) ?? null);
-
-sample({
   clock: $initiatorWallet,
   filter: nonNullable,
   fn: (wallet) => [wallet!],
   target: signatoryModel.getSignatoriesBalance,
 });
+
+const $signatories = createSignatoriesStore({
+  chain: $chain,
+  initiator: $initiator,
+  accounts: accounts.$list,
+});
+
+// in the current implementation, the first signatory is always the signer
+const $signatory = $signatories.map((signatories) => signatories.at(0) ?? null);
 
 // Transactions
 const $reassignTx = combine(
@@ -148,9 +129,9 @@ const $reassignTx = combine(
   },
 );
 
-const { $tx: $flexibleTx } = createComplexTxStore({
+const { $tx: $flexibleTx, $route } = createComplexTxStore({
   api: formModel.$api,
-  initiator: $flexProxiedAccount,
+  initiator: $initiator,
   signatory: $signatory,
   accounts: accounts.$list,
   chain: $chain,
@@ -191,9 +172,10 @@ const $coreTx = combine(
   },
 );
 
-const { $tx, $route, $fee, $pendingFee } = createComplexTxStore({
+// transaction with remark executed from the signatory without flex wrap
+const { $tx, $fee, $pendingFee } = createComplexTxStore({
   api: formModel.$api,
-  initiator: $selectedInitiator,
+  initiator: $signatory,
   signatory: $signatory,
   accounts: accounts.$list,
   chain: $chain,
@@ -265,7 +247,7 @@ const formSubmitted = sample({
     tx: $tx,
     coreTx: $coreTx,
     route: $route,
-    initiator: $selectedInitiator,
+    initiator: $initiator,
     signatory: $signatory,
     chain: $chain,
   },
@@ -309,7 +291,7 @@ sample({
   source: {
     chain: $chain,
     tx: $tx,
-    initiator: $selectedInitiator,
+    initiator: $initiator,
     signer: $signatory,
   },
   filter: ({ chain, tx, initiator, signer }) =>
@@ -344,6 +326,24 @@ sample({
   }),
 });
 
+const viewOperation = createEvent();
+
+sample({
+  clock: viewOperation,
+  source: $initiatorWallet,
+  filter: (initiatorWallet) => nonNullable(initiatorWallet),
+  fn: (initiatorWallet) => initiatorWallet!.id,
+  target: walletSelect.select,
+});
+
+sample({
+  clock: delay(viewOperation, 2000),
+  source: $tx,
+  filter: (tx) => nonNullable(tx),
+  fn: () => Paths.OPERATIONS,
+  target: navigationModel.events.navigateTo,
+});
+
 sample({
   clock: delay(flow.close, 2000),
   fn: () => Step.SIGNATORIES_THRESHOLD,
@@ -368,6 +368,7 @@ export const changeSignatoriesModel = {
   $isLoading,
 
   stepChanged,
+  viewOperation,
 
   flow,
 };
