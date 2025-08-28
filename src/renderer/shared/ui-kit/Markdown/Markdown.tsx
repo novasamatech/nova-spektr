@@ -17,7 +17,7 @@ const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: true
 const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw];
 const remarkPlugins: Options['remarkPlugins'] = [remarkGfm];
 
-const components: Components = {
+const baseComponents: Components = {
   h1: ({ node: _, className, ...props }) => (
     <h1 className={cnTw('border-b border-filter-border pb-2 text-header-title not-first:mt-6', className)} {...props} />
   ),
@@ -140,12 +140,18 @@ type Props = {
   compact?: boolean;
   cut?: string;
   children: string;
+  overrideElements?: Partial<Components>;
 };
 
-export const Markdown = memo(({ compact, cut, children }: Props) => {
+export const Markdown = memo(({ compact, cut, children, overrideElements = {} }: Props) => {
   if (!children) {
     return null;
   }
+
+  const components = {
+    ...baseComponents,
+    ...overrideElements,
+  };
 
   const markdown = (
     <div
