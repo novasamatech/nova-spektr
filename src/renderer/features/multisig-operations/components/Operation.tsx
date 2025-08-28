@@ -8,7 +8,7 @@ import { Accordion } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
-import { TransactionTitle } from '@/entities/transaction';
+import { TransactionTitle, findCoreTransaction } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 
 import { OperationFullInfo } from './OperationFullInfo';
@@ -27,19 +27,21 @@ export const operationTitleTransformer = createTransformer<
 export const Operation = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
 
+  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
   const externalTitleNode = useTransformer(operationTitleTransformer, {
-    operation: operation,
-    showCoreTransaction: accountUtils.isFlexibleMultisigAccount(account),
+    operation,
+    showCoreTransaction,
   });
 
   let titleNode;
-
   if (externalTitleNode) {
     titleNode = externalTitleNode;
   } else {
+    const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+
     const title =
-      operation.section && operation.method
-        ? formatSectionAndMethod(operation.section, operation.method)
+      coreTx?.section && coreTx?.method
+        ? formatSectionAndMethod(coreTx.section, coreTx.method)
         : t('operations.titles.unknown');
     titleNode = (
       <>

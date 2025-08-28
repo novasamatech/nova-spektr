@@ -1562,6 +1562,7 @@
       "inputPlaceholder": "0x00...",
       "title": "Enter call data"
     },
+    "createdOperationDescription": "The changes will take effect after the other signatories sign.",
     "filters": {
       "clearAll": "Clear all",
       "networkPlaceholder": "Network",
@@ -1582,6 +1583,7 @@
       "delegateOn": "Delegate on",
       "destinationOn": "Set reward destination on",
       "editDelegationOn": "Edit delegation on",
+      "editFlexibleOn": "Edit flexible multisig on",
       "nominateOn": "Change Validators on",
       "proxy": "Proxy",
       "redeemOn": "Withdraw Unstaked { asset } on",
@@ -1609,6 +1611,7 @@
     "noOperationsDescription": "Your operation history will appear here",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
+    "operationCreated": "Operation created",
     "title": "Operations",
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
@@ -1619,6 +1622,7 @@
       "delegate": "Delegate",
       "destination": "Set reward destination",
       "editDelegation": "Edit Delegation",
+      "editFlexible": "Edit flexible multisig",
       "nominate": "Change Validators",
       "proxy": "Proxy",
       "redeem": "Withdraw Unstaked",
@@ -1637,7 +1641,8 @@
       "unlock": "Unlock",
       "unstake": "Unstake",
       "vote": "Vote"
-    }
+    },
+    "viewOperation": "View operation"
   },
   "portfolilo": {
     "selectNetworkLabel": "Select network"

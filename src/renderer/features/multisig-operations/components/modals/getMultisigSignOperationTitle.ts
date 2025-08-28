@@ -3,7 +3,7 @@ import { type TFunction } from 'i18next';
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { type MultisigOperation } from '@/domains/network';
-import { findCoreBatchAll, isEditDelegationTransaction } from '@/entities/transaction';
+import { findCoreBatchAll, isEditDelegationTransaction, isEditFlexibleTransaction } from '@/entities/transaction';
 
 const TRANSACTION_UNKNOWN = 'operations.titles.unknown';
 
@@ -79,6 +79,10 @@ export const getModalTransactionTitle = (
 
   if (isEditDelegationTransaction(transaction)) {
     return t('operations.modalTitles.editDelegationOn');
+  }
+
+  if (isEditFlexibleTransaction(transaction)) {
+    return t('operations.modalTitles.editFlexibleOn');
   }
 
   if (transaction.type === TransactionType.BATCH_ALL) {
