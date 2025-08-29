@@ -262,7 +262,7 @@ const $ongoingReferendumsTasks = combine(
 
     const possibleReferendums = referendums.filter(referendum => {
       // Filter out unknown proposals
-      if (referendum.proposal && referendumService.isUnknownProposal(referendum.proposal)) {
+      if (!referendum.proposal || referendumService.isUnknownProposal(referendum.proposal)) {
         return false;
       }
 
