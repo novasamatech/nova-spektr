@@ -50,7 +50,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
   }, [title, referendum, tracks, referendumId]);
 
   return (
-    <Modal size="xl" height="full">
+    <Modal size="xl" height="fit">
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{modalTitle}</Modal.Title>
       <Modal.Content disableScroll>
