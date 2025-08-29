@@ -4,9 +4,24 @@ import { sortBy } from 'lodash';
 import { spread } from 'patronum';
 import { z } from 'zod';
 
-import { AccountType, CryptoType, type NoID, SigningType, WalletType } from '@/shared/core';
-import { type FlexibleMultisigAccount, type FlexibleProxiedAccount } from '@/shared/core/types/account';
-import { Step, assert, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import {
+  AccountType,
+  CryptoType,
+  type FlexibleMultisigWallet,
+  type MultisigWallet,
+  type NoID,
+  type ProxiedAccount,
+  type ProxiedWallet,
+  ProxyVariant,
+  SigningType,
+  WalletType,
+} from '@/shared/core';
+import {
+  type FlexibleMultisigAccount,
+  type FlexibleProxiedAccount,
+  type MultisigAccount,
+} from '@/shared/core/types/account';
+import { Step, assert, nonNullable, nullable, toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createComplexTxStore } from '@/shared/transactions';
@@ -179,7 +194,10 @@ sample({
   }),
 });
 
-const $flexibleMultisigCreated = createStore<boolean>(false).reset(flexibleMultisigModel.flow.close);
+const flexibleMultisigCreated = createEvent();
+const $flexibleMultisigCreated = createStore<boolean>(false)
+  .reset(flexibleMultisigModel.flow.close)
+  .on(flexibleMultisigCreated, () => true);
 
 sample({
   clock: submitModel.output.formSubmitted,
@@ -188,13 +206,14 @@ sample({
     accounts: accounts.$list,
   },
   filter: ({ tx }, results) => nonNullable(tx) && results.some(({ result }) => submitUtils.isSuccessResult(result)),
-  fn: () => true,
-  target: $flexibleMultisigCreated,
+  target: flexibleMultisigCreated,
 });
 
 // Create wallet
 
-const createWalletFx = attach({ effect: walletModel.createWallet });
+const createFlexibleMultisigWalletFx = attach({ effect: walletModel.createWallet });
+const createProxiedWalletFx = attach({ effect: walletModel.createWallet });
+const createMultisigWalletFx = attach({ effect: walletModel.createWallet });
 
 sample({
   clock: submitModel.output.formSubmitted,
@@ -249,22 +268,113 @@ sample({
       extrinsicIndex: timepoint.index,
     };
 
+    const wallet: Omit<NoID<FlexibleMultisigWallet>, 'accounts'> = {
+      name,
+      type: WalletType.FLEXIBLE_MULTISIG,
+    };
+
     return {
-      wallet: {
-        name,
-        type: WalletType.FLEXIBLE_MULTISIG,
-        signingType: SigningType.MULTISIG,
-      },
+      wallet,
       accounts: [pureAccount, multisigAccount],
     };
   },
-  target: createWalletFx,
+  target: createFlexibleMultisigWalletFx,
 });
 
 sample({
-  clock: createWalletFx.doneData.filter({ fn: nonNullable }),
+  clock: createFlexibleMultisigWalletFx.doneData.filter({ fn: nonNullable }),
   fn: ({ wallet }) => wallet.id,
   target: walletSelect.select,
+});
+
+sample({
+  clock: flexibleMultisigCreated,
+  source: {
+    name: formModel.form.fields.name.$value,
+    chain: formModel.$chain,
+    multisigAccountId: formModel.$multisigAccountId,
+    proxyAddress: $proxyAddress,
+  },
+  filter: ({ chain, multisigAccountId, proxyAddress }) => {
+    return nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(proxyAddress);
+  },
+  fn: ({ chain, name, multisigAccountId, proxyAddress }) => {
+    const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
+
+    const proxiedAccount: Omit<NoID<ProxiedAccount>, 'walletId'> = {
+      name: name.trim(),
+      accountId: toAccountId(proxyAddress!),
+      accountType: AccountType.PROXIED,
+      type: 'chain',
+      signingType: SigningType.WATCH_ONLY,
+      cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+      chainId: chain!.chainId,
+      connections: [
+        {
+          proxyAccountId: multisigAccountId!,
+          delay: 0,
+          proxyType: 'Any',
+        },
+      ],
+      proxyVariant: ProxyVariant.PURE,
+      deposit: '100',
+    };
+
+    const wallet: Omit<NoID<ProxiedWallet>, 'accounts'> = {
+      name: `Any for pure ${toShortAddress(toAddress(proxyAddress!), 5)}`,
+      type: WalletType.PROXIED,
+    };
+
+    return {
+      wallet,
+      accounts: [proxiedAccount],
+    };
+  },
+  target: createProxiedWalletFx,
+});
+
+sample({
+  clock: flexibleMultisigCreated,
+  source: {
+    name: formModel.form.fields.name.$value,
+    threshold: formModel.form.fields.threshold.$value,
+    signatories: signatoryModel.$signatories,
+    chain: formModel.$chain,
+    multisigAccountId: formModel.$multisigAccountId,
+  },
+  filter: ({ chain, multisigAccountId }) => {
+    return nonNullable(chain) && nonNullable(multisigAccountId);
+  },
+  fn: ({ signatories, chain, name, threshold, multisigAccountId }) => {
+    const sortedSignatories = sortBy(
+      signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address), walletId: a.walletId })),
+      'accountId',
+    );
+
+    const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
+
+    const multisigAccount: Omit<NoID<MultisigAccount>, 'walletId'> = {
+      signatories: sortedSignatories,
+      name: `${name.trim()} Multisig`,
+      accountId: multisigAccountId!,
+      threshold: threshold,
+      cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
+      signingType: SigningType.MULTISIG,
+      accountType: AccountType.MULTISIG,
+      type: 'universal',
+    };
+
+    const wallet: Omit<NoID<MultisigWallet>, 'accounts'> = {
+      name: toShortAddress(toAddress(multisigAccountId!), 5),
+      type: WalletType.MULTISIG,
+    };
+
+    return {
+      wallet,
+      accounts: [multisigAccount],
+    };
+  },
+  target: createMultisigWalletFx,
 });
 
 export const assignModel = {
