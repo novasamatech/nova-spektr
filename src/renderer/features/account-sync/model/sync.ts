@@ -333,7 +333,7 @@ sample({
             chainId: chainId,
             threshold: syncedMultisig.threshold,
             cryptoType: isEthereumAccountId(syncedMultisig.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-            signingType: SigningType.WATCH_ONLY,
+            signingType: SigningType.MULTISIG,
             signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
           };
 
