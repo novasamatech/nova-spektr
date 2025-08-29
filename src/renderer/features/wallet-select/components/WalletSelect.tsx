@@ -1,12 +1,10 @@
 import { useUnit } from 'effector-react';
 import { type ComponentProps, memo, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { Paths } from '@/shared/routes';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -72,16 +70,11 @@ const WalletSelectTrigger = memo(
 const WalletSelectDropdown = memo(() => {
   const { t } = useI18n();
 
-  const navigate = useNavigate();
   const filterQuery = useUnit(walletList.$query);
 
-  const selectWallet = useCallback(
-    (wallet: Wallet) => {
-      walletSelect.select(wallet.id);
-      navigate(Paths.ASSETS);
-    },
-    [navigate],
-  );
+  const selectWallet = useCallback((wallet: Wallet) => {
+    walletSelect.select(wallet.id);
+  }, []);
 
   return (
     <section className="flex h-full max-h-[87vh] min-h-0 w-[300px] flex-col overflow-hidden">
