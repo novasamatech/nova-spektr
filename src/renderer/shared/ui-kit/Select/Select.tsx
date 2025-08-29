@@ -54,6 +54,7 @@ type ControlledSelectProps<T extends string> = {
   placeholder: string;
   value: T | null;
   onChange: (value: T) => void;
+  valueNode?: ReactNode;
 } & XOR<{
   open: boolean;
   onToggle: (value: boolean) => void;
@@ -86,6 +87,7 @@ const Root = <T extends string>({
   open,
   onToggle,
   placeholder,
+  valueNode,
   value,
   onChange,
   onSearch,
@@ -165,11 +167,11 @@ const Root = <T extends string>({
         }}
       >
         {!isOpen ? (
-          <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true}>
+          <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true} className="w-full rounded-md">
             <button
               className={cnTw(
-                'box-border flex items-center rounded-sm border border-filter-border bg-input-background px-2 text-text-secondary',
-                'w-full text-left text-footnote hover:shadow-card-shadow',
+                'box-border border px-2 text-text-secondary',
+                'w-full rounded-md text-left text-footnote hover:shadow-card-shadow',
                 {
                   'h-8.5': height === 'sm',
                   'h-10.5': height === 'md',
@@ -179,11 +181,12 @@ const Root = <T extends string>({
                   'border-filter-border-negative': invalid,
                 },
               )}
+              disabled={disabled}
               onClick={() => {
                 !disabled && onOpenChange(true);
               }}
             >
-              {selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
+              {valueNode || selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
             </button>
           </ComboboxDisclosure>
         ) : (
@@ -192,7 +195,7 @@ const Root = <T extends string>({
             placeholder={placeholder}
             readOnly={!onSearch}
             className={cnTw(
-              'min-h-[34px] w-full rounded-md border-none px-2 leading-6 outline-1 placeholder:text-text-secondary focus-visible:outline-2 dark:text-white',
+              'min-h-[34px] w-full rounded-md border-none px-2 leading-6 outline-1 placeholder:text-footnote placeholder:text-text-secondary focus-visible:outline-2 dark:text-white',
               { 'h-8.5': height === 'sm', 'h-10.5': height === 'md' },
               { 'cursor-default': !onSearch },
             )}
@@ -204,7 +207,7 @@ const Root = <T extends string>({
         <ComboboxPopover
           gutter={8}
           sameWidth
-          className="relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-lg border border-filter-border bg-input-background p-2 dark:border-border-dark dark:bg-background-dark"
+          className="relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-md border border-filter-border bg-input-background p-2 dark:border-border-dark dark:bg-background-dark"
         >
           {children}
           {registeredItems.size === 0 && (

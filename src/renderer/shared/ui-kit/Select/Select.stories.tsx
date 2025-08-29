@@ -132,7 +132,13 @@ export const CustomValueNode: Story = {
     const [value, onChange] = useState('');
 
     return (
-      <Select {...params} placeholder="Select a fruit" value={value} onChange={onChange}>
+      <Select
+        {...params}
+        placeholder="Select a fruit"
+        value={value}
+        valueNode={value ? <span style={{ color: 'red' }}>selected: {value}</span> : null}
+        onChange={onChange}
+      >
         <Select.Group title="Group 1">
           <Select.Item value="Apple">Apple</Select.Item>
           <Select.Item value="Orange">Orange</Select.Item>
