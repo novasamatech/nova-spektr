@@ -35,7 +35,6 @@ export const SelectSignatoriesThreshold = () => {
 
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
   const signatories = useUnit(signatoryModel.$signatories);
-  const isEnoughBalance = useUnit(flexibleMultisigModel.$isEnoughBalance);
 
   const isLoading = useUnit(flexibleMultisigModel.$isLoading);
   const errors = useUnit(flexibleMultisigModel.$errors);
@@ -219,7 +218,7 @@ export const SelectSignatoriesThreshold = () => {
             <Button
               key="create"
               type="submit"
-              disabled={!canSubmit || !isEnoughBalance || isLoading}
+              disabled={!canSubmit || errors.length !== 0 || isLoading}
               onClick={onSubmit}
             >
               {t('createMultisigAccount.continueButton')}

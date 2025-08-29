@@ -7,15 +7,7 @@ import { delay, or, spread } from 'patronum';
 import { balanceService } from '@/shared/api/balances';
 import { proxyService } from '@/shared/api/proxy';
 import { type Asset, type Contact, type Transaction, type Wallet } from '@/shared/core';
-import {
-  Step,
-  TEST_ACCOUNTS,
-  getNativeAsset,
-  nonNullable,
-  nullable,
-  toAccountId,
-  withdrawableAmountBN,
-} from '@/shared/lib/utils';
+import { Step, TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
   createFeeCalculator,
@@ -227,7 +219,8 @@ const { $tx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-const validator = createTxValidator();
+// Validation
+const validator = createTxValidator(); //should validate all fee (proxy  deposit + existential)
 const { $errors: $firstErrors } = createTxValidationStore({
   validator,
   params: {
@@ -261,19 +254,6 @@ const $signerBalance = combine(
     const asset = getNativeAsset(chain.assets);
 
     return balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId) ?? null;
-  },
-);
-
-const $isEnoughBalance = combine(
-  {
-    fee: $fee,
-    totalDeposit: $totalDeposit,
-    signerBalance: $signerBalance,
-  },
-  ({ fee, totalDeposit, signerBalance }) => {
-    if (nullable(signerBalance) || nullable(totalDeposit)) return false;
-
-    return fee.add(totalDeposit).lte(withdrawableAmountBN(signerBalance));
   },
 );
 
@@ -454,7 +434,6 @@ export const flexibleMultisigModel = {
   $existentialDeposit,
   $totalDeposit,
   $isLoading: or($pendingProxyFee, $pendingMultisigFee, getExistentialDepositFx.pending),
-  $isEnoughBalance,
 
   signerSelected,
   stepChanged,

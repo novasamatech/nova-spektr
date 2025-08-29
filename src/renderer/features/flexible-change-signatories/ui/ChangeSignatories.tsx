@@ -84,7 +84,7 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
     <Modal isOpen={isModalOpen} size={MODAL_SIZE[step].size} height={MODAL_SIZE[step].height} onToggle={onToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
 
-      <Modal.Title>
+      <Modal.Title close>
         {chain && <OperationTitle title={t('flexibleMultisig.editTitleOn')} chainId={chain.chainId} />}
       </Modal.Title>
       {isStep(step, Step.CONFIRM) && <ConfirmationStep />}
@@ -142,10 +142,10 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
                   {t('flexibleMultisig.thresholdDescription')}
                 </InputHint>
               </div>
-            </div>
 
-            <div className="mt-auto flex flex-col">
-              <TransactionValidationError errors={errors} wallets={wallets} />
+              <div className="mt-auto flex flex-col">
+                <TransactionValidationError errors={errors} wallets={wallets} />
+              </div>
             </div>
           </Modal.Content>
 
