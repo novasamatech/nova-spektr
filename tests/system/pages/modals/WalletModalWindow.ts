@@ -1,6 +1,7 @@
 import { type Page } from '@playwright/test';
 import { step } from 'allure-js-commons';
 
+import { TEST_IDS } from '@/shared/constants';
 import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
 import { MultisigModalElements } from '../_elements/MultisigModalElements';
@@ -26,7 +27,7 @@ export class WalletModalWindow extends BaseModal<WalletModalElements> {
 
   public async openMultisigCreationModalWindow(): Promise<MultisigModalWindow> {
     await step('Open Multisig creation widget', async () => {
-      await this.page.getByRole('button', { name: 'Add' }).click();
+      await this.page.getByTestId(TEST_IDS.ADD_BUTTON).click();
       await this.page.getByRole('menuitem', { name: 'Multisig' }).click();
     });
 

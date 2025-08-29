@@ -63,5 +63,6 @@ export const TEST_IDS = {
   TRANSFER: {
     MODAL: 'transfer-modal',
   },
+  ADD_BUTTON: 'button-add',
   CLOSE_BUTTON: 'Icon:close',
 } as const;
