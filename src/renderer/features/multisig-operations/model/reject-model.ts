@@ -10,7 +10,13 @@ import {
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { type AnyAccount, type MultisigOperation, accounts, multisigOperationService } from '@/domains/network';
+import {
+  type AnyAccount,
+  type MultisigOperation,
+  accountService,
+  accounts,
+  multisigOperationService,
+} from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
@@ -48,10 +54,15 @@ const $initiator = combine(
   {
     operation: $operation,
     accounts: accounts.$list,
+    chain: $chain,
   },
-  ({ operation, accounts }) => {
-    if (!operation) return null;
-    return accounts.find(a => a.accountId === operation.depositor) ?? null;
+  ({ operation, accounts, chain }) => {
+    if (!operation || !chain) return null;
+
+    return (
+      accounts.find(a => a.accountId === operation.depositor && accountService.isAccountAvailableOnChain(a, chain)) ??
+      null
+    );
   },
 );
 
