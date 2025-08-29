@@ -169,6 +169,8 @@ export const getDelegationTarget = (tx: MultisigOperation): AccountId | undefine
     coreTx = coreTxDelegate;
   }
 
+  if (!coreTx) return;
+
   return toAccountId(coreTx?.args.target);
 };
 
