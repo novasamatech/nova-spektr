@@ -3,7 +3,6 @@ import { useState } from 'react';
 
 import { Icon } from '@/shared/ui';
 import { Box } from '../Box/Box';
-import { ThemeProvider } from '../Theme/ThemeProvider';
 
 import { Select } from './Select';
 
@@ -113,20 +112,6 @@ export const Groups: Story = {
   },
 };
 
-export const Dark: Story = {
-  decorators: [
-    (Story, { args }) => {
-      return (
-        <ThemeProvider theme="dark">
-          <div className="flex h-full w-full items-center justify-center rounded-lg bg-black p-8">
-            <Story args={args} />
-          </div>
-        </ThemeProvider>
-      );
-    },
-  ],
-};
-
 export const CustomValueNode: Story = {
   render: params => {
     const [value, onChange] = useState('');
@@ -147,6 +132,44 @@ export const CustomValueNode: Story = {
           <Select.Item value="Watermelon">Watermelon</Select.Item>
           <Select.Item value="Banana">Banana</Select.Item>
         </Select.Group>
+      </Select>
+    );
+  },
+};
+
+export const WithSearch: Story = {
+  render: params => {
+    const [value, onChange] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const fruits = [
+      { value: 'apple', label: 'Apple' },
+      { value: 'orange', label: 'Orange' },
+      { value: 'watermelon', label: 'Watermelon' },
+      { value: 'banana', label: 'Banana' },
+      { value: 'cherry', label: 'Cherry' },
+      { value: 'grape', label: 'Grape' },
+      { value: 'pineapple', label: 'Pineapple' },
+      { value: 'strawberry', label: 'Strawberry' },
+      { value: 'mango', label: 'Mango' },
+      { value: 'kiwi', label: 'Kiwi' },
+    ];
+
+    const filteredFruits = fruits.filter(fruit => fruit.label.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    return (
+      <Select
+        {...params}
+        placeholder="Search and select a fruit"
+        value={value}
+        onChange={onChange}
+        onSearch={setSearchQuery}
+      >
+        {filteredFruits.map(fruit => (
+          <Select.Item key={fruit.value} value={fruit.value}>
+            {fruit.label}
+          </Select.Item>
+        ))}
       </Select>
     );
   },

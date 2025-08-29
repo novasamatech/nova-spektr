@@ -49,6 +49,10 @@ const Context = createContext<ContextProps>({
   unregisterItem: () => {},
 });
 
+const GroupContext = createContext<{ nestingLevel: number }>({
+  nestingLevel: 0,
+});
+
 type ControlledSelectProps<T extends string> = {
   name?: string;
   placeholder: string;
@@ -170,7 +174,7 @@ const Root = <T extends string>({
           <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true} className="w-full rounded-md">
             <button
               className={cnTw(
-                'box-border border px-2 text-text-secondary',
+                'box-border border px-1.75 text-text-secondary',
                 'w-full rounded-md text-left text-footnote hover:shadow-card-shadow',
                 {
                   'h-8.5': height === 'sm',
@@ -195,8 +199,8 @@ const Root = <T extends string>({
             placeholder={placeholder}
             readOnly={!onSearch}
             className={cnTw(
-              'min-h-[34px] w-full rounded-md border-none px-2 leading-6 outline-1 placeholder:text-footnote placeholder:text-text-secondary focus-visible:outline-2 dark:text-white',
-              { 'h-8.5': height === 'sm', 'h-10.5': height === 'md' },
+              'min-h-[34px] w-full rounded-md border-none px-2 outline-1 placeholder:text-footnote placeholder:text-text-secondary focus-visible:outline-2 dark:text-white',
+              { 'h-10.5': height === 'md' },
               { 'cursor-default': !onSearch },
             )}
             onBlur={() => {
@@ -223,22 +227,31 @@ const Root = <T extends string>({
 };
 
 const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
+  const { nestingLevel } = useContext(GroupContext);
+  const contextValue = useMemo(() => ({ nestingLevel: nestingLevel + 1 }), [nestingLevel]);
+
   if (Children.count(children) === 0) return null;
+
+  const titlePaddingLeft = nestingLevel > 0 ? `${4 + nestingLevel * 16}px` : undefined;
+  const titleStyle = titlePaddingLeft ? { paddingLeft: titlePaddingLeft } : undefined;
 
   return (
     <ComboboxGroup className="mb-1 last:mb-0">
       <ComboboxGroupLabel>
-        <div className="px-1 pt-1 text-help-text text-text-secondary">{title}</div>
+        <div className="px-1 pt-1 text-help-text text-text-secondary" style={titleStyle}>
+          {title}
+        </div>
       </ComboboxGroupLabel>
-      <div className="pl-4">
+      <GroupContext.Provider value={contextValue}>
         <ComboboxList>{children}</ComboboxList>
-      </div>
+      </GroupContext.Provider>
     </ComboboxGroup>
   );
 };
 
 const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => {
   const { selectedValue, setSelectedItemContent, registerItem, unregisterItem, onItemSelect } = useContext(Context);
+  const { nestingLevel } = useContext(GroupContext);
 
   const isSelected = selectedValue === value;
 
@@ -255,11 +268,9 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
     }
   }, [isSelected, children, setSelectedItemContent]);
 
-  const commonStyle = depth
-    ? {
-        paddingLeft: `${(depth + 1) * 16}px`,
-      }
-    : undefined;
+  const paddingLeft = depth ? `${(depth + 1) * 16}px` : nestingLevel > 0 ? `${8 + nestingLevel * 16}px` : undefined;
+
+  const commonStyle = paddingLeft ? { paddingLeft } : undefined;
 
   return (
     <ComboboxItem
