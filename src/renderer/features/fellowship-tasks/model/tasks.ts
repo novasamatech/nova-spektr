@@ -9,6 +9,7 @@ import {
   evidenceService,
   member,
   memberService,
+  referendumService,
   salaryService,
   trackService,
   votingService,
@@ -260,6 +261,11 @@ const $ongoingReferendumsTasks = combine(
     if (nullable(member) || nullable(currentBlock)) return [];
 
     const possibleReferendums = referendums.filter(referendum => {
+      // Filter out unknown proposals
+      if (!referendum.proposal || referendumService.isUnknownProposal(referendum.proposal)) {
+        return false;
+      }
+
       return trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
     });
 
