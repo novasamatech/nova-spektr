@@ -1,6 +1,6 @@
 import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { InfoLink, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type Referendum, evidenceService } from '@/domains/collectives';
@@ -24,7 +24,7 @@ export const AdditionalInfo = ({ referendumId, evidenceHash }: Props) => {
       <Box padding={6} gap={6}>
         <SmallTitleText>{t('fellowship.additional.title')}</SmallTitleText>
         <Box gap={4}>
-          {referendumId ? (
+          {nonNullable(referendumId) ? (
             <InfoLink
               size="inherit"
               iconName="polkassembly"
@@ -34,7 +34,7 @@ export const AdditionalInfo = ({ referendumId, evidenceHash }: Props) => {
               {t('fellowship.additional.polkassembly')}
             </InfoLink>
           ) : null}
-          {referendumId ? (
+          {nonNullable(referendumId) ? (
             <InfoLink
               size="inherit"
               iconName="subsquare"
@@ -44,7 +44,7 @@ export const AdditionalInfo = ({ referendumId, evidenceHash }: Props) => {
               {t('fellowship.additional.subsquare')}
             </InfoLink>
           ) : null}
-          {evidenceHash ? (
+          {nonNullable(evidenceHash) ? (
             <InfoLink
               size="inherit"
               iconName="embed"
