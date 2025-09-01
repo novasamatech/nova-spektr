@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { Icon } from '@/shared/ui';
 import { Box } from '../Box/Box';
+import { ThemeProvider } from '../Theme/ThemeProvider';
 
 import { Select } from './Select';
 
@@ -173,4 +174,18 @@ export const WithSearch: Story = {
       </Select>
     );
   },
+};
+
+export const Dark: Story = {
+  decorators: [
+    (Story, { args }) => {
+      return (
+        <ThemeProvider theme="dark">
+          <div className="flex h-full w-full items-center justify-center rounded-lg bg-black p-8">
+            <Story args={args} />
+          </div>
+        </ThemeProvider>
+      );
+    },
+  ],
 };

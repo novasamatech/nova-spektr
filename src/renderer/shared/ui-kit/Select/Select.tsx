@@ -199,7 +199,7 @@ const Root = <T extends string>({
             placeholder={placeholder}
             readOnly={!onSearch}
             className={cnTw(
-              'min-h-[34px] w-full rounded-md border-none px-2 outline-1 placeholder:text-footnote placeholder:text-text-secondary focus-visible:outline-2 dark:text-white',
+              'min-h-[34px] w-full rounded-md border-none px-2 outline-1 placeholder:text-footnote placeholder:text-text-secondary focus-visible:outline-2',
               { 'h-10.5': height === 'md' },
               { 'cursor-default': !onSearch },
             )}
@@ -211,7 +211,13 @@ const Root = <T extends string>({
         <ComboboxPopover
           gutter={8}
           sameWidth
-          className="relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-md border border-filter-border bg-input-background p-2 dark:border-border-dark dark:bg-background-dark"
+          className={cnTw(
+            'relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-md border p-2',
+            {
+              'border-filter-border bg-input-background': theme === 'light',
+              'border-border-dark bg-background-dark': theme === 'dark',
+            },
+          )}
         >
           {children}
           {registeredItems.size === 0 && (
@@ -252,6 +258,7 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
 const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => {
   const { selectedValue, setSelectedItemContent, registerItem, unregisterItem, onItemSelect } = useContext(Context);
   const { nestingLevel } = useContext(GroupContext);
+  const { theme } = useTheme();
 
   const isSelected = selectedValue === value;
 
@@ -278,7 +285,14 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
       clickOnSpace={true}
       clickOnEnter={true}
       value={value}
-      className="flex cursor-default scroll-m-2 items-center gap-2 rounded px-2 py-2 outline-none hover:bg-action-background-hover data-[active]:pb-[7px] data-[active-item]:bg-tab-background data-[active-item]:outline-2 dark:hover:bg-background-item-hover dark:data-[active-item]:bg-tab-background"
+      className={cnTw(
+        'flex cursor-pointer scroll-m-2 items-center gap-2 rounded px-2 py-2 outline-none data-[active]:pb-[7px] data-[active-item]:outline-2',
+        {
+          'hover:bg-action-background-hover data-[active-item]:bg-tab-background': theme === 'light',
+          'text-text-tertiary hover:bg-background-item-hover data-[active-item]:bg-background-item-hover':
+            theme === 'dark',
+        },
+      )}
       style={commonStyle}
       onClick={() => onItemSelect(value)}
     >
