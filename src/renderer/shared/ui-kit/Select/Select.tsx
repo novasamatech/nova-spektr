@@ -49,10 +49,6 @@ const Context = createContext<ContextProps>({
   unregisterItem: () => {},
 });
 
-const GroupContext = createContext<{ nestingLevel: number }>({
-  nestingLevel: 0,
-});
-
 type ControlledSelectProps<T extends string> = {
   name?: string;
   placeholder: string;
@@ -76,7 +72,7 @@ type RootProps<T extends string> = PropsWithChildren<
 
 type ItemProps = PropsWithChildren<{
   value: string;
-  depth?: number;
+  indent?: number;
 }>;
 
 type GroupProps = PropsWithChildren<{
@@ -212,7 +208,7 @@ const Root = <T extends string>({
           gutter={8}
           sameWidth
           className={cnTw(
-            'relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-md border p-2',
+            'relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-md border px-1 py-2',
             {
               'border-filter-border bg-input-background': theme === 'light',
               'border-border-dark bg-background-dark': theme === 'dark',
@@ -233,31 +229,20 @@ const Root = <T extends string>({
 };
 
 const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
-  const { nestingLevel } = useContext(GroupContext);
-  const contextValue = useMemo(() => ({ nestingLevel: nestingLevel + 1 }), [nestingLevel]);
-
   if (Children.count(children) === 0) return null;
-
-  const titlePaddingLeft = nestingLevel > 0 ? `${4 + nestingLevel * 16}px` : undefined;
-  const titleStyle = titlePaddingLeft ? { paddingLeft: titlePaddingLeft } : undefined;
 
   return (
     <ComboboxGroup className="mb-1 last:mb-0">
       <ComboboxGroupLabel>
-        <div className="px-1 pt-1 text-help-text text-text-secondary" style={titleStyle}>
-          {title}
-        </div>
+        <div className="px-3 py-1 text-help-text text-text-secondary">{title}</div>
       </ComboboxGroupLabel>
-      <GroupContext.Provider value={contextValue}>
-        <ComboboxList>{children}</ComboboxList>
-      </GroupContext.Provider>
+      <ComboboxList>{children}</ComboboxList>
     </ComboboxGroup>
   );
 };
 
-const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => {
+const Item = memo(({ value, indent = 0, children }: PropsWithChildren<ItemProps>) => {
   const { selectedValue, setSelectedItemContent, registerItem, unregisterItem, onItemSelect } = useContext(Context);
-  const { nestingLevel } = useContext(GroupContext);
   const { theme } = useTheme();
 
   const isSelected = selectedValue === value;
@@ -275,9 +260,8 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
     }
   }, [isSelected, children, setSelectedItemContent]);
 
-  const paddingLeft = depth ? `${(depth + 1) * 16}px` : nestingLevel > 0 ? `${8 + nestingLevel * 16}px` : undefined;
-
-  const commonStyle = paddingLeft ? { paddingLeft } : undefined;
+  const paddingLeft = indent > 0 ? `${8 + indent * 16}px` : undefined;
+  const itemStyle = paddingLeft ? { paddingLeft } : undefined;
 
   return (
     <ComboboxItem
@@ -286,14 +270,14 @@ const Item = memo(({ value, depth, children }: PropsWithChildren<ItemProps>) => 
       clickOnEnter={true}
       value={value}
       className={cnTw(
-        'flex cursor-pointer scroll-m-2 items-center gap-2 rounded px-2 py-2 outline-none data-[active]:pb-[7px] data-[active-item]:outline-2',
+        'flex cursor-pointer scroll-m-2 items-center gap-2 rounded px-3 py-2 outline-none data-[active]:pb-[7px] data-[active-item]:outline-2',
         {
           'hover:bg-action-background-hover data-[active-item]:bg-tab-background': theme === 'light',
           'text-text-tertiary hover:bg-background-item-hover data-[active-item]:bg-background-item-hover':
             theme === 'dark',
         },
       )}
-      style={commonStyle}
+      style={itemStyle}
       onClick={() => onItemSelect(value)}
     >
       <div className="h-full w-full truncate">{children}</div>

@@ -116,7 +116,7 @@ export const InitiatorSelect = memo(() => {
           );
 
           return (
-            <Select.Item key={wallet.id} value={wallet.id.toString()}>
+            <Select.Item key={wallet.id} value={wallet.id.toString()} indent={1}>
               <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2} width="100%">
                 <Address
                   showIcon
