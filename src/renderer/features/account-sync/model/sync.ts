@@ -260,34 +260,6 @@ sample({
   }),
 });
 
-// remove proxies when proxy wallets are deleted
-sample({
-  clock: walletModel.walletsRemoved,
-  source: {
-    allAccounts: accounts.$list,
-    proxies: proxyModel.$proxies,
-  },
-  fn({ allAccounts, proxies }, deletedWalletIds) {
-    const proxiesToRemove: ProxyAccount[] = [];
-
-    for (const walletId of deletedWalletIds) {
-      const proxiedAccounts = allAccounts.filter(
-        (account) => account.walletId === walletId && accountUtils.isProxiedAccount(account),
-      );
-
-      for (const account of proxiedAccounts) {
-        const proxyAccounts = proxies[account.accountId];
-        if (proxyAccounts) {
-          proxiesToRemove.push(...proxyAccounts);
-        }
-      }
-    }
-
-    return proxiesToRemove;
-  },
-  target: proxyModel.events.proxiesRemoved,
-});
-
 // multisig sync
 
 sample({
