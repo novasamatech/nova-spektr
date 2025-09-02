@@ -11,6 +11,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import {
+  Filters,
   Locks,
   NetworkSelector,
   Search,
@@ -88,9 +89,9 @@ export const Governance = () => {
         <Box width="230px">{isApiConnected && <Search />}</Box>
       </Header>
 
-      <ScrollArea>
-        <Box horizontalAlign="center" height="100%" padding={[6, 0]}>
-          <Box width="736px" height="100%" gap={5}>
+      <Box direction="column" height="100%">
+        <Box horizontalAlign="center" padding={[6, 0, 2, 0]} shrink={0}>
+          <Box width="736px" gap={5}>
             <div className="flex gap-x-3">
               <Plate className="h-[90px] w-[240px] px-4 pt-3 pb-4.5">
                 <NetworkSelector />
@@ -108,11 +109,17 @@ export const Governance = () => {
                 </>
               )}
             </div>
-
-            <Outlet />
+            {isApiConnected && <Filters />}
           </Box>
         </Box>
-      </ScrollArea>
+        <ScrollArea>
+          <Box horizontalAlign="center" height="100%">
+            <Box width="736px" height="100%">
+              <Outlet />
+            </Box>
+          </Box>
+        </ScrollArea>
+      </Box>
 
       <CurrentDelegationModal />
       <DelegationModal />
