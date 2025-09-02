@@ -216,29 +216,48 @@ sample({
 sample({
   clock: accountsSynced,
   source: {
-    allAccounts: accounts.$list,
+    existingProxies: proxyModel.$proxies,
     chains: networkModel.$chains,
   },
-  fn({ allAccounts, chains }, [result, identities]) {
+  fn({ chains, existingProxies }, [result]) {
     const syncedProxyAccounts = result.filter(accountSyncService.isSyncedProxyAccount);
     const proxiesToAdd: NoID<ProxyAccount>[] = [];
+
+    const deleteProxies = new Set<ProxyAccount>(Object.values(existingProxies).flat());
 
     for (const proxyAccount of syncedProxyAccounts) {
       const chain = chains[proxyAccount.chainId];
       if (nullable(chain)) continue;
 
-      proxiesToAdd.push({
-        accountId: proxyAccount.proxyAccountId,
-        proxiedAccountId: proxyAccount.accountId,
-        chainId: proxyAccount.chainId,
-        delay: proxyAccount.delay,
-        proxyType: proxyAccount.proxyType as ProxyType,
-      });
+      const existingProxy = Array.from(deleteProxies).find(
+        (p) =>
+          p.accountId === proxyAccount.proxyAccountId &&
+          p.proxiedAccountId === proxyAccount.accountId &&
+          p.chainId === proxyAccount.chainId,
+      );
+
+      if (existingProxy) {
+        deleteProxies.delete(existingProxy);
+      } else {
+        proxiesToAdd.push({
+          accountId: proxyAccount.proxyAccountId,
+          proxiedAccountId: proxyAccount.accountId,
+          chainId: proxyAccount.chainId,
+          delay: proxyAccount.delay,
+          proxyType: proxyAccount.proxyType as ProxyType,
+        });
+      }
     }
 
-    return proxiesToAdd;
+    return {
+      proxiesToAdd,
+      proxiesToRemove: Array.from(deleteProxies),
+    };
   },
-  target: proxyModel.events.proxiesAdded,
+  target: spread({
+    proxiesToAdd: proxyModel.events.proxiesAdded,
+    proxiesToRemove: proxyModel.events.proxiesRemoved,
+  }),
 });
 
 // remove proxies when proxy wallets are deleted
