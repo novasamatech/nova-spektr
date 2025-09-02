@@ -90,7 +90,7 @@ export const Governance = () => {
       </Header>
 
       <Box direction="column" height="100%">
-        <Box horizontalAlign="center" padding={[6, 0, 5, 0]} shrink={0}>
+        <Box horizontalAlign="center" padding={[6, 0, 2, 0]} shrink={0}>
           <Box width="736px" gap={5}>
             <div className="flex gap-x-3">
               <Plate className="h-[90px] w-[240px] px-4 pt-3 pb-4.5">
