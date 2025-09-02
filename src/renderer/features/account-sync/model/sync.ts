@@ -17,6 +17,7 @@ import {
   type ProxiedAccount,
   type ProxiedConnection,
   type ProxiedWallet,
+  type ProxyAccount,
   type ProxyType,
   SigningType,
   type Wallet,
@@ -37,7 +38,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountSync, accountSyncService, accounts, identity, identityService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
-import { proxyUtils } from '@/entities/proxy';
+import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { type WalletCreateParams, accountUtils, walletModel } from '@/entities/wallet';
 
 const createWalletsFx = attach({ effect: walletModel.createWallets });
@@ -210,6 +211,62 @@ sample({
     deleteWallets: walletModel.walletsRemoved,
     updateAccounts: accounts.updateAccounts,
   }),
+});
+
+sample({
+  clock: accountsSynced,
+  source: {
+    allAccounts: accounts.$list,
+    chains: networkModel.$chains,
+  },
+  fn({ allAccounts, chains }, [result, identities]) {
+    const syncedProxyAccounts = result.filter(accountSyncService.isSyncedProxyAccount);
+    const proxiesToAdd: NoID<ProxyAccount>[] = [];
+
+    for (const proxyAccount of syncedProxyAccounts) {
+      const chain = chains[proxyAccount.chainId];
+      if (nullable(chain)) continue;
+
+      proxiesToAdd.push({
+        accountId: proxyAccount.proxyAccountId,
+        proxiedAccountId: proxyAccount.accountId,
+        chainId: proxyAccount.chainId,
+        delay: proxyAccount.delay,
+        proxyType: proxyAccount.proxyType as ProxyType,
+      });
+    }
+
+    return proxiesToAdd;
+  },
+  target: proxyModel.events.proxiesAdded,
+});
+
+// remove proxies when proxy wallets are deleted
+sample({
+  clock: walletModel.walletsRemoved,
+  source: {
+    allAccounts: accounts.$list,
+    proxies: proxyModel.$proxies,
+  },
+  fn({ allAccounts, proxies }, deletedWalletIds) {
+    const proxiesToRemove: ProxyAccount[] = [];
+
+    for (const walletId of deletedWalletIds) {
+      const proxiedAccounts = allAccounts.filter(
+        (account) => account.walletId === walletId && accountUtils.isProxiedAccount(account),
+      );
+
+      for (const account of proxiedAccounts) {
+        const proxyAccounts = proxies[account.accountId];
+        if (proxyAccounts) {
+          proxiesToRemove.push(...proxyAccounts);
+        }
+      }
+    }
+
+    return proxiesToRemove;
+  },
+  target: proxyModel.events.proxiesRemoved,
 });
 
 // multisig sync
