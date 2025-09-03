@@ -337,9 +337,7 @@ sample({
 });
 
 sample({
-  clock: delay(viewOperation, 2000),
-  source: $tx,
-  filter: (tx) => nonNullable(tx),
+  clock: viewOperation,
   fn: () => Paths.OPERATIONS,
   target: navigationModel.events.navigateTo,
 });
