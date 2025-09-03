@@ -52,7 +52,7 @@ sample({
   filter: (wallet: Wallet | null) => nonNullable(wallet),
   fn: (wallet) => {
     if (walletUtils.isFlexibleMultisig(wallet)) {
-      return wallet.accounts.filter(accountUtils.isProxiedAccount);
+      return wallet.accounts.filter(accountUtils.isFlexibleProxiedAccount);
     }
     if (!walletUtils.isPolkadotVault(wallet)) {
       return wallet?.accounts;
