@@ -3,6 +3,7 @@ import { createGate } from 'effector-react';
 import { sortBy } from 'lodash';
 import { delay, spread } from 'patronum';
 
+import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
   type Contact,
@@ -14,7 +15,6 @@ import {
   WalletType,
 } from '@/shared/core';
 import { Step, TEST_ACCOUNTS, getNativeAsset, isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
-import { sortChains } from '@/shared/lib/utils/chains';
 import {
   createComplexTxStore,
   createMultisigDeposit,
@@ -104,7 +104,7 @@ const $api = combine(
 
 const $multisigChains = combine(networkModel.$chains, chains => {
   const filteredChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
-  return sortChains(filteredChains);
+  return chainsService.sortChains(filteredChains);
 });
 
 // If the current chain is not connected switch to the next one

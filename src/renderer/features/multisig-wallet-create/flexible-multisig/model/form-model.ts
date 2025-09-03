@@ -1,9 +1,9 @@
 import { combine, sample } from 'effector';
 
+import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { createForm } from '@/shared/forms';
 import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
-import { sortChains } from '@/shared/lib/utils/chains';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -45,7 +45,7 @@ const $multisigChains = combine(
     const filteredChains = Object.values(chains).filter(
       c => networkUtils.isMultisigSupported(c.options) && networkUtils.isConnectedStatus(statuses[c.chainId]),
     );
-    return sortChains(filteredChains);
+    return chainsService.sortChains(filteredChains);
   },
 );
 

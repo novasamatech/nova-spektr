@@ -3,6 +3,7 @@ import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
+import { chainsService } from '@/shared/api/network';
 import { proxyService } from '@/shared/api/proxy';
 import { type Address, type Chain, type ProxyType, type Transaction, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -20,7 +21,6 @@ import {
   validateAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
-import { sortChains } from '@/shared/lib/utils/chains';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   createComplexTxStore,
@@ -245,7 +245,7 @@ const $availableChains = combine(
     const filteredChains = proxyChains.filter((chain) => {
       return walletAccounts.some((account) => accountService.isAccountAvailableOnChain(account, chain));
     });
-    return sortChains(filteredChains);
+    return chainsService.sortChains(filteredChains);
   },
 );
 

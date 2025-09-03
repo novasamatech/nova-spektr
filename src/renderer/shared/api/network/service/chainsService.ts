@@ -3,8 +3,15 @@ import { default as BigNumber } from 'bignumber.js';
 import { concat, keyBy, orderBy, sortBy } from 'lodash';
 
 import { type PriceObject } from '@/shared/api/price-provider';
-import { type AssetBalance, type Balance, type BalanceMap, type Chain, type ChainId } from '@/shared/core';
-import { CHAINS_CONFIG_URL, ZERO_BALANCE, getRelaychainAsset, nonNullable, totalAmount } from '@/shared/lib/utils';
+import {
+  type AssetBalance,
+  type Balance,
+  type BalanceMap,
+  type Chain,
+  type ChainId,
+  ChainOptions,
+} from '@/shared/core';
+import { CHAINS_CONFIG_URL, RelayChains, ZERO_BALANCE, getRelaychainAsset, totalAmount } from '@/shared/lib/utils';
 import { isKusama, isNameStartsWithNumber, isPolkadot, isTestnet } from '../lib/utils';
 
 type ChainWithFiatBalance = Chain & {
@@ -38,27 +45,60 @@ function getStakingChainsData(chains: Record<ChainId, Chain>): Chain[] {
   return Object.values(chains).filter((chain) => getRelaychainAsset(chain.assets));
 }
 
-function sortChains<T extends Pick<Chain, 'name' | 'options'>>(chains: T[]): T[] {
-  let polkadot;
-  let kusama;
-  const testnets = [] as T[];
-  const parachains = [] as T[];
-  const numberchains = [] as T[];
+function sortChains<T extends Pick<Chain, 'name' | 'options' | 'chainId' | 'parentId'>>(chains: T[]): T[] {
+  const polkadotChains: T[] = [];
+  const kusamaChains: T[] = [];
+  const otherChains: T[] = [];
+  const testnetChains: T[] = [];
 
   for (const chain of chains) {
-    if (isPolkadot(chain.name)) polkadot = chain;
-    else if (isKusama(chain.name)) kusama = chain;
-    else if (isTestnet(chain.options)) testnets.push(chain);
-    else if (isNameStartsWithNumber(chain.name)) numberchains.push(chain);
-    else parachains.push(chain);
+    if (chain.chainId === RelayChains.POLKADOT) {
+      polkadotChains.unshift(chain); // Put Polkadot first
+    } else if (chain.chainId === RelayChains.KUSAMA) {
+      kusamaChains.unshift(chain); // Put Kusama first
+    } else if (chain?.parentId === RelayChains.POLKADOT) {
+      polkadotChains.push(chain);
+    } else if (chain?.parentId === RelayChains.KUSAMA) {
+      kusamaChains.push(chain);
+    } else if (chain?.options?.includes(ChainOptions.TESTNET)) {
+      testnetChains.push(chain);
+    } else {
+      otherChains.push(chain);
+    }
   }
 
-  return concat(
-    [polkadot, kusama].filter(nonNullable),
-    sortBy(parachains, 'name'),
-    sortBy(numberchains, 'name'),
-    sortBy(testnets, 'name'),
-  );
+  // Helper to prioritize parachains with "polkadot" or "kusama" as the first word in their name
+  function parachainPriority(chain: T, relay: 'polkadot' | 'kusama'): number {
+    const name = chain.name.trim().toLowerCase();
+    if (name.startsWith(relay)) return 0;
+    return 1;
+  }
+
+  // Sort parachains alphabetically within their groups, but prioritize those with "polkadot"/"kusama" as the first word in their name
+  polkadotChains.sort((a, b) => {
+    if (a.chainId === RelayChains.POLKADOT) return -1; // Polkadot always first
+    if (b.chainId === RelayChains.POLKADOT) return 1;
+    // Both are parachains, prioritize by name starting with "polkadot"
+    const pa = parachainPriority(a, 'polkadot');
+    const pb = parachainPriority(b, 'polkadot');
+    if (pa !== pb) return pa - pb;
+    return a.name.localeCompare(b.name);
+  });
+
+  kusamaChains.sort((a, b) => {
+    if (a.chainId === RelayChains.KUSAMA) return -1; // Kusama always first
+    if (b.chainId === RelayChains.KUSAMA) return 1;
+    // Both are parachains, prioritize by name starting with "kusama"
+    const pa = parachainPriority(a, 'kusama');
+    const pb = parachainPriority(b, 'kusama');
+    if (pa !== pb) return pa - pb;
+    return a.name.localeCompare(b.name);
+  });
+
+  otherChains.sort((a, b) => a.name.localeCompare(b.name));
+  testnetChains.sort((a, b) => a.name.localeCompare(b.name));
+
+  return [...polkadotChains, ...kusamaChains, ...otherChains, ...testnetChains];
 }
 
 const compareFiatBalances = (a: ChainWithFiatBalance, b: ChainWithFiatBalance) => {

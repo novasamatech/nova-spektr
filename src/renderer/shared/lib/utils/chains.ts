@@ -1,6 +1,6 @@
 import { WellKnownChain } from '@substrate/connect';
 
-import { type Address, type Chain, type ChainId, ChainOptions, type Explorer, type HexString } from '@/shared/core';
+import { type Address, type ChainId, type Explorer, type HexString } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { toAddress } from './address';
@@ -71,69 +71,4 @@ export function getKnownChain(chainId: ChainId): WellKnownChain | undefined {
  */
 export function isPolkadotChain(chainId: ChainId): boolean {
   return chainId === RelayChains.POLKADOT;
-}
-
-/**
- * Sorts chains in the order: Polkadot + parachains, then Kusama + parachains,
- * then others, and finally testnets. Within each group, relay chains come
- * first, then parachains are sorted alphabetically.
- *
- * @param chains Chains to sort
- *
- * @returns Sorted chains
- */
-export function sortChains(chains: Chain[]): Chain[] {
-  const polkadotChains: Chain[] = [];
-  const kusamaChains: Chain[] = [];
-  const otherChains: Chain[] = [];
-  const testnetChains: Chain[] = [];
-
-  for (const chain of chains) {
-    if (chain.chainId === RelayChains.POLKADOT) {
-      polkadotChains.unshift(chain); // Put Polkadot first
-    } else if (chain.chainId === RelayChains.KUSAMA) {
-      kusamaChains.unshift(chain); // Put Kusama first
-    } else if (chain?.parentId === RelayChains.POLKADOT) {
-      polkadotChains.push(chain);
-    } else if (chain?.parentId === RelayChains.KUSAMA) {
-      kusamaChains.push(chain);
-    } else if (chain?.options?.includes(ChainOptions.TESTNET)) {
-      testnetChains.push(chain);
-    } else {
-      otherChains.push(chain);
-    }
-  }
-
-  // Helper to prioritize parachains with "polkadot" or "kusama" in their name
-  function parachainPriority(chain: Chain, relay: 'polkadot' | 'kusama'): number {
-    const name = chain.name.toLowerCase();
-    if (name.includes(relay)) return 0;
-    return 1;
-  }
-
-  // Sort parachains alphabetically within their groups, but prioritize those with "polkadot"/"kusama" in their name
-  polkadotChains.sort((a, b) => {
-    if (a.chainId === RelayChains.POLKADOT) return -1; // Polkadot always first
-    if (b.chainId === RelayChains.POLKADOT) return 1;
-    // Both are parachains, prioritize by name containing "polkadot"
-    const pa = parachainPriority(a, 'polkadot');
-    const pb = parachainPriority(b, 'polkadot');
-    if (pa !== pb) return pa - pb;
-    return a.name.localeCompare(b.name);
-  });
-
-  kusamaChains.sort((a, b) => {
-    if (a.chainId === RelayChains.KUSAMA) return -1; // Kusama always first
-    if (b.chainId === RelayChains.KUSAMA) return 1;
-    // Both are parachains, prioritize by name containing "kusama"
-    const pa = parachainPriority(a, 'kusama');
-    const pb = parachainPriority(b, 'kusama');
-    if (pa !== pb) return pa - pb;
-    return a.name.localeCompare(b.name);
-  });
-
-  otherChains.sort((a, b) => a.name.localeCompare(b.name));
-  testnetChains.sort((a, b) => a.name.localeCompare(b.name));
-
-  return [...polkadotChains, ...kusamaChains, ...otherChains, ...testnetChains];
 }
