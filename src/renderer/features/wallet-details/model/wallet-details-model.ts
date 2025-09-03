@@ -36,16 +36,14 @@ const $chainsProxies = combine(
 const $walletProxyGroups = $wallet.map(wallet => {
   if (nullable(wallet)) return [];
 
-  return wallet.accounts
-    .filter(a => accountUtils.isProxiedAccount(a) || accountUtils.isFlexibleProxiedAccount(a))
-    .map(account => {
-      return {
-        chainId: account.chainId,
-        proxiedAccountId: account.accountId,
-        walletId: account.walletId,
-        totalDeposit: account.deposit,
-      };
-    });
+  return wallet.accounts.filter(accountUtils.isAnyProxied).map(account => {
+    return {
+      chainId: account.chainId,
+      proxiedAccountId: account.accountId,
+      walletId: account.walletId,
+      totalDeposit: account.deposit,
+    };
+  });
 });
 
 const $hasProxies = combine($chainsProxies, chainsProxies => {
