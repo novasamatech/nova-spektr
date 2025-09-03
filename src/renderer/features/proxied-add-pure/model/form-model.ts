@@ -10,6 +10,7 @@ import {
   transferableAmountBN,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
+import { sortChains } from '@/shared/lib/utils/chain-sorting';
 import {
   createComplexTxStore,
   createInitiatorsStore,
@@ -167,10 +168,10 @@ const $availableChains = combine(
   },
   ({ chains, walletAccounts }) => {
     const proxyChains = Object.values(chains).filter(proxiesUtils.isPureProxy);
-
-    return proxyChains.filter(chain => {
+    const filteredChains = proxyChains.filter(chain => {
       return walletAccounts.some(account => accountService.isAccountAvailableOnChain(account, chain));
     });
+    return sortChains(filteredChains);
   },
 );
 

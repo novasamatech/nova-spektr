@@ -20,6 +20,7 @@ import {
   validateAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
+import { sortChains } from '@/shared/lib/utils/chain-sorting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   createComplexTxStore,
@@ -241,10 +242,10 @@ const $availableChains = combine(
   },
   ({ chains, walletAccounts }) => {
     const proxyChains = Object.values(chains).filter(proxiesUtils.isRegularProxy);
-
-    return proxyChains.filter((chain) => {
+    const filteredChains = proxyChains.filter((chain) => {
       return walletAccounts.some((account) => accountService.isAccountAvailableOnChain(account, chain));
     });
+    return sortChains(filteredChains);
   },
 );
 

@@ -13,15 +13,8 @@ import {
   type Wallet,
   WalletType,
 } from '@/shared/core';
-import {
-  Step,
-  TEST_ACCOUNTS,
-  getNativeAsset,
-  isStep,
-  nonNullable,
-  nullable,
-  toAccountId,
-} from '@/shared/lib/utils';
+import { Step, TEST_ACCOUNTS, getNativeAsset, isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
+import { sortChains } from '@/shared/lib/utils/chain-sorting';
 import {
   createComplexTxStore,
   createMultisigDeposit,
@@ -110,7 +103,8 @@ const $api = combine(
 );
 
 const $multisigChains = combine(networkModel.$chains, chains => {
-  return Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
+  const filteredChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
+  return sortChains(filteredChains);
 });
 
 // If the current chain is not connected switch to the next one

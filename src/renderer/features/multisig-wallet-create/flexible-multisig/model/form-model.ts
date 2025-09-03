@@ -3,6 +3,7 @@ import { combine, sample } from 'effector';
 import { type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { createForm } from '@/shared/forms';
 import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { sortChains } from '@/shared/lib/utils/chain-sorting';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -41,9 +42,10 @@ const form = createForm<FormParams>({
 const $multisigChains = combine(
   { chains: networkModel.$chains, statuses: networkModel.$connectionStatuses },
   ({ chains, statuses }) => {
-    return Object.values(chains).filter(
+    const filteredChains = Object.values(chains).filter(
       c => networkUtils.isMultisigSupported(c.options) && networkUtils.isConnectedStatus(statuses[c.chainId]),
     );
+    return sortChains(filteredChains);
   },
 );
 
