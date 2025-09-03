@@ -39,6 +39,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
+  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
 
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [tab, setTab] = useState('1');
@@ -103,7 +104,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   //   ),
   // });
 
-  const TabItems: { id: string; title: string; panel: ReactNode }[] = [];
+  const TabItems: { id: string; title: ReactNode; panel: ReactNode }[] = [];
 
   const TabAccount = {
     id: '1',
@@ -168,7 +169,12 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   if (canCreateProxy) {
     const TabProxy = {
       id: '3',
-      title: t('walletDetails.common.proxiesTabTitle'),
+      title: (
+        <span className="flex items-center gap-1">
+          {t('walletDetails.common.proxiesTabTitleShort')}
+          <span className="text-text-tertiary">{proxiesCount}</span>
+        </span>
+      ),
       panel: <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />,
     };
 
