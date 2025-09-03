@@ -97,7 +97,7 @@ export function sortChains(chains: Chain[]): Chain[] {
       polkadotChains.push(chain);
     } else if (chain?.parentId === RelayChains.KUSAMA) {
       kusamaChains.push(chain);
-    } else if (chain.options?.includes(ChainOptions.TESTNET)) {
+    } else if (chain?.options?.includes(ChainOptions.TESTNET)) {
       testnetChains.push(chain);
     } else {
       otherChains.push(chain);
