@@ -2,17 +2,13 @@ import { combine, createEvent, restore, sample } from 'effector';
 
 import { type Chain, ChainOptions } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
-import { sortChains } from '@/shared/lib/utils/chain-sorting';
 import { type AccountNode, type AnyAccount, accountService, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 
 const $allChains = networkModel.$chains.map((chains) => {
   const requiredOptions = new Set([ChainOptions.MULTISIG, ChainOptions.PURE_PROXY, ChainOptions.REGULAR_PROXY]);
-  const filteredChains = Object.values(chains).filter((chain) =>
-    chain.options?.some((option) => requiredOptions.has(option)),
-  );
-  return sortChains(filteredChains);
+  return Object.values(chains).filter((chain) => chain.options?.some((option) => requiredOptions.has(option)));
 });
 const $allChainsMap = $allChains.map((chains) => new Map(chains.map((chain) => [chain.chainId, chain])));
 

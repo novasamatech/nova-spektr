@@ -20,7 +20,7 @@ import {
   validateAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
-import { sortChains } from '@/shared/lib/utils/chain-sorting';
+import { sortChains } from '@/shared/lib/utils/chains';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   createComplexTxStore,

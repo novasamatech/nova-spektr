@@ -14,7 +14,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { Step, TEST_ACCOUNTS, getNativeAsset, isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
-import { sortChains } from '@/shared/lib/utils/chain-sorting';
+import { sortChains } from '@/shared/lib/utils/chains';
 import {
   createComplexTxStore,
   createMultisigDeposit,

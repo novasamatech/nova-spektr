@@ -6,7 +6,7 @@ import { spread } from 'patronum';
 import { type Asset, type Chain, type Transaction } from '@/shared/core';
 import { series } from '@/shared/effector/series';
 import { TEST_ACCOUNTS, getNativeAsset, merge, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
-import { sortChains } from '@/shared/lib/utils/chain-sorting';
+import { sortChains } from '@/shared/lib/utils/chains';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
