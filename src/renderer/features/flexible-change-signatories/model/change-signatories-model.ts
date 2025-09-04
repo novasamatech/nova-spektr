@@ -338,6 +338,12 @@ sample({
 
 sample({
   clock: viewOperation,
+  fn: () => ({ wallet: null }),
+  target: flow.close,
+});
+
+sample({
+  clock: viewOperation,
   fn: () => Paths.OPERATIONS,
   target: navigationModel.events.navigateTo,
 });
@@ -361,12 +367,9 @@ export const changeSignatoriesModel = {
   $canSubmit,
   $route,
   $errors,
-
   $fee,
   $isLoading,
-
   stepChanged,
   viewOperation,
-
   flow,
 };
