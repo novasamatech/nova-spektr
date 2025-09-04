@@ -40,6 +40,7 @@ export const accountUtils = {
   isWcAccount,
   isProxiedAccount,
   isFlexibleProxiedAccount,
+  isAnyProxied,
   isPureProxiedAccount,
 
   /**
@@ -139,6 +140,10 @@ function isFlexibleProxiedAccount(account: Partial<AnyAccount>): account is Flex
     'accountType' in account &&
     account.accountType === AccountType.FLEX_PROXIED
   );
+}
+
+function isAnyProxied(account: Partial<AnyAccount>): account is ProxiedAccount | FlexibleProxiedAccount {
+  return isProxiedAccount(account) || isFlexibleProxiedAccount(account);
 }
 
 function isPureProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccount {
