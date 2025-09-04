@@ -195,7 +195,7 @@ export const VaultQrReader = ({
       if (isSimpleQr) return;
 
       const resultMetadata = result.getResultMetadata().get(FRAME_KEY) as Uint8Array[];
-      if (!resultMetadata || resultMetadata.length === 0) {
+      if (!resultMetadata?.length) {
         // If no metadata, it's not a multiframe QR, skip processing
         return;
       }
