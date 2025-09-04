@@ -20,6 +20,7 @@ export const GovernanceReferendumList = () => {
 
   const isLoading = useUnit(governancePageAggregate.$isLoading);
   const isTitlesLoading = useUnit(governancePageAggregate.$isTitlesLoading);
+  const isApprovalThresholdsLoading = useUnit(governancePageAggregate.$isApprovalThresholdsLoading);
   const isSearching = useUnit(governancePageAggregate.$isSearching);
   const displayedReferendums = useUnit(governancePageAggregate.$displayedReferendums);
   const ongoing = useUnit(governancePageAggregate.$ongoing);
@@ -53,6 +54,7 @@ export const GovernanceReferendumList = () => {
             referendums={ongoing}
             isLoading={isLoading}
             isTitlesLoading={isTitlesLoading}
+            isApprovalThresholdsLoading={isApprovalThresholdsLoading}
             mixLoadingWithData={isLoadingState}
             onSelect={({ referendumId }) => navigate(referendumId)}
           />
