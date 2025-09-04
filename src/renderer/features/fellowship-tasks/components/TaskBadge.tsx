@@ -39,7 +39,7 @@ export const TaskBadge = memo(({ rank, isPromotion, isRetention, proposal }: Pro
   }
 
   if (isSpendProposal) {
-    iconName = 'treasury';
+    iconName = 'spend';
   }
 
   if (!iconName) {

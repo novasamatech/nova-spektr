@@ -17,6 +17,7 @@ import {
   type ProxiedAccount,
   type ProxiedConnection,
   type ProxiedWallet,
+  type ProxyAccount,
   type ProxyType,
   SigningType,
   type Wallet,
@@ -37,7 +38,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountSync, accountSyncService, accounts, identity, identityService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
-import { proxyUtils } from '@/entities/proxy';
+import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { type WalletCreateParams, accountUtils, walletModel } from '@/entities/wallet';
 
 const createWalletsFx = attach({ effect: walletModel.createWallets });
@@ -209,6 +210,53 @@ sample({
     createWallets: createWalletsFx,
     deleteWallets: walletModel.walletsRemoved,
     updateAccounts: accounts.updateAccounts,
+  }),
+});
+
+sample({
+  clock: accountsSynced,
+  source: {
+    existingProxies: proxyModel.$proxies,
+    chains: networkModel.$chains,
+  },
+  fn({ chains, existingProxies }, [result]) {
+    const syncedProxyAccounts = result.filter(accountSyncService.isSyncedProxyAccount);
+    const proxiesToAdd: NoID<ProxyAccount>[] = [];
+
+    const deleteProxies = new Set<ProxyAccount>(Object.values(existingProxies).flat());
+
+    for (const proxyAccount of syncedProxyAccounts) {
+      const chain = chains[proxyAccount.chainId];
+      if (nullable(chain)) continue;
+
+      const existingProxy = Array.from(deleteProxies).find(
+        (p) =>
+          p.accountId === proxyAccount.proxyAccountId &&
+          p.proxiedAccountId === proxyAccount.accountId &&
+          p.chainId === proxyAccount.chainId,
+      );
+
+      if (existingProxy) {
+        deleteProxies.delete(existingProxy);
+      } else {
+        proxiesToAdd.push({
+          accountId: proxyAccount.proxyAccountId,
+          proxiedAccountId: proxyAccount.accountId,
+          chainId: proxyAccount.chainId,
+          delay: proxyAccount.delay,
+          proxyType: proxyAccount.proxyType as ProxyType,
+        });
+      }
+    }
+
+    return {
+      proxiesToAdd,
+      proxiesToRemove: Array.from(deleteProxies),
+    };
+  },
+  target: spread({
+    proxiesToAdd: proxyModel.events.proxiesAdded,
+    proxiesToRemove: proxyModel.events.proxiesRemoved,
   }),
 });
 
