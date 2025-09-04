@@ -18,6 +18,7 @@ type Props = {
   referendums: AggregatedReferendum[];
   isLoading: boolean;
   isTitlesLoading: boolean;
+  isApprovalThresholdsLoading: boolean;
   mixLoadingWithData: boolean;
   onSelect: (value: AggregatedReferendum) => void;
 };
@@ -31,7 +32,17 @@ const createPlaceholders = (size: number) => {
 };
 
 export const OngoingReferendums = memo(
-  ({ api, chain, asset, referendums, isLoading, isTitlesLoading, mixLoadingWithData, onSelect }: Props) => {
+  ({
+    api,
+    chain,
+    asset,
+    referendums,
+    isLoading,
+    isTitlesLoading,
+    isApprovalThresholdsLoading,
+    mixLoadingWithData,
+    onSelect,
+  }: Props) => {
     const { t } = useI18n();
 
     const placeholdersCount = isLoading ? Math.min(referendums.length || 4, 20) : Math.max(1, 4 - referendums.length);
@@ -65,6 +76,7 @@ export const OngoingReferendums = memo(
                       asset={asset}
                       referendum={referendum}
                       isTitlesLoading={isTitlesLoading}
+                      isApprovalThresholdsLoading={isApprovalThresholdsLoading}
                       onSelect={onSelect}
                     />
                   </AsyncItem>
