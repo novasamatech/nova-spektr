@@ -634,17 +634,6 @@ function buildCreateFlexibleMultisig({
     type: 'Any',
   });
 
-  const wrapperAdd = {
-    chainId: chain.chainId,
-    accountId: signerAccountId,
-    type: TransactionType.PROXY,
-    args: {
-      real: proxyAccountId,
-      forceProxyType: 'Any',
-      transaction: addProxyTx,
-    },
-  };
-
   const removeProxyTx = transactionBuilder.buildRemoveProxy({
     chain,
     accountId: signerAccountId,
@@ -653,20 +642,28 @@ function buildCreateFlexibleMultisig({
     delay: 0,
   });
 
-  const wrapperRemove = {
+  // create inner batch containing both proxy operations
+  const innerBatch = buildBatchAll({
+    chain,
+    accountId: signerAccountId,
+    transactions: [addProxyTx, removeProxyTx],
+  });
+
+  // wrap inner batch in single proxy call
+  const proxyWrapper = {
     chainId: chain.chainId,
     accountId: signerAccountId,
     type: TransactionType.PROXY,
     args: {
       real: proxyAccountId,
       forceProxyType: 'Any',
-      transaction: removeProxyTx,
+      transaction: innerBatch,
     },
   };
 
   let transactions;
   if (isMultisigExists) {
-    transactions = [transferTransaction, wrapperAdd, wrapperRemove];
+    transactions = [transferTransaction, proxyWrapper];
   } else {
     const remarkTx = transactionBuilder.buildRemark({
       chainId: chain.chainId,
@@ -675,7 +672,7 @@ function buildCreateFlexibleMultisig({
       signatories: signatories.map((s) => s.accountId),
     });
 
-    transactions = [remarkTx, transferTransaction, wrapperAdd, wrapperRemove];
+    transactions = [transferTransaction, remarkTx, proxyWrapper];
   }
 
   return buildBatchAll({ chain, accountId: signerAccountId, transactions });
