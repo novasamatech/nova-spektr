@@ -7,8 +7,4 @@ export const multisigOnboardingSignatories = {
     { account: '15oPKUbszUcWuYBLrctmdSKjYoRvA3BVgidyn3Fr4zn6YqY6', name: 'Signatory 1' },
     { account: '15uP2xhk16cRztkoP6oFbP88u2GCZ4sjLUukyGZ6Jm5bUoUe', name: 'Signatory 2' },
   ],
-  twoSignatoriesPolkadot: [
-    '15oPKUbszUcWuYBLrctmdSKjYoRvA3BVgidyn3Fr4zn6YqY6',
-    '15uP2xhk16cRztkoP6oFbP88u2GCZ4sjLUukyGZ6Jm5bUoUe',
-  ],
 };
