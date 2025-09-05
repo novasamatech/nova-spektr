@@ -95,7 +95,6 @@ sample({
     allChains: networkModel.$chains,
   },
   fn({ allAccounts, allWallets, allChains }, [syncResult, identities]) {
-    console.log({ syncResult, allChains, allChainsLength: Object.values(allChains).length });
     const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
     const proxiedAccounts = allAccounts.filter(accountUtils.isProxiedAccount);
     const syncedChains = new Set(syncResult.chains);
