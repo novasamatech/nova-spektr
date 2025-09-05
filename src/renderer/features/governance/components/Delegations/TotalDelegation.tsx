@@ -7,6 +7,7 @@ import { useConfirmContext } from '@/shared/providers';
 import { FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
+import { AssetFiatBalance } from '@/entities/price';
 import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { EmptyAccountMessage } from '@/features/emptyList';
@@ -30,6 +31,8 @@ export const TotalDelegation = ({ onClick }: Props) => {
   const activeWallet = useUnit(walletSelect.$selectedWallet);
 
   const [showWalletDetails, setShowWalletDetails] = useState(false);
+
+  const delegatedVotingPowerString = delegatedVotingPower.toString();
 
   const handleClick = () => {
     if (hasAccount && canDelegate) {
@@ -81,7 +84,10 @@ export const TotalDelegation = ({ onClick }: Props) => {
             )}
 
             {!isLoading && nonNullable(network) && !delegatedVotingPower.isZero() && (
-              <AssetBalance className="text-small-title" value={delegatedVotingPower} asset={network.asset} />
+              <div className="flex flex-col gap-y-0.5">
+                <AssetBalance className="text-small-title" value={delegatedVotingPowerString} asset={network.asset} />
+                <AssetFiatBalance amount={delegatedVotingPowerString} asset={network.asset} />
+              </div>
             )}
           </div>
 

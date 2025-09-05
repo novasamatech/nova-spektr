@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type ComponentProps, type PropsWithChildren, useEffect, useState } from 'react';
+import { type ComponentProps, type PropsWithChildren, useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -55,20 +55,13 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
     onClose?.();
   };
 
-  useEffect(() => {
-    if (step === Step.NONE) {
-      setIsModalOpen(false);
-    }
-  }, [step]);
-
   const onToggle = (isOpen: boolean) => {
     if (isOpen) {
       setIsModalOpen(true);
       changeSignatoriesModel.flow.open({ wallet });
-      return;
+    } else {
+      closeModal();
     }
-
-    closeModal();
   };
 
   const onSubmit = () => {
@@ -77,7 +70,13 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
   };
 
   if (isStep(step, Step.SUBMIT)) {
-    return <OperationSubmitWithAction isOpen={isModalOpen} onClose={closeModal} onSubmit={onSubmit} />;
+    return (
+      <OperationSubmitWithAction
+        isOpen={isModalOpen}
+        onClose={() => changeSignatoriesModel.stepChanged(Step.CONFIRM)}
+        onSubmit={onSubmit}
+      />
+    );
   }
 
   return (
