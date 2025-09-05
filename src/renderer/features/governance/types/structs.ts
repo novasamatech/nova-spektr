@@ -31,6 +31,8 @@ export type DecoupledVote = {
   balance: BN;
   votingPower: BN;
   conviction: number;
+  isDelegated?: boolean;
+  delegator?: AccountId;
 };
 
 export type AggregatedVoteHistory = DecoupledVote & {

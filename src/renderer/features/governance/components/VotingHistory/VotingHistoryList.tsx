@@ -4,10 +4,10 @@ import { Trans } from 'react-i18next';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { performSearch } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
-import { Box, EmptyMessage, ScrollArea, SearchInput } from '@/shared/ui-kit';
+import { performSearch, toAddress } from '@/shared/lib/utils';
+import { FootnoteText, IconButton } from '@/shared/ui';
+import { Account, Address, AssetBalance } from '@/shared/ui-entities';
+import { Box, Copy, EmptyMessage, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListPlaceholder } from './VotingHistoryListPlaceholder';
@@ -68,20 +68,31 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
           )}
 
           {shouldRenderList &&
-            deferredItems.map(({ voter, balance, conviction, votingPower, name }) => {
+            deferredItems.map(({ voter, balance, conviction, votingPower, name, isDelegated, delegator }) => {
               return (
                 <div
                   key={`${voter}-${balance.toString()}-${conviction}`}
                   className="grid h-11 grid-cols-[224px_1fr] items-center gap-x-3 px-2"
                 >
-                  <Account
-                    hideAddress
-                    iconSize={20}
-                    title={name ?? ''}
-                    accountId={voter}
-                    chain={chain}
-                    variant="truncate"
-                  />
+                  <div className="flex flex-col">
+                    <Account
+                      hideAddress
+                      iconSize={20}
+                      title={name ?? ''}
+                      accountId={voter}
+                      chain={chain}
+                      variant="truncate"
+                    />
+                    {isDelegated && delegator && (
+                      <FootnoteText className="flex items-start gap-x-1 text-text-tertiary">
+                        <span className="whitespace-nowrap">{t('governance.voteHistory.delegatedBy')}:</span>
+                        <Address variant="truncate" address={toAddress(delegator, { prefix: chain.addressPrefix })} />
+                        <Copy value={toAddress(delegator, { prefix: chain.addressPrefix })}>
+                          <IconButton className="m-0 mt-0.5 p-0 text-icon-default" name="copy" size={12} />
+                        </Copy>
+                      </FootnoteText>
+                    )}
+                  </div>
 
                   <Box direction="column" horizontalAlign="end">
                     <FootnoteText>

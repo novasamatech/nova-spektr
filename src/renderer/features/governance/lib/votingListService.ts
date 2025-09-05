@@ -103,10 +103,12 @@ const getDecoupledVotesFromVotingHistory = (voting: VoteHistoryRecord) => {
     for (const delegatedVote of voting.delegatorVotes) {
       res.push({
         decision: voting.vote.vote.aye ? 'aye' : 'nay',
-        voter: delegatedVote.delegator,
+        voter: voting.voter,
         votingPower: votingService.calculateVotingPower(delegatedVote.amount, delegatedVote.conviction),
         conviction: votingService.getConvictionMultiplier(delegatedVote.conviction),
         balance: delegatedVote.amount,
+        isDelegated: true,
+        delegator: delegatedVote.delegator,
       });
     }
   }
