@@ -24,22 +24,10 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
     await this.page.getByRole('button', { name: 'Add new signatory' }).click();
   }
 
-  private async fillSignatoryAddress(address: string, ammount: number): Promise<void> {
-    await this.page.getByTestId(MultisigModalElements.signatoryComboBox).nth(ammount).fill(address);
-    await this.page.getByTestId(MultisigModalElements.address).click();
-  }
-
   public async fillWalletName(name: string): Promise<void> {
     await step(`Fill wallet name: ${name}`, async () => {
       await this.page.getByTestId(MultisigModalElements.walletNameInput).fill(name);
     });
-  }
-
-  private async fillSignatoryWalletName(name: string, ammount: number): Promise<void> {
-    await this.page
-      .getByPlaceholder(MultisigModalElements.nameInput)
-      .nth(ammount)
-      .fill(name + '_' + ammount);
   }
 
   private async chooseNetwork(network: string): Promise<void> {
@@ -57,18 +45,13 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
     }
   }
 
-  private async chooseThreshold(threshold: number): Promise<void> {
-    await this.page.getByTestId(MultisigModalElements.selectTestId).click();
-    await this.page.getByRole('option', { name: threshold.toString() }).click();
-  }
-
   public async selectMultisigType(multisigType: string): Promise<void> {
     await step('Select the type of a new multisig', async () => {
       await this.page.getByTestId(multisigType).click();
     });
   }
 
-  public async selectMyAccount(account: string): Promise<void> {
+  private async selectMyAccount(account: string): Promise<void> {
     await step(`Select account: ${account}`, async () => {
       await this.page.getByTestId(MultisigModalElements.signerSelector).click();
       await this.page
@@ -80,12 +63,20 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
     });
   }
 
-  public async editNetworkSelection(): Promise<NetworkSelectionModalWindow> {
+  private async editNetworkSelection(): Promise<NetworkSelectionModalWindow> {
     await step('Click Edit Network button to open selection modal', async () => {
       await this.page.getByTestId(MultisigModalElements.networkEditButton).click();
     });
 
     return new NetworkSelectionModalWindow(this.page, new MultisigModalElements(), this.previousPage);
+  }
+
+  public async editAndSelectNetwork(name: string): Promise<MultisigModalWindow> {
+    return await step(`Edit network and select "${name}"`, async () => {
+      const networkModal = await this.editNetworkSelection();
+
+      return await networkModal.selectAndApplyNetwork(name);
+    });
   }
 
   public async clickContinueWithAlertChecks(): Promise<void> {
@@ -94,13 +85,6 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
       await this.waitForContinueButtonToBeEnabled();
       await this.page.getByRole('button', { name: 'Continue' }).click();
       await this.checkForAlerts();
-    });
-  }
-
-  public async clickContinueNoAlertChecks(): Promise<void> {
-    await step('Click Continue button without alert checks', async () => {
-      await this.waitForContinueButtonToBeEnabled();
-      await this.page.getByRole('button', { name: 'Continue' }).click();
     });
   }
 
@@ -119,40 +103,27 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
     });
   }
 
-  public async fillSignatoryAndSetThreshold(signatoryDictionary: string[], threshold?: number): Promise<void> {
-    await step('Fill signatories and set threshold', async () => {
-      await this.fillSignatoryAddress(signatoryDictionary[0], 0);
-
-      for (let i = 1; i < signatoryDictionary.length; i++) {
-        await this.clickAddSignatoryButton();
-        await this.fillSignatoryWalletName('Multisig wallet', i);
-        await this.fillSignatoryAddress(signatoryDictionary[i], i);
-      }
-      if (threshold) {
-        if (threshold < 2 || threshold > signatoryDictionary.length) {
-          throw new Error(`Threshold must be between 2 and ${signatoryDictionary.length}`);
-        }
-        await this.chooseThreshold(threshold);
-      } else {
-        await this.chooseThreshold(signatoryDictionary.length);
-      }
-    });
-  }
-
-  public async addSignatory(signatory: string): Promise<void> {
+  private async addSignatory(signatory: string): Promise<void> {
     await step('Add signatory', async () => {
       await this.clickAddSignatoryButton();
       await this.page.getByTestId(MultisigModalElements.signatoryComboBox).fill(signatory);
     });
   }
 
-  public async fillSignatoryName(name: string): Promise<void> {
+  private async fillSignatoryName(name: string): Promise<void> {
     await step(`Fill signatory name`, async () => {
       await this.page.getByTestId(MultisigModalElements.signatoryName).fill(name);
     });
   }
 
-  public async setThreshold(threshold: number): Promise<void> {
+  public async addSignatoryWithName(signatory: string, name: string): Promise<void> {
+    await step(`Add signatory "${signatory}" with name "${name}"`, async () => {
+      await this.addSignatory(signatory);
+      await this.fillSignatoryName(name);
+    });
+  }
+
+  private async setThreshold(threshold: number): Promise<void> {
     await step(`Set threshold to ${threshold}`, async () => {
       await this.page.getByTestId(MultisigModalElements.thresholdSelector).click();
       await this.page.getByRole('option', { name: threshold.toString() }).click();
@@ -169,6 +140,32 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
   public async isAssignControlDisabled(): Promise<void> {
     await step('Assert "Assign control" button is disabled', async () => {
       await expect(this.page.getByTestId(MultisigModalElements.assignControlButton)).toBeDisabled();
+    });
+  }
+
+  public async setupSignatoriesAndThreshold(
+    signatories: { account: string; name?: string }[],
+    threshold: number,
+  ): Promise<void> {
+    await step(`Setup signatories (total: ${signatories.length}, threshold: ${threshold})`, async () => {
+      if (!signatories || signatories.length < 2) {
+        throw new Error(
+          'setupSignatories: provide at least two signatories (one for My account, one for an additional signatory)',
+        );
+      }
+
+      if (threshold < 2 || threshold > signatories.length) {
+        throw new Error(`setupSignatories: threshold must be at least 2 and no more than ${signatories.length}`);
+      }
+
+      const [first, ...rest] = signatories;
+      await this.selectMyAccount(first.account);
+
+      for (const s of rest) {
+        await this.addSignatoryWithName(s.account, s.name ?? s.account);
+      }
+
+      await this.setThreshold(threshold);
     });
   }
 }

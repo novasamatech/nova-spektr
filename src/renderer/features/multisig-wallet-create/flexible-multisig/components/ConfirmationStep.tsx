@@ -102,6 +102,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
           <Alert
             variant="info"
             active={!flexibleMultisigCreated}
+            dataTestId="info-alert"
             title={t('createMultisigAccount.flexibleMultisig.leaveFlowTitle')}
           >
             <Alert.Item withDot={false}>
