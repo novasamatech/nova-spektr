@@ -5,6 +5,7 @@ import { type NoID, type Notification } from '@/shared/core';
 
 const $notifications = createStore<Notification[]>([]);
 const $hasUnread = $notifications.map((notifications) => notifications.some((n) => !n.read));
+const $unreadCount = $notifications.map((notifications) => notifications.reduce((acc, n) => acc + (n.read ? 0 : 1), 0));
 
 const populateNotificationsFx = createEffect((): Promise<Notification[]> => {
   return storageService.notifications.readAll();
@@ -54,6 +55,7 @@ sample({
 export const notificationModel = {
   $notifications,
   $hasUnread,
+  $unreadCount,
   events: {
     notificationsStarted: populateNotificationsFx,
     notificationsAdded: addNotificationsFx,

@@ -14,14 +14,21 @@ export const notificationsNavigationFeature = createFeature({
 notificationsNavigationFeature.inject(navigationBottomLinksSlot, {
   order: 1,
   render() {
-    const hasUnread = useUnit(notificationModel.$hasUnread);
+    const [hasUnread, unreadCount] = useUnit([notificationModel.$hasUnread, notificationModel.$unreadCount]);
 
     return (
       <NavItem
         icon="notification"
         title="navigation.notificationsLabel"
         link={Paths.NOTIFICATIONS}
-        badge={hasUnread ? <span className="relative -top-1 ml-2 h-1.5 w-1.5 rounded-full bg-icon-accent" /> : null}
+        badge={
+          hasUnread ? (
+            <div className="ml-auto flex items-center gap-x-2">
+              <span className="text-text-tertiary">{unreadCount}</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-icon-accent" />
+            </div>
+          ) : null
+        }
       />
     );
   },
