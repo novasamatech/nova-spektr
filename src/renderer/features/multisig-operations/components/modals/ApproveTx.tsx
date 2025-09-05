@@ -74,7 +74,13 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
       multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
     );
 
-    return signatories.filter(a => !operation.events.some(e => e.accountId === a.accountId));
+    const signatoriesOnChain = signatories.filter(s => (s.type === 'chain' ? s.chainId === chain.chainId : true));
+
+    const filteredSignatories = signatoriesOnChain.filter(
+      a => !operation.events.some(e => e.accountId === a.accountId),
+    );
+
+    return filteredSignatories;
   }, [operation, multisigAccount, chain, accountsList]);
 
   useEffect(() => {
