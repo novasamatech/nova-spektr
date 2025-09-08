@@ -191,7 +191,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
-                  address={proxiedAccount?.accountId}
+                  address={toAddress(proxiedAccount?.accountId, { prefix: chain?.addressPrefix })}
                   type={wallet.type}
                   size={42}
                   theme={isEthereumAccountId(proxiedAccount?.accountId) ? 'ethereum' : 'polkadot'}

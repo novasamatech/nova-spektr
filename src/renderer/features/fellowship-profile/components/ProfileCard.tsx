@@ -145,7 +145,7 @@ const Member = () => {
 
       <Box direction="column" gap={5} padding={4}>
         <Box direction="row" verticalAlign="center" gap={2}>
-          <Identicon size={32} background={false} value={member.accountId} />
+          <Identicon size={32} background={false} address={toAddress(member.accountId)} />
           <Box direction="column" gap={1} width="100%">
             <Box direction="row" horizontalAlign="space-between" gap={2}>
               <BodyText>

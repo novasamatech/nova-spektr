@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { Step, isStep } from '@/shared/lib/utils';
+import { Step, isStep, toAddress } from '@/shared/lib/utils';
 import { BaseModal, Button, InputHint } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 import { Field, Input } from '@/shared/ui-kit';
@@ -26,7 +26,7 @@ export const AddCustomDelegationModel = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon size={20} value={customDelegate} background={false} />
+      <Identicon size={20} address={toAddress(customDelegate, { prefix: chain?.addressPrefix })} background={false} />
     </div>
   );
 

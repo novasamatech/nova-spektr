@@ -77,7 +77,11 @@ const ValidatorRow = ({ validator, identity, chain, asset }: RowProps) => {
 
 const ValidatorShortRow = ({ validator, identity, chain }: Pick<RowProps, 'validator' | 'identity' | 'chain'>) => (
   <div className="mr-auto flex items-center gap-x-2">
-    <Identicon value={validator.accountId} background={false} size={20} />
+    <Identicon
+      address={toAddress(validator.accountId, { prefix: chain?.addressPrefix })}
+      background={false}
+      size={20}
+    />
     <div className="flex w-[276px] flex-col">
       {identity ? (
         <BodyText className="text-text-secondary">{identity.name}</BodyText>

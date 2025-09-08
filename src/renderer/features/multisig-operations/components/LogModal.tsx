@@ -11,7 +11,7 @@ import {
 } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod, getExtrinsicExplorer, sortByDateAsc } from '@/shared/lib/utils';
+import { formatSectionAndMethod, getExtrinsicExplorer, sortByDateAsc, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
@@ -145,7 +145,7 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
                           {wallet ? (
                             <WalletIcon type={wallet.type} size={16} />
                           ) : (
-                            <Identicon size={16} value={event.accountId} background={false} />
+                            <Identicon size={16} address={toAddress(event.accountId)} background={false} />
                           )}
                           <BodyText className="flex-1 text-text-secondary">{getEventMessage(event)}</BodyText>
                           <BodyText className="text-text-tertiary">{formatDate(Number(event.timestamp), 'p')}</BodyText>

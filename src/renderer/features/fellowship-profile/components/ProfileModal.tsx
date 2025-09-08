@@ -3,7 +3,7 @@ import { type PropsWithChildren } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nullable } from '@/shared/lib/utils';
+import { cnTw, nullable, toAddress } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, HeaderTitleText, Separator, Switch } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
@@ -45,7 +45,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
       <Modal.HeaderContent>
         <Box padding={5} gap={6}>
           <Box direction="row" verticalAlign="center" gap={2}>
-            <Identicon value={member.accountId} size={48} />
+            <Identicon address={toAddress(member.accountId)} size={48} />
             <Box gap={2} grow={1}>
               <HeaderTitleText>
                 <Account
