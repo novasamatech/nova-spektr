@@ -49,6 +49,8 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
     });
   }, [signatories, balances, chain, nativeAsset]);
 
+  const network = useMemo(() => ({ chain, asset: nativeAsset }), [chain, nativeAsset]);
+
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
       <div className="mb-6 flex flex-col items-center gap-y-3">
@@ -78,7 +80,7 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
         initiator={initiator}
         hasError={false}
         errorText=""
-        network={{ chain, asset: nativeAsset }}
+        network={network}
         onChange={approveModel.selectSignatory}
       />
 
