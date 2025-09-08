@@ -7,7 +7,7 @@ import { type Asset, type Chain } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, getAssetByTypeExtras, getNativeAsset } from '@/shared/lib/utils';
-import { DetailRow, Icon } from '@/shared/ui';
+import { Button, DetailRow, Icon } from '@/shared/ui';
 import {
   type TransactionValidationBalanceError,
   TransactionValidationError,
@@ -44,6 +44,7 @@ type Props = {
   isFeeLoading: boolean;
   isDepositLoading: boolean;
   onSign: () => void;
+  onGoBack?: () => void;
 };
 export const Confirmation = ({
   api,
@@ -56,6 +57,7 @@ export const Confirmation = ({
   isFeeLoading,
   isDepositLoading,
   onSign,
+  onGoBack,
 }: Props) => {
   const { t } = useI18n();
 
@@ -116,12 +118,19 @@ export const Confirmation = ({
           <XcmFee api={xcmApi} transaction={transaction} asset={asset} config={xcmConfig} />
         </DetailRow>
       )}
-      <SignButton
-        disabled={isFeeLoading || isDepositLoading || errors.length !== 0}
-        className="mt-3 ml-auto"
-        type={signerWallet?.type}
-        onClick={onSign}
-      />
+      <div className="mt-3 flex w-full justify-between">
+        {onGoBack && (
+          <Button variant="text" onClick={onGoBack}>
+            {t('operation.goBackButton')}
+          </Button>
+        )}
+        <SignButton
+          disabled={isFeeLoading || isDepositLoading || errors.length !== 0}
+          className="ml-auto"
+          type={signerWallet?.type}
+          onClick={onSign}
+        />
+      </div>
     </div>
   );
 };

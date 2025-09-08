@@ -15,9 +15,9 @@ import { accountUtils } from '@/entities/wallet';
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
 import { OperationDetails } from './OperationDetails';
 import { OperationSignatories } from './OperationSignatories';
-import ApproveTxModal from './modals/ApproveTx';
-import CallDataModal from './modals/CallDataModal';
-import RejectTxModal from './modals/RejectTx';
+import { ApproveTxModal } from './modals/ApproveTx';
+import { CallDataModal } from './modals/CallDataModal';
+import { RejectTxModal } from './modals/RejectTx';
 
 type Props = {
   operation: MultisigOperation;

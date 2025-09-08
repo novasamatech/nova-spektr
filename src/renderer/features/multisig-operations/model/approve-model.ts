@@ -35,9 +35,12 @@ const flow = createGate<GetMultisigType>({
 });
 
 const selectInitiator = createEvent<AnyAccount | null>();
-
 const $initiator = restore<AnyAccount | null>(selectInitiator, null).reset(flow.open);
+
 const $weight = createStore<Weight | null>(null);
+
+const selectSignatory = createEvent<AnyAccount | null>();
+const $signatory = restore<AnyAccount | null>(selectSignatory, null).reset(flow.open);
 
 const $chain = flow.state.map(state => state.chain);
 const $operation = flow.state.map(state => state.operation);
@@ -60,7 +63,12 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const $signatory = $signatories.map(signatories => signatories[0] ?? null);
+sample({
+  clock: $signatories,
+  filter: $signatories.map(signatories => signatories.length === 1),
+  fn: signatories => signatories[0],
+  target: $signatory,
+});
 
 // Get weight
 type ExtrinsicSigningPayload = {
@@ -188,5 +196,7 @@ export const approveModel = {
   $signingPayloads,
   $initiator,
 
+  $signatories,
+  selectSignatory,
   selectInitiator,
 };
