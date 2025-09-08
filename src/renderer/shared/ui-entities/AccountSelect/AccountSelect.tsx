@@ -30,8 +30,6 @@ export const AccountSelect = memo(
       }
     };
 
-    console.log('value', value);
-
     return (
       <Select
         placeholder={placeholder}
