@@ -160,9 +160,9 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const accountsCount = Object.values(accountsMap).flat(2).length;
 
   const isSingleAccount = wallet.accounts.length === 1;
-  const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
-  if (nullable(address)) return null;
-  const isEthereum = isEthereumAccountId(address);
+  const accoundId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+  if (nullable(accoundId)) return null;
+  const isEthereum = isEthereumAccountId(accoundId);
   const theme: IdenticonIconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
   return (
@@ -175,7 +175,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
           <div className="mb-6 flex items-center justify-between px-5">
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
-                <WalletAccountIcon address={address} type={wallet.type} size={42} theme={theme} />
+                <WalletAccountIcon address={toAddress(accoundId)} type={wallet.type} size={42} theme={theme} />
               </div>
               {!isRenameInputOpen && (
                 <>

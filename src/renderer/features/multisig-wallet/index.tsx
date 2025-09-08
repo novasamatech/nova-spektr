@@ -10,7 +10,7 @@ import {
 } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { assert, nullable } from '@/shared/lib/utils';
+import { assert, nullable, toAddress } from '@/shared/lib/utils';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountService, balanceService, multisigOperationService, transactionService } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
@@ -290,7 +290,7 @@ multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
     ? wallet.accounts.find(a => accountUtils.isMultisigAccount(a))?.accountId
     : wallet.accounts.find(a => accountUtils.isFlexibleProxiedAccount(a))?.accountId;
 
-  return <WalletAccountIcon address={accountId} type={wallet.type} size={size} />;
+  return <WalletAccountIcon address={accountId && toAddress(accountId)} type={wallet.type} size={size} />;
 });
 
 multisigWalletFeature.inject(walletGroupSlot, {

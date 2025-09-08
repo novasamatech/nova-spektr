@@ -175,7 +175,12 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon value={payout} size={20} background={false} canCopy={false} />
+      <Identicon
+        address={toAddress(payout, { prefix: network.chain.addressPrefix })}
+        size={20}
+        background={false}
+        canCopy={false}
+      />
     </div>
   );
 

@@ -45,7 +45,7 @@ const enum Step {
 
 const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
+export const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$wallets);
@@ -184,5 +184,3 @@ const RejectTxModal = memo(({ api, operation, chain, children }: Props) => {
     </Modal>
   );
 });
-
-export default RejectTxModal;

@@ -55,7 +55,12 @@ export const DerivedAccount = ({
 
         {chainWithAccountId && (
           <div className="flex">
-            <Identicon background={false} canCopy={false} value={account.accountId} size={20} />
+            <Identicon
+              background={false}
+              canCopy={false}
+              address={toAddress(account.accountId, { prefix: addressPrefix })}
+              size={20}
+            />
             <Icon
               className="z-10 -ml-2.5 rounded-full border bg-white text-text-secondary"
               size={20}

@@ -84,7 +84,7 @@ export const AccountAddress = ({
 
   return (
     <span className={cnTw('flex items-center gap-x-2', className)}>
-      {showIcon && <Identicon value={currentAddress} size={size} background={false} canCopy={canCopy} />}
+      {showIcon && <Identicon address={currentAddress} size={size} background={false} canCopy={canCopy} />}
       {nameContent || addressContent}
     </span>
   );

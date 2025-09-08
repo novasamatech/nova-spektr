@@ -21,16 +21,25 @@ type Params<Providers extends AccountProvider<any>[]> = {
   providers: Providers;
 };
 
+type SyncResult<Providers extends AccountProvider<any>[]> = {
+  accounts: InferProviderAccount<Providers[number]>[];
+  chains: ChainId[];
+};
+
 async function syncAccounts<const Providers extends AccountProvider<any>[]>({
   accounts,
   chains,
   providers,
-}: Params<Providers>): Promise<InferProviderAccount<Providers[number]>[]> {
+}: Params<Providers>): Promise<SyncResult<Providers>> {
   const possingAccounts = accounts.filter(accountService.hasPermissionToMakeActions);
   let foundAccounts: InferProviderAccount<Providers[number]>[] = [];
+  const inputChains = Object.keys(chains) as ChainId[];
 
   if (possingAccounts.length === 0) {
-    return foundAccounts;
+    return {
+      accounts: foundAccounts,
+      chains: inputChains,
+    };
   }
 
   const pool = createAsyncTaskPool({
@@ -59,7 +68,10 @@ async function syncAccounts<const Providers extends AccountProvider<any>[]>({
 
   await process(Array.from(foundAccountIds));
 
-  return foundAccounts;
+  return {
+    accounts: foundAccounts,
+    chains: inputChains,
+  };
 }
 
 function isSyncedProxyAccount(a: SyncedAccount): a is SyncedProxyAccount {
@@ -74,5 +86,5 @@ export const accountSyncService = {
   isSyncedProxyAccount,
   isSyncedMultisigAccount,
 
-  syncAccounts,
+  syncAccounts: syncAccounts,
 };
