@@ -42,7 +42,10 @@ export const WalletManagement = memo(
           'focus-within:bg-action-background-hover hover:bg-action-background-hover',
         )}
       >
-        <button className="flex w-full min-w-0 shrink items-center gap-x-2 rounded px-2 py-1.5" onClick={onClick}>
+        <button
+          className="flex w-full min-w-0 shrink cursor-pointer items-center gap-x-2 rounded px-2 py-1.5"
+          onClick={onClick}
+        >
           {active ? (
             <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
           ) : (
