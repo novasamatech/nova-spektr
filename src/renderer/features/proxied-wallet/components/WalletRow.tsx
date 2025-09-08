@@ -39,6 +39,7 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
       wallet={wallet}
       active={wallet.id === selectedWalletId}
       accountId={accountId}
+      chain={chain}
       meta={chain ? <ChainIcon chain={chain} size={16} /> : null}
       description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}

@@ -5,7 +5,7 @@ import { type ProxiedWallet, type ProxyType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { isEthereumAccountId } from '@/shared/lib/utils';
+import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
 import { ChainAccountsList, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
@@ -114,7 +114,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
-                  address={account?.accountId}
+                  address={account?.accountId && toAddress(account?.accountId, { prefix: chain?.addressPrefix })}
                   type={wallet.type}
                   size={42}
                   theme={isEthereumAccountId(account?.accountId) ? 'ethereum' : 'polkadot'}

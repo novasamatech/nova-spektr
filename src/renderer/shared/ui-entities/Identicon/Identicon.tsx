@@ -1,6 +1,7 @@
 import { type IconTheme as IdenticonIconTheme } from '@polkadot/react-identicon/types';
 import { Suspense, lazy, memo } from 'react';
 
+import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, isEthereumAccountId, validateAddress } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
@@ -9,7 +10,7 @@ import { Copy, useTheme } from '@/shared/ui-kit';
 export type { IdenticonIconTheme };
 
 type Props = {
-  value: string;
+  address: Address | null | undefined;
   theme?: IdenticonIconTheme;
   size?: number;
   background?: boolean;
@@ -22,13 +23,13 @@ const PolkadotIdenticon = lazy(() =>
 );
 
 export const Identicon = memo(
-  ({ theme, value, size = 24, background = true, canCopy: canCopyProp, testId = 'Identicon' }: Props) => {
+  ({ theme, address, size = 24, background = true, canCopy: canCopyProp, testId = 'Identicon' }: Props) => {
     const { t } = useI18n();
     const { preferStaticContent } = useTheme();
-    const valid = validateAddress(value);
+    const valid = address && validateAddress(address);
     const canCopy = typeof canCopyProp === 'undefined' ? !preferStaticContent : canCopyProp;
 
-    const defaultTheme: IdenticonIconTheme = value && valid && isEthereumAccountId(value) ? 'ethereum' : 'polkadot';
+    const defaultTheme: IdenticonIconTheme = address && valid && isEthereumAccountId(address) ? 'ethereum' : 'polkadot';
 
     const emptyIcon = <Icon name="emptyIdenticon" size={background ? size * 0.75 : size} />;
 
@@ -36,7 +37,7 @@ export const Identicon = memo(
       <Suspense fallback={emptyIcon}>
         <PolkadotIdenticon
           theme={theme || defaultTheme}
-          value={value}
+          value={address}
           size={background ? size * 0.75 : size}
           // &>svg>circle:first-of-type - background selector
           className="pointer-events-none overflow-hidden rounded-full [&>svg>circle:first-of-type]:fill-none"
@@ -64,7 +65,7 @@ export const Identicon = memo(
 
     if (shouldCopy) {
       return (
-        <Copy value={value} notification={t('general.notifications.addressCopied')}>
+        <Copy value={address} notification={t('general.notifications.addressCopied')}>
           {node}
         </Copy>
       );

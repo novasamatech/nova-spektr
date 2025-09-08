@@ -36,7 +36,7 @@ export const Address = memo(
 
     return (
       <span className="flex w-full min-w-0 items-center gap-x-2 overflow-hidden" data-testid={testId}>
-        {showIcon && <Identicon value={address} size={iconSize} background={false} canCopy={canCopy} />}
+        {showIcon && <Identicon address={address} size={iconSize} background={false} canCopy={canCopy} />}
         <span className="flex w-full flex-col overflow-hidden">
           {titleNode}
           {addressNode}
