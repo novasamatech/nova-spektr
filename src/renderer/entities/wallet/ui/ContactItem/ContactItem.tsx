@@ -36,7 +36,7 @@ export const ContactItem = ({
     >
       <div className={cnTw('flex w-full items-center gap-x-2 overflow-hidden py-1.5 pl-2', children ? 'pr-9' : 'pr-3')}>
         <div className="flex">
-          <Identicon value={formattedAddress} size={iconSize} background={false} />
+          <Identicon address={formattedAddress} size={iconSize} background={false} />
 
           {keyType && (
             <Icon

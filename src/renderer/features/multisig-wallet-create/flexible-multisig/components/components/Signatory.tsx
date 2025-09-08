@@ -234,7 +234,13 @@ export const Signatory = ({
               placeholder={t('createMultisigAccount.signatorySelection')}
               invalid={isDuplicate}
               value={query}
-              prefixElement={<Identicon value={isInvalid ? '' : signatoryAddress} size={20} background={false} />}
+              prefixElement={
+                <Identicon
+                  address={isInvalid ? null : (signatoryAddress as AccountAddress)}
+                  size={20}
+                  background={false}
+                />
+              }
               onChange={onAddressChange}
               onInput={setQuery}
             >

@@ -1,7 +1,7 @@
 import { type PropsWithChildren, type ReactNode, memo } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
-import { cnTw, nonNullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
@@ -50,7 +50,14 @@ export const WalletManagement = memo(
           )}
 
           {checkBox}
-          {accountId && <Identicon value={accountId} size={16} background={false} theme={theme} />}
+          {accountId && (
+            <Identicon
+              address={toAddress(accountId, { prefix: chain?.addressPrefix })}
+              size={16}
+              background={false}
+              theme={theme}
+            />
+          )}
 
           <div className="flex min-w-0 flex-grow flex-col">
             <div className="flex items-center gap-x-2">

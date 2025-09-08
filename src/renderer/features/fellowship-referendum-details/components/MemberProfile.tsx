@@ -2,7 +2,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
@@ -59,7 +59,7 @@ export const MemberProfile = memo(({ referendum, evidence }: Props) => {
       <Box padding={6}>
         <SmallTitleText className="mb-4">{t('fellowship.evidenceModal.member')}</SmallTitleText>
         <Box direction="row" verticalAlign="center" gap={1.25}>
-          <Identicon value={member.accountId} size={52} />
+          <Identicon address={toAddress(member.accountId)} size={52} />
           <Box gap={1.5}>
             <SmallTitleText>
               <Account

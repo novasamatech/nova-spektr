@@ -235,7 +235,12 @@ export const Signatory = ({
               invalid={isDuplicate}
               value={query}
               prefixElement={
-                <Identicon value={isInvalid ? '' : signatoryAddress} size={20} background={false} canCopy={false} />
+                <Identicon
+                  address={isInvalid ? null : (signatoryAddress as AccountAddress)}
+                  size={20}
+                  background={false}
+                  canCopy={false}
+                />
               }
               onChange={onAddressChange}
               onInput={setQuery}
