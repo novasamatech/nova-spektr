@@ -31,10 +31,21 @@ export type DecoupledVote = {
   balance: BN;
   votingPower: BN;
   conviction: number;
-  isDelegated?: boolean;
-  delegator?: AccountId;
 };
 
-export type AggregatedVoteHistory = DecoupledVote & {
+export type DelegatedVote = {
+  decision: 'aye' | 'nay' | 'abstain';
+  delegator: AccountId;
+  balance: BN;
+  votingPower: BN;
+  conviction: number;
+};
+
+export type AggregatedVoteHistory = {
+  voter: AccountId;
   name: string | null;
+  decision: 'aye' | 'nay' | 'abstain';
+  totalVotingPower: BN;
+  directVote?: DecoupledVote;
+  delegatedVotes: DelegatedVote[];
 };

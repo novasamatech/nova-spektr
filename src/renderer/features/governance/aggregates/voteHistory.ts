@@ -10,7 +10,7 @@ import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
 import { votingAssetModel } from '../model/votingAsset';
 import { type AggregatedVoteHistory } from '../types/structs';
-import { votingPowerSorting } from '../utils/votingPowerSorting';
+import { totalVotingPowerSorting } from '../utils/votingPowerSorting';
 
 import { listAggregate } from './list';
 
@@ -41,21 +41,19 @@ const $voteHistory = combine(
     const chainIdentities = identities[chainId];
 
     for (const [referendumId, historyList] of entries(history)) {
-      const aggregatedHistory = historyList.flatMap((vote) => {
-        const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
+      const voteGroups = votingListService.getVoteGroupsFromVotingHistory(historyList);
 
-        return splitVotes.map((vote) => {
-          const voterIdentity = chainIdentities[vote.voter];
-          const identityName = voterIdentity ? identityService.getFullName(voterIdentity) : null;
+      const aggregatedHistory = voteGroups.map((group) => {
+        const voterIdentity = chainIdentities[group.voter];
+        const identityName = voterIdentity ? identityService.getFullName(voterIdentity) : null;
 
-          return {
-            ...vote,
-            name: identityName,
-          };
-        });
+        return {
+          ...group,
+          name: identityName,
+        };
       });
 
-      result[referendumId] = aggregatedHistory.sort(votingPowerSorting);
+      result[referendumId] = aggregatedHistory.sort(totalVotingPowerSorting);
     }
 
     return result;
