@@ -18,7 +18,7 @@ type Props = {
   onSubmit: (callData: CallData) => void;
 };
 
-const CallDataModal = ({ isOpen, operation, onClose, onSubmit }: Props) => {
+export const CallDataModal = ({ isOpen, operation, onClose, onSubmit }: Props) => {
   const { t } = useI18n();
 
   const {
@@ -87,5 +87,3 @@ const CallDataModal = ({ isOpen, operation, onClose, onSubmit }: Props) => {
     </BaseModal>
   );
 };
-
-export default CallDataModal;

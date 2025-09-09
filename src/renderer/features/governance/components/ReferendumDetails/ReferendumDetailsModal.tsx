@@ -84,7 +84,7 @@ export const ReferendumDetailsModal = ({
 
   const ShareButton = (
     <Copy value={referendumLink.href} notification={t('governance.referendums.linkCopied')}>
-      <div className="flex cursor-default items-center gap-1 text-primary-button-background-default hover:text-primary-button-background-hover active:text-primary-button-background-active">
+      <div className="flex cursor-pointer items-center gap-1 text-primary-button-background-default hover:text-primary-button-background-hover active:text-primary-button-background-active">
         <Icon className="shrink-0 text-inherit" name="export" size={16} />
         <span className="text-inherit">{t('governance.referendums.linkShare')}</span>
       </div>

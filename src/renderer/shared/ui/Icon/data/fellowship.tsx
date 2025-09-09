@@ -21,9 +21,9 @@ import RetentionRank7Icon from '@/shared/assets/images/fellowship/retention-rank
 import RetentionRank8Icon from '@/shared/assets/images/fellowship/retention-rank-8.svg?jsx';
 import RetentionRank9Icon from '@/shared/assets/images/fellowship/retention-rank-9.svg?jsx';
 import RFCIcon from '@/shared/assets/images/fellowship/rfc.svg?jsx';
+import Spend from '@/shared/assets/images/fellowship/spend.svg?jsx';
 import SubmitPromotionEvidenceIcon from '@/shared/assets/images/fellowship/submit-promotion-evidence.svg?jsx';
 import SubmitRetentionEvidenceIcon from '@/shared/assets/images/fellowship/submit-retention-evidence.svg?jsx';
-import TreasuryIcon from '@/shared/assets/images/fellowship/treasury.svg?jsx';
 import WhitelistVotingIcon from '@/shared/assets/images/fellowship/whitelist.svg?jsx';
 import WithdrawSalaryIcon from '@/shared/assets/images/fellowship/withdraw-salary.svg?jsx';
 
@@ -53,7 +53,7 @@ const FellowshipImages = {
   submitRetentionEvidence: { svg: SubmitRetentionEvidenceIcon },
   rfc: { svg: RFCIcon },
   whitelist: { svg: WhitelistVotingIcon },
-  treasury: { svg: TreasuryIcon },
+  spend: { svg: Spend },
 } as const;
 
 export type Fellowship = keyof typeof FellowshipImages;

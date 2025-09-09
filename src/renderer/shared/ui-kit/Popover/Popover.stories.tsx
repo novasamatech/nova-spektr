@@ -57,3 +57,23 @@ export const Controlled: Story = {
     },
   ],
 };
+
+export const Hover: Story = {
+  args: {
+    enableHover: true,
+  },
+  render: args => {
+    return (
+      <Box padding={20}>
+        <Popover {...args}>
+          <Popover.Trigger>
+            <Button>Hover over me</Button>
+          </Popover.Trigger>
+          <Popover.Content>
+            <Box padding={4}>Some content</Box>
+          </Popover.Content>
+        </Popover>
+      </Box>
+    );
+  },
+};

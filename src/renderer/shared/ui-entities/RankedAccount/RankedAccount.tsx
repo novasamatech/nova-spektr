@@ -37,7 +37,7 @@ export const RankedAccount = ({
         <div className="relative flex min-w-0 shrink grow items-center gap-2">
           <div className="min-w-0">
             <div className="flex grow items-center gap-4.5">
-              <Identicon value={address} size={20} canCopy background={false} />
+              <Identicon address={address} size={20} canCopy background={false} />
               <Address title={name} address={address} showIcon={false} hideAddress variant="truncate" />
             </div>
             <div className="pointer-events-none absolute inset-y-0 left-3 my-auto h-fit w-fit">

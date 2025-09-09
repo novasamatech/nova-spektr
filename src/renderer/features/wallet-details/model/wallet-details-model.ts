@@ -36,7 +36,7 @@ const $chainsProxies = combine(
 const $walletProxyGroups = $wallet.map(wallet => {
   if (nullable(wallet)) return [];
 
-  return wallet.accounts.filter(accountUtils.isProxiedAccount).map(account => {
+  return wallet.accounts.filter(accountUtils.isAnyProxied).map(account => {
     return {
       chainId: account.chainId,
       proxiedAccountId: account.accountId,

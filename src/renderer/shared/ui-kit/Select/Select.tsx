@@ -170,14 +170,14 @@ const Root = <T extends string>({
           <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true} className="w-full rounded-md">
             <button
               className={cnTw(
-                'box-border border px-1.75 text-text-secondary',
+                'box-border cursor-pointer border px-1.75 text-text-secondary',
                 'w-full rounded-md text-left text-footnote hover:shadow-card-shadow',
                 {
                   'h-8.5': height === 'sm',
                   'h-10.5': height === 'md',
                   'border-filter-border bg-input-background text-text-primary': theme === 'light',
                   'border-border-dark bg-background-dark text-white': theme === 'dark',
-                  'bg-input-background-disabled text-text-tertiary': disabled,
+                  'cursor-not-allowed bg-input-background-disabled text-text-tertiary': disabled,
                   'border-filter-border-negative': invalid,
                 },
               )}

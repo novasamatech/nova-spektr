@@ -6,7 +6,7 @@ import { nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { AsyncItem, Box } from '@/shared/ui-kit';
 import { InactiveNetwork } from '@/entities/network';
-import { CompletedReferendums, Filters, OngoingReferendums, networkSelectorModel } from '@/features/governance';
+import { CompletedReferendums, OngoingReferendums, networkSelectorModel } from '@/features/governance';
 import { navigationModel } from '@/features/navigation';
 import { governancePageAggregate } from '../aggregates/governancePage';
 
@@ -20,6 +20,7 @@ export const GovernanceReferendumList = () => {
 
   const isLoading = useUnit(governancePageAggregate.$isLoading);
   const isTitlesLoading = useUnit(governancePageAggregate.$isTitlesLoading);
+  const isApprovalThresholdsLoading = useUnit(governancePageAggregate.$isApprovalThresholdsLoading);
   const isSearching = useUnit(governancePageAggregate.$isSearching);
   const displayedReferendums = useUnit(governancePageAggregate.$displayedReferendums);
   const ongoing = useUnit(governancePageAggregate.$ongoing);
@@ -40,8 +41,6 @@ export const GovernanceReferendumList = () => {
 
   return (
     <Box gap={4} grow={1}>
-      {isApiConnected && <Filters />}
-
       {isEmptyState && <EmptyGovernance />}
 
       {isNetworkDisabled && <InactiveNetwork active className="grow" />}
@@ -55,6 +54,7 @@ export const GovernanceReferendumList = () => {
             referendums={ongoing}
             isLoading={isLoading}
             isTitlesLoading={isTitlesLoading}
+            isApprovalThresholdsLoading={isApprovalThresholdsLoading}
             mixLoadingWithData={isLoadingState}
             onSelect={({ referendumId }) => navigate(referendumId)}
           />

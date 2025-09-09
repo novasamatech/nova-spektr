@@ -1,4 +1,4 @@
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText } from '@/shared/ui';
 import { Identicon, RootExplorers } from '@/shared/ui-entities';
@@ -23,7 +23,7 @@ export const SelectableRoot = ({ accountId, accountName, checked, semiChecked, o
       <Checkbox checked={checked} semiChecked={semiChecked} onChange={onChange} />
 
       <div className="flex w-full grow items-center gap-x-2 truncate">
-        <Identicon value={accountId} theme="jdenticon" size={20} background={false} canCopy={false} />
+        <Identicon address={toAddress(accountId)} theme="jdenticon" size={20} background={false} canCopy={false} />
         <FootnoteText
           className={cnTw('min-w-0 grow', checked || semiChecked ? 'text-text-primary' : 'text-text-secondary')}
         >

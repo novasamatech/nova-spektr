@@ -47,7 +47,7 @@ const WalletSelectTrigger = memo(
       <button
         type="button"
         data-testid={TEST_IDS.COMMON.WALLET_BUTTON}
-        className="w-full rounded-md border border-container-border bg-left-navigation-menu-background shadow-card-shadow"
+        className="w-full cursor-pointer rounded-md border border-container-border bg-left-navigation-menu-background shadow-card-shadow"
         {...rest}
       >
         <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={3}>

@@ -37,11 +37,11 @@ export const WalletOnboardingCard = forwardRef<HTMLButtonElement, Props>(
         data-testid={testId}
         disabled={disabled}
         className={cnTw(
-          'flex items-center gap-4 rounded-lg border border-filter-border px-4 py-2 shadow-none transition-shadow duration-200',
+          'flex cursor-pointer items-center gap-4 rounded-lg border border-filter-border px-4 py-2 shadow-none transition-shadow duration-200',
           {
             'bg-block-background-default text-text-primary shadow-card-shadow hover:shadow-card-shadow-level2':
               !disabled,
-            'bg-input-background-disabled text-text-tertiary': disabled,
+            'cursor-not-allowed bg-input-background-disabled text-text-tertiary': disabled,
           },
         )}
         onClick={onClick}

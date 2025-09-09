@@ -2,7 +2,7 @@ import { type PropsWithChildren, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
-import { isDev, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { BodyText, Button, Icon, RadioGroup, SmallTitleText } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 
@@ -11,8 +11,7 @@ import { FlexibleMultisigWallet, flexibleMultisigModel } from './flexible-multis
 import { MultisigWallet, flowModel } from './multisig-wallet';
 
 export const SelectMultisigWalletType = ({ children }: PropsWithChildren) => {
-  // TODO remove when flexible multisig is ready for prod
-  const flowStatus = isDev() ? null : 'regularMultisig';
+  const flowStatus = null;
 
   const [selectedFlow, setSelectedFlow] = useState<MultisigWalletType | null>(flowStatus);
   const [isOpen, setToggle] = useState<boolean>(false);
@@ -28,11 +27,6 @@ export const SelectMultisigWalletType = ({ children }: PropsWithChildren) => {
   };
 
   const handleGoBack = () => {
-    // TODO remove when flexible multisig is ready for prod
-    if (!isDev()) {
-      return toggleModal(false);
-    }
-
     setSelectedFlow(flowStatus);
     flowModel.flow.close();
     flexibleMultisigModel.flow.close();
