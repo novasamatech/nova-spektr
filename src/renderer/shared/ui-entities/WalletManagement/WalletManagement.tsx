@@ -71,9 +71,9 @@ export const WalletManagement = memo(
                 {wallet.name}
               </BodyText>
               {
-                <div className="flex items-center gap-x-1">
+                <div className="flex shrink-0 items-center gap-x-1">
                   {nonNullable(label) && <Label variant="purple">{label}</Label>}
-                  {nonNullable(chain) && <ChainIcon chain={chain} />}
+                  {nonNullable(chain) && <ChainIcon chain={chain} size={16} />}
                 </div>
               }
 

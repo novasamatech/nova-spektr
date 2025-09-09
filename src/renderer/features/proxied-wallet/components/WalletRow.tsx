@@ -2,7 +2,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
-import { ChainIcon, WalletManagement } from '@/shared/ui-entities';
+import { WalletManagement } from '@/shared/ui-entities';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -40,7 +40,6 @@ export const WalletRow = ({ wallet, onSelect }: Props) => {
       active={wallet.id === selectedWalletId}
       accountId={accountId}
       chain={chain}
-      meta={chain ? <ChainIcon chain={chain} size={16} /> : null}
       description={<WalletFiatBalance wallet={wallet} className="max-w-[215px] truncate text-help-text" />}
       onClick={() => onSelect(wallet)}
     >
