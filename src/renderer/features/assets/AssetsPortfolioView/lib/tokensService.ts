@@ -194,15 +194,15 @@ function sortTokensByBalance(
 
     token.chains.sort((a, b) => compareChainsByFiatAndBalance(a, b, assetsPrices, token, currency));
 
-    if ((isPolkadot(token.name) || isKusama(token.name)) && !token.isTestToken) {
-      collection = hasBalance ? relaychains.withBalance : relaychains.noBalance;
-      collection.push(token);
+    if (fiatBalance.gt(0) && !token.isTestToken) {
+      tokensWithFiatBalance.push({ ...token, fiatBalance: fiatBalance.toString() });
 
       continue;
     }
 
-    if (fiatBalance.gt(0) && !token.isTestToken) {
-      tokensWithFiatBalance.push({ ...token, fiatBalance: fiatBalance.toString() });
+    if ((isPolkadot(token.name) || isKusama(token.name)) && !token.isTestToken) {
+      collection = hasBalance ? relaychains.withBalance : relaychains.noBalance;
+      collection.push(token);
 
       continue;
     }
