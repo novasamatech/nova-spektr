@@ -2,10 +2,12 @@ import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
-import { entries, nonNullable } from '@/shared/lib/utils';
+import { entries, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { identity, identityService } from '@/domains/network';
+import { contactModel } from '@/entities/contact';
 import { voteHistoryModel } from '@/entities/governance';
+import { walletModel } from '@/entities/wallet';
 import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
 import { votingAssetModel } from '../model/votingAsset';
@@ -33,23 +35,44 @@ const $voteHistory = combine(
     history: $chainVoteHistory,
     chainId: networkSelectorModel.$governanceChainId,
     identities: identity.$list,
+    wallets: walletModel.$wallets,
+    contacts: contactModel.$contacts,
   },
-  ({ history, identities, chainId }) => {
+  ({ history, identities, chainId, wallets, contacts }) => {
     if (!chainId) return {};
 
     const result: Record<ReferendumId, AggregatedVoteHistory[]> = {};
     const chainIdentities = identities[chainId];
 
+    const walletNameByAccountId: Record<string, string> = {};
+    for (const wallet of wallets) {
+      for (const account of wallet.accounts) {
+        walletNameByAccountId[account.accountId] = account.name;
+      }
+    }
+
+    const contactNameByAccountId: Record<string, string> = {};
+    for (const contact of contacts) {
+      contactNameByAccountId[toAccountId(contact.address)] = contact.name;
+    }
+
+    const resolveAccountName = (accountId: string): string | null => {
+      const accountIdentity = chainIdentities?.[accountId as AccountId];
+      if (accountIdentity) return identityService.getFullName(accountIdentity);
+      if (walletNameByAccountId[accountId]) return walletNameByAccountId[accountId];
+      if (contactNameByAccountId[accountId]) return contactNameByAccountId[accountId];
+      return null;
+    };
+
     for (const [referendumId, historyList] of entries(history)) {
-      const voteGroups = votingListService.getVoteGroupsFromVotingHistory(historyList);
+      const voteGroups = votingListService.getVoteGroupsFromVotingHistory(historyList, resolveAccountName);
 
       const aggregatedHistory = voteGroups.map((group) => {
-        const voterIdentity = chainIdentities[group.voter];
-        const identityName = voterIdentity ? identityService.getFullName(voterIdentity) : null;
+        const voterName = resolveAccountName(group.voter);
 
         return {
           ...group,
-          name: identityName,
+          name: voterName,
         };
       });
 

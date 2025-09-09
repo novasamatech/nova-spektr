@@ -6,7 +6,7 @@ import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { Account, Address, AssetBalance } from '@/shared/ui-entities';
+import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Accordion, Box, EmptyMessage, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
@@ -25,10 +25,53 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
 
   const [query, setQuery] = useState<string>('');
 
-  const filteredItems = useMemo(
-    () => performSearch({ records: items, query, weights: { voter: 0.5, name: 1 } }),
-    [items, query],
-  );
+  const filteredItems = useMemo(() => {
+    const searchResults = performSearch({
+      records: items,
+      query,
+      weights: { voter: 0.5, name: 1, delegators: 0.3 },
+      getMeta: (item) => ({
+        delegators: item.delegatedVotes
+          .map((dv) => {
+            const rawAddress = dv.delegator;
+            const formattedAddress = toAddress(dv.delegator, { prefix: chain?.addressPrefix });
+            return `${rawAddress} ${formattedAddress}`;
+          })
+          .join(' '),
+      }),
+    });
+
+    if (!query.trim()) {
+      return searchResults;
+    }
+
+    return searchResults.map((item) => {
+      if (item.delegatedVotes.length === 0) {
+        return item;
+      }
+
+      const matchingDelegators = item.delegatedVotes.filter((dv) => {
+        const rawAddress = dv.delegator.toLowerCase();
+        const formattedAddress = toAddress(dv.delegator, { prefix: chain?.addressPrefix }).toLowerCase();
+        const queryLower = query.toLowerCase();
+
+        return (
+          rawAddress.includes(queryLower) ||
+          formattedAddress.includes(queryLower) ||
+          (dv.name && dv.name.toLowerCase().includes(queryLower))
+        );
+      });
+
+      if (matchingDelegators.length > 0) {
+        return {
+          ...item,
+          delegatedVotes: matchingDelegators,
+        };
+      }
+
+      return item;
+    });
+  }, [items, query]);
   const { list: deferredItems, isLoading } = useDeferredList({ list: filteredItems, isLoading: !!loading });
 
   if (!chain || !asset) {
@@ -121,14 +164,18 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
                         </Accordion.Trigger>
                         <Accordion.Content>
                           <div className="ml-4">
-                            {delegatedVotes.map((delegatedVote, index) => (
+                            {delegatedVotes.map((delegatedVote) => (
                               <div
-                                key={`${delegatedVote.delegator}-${index}`}
+                                key={delegatedVote.delegator}
                                 className="grid grid-cols-[224px_1fr] items-center gap-x-3 rounded-md bg-action-background-hover px-2 py-1"
                               >
-                                <Address
+                                <Account
+                                  hideAddress
+                                  iconSize={20}
+                                  title={delegatedVote.name || undefined}
+                                  accountId={delegatedVote.delegator}
+                                  chain={chain}
                                   variant="truncate"
-                                  address={toAddress(delegatedVote.delegator, { prefix: chain.addressPrefix })}
                                 />
 
                                 <Box direction="column" horizontalAlign="end">
@@ -161,7 +208,7 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
                       </Accordion>
                     </div>
                   ) : (
-                    <div className="grid h-11 grid-cols-[224px_1fr] items-center gap-x-3 px-2">
+                    <div className="grid h-11 grid-cols-[224px_1fr] items-center gap-x-3 pr-8 pl-2">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
                           <Account

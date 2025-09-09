@@ -36,6 +36,7 @@ export type DecoupledVote = {
 export type DelegatedVote = {
   decision: 'aye' | 'nay' | 'abstain';
   delegator: AccountId;
+  name: string | null;
   balance: BN;
   votingPower: BN;
   conviction: number;

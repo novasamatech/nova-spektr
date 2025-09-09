@@ -168,7 +168,10 @@ const getDecoupledVotesFromVotingHistory = (voting: VoteHistoryRecord) => {
   return res;
 };
 
-const getVoteGroupsFromVotingHistory = (votingHistory: VoteHistoryRecord[]) => {
+const getVoteGroupsFromVotingHistory = (
+  votingHistory: VoteHistoryRecord[],
+  resolveAccountName: (accountId: string) => string | null,
+) => {
   const groups: AggregatedVoteHistory[] = [];
 
   for (const voting of votingHistory) {
@@ -178,15 +181,18 @@ const getVoteGroupsFromVotingHistory = (votingHistory: VoteHistoryRecord[]) => {
       const directVotingPower = votingService.calculateVotingPower(voting.vote.balance, voting.vote.vote.conviction);
 
       const delegatedVotes: DelegatedVote[] = voting.delegatorVotes
-        .map(
-          (delegatedVote): DelegatedVote => ({
+        .map((delegatedVote): DelegatedVote => {
+          const delegatorName = resolveAccountName(delegatedVote.delegator);
+
+          return {
             decision,
             delegator: delegatedVote.delegator,
+            name: delegatorName,
             balance: delegatedVote.amount,
             votingPower: votingService.calculateVotingPower(delegatedVote.amount, delegatedVote.conviction),
             conviction: votingService.getConvictionMultiplier(delegatedVote.conviction),
-          }),
-        )
+          };
+        })
         .sort(votingPowerSorting);
 
       const delegatedVotingPower = delegatedVotes.reduce((sum, vote) => sum.add(vote.votingPower), new BN(0));
