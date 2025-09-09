@@ -26,6 +26,10 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
   const [query, setQuery] = useState<string>('');
 
   const filteredItems = useMemo(() => {
+    if (!query.trim()) {
+      return items;
+    }
+
     const searchResults = performSearch({
       records: items,
       query,
@@ -40,10 +44,6 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
           .join(' '),
       }),
     });
-
-    if (!query.trim()) {
-      return searchResults;
-    }
 
     return searchResults.map((item) => {
       if (item.delegatedVotes.length === 0) {

@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 
 import { type ReferendumId, type Voting } from '@/shared/core';
 import { entries, toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { votingService } from '@/entities/governance';
 import { type VoteHistoryRecord } from '@/entities/governance';
 import { type AggregatedVoteHistory, type DecoupledVote, type DelegatedVote } from '../types/structs';
@@ -170,7 +171,7 @@ const getDecoupledVotesFromVotingHistory = (voting: VoteHistoryRecord) => {
 
 const getVoteGroupsFromVotingHistory = (
   votingHistory: VoteHistoryRecord[],
-  resolveAccountName: (accountId: string) => string | null,
+  resolveAccountName: (accountId: AccountId) => string | null,
 ) => {
   const groups: AggregatedVoteHistory[] = [];
 
