@@ -10,15 +10,9 @@ import { Select } from './Select';
 const meta: Meta<typeof Select> = {
   title: 'Design System/kit/Select',
   component: Select,
-  parameters: {
-    viewport: {
-      defaultViewport: 'large',
-    },
-    layout: 'centered',
-  },
   decorators: [
     Story => (
-      <div className="flex h-[400px] w-[400px] items-center justify-center">
+      <div className="flex w-[300px] items-center justify-center">
         <Story />
       </div>
     ),
