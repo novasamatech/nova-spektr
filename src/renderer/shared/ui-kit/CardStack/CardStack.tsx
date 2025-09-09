@@ -62,7 +62,7 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
         )}
         <RadixAccordion.Trigger
           className={cnTw(
-            'card-stack-trigger group flex w-full items-center gap-x-2 bg-row-background py-1 pr-2 pl-3',
+            'card-stack-trigger group flex w-full cursor-pointer items-center gap-x-2 bg-row-background py-1 pr-2 pl-3',
             'shadow-stack outline-hidden! hover:shadow-stack-hover focus:shadow-stack-hover data-[state=open]:shadow-none',
             'transition-all duration-300',
             'data-[state=closed]:rounded-md data-[state=open]:rounded-t-md',
