@@ -4,10 +4,10 @@ import { Trans } from 'react-i18next';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { performSearch } from '@/shared/lib/utils';
+import { performSearch, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
-import { Box, EmptyMessage, ScrollArea, SearchInput } from '@/shared/ui-kit';
+import { Accordion, Box, EmptyMessage, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListPlaceholder } from './VotingHistoryListPlaceholder';
@@ -25,10 +25,53 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
 
   const [query, setQuery] = useState<string>('');
 
-  const filteredItems = useMemo(
-    () => performSearch({ records: items, query, weights: { voter: 0.5, name: 1 } }),
-    [items, query],
-  );
+  const filteredItems = useMemo(() => {
+    if (!query.trim()) {
+      return items;
+    }
+
+    const searchResults = performSearch({
+      records: items,
+      query,
+      weights: { voter: 0.5, name: 1, delegators: 0.3 },
+      getMeta: (item) => ({
+        delegators: item.delegatedVotes
+          .map((dv) => {
+            const rawAddress = dv.delegator;
+            const formattedAddress = toAddress(dv.delegator, { prefix: chain?.addressPrefix });
+            return `${rawAddress} ${formattedAddress}`;
+          })
+          .join(' '),
+      }),
+    });
+
+    return searchResults.map((item) => {
+      if (item.delegatedVotes.length === 0) {
+        return item;
+      }
+
+      const matchingDelegators = item.delegatedVotes.filter((dv) => {
+        const rawAddress = dv.delegator.toLowerCase();
+        const formattedAddress = toAddress(dv.delegator, { prefix: chain?.addressPrefix }).toLowerCase();
+        const queryLower = query.toLowerCase();
+
+        return (
+          rawAddress.includes(queryLower) ||
+          formattedAddress.includes(queryLower) ||
+          (dv.name && dv.name.toLowerCase().includes(queryLower))
+        );
+      });
+
+      if (matchingDelegators.length > 0) {
+        return {
+          ...item,
+          delegatedVotes: matchingDelegators,
+        };
+      }
+
+      return item;
+    });
+  }, [items, query]);
   const { list: deferredItems, isLoading } = useDeferredList({ list: filteredItems, isLoading: !!loading });
 
   if (!chain || !asset) {
@@ -68,34 +111,140 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
           )}
 
           {shouldRenderList &&
-            deferredItems.map(({ voter, balance, conviction, votingPower, name }) => {
-              return (
-                <div
-                  key={`${voter}-${balance.toString()}-${conviction}`}
-                  className="grid h-11 grid-cols-[224px_1fr] items-center gap-x-3 px-2"
-                >
-                  <Account
-                    hideAddress
-                    iconSize={20}
-                    title={name ?? ''}
-                    accountId={voter}
-                    chain={chain}
-                    variant="truncate"
-                  />
+            deferredItems.map(({ voter, name, decision, totalVotingPower, directVote, delegatedVotes }) => {
+              const groupId = `${voter}-${decision}`;
+              const hasDelegatedVotes = delegatedVotes.length > 0;
 
-                  <Box direction="column" horizontalAlign="end">
-                    <FootnoteText>
-                      <Trans
-                        t={t}
-                        i18nKey="general.actions.multiply"
-                        values={{ multiplier: conviction }}
-                        components={{
-                          balance: <AssetBalance className="text-footnote" value={balance} asset={asset} />,
-                        }}
-                      />
-                    </FootnoteText>
-                    <AssetBalance className="text-footnote text-text-tertiary" asset={asset} value={votingPower} />
-                  </Box>
+              return (
+                <div key={groupId} className="space-y-1">
+                  {hasDelegatedVotes ? (
+                    <div className="[&_button]:!py-0 [&_button]:hover:!bg-transparent">
+                      <Accordion>
+                        <Accordion.Trigger>
+                          <div className="grid h-11 w-full grid-cols-[224px_1fr] items-center gap-x-3 text-body text-text-primary normal-case">
+                            <div className="flex flex-col">
+                              <div className="flex items-center gap-2">
+                                <Account
+                                  hideAddress
+                                  iconSize={20}
+                                  title={name ?? ''}
+                                  accountId={voter}
+                                  chain={chain}
+                                  variant="truncate"
+                                />
+                              </div>
+                            </div>
+
+                            <Box direction="column" horizontalAlign="end">
+                              {directVote && (
+                                <FootnoteText>
+                                  <Trans
+                                    t={t}
+                                    i18nKey="general.actions.multiply"
+                                    values={{ multiplier: directVote.conviction }}
+                                    components={{
+                                      balance: (
+                                        <AssetBalance
+                                          className="text-footnote"
+                                          value={directVote.balance}
+                                          asset={asset}
+                                        />
+                                      ),
+                                    }}
+                                  />
+                                </FootnoteText>
+                              )}
+                              <AssetBalance
+                                className="text-footnote text-text-tertiary"
+                                asset={asset}
+                                value={totalVotingPower}
+                              />
+                            </Box>
+                          </div>
+                        </Accordion.Trigger>
+                        <Accordion.Content>
+                          <div className="ml-4">
+                            {delegatedVotes.map((delegatedVote) => (
+                              <div
+                                key={delegatedVote.delegator}
+                                className="grid grid-cols-[224px_1fr] items-center gap-x-3 rounded-md bg-action-background-hover px-2 py-1"
+                              >
+                                <Account
+                                  hideAddress
+                                  iconSize={20}
+                                  title={delegatedVote.name || undefined}
+                                  accountId={delegatedVote.delegator}
+                                  chain={chain}
+                                  variant="truncate"
+                                />
+
+                                <Box direction="column" horizontalAlign="end">
+                                  <FootnoteText>
+                                    <Trans
+                                      t={t}
+                                      i18nKey="general.actions.multiply"
+                                      values={{ multiplier: delegatedVote.conviction }}
+                                      components={{
+                                        balance: (
+                                          <AssetBalance
+                                            className="text-footnote"
+                                            value={delegatedVote.balance}
+                                            asset={asset}
+                                          />
+                                        ),
+                                      }}
+                                    />
+                                  </FootnoteText>
+                                  <AssetBalance
+                                    className="text-footnote text-text-tertiary"
+                                    asset={asset}
+                                    value={delegatedVote.votingPower}
+                                  />
+                                </Box>
+                              </div>
+                            ))}
+                          </div>
+                        </Accordion.Content>
+                      </Accordion>
+                    </div>
+                  ) : (
+                    <div className="grid h-11 grid-cols-[224px_1fr] items-center gap-x-3 pr-8 pl-2">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                          <Account
+                            hideAddress
+                            iconSize={20}
+                            title={name ?? ''}
+                            accountId={voter}
+                            chain={chain}
+                            variant="truncate"
+                          />
+                        </div>
+                      </div>
+
+                      <Box direction="column" horizontalAlign="end">
+                        {directVote && (
+                          <FootnoteText>
+                            <Trans
+                              t={t}
+                              i18nKey="general.actions.multiply"
+                              values={{ multiplier: directVote.conviction }}
+                              components={{
+                                balance: (
+                                  <AssetBalance className="text-footnote" value={directVote.balance} asset={asset} />
+                                ),
+                              }}
+                            />
+                          </FootnoteText>
+                        )}
+                        <AssetBalance
+                          className="text-footnote text-text-tertiary"
+                          asset={asset}
+                          value={totalVotingPower}
+                        />
+                      </Box>
+                    </div>
+                  )}
                 </div>
               );
             })}

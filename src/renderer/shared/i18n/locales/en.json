@@ -1203,6 +1203,7 @@
       "timeoutReferendumError": "This referendum has already passed"
     },
     "voteHistory": {
+      "delegatedBy": "Delegated by",
       "listColumnAccount": "Account",
       "listColumnVotingPower": "Voting power",
       "listEmptyDescription": "Nobody has voted yet",
