@@ -368,21 +368,21 @@ sample({
       if (existingFlexibleMultisig) {
         deleteAccounts.delete(existingFlexibleMultisig);
       } else {
-        const identity = identities[syncedMultisig.accountId];
-        const name = identity
-          ? identityService.getFullName(identity)
+        const multisigIdentity = identities[syncedMultisig.accountId];
+        const multisigName = multisigIdentity
+          ? identityService.getFullName(multisigIdentity)
           : toShortAddress(toAddress(syncedMultisig.accountId), 5);
 
         const chainGroups = groupBy(matchingProxies, (proxy) => proxy.chainId);
 
-        for (const [chainId, proxies] of entries(chainGroups)) {
-          if (nullable(proxies)) continue;
+        for (const [chainId, proxieds] of entries(chainGroups)) {
+          if (nullable(proxieds)) continue;
 
-          const firstProxy = proxies.at(0);
-          if (nullable(firstProxy)) continue;
+          const firstProxied = proxieds.at(0);
+          if (nullable(firstProxied)) continue;
 
           const multisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
-            name,
+            name: multisigName,
             type: 'chain',
             accountType: AccountType.FLEX_MULTISIG,
             accountId: syncedMultisig.accountId,
@@ -393,22 +393,26 @@ sample({
             signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
           };
 
-          const proxyAccount: Omit<FlexibleProxiedAccount, 'id' | 'walletId'> = {
-            ...firstProxy,
-            name,
+          const proxiedIdentity = identities[firstProxied.accountId];
+          const proxiedName = proxiedIdentity
+            ? identityService.getFullName(proxiedIdentity)
+            : toShortAddress(toAddress(firstProxied.accountId), 5);
+          const proxiedAccount: Omit<FlexibleProxiedAccount, 'id' | 'walletId'> = {
+            ...firstProxied,
+            name: proxiedName,
             type: 'chain',
             accountType: AccountType.FLEX_PROXIED,
-            cryptoType: isEthereumAccountId(firstProxy.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+            cryptoType: isEthereumAccountId(firstProxied.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
             signingType: SigningType.WATCH_ONLY,
-            deposit: firstProxy.deposit.toString(),
+            deposit: firstProxied.deposit.toString(),
           };
 
           createWallets.push({
             wallet: {
-              name,
+              name: proxiedName,
               type: WalletType.FLEXIBLE_MULTISIG,
             },
-            accounts: [proxyAccount, multisigAccount],
+            accounts: [proxiedAccount, multisigAccount],
           });
         }
       }
