@@ -64,9 +64,7 @@ sample({
 sample({
   clock: currencyModel.$activeCurrency,
   source: { chains: networkModel.$chains, provider: $priceProvider },
-  filter: ({ provider }, currency) => {
-    return provider !== null && currency !== null;
-  },
+  filter: ({ provider }, currency) => nonNullable(provider) && nonNullable(currency),
   fn: ({ chains, provider }, currency) => {
     return {
       chains: Object.values(chains),
