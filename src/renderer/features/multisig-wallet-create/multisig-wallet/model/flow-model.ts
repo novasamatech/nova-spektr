@@ -5,6 +5,8 @@ import { delay, spread } from 'patronum';
 
 import {
   AccountType,
+  type Chain,
+  type ChainId,
   type Contact,
   CryptoType,
   type MultisigAccount,
@@ -48,6 +50,10 @@ const $signer = restore(signerSelected, null).reset(flow.open);
 
 const $initiators = createStore<AnyAccount[] | null>(null).reset(flow.close);
 const $initiatorWallet = createStore<Wallet | null>(null).reset(flow.close);
+
+const $multisigChains = combine(networkModel.$chains, chains => {
+  return Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
+});
 
 sample({
   clock: signatoryModel.$ownedSignatoriesWallets,
@@ -101,10 +107,6 @@ const $api = combine(
   },
 );
 
-const $multisigChains = combine(networkModel.$chains, chains => {
-  return Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
-});
-
 // If the current chain is not connected switch to the next one
 sample({
   clock: flow.open,
@@ -128,7 +130,29 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+// Signatories for all multisig chains
+const $allChainsSignatories = combine(
+  {
+    multisigChains: $multisigChains,
+    initiator: $initiator,
+    accounts: accounts.$list,
+  },
+  ({ multisigChains, initiator, accounts }) => {
+    if (!initiator || !multisigChains.length) return {} as Record<ChainId, AnyAccount[]>;
+
+    return multisigChains.reduce(
+      (acc, chain: Chain) => {
+        const signatories = accountService.findSignatories(initiator, accounts, chain);
+        acc[chain.chainId] = signatories;
+        return acc;
+      },
+      {} as Record<ChainId, AnyAccount[]>,
+    );
+  },
+);
+
 // in the current implementation, the first signatory is always the signer
+//github.com/novasamatech/nova-spektr/issues/4565
 sample({
   clock: $signatories,
   fn: signatories => {
@@ -477,6 +501,10 @@ export const flowModel = {
 
   //for tests
   formSubmitted,
+
+  $multisigChains,
+
+  $allChainsSignatories,
 
   flow,
 };

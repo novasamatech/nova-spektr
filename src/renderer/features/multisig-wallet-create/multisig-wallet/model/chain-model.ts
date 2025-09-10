@@ -8,10 +8,11 @@ import { series } from '@/shared/effector/series';
 import { TEST_ACCOUNTS, getNativeAsset, merge, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { networkModel, networkUtils } from '@/entities/network';
+import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
 
 import { flowModel } from './flow-model';
+import { formModel } from './form-model';
 
 type ChainWithFeeAndBalance = {
   chain: Chain;
@@ -24,10 +25,6 @@ type ChainsWithFee = {
   chain: Chain;
   fee: string | null;
 };
-
-const $multisigChains = combine(networkModel.$chains, chains => {
-  return Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
-});
 
 const calculateFeeForChainFx = createEffect(
   async ({ chain, tx, api }: { chain: Chain; tx: Transaction; api: ApiPromise | null }) => {
@@ -47,7 +44,7 @@ const calculateFeesSeriesFx = series(calculateFeeForChainFx, { parallel: true })
 sample({
   clock: [flowModel.$tx, flowModel.$initiator],
   source: {
-    multisigChains: $multisigChains,
+    multisigChains: flowModel.$multisigChains,
     apis: networkModel.$apis,
     tx: flowModel.$tx,
   },
@@ -93,16 +90,18 @@ const $chainsWithFeeAvailableForInitiatorChain = combine(
   },
 );
 
+const filteredChains = $chainsWithFeeAvailableForInitiatorChain.map(chains => chains.map(chain => chain.chain));
+
 sample({
   clock: [$chainsWithFeeAvailableForInitiatorChain, flowModel.$signer],
   source: {
-    signer: flowModel.$signer,
+    signatories: flowModel.$allChainsSignatories,
     initiators: flowModel.$initiators,
     balances: balanceModel.$balanceMap,
     chains: $chainsWithFeeAvailableForInitiatorChain,
   },
   filter: ({ chains, initiators }) => chains.length > 0 && nonNullable(initiators),
-  fn: ({ signer, balances, chains, initiators }) => {
+  fn: ({ signatories, balances, chains, initiators }) => {
     const availableChains = [];
     const unavailableChains = [];
 
@@ -111,12 +110,14 @@ sample({
       const initiator =
         initiators && initiators.find(initiator => accountService.isAccountAvailableOnChain(initiator, chain));
 
-      if (!signer || !initiator) {
+      const signatory = signatories[chain.chainId].at(0);
+
+      if (!signatory || !initiator) {
         unavailableChains.push({ chain, fee: fee ?? '0', asset, balance: '0' });
         continue;
       }
 
-      const balance = balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId);
+      const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId);
       const withdrawable = withdrawableAmountBN(balance);
 
       if (nullable(fee)) {
@@ -143,9 +144,25 @@ sample({
   }),
 });
 
+sample({
+  clock: $availableChains,
+  source: formModel.form.fields.chainId.$value,
+  filter: (currentChainId, availableChains) => {
+    // Only auto-select if:
+    // 1. No chain is currently selected, OR
+    // 2. Current chain is not in available chains
+
+    if (!currentChainId) return availableChains.length > 0;
+
+    return availableChains.length > 0 && !availableChains.some(chain => chain.chain.chainId === currentChainId);
+  },
+  fn: (_, availableChains) => availableChains.at(0)!.chain.chainId,
+  target: formModel.form.fields.chainId.change,
+});
+
 export const chainSelectorModel = {
   $availableChains,
   $unavailableChains,
   $isLoading: calculateFeesSeriesFx.pending,
-  $multisigChains,
+  $multisigChains: filteredChains,
 };
