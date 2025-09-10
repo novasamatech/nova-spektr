@@ -76,7 +76,7 @@ const ChainsList = ({ search, selectedChainId, onChange }: ChainsListProps) => {
   const availableChains = useUnit(chainSelectorModel.$availableChains);
   const unavailableChains = useUnit(chainSelectorModel.$unavailableChains);
   const isLoading = useUnit(chainSelectorModel.$isLoading);
-  const multisigChains = useUnit(chainSelectorModel.$multisigChains);
+  const multisigChains = useUnit(chainSelectorModel.$filteredChains);
 
   const filteredAvailableChains = useMemo(
     () =>
