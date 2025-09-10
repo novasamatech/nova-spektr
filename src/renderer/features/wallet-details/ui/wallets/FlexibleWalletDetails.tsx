@@ -4,7 +4,7 @@ import { type ReactNode, useMemo, useState } from 'react';
 import { type FlexibleMultisigWallet, type MultisigWallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
+import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { assert, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
 import { AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
@@ -41,6 +41,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const accountList = useUnit(accounts.$list);
   const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
 
+  const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [tab, setTab] = useState('1');
 
@@ -68,7 +69,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const actions: WalletAction[] = [
     {
       component: (
-        <ChangeSignatories wallet={wallet}>
+        <ChangeSignatories wallet={wallet} onClose={closeModal}>
           <Action title={t('walletDetails.multisig.changeSignatories')} icon="changeSignatories" />
         </ChangeSignatories>
       ),
@@ -182,7 +183,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   }
 
   return (
-    <Modal size="mdlg" height="full" isOpen onToggle={open => !open && onClose()}>
+    <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="mb-6 flex flex-col gap-y-2.5 px-5">
@@ -190,7 +191,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
-                  address={proxiedAccount?.accountId}
+                  address={toAddress(proxiedAccount?.accountId, { prefix: chain?.addressPrefix })}
                   type={wallet.type}
                   size={42}
                   theme={isEthereumAccountId(proxiedAccount?.accountId) ? 'ethereum' : 'polkadot'}

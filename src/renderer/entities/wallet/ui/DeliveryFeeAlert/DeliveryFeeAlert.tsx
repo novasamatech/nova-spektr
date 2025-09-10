@@ -18,7 +18,7 @@ export const DeliveryFeeAlert = ({ address, fee, balance, symbol, onClose }: Pro
 
   const component = (
     <span className="mx-1 inline-flex items-center gap-x-1 align-bottom text-footnote text-text-secondary">
-      <Identicon value={address} size={16} background={false} />
+      <Identicon address={address} size={16} background={false} />
       <Hash value={address} variant="short" />
     </span>
   );

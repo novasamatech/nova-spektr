@@ -226,7 +226,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
           <Box direction="row" verticalAlign="center" gap={2}>
             <div className="mr-1">
               <WalletAccountIcon
-                address={multisigAccount?.accountId}
+                address={multisigAccount?.accountId && toAddress(multisigAccount?.accountId)}
                 type={wallet.type}
                 size={42}
                 theme={isEthereumAccountId(multisigAccount?.accountId) ? 'ethereum' : 'polkadot'}

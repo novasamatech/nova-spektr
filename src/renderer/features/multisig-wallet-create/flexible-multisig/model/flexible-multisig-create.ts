@@ -5,7 +5,6 @@ import { createGate } from 'effector-react';
 import { delay, or, spread } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
-import { proxyService } from '@/shared/api/proxy';
 import { type Asset, type Contact, type Transaction, type Wallet } from '@/shared/core';
 import { Step, TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import {
@@ -119,12 +118,12 @@ sample({
   target: $existentialDeposit,
 });
 
-const $proxyDeposit = combine($api, api => (api && proxyService.getProxyDeposit(api, '0', 1)) ?? null);
+const $proxyDepositFactor = combine($api, api => (api && api.consts.proxy.proxyDepositFactor.toString()) ?? null);
 
-const $totalDeposit = combine($existentialDeposit, $proxyDeposit, (existentialDeposit, proxyDeposit) => {
-  if (nullable(proxyDeposit)) return null;
+const $totalDeposit = combine($existentialDeposit, $proxyDepositFactor, (existentialDeposit, proxyDepositFactor) => {
+  if (nullable(proxyDepositFactor)) return null;
 
-  return existentialDeposit.add(new BN(proxyDeposit));
+  return existentialDeposit.add(new BN(proxyDepositFactor));
 });
 
 // Transactions
@@ -430,7 +429,7 @@ export const flexibleMultisigModel = {
 
   $errors: combine($firstErrors, $secondErrors, (first, second) => [...first, ...second]),
   $fee,
-  $proxyDeposit,
+  $proxyDeposit: $proxyDepositFactor,
   $existentialDeposit,
   $totalDeposit,
   $isLoading: or($pendingProxyFee, $pendingMultisigFee, getExistentialDepositFx.pending),

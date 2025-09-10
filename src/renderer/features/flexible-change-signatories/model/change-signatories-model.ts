@@ -221,15 +221,17 @@ const $canSubmit = combine(
     hasEmptySignatories: signatoryModel.$hasEmptySignatories,
     hasDuplicateSignatories: signatoryModel.$hasDuplicateSignatories,
     isTheSameMultisig: $isTheSameMultisig,
+    errors: $errors,
   },
-  ({ threshold, isLoading, hasEmptySignatories, hasDuplicateSignatories, isTheSameMultisig }) => {
+  ({ threshold, isLoading, hasEmptySignatories, hasDuplicateSignatories, isTheSameMultisig, errors }) => {
     return (
       !isLoading &&
       nonNullable(threshold) &&
       threshold > 1 &&
       !hasEmptySignatories &&
       !hasDuplicateSignatories &&
-      !isTheSameMultisig
+      !isTheSameMultisig &&
+      errors.length === 0
     );
   },
 );
@@ -338,6 +340,12 @@ sample({
 
 sample({
   clock: viewOperation,
+  fn: () => ({ wallet: null }),
+  target: flow.close,
+});
+
+sample({
+  clock: viewOperation,
   fn: () => Paths.OPERATIONS,
   target: navigationModel.events.navigateTo,
 });
@@ -361,12 +369,9 @@ export const changeSignatoriesModel = {
   $canSubmit,
   $route,
   $errors,
-
   $fee,
   $isLoading,
-
   stepChanged,
   viewOperation,
-
   flow,
 };

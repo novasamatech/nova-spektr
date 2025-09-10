@@ -41,7 +41,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
             components={{
               identicon: (
                 <div className="mx-1 inline-flex">
-                  <Identicon value={address} size={16} background={false} canCopy={true} />
+                  <Identicon address={address} size={16} background={false} canCopy={true} />
                 </div>
               ),
               address: <p className="inline-flex" />,

@@ -53,7 +53,7 @@ export const Button = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(
       form={form}
       disabled={disabled}
       className={cnTw(
-        'flex items-center justify-center gap-x-2 outline-offset-1 transition-colors select-none',
+        'flex cursor-pointer items-center justify-center gap-x-2 outline-offset-1 transition-colors select-none disabled:cursor-not-allowed',
         {
           'justify-between': prefixElement || suffixElement || isLoading,
         },

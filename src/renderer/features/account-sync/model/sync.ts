@@ -67,9 +67,9 @@ const $pending = createStore(false)
 
 sample({
   clock: accountSync.syncAccounts.doneData,
-  fn(accounts) {
+  fn(syncResult) {
     const params: { accounts: AccountId[]; chainId?: ChainId }[] = [];
-    const chainGroups = groupBy(accounts, (a) => ('chainId' in a ? a.chainId : 'universal'));
+    const chainGroups = groupBy(syncResult.accounts, (a) => ('chainId' in a ? a.chainId : 'universal'));
 
     for (const [chainId, accounts] of entries(chainGroups)) {
       if (nullable(accounts)) continue;
@@ -92,17 +92,18 @@ sample({
   source: {
     allAccounts: accounts.$list,
     allWallets: walletModel.$allWallets,
-    chains: networkModel.$chains,
+    allChains: networkModel.$chains,
   },
-  fn({ allAccounts, allWallets, chains }, [result, identities]) {
-    const syncedProxyAccounts = result.filter(accountSyncService.isSyncedProxyAccount);
+  fn({ allAccounts, allWallets, allChains }, [syncResult, identities]) {
+    const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
     const proxiedAccounts = allAccounts.filter(accountUtils.isProxiedAccount);
+    const syncedChains = new Set(syncResult.chains);
 
     const createWallets: WalletCreateParams<ProxiedAccount, ProxiedWallet>[] = [];
     const updateAccounts: ProxiedAccount[] = [];
 
     const deleteWallets = new Set<Wallet>();
-    const deleteAccounts = new Set(proxiedAccounts);
+    const deleteAccounts = new Set(proxiedAccounts.filter((account) => syncedChains.has(account.chainId)));
 
     const proxiedGroups = groupBy(syncedProxyAccounts, (a) => a.accountId);
 
@@ -117,7 +118,7 @@ sample({
         const firstAccount = chainAccounts.at(0);
         if (nullable(firstAccount)) continue;
 
-        const chain = chains[chainId];
+        const chain = allChains[chainId];
         if (nullable(chain)) continue;
 
         const connections: ProxiedConnection[] = chainAccounts
@@ -219,11 +220,16 @@ sample({
     existingProxies: proxyModel.$proxies,
     chains: networkModel.$chains,
   },
-  fn({ chains, existingProxies }, [result]) {
-    const syncedProxyAccounts = result.filter(accountSyncService.isSyncedProxyAccount);
+  fn({ chains, existingProxies }, [syncResult]) {
+    const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
+    const syncedChains = new Set(syncResult.chains);
     const proxiesToAdd: NoID<ProxyAccount>[] = [];
 
-    const deleteProxies = new Set<ProxyAccount>(Object.values(existingProxies).flat());
+    const deleteProxies = new Set<ProxyAccount>(
+      Object.values(existingProxies)
+        .flat()
+        .filter((proxy) => syncedChains.has(proxy.chainId)),
+    );
 
     for (const proxyAccount of syncedProxyAccounts) {
       const chain = chains[proxyAccount.chainId];
@@ -268,14 +274,15 @@ sample({
     allAccounts: accounts.$list,
     allWallets: walletModel.$allWallets,
   },
-  fn({ allAccounts, allWallets }, [result, identities]) {
-    const syncedMultisigAccounts = result.filter(accountSyncService.isSyncedMultisigAccount);
+  fn({ allAccounts, allWallets }, [syncResult, identities]) {
+    const syncedMultisigAccounts = syncResult.accounts.filter(accountSyncService.isSyncedMultisigAccount);
     const multisigAccounts = allAccounts.filter(accountUtils.isMultisigAccount);
+    const syncedChains = new Set(syncResult.chains);
 
     const createWallets: WalletCreateParams<MultisigAccount, MultisigWallet>[] = [];
 
     const deleteWallets = new Set<Wallet>();
-    const deleteAccounts = new Set(multisigAccounts);
+    const deleteAccounts = new Set(syncedChains.size > 0 ? multisigAccounts : []);
 
     for (const syncedAccount of syncedMultisigAccounts) {
       const existingMultisigAccount = multisigAccounts.find((a) => a.accountId === syncedAccount.accountId);
@@ -335,10 +342,11 @@ sample({
     allAccounts: accounts.$list,
     allWallets: walletModel.$allWallets,
   },
-  fn({ allAccounts, allWallets }, [result, identities]) {
-    const syncedMultisigAccounts = result.filter(accountSyncService.isSyncedMultisigAccount);
-    const syncedProxyAccounts = result.filter(accountSyncService.isSyncedProxyAccount);
+  fn({ allAccounts, allWallets }, [syncResult, identities]) {
+    const syncedMultisigAccounts = syncResult.accounts.filter(accountSyncService.isSyncedMultisigAccount);
+    const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
     const flexibleMultisigAccounts = allAccounts.filter(accountUtils.isFlexibleMultisigAccount);
+    const syncedChains = new Set(syncResult.chains);
 
     const createWallets: WalletCreateParams<
       FlexibleMultisigAccount | FlexibleProxiedAccount,
@@ -346,7 +354,7 @@ sample({
     >[] = [];
 
     const deleteWallets = new Set<Wallet>();
-    const deleteAccounts = new Set(flexibleMultisigAccounts);
+    const deleteAccounts = new Set(flexibleMultisigAccounts.filter((account) => syncedChains.has(account.chainId)));
 
     for (const syncedMultisig of syncedMultisigAccounts) {
       const matchingProxies = syncedProxyAccounts.filter((proxy) => proxy.proxyAccountId === syncedMultisig.accountId);
@@ -360,21 +368,21 @@ sample({
       if (existingFlexibleMultisig) {
         deleteAccounts.delete(existingFlexibleMultisig);
       } else {
-        const identity = identities[syncedMultisig.accountId];
-        const name = identity
-          ? identityService.getFullName(identity)
+        const multisigIdentity = identities[syncedMultisig.accountId];
+        const multisigName = multisigIdentity
+          ? identityService.getFullName(multisigIdentity)
           : toShortAddress(toAddress(syncedMultisig.accountId), 5);
 
         const chainGroups = groupBy(matchingProxies, (proxy) => proxy.chainId);
 
-        for (const [chainId, proxies] of entries(chainGroups)) {
-          if (nullable(proxies)) continue;
+        for (const [chainId, proxieds] of entries(chainGroups)) {
+          if (nullable(proxieds)) continue;
 
-          const firstProxy = proxies.at(0);
-          if (nullable(firstProxy)) continue;
+          const firstProxied = proxieds.at(0);
+          if (nullable(firstProxied)) continue;
 
           const multisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
-            name,
+            name: multisigName,
             type: 'chain',
             accountType: AccountType.FLEX_MULTISIG,
             accountId: syncedMultisig.accountId,
@@ -385,22 +393,26 @@ sample({
             signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
           };
 
-          const proxyAccount: Omit<FlexibleProxiedAccount, 'id' | 'walletId'> = {
-            ...firstProxy,
-            name,
+          const proxiedIdentity = identities[firstProxied.accountId];
+          const proxiedName = proxiedIdentity
+            ? identityService.getFullName(proxiedIdentity)
+            : toShortAddress(toAddress(firstProxied.accountId), 5);
+          const proxiedAccount: Omit<FlexibleProxiedAccount, 'id' | 'walletId'> = {
+            ...firstProxied,
+            name: proxiedName,
             type: 'chain',
             accountType: AccountType.FLEX_PROXIED,
-            cryptoType: isEthereumAccountId(firstProxy.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+            cryptoType: isEthereumAccountId(firstProxied.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
             signingType: SigningType.WATCH_ONLY,
-            deposit: firstProxy.deposit.toString(),
+            deposit: firstProxied.deposit.toString(),
           };
 
           createWallets.push({
             wallet: {
-              name,
+              name: proxiedName,
               type: WalletType.FLEXIBLE_MULTISIG,
             },
-            accounts: [proxyAccount, multisigAccount],
+            accounts: [proxiedAccount, multisigAccount],
           });
         }
       }

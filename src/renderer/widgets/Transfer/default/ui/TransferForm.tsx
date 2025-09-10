@@ -347,7 +347,11 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon size={20} value={destination.value} background={false} />
+      <Identicon
+        size={20}
+        address={toAddress(destination.value, { prefix: chain?.addressPrefix })}
+        background={false}
+      />
     </div>
   );
 

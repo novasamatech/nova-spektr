@@ -39,7 +39,7 @@ export const RootAccountMd = ({ name, accountId, className, onClick, onInfoClick
           theme="jdenticon"
           background={false}
           canCopy={false}
-          value={toAddress(accountId, { prefix: SS58_PUBLIC_KEY_PREFIX })}
+          address={toAddress(accountId, { prefix: SS58_PUBLIC_KEY_PREFIX })}
           size={20}
         />
         <BodyText className="truncate pr-5 text-text-secondary">{name}</BodyText>

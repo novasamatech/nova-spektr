@@ -1,7 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
-import { WalletType } from '@/shared/core';
+import { type Address, WalletType } from '@/shared/core';
 import { Input, Select } from '@/shared/ui-kit';
 import { type IdenticonIconTheme } from '../Identicon/Identicon';
 
@@ -44,7 +44,7 @@ export const VariantsDerivedFromConfig: Story = {
           </Select>
         </div>
         <div className="w-72">
-          <WalletAccountIcon address={address} size={32} type={type} theme={theme} />
+          <WalletAccountIcon address={address as Address} size={32} type={type} theme={theme} />
         </div>
       </div>
     );
