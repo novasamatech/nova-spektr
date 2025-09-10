@@ -37,20 +37,31 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
   const isLoading = useUnit(voteHistoryAggregate.$isLoading);
   const hasError = useUnit(voteHistoryAggregate.$hasError);
 
-  const { ayes, nays, abstain } = useMemo(() => {
+  const { ayes, nays, abstain, ayesCount, naysCount, abstainCount } = useMemo(() => {
     const result: Record<'ayes' | 'nays' | 'abstain', AggregatedVoteHistory[]> = {
       ayes: [],
       nays: [],
       abstain: [],
     };
 
+    let ayesCount = 0;
+    let naysCount = 0;
+    let abstainCount = 0;
+
     for (const history of voteHistory) {
-      if (history.decision === 'aye') result.ayes.push(history);
-      else if (history.decision === 'nay') result.nays.push(history);
-      else if (history.decision === 'abstain') result.abstain.push(history);
+      if (history.decision === 'aye') {
+        result.ayes.push(history);
+        ayesCount += 1 + history.delegatedVotes.length;
+      } else if (history.decision === 'nay') {
+        result.nays.push(history);
+        naysCount += 1 + history.delegatedVotes.length;
+      } else if (history.decision === 'abstain') {
+        result.abstain.push(history);
+        abstainCount += 1 + history.delegatedVotes.length;
+      }
     }
 
-    return result;
+    return { ayes: result.ayes, nays: result.nays, abstain: result.abstain, ayesCount, naysCount, abstainCount };
   }, [voteHistory]);
 
   return (
@@ -79,17 +90,17 @@ export const VotingHistoryDialog = ({ referendum, onClose }: Props) => {
                 <Tabs.Trigger value="aye">
                   <Icon name="thumbUp" size={16} className={cnTw(selectedTab === 'aye' && 'text-icon-positive')} />
                   <span>{t('governance.referendum.ayes')}</span>
-                  <VoteCount count={ayes.length} loading={isLoading} />
+                  <VoteCount count={ayesCount} loading={isLoading} />
                 </Tabs.Trigger>
                 <Tabs.Trigger value="nay">
                   <Icon name="thumbDown" size={16} className={cnTw(selectedTab === 'nay' && 'text-icon-negative')} />
                   <span>{t('governance.referendum.nays')}</span>
-                  <VoteCount count={nays.length} loading={isLoading} />
+                  <VoteCount count={naysCount} loading={isLoading} />
                 </Tabs.Trigger>
                 <Tabs.Trigger value="abstain">
                   <Icon name="minusCircle" size={16} />
                   <span>{t('governance.referendum.abstain')}</span>
-                  <VoteCount count={abstain.length} loading={isLoading} />
+                  <VoteCount count={abstainCount} loading={isLoading} />
                 </Tabs.Trigger>
               </Tabs.List>
             </Box>
