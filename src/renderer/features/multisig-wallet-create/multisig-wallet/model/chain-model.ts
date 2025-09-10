@@ -110,7 +110,7 @@ sample({
 
       const signatory = signatories[chain.chainId].at(0);
 
-      if (!signatory || !initiator) {
+      if (nullable(signatory) || nullable(initiator)) {
         unavailableChains.push({ chain, fee: fee ?? '0', asset, balance: '0' });
         continue;
       }
