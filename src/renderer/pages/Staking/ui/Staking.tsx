@@ -12,7 +12,6 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
 import { type AnyAccount, accountService, identity } from '@/domains/network';
 import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
-import { priceProviderModel } from '@/entities/price';
 import {
   DEFAULT_STAKING_CHAIN,
   STAKING_NETWORK,
@@ -153,10 +152,6 @@ export const Staking = () => {
 
   useEffect(() => {
     setChainId(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN));
-  }, []);
-
-  useEffect(() => {
-    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 
   useEffect(() => {
