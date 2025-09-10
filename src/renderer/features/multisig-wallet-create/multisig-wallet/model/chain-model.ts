@@ -84,13 +84,22 @@ sample({
   target: $chainsWithFee,
 });
 
+const $chainsWithFeeAvailableForInitiatorChain = combine(
+  { chains: $chainsWithFee, initiator: flowModel.$initiator },
+  ({ chains, initiator }) => {
+    if (!initiator) return [];
+
+    return chains.filter(chain => accountService.isAccountAvailableOnChain(initiator, chain.chain));
+  },
+);
+
 sample({
-  clock: [$chainsWithFee, flowModel.$signer],
+  clock: [$chainsWithFeeAvailableForInitiatorChain, flowModel.$signer],
   source: {
     signer: flowModel.$signer,
     initiators: flowModel.$initiators,
     balances: balanceModel.$balanceMap,
-    chains: $chainsWithFee,
+    chains: $chainsWithFeeAvailableForInitiatorChain,
   },
   filter: ({ chains, initiators }) => chains.length > 0 && nonNullable(initiators),
   fn: ({ signer, balances, chains, initiators }) => {

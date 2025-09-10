@@ -13,15 +13,7 @@ import {
   type Wallet,
   WalletType,
 } from '@/shared/core';
-import {
-  Step,
-  TEST_ACCOUNTS,
-  getNativeAsset,
-  isStep,
-  nonNullable,
-  nullable,
-  toAccountId,
-} from '@/shared/lib/utils';
+import { Step, TEST_ACCOUNTS, getNativeAsset, isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
   createMultisigDeposit,
