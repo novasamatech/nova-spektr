@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { type PriceAdapter, type PriceObject, coingekoService, fiatService } from '@/shared/api/price-provider';
-import { type Chain, type ChainId, kernelModel } from '@/shared/core';
+import { type Chain, kernelModel } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { DEFAULT_ASSETS_PRICES, DEFAULT_FIAT_FLAG, DEFAULT_FIAT_PROVIDER } from '../lib/constants';
@@ -64,8 +64,7 @@ sample({
 sample({
   clock: currencyModel.$activeCurrency,
   source: { chains: networkModel.$chains, provider: $priceProvider },
-  filter: (source: { chains: Record<ChainId, Chain>; provider: PriceApiProvider | null }, currency) => {
-    const { provider } = source;
+  filter: ({ provider }, currency) => {
     return provider !== null && currency !== null;
   },
   fn: ({ chains, provider }, currency) => {
