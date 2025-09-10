@@ -17,10 +17,24 @@ export const useTransactionAsset = (operation: MultisigOperation) => {
   });
 
   if (operation.transaction && chain) {
-    if (operation.transaction.args.assetId && api) {
-      return getAssetByTypeExtras(api, chain.assets, operation.transaction.args.assetId);
+    if (operation.transaction.args.assetId) {
+      const targetAssetId = operation.transaction.args.assetId;
+
+      const foundAsset = chain.assets.find((asset) => {
+        return asset.typeExtras && 'assetId' in asset.typeExtras && asset.typeExtras.assetId === targetAssetId;
+      });
+
+      if (foundAsset) {
+        return foundAsset;
+      }
+
+      if (api) {
+        return getAssetByTypeExtras(api, chain.assets, targetAssetId);
+      }
+
+      return null;
     } else {
-      return getAssetById(operation.transaction.args.asset, chain?.assets) ?? null;
+      return getAssetById(operation.transaction.args.asset, chain.assets) ?? null;
     }
   }
 
