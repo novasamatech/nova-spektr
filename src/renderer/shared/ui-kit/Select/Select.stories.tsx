@@ -12,7 +12,7 @@ const meta: Meta<typeof Select> = {
   component: Select,
   decorators: [
     Story => (
-      <div className="flex w-[300px] items-center justify-center">
+      <div className="w-[300px]">
         <Story />
       </div>
     ),

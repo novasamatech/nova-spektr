@@ -208,7 +208,7 @@ const Root = <T extends string>({
           gutter={8}
           sameWidth
           className={cnTw(
-            'relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-md border px-1 py-2',
+            'relative z-50 flex max-h-[300px] flex-col overflow-auto overscroll-contain rounded-md border px-1 py-2',
             {
               'border-filter-border bg-input-background': theme === 'light',
               'border-border-dark bg-background-dark': theme === 'dark',
