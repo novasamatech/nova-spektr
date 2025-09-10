@@ -67,37 +67,31 @@ function sortChains<T extends Pick<Chain, 'name' | 'options' | 'chainId' | 'pare
     }
   }
 
-  // Helper to prioritize parachains with "polkadot" or "kusama" as the first word in their name
   function parachainPriority(chain: T, relay: 'polkadot' | 'kusama'): number {
-    const name = chain.name.trim().toLowerCase();
-    if (name.startsWith(relay)) return 0;
-    return 1;
+    return chain.name.trim().toLowerCase().startsWith(relay) ? 0 : 1;
   }
 
-  // Sort parachains alphabetically within their groups, but prioritize those with "polkadot"/"kusama" as the first word in their name
-  polkadotChains.sort((a, b) => {
-    if (a.chainId === RelayChains.POLKADOT) return -1; // Polkadot always first
-    if (b.chainId === RelayChains.POLKADOT) return 1;
-    // Both are parachains, prioritize by name starting with "polkadot"
-    const pa = parachainPriority(a, 'polkadot');
-    const pb = parachainPriority(b, 'polkadot');
-    if (pa !== pb) return pa - pb;
-    return a.name.localeCompare(b.name);
-  });
+  // Sort Polkadot group: Polkadot first, then parachains (priority: name starts with "polkadot"), then alpha
+  // Helper to sort relaychain groups: relay first, then parachains (priority: name starts with relay), then alpha
+  function sortRelayGroup(chains: T[], relayChainId: string, relayName: 'polkadot' | 'kusama') {
+    chains.sort((a, b) => {
+      if (a.chainId === relayChainId) return -1;
+      if (b.chainId === relayChainId) return 1;
+      const pa = parachainPriority(a, relayName);
+      const pb = parachainPriority(b, relayName);
+      if (pa !== pb) return pa - pb;
+      return a.name.localeCompare(b.name);
+    });
+  }
 
-  kusamaChains.sort((a, b) => {
-    if (a.chainId === RelayChains.KUSAMA) return -1; // Kusama always first
-    if (b.chainId === RelayChains.KUSAMA) return 1;
-    // Both are parachains, prioritize by name starting with "kusama"
-    const pa = parachainPriority(a, 'kusama');
-    const pb = parachainPriority(b, 'kusama');
-    if (pa !== pb) return pa - pb;
-    return a.name.localeCompare(b.name);
-  });
+  sortRelayGroup(polkadotChains, RelayChains.POLKADOT, 'polkadot');
+  sortRelayGroup(kusamaChains, RelayChains.KUSAMA, 'kusama');
 
+  // Sort other and testnet chains alphabetically
   otherChains.sort((a, b) => a.name.localeCompare(b.name));
   testnetChains.sort((a, b) => a.name.localeCompare(b.name));
 
+  // Concatenate all groups in order
   return [...polkadotChains, ...kusamaChains, ...otherChains, ...testnetChains];
 }
 
