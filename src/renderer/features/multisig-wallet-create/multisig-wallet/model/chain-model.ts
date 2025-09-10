@@ -81,7 +81,7 @@ sample({
   target: $chainsWithFee,
 });
 
-const $chainsWithFeeAvailableForInitiatorChain = combine(
+const $filteredChainsWithFee = combine(
   { chains: $chainsWithFee, initiator: flowModel.$initiator },
   ({ chains, initiator }) => {
     if (!initiator) return [];
@@ -90,15 +90,13 @@ const $chainsWithFeeAvailableForInitiatorChain = combine(
   },
 );
 
-const filteredChains = $chainsWithFeeAvailableForInitiatorChain.map(chains => chains.map(chain => chain.chain));
-
 sample({
-  clock: [$chainsWithFeeAvailableForInitiatorChain, flowModel.$signer],
+  clock: [$filteredChainsWithFee, flowModel.$signer],
   source: {
     signatories: flowModel.$allChainsSignatories,
     initiators: flowModel.$initiators,
     balances: balanceModel.$balanceMap,
-    chains: $chainsWithFeeAvailableForInitiatorChain,
+    chains: $filteredChainsWithFee,
   },
   filter: ({ chains, initiators }) => chains.length > 0 && nonNullable(initiators),
   fn: ({ signatories, balances, chains, initiators }) => {
@@ -164,5 +162,5 @@ export const chainSelectorModel = {
   $availableChains,
   $unavailableChains,
   $isLoading: calculateFeesSeriesFx.pending,
-  $multisigChains: filteredChains,
+  $filteredChains: $filteredChainsWithFee.map(chains => chains.map(chain => chain.chain)),
 };
