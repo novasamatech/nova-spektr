@@ -44,7 +44,11 @@ accountSDK(multisigWalletFeature, {
     }
 
     if (accountUtils.isFlexibleMultisigAccount(account)) {
-      return networkUtils.isMultisigSupported(chain.options) && networkUtils.isPureProxySupported(chain.options);
+      return (
+        accountService.isChainMatch(account, chain) &&
+        networkUtils.isMultisigSupported(chain.options) &&
+        networkUtils.isPureProxySupported(chain.options)
+      );
     }
 
     if (accountUtils.isFlexibleProxiedAccount(account)) {
