@@ -1,4 +1,4 @@
-import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
 import { type HexString } from '@/shared/core';
@@ -37,6 +37,11 @@ const syncOperationsFx = createQueuedEffect(async (operations: MultisigOperation
   await storageService.multisigOperations.insertAll(operations.map(serializeOperation));
 });
 
+const callDataUpdated = createEvent<MultisigOperation>();
+
+// Store to track the last updated operation for UI feedback
+const $lastUpdatedOperation = createStore<MultisigOperation | null>(null);
+
 type UpdateCallDataParams = {
   operation: MultisigOperation;
   callData: HexString;
@@ -47,26 +52,23 @@ const updateCallDataFx = attach({
     apis: networkModel.$apis,
     chains: networkModel.$chains,
   },
-  effect({ apis, chains }, { operation, callData }: UpdateCallDataParams) {
+  async effect({ apis, chains }, { operation, callData }: UpdateCallDataParams) {
     const update = scopeBind(updateOperationsFx, { safe: true });
     const api = apis[operation.chainId];
     if (!api) {
       throw new Error(`Api from tx not found: ${operation.chainId}`);
     }
-    try {
-      const decoded = decodeCallData(api, operation.accountId, callData, chains);
-      const newOperation: MultisigOperation = {
-        ...operation,
-        section: decoded.section,
-        method: decoded.method,
-        callData,
-        transaction: decoded,
-      };
+    const decoded = decodeCallData(api, operation.accountId, callData, chains);
+    const newOperation: MultisigOperation = {
+      ...operation,
+      section: decoded.section,
+      method: decoded.method,
+      callData,
+      transaction: decoded,
+    };
 
-      return update([newOperation]);
-    } catch (error) {
-      console.error(error);
-    }
+    await update([newOperation]);
+    return newOperation;
   },
 });
 
@@ -137,14 +139,29 @@ sample({
   target: syncOperationsFx,
 });
 
+// Handle successful call data updates
+sample({
+  clock: updateCallDataFx.doneData,
+  target: [callDataUpdated, $lastUpdatedOperation],
+});
+
+// Clear the last updated operation when new update starts
+sample({
+  clock: updateCallDataFx,
+  fn: () => null,
+  target: $lastUpdatedOperation,
+});
+
 export const multisigOperation = {
   $list,
+  $lastUpdatedOperation,
 
   populate: populateFx,
   addOperations: addOperationsFx,
   updateOperations: updateOperationsFx,
   removeOperationsForAccount: removeOperationsForAccountFx,
   updateCallData: updateCallDataFx,
+  callDataUpdated,
   requestOperations: fetchResource.request,
   subscribe: subscribeResource.subscribe,
   unsubscribe: subscribeResource.unsubscribe,
