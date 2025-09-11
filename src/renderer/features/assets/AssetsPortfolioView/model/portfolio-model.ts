@@ -101,9 +101,7 @@ const $tokens = combine(
         const chain = chains[tokenChain.chainId];
         if (!chain) return false;
 
-        const availableAccounts = accountService.filterAccountsOnChain(accounts, chain);
-
-        return availableAccounts.length > 0;
+        return accountService.filterAccountsOnChain(accounts, chain).length > 0;
       });
 
       if (filteredChains.length === 0) continue;
@@ -138,9 +136,7 @@ const $activeTokens = combine(
         if (nullable(chain)) return false;
         if (networkUtils.isDisabledConnection(connection)) return false;
 
-        const availableAccounts = accountService.filterAccountsOnChain(filteredAccounts, chain);
-
-        return availableAccounts.length > 0;
+        return accountService.filterAccountsOnChain(filteredAccounts, chain).length > 0;
       });
 
       if (filteredChains.length === 0) continue;
