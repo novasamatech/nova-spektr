@@ -34,7 +34,7 @@ const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
 });
 
 const syncOperationsFx = createQueuedEffect(async (operations: MultisigOperation[]) => {
-  await storageService.multisigOperations.updateAll(operations.map(serializeOperation));
+  await storageService.multisigOperations.insertAll(operations.map(serializeOperation));
 });
 
 type UpdateCallDataParams = {

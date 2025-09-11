@@ -15,7 +15,6 @@ const $assetsPrices = createStore<PriceObject | null>(null);
 
 const fiatFlagChanged = createEvent<boolean>();
 const priceProviderChanged = createEvent<PriceApiProvider>();
-const assetsPricesRequested = createEvent<{ includeRates: boolean }>();
 
 const getFiatFlagFx = createEffect((): boolean => {
   return fiatService.getFiatFlag(DEFAULT_FIAT_FLAG);
@@ -63,6 +62,21 @@ sample({
 });
 
 sample({
+  clock: currencyModel.$activeCurrency,
+  source: { chains: networkModel.$chains, provider: $priceProvider },
+  filter: ({ provider }, currency) => nonNullable(provider) && nonNullable(currency),
+  fn: ({ chains, provider }, currency) => {
+    return {
+      chains: Object.values(chains),
+      provider: provider!,
+      currencies: [currency!.coingeckoId],
+      includeRates: true,
+    };
+  },
+  target: fetchAssetsPricesFx,
+});
+
+sample({
   clock: getFiatFlagFx.doneData,
   target: $fiatFlag,
 });
@@ -75,21 +89,6 @@ sample({
 sample({
   clock: getAssetsPricesFx.doneData,
   target: $assetsPrices,
-});
-
-sample({
-  clock: [assetsPricesRequested, $priceProvider, currencyModel.$activeCurrency],
-  source: { chains: networkModel.$chains, provider: $priceProvider, currency: currencyModel.$activeCurrency },
-  filter: ({ provider, currency }) => provider !== null && currency !== null,
-  fn: ({ chains, provider, currency }) => {
-    return {
-      chains: Object.values(chains),
-      provider: provider!,
-      currencies: [currency!.coingeckoId],
-      includeRates: true,
-    };
-  },
-  target: fetchAssetsPricesFx,
 });
 
 sample({
@@ -126,7 +125,6 @@ export const priceProviderModel = {
   events: {
     fiatFlagChanged,
     priceProviderChanged,
-    assetsPricesRequested,
   },
   output: {
     fiatFlagChangedDone: saveFiatFlagFx.done,
