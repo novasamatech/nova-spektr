@@ -18,5 +18,7 @@
 <!-- Please check all applicable items before submitting your PR -->
 - [ ] I have performed a self-review of my own code
 - [ ] I have tested the changes and verified the happy path works as expected
+- [ ] I have provided screenshot of the working feature (if applicable)
+- [ ] I have provided description of the changes and any additional context that might help reviewers perform more accurate review
 - [ ] I have added tests that cover the base logic (if applicable)
 - [ ] My code follows the project's coding standards and style guidelines
