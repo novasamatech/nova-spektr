@@ -22,7 +22,12 @@ const markAllAsReadFx = createEffect((notifications: Notification[]): Promise<No
   return storageService.notifications.updateAll(updates).then(() => updates);
 });
 
+const editNotificationFx = createEffect((notification: Notification): Promise<Notification> => {
+  return storageService.notifications.update(notification.id, notification).then(() => notification);
+});
+
 const notificationsViewed = createEvent();
+const notificationEdited = createEvent<Notification>();
 
 sample({
   clock: populateNotificationsFx.doneData,
@@ -57,6 +62,20 @@ sample({
   target: $notifications,
 });
 
+sample({
+  clock: notificationEdited,
+  target: editNotificationFx,
+});
+
+sample({
+  clock: editNotificationFx.doneData,
+  source: $notifications,
+  fn: (notifications, editedNotification) => {
+    return notifications.map((n) => (n.id === editedNotification.id ? editedNotification : n));
+  },
+  target: $notifications,
+});
+
 export const notificationModel = {
   $notifications,
   $hasUnread,
@@ -65,5 +84,6 @@ export const notificationModel = {
     notificationsStarted: populateNotificationsFx,
     notificationsAdded: addNotificationsFx,
     notificationsViewed,
+    notificationEdited,
   },
 };
