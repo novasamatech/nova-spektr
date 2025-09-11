@@ -2,6 +2,7 @@ import { useStoreMap } from 'effector-react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
 import { Checkbox } from '@/shared/ui-kit';
 import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { validation } from '../model/validation';
@@ -48,7 +49,10 @@ export const BasketItem = ({ transaction, selected, onSelect, onClick }: Props) 
       </div>
 
       <div
-        className="flex h-full w-full items-center gap-x-4 overflow-hidden px-2"
+        className={cnTw(
+          'flex h-full w-full items-center gap-x-4 overflow-hidden px-2',
+          disabled ? 'cursor-default' : 'cursor-pointer',
+        )}
         onClick={() => {
           if (!disabled) {
             onClick(transaction);
