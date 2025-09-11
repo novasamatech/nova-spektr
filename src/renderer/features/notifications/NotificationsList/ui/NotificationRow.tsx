@@ -10,7 +10,7 @@ import { NotificationType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 
-import { FlexibleMultisigNotification as FlexibleMultisigNotificationComponent } from './notifies/FlexibleMultisigNotification';
+import { FlexibleMultisigNotification } from './notifies/FlexibleMultisigNotification';
 import { MultisigCreatedNotification } from './notifies/MultisigCreatedNotification';
 import { ProxyCreatedNotification } from './notifies/ProxyCreatedNotification';
 import { ProxyRemovedNotification } from './notifies/ProxyRemovedNotification';
@@ -18,10 +18,10 @@ import { ProxyRemovedNotification } from './notifies/ProxyRemovedNotification';
 const Notifications: Record<NotificationType, (n: Notification) => ReactNode> = {
   [NotificationType.MULTISIG_CREATED]: (n) => <MultisigCreatedNotification notification={n as MultisigCreated} />,
   [NotificationType.FLEXIBLE_MULTISIG_CREATED]: (n) => (
-    <FlexibleMultisigNotificationComponent notification={n as FlexibleMultisigOperationNotification} />
+    <FlexibleMultisigNotification notification={n as FlexibleMultisigOperationNotification} />
   ),
   [NotificationType.FLEXIBLE_MULTISIG_EDITED]: (n) => (
-    <FlexibleMultisigNotificationComponent notification={n as FlexibleMultisigOperationNotification} />
+    <FlexibleMultisigNotification notification={n as FlexibleMultisigOperationNotification} />
   ),
   [NotificationType.MULTISIG_APPROVED]: () => null,
   [NotificationType.MULTISIG_CANCELLED]: () => null,
