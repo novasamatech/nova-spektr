@@ -20,6 +20,7 @@ import {
 } from '@/shared/ui-entities';
 import { balanceUtils } from '@/entities/balance';
 import { networkUtils } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
 import { type AnyTransaction } from '../transaction/types';
 
 import {
@@ -109,6 +110,19 @@ function isAccountAvailableOnChain(account: AnyAccount, chain: Chain) {
 
 function filterAccountsOnChain(accounts: AnyAccount[], chain: Chain) {
   return accounts.filter(account => isAccountAvailableOnChain(account, chain));
+}
+
+function filterAccountsAvailableForChain(accounts: AnyAccount[], chain: Chain): AnyAccount[] {
+  return accounts.filter(account => {
+    if (!isAccountAvailableOnChain(account, chain)) return false;
+    if (accountUtils.isFlexibleProxiedAccount(account)) {
+      return account.chainId === chain.chainId;
+    }
+    if (accountUtils.isFlexibleMultisigAccount(account)) {
+      return account.chainId === chain.chainId;
+    }
+    return true;
+  });
 }
 
 function filterAccountsByWallet(accounts: AnyAccount[], walletId: number) {
@@ -414,6 +428,7 @@ export const accountService = {
   hasPermissionToMakeActions,
 
   filterAccountsOnChain,
+  filterAccountsAvailableForChain,
   filterAccountsByWallet,
 
   // graph

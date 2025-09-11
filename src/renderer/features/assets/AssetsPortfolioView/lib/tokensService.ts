@@ -24,6 +24,7 @@ import {
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
+import { accountUtils } from '@/entities/wallet';
 
 import { type AssetByChainsWithBalance, type AssetByChainsWithFiatBalance, type AssetChain } from './types';
 
@@ -72,11 +73,13 @@ function sumTokenBalances(a: PortfolioTokenBalance, b: PortfolioTokenBalance): P
 }
 
 function getSelectedAccountIds(accounts: AnyAccount[], chain: Chain): AccountId[] {
-  return accounts.reduce<AccountId[]>((acc, account) => {
-    if (accountService.isAccountAvailableOnChain(account, chain)) {
-      acc.push(account.accountId);
-    }
+  const availableAccounts = accountService.filterAccountsAvailableForChain(accounts, chain);
 
+  return availableAccounts.reduce<AccountId[]>((acc, account) => {
+    if (accountUtils.isFlexibleMultisigAccount(account)) {
+      return acc;
+    }
+    acc.push(account.accountId);
     return acc;
   }, []);
 }
