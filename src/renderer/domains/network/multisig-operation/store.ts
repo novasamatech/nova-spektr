@@ -1,4 +1,4 @@
-import { attach, createEffect, createEvent, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
 import { type HexString } from '@/shared/core';
@@ -37,10 +37,7 @@ const syncOperationsFx = createQueuedEffect(async (operations: MultisigOperation
   await storageService.multisigOperations.insertAll(operations.map(serializeOperation));
 });
 
-const callDataUpdated = createEvent<MultisigOperation>();
-
-// Store to track the last updated operation for UI feedback
-const $lastUpdatedOperation = createStore<MultisigOperation | null>(null);
+const $callDataUpdated = createStore<MultisigOperation | null>(null);
 
 type UpdateCallDataParams = {
   operation: MultisigOperation;
@@ -142,26 +139,25 @@ sample({
 // Handle successful call data updates
 sample({
   clock: updateCallDataFx.doneData,
-  target: [callDataUpdated, $lastUpdatedOperation],
+  target: $callDataUpdated,
 });
 
 // Clear the last updated operation when new update starts
 sample({
   clock: updateCallDataFx,
   fn: () => null,
-  target: $lastUpdatedOperation,
+  target: $callDataUpdated,
 });
 
 export const multisigOperation = {
   $list,
-  $lastUpdatedOperation,
+  $callDataUpdated,
 
   populate: populateFx,
   addOperations: addOperationsFx,
   updateOperations: updateOperationsFx,
   removeOperationsForAccount: removeOperationsForAccountFx,
   updateCallData: updateCallDataFx,
-  callDataUpdated,
   requestOperations: fetchResource.request,
   subscribe: subscribeResource.subscribe,
   unsubscribe: subscribeResource.unsubscribe,

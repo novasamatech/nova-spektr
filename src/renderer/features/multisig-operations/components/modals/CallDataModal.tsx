@@ -28,7 +28,7 @@ export const CallDataModal = ({ isOpen, operation, onClose, onSubmit }: Props) =
   const [showSuccess, toggleSuccess] = useToggle();
 
   // Use stores to handle success and failure states
-  const lastUpdatedOperation = useUnit(multisigOperation.$lastUpdatedOperation);
+  const lastUpdatedOperation = useUnit(multisigOperation.$callDataUpdated);
   const isUpdatePending = useUnit(multisigOperation.updateCallData.pending);
 
   const {
