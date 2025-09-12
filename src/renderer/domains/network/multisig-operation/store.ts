@@ -55,17 +55,22 @@ const updateCallDataFx = attach({
     if (!api) {
       throw new Error(`Api from tx not found: ${operation.chainId}`);
     }
-    const decoded = decodeCallData(api, operation.accountId, callData, chains);
-    const newOperation: MultisigOperation = {
-      ...operation,
-      section: decoded.section,
-      method: decoded.method,
-      callData,
-      transaction: decoded,
-    };
+    try {
+      const decoded = decodeCallData(api, operation.accountId, callData, chains);
+      const newOperation: MultisigOperation = {
+        ...operation,
+        section: decoded.section,
+        method: decoded.method,
+        callData,
+        transaction: decoded,
+      };
 
-    await update([newOperation]);
-    return newOperation;
+      await update([newOperation]);
+      return newOperation;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
   },
 });
 
