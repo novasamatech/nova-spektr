@@ -6,8 +6,8 @@ import { type CallData } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { nonNullable, validateCallData } from '@/shared/lib/utils';
-import { BaseModal, Button, InputHint } from '@/shared/ui';
-import { TextArea } from '@/shared/ui-kit';
+import { Button, InputHint } from '@/shared/ui';
+import { Modal, TextArea } from '@/shared/ui-kit';
 import { type MultisigOperation, multisigOperation } from '@/domains/network';
 import { OperationResult } from '@/entities/transaction';
 
@@ -103,42 +103,39 @@ export const CallDataModal = ({ isOpen, operation, onClose, onSubmit }: Props) =
 
   // Show form modal when not in submission states
   return (
-    <BaseModal
-      isOpen={isOpen}
-      title={t('operations.callData.title')}
-      closeButton
-      contentClass="px-5 pb-4 w-[400px]"
-      onClose={closeHandler}
-    >
-      <form id="multisigForm" className="mt-2 flex flex-col gap-y-4" onSubmit={handleSubmit(submitHandler)}>
-        <Controller
-          name="callData"
-          control={control}
-          rules={{ required: true, validate: validateCallDataValue }}
-          render={({ field: { value, onChange }, fieldState: { error } }) => (
-            <>
-              <TextArea
-                placeholder={t('operations.callData.inputPlaceholder')}
-                value={value}
-                invalid={nonNullable(error)}
-                onChange={onChange}
-              />
+    <Modal isOpen={isOpen} size="fit" onToggle={open => !open && closeHandler()}>
+      <Modal.Title close>{t('operations.callData.title')}</Modal.Title>
+      <Modal.Content>
+        <form id="multisigForm" className="flex flex-col gap-y-4 px-5 py-4" onSubmit={handleSubmit(submitHandler)}>
+          <Controller
+            name="callData"
+            control={control}
+            rules={{ required: true, validate: validateCallDataValue }}
+            render={({ field: { value, onChange }, fieldState: { error } }) => (
+              <>
+                <TextArea
+                  placeholder={t('operations.callData.inputPlaceholder')}
+                  value={value}
+                  invalid={nonNullable(error)}
+                  onChange={onChange}
+                />
 
-              <InputHint className="mt-2" active={!!error} variant="error">
-                {t('operations.callData.errorMessage')}
-              </InputHint>
-            </>
-          )}
-        />
+                <InputHint className="mt-2" active={!!error} variant="error">
+                  {t('operations.callData.errorMessage')}
+                </InputHint>
+              </>
+            )}
+          />
 
-        <div className="flex items-center justify-between">
-          <InputHint active>{t('operations.callData.inputHint')}</InputHint>
+          <div className="flex items-center justify-between gap-4">
+            <InputHint active>{t('operations.callData.inputHint')}</InputHint>
 
-          <Button disabled={!isValid} type="submit">
-            {t('operations.callData.continueButton')}
-          </Button>
-        </div>
-      </form>
-    </BaseModal>
+            <Button disabled={!isValid} type="submit">
+              {t('operations.callData.continueButton')}
+            </Button>
+          </div>
+        </form>
+      </Modal.Content>
+    </Modal>
   );
 };
