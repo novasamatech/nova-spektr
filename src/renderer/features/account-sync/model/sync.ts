@@ -19,7 +19,6 @@ import {
   type ProxiedWallet,
   type ProxyAccount,
   type ProxyType,
-  ProxyVariant,
   SigningType,
   type Wallet,
   WalletType,
@@ -395,8 +394,8 @@ sample({
     );
 
     for (const syncedMultisig of syncedMultisigAccounts) {
-      const matchingProxies = syncedProxyAccounts.filter(
-        (proxy) => proxy.proxyVariant === ProxyVariant.PURE && proxy.proxyAccountId === syncedMultisig.accountId,
+      const matchingProxies = syncedProxyAccounts.filter((proxy) =>
+        accountSyncService.isFlexibleMultisigPair(proxy, syncedMultisig),
       );
 
       if (matchingProxies.length === 0) continue;

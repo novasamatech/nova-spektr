@@ -1,4 +1,4 @@
-import { type ChainId } from '@/shared/core';
+import { type ChainId, ProxyVariant } from '@/shared/core';
 import { createAsyncTaskPool } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService } from '../account/service';
@@ -88,9 +88,16 @@ function isSyncedMultisigAccount(a: SyncedAccount): a is SyncedMultisigAccount {
   return 'type' in a && a.type === 'multisig';
 }
 
+function isFlexibleMultisigPair(proxy: SyncedProxyAccount, multisig: SyncedMultisigAccount) {
+  return (
+    proxy.proxyType === 'Any' && proxy.proxyVariant === ProxyVariant.PURE && proxy.proxyAccountId === multisig.accountId
+  );
+}
+
 export const accountSyncService = {
   isSyncedProxyAccount,
   isSyncedMultisigAccount,
+  isFlexibleMultisigPair,
 
   syncAccounts: syncAccounts,
 };
