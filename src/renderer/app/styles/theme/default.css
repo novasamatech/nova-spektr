@@ -38,8 +38,8 @@
   /* BUTTON */
   /* primary */
   --primary-button-background-default: #4649f6;
-  --primary-button-background-hover: #3e40d8;
-  --primary-button-background-active: #3e40d8;
+  --primary-button-background-hover: #3235B1;
+  --primary-button-background-active: #222376;
   --primary-button-background-inactive: rgba(70, 73, 246, 0.48);
   /* secondary */
   --secondary-button-background: rgba(69, 69, 137, 0.06);
