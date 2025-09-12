@@ -387,7 +387,7 @@ sample({
       accountType: AccountType.MULTISIG,
       type: 'universal',
       blockNumber,
-      remarkChainId: chain!.chainId, // Save chain where remark transaction was submitted
+      remarkChainId: chain!.chainId,
     };
 
     return {

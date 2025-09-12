@@ -35,10 +35,9 @@ export interface MultisigAccount extends UniversalAccount {
   signatories: Signatory[];
   threshold: number;
 
-  // Block number when this account was first created, used for sync comparison with indexer metadata
-  blockNumber?: number;
-  // Chain ID where the creation remark transaction was submitted and fees were paid
-  remarkChainId?: ChainId;
+  // Temp fields for freshly created user accounts , used for sync comparison with indexer metadata
+  blockNumber?: number; // Block number when this account was created
+  remarkChainId?: ChainId; // Chain ID where the remark was submitted
 }
 
 export interface FlexibleMultisigAccount extends ChainAccount {
@@ -46,8 +45,8 @@ export interface FlexibleMultisigAccount extends ChainAccount {
   signatories: Signatory[];
   threshold: number;
 
-  // Block number when this account was first created, used for sync comparison with indexer metadata
-  blockNumber?: number;
+  // Temp fields for freshly created user accounts , used for sync comparison with indexer metadata
+  blockNumber?: number; // Block number when this account was created
 }
 
 export interface MultisigSignatoryAccount extends UniversalAccount {
