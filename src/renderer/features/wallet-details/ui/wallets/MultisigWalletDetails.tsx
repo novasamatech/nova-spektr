@@ -45,7 +45,6 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const [tab, setTab] = useState('1');
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
-
   const multisigAccount = walletAccounts.find(accountUtils.isMultisigAccount);
   assert(multisigAccount, 'Multisig account not found.');
 

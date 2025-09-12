@@ -373,7 +373,6 @@ sample({
     const accountIds = sortedSignatories.map(s => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
 
-    // Extract blockNumber from successful transaction result
     const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
     const blockNumber = successResult ? (successResult.params as ExtrinsicResultParams)?.timepoint?.height : undefined;
 
