@@ -5,7 +5,7 @@ import wallet_connect_confirm from '@/shared/assets/video/wallet_connect_confirm
 import wallet_connect_confirm_webm from '@/shared/assets/video/wallet_connect_confirm.webm';
 import { type HexString, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { ValidationErrors } from '@/shared/lib/utils';
+import { ValidationErrors, getTranslatedErrorMessage } from '@/shared/lib/utils';
 import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { transactionService } from '@/entities/transaction';
@@ -25,6 +25,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
   const pairingUri = useUnit(walletConnectSign.$pairingUri);
   const step = useUnit(walletConnectSign.$step);
   const signed = useUnit(walletConnectSign.$signed);
+  const error = useUnit(walletConnectSign.$error);
 
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
@@ -69,22 +70,14 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
   const walletName = signerWallet?.type === WalletType.NOVA_WALLET ? 'Nova Wallet' : 'WalletConnect';
 
   const getStatusProps = () => {
-    if (step === 'rejected') {
-      return {
-        isOpen: true,
-        title: t('operation.walletConnect.rejected'),
-        content: <Animation variant="error" />,
-        onClose: () => {
-          onGoBack();
-        },
-      };
-    }
+    if (step === 'rejected' || step === 'failed') {
+      const errorMessage = error?.type
+        ? getTranslatedErrorMessage(error.type, t)
+        : t('operation.walletConnect.rejected');
 
-    // TODO fix failed state
-    if (step === 'failed') {
       return {
         isOpen: true,
-        title: t('operation.walletConnect.rejected'),
+        title: errorMessage,
         content: <Animation variant="error" />,
         onClose: () => {
           onGoBack();
