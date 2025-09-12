@@ -134,15 +134,15 @@ const $signatories = createSignatoriesStore({
 const $allChainsSignatories = combine(
   {
     multisigChains: $multisigChains,
-    initiator: $initiator,
+    initiators: $initiators,
     accounts: accounts.$list,
   },
-  ({ multisigChains, initiator, accounts }) => {
-    if (!initiator || !multisigChains.length) return {} as Record<ChainId, AnyAccount[]>;
+  ({ multisigChains, initiators, accounts }) => {
+    if (nullable(initiators) || !multisigChains.length) return {} as Record<ChainId, AnyAccount[]>;
 
     return multisigChains.reduce(
       (acc, chain: Chain) => {
-        const signatories = accountService.findSignatories(initiator, accounts, chain);
+        const signatories = initiators.flatMap(initiator => accountService.findSignatories(initiator, accounts, chain));
         acc[chain.chainId] = signatories;
         return acc;
       },
