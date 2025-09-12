@@ -27,7 +27,7 @@ import { type AnyAccount, type ChainAccount, accountService, accountSync, accoun
 import { balanceModel } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { type ExtrinsicResultParams, transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -358,7 +358,7 @@ sample({
 
     return nonNullable(chain) && isSubmitStep && isSuccessResult;
   },
-  fn: ({ signatories, chain, name, threshold }) => {
+  fn: ({ signatories, chain, name, threshold }, results) => {
     const sortedSignatories = sortBy(
       Array.from(signatories.values()).map(a => ({
         address: a.address,
@@ -373,6 +373,10 @@ sample({
     const accountIds = sortedSignatories.map(s => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
 
+    // Extract blockNumber from successful transaction result
+    const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
+    const blockNumber = successResult ? (successResult.params as ExtrinsicResultParams)?.timepoint?.height : undefined;
+
     const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
       name: name.trim(),
@@ -382,6 +386,8 @@ sample({
       signingType: SigningType.MULTISIG,
       accountType: AccountType.MULTISIG,
       type: 'universal',
+      blockNumber,
+      remarkChainId: chain!.chainId, // Save chain where remark transaction was submitted
     };
 
     return {

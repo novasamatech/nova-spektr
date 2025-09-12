@@ -251,6 +251,7 @@ sample({
       accountType: AccountType.FLEX_MULTISIG,
       type: 'chain',
       chainId: chain!.chainId,
+      blockNumber: timepoint.height,
     };
 
     const pureAccount: Omit<NoID<FlexibleProxiedAccount>, 'walletId'> = {
@@ -318,6 +319,8 @@ sample({
       ],
       proxyVariant: ProxyVariant.PURE,
       deposit: '100',
+      blockNumber: undefined, // Block number not available for consequence account creation
+      extrinsicIndex: undefined,
     };
 
     const wallet: Omit<NoID<ProxiedWallet>, 'accounts'> = {
@@ -362,6 +365,8 @@ sample({
       signingType: SigningType.MULTISIG,
       accountType: AccountType.MULTISIG,
       type: 'universal',
+      blockNumber: undefined, // Block number not available for consequence account creation
+      remarkChainId: chain?.chainId, // Chain ID not available for consequence account creation
     };
 
     const wallet: Omit<NoID<MultisigWallet>, 'accounts'> = {

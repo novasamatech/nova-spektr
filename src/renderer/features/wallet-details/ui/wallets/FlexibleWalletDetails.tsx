@@ -46,6 +46,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const [tab, setTab] = useState('1');
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
+
   const multisigAccount = walletAccounts.find(accountUtils.isFlexibleMultisigAccount);
   const proxiedAccount = walletAccounts.find(accountUtils.isFlexibleProxiedAccount);
 

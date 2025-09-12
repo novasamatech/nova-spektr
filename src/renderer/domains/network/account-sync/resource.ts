@@ -2,7 +2,7 @@ import { GraphQLClient, gql } from 'graphql-request';
 import { uniq } from 'lodash';
 import { z } from 'zod';
 
-import { CryptoType, ProxyVariant } from '@/shared/core';
+import { type ChainId, CryptoType, ProxyVariant } from '@/shared/core';
 import { entries, groupBy, isEthereumAccountId, isHex, nullable } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -23,9 +23,9 @@ const chainIdSchema = z.string().transform((id, ctx) => {
   }
 });
 
-// proxy
+// proxieds
 
-const PROXY_ACCOUNT_QUERY = gql`
+const PROXIED_ACCOUNTS_QUERY = gql`
   query Proxieds($accounts: [String!]) {
     proxieds(filter: { proxyAccountId: { in: $accounts }, delay: { equalTo: 0 } }) {
       nodes {
@@ -59,7 +59,7 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
     // subquery request
     const client = new GraphQLClient(INDEXER_URL);
     const response = await client.request<{ proxieds: { nodes: unknown[] } }, { accounts: AccountId[] }>(
-      PROXY_ACCOUNT_QUERY,
+      PROXIED_ACCOUNTS_QUERY,
       { accounts },
     );
     const parsed = response.proxieds.nodes.map(x => proxySchema.parse(x));
@@ -127,7 +127,7 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
 
 // multisig
 
-const MULTISIG_ACCOUNT_QUERY = gql`
+const MULTISIG_ACCOUNTS_QUERY = gql`
   query Multisigs($accounts: [String!]) {
     accounts(filter: { accountId: { in: $accounts } }) {
       nodes {
@@ -178,7 +178,7 @@ export const multisigAccountsProvider: AccountProvider<SyncedMultisigAccount> = 
     // subquery request
     const client = new GraphQLClient(INDEXER_URL);
     const response = await client.request<{ accounts: { nodes: unknown[] } }, { accounts: AccountId[] }>(
-      MULTISIG_ACCOUNT_QUERY,
+      MULTISIG_ACCOUNTS_QUERY,
       { accounts },
     );
 
@@ -211,5 +211,43 @@ export const multisigAccountsProvider: AccountProvider<SyncedMultisigAccount> = 
     }
 
     return result;
+  },
+};
+
+// chains metadata
+
+const METADATAS_QUERY = gql`
+  query Metadatas {
+    _metadatas {
+      nodes {
+        chain
+        lastProcessedHeight
+        genesisHash
+      }
+    }
+  }
+`;
+
+const metadataSchema = z.object({
+  chain: z.string(),
+  lastProcessedHeight: z.number(),
+  genesisHash: z.string<ChainId>(),
+});
+
+export const indexedBlocksProvider = {
+  async fn(): Promise<Map<ChainId, number>> {
+    const client = new GraphQLClient(INDEXER_URL);
+    const response = await client.request<{
+      _metadatas: { nodes: { chain: string; genesisHash: ChainId; lastProcessedHeight: number }[] };
+    }>(METADATAS_QUERY);
+
+    const parsedData = response._metadatas.nodes.map(x => metadataSchema.parse(x));
+    const metadataMap = new Map<ChainId, number>();
+
+    for (const meta of parsedData) {
+      metadataMap.set(meta.genesisHash, meta.lastProcessedHeight);
+    }
+
+    return metadataMap;
   },
 };
