@@ -86,13 +86,9 @@ const $filteredChainsWithFee = combine(
   ({ chains, initiators }) => {
     if (!initiators) return [];
 
-    return chains.filter(chain => {
-      const isAvailable = initiators.some(initiator =>
-        accountService.isAccountAvailableOnChain(initiator, chain.chain),
-      );
-      console.log('isAvailable', isAvailable, chain.chain.name);
-      return isAvailable;
-    });
+    return chains.filter(chain =>
+      initiators.some(initiator => accountService.isAccountAvailableOnChain(initiator, chain.chain)),
+    );
   },
 );
 
