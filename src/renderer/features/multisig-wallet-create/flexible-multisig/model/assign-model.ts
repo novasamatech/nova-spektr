@@ -32,7 +32,7 @@ import { transactionBuilder } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign';
-import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
+import { type ExtrinsicResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 
 import { flexibleMultisigFeature } from './feature';
 import { flexibleMultisigModel } from './flexible-multisig-create';
@@ -199,6 +199,11 @@ const $flexibleMultisigCreated = createStore<boolean>(false)
   .reset(flexibleMultisigModel.flow.close)
   .on(flexibleMultisigCreated, () => true);
 
+const successResultSaved = createEvent<{ result: ExtrinsicResult; params: ExtrinsicResultParams }>();
+const $successResult = createStore<{ result: ExtrinsicResult; params: ExtrinsicResultParams } | null>(null)
+  .reset(flexibleMultisigModel.flow.close)
+  .on(successResultSaved, (_, payload) => payload);
+
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
@@ -206,6 +211,17 @@ sample({
     accounts: accounts.$list,
   },
   filter: ({ tx }, results) => nonNullable(tx) && results.some(({ result }) => submitUtils.isSuccessResult(result)),
+  fn: (_, results) => {
+    const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
+    assert(successResult, 'Successful result for flexible multisig creation was not found');
+
+    return { result: successResult.result, params: successResult.params as ExtrinsicResultParams };
+  },
+  target: successResultSaved,
+});
+
+sample({
+  clock: successResultSaved,
   target: flexibleMultisigCreated,
 });
 
@@ -225,15 +241,19 @@ sample({
     flexibleMultisigCreated: $flexibleMultisigCreated,
     multisigAccountId: formModel.$multisigAccountId,
     proxyAddress: $proxyAddress,
+    successResult: $successResult,
   },
-  filter: ({ flexibleMultisigCreated, chain, multisigAccountId, proxyAddress }) => {
-    return nonNullable(chain) && flexibleMultisigCreated && nonNullable(multisigAccountId) && nonNullable(proxyAddress);
+  filter: ({ flexibleMultisigCreated, chain, multisigAccountId, proxyAddress, successResult }) => {
+    return (
+      nonNullable(chain) &&
+      flexibleMultisigCreated &&
+      nonNullable(multisigAccountId) &&
+      nonNullable(proxyAddress) &&
+      nonNullable(successResult)
+    );
   },
-  fn: ({ signatories, chain, name, threshold, multisigAccountId, proxyAddress }, results) => {
-    const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
-    assert(successResult, 'Successful result for flexible multisig creation was not found');
-
-    const timepoint = (successResult.params as ExtrinsicResultParams).timepoint;
+  fn: ({ signatories, chain, name, threshold, multisigAccountId, proxyAddress, successResult }) => {
+    const timepoint = successResult!.params.timepoint;
     const sortedSignatories = sortBy(
       signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address), walletId: a.walletId })),
       'accountId',
@@ -295,11 +315,15 @@ sample({
     chain: formModel.$chain,
     multisigAccountId: formModel.$multisigAccountId,
     proxyAddress: $proxyAddress,
+    successResult: $successResult,
   },
-  filter: ({ chain, multisigAccountId, proxyAddress }) => {
-    return nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(proxyAddress);
+  filter: ({ chain, multisigAccountId, proxyAddress, successResult }) => {
+    return (
+      nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(proxyAddress) && nonNullable(successResult)
+    );
   },
-  fn: ({ chain, name, multisigAccountId, proxyAddress }) => {
+  fn: ({ chain, name, multisigAccountId, proxyAddress, successResult }) => {
+    const timepoint = successResult!.params.timepoint;
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
 
     const proxiedAccount: Omit<NoID<ProxiedAccount>, 'walletId'> = {
@@ -319,7 +343,7 @@ sample({
       ],
       proxyVariant: ProxyVariant.PURE,
       deposit: '100',
-      blockNumber: undefined, // Block number not available for consequence account creation
+      blockNumber: timepoint.height,
       extrinsicIndex: undefined,
     };
 
@@ -344,11 +368,13 @@ sample({
     signatories: signatoryModel.$signatories,
     chain: formModel.$chain,
     multisigAccountId: formModel.$multisigAccountId,
+    successResult: $successResult,
   },
-  filter: ({ chain, multisigAccountId }) => {
-    return nonNullable(chain) && nonNullable(multisigAccountId);
+  filter: ({ chain, multisigAccountId, successResult }) => {
+    return nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(successResult);
   },
-  fn: ({ signatories, chain, name, threshold, multisigAccountId }) => {
+  fn: ({ signatories, chain, name, threshold, multisigAccountId, successResult }) => {
+    const timepoint = successResult!.params.timepoint;
     const sortedSignatories = sortBy(
       signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address), walletId: a.walletId })),
       'accountId',
@@ -365,8 +391,8 @@ sample({
       signingType: SigningType.MULTISIG,
       accountType: AccountType.MULTISIG,
       type: 'universal',
-      blockNumber: undefined, // Block number not available for consequence account creation
-      remarkChainId: chain?.chainId, // Chain ID not available for consequence account creation
+      blockNumber: timepoint.height,
+      remarkChainId: chain?.chainId,
     };
 
     const wallet: Omit<NoID<MultisigWallet>, 'accounts'> = {
