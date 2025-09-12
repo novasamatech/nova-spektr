@@ -82,11 +82,13 @@ sample({
 });
 
 const $filteredChainsWithFee = combine(
-  { chains: $chainsWithFee, initiator: flowModel.$initiator },
-  ({ chains, initiator }) => {
-    if (!initiator) return [];
+  { chains: $chainsWithFee, initiators: flowModel.$initiators },
+  ({ chains, initiators }) => {
+    if (!initiators) return [];
 
-    return chains.filter(chain => accountService.isAccountAvailableOnChain(initiator, chain.chain));
+    return chains.filter(chain =>
+      initiators.some(initiator => accountService.isAccountAvailableOnChain(initiator, chain.chain)),
+    );
   },
 );
 
