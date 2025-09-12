@@ -1536,6 +1536,12 @@
     "successRejectMessage": "Operation Rejected",
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
+      "errors": {
+        "networkError": "Rejected. Some transport error, try to reconnect your wallet",
+        "sessionError": "Rejected. Connection lost, please reconnect your wallet",
+        "unknownError": "Rejected. An unexpected error occurred",
+        "userRejected": "Rejected. Request on sign was rejected"
+      },
       "expiredDescription": "The operation isn’t valid anymore",
       "failedDescription": "Scan with your mobile wallet to connect",
       "failedTitle": "Waiting for Reconnect...",
@@ -1547,17 +1553,11 @@
         "reconnecting": "Waiting for Reconnect...",
         "title": "{ walletName } is not connected"
       },
+      "reconnectHint": "Please check your internet connection and try reconnecting your wallet",
+      "rejected": "Rejected",
       "signTitle_one": "Confirm with { walletName }",
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
-      "tryAgainButton": "Try again",
-      "rejected": "Rejected",
-      "reconnectHint": "Please check your internet connection and try reconnecting your wallet",
-      "errors": {
-        "userRejected": "Rejected. Request on sign was rejected",
-        "networkError": "Rejected. Some transport error, try to reconnect your wallet",
-        "sessionError": "Rejected. Connection lost, please reconnect your wallet",
-        "unknownError": "Rejected. An unexpected error occurred"
-      }
+      "tryAgainButton": "Try again"
     },
     "walletSignatoriesTitle": "Your wallets",
     "xcmFee": "Cross-chain fee"
