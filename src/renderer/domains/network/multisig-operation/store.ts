@@ -37,6 +37,8 @@ const syncOperationsFx = createQueuedEffect(async (operations: MultisigOperation
   await storageService.multisigOperations.insertAll(operations.map(serializeOperation));
 });
 
+const $callDataUpdated = createStore<MultisigOperation | null>(null);
+
 type UpdateCallDataParams = {
   operation: MultisigOperation;
   callData: HexString;
@@ -47,7 +49,7 @@ const updateCallDataFx = attach({
     apis: networkModel.$apis,
     chains: networkModel.$chains,
   },
-  effect({ apis, chains }, { operation, callData }: UpdateCallDataParams) {
+  async effect({ apis, chains }, { operation, callData }: UpdateCallDataParams) {
     const update = scopeBind(updateOperationsFx, { safe: true });
     const api = apis[operation.chainId];
     if (!api) {
@@ -63,9 +65,11 @@ const updateCallDataFx = attach({
         transaction: decoded,
       };
 
-      return update([newOperation]);
+      await update([newOperation]);
+      return newOperation;
     } catch (error) {
       console.error(error);
+      return null;
     }
   },
 });
@@ -137,8 +141,22 @@ sample({
   target: syncOperationsFx,
 });
 
+// Handle successful call data updates
+sample({
+  clock: updateCallDataFx.doneData,
+  target: $callDataUpdated,
+});
+
+// Clear the last updated operation when new update starts
+sample({
+  clock: updateCallDataFx,
+  fn: () => null,
+  target: $callDataUpdated,
+});
+
 export const multisigOperation = {
   $list,
+  $callDataUpdated,
 
   populate: populateFx,
   addOperations: addOperationsFx,
