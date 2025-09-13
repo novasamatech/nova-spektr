@@ -4,6 +4,7 @@ import { sortBy } from 'lodash';
 import { spread } from 'patronum';
 import { z } from 'zod';
 
+import { proxyService } from '@/shared/api/proxy';
 import {
   AccountType,
   CryptoType,
@@ -218,6 +219,7 @@ const createMultisigWalletFx = attach({ effect: walletModel.createWallet });
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
+    api: $api,
     name: formModel.form.fields.name.$value,
     threshold: formModel.form.fields.threshold.$value,
     signatories: signatoryModel.$signatories,
@@ -226,10 +228,16 @@ sample({
     multisigAccountId: formModel.$multisigAccountId,
     proxyAddress: $proxyAddress,
   },
-  filter: ({ flexibleMultisigCreated, chain, multisigAccountId, proxyAddress }) => {
-    return nonNullable(chain) && flexibleMultisigCreated && nonNullable(multisigAccountId) && nonNullable(proxyAddress);
+  filter: ({ api, flexibleMultisigCreated, chain, multisigAccountId, proxyAddress }) => {
+    return (
+      nonNullable(api) &&
+      nonNullable(chain) &&
+      flexibleMultisigCreated &&
+      nonNullable(multisigAccountId) &&
+      nonNullable(proxyAddress)
+    );
   },
-  fn: ({ signatories, chain, name, threshold, multisigAccountId, proxyAddress }, results) => {
+  fn: ({ api, signatories, chain, name, threshold, multisigAccountId, proxyAddress }, results) => {
     const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
     assert(successResult, 'Successful result for flexible multisig creation was not found');
 
@@ -260,7 +268,7 @@ sample({
       type: 'chain',
       signingType: SigningType.WATCH_ONLY,
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
-      deposit: '100',
+      deposit: proxyService.getProxyDeposit(api!, '0', 1),
       proxyAccountId: multisigAccountId!,
       delay: 0,
       chainId: chain!.chainId,
@@ -290,15 +298,16 @@ sample({
 sample({
   clock: flexibleMultisigCreated,
   source: {
+    api: $api,
     name: formModel.form.fields.name.$value,
     chain: formModel.$chain,
     multisigAccountId: formModel.$multisigAccountId,
     proxyAddress: $proxyAddress,
   },
-  filter: ({ chain, multisigAccountId, proxyAddress }) => {
-    return nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(proxyAddress);
+  filter: ({ api, chain, multisigAccountId, proxyAddress }) => {
+    return nonNullable(api) && nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(proxyAddress);
   },
-  fn: ({ chain, name, multisigAccountId, proxyAddress }) => {
+  fn: ({ api, chain, name, multisigAccountId, proxyAddress }) => {
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
 
     const proxiedAccount: Omit<NoID<ProxiedAccount>, 'walletId'> = {
@@ -317,7 +326,7 @@ sample({
         },
       ],
       proxyVariant: ProxyVariant.PURE,
-      deposit: '100',
+      deposit: proxyService.getProxyDeposit(api!, '0', 1),
     };
 
     const wallet: Omit<NoID<ProxiedWallet>, 'accounts'> = {
