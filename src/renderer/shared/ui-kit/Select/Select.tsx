@@ -25,7 +25,7 @@ import {
 
 import { type XOR } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, truncate } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Graphics } from '../Graphics/Graphics';
 import { useTheme } from '../Theme/useTheme';
@@ -229,7 +229,9 @@ const Root = <T extends string>({
           {registeredItems.size === 0 && (
             <div className="flex flex-col items-center justify-center gap-2 px-2 py-6">
               <Graphics name="emptyList" size={64} />
-              <FootnoteText className="text-text-tertiary">{t('emptyState.accountsNotFound')}</FootnoteText>
+              <FootnoteText className="text-text-tertiary">
+                {t('emptyState.searchEmpty', { query: truncate(searchValue, 5, 5) })}
+              </FootnoteText>
             </div>
           )}
         </ComboboxPopover>
