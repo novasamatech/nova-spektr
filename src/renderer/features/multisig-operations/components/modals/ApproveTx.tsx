@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import { type Chain, type FlexibleMultisigAccount, type HexString, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -10,7 +10,6 @@ import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { type MultisigOperation, accounts } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
-import { priceProviderModel } from '@/entities/price';
 import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
@@ -82,10 +81,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
 
     return filteredSignatories;
   }, [operation, multisigAccount, chain, accountsList]);
-
-  useEffect(() => {
-    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
-  }, []);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
