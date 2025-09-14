@@ -2,7 +2,6 @@ import { type Meta, type StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
 import { Icon } from '@/shared/ui';
-import { Box } from '../Box/Box';
 import { ThemeProvider } from '../Theme/ThemeProvider';
 
 import { Select } from './Select';
@@ -48,28 +47,20 @@ export const RichContent: Story = {
     return (
       <Select {...args} placeholder="Select a fruit" value={value} onChange={onChange}>
         <Select.Item value="item_1">
-          <Box direction="row" verticalAlign="center" gap={2}>
-            <Icon name="btc" size={12} className="shrink-0" />
-            <span className="truncate">Apple</span>
-          </Box>
+          <Icon name="btc" size={12} className="shrink-0" />
+          <span className="truncate">Apple</span>
         </Select.Item>
         <Select.Item value="item_2">
-          <Box direction="row" verticalAlign="center" gap={2}>
-            <Icon name="usd" size={12} className="shrink-0" />
-            <span className="truncate">Orange</span>
-          </Box>
+          <Icon name="usd" size={12} className="shrink-0" />
+          <span className="truncate">Orange</span>
         </Select.Item>
         <Select.Item value="item_3">
-          <Box direction="row" verticalAlign="center" gap={2}>
-            <Icon name="eur" size={12} className="shrink-0" />
-            <span className="truncate">Watermelon</span>
-          </Box>
+          <Icon name="eur" size={12} className="shrink-0" />
+          <span className="truncate">Watermelon</span>
         </Select.Item>
         <Select.Item value="item_4">
-          <Box direction="row" verticalAlign="center" gap={2}>
-            <Icon name="rub" size={12} className="shrink-0" />
-            <span className="truncate">Banana-nana-nana-nana-nana-nana</span>
-          </Box>
+          <Icon name="rub" size={12} className="shrink-0" />
+          <span className="truncate">Banana-nana-nana-nana-nana-nana</span>
         </Select.Item>
       </Select>
     );
@@ -94,13 +85,21 @@ export const Groups: Story = {
 
     return (
       <Select {...params} placeholder="Select a fruit" value={value} onChange={onChange}>
-        <Select.Group title="Group 1">
-          <Select.Item value="item_1">Apple</Select.Item>
-          <Select.Item value="item_2">Orange</Select.Item>
+        <Select.Group title="Fruits">
+          <Select.Item value="item_1" indent={1}>
+            Apple
+          </Select.Item>
+          <Select.Item value="item_2" indent={1}>
+            Orange
+          </Select.Item>
         </Select.Group>
-        <Select.Group title="Group 2">
-          <Select.Item value="item_3">Watermelon</Select.Item>
-          <Select.Item value="item_4">Banana</Select.Item>
+        <Select.Group title="Vegetables">
+          <Select.Item value="item_3" indent={1}>
+            Cucumber
+          </Select.Item>
+          <Select.Item value="item_4" indent={1}>
+            Cabbage
+          </Select.Item>
         </Select.Group>
       </Select>
     );
@@ -119,14 +118,10 @@ export const CustomValueNode: Story = {
         valueNode={value ? <span style={{ color: 'red' }}>selected: {value}</span> : null}
         onChange={onChange}
       >
-        <Select.Group title="Group 1">
-          <Select.Item value="Apple">Apple</Select.Item>
-          <Select.Item value="Orange">Orange</Select.Item>
-        </Select.Group>
-        <Select.Group title="Group 2">
-          <Select.Item value="Watermelon">Watermelon</Select.Item>
-          <Select.Item value="Banana">Banana</Select.Item>
-        </Select.Group>
+        <Select.Item value="Apple">Apple</Select.Item>
+        <Select.Item value="Orange">Orange</Select.Item>
+        <Select.Item value="Watermelon">Watermelon</Select.Item>
+        <Select.Item value="Banana">Banana</Select.Item>
       </Select>
     );
   },

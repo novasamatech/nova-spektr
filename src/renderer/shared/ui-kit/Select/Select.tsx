@@ -170,7 +170,7 @@ const Root = <T extends string>({
           <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true} className="w-full rounded-md">
             <button
               className={cnTw(
-                'box-border cursor-pointer border px-1.75 text-text-secondary',
+                'box-border cursor-pointer border px-2.75 text-text-secondary',
                 'w-full rounded-md text-left text-footnote hover:shadow-card-shadow',
                 {
                   'h-8.5': height === 'sm',
@@ -195,7 +195,7 @@ const Root = <T extends string>({
             placeholder={placeholder}
             readOnly={!onSearch}
             className={cnTw(
-              'min-h-[34px] w-full rounded-md border-none px-2 outline-1 placeholder:text-footnote placeholder:text-text-secondary focus-visible:outline-2',
+              'min-h-[34px] w-full rounded-md border-none px-3 outline-1 placeholder:text-footnote placeholder:text-text-secondary focus-visible:outline-2',
               { 'h-10.5': height === 'md' },
               { 'cursor-default': !onSearch },
             )}
@@ -208,7 +208,7 @@ const Root = <T extends string>({
           gutter={8}
           sameWidth
           className={cnTw(
-            'relative z-50 flex max-h-[300px] flex-col overflow-auto overscroll-contain rounded-md border px-1 py-2',
+            'relative z-50 flex max-h-[300px] flex-col overflow-auto overscroll-contain rounded-md border p-1',
             {
               'border-filter-border bg-input-background': theme === 'light',
               'border-border-dark bg-background-dark': theme === 'dark',
@@ -260,7 +260,7 @@ const Item = memo(({ value, indent = 0, children }: PropsWithChildren<ItemProps>
     }
   }, [isSelected, children, setSelectedItemContent]);
 
-  const paddingLeft = indent > 0 ? `${8 + indent * 16}px` : undefined;
+  const paddingLeft = indent > 0 ? `${24 + indent * 16}px` : undefined;
   const itemStyle = paddingLeft ? { paddingLeft } : undefined;
 
   return (
@@ -270,7 +270,7 @@ const Item = memo(({ value, indent = 0, children }: PropsWithChildren<ItemProps>
       clickOnEnter={true}
       value={value}
       className={cnTw(
-        'flex cursor-pointer scroll-m-2 items-center gap-2 rounded px-3 py-2 outline-none data-[active]:pb-[7px] data-[active-item]:outline-2',
+        'flex cursor-pointer scroll-m-2 items-center gap-2 rounded p-2 outline-none data-[active-item]:outline-2',
         {
           'hover:bg-action-background-hover data-[active-item]:bg-tab-background': theme === 'light',
           'text-text-tertiary hover:bg-background-item-hover data-[active-item]:bg-background-item-hover':
@@ -280,7 +280,7 @@ const Item = memo(({ value, indent = 0, children }: PropsWithChildren<ItemProps>
       style={itemStyle}
       onClick={() => onItemSelect(value)}
     >
-      <div className="h-full w-full truncate">{children}</div>
+      {children}
     </ComboboxItem>
   );
 });
