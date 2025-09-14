@@ -31,21 +31,13 @@ import { Graphics } from '../Graphics/Graphics';
 import { useTheme } from '../Theme/useTheme';
 
 type ContextProps = {
-  invalid?: boolean;
-  disabled?: boolean;
-  height?: 'sm' | 'md';
-  testId?: string;
-  onSearch?: (query: string) => void;
   onItemSelect: (value: string) => void;
-  selectedValue?: string | null;
-  setSelectedItemContent: (content: ReactNode) => void;
   registerItem: (value: string, content: ReactNode) => void;
   unregisterItem: (value: string) => void;
 };
 
 const Context = createContext<ContextProps>({
   onItemSelect: () => {},
-  setSelectedItemContent: () => {},
   registerItem: () => {},
   unregisterItem: () => {},
 });
@@ -131,6 +123,14 @@ const Root = <T extends string>({
     }
   }, [open]);
 
+  useEffect(() => {
+    if (value && registeredItems.has(value)) {
+      setSelectedItemContent(registeredItems.get(value));
+    } else if (!value) {
+      setSelectedItemContent(null);
+    }
+  }, [value, registeredItems]);
+
   const registerItem = useCallback((value: string, content: ReactNode) => {
     setRegisteredItems(prev => new Map(prev.set(value, content)));
   }, []);
@@ -210,20 +210,26 @@ const Root = <T extends string>({
               { 'cursor-default': !onSearch },
             )}
             onBlur={() => {
-              onOpenChange(false);
+              setTimeout(() => {
+                onOpenChange(false);
+              }, 100);
             }}
           />
         )}
         <ComboboxPopover
           gutter={8}
           sameWidth
+          portal
           className={cnTw(
-            'relative z-50 flex max-h-[min(var(--popover-available-height,300px),300px)] flex-col overflow-auto overscroll-contain rounded-md border p-1',
+            'pointer-events-auto relative z-[9999]', // necessary for proper render in portal
+            'text-body', // duplicate of the root rule bc the content will be rendered outside
+            'flex max-h-[300px] flex-col overflow-auto overscroll-contain rounded-md border p-1 shadow-lg',
             {
               'border-filter-border bg-input-background': theme === 'light',
               'border-border-dark bg-background-dark': theme === 'dark',
             },
           )}
+          data-theme={theme}
         >
           {children}
           {registeredItems.size === 0 && (
@@ -254,23 +260,14 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
 };
 
 const Item = memo(({ value, indent = 0, children }: PropsWithChildren<ItemProps>) => {
-  const { selectedValue, setSelectedItemContent, registerItem, unregisterItem, onItemSelect } = useContext(Context);
+  const { registerItem, unregisterItem, onItemSelect } = useContext(Context);
   const { theme } = useTheme();
-
-  const isSelected = selectedValue === value;
 
   // Register this item on mount and update when children change
   useEffect(() => {
     registerItem(value, children);
     return () => unregisterItem(value);
   }, [value, children, registerItem, unregisterItem]);
-
-  // Set selected item content when selected
-  useEffect(() => {
-    if (isSelected) {
-      setSelectedItemContent(children);
-    }
-  }, [isSelected, children, setSelectedItemContent]);
 
   const paddingLeft = indent > 0 ? `${24 + indent * 16}px` : undefined;
   const itemStyle = paddingLeft ? { paddingLeft } : undefined;
