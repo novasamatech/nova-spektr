@@ -19,6 +19,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -96,6 +97,7 @@ const Root = <T extends string>({
   const { t } = useI18n();
 
   const { theme } = useTheme();
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [searchValue, setSearchValue] = useState('');
   const [selectedItemContent, setSelectedItemContent] = useState<ReactNode>(null);
   const [registeredItems, setRegisteredItems] = useState<Map<string, ReactNode>>(new Map());
@@ -111,6 +113,13 @@ const Root = <T extends string>({
     setIsOpen(requestedOpen);
     onToggle?.(requestedOpen);
     onSearch?.('');
+
+    setTimeout(() => {
+      // Restore focus to trigger button when closing
+      if (!requestedOpen) {
+        triggerRef.current?.focus();
+      }
+    }, 0);
   };
 
   useEffect(() => {
@@ -169,6 +178,7 @@ const Root = <T extends string>({
         {!isOpen ? (
           <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true} className="w-full rounded-md">
             <button
+              ref={triggerRef}
               className={cnTw(
                 'box-border cursor-pointer border px-2.75 text-text-secondary',
                 'w-full rounded-md text-left text-footnote hover:shadow-card-shadow',
