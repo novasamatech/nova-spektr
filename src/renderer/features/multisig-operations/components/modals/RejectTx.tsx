@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import {
   type Asset,
@@ -18,7 +18,6 @@ import { Modal } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { operationDetailsUtils } from '@/entities/operations';
-import { priceProviderModel } from '@/entities/price';
 import { OperationResult, getExtrinsic, isXcmTransaction } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
@@ -92,10 +91,6 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
       },
     ];
   }, [chain, signAccount, rejectTx]);
-
-  useEffect(() => {
-    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
-  }, []);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
