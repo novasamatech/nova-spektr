@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { assert, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
-import { AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
+import { Account, AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -224,7 +224,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
               <div className="flex items-center gap-1 text-footnote">
                 <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
                 <WalletIcon type={WalletType.MULTISIG} size={16} />
-                <FootnoteText className="shrink-0">{t('walletDetails.multisig.multisigWallet')}</FootnoteText>
+                <Account accountId={multisigAccount.accountId} chain={chain} hideIcon variant="short" />
                 <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
                 <ChainIcon chain={chain} size={16} />
                 <FootnoteText className="truncate">{chain.name}</FootnoteText>
