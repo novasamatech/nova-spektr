@@ -223,7 +223,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
               <div className="flex items-center gap-1 text-footnote">
                 <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
                 <WalletIcon type={WalletType.MULTISIG} size={16} />
-                <Account accountId={multisigAccount.accountId} chain={chain} hideIcon variant="short" />
+                <Account accountId={multisigAccount.multisigAccountId} chain={chain} hideIcon variant="short" />
                 <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
                 <ChainIcon chain={chain} size={16} />
                 <FootnoteText className="truncate">{chain.name}</FootnoteText>
