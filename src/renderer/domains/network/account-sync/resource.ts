@@ -134,7 +134,7 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
           if (nullable(proxyFromIndexer)) continue;
 
           // Check if this account is a pure proxy using the PureProxy table data
-          const isPureProxy = pureProxyLookup.has(`${accountId}:${chainId}`);
+          const isPureProxy = proxyFromIndexer.isPureProxy || pureProxyLookup.has(`${accountId}:${chainId}`);
 
           result.push({
             type: 'proxy',
