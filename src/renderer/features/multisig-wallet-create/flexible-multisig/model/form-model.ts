@@ -96,8 +96,10 @@ const $existingMultisig = combine(
 
     return (
       accounts.find(a => {
-        if (!accountUtils.isAnyMultisigAccount(a)) return false;
-        return a.accountId === multisigAccountId;
+        return (
+          a.accountId === multisigAccountId &&
+          (accountUtils.isMultisigAccount(a) || accountUtils.isFlexibleMultisigAccount(a))
+        );
       }) ?? null
     );
   },
@@ -116,8 +118,8 @@ const $existingProxy = combine(
           return a.connections.some(c => c.proxyAccountId === existingMultisig.accountId);
         }
 
-        if (accountUtils.isFlexibleProxiedAccount(a)) {
-          return a.proxyAccountId === existingMultisig.accountId;
+        if (accountUtils.isFlexibleMultisigAccount(a)) {
+          return a.multisigAccountId === existingMultisig.accountId;
         }
 
         return false;

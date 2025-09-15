@@ -4,7 +4,6 @@ import { type AnyAccount } from '@/domains/network';
 
 import {
   type FlexibleMultisigAccount,
-  type FlexibleProxiedAccount,
   type MultisigAccount,
   type ProxiedAccount,
   type VaultBaseAccount,
@@ -52,7 +51,7 @@ export interface MultisigWallet extends Wallet {
 
 export interface FlexibleMultisigWallet extends Wallet {
   type: WalletType.FLEXIBLE_MULTISIG;
-  accounts: (FlexibleMultisigAccount | FlexibleProxiedAccount)[];
+  accounts: FlexibleMultisigAccount[];
 }
 
 export interface ProxiedWallet extends Wallet {
