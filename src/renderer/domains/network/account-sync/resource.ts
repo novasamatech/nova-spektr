@@ -86,6 +86,7 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
       PURE_PROXY_QUERY,
       { accounts: accountIds },
     );
+    //todo remove when reindexing is done
     const pureProxies = pureProxiesResponse.pureProxies.nodes.map(x => pureProxySchema.parse(x));
 
     // Create lookup set for pure proxies
