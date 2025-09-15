@@ -45,7 +45,7 @@ const $input = combine(
 
     for (const account of wallet.accounts) {
       let availableChains;
-      if (accountUtils.isFlexibleProxiedAccount(account)) {
+      if (accountUtils.isFlexibleMultisigAccount(account)) {
         const chain = chains[account.chainId];
         availableChains = chain ? [chain] : [];
       } else {

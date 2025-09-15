@@ -8,7 +8,6 @@ import {
   type FlexibleMultisigAccount,
   type FlexibleMultisigCreated,
   type FlexibleMultisigWallet,
-  type FlexibleProxiedAccount,
   type MultisigAccount,
   type MultisigCreated,
   type MultisigWallet,
@@ -348,10 +347,7 @@ sample({
     const flexibleMultisigAccounts = allAccounts.filter(accountUtils.isFlexibleMultisigAccount);
     const syncedChains = new Set(syncResult.chains);
 
-    const createWallets: WalletCreateParams<
-      FlexibleMultisigAccount | FlexibleProxiedAccount,
-      FlexibleMultisigWallet
-    >[] = [];
+    const createWallets: WalletCreateParams<FlexibleMultisigAccount, FlexibleMultisigWallet>[] = [];
 
     const deleteWallets = new Set<Wallet>();
     const deleteAccounts = new Set(flexibleMultisigAccounts.filter((account) => syncedChains.has(account.chainId)));
@@ -370,11 +366,6 @@ sample({
       if (existingFlexibleMultisig) {
         deleteAccounts.delete(existingFlexibleMultisig);
       } else {
-        const multisigIdentity = identities[syncedMultisig.accountId];
-        const multisigName = multisigIdentity
-          ? identityService.getFullName(multisigIdentity)
-          : toShortAddress(toAddress(syncedMultisig.accountId), 5);
-
         const chainGroups = groupBy(matchingProxies, (proxy) => proxy.chainId);
 
         for (const [chainId, proxieds] of entries(chainGroups)) {
@@ -383,30 +374,28 @@ sample({
           const firstProxied = proxieds.at(0);
           if (nullable(firstProxied)) continue;
 
-          const multisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
-            name: multisigName,
-            type: 'chain',
-            accountType: AccountType.FLEX_MULTISIG,
-            accountId: syncedMultisig.accountId,
-            chainId: chainId,
-            threshold: syncedMultisig.threshold,
-            cryptoType: isEthereumAccountId(syncedMultisig.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-            signingType: SigningType.MULTISIG,
-            signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
-          };
-
           const proxiedIdentity = identities[firstProxied.accountId];
           const proxiedName = proxiedIdentity
             ? identityService.getFullName(proxiedIdentity)
             : toShortAddress(toAddress(firstProxied.accountId), 5);
-          const proxiedAccount: Omit<FlexibleProxiedAccount, 'id' | 'walletId'> = {
-            ...firstProxied,
-            name: proxiedName,
+
+          const multisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
+            accountType: AccountType.FLEX_MULTISIG,
             type: 'chain',
-            accountType: AccountType.FLEX_PROXIED,
-            cryptoType: isEthereumAccountId(firstProxied.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-            signingType: SigningType.WATCH_ONLY,
+            chainId: chainId,
+            name: proxiedName,
+            accountId: firstProxied.accountId,
+
+            multisigAccountId: syncedMultisig.accountId,
+            threshold: syncedMultisig.threshold,
+            signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
+
             deposit: firstProxied.deposit.toString(),
+            blockNumber: firstProxied.blockNumber,
+            extrinsicIndex: firstProxied.extrinsicIndex,
+
+            cryptoType: isEthereumAccountId(firstProxied.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+            signingType: SigningType.MULTISIG,
           };
 
           createWallets.push({
@@ -414,7 +403,7 @@ sample({
               name: proxiedName,
               type: WalletType.FLEXIBLE_MULTISIG,
             },
-            accounts: [proxiedAccount, multisigAccount],
+            accounts: [multisigAccount],
           });
         }
       }

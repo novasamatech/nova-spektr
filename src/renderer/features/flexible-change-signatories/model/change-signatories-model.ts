@@ -38,15 +38,12 @@ const $walletAccounts = combine($initiatorWallet, accounts.$list, (wallet, accou
   return accountService.filterAccountsByWallet(accountList, wallet.id);
 });
 
-const $initiator = $walletAccounts.map((acc) => acc.find((a) => accountUtils.isFlexibleProxiedAccount(a)) ?? null);
-const $multisigAccount = $walletAccounts.map(
-  (acc) => acc.find((a) => accountUtils.isFlexibleMultisigAccount(a)) ?? null,
-);
+const $flexibleMultisigAccount = $walletAccounts.map((acc) => acc.find(accountUtils.isFlexibleMultisigAccount) ?? null);
 
-const $chainId = $initiator.map((acc) => acc?.chainId ?? null);
+const $chainId = $flexibleMultisigAccount.map((acc) => acc?.chainId ?? null);
 const $chain = combine($chainId, networkModel.$chains, (chainId, chains) => (chainId ? chains[chainId] : null));
 
-const $walletSignatories = combine($multisigAccount, accounts.$list, (account, accounts) => {
+const $walletSignatories = combine($flexibleMultisigAccount, accounts.$list, (account, accounts) => {
   if (!account) return null;
 
   const ownAccounts = accounts.filter((a) =>
@@ -86,7 +83,7 @@ sample({
 
 sample({
   clock: flow.open,
-  source: $multisigAccount,
+  source: $flexibleMultisigAccount,
   fn: (acc) => acc?.threshold ?? null,
   target: formModel.thresholdChanged,
 });
@@ -100,7 +97,7 @@ sample({
 
 const $signatories = createSignatoriesStore({
   chain: $chain,
-  initiator: $initiator,
+  initiator: $flexibleMultisigAccount,
   accounts: accounts.$list,
 });
 
@@ -111,7 +108,7 @@ const $signatory = $signatories.map((signatories) => signatories.at(0) ?? null);
 const $reassignTx = combine(
   {
     chain: $chain,
-    multisigAccount: $multisigAccount,
+    multisigAccount: $flexibleMultisigAccount,
     signer: $signatory,
     newMultisigAccountId: formModel.$newMultisigAccountId,
   },
@@ -131,7 +128,7 @@ const $reassignTx = combine(
 
 const { $tx: $flexibleTx, $route } = createComplexTxStore({
   api: formModel.$api,
-  initiator: $initiator,
+  initiator: $flexibleMultisigAccount,
   signatory: $signatory,
   accounts: accounts.$list,
   chain: $chain,
@@ -197,7 +194,7 @@ const { $errors } = createTxValidationStore({
 const $isTheSameMultisig = combine(
   {
     newMultisigAccountId: formModel.$newMultisigAccountId,
-    multisigAccount: $multisigAccount,
+    multisigAccount: $flexibleMultisigAccount,
   },
   ({ multisigAccount, newMultisigAccountId }) => {
     if (!newMultisigAccountId || !multisigAccount) return false;
@@ -249,7 +246,7 @@ const formSubmitted = sample({
     tx: $tx,
     coreTx: $coreTx,
     route: $route,
-    initiator: $initiator,
+    initiator: $flexibleMultisigAccount,
     signatory: $signatory,
     chain: $chain,
   },
@@ -293,7 +290,7 @@ sample({
   source: {
     chain: $chain,
     tx: $tx,
-    initiator: $initiator,
+    initiator: $flexibleMultisigAccount,
     signer: $signatory,
   },
   filter: ({ chain, tx, initiator, signer }) =>
