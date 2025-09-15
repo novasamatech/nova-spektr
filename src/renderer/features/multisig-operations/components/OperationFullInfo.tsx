@@ -75,7 +75,7 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
           <SmallTitleText className="mr-auto">{t('operation.detailsTitle')}</SmallTitleText>
 
           {(!operation.callData || explorerLink) && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               {!operation.callData && (
                 <Button pallet="primary" variant="text" size="sm" onClick={toggleCallDataModal}>
                   {t('operation.addCallDataButton')}
