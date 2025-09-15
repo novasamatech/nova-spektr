@@ -22,7 +22,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
   const isSubmitOpen = activeStep === Step.SUBMIT;
 
   const chain = useUnit(formModel.$chain);
-  const proxyAddress = useUnit(assignModel.$proxyAddress);
+  const proxyAddress = useUnit(assignModel.$proxiedAddress);
   const pendingProxyCreate = useUnit(assignModel.$pendingProxyCreate);
   const flexibleMultisigCreated = useUnit(assignModel.$flexibleMultisigCreated);
 
