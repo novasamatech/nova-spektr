@@ -47,12 +47,10 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
   const multisigAccount = walletAccounts.find(accountUtils.isFlexibleMultisigAccount);
-  const proxiedAccount = walletAccounts.find(accountUtils.isFlexibleProxiedAccount);
 
   assert(multisigAccount, 'Multisig account not found.');
-  assert(proxiedAccount, 'Proxied account not found.');
 
-  const chain = chains[proxiedAccount.chainId];
+  const chain = chains[multisigAccount.chainId];
 
   const canCreateProxy = useMemo(() => {
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
@@ -116,9 +114,9 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
           <FootnoteText className="text-text-tertiary"></FootnoteText>
 
           <div className="-mx-2">
-            {proxiedAccount ? (
-              <ContactItem address={proxiedAccount.accountId} addressPrefix={chain.addressPrefix}>
-                <AccountExplorers accountId={proxiedAccount.accountId} chain={chain} />
+            {multisigAccount ? (
+              <ContactItem address={multisigAccount.accountId} addressPrefix={chain.addressPrefix}>
+                <AccountExplorers accountId={multisigAccount.accountId} chain={chain} />
               </ContactItem>
             ) : (
               <BodyText>{t('walletDetails.multisig.addressInProgress')}</BodyText>
@@ -191,10 +189,10 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
-                  address={toAddress(proxiedAccount?.accountId, { prefix: chain?.addressPrefix })}
+                  address={toAddress(multisigAccount?.accountId, { prefix: chain?.addressPrefix })}
                   type={wallet.type}
                   size={42}
-                  theme={isEthereumAccountId(proxiedAccount?.accountId) ? 'ethereum' : 'polkadot'}
+                  theme={isEthereumAccountId(multisigAccount?.accountId) ? 'ethereum' : 'polkadot'}
                 />
               </div>
               {!isRenameInputOpen && (
@@ -214,7 +212,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
             {multisigAccount && !isRenameInputOpen && (
               <div className="ml-auto shrink-0 duration-300 animate-in fade-in-0">
-                <Slot id={overviewSlot} props={{ walletAccounts: [proxiedAccount] }} />
+                <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
               </div>
             )}
           </Box>
