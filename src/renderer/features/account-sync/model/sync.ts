@@ -397,7 +397,7 @@ sample({
       if (matchingProxies.length === 0) continue;
 
       const existingFlexibleMultisig = flexibleMultisigAccounts.find(
-        (account) => account.accountId === syncedMultisig.accountId,
+        (account) => account.multisigAccountId === syncedMultisig.accountId,
       );
 
       if (existingFlexibleMultisig) {
