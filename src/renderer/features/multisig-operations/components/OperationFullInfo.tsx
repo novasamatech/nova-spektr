@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { type CallData, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -7,9 +7,11 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
+import { Box, Json, Modal } from '@/shared/ui-kit';
 import { type MultisigOperation, accounts, multisigOperation } from '@/domains/network';
-import { useNetworkData } from '@/entities/network';
+import { networkModel, useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
+import { decodeCallData } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
@@ -36,12 +38,18 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
   const { api, chain, connection, extendedChain } = useNetworkData(operation.chainId);
   const allAccounts = useUnit(accounts.$list);
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
+  const chains = useUnit(networkModel.$chains);
 
   const explorerLink = operationDetailsUtils.getMultisigExtrinsicLink(
     operation.callHash,
     operation.indexCreated,
     operation.blockCreated,
     chain?.explorers,
+  );
+
+  const jsonArgs = useMemo(
+    () => operation.callData && decodeCallData(api, account.accountId, operation.callData, chains),
+    [api, account.accountId, operation.callData, chains],
   );
 
   const hasAccount = allAccounts.some(a => {
@@ -67,12 +75,29 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
           <SmallTitleText className="mr-auto">{t('operation.detailsTitle')}</SmallTitleText>
 
           {(!operation.callData || explorerLink) && (
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
               {!operation.callData && (
                 <Button pallet="primary" variant="text" size="sm" onClick={toggleCallDataModal}>
                   {t('operation.addCallDataButton')}
                 </Button>
               )}
+
+              {jsonArgs && (
+                <Modal size="lg" height="fit">
+                  <Modal.Trigger>
+                    <Button className="p-0" size="sm" variant="text">
+                      {t('operation.viewJSON.button')}
+                    </Button>
+                  </Modal.Trigger>
+                  <Modal.Title close>{t('operation.viewJSON.label')}</Modal.Title>
+                  <Modal.Content>
+                    <Box padding={5}>
+                      <Json value={jsonArgs} name="operation" />
+                    </Box>
+                  </Modal.Content>
+                </Modal>
+              )}
+
               {explorerLink && (
                 <InfoLink url={explorerLink} className="ml-0.5 flex items-center gap-x-0.5 text-footnote">
                   <span>{t('operation.explorerLink')}</span>
