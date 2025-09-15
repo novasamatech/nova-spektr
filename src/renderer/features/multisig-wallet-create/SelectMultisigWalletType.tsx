@@ -73,14 +73,12 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
     id: 'flexibleMultisig',
     value: 'flexibleMultisig',
     title: t('createMultisigAccount.flexibleMultisig.flexible'),
-    description: t('createMultisigAccount.selectMultisigDescription.flexibleDescription'),
   } as const;
 
   const regularMultisigOption = {
     id: 'regularMultisig',
     value: 'regularMultisig',
     title: t('createMultisigAccount.multisig'),
-    description: t('createMultisigAccount.selectMultisigDescription.regularDescription'),
   } as const;
 
   return (
