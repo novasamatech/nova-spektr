@@ -1534,6 +1534,10 @@
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
+    "viewJSON": {
+      "button": "View JSON",
+      "label": "Operation details"
+    },
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
       "expiredDescription": "The operation isn’t valid anymore",
@@ -1559,8 +1563,11 @@
     "callData": {
       "continueButton": "Continue",
       "errorMessage": "Incorrect call data",
+      "errorTitle": "Call Data Error",
       "inputHint": "Visible only for you and signers",
       "inputPlaceholder": "0x00...",
+      "submitting": "Submitting call data...",
+      "success": "Call data submitted successfully",
       "title": "Enter call data"
     },
     "createdOperationDescription": "The changes will take effect after the other signatories sign.",

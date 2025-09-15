@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
-import { AccountType, type Chain, type Wallet, type WalletType } from '@/shared/core';
+import { type Chain, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
@@ -23,22 +23,23 @@ type Props = {
   onSelect: (wallet: Wallet) => unknown;
 };
 
-export const WalletGroup = memo((props: Props) => {
-  const { wallets, walletType, query, title, onSelect } = props;
+export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }: Props) => {
   const { t } = useI18n();
 
   const allAccounts = useUnit(accounts.$list);
   const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const chains = useUnit(networkModel.$chains);
 
-  const filteredWallets = performSearch({
-    query,
-    records: wallets,
-    getMeta: wallet => ({
-      allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
-    }),
-    weights: { name: 1, allAddresses: 0.8 },
-  });
+  const filteredWallets = useMemo(() => {
+    return performSearch({
+      query,
+      records: wallets,
+      getMeta: wallet => ({
+        allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
+      }),
+      weights: { name: 1, allAddresses: 0.8 },
+    });
+  }, [wallets, allAccounts, chains, query]);
 
   if (filteredWallets.length === 0) {
     return null;
@@ -61,16 +62,14 @@ export const WalletGroup = memo((props: Props) => {
         <Box gap={1} padding={[1, 0, 0]}>
           {filteredWallets.map(wallet => {
             const accountId = walletUtils.isRegularMultisig(wallet)
-              ? wallet.accounts.find(a => accountUtils.isMultisigAccount(a))?.accountId
-              : wallet.accounts.find(a => accountUtils.isFlexibleProxiedAccount(a))?.accountId;
+              ? wallet.accounts.find(accountUtils.isMultisigAccount)?.accountId
+              : wallet.accounts.find(accountUtils.isFlexibleMultisigAccount)?.accountId;
 
             let chain: Chain | null = null;
             let label: string | null = null;
 
             if (walletUtils.isFlexibleMultisig(wallet)) {
-              const chainId = wallet.accounts.find(
-                account => account.accountType === AccountType.FLEX_PROXIED,
-              )?.chainId;
+              const chainId = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount)?.chainId;
               chain = chainId ? chains[chainId] : null;
               label = t('wallets.flexibleMultisigFlexLabel');
             }

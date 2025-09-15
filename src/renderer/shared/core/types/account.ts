@@ -36,10 +36,22 @@ export interface MultisigAccount extends UniversalAccount {
   threshold: number;
 }
 
+/**
+ * Special account type for flexible multisig. It contains 2 accounts from
+ * chain, proxied account that works as facade and proxy account that is actual
+ * multisig account.
+ */
 export interface FlexibleMultisigAccount extends ChainAccount {
   accountType: AccountType.FLEX_MULTISIG;
+  // multisig account part
+  multisigAccountId: AccountId;
   signatories: Signatory[];
   threshold: number;
+
+  // proxied account part
+  deposit: string;
+  blockNumber: number;
+  extrinsicIndex: number;
 }
 
 export interface MultisigSignatoryAccount extends UniversalAccount {
@@ -69,15 +81,6 @@ export interface ProxiedConnection {
   proxyType: ProxyType;
 }
 
-export interface FlexibleProxiedAccount extends ChainAccount {
-  accountType: AccountType.FLEX_PROXIED;
-  proxyAccountId: AccountId;
-  delay: number;
-  deposit: string;
-  blockNumber: number;
-  extrinsicIndex: number;
-}
-
 export type DraftAccount<T extends AnyAccount> = Omit<NoID<T>, 'accountId' | 'walletId'>;
 
 export const enum AccountType {
@@ -90,7 +93,6 @@ export const enum AccountType {
   PROXIED = 'proxied',
   MULTISIG_SIGNATORY = 'multisig_signatory',
   FLEX_MULTISIG = 'flex_multisig',
-  FLEX_PROXIED = 'flex_proxied',
 }
 
 export const enum KeyType {
