@@ -38,7 +38,7 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
 
   const [isConfirmOpen, setConfirmOpen] = useState<boolean>(false);
 
-  const proxyAddress = useUnit(assignModel.$proxyAddress);
+  const proxyAddress = useUnit(assignModel.$proxiedAddress);
   const flexibleMultisigCreated = useUnit(assignModel.$flexibleMultisigCreated);
 
   const activeStep = useUnit(flexibleMultisigModel.$step);

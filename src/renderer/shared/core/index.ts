@@ -37,7 +37,6 @@ export type {
   VaultShardAccount,
   DraftAccount,
   FlexibleMultisigAccount,
-  FlexibleProxiedAccount,
 } from './types/account';
 
 export { AssetType, StakingType } from './types/asset';
