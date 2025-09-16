@@ -171,7 +171,6 @@ transactionSDK(multisigWalletFeature, {
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
         if (accountUtils.isFlexibleMultisigAccount(account)) {
-          // For flexible multisig: create proxy first, then wrap in multisig
           const encodedTransaction = transactionService.encodeTransaction(transaction, api);
 
           const proxyTransaction: ProxyTransaction = {
@@ -234,7 +233,6 @@ transactionSDK(multisigWalletFeature, {
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
         if (accountUtils.isFlexibleMultisigAccount(account)) {
-          // For flexible multisig: create proxy first, then wrap in multisig
           const originalExtrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
           const proxyTransaction: Transaction = {
