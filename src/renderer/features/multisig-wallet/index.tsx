@@ -187,7 +187,7 @@ transactionSDK(multisigWalletFeature, {
 
           const proxyExtrinsic = transactionService.encodeTransaction(proxyTransaction, api);
 
-          const flexibleMultisigTransaction: MultisigTransaction = {
+          return {
             type: 'decoded',
             section: 'multisig',
             method: 'asMulti',
@@ -198,12 +198,10 @@ transactionSDK(multisigWalletFeature, {
               call: proxyExtrinsic.callData,
               maxWeight,
             },
-          };
-
-          return flexibleMultisigTransaction;
+          } satisfies MultisigTransaction;
         }
 
-        const multisigTransaction: MultisigTransaction = {
+        return {
           type: 'decoded',
           section: 'multisig',
           method: 'asMulti',
@@ -214,9 +212,7 @@ transactionSDK(multisigWalletFeature, {
             call: encodedTransaction.callData,
             maxWeight,
           },
-        };
-
-        return multisigTransaction;
+        } satisfies MultisigTransaction;
       });
     }
   },
@@ -254,7 +250,7 @@ transactionSDK(multisigWalletFeature, {
 
           const proxyExtrinsic = getExtrinsic[proxyTransaction.type](proxyTransaction.args, api);
 
-          const flexibleMultisigTransaction: Transaction = {
+          return {
             type: TransactionType.MULTISIG_AS_MULTI,
             accountId: account.accountId,
             chainId: api.genesisHash.toHex(),
@@ -266,12 +262,10 @@ transactionSDK(multisigWalletFeature, {
               callHash: proxyExtrinsic.method.hash.toHex(),
               maxWeight,
             },
-          };
-
-          return flexibleMultisigTransaction;
+          } satisfies Transaction;
         }
 
-        const multisigTransaction: Transaction = {
+        return {
           type: TransactionType.MULTISIG_AS_MULTI,
           accountId: account.accountId,
           chainId: api.genesisHash.toHex(),
@@ -283,9 +277,7 @@ transactionSDK(multisigWalletFeature, {
             callHash: extrinsic.method.hash.toHex(),
             maxWeight,
           },
-        };
-
-        return multisigTransaction;
+        } satisfies Transaction;
       });
     }
   },
