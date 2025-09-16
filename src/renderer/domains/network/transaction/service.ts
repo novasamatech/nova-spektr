@@ -358,6 +358,13 @@ async function submitExtrinsic(
             });
           }
 
+          if (status.isFuture) {
+            resolve({
+              executed: false,
+              error: 'Invalid transaction: queued for future (nonce too high)',
+            });
+          }
+
           if (status.isInBlock) {
             for (const { event, phase } of events) {
               if (!phase.isApplyExtrinsic || !phase.asApplyExtrinsic.eq(txIndex)) continue;
