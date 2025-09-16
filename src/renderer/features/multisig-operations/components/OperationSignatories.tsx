@@ -105,7 +105,7 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                   explorers={connection.explorers}
                 >
                   <WalletIcon type={signatory.wallet.type} size={20} />
-                  <BodyText className="mr-auto text-inherit">{signatory.wallet.name}</BodyText>
+                  <BodyText className="mr-auto truncate text-inherit">{signatory.wallet.name}</BodyText>
                 </SignatoryCard>
               ))}
             </ul>
