@@ -64,7 +64,7 @@ const $results = createStore<Result[]>([]).reset(init);
 
 // effects
 
-const submitExtrinsicFx = createEffect(async (payloads: SubmitInput) => {
+const submitExtrinsicFx = createEffect((payloads: SubmitInput) => {
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
