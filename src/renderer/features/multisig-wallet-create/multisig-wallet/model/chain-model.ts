@@ -1,11 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createStore, sample } from 'effector';
-import { spread } from 'patronum';
 
-import { type Asset, type Chain, type Transaction } from '@/shared/core';
-import { series } from '@/shared/effector/series';
-import { TEST_ACCOUNTS, getNativeAsset, merge, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
+import { type Asset, type Chain, type ChainId } from '@/shared/core';
+import { series } from '@/shared/effector';
+import { TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -21,35 +20,24 @@ type ChainWithFeeAndBalance = {
   asset: Asset;
 };
 
-type ChainsWithFee = {
+type ChainFeeResult = {
   chain: Chain;
   fee: string | null;
 };
 
-const calculateFeeForChainFx = createEffect(
-  async ({ chain, tx, api }: { chain: Chain; tx: Transaction; api: ApiPromise | null }) => {
+// Cache for fee results - since remark tx parameters are always the same
+const feeCache = new Map<ChainId, string>();
+
+const calculateChainFeeFx = createEffect(
+  async ({ chain, api }: { chain: Chain; api: ApiPromise | null }): Promise<ChainFeeResult> => {
     if (!api) return { chain, fee: null };
 
+    // Check cache first
+    const cached = feeCache.get(chain.chainId);
+    if (cached) return { chain, fee: cached };
+
     try {
-      const fee = await transactionService.getTransactionFee(tx, api);
-      return { chain, fee };
-    } catch {
-      return { chain, fee: null };
-    }
-  },
-);
-
-const calculateFeesSeriesFx = series(calculateFeeForChainFx, { parallel: true });
-
-sample({
-  clock: [flowModel.$tx, flowModel.$initiator],
-  source: {
-    multisigChains: flowModel.$multisigChains,
-    apis: networkModel.$apis,
-    tx: flowModel.$tx,
-  },
-  fn: ({ multisigChains, apis, tx }) => {
-    return multisigChains.map(chain => {
+      // Use fixed remark transaction for fee estimation
       const fakeTx = transactionBuilder.buildRemark({
         chainId: chain.chainId,
         accountId: TEST_ACCOUNTS[0],
@@ -57,27 +45,42 @@ sample({
         signatories: [TEST_ACCOUNTS[0], TEST_ACCOUNTS[1]],
       });
 
-      const transaction = tx ? { ...tx, chainId: chain.chainId, accountId: TEST_ACCOUNTS[0] } : fakeTx;
-      return { chain, tx: transaction, api: apis[chain.chainId] ?? null };
-    });
+      const fee = await transactionService.getTransactionFee(fakeTx, api);
+
+      // Cache the result
+      feeCache.set(chain.chainId, fee);
+
+      return { chain, fee };
+    } catch {
+      return { chain, fee: null };
+    }
   },
-  target: calculateFeesSeriesFx,
+);
+
+// Calculate fees for all chains in series
+const calculateAllFeesFx = series(calculateChainFeeFx, { parallel: true });
+
+const $chainsWithFee = createStore<ChainFeeResult[]>([]).reset(flowModel.flow.close);
+
+// Trigger fee calculation only when APIs and chains are available
+sample({
+  clock: [networkModel.$apis, flowModel.$multisigChains],
+  source: {
+    multisigChains: flowModel.$multisigChains,
+    apis: networkModel.$apis,
+  },
+  filter: ({ multisigChains, apis }) => multisigChains.length > 0 && Object.keys(apis).length > 0,
+  fn: ({ multisigChains, apis }) => {
+    return multisigChains.map(chain => ({
+      chain,
+      api: apis[chain.chainId] ?? null,
+    }));
+  },
+  target: calculateAllFeesFx,
 });
 
-const $availableChains = createStore<ChainWithFeeAndBalance[]>([]).reset(flowModel.flow.close);
-const $unavailableChains = createStore<ChainWithFeeAndBalance[]>([]).reset(flowModel.flow.close);
-const $chainsWithFee = createStore<ChainsWithFee[]>([]).reset(flowModel.flow.close);
-
 sample({
-  clock: calculateFeesSeriesFx.doneData,
-  source: $chainsWithFee,
-  fn: (chains, newChains) => {
-    return merge({
-      a: chains,
-      b: newChains,
-      mergeBy: e => e.chain.chainId,
-    });
-  },
+  clock: calculateAllFeesFx.doneData,
   target: $chainsWithFee,
 });
 
@@ -86,34 +89,48 @@ const $filteredChainsWithFee = combine(
   ({ chains, initiators }) => {
     if (!initiators) return [];
 
-    return chains.filter(chain =>
-      initiators.some(initiator => accountService.isAccountAvailableOnChain(initiator, chain.chain)),
+    return chains.filter(({ chain }) =>
+      initiators.some(initiator => accountService.isAccountAvailableOnChain(initiator, chain)),
     );
   },
 );
 
-sample({
-  clock: [$filteredChainsWithFee, flowModel.$signer],
-  source: {
+const $chainsData = combine(
+  {
     signatories: flowModel.$allChainsSignatories,
     initiators: flowModel.$initiators,
     balances: balanceModel.$balanceMap,
     chains: $filteredChainsWithFee,
+    chosenChainFee: flowModel.$fee,
+    currentChain: formModel.$chain,
   },
-  filter: ({ chains, initiators }) => chains.length > 0 && nonNullable(initiators),
-  fn: ({ signatories, balances, chains, initiators }) => {
-    const availableChains = [];
-    const unavailableChains = [];
+  ({ signatories, balances, chains, initiators, chosenChainFee, currentChain }) => {
+    // Apply filter logic
+    if (chains.length === 0 || !nonNullable(initiators)) {
+      return {
+        availableChains: [],
+        unavailableChains: [],
+      };
+    }
+
+    const availableChains: ChainWithFeeAndBalance[] = [];
+    const unavailableChains: ChainWithFeeAndBalance[] = [];
 
     for (const { chain, fee } of chains) {
+      let feeToUse = fee;
+
+      if (currentChain && chain.chainId === currentChain.chainId) {
+        feeToUse = chosenChainFee.toString();
+      }
+
       const asset = getNativeAsset(chain.assets);
       const initiator =
         initiators && initiators.find(initiator => accountService.isAccountAvailableOnChain(initiator, chain));
 
-      const signatory = signatories[chain.chainId].at(0);
+      const signatory = signatories[chain.chainId]?.at(0);
 
       if (nullable(signatory) || nullable(initiator)) {
-        unavailableChains.push({ chain, fee: fee ?? '0', asset, balance: '0' });
+        unavailableChains.push({ chain, fee: feeToUse ?? '0', asset, balance: '0' });
         continue;
       }
 
@@ -121,16 +138,16 @@ sample({
       const withdrawable = withdrawableAmountBN(balance);
 
       if (nullable(fee)) {
-        unavailableChains.push({ chain, fee: '0', asset, balance: withdrawable.toString() });
+        unavailableChains.push({ chain, fee: feeToUse ?? '0', asset, balance: withdrawable.toString() });
         continue;
       }
 
       if (withdrawable.lt(new BN(fee))) {
-        unavailableChains.push({ chain, fee, asset, balance: withdrawable.toString() });
+        unavailableChains.push({ chain, fee: feeToUse ?? '0', asset, balance: withdrawable.toString() });
         continue;
       }
 
-      availableChains.push({ chain, fee, asset, balance: withdrawable.toString() });
+      availableChains.push({ chain, fee: feeToUse ?? '0', asset, balance: withdrawable.toString() });
     }
 
     return {
@@ -138,31 +155,38 @@ sample({
       unavailableChains,
     };
   },
-  target: spread({
-    availableChains: $availableChains,
-    unavailableChains: $unavailableChains,
-  }),
+);
+
+const $availableChains = createStore<ChainWithFeeAndBalance[]>([]).reset(flowModel.flow.close);
+const $unavailableChains = createStore<ChainWithFeeAndBalance[]>([]).reset(flowModel.flow.close);
+
+sample({
+  clock: $chainsData,
+  fn: ({ availableChains }) => availableChains,
+  target: $availableChains,
+});
+
+sample({
+  clock: $chainsData,
+  fn: ({ unavailableChains }) => unavailableChains,
+  target: $unavailableChains,
 });
 
 sample({
   clock: $availableChains,
   source: formModel.form.fields.chainId.$value,
-  filter: (currentChainId, availableChains) => {
-    // Only auto-select if:
-    // 1. No chain is currently selected, OR
-    // 2. Current chain is not in available chains
-
+  filter: (currentChainId: string | null, availableChains: ChainWithFeeAndBalance[]) => {
     if (!currentChainId) return availableChains.length > 0;
 
     return availableChains.length > 0 && !availableChains.some(chain => chain.chain.chainId === currentChainId);
   },
-  fn: (_, availableChains) => availableChains.at(0)!.chain.chainId,
+  fn: (_: string | null, availableChains: ChainWithFeeAndBalance[]) => availableChains.at(0)!.chain.chainId,
   target: formModel.form.fields.chainId.change,
 });
 
 export const chainSelectorModel = {
   $availableChains,
   $unavailableChains,
-  $isLoading: calculateFeesSeriesFx.pending,
-  $filteredChains: $filteredChainsWithFee.map(chains => chains.map(chain => chain.chain)),
+  $isLoading: calculateAllFeesFx.pending,
+  $filteredChains: $filteredChainsWithFee.map(chains => chains.map(({ chain }) => chain)),
 };
