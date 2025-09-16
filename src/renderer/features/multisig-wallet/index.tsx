@@ -170,6 +170,39 @@ transactionSDK(multisigWalletFeature, {
       const extrinsic = transactionService.createExtrinsic(transaction, api);
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
+        if (accountUtils.isFlexibleMultisigAccount(account)) {
+          // For flexible multisig: create proxy first, then wrap in multisig
+          const encodedTransaction = transactionService.encodeTransaction(transaction, api);
+
+          const proxyTransaction: ProxyTransaction = {
+            type: 'decoded',
+            section: 'proxy',
+            method: 'proxy',
+            args: {
+              real: account.accountId,
+              forceProxyType: 'Any',
+              call: encodedTransaction.callData,
+            },
+          };
+
+          const proxyExtrinsic = transactionService.encodeTransaction(proxyTransaction, api);
+
+          const flexibleMultisigTransaction: MultisigTransaction = {
+            type: 'decoded',
+            section: 'multisig',
+            method: 'asMulti',
+            args: {
+              threshold: account.threshold,
+              otherSignatories,
+              maybeTimepoint: null,
+              call: proxyExtrinsic.callData,
+              maxWeight,
+            },
+          };
+
+          return flexibleMultisigTransaction;
+        }
+
         const multisigTransaction: MultisigTransaction = {
           type: 'decoded',
           section: 'multisig',
@@ -182,23 +215,6 @@ transactionSDK(multisigWalletFeature, {
             maxWeight,
           },
         };
-
-        if (accountUtils.isFlexibleMultisigAccount(account)) {
-          const multisigExtrinsic = transactionService.encodeTransaction(multisigTransaction, api);
-
-          const proxyTransaction: ProxyTransaction = {
-            type: 'decoded',
-            section: 'proxy',
-            method: 'proxy',
-            args: {
-              real: account.accountId,
-              forceProxyType: 'Any',
-              call: multisigExtrinsic.callData,
-            },
-          };
-
-          return proxyTransaction;
-        }
 
         return multisigTransaction;
       });
@@ -221,6 +237,40 @@ transactionSDK(multisigWalletFeature, {
       const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
+        if (accountUtils.isFlexibleMultisigAccount(account)) {
+          // For flexible multisig: create proxy first, then wrap in multisig
+          const originalExtrinsic = getExtrinsic[transaction.type](transaction.args, api);
+
+          const proxyTransaction: Transaction = {
+            type: TransactionType.PROXY,
+            accountId: account.accountId,
+            chainId: api.genesisHash.toHex(),
+            args: {
+              real: account.accountId,
+              forceProxyType: 'Any',
+              call: originalExtrinsic.method.toHex(),
+            },
+          };
+
+          const proxyExtrinsic = getExtrinsic[proxyTransaction.type](proxyTransaction.args, api);
+
+          const flexibleMultisigTransaction: Transaction = {
+            type: TransactionType.MULTISIG_AS_MULTI,
+            accountId: account.accountId,
+            chainId: api.genesisHash.toHex(),
+            args: {
+              threshold: account.threshold,
+              otherSignatories,
+              maybeTimepoint: null,
+              call: proxyExtrinsic.method.toHex(),
+              callHash: proxyExtrinsic.method.hash.toHex(),
+              maxWeight,
+            },
+          };
+
+          return flexibleMultisigTransaction;
+        }
+
         const multisigTransaction: Transaction = {
           type: TransactionType.MULTISIG_AS_MULTI,
           accountId: account.accountId,
@@ -234,23 +284,6 @@ transactionSDK(multisigWalletFeature, {
             maxWeight,
           },
         };
-
-        if (accountUtils.isFlexibleMultisigAccount(account)) {
-          const multisigExtrinsic = getExtrinsic[multisigTransaction.type](multisigTransaction.args, api);
-
-          const proxyTransaction: Transaction = {
-            type: TransactionType.PROXY,
-            accountId: account.accountId,
-            chainId: api.genesisHash.toHex(),
-            args: {
-              real: account.accountId,
-              forceProxyType: 'Any',
-              call: multisigExtrinsic.method.toHex(),
-            },
-          };
-
-          return proxyTransaction;
-        }
 
         return multisigTransaction;
       });
