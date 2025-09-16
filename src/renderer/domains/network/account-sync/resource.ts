@@ -215,7 +215,7 @@ export const multisigAccountsProvider: AccountProvider<SyncedMultisigAccount> = 
 
     const parsed = response.accounts.nodes.map(x => multisigSchema.parse(x));
     // multisigs can be duplicated because each chain can provide own multisig account with same address
-    const processed = new Set<AccountId>();
+    const processed = new Set<AccountId>(accounts);
 
     // actual processing
     for (const signatory of parsed) {
