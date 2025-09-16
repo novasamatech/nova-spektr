@@ -195,9 +195,12 @@ export const Signatory = ({
     const selectedOption = options.flatMap(group => group.items).find(option => option.value.address === value);
     const newSignatory = selectedOption?.value;
 
+    const shouldClearName = value !== signatoryAddress && !selectedOption;
+    const newName = shouldClearName ? '' : signatoryName;
+
     signatoryModel.events.changeSignatory({
       index: signatoryIndex,
-      name: signatoryName,
+      name: newName,
       address: value,
       walletId: newSignatory?.walletId?.toString(), // will be undefined for contact
     });
@@ -273,7 +276,7 @@ export const Signatory = ({
       </Field>
       {!isOwnAccount && onDelete && (
         <IconButton
-          className="mt-9 self-start justify-self-center"
+          className="mb-1 self-end justify-self-center"
           name="delete"
           size={16}
           onClick={() => onDelete(signatoryIndex)}
