@@ -19,4 +19,5 @@ export type TaskDescription<T extends NonNullable<unknown> = any> = {
   weight: number;
   body: ComponentType<T & { transaction: Transaction | null }>;
   meta: T & { transaction: Transaction | null; tags: string[] };
+  hasVoted?: boolean;
 };
