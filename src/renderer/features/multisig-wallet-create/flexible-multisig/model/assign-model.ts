@@ -251,7 +251,7 @@ sample({
       nonNullable(successResult)
     );
   },
-  fn: ({ api, signatories, chain, name, threshold, multisigAccountId, proxiedAddress }) => {
+  fn: ({ api, signatories, chain, name, threshold, multisigAccountId, proxiedAddress, successResult }) => {
     const timepoint = successResult!.params.timepoint;
     const sortedSignatories = sortBy(
       signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address), walletId: a.walletId })),
@@ -310,7 +310,11 @@ sample({
   },
   filter: ({ api, chain, multisigAccountId, proxiedAddress, successResult }) => {
     return (
-      nonNullable(api) && nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(proxiedAddress) && nonNullable(successResult)
+      nonNullable(api) &&
+      nonNullable(chain) &&
+      nonNullable(multisigAccountId) &&
+      nonNullable(proxiedAddress) &&
+      nonNullable(successResult)
     );
   },
   fn: ({ api, chain, name, multisigAccountId, proxiedAddress, successResult }) => {
