@@ -11,6 +11,7 @@ export class TransferModalElements {
   static signatoryOptionLocator = TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR_OPTION;
   static xcmSelectorLocator = TEST_IDS.OPERATIONS.XCM_SELECTOR;
   static networkOption = TEST_IDS.MULTISIG.NETWORK_OPTION;
+  static sendingAmountError = `${TEST_IDS.VALIDATIONS.BALANCE}-sending-amount`;
 
   static getUrl(chainId: string, assetId: number): string {
     if (chainId === undefined || assetId === undefined) {

@@ -55,12 +55,14 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
   private async expectTransferFeeNotZero(): Promise<void> {
     const feeRow = this.page.getByTestId(TransferModalElements.feeRowLocator);
     const assetBalance = feeRow.getByTestId(TransferModalElements.feeValueLocator);
-    const feeText = await assetBalance.textContent();
 
-    const numericMatch = feeText?.match(/(\d+\.?\d*)/);
-    const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
+    await expect(async () => {
+      const feeText = await assetBalance.textContent();
+      const numericMatch = feeText?.match(/(\d+\.?\d*)/);
+      const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
 
-    expect(feeValue).toBeGreaterThan(0);
+      expect(feeValue).toBeGreaterThan(0);
+    }).toPass({ timeout: 5000, intervals: [200, 300, 500] });
   }
 
   private async waitForContinueButtonToBeEnabled(): Promise<void> {
@@ -73,9 +75,18 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     }
   }
 
+  public async waitForAlertToDisapeear(): Promise<void> {
+    const alert = this.page.getByTestId('alert');
+
+    await step('Wait for alert to disappear', async () => {
+      await expect(alert).toHaveCount(0, { timeout: 5000 });
+    });
+  }
+
   public async fillAmount(amount: string): Promise<void> {
     await step(`Fill transfer amount: ${amount}`, async () => {
       await this.page.getByTestId(TransferModalElements.amountInputLocator).fill(amount);
+      await this.page.getByTestId(TransferModalElements.amountInputLocator).blur();
     });
   }
 
@@ -96,6 +107,23 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     await step('Choose signatory for transfer', async () => {
       await this.page.getByTestId(TransferModalElements.signatoryLocator).click();
       await this.page.getByTestId(TransferModalElements.signatoryOptionLocator).first().click();
+    });
+  }
+
+  public async isBalanceValidationOnPage(): Promise<void> {
+    await step('Check balance validation on transfer modal', async () => {
+      const balanceError = this.page.getByTestId(TEST_IDS.VALIDATIONS.BALANCE);
+      const amountError = this.page.getByTestId(TransferModalElements.sendingAmountError);
+
+      await Promise.race([
+        balanceError.waitFor({ state: 'visible', timeout: 5000 }),
+        amountError.waitFor({ state: 'visible', timeout: 5000 }),
+      ]).catch(async () => {
+        throw new Error('Validation did not appear within 5s.');
+      });
+
+      await expect(balanceError).toBeVisible({ timeout: 2000 });
+      await expect(amountError).toBeVisible({ timeout: 2000 });
     });
   }
 

@@ -29,6 +29,10 @@ export const TEST_IDS = {
     INFO_BUTTON: 'common-info-button',
     APPLY_BUTTON: 'common-apply-button',
   },
+  WALLET_MANAGEMENT: {
+    WALLET_SEARCH: 'wallet-search-input',
+    WALLET_ITEM: 'wallet_item',
+  },
   OPERATIONS: {
     CONFIRM_NETWORK_FEE: 'operations-confirm-network-fee',
     ESTIMATE_FEE: 'operations-estimate-fee',
@@ -68,4 +72,9 @@ export const TEST_IDS = {
   },
   ADD_BUTTON: 'button-add',
   CLOSE_BUTTON: 'Icon:close',
+  VALIDATIONS: {
+    PERMISSION: 'permission-error',
+    BALANCE: 'balance-error',
+    FATAL: 'balance-error',
+  },
 } as const;
