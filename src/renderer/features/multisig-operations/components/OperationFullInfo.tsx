@@ -108,7 +108,7 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
           )}
         </div>
 
-        <div className="flex w-full flex-col gap-y-1">
+        <div className="flex w-full flex-1 flex-col gap-y-1">
           <OperationDetails operation={operation} />
 
           <Slot id={operationDetailsSlot} props={{ operation, showCoreTransaction }} />
