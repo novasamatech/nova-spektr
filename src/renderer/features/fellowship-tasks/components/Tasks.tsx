@@ -22,6 +22,12 @@ export const Tasks = () => {
 
   const groups = useMemo(() => groupBy(activeTasks, task => task.group), [activeTasks]);
 
+  const tasksCount = useMemo(() => {
+    const personalCount = groups.personal?.length ?? 0;
+    const generalCount = groups.general?.filter(task => !task.hasVoted).length ?? 0;
+    return personalCount + generalCount;
+  }, [groups]);
+
   if (nullable(input) || pending) {
     return (
       <div className="flex h-full grow flex-col items-center justify-center overflow-hidden rounded-xl border border-filter-border bg-card-background">
@@ -29,8 +35,6 @@ export const Tasks = () => {
       </div>
     );
   }
-
-  const tasksCount = (groups.personal?.length ?? 0) + (groups.general?.length ?? 0);
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border">

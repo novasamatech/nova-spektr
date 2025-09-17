@@ -100,12 +100,11 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                 <SignatoryCard
                   key={signatory.accountId}
                   accountId={signatory.accountId}
-                  addressPrefix={connection.addressPrefix}
+                  chain={connection}
                   status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
-                  explorers={connection.explorers}
                 >
                   <WalletIcon type={signatory.wallet.type} size={20} />
-                  <BodyText className="mr-auto text-inherit">{signatory.wallet.name}</BodyText>
+                  <BodyText className="mr-auto truncate text-inherit">{signatory.wallet.name}</BodyText>
                 </SignatoryCard>
               ))}
             </ul>
@@ -122,9 +121,8 @@ export const OperationSignatories = ({ operation, connection, account }: Props) 
                 <SignatoryCard
                   key={signatory.accountId}
                   accountId={signatory.accountId}
-                  addressPrefix={connection.addressPrefix}
+                  chain={connection}
                   status={operationDetailsUtils.getSignatoryStatus(operation.events, signatory.accountId)}
-                  explorers={connection.explorers}
                 >
                   <Address
                     title={operationDetailsUtils.getSignatoryName(
