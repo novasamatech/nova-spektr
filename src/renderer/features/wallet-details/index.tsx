@@ -1,3 +1,4 @@
+import { useGate } from 'effector-react';
 import { useState } from 'react';
 
 import { type XOR } from '@/shared/core/types/utility';
@@ -22,6 +23,7 @@ import { walletActionsSlot as watchOnlyActionsSlot } from '@/features/watch-only
 
 export { walletDetailsUtils } from './lib/utils';
 
+import { walletConnectForget } from './model/walletConnectForgot';
 import { WalletDetails } from './ui/components';
 
 export { overviewSlot as simpleOverviewSlot } from './ui/wallets/SimpleWalletDetails';
@@ -80,6 +82,7 @@ const DropdownItem = (props: DropdownItemProps) => {
 };
 
 walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
+  useGate(walletConnectForget.flow, { accounts: wallet.accounts });
   const [isWalletDetailsOpen, setIsWalletDetailsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -119,9 +122,16 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
       title = t('walletDetails.common.hideButton');
     }
 
+    let onForget;
+    if (walletUtils.isWalletConnectGroup(wallet)) {
+      onForget = () => {
+        walletConnectForget.forget(wallet);
+      };
+    }
+
     items.push({
       component: (
-        <ForgetWalletConfirm wallet={wallet} onClose={createModalCloseHandler()}>
+        <ForgetWalletConfirm wallet={wallet} onClose={createModalCloseHandler()} onForget={onForget}>
           <Dropdown.Item>
             <div className="flex items-center gap-2">
               <Icon name={icon} size={20} className="text-icon-accent" />
