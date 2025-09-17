@@ -58,7 +58,7 @@ const calculateChainFeeFx = createEffect(
 );
 
 // Calculate fees for all chains in series
-const calculateAllFeesFx = series(calculateChainFeeFx, { parallel: true });
+const calculateAllFeesFx = series(calculateChainFeeFx, { parallel: true, skipErrors: true });
 
 const $chainsWithFee = createStore<ChainFeeResult[]>([]).reset(flowModel.flow.close);
 
