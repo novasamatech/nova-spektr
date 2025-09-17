@@ -3,7 +3,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount, type ChainAccount, type UniversalAccount } from '@/domains/network';
 
-import { type NoID } from './general';
+import { type ChainId, type NoID } from './general';
 import { type ProxyType, type ProxyVariant } from './proxy';
 import { type Signatory } from './signatory';
 
@@ -34,6 +34,10 @@ export interface MultisigAccount extends UniversalAccount {
   accountType: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: number;
+
+  // Temp fields for freshly created user accounts , used for sync comparison with indexer metadata
+  blockNumber?: number; // Block number when this account was created
+  remarkChainId?: ChainId; // Chain ID where the remark was submitted
 }
 
 /**

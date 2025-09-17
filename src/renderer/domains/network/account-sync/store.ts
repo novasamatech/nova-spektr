@@ -5,7 +5,7 @@ import { entries, nullable } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { accounts } from '../account/store';
 
-import { multisigAccountsProvider, proxyAccountsProvider } from './resource';
+import { indexedBlocksProvider, multisigAccountsProvider, proxyAccountsProvider } from './resource';
 import { accountSyncService } from './service';
 import { type AccountProviderChain } from './types';
 
@@ -15,7 +15,7 @@ export const syncAccountsFx = attach({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
   },
-  effect: ({ chains, apis, accounts }) => {
+  effect: async ({ chains, apis, accounts }) => {
     const chainsToSync: Record<ChainId, AccountProviderChain> = {};
 
     for (const [chainId, chain] of entries(chains)) {
@@ -30,7 +30,8 @@ export const syncAccountsFx = attach({
     return accountSyncService.syncAccounts({
       accounts,
       chains: chainsToSync,
-      providers: [proxyAccountsProvider, multisigAccountsProvider],
+      accountsProviders: [proxyAccountsProvider, multisigAccountsProvider],
+      indexedBlocksProvider,
     });
   },
 });
