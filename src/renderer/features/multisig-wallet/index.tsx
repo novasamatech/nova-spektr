@@ -231,7 +231,6 @@ transactionSDK(multisigWalletFeature, {
 
       return transactionService.getExtrinsicWeight(multisigExtrinsic).then(maxWeight => {
         if (accountUtils.isFlexibleMultisigAccount(account)) {
-
           const proxyTransaction: Transaction = {
             type: TransactionType.PROXY,
             accountId: account.accountId,
