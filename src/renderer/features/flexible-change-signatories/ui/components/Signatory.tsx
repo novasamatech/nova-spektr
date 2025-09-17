@@ -221,7 +221,7 @@ export const Signatory = ({
       </Box>
       {!isOwnAccount && onDelete && (
         <IconButton
-          className="mt-9 self-start justify-self-center"
+          className="mb-1 self-end justify-self-start"
           name="delete"
           size={16}
           onClick={() => onDelete(signatoryIndex)}
