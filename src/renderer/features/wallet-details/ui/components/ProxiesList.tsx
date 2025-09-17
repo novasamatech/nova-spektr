@@ -44,10 +44,14 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   });
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    removeProxyModel.flowStarted({
-      proxied: walletAccounts[0] as ProxiedAccount,
-      proxy: proxyAccount,
-    });
+    const proxiedAccount = walletAccounts.find((account): account is ProxiedAccount => 'deposit' in account);
+
+    if (proxiedAccount) {
+      removeProxyModel.flowStarted({
+        proxied: proxiedAccount,
+        proxy: proxyAccount,
+      });
+    }
   };
 
   return (

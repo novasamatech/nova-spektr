@@ -39,7 +39,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
+  const hasProxies = useUnit(walletDetailsModel.$hasProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
   const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
