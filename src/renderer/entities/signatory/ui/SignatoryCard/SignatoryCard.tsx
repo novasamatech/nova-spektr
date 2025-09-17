@@ -1,11 +1,11 @@
 import { type PropsWithChildren } from 'react';
 
-import { type Explorer } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Icon, type IconNames } from '@/shared/ui';
+import { AccountExplorers } from '@/shared/ui-entities';
 import { type MultisigEvent } from '@/domains/network';
-import { ExplorersPopover } from '@/entities/wallet';
 
 const IconProps: Record<MultisigEvent['status'], { className: string; name: IconNames }> = {
   approve: { className: 'text-text-positive', name: 'checkmarkOutline' },
@@ -15,22 +15,14 @@ const IconProps: Record<MultisigEvent['status'], { className: string; name: Icon
 type Props = {
   className?: string;
   accountId: AccountId;
-  explorers?: Explorer[];
-  addressPrefix?: number;
+  chain?: Chain;
   status: MultisigEvent['status'] | null;
 };
 
-export const SignatoryCard = ({
-  className,
-  accountId,
-  explorers,
-  addressPrefix,
-  status,
-  children,
-}: PropsWithChildren<Props>) => {
+export const SignatoryCard = ({ className, accountId, chain, status, children }: PropsWithChildren<Props>) => {
   const statusProps = status ? IconProps[status] : null;
 
-  const button = (
+  return (
     <div
       className={cnTw(
         'group flex flex-1 cursor-pointer items-center justify-between gap-x-2 rounded-sm px-2 py-1.5 text-text-secondary',
@@ -39,12 +31,14 @@ export const SignatoryCard = ({
       )}
     >
       {children}
-      <Icon name="details" size={16} className="text-icon-hover opacity-0 transition-opacity group-hover:opacity-100" />
-      {statusProps ? (
+      {chain && (
+        <div className={cnTw(statusProps && 'opacity-0 transition-opacity group-hover:opacity-100')}>
+          <AccountExplorers accountId={accountId} chain={chain} />
+        </div>
+      )}
+      {statusProps && (
         <Icon size={16} className={cnTw('group-hover:hidden', statusProps.className)} name={statusProps.name} />
-      ) : null}
+      )}
     </div>
   );
-
-  return <ExplorersPopover button={button} address={accountId} explorers={explorers} addressPrefix={addressPrefix} />;
 };
