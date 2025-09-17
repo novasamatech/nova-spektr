@@ -119,7 +119,10 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
                   ))}
                 </div>
                 <div className="mt-auto pt-6">
-                  <InfoLink url="#" className="flex items-center gap-x-1">
+                  <InfoLink
+                    url="https://docs.novaspektr.io/wallet-management/flexible-multisig-wallet"
+                    className="flex items-center gap-x-1"
+                  >
                     <Trans t={t} i18nKey="createMultisigAccount.selectMultisigDescription.flexibleWikiLink" />
                     <Icon name="link" size={12} className="text-inherit" />
                   </InfoLink>
@@ -156,7 +159,10 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
                   ))}
                 </div>
                 <div className="mt-auto pt-6">
-                  <InfoLink url="#" className="flex items-center gap-x-1">
+                  <InfoLink
+                    url="https://docs.novaspektr.io/wallet-management/multisig-wallet"
+                    className="flex items-center gap-x-1"
+                  >
                     <Trans t={t} i18nKey="createMultisigAccount.selectMultisigDescription.regularWikiLink" />
                     <Icon name="link" size={12} className="text-inherit" />
                   </InfoLink>
