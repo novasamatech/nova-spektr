@@ -80,6 +80,10 @@ accountSDK(multisigWalletFeature, {
     if (accountUtils.isFlexibleMultisigAccount(account)) {
       return {
         title: 'Flexible multisig',
+        subTitle: t('accountsStructure.multisigThreshold', {
+          threshold: account.threshold,
+          total: account.signatories.length,
+        }),
         color: '#E85649',
         background: 'linear-gradient(180deg, #E85649 53.45%, #8707D5 80.32%)',
       };
