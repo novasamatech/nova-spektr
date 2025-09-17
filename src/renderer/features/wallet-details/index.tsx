@@ -122,6 +122,8 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
       title = t('walletDetails.common.hideButton');
     }
 
+    // TODO refactor
+    // abstract feature wallet details shouldn't know about wallet connect
     let onForget;
     if (walletUtils.isWalletConnectGroup(wallet)) {
       onForget = () => {
