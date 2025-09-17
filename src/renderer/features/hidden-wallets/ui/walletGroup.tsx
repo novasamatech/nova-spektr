@@ -2,14 +2,14 @@ import { useUnit } from 'effector-react';
 import { t } from 'i18next';
 import { useMemo } from 'react';
 
-import { AccountType, type Chain, type Wallet, WalletType } from '@/shared/core';
+import { type Chain, type Wallet, WalletType } from '@/shared/core';
 import { createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Checkbox } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { FiatBalance } from '@/entities/price';
-import { walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { hiddenWalletsBalancesModel } from '../model/balances';
 
@@ -96,10 +96,9 @@ export const WalletGroup = (props: Props) => {
             let chain: Chain | null = null;
             let label: string | null = null;
 
+            // TODO incorrect connection between features, this data should be inserted other way, by slot on smth
             if (walletUtils.isFlexibleMultisig(wallet)) {
-              const chainId = wallet.accounts.find(
-                (account) => account.accountType === AccountType.FLEX_PROXIED,
-              )?.chainId;
+              const chainId = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount)?.chainId;
               chain = chainId ? chains[chainId] : null;
               label = t('wallets.flexibleMultisigFlexLabel');
             }

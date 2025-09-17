@@ -196,7 +196,9 @@ const ForgetWallet = ({ wallet, onClose, onForget, children, isModalOpen, setIsM
       confirmText={t('walletDetails.common.forgetButton')}
       type="warning"
       title={t('walletDetails.common.removeWalletTitle')}
-      description={t('walletDetails.common.removeWalletDesc', { walletName: wallet.name })}
+      description={
+        <span className="break-all">{t('walletDetails.common.removeWalletDesc', { walletName: wallet.name })}</span>
+      }
       onCancel={onClose}
       onConfirm={forgetWallet}
     >

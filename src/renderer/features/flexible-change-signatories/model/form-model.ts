@@ -131,9 +131,9 @@ const $isMultisigExists = combine(
   ({ multisigAccountId, accounts }) => {
     if (nullable(multisigAccountId)) return false;
 
-    return Boolean(
+    return nonNullable(
       accounts.find((a) => {
-        if (!accountUtils.isAnyMultisigAccount(a)) return false;
+        if (!accountUtils.isMultisigAccount(a)) return false;
         return a.accountId === multisigAccountId;
       }),
     );
