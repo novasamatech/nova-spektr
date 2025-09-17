@@ -102,7 +102,20 @@ sample({
     const updateAccounts: ProxiedAccount[] = [];
 
     const deleteWallets = new Set<Wallet>();
-    const deleteAccounts = new Set(proxiedAccounts.filter((account) => syncedChains.has(account.chainId)));
+    const deleteAccounts = new Set(
+      proxiedAccounts.filter((account) => {
+        if (!syncedChains.has(account.chainId)) {
+          return false;
+        }
+
+        if (!account.blockNumber) {
+          return true;
+        } else {
+          const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
+          return lastIndexedBlock && lastIndexedBlock >= account.blockNumber;
+        }
+      }),
+    );
 
     const proxiedGroups = groupBy(syncedProxyAccounts, (a) => a.accountId);
 
@@ -281,7 +294,18 @@ sample({
     const createWallets: WalletCreateParams<MultisigAccount, MultisigWallet>[] = [];
 
     const deleteWallets = new Set<Wallet>();
-    const deleteAccounts = new Set(syncedChains.size > 0 ? multisigAccounts : []);
+    const deleteAccounts = new Set(
+      syncedChains.size > 0
+        ? multisigAccounts.filter((account) => {
+            if (!account.remarkChainId || !account.blockNumber) {
+              return true;
+            } else {
+              const lastIndexedBlock = syncResult.indexedBlocks.get(account.remarkChainId);
+              return lastIndexedBlock && lastIndexedBlock >= account.blockNumber;
+            }
+          })
+        : [],
+    );
 
     for (const syncedAccount of syncedMultisigAccounts) {
       const existingMultisigAccount = multisigAccounts.find((a) => a.accountId === syncedAccount.accountId);
@@ -350,7 +374,20 @@ sample({
     const createWallets: WalletCreateParams<FlexibleMultisigAccount, FlexibleMultisigWallet>[] = [];
 
     const deleteWallets = new Set<Wallet>();
-    const deleteAccounts = new Set(flexibleMultisigAccounts.filter((account) => syncedChains.has(account.chainId)));
+    const deleteAccounts = new Set(
+      flexibleMultisigAccounts.filter((account) => {
+        if (!syncedChains.has(account.chainId)) {
+          return false;
+        }
+
+        if (!account.blockNumber) {
+          return true;
+        } else {
+          const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
+          return lastIndexedBlock && lastIndexedBlock >= account.blockNumber;
+        }
+      }),
+    );
 
     for (const syncedMultisig of syncedMultisigAccounts) {
       const matchingProxies = syncedProxyAccounts.filter((proxy) =>
@@ -360,7 +397,7 @@ sample({
       if (matchingProxies.length === 0) continue;
 
       const existingFlexibleMultisig = flexibleMultisigAccounts.find(
-        (account) => account.accountId === syncedMultisig.accountId,
+        (account) => account.multisigAccountId === syncedMultisig.accountId,
       );
 
       if (existingFlexibleMultisig) {
