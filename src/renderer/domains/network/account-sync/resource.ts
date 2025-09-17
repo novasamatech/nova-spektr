@@ -25,7 +25,7 @@ const chainIdSchema = z.string().transform((id, ctx) => {
 
 // proxieds
 
-const PROXIED_ACCOUNTS_QUERY = gql`
+const PROXY_ACCOUNT_QUERY = gql`
   query Proxieds($accounts: [String!]) {
     proxieds(filter: { proxyAccountId: { in: $accounts }, delay: { equalTo: 0 } }) {
       nodes {
@@ -59,7 +59,7 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
     // subquery request
     const client = new GraphQLClient(INDEXER_URL);
     const response = await client.request<{ proxieds: { nodes: unknown[] } }, { accounts: AccountId[] }>(
-      PROXIED_ACCOUNTS_QUERY,
+      PROXY_ACCOUNT_QUERY,
       { accounts },
     );
     const parsed = response.proxieds.nodes.map(x => proxySchema.parse(x));
