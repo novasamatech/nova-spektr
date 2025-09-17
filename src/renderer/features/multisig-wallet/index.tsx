@@ -171,8 +171,6 @@ transactionSDK(multisigWalletFeature, {
 
       return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
         if (accountUtils.isFlexibleMultisigAccount(account)) {
-          const encodedTransaction = transactionService.encodeTransaction(transaction, api);
-
           const proxyTransaction: ProxyTransaction = {
             type: 'decoded',
             section: 'proxy',
@@ -229,11 +227,10 @@ transactionSDK(multisigWalletFeature, {
       assert(signatory, 'Signatory not found');
 
       const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
-      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
+      const multisigExtrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
-      return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
+      return transactionService.getExtrinsicWeight(multisigExtrinsic).then(maxWeight => {
         if (accountUtils.isFlexibleMultisigAccount(account)) {
-          const originalExtrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
           const proxyTransaction: Transaction = {
             type: TransactionType.PROXY,
@@ -242,7 +239,7 @@ transactionSDK(multisigWalletFeature, {
             args: {
               real: account.accountId,
               forceProxyType: 'Any',
-              call: originalExtrinsic.method.toHex(),
+              call: multisigExtrinsic.method.toHex(),
             },
           };
 
@@ -271,8 +268,8 @@ transactionSDK(multisigWalletFeature, {
             threshold: account.threshold,
             otherSignatories,
             maybeTimepoint: null,
-            call: extrinsic.method.toHex(),
-            callHash: extrinsic.method.hash.toHex(),
+            call: multisigExtrinsic.method.toHex(),
+            callHash: multisigExtrinsic.method.hash.toHex(),
             maxWeight,
           },
         } satisfies Transaction;
