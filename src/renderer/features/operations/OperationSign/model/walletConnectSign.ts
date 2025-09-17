@@ -1,5 +1,6 @@
 import { type SignerPayloadJSON } from '@polkadot/types/types';
 import { type SessionTypes } from '@walletconnect/types';
+import { SDK_ERRORS } from '@walletconnect/utils';
 import { attach, createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { nanoid } from 'nanoid';
@@ -7,7 +8,14 @@ import { combineEvents, spread } from 'patronum';
 
 import { type HexString, type WcAccount } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { assert, createTxMetadata, nonNullable, upgradeNonce } from '@/shared/lib/utils';
+import {
+  type WalletConnectErrorInfo,
+  assert,
+  createTxMetadata,
+  getWalletConnectErrorInfo,
+  nonNullable,
+  upgradeNonce,
+} from '@/shared/lib/utils';
 import { type AnyAccount, type AnyAccountDraft, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -24,6 +32,7 @@ const flow = createGate<{ payloads: ExtrinsicSigningPayload[]; accounts: AnyAcco
   defaultState: { payloads: [], accounts: [] },
 });
 const $step = createStore<Step>('idle');
+const $error = createStore<WalletConnectErrorInfo | null>(null);
 
 const $signingPayloads = flow.state.map(({ payloads }) => payloads);
 const $accounts = flow.state.map(({ accounts }) => accounts);
@@ -120,8 +129,18 @@ sample({
 
 sample({
   clock: getSessionFx.fail,
-  fn: () => 'rejected' as const,
-  target: $step,
+  fn: (error) => {
+    const errorInfo = getWalletConnectErrorInfo(error, SDK_ERRORS);
+
+    return {
+      step: 'rejected' as const,
+      error: errorInfo,
+    };
+  },
+  target: spread({
+    step: $step,
+    error: $error,
+  }),
 });
 
 // Signing
@@ -130,8 +149,18 @@ sample({
   clock: signFx.fail,
   source: $pending,
   filter: (id, { params }) => params.id === id,
-  fn: () => 'failed' as const,
-  target: $step,
+  fn: (_, { error }) => {
+    const errorInfo = getWalletConnectErrorInfo(error, SDK_ERRORS);
+
+    return {
+      step: 'failed' as const,
+      error: errorInfo,
+    };
+  },
+  target: spread({
+    step: $step,
+    error: $error,
+  }),
 });
 
 sample({
@@ -144,7 +173,7 @@ sample({
 
 sample({
   clock: flow.close,
-  target: $step.reinit,
+  target: [$step.reinit, $error.reinit],
 });
 
 // Main signing flow
@@ -292,5 +321,6 @@ export const walletConnectSign = {
   $transactions,
   $step,
   $signed,
+  $error,
   flow,
 };
