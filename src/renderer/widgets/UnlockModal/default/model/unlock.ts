@@ -211,8 +211,8 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: unlockFormAggregate.$isMultisig,
-  filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
+  source: unlockFormAggregate.$isAnyMultisig,
+  filter: (isAnyMultisig, results) => isAnyMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
 });
