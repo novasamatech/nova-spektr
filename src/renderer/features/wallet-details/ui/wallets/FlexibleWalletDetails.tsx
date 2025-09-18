@@ -12,12 +12,12 @@ import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
-import { operationDetailsUtils } from '@/entities/operations';
 import { ContactItem, WalletCardMd, accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
+import { walletDetailsUtils } from '../../lib/utils';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -56,7 +56,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   const chain = chains[multisigAccount.chainId];
 
-  const multisigAccountName = operationDetailsUtils.getSignatoryName(
+  const multisigAccountName = walletDetailsUtils.getSignatoryName(
     multisigAccount.multisigAccountId,
     multisigAccount.signatories,
     contacts,

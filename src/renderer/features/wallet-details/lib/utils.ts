@@ -1,4 +1,14 @@
-import { KeyType, type PolkadotVaultWallet, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import {
+  type Contact,
+  KeyType,
+  type PolkadotVaultWallet,
+  type Signatory,
+  type VaultChainAccount,
+  type VaultShardAccount,
+  type Wallet,
+} from '@/shared/core';
+import { toAddress, toShortAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
 
 import { ForgetStep, ReconnectStep } from './constants';
@@ -16,6 +26,7 @@ export const walletDetailsUtils = {
   isForgetModalOpen,
   getVaultAccountsMap,
   getMainAccounts,
+  getSignatoryName,
 };
 
 function isNotStarted(step: ReconnectStep, connected: boolean): boolean {
@@ -63,4 +74,29 @@ function getMainAccounts(accounts: (VaultChainAccount | VaultShardAccount[])[]):
   return accounts.filter(account => {
     return !accountUtils.isAccountWithShards(account) && account.keyType === KeyType.MAIN;
   }) as VaultChainAccount[];
+}
+
+function getSignatoryName(
+  signatoryId: AccountId,
+  txSignatories: Signatory[],
+  contacts: Contact[],
+  wallets: Wallet[],
+  addressPrefix?: number,
+): string {
+  const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
+    return collection.find(c => c.accountId === signatoryId);
+  };
+
+  // signatory data source priority: transaction -> contacts -> wallets -> address
+  const fromTx = finderFn(txSignatories)?.name;
+  if (fromTx) return fromTx;
+
+  const fromContact = finderFn(contacts)?.name;
+  if (fromContact) return fromContact;
+
+  const accounts = wallets.map(wallet => wallet.accounts).flat();
+  const fromAccount = finderFn(accounts)?.name;
+  if (fromAccount) return fromAccount;
+
+  return toShortAddress(toAddress(signatoryId, { prefix: addressPrefix }), 5);
 }
