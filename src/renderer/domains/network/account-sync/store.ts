@@ -42,7 +42,6 @@ export const syncAccountsFx = attach({
         };
       }
 
-      // Use task pool to queue sync operations and ensure only 1 concurrent execution
       return accountSyncService.syncAccounts({
         accounts,
         chains: chainsToSync,
@@ -54,25 +53,23 @@ export const syncAccountsFx = attach({
   }),
 });
 
-const $availableChainIds = combine(
+const $supportedChainIds = combine(
   {
     chains: networkModel.$chains,
   },
   ({ chains }) => {
-    const availableChains = new Set<ChainId>();
-    for (const provider of accountsProviders) {
-      for (const chain of provider.getSupportedChains(Object.values(chains))) {
-        availableChains.add(chain.chainId);
-      }
-    }
-    return Array.from(availableChains);
+    const chainIds = accountsProviders.flatMap(provider =>
+      provider.getSupportedChains(Object.values(chains)).map(chain => chain.chainId),
+    );
+
+    return [...new Set(chainIds)];
   },
 );
 
 const $isAllNetworksConnected = combine(
   {
     statuses: networkModel.$connectionStatuses,
-    chainIds: $availableChainIds,
+    chainIds: $supportedChainIds,
   },
   ({ statuses, chainIds }) => {
     return chainIds.every(chainId => {
