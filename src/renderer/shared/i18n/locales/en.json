@@ -250,7 +250,7 @@
     "multisig": "Multisig",
     "multisigCreationFeeLabel": "Additional cost",
     "multisigDeposit": "Multisig deposit:",
-    "multisigExistText": "The multisig wallet with the selected signatories and threshold already exists. Please change the signatories or threshold to create a new one.",
+    "multisigExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists and will be used for the flexible one.",
     "multisigExistTitle": "Multisig wallet already exists",
     "multisigHiddenExistText": "The multisig wallet with the selected signatories and threshold already exists but was previously removed by you.<br />Would you like to restore it now?",
     "multisigStep": "Step {step}.",
