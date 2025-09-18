@@ -60,12 +60,15 @@ const $supportedChainIds = combine(
   ({ chains: chainsMap }) => {
     const chains = Object.values(chainsMap);
 
-    const chainIds = accountsProviders.flatMap(provider =>
-      provider.getSupportedChains(chains).map(chain => chain.chainId),
-    );
+    const chainIds = new Set<ChainId>();
 
-    // Remove duplicates
-    return [...new Set(chainIds)];
+    for (const provider of accountsProviders) {
+      for (const chain of provider.getSupportedChains(chains)) {
+        chainIds.add(chain.chainId);
+      }
+    }
+
+    return Array.from(chainIds);
   },
 );
 
