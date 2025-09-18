@@ -10,12 +10,14 @@ import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, Separator } fro
 import { Account, AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
-import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
+import { ContactItem, WalletCardMd, accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
+import { walletDetailsUtils } from '../../lib/utils';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { WalletFiatBalance } from '../components';
@@ -40,17 +42,28 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
   const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
+  const contacts = useUnit(contactModel.$contacts);
+  const walletsList = useUnit(walletModel.$wallets);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [tab, setTab] = useState('1');
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
+
   const multisigAccount = walletAccounts.find(accountUtils.isFlexibleMultisigAccount);
 
   assert(multisigAccount, 'Multisig account not found.');
 
   const chain = chains[multisigAccount.chainId];
+
+  const multisigAccountName = walletDetailsUtils.getSignatoryName(
+    multisigAccount.multisigAccountId,
+    multisigAccount.signatories,
+    contacts,
+    walletsList,
+    chain.addressPrefix,
+  );
 
   const canCreateProxy = useMemo(() => {
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
@@ -222,7 +235,14 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
               <div className="flex items-center gap-1 text-footnote">
                 <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
                 <WalletIcon type={WalletType.MULTISIG} size={16} />
-                <Account accountId={multisigAccount.multisigAccountId} chain={chain} hideIcon variant="short" />
+                <Account
+                  accountId={multisigAccount.multisigAccountId}
+                  chain={chain}
+                  hideIcon
+                  hideAddress
+                  variant="short"
+                  title={multisigAccountName}
+                />
                 <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
                 <ChainIcon chain={chain} size={16} />
                 <FootnoteText className="truncate">{chain.name}</FootnoteText>

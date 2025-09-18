@@ -25,7 +25,11 @@ export const Locks = ({ onClick }: Props) => {
   const totalLockString = totalLock.toString();
 
   return (
-    <button disabled={isLoading || totalLock.isZero()} onClick={onClick}>
+    <button
+      disabled={isLoading || totalLock.isZero()}
+      className="cursor-pointer disabled:cursor-not-allowed"
+      onClick={onClick}
+    >
       <Plate className="flex h-[90px] w-[240px] items-center justify-between px-4 pt-3 pb-4.5">
         <div className="flex flex-col items-start gap-y-2">
           <div className="flex items-center gap-x-1">

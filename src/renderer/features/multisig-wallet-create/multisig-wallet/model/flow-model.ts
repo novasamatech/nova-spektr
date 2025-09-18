@@ -17,7 +17,7 @@ import {
 } from '@/shared/core';
 import { Step, TEST_ACCOUNTS, getNativeAsset, isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import {
-  createComplexTxStore,
+  createFeeCalculator,
   createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
@@ -27,7 +27,7 @@ import { type AnyAccount, type ChainAccount, accountService, accountSync, accoun
 import { balanceModel } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { type ExtrinsicResultParams, getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -184,7 +184,7 @@ sample({
   target: formModel.form.fields.chainId.change,
 });
 
-const $coreTx = combine(
+const $tx = combine(
   {
     threshold: formModel.form.fields.threshold.$value,
     chainId: formModel.form.fields.chainId.$value,
@@ -219,17 +219,18 @@ const $fakeTx = combine(
   },
 );
 
-const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
-  api: $api,
-  initiator: $initiator,
-  signatory: $signer,
-  accounts: accounts.$list,
-  chain: formModel.$chain,
-  transaction: $coreTx,
-  feeTransaction: $fakeTx,
+const $fakeExtrinsic = combine($api, $fakeTx, (api, tx) => {
+  if (nullable(api)) return null;
+  if (nullable(tx)) return null;
+  return getExtrinsic[tx.type](tx.args, api);
 });
 
-const $asset = formModel.$chain.map(chain => (chain ? getNativeAsset(chain.assets) : null));
+const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
+  extrinsic: $fakeExtrinsic,
+});
+
+const $route = combine($signer, signer => (signer ? [signer] : []));
+const $asset = combine(formModel.$chain, chain => (chain ? getNativeAsset(chain.assets) : null));
 
 const validator = createTxValidator();
 const { $errors } = createTxValidationStore({
@@ -260,7 +261,7 @@ const formSubmitted = sample({
   clock: formModel.form.validate,
   source: {
     tx: $tx,
-    coreTx: $coreTx,
+    coreTx: $tx,
     route: $route,
     signatory: $signer,
     initiator: $initiator,
@@ -358,7 +359,7 @@ sample({
 
     return nonNullable(chain) && isSubmitStep && isSuccessResult;
   },
-  fn: ({ signatories, chain, name, threshold }) => {
+  fn: ({ signatories, chain, name, threshold }, results) => {
     const sortedSignatories = sortBy(
       Array.from(signatories.values()).map(a => ({
         address: a.address,
@@ -373,6 +374,9 @@ sample({
     const accountIds = sortedSignatories.map(s => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
 
+    const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
+    const blockNumber = successResult ? (successResult.params as ExtrinsicResultParams)?.timepoint?.height : undefined;
+
     const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
       name: name.trim(),
@@ -382,6 +386,8 @@ sample({
       signingType: SigningType.MULTISIG,
       accountType: AccountType.MULTISIG,
       type: 'universal',
+      blockNumber,
+      remarkChainId: chain!.chainId,
     };
 
     return {

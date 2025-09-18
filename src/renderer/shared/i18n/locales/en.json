@@ -286,15 +286,16 @@
     "restoreButton": "Restore",
     "searchContactPlaceholder": "Search",
     "selectMultisigDescription": {
-      "featureFive": "<header>Address does not change</header> when changing signatories",
-      "featureFour": "<header>Change signatories and threshold</header> at any time",
-      "featureOne": "<header>Multiple Signatories</header> required to approve transactions",
-      "featureThree": "<header>Delegate authority</header> over certain operations",
-      "featureTwo": "<header>Set custom signatory threshold</header> which must be met for transactions to be executed",
-      "flexibleDescription": "Can modify signatories",
+      "flexibleFeatureOne": "<header>Update signatories as needed</header> while maintaining a fixed address.",
+      "flexibleFeatureThree": "<header>Works only on the network</header> where it was created.",
+      "flexibleFeatureTwo": "<header>Deposit is needed</header> to create the wallet (returned when deleted).",
       "flexibleNote": "Pure Proxy deposit will be reserved on your account. This wallet <header>only works on the network</header> it was created on.",
-      "regularDescription": "Regular multisig wallet",
-      "regularNote": "Only fee is required. This wallet <header>works on all networks.</header>"
+      "flexibleWikiLink": "Flexible Multisigs on Wiki",
+      "regularFeatureOne": "<header>Changing signatories or the threshold</header> requires creating a new multisig address.",
+      "regularFeatureThree": "<header>Works on all supported chains</header> from the start.",
+      "regularFeatureTwo": "<header>No deposit required</header>, you only pay standard network fees.",
+      "regularNote": "Only fee is required. This wallet <header>works on all networks.</header>",
+      "regularWikiLink": "Multisigs on Wiki"
     },
     "selectSigner": "Select signing wallet",
     "selectedSignatoriesTitle": "Selected signatories",
@@ -418,12 +419,14 @@
   },
   "emptyState": {
     "accountDescription": "You don't have an account in that network.",
+    "accountsNotFound": "Accounts not found",
     "addAccountButton": "Add account",
     "addNewAccountButton": "Add new account",
     "createAccount": "Create a new account",
     "createFlexibleMultisig": "Create a new flexible multisig wallet",
     "createMultisig": "Create a new multisig wallet",
-    "createOrImportAccount": "Create a new account or import an existing one"
+    "createOrImportAccount": "Create a new account or import an existing one",
+    "searchEmpty": "Nothing was found for the \"{query}\""
   },
   "fallbackScreen": {
     "message": "Sorry, something went wrong",

@@ -3,7 +3,6 @@ import { type PropsWithChildren } from 'react';
 
 import { LabelText } from '../Typography';
 
-import { RadioCard } from './RadioCard';
 import { Option } from './RadioOption';
 import { Select } from './RadioSelect';
 import { type RadioOption, type RadioResult } from './common/types';
@@ -57,5 +56,4 @@ const RadioGroupRoot = <T = never,>({
 export const RadioGroup = Object.assign(RadioGroupRoot, {
   Option,
   Select,
-  CardOption: RadioCard,
 });
