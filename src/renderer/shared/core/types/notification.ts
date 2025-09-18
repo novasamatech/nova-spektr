@@ -58,4 +58,4 @@ export type ProxyAction = BaseNotification & {
   proxiedWalletName: string;
 };
 
-export type Notification = MultisigCreated | MultisigOperationNotification | ProxyAction;
+export type Notification = FlexibleMultisigCreated | MultisigCreated | MultisigOperationNotification | ProxyAction;
