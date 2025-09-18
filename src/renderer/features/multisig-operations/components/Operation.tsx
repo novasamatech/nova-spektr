@@ -27,10 +27,9 @@ export const operationTitleTransformer = createTransformer<
 export const Operation = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
 
-  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
   const externalTitleNode = useTransformer(operationTitleTransformer, {
     operation,
-    showCoreTransaction,
+    showCoreTransaction: true,
   });
 
   let titleNode;
