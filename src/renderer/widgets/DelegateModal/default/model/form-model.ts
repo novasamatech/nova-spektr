@@ -92,16 +92,16 @@ const form: Form<FormParams> = createForm<FormParams>({
           source: combine({
             multisigDeposit: $multisigDeposit,
             fee: $fee,
-            isMultisig: $isMultisig,
+            hasAnyMultisig: $hasAnyMultisig,
             signatoryBalance: $signatoryBalance,
           }),
-          fn: (signatory, _fields, { multisigDeposit, fee, isMultisig, signatoryBalance }) => {
+          fn: (signatory, _fields, { multisigDeposit, fee, hasAnyMultisig, signatoryBalance }) => {
             if (nullable(signatory)) {
               return { message: 'transfer.noSignatoryError' };
             }
 
             const required = new BN(multisigDeposit).add(new BN(fee));
-            if (isMultisig && required.gt(new BN(signatoryBalance))) {
+            if (hasAnyMultisig && required.gt(new BN(signatoryBalance))) {
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
           },
@@ -114,12 +114,12 @@ const form: Form<FormParams> = createForm<FormParams>({
         return {
           source: combine({
             fee: $fee,
-            isMultisig: $isMultisig,
+            hasAnyMultisig: $hasAnyMultisig,
             network: $networkStore,
             delegateBalanceRange: $delegateBalanceRange,
             initiatorBalance: $initiatorBalance,
           }),
-          fn: (value, fields, { fee, isMultisig, network, delegateBalanceRange, initiatorBalance }) => {
+          fn: (value, fields, { fee, hasAnyMultisig, network, delegateBalanceRange, initiatorBalance }) => {
             if (!value) {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -137,7 +137,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               return { message: 'staking.notEnoughBalanceError' };
             }
 
-            if (!isMultisig && fields.initiator) {
+            if (!hasAnyMultisig && fields.initiator) {
               if (amountBN.add(new BN(fee)).gt(new BN(initiatorBalance))) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
               }
@@ -245,7 +245,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 });
 
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
-const $isMultisig = $route.map((route) => nonNullable(route.find(accountUtils.isMultisigAccount)));
+const $hasAnyMultisig = $route.map((route) => nonNullable(route.find(accountUtils.isAnyMultisigAccount)));
 const $isProxy = $proxyAccount.map((account) => nonNullable(account));
 
 // Multisig deposit calculation
@@ -385,7 +385,7 @@ export const formModel = {
 
   $api,
   $networkStore,
-  $isMultisig,
+  $hasAnyMultisig,
   $canSubmit,
 
   $fee,
