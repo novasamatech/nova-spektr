@@ -2,7 +2,6 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { t } from 'i18next';
-import { spread } from 'patronum';
 
 import { type ClaimChunkWithAccountId } from '@/shared/api/governance';
 import { type Asset, type Chain, type ProxiedAccount, type Transaction } from '@/shared/core';
@@ -449,14 +448,14 @@ const $canSubmit = combine(
 
 sample({
   clock: $txWrappers.updates,
-  fn: (txWrappers) => ({
-    isProxy: transactionService.hasProxy(txWrappers),
-    isMultisig: transactionService.hasMultisig(txWrappers),
-  }),
-  target: spread({
-    isProxy: $isProxy,
-    isMultisig: $isMultisig,
-  }),
+  fn: (txWrappers) => transactionService.hasMultisig(txWrappers),
+  target: $isMultisig,
+});
+
+sample({
+  clock: $txWrappers.updates,
+  fn: (txWrappers) => transactionService.hasProxy(txWrappers),
+  target: $isProxy,
 });
 
 sample({
