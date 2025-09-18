@@ -11,7 +11,6 @@ type Params = {
   retryDelay: ((attempt: number) => number) | number;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Task<T = unknown> = {
   fn: () => T | Promise<T>;
   pool: string;
