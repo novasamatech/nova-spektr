@@ -10,8 +10,10 @@ import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, Separator } fro
 import { Account, AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
-import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
+import { operationDetailsUtils } from '@/entities/operations';
+import { ContactItem, WalletCardMd, accountUtils, permissionUtils, walletModel } from '@/entities/wallet';
 import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
@@ -40,6 +42,8 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
   const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
+  const contacts = useUnit(contactModel.$contacts);
+  const walletsList = useUnit(walletModel.$wallets);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
@@ -51,6 +55,14 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   assert(multisigAccount, 'Multisig account not found.');
 
   const chain = chains[multisigAccount.chainId];
+
+  const multisigAccountName = operationDetailsUtils.getSignatoryName(
+    multisigAccount.multisigAccountId,
+    multisigAccount.signatories,
+    contacts,
+    walletsList,
+    chain.addressPrefix,
+  );
 
   const canCreateProxy = useMemo(() => {
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
@@ -228,7 +240,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
                   hideIcon
                   hideAddress
                   variant="short"
-                  title={multisigAccount.name}
+                  title={multisigAccountName}
                 />
                 <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
                 <ChainIcon chain={chain} size={16} />
