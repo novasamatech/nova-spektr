@@ -386,13 +386,13 @@ sample({
 
 // Multisig deposit calculation
 const $multisigThreshold = $route.map((route) => {
-  const multisig = route.find(accountUtils.isMultisigAccount);
-  if (!multisig) return null;
+  const anyMultisig = route.find(accountUtils.isAnyMultisigAccount);
+  if (!anyMultisig) return null;
 
-  return multisig.threshold;
+  return anyMultisig.threshold;
 });
 
-const { $multisigDeposit, $pending: _pendingDeposit } = createMultisigDeposit({
+const { $multisigDeposit } = createMultisigDeposit({
   $threshold: $multisigThreshold,
   $api: $api,
 });
