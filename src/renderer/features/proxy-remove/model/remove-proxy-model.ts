@@ -189,10 +189,10 @@ const { $errors } = createTxValidationStore({
   },
 });
 const $multisigThreshold = $route.map((route) => {
-  const multisig = route.find(accountUtils.isMultisigAccount);
-  if (!multisig) return null;
+  const anyMultisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+  if (!anyMultisigAccount) return null;
 
-  return multisig.threshold;
+  return anyMultisigAccount.threshold;
 });
 
 const { $multisigDeposit } = createMultisigDeposit({

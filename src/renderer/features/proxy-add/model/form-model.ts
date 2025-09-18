@@ -116,9 +116,9 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balanceMap,
-            isMultisig: $isMultisig,
+            isAnyMultisigAccount: $isAnyMultisigAccount,
           }),
-          fn: (initiator, form, { isMultisig, balances, ...params }) => {
+          fn: (initiator, form, { isAnyMultisigAccount, balances, ...params }) => {
             if (nullable(initiator)) {
               return { message: 'proxy.addProxy.noInitiatorError' };
             }
@@ -134,7 +134,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               getNativeAsset(form.chain.assets).assetId,
             );
 
-            const isNotEnoughTokens = isMultisig
+            const isNotEnoughTokens = isAnyMultisigAccount
               ? new BN(params.proxyDeposit).gte(new BN(transferableAmount(balance)))
               : new BN(params.proxyDeposit).add(new BN(params.fee)).gte(new BN(transferableAmount(balance)));
 
@@ -154,9 +154,9 @@ const form: Form<FormParams> = createForm<FormParams>({
             multisigDeposit: $multisigDeposit,
             proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balanceMap,
-            isMultisig: $isMultisig,
+            isAnyMultisigAccount: $isAnyMultisigAccount,
           }),
-          fn: (signatory, form, { isMultisig, balances, ...params }) => {
+          fn: (signatory, form, { isAnyMultisigAccount, balances, ...params }) => {
             if (nullable(signatory)) {
               return { message: 'proxy.addProxy.noSignatoryError' };
             }
@@ -173,7 +173,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             );
 
             const isNotEnoughMultisigTokens =
-              isMultisig &&
+              isAnyMultisigAccount &&
               new BN(params.multisigDeposit).add(new BN(params.fee)).gte(withdrawableAmountBN(signatoryBalance));
 
             if (isNotEnoughMultisigTokens) {
@@ -382,18 +382,18 @@ const { $errors } = createTxValidationStore({
   },
 });
 
-const $isMultisig = $route.map((route) => {
-  return route.some((acc) => accountUtils.isMultisigAccount(acc));
+const $isAnyMultisigAccount = $route.map((route) => {
+  return route.some((acc) => accountUtils.isAnyMultisigAccount(acc));
 });
 
 const $multisigThreshold = $route.map((route) => {
-  const multisig = route.find(accountUtils.isMultisigAccount);
-  if (!multisig) return null;
+  const isAnyMultisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+  if (!isAnyMultisigAccount) return null;
 
-  return multisig.threshold;
+  return isAnyMultisigAccount.threshold;
 });
 
-const { $multisigDeposit, $pending: _pendingDeposit } = createMultisigDeposit({
+const { $multisigDeposit } = createMultisigDeposit({
   $threshold: $multisigThreshold,
   $api: $api,
 });
@@ -603,7 +603,7 @@ export const formModel = {
 
   flowStarted,
   $api,
-  $isMultisig,
+  $isAnyMultisigAccount,
   $isChainConnected,
   $canSubmit,
 
