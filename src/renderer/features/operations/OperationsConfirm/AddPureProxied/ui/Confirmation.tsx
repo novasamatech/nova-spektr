@@ -39,7 +39,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const { chain, signatory, proxyDeposit, fee, multisigDeposit, route } = confirmStore.meta;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
 
-  const multisigAccount = route.find(accountUtils.isMultisigAccount);
+  const isAnyMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
   const nativeAsset = getNativeAsset(chain.assets);
 
@@ -72,7 +72,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <Fee fee={proxyDeposit} asset={nativeAsset} />
         </DetailRow>
 
-        {multisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit} />}
+        {isAnyMultisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit} />}
 
         <FeeWithLabel fee={fee} asset={nativeAsset} />
       </TransactionDetails>
