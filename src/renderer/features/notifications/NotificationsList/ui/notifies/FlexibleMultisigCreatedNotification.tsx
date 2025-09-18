@@ -13,7 +13,7 @@ type Props = {
 };
 
 export const FlexibleMultisigCreatedNotification = ({
-  notification: { threshold, signatories, multisigAccountName, walletId },
+  notification: { threshold, signatories, accountName, walletId },
 }: Props) => {
   const { t } = useI18n();
 
@@ -38,7 +38,7 @@ export const FlexibleMultisigCreatedNotification = ({
               values={{
                 threshold,
                 signatoriesLength: signatories.length,
-                name: multisigAccountName,
+                name: accountName,
               }}
             />
           </BodyText>
