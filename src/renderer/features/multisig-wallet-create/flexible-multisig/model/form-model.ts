@@ -96,10 +96,7 @@ const $existingMultisig = combine(
 
     return (
       accounts.find(a => {
-        return (
-          a.accountId === multisigAccountId &&
-          (accountUtils.isMultisigAccount(a) || accountUtils.isFlexibleMultisigAccount(a))
-        );
+        return a.accountId === multisigAccountId && accountUtils.isAnyMultisigAccount(a);
       }) ?? null
     );
   },

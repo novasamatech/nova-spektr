@@ -126,7 +126,7 @@ export const Confirmation = ({
 
         <hr className="w-full border-filter-border pr-2" />
 
-        {accountUtils.isMultisigAccount(confirmStore.meta.initiator) && (
+        {accountUtils.isAnyMultisigAccount(confirmStore.meta.initiator) && (
           <DetailRow
             className="text-text-primary"
             label={

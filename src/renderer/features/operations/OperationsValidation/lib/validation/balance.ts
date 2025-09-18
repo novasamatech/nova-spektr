@@ -31,7 +31,7 @@ function insufficientBalanceForFee(
 
     isNative,
     isProxy,
-    isMultisig,
+    isAnyMultisig,
   }: TransferFeeStore,
   config: Config = { withFormatAmount: true },
 ) {
@@ -40,7 +40,7 @@ function insufficientBalanceForFee(
   }
 
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, asset.precision) : amount);
-  const feeBN = isProxy || isMultisig ? BN_ZERO : new BN(fee);
+  const feeBN = isProxy || isAnyMultisig ? BN_ZERO : new BN(fee);
 
   return isLteThanBalance(amountBN.add(feeBN), balance);
 }
@@ -58,11 +58,11 @@ function insufficientBalanceForXcmFee(
     isXcm,
     isNative,
     isProxy,
-    isMultisig,
+    isAnyMultisig,
   }: TransferXcmFeeStore,
   config: Config = { withFormatAmount: true },
 ) {
-  const isAuthority = isProxy || isMultisig;
+  const isAuthority = isProxy || isAnyMultisig;
 
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
   const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);

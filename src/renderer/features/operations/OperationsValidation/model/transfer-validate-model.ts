@@ -109,7 +109,7 @@ const rootValidateFx = createEffect(
         }),
         source: {
           network: { chain, asset },
-          isMultisig: false,
+          isAnyMultisig: false,
           isProxy: false,
           multisigDeposit: '0',
           fee: new BN(fee),
@@ -133,7 +133,7 @@ const rootValidateFx = createEffect(
         }),
         source: {
           network: { chain, asset },
-          isMultisig: false,
+          isAnyMultisig: false,
           multisigDeposit: BN_ZERO,
           fee: new BN(fee),
           xcmFee: new BN(transaction.args.xcmData?.args.xcmFee || '0'),

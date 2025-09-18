@@ -35,7 +35,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
   const initiatorWallet = confirm.wallets.initiator;
   const signerWallet = confirm.wallets.signatory;
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
-  const multisigAccount = confirm.meta.route.find(accountUtils.isMultisigAccount);
+  const hasAnyMultisigAccount = confirm.meta.route.some(accountUtils.isAnyMultisigAccount);
   const nativeAsset = getNativeAsset(confirm.meta.chain.assets);
 
   if (!confirm || !initiatorWallet) {
@@ -65,7 +65,7 @@ export const Confirmation = ({ id = 0, onGoBack, secondaryActionButton, hideSign
         initiators={confirms.map((confirm) => confirm.meta.initiator)}
         signatory={confirm.meta.signatory}
       >
-        {multisigAccount && (
+        {hasAnyMultisigAccount && (
           <DetailRow
             className="text-text-primary"
             label={

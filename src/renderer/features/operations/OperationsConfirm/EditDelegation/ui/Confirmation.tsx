@@ -63,10 +63,10 @@ export const Confirmation = ({
     return confirms.map((confirm) => confirm.meta.initiator);
   }, [confirms]);
 
-  const multisigAccount = useMemo(() => {
+  const hasAnyMultisigAccount = useMemo(() => {
     if (nullable(confirm)) return null;
 
-    return confirm.meta.route.find(accountUtils.isMultisigAccount) ?? null;
+    return confirm.meta.route.some(accountUtils.isAnyMultisigAccount);
   }, [confirm.meta.route]);
 
   if (!confirm || !meta || !initiatorWallet) {
@@ -121,7 +121,7 @@ export const Confirmation = ({
 
         <hr className="w-full border-filter-border pr-2" />
 
-        {multisigAccount && (
+        {hasAnyMultisigAccount && (
           <DetailRow
             className="text-text-primary"
             label={

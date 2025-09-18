@@ -48,7 +48,7 @@ type ValidateParams = {
 
 const validateFx = createEffect(({ store, balances }: ValidateParams) => {
   const proxyAccount = store.route.find(accountUtils.isProxiedAccount);
-  const multisigAccount = store.route.find(accountUtils.isMultisigAccount);
+  const hasAnyMultisigAccount = store.route.find(accountUtils.isAnyMultisigAccount);
 
   const rules = [
     {
@@ -78,7 +78,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
       ...TransferRules.signatory.notEnoughTokens({} as Store<TransferSignatoryFeeStore>),
       source: {
         fee: store.fee,
-        isMultisig: nonNullable(multisigAccount),
+        isMultisig: nonNullable(hasAnyMultisigAccount),
         multisigDeposit: store.multisigDeposit,
         balance:
           store.signatory &&
@@ -126,7 +126,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
       }),
       source: {
         network: { chain: store.chain, asset: store.asset },
-        isMultisig: nonNullable(multisigAccount),
+        isAnyMultisig: nonNullable(hasAnyMultisigAccount),
         multisigDeposit: store.multisigDeposit,
         fee: store.fee,
         xcmFee: store.xcmFee,
@@ -157,7 +157,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
       }),
       source: {
         network: { chain: store.chain, asset: store.asset },
-        isMultisig: nonNullable(multisigAccount),
+        isAnyMultisig: nonNullable(hasAnyMultisigAccount),
         multisigDeposit: store.multisigDeposit,
         fee: store.fee,
         xcmFee: store.xcmFee,
@@ -188,7 +188,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
       }),
       source: {
         network: { chain: store.chain, asset: store.asset },
-        isMultisig: nonNullable(multisigAccount),
+        isAnyMultisig: nonNullable(hasAnyMultisigAccount),
         multisigDeposit: store.multisigDeposit,
         fee: store.fee,
         xcmFee: store.xcmFee,
