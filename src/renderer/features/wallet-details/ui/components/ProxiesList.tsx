@@ -1,6 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
-import { type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
+import { type ProxyAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, HelpText } from '@/shared/ui';
@@ -9,6 +9,7 @@ import { Accordion } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 
@@ -44,7 +45,7 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   });
 
   const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
-    const proxiedAccount = walletAccounts.find((account): account is ProxiedAccount => 'deposit' in account);
+    const proxiedAccount = walletAccounts.find(account => accountUtils.isProxiedAccount(account));
 
     if (proxiedAccount) {
       removeProxyModel.flowStarted({
