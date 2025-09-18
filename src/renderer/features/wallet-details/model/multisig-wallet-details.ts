@@ -1,12 +1,13 @@
-import { combine } from 'effector';
+import { type ApiPromise } from '@polkadot/api';
+import { combine, createEffect, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type ChainId, type Contact, type ProxyAccount, type Wallet } from '@/shared/core';
-import { dictionary, keys, nullable } from '@/shared/lib/utils';
+import { proxyService } from '@/shared/api/proxy';
+import { type Chain, type ChainId, type Contact, type ProxyAccount, type Wallet } from '@/shared/core';
+import { dictionary, keys, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
-import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
@@ -62,18 +63,69 @@ const $signatories = combine(
   },
 );
 
-const $chainsProxies = combine(
-  {
-    wallet: $wallet,
-    chains: networkModel.$chains,
-    proxies: proxyModel.$proxies,
-  },
-  ({ wallet, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
-    if (nullable(wallet)) return {};
+const fetchAllProxiesFx = createEffect(
+  async ({
+    wallet,
+    chains,
+    apis,
+  }: {
+    wallet: Wallet;
+    chains: Record<ChainId, Chain>;
+    apis: Record<ChainId, ApiPromise>;
+  }): Promise<Record<ChainId, Omit<ProxyAccount, 'id' | 'delay'>[]>> => {
+    const chainIds = keys(chains);
 
-    return proxyUtils.getProxyAccountsOnChain(wallet.accounts, keys(chains), proxies);
+    const fetchChainProxies = async (chainId: ChainId): Promise<[ChainId, Omit<ProxyAccount, 'id' | 'delay'>[]]> => {
+      const api = apis[chainId];
+      if (!api) return [chainId, []];
+
+      const accountProxiesPromises = wallet.accounts.map(async account => {
+        try {
+          const result = await proxyService.getProxiesForAccount(api, account.accountId);
+
+          return result.accounts.map(proxy => ({
+            accountId: toAccountId(proxy.address),
+            proxiedAccountId: account.accountId,
+            chainId,
+            proxyType: proxy.proxyType,
+          }));
+        } catch (error) {
+          console.log(
+            `Failed to fetch proxies for account ${account.accountId} on chain ${chainId}:`,
+            JSON.stringify(error),
+          );
+          return [];
+        }
+      });
+
+      const accountsProxies = await Promise.all(accountProxiesPromises);
+      return [chainId, accountsProxies.flat()];
+    };
+
+    const chainProxiesPromises = chainIds.map(fetchChainProxies);
+    const chainProxiesResults = await Promise.all(chainProxiesPromises);
+
+    return Object.fromEntries(chainProxiesResults);
   },
 );
+
+const $chainsProxies = createStore<Record<ChainId, Omit<ProxyAccount, 'id' | 'delay'>[]>>({});
+
+sample({
+  source: {
+    wallet: $wallet,
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+  },
+  filter: ({ wallet }) => !nullable(wallet),
+  fn: ({ wallet, chains, apis }) => ({ wallet: wallet!, chains, apis }),
+  target: fetchAllProxiesFx,
+});
+
+sample({
+  clock: fetchAllProxiesFx.doneData,
+  target: $chainsProxies,
+});
 
 const $hasProxies = combine($chainsProxies, chainsProxies => {
   return Object.values(chainsProxies).some(accounts => accounts.length > 0);
