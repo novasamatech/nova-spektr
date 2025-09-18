@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, memo, useMemo, useState } from 'react';
+import { type PropsWithChildren, memo, useEffect, useMemo, useState } from 'react';
 
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
@@ -22,6 +22,10 @@ export const MultisigFeeModal = memo(({ children }: PropsWithChildren) => {
   const [search, setSearch] = useState('');
   const [isOpen, setToggle] = useState(false);
   const [selectedChainId, setSelectedChainId] = useState<ChainId>(chainId.value);
+
+  useEffect(() => {
+    setSelectedChainId(chainId.value);
+  }, [chainId.value]);
 
   const handleApply = () => {
     formModel.form.fields.chainId.change(selectedChainId);
@@ -62,7 +66,7 @@ export const MultisigFeeModal = memo(({ children }: PropsWithChildren) => {
 
 type ChainsListProps = {
   search: string;
-  selectedChainId?: string;
+  selectedChainId?: ChainId;
   onChange: (chainId: ChainId) => void;
 };
 
@@ -72,9 +76,9 @@ const ChainsList = ({ search, selectedChainId, onChange }: ChainsListProps) => {
   const availableChains = useUnit(chainSelectorModel.$availableChains);
   const unavailableChains = useUnit(chainSelectorModel.$unavailableChains);
   const isLoading = useUnit(chainSelectorModel.$isLoading);
-  const multisigChains = useUnit(chainSelectorModel.$multisigChains);
+  const multisigChains = useUnit(chainSelectorModel.$filteredChains);
 
-  const filteredAvailableChains = useMemo(
+  const availableRadioOptions = useMemo(
     () =>
       performSearch({
         records: availableChains,
@@ -84,11 +88,15 @@ const ChainsList = ({ search, selectedChainId, onChange }: ChainsListProps) => {
         }),
         query: search,
         weights: { symbol: 1, name: 0.8 },
-      }),
+      }).map(item => ({
+        id: item.chain.chainId,
+        value: item,
+        title: `${item.asset.symbol} (${item.chain.name})`,
+      })),
     [availableChains, search],
   );
 
-  const filteredUnavailableChains = useMemo(
+  const unavailableRadioOptions = useMemo(
     () =>
       performSearch({
         records: unavailableChains,
@@ -98,23 +106,15 @@ const ChainsList = ({ search, selectedChainId, onChange }: ChainsListProps) => {
         }),
         query: search,
         weights: { symbol: 1, name: 0.8 },
-      }),
+      }).map(item => ({
+        id: item.chain.chainId,
+        value: item,
+        title: `${item.asset.symbol} (${item.chain.name})`,
+      })),
     [unavailableChains, search],
   );
 
-  const availableRadioOptions = filteredAvailableChains.map(item => ({
-    id: item.chain.chainId,
-    value: item,
-    title: `${item.asset.symbol} (${item.chain.name})`,
-  }));
-
-  const unavailableRadioOptions = filteredUnavailableChains.map(item => ({
-    id: item.chain.chainId,
-    value: item,
-    title: `${item.asset.symbol} (${item.chain.name})`,
-  }));
-
-  if (filteredAvailableChains.length === 0 && filteredUnavailableChains.length === 0) {
+  if (availableRadioOptions.length === 0 && unavailableRadioOptions.length === 0) {
     if (isLoading) {
       return (
         <>
@@ -138,7 +138,7 @@ const ChainsList = ({ search, selectedChainId, onChange }: ChainsListProps) => {
 
   return (
     <>
-      {filteredAvailableChains.length > 0 && (
+      {availableRadioOptions.length > 0 && (
         <Box gap={2}>
           <div className="flex items-center justify-between">
             <FootnoteText className="text-text-tertiary">
@@ -162,7 +162,7 @@ const ChainsList = ({ search, selectedChainId, onChange }: ChainsListProps) => {
         </Box>
       )}
 
-      {filteredUnavailableChains.length > 0 && (
+      {unavailableRadioOptions.length > 0 && (
         <Box gap={2}>
           <div className="flex items-center justify-between">
             <FootnoteText className="text-text-tertiary">

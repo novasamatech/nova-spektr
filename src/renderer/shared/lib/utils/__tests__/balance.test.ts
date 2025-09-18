@@ -2,7 +2,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type AssetBalance, type AssetId, type Balance, type BalanceId, LockTypes } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { formatBalance, stakeableAmountBN, transferableAmountBN, withdrawableAmount } from '../balance';
+import { formatAmount, formatBalance, stakeableAmountBN, transferableAmountBN, withdrawableAmount } from '../balance';
 
 const createBalance = (params: {
   free?: string | number;
@@ -25,6 +25,36 @@ const createBalance = (params: {
 };
 
 describe('shared/lib/onChainUtils/balance', () => {
+  describe('formatAmount', () => {
+    test('should handle regular decimal values', () => {
+      const result1 = formatAmount('1.5', 12);
+      const result2 = formatAmount('123.456', 6);
+
+      expect(result1).toEqual('1500000000000');
+      expect(result2).toEqual('123456000');
+    });
+
+    test('should handle whole numbers', () => {
+      const result1 = formatAmount('1', 12);
+      const result2 = formatAmount('123', 6);
+
+      expect(result1).toEqual('1000000000000');
+      expect(result2).toEqual('123000000');
+    });
+
+    test('should handle decimal values without leading zero', () => {
+      const result1 = formatAmount('.1', 12);
+      const result2 = formatAmount('0.1', 12);
+      const result3 = formatAmount('.5', 10);
+      const result4 = formatAmount('.123456', 6);
+
+      expect(result1).toEqual('100000000000');
+      expect(result2).toEqual('100000000000');
+      expect(result3).toEqual('5000000000');
+      expect(result4).toEqual('123456');
+    });
+  });
+
   describe('formatBalance', () => {
     test('should calculate amount without without float part', () => {
       const { value, suffix, decimalPlaces } = formatBalance('50000000000000', 12);

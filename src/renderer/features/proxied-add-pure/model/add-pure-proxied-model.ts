@@ -265,9 +265,10 @@ sample({
   source: {
     initiator: formModel.form.fields.initiator.$value,
     chain: formModel.form.fields.chain.$value,
+    proxyDeposit: formModel.$proxyDeposit,
   },
   filter: ({ initiator, chain }) => nonNullable(initiator) && nonNullable(chain),
-  fn: ({ chain, initiator }, { accountId, blockNumber, extrinsicIndex }) => {
+  fn: ({ chain, initiator, proxyDeposit }, { accountId, blockNumber, extrinsicIndex }) => {
     return [
       {
         accountId,
@@ -282,6 +283,7 @@ sample({
         proxyVariant: ProxyVariant.PURE,
         blockNumber,
         extrinsicIndex,
+        deposit: proxyDeposit,
       },
     ] as PartialProxiedAccount[];
   },

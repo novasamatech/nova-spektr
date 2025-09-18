@@ -5,6 +5,7 @@ import { type Chain, type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
+import { toAddress } from '@/shared/lib/utils';
 import { Button, HeadlineText, IconButton } from '@/shared/ui';
 import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
@@ -66,7 +67,11 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
         <div className="mb-4 flex items-center justify-between px-5 pt-4 pb-6">
           <Box direction="row" verticalAlign="center" gap={2}>
             <div className="mr-1">
-              <WalletAccountIcon address={firstAccount?.accountId} type={wallet.type} size={42} />
+              <WalletAccountIcon
+                address={firstAccount?.accountId && toAddress(firstAccount?.accountId)}
+                type={wallet.type}
+                size={42}
+              />
             </div>
 
             {!isRenameInputOpen && (

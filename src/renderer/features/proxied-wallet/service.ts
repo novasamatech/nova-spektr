@@ -92,17 +92,15 @@ function checkPermission(
   // TODO redo all this parsing thing after migration to new transaction interface
   let extrinsic = transactionService.createExtrinsic(transaction, api);
 
-  for (const [index, account] of route.entries()) {
-    if (isProxyExtrinsic(extrinsic)) {
-      extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[2].toHex(), api);
-    }
+  const inversedRoute = [...route].reverse();
 
-    if (extrinsic.method.section === 'multisig' && extrinsic.method.method === 'asMulti') {
-      extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[3].toHex(), api);
-    }
-
+  for (const [index, account] of inversedRoute.entries()) {
     if (accountUtils.isProxiedAccount(account)) {
-      const proxyAccount = route.at(index + 1);
+      if (isProxyExtrinsic(extrinsic)) {
+        extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[2].toHex(), api);
+      }
+
+      const proxyAccount = inversedRoute.at(index - 1);
       if (nullable(proxyAccount)) return null;
 
       const connection = account.connections.find(c => c.proxyAccountId === proxyAccount.accountId);
@@ -110,6 +108,10 @@ function checkPermission(
 
       if (checkCallPermission(connection.proxyType, extrinsic.method.section) === false) {
         return { account, permission: connection.proxyType };
+      }
+    } else {
+      if (extrinsic.method.section === 'multisig' && extrinsic.method.method === 'asMulti') {
+        extrinsic = transactionService.createExtrinsicFromCallData(extrinsic.args[3].toHex(), api);
       }
     }
   }

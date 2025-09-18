@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { isPolkadotChain } from '@/shared/lib/utils';
+import { isPolkadotChain, toAddress } from '@/shared/lib/utils';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountService, accounts } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -17,9 +17,8 @@ accountSDK(walletConnectWalletFeature, {
   actionPermission({ account }) {
     return accountUtils.isWcAccount(account);
   },
-  availableOnChain({ account }) {
-    // wallet connect account are chain-specific
-    return accountUtils.isWcAccount(account);
+  availableOnChain({ account, chain }) {
+    return accountUtils.isWcAccount(account) && accountService.isChainMatch(account, chain);
   },
   canSignMultipleTransactions() {
     return false;
@@ -51,9 +50,9 @@ walletConnectWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   const mainAccount =
     walletAccounts.find(account => accountService.isChainAccount(account) && isPolkadotChain(account.chainId)) ||
     walletAccounts.at(0);
-  const address = mainAccount?.accountId;
+  const accountId = mainAccount?.accountId;
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} />;
+  return <WalletAccountIcon address={accountId && toAddress(accountId)} type={wallet.type} size={size} />;
 });
 
 walletConnectWalletFeature.inject(walletGroupSlot, {

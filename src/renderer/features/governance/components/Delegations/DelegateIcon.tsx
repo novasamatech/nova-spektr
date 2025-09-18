@@ -1,5 +1,5 @@
 import { type DelegateAccount } from '@/shared/api/governance';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, toAddress } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
 
@@ -11,7 +11,7 @@ type Props = {
 };
 
 export const DelegateIcon = ({ delegate, className }: Props) => {
-  if (!delegate.name) return <Identicon background={false} value={delegate.accountId} size={46} />;
+  if (!delegate.name) return <Identicon background={false} address={toAddress(delegate.accountId)} size={46} />;
 
   if (isDefaultImage(delegate.image)) {
     return (

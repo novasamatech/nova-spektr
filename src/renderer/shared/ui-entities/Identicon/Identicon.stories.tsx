@@ -1,6 +1,7 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 
-import { TEST_ADDRESS, TEST_EVM_ADDRESS, toAccountId } from '@/shared/lib/utils';
+import { type Address } from '@/shared/core';
+import { TEST_ADDRESS, TEST_EVM_ADDRESS } from '@/shared/lib/utils';
 
 import { Identicon } from './Identicon';
 
@@ -8,7 +9,7 @@ const meta: Meta<typeof Identicon> = {
   title: 'Design System/entities/Identicon',
   component: Identicon,
   args: {
-    value: TEST_ADDRESS,
+    address: TEST_ADDRESS,
   },
 };
 
@@ -18,25 +19,25 @@ type Story = StoryObj<typeof Identicon>;
 
 export const Default: Story = {
   args: {
-    value: TEST_ADDRESS,
+    address: TEST_ADDRESS,
   },
 };
 
 export const Invalid: Story = {
   args: {
-    value: '1234',
+    address: '1234' as Address,
   },
 };
 
 export const EtheriumAddress: Story = {
   args: {
-    value: TEST_EVM_ADDRESS,
+    address: TEST_EVM_ADDRESS,
   },
 };
 
 export const ValueAsAccountId: Story = {
   args: {
-    value: toAccountId(Default.args?.value ?? ''),
+    address: Default.args?.address,
   },
 };
 

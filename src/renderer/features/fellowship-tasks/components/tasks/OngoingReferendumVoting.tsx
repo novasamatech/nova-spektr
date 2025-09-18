@@ -5,12 +5,13 @@ import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
-import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService } from '@/domains/collectives';
 import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { referendums } from '../../model/referendums';
 import { rfcModel } from '../../model/rfc';
 import { tasksService } from '../../service';
+import { ReferendumTaskMarkdown } from '../ReferendumTaskMarkdown';
 import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
 
@@ -68,36 +69,34 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
     if (isPending) return;
 
     if (rfc?.summary) {
-      return (
-        <Markdown cut="150px" compact>
-          {tasksService.cutMarkdown(rfc.summary)}
-        </Markdown>
-      );
+      return <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(rfc.summary)}</ReferendumTaskMarkdown>;
     }
 
     if (meta?.description) {
-      return (
-        <Markdown cut="150px" compact>
-          {tasksService.cutMarkdown(meta.description)}
-        </Markdown>
-      );
+      return <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(meta.description)}</ReferendumTaskMarkdown>;
     }
 
     return t('fellowship.tasks.task.anyReferendum.noDescription');
   }, [meta, rfc, isPending]);
 
+  const title = useMemo(() => {
+    const isSpendProposal = referendum.proposal ? referendumService.isSpendProposal(referendum.proposal) : false;
+
+    return isSpendProposal
+      ? t('governance.referendums.spendReferendumTitle')
+      : t('governance.referendums.referendumTitle', { index: referendum.id });
+  }, [referendum.proposal]);
+
   return (
     <Box direction="row" gap={2}>
-      <ReferendumDetailsModal referendum={referendum}>
-        <button className="flex w-full min-w-0 appearance-none gap-2 p-4">
+      <ReferendumDetailsModal referendum={referendum} title={title}>
+        <button className="flex w-full min-w-0 cursor-pointer appearance-none gap-2 p-4">
           <Box alignSelf="flex-start" shrink={0}>
             <TaskBadge proposal={referendum.proposal} />
           </Box>
           <Box fillContainer gap={3} grow={1}>
             <Box direction="row" gap={3} grow={1}>
-              <SmallTitleText className="truncate">
-                {meta?.title || t('governance.referendums.referendumTitle', { index: referendum.id })}
-              </SmallTitleText>
+              <SmallTitleText className="truncate">{title}</SmallTitleText>
               <TaskLabels tags={tags} />
             </Box>
             <Box width="90%">

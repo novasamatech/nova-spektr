@@ -3,6 +3,7 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
+import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
@@ -71,7 +72,7 @@ export const PairingFormModal = ({ children }: Props) => {
                   invalid={address.hasError()}
                   placeholder={t('onboarding.watchOnly.accountAddressPlaceholder')}
                   value={address.value}
-                  prefixElement={<Identicon value={address.value} background={false} />}
+                  prefixElement={<Identicon address={address.value as Address} background={false} />}
                   testId={TEST_IDS.ONBOARDING.WALLET_ADDRESS_INPUT}
                   onChange={address.onChange}
                 />

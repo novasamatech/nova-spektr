@@ -100,6 +100,17 @@ export const isUnlockTransaction = (transaction?: Transaction | DecodedTransacti
   return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.UNLOCK);
 };
 
+export const isEditFlexibleTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    const addProxy = transaction.args.transactions?.some(isAddProxyTransaction);
+    const removeProxy = transaction.args.transactions?.some(isRemoveProxyTransaction);
+
+    return addProxy && removeProxy;
+  }
+
+  return false;
+};
+
 export const hasTransaction = (
   transaction: Transaction | DecodedTransaction,
   filter: (transaction: Transaction | DecodedTransaction) => boolean,
@@ -132,6 +143,16 @@ export const findCoreBatchAll = (coreTx: Transaction | DecodedTransaction): Tran
   const supportedTransaction = coreTx.args?.transactions?.find((tx: Transaction) => isWrappedInBatchAll(tx.type));
 
   return supportedTransaction || coreTx.args?.transactions?.[0];
+};
+
+export const findCoreTransaction = (tx: DecodedTransaction | null): DecodedTransaction | null => {
+  if (!tx) return null;
+
+  if (isProxyTransaction(tx)) {
+    return findCoreTransaction(tx.args?.transaction) || tx;
+  }
+
+  return tx;
 };
 
 export const getTransactionAmount = (tx: Transaction | DecodedTransaction): string | null => {

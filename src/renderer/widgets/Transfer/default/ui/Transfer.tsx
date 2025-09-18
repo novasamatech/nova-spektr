@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
@@ -62,7 +63,7 @@ export const Transfer = ({ chain, asset }: Props) => {
   };
 
   return (
-    <Modal size="md" isOpen={isModalOpen} onToggle={closeModal}>
+    <Modal size="md" isOpen={isModalOpen} testId={TEST_IDS.TRANSFER.MODAL} onToggle={closeModal}>
       <Modal.Title close>{getModalTitle(chain, asset, xcmChain)}</Modal.Title>
       <Modal.Content>
         {transferUtils.isInitStep(step) && <TransferForm onGoBack={closeModal} />}

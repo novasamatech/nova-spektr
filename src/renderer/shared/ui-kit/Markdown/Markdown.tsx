@@ -17,9 +17,9 @@ const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: true
 const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw];
 const remarkPlugins: Options['remarkPlugins'] = [remarkGfm];
 
-const components: Components = {
+const baseComponents: Components = {
   h1: ({ node: _, className, ...props }) => (
-    <h1 className={cnTw('border-b pb-2 text-header-title not-first:mt-6', className)} {...props} />
+    <h1 className={cnTw('border-b border-filter-border pb-2 text-header-title not-first:mt-6', className)} {...props} />
   ),
   h2: ({ node: _, className, ...props }) => (
     <h2 className={cnTw('text-header-title not-first:mt-4', className)} {...props} />
@@ -109,7 +109,10 @@ const components: Components = {
   code: ({ node: _, className, ...props }) => {
     return (
       <code
-        className={cnTw('rounded-md border bg-block-background box-decoration-clone px-0.5 leading-none', className)}
+        className={cnTw(
+          'rounded-md border border-filter-border bg-block-background box-decoration-clone px-0.5 leading-none',
+          className,
+        )}
         {...props}
       />
     );
@@ -122,8 +125,12 @@ const components: Components = {
     );
   },
   table: ({ node: _, className, ...props }) => <table className={cnTw('border-collapse', className)} {...props} />,
-  td: ({ node: _, className, ...props }) => <td className={cnTw('border px-4 py-2', className)} {...props} />,
-  th: ({ node: _, className, ...props }) => <th className={cnTw('border px-4 py-2 font-bold', className)} {...props} />,
+  td: ({ node: _, className, ...props }) => (
+    <td className={cnTw('border border-filter-border px-4 py-2', className)} {...props} />
+  ),
+  th: ({ node: _, className, ...props }) => (
+    <th className={cnTw('border border-filter-border px-4 py-2 font-bold', className)} {...props} />
+  ),
   blockquote: ({ node: _, className, ...props }) => (
     <blockquote className={cnTw('border-l-4 px-2 py-1 whitespace-normal', className)} {...props} />
   ),
@@ -133,12 +140,18 @@ type Props = {
   compact?: boolean;
   cut?: string;
   children: string;
+  overrideElements?: Partial<Components>;
 };
 
-export const Markdown = memo(({ compact, cut, children }: Props) => {
+export const Markdown = memo(({ compact, cut, children, overrideElements = {} }: Props) => {
   if (!children) {
     return null;
   }
+
+  const components = {
+    ...baseComponents,
+    ...overrideElements,
+  };
 
   const markdown = (
     <div

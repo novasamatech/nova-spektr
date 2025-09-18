@@ -3,7 +3,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type ChainId } from '@/shared/core';
+import { type ChainId, type Wallet } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
@@ -235,6 +235,13 @@ const Destination = () => {
   const accountsList = useUnit(walletModel.$availableAccounts);
   const network = useUnit(formModel.$networkStore);
 
+  const walletsMap = useMemo(() => {
+    return wallets.reduce<Record<number, Wallet>>((acc, wallet) => {
+      acc[wallet.id] = wallet;
+      return acc;
+    }, {});
+  }, [wallets]);
+
   const [query, setQuery] = useState('');
 
   const isMyselfXcmEnabled = useUnit(formModel.$isMyselfXcmEnabled);
@@ -258,7 +265,7 @@ const Destination = () => {
 
     const filteredAccounts = accountsList.filter((account) => {
       const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
-      const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
+      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
       const queryPass = includesMultiple([account.name, address], query);
       const isMyself = nonNullable(initiator.value) && initiator.value.accountId === account.accountId;
       const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(account);
@@ -275,12 +282,19 @@ const Destination = () => {
       const accountOptions: ComboboxItem[] = [];
 
       for (const account of accountsGroup) {
-        const address = toAddress(account.accountId, { prefix: chain?.addressPrefix });
+        const wallet = walletsMap[account.walletId];
+        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+
+        const title = nonNullable(wallet)
+          ? account.name === wallet.name
+            ? account.name
+            : `${account.name} (${wallet.name})`
+          : account.name;
 
         accountOptions.push({
           id: address,
           value: { address, walletId: account.walletId },
-          label: <Address showIcon title={account.name} address={address} />,
+          label: <Address showIcon title={title} address={address} />,
         });
       }
 
@@ -333,7 +347,11 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon size={20} value={destination.value} background={false} />
+      <Identicon
+        size={20}
+        address={toAddress(destination.value, { prefix: chain?.addressPrefix })}
+        background={false}
+      />
     </div>
   );
 
@@ -460,7 +478,9 @@ const FeeSection = () => {
         />
       )}
 
-      {isXcm && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
+      {isXcm && !deliveryFee.isZero() && (
+        <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
+      )}
     </div>
   );
 };

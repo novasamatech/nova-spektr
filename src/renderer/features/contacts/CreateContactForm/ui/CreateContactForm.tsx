@@ -2,6 +2,7 @@ import { useForm } from 'effector-forms';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useEffect } from 'react';
 
+import { type Address } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button, InputHint } from '@/shared/ui';
 import { Identicon } from '@/shared/ui-entities';
@@ -55,7 +56,7 @@ export const CreateContactForm = ({ onSubmit }: Props) => {
             placeholder={t('addressBook.createContact.accountIdPlaceholder')}
             invalid={address.hasError()}
             value={address.value}
-            prefixElement={<Identicon value={address.value} background={false} />}
+            prefixElement={<Identicon address={address.value as Address} background={false} />}
             onChange={address.onChange}
           />
           <InputHint variant="error" active={address.hasError()}>

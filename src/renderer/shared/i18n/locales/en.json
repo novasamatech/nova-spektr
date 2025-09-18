@@ -286,15 +286,16 @@
     "restoreButton": "Restore",
     "searchContactPlaceholder": "Search",
     "selectMultisigDescription": {
-      "featureFive": "<header>Address does not change</header> when changing signatories",
-      "featureFour": "<header>Change signatories and threshold</header> at any time",
-      "featureOne": "<header>Multiple Signatories</header> required to approve transactions",
-      "featureThree": "<header>Delegate authority</header> over certain operations",
-      "featureTwo": "<header>Set custom signatory threshold</header> which must be met for transactions to be executed",
-      "flexibleDescription": "Can modify signatories",
+      "flexibleFeatureOne": "<header>Update signatories as needed</header> while maintaining a fixed address.",
+      "flexibleFeatureThree": "<header>Works only on the network</header> where it was created.",
+      "flexibleFeatureTwo": "<header>Deposit is needed</header> to create the wallet (returned when deleted).",
       "flexibleNote": "Pure Proxy deposit will be reserved on your account. This wallet <header>only works on the network</header> it was created on.",
-      "regularDescription": "Regular multisig wallet",
-      "regularNote": "Only fee is required. This wallet <header>works on all networks.</header>"
+      "flexibleWikiLink": "Flexible Multisigs on Wiki",
+      "regularFeatureOne": "<header>Changing signatories or the threshold</header> requires creating a new multisig address.",
+      "regularFeatureThree": "<header>Works on all supported chains</header> from the start.",
+      "regularFeatureTwo": "<header>No deposit required</header>, you only pay standard network fees.",
+      "regularNote": "Only fee is required. This wallet <header>works on all networks.</header>",
+      "regularWikiLink": "Multisigs on Wiki"
     },
     "selectSigner": "Select signing wallet",
     "selectedSignatoriesTitle": "Selected signatories",
@@ -429,6 +430,11 @@
     "message": "Sorry, something went wrong",
     "omniLogoAlt": "Nova Spektr logo",
     "reloadButton": "Refresh"
+  },
+  "features": {
+    "account-sync": {
+      "syncAccountsLabel": "Sync accounts"
+    }
   },
   "fellowship": {
     "activityFeed": {
@@ -809,6 +815,11 @@
       "votingPowerDescription": "Voting power is a number of votes calculated based on the member's rank."
     }
   },
+  "flexibleMultisig": {
+    "editSubtitle": "Change the signatories and set the signatory threshold for your flexible multisig.",
+    "editTitleOn": "Edit flexible multisig on",
+    "thresholdDescription": "Minimum signatories needed to approve."
+  },
   "general": {
     "actions": {
       "duration": "<balance /> for { duration } days",
@@ -845,6 +856,10 @@
       "searchPlaceholder": "Search",
       "signerLabel": "Select signer",
       "transferableLabel": "Transferable"
+    },
+    "notifications": {
+      "addressCopied": "Address copied!",
+      "copiedToClipboard": "Copied to clipboard!"
     },
     "timeout": {
       "expired": "Expired"
@@ -1114,6 +1129,8 @@
       "governanceLease": "Governance: Lease",
       "governanceRegistrar": "Governance: Registrar",
       "killed": "Killed",
+      "linkCopied": "Link copied!",
+      "linkShare": "Share",
       "mainAgenda": "Main agenda",
       "noDeposit": "Waiting for deposit",
       "ongoing": "Ongoing",
@@ -1122,6 +1139,7 @@
       "referendumTitle": "Referendum #{ index }",
       "rejectIn": "Reject in",
       "rejected": "Rejected",
+      "spendReferendumTitle": "Should we pay?",
       "staking": "Staking",
       "timedOut": "Timed out",
       "timeoutIn": "Time out in",
@@ -1186,6 +1204,7 @@
       "timeoutReferendumError": "This referendum has already passed"
     },
     "voteHistory": {
+      "delegatedBy": "Delegated by",
       "listColumnAccount": "Account",
       "listColumnVotingPower": "Voting power",
       "listEmptyDescription": "Nobody has voted yet",
@@ -1516,8 +1535,18 @@
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
+    "viewJSON": {
+      "button": "View JSON",
+      "label": "Operation details"
+    },
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
+      "errors": {
+        "networkError": "Rejected. Some transport error, try to reconnect your wallet",
+        "sessionError": "Rejected. Connection lost, please reconnect your wallet",
+        "unknownError": "Rejected. An unexpected error occurred",
+        "userRejected": "Rejected. Request on sign was rejected"
+      },
       "expiredDescription": "The operation isn’t valid anymore",
       "failedDescription": "Scan with your mobile wallet to connect",
       "failedTitle": "Waiting for Reconnect...",
@@ -1529,6 +1558,7 @@
         "reconnecting": "Waiting for Reconnect...",
         "title": "{ walletName } is not connected"
       },
+      "reconnectHint": "Please check your internet connection and try reconnecting your wallet",
       "rejected": "Rejected",
       "signTitle_one": "Confirm with { walletName }",
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
@@ -1541,10 +1571,14 @@
     "callData": {
       "continueButton": "Continue",
       "errorMessage": "Incorrect call data",
+      "errorTitle": "Call Data Error",
       "inputHint": "Visible only for you and signers",
       "inputPlaceholder": "0x00...",
+      "submitting": "Submitting call data...",
+      "success": "Call data submitted successfully",
       "title": "Enter call data"
     },
+    "createdOperationDescription": "The changes will take effect after the other signatories sign.",
     "filters": {
       "clearAll": "Clear all",
       "networkPlaceholder": "Network",
@@ -1561,11 +1595,11 @@
       "addPureProxyOn": "Create pure proxy on",
       "approve": "Approve",
       "approveMultisig": "Approve multisig operation",
-      "convertToFlexible": "Convert to flexible multisig on",
       "createPureProxy": "Add delegated authority (pure proxy)",
       "delegateOn": "Delegate on",
       "destinationOn": "Set reward destination on",
       "editDelegationOn": "Edit delegation on",
+      "editFlexibleOn": "Edit flexible multisig on",
       "nominateOn": "Change Validators on",
       "proxy": "Proxy",
       "redeemOn": "Withdraw Unstaked { asset } on",
@@ -1593,6 +1627,7 @@
     "noOperationsDescription": "Your operation history will appear here",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
+    "operationCreated": "Operation created",
     "title": "Operations",
     "titles": {
       "addProxy": "Add delegated authority (proxy)",
@@ -1603,6 +1638,7 @@
       "delegate": "Delegate",
       "destination": "Set reward destination",
       "editDelegation": "Edit Delegation",
+      "editFlexible": "Edit flexible multisig",
       "nominate": "Change Validators",
       "proxy": "Proxy",
       "redeem": "Withdraw Unstaked",
@@ -1621,7 +1657,8 @@
       "unlock": "Unlock",
       "unstake": "Unstake",
       "vote": "Vote"
-    }
+    },
+    "viewOperation": "View operation"
   },
   "portfolilo": {
     "selectNetworkLabel": "Select network"
@@ -1735,13 +1772,13 @@
     "videoError": "Your browser doesn't support video"
   },
   "receive": {
-    "addressCopied": "Address copied",
+    "addressCopied": "Address copied!",
     "compareAddressFormat": "Compare address format",
     "copy": "Copy",
     "copyLegacyFormat": "Copy legacy format",
     "exchangeAccount": "Need address for exchange?",
     "explorerLinkLabel": "Link to {name}",
-    "legacyAddressCopied": "Legacy address copied",
+    "legacyAddressCopied": "Legacy address copied!",
     "selectAccount": "Select account",
     "title": "Receive {asset} on",
     "unfiedAddress": {
@@ -1755,7 +1792,7 @@
       "newUnifiedTitle": "New unified address",
       "unifiedFormat": "Unified format"
     },
-    "unifiedAddressCopied": "Unified address copied",
+    "unifiedAddressCopied": "Unified address copied!",
     "viewInExplorers": "View in explorers"
   },
   "settings": {
@@ -2211,7 +2248,6 @@
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
       "confirmRemoveProxySubmit": "Delete",
       "confirmRemoveProxyTitle": "Revoke delegated authority?",
-      "convertToFlexibleAction": "Convert to flexible multisig",
       "doNotShowAgain": "Do not show this again",
       "emptyProxyDescription": "Add new proxies to work with them",
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",

@@ -1,12 +1,10 @@
 import { useUnit } from 'effector-react';
 import { type ComponentProps, memo, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { Paths } from '@/shared/routes';
 import { BodyText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Graphics, Popover, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -49,7 +47,7 @@ const WalletSelectTrigger = memo(
       <button
         type="button"
         data-testid={TEST_IDS.COMMON.WALLET_BUTTON}
-        className="w-full rounded-md border border-container-border bg-left-navigation-menu-background shadow-card-shadow"
+        className="w-full cursor-pointer rounded-md border border-container-border bg-left-navigation-menu-background shadow-card-shadow"
         {...rest}
       >
         <Box direction="row" verticalAlign="center" horizontalAlign="space-between" padding={3}>
@@ -72,22 +70,17 @@ const WalletSelectTrigger = memo(
 const WalletSelectDropdown = memo(() => {
   const { t } = useI18n();
 
-  const navigate = useNavigate();
   const filterQuery = useUnit(walletList.$query);
 
-  const selectWallet = useCallback(
-    (wallet: Wallet) => {
-      walletSelect.select(wallet.id);
-      navigate(Paths.ASSETS);
-    },
-    [navigate],
-  );
+  const selectWallet = useCallback((wallet: Wallet) => {
+    walletSelect.select(wallet.id);
+  }, []);
 
   return (
     <section className="flex h-full max-h-[87vh] min-h-0 w-[300px] flex-col overflow-hidden">
       <header className="flex items-center justify-between border-b border-divider px-5 py-3">
         <SmallTitleText>{t('wallets.title')}</SmallTitleText>
-        <div>
+        <div className="flex items-center gap-2">
           <Slot id={walletSelectActionsSlot} />
         </div>
       </header>
@@ -101,7 +94,7 @@ const WalletSelectDropdown = memo(() => {
       </div>
 
       <ScrollArea>
-        <div className="flex flex-col gap-1 divide-y divide-divider px-1 pb-1 empty:p-0">
+        <div className="flex flex-col gap-1 divide-y divide-divider p-1 empty:p-0">
           <Slot
             id={walletGroupSlot}
             props={{

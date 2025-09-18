@@ -9,6 +9,7 @@ import {
   evidenceService,
   member,
   memberService,
+  referendumService,
   salaryService,
   trackService,
   votingService,
@@ -238,6 +239,7 @@ const $evidenceTasks = combine(
           group: 'general',
           body: PromotionRetentionEvidenceVoting,
           meta: { evidence, transaction: null, endBlock, tags },
+          hasVoted: false,
         });
       }
     }
@@ -260,6 +262,11 @@ const $ongoingReferendumsTasks = combine(
     if (nullable(member) || nullable(currentBlock)) return [];
 
     const possibleReferendums = referendums.filter(referendum => {
+      // Filter out unknown proposals
+      if (!referendum.proposal || referendumService.isUnknownProposal(referendum.proposal)) {
+        return false;
+      }
+
       return trackService.rankSatisfiesVotingThreshold(member.rank, maxRank, referendum.track);
     });
 
@@ -304,6 +311,7 @@ const $ongoingReferendumsTasks = combine(
     const evidenceTasks = groups.evidence
       ? groups.evidence.map<TaskDescription>(referendum => {
           const weight = getWeight(referendum);
+
           return {
             id: `referendum_${referendum.id}`,
             weight: weight.sortingScore,
@@ -314,6 +322,7 @@ const $ongoingReferendumsTasks = combine(
               transaction: operations[`referendum_${referendum.id}`]?.coreTx ?? null,
               tags: weight.tags,
             },
+            hasVoted: hasUserVoted(referendum),
           };
         })
       : [];
@@ -331,6 +340,7 @@ const $ongoingReferendumsTasks = combine(
               transaction: operations[`referendum_${referendum.id}`]?.coreTx ?? null,
               tags: weight.tags,
             },
+            hasVoted: hasUserVoted(referendum),
           };
         })
       : [];

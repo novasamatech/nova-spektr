@@ -2,14 +2,15 @@ import { useUnit } from 'effector-react';
 import { t } from 'i18next';
 import { useMemo } from 'react';
 
-import { AccountType, type Chain, type Wallet, WalletType } from '@/shared/core';
+import { type Chain, type Wallet, WalletType } from '@/shared/core';
 import { createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Checkbox } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { FiatBalance } from '@/entities/price';
-import { walletUtils } from '@/entities/wallet';
+import { accountUtils, walletUtils } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { hiddenWalletsBalancesModel } from '../model/balances';
 
 export const walletActionsSlot = createSlot<{ wallet: Wallet }>();
@@ -40,6 +41,7 @@ export const WalletGroup = (props: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
+  const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const balances = useUnit(hiddenWalletsBalancesModel.$balances);
 
   // Optimized Set for O(1) selection lookups
@@ -71,63 +73,58 @@ export const WalletGroup = (props: Props) => {
   };
 
   return (
-    <Box padding={[1, 0, 0]}>
-      <Accordion initialOpen>
-        <Accordion.Trigger>
-          <div className="flex w-full items-center gap-2">
-            <Checkbox
-              checked={groupCheckboxState.checked}
-              semiChecked={groupCheckboxState.semiChecked}
-              onChange={handleGroupCheckboxChange}
-              onClick={(e) => e.stopPropagation()}
-            />
-            <WalletIcon type={walletType} />
-            <span>{t(WALLET_TYPE_LABELS[walletType as keyof typeof WALLET_TYPE_LABELS])}</span>
-            <span className="ml-auto text-text-tertiary">{wallets.length}</span>
-          </div>
-        </Accordion.Trigger>
-        <Accordion.Content>
-          <Box gap={1} padding={[1, 0, 0]}>
-            {wallets.map((wallet) => {
-              const accountId = wallet.accounts[0]?.accountId;
-              const isSelected = selectedWalletSet.has(wallet);
+    <Accordion initialOpen>
+      <Accordion.Trigger>
+        <div className="flex w-full items-center gap-2">
+          <Checkbox
+            checked={groupCheckboxState.checked}
+            semiChecked={groupCheckboxState.semiChecked}
+            onChange={handleGroupCheckboxChange}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <WalletIcon type={walletType} />
+          <span>{t(WALLET_TYPE_LABELS[walletType as keyof typeof WALLET_TYPE_LABELS])}</span>
+          <span className="ml-auto text-text-tertiary">{wallets.length}</span>
+        </div>
+      </Accordion.Trigger>
+      <Accordion.Content>
+        <Box gap={1} padding={[1, 0, 0]}>
+          {wallets.map((wallet) => {
+            const accountId = wallet.accounts[0]?.accountId;
+            const isSelected = selectedWalletSet.has(wallet);
 
-              let chain: Chain | null = null;
-              let label: string | null = null;
+            let chain: Chain | null = null;
+            let label: string | null = null;
 
-              if (walletUtils.isFlexibleMultisig(wallet)) {
-                const chainId = wallet.accounts.find(
-                  (account) => account.accountType === AccountType.FLEX_PROXIED,
-                )?.chainId;
-                chain = chainId ? chains[chainId] : null;
-                label = t('wallets.flexibleMultisigFlexLabel');
-              }
+            // TODO incorrect connection between features, this data should be inserted other way, by slot on smth
+            if (walletUtils.isFlexibleMultisig(wallet)) {
+              const chainId = wallet.accounts.find(accountUtils.isFlexibleMultisigAccount)?.chainId;
+              chain = chainId ? chains[chainId] : null;
+              label = t('wallets.flexibleMultisigFlexLabel');
+            }
 
-              return (
-                <div key={wallet.id} className="flex items-center gap-2">
-                  <div className="flex-1">
-                    <WalletManagement
-                      wallet={wallet}
-                      accountId={accountId ?? null}
-                      checkBox={
-                        <Checkbox
-                          checked={isSelected}
-                          onChange={() => handleWalletClick(wallet)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      }
-                      description={<FiatBalance amount={balances[wallet.id].toString()} />}
-                      chain={chain}
-                      label={label}
-                      onClick={() => handleWalletClick(wallet)}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </Box>
-        </Accordion.Content>
-      </Accordion>
-    </Box>
+            return (
+              <WalletManagement
+                key={wallet.id}
+                active={selectedWalletId === wallet.id}
+                wallet={wallet}
+                accountId={accountId ?? null}
+                checkBox={
+                  <Checkbox
+                    checked={isSelected}
+                    onChange={() => handleWalletClick(wallet)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                }
+                description={<FiatBalance amount={balances[wallet.id].toString()} />}
+                chain={chain}
+                label={label}
+                onClick={() => handleWalletClick(wallet)}
+              />
+            );
+          })}
+        </Box>
+      </Accordion.Content>
+    </Accordion>
   );
 };

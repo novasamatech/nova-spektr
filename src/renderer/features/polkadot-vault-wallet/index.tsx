@@ -4,8 +4,9 @@ import { $features } from '@/shared/config/features';
 import { WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { isEthereumAccountId, nullable } from '@/shared/lib/utils';
+import { isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
 import { WalletAccountIcon } from '@/shared/ui-entities';
+import { accountService } from '@/domains/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
 import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
@@ -28,12 +29,17 @@ accountSDK(polkadotVaultWalletFeature, {
       accountUtils.isVaultShardAccount(account)
     );
   },
-  availableOnChain({ account }) {
-    return (
-      accountUtils.isVaultBaseAccount(account) ||
-      accountUtils.isVaultChainAccount(account) ||
-      accountUtils.isVaultShardAccount(account)
-    );
+  availableOnChain({ account, chain }) {
+    if (accountUtils.isVaultBaseAccount(account)) {
+      return true;
+    }
+
+    if (accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)) {
+      return accountService.isChainMatch(account, chain);
+      // TODO uncomment when design will be ready
+      // parentId check exists because of consensus mechanism in vault - all keys related to relaychain should also work in parachains
+      // account.chainId === chain.parentId
+    }
   },
   canSignMultipleTransactions({ account }) {
     return (
@@ -60,12 +66,12 @@ polkadotVaultWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
   if (!walletUtils.isPolkadotVaultGroup(wallet)) return null;
 
   const isSingleAccount = wallet.accounts.length === 1;
-  const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
-  if (nullable(address)) return null;
-  const isEthereum = isEthereumAccountId(address);
+  const accountId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+  if (nullable(accountId)) return null;
+  const isEthereum = isEthereumAccountId(accountId);
   const theme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} theme={theme} />;
+  return <WalletAccountIcon address={toAddress(accountId)} type={wallet.type} size={size} theme={theme} />;
 });
 
 polkadotVaultWalletFeature.inject(walletGroupSlot, {

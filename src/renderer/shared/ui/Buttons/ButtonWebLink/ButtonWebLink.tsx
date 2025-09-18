@@ -28,7 +28,10 @@ export const ButtonWebLink = ({
   suffixElement,
 }: PropsWithChildren<Props>) => {
   const classes = cnTw(
-    'flex items-center justify-center gap-x-2 font-medium outline-offset-1 select-none',
+    'flex cursor-pointer items-center justify-center gap-x-2 font-medium outline-offset-1 select-none',
+    {
+      'cursor-not-allowed': disabled,
+    },
     SizeClass[size],
     variant !== 'text' && Padding[size],
     ViewClass[`${variant}_${pallet}`](disabled),

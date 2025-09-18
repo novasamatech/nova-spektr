@@ -1,13 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
+import { generatePath } from 'react-router-dom';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { FootnoteText, HeadlineText } from '@/shared/ui';
-import { Box, Skeleton } from '@/shared/ui-kit';
+import { Paths } from '@/shared/routes';
+import { getAppUrl } from '@/shared/routes/utils';
+import { FootnoteText, HeadlineText, IconButton } from '@/shared/ui';
+import { Box, Copy, Skeleton } from '@/shared/ui-kit';
 import { ReferendumVoteChart, TrackInfo, referendumService, votingService } from '@/entities/governance';
+import { networkUtils } from '@/entities/network';
 import { listAggregate } from '../../aggregates/list';
 import { proposerIdentityAggregate } from '../../aggregates/proposerIdentity';
 import { listService } from '../../lib/listService';
@@ -24,75 +28,90 @@ type Props = {
   asset: Asset;
   referendum: AggregatedReferendum;
   isTitlesLoading: boolean;
+  isApprovalThresholdsLoading?: boolean;
   onSelect: (value: AggregatedReferendum) => void;
 };
 
-export const ReferendumItem = memo(({ api, chain, asset, referendum, isTitlesLoading, onSelect }: Props) => {
-  const { t } = useI18n();
+export const ReferendumItem = memo(
+  ({ api, chain, asset, referendum, isTitlesLoading, isApprovalThresholdsLoading, onSelect }: Props) => {
+    const { t } = useI18n();
 
-  const { referendumId, approvalThreshold } = referendum;
+    const { referendumId, approvalThreshold } = referendum;
 
-  const title = useStoreMap({
-    store: listAggregate.$titles,
-    keys: [referendum.referendumId],
-    fn: (titles, [id]) => titles[id] ?? null,
-  });
+    const title = useStoreMap({
+      store: listAggregate.$titles,
+      keys: [referendum.referendumId],
+      fn: (titles, [id]) => titles[id] ?? null,
+    });
 
-  const identity = useStoreMap({
-    store: proposerIdentityAggregate.$proposers,
-    keys: [referendum.votedByDelegates],
-    fn: (proposers, [delegates]) => listService.getMappedIdentity(proposers, delegates),
-  });
+    const identity = useStoreMap({
+      store: proposerIdentityAggregate.$proposers,
+      keys: [referendum.votedByDelegates],
+      fn: (proposers, [delegates]) => listService.getMappedIdentity(proposers, delegates),
+    });
 
-  const voteFractions =
-    referendumService.isOngoing(referendum) && approvalThreshold
-      ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
-      : null;
+    const voteFractions =
+      referendumService.isOngoing(referendum) && approvalThreshold
+        ? votingService.getVoteFractions(referendum.tally, approvalThreshold.value)
+        : null;
 
-  const titleNode =
-    title ||
-    (isTitlesLoading ? (
-      <Skeleton height="1em" width="28ch" />
-    ) : (
-      t('governance.referendums.referendumTitle', { index: referendumId })
-    ));
+    const titleNode =
+      title ||
+      (isTitlesLoading ? (
+        <Skeleton height="1em" width="28ch" />
+      ) : (
+        t('governance.referendums.referendumTitle', { index: referendumId })
+      ));
 
-  return (
-    <ListItem onClick={() => onSelect(referendum)}>
-      <div className="flex w-full items-center gap-x-2">
-        <VotingStatusBadge referendum={referendum} />
+    const referendumPath = generatePath(Paths.GOVERNANCE_REFERENDUM, {
+      chainId: networkUtils.chainNameToUrl(chain.name),
+      referendumId,
+    });
+    const referendumLink = getAppUrl(referendumPath);
 
-        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
+    return (
+      <ListItem onClick={() => onSelect(referendum)}>
+        <div className="flex w-full items-center gap-x-2">
+          <VotingStatusBadge referendum={referendum} />
 
-        <div className="ml-auto flex text-text-secondary">
-          {referendumId && (
-            <FootnoteText className="text-inherit" testId={TEST_IDS.GOVERNANCE.PROPOSAL_ID}>
-              #{referendumId}
-            </FootnoteText>
-          )}
-          {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
+          <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
+
+          <div className="ml-auto flex text-text-secondary">
+            {referendumId && (
+              <FootnoteText className="text-inherit" testId={TEST_IDS.GOVERNANCE.PROPOSAL_ID}>
+                #{referendumId}
+              </FootnoteText>
+            )}
+            {referendumService.isOngoing(referendum) && <TrackInfo trackId={referendum.track} />}
+            <Copy value={referendumLink.href} notification={t('governance.referendums.linkCopied')}>
+              <IconButton className="ml-2 shrink-0 p-0 text-icon-default" name="export" />
+            </Copy>
+          </div>
         </div>
-      </div>
 
-      <div className="flex w-full items-start gap-x-6">
-        <HeadlineText className="pointer-events-auto flex-1">{titleNode}</HeadlineText>
-        <div className="shrink-0 basis-[200px]">
-          {voteFractions ? (
-            <ReferendumVoteChart aye={voteFractions.aye} nay={voteFractions.nay} pass={voteFractions.pass} />
-          ) : null}
+        <div className="flex w-full items-start gap-x-6">
+          <HeadlineText className="pointer-events-auto flex-1">{titleNode}</HeadlineText>
+          <div className="shrink-0 basis-[200px]">
+            {voteFractions && (
+              <ReferendumVoteChart aye={voteFractions.aye} nay={voteFractions.nay} pass={voteFractions.pass} />
+            )}
+            {!voteFractions && referendumService.isOngoing(referendum) && isApprovalThresholdsLoading && (
+              <Skeleton height={4} />
+            )}
+          </div>
         </div>
-      </div>
 
-      <Box width="max-content">
-        <VotedBy
-          direction="row"
-          chain={chain}
-          asset={asset}
-          identity={identity}
-          delegates={referendum.votedByDelegates}
-          castingVotes={referendum.voting.votes}
-        />
-      </Box>
-    </ListItem>
-  );
-});
+        <Box width="max-content">
+          <VotedBy
+            direction="row"
+            chain={chain}
+            asset={asset}
+            identity={identity}
+            delegates={referendum.votedByDelegates}
+            castingVotes={referendum.voting.votes}
+          />
+        </Box>
+      </ListItem>
+    );
+  },
+);

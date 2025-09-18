@@ -1,6 +1,6 @@
 import { type ReactNode, memo } from 'react';
 
-import { type MultisigAccount } from '@/shared/core';
+import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
@@ -8,29 +8,40 @@ import { Accordion } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
-import { TransactionTitle } from '@/entities/transaction';
+import { TransactionTitle, findCoreTransaction } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 
 import { OperationFullInfo } from './OperationFullInfo';
 import { OperationIcon } from './OperationIcon';
 
 type Props = {
   operation: MultisigOperation;
-  account: MultisigAccount;
+  account: MultisigAccount | FlexibleMultisigAccount;
 };
 
-export const operationTitleTransformer = createTransformer<{ operation: MultisigOperation }, ReactNode>();
+export const operationTitleTransformer = createTransformer<
+  { operation: MultisigOperation; showCoreTransaction?: boolean },
+  ReactNode
+>();
 
 export const Operation = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
-  const externalTitleNode = useTransformer(operationTitleTransformer, { operation });
-  let titleNode;
 
+  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
+  const externalTitleNode = useTransformer(operationTitleTransformer, {
+    operation,
+    showCoreTransaction,
+  });
+
+  let titleNode;
   if (externalTitleNode) {
     titleNode = externalTitleNode;
   } else {
+    const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+
     const title =
-      operation.section && operation.method
-        ? formatSectionAndMethod(operation.section, operation.method)
+      coreTx?.section && coreTx?.method
+        ? formatSectionAndMethod(coreTx.section, coreTx.method)
         : t('operations.titles.unknown');
     titleNode = (
       <>
@@ -46,7 +57,7 @@ export const Operation = memo(({ operation, account }: Props) => {
         <div className="flex h-[52px] w-full items-center gap-4 overflow-hidden">
           <div className="flex w-full items-center gap-4 overflow-hidden">
             <OperationTitleDate operation={operation} />
-            <OperationIcon operation={operation} />
+            <OperationIcon operation={operation} account={account} />
             {titleNode}
           </div>
           <OperationTitleStatus operation={operation} account={account} />

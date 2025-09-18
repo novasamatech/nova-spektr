@@ -49,7 +49,7 @@ export const AssetsPortfolioView = () => {
   return (
     <div className="flex min-h-full w-full flex-col items-center gap-y-2 py-4">
       {list.length > 0 && (
-        <div className={cnTw('grid w-[736px] items-center pr-4 pl-9.5', getColStyle(wallet))}>
+        <div className={cnTw('grid w-[736px] items-center px-9', getColStyle(wallet))}>
           <FootnoteText className="text-text-tertiary">{t('balances.token')}</FootnoteText>
           <FootnoteText className="text-text-tertiary" align="right">
             {fiatFlag && t('balances.price')}

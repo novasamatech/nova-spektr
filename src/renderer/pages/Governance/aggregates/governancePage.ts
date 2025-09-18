@@ -107,6 +107,7 @@ export const governancePageAggregate = {
   $isSearching: filterModel.$query.map((x) => x.length > 0),
   $isLoading: listAggregate.$isLoading,
   $isTitlesLoading: listAggregate.$isTitlesLoading,
+  $isApprovalThresholdsLoading: listAggregate.$isApprovalThresholdsLoading,
 
   gates: {
     flow,

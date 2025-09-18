@@ -3,7 +3,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 // eslint-disable-next-line boundaries/element-types
 import { type AnyAccount, type ChainAccount, type UniversalAccount } from '@/domains/network';
 
-import { type NoID } from './general';
+import { type ChainId, type NoID } from './general';
 import { type ProxyType, type ProxyVariant } from './proxy';
 import { type Signatory } from './signatory';
 
@@ -34,12 +34,28 @@ export interface MultisigAccount extends UniversalAccount {
   accountType: AccountType.MULTISIG;
   signatories: Signatory[];
   threshold: number;
+
+  // Temp fields for freshly created user accounts , used for sync comparison with indexer metadata
+  blockNumber?: number; // Block number when this account was created
+  remarkChainId?: ChainId; // Chain ID where the remark was submitted
 }
 
+/**
+ * Special account type for flexible multisig. It contains 2 accounts from
+ * chain, proxied account that works as facade and proxy account that is actual
+ * multisig account.
+ */
 export interface FlexibleMultisigAccount extends ChainAccount {
   accountType: AccountType.FLEX_MULTISIG;
+  // multisig account part
+  multisigAccountId: AccountId;
   signatories: Signatory[];
   threshold: number;
+
+  // proxied account part
+  deposit: string;
+  blockNumber: number;
+  extrinsicIndex: number;
 }
 
 export interface MultisigSignatoryAccount extends UniversalAccount {
@@ -69,15 +85,6 @@ export interface ProxiedConnection {
   proxyType: ProxyType;
 }
 
-export interface FlexibleProxiedAccount extends ChainAccount {
-  accountType: AccountType.FLEX_PROXIED;
-  proxyAccountId: AccountId;
-  delay: number;
-  deposit: string;
-  blockNumber: number;
-  extrinsicIndex: number;
-}
-
 export type DraftAccount<T extends AnyAccount> = Omit<NoID<T>, 'accountId' | 'walletId'>;
 
 export const enum AccountType {
@@ -90,7 +97,6 @@ export const enum AccountType {
   PROXIED = 'proxied',
   MULTISIG_SIGNATORY = 'multisig_signatory',
   FLEX_MULTISIG = 'flex_multisig',
-  FLEX_PROXIED = 'flex_proxied',
 }
 
 export const enum KeyType {

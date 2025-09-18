@@ -9,7 +9,6 @@ import {
   type ChainId,
   CryptoType,
   type FlexibleMultisigAccount,
-  type FlexibleProxiedAccount,
   type MultisigAccount,
   type MultisigSignatoryAccount,
   type ProxiedAccount,
@@ -35,14 +34,18 @@ export const accountUtils = {
   isVaultShardAccount,
   isMultisigAccount,
   isFlexibleMultisigAccount,
-  isAnyMultisigAccount,
   isMultisigSignatoryAccount,
   isWcAccount,
   isProxiedAccount,
-  isFlexibleProxiedAccount,
   isPureProxiedAccount,
 
+  /**
+   * @deprecated Use accountService.isAccountAvailableOnChain instead
+   */
   isChainIdMatch,
+  /**
+   * @deprecated Use accountService.isAccountAvailableOnChain instead
+   */
   isChainAndCryptoMatch,
   isAccountWithShards,
   isNonBaseVaultAccount,
@@ -111,10 +114,6 @@ function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is Fle
   return 'accountType' in account && account.accountType === AccountType.FLEX_MULTISIG;
 }
 
-function isAnyMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount | FlexibleMultisigAccount {
-  return isMultisigAccount(account) || isFlexibleMultisigAccount(account);
-}
-
 function isMultisigSignatoryAccount(account: Partial<AnyAccount>): account is MultisigSignatoryAccount {
   return 'accountType' in account && account.accountType === AccountType.MULTISIG_SIGNATORY;
 }
@@ -123,15 +122,6 @@ function isProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccou
   return (
     // @ts-expect-error Partial type breaks required type field usage
     accountService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.PROXIED
-  );
-}
-
-function isFlexibleProxiedAccount(account: Partial<AnyAccount>): account is FlexibleProxiedAccount {
-  return (
-    // @ts-expect-error Partial type breaks required type field usage
-    accountService.isChainAccount(account) &&
-    'accountType' in account &&
-    account.accountType === AccountType.FLEX_PROXIED
   );
 }
 
@@ -163,6 +153,7 @@ function isChainAndCryptoMatch(account: AnyAccount, chain: Chain): boolean {
 }
 
 function isCryptoTypeMatch(account: AnyAccount, chain: Chain): boolean {
+  // TODO check this logic, should be incorrect
   if (isWcAccount(account)) {
     return true;
   }

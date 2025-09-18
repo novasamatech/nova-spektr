@@ -5,18 +5,15 @@ import { createGate } from 'effector-react';
 import { delay, or, spread } from 'patronum';
 
 import { balanceService } from '@/shared/api/balances';
-import { proxyService } from '@/shared/api/proxy';
 import { type Asset, type Contact, type Transaction, type Wallet } from '@/shared/core';
+import { Step, TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import {
-  Step,
-  TEST_ACCOUNTS,
-  getNativeAsset,
-  nonNullable,
-  nullable,
-  toAccountId,
-  withdrawableAmountBN,
-} from '@/shared/lib/utils';
-import { createComplexTxStore, createFeeCalculator, createSignatoriesStore } from '@/shared/transactions';
+  createComplexTxStore,
+  createFeeCalculator,
+  createSignatoriesStore,
+  createTxValidationStore,
+  createTxValidator,
+} from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
@@ -121,12 +118,12 @@ sample({
   target: $existentialDeposit,
 });
 
-const $proxyDeposit = combine($api, api => (api && proxyService.getProxyDeposit(api, '0', 1)) ?? null);
+const $proxyDepositFactor = combine($api, api => (api && api.consts.proxy.proxyDepositFactor.toString()) ?? null);
 
-const $totalDeposit = combine($existentialDeposit, $proxyDeposit, (existentialDeposit, proxyDeposit) => {
-  if (nullable(proxyDeposit)) return null;
+const $totalDeposit = combine($existentialDeposit, $proxyDepositFactor, (existentialDeposit, proxyDepositFactor) => {
+  if (nullable(proxyDepositFactor)) return null;
 
-  return existentialDeposit.add(new BN(proxyDeposit));
+  return existentialDeposit.add(new BN(proxyDepositFactor));
 });
 
 // Transactions
@@ -150,11 +147,9 @@ const $fakeProxyTx = combine(
     chain: formModel.$chain,
     isConnected: formModel.$isChainConnected,
     api: $api,
-    coreTx: $coreTx,
   },
-  ({ isConnected, chain, api, coreTx }): Transaction | null => {
+  ({ isConnected, chain, api }): Transaction | null => {
     if (!chain || !isConnected || !api) return null;
-    if (coreTx) return coreTx;
 
     return transactionBuilder.buildCreatePureProxy({
       chain: chain,
@@ -171,8 +166,9 @@ const $fakeFinalTx = combine(
     signatories: signatoryModel.$signatories,
     threshold: formModel.form.fields.threshold.$value,
     totalDeposit: $totalDeposit,
+    signer: $signer,
   },
-  ({ isConnected, chain, api, signatories, threshold, totalDeposit }): Transaction | null => {
+  ({ isConnected, chain, api, signatories, threshold, totalDeposit, signer }): Transaction | null => {
     if (!chain || !isConnected || !api) return null;
 
     const signatoriesWrapped = signatories
@@ -181,7 +177,7 @@ const $fakeFinalTx = combine(
 
     return transactionBuilder.buildCreateFlexibleMultisig({
       chain,
-      signerAccountId: TEST_ACCOUNTS[0],
+      signerAccountId: signer?.accountId || TEST_ACCOUNTS[0],
       signatories: signatoriesWrapped,
       multisigAccountId: TEST_ACCOUNTS[0],
       threshold: threshold || 2,
@@ -219,7 +215,31 @@ const { $tx, $route } = createComplexTxStore({
   signatory: $signer,
   accounts: accounts.$list,
   chain: formModel.$chain,
-  transaction: $fakeProxyTx,
+  transaction: $coreTx,
+});
+
+// Validation
+const validator = createTxValidator(); //should validate all fee (proxy  deposit + existential)
+const { $errors: $firstErrors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $tx,
+  },
+});
+
+const { $errors: $secondErrors } = createTxValidationStore({
+  validator,
+  params: {
+    api: $api,
+    asset: $asset,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $fakeFinalTx,
+  },
 });
 
 const $signerBalance = combine(
@@ -233,19 +253,6 @@ const $signerBalance = combine(
     const asset = getNativeAsset(chain.assets);
 
     return balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId) ?? null;
-  },
-);
-
-const $isEnoughBalance = combine(
-  {
-    fee: $fee,
-    totalDeposit: $totalDeposit,
-    signerBalance: $signerBalance,
-  },
-  ({ fee, totalDeposit, signerBalance }) => {
-    if (nullable(signerBalance) || nullable(totalDeposit)) return false;
-
-    return fee.add(totalDeposit).lte(withdrawableAmountBN(signerBalance));
   },
 );
 
@@ -343,10 +350,12 @@ sample({
   },
   fn: ({ signatories, contacts }) => {
     const signatoriesWithoutSigner = signatories.slice(1);
+    const filtredSignatories = signatoriesWithoutSigner.filter(s => !s.walletId);
+
     const contactMap = new Map(contacts.map(c => [c.accountId, c]));
     const updatedContacts: Contact[] = [];
 
-    for (const { address, name } of signatoriesWithoutSigner) {
+    for (const { address, name } of filtredSignatories) {
       const contact = contactMap.get(toAccountId(address));
 
       if (!contact) continue;
@@ -373,7 +382,7 @@ sample({
 
     return signatories
       .slice(1)
-      .filter(signatory => !contactsSet.has(toAccountId(signatory.address)))
+      .filter(signatory => !signatory.walletId && !contactsSet.has(toAccountId(signatory.address)))
       .map(
         ({ address, name }) =>
           ({
@@ -418,13 +427,12 @@ export const flexibleMultisigModel = {
   $signerBalance,
   $asset,
 
+  $errors: combine($firstErrors, $secondErrors, (first, second) => [...first, ...second]),
   $fee,
-  $pendingFee: or($pendingProxyFee, $pendingMultisigFee),
-  $proxyDeposit,
+  $proxyDeposit: $proxyDepositFactor,
   $existentialDeposit,
   $totalDeposit,
   $isLoading: or($pendingProxyFee, $pendingMultisigFee, getExistentialDepositFx.pending),
-  $isEnoughBalance,
 
   signerSelected,
   stepChanged,

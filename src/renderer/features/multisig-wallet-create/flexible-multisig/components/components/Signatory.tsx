@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { type Address as AccountAddress, type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { includesMultiple, nullable, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
+import { includesMultiple, performSearch, toAccountId, toAddress, validateAddress } from '@/shared/lib/utils';
 import { FootnoteText, IconButton, InputHint } from '@/shared/ui';
 import { Address, Identicon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Input, Select } from '@/shared/ui-kit';
@@ -53,6 +53,7 @@ export const Signatory = ({
   const wallets = useUnit(walletModel.$wallets);
   const chain = useUnit(formModel.$chain);
   const selectedSignatories = useUnit(signatoryModel.$signatories);
+  const accountsList = useUnit(walletModel.$availableAccounts);
 
   const filteredContacts = useMemo(() => {
     if (isOwnAccount) return [];
@@ -66,7 +67,7 @@ export const Signatory = ({
 
   const ownAccountName =
     walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: w => walletUtils.isValidSignatory(w) && (!selectedWalletId || w.id.toString() === selectedWalletId),
+      walletFn: w => !walletUtils.isWatchOnly(w) && (!selectedWalletId || w.id.toString() === selectedWalletId),
       accountFn: a => {
         if (!chain) return false;
 
@@ -92,43 +93,40 @@ export const Signatory = ({
 
   // Wallets
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
-    if (!chain || wallets.length === 0 || (!isOwnAccount && validateAddress(query, chain))) return [];
+    if (!chain || accountsList.length === 0 || (!isOwnAccount && validateAddress(query, chain))) return [];
 
-    const filteredWallets = walletUtils.getWalletsFilteredAccounts(wallets, {
-      walletFn: walletUtils.isValidSignatory,
-      accountFn: account => {
-        const isCorrectAccount = !accountUtils.isWatchOnlyAccount(account);
+    const filteredAccounts = accountsList.filter(account => {
+      const isCorrectAccount =
+        !accountUtils.isWatchOnlyAccount(account) && !accountUtils.isFlexibleMultisigAccount(account);
 
-        const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
-        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+      const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
+      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
-        if (isOwnAccount) return isChainMatch && isCorrectAccount;
+      if (isOwnAccount) return isChainMatch && isCorrectAccount;
 
-        const queryPass = includesMultiple([account.name, address], query);
+      const queryPass = includesMultiple([account.name, address], query);
 
-        return isChainMatch && isCorrectAccount && queryPass;
-      },
+      return isChainMatch && isCorrectAccount && queryPass;
     });
 
-    if (nullable(filteredWallets) || filteredWallets.length === 0) return [];
+    if (filteredAccounts.length === 0) return [];
 
     const accountOptions = new Map<string, ComboboxItem>();
 
-    for (const wallet of filteredWallets) {
-      for (const account of wallet.accounts) {
-        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
+    for (const account of filteredAccounts) {
+      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
-        if (!isOwnAccount && selectedSignatories.some(s => toAccountId(s.address) === account.accountId)) continue;
-        if (accountOptions.has(address)) continue;
+      if (!isOwnAccount && selectedSignatories.some(s => toAccountId(s.address) === account.accountId)) continue;
+      if (accountOptions.has(address)) continue;
+      const wallet = wallets.find(w => w.id === account.walletId);
 
-        const title = wallet.name === account.name ? account.name : `${wallet.name} (${account.name})`;
+      const title = !wallet || wallet.name === account.name ? account.name : `${wallet.name} (${account.name})`;
 
-        accountOptions.set(address, {
-          id: address,
-          value: { address, walletId: account.walletId },
-          label: <Address iconSize={20} showIcon title={title} address={address} />,
-        });
-      }
+      accountOptions.set(address, {
+        id: address,
+        value: { address, walletId: account.walletId },
+        label: <Address iconSize={20} showIcon title={title} address={address} />,
+      });
     }
 
     if (accountOptions.size === 0) return [];
@@ -197,9 +195,12 @@ export const Signatory = ({
     const selectedOption = options.flatMap(group => group.items).find(option => option.value.address === value);
     const newSignatory = selectedOption?.value;
 
+    const shouldClearName = value !== signatoryAddress && !selectedOption;
+    const newName = shouldClearName ? '' : signatoryName;
+
     signatoryModel.events.changeSignatory({
       index: signatoryIndex,
-      name: signatoryName,
+      name: newName,
       address: value,
       walletId: newSignatory?.walletId?.toString(), // will be undefined for contact
     });
@@ -236,7 +237,13 @@ export const Signatory = ({
               placeholder={t('createMultisigAccount.signatorySelection')}
               invalid={isDuplicate}
               value={query}
-              prefixElement={<Identicon value={isInvalid ? '' : signatoryAddress} size={20} background={false} />}
+              prefixElement={
+                <Identicon
+                  address={isInvalid ? null : (signatoryAddress as AccountAddress)}
+                  size={20}
+                  background={false}
+                />
+              }
               onChange={onAddressChange}
               onInput={setQuery}
             >
@@ -269,7 +276,7 @@ export const Signatory = ({
       </Field>
       {!isOwnAccount && onDelete && (
         <IconButton
-          className="mt-9 self-start justify-self-center"
+          className="mb-1 self-end justify-self-center"
           name="delete"
           size={16}
           onClick={() => onDelete(signatoryIndex)}

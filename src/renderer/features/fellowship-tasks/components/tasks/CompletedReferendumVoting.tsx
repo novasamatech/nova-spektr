@@ -4,11 +4,12 @@ import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, Icon, type IconNames, SmallTitleText } from '@/shared/ui';
-import { Box, Markdown } from '@/shared/ui-kit';
+import { Box } from '@/shared/ui-kit';
 import { type CompletedReferendum } from '@/domains/collectives';
 import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
 import { referendums } from '../../model/referendums';
 import { tasksService } from '../../service';
+import { ReferendumTaskMarkdown } from '../ReferendumTaskMarkdown';
 
 const getStatusLabel = (type: CompletedReferendum['type'], t: TFunction): { icon: IconNames; label: string } => {
   switch (type) {
@@ -44,9 +45,7 @@ export const CompletedReferendumVoting = memo(({ referendum }: Props) => {
   const content = useMemo(
     () =>
       meta?.description ? (
-        <Markdown cut="150px" compact>
-          {tasksService.cutMarkdown(meta.description)}
-        </Markdown>
+        <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(meta.description)}</ReferendumTaskMarkdown>
       ) : (
         t('fellowship.tasks.task.anyReferendum.noDescription')
       ),

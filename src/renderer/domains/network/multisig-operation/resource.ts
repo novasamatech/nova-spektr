@@ -4,7 +4,7 @@ import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
 import { type Chain, type ChainId, type DecodedTransaction, type HexString } from '@/shared/core';
-import { getCreatedDateFromApi, nullable } from '@/shared/lib/utils';
+import { getCreatedDateFromApi, nullable, validateCallData } from '@/shared/lib/utils';
 import { multisigPallet } from '@/shared/pallet/multisig';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
@@ -86,7 +86,7 @@ function mapSubqueryOperationRecord(
   let transaction: DecodedTransaction | null = null;
 
   try {
-    if (response.callData) {
+    if (response.callData && validateCallData(response.callData, response.callHash)) {
       transaction = decodeCallData(api, response.accountId, response.callData, chains);
     }
   } catch {
@@ -133,8 +133,17 @@ async function fetchOperationsHistory(
     .filter((x: MultisigOperation | null) => {
       if (nullable(x)) return false;
 
+      // we consider "pending" operations from indexer as invalid. All pending operations should be fetched from chain directly.
+      if (x.status === 'pending') {
+        return false;
+      }
+
       // filtering out existing operations
-      return !existingMultisigs.has(x.id);
+      if (existingMultisigs.has(x.id)) {
+        return false;
+      }
+
+      return true;
     });
 }
 
@@ -183,7 +192,9 @@ const fetchOnchainOperations = async (
 
     let decodedTransaction: DecodedTransaction | null = null;
     try {
-      decodedTransaction = callData ? decodeCallData(api, accountId, callData, chains) : null;
+      if (callData && validateCallData(callData, key.callHash)) {
+        decodedTransaction = callData ? decodeCallData(api, accountId, callData, chains) : null;
+      }
     } catch {
       // do nothing
     }

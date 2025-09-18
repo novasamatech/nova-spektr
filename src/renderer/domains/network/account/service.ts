@@ -30,7 +30,7 @@ import {
   type UniversalAccount,
 } from './types';
 
-const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: UniversalAccount; chain: Chain }>();
+const accountAvailabilityOnChainAnyOf = createAnyOf<{ account: AnyAccount; chain: Chain }>();
 const accountActionPermissionAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCanSignMultipleAnyOf = createAnyOf<{ account: AnyAccount }>();
 const accountCollectChildrenPipeline = createPipeline<AnyAccount[], { account: AnyAccount; accounts: AnyAccount[] }>();
@@ -83,6 +83,10 @@ function isCryptoMatch(account: Pick<AnyAccount, 'cryptoType'>, chain: Chain): b
   return supportedCryptoTypes.includes(account.cryptoType);
 }
 
+function isChainMatch(account: ChainAccount, chain: Chain) {
+  return account.chainId === chain.chainId;
+}
+
 function isChainAccount(account: Pick<AnyAccount, 'type'>): account is ChainAccount {
   return account.type === 'chain';
 }
@@ -91,7 +95,7 @@ function isUniversalAccount(account: Pick<AnyAccount, 'type'>): account is Unive
   return account.type === 'universal';
 }
 
-function isAccountAvailableOnChain(account: Pick<AnyAccount, 'type' | 'cryptoType'>, chain: Chain) {
+function isAccountAvailableOnChain(account: AnyAccount, chain: Chain) {
   if (!chain) {
     return false;
   }
@@ -100,15 +104,7 @@ function isAccountAvailableOnChain(account: Pick<AnyAccount, 'type' | 'cryptoTyp
     return false;
   }
 
-  if (isChainAccount(account)) {
-    return account.chainId === chain.chainId;
-  }
-
-  if (isUniversalAccount(account)) {
-    return accountAvailabilityOnChainAnyOf.check({ account, chain });
-  }
-
-  return false;
+  return accountAvailabilityOnChainAnyOf.check({ account, chain });
 }
 
 function filterAccountsOnChain(accounts: AnyAccount[], chain: Chain) {
@@ -411,6 +407,7 @@ export const accountService = {
   isUniversalAccount,
   isAccountAvailableOnChain,
   isCryptoMatch,
+  isChainMatch,
 
   canSignMultipleTransactions,
 

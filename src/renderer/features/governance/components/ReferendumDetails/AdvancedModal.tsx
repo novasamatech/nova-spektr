@@ -4,10 +4,10 @@ import { useUnit } from 'effector-react';
 import { type Asset, type OngoingReferendum } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
-import { copyToClipboard, formatAsset, nonNullable } from '@/shared/lib/utils';
+import { formatAsset, nonNullable } from '@/shared/lib/utils';
 import { DetailRow, IconButton, Separator } from '@/shared/ui';
 import { Account, Hash } from '@/shared/ui-entities';
-import { Modal } from '@/shared/ui-kit';
+import { Copy, Modal } from '@/shared/ui-kit';
 import { networkSelectorModel } from '../../model/networkSelector';
 import { type AggregatedReferendum } from '../../types/structs';
 
@@ -74,7 +74,9 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
               <DetailRow label={t('governance.advanced.fields.callHash')}>
                 <div className="flex w-32 items-center gap-1 text-footnote text-text-secondary">
                   <Hash value={rawProposal} variant="short" />
-                  <IconButton name="copy" onClick={() => copyToClipboard(rawProposal)} />
+                  <Copy value={rawProposal}>
+                    <IconButton name="copy" />
+                  </Copy>
                 </div>
               </DetailRow>
             ) : null}

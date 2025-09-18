@@ -10,9 +10,8 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getRelaychainAsset, keys, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
-import { type AnyAccount, identity } from '@/domains/network';
+import { type AnyAccount, accountService, identity } from '@/domains/network';
 import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/entities/network';
-import { priceProviderModel } from '@/entities/price';
 import {
   DEFAULT_STAKING_CHAIN,
   STAKING_NETWORK,
@@ -125,7 +124,6 @@ export const Staking = () => {
 
   const activeChain = chainId && chains[chainId] ? chains[chainId] : null;
   const addressPrefix = activeChain?.addressPrefix;
-  const explorers = activeChain?.explorers;
 
   const timelineChainId = useMemo(() => {
     return activeChain?.additional?.timelineChain ?? activeChain?.chainId;
@@ -134,7 +132,7 @@ export const Staking = () => {
 
   const accounts =
     selectedAccounts.filter((account, _, collection) => {
-      if (!chainId) return false;
+      if (!activeChain) return false;
 
       const isBaseAccount = accountUtils.isVaultBaseAccount(account);
       const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
@@ -145,7 +143,7 @@ export const Staking = () => {
         return false;
       }
 
-      return accountUtils.isChainIdMatch(account, chainId);
+      return accountService.isAccountAvailableOnChain(account, activeChain);
     }) || [];
 
   const accountIds = accounts.map((a) => a.accountId);
@@ -154,10 +152,6 @@ export const Staking = () => {
 
   useEffect(() => {
     setChainId(localStorageService.getFromStorage(STAKING_NETWORK, DEFAULT_STAKING_CHAIN));
-  }, []);
-
-  useEffect(() => {
-    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
   }, []);
 
   useEffect(() => {
@@ -196,13 +190,26 @@ export const Staking = () => {
   useEffect(() => {
     if (!activeWallet) return;
 
+    // TODO remove this check
     const isMultisig = walletUtils.isMultisig(activeWallet);
     const isNovaWallet = walletUtils.isNovaWallet(activeWallet);
     const isWalletConnect = walletUtils.isWalletConnect(activeWallet);
     const isPolkadotVault = walletUtils.isPolkadotVaultGroup(activeWallet);
+    const isPolkadotExtension = walletUtils.isPolkadotExtension(activeWallet);
+    const isTalismanExtension = walletUtils.isTalismanExtension(activeWallet);
+    const isSubWalletExtension = walletUtils.isSubWalletExtension(activeWallet);
     const isProxied = walletUtils.isProxied(activeWallet);
 
-    if (isMultisig || isNovaWallet || isWalletConnect || isProxied || (isPolkadotVault && accountIds.length === 1)) {
+    if (
+      isMultisig ||
+      isNovaWallet ||
+      isWalletConnect ||
+      isProxied ||
+      isPolkadotExtension ||
+      isTalismanExtension ||
+      isSubWalletExtension ||
+      (isPolkadotVault && accountIds.length === 1)
+    ) {
       setSelectedNominators([accountIds[0]]);
     } else {
       setSelectedNominators([]);
@@ -434,7 +441,7 @@ export const Staking = () => {
         selectedValidators={selectedValidators}
         notSelectedValidators={notSelectedValidators}
         identities={identities}
-        explorers={explorers}
+        chain={activeChain ?? undefined}
         isOpen={isShowNominators}
         onClose={toggleNominators}
       />

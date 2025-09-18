@@ -1,4 +1,5 @@
 import { createFeature } from '@/shared/feature';
+import { toAddress } from '@/shared/lib/utils';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { accountSDK } from '@/sdk/account';
@@ -41,7 +42,7 @@ watchOnlyWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
 
   const accountId = wallet.accounts[0]?.accountId;
 
-  return <WalletAccountIcon address={accountId} type={wallet.type} size={size} />;
+  return <WalletAccountIcon address={toAddress(accountId)} type={wallet.type} size={size} />;
 });
 
 watchOnlyWalletFeature.inject(walletGroupSlot, {

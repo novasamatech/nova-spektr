@@ -10,12 +10,26 @@ type Params = {
   extrinsic: Store<SubmittableExtrinsic<'promise'> | null>;
 };
 
+type FeeCalculationRequest = {
+  extrinsic: SubmittableExtrinsic<'promise'>;
+  requestId: string;
+};
+
+type FeeCalculationResult = {
+  fee: BN;
+  requestId: string;
+};
+
 export const createFeeCalculator = ({ active = createStore(true), extrinsic }: Params) => {
   const $fee = createStore(BN_ZERO);
+  const $currentRequestId = createStore<string | null>(null);
 
-  const fetchFeeFx = createEffect((extrinsic: SubmittableExtrinsic<'promise'>) => {
-    return transactionService.getExtrinsicFee(extrinsic).then((x) => new BN(x));
-  });
+  const fetchFeeFx = createEffect(
+    async ({ extrinsic, requestId }: FeeCalculationRequest): Promise<FeeCalculationResult> => {
+      const fee = await transactionService.getExtrinsicFee(extrinsic).then((x) => new BN(x));
+      return { fee, requestId };
+    },
+  );
 
   const $pending = restore(fetchFeeFx.pending.updates, true);
 
@@ -30,12 +44,28 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
     target: $fee,
   });
 
+  sample({
+    clock: extrinsic,
+    filter: nullable,
+    fn: () => null,
+    target: $currentRequestId,
+  });
+
   const feeRequested = sample({
     clock: [extrinsic.updates, active.updates],
     source: { active, extrinsic },
   }).filterMap(({ active, extrinsic }) => {
     if (!active) return undefined;
-    if (extrinsic) return extrinsic;
+    if (extrinsic) {
+      const requestId = `${Date.now()}-${Math.random()}`;
+      return { extrinsic, requestId };
+    }
+  });
+
+  sample({
+    clock: feeRequested,
+    fn: ({ requestId }) => requestId,
+    target: $currentRequestId,
   });
 
   sample({
@@ -45,9 +75,11 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
 
   sample({
     clock: fetchFeeFx.doneData,
-    source: extrinsic,
-    filter: nonNullable,
-    fn: (_, fee) => fee,
+    source: $currentRequestId,
+    filter: (currentRequestId, { requestId }) => {
+      return currentRequestId === requestId;
+    },
+    fn: (_, { fee }) => fee,
     target: $fee,
   });
 

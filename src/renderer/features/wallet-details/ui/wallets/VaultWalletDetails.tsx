@@ -12,10 +12,10 @@ import { KeyType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { copyToClipboard, isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
+import { isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Hash, type IdenticonIconTheme, WalletAccountIcon } from '@/shared/ui-entities';
-import { Box, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { Box, Copy, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wallet';
@@ -160,9 +160,9 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const accountsCount = Object.values(accountsMap).flat(2).length;
 
   const isSingleAccount = wallet.accounts.length === 1;
-  const address = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
-  if (nullable(address)) return null;
-  const isEthereum = isEthereumAccountId(address);
+  const accoundId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+  if (nullable(accoundId)) return null;
+  const isEthereum = isEthereumAccountId(accoundId);
   const theme: IdenticonIconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
 
   return (
@@ -175,7 +175,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
           <div className="mb-6 flex items-center justify-between px-5">
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
-                <WalletAccountIcon address={address} type={wallet.type} size={42} theme={theme} />
+                <WalletAccountIcon address={toAddress(accoundId)} type={wallet.type} size={42} theme={theme} />
               </div>
               {!isRenameInputOpen && (
                 <>
@@ -197,11 +197,9 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
                             <HelpText className="text-text-secondary">
                               <Hash value={toAddress(wallet.rootAccountId, { prefix: 1 })} variant="full" />
                             </HelpText>
-                            <IconButton
-                              className="shrink-0 text-icon-default"
-                              name="copy"
-                              onClick={() => copyToClipboard(wallet.rootAccountId)}
-                            />
+                            <Copy value={wallet.rootAccountId} notification={t('general.notifications.addressCopied')}>
+                              <IconButton className="shrink-0 text-icon-default" name="copy" />
+                            </Copy>
                           </Box>
                         </Box>
                       </Popover.Content>

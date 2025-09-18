@@ -1,16 +1,10 @@
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
-import {
-  AccountType,
-  type MultisigSignatoryAccount,
-  type Transaction,
-  TransactionType,
-  WalletType,
-} from '@/shared/core';
+import { type Transaction, TransactionType, WalletType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { assert, nullable } from '@/shared/lib/utils';
+import { assert, nullable, toAddress } from '@/shared/lib/utils';
 import { WalletAccountIcon } from '@/shared/ui-entities';
 import { accountService, balanceService, multisigOperationService, transactionService } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
@@ -39,53 +33,39 @@ accountSDK(multisigWalletFeature, {
     return false;
   },
   availableOnChain({ account, chain }) {
-    return (
-      (accountUtils.isMultisigAccount(account) ||
-        accountUtils.isMultisigSignatoryAccount(account) ||
-        (accountUtils.isFlexibleMultisigAccount(account) && networkUtils.isPureProxySupported(chain.options))) &&
-      networkUtils.isMultisigSupported(chain.options)
-    );
+    if (accountUtils.isMultisigAccount(account) || accountUtils.isMultisigSignatoryAccount(account)) {
+      return networkUtils.isMultisigSupported(chain.options);
+    }
+
+    if (accountUtils.isFlexibleMultisigAccount(account)) {
+      return (
+        accountService.isChainMatch(account, chain) &&
+        networkUtils.isMultisigSupported(chain.options) &&
+        networkUtils.isPureProxySupported(chain.options)
+      );
+    }
   },
   canSignMultipleTransactions() {
     return false;
   },
   collectAccountChildren(children, { account, accounts }) {
-    if (accountUtils.isAnyMultisigAccount(account)) {
+    if (accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
       return account.signatories
-        .map((signatory, index) => {
-          const userAccount = accounts.find(a => a.accountId === signatory.accountId);
+        .map(signatory => {
+          const signatoryAccount = accounts.find(a => a.accountId === signatory.accountId);
 
-          if (userAccount) {
-            return userAccount;
-          } else {
-            const accountId = signatory.accountId as string;
-            const signatoryAccount: MultisigSignatoryAccount = {
-              accountType: AccountType.MULTISIG_SIGNATORY,
-              accountId: signatory.accountId,
-              id: signatory.id ? `${signatory.id}` : `${index} ${accountId}`,
-              name: signatory.name ?? '',
-              walletId: account.walletId,
-              cryptoType: account.cryptoType,
-              type: 'universal',
-              signingType: account.signingType,
-            };
-
-            return signatoryAccount;
-          }
+          return (
+            signatoryAccount ??
+            multisigService.createSignatoryVirtualAccount(signatory, account.accountId, account.walletId)
+          );
         })
-        .concat(children);
-    }
-
-    if (accountUtils.isFlexibleProxiedAccount(account)) {
-      return accounts
-        .filter(a => a.walletId === account.walletId && a.accountId === account.proxyAccountId)
         .concat(children);
     }
 
     return children;
   },
   visualGraphNode({ account, t }) {
-    if (accountUtils.isAnyMultisigAccount(account)) {
+    if (accountUtils.isMultisigAccount(account)) {
       return {
         title: 'Multisig',
         subTitle: t('accountsStructure.multisigThreshold', {
@@ -97,9 +77,13 @@ accountSDK(multisigWalletFeature, {
       };
     }
 
-    if (accountUtils.isFlexibleProxiedAccount(account)) {
+    if (accountUtils.isFlexibleMultisigAccount(account)) {
       return {
         title: 'Flexible multisig',
+        subTitle: t('accountsStructure.multisigThreshold', {
+          threshold: account.threshold,
+          total: account.signatories.length,
+        }),
         color: '#E85649',
         background: 'linear-gradient(180deg, #E85649 53.45%, #8707D5 80.32%)',
       };
@@ -114,20 +98,20 @@ accountSDK(multisigWalletFeature, {
     }
   },
   connection({ target }) {
-    if (accountUtils.isAnyMultisigAccount(target)) {
+    if (accountUtils.isMultisigAccount(target)) {
       return {
         color: '#05B199',
       };
     }
 
-    if (accountUtils.isFlexibleProxiedAccount(target)) {
+    if (accountUtils.isFlexibleMultisigAccount(target)) {
       return {
         color: '#E85649',
       };
     }
   },
   validateRouteBalances({ account, api, route, asset, chainId, getBalance }) {
-    if (accountUtils.isAnyMultisigAccount(account)) {
+    if (accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
       const deposit = multisigService.getMultisigDeposit(account.threshold, api);
       const payer = accountService.findNextAccount(route, account);
 
@@ -181,47 +165,63 @@ transactionSDK(multisigWalletFeature, {
     }
   },
   wrap(transaction, { api, account, route }) {
-    if (accountUtils.isAnyMultisigAccount(account)) {
+    if (accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
       const signatory = accountService.findNextAccount(route, account);
       assert(signatory, 'Signatory not found');
 
       const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const encodedTransaction = transactionService.encodeTransaction(transaction, api);
-      const extrinsic = transactionService.createExtrinsic(transaction, api);
 
-      return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
-        const multisigTransaction: MultisigTransaction = {
+      if (accountUtils.isFlexibleMultisigAccount(account)) {
+        // FlexibleMultisig path
+
+        const proxyTransaction: ProxyTransaction = {
           type: 'decoded',
-          section: 'multisig',
-          method: 'asMulti',
+          section: 'proxy',
+          method: 'proxy',
           args: {
-            threshold: account.threshold,
-            otherSignatories,
-            maybeTimepoint: null,
+            real: account.accountId,
+            forceProxyType: 'Any',
             call: encodedTransaction.callData,
-            maxWeight,
           },
         };
 
-        return multisigTransaction;
-      });
-    }
+        const encodedProxyTransaction = transactionService.encodeTransaction(proxyTransaction, api);
+        const proxyExtrinsic = transactionService.createExtrinsic(encodedProxyTransaction, api);
+        return transactionService.getExtrinsicWeight(proxyExtrinsic).then(maxWeight => {
+          return {
+            type: 'decoded',
+            section: 'multisig',
+            method: 'asMulti',
+            args: {
+              threshold: account.threshold,
+              otherSignatories,
+              maybeTimepoint: null,
+              call: encodedProxyTransaction.callData,
+              maxWeight,
+            },
+          } satisfies MultisigTransaction;
+        });
+      } else {
+        // Multisig path
 
-    if (accountUtils.isFlexibleProxiedAccount(account)) {
-      const encodedTransaction = transactionService.encodeTransaction(transaction, api);
+        const extrinsic = transactionService.createExtrinsic(transaction, api);
 
-      const proxyTransaction: ProxyTransaction = {
-        type: 'decoded',
-        section: 'proxy',
-        method: 'proxy',
-        args: {
-          real: account.accountId,
-          forceProxyType: 'Any',
-          call: encodedTransaction.callData,
-        },
-      };
-
-      return proxyTransaction;
+        return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
+          return {
+            type: 'decoded',
+            section: 'multisig',
+            method: 'asMulti',
+            args: {
+              threshold: account.threshold,
+              otherSignatories,
+              maybeTimepoint: null,
+              call: encodedTransaction.callData,
+              maxWeight,
+            },
+          } satisfies MultisigTransaction;
+        });
+      }
     }
   },
   unwrap(transaction) {
@@ -233,56 +233,75 @@ transactionSDK(multisigWalletFeature, {
     }
   },
   wrapLegacy(transaction, { api, account, route }) {
-    if (accountUtils.isAnyMultisigAccount(account)) {
+    if (accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account)) {
       const signatory = accountService.findNextAccount(route, account);
       assert(signatory, 'Signatory not found');
 
       const otherSignatories = multisigOperationService.getOtherSignatories(account, signatory.accountId);
       const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
 
-      return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
-        const multisigTransaction: Transaction = {
-          type: TransactionType.MULTISIG_AS_MULTI,
+      if (accountUtils.isFlexibleMultisigAccount(account)) {
+        // FlexibleMultisig path
+
+        const proxyTransaction: Transaction = {
+          type: TransactionType.PROXY,
           accountId: account.accountId,
           chainId: api.genesisHash.toHex(),
           args: {
-            threshold: account.threshold,
-            otherSignatories,
-            maybeTimepoint: null,
+            real: account.accountId,
+            forceProxyType: 'Any',
             call: extrinsic.method.toHex(),
-            callHash: extrinsic.method.hash.toHex(),
-            maxWeight,
           },
         };
 
-        return multisigTransaction;
-      });
-    }
+        const proxyExtrinsic = getExtrinsic[proxyTransaction.type](proxyTransaction.args, api);
+        return transactionService.getExtrinsicWeight(proxyExtrinsic).then(maxWeight => {
+          return {
+            type: TransactionType.MULTISIG_AS_MULTI,
+            accountId: account.accountId,
+            chainId: api.genesisHash.toHex(),
+            args: {
+              threshold: account.threshold,
+              otherSignatories,
+              maybeTimepoint: null,
+              call: proxyExtrinsic.method.toHex(),
+              callHash: proxyExtrinsic.method.hash.toHex(),
+              maxWeight,
+            },
+          } satisfies Transaction;
+        });
+      } else {
+        // Multisig path
 
-    if (accountUtils.isFlexibleProxiedAccount(account)) {
-      const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
-
-      const proxyTransaction: Transaction = {
-        type: TransactionType.PROXY,
-        accountId: account.accountId,
-        chainId: api.genesisHash.toHex(),
-        args: {
-          real: account.accountId,
-          forceProxyType: 'Any',
-          call: extrinsic.method.toHex(),
-        },
-      };
-
-      return proxyTransaction;
+        return transactionService.getExtrinsicWeight(extrinsic).then(maxWeight => {
+          return {
+            type: TransactionType.MULTISIG_AS_MULTI,
+            accountId: account.accountId,
+            chainId: api.genesisHash.toHex(),
+            args: {
+              threshold: account.threshold,
+              otherSignatories,
+              maybeTimepoint: null,
+              call: extrinsic.method.toHex(),
+              callHash: extrinsic.method.hash.toHex(),
+              maxWeight,
+            },
+          } satisfies Transaction;
+        });
+      }
     }
   },
 });
 
 multisigWalletFeature.inject(walletIconSlot, ({ wallet, size }) => {
-  if (!walletUtils.isMultisig(wallet)) return null;
-  const address = wallet.accounts[0]?.accountId;
+  if (walletUtils.isMultisig(wallet)) {
+    const accountId = wallet.accounts.at(0)?.accountId;
+    if (accountId) {
+      return <WalletAccountIcon address={toAddress(accountId)} type={wallet.type} size={size} />;
+    }
+  }
 
-  return <WalletAccountIcon address={address} type={wallet.type} size={size} />;
+  return null;
 });
 
 multisigWalletFeature.inject(walletGroupSlot, {

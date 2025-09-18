@@ -6,7 +6,7 @@ export const VaultInfoPopover = () => {
   const { t } = useI18n();
 
   return (
-    <Popover>
+    <Popover enableHover>
       <Popover.Trigger>
         <div>
           <Icon name="questionOutline" size={16} />

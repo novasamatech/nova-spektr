@@ -1,18 +1,18 @@
 import { useGate, useUnit } from 'effector-react';
-import { noop } from 'lodash';
 import { type ReactNode, useMemo, useState } from 'react';
 
 import { type FlexibleMultisigWallet, type MultisigWallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
+import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { assert, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, type IconNames, Separator } from '@/shared/ui';
-import { AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
+import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
+import { Account, AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { ContactItem, WalletCardMd, accountUtils, permissionUtils } from '@/entities/wallet';
+import { ChangeSignatories } from '@/features/flexible-change-signatories';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
@@ -39,18 +39,19 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
+  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
 
+  const [isModalOpen, closeModal] = useModalClose(true, onClose);
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [tab, setTab] = useState('1');
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
+
   const multisigAccount = walletAccounts.find(accountUtils.isFlexibleMultisigAccount);
-  const proxiedAccount = walletAccounts.find(accountUtils.isFlexibleProxiedAccount);
 
   assert(multisigAccount, 'Multisig account not found.');
-  assert(proxiedAccount, 'Proxied account not found.');
 
-  const chain = chains[proxiedAccount.chainId];
+  const chain = chains[multisigAccount.chainId];
 
   const canCreateProxy = useMemo(() => {
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
@@ -66,9 +67,11 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   const actions: WalletAction[] = [
     {
-      icon: 'changeSignatories' as IconNames,
-      title: t('walletDetails.multisig.changeSignatories'),
-      onClick: noop,
+      component: (
+        <ChangeSignatories wallet={wallet} onClose={closeModal}>
+          <Action title={t('walletDetails.multisig.changeSignatories')} icon="changeSignatories" />
+        </ChangeSignatories>
+      ),
     },
   ];
 
@@ -101,7 +104,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   //   ),
   // });
 
-  const TabItems: { id: string; title: string; panel: ReactNode }[] = [];
+  const TabItems: { id: string; title: ReactNode; panel: ReactNode }[] = [];
 
   const TabAccount = {
     id: '1',
@@ -112,9 +115,9 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
           <FootnoteText className="text-text-tertiary"></FootnoteText>
 
           <div className="-mx-2">
-            {proxiedAccount ? (
-              <ContactItem address={proxiedAccount.accountId} addressPrefix={chain.addressPrefix}>
-                <AccountExplorers accountId={proxiedAccount.accountId} chain={chain} />
+            {multisigAccount ? (
+              <ContactItem address={multisigAccount.accountId} addressPrefix={chain.addressPrefix}>
+                <AccountExplorers accountId={multisigAccount.accountId} chain={chain} />
               </ContactItem>
             ) : (
               <BodyText>{t('walletDetails.multisig.addressInProgress')}</BodyText>
@@ -166,7 +169,12 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   if (canCreateProxy) {
     const TabProxy = {
       id: '3',
-      title: t('walletDetails.common.proxiesTabTitle'),
+      title: (
+        <span className="flex items-center gap-1">
+          {t('walletDetails.common.proxiesTabTitleShort')}
+          <span className="text-text-tertiary">{proxiesCount}</span>
+        </span>
+      ),
       panel: <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />,
     };
 
@@ -174,7 +182,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   }
 
   return (
-    <Modal size="mdlg" height="full" isOpen onToggle={open => !open && onClose()}>
+    <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="mb-6 flex flex-col gap-y-2.5 px-5">
@@ -182,7 +190,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon
-                  address={multisigAccount?.accountId}
+                  address={toAddress(multisigAccount?.accountId, { prefix: chain?.addressPrefix })}
                   type={wallet.type}
                   size={42}
                   theme={isEthereumAccountId(multisigAccount?.accountId) ? 'ethereum' : 'polkadot'}
@@ -205,7 +213,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
             {multisigAccount && !isRenameInputOpen && (
               <div className="ml-auto shrink-0 duration-300 animate-in fade-in-0">
-                <Slot id={overviewSlot} props={{ walletAccounts: walletAccounts }} />
+                <Slot id={overviewSlot} props={{ walletAccounts: [multisigAccount] }} />
               </div>
             )}
           </Box>
@@ -215,7 +223,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
               <div className="flex items-center gap-1 text-footnote">
                 <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
                 <WalletIcon type={WalletType.MULTISIG} size={16} />
-                <FootnoteText className="shrink-0">{t('walletDetails.multisig.multisigWallet')}</FootnoteText>
+                <Account accountId={multisigAccount.multisigAccountId} chain={chain} hideIcon variant="short" />
                 <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
                 <ChainIcon chain={chain} size={16} />
                 <FootnoteText className="truncate">{chain.name}</FootnoteText>

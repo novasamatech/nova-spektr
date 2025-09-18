@@ -1,13 +1,11 @@
 import { useUnit } from 'effector-react';
 import { groupBy } from 'lodash';
-import { useEffect } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { sortByDateDesc } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
-import { priceProviderModel } from '@/entities/price';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { operationsContextModel } from '../model/context';
 
@@ -18,7 +16,7 @@ import { OperationsFilter } from './OperationsFilter';
 export const Operations = () => {
   const { formatDate } = useI18n();
 
-  const account = useUnit(operationsContextModel.$account);
+  const account = useUnit(operationsContextModel.$multisigAccount);
   const operations = useUnit(selectedWalletMultisigOperations.$list);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
 
@@ -35,10 +33,6 @@ export const Operations = () => {
 
     return formatDate(new Date(date), 'PP');
   });
-
-  useEffect(() => {
-    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
-  }, []);
 
   if (!account) {
     return <EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />;

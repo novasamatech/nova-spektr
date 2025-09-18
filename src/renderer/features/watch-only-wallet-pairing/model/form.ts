@@ -62,15 +62,12 @@ const form = createForm<FormValues>({
 const createWalletFx = attach({ effect: walletModel.createWallet });
 const requestIdentityFx = attach({ effect: identity.request });
 
-const $walletDraft = form.fields.walletName.$value.map(
-  (walletName): Pick<WatchOnlyWallet, 'name' | 'type' | 'signingType'> => {
-    return {
-      name: walletName,
-      type: WalletType.WATCH_ONLY,
-      signingType: SigningType.WATCH_ONLY,
-    };
-  },
-);
+const $walletDraft = form.fields.walletName.$value.map((walletName): Pick<WatchOnlyWallet, 'name' | 'type'> => {
+  return {
+    name: walletName,
+    type: WalletType.WATCH_ONLY,
+  };
+});
 
 const $accountDraft = form.$values.map(({ address, walletName }): Omit<WatchOnlyAccount, 'id' | 'walletId'> => {
   const accountId = toAccountId(address);

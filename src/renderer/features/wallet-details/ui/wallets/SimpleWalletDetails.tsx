@@ -5,7 +5,7 @@ import { type Chain, type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { isEthereumAccountId } from '@/shared/lib/utils';
+import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
 import { HeadlineText, IconButton, Separator } from '@/shared/ui';
 import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
@@ -101,7 +101,7 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
           <Box direction="row" verticalAlign="center" gap={2} height="fit">
             <div className="mr-1">
               <WalletAccountIcon
-                address={firstAccount?.accountId}
+                address={firstAccount?.accountId && toAddress(firstAccount?.accountId)}
                 type={wallet.type}
                 size={42}
                 theme={isEthereumAccountId(firstAccount?.accountId) ? 'ethereum' : 'polkadot'}

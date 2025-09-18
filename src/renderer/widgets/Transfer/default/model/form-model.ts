@@ -1,9 +1,9 @@
 /* eslint-disable import-x/max-dependencies */
-import { BN, BN_ZERO } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Address, type Chain, type ChainId, type Transaction } from '@/shared/core';
+import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ADDRESS,
@@ -16,6 +16,7 @@ import {
   nullable,
   toAccountId,
   toAddress,
+  toPrecision,
   transferableAmountBN,
   validateAddress,
   withdrawableAmountBN,
@@ -96,12 +97,17 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
     amount: {
       defaultValue: '',
-      validator: () => (amount) => {
-        const bn = new BN(amount);
-        if (bn.isZero()) {
-          return { message: 'transfer.requiredAmountError' };
-        }
-      },
+      validator: () => ({
+        source: $asset,
+        fn: (amount, _, asset: Asset | null) => {
+          if (nullable(asset)) return;
+
+          const bn = toPrecision(amount, asset.precision);
+          if (bn.isZero()) {
+            return { message: 'transfer.requiredAmountError' };
+          }
+        },
+      }),
     },
   },
   validateOn: ['submit'],
@@ -232,7 +238,7 @@ const $coreTx = combine(
   },
 );
 
-const $feeTx = combine(
+const $feeCoreTx = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
@@ -260,7 +266,17 @@ const $feeTx = combine(
   },
 );
 
-const $calculationTx = combine({ coreTx: $coreTx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
+const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
+  api: $api,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $coreTx,
+  feeTransaction: $feeCoreTx,
+});
+
+const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
 
 const $calculationExtrinsic = combine(
   {
@@ -272,16 +288,6 @@ const $calculationExtrinsic = combine(
     return getExtrinsic[tx.type](tx.args, api);
   },
 );
-
-const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
-  api: $api,
-  initiator: form.fields.initiator.$value,
-  signatory: form.fields.signatory.$value,
-  accounts: accounts.$list,
-  chain: $chain,
-  transaction: $coreTx,
-  feeTransaction: $feeTx,
-});
 
 const { $errors } = createTxValidationStore({
   validator: transferValidator,

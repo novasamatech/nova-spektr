@@ -18,7 +18,7 @@ import {
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useAltOrCtrlKeyPressed, useToggle } from '@/shared/lib/hooks';
-import { IS_MAC, copyToClipboard, toAddress } from '@/shared/lib/utils';
+import { IS_MAC, toAddress } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import {
   Button,
@@ -32,7 +32,7 @@ import {
 } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Address } from '@/shared/ui-entities';
-import { Accordion, Box, Field, Input, Popover, ScrollArea } from '@/shared/ui-kit';
+import { Accordion, Box, Copy, Field, Input, Popover, ScrollArea } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
@@ -112,7 +112,6 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         name: walletName.trim(),
         rootAccountId: publicKey,
         type: WalletType.POLKADOT_VAULT,
-        signingType: SigningType.POLKADOT_VAULT,
       },
       accounts: accounts.length
         ? accounts
@@ -239,12 +238,9 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                     <HelpText className="text-text-secondary">
                       <Address variant="full" address={publicKeyAddress} />
                     </HelpText>
-                    <IconButton
-                      className="shrink-0"
-                      name="copy"
-                      size={20}
-                      onClick={() => copyToClipboard(publicKeyAddress)}
-                    />
+                    <Copy value={publicKeyAddress} notification={t('general.notifications.addressCopied')}>
+                      <IconButton className="shrink-0" name="copy" size={20} />
+                    </Copy>
                   </Box>
                 </Box>
               </Popover.Content>

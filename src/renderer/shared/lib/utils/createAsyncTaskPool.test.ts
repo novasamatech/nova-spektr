@@ -5,10 +5,6 @@ import { createAsyncTaskPool } from './createAsyncTaskPool';
 const delay = (ttl: number = 0) => setTimeout(ttl);
 
 describe('asyncTaskPool', () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it('should exec sync task', async () => {
     const pool = createAsyncTaskPool({ poolSize: 1, retryCount: 0, retryDelay: () => 0 });
     const result = await pool.call(() => 'test');
@@ -38,7 +34,7 @@ describe('asyncTaskPool', () => {
     const error = new Error('test');
     const result = pool.call(() => Promise.reject(error));
 
-    return expect(result).rejects.toBe(error);
+    return expect(result).rejects.toThrowError(error);
   });
 
   it('should handle queue', async () => {
@@ -54,7 +50,6 @@ describe('asyncTaskPool', () => {
     const pool = createAsyncTaskPool({ poolSize: 2, retryCount: 0, retryDelay: () => 0 });
     const result: number[] = [];
 
-    vi.useFakeTimers();
     const res = Promise.all([
       pool.call(() => delay(800).then(() => result.push(1))),
       pool.call(() => delay(100).then(() => result.push(2))),
@@ -62,7 +57,6 @@ describe('asyncTaskPool', () => {
       pool.call(() => delay(100).then(() => result.push(4))),
     ]);
 
-    await vi.runAllTimersAsync();
     await res;
 
     expect(result).toEqual([2, 3, 4, 1]);
@@ -139,4 +133,53 @@ describe('asyncTaskPool', () => {
     expect(spy).toHaveBeenCalledTimes(4);
     expect(spy.mock.calls).toEqual([[2], [4], [1], [3]]);
   }, 10000);
+
+  it('should settle all tasks', async () => {
+    const pool = createAsyncTaskPool({ poolSize: 1, retryCount: 0, retryDelay: 0 });
+    const tasks = [
+      { delay: 0, value: 1 },
+      { delay: 0, value: 2 },
+      { delay: 0, value: 3 },
+      { delay: 0, value: 4 },
+    ];
+
+    const result: number[] = [];
+
+    for (const task of tasks) {
+      pool
+        .call(() => delay(task.delay))
+        .then(() => {
+          result.push(task.value);
+        });
+    }
+
+    await pool.settle();
+
+    expect(result).toEqual([1, 2, 3, 4]);
+  });
+
+  it('should settle tasks that was created by chain reaction', async () => {
+    const pool = createAsyncTaskPool({ poolSize: 1, retryCount: 0, retryDelay: 0 });
+    const tasks = [
+      { delay: 0, value: 1 },
+      { delay: 0, value: 2 },
+      { delay: 0, value: 3 },
+      { delay: 0, value: 4 },
+    ];
+
+    const result: number[] = [];
+
+    for (const task of tasks) {
+      pool
+        .call(() => delay(task.delay))
+        .then(() => {
+          result.push(task.value);
+          pool.call(() => delay(task.delay).then(() => result.push(task.value + 10)));
+        });
+    }
+
+    await pool.settle();
+
+    expect(result).toEqual([1, 2, 3, 4, 11, 12, 13, 14]);
+  });
 });

@@ -8,7 +8,6 @@ import { Paths } from '@/shared/routes';
 import { createInitiatorsStore } from '@/shared/transactions';
 import { type AnyAccount, accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
-import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationModel } from '@/features/navigation';
 
@@ -34,7 +33,7 @@ const $chainAccounts = combine(
     if (selectedAccounts.length === 1) return selectedAccounts;
 
     const filteredAccount = selectedAccounts.filter(
-      (acc) => accountService.isChainAccount(acc) && accountUtils.isChainIdMatch(acc, chain.chainId),
+      (acc) => accountService.isChainAccount(acc) && accountService.isAccountAvailableOnChain(acc, chain),
     );
 
     return filteredAccount.map((account) => ({

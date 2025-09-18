@@ -25,7 +25,7 @@ export type Callbacks = {
 };
 
 type VaultCreateParams = {
-  wallet: Omit<NoID<PolkadotVaultGroup>, 'isActive' | 'accounts'>;
+  wallet: Omit<NoID<PolkadotVaultGroup>, 'accounts'>;
   accounts: (
     | Omit<NoID<VaultBaseAccount>, 'walletId'>
     | Omit<NoID<VaultChainAccount>, 'walletId'>

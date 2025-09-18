@@ -79,7 +79,7 @@ const Button = ({ name, placeholder, valueNode, testId }: TriggerProps) => {
     <RadixSelect.Trigger
       name={name}
       className={cnTw(
-        'relative flex w-full items-center pr-6 pl-[11px]',
+        'relative flex w-full cursor-pointer items-center pr-6 pl-[11px]',
         'rounded-sm border text-footnote outline-offset-1',
         'enabled:hover:shadow-card-shadow',
         'data-[state=open]:border-active-container-border',
@@ -88,7 +88,7 @@ const Button = ({ name, placeholder, valueNode, testId }: TriggerProps) => {
           'h-10.5': height === 'md',
           'border-filter-border bg-input-background text-text-primary': theme === 'light',
           'border-border-dark bg-background-dark text-white': theme === 'dark',
-          'bg-input-background-disabled text-text-tertiary': disabled,
+          'cursor-not-allowed bg-input-background-disabled text-text-tertiary': disabled,
           'border-filter-border-negative': invalid,
         },
       )}
