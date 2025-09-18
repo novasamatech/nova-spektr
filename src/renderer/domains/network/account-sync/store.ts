@@ -1,10 +1,13 @@
+import { type ApiPromise } from '@polkadot/api';
 import { attach, combine, createEvent, sample } from 'effector';
 import { once } from 'patronum/once';
 
-import { type ChainId } from '@/shared/core';
+import { type Chain, type ChainId } from '@/shared/core';
+import { takeLast } from '@/shared/effector';
 import { entries, nullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accounts } from '../account/store';
+import { type AnyAccount } from '../account/types';
 
 import { indexedBlocksProvider, multisigAccountsProvider, proxyAccountsProvider } from './resource';
 import { accountSyncService } from './service';
@@ -18,35 +21,47 @@ export const syncAccountsFx = attach({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
   },
-  effect: async ({ chains, apis, accounts }) => {
-    const chainsToSync: Record<ChainId, AccountProviderChain> = {};
-
-    for (const [chainId, chain] of entries(chains)) {
-      const api = apis[chainId];
-      if (nullable(api)) continue;
-      chainsToSync[chainId] = {
-        api,
-        chain,
-      };
-    }
-
-    return accountSyncService.syncAccounts({
+  effect: takeLast({
+    fn: async ({
+      chains,
+      apis,
       accounts,
-      chains: chainsToSync,
-      accountsProviders,
-      indexedBlocksProvider,
-    });
-  },
+    }: {
+      chains: Record<ChainId, Chain>;
+      apis: Record<ChainId, ApiPromise>;
+      accounts: AnyAccount[];
+    }) => {
+      const chainsToSync: Record<ChainId, AccountProviderChain> = {};
+
+      for (const [chainId, chain] of entries(chains)) {
+        const api = apis[chainId];
+        if (nullable(api)) continue;
+        chainsToSync[chainId] = {
+          api,
+          chain,
+        };
+      }
+
+      // Use task pool to queue sync operations and ensure only 1 concurrent execution
+      return accountSyncService.syncAccounts({
+        accounts,
+        chains: chainsToSync,
+        accountsProviders,
+        indexedBlocksProvider,
+      });
+    },
+    key: () => 'accountSync',
+  }),
 });
 
-const $avaialableChainIds = combine(
+const $availableChainIds = combine(
   {
     chains: networkModel.$chains,
   },
   ({ chains }) => {
     const availableChains = new Set<ChainId>();
     for (const provider of accountsProviders) {
-      for (const chain of provider.getAvailableChains(Object.values(chains))) {
+      for (const chain of provider.getSupportedChains(Object.values(chains))) {
         availableChains.add(chain.chainId);
       }
     }
@@ -57,7 +72,7 @@ const $avaialableChainIds = combine(
 const $isAllNetworksConnected = combine(
   {
     statuses: networkModel.$connectionStatuses,
-    chainIds: $avaialableChainIds,
+    chainIds: $availableChainIds,
   },
   ({ statuses, chainIds }) => {
     return chainIds.every(chainId => {

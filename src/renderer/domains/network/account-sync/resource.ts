@@ -69,7 +69,7 @@ const proxySchema = z.object({
 });
 
 export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
-  getAvailableChains: (chains: Chain[]) => {
+  getSupportedChains: (chains: Chain[]) => {
     return chains.filter(chain => networkUtils.isProxySupported(chain.options));
   },
 
@@ -208,7 +208,7 @@ const multisigSchema = z.object({
 });
 
 export const multisigAccountsProvider: AccountProvider<SyncedMultisigAccount> = {
-  getAvailableChains: (chains: Chain[]) => {
+  getSupportedChains: (chains: Chain[]) => {
     return chains.filter(chain => networkUtils.isMultisigSupported(chain.options));
   },
 

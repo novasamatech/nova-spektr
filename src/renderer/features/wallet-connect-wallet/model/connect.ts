@@ -8,6 +8,7 @@ import { readonly } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { assert, nonNullable, nullable } from '@/shared/lib/utils';
+import { accountSync } from '@/domains/network';
 import { walletConnectService } from '../lib/service';
 
 import { signClient } from './signClient';
@@ -51,6 +52,11 @@ sample({
     return Object.fromEntries(sessions.map(s => [s.pairingTopic, s]));
   },
   target: $sessions,
+});
+
+sample({
+  clock: populateSessionsFx.done,
+  target: accountSync.syncAccounts,
 });
 
 const createSessionFx = createEffect(
