@@ -37,7 +37,7 @@ export const Operation = memo(({ operation, account }: Props) => {
   if (externalTitleNode) {
     titleNode = externalTitleNode;
   } else {
-    const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+    const coreTx = findCoreTransaction(operation.transaction);
 
     const title =
       coreTx?.section && coreTx?.method
