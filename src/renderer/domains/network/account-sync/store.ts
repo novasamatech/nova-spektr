@@ -57,11 +57,14 @@ const $supportedChainIds = combine(
   {
     chains: networkModel.$chains,
   },
-  ({ chains }) => {
+  ({ chains: chainsMap }) => {
+    const chains = Object.values(chainsMap);
+
     const chainIds = accountsProviders.flatMap(provider =>
-      provider.getSupportedChains(Object.values(chains)).map(chain => chain.chainId),
+      provider.getSupportedChains(chains).map(chain => chain.chainId),
     );
 
+    // Remove duplicates
     return [...new Set(chainIds)];
   },
 );

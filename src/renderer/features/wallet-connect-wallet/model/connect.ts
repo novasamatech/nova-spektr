@@ -54,11 +54,6 @@ sample({
   target: $sessions,
 });
 
-sample({
-  clock: populateSessionsFx.done,
-  target: accountSync.syncAccounts,
-});
-
 const createSessionFx = createEffect(
   async ({ pairingTopic, chains, client }: { pairingTopic?: string; chains: ChainId[]; client: Client }) => {
     const optionalNamespaces = walletConnectService.createNamespaces(chains);
@@ -71,6 +66,11 @@ const createSessionFx = createEffect(
     return connect.approval().finally(() => updateUri(''));
   },
 );
+
+sample({
+  clock: createSessionFx.done,
+  target: accountSync.syncAccounts,
+});
 
 const removeSessionFx = attach({
   source: { client: signClient.$client },
