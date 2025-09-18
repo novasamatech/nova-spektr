@@ -4,14 +4,14 @@ import { BodyText } from '@/shared/ui';
 import { Graphics } from '@/shared/ui-kit';
 
 type Props = {
-  multisigAccount: MultisigAccount | FlexibleMultisigAccount | null;
+  anyMultisigAccount: MultisigAccount | FlexibleMultisigAccount | null;
   isEmptyFromFilters: boolean;
 };
 
-export const EmptyOperations = ({ multisigAccount, isEmptyFromFilters }: Props) => {
+export const EmptyOperations = ({ anyMultisigAccount, isEmptyFromFilters }: Props) => {
   const { t } = useI18n();
 
-  const emptyText = multisigAccount
+  const emptyText = anyMultisigAccount
     ? isEmptyFromFilters
       ? 'operations.noOperationsFilters'
       : 'operations.noOperationsDescription'

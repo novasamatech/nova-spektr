@@ -103,22 +103,22 @@ sample({
 
 const $transaction = combine(
   {
-    multisigAccount: operationsContextModel.$multisigAccount,
+    anyMultisigAccount: operationsContextModel.$anyMultisigAccount,
     signatory: $signatory,
     initiator: $initiator,
     chain: $chain,
     operation: $operation,
     weight: $weight,
   },
-  ({ multisigAccount, chain, operation, signatory, weight, initiator }) => {
-    if (!multisigAccount || !operation || !chain || !signatory || !weight || !initiator) return null;
-    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, initiator.accountId);
+  ({ anyMultisigAccount, chain, operation, signatory, weight, initiator }) => {
+    if (!anyMultisigAccount || !operation || !chain || !signatory || !weight || !initiator) return null;
+    const otherSignatories = multisigOperationService.getOtherSignatories(anyMultisigAccount, initiator.accountId);
     const hasCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
 
     return transactionBuilder.buildApproveMultisigTx({
       chain,
       signerAccountId: signatory.accountId,
-      threshold: multisigAccount.threshold,
+      threshold: anyMultisigAccount.threshold,
       otherSignatories,
       tx: operation,
       hasCallData: !!hasCallData,
@@ -148,7 +148,7 @@ const $extrinsic = combine($api, $tx, (api, tx) => {
 
 const { $multisigDeposit, $pending: $isDepositLoading } = createMultisigDeposit({
   $api: $api,
-  $threshold: operationsContextModel.$multisigAccount.map(account => account?.threshold ?? null),
+  $threshold: operationsContextModel.$anyMultisigAccount.map(account => account?.threshold ?? null),
 });
 
 const $signingPayloads = combine(

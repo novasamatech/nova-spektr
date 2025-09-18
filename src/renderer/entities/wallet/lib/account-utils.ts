@@ -121,7 +121,7 @@ function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is Fle
  * Make sure you handle FlexibleMultisig separately since it is a custom virtual
  * structure and its accountId is not related to the multisig
  */
-function isAnyMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount {
+function isAnyMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount | FlexibleMultisigAccount {
   return isMultisigAccount(account) || isFlexibleMultisigAccount(account);
 }
 

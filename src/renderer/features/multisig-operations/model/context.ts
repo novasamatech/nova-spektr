@@ -74,8 +74,8 @@ const $initiators = combine(
   },
 );
 
-const $multisigAccount = walletSelect.$selectedAccounts.map(
-  accs => accs.find(a => accountUtils.isMultisigAccount(a) || accountUtils.isFlexibleMultisigAccount(a)) ?? null,
+const $anyMultisigAccount = walletSelect.$selectedAccounts.map(
+  accs => accs.find(a => accountUtils.isAnyMultisigAccount(a)) ?? null,
 );
 
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);
@@ -100,7 +100,7 @@ sample({
 export const operationsContextModel = {
   $filter,
   $filteredOperations,
-  $multisigAccount,
+  $anyMultisigAccount,
   $initiator,
 
   setFilters,

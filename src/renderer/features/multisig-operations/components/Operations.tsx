@@ -16,7 +16,7 @@ import { OperationsFilter } from './OperationsFilter';
 export const Operations = () => {
   const { formatDate } = useI18n();
 
-  const account = useUnit(operationsContextModel.$multisigAccount);
+  const anyMultisigAccount = useUnit(operationsContextModel.$anyMultisigAccount);
   const operations = useUnit(selectedWalletMultisigOperations.$list);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
 
@@ -34,8 +34,8 @@ export const Operations = () => {
     return formatDate(new Date(date), 'PP');
   });
 
-  if (!account) {
-    return <EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />;
+  if (!anyMultisigAccount) {
+    return <EmptyOperations anyMultisigAccount={null} isEmptyFromFilters={false} />;
   }
 
   return (
@@ -44,7 +44,10 @@ export const Operations = () => {
         {operations.length > 0 && <OperationsFilter operations={operations} />}
 
         {filteredTxs.length === 0 && (
-          <EmptyOperations multisigAccount={account} isEmptyFromFilters={operations.length !== filteredTxs.length} />
+          <EmptyOperations
+            anyMultisigAccount={anyMultisigAccount}
+            isEmptyFromFilters={operations.length !== filteredTxs.length}
+          />
         )}
 
         {filteredTxs.length > 0 && (
@@ -59,7 +62,7 @@ export const Operations = () => {
                       .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
                       .map(tx => (
                         <li key={tx.id}>
-                          <Operation operation={tx} account={account} />
+                          <Operation operation={tx} anyMultisigAccount={anyMultisigAccount} />
                         </li>
                       ))}
                   </ul>

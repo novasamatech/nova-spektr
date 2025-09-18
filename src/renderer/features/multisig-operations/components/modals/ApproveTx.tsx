@@ -42,7 +42,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(accounts.$list);
-  const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
+  const anyMultisigAccount = useUnit(operationsContextModel.$anyMultisigAccount);
 
   const approveTx = useUnit(approveModel.$transaction);
   const errors = useUnit(approveModel.$errors);
@@ -67,10 +67,10 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const asset = useTransactionAsset(operation);
 
   const unsignedAccounts = useMemo(() => {
-    if (!multisigAccount || !chain) return [];
+    if (!anyMultisigAccount || !chain) return [];
 
     const signatories = accountsList.filter(a =>
-      multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
+      anyMultisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
     );
 
     const signatoriesOnChain = signatories.filter(s => (s.type === 'chain' ? s.chainId === chain.chainId : true));
@@ -80,7 +80,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
     );
 
     return filteredSignatories;
-  }, [operation, multisigAccount, chain, accountsList]);
+  }, [operation, anyMultisigAccount, chain, accountsList]);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -154,7 +154,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
         />
       </Modal.Title>
       <Modal.Content>
-        {activeStep === Step.FORM && multisigAccount && (
+        {activeStep === Step.FORM && anyMultisigAccount && (
           <ApproveForm
             unsignedAccounts={unsignedAccounts}
             chain={chain}
