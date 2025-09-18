@@ -19,6 +19,7 @@ export type AccountProviderChain = {
 };
 
 export type AccountProvider<Account extends SyncedAccount> = {
+  getAvailableChains(chains: Chain[]): Chain[];
   fn(accounts: AccountId[], chains: Record<ChainId, AccountProviderChain>): Promise<Account[]>;
 };
 
