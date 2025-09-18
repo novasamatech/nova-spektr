@@ -197,8 +197,8 @@ const $realAccount = combine(
   },
 );
 
-const $isMultisig = $route.map((route) => {
-  return route.some((acc) => accountUtils.isMultisigAccount(acc));
+const $isAnyMultisig = $route.map((route) => {
+  return route.some((acc) => accountUtils.isAnyMultisigAccount(acc));
 });
 
 const $isProxy = $route.map((route) => {
@@ -431,7 +431,7 @@ export const formModel = {
   $api,
   $networkStore,
   $tx,
-  $isMultisig,
+  $isAnyMultisig,
   $isChainConnected,
   $isStakingLoading: subscribeStakingFx.pending,
   $canSubmit,

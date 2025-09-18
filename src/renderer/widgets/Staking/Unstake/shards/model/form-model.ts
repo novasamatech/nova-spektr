@@ -551,6 +551,7 @@ sample({
   target: $unstakeForm.fields.shards.resetErrors,
 });
 
+// ToDo: make 2
 sample({
   clock: $txWrappers.updates,
   fn: (txWrappers) => ({

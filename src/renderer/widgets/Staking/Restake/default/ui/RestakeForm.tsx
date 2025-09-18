@@ -132,7 +132,7 @@ const FeeSection = () => {
 
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const isMultisig = useUnit(formModel.$isMultisig);
+  const isAnyMultisig = useUnit(formModel.$isAnyMultisig);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
 
@@ -142,7 +142,7 @@ const FeeSection = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      {isMultisig && (
+      {isAnyMultisig && (
         <MultisigDepositWithLabel
           api={api}
           asset={network.asset}
