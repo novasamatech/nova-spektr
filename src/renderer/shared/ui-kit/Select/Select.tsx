@@ -252,7 +252,7 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
   return (
     <ComboboxGroup className="mb-1 last:mb-0">
       <ComboboxGroupLabel>
-        <div className="px-3 py-1 text-help-text text-text-secondary">{title}</div>
+        <div className="px-2 py-1 text-help-text text-text-secondary">{title}</div>
       </ComboboxGroupLabel>
       <ComboboxList>{children}</ComboboxList>
     </ComboboxGroup>
