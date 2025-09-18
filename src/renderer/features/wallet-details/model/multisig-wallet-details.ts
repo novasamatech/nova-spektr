@@ -90,10 +90,7 @@ const fetchAllProxiesFx = createEffect(
             proxyType: proxy.proxyType,
           }));
         } catch (error) {
-          console.log(
-            `Failed to fetch proxies for account ${account.accountId} on chain ${chainId}:`,
-            JSON.stringify(error),
-          );
+          console.log(`Failed to fetch proxies for account ${account.accountId} on chain ${chainId}:`, error);
           return [];
         }
       });
