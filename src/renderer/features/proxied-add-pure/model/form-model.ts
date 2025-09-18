@@ -73,9 +73,9 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             proxyDeposit: $proxyDeposit,
             balances: balanceModel.$balanceMap,
-            isMultisig: $isMultisig,
+            isAnyMultisigAccount: $isAnyMultisigAccount,
           }),
-          fn: (value, form, { isMultisig, balances, fee, proxyDeposit }) => {
+          fn: (value, form, { isAnyMultisigAccount, balances, fee, proxyDeposit }) => {
             if (!value) {
               return { message: 'proxy.addProxy.noInitiator' };
             }
@@ -93,7 +93,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             const proxyDepositBN = new BN(proxyDeposit);
             const feeBN = new BN(fee);
 
-            const hasEnoughTokens = isMultisig
+            const hasEnoughTokens = isAnyMultisigAccount
               ? proxyDepositBN.lte(withdrawableAmountBN(balance))
               : proxyDepositBN.add(feeBN).lte(transferableAmountBN(balance));
 
@@ -113,10 +113,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             multisigDeposit: $multisigDeposit,
             proxyDeposit: $proxyDeposit,
             balances: balanceModel.$balanceMap,
-            isMultisig: $isMultisig,
+            isAnyMultisigAccount: $isAnyMultisigAccount,
           }),
-          fn: (value, form, { isMultisig, balances, fee, multisigDeposit }) => {
-            if (!isMultisig) return;
+          fn: (value, form, { isAnyMultisigAccount, balances, fee, multisigDeposit }) => {
+            if (!isAnyMultisigAccount) return;
 
             if (!value) {
               return { message: 'proxy.addProxy.noSignatoryError' };
@@ -244,8 +244,8 @@ const { $errors } = createTxValidationStore({
   },
 });
 
-const $isProxy = $route.map(route => nonNullable(route.find(account => accountUtils.isProxiedAccount(account))));
-const $isMultisig = $route.map(route => nonNullable(route.find(account => accountUtils.isMultisigAccount(account))));
+const $isProxy = $route.map(route => route.some(account => accountUtils.isProxiedAccount(account)));
+const $isAnyMultisigAccount = $route.map(route => route.some(account => accountUtils.isAnyMultisigAccount(account)));
 
 const $multisigThreshold = $route.map(route => {
   const multisig = route.find(accountUtils.isMultisigAccount);
@@ -371,7 +371,7 @@ export const formModel = {
   $pendingMultisigDeposit,
   $route,
   $api,
-  $isMultisig,
+  $isAnyMultisigAccount,
   $isChainConnected,
   $canSubmit,
 
