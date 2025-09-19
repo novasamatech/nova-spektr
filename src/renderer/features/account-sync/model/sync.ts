@@ -489,8 +489,8 @@ sample({
             walletId: wallet.id,
             type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
             dateCreated: Date.now(),
-            multisigAccountId: account.accountId,
-            multisigAccountName: account.name,
+            accountId: account.accountId,
+            accountName: account.name,
             signatories: account.signatories.map((signatory) => signatory.accountId),
             threshold: account.threshold,
           } satisfies NoID<FlexibleMultisigCreated>;

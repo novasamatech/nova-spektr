@@ -43,7 +43,7 @@ export const EntrypointCard = memo(() => {
 
   return (
     <EvidenceSalaryModal>
-      <button className="rounded-xl border border-filter-border bg-card-background text-button-small">
+      <button className="cursor-pointer rounded-xl border border-filter-border bg-card-background text-button-small">
         <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2} padding={4}>
           <Box direction="row" verticalAlign="center" gap={2} grow={1}>
             <Icon name="defaultExplorer" size={16} />

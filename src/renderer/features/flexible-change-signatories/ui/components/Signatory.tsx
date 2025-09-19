@@ -166,9 +166,9 @@ export const Signatory = ({
   const isInvalid = isInvalidAddress || signatoryAddress !== query;
 
   return (
-    <div className="grid grid-cols-[1fr_44px] gap-x-4">
-      <Box width="100%" direction="row" verticalAlign="end" gap={3}>
-        <FootnoteText className="pb-2 text-text-tertiary">{1 + signatoryIndex}</FootnoteText>
+    <div className="grid grid-cols-[1fr_44px] items-start gap-x-4">
+      <Box width="100%" direction="row" verticalAlign="start" gap={3}>
+        <FootnoteText className="pt-8.5 text-text-tertiary">{1 + signatoryIndex}</FootnoteText>
         {isOwnAccount ? (
           <Field text={t('createMultisigAccount.myAccount')}>
             <Select
@@ -213,6 +213,10 @@ export const Signatory = ({
               ))}
             </Combobox>
 
+            <InputHint active={isInvalid} variant="error">
+              {t('createMultisigAccount.disabledError.addressIsNotSupported')}
+            </InputHint>
+
             <InputHint active={isDuplicate} variant="error">
               {t('createMultisigAccount.duplicateSignatoryAddress')}
             </InputHint>
@@ -220,12 +224,14 @@ export const Signatory = ({
         )}
       </Box>
       {!isOwnAccount && onDelete && (
-        <IconButton
-          className="mb-1 self-end justify-self-start"
-          name="delete"
-          size={16}
-          onClick={() => onDelete(signatoryIndex)}
-        />
+        <div className="pt-7">
+          <IconButton
+            className="justify-self-center"
+            name="delete"
+            size={16}
+            onClick={() => onDelete(signatoryIndex)}
+          />
+        </div>
       )}
     </div>
   );
