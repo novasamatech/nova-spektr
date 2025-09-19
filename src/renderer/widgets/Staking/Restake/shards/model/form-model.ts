@@ -550,14 +550,14 @@ sample({
 
 sample({
   clock: $txWrappers.updates,
-  fn: (txWrappers) => ({
-    isProxy: transactionService.hasProxy(txWrappers),
-    isMultisig: transactionService.hasMultisig(txWrappers),
-  }),
-  target: spread({
-    isProxy: $isProxy,
-    isMultisig: $isMultisig,
-  }),
+  fn: (txWrappers) => transactionService.hasProxy(txWrappers),
+  target: $isProxy,
+});
+
+sample({
+  clock: $txWrappers.updates,
+  fn: (txWrappers) => transactionService.hasMultisig(txWrappers),
+  target: $isMultisig,
 });
 
 sample({

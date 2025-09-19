@@ -2,10 +2,11 @@ import { GraphQLClient, gql } from 'graphql-request';
 import { uniq } from 'lodash';
 import { z } from 'zod';
 
-import { type ChainId, CryptoType, ProxyVariant } from '@/shared/core';
+import { type Chain, type ChainId, CryptoType, ProxyVariant } from '@/shared/core';
 import { entries, groupBy, isEthereumAccountId, isHex, nullable } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { networkUtils } from '@/entities/network';
 import { multisigOperationService } from '../multisig-operation/service';
 
 import { INDEXER_URL } from './constants';
@@ -68,6 +69,10 @@ const proxySchema = z.object({
 });
 
 export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
+  getSupportedChains: (chains: Chain[]) => {
+    return chains.filter(chain => networkUtils.isProxySupported(chain.options));
+  },
+
   async fn(accounts, chains) {
     const accountsSet = new Set(accounts);
     const result: SyncedProxyAccount[] = [];
@@ -203,6 +208,10 @@ const multisigSchema = z.object({
 });
 
 export const multisigAccountsProvider: AccountProvider<SyncedMultisigAccount> = {
+  getSupportedChains: (chains: Chain[]) => {
+    return chains.filter(chain => networkUtils.isMultisigSupported(chain.options));
+  },
+
   async fn(accounts) {
     const result: SyncedMultisigAccount[] = [];
 

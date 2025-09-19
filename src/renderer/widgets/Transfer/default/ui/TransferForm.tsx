@@ -449,9 +449,11 @@ const FeeSection = () => {
     return null;
   }
 
+  const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
+
   return (
     <div className="flex flex-col gap-y-2">
-      {nonNullable(initiator) && accountUtils.isMultisigAccount(initiator) && (
+      {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
           asset={getNativeAsset(network.chain.assets)}

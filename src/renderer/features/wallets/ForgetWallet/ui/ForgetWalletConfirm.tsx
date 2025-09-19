@@ -67,7 +67,7 @@ const HideWallet = ({ onClose, onForget, children, isModalOpen, setIsModalOpen }
   const forgetWallet = () => {
     forgetWalletModel.remove();
     !isHideWalletDoNotShowAgain && forgetWalletModel.changeHideWalletDoNotShowAgain(isHideWalletDoNotShowAgainLocal);
-    onForget && onForget();
+    onForget?.();
     onClose?.();
 
     let description = t('settings.hiddenWallets.youCanRestore');
@@ -147,7 +147,7 @@ const ForgetWallet = ({ wallet, onClose, onForget, children, isModalOpen, setIsM
     forgetWalletModel.remove();
     !isConnectedAccountsDoNotShowAgain &&
       forgetWalletModel.changeConnectedAccountsDoNotShowAgain(isConnectedAccountsDoNotShowAgainLocal);
-    onForget && onForget();
+    onForget?.();
     onClose?.();
 
     notification.modal({
