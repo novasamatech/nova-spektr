@@ -248,10 +248,10 @@ const $isProxy = $route.map(route => route.some(account => accountUtils.isProxie
 const $isMultisig = $route.map(route => route.some(account => accountUtils.isAnyMultisigAccount(account)));
 
 const $multisigThreshold = $route.map(route => {
-  const anyMultisig = route.find(accountUtils.isAnyMultisigAccount);
-  if (!anyMultisig) return null;
+  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+  if (!multisigAccount) return null;
 
-  return anyMultisig.threshold;
+  return multisigAccount.threshold;
 });
 
 const { $multisigDeposit, $pending: $pendingMultisigDeposit } = createMultisigDeposit({

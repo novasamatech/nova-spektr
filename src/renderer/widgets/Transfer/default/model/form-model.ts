@@ -307,7 +307,7 @@ const { $errors } = createTxValidationStore({
 });
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
-const $multisigAccount = $route.map((route) => route.find(accountUtils.isMultisigAccount) ?? null);
+const $isMultisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
 
 const $destinationChains = combine(
   {
@@ -538,7 +538,7 @@ export const formModel = {
   $signatoryBalance,
 
   $proxyAccount,
-  $multisigAccount,
+  $multisigAccount: $isMultisigAccount,
 
   $isMyselfXcmEnabled,
   $isMyselfXcmOpened,

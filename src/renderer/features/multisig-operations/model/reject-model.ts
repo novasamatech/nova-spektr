@@ -77,7 +77,7 @@ const $signatory = $signatories.map(s => s.at(0) ?? null);
 sample({
   clock: flow.open,
   source: {
-    multisigAccount: operationsContextModel.$anyMultisigAccount,
+    multisigAccount: operationsContextModel.$multisigAccount,
     signatory: $signatory,
     chain: $chain,
     operation: $operation,
@@ -115,7 +115,7 @@ const {
 
 const { $multisigDeposit, $pending: $pendingMultisigDepositFee } = createMultisigDeposit({
   $api: $api,
-  $threshold: operationsContextModel.$anyMultisigAccount.map(account => account?.threshold ?? null),
+  $threshold: operationsContextModel.$multisigAccount.map(account => account?.threshold ?? null),
 });
 
 const validator = createTxValidator();

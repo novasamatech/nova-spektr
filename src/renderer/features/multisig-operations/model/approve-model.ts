@@ -103,7 +103,7 @@ sample({
 
 const $transaction = combine(
   {
-    anyMultisigAccount: operationsContextModel.$anyMultisigAccount,
+    anyMultisigAccount: operationsContextModel.$multisigAccount,
     signatory: $signatory,
     initiator: $initiator,
     chain: $chain,
@@ -148,7 +148,7 @@ const $extrinsic = combine($api, $tx, (api, tx) => {
 
 const { $multisigDeposit, $pending: $isDepositLoading } = createMultisigDeposit({
   $api: $api,
-  $threshold: operationsContextModel.$anyMultisigAccount.map(account => account?.threshold ?? null),
+  $threshold: operationsContextModel.$multisigAccount.map(account => account?.threshold ?? null),
 });
 
 const $signingPayloads = combine(
