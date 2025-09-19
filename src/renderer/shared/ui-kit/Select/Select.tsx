@@ -198,7 +198,9 @@ const Root = <T extends string>({
             >
               {valueNode || selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
 
-              <Icon name="down" size={16} className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2" />
+              <div className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2">
+                <Icon name="down" size={16} />
+              </div>
             </button>
           </ComboboxDisclosure>
         ) : (
@@ -218,7 +220,9 @@ const Root = <T extends string>({
                 }, 100);
               }}
             />
-            <Icon name="down" size={16} className="absolute top-1/2 right-1.75 shrink-0 -translate-y-1/2" />
+            <div className="absolute top-1/2 right-1.75 shrink-0 -translate-y-1/2">
+              <Icon name="down" size={16} />
+            </div>
           </div>
         )}
         <ComboboxPopover
