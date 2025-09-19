@@ -26,7 +26,7 @@ import {
 import { type XOR } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, truncate } from '@/shared/lib/utils';
-import { FootnoteText } from '@/shared/ui';
+import { FootnoteText, Icon } from '@/shared/ui';
 import { Graphics } from '../Graphics/Graphics';
 import { useTheme } from '../Theme/useTheme';
 
@@ -180,7 +180,7 @@ const Root = <T extends string>({
             <button
               ref={triggerRef}
               className={cnTw(
-                'box-border cursor-pointer border px-2.75 text-text-secondary',
+                'relative box-border cursor-pointer border px-2.75 text-text-secondary',
                 'w-full rounded-md text-left text-footnote hover:shadow-card-shadow',
                 {
                   'h-8.5': height === 'sm',
@@ -197,24 +197,29 @@ const Root = <T extends string>({
               }}
             >
               {valueNode || selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
+
+              <Icon name="down" size={16} className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2" />
             </button>
           </ComboboxDisclosure>
         ) : (
-          <Combobox
-            autoFocus
-            placeholder={placeholder}
-            readOnly={!onSearch}
-            className={cnTw(
-              'min-h-[34px] w-full rounded-md border-none px-3 outline-1 placeholder:text-footnote placeholder:text-text-secondary focus-visible:outline-2',
-              { 'h-10.5': height === 'md' },
-              { 'cursor-default': !onSearch },
-            )}
-            onBlur={() => {
-              setTimeout(() => {
-                onOpenChange(false);
-              }, 100);
-            }}
-          />
+          <div className="relative">
+            <Combobox
+              autoFocus
+              placeholder={placeholder}
+              readOnly={!onSearch}
+              className={cnTw(
+                'min-h-[34px] w-full rounded-md border-none px-3 pr-8 outline-1 placeholder:text-footnote placeholder:text-text-secondary focus-visible:outline-2',
+                { 'h-10.5': height === 'md' },
+                { 'cursor-default': !onSearch },
+              )}
+              onBlur={() => {
+                setTimeout(() => {
+                  onOpenChange(false);
+                }, 100);
+              }}
+            />
+            <Icon name="down" size={16} className="absolute top-1/2 right-1.75 shrink-0 -translate-y-1/2" />
+          </div>
         )}
         <ComboboxPopover
           gutter={8}
