@@ -116,9 +116,9 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balanceMap,
-            isAnyMultisigAccount: $isMultisig,
+            isMultisig: $isMultisig,
           }),
-          fn: (initiator, form, { isAnyMultisigAccount, balances, ...params }) => {
+          fn: (initiator, form, { isMultisig, balances, ...params }) => {
             if (nullable(initiator)) {
               return { message: 'proxy.addProxy.noInitiatorError' };
             }
@@ -134,7 +134,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               getNativeAsset(form.chain.assets).assetId,
             );
 
-            const isNotEnoughTokens = isAnyMultisigAccount
+            const isNotEnoughTokens = isMultisig
               ? new BN(params.proxyDeposit).gte(new BN(transferableAmount(balance)))
               : new BN(params.proxyDeposit).add(new BN(params.fee)).gte(new BN(transferableAmount(balance)));
 
@@ -154,9 +154,9 @@ const form: Form<FormParams> = createForm<FormParams>({
             multisigDeposit: $multisigDeposit,
             proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balanceMap,
-            isAnyMultisigAccount: $isMultisig,
+            isMultisig: $isMultisig,
           }),
-          fn: (signatory, form, { isAnyMultisigAccount, balances, ...params }) => {
+          fn: (signatory, form, { isMultisig, balances, ...params }) => {
             if (nullable(signatory)) {
               return { message: 'proxy.addProxy.noSignatoryError' };
             }
@@ -173,7 +173,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             );
 
             const isNotEnoughMultisigTokens =
-              isAnyMultisigAccount &&
+              isMultisig &&
               new BN(params.multisigDeposit).add(new BN(params.fee)).gte(withdrawableAmountBN(signatoryBalance));
 
             if (isNotEnoughMultisigTokens) {

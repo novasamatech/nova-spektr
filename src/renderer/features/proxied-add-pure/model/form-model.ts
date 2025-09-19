@@ -73,9 +73,9 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             proxyDeposit: $proxyDeposit,
             balances: balanceModel.$balanceMap,
-            isAnyMultisigAccount: $isMultisig,
+            isMultisig: $isMultisig,
           }),
-          fn: (value, form, { isAnyMultisigAccount, balances, fee, proxyDeposit }) => {
+          fn: (value, form, { isMultisig, balances, fee, proxyDeposit }) => {
             if (!value) {
               return { message: 'proxy.addProxy.noInitiator' };
             }
@@ -93,7 +93,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             const proxyDepositBN = new BN(proxyDeposit);
             const feeBN = new BN(fee);
 
-            const hasEnoughTokens = isAnyMultisigAccount
+            const hasEnoughTokens = isMultisig
               ? proxyDepositBN.lte(withdrawableAmountBN(balance))
               : proxyDepositBN.add(feeBN).lte(transferableAmountBN(balance));
 
@@ -113,10 +113,10 @@ const form: Form<FormParams> = createForm<FormParams>({
             multisigDeposit: $multisigDeposit,
             proxyDeposit: $proxyDeposit,
             balances: balanceModel.$balanceMap,
-            isAnyMultisigAccount: $isMultisig,
+            isMultisig: $isMultisig,
           }),
-          fn: (value, form, { isAnyMultisigAccount, balances, fee, multisigDeposit }) => {
-            if (!isAnyMultisigAccount) return;
+          fn: (value, form, { isMultisig, balances, fee, multisigDeposit }) => {
+            if (!isMultisig) return;
 
             if (!value) {
               return { message: 'proxy.addProxy.noSignatoryError' };
