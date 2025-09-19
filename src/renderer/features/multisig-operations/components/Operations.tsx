@@ -62,7 +62,7 @@ export const Operations = () => {
                       .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
                       .map(tx => (
                         <li key={tx.id}>
-                          <Operation operation={tx} anyMultisigAccount={multisigAccount} />
+                          <Operation operation={tx} multisigAccount={multisigAccount} />
                         </li>
                       ))}
                   </ul>

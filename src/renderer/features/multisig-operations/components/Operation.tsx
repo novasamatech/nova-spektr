@@ -16,7 +16,7 @@ import { OperationIcon } from './OperationIcon';
 
 type Props = {
   operation: MultisigOperation;
-  anyMultisigAccount: MultisigAccount | FlexibleMultisigAccount;
+  multisigAccount: MultisigAccount | FlexibleMultisigAccount;
 };
 
 export const operationTitleTransformer = createTransformer<
@@ -24,10 +24,10 @@ export const operationTitleTransformer = createTransformer<
   ReactNode
 >();
 
-export const Operation = memo(({ operation, anyMultisigAccount }: Props) => {
+export const Operation = memo(({ operation, multisigAccount }: Props) => {
   const { t } = useI18n();
 
-  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(anyMultisigAccount);
+  const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const externalTitleNode = useTransformer(operationTitleTransformer, {
     operation,
     showCoreTransaction,
@@ -57,14 +57,14 @@ export const Operation = memo(({ operation, anyMultisigAccount }: Props) => {
         <div className="flex h-[52px] w-full items-center gap-4 overflow-hidden">
           <div className="flex w-full items-center gap-4 overflow-hidden">
             <OperationTitleDate operation={operation} />
-            <OperationIcon operation={operation} account={anyMultisigAccount} />
+            <OperationIcon operation={operation} account={multisigAccount} />
             {titleNode}
           </div>
-          <OperationTitleStatus operation={operation} account={anyMultisigAccount} />
+          <OperationTitleStatus operation={operation} account={multisigAccount} />
         </div>
       </Accordion.Button>
       <Accordion.Content className="border-t border-divider">
-        <OperationFullInfo operation={operation} account={anyMultisigAccount} />
+        <OperationFullInfo operation={operation} account={multisigAccount} />
       </Accordion.Content>
     </Accordion>
   );
