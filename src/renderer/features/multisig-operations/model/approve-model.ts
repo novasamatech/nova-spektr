@@ -103,22 +103,22 @@ sample({
 
 const $transaction = combine(
   {
-    anyMultisigAccount: operationsContextModel.$multisigAccount,
+    multisigAccount: operationsContextModel.$multisigAccount,
     signatory: $signatory,
     initiator: $initiator,
     chain: $chain,
     operation: $operation,
     weight: $weight,
   },
-  ({ anyMultisigAccount, chain, operation, signatory, weight, initiator }) => {
-    if (!anyMultisigAccount || !operation || !chain || !signatory || !weight || !initiator) return null;
-    const otherSignatories = multisigOperationService.getOtherSignatories(anyMultisigAccount, initiator.accountId);
+  ({ multisigAccount, chain, operation, signatory, weight, initiator }) => {
+    if (!multisigAccount || !operation || !chain || !signatory || !weight || !initiator) return null;
+    const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, initiator.accountId);
     const hasCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
 
     return transactionBuilder.buildApproveMultisigTx({
       chain,
       signerAccountId: signatory.accountId,
-      threshold: anyMultisigAccount.threshold,
+      threshold: multisigAccount.threshold,
       otherSignatories,
       tx: operation,
       hasCallData: !!hasCallData,
