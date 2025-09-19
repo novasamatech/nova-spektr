@@ -25,6 +25,7 @@ import {
 } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { transactionService as transactionEntitiesService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
@@ -32,7 +33,6 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { Step } from '../lib/types';
-import { callDataExecuteService } from '../service';
 
 import { type ConfirmInput, confirmModel } from './confirm';
 import { callDataExecuteFeature } from './feature';
@@ -110,7 +110,7 @@ const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
 const $args = combine($extrinsic, form.fields.chain.$value, (extrinsic, chain) => {
   if (!extrinsic || !chain) return null;
 
-  return callDataExecuteService.formatExtrinsic(extrinsic, chain);
+  return transactionEntitiesService.formatExtrinsic(extrinsic, chain);
 });
 
 const $route = createRouteStore({
@@ -129,7 +129,7 @@ const { $tx: $wrappedTx } = createWrappedTxStore({
 const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
 
 const $wrappedArgs = combine($wrappedExtrinsic, form.fields.chain.$value, (extrinsic, chain) => {
-  return extrinsic && chain ? callDataExecuteService.formatExtrinsic(extrinsic, chain) : null;
+  return extrinsic && chain ? transactionEntitiesService.formatExtrinsic(extrinsic, chain) : null;
 });
 
 const createWrappedExtrinsicFx = createQueuedEffect(
