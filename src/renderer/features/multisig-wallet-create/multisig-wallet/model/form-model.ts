@@ -77,21 +77,15 @@ const $multisigAccountId = combine(
   },
 );
 
-const $multisigAlreadyExists = combine(
+const $existingMultisig = combine(
   {
-    wallets: walletModel.$wallets,
+    accounts: accounts.$list,
     multisigAccountId: $multisigAccountId,
   },
-  ({ multisigAccountId, wallets }) => {
-    const multisigWallet = walletUtils.getWalletFilteredAccounts(wallets, {
-      walletFn: walletUtils.isMultisig,
-      accountFn: multisigAccount => {
-        if (!accountUtils.isMultisigAccount(multisigAccount)) return false;
-        return multisigAccount.accountId === multisigAccountId;
-      },
-    });
+  ({ multisigAccountId, accounts }) => {
+    if (nullable(multisigAccountId)) return null;
 
-    return nonNullable(multisigWallet);
+    return accounts.find(a => a.accountId === multisigAccountId && accountUtils.isMultisigAccount(a)) ?? null;
   },
 );
 
@@ -145,7 +139,7 @@ const $canSubmit = combine(
     hasEmptySignatories: signatoryModel.$hasEmptySignatories,
     hasEmptySignatoryName: signatoryModel.$hasEmptySignatoryName,
     hasDuplicateSignatories: signatoryModel.$hasDuplicateSignatories,
-    multisigAlreadyExists: $multisigAlreadyExists,
+    multisigAlreadyExists: $existingMultisig.map(nonNullable),
     invalidAddresses: $invalidAddresses,
     hiddenMultisig: $hiddenMultisig,
     threshold: form.fields.threshold.$value,
@@ -177,11 +171,12 @@ export const formModel = {
   $chain,
   form,
   $multisigAccountId,
-  $multisigAlreadyExists,
+  $multisigAlreadyExists: $existingMultisig.map(nonNullable),
   $hiddenMultisig,
   $invalidAddresses,
   $canSubmit,
   $isChainConnected,
+  $existingMultisig,
 
   formSubmitted: form.submit,
 };
