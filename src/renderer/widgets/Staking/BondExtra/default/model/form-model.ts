@@ -179,7 +179,7 @@ const { $errors } = createTxValidationStore({
 });
 
 const $proxiedAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
-const $multisigAccount = $route.map((route) => route.find(accountUtils.isMultisigAccount) ?? null);
+const $multisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
 const $isProxy = $proxiedAccount.map(nonNullable);
 const $isMultisig = $multisigAccount.map(nonNullable);
 
