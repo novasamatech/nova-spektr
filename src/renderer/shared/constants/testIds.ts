@@ -58,6 +58,7 @@ export const TEST_IDS = {
     SIGNER_SELECTOR: 'multisig-signer-selector',
     THRESHOLD_SELECTOR: 'multisig-threshold-selector',
     THRESHOLD_OPTION: 'multisig-threshold-option',
+    NETWORK_OPTION: 'multisig-network-option',
     CREATE_PURE_BUTTON: 'create-pure-button',
     ASSIGN_CONTROL_BUTTON: 'assign-control-button',
   },

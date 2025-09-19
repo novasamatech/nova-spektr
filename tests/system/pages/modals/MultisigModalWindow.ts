@@ -32,7 +32,7 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
 
   private async chooseNetwork(network: string): Promise<void> {
     await this.page.getByTestId('Select').click();
-    await this.page.getByLabel(network, { exact: true }).getByText(network).click();
+    await this.page.getByTestId(MultisigModalElements.networkOption).filter({ hasText: network }).first().click();
   }
 
   private async waitForContinueButtonToBeEnabled(): Promise<void> {

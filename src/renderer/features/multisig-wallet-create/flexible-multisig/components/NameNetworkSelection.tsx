@@ -64,7 +64,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
                     onChange={value => chainId.onChange(value as ChainId)}
                   >
                     {chains.map(chain => (
-                      <Select.Item key={chain.chainId} value={chain.chainId}>
+                      <Select.Item testId={TEST_IDS.MULTISIG.NETWORK_OPTION} key={chain.chainId} value={chain.chainId}>
                         <ChainTitle className="overflow-hidden" chain={chain} fontClass="text-text-primary truncate" />
                       </Select.Item>
                     ))}
