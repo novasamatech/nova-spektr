@@ -366,7 +366,7 @@ sample({
     successResult: $successResult,
   },
   filter: ({ chain, multisigAccountId, successResult }) => {
-    return nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(successResult);
+    return nonNullable(chain) &&  nonNullable(multisigAccountId) && nonNullable(successResult);
   },
   fn: ({ signatories, chain, name, threshold, multisigAccountId, successResult }) => {
     const timepoint = successResult!.params.timepoint;

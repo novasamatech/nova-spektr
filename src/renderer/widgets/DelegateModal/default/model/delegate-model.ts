@@ -308,7 +308,7 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: formModel.$isMultisig,
+  source: formModel.$hasAnyMultisig,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   filter: (isMultisig: boolean, results: any) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,

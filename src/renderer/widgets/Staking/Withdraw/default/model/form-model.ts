@@ -84,7 +84,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             isMultisig: $isMultisig,
             signatoryBalance: $signatoryBalance,
           }),
-          fn: (value, form, { fee, isMultisig, signatoryBalance }) => {
+          fn: (value, _, { fee, isMultisig, signatoryBalance }) => {
             if (!value) {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -229,9 +229,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 });
 
 const $isProxy = $route.map((route) => nonNullable(route.find((account) => accountUtils.isProxiedAccount(account))));
-const $isMultisig = $route.map((route) =>
-  nonNullable(route.find((account) => accountUtils.isMultisigAccount(account))),
-);
+const $isMultisig = $route.map((route) => route.some((account) => accountUtils.isAnyMultisigAccount(account)));
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
 
 const $proxyWallet = combine(

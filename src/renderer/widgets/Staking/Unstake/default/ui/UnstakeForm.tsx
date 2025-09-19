@@ -139,11 +139,11 @@ const FeeSection = () => {
   if (!network || !initiator.value) {
     return null;
   }
-  const multisig = route.find(accountUtils.isMultisigAccount);
+  const isMultisig = route.some(accountUtils.isAnyMultisigAccount);
 
   return (
     <div className="flex flex-col gap-y-2">
-      {multisig && (
+      {isMultisig && (
         <DetailRow
           className="text-text-primary"
           label={
