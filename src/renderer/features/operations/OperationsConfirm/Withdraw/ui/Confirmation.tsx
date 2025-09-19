@@ -35,7 +35,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const hasMultisigAccount = confirmStore.meta.route.find(accountUtils.isAnyMultisigAccount) ?? null;
+  const hasMultisigAccount = confirmStore.meta.route.some(accountUtils.isAnyMultisigAccount) ?? null;
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
