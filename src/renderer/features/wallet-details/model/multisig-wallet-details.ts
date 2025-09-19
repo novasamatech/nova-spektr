@@ -16,37 +16,39 @@ const $wallet = flow.state.map(({ wallet }) => wallet);
 const $multisigAccount = $wallet.map(wallet => {
   if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
 
-  return wallet.accounts
-    .filter(account => accountUtils.isMultisigAccount(account) || accountUtils.isFlexibleMultisigAccount(account))
-    .at(0);
+  return wallet.accounts.filter(account => accountUtils.isAnyMultisigAccount(account)).at(0);
 });
 
 const $signatories = combine(
   {
-    account: $multisigAccount,
+    multisigAccount: $multisigAccount,
     wallets: walletModel.$wallets,
     contacts: contactModel.$contacts,
   },
-  ({ account, wallets, contacts }): { wallets: [Wallet, AccountId][]; contacts: Contact[]; people: AccountId[] } => {
-    if (!account) {
+  ({
+    multisigAccount,
+    wallets,
+    contacts,
+  }): { wallets: [Wallet, AccountId][]; contacts: Contact[]; people: AccountId[] } => {
+    if (!multisigAccount) {
       return { wallets: [], contacts: [], people: [] };
     }
 
-    const signatoriesMap = dictionary(account.signatories, 'accountId', true);
+    const signatoriesMap = dictionary(multisigAccount.signatories, 'accountId', true);
 
     const walletSignatories: [Wallet, AccountId][] = [];
     for (const wallet of wallets) {
       for (const account of wallet.accounts) {
-        if (!signatoriesMap[account.accountId]) continue;
+        if (!signatoriesMap[multisigAccount.accountId]) continue;
 
-        delete signatoriesMap[account.accountId];
+        delete signatoriesMap[multisigAccount.accountId];
         walletSignatories.push([wallet, account.accountId]);
       }
     }
 
     const contactSignatories: Contact[] = [];
     for (const contact of contacts) {
-      if (!signatoriesMap[contact.accountId]) continue;
+      if (!signatoriesMap[multisigAccount.accountId]) continue;
 
       contactSignatories.push(contact);
       delete signatoriesMap[contact.accountId];
