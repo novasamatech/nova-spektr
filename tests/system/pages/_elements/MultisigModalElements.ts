@@ -10,6 +10,7 @@ export class MultisigModalElements {
   static signatoryName = TEST_IDS.MULTISIG.SIGNATORY_NAME;
   static signerSelector = TEST_IDS.MULTISIG.SIGNER_SELECTOR;
   static thresholdSelector = TEST_IDS.MULTISIG.THRESHOLD_SELECTOR;
+  static thresholdOption = TEST_IDS.MULTISIG.THRESHOLD_OPTION;
   static address = 'Address';
   static flexibleMultisigType = TEST_IDS.MULTISIG.FLEXIBLE_MULTISIG;
   static regularMultisigType = TEST_IDS.MULTISIG.REGULAR_MULTISIG;

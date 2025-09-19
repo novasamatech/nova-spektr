@@ -54,12 +54,7 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
   private async selectMyAccount(account: string): Promise<void> {
     await step(`Select account: ${account}`, async () => {
       await this.page.getByTestId(MultisigModalElements.signerSelector).click();
-      await this.page
-        .getByTestId(MultisigModalElements.signerSelector)
-        .getByTestId(MultisigModalElements.address)
-        .filter({ hasText: account })
-        .first()
-        .click();
+      await this.page.getByTestId(MultisigModalElements.address).filter({ hasText: account }).first().click();
     });
   }
 
@@ -126,7 +121,11 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
   private async setThreshold(threshold: number): Promise<void> {
     await step(`Set threshold to ${threshold}`, async () => {
       await this.page.getByTestId(MultisigModalElements.thresholdSelector).click();
-      await this.page.getByRole('option', { name: threshold.toString() }).click();
+      await this.page
+        .getByTestId(MultisigModalElements.thresholdOption)
+        .filter({ hasText: threshold.toString() })
+        .first()
+        .click();
     });
   }
 

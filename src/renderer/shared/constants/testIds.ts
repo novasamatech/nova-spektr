@@ -57,6 +57,7 @@ export const TEST_IDS = {
     MULTISIG_WALLET_NAME: 'multisig-wallet-name',
     SIGNER_SELECTOR: 'multisig-signer-selector',
     THRESHOLD_SELECTOR: 'multisig-threshold-selector',
+    THRESHOLD_OPTION: 'multisig-threshold-option',
     CREATE_PURE_BUTTON: 'create-pure-button',
     ASSIGN_CONTROL_BUTTON: 'assign-control-button',
   },
