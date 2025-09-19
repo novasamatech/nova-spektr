@@ -181,7 +181,7 @@ const Root = <T extends string>({
               ref={triggerRef}
               className={cnTw(
                 'relative box-border cursor-pointer border pr-6.5 pl-2.75 text-text-secondary',
-                'w-full rounded-md text-left text-footnote hover:shadow-card-shadow',
+                'w-full overflow-y-clip rounded-md text-left text-footnote hover:shadow-card-shadow',
                 {
                   'h-8.5': height === 'sm',
                   'h-10.5': height === 'md',
