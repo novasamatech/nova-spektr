@@ -155,7 +155,7 @@ const FeeSection = () => {
 
   const api = useUnit(formModel.$api);
   const multisigDeposit = useUnit(formModel.$multisigDeposit);
-  const isAnyMultisigAccount = useUnit(formModel.$isAnyMultisigAccount);
+  const isMultisig = useUnit(formModel.$isMultisig);
 
   if (!chain.value) return null;
 
@@ -172,7 +172,7 @@ const FeeSection = () => {
         />
       </ProxyDepositLabel>
 
-      {isAnyMultisigAccount && (
+      {isMultisig && (
         <MultisigDepositFee asset={getNativeAsset(chain.value.assets)} multisigDeposit={multisigDeposit.toString()} />
       )}
 
@@ -188,7 +188,7 @@ const FeeError = () => {
     fields: { initiator: account },
   } = useForm(formModel.form);
 
-  const isMultisig = useUnit(formModel.$isAnyMultisigAccount);
+  const isMultisig = useUnit(formModel.$isMultisig);
 
   return (
     <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={account.hasError} variant="error">

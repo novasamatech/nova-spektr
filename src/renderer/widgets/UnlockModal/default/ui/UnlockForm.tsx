@@ -126,7 +126,7 @@ const FeeSection = () => {
 
   const api = useUnit(unlockFormAggregate.$api);
   const chain = useUnit(networkSelectorModel.$governanceChain);
-  const isAnyMultisig = useUnit(unlockFormAggregate.$isAnyMultisig);
+  const isMultisig = useUnit(unlockFormAggregate.$isMultisig);
   const fee = useUnit(unlockFormAggregate.$fee);
   const pendingFee = useUnit(unlockFormAggregate.$pendingFee);
 
@@ -136,7 +136,7 @@ const FeeSection = () => {
 
   return (
     <div className="flex flex-col gap-y-2">
-      {isAnyMultisig && (
+      {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
           asset={getNativeAsset(chain.assets)!}

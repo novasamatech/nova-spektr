@@ -48,7 +48,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const { chain, asset, route, validators, signatory, fee, totalFee, multisigDeposit } = confirmStore.meta;
 
-  const hasAnyMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
+  const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
   return (
     <>
@@ -80,7 +80,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
           <hr className="w-full border-filter-border pr-2" />
 
-          {hasAnyMultisigAccount && (
+          {hasMultisigAccount && (
             <DetailRow
               className="text-text-primary"
               label={

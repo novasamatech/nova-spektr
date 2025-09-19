@@ -81,7 +81,7 @@ const form: Form<FormParams> = createForm<FormParams>({
         return {
           source: combine({
             fee: $fee,
-            isAnyMultisig: $isAnyMultisig,
+            isAnyMultisig: $isMultisig,
             signatoryBalance: $signatoryBalance,
           }),
           fn: (value, _, { fee, isAnyMultisig, signatoryBalance }) => {
@@ -229,7 +229,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 });
 
 const $isProxy = $route.map((route) => nonNullable(route.find((account) => accountUtils.isProxiedAccount(account))));
-const $isAnyMultisig = $route.map((route) => route.some((account) => accountUtils.isAnyMultisigAccount(account)));
+const $isMultisig = $route.map((route) => route.some((account) => accountUtils.isAnyMultisigAccount(account)));
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
 
 const $proxyWallet = combine(
@@ -446,7 +446,7 @@ export const formModel = {
   $coreTx,
   $tx,
   $route,
-  $isAnyMultisig,
+  $isMultisig,
   $isChainConnected,
   $isStakingLoading: subscribeStakingFx.pending,
   $isEraLoading: subscribeEraFx.pending,

@@ -66,7 +66,7 @@ const form: Form<FormParams> = createForm<FormParams>({
         return {
           source: combine({
             fee: $fee,
-            isAnyMultisig: $isAnyMultisig,
+            isAnyMultisig: $isMultisig,
             multisigDeposit: $multisigDeposit,
             signatoryBalance: $signatoryBalance,
           }),
@@ -89,7 +89,7 @@ const form: Form<FormParams> = createForm<FormParams>({
         return {
           source: combine({
             fee: $fee,
-            isAnyMultisig: $isAnyMultisig,
+            isAnyMultisig: $isMultisig,
             availableBalance: $availableBalance,
           }),
           fn: (amount, fields, { fee, isAnyMultisig, availableBalance }) => {
@@ -188,7 +188,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 });
 
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
-const $isAnyMultisig = $route.map((route) => (route.some(accountUtils.isAnyMultisigAccount)));
+const $isMultisig = $route.map((route) => (route.some(accountUtils.isAnyMultisigAccount)));
 const $isProxy = $proxyAccount.map((account) => nonNullable(account));
 
 const $proxyBalance = combine(
@@ -344,7 +344,7 @@ export const unlockFormAggregate = {
   $fee,
   $pendingFee,
   $isProxy,
-  $isAnyMultisig,
+  $isMultisig,
   $proxyWallet,
   $signatories,
   $proxyBalance,

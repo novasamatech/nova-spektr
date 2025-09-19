@@ -41,7 +41,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
     fn: (value, [chainId]) => value?.[chainId],
   });
 
-  const hasAnyMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
+  const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
   if (!confirmStore) {
     return null;
@@ -70,7 +70,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         initiators={confirms.map((c) => c.meta.initiator)}
         signatory={signatory}
       >
-        {hasAnyMultisigAccount && (
+        {hasMultisigAccount && (
           <DetailRow
             className="text-text-primary"
             label={

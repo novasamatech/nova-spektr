@@ -165,7 +165,7 @@ const Signatories = () => {
   } = useForm(formModel.form);
 
   const signatories = useUnit(formModel.$signatories);
-  const isAnyMultisigAccount = useUnit(formModel.$isAnyMultisigAccount);
+  const isMultisig = useUnit(formModel.$isMultisig);
 
   const allAccounts = useUnit(accounts.$list);
   const allWallets = useUnit(walletModel.$wallets);
@@ -182,7 +182,7 @@ const Signatories = () => {
     });
   }, [signatories, balances]);
 
-  if (!isAnyMultisigAccount) {
+  if (!isMultisig) {
     return null;
   }
 
@@ -302,7 +302,7 @@ const FeeSection = () => {
   const api = useUnit(formModel.$api);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
-  const isAnyMultisigAccount = useUnit(formModel.$isAnyMultisigAccount);
+  const isMultisig = useUnit(formModel.$isMultisig);
   const multisigDeposit = useUnit(formModel.$multisigDeposit);
   const oldProxyDeposit = useUnit(formModel.$oldProxyDeposit);
   const activeProxies = useUnit(formModel.$activeProxies);
@@ -324,7 +324,7 @@ const FeeSection = () => {
         />
       </ProxyDepositLabel>
 
-      {isAnyMultisigAccount && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit.toString()} />}
+      {isMultisig && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit.toString()} />}
 
       <FeeWithLabel asset={nativeAsset} fee={fee.toString()} isLoading={pendingFee} />
     </div>
@@ -338,12 +338,12 @@ const FeeError = () => {
     fields: { initiator },
   } = useForm(formModel.form);
 
-  const isAnyMultisigAccount = useUnit(formModel.$isAnyMultisigAccount);
+  const isMultisig = useUnit(formModel.$isMultisig);
 
   return (
     <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={initiator.hasError} variant="error">
       <Alert.Item withDot={false}>
-        {isAnyMultisigAccount ? t('proxy.addProxy.balanceAlertMultisig') : t('proxy.addProxy.balanceAlertRegular')}
+        {isMultisig ? t('proxy.addProxy.balanceAlertMultisig') : t('proxy.addProxy.balanceAlertRegular')}
       </Alert.Item>
     </Alert>
   );

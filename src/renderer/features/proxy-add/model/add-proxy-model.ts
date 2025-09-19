@@ -180,7 +180,7 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  source: formModel.$isAnyMultisigAccount,
+  source: formModel.$isMultisig,
   filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,

@@ -60,7 +60,7 @@ export const Confirmation = ({
     return confirms.map((confirm) => confirm.meta.initiator);
   }, [confirms]);
 
-  const isAnyMultisigAccount = useMemo(() => {
+  const hasMultisig = useMemo(() => {
     if (nullable(confirm)) return null;
 
     return confirm.meta.route.some(accountUtils.isAnyMultisigAccount);
@@ -120,7 +120,7 @@ export const Confirmation = ({
 
         <hr className="w-full border-filter-border pr-2" />
 
-        {isAnyMultisigAccount && (
+        {hasMultisig && (
           <DetailRow
             className="text-text-primary"
             label={

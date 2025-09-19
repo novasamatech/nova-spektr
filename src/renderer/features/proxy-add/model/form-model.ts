@@ -116,7 +116,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             fee: $fee,
             proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balanceMap,
-            isAnyMultisigAccount: $isAnyMultisigAccount,
+            isAnyMultisigAccount: $isMultisig,
           }),
           fn: (initiator, form, { isAnyMultisigAccount, balances, ...params }) => {
             if (nullable(initiator)) {
@@ -154,7 +154,7 @@ const form: Form<FormParams> = createForm<FormParams>({
             multisigDeposit: $multisigDeposit,
             proxyDeposit: $newProxyDeposit,
             balances: balanceModel.$balanceMap,
-            isAnyMultisigAccount: $isAnyMultisigAccount,
+            isAnyMultisigAccount: $isMultisig,
           }),
           fn: (signatory, form, { isAnyMultisigAccount, balances, ...params }) => {
             if (nullable(signatory)) {
@@ -382,15 +382,15 @@ const { $errors } = createTxValidationStore({
   },
 });
 
-const $isAnyMultisigAccount = $route.map((route) => {
+const $isMultisig = $route.map((route) => {
   return route.some((acc) => accountUtils.isAnyMultisigAccount(acc));
 });
 
 const $multisigThreshold = $route.map((route) => {
-  const isAnyMultisigAccount = route.find(accountUtils.isAnyMultisigAccount);
-  if (!isAnyMultisigAccount) return null;
+  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+  if (!multisigAccount) return null;
 
-  return isAnyMultisigAccount.threshold;
+  return multisigAccount.threshold;
 });
 
 const { $multisigDeposit } = createMultisigDeposit({
@@ -603,7 +603,7 @@ export const formModel = {
 
   flowStarted,
   $api,
-  $isAnyMultisigAccount,
+  $isMultisig,
   $isChainConnected,
   $canSubmit,
 

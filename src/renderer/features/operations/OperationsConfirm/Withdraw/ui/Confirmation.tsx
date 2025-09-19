@@ -35,7 +35,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
 
-  const hasAnyMultisigAccount = confirmStore.meta.route.find(accountUtils.isAnyMultisigAccount) ?? null;
+  const hasMultisigAccount = confirmStore.meta.route.find(accountUtils.isAnyMultisigAccount) ?? null;
 
   const [isAccountsOpen, toggleAccounts] = useToggle();
 
@@ -62,7 +62,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         <MultisigExistsAlert active={isMultisigExists} />
 
         <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
-          {hasAnyMultisigAccount && (
+          {hasMultisigAccount && (
             <DetailRow
               className="text-text-primary"
               label={
