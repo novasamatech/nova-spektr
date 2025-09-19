@@ -8,6 +8,7 @@ import { readonly } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { assert, nonNullable, nullable } from '@/shared/lib/utils';
+import { accountSync } from '@/domains/network';
 import { walletConnectService } from '../lib/service';
 
 import { signClient } from './signClient';
@@ -65,6 +66,11 @@ const createSessionFx = createEffect(
     return connect.approval().finally(() => updateUri(''));
   },
 );
+
+sample({
+  clock: createSessionFx.done,
+  target: accountSync.syncAccounts,
+});
 
 const removeSessionFx = attach({
   source: { client: signClient.$client },
