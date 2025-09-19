@@ -175,7 +175,7 @@ const $proxyAccount = $route.map((route) => route.find((account) => accountUtils
 const $isProxy = $proxyAccount.map((account) => nonNullable(account));
 
 const $multisigAccount = $route.map(
-  (route) => route.find((account) => accountUtils.isMultisigAccount(account)) ?? null,
+  (route) => route.find((account) => accountUtils.isAnyMultisigAccount(account)) ?? null,
 );
 
 const $isMultisig = $multisigAccount.map((account) => nonNullable(account));

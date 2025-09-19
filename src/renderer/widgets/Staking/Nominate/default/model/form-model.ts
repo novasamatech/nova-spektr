@@ -149,7 +149,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 });
 
 const $isMultisig = $route.map((route) => {
-  return route.some((acc) => accountUtils.isMultisigAccount(acc));
+  return route.some((acc) => accountUtils.isAnyMultisigAccount(acc));
 });
 
 const $proxyAccount = combine({ route: $route }, ({ route }) => {

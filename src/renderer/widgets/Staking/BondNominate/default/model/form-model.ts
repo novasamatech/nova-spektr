@@ -289,12 +289,12 @@ sample({
   clock: $route,
   fn: (route) => {
     const proxyAccount = route.find(accountUtils.isProxiedAccount);
-    const isMultisigAccount = route.find(accountUtils.isMultisigAccount);
+    const isMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
     return {
       proxyAccount: proxyAccount ?? null,
       isProxy: nonNullable(proxyAccount),
-      isMultisig: nonNullable(isMultisigAccount),
+      isMultisig: isMultisigAccount,
     };
   },
   target: spread({
