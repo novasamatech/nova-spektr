@@ -66,17 +66,17 @@ const form: Form<FormParams> = createForm<FormParams>({
         return {
           source: combine({
             fee: $fee,
-            isAnyMultisig: $isMultisig,
+            isMultisig: $isMultisig,
             multisigDeposit: $multisigDeposit,
             signatoryBalance: $signatoryBalance,
           }),
-          fn: (signatory, _fields, { fee, isAnyMultisig, multisigDeposit, signatoryBalance }) => {
+          fn: (signatory, _fields, { fee, isMultisig, multisigDeposit, signatoryBalance }) => {
             if (nullable(signatory)) {
               return { message: 'transfer.noSignatoryError' };
             }
 
             const required = new BN(multisigDeposit).add(new BN(fee));
-            if (isAnyMultisig && required.gt(new BN(signatoryBalance))) {
+            if (isMultisig && required.gt(new BN(signatoryBalance))) {
               return { message: 'proxy.addProxy.notEnoughMultisigTokens' };
             }
           },
@@ -89,15 +89,15 @@ const form: Form<FormParams> = createForm<FormParams>({
         return {
           source: combine({
             fee: $fee,
-            isAnyMultisig: $isMultisig,
+            isMultisig: $isMultisig,
             availableBalance: $availableBalance,
           }),
-          fn: (amount, fields, { fee, isAnyMultisig, availableBalance }) => {
+          fn: (amount, fields, { fee, isMultisig, availableBalance }) => {
             const amountBN = new BN(amount);
             if (nullable(amount) || amountBN.lte(BN_ZERO)) {
               return { message: 'transfer.notZeroAmountError' };
             }
-            if (!isAnyMultisig && fields.initiator) {
+            if (!isMultisig && fields.initiator) {
               const feeBN = new BN(fee);
               if (amountBN.add(feeBN).gt(new BN(availableBalance))) {
                 return { message: 'transfer.notEnoughBalanceForFeeError' };
@@ -188,7 +188,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 });
 
 const $proxyAccount = $route.map((route) => route.find((account) => accountUtils.isProxiedAccount(account)) ?? null);
-const $isMultisig = $route.map((route) => (route.some(accountUtils.isAnyMultisigAccount)));
+const $isMultisig = $route.map((route) => route.some(accountUtils.isAnyMultisigAccount));
 const $isProxy = $proxyAccount.map((account) => nonNullable(account));
 
 const $proxyBalance = combine(

@@ -81,10 +81,10 @@ const form: Form<FormParams> = createForm<FormParams>({
         return {
           source: combine({
             fee: $fee,
-            isAnyMultisig: $isMultisig,
+            isMultisig: $isMultisig,
             signatoryBalance: $signatoryBalance,
           }),
-          fn: (value, _, { fee, isAnyMultisig, signatoryBalance }) => {
+          fn: (value, _, { fee, isMultisig, signatoryBalance }) => {
             if (!value) {
               return { message: 'transfer.requiredAmountError' };
             }
@@ -93,7 +93,7 @@ const form: Form<FormParams> = createForm<FormParams>({
               return { message: 'transfer.notZeroAmountError' };
             }
 
-            if (isAnyMultisig) {
+            if (isMultisig) {
               const isEnough = new BN(signatoryBalance).gt(new BN(fee));
 
               if (!isEnough) {
