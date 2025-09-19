@@ -7,13 +7,13 @@ projects:
   SubQuery Proxy:
     schema: https://subquery-proxy-polkadot-stg.novasama-tech.org
     include:
-      - src/renderer/domains/network/multisig-operation/**
       - src/renderer/entities/multisig-accounts/**
       - src/renderer/entities/proxy/**
 
-  SubQuery Multi Chain Proxy:
+  SubQuery Multi Chain Account Management:
     schema: https://subquery-account-manager-stg.novasama-tech.org
     include:
+      - src/renderer/domains/network/multisig-operation/**
       - src/renderer/domains/network/account-sync/**
 
   SubQuery History:
