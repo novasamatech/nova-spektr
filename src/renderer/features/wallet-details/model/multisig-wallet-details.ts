@@ -21,34 +21,34 @@ const $multisigAccount = $wallet.map(wallet => {
 
 const $signatories = combine(
   {
-    anyMultisigAccount: $multisigAccount,
+    multisigAccount: $multisigAccount,
     wallets: walletModel.$wallets,
     contacts: contactModel.$contacts,
   },
   ({
-    anyMultisigAccount,
+    multisigAccount,
     wallets,
     contacts,
   }): { wallets: [Wallet, AccountId][]; contacts: Contact[]; people: AccountId[] } => {
-    if (!anyMultisigAccount) {
+    if (!multisigAccount) {
       return { wallets: [], contacts: [], people: [] };
     }
 
-    const signatoriesMap = dictionary(anyMultisigAccount.signatories, 'accountId', true);
+    const signatoriesMap = dictionary(multisigAccount.signatories, 'accountId', true);
 
     const walletSignatories: [Wallet, AccountId][] = [];
     for (const wallet of wallets) {
       for (const account of wallet.accounts) {
-        if (!signatoriesMap[anyMultisigAccount.accountId]) continue;
+        if (!signatoriesMap[multisigAccount.accountId]) continue;
 
-        delete signatoriesMap[anyMultisigAccount.accountId];
+        delete signatoriesMap[multisigAccount.accountId];
         walletSignatories.push([wallet, account.accountId]);
       }
     }
 
     const contactSignatories: Contact[] = [];
     for (const contact of contacts) {
-      if (!signatoriesMap[anyMultisigAccount.accountId]) continue;
+      if (!signatoriesMap[multisigAccount.accountId]) continue;
 
       contactSignatories.push(contact);
       delete signatoriesMap[contact.accountId];
