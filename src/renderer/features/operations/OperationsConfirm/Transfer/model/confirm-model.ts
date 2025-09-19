@@ -126,7 +126,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
       }),
       source: {
         network: { chain: store.chain, asset: store.asset },
-        isAnyMultisig: nonNullable(hasMultisigAccount),
+        isMultisig: nonNullable(hasMultisigAccount),
         multisigDeposit: store.multisigDeposit,
         fee: store.fee,
         xcmFee: store.xcmFee,
@@ -157,7 +157,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
       }),
       source: {
         network: { chain: store.chain, asset: store.asset },
-        isAnyMultisig: nonNullable(hasMultisigAccount),
+        isMultisig: nonNullable(hasMultisigAccount),
         multisigDeposit: store.multisigDeposit,
         fee: store.fee,
         xcmFee: store.xcmFee,
@@ -188,7 +188,7 @@ const validateFx = createEffect(({ store, balances }: ValidateParams) => {
       }),
       source: {
         network: { chain: store.chain, asset: store.asset },
-        isAnyMultisig: nonNullable(hasMultisigAccount),
+        isMultisig: nonNullable(hasMultisigAccount),
         multisigDeposit: store.multisigDeposit,
         fee: store.fee,
         xcmFee: store.xcmFee,

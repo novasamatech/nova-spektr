@@ -103,7 +103,7 @@ export const DelegateRules = {
             deliveryFee: BN_ZERO,
             isNative: true,
             isProxy: false,
-            isAnyMultisig: isMultisig,
+            isMultisig: isMultisig,
             isXcm: false,
           },
           config,

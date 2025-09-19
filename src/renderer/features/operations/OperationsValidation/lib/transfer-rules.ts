@@ -116,7 +116,7 @@ export const TransferRules = {
       validator: (
         amount: string,
         _: any,
-        { network, isNative, isProxy, isAnyMultisig, isXcm, balance, ...fee }: TransferAmountFeeStore,
+        { network, isNative, isProxy, isMultisig, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
 
@@ -129,7 +129,7 @@ export const TransferRules = {
             balance: isXcm || !isNative ? balance.native : balance.balance,
             isNative,
             isProxy,
-            isAnyMultisig: isMultisig,
+            isMultisig,
             isXcm,
             ...fee,
           },
@@ -147,10 +147,10 @@ export const TransferRules = {
       validator: (
         amount: string,
         _: any,
-        { network, isProxy, isAnyMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
+        { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
-        if (!isXcm || !isProxy || !isAnyMultisig || !fee.deliveryFee || !balance) return true;
+        if (!isXcm || !isProxy || !isMultisig || !fee.deliveryFee || !balance) return true;
 
         return balanceValidation.insufficientBalanceForDeliveryFee(
           {
@@ -161,7 +161,7 @@ export const TransferRules = {
             isXcm,
             isNative,
             isProxy,
-            isAnyMultisig: isMultisig,
+            isMultisig: isMultisig,
             ...fee,
           },
           config,
@@ -178,7 +178,7 @@ export const TransferRules = {
       validator: (
         amount: string,
         _: any,
-        { network, isProxy, isAnyMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
+        { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
 
@@ -193,7 +193,7 @@ export const TransferRules = {
             isXcm,
             isNative,
             isProxy,
-            isAnyMultisig: isMultisig,
+            isMultisig,
             ...fee,
           },
           config,

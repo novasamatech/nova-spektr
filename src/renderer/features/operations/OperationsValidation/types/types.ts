@@ -99,7 +99,7 @@ export type TransferAmountFeeStore = {
   network: NetworkStore | null;
   isXcm: boolean;
   isNative: boolean;
-  isAnyMultisig: boolean;
+  isMultisig: boolean;
   isProxy: boolean;
   fee: BN;
   xcmFee: BN;
