@@ -103,44 +103,46 @@ export const PairingModal = memo(({ variant, children }: Props) => {
   }
 
   return (
-    <Modal size="xl" height="lg" isOpen={open} onToggle={toggleModal}>
+    <Modal size="xl" isOpen={open} onToggle={toggleModal}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Content disableScroll>
-        <Carousel item={step.toString()} fixedHeight>
-          <Carousel.Item id={Step.SCAN.toString()} index={0}>
-            <div className="flex h-full w-full">
-              <div className="flex w-full max-w-[472px] min-w-96 flex-col rounded-l-lg bg-white px-5 py-4">
-                <HeaderTitleText className="mb-10">{header}</HeaderTitleText>
-                <SmallTitleText className="mb-6">{scanTitle}</SmallTitleText>
+        <div className="relative min-h-[600px]">
+          <Carousel item={step.toString()} fixedHeight>
+            <Carousel.Item id={Step.SCAN.toString()} index={0}>
+              <div className="flex h-full w-full">
+                <div className="flex w-full max-w-[472px] min-w-96 flex-col rounded-l-lg bg-white px-5 py-4">
+                  <HeaderTitleText className="mb-10">{header}</HeaderTitleText>
+                  <SmallTitleText className="mb-6">{scanTitle}</SmallTitleText>
 
-                <div className="py-7">
-                  <WalletConnectQrCode uri={uri} type={variant} />
+                  <div className="py-7">
+                    <WalletConnectQrCode uri={uri} type={variant} />
+                  </div>
+
+                  <div className="mt-auto">
+                    <Button variant="text" onClick={() => toggleModal(false)}>
+                      {t('onboarding.backButton')}
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="mt-auto">
-                  <Button variant="text" onClick={() => toggleModal(false)}>
-                    {t('onboarding.backButton')}
-                  </Button>
+                <div className="flex w-full flex-col bg-black duration-500 animate-in fade-in">
+                  <video className="h-full object-contain" autoPlay loop>
+                    <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
+                    <source src={novawallet_onboarding_tutorial} type="video/mp4" />
+                  </video>
                 </div>
               </div>
-
-              <div className="flex w-full flex-col bg-black duration-500 animate-in fade-in">
-                <video className="h-full object-contain" autoPlay loop>
-                  <source src={novawallet_onboarding_tutorial_webm} type="video/webm" />
-                  <source src={novawallet_onboarding_tutorial} type="video/mp4" />
-                </video>
-              </div>
-            </div>
-          </Carousel.Item>
-          <Carousel.Item id={Step.MANAGE.toString()} index={1}>
-            {session ? (
-              <PairingForm
-                type={variant === 'novawallet' ? WalletType.NOVA_WALLET : WalletType.WALLET_CONNECT}
-                onBack={goToScan}
-              />
-            ) : null}
-          </Carousel.Item>
-        </Carousel>
+            </Carousel.Item>
+            <Carousel.Item id={Step.MANAGE.toString()} index={1}>
+              {session ? (
+                <PairingForm
+                  type={variant === 'novawallet' ? WalletType.NOVA_WALLET : WalletType.WALLET_CONNECT}
+                  onBack={goToScan}
+                />
+              ) : null}
+            </Carousel.Item>
+          </Carousel>
+        </div>
       </Modal.Content>
     </Modal>
   );
