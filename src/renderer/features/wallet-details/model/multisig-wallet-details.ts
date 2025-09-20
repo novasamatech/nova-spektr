@@ -7,7 +7,7 @@ import { type Chain, type ChainId, type Contact, type ProxyAccount, type Wallet 
 import { dictionary, keys, nullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { contactModel } from '@/entities/contact';
-import { networkModel } from '@/entities/network';
+import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
@@ -77,7 +77,12 @@ const fetchAllProxiesFx = createEffect(
 
     const fetchChainProxies = async (chainId: ChainId): Promise<[ChainId, Omit<ProxyAccount, 'id' | 'delay'>[]]> => {
       const api = apis[chainId];
-      if (!api) return [chainId, []];
+      const chain = chains[chainId];
+      if (!api || !chain) return [chainId, []];
+
+      if (!networkUtils.isProxySupported(chain.options)) {
+        return [chainId, []];
+      }
 
       const accountProxiesPromises = wallet.accounts.map(async account => {
         try {
