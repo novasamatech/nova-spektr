@@ -33,11 +33,12 @@ export type MultisigCreated = MultisigBaseNotification & {
   multisigAccountName: string;
 };
 
-export type FlexibleMultisigCreated = MultisigBaseNotification & {
+export type FlexibleMultisigCreated = BaseNotification & {
   walletId: number;
+  accountId: AccountId;
+  accountName: string;
   signatories: AccountId[];
   threshold: number;
-  multisigAccountName: string;
 };
 
 export type MultisigOperationNotification = MultisigBaseNotification & {
@@ -57,4 +58,4 @@ export type ProxyAction = BaseNotification & {
   proxiedWalletName: string;
 };
 
-export type Notification = MultisigCreated | MultisigOperationNotification | ProxyAction;
+export type Notification = FlexibleMultisigCreated | MultisigCreated | MultisigOperationNotification | ProxyAction;

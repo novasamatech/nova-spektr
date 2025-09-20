@@ -58,7 +58,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
     );
   }
 
-  const multisigAccount = confirmStore.meta.route.find(accountUtils.isMultisigAccount) ?? null;
+  const hasMultisigAccount = confirmStore.meta.route.some(accountUtils.isAnyMultisigAccount);
   const { fee, asset, amount, totalLock, signatory } = confirmStore.meta;
   const initiators = confirms.map((confirm) => confirm.meta.initiator);
   const nativeAsset = getNativeAsset(confirmStore.meta.chain.assets);
@@ -104,7 +104,7 @@ export const UnlockConfirmation = ({ id = 0, hideSignButton, secondaryActionButt
 
         <hr className="w-full border-filter-border pr-2" />
 
-        {multisigAccount && (
+        {hasMultisigAccount && (
           <DetailRow
             className="text-text-primary"
             label={

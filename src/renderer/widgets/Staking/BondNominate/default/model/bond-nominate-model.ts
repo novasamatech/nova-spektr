@@ -110,7 +110,7 @@ sample({
   },
   filter: ({ api, route }) => nonNullable(api) && nonNullable(route),
   fn: ({ api, route }) => {
-    const multisig = route.find(accountUtils.isMultisigAccount);
+    const multisig = route.find(accountUtils.isAnyMultisigAccount);
     return {
       api: api!,
       threshold: multisig?.threshold ?? 0,

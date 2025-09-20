@@ -75,7 +75,7 @@ const $initiators = combine(
 );
 
 const $multisigAccount = walletSelect.$selectedAccounts.map(
-  accs => accs.find(a => accountUtils.isMultisigAccount(a) || accountUtils.isFlexibleMultisigAccount(a)) ?? null,
+  accs => accs.find(a => accountUtils.isAnyMultisigAccount(a)) ?? null,
 );
 
 const $initiator = $initiators.map(initiators => initiators.at(0) ?? null);

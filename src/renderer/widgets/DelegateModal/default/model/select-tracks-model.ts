@@ -234,7 +234,7 @@ sample({
   source: {
     tracks: $tracks,
     network: delegationAggregate.$network,
-    isMultisig: formModel.$isMultisig,
+    isMultisig: formModel.$hasAnyMultisig,
   },
   filter: ({ network, isMultisig }) => !!network && !!isMultisig,
   fn: ({ tracks, network, isMultisig }, _): CheckWeightParams => ({
