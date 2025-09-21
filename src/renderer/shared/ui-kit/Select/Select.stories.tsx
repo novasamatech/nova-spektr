@@ -47,20 +47,28 @@ export const RichContent: Story = {
     return (
       <Select {...args} placeholder="Select a fruit" value={value} onChange={onChange}>
         <Select.Item value="item_1">
-          <Icon name="btc" size={12} className="shrink-0" />
-          <span className="truncate">Apple</span>
+          <div className="flex items-center gap-2">
+            <Icon name="btc" size={12} className="shrink-0" />
+            <span className="truncate">Apple</span>
+          </div>
         </Select.Item>
         <Select.Item value="item_2">
-          <Icon name="usd" size={12} className="shrink-0" />
-          <span className="truncate">Orange</span>
+          <div className="flex items-center gap-2">
+            <Icon name="usd" size={12} className="shrink-0" />
+            <span className="truncate">Orange</span>
+          </div>
         </Select.Item>
         <Select.Item value="item_3">
-          <Icon name="eur" size={12} className="shrink-0" />
-          <span className="truncate">Watermelon</span>
+          <div className="flex items-center gap-2">
+            <Icon name="eur" size={12} className="shrink-0" />
+            <span className="truncate">Watermelon</span>
+          </div>
         </Select.Item>
         <Select.Item value="item_4">
-          <Icon name="rub" size={12} className="shrink-0" />
-          <span className="truncate">Banana-nana-nana-nana-nana-nana</span>
+          <div className="flex items-center gap-2">
+            <Icon name="rub" size={12} className="shrink-0" />
+            <span className="truncate">Banana-nana-nana-nana-nana-nana</span>
+          </div>
         </Select.Item>
       </Select>
     );
