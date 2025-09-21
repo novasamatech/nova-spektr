@@ -391,7 +391,6 @@ function formatArg(arg: Codec, chain: Chain): unknown {
   }
 
   if (arg instanceof GenericMultiAddress) {
-    console.log({ arg });
     if (arg.type === 'Id' || arg.type === 'Address20' || arg.type === 'Address32') {
       return toAddress(arg.value.toString(), { prefix: chain.addressPrefix });
     } else {
