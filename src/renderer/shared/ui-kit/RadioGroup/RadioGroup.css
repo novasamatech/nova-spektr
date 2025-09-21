@@ -16,3 +16,8 @@
   border: 0;
   background-color: var(--primary-button-background-default);
 }
+
+/* Ensure the card border changes when checked */
+[data-state="checked"] > div {
+  border-color: var(--primary-button-background-default);
+}
