@@ -1,7 +1,6 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
-import { type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
@@ -63,7 +62,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
                     placeholder={t('createMultisigAccount.chainPlaceholder')}
                     value={selectedChain ?? null}
                     options={chains}
-                    onChange={chain => chainId.onChange(chain.chainId as ChainId)}
+                    onChange={chain => chainId.onChange(chain.chainId)}
                   />
                 </Field>
               </Box>
