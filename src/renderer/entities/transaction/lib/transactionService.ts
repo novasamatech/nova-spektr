@@ -437,8 +437,6 @@ function createCallFromCallData(callData: CallData, api: ApiPromise): CallBase<a
 function formatCall(call: CallBase<any>, chain: Chain): object {
   const args: Record<string, unknown> = {};
 
-  console.log({ call });
-
   // @ts-expect-error argsEntries are not defined in extrinsic type
   for (const [key, value] of call.argsEntries as [string, Codec][]) {
     args[key] = formatArg(value, chain);
