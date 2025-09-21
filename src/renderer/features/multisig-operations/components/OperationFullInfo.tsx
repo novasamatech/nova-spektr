@@ -11,7 +11,7 @@ import { Box, Json, Modal } from '@/shared/ui-kit';
 import { type MultisigOperation, accounts, multisigOperation } from '@/domains/network';
 import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { getTxFromCallData, transactionService } from '@/entities/transaction';
+import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
@@ -49,12 +49,10 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
   const jsonArgs = useMemo(() => {
     if (!operation.callData || !api || !chain) return null;
 
-    try {
-      const extrinsic = getTxFromCallData(api, operation.callData);
-      return transactionService.formatExtrinsic(extrinsic, chain);
-    } catch {
-      return null;
-    }
+    const call = transactionService.createCallFromCallData(operation.callData, api);
+    if (!call) return null;
+
+    return transactionService.formatCall(call, chain);
   }, [api, operation.callData, chain]);
 
   const hasAccount = allAccounts.some(a => {
