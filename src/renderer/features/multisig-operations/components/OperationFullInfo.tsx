@@ -47,10 +47,17 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
     chain?.explorers,
   );
 
-  const jsonArgs = useMemo(
-    () => operation.callData && decodeCallData(api, account.accountId, operation.callData, chains),
-    [api, account.accountId, operation.callData, chains],
-  );
+  const jsonArgs = useMemo(() => {
+    if (!operation.callData) {
+      return null;
+    }
+
+    try {
+      return decodeCallData(api, account.accountId, operation.callData, chains);
+    } catch {
+      return null;
+    }
+  }, [api, account.accountId, operation.callData, chains]);
 
   const hasAccount = allAccounts.some(a => {
     return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);
