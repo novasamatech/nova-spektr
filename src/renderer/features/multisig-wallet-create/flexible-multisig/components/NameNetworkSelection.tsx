@@ -1,12 +1,13 @@
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
 import { Button, FootnoteText, InputHint, SmallTitleText } from '@/shared/ui';
-import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
-import { ChainTitle } from '@/entities/chain';
+import { ChainSelect } from '@/shared/ui-entities';
+import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { flexibleMultisigModel } from '../model/flexible-multisig-create';
 import { formModel } from '../model/form-model';
 
@@ -24,6 +25,8 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
   const {
     fields: { name, chainId },
   } = useForm(formModel.form);
+
+  const selectedChain = useMemo(() => chains.find(chain => chain.chainId === chainId.value), [chains, chainId]);
 
   return (
     <>
@@ -56,17 +59,12 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
             <div className="flex items-end gap-x-4">
               <Box width="100%">
                 <Field text={t('createMultisigAccount.chainName')}>
-                  <Select
+                  <ChainSelect
                     placeholder={t('createMultisigAccount.chainPlaceholder')}
-                    value={chainId.value}
-                    onChange={value => chainId.onChange(value as ChainId)}
-                  >
-                    {chains.map(chain => (
-                      <Select.Item key={chain.chainId} value={chain.chainId}>
-                        <ChainTitle className="overflow-hidden" chain={chain} fontClass="text-text-primary truncate" />
-                      </Select.Item>
-                    ))}
-                  </Select>
+                    value={selectedChain ?? null}
+                    options={chains}
+                    onChange={chain => chainId.onChange(chain.chainId as ChainId)}
+                  />
                 </Field>
               </Box>
               <FootnoteText className="mt-2 text-text-tertiary">

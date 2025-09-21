@@ -46,6 +46,7 @@ export const Signatory = ({
 }: Props) => {
   const { t } = useI18n();
   const [query, setQuery] = useState('');
+  const [signatoryQuery, setSignatoryQuery] = useState('');
 
   const { name: signatoryName, address: signatoryAddress, walletId: selectedWalletId } = signatory;
 
@@ -95,7 +96,7 @@ export const Signatory = ({
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (!chain || accountsList.length === 0 || (!isOwnAccount && validateAddress(query, chain))) return [];
 
-    const filteredAccounts = accountsList.filter(account => {
+    const availableAccounts = accountsList.filter(account => {
       const isCorrectAccount =
         !accountUtils.isWatchOnlyAccount(account) && !accountUtils.isFlexibleMultisigAccount(account);
 
@@ -109,7 +110,15 @@ export const Signatory = ({
       return isChainMatch && isCorrectAccount && queryPass;
     });
 
-    if (filteredAccounts.length === 0) return [];
+    if (availableAccounts.length === 0) return [];
+
+    const filteredAccounts = signatoryQuery
+      ? performSearch({
+          records: availableAccounts,
+          query: signatoryQuery,
+          weights: { name: 1, address: 0.5, id: 0.5, accountId: 0.5 },
+        })
+      : availableAccounts;
 
     const accountOptions = new Map<string, ComboboxItem>();
 
@@ -138,7 +147,7 @@ export const Signatory = ({
         items: Array.from(accountOptions.values()),
       },
     ];
-  }, [query, chain, wallets, isOwnAccount, selectedSignatories]);
+  }, [query, signatoryQuery, chain, wallets, isOwnAccount, selectedSignatories]);
 
   // Contacts
   const contactOptions = useMemo<ComboboxGroup[]>(() => {
@@ -219,6 +228,7 @@ export const Signatory = ({
             <Select
               placeholder={t('createMultisigAccount.signatorySelection')}
               value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
+              onSearch={setSignatoryQuery}
               onChange={onAddressChange}
             >
               {walletsOptions.map(group =>

@@ -55,6 +55,7 @@ export const Signatory = ({
   const accountsList = useUnit(walletModel.$availableAccounts);
 
   const [query, setQuery] = useState(signatoryAddress);
+  const [signatoryQuery, setSignatoryQuery] = useState('');
 
   const filteredContacts = useMemo(() => {
     if (isOwnAccount) return [];
@@ -92,7 +93,7 @@ export const Signatory = ({
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (!chain || accountsList.length === 0 || (!isOwnAccount && validateAddress(query, chain))) return [];
 
-    const filteredAccounts = accountsList.filter(account => {
+    const availableAccounts = accountsList.filter(account => {
       const isCorrectAccount =
         !accountUtils.isWatchOnlyAccount(account) && !accountUtils.isFlexibleMultisigAccount(account);
 
@@ -105,7 +106,15 @@ export const Signatory = ({
       return isChainMatch && isCorrectAccount && queryPass;
     });
 
-    if (filteredAccounts.length === 0) return [];
+    if (availableAccounts.length === 0) return [];
+
+    const filteredAccounts = signatoryQuery
+      ? performSearch({
+          records: availableAccounts,
+          query: signatoryQuery,
+          weights: { name: 1, address: 0.5, id: 0.5, accountId: 0.5 },
+        })
+      : availableAccounts;
 
     const accountOptions = new Map<string, ComboboxItem>();
 
@@ -135,7 +144,7 @@ export const Signatory = ({
         items: Array.from(accountOptions.values()),
       },
     ];
-  }, [query, chain, wallets, isOwnAccount, selectedSignatories]);
+  }, [query, signatoryQuery, chain, wallets, isOwnAccount, selectedSignatories]);
 
   // Build Contacts options
   const contactOptions = useMemo<ComboboxGroup[]>(() => {
@@ -216,6 +225,7 @@ export const Signatory = ({
             <Select
               placeholder={t('createMultisigAccount.signatorySelection')}
               value={toAddress(signatoryAddress, { prefix: POLKADOT_ADDRESS_PREFFIX })}
+              onSearch={setSignatoryQuery}
               onChange={onAddressChange}
             >
               {walletsOptions.map(group =>

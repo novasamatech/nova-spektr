@@ -1,8 +1,8 @@
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, performSearch } from '@/shared/lib/utils';
 import { Box, Select } from '@/shared/ui-kit';
 import { ChainIcon } from '../ChainIcon/ChainIcon';
 
@@ -14,7 +14,15 @@ type Props = {
 };
 
 export const ChainSelect = memo(({ value, options, placeholder, onChange }: Props) => {
-  const sortedOptions = useMemo(() => chainsService.sortChains(options), [options]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredAndSortedOptions = useMemo(() => {
+    const filtered = searchQuery
+      ? performSearch({ query: searchQuery, records: options, weights: { name: 1, chainId: 0.5, specName: 0.5 } })
+      : options;
+    return chainsService.sortChains(filtered);
+  }, [options, searchQuery]);
+
   const handleChange = (chainId: ChainId) => {
     const chain = options.find(chain => chain.chainId === chainId);
     if (nonNullable(chain)) {
@@ -22,9 +30,19 @@ export const ChainSelect = memo(({ value, options, placeholder, onChange }: Prop
     }
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
   return (
-    <Select placeholder={placeholder} value={value?.chainId ?? null} height="sm" onChange={handleChange}>
-      {sortedOptions.map(chain => (
+    <Select
+      placeholder={placeholder}
+      value={value?.chainId ?? null}
+      height="sm"
+      onChange={handleChange}
+      onSearch={handleSearch}
+    >
+      {filteredAndSortedOptions.map(chain => (
         <Select.Item key={chain.chainId} value={chain.chainId}>
           <Box direction="row" gap={2}>
             <ChainIcon chain={chain} />
