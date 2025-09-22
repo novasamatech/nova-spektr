@@ -107,16 +107,7 @@ const $walletProxyGroups = combine(
     chainsProxies: $walletProxies,
     accounts: accounts.$list,
   },
-  ({
-    wallet,
-    chainsProxies,
-    accounts,
-  }): {
-    chainId: ChainId;
-    proxiedAccountId: string;
-    walletId: number;
-    totalDeposit: string;
-  }[] => {
+  ({ wallet, chainsProxies, accounts }) => {
     if (!wallet) return [];
 
     const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
