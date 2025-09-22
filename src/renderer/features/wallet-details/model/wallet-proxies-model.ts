@@ -137,7 +137,8 @@ const $walletProxyGroups = combine(
           chainId: chainIdStr as ChainId,
           proxiedAccountId: proxyAccounts[0].proxiedAccountId,
           walletId: wallet.id,
-          totalDeposit: proxiedAccount && 'deposit' in proxiedAccount ? String(proxiedAccount.deposit) : '0',
+          totalDeposit:
+            proxiedAccount && accountUtils.isProxiedAccount(proxiedAccount) ? String(proxiedAccount.deposit) : '0',
         });
       }
     }
