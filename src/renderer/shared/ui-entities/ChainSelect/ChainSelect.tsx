@@ -16,14 +16,17 @@ type Props = {
 export const ChainSelect = memo(({ value, options, placeholder, onChange }: Props) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredAndSortedOptions = useMemo(() => {
-    const filtered = performSearch({
-      query: searchQuery,
-      records: options,
-      weights: { name: 1, chainId: 0.5, specName: 0.5 },
-    });
-    return chainsService.sortChains(filtered);
-  }, [options, searchQuery]);
+  const sortedOptions = useMemo(() => chainsService.sortChains(options), [options]);
+
+  const filteredOptions = useMemo(
+    () =>
+      performSearch({
+        query: searchQuery,
+        records: sortedOptions,
+        weights: { name: 1, chainId: 0.5, specName: 0.5 },
+      }),
+    [sortedOptions, searchQuery],
+  );
 
   const handleChange = (chainId: ChainId) => {
     const chain = options.find(chain => chain.chainId === chainId);
@@ -44,7 +47,7 @@ export const ChainSelect = memo(({ value, options, placeholder, onChange }: Prop
       onChange={handleChange}
       onSearch={handleSearch}
     >
-      {filteredAndSortedOptions.map(chain => (
+      {filteredOptions.map(chain => (
         <Select.Item key={chain.chainId} value={chain.chainId}>
           <Box direction="row" gap={2}>
             <ChainIcon chain={chain} />
