@@ -68,16 +68,8 @@ function getProxyAccountsOnChain(
   if (accounts.length === 0) return {};
 
   const proxiesForAccounts = uniqBy(accounts, 'accountId').reduce<ProxyAccount[]>((acc, account) => {
-    const accountProxies = proxies[account.accountId];
-    if (accountProxies) {
-      acc.push(...accountProxies);
-    }
-
-    const proxyRelationships = Object.values(proxies)
-      .flat()
-      .filter((proxy) => proxy.accountId === account.accountId);
-    if (proxyRelationships.length > 0) {
-      acc.push(...proxyRelationships);
+    if (proxies[account.accountId]) {
+      acc.push(...proxies[account.accountId]);
     }
 
     return acc;
