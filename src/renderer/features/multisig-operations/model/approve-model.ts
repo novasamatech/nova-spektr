@@ -66,7 +66,6 @@ const $unsignedAccounts = combine(
     operation: $operation,
   },
   ({ multisigAccount, chain, accountsList, operation }) => {
-    console.log('ya ebal kozu unsignedAccounts', { multisigAccount, chain, accountsList, operation });
     if (!multisigAccount || !chain || !operation) return [];
 
     const signatories = accountsList.filter(a =>
