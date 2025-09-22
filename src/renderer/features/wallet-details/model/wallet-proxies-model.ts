@@ -5,7 +5,7 @@ import { createGate } from 'effector-react';
 import { proxyService } from '@/shared/api/proxy';
 import { type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { type ProxyAccount } from '@/shared/core/types/proxy';
-import { keys, toAccountId } from '@/shared/lib/utils';
+import { keys, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
@@ -81,7 +81,7 @@ const $wallet = flow.state.map(({ wallet }) => wallet);
 
 sample({
   clock: $wallet,
-  filter: wallet => wallet !== null,
+  filter: nonNullable,
   target: resetWalletProxies,
 });
 
@@ -91,7 +91,7 @@ sample({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
   },
-  filter: ({ wallet }) => wallet !== null,
+  filter: ({ wallet }) => nonNullable(wallet),
   fn: ({ wallet, chains, apis }) => ({ wallet: wallet!, chains, apis }),
   target: fetchWalletProxiesFx,
 });
