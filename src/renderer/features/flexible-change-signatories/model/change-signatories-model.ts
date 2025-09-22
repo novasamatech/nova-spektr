@@ -140,7 +140,7 @@ const $reassignTx = combine(
 
     return transactionBuilder.buildProxyReassign({
       chain,
-      oldAccountId: multisigAccount.accountId,
+      oldAccountId: multisigAccount.multisigAccountId,
       newAccountId: newMultisigAccountId,
       signerAccountId: signer.accountId,
     });

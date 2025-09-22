@@ -59,7 +59,6 @@ const subscribePureEventFx = createEffect(({ api, signatory }: SubscribePureEven
     const unsubscribe = polkadotjsHelpers.subscribeSystemEvents(
       { api, section: `proxy`, methods: ['PureCreated'] },
       event => {
-        if (!api) return unsubscribe.then(fn => fn());
         const data = eventSchema.parse(event.data.toHuman());
         const accountId = toAccountId(data.who);
 
