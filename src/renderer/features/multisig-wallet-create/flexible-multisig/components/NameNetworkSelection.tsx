@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step } from '@/shared/lib/utils';
@@ -47,6 +48,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
                     placeholder={t('createMultisigAccount.namePlaceholder')}
                     invalid={name.hasError}
                     value={name.value}
+                    testId={TEST_IDS.MULTISIG.MULTISIG_WALLET_NAME}
                     onChange={name.onChange}
                   />
                 </Field>
@@ -61,6 +63,7 @@ export const NameNetworkSelection = ({ onGoBack }: Props) => {
                   <ChainSelect
                     placeholder={t('createMultisigAccount.chainPlaceholder')}
                     value={selectedChain ?? null}
+                    itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}
                     options={chains}
                     onChange={chain => chainId.onChange(chain.chainId)}
                   />

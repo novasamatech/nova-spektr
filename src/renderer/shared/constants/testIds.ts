@@ -26,6 +26,7 @@ export const TEST_IDS = {
     BACK_BUTTON: 'common-back-button',
     CONTINUE_BUTTON: 'common-continue-button',
     INFO_BUTTON: 'common-info-button',
+    APPLY_BUTTON: 'common-apply-button',
   },
   OPERATIONS: {
     CONFIRM_NETWORK_FEE: 'operations-confirm-network-fee',
@@ -48,9 +49,22 @@ export const TEST_IDS = {
   },
   MULTISIG: {
     SIGNATORY_COMBOBOX: 'multisig-signatory-combobox',
+    SIGNATORY_NAME: 'multisig-signatory-name',
+    FLEXIBLE_MULTISIG: 'flexible-multisig',
+    REGULAR_MULTISIG: 'regular-multisig',
+    NETWORK_EDIT_BUTTON: 'network-edit-buton',
+    FEE_MODAL: 'multisig-fee-modal',
+    MULTISIG_WALLET_NAME: 'multisig-wallet-name',
+    SIGNER_SELECTOR: 'multisig-signer-selector',
+    THRESHOLD_SELECTOR: 'multisig-threshold-selector',
+    THRESHOLD_OPTION: 'multisig-threshold-option',
+    NETWORK_OPTION: 'multisig-network-option',
+    CREATE_PURE_BUTTON: 'create-pure-button',
+    ASSIGN_CONTROL_BUTTON: 'assign-control-button',
   },
   TRANSFER: {
     MODAL: 'transfer-modal',
   },
+  ADD_BUTTON: 'button-add',
   CLOSE_BUTTON: 'Icon:close',
 } as const;

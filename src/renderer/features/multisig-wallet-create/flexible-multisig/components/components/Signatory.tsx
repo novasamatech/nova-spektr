@@ -226,6 +226,7 @@ export const Signatory = ({
             <Select
               placeholder={t('createMultisigAccount.signatorySelection')}
               value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
+              testId={TEST_IDS.MULTISIG.SIGNER_SELECTOR}
               onSearch={setSignatoryQuery}
               onChange={onAddressChange}
             >
@@ -283,6 +284,7 @@ export const Signatory = ({
           invalid={false}
           value={signatoryName}
           disabled={!!ownAccountName}
+          {...(!isOwnAccount && { testId: TEST_IDS.MULTISIG.SIGNATORY_NAME })}
           onChange={onNameChange}
         />
       </Field>

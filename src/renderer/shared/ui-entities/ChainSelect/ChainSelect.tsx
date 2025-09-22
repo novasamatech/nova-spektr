@@ -10,10 +10,11 @@ type Props = {
   value: Chain | null;
   options: Chain[];
   placeholder: string;
+  itemTestId?: string;
   onChange: (value: Chain) => void;
 };
 
-export const ChainSelect = memo(({ value, options, placeholder, onChange }: Props) => {
+export const ChainSelect = memo(({ value, options, placeholder, itemTestId, onChange }: Props) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const sortedOptions = useMemo(() => chainsService.sortChains(options), [options]);
@@ -48,7 +49,7 @@ export const ChainSelect = memo(({ value, options, placeholder, onChange }: Prop
       onSearch={handleSearch}
     >
       {filteredOptions.map(chain => (
-        <Select.Item key={chain.chainId} value={chain.chainId}>
+        <Select.Item key={chain.chainId} value={chain.chainId} data-testid={itemTestId}>
           <Box direction="row" gap={2}>
             <ChainIcon chain={chain} />
             <span>{chain.name}</span>

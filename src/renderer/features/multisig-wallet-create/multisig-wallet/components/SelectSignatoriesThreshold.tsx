@@ -2,6 +2,7 @@ import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 import { Trans } from 'react-i18next';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
@@ -94,6 +95,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                   placeholder={t('createMultisigAccount.namePlaceholder')}
                   invalid={name.hasError}
                   value={name.value}
+                  testId={TEST_IDS.MULTISIG.MULTISIG_WALLET_NAME}
                   onChange={name.onChange}
                 />
 
@@ -112,10 +114,11 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                   invalid={threshold.hasError}
                   disabled={thresholdDisabled}
                   height="md"
+                  testId={TEST_IDS.MULTISIG.THRESHOLD_SELECTOR}
                   onChange={value => threshold.onChange(Number(value))}
                 >
                   {Array.from({ length: signatories.length - 1 }, (_, index) => (
-                    <Select.Item key={index} value={(index + 2).toString()}>
+                    <Select.Item testId={TEST_IDS.MULTISIG.THRESHOLD_OPTION} key={index} value={(index + 2).toString()}>
                       {index + 2}
                     </Select.Item>
                   ))}
@@ -203,7 +206,12 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                 )}
 
                 <MultisigFeeModal>
-                  <IconButton size={16} name="edit" className="text-icon-default" />
+                  <IconButton
+                    size={16}
+                    name="edit"
+                    className="text-icon-default"
+                    testId={TEST_IDS.MULTISIG.NETWORK_EDIT_BUTTON}
+                  />
                 </MultisigFeeModal>
               </div>
             )}
