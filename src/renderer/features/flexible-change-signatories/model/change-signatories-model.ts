@@ -1,9 +1,14 @@
+import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { delay, spread } from 'patronum';
 
+import { proxyService } from '@/shared/api/proxy';
 import { type Wallet } from '@/shared/core';
+import { createStoreFromEffect } from '@/shared/effector';
 import { Step, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import {
   createComplexTxStore,
@@ -11,7 +16,7 @@ import {
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { accountService, accounts } from '@/domains/network';
+import { accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
@@ -55,6 +60,22 @@ const $walletSignatories = combine($flexibleMultisigAccount, accounts.$list, (ac
     const bExists = ownAccounts.some((acc) => acc.accountId === b.accountId);
     return Number(bExists) - Number(aExists);
   });
+});
+
+type ProxyParams = {
+  api: ApiPromise;
+  accountId: AccountId;
+};
+
+const { $: $proxiesInfo } = createStoreFromEffect({
+  fn: ({ api, accountId }: ProxyParams) => {
+    return proxyService.getProxiesForAccount(api, accountId);
+  },
+  params: {
+    api: formModel.$api,
+    accountId: $flexibleMultisigAccount.map((account) => account?.accountId ?? null),
+  },
+  defaultValue: null,
 });
 
 sample({
@@ -179,7 +200,29 @@ const { $tx, $fee, $pendingFee } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-const validator = createTxValidator();
+//todo move to ... probably should have a file "validators" in the feature
+const validator = createTxValidator<{ deposit: string; proxyNumber: number }>({
+  additionalBalanceRules: [
+    ({ route, getBalance, asset, api, deposit, proxyNumber }) => {
+      const initiator = accountService.findInitiator(route);
+      if (!initiator || !accountUtils.isFlexibleMultisigAccount(initiator)) return;
+
+      const balance = getBalance(initiator.accountId, initiator.chainId, asset.assetId);
+
+      if (nullable(balance)) return;
+
+      const proxyDeposit = proxyService.getProxyDeposit(api, deposit, proxyNumber + 1);
+
+      return {
+        account: initiator,
+        balance: balanceService.tryReserve(balance, new BN(proxyDeposit), 'legacy'),
+        asset: asset,
+        action: 'proxy deposit',
+      };
+    },
+  ],
+});
+
 const { $errors } = createTxValidationStore({
   validator,
   params: {
@@ -188,6 +231,8 @@ const { $errors } = createTxValidationStore({
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
+    deposit: $proxiesInfo.map((info) => info?.deposit ?? null),
+    proxyNumber: $proxiesInfo.map((info) => info?.accounts.length ?? 0),
   },
 });
 
