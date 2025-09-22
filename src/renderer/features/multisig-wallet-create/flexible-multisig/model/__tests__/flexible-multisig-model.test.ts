@@ -57,7 +57,7 @@ describe.skip('Create flexible multisig wallet flexible-multisig', () => {
       scope,
       params: { index: 1, name: 'Alice', address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', walletId: '1' },
     });
-    await allSettled(flexibleMultisigModel.signerSelected, { scope, params: signerWallet.accounts[0] });
+    await allSettled(flexibleMultisigModel.signatorySelected, { scope, params: signerWallet.accounts[0] });
 
     expect(scope.getState(flexibleMultisigModel.$step)).toEqual(Step.NAME_NETWORK);
   });
