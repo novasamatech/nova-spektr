@@ -219,6 +219,7 @@ export const Signatory = ({
             <Select
               placeholder={t('createMultisigAccount.signatorySelection')}
               value={toAddress(signatoryAddress, { prefix: chain?.addressPrefix })}
+              testId={TEST_IDS.MULTISIG.SIGNER_SELECTOR}
               onChange={onAddressChange}
             >
               {walletsOptions.map(group =>
@@ -275,6 +276,7 @@ export const Signatory = ({
           invalid={false}
           value={signatoryName}
           disabled={!!ownAccountName}
+          {...(!isOwnAccount && { testId: TEST_IDS.MULTISIG.SIGNATORY_NAME })}
           onChange={onNameChange}
         />
       </Field>

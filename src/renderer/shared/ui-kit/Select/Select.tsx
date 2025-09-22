@@ -66,6 +66,7 @@ type RootProps<T extends string> = PropsWithChildren<
 type ItemProps = PropsWithChildren<{
   value: string;
   indent?: number;
+  testId?: string;
 }>;
 
 type GroupProps = PropsWithChildren<{
@@ -179,6 +180,7 @@ const Root = <T extends string>({
           <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true} className="w-full rounded-md">
             <button
               ref={triggerRef}
+              data-testid={testId}
               className={cnTw(
                 'relative box-border cursor-pointer border pr-6.5 pl-2.75 text-text-secondary',
                 'w-full overflow-y-clip rounded-md text-left text-footnote hover:shadow-card-shadow',
@@ -204,7 +206,7 @@ const Root = <T extends string>({
             </button>
           </ComboboxDisclosure>
         ) : (
-          <div className="relative">
+          <div className="relative" data-testid={testId}>
             <Combobox
               autoFocus
               placeholder={placeholder}
@@ -268,7 +270,7 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
   );
 };
 
-const Item = memo(({ value, indent = 0, children }: PropsWithChildren<ItemProps>) => {
+const Item = memo(({ value, testId, indent = 0, children }: PropsWithChildren<ItemProps>) => {
   const { registerItem, unregisterItem, onItemSelect } = useContext(Context);
   const { theme } = useTheme();
 
@@ -287,6 +289,7 @@ const Item = memo(({ value, indent = 0, children }: PropsWithChildren<ItemProps>
       clickOnSpace={true}
       clickOnEnter={true}
       value={value}
+      data-testid={testId}
       className={cnTw(
         'flex cursor-pointer scroll-m-2 items-center gap-2 rounded p-2 outline-none data-[active-item]:outline-2',
         {

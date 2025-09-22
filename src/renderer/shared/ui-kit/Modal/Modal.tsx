@@ -13,8 +13,8 @@ type Props = {
   isOpen?: boolean;
   size: 'sm' | 'md' | 'mdlg' | 'lg' | 'xl' | 'xxl' | 'full' | 'fit';
   height?: 'full' | 'lg' | 'fit';
-  onToggle?: (open: boolean) => void;
   testId?: string;
+  onToggle?: (open: boolean) => void;
 };
 
 const Root = ({
