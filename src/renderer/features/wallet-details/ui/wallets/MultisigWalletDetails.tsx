@@ -22,6 +22,7 @@ import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
+import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
 import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
@@ -37,6 +38,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
 
   useGate(multisigWalletDetailsModel.flow, { wallet });
   useGate(walletDetailsModel.flow, { wallet });
+  useGate(walletProxiesModel.flow, { wallet });
 
   const chains = useUnit(networkModel.$chains);
   const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
@@ -45,7 +47,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const walletsList = useUnit(walletModel.$wallets);
 
   const accountList = useUnit(accounts.$list);
-  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
+  const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
 
   const [isRenameInputOpen, toggleIsRenameInputOpen] = useToggle();
   const [tab, setTab] = useState('1');

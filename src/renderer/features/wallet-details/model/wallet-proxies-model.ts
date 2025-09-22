@@ -1,11 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { createGate } from 'effector-react';
 
 import { proxyService } from '@/shared/api/proxy';
 import { type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { type ProxyAccount } from '@/shared/core/types/proxy';
 import { keys, toAccountId } from '@/shared/lib/utils';
-import { networkUtils } from '@/entities/network';
+import { accountService, accounts } from '@/domains/network';
+import { networkModel, networkUtils } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
 
 export const fetchWalletProxiesFx = createEffect(
   async ({
@@ -72,10 +75,92 @@ export const $walletProxiesCount = $walletProxies.map(chainsProxies => {
   return Object.values(chainsProxies).reduce((total, accounts) => total + accounts.length, 0);
 });
 
+const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
+
+const $wallet = flow.state.map(({ wallet }) => wallet);
+
+sample({
+  clock: $wallet,
+  filter: wallet => wallet !== null,
+  target: resetWalletProxies,
+});
+
+sample({
+  source: {
+    wallet: $wallet,
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+  },
+  filter: ({ wallet }) => wallet !== null,
+  fn: ({ wallet, chains, apis }) => ({ wallet: wallet!, chains, apis }),
+  target: fetchWalletProxiesFx,
+});
+
+sample({
+  clock: fetchWalletProxiesFx.doneData,
+  target: $walletProxies,
+});
+
+const $walletProxyGroups = combine(
+  {
+    wallet: $wallet,
+    chainsProxies: $walletProxies,
+    accounts: accounts.$list,
+  },
+  ({
+    wallet,
+    chainsProxies,
+    accounts,
+  }): {
+    chainId: ChainId;
+    proxiedAccountId: string;
+    walletId: number;
+    totalDeposit: string;
+  }[] => {
+    if (!wallet) return [];
+
+    const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
+    const proxiedAccounts = walletAccounts.filter(accountUtils.isProxiedAccount);
+
+    const initialGroups = proxiedAccounts.map(account => {
+      return {
+        chainId: account.chainId,
+        proxiedAccountId: account.accountId,
+        walletId: account.walletId,
+        totalDeposit: String(account.deposit),
+      };
+    });
+
+    if (initialGroups.length !== 0) {
+      return initialGroups;
+    }
+
+    const derivedGroups = [];
+    for (const [chainIdStr, proxyAccounts] of Object.entries(chainsProxies)) {
+      if (proxyAccounts.length > 0) {
+        const proxiedAccount = accounts.find(
+          account => account.accountId === proxyAccounts[0].proxiedAccountId && accountUtils.isProxiedAccount(account),
+        );
+
+        derivedGroups.push({
+          chainId: chainIdStr as ChainId,
+          proxiedAccountId: proxyAccounts[0].proxiedAccountId,
+          walletId: wallet.id,
+          totalDeposit: proxiedAccount && 'deposit' in proxiedAccount ? String(proxiedAccount.deposit) : '0',
+        });
+      }
+    }
+    return derivedGroups;
+  },
+);
+
 export const walletProxiesModel = {
+  flow,
+  $wallet,
   fetchWalletProxiesFx,
   resetWalletProxies,
   $walletProxies,
   $hasWalletProxies,
   $walletProxiesCount,
+  $walletProxyGroups,
 };

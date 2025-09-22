@@ -29,6 +29,7 @@ import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { ForgetStep } from '../../lib/constants';
 import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
 import { walletDetailsModel } from '../../model/wallet-details-model';
+import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { walletConnectForget } from '../../model/walletConnectForgot';
 import { walletConnectReconnect } from '../../model/walletConnectReconnect';
 import { WalletFiatBalance } from '../components';
@@ -46,15 +47,16 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   useGate(walletConnectForget.flow, { accounts: wallet.accounts });
   useGate(walletConnectReconnect.flow, { accounts: wallet.accounts });
   useGate(walletDetailsModel.flow, { wallet });
+  useGate(walletProxiesModel.flow, { wallet });
 
   const { t } = useI18n();
 
-  const hasProxies = useUnit(walletDetailsModel.$hasProxies);
+  const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
   const connected = useUnit(walletConnectReconnect.$connected);
   const forgetStep = useUnit(walletConnectForget.$forgetStep);
   const reconnectStep = useUnit(walletConnectReconnect.$reconnectStep);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
-  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
+  const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
   const accountList = useUnit(accounts.$list);
 
   const [_, startTransition] = useTransition();
