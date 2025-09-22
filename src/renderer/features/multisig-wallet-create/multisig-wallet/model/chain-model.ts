@@ -4,7 +4,7 @@ import { combine, createEffect, createStore, sample } from 'effector';
 
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
 import { series } from '@/shared/effector';
-import { TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
+import { TEST_ACCOUNTS, getNativeAsset, nullable, withdrawableAmountBN } from '@/shared/lib/utils';
 import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
@@ -64,7 +64,7 @@ const $chainsWithFee = createStore<ChainFeeResult[]>([]).reset(flowModel.flow.cl
 
 // Trigger fee calculation only when APIs and chains are available
 sample({
-  clock: [networkModel.$apis, flowModel.$multisigChains],
+  clock: [networkModel.$apis, flowModel.$multisigChains, flowModel.flow.open],
   source: {
     multisigChains: flowModel.$multisigChains,
     apis: networkModel.$apis,
@@ -106,7 +106,7 @@ const $chainsData = combine(
   },
   ({ signatories, balances, chains, initiators, chosenChainFee, currentChain }) => {
     // Apply filter logic
-    if (chains.length === 0 || !nonNullable(initiators)) {
+    if (chains.length === 0 || nullable(initiators)) {
       return {
         availableChains: [],
         unavailableChains: [],
