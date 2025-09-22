@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createStore, sample } from 'effector';
+import { keyBy } from 'lodash';
 import { debounce } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
@@ -42,35 +43,39 @@ const $input = combine(
   ({ apis, chains, wallet }) => {
     if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
 
-    const input = [];
+    const account = wallet.accounts.find(accountUtils.isAnyMultisigAccount);
+    if (nullable(account)) return null;
 
-    for (const account of wallet.accounts) {
-      let availableChains;
-      let accountId: AccountId;
-      if (accountUtils.isFlexibleMultisigAccount(account)) {
-        const chain = chains[account.chainId];
-        availableChains = chain ? [chain] : [];
-        accountId = account.multisigAccountId;
-      } else {
-        availableChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
-        accountId = account.accountId;
-      }
+    let availableChains;
+    let accountId: AccountId;
 
-      for (const chain of availableChains) {
-        const api = apis[chain.chainId];
+    if (accountUtils.isFlexibleMultisigAccount(account)) {
+      const chain = chains[account.chainId];
+      availableChains = chain ? [chain] : [];
+      accountId = account.multisigAccountId;
+    } else {
+      availableChains = Object.values(chains).filter(chain => {
+        return networkUtils.isMultisigSupported(chain.options) && accountService.isCryptoMatch(account, chain);
+      });
+      accountId = account.accountId;
+    }
 
-        if (api && accountService.isCryptoMatch(account, chain)) {
-          input.push({
-            api,
-            chains,
-            chain,
-            accountId,
-          });
-        }
+    const availableApis: Record<ChainId, ApiPromise> = {};
+
+    for (const chain of availableChains) {
+      const api = apis[chain.chainId];
+      if (api) {
+        availableApis[chain.chainId] = api;
       }
     }
 
-    return input;
+    const availableChainsRecord = keyBy(availableChains, c => c.chainId);
+
+    return {
+      chains: availableChainsRecord,
+      apis: availableApis,
+      accountId,
+    };
   },
 );
 
