@@ -46,4 +46,4 @@ export const substrateChains = [
   { name: 'Kusama Coretime' },
 ];
 
-export const ethChains = [{ name: 'Moonbeam' }, { name: 'Moonriver' }, { name: 'Mythos' }];
+export const ethChains = [{ name: 'Moonriver' }, { name: 'Moonbeam' }, { name: 'Mythos' }];
