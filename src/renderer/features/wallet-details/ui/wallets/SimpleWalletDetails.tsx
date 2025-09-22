@@ -17,6 +17,7 @@ import { AddProxy } from '@/features/proxy-add';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
+import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { WalletFiatBalance } from '../components';
 import { ProxiesList } from '../components/ProxiesList';
 import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
@@ -29,12 +30,13 @@ type Props = {
 };
 export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
+  useGate(walletProxiesModel.flow, { wallet });
   const { t } = useI18n();
 
   const allChains = useUnit(networkModel.$chains);
-  const hasProxies = useUnit(walletDetailsModel.$hasProxies);
+  const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
-  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
+  const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
 
   const firstAccount = useStoreMap({
     store: accounts.$list,

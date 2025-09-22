@@ -1,4 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 
 import { type ProxyAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -11,7 +11,7 @@ import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
-import { walletDetailsModel } from '../../model/wallet-details-model';
+import { walletProxiesModel } from '../../model/wallet-proxies-model';
 
 import { NoProxiesAction } from './NoProxiesAction';
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';
@@ -29,12 +29,13 @@ type Props = {
 };
 
 export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = true }: Props) => {
+  useGate(walletProxiesModel.flow, { wallet });
+
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-
-  const chainsProxies = useUnit(walletDetailsModel.$chainsProxies);
-  const walletProxyGroups = useUnit(walletDetailsModel.$walletProxyGroups);
+  const chainsProxies = useUnit(walletProxiesModel.$walletProxies);
+  const walletProxyGroups = useUnit(walletProxiesModel.$walletProxyGroups);
 
   const walletAccounts = useStoreMap({
     store: accounts.$list,
