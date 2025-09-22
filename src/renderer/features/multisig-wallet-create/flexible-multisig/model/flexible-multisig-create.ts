@@ -9,7 +9,6 @@ import { proxyService } from '@/shared/api/proxy';
 import { type Asset, type Contact, type Transaction, type Wallet } from '@/shared/core';
 import { Step, TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import {
-  createComplexTxStore,
   createFeeCalculator,
   createSignatoriesStore,
   createTxValidationStore,
@@ -37,14 +36,14 @@ const $api = combine(flexibleMultisigFeature.state, (state): ApiPromise | null =
 const flow = createGate();
 
 const stepChanged = createEvent<Step>();
-const signerSelected = createEvent<AnyAccount>();
+const signatorySelected = createEvent<AnyAccount>();
 
 const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flow.close);
 
 const $existentialDeposit = createStore(BN_ZERO).reset(flow.close);
 const $error = createStore('').reset(flow.close);
 
-const $signer = restore(signerSelected, null).reset(flow.close);
+const $signatory = restore(signatorySelected, null).reset(flow.close);
 
 const $initiator = createStore<AnyAccount | null>(null).reset(flow.close);
 const $initiatorWallet = createStore<Wallet | null>(null).reset(flow.close);
@@ -67,21 +66,20 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-// in the current implementation, the first signatory is always the signer
+// in the current implementation, the first signatory is always the signatory
 sample({
   clock: $signatories,
   fn: signatories => (signatories.length >= 1 ? signatories[0] : null),
-  target: $signer,
+  target: $signatory,
 });
 
 sample({
   clock: $initiatorWallet,
   source: { accounts: accounts.$list, chain: formModel.$chain },
-  filter: ({ chain }) => nonNullable(chain),
   fn: ({ accounts, chain }, wallet) => {
-    if (!wallet) return null;
+    if (!wallet || !chain) return null;
 
-    return accounts.find(a => a.walletId === wallet!.id && accountService.isAccountAvailableOnChain(a, chain!)) ?? null;
+    return accounts.find(a => a.walletId === wallet!.id && accountService.isAccountAvailableOnChain(a, chain)) ?? null;
   },
   target: $initiator,
 });
@@ -129,17 +127,17 @@ const $totalDeposit = combine($existentialDeposit, $proxyDepositFactor, (existen
 });
 
 // Transactions
-const $coreTx = combine(
+const $tx = combine(
   {
     chain: formModel.$chain,
-    account: $signer,
+    signatory: $signatory,
   },
-  ({ chain, account }) => {
-    if (!account || !chain) return null;
+  ({ chain, signatory }) => {
+    if (!signatory || !chain) return null;
 
     return transactionBuilder.buildCreatePureProxy({
       chain: chain,
-      accountId: account.accountId,
+      accountId: signatory.accountId,
     });
   },
 );
@@ -168,9 +166,9 @@ const $fakeFinalTx = combine(
     signatories: signatoryModel.$signatories,
     threshold: formModel.form.fields.threshold.$value,
     totalDeposit: $totalDeposit,
-    signer: $signer,
+    signatory: $signatory,
   },
-  ({ isConnected, chain, api, signatories, threshold, totalDeposit, signer }): Transaction | null => {
+  ({ isConnected, chain, api, signatories, threshold, totalDeposit, signatory }): Transaction | null => {
     if (!chain || !isConnected || !api) return null;
 
     const signatoriesWrapped = signatories
@@ -179,7 +177,7 @@ const $fakeFinalTx = combine(
 
     return transactionBuilder.buildCreateFlexibleMultisig({
       chain,
-      signerAccountId: signer?.accountId || TEST_ACCOUNTS[0],
+      signatoryAccountId: signatory?.accountId || TEST_ACCOUNTS[0],
       signatories: signatoriesWrapped,
       multisigAccountId: TEST_ACCOUNTS[0],
       threshold: threshold || 2,
@@ -211,15 +209,6 @@ const { $: $multisigFee, $pending: $pendingMultisigFee } = createFeeCalculator({
 
 const $fee = combine($proxyFee, $multisigFee, (proxyFee, multisigFee) => multisigFee.add(proxyFee));
 
-const { $tx, $route } = createComplexTxStore({
-  api: $api,
-  initiator: $initiator,
-  signatory: $signer,
-  accounts: accounts.$list,
-  chain: formModel.$chain,
-  transaction: $coreTx,
-});
-
 // Validation
 const validator = createTxValidator(); //should validate all fee (proxy  deposit + existential)
 const { $errors: $firstErrors } = createTxValidationStore({
@@ -228,7 +217,7 @@ const { $errors: $firstErrors } = createTxValidationStore({
     api: $api,
     asset: $asset,
     balances: balanceModel.$balanceMap,
-    route: $route,
+    route: createStore([]),
     transaction: $tx,
   },
 });
@@ -239,22 +228,22 @@ const { $errors: $secondErrors } = createTxValidationStore({
     api: $api,
     asset: $asset,
     balances: balanceModel.$balanceMap,
-    route: $route,
+    route: createStore([]),
     transaction: $fakeFinalTx,
   },
 });
 
-const $signerBalance = combine(
+const $signatoryBalance = combine(
   {
-    signer: $signer,
+    signatory: $signatory,
     balances: balanceModel.$balanceMap,
     chain: formModel.$chain,
   },
-  ({ signer, balances, chain }) => {
-    if (!signer || !chain) return null;
+  ({ signatory, balances, chain }) => {
+    if (!signatory || !chain) return null;
     const asset = getNativeAsset(chain.assets);
 
-    return balanceUtils.getBalance(balances, signer.accountId, chain.chainId, asset.assetId) ?? null;
+    return balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId) ?? null;
   },
 );
 
@@ -262,13 +251,12 @@ const formSubmitted = sample({
   clock: formModel.form.validate,
   source: {
     tx: $tx,
-    coreTx: $coreTx,
-    route: $route,
+    coreTx: $tx,
     initiator: $initiator,
-    signatory: $signer,
+    signatory: $signatory,
     chain: formModel.$chain,
   },
-}).filterMap(({ chain, tx, coreTx, route, initiator, signatory }) => {
+}).filterMap(({ chain, tx, coreTx, initiator, signatory }) => {
   if (
     nonNullable(coreTx) &&
     nonNullable(chain) &&
@@ -280,7 +268,7 @@ const formSubmitted = sample({
       {
         tx,
         coreTx,
-        route,
+        route: [],
         signatory,
         initiator,
         chain,
@@ -309,18 +297,18 @@ sample({
     chain: formModel.$chain,
     tx: $tx,
     initiator: $initiator,
-    signer: $signer,
+    signatory: $signatory,
   },
-  filter: ({ chain, tx, initiator, signer }) =>
-    nonNullable(chain) && nonNullable(tx) && nonNullable(initiator) && nonNullable(signer),
-  fn: ({ chain, tx, initiator, signer }) => ({
+  filter: ({ chain, tx, initiator, signatory }) =>
+    nonNullable(chain) && nonNullable(tx) && nonNullable(initiator) && nonNullable(signatory),
+  fn: ({ chain, tx, initiator, signatory }) => ({
     event: {
       signingPayloads: [
         {
           chain: chain!,
           account: initiator!,
           transaction: tx!,
-          signatory: signer,
+          signatory: signatory,
         },
       ],
     },
@@ -336,9 +324,9 @@ sample({
   clock: signModel.signed,
   source: $tx,
   filter: tx => nonNullable(tx),
-  fn: (_, payload) => ({ event: payload, step: Step.SUBMIT }),
+  fn: (_, payload) => ({ submit: payload, step: Step.SUBMIT }),
   target: spread({
-    event: submitModel.init,
+    submit: submitModel.init,
     step: stepChanged,
   }),
 });
@@ -351,8 +339,8 @@ sample({
     contacts: contactModel.$contacts,
   },
   fn: ({ signatories, contacts }) => {
-    const signatoriesWithoutSigner = signatories.slice(1);
-    const filtredSignatories = signatoriesWithoutSigner.filter(s => !s.walletId);
+    const signatoriesWithoutsignatory = signatories.slice(1);
+    const filtredSignatories = signatoriesWithoutsignatory.filter(s => !s.walletId);
 
     const contactMap = new Map(contacts.map(c => [c.accountId, c]));
     const updatedContacts: Contact[] = [];
@@ -424,9 +412,9 @@ export const flexibleMultisigModel = {
   $step,
   $api,
   $initiator,
-  $signer,
+  $signatory: $signatory,
   $initiatorWallet,
-  $signerBalance,
+  $signatoryBalance,
   $asset,
 
   $errors: combine($firstErrors, $secondErrors, (first, second) => [...first, ...second]),
@@ -436,7 +424,7 @@ export const flexibleMultisigModel = {
   $totalDeposit,
   $isLoading: or($pendingProxyFee, $pendingMultisigFee, getExistentialDepositFx.pending),
 
-  signerSelected,
+  signatorySelected: signatorySelected,
   stepChanged,
 
   _test: {

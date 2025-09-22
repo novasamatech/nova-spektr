@@ -104,7 +104,7 @@ sample({
 // Second transaction
 const $coreTx = combine(
   {
-    signatory: flexibleMultisigModel.$signer,
+    signatory: flexibleMultisigModel.$signatory,
     totalDeposit: flexibleMultisigModel.$totalDeposit,
     isMultisigExists: formModel.$multisigAlreadyExists,
     threshold: formModel.form.fields.threshold.$value,
@@ -129,7 +129,7 @@ const $coreTx = combine(
 
     return transactionBuilder.buildCreateFlexibleMultisig({
       chain,
-      signerAccountId: signatory.accountId,
+      signatoryAccountId: signatory.accountId,
       signatories: signatoriesWrapped,
       multisigAccountId: toAccountId(multisigAccountId),
       threshold,
@@ -143,7 +143,7 @@ const $coreTx = combine(
 const { $tx } = createComplexTxStore({
   api: $api,
   initiator: flexibleMultisigModel.$initiator,
-  signatory: flexibleMultisigModel.$signer,
+  signatory: flexibleMultisigModel.$signatory,
   accounts: accounts.$list,
   chain: formModel.$chain,
   transaction: $coreTx,
@@ -156,7 +156,7 @@ sample({
   source: {
     chain: formModel.$chain,
     tx: $tx,
-    signatory: flexibleMultisigModel.$signer,
+    signatory: flexibleMultisigModel.$signatory,
     initiator: flexibleMultisigModel.$initiator,
   },
   filter: ({ chain, tx, signatory, initiator }) =>
