@@ -103,7 +103,7 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
                 <RadioGroup.RadioButton />
               </div>
               <div className="flex flex-1 flex-col">
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
                   {flexibleMultisigFeatures.map(item => (
                     <div className="flex items-start gap-x-2" key={item.text}>
                       <span className="shrink-0 font-bold text-text-primary">•</span>
@@ -143,7 +143,7 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
                 <RadioGroup.RadioButton />
               </div>
               <div className="flex flex-1 flex-col">
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
                   {regularMultisigFeatures.map(item => (
                     <div className="flex items-start gap-x-2" key={item.text}>
                       <span className="shrink-0 font-bold text-text-primary">•</span>
