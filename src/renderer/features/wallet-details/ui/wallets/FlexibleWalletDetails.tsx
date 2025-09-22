@@ -6,6 +6,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { assert, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
 import { Account, AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
@@ -55,15 +56,13 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   assert(multisigAccount, 'Multisig account not found.');
 
+  const getSignatoryName = (accountId: AccountId) => {
+    return walletDetailsUtils.getSignatoryName(accountId, multisigAccount.signatories, contacts, walletsList);
+  };
+
   const chain = chains[multisigAccount.chainId];
 
-  const multisigAccountName = walletDetailsUtils.getSignatoryName(
-    multisigAccount.multisigAccountId,
-    multisigAccount.signatories,
-    contacts,
-    walletsList,
-    chain.addressPrefix,
-  );
+  const multisigAccountName = getSignatoryName(multisigAccount.multisigAccountId);
 
   const canCreateProxy = useMemo(() => {
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
@@ -166,7 +165,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
             ))}
             {signatories.people.map(accountId => (
               <li key={accountId} className="-mx-2">
-                <ContactItem address={accountId} addressPrefix={chain.addressPrefix}>
+                <ContactItem address={accountId} addressPrefix={chain.addressPrefix} name={getSignatoryName(accountId)}>
                   <AccountExplorers accountId={accountId} chain={chain} />
                 </ContactItem>
               </li>
