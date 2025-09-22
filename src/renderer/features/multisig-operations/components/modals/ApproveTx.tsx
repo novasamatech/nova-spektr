@@ -5,13 +5,13 @@ import { memo, useMemo, useState } from 'react';
 import { type Chain, type FlexibleMultisigAccount, type HexString, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getNativeAsset } from '@/shared/lib/utils';
+import { getNativeAsset, groupBy, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigOperation, accounts } from '@/domains/network';
+import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
 import { approveModel } from '../../model/approve-model';
 import { operationsContextModel } from '../../model/context';
@@ -79,7 +79,25 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
       a => !operation.events.some(e => e.accountId === a.accountId),
     );
 
-    return filteredSignatories;
+    const signatoriesGroupedByAccountId = groupBy(filteredSignatories, a => a.accountId);
+
+    let result: AnyAccount[] = [];
+
+    for (const group of Object.values(signatoriesGroupedByAccountId)) {
+      if (nullable(group)) continue;
+
+      if (group.length > 1) {
+        const flexibleMultisigAccount = group.find(accountUtils.isFlexibleMultisigAccount);
+        if (flexibleMultisigAccount) {
+          group.push(flexibleMultisigAccount);
+          continue;
+        }
+      }
+
+      result = result.concat(group);
+    }
+
+    return result;
   }, [operation, multisigAccount, chain, accountsList]);
 
   const goBack = () => {
