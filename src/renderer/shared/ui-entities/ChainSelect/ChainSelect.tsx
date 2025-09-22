@@ -17,9 +17,11 @@ export const ChainSelect = memo(({ value, options, placeholder, onChange }: Prop
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredAndSortedOptions = useMemo(() => {
-    const filtered = searchQuery
-      ? performSearch({ query: searchQuery, records: options, weights: { name: 1, chainId: 0.5, specName: 0.5 } })
-      : options;
+    const filtered = performSearch({
+      query: searchQuery,
+      records: options,
+      weights: { name: 1, chainId: 0.5, specName: 0.5 },
+    });
     return chainsService.sortChains(filtered);
   }, [options, searchQuery]);
 

@@ -112,13 +112,11 @@ export const Signatory = ({
 
     if (availableAccounts.length === 0) return [];
 
-    const filteredAccounts = signatoryQuery
-      ? performSearch({
-          records: availableAccounts,
-          query: signatoryQuery,
-          weights: { name: 1, address: 0.5, id: 0.5, accountId: 0.5 },
-        })
-      : availableAccounts;
+    const filteredAccounts = performSearch({
+      records: availableAccounts,
+      query: signatoryQuery,
+      weights: { name: 1, address: 0.5, id: 0.5, accountId: 0.5 },
+    });
 
     const accountOptions = new Map<string, ComboboxItem>();
 
