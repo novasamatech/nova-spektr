@@ -1,17 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useUnit } from 'effector-react';
-import { memo, useMemo, useState } from 'react';
+import { useGate, useUnit } from 'effector-react';
+import { memo, useState } from 'react';
 
 import { type Chain, type FlexibleMultisigAccount, type HexString, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getNativeAsset, groupBy, nullable } from '@/shared/lib/utils';
+import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
+import { type MultisigOperation } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entities/transaction';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
 import { approveModel } from '../../model/approve-model';
 import { operationsContextModel } from '../../model/context';
@@ -39,9 +39,10 @@ const enum Step {
 const AllSteps = [Step.FORM, Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 export const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props) => {
+  useGate(approveModel.flow, { chain, operation });
+
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
-  const accountsList = useUnit(accounts.$list);
   const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
 
   const approveTx = useUnit(approveModel.$transaction);
@@ -54,6 +55,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const isDepositLoading = useUnit(approveModel.$isDepositLoading);
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
   const signingPayloads = useUnit(approveModel.$signingPayloads);
+  const unsignedAccounts = useUnit(approveModel.$unsignedAccounts);
 
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
@@ -66,40 +68,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
 
   const nativeAsset = getNativeAsset(chain.assets);
   const asset = useTransactionAsset(operation);
-
-  const unsignedAccounts = useMemo(() => {
-    if (!multisigAccount || !chain) return [];
-
-    const signatories = accountsList.filter(a =>
-      multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
-    );
-
-    const signatoriesOnChain = signatories.filter(s => (s.type === 'chain' ? s.chainId === chain.chainId : true));
-
-    const filteredSignatories = signatoriesOnChain.filter(
-      a => !operation.events.some(e => e.accountId === a.accountId),
-    );
-
-    const signatoriesGroupedByAccountId = groupBy(filteredSignatories, a => a.accountId);
-
-    let result: AnyAccount[] = [];
-
-    for (const group of Object.values(signatoriesGroupedByAccountId)) {
-      if (nullable(group)) continue;
-
-      if (group.length > 1) {
-        const flexibleMultisigAccount = group.find(accountUtils.isFlexibleMultisigAccount);
-        if (flexibleMultisigAccount) {
-          result.push(flexibleMultisigAccount);
-          continue;
-        }
-      }
-
-      result = result.concat(group);
-    }
-
-    return result;
-  }, [operation, multisigAccount, chain, accountsList]);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -116,16 +84,9 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   };
 
   const toggleModal = (open: boolean) => {
-    if (open) {
-      approveModel.flow.open({ chain, operation });
-      if (unsignedAccounts.length === 1) {
-        approveModel.selectInitiator(unsignedAccounts[0]);
-      }
-      return;
+    if (!open) {
+      setActiveStep(Step.FORM);
     }
-
-    approveModel.flow.close({ chain: null, operation: null });
-    setActiveStep(Step.FORM);
   };
 
   // wtf do we need it?
