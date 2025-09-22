@@ -35,7 +35,7 @@ export const ConfirmationStep = () => {
   } = useForm(formModel.form);
 
   const signerWallet = wallets.find(wallet => wallet.id === signer?.walletId);
-  const multisigAccount = route.find(accountUtils.isMultisigAccount);
+  const hasMultisigAccount = route.some(accountUtils.isAnyMultisigAccount);
 
   if (!signerWallet || !signer || !chain) return;
 
@@ -90,7 +90,7 @@ export const ConfirmationStep = () => {
 
             <Separator className="border-filter-border" />
             <div className="mb-4 flex flex-1 flex-col gap-y-4">
-              {multisigAccount && (
+              {hasMultisigAccount && (
                 <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
               )}
 

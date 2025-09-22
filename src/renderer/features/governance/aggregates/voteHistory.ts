@@ -4,17 +4,37 @@ import { createGate } from 'effector-react';
 import { type ChainId, type Referendum, type ReferendumId } from '@/shared/core';
 import { entries, nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { identity, identityService } from '@/domains/network';
+import { accounts, identity, identityService } from '@/domains/network';
+import { contactModel } from '@/entities/contact';
 import { voteHistoryModel } from '@/entities/governance';
 import { votingListService } from '../lib/votingListService';
 import { networkSelectorModel } from '../model/networkSelector';
-import { votingAssetModel } from '../model/votingAsset';
 import { type AggregatedVoteHistory } from '../types/structs';
-import { votingPowerSorting } from '../utils/votingPowerSorting';
+import { totalVotingPowerSorting } from '../utils/votingPowerSorting';
 
 import { listAggregate } from './list';
 
 const flow = createGate<{ referendum: Referendum }>();
+
+const $accountNameByAccountId = combine(
+  {
+    accounts: accounts.$list,
+    contacts: contactModel.$contacts,
+  },
+  ({ accounts, contacts }) => {
+    const accountNameByAccountId: Record<AccountId, string> = {};
+
+    for (const account of accounts) {
+      accountNameByAccountId[account.accountId] = account.name;
+    }
+
+    for (const contact of contacts) {
+      accountNameByAccountId[contact.accountId] = contact.name;
+    }
+
+    return accountNameByAccountId;
+  },
+);
 
 const $chainVoteHistory = combine(
   {
@@ -33,29 +53,34 @@ const $voteHistory = combine(
     history: $chainVoteHistory,
     chainId: networkSelectorModel.$governanceChainId,
     identities: identity.$list,
+    accountNameByAccountId: $accountNameByAccountId,
   },
-  ({ history, identities, chainId }) => {
+  ({ history, identities, chainId, accountNameByAccountId }) => {
     if (!chainId) return {};
 
     const result: Record<ReferendumId, AggregatedVoteHistory[]> = {};
     const chainIdentities = identities[chainId];
 
+    const resolveAccountName = (accountId: AccountId): string | null => {
+      const accountIdentity = chainIdentities?.[accountId];
+      if (accountIdentity) return identityService.getFullName(accountIdentity);
+      if (accountNameByAccountId[accountId]) return accountNameByAccountId[accountId];
+      return null;
+    };
+
     for (const [referendumId, historyList] of entries(history)) {
-      const aggregatedHistory = historyList.flatMap((vote) => {
-        const splitVotes = votingListService.getDecoupledVotesFromVotingHistory(vote);
+      const voteGroups = votingListService.getVoteGroupsFromVotingHistory(historyList, resolveAccountName);
 
-        return splitVotes.map((vote) => {
-          const voterIdentity = chainIdentities[vote.voter];
-          const identityName = voterIdentity ? identityService.getFullName(voterIdentity) : null;
+      const aggregatedHistory = voteGroups.map((group) => {
+        const voterName = resolveAccountName(group.voter);
 
-          return {
-            ...vote,
-            name: identityName,
-          };
-        });
+        return {
+          ...group,
+          name: voterName,
+        };
       });
 
-      result[referendumId] = aggregatedHistory.sort(votingPowerSorting);
+      result[referendumId] = aggregatedHistory.sort(totalVotingPowerSorting);
     }
 
     return result;
@@ -127,7 +152,7 @@ export const voteHistoryAggregate = {
   $isLoading: voteHistoryModel.$isLoading,
   $hasError: voteHistoryModel.$hasError,
   $chain: networkSelectorModel.$governanceChain,
-  $votingAsset: votingAssetModel.$votingAsset,
+  $votingAsset: networkSelectorModel.$network.map((network) => network?.asset ?? null),
 
   events: {
     requestVoteHistory,

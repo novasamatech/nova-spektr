@@ -83,7 +83,7 @@ const $signatory = createStore<AnyAccount | null>(null);
 const $signatories = combine($walletData, walletModel.$wallets, (wallet, wallets) => {
   const account = wallet.wallet?.accounts[0];
 
-  if (!account || !accountUtils.isMultisigAccount(account)) {
+  if (!account || !accountUtils.isAnyMultisigAccount(account)) {
     return [];
   }
 

@@ -226,7 +226,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 });
 
 const $isMultisig = $route.map((route) => {
-  return route.some((acc) => accountUtils.isMultisigAccount(acc));
+  return route.some((acc) => accountUtils.isAnyMultisigAccount(acc));
 });
 
 const $isProxy = $route.map((route) => {
@@ -386,13 +386,13 @@ sample({
 
 // Multisig deposit calculation
 const $multisigThreshold = $route.map((route) => {
-  const multisig = route.find(accountUtils.isMultisigAccount);
-  if (!multisig) return null;
+  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+  if (!multisigAccount) return null;
 
-  return multisig.threshold;
+  return multisigAccount.threshold;
 });
 
-const { $multisigDeposit, $pending: _pendingDeposit } = createMultisigDeposit({
+const { $multisigDeposit } = createMultisigDeposit({
   $threshold: $multisigThreshold,
   $api: $api,
 });

@@ -119,12 +119,13 @@ sample({
   target: $existentialDeposit,
 });
 
-const $proxyDeposit = combine($api, api => (api && proxyService.getProxyDeposit(api, '0', 1)) ?? null);
+const $proxyDepositFactor = combine($api, api => (api && api.consts.proxy.proxyDepositFactor.toString()) ?? null);
+const $proxyDeposit = combine($api, api => (api ? proxyService.getProxyDeposit(api!, '0', 1) : null));
 
-const $totalDeposit = combine($existentialDeposit, $proxyDeposit, (existentialDeposit, proxyDeposit) => {
-  if (nullable(proxyDeposit)) return null;
+const $totalDeposit = combine($existentialDeposit, $proxyDepositFactor, (existentialDeposit, proxyDepositFactor) => {
+  if (nullable(proxyDepositFactor)) return null;
 
-  return existentialDeposit.add(new BN(proxyDeposit));
+  return existentialDeposit.add(new BN(proxyDepositFactor));
 });
 
 // Transactions

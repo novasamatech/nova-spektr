@@ -2,10 +2,11 @@ import { GraphQLClient, gql } from 'graphql-request';
 import { uniq } from 'lodash';
 import { z } from 'zod';
 
-import { CryptoType, ProxyVariant } from '@/shared/core';
+import { type Chain, type ChainId, CryptoType, ProxyVariant } from '@/shared/core';
 import { entries, groupBy, isEthereumAccountId, isHex, nullable } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { networkUtils } from '@/entities/network';
 import { multisigOperationService } from '../multisig-operation/service';
 
 import { INDEXER_URL } from './constants';
@@ -23,7 +24,7 @@ const chainIdSchema = z.string().transform((id, ctx) => {
   }
 });
 
-// proxy
+// proxieds
 
 const PROXY_ACCOUNT_QUERY = gql`
   query Proxieds($accounts: [String!]) {
@@ -41,6 +42,22 @@ const PROXY_ACCOUNT_QUERY = gql`
   }
 `;
 
+const PURE_PROXY_QUERY = gql`
+  query PureProxies($accounts: [String!]) {
+    pureProxies(filter: { accountId: { in: $accounts } }) {
+      nodes {
+        accountId
+        chainId
+      }
+    }
+  }
+`;
+
+const pureProxySchema = z.object({
+  accountId: accountIdSchema,
+  chainId: chainIdSchema,
+});
+
 const proxySchema = z.object({
   accountId: accountIdSchema,
   proxyAccountId: accountIdSchema,
@@ -52,17 +69,33 @@ const proxySchema = z.object({
 });
 
 export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
+  getSupportedChains: (chains: Chain[]) => {
+    return chains.filter(chain => networkUtils.isProxySupported(chain.options));
+  },
+
   async fn(accounts, chains) {
     const accountsSet = new Set(accounts);
     const result: SyncedProxyAccount[] = [];
 
-    // subquery request
     const client = new GraphQLClient(INDEXER_URL);
     const response = await client.request<{ proxieds: { nodes: unknown[] } }, { accounts: AccountId[] }>(
       PROXY_ACCOUNT_QUERY,
       { accounts },
     );
+
     const parsed = response.proxieds.nodes.map(x => proxySchema.parse(x));
+
+    const accountIds = parsed.map(x => x.accountId);
+
+    const pureProxiesResponse = await client.request<{ pureProxies: { nodes: unknown[] } }, { accounts: AccountId[] }>(
+      PURE_PROXY_QUERY,
+      { accounts: accountIds },
+    );
+    //todo remove when reindexing is done
+    const pureProxies = pureProxiesResponse.pureProxies.nodes.map(x => pureProxySchema.parse(x));
+
+    // Create lookup set for pure proxies
+    const pureProxyLookup = new Set(pureProxies.map(pp => `${pp.accountId}:${pp.chainId}`));
 
     const indexerChainGroups = groupBy(parsed, g => g.chainId);
 
@@ -105,6 +138,9 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
           });
           if (nullable(proxyFromIndexer)) continue;
 
+          // Check if this account is a pure proxy using the PureProxy table data
+          const isPureProxy = proxyFromIndexer.isPureProxy || pureProxyLookup.has(`${accountId}:${chainId}`);
+
           result.push({
             type: 'proxy',
             accountId,
@@ -113,7 +149,7 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
             deposit: proxied.value.deposit,
             delay: proxy.delay,
             proxyType: proxy.proxyType,
-            proxyVariant: proxyFromIndexer.isPureProxy ? ProxyVariant.PURE : ProxyVariant.REGULAR,
+            proxyVariant: isPureProxy ? ProxyVariant.PURE : ProxyVariant.REGULAR,
             blockNumber: proxyFromIndexer.blockNumber,
             extrinsicIndex: proxyFromIndexer.extrinsicIndex,
           });
@@ -127,7 +163,7 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
 
 // multisig
 
-const MULTISIG_ACCOUNT_QUERY = gql`
+const MULTISIG_ACCOUNTS_QUERY = gql`
   query Multisigs($accounts: [String!]) {
     accounts(filter: { accountId: { in: $accounts } }) {
       nodes {
@@ -172,19 +208,23 @@ const multisigSchema = z.object({
 });
 
 export const multisigAccountsProvider: AccountProvider<SyncedMultisigAccount> = {
+  getSupportedChains: (chains: Chain[]) => {
+    return chains.filter(chain => networkUtils.isMultisigSupported(chain.options));
+  },
+
   async fn(accounts) {
     const result: SyncedMultisigAccount[] = [];
 
     // subquery request
     const client = new GraphQLClient(INDEXER_URL);
     const response = await client.request<{ accounts: { nodes: unknown[] } }, { accounts: AccountId[] }>(
-      MULTISIG_ACCOUNT_QUERY,
+      MULTISIG_ACCOUNTS_QUERY,
       { accounts },
     );
 
     const parsed = response.accounts.nodes.map(x => multisigSchema.parse(x));
     // multisigs can be duplicated because each chain can provide own multisig account with same address
-    const processed = new Set<AccountId>();
+    const processed = new Set<AccountId>(accounts);
 
     // actual processing
     for (const signatory of parsed) {
@@ -211,5 +251,43 @@ export const multisigAccountsProvider: AccountProvider<SyncedMultisigAccount> = 
     }
 
     return result;
+  },
+};
+
+// chains metadata
+
+const METADATAS_QUERY = gql`
+  query Metadatas {
+    _metadatas {
+      nodes {
+        chain
+        lastProcessedHeight
+        genesisHash
+      }
+    }
+  }
+`;
+
+const metadataSchema = z.object({
+  chain: z.string(),
+  lastProcessedHeight: z.number(),
+  genesisHash: z.string<ChainId>(),
+});
+
+export const indexedBlocksProvider = {
+  async fn(): Promise<Map<ChainId, number>> {
+    const client = new GraphQLClient(INDEXER_URL);
+    const response = await client.request<{
+      _metadatas: { nodes: { chain: string; genesisHash: ChainId; lastProcessedHeight: number }[] };
+    }>(METADATAS_QUERY);
+
+    const parsedData = response._metadatas.nodes.map(x => metadataSchema.parse(x));
+    const metadataMap = new Map<ChainId, number>();
+
+    for (const meta of parsedData) {
+      metadataMap.set(meta.genesisHash, meta.lastProcessedHeight);
+    }
+
+    return metadataMap;
   },
 };

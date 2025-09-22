@@ -1,7 +1,7 @@
 import { type PropsWithChildren, type ReactNode, memo } from 'react';
 
 import { type Chain, type Wallet } from '@/shared/core';
-import { cnTw, nonNullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
@@ -42,7 +42,10 @@ export const WalletManagement = memo(
           'focus-within:bg-action-background-hover hover:bg-action-background-hover',
         )}
       >
-        <button className="flex w-full min-w-0 shrink items-center gap-x-2 rounded px-2 py-1.5" onClick={onClick}>
+        <button
+          className="flex w-full min-w-0 shrink cursor-pointer items-center gap-x-2 rounded px-2 py-1.5"
+          onClick={onClick}
+        >
           {active ? (
             <Icon name="checkmarkCutout" className="shrink-0 text-icon-accent" size={16} />
           ) : (
@@ -50,7 +53,14 @@ export const WalletManagement = memo(
           )}
 
           {checkBox}
-          {accountId && <Identicon value={accountId} size={16} background={false} theme={theme} />}
+          {accountId && (
+            <Identicon
+              address={toAddress(accountId, { prefix: chain?.addressPrefix })}
+              size={16}
+              background={false}
+              theme={theme}
+            />
+          )}
 
           <div className="flex min-w-0 flex-grow flex-col">
             <div className="flex items-center gap-x-2">
@@ -64,9 +74,9 @@ export const WalletManagement = memo(
                 {wallet.name}
               </BodyText>
               {
-                <div className="flex items-center gap-x-1">
+                <div className="flex shrink-0 items-center gap-x-1">
                   {nonNullable(label) && <Label variant="purple">{label}</Label>}
-                  {nonNullable(chain) && <ChainIcon chain={chain} />}
+                  {nonNullable(chain) && <ChainIcon chain={chain} size={16} />}
                 </div>
               }
 

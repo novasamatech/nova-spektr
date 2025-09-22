@@ -1,4 +1,4 @@
-import { type BN, BN_BILLION, bnMax, bnMin } from '@polkadot/util';
+import { type BN, BN_BILLION, BN_ZERO, bnMax, bnMin } from '@polkadot/util';
 
 import { type AyesParams, type SupportParams } from '@/shared/api/governance';
 import { type BlockHeight, type VotingCurve, type VotingThreshold } from '@/shared/core';
@@ -27,7 +27,8 @@ function supportThreshold({
 
 function ayesFractionThreshold({ approvalCurve, tally, blockDifference, decisionPeriod }: AyesParams): VotingThreshold {
   const threshold = getThreshold(approvalCurve, blockDifference, decisionPeriod);
-  const ayeFraction = BN_BILLION.mul(tally.ayes).div(tally.ayes.add(tally.nays));
+  const total = tally.ayes.add(tally.nays);
+  const ayeFraction = total.isZero() ? BN_ZERO : BN_BILLION.mul(tally.ayes).div(total);
 
   return {
     value: threshold,

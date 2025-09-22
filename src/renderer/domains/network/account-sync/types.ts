@@ -5,6 +5,10 @@ import { type Chain, type ChainId, type ProxyVariant } from '@/shared/core';
 import { type KitchensinkRuntimeProxyType } from '@/shared/pallet/proxy';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 
+export type IndexedBlocksProvider = {
+  fn(): Promise<Map<ChainId, number>>;
+};
+
 export interface SyncedAccount {
   accountId: AccountId;
 }
@@ -15,6 +19,7 @@ export type AccountProviderChain = {
 };
 
 export type AccountProvider<Account extends SyncedAccount> = {
+  getSupportedChains(chains: Chain[]): Chain[];
   fn(accounts: AccountId[], chains: Record<ChainId, AccountProviderChain>): Promise<Account[]>;
 };
 

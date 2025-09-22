@@ -3,9 +3,10 @@ import { createGate } from 'effector-react';
 import { sortBy } from 'lodash';
 import { delay, spread } from 'patronum';
 
-import { chainsService } from '@/shared/api/network';
 import {
   AccountType,
+  type Chain,
+  type ChainId,
   type Contact,
   CryptoType,
   type MultisigAccount,
@@ -16,7 +17,7 @@ import {
 } from '@/shared/core';
 import { Step, TEST_ACCOUNTS, getNativeAsset, isStep, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import {
-  createComplexTxStore,
+  createFeeCalculator,
   createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
@@ -26,7 +27,7 @@ import { type AnyAccount, type ChainAccount, accountService, accountSync, accoun
 import { balanceModel } from '@/entities/balance';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { type ExtrinsicResultParams, getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -49,6 +50,10 @@ const $signer = restore(signerSelected, null).reset(flow.open);
 
 const $initiators = createStore<AnyAccount[] | null>(null).reset(flow.close);
 const $initiatorWallet = createStore<Wallet | null>(null).reset(flow.close);
+
+const $multisigChains = combine(networkModel.$chains, chains => {
+  return Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
+});
 
 sample({
   clock: signatoryModel.$ownedSignatoriesWallets,
@@ -102,11 +107,6 @@ const $api = combine(
   },
 );
 
-const $multisigChains = combine(networkModel.$chains, chains => {
-  const filteredChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
-  return chainsService.sortChains(filteredChains);
-});
-
 // If the current chain is not connected switch to the next one
 sample({
   clock: flow.open,
@@ -130,7 +130,29 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
+// Signatories for all multisig chains
+const $allChainsSignatories = combine(
+  {
+    multisigChains: $multisigChains,
+    initiators: $initiators,
+    accounts: accounts.$list,
+  },
+  ({ multisigChains, initiators, accounts }) => {
+    if (nullable(initiators) || !multisigChains.length) return {} as Record<ChainId, AnyAccount[]>;
+
+    return multisigChains.reduce(
+      (acc, chain: Chain) => {
+        const signatories = initiators.flatMap(initiator => accountService.findSignatories(initiator, accounts, chain));
+        acc[chain.chainId] = signatories;
+        return acc;
+      },
+      {} as Record<ChainId, AnyAccount[]>,
+    );
+  },
+);
+
 // in the current implementation, the first signatory is always the signer
+//github.com/novasamatech/nova-spektr/issues/4565
 sample({
   clock: $signatories,
   fn: signatories => {
@@ -162,7 +184,7 @@ sample({
   target: formModel.form.fields.chainId.change,
 });
 
-const $coreTx = combine(
+const $tx = combine(
   {
     threshold: formModel.form.fields.threshold.$value,
     chainId: formModel.form.fields.chainId.$value,
@@ -197,17 +219,18 @@ const $fakeTx = combine(
   },
 );
 
-const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
-  api: $api,
-  initiator: $initiator,
-  signatory: $signer,
-  accounts: accounts.$list,
-  chain: formModel.$chain,
-  transaction: $coreTx,
-  feeTransaction: $fakeTx,
+const $fakeExtrinsic = combine($api, $fakeTx, (api, tx) => {
+  if (nullable(api)) return null;
+  if (nullable(tx)) return null;
+  return getExtrinsic[tx.type](tx.args, api);
 });
 
-const $asset = formModel.$chain.map(chain => (chain ? getNativeAsset(chain.assets) : null));
+const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
+  extrinsic: $fakeExtrinsic,
+});
+
+const $route = combine($signer, signer => (signer ? [signer] : []));
+const $asset = combine(formModel.$chain, chain => (chain ? getNativeAsset(chain.assets) : null));
 
 const validator = createTxValidator();
 const { $errors } = createTxValidationStore({
@@ -238,7 +261,7 @@ const formSubmitted = sample({
   clock: formModel.form.validate,
   source: {
     tx: $tx,
-    coreTx: $coreTx,
+    coreTx: $tx,
     route: $route,
     signatory: $signer,
     initiator: $initiator,
@@ -336,7 +359,7 @@ sample({
 
     return nonNullable(chain) && isSubmitStep && isSuccessResult;
   },
-  fn: ({ signatories, chain, name, threshold }) => {
+  fn: ({ signatories, chain, name, threshold }, results) => {
     const sortedSignatories = sortBy(
       Array.from(signatories.values()).map(a => ({
         address: a.address,
@@ -351,6 +374,9 @@ sample({
     const accountIds = sortedSignatories.map(s => s.accountId);
     const accountId = accountUtils.getMultisigAccountId(accountIds, threshold, cryptoType);
 
+    const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
+    const blockNumber = successResult ? (successResult.params as ExtrinsicResultParams)?.timepoint?.height : undefined;
+
     const account: Omit<NoID<MultisigAccount>, 'walletId'> = {
       signatories: sortedSignatories,
       name: name.trim(),
@@ -360,6 +386,8 @@ sample({
       signingType: SigningType.MULTISIG,
       accountType: AccountType.MULTISIG,
       type: 'universal',
+      blockNumber,
+      remarkChainId: chain!.chainId,
     };
 
     return {
@@ -479,6 +507,10 @@ export const flowModel = {
 
   //for tests
   formSubmitted,
+
+  $multisigChains,
+
+  $allChainsSignatories,
 
   flow,
 };

@@ -170,7 +170,7 @@ const FeeSection = () => {
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
   const multisigDeposit = useUnit(formModel.$multisigDeposit);
-  const isMultisig = useUnit(formModel.$isMultisig);
+  const isMultisig = useUnit(formModel.$hasAnyMultisig);
   const availableBalance = useUnit(formModel.$availableBalance);
   const previousConviction = useUnit(formModel.$previousConviction);
 

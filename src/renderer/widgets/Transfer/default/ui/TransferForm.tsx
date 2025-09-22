@@ -347,7 +347,11 @@ const Destination = () => {
 
   const prefixElement = (
     <div className="flex h-auto items-center">
-      <Identicon size={20} value={destination.value} background={false} />
+      <Identicon
+        size={20}
+        address={toAddress(destination.value, { prefix: chain?.addressPrefix })}
+        background={false}
+      />
     </div>
   );
 
@@ -445,9 +449,11 @@ const FeeSection = () => {
     return null;
   }
 
+  const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
+
   return (
     <div className="flex flex-col gap-y-2">
-      {nonNullable(initiator) && accountUtils.isMultisigAccount(initiator) && (
+      {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
           asset={getNativeAsset(network.chain.assets)}

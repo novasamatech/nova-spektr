@@ -164,4 +164,5 @@ export const listAggregate = {
   $titles: $chainTitles,
   $isLoading: referendumModel.$isLoading,
   $isTitlesLoading,
+  $isApprovalThresholdsLoading: approveThresholdModel.$getApproveThresholdsPending,
 };

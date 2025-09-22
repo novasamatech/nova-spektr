@@ -250,7 +250,7 @@
     "multisig": "Multisig",
     "multisigCreationFeeLabel": "Additional cost",
     "multisigDeposit": "Multisig deposit:",
-    "multisigExistText": "The multisig wallet with the selected signatories and threshold already exists. Please change the signatories or threshold to create a new one.",
+    "multisigExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists and will be used for the flexible one.",
     "multisigExistTitle": "Multisig wallet already exists",
     "multisigHiddenExistText": "The multisig wallet with the selected signatories and threshold already exists but was previously removed by you.<br />Would you like to restore it now?",
     "multisigStep": "Step {step}.",
@@ -286,15 +286,16 @@
     "restoreButton": "Restore",
     "searchContactPlaceholder": "Search",
     "selectMultisigDescription": {
-      "featureFive": "<header>Address does not change</header> when changing signatories",
-      "featureFour": "<header>Change signatories and threshold</header> at any time",
-      "featureOne": "<header>Multiple Signatories</header> required to approve transactions",
-      "featureThree": "<header>Delegate authority</header> over certain operations",
-      "featureTwo": "<header>Set custom signatory threshold</header> which must be met for transactions to be executed",
-      "flexibleDescription": "Can modify signatories",
+      "flexibleFeatureOne": "<header>Update signatories as needed</header> while maintaining a fixed address.",
+      "flexibleFeatureThree": "<header>Works only on the network</header> where it was created.",
+      "flexibleFeatureTwo": "<header>Deposit is needed</header> to create the wallet (returned when deleted).",
       "flexibleNote": "Pure Proxy deposit will be reserved on your account. This wallet <header>only works on the network</header> it was created on.",
-      "regularDescription": "Regular multisig wallet",
-      "regularNote": "Only fee is required. This wallet <header>works on all networks.</header>"
+      "flexibleWikiLink": "Flexible Multisigs on Wiki",
+      "regularFeatureOne": "<header>Changing signatories or the threshold</header> requires creating a new multisig address.",
+      "regularFeatureThree": "<header>Works on all supported chains</header> from the start.",
+      "regularFeatureTwo": "<header>No deposit required</header>, you only pay standard network fees.",
+      "regularNote": "Only fee is required. This wallet <header>works on all networks.</header>",
+      "regularWikiLink": "Multisigs on Wiki"
     },
     "selectSigner": "Select signing wallet",
     "selectedSignatoriesTitle": "Selected signatories",
@@ -418,12 +419,14 @@
   },
   "emptyState": {
     "accountDescription": "You don't have an account in that network.",
+    "accountsNotFound": "Accounts not found",
     "addAccountButton": "Add account",
     "addNewAccountButton": "Add new account",
     "createAccount": "Create a new account",
     "createFlexibleMultisig": "Create a new flexible multisig wallet",
     "createMultisig": "Create a new multisig wallet",
-    "createOrImportAccount": "Create a new account or import an existing one"
+    "createOrImportAccount": "Create a new account or import an existing one",
+    "searchEmpty": "Nothing was found for the \"{query}\""
   },
   "fallbackScreen": {
     "message": "Sorry, something went wrong",
@@ -1203,6 +1206,7 @@
       "timeoutReferendumError": "This referendum has already passed"
     },
     "voteHistory": {
+      "delegatedBy": "Delegated by",
       "listColumnAccount": "Account",
       "listColumnVotingPower": "Voting power",
       "listEmptyDescription": "Nobody has voted yet",
@@ -1533,8 +1537,18 @@
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
+    "viewJSON": {
+      "button": "View JSON",
+      "label": "Operation details"
+    },
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
+      "errors": {
+        "networkError": "Rejected. Some transport error, try to reconnect your wallet",
+        "sessionError": "Rejected. Connection lost, please reconnect your wallet",
+        "unknownError": "Rejected. An unexpected error occurred",
+        "userRejected": "Rejected. Request on sign was rejected"
+      },
       "expiredDescription": "The operation isn’t valid anymore",
       "failedDescription": "Scan with your mobile wallet to connect",
       "failedTitle": "Waiting for Reconnect...",
@@ -1546,6 +1560,7 @@
         "reconnecting": "Waiting for Reconnect...",
         "title": "{ walletName } is not connected"
       },
+      "reconnectHint": "Please check your internet connection and try reconnecting your wallet",
       "rejected": "Rejected",
       "signTitle_one": "Confirm with { walletName }",
       "signTitle_other": "Confirm { count } operations on your { walletName } app",
@@ -1558,8 +1573,11 @@
     "callData": {
       "continueButton": "Continue",
       "errorMessage": "Incorrect call data",
+      "errorTitle": "Call Data Error",
       "inputHint": "Visible only for you and signers",
       "inputPlaceholder": "0x00...",
+      "submitting": "Submitting call data...",
+      "success": "Call data submitted successfully",
       "title": "Enter call data"
     },
     "createdOperationDescription": "The changes will take effect after the other signatories sign.",

@@ -5,6 +5,7 @@ import { debounce } from 'patronum';
 import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -45,11 +46,14 @@ const $input = combine(
 
     for (const account of wallet.accounts) {
       let availableChains;
-      if (accountUtils.isFlexibleProxiedAccount(account)) {
+      let accountId: AccountId;
+      if (accountUtils.isFlexibleMultisigAccount(account)) {
         const chain = chains[account.chainId];
         availableChains = chain ? [chain] : [];
+        accountId = account.multisigAccountId;
       } else {
         availableChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
+        accountId = account.accountId;
       }
 
       for (const chain of availableChains) {
@@ -60,7 +64,7 @@ const $input = combine(
             api,
             chains,
             chain,
-            accountId: account.accountId,
+            accountId,
           });
         }
       }

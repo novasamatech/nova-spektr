@@ -179,18 +179,18 @@ const { $errors } = createTxValidationStore({
 });
 
 const $proxiedAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
-const $multisigAccount = $route.map((route) => route.find(accountUtils.isMultisigAccount) ?? null);
+const $multisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
 const $isProxy = $proxiedAccount.map(nonNullable);
 const $isMultisig = $multisigAccount.map(nonNullable);
 
 const $multisigThreshold = $route.map((route) => {
-  const multisig = route.find(accountUtils.isMultisigAccount);
-  if (!multisig) return null;
+  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+  if (!multisigAccount) return null;
 
-  return multisig.threshold;
+  return multisigAccount.threshold;
 });
 
-const { $multisigDeposit, $pending: _pendingDeposit } = createMultisigDeposit({
+const { $multisigDeposit } = createMultisigDeposit({
   $threshold: $multisigThreshold,
   $api: $api,
 });

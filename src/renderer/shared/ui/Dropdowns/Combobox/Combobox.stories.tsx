@@ -1,5 +1,6 @@
 import { type Meta, type StoryFn } from '@storybook/react-vite';
 
+import { type Address } from '@/shared/core';
 import { Identicon } from '@/shared/ui-entities';
 import { Icon } from '../../Icon/Icon';
 
@@ -37,7 +38,7 @@ const customOptions = data.map((d, index) => ({
   value: d.value,
   element: (
     <div className="flex items-center gap-x-2.5">
-      <Identicon value={d.address} background={false} size={24} canCopy={false} />
+      <Identicon address={d.address as Address} background={false} size={24} canCopy={false} />
       <p>{d.value}</p>
     </div>
   ),

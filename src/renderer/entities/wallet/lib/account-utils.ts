@@ -9,7 +9,6 @@ import {
   type ChainId,
   CryptoType,
   type FlexibleMultisigAccount,
-  type FlexibleProxiedAccount,
   type MultisigAccount,
   type MultisigSignatoryAccount,
   type ProxiedAccount,
@@ -39,7 +38,6 @@ export const accountUtils = {
   isMultisigSignatoryAccount,
   isWcAccount,
   isProxiedAccount,
-  isFlexibleProxiedAccount,
   isPureProxiedAccount,
 
   /**
@@ -117,6 +115,12 @@ function isFlexibleMultisigAccount(account: Partial<AnyAccount>): account is Fle
   return 'accountType' in account && account.accountType === AccountType.FLEX_MULTISIG;
 }
 
+/**
+ * Returns true for any account that has multiple signatories
+ *
+ * Make sure you handle FlexibleMultisig separately since it is a custom virtual
+ * structure and its accountId is not related to the multisig
+ */
 function isAnyMultisigAccount(account: Partial<AnyAccount>): account is MultisigAccount | FlexibleMultisigAccount {
   return isMultisigAccount(account) || isFlexibleMultisigAccount(account);
 }
@@ -129,15 +133,6 @@ function isProxiedAccount(account: Partial<AnyAccount>): account is ProxiedAccou
   return (
     // @ts-expect-error Partial type breaks required type field usage
     accountService.isChainAccount(account) && 'accountType' in account && account.accountType === AccountType.PROXIED
-  );
-}
-
-function isFlexibleProxiedAccount(account: Partial<AnyAccount>): account is FlexibleProxiedAccount {
-  return (
-    // @ts-expect-error Partial type breaks required type field usage
-    accountService.isChainAccount(account) &&
-    'accountType' in account &&
-    account.accountType === AccountType.FLEX_PROXIED
   );
 }
 

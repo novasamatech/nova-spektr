@@ -191,9 +191,12 @@ export const Signatory = ({
     const selectedOption = options.flatMap(group => group.items).find(option => option.value.address === value);
     const newSignatory = selectedOption?.value;
 
+    const shouldClearName = value !== signatoryAddress && !selectedOption;
+    const newName = shouldClearName ? '' : signatoryName;
+
     signatoryModel.events.changeSignatory({
       index: signatoryIndex,
-      name: signatoryName,
+      name: newName,
       address: value,
       walletId: newSignatory?.walletId?.toString(), // will be undefined for contact
     });
@@ -204,9 +207,9 @@ export const Signatory = ({
   const isInvalid = isInvalidAddress || signatoryAddress !== query;
 
   return (
-    <div className="grid grid-cols-[1fr_232px_44px] gap-x-4">
-      <Box width="100%" direction="row" verticalAlign="end" gap={3}>
-        <FootnoteText className="pb-2 text-text-tertiary">{1 + signatoryIndex}</FootnoteText>
+    <div className="grid grid-cols-[1fr_232px_44px] items-start gap-x-4">
+      <Box width="100%" direction="row" verticalAlign="start" gap={3}>
+        <FootnoteText className="pt-8.5 text-text-tertiary">{1 + signatoryIndex}</FootnoteText>
 
         {isOwnAccount ? (
           <Field text={t('createMultisigAccount.myAccount')}>
@@ -235,7 +238,12 @@ export const Signatory = ({
               invalid={isDuplicate}
               value={query}
               prefixElement={
-                <Identicon value={isInvalid ? '' : signatoryAddress} size={20} background={false} canCopy={false} />
+                <Identicon
+                  address={isInvalid ? null : (signatoryAddress as AccountAddress)}
+                  size={20}
+                  background={false}
+                  canCopy={false}
+                />
               }
               onChange={onAddressChange}
               onInput={setQuery}
@@ -272,12 +280,14 @@ export const Signatory = ({
         />
       </Field>
       {!isOwnAccount && onDelete && (
-        <IconButton
-          className="mt-9 self-start justify-self-center"
-          name="delete"
-          size={16}
-          onClick={() => onDelete(signatoryIndex)}
-        />
+        <div className="pt-7">
+          <IconButton
+            className="justify-self-center"
+            name="delete"
+            size={16}
+            onClick={() => onDelete(signatoryIndex)}
+          />
+        </div>
       )}
     </div>
   );

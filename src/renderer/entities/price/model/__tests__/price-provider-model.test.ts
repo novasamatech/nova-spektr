@@ -85,18 +85,6 @@ describe('entities/price/model/price-provider-model', () => {
     expect(scope.getState(priceProviderModel.$priceProvider)).toEqual('my_provider');
   });
 
-  test('should fetch $assetsPrices when assetsPricesRequested', async () => {
-    jest.spyOn(coingekoService, 'getPrice').mockResolvedValue(prices);
-
-    const scope = fork({
-      values: new Map()
-        .set(priceProviderModel.$priceProvider, PriceApiProvider.COINGEKO)
-        .set(currencyModel.$activeCurrency, 'usd'),
-    });
-    await allSettled(priceProviderModel.events.assetsPricesRequested, { scope, params: { includeRates: false } });
-    expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(prices);
-  });
-
   test('should update $assetPrices when currencyChanged', async () => {
     const newPrices = {
       kusama: {

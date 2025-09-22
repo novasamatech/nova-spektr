@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import { type Chain, type FlexibleMultisigAccount, type HexString, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -8,9 +8,8 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
+import { type MultisigOperation, accounts } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
-import { priceProviderModel } from '@/entities/price';
 import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { SigningSwitch } from '@/features/operations';
@@ -18,8 +17,8 @@ import { approveModel } from '../../model/approve-model';
 import { operationsContextModel } from '../../model/context';
 import { Confirmation } from '../ActionSteps/Confirmation';
 import { Submit } from '../ActionSteps/Submit';
+import { ApproveForm } from '../ApproveForm';
 
-import { SignatorySelectModal } from './SignatorySelectModal';
 import { getMultisigSignOperationTitle } from './getMultisigSignOperationTitle';
 
 type Props = {
@@ -31,14 +30,15 @@ type Props = {
 };
 
 const enum Step {
+  FORM,
   CONFIRMATION,
   SIGNING,
   SUBMIT,
 }
 
-const AllSteps = [Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
+const AllSteps = [Step.FORM, Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
-const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props) => {
+export const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props) => {
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(accounts.$list);
@@ -54,10 +54,9 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
   const signingPayloads = useUnit(approveModel.$signingPayloads);
 
-  const [isSelectAccountModalOpen, toggleSelectAccountModal] = useToggle();
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
-  const [activeStep, setActiveStep] = useState(Step.CONFIRMATION);
+  const [activeStep, setActiveStep] = useState(Step.FORM);
   const [txPayload, setTxPayload] = useState<Uint8Array>();
   const [signature, setSignature] = useState<HexString>();
 
@@ -74,12 +73,14 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
       multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
     );
 
-    return signatories.filter(a => !operation.events.some(e => e.accountId === a.accountId));
-  }, [operation, multisigAccount, chain, accountsList]);
+    const signatoriesOnChain = signatories.filter(s => (s.type === 'chain' ? s.chainId === chain.chainId : true));
 
-  useEffect(() => {
-    priceProviderModel.events.assetsPricesRequested({ includeRates: true });
-  }, []);
+    const filteredSignatories = signatoriesOnChain.filter(
+      a => !operation.events.some(e => e.accountId === a.accountId),
+    );
+
+    return filteredSignatories;
+  }, [operation, multisigAccount, chain, accountsList]);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -91,27 +92,22 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
     setActiveStep(Step.SUBMIT);
   };
 
-  const setSignerAccount = () => {
-    if (unsignedAccounts.length === 1) {
-      approveModel.selectInitiator(unsignedAccounts[0]);
-    } else {
-      toggleSelectAccountModal();
-    }
-  };
-
-  const selectSignerAccount = (account: AnyAccount) => {
-    approveModel.selectInitiator(account);
-    toggleSelectAccountModal();
+  const onFormSubmit = () => {
+    setActiveStep(Step.CONFIRMATION);
   };
 
   const toggleModal = (open: boolean) => {
     if (open) {
       approveModel.flow.open({ chain, operation });
-      setSignerAccount();
-    } else {
-      approveModel.flow.close({ chain: null, operation: null });
-      setActiveStep(Step.CONFIRMATION);
+      if (unsignedAccounts.length === 1) {
+        approveModel.selectInitiator(unsignedAccounts[0]);
+        setActiveStep(Step.CONFIRMATION);
+      }
+      return;
     }
+
+    approveModel.flow.close({ chain: null, operation: null });
+    setActiveStep(Step.FORM);
   };
 
   // wtf do we need it?
@@ -149,58 +145,60 @@ const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props
   }
 
   return (
-    <>
-      <Modal size="md" onToggle={toggleModal}>
-        <Modal.Trigger>{children}</Modal.Trigger>
-        <Modal.Title close>
-          <OperationTitle title={t(transactionTitle || '', { asset: asset?.symbol })} chainId={operation.chainId} />
-        </Modal.Title>
-        <Modal.Content>
-          {activeStep === Step.CONFIRMATION && (
-            <Confirmation
-              operation={operation}
-              api={api}
-              chain={chain}
-              fee={fee}
-              isFeeLoading={isFeeLoading}
-              isDepositLoading={isDepositLoading}
-              signAccount={signAccount}
-              multisigDeposit={multisigDeposit}
-              errors={errors}
-              onSign={handleConfirm}
-            />
-          )}
+    <Modal size="md" onToggle={toggleModal}>
+      <Modal.Trigger>{children}</Modal.Trigger>
+      <Modal.Title close>
+        <OperationTitle
+          title={activeStep !== Step.FORM ? t(transactionTitle || '', { asset: asset?.symbol }) : ''}
+          chainId={operation.chainId}
+        />
+      </Modal.Title>
+      <Modal.Content>
+        {activeStep === Step.FORM && multisigAccount && (
+          <ApproveForm
+            unsignedAccounts={unsignedAccounts}
+            chain={chain}
+            nativeAsset={nativeAsset}
+            asset={asset}
+            operation={operation}
+            onSubmit={onFormSubmit}
+          />
+        )}
+        {activeStep === Step.CONFIRMATION && (
+          <Confirmation
+            operation={operation}
+            api={api}
+            chain={chain}
+            fee={fee}
+            isFeeLoading={isFeeLoading}
+            isDepositLoading={isDepositLoading}
+            signAccount={signAccount}
+            multisigDeposit={multisigDeposit}
+            errors={errors}
+            onSign={handleConfirm}
+            onGoBack={() => setActiveStep(Step.FORM)}
+          />
+        )}
 
-          {activeStep === Step.SIGNING && signingPayloads && signAccount && (
-            <SigningSwitch
-              signerWallet={wallets.find(w => w.id === signAccount.walletId)}
-              signingPayloads={signingPayloads}
-              onGoBack={goBack}
-              onResult={onSignResult}
-            />
-          )}
+        {activeStep === Step.SIGNING && signingPayloads && signAccount && (
+          <SigningSwitch
+            signerWallet={wallets.find(w => w.id === signAccount.walletId)}
+            signingPayloads={signingPayloads}
+            onGoBack={goBack}
+            onResult={onSignResult}
+          />
+        )}
 
-          <OperationResult
-            isOpen={isFeeModalOpen}
-            variant="error"
-            title={t('operation.feeErrorTitle')}
-            description={t('operation.feeErrorMessage')}
-            onClose={toggleFeeModal}
-          >
-            <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
-          </OperationResult>
-        </Modal.Content>
-      </Modal>
-      <SignatorySelectModal
-        isOpen={isSelectAccountModalOpen}
-        accounts={unsignedAccounts}
-        chain={chain}
-        nativeAsset={nativeAsset}
-        onClose={toggleSelectAccountModal}
-        onSelect={selectSignerAccount}
-      />
-    </>
+        <OperationResult
+          isOpen={isFeeModalOpen}
+          variant="error"
+          title={t('operation.feeErrorTitle')}
+          description={t('operation.feeErrorMessage')}
+          onClose={toggleFeeModal}
+        >
+          <Button onClick={toggleFeeModal}>{t('operation.submitErrorButton')}</Button>
+        </OperationResult>
+      </Modal.Content>
+    </Modal>
   );
 });
-
-export default ApproveTxModal;

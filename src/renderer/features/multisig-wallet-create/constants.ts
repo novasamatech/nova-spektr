@@ -1,9 +1,13 @@
 export type MultisigWalletType = 'regularMultisig' | 'flexibleMultisig';
 
-export const descriptionMultisig = [
-  { text: 'createMultisigAccount.selectMultisigDescription.featureOne', onlyFlexible: false },
-  { text: 'createMultisigAccount.selectMultisigDescription.featureTwo', onlyFlexible: false },
-  { text: 'createMultisigAccount.selectMultisigDescription.featureThree', onlyFlexible: true },
-  { text: 'createMultisigAccount.selectMultisigDescription.featureFour', onlyFlexible: true },
-  { text: 'createMultisigAccount.selectMultisigDescription.featureFive', onlyFlexible: true },
+export const flexibleMultisigFeatures = [
+  { text: 'createMultisigAccount.selectMultisigDescription.flexibleFeatureOne' },
+  { text: 'createMultisigAccount.selectMultisigDescription.flexibleFeatureTwo' },
+  { text: 'createMultisigAccount.selectMultisigDescription.flexibleFeatureThree' },
+];
+
+export const regularMultisigFeatures = [
+  { text: 'createMultisigAccount.selectMultisigDescription.regularFeatureOne' },
+  { text: 'createMultisigAccount.selectMultisigDescription.regularFeatureTwo' },
+  { text: 'createMultisigAccount.selectMultisigDescription.regularFeatureThree' },
 ];
