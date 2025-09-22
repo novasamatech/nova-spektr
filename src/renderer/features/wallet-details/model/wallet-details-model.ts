@@ -83,27 +83,26 @@ const $walletProxyGroups = combine(
       };
     });
 
-    if (initialGroups.length === 0) {
-      const derivedGroups = [];
-      for (const [chainIdStr, proxyAccounts] of Object.entries(chainsProxies)) {
-        if (proxyAccounts.length > 0) {
-          const proxiedAccount = accounts.find(
-            account =>
-              account.accountId === proxyAccounts[0].proxiedAccountId && accountUtils.isProxiedAccount(account),
-          );
-
-          derivedGroups.push({
-            chainId: chainIdStr as ChainId,
-            proxiedAccountId: proxyAccounts[0].proxiedAccountId,
-            walletId: wallet.id,
-            totalDeposit: proxiedAccount && 'deposit' in proxiedAccount ? String(proxiedAccount.deposit) : '0',
-          });
-        }
-      }
-      return derivedGroups;
+    if (initialGroups.length !== 0) {
+      return initialGroups;
     }
 
-    return initialGroups;
+    const derivedGroups = [];
+    for (const [chainIdStr, proxyAccounts] of Object.entries(chainsProxies)) {
+      if (proxyAccounts.length > 0) {
+        const proxiedAccount = accounts.find(
+          account => account.accountId === proxyAccounts[0].proxiedAccountId && accountUtils.isProxiedAccount(account),
+        );
+
+        derivedGroups.push({
+          chainId: chainIdStr as ChainId,
+          proxiedAccountId: proxyAccounts[0].proxiedAccountId,
+          walletId: wallet.id,
+          totalDeposit: proxiedAccount && 'deposit' in proxiedAccount ? String(proxiedAccount.deposit) : '0',
+        });
+      }
+    }
+    return derivedGroups;
   },
 );
 
