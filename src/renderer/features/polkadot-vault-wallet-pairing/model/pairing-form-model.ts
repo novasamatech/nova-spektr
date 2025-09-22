@@ -17,12 +17,18 @@ sample({
   target: accountSync.syncAccounts,
 });
 
+const createWalletDone = walletModel.createWallet.doneData.filter({ fn: nonNullable });
 // TODO form should react on actual wallet create flow,
 sample({
-  clock: walletModel.createWallet.doneData.filter({ fn: nonNullable }),
+  clock: createWalletDone,
   filter: ({ wallet }) => wallet.type === WalletType.POLKADOT_VAULT,
   fn: ({ wallet }) => wallet.id,
   target: walletSelect.select,
+});
+
+sample({
+  clock: createWalletDone,
+  target: accountSync.syncAccounts,
 });
 
 export const pairingFormModel = {
