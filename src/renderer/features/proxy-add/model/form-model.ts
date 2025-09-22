@@ -380,6 +380,7 @@ const { $errors } = createTxValidationStore({
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
+    proxyNumber: $activeProxies.map((proxies) => proxies.length),
   },
 });
 

@@ -1,7 +1,9 @@
+import { BN } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { delay, spread } from 'patronum';
 
+import { proxyService } from '@/shared/api/proxy';
 import { type Wallet } from '@/shared/core';
 import { Step, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
@@ -11,7 +13,7 @@ import {
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { accountService, accounts } from '@/domains/network';
+import { accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
@@ -179,7 +181,29 @@ const { $tx, $fee, $pendingFee } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-const validator = createTxValidator();
+//todo move to ... probably should have a file "validators" in the feature
+const validator = createTxValidator({
+  additionalBalanceRules: [
+    ({ route, getBalance, asset, api }) => {
+      const initiator = accountService.findInitiator(route);
+      if (!initiator || !accountUtils.isFlexibleMultisigAccount(initiator)) return;
+
+      const balance = getBalance(initiator.accountId, initiator.chainId, asset.assetId);
+
+      if (nullable(balance)) return;
+
+      const deposit = proxyService.getProxyDeposit(api, '0', 1);
+
+      return {
+        account: initiator,
+        balance: balanceService.tryReserve(balance, new BN(deposit), 'legacy'),
+        asset: asset,
+        action: 'proxy deposit',
+      };
+    },
+  ],
+});
+
 const { $errors } = createTxValidationStore({
   validator,
   params: {
