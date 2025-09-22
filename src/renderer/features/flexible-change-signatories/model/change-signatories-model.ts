@@ -5,7 +5,7 @@ import { createGate } from 'effector-react';
 import { delay, spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
-import { type Wallet } from '@/shared/core';
+import { type FlexibleMultisigOperationNotification, type NoID, NotificationType, type Wallet } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { Step, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -19,6 +19,7 @@ import {
 import { accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { notificationModel } from '@/entities/notification';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -401,6 +402,35 @@ sample({
 sample({
   clock: flow.close,
   target: [formModel.resetForm, signatoryModel.$signatories.reinit],
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    multisigAccount: $flexibleMultisigAccount,
+    initiatorWallet: $initiatorWallet,
+    signatories: signatoryModel.$signatories,
+    threshold: formModel.$threshold,
+  },
+  filter: ({ multisigAccount, initiatorWallet, threshold }) => {
+    return nonNullable(multisigAccount) && nonNullable(initiatorWallet) && nonNullable(threshold);
+  },
+  fn: ({ multisigAccount, initiatorWallet, signatories, threshold }) => {
+    const notification: NoID<FlexibleMultisigOperationNotification> = {
+      read: false,
+      walletId: initiatorWallet!.id,
+      type: NotificationType.FLEXIBLE_MULTISIG_EDITED,
+      dateCreated: Date.now(),
+      multisigAccountId: multisigAccount!.accountId,
+      accountId: multisigAccount!.accountId,
+      accountName: multisigAccount!.name,
+      signatories: signatories.map((signatory) => toAccountId(signatory.address)),
+      threshold: threshold!,
+    };
+
+    return [notification];
+  },
+  target: notificationModel.events.notificationsAdded,
 });
 
 export const changeSignatoriesModel = {
