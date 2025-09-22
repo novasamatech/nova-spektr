@@ -103,7 +103,7 @@ export const PairingModal = memo(({ variant, children }: Props) => {
   }
 
   return (
-    <Modal size="xl" height="lg" isOpen={open} onToggle={toggleModal}>
+    <Modal size="xl" isOpen={open} onToggle={toggleModal}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Content disableScroll>
         <Carousel item={step.toString()} fixedHeight>
