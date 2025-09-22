@@ -1,3 +1,4 @@
+import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
@@ -5,7 +6,9 @@ import { delay, spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
 import { type Wallet } from '@/shared/core';
+import { createStoreFromEffect } from '@/shared/effector';
 import { Step, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import {
   createComplexTxStore,
@@ -58,6 +61,26 @@ const $walletSignatories = combine($flexibleMultisigAccount, accounts.$list, (ac
     return Number(bExists) - Number(aExists);
   });
 });
+
+type ProxyParams = {
+  api: ApiPromise;
+  accountId: AccountId;
+};
+
+const { $: $proxiesInfo } = createStoreFromEffect({
+  fn: ({ api, accountId }: ProxyParams) => {
+    return proxyService.getProxiesForAccount(api, accountId);
+  },
+  params: {
+    api: formModel.$api,
+    accountId: $flexibleMultisigAccount.map((account) => account?.accountId ?? null),
+  },
+  defaultValue: null,
+});
+
+// const $oldProxyDeposit = createStoreFromEffect({fn: ({ api, accountId }: ProxyParams): ProxyAccounts => {
+//   return proxyService.getProxiesForAccount(api, accountId);
+// })});
 
 sample({
   clock: flow.open,
@@ -182,9 +205,9 @@ const { $tx, $fee, $pendingFee } = createComplexTxStore({
 });
 
 //todo move to ... probably should have a file "validators" in the feature
-const validator = createTxValidator({
+const validator = createTxValidator<{ deposit: string; proxyNumber: number }>({
   additionalBalanceRules: [
-    ({ route, getBalance, asset, api }) => {
+    ({ route, getBalance, asset, api, deposit, proxyNumber }) => {
       const initiator = accountService.findInitiator(route);
       if (!initiator || !accountUtils.isFlexibleMultisigAccount(initiator)) return;
 
@@ -192,11 +215,11 @@ const validator = createTxValidator({
 
       if (nullable(balance)) return;
 
-      const deposit = proxyService.getProxyDeposit(api, '0', 1);
+      const proxyDeposit = proxyService.getProxyDeposit(api, deposit, proxyNumber + 1);
 
       return {
         account: initiator,
-        balance: balanceService.tryReserve(balance, new BN(deposit), 'legacy'),
+        balance: balanceService.tryReserve(balance, new BN(proxyDeposit), 'legacy'),
         asset: asset,
         action: 'proxy deposit',
       };
@@ -212,6 +235,8 @@ const { $errors } = createTxValidationStore({
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
+    deposit: $proxiesInfo.map((info) => info?.deposit ?? null),
+    proxyNumber: $proxiesInfo.map((info) => info?.accounts.length ?? 0),
   },
 });
 

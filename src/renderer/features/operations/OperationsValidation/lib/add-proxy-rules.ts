@@ -76,9 +76,9 @@ export const AddProxyRules = {
   },
 };
 
-export const addProxyValidator = createTxValidator<{ proxyNumber: number }>({
+export const addProxyValidator = createTxValidator<{ proxyNumber: number; deposit: string }>({
   additionalBalanceRules: [
-    ({ route, getBalance, asset, api, proxyNumber }) => {
+    ({ route, getBalance, asset, api, proxyNumber, deposit }) => {
       const initiator = accountService.findInitiator(route);
       if (!initiator) return;
 
@@ -88,11 +88,11 @@ export const addProxyValidator = createTxValidator<{ proxyNumber: number }>({
 
       if (nullable(balance)) return;
 
-      const deposit = proxyService.getProxyDeposit(api, '0', proxyNumber + 1);
+      const proxyDeposit = proxyService.getProxyDeposit(api, deposit, proxyNumber + 1);
 
       return {
         account: initiator,
-        balance: balanceService.tryReserve(balance, new BN(deposit), 'legacy'),
+        balance: balanceService.tryReserve(balance, new BN(proxyDeposit), 'legacy'),
         asset: asset,
         action: 'proxy deposit',
       };
