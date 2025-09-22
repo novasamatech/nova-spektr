@@ -1,11 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { spread } from 'patronum';
 
 import { chainsService } from '@/shared/api/network';
 import { proxyService } from '@/shared/api/proxy';
 import { type Address, type Chain, type ProxyType, type Transaction, type Wallet } from '@/shared/core';
+import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ACCOUNTS,
@@ -81,14 +81,11 @@ const isProxyDepositLoadingChanged = createEvent<boolean>();
 
 const $wallet = restore(flowStarted, null);
 
-const $oldProxyDeposit = createStore<string>('0');
-
 const $newProxyDeposit = restore(proxyDepositChanged, ZERO_BALANCE);
 const $isProxyDepositLoading = restore(isProxyDepositLoadingChanged, true);
 
 const $proxyQuery = createStore<string>('');
 const $maxProxies = createStore<number>(0);
-const $activeProxies = createStore<ProxyAccounts['accounts']>([]);
 
 const form: Form<FormParams> = createForm<FormParams>({
   validateOn: ['submit'],
@@ -371,6 +368,25 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 });
 
 // Transaction validation
+type ProxyParams = {
+  api: ApiPromise;
+  accountId: AccountId;
+};
+
+const { $: $proxiesInfo } = createStoreFromEffect({
+  fn: ({ api, accountId }: ProxyParams) => {
+    return proxyService.getProxiesForAccount(api, accountId);
+  },
+  params: {
+    api: $api,
+    accountId: form.fields.initiator.$value.map((account) => account?.accountId ?? null),
+  },
+  defaultValue: null,
+});
+
+const $activeProxies = $proxiesInfo.map((info) => info?.accounts ?? []);
+const $oldProxyDeposit = $proxiesInfo.map((info) => info?.deposit ?? '0');
+
 const $asset = form.fields.chain.$value.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
 const { $errors } = createTxValidationStore({
   validator: addProxyValidator,
@@ -380,6 +396,8 @@ const { $errors } = createTxValidationStore({
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
+    proxyNumber: $activeProxies.map((proxies) => proxies.length),
+    deposit: $oldProxyDeposit,
   },
 });
 
@@ -409,14 +427,6 @@ const $canSubmit = combine(
     return isFormValid && !isFeeLoading && !isProxyDepositLoading;
   },
 );
-
-type ProxyParams = {
-  api: ApiPromise;
-  accountId: AccountId;
-};
-const getAccountProxiesFx = createEffect(({ api, accountId }: ProxyParams): Promise<ProxyAccounts> => {
-  return proxyService.getProxiesForAccount(api, accountId);
-});
 
 const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
   return proxyService.getMaxProxies(api);
@@ -502,40 +512,6 @@ sample({
   },
   fn: (_, { result }) => result,
   target: $maxProxies,
-});
-
-sample({
-  clock: form.fields.chain.change,
-  source: {
-    apis: networkModel.$apis,
-    account: form.fields.initiator.$value,
-    isChainConnected: $isChainConnected,
-  },
-  filter: ({ isChainConnected, account }, chain) => isChainConnected && nonNullable(account) && nonNullable(chain),
-  fn: ({ apis, account }, chain) => ({
-    api: apis[chain!.chainId],
-    accountId: account!.accountId,
-  }),
-  target: getAccountProxiesFx,
-});
-
-sample({
-  clock: getAccountProxiesFx.done,
-  source: {
-    chain: form.fields.chain.$value,
-    apis: networkModel.$apis,
-  },
-  filter: ({ chain, apis }, { params }) => {
-    return nonNullable(chain) && apis[chain.chainId].genesisHash === params.api.genesisHash;
-  },
-  fn: (_, { result }) => ({
-    activeProxies: result.accounts,
-    oldProxyDeposit: result.deposit,
-  }),
-  target: spread({
-    activeProxies: $activeProxies,
-    oldProxyDeposit: $oldProxyDeposit,
-  }),
 });
 
 // Submit

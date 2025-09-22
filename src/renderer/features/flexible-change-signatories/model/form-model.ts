@@ -147,6 +147,7 @@ export const formModel = {
   $pendingMultisigDeposit,
   $invalidAddresses,
   $isMultisigExists,
+  $chain,
 
   $threshold,
   $newMultisigAccountId,

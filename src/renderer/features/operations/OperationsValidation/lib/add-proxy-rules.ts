@@ -2,10 +2,12 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 import { t } from 'i18next';
 
+import { proxyService } from '@/shared/api/proxy';
 import { type Chain } from '@/shared/core';
-import { getNativeAsset, transferableAmountBN, withdrawableAmountBN } from '@/shared/lib/utils';
+import { getNativeAsset, nullable, transferableAmountBN, withdrawableAmountBN } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxValidator } from '@/shared/transactions';
+import { accountService, balanceService } from '@/domains/network';
 import { balanceUtils } from '@/entities/balance';
 import { type AccountStore, type ChainProxyStore, type SignatoryStore } from '../types/types';
 
@@ -74,4 +76,26 @@ export const AddProxyRules = {
   },
 };
 
-export const addProxyValidator = createTxValidator();
+export const addProxyValidator = createTxValidator<{ proxyNumber: number; deposit: string }>({
+  additionalBalanceRules: [
+    ({ route, getBalance, asset, api, proxyNumber, deposit }) => {
+      const initiator = accountService.findInitiator(route);
+      if (!initiator) return;
+
+      const chainId = api.genesisHash.toHex();
+
+      const balance = getBalance(initiator.accountId, chainId, asset.assetId);
+
+      if (nullable(balance)) return;
+
+      const proxyDeposit = proxyService.getProxyDeposit(api, deposit, proxyNumber + 1);
+
+      return {
+        account: initiator,
+        balance: balanceService.tryReserve(balance, new BN(proxyDeposit), 'legacy'),
+        asset: asset,
+        action: 'proxy deposit',
+      };
+    },
+  ],
+});
