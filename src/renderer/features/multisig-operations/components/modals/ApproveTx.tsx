@@ -50,6 +50,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const initiator = useUnit(approveModel.$initiator);
   const fee = useUnit(approveModel.$fee);
   const isFeeLoading = useUnit(approveModel.$isFeeLoading);
+
   const isDepositLoading = useUnit(approveModel.$isDepositLoading);
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
   const signingPayloads = useUnit(approveModel.$signingPayloads);
@@ -89,7 +90,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
       if (group.length > 1) {
         const flexibleMultisigAccount = group.find(accountUtils.isFlexibleMultisigAccount);
         if (flexibleMultisigAccount) {
-          group.push(flexibleMultisigAccount);
+          result.push(flexibleMultisigAccount);
           continue;
         }
       }
@@ -119,7 +120,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
       approveModel.flow.open({ chain, operation });
       if (unsignedAccounts.length === 1) {
         approveModel.selectInitiator(unsignedAccounts[0]);
-        setActiveStep(Step.CONFIRMATION);
       }
       return;
     }

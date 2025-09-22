@@ -1,7 +1,8 @@
 import { type SubmittableExtrinsic } from '@polkadot/api/types/submittable';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { type Store, type UnitValue, createEffect, createStore, restore, sample } from 'effector';
+import { type Store, type UnitValue, createEffect, createStore, sample } from 'effector';
 
+import { takeLast } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { transactionService } from '@/domains/network';
 
@@ -12,26 +13,18 @@ type Params = {
 
 type FeeCalculationRequest = {
   extrinsic: SubmittableExtrinsic<'promise'>;
-  requestId: string;
-};
-
-type FeeCalculationResult = {
-  fee: BN;
-  requestId: string;
 };
 
 export const createFeeCalculator = ({ active = createStore(true), extrinsic }: Params) => {
   const $fee = createStore(BN_ZERO);
-  const $currentRequestId = createStore<string | null>(null);
 
-  const fetchFeeFx = createEffect(
-    async ({ extrinsic, requestId }: FeeCalculationRequest): Promise<FeeCalculationResult> => {
+  const fetchFeeFx = takeLast({
+    fn: async ({ extrinsic }: FeeCalculationRequest): Promise<BN> => {
       const fee = await transactionService.getExtrinsicFee(extrinsic).then((x) => new BN(x));
-      return { fee, requestId };
+      return fee;
     },
-  );
-
-  const $pending = restore(fetchFeeFx.pending.updates, true);
+    key: () => 'feeCalculation',
+  });
 
   const logErrorFx = createEffect((res: UnitValue<typeof fetchFeeFx.fail>) => {
     console.error('fee calculation faied', res);
@@ -44,28 +37,14 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
     target: $fee,
   });
 
-  sample({
-    clock: extrinsic,
-    filter: nullable,
-    fn: () => null,
-    target: $currentRequestId,
-  });
-
   const feeRequested = sample({
     clock: [extrinsic.updates, active.updates],
     source: { active, extrinsic },
   }).filterMap(({ active, extrinsic }) => {
     if (!active) return undefined;
     if (extrinsic) {
-      const requestId = `${Date.now()}-${Math.random()}`;
-      return { extrinsic, requestId };
+      return { extrinsic };
     }
-  });
-
-  sample({
-    clock: feeRequested,
-    fn: ({ requestId }) => requestId,
-    target: $currentRequestId,
   });
 
   sample({
@@ -75,11 +54,6 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
 
   sample({
     clock: fetchFeeFx.doneData,
-    source: $currentRequestId,
-    filter: (currentRequestId, { requestId }) => {
-      return currentRequestId === requestId;
-    },
-    fn: (_, { fee }) => fee,
     target: $fee,
   });
 
@@ -98,6 +72,6 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
 
   return {
     $: $fee,
-    $pending,
+    $pending: fetchFeeFx.pending,
   };
 };
