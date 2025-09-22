@@ -53,23 +53,21 @@ export const InitiatorSelect = memo(() => {
     if (nullable(chain) || nullable(asset)) return options;
 
     // Filter wallets based on search query
-    const filteredWallets = searchQuery
-      ? performSearch({
-          query: searchQuery.trim(),
-          records: wallets,
-          getMeta: (wallet) => ({
-            name: wallet.name,
-            allAddresses: accountService
-              .filterAccountsByWallet(allAccounts, wallet.id)
-              .map((account) => toAddress(account.accountId, { prefix: chain.addressPrefix }))
-              .join(' '),
-          }),
-          weights: {
-            name: 1,
-            allAddresses: 0.8,
-          },
-        })
-      : wallets;
+    const filteredWallets = performSearch({
+      query: searchQuery.trim(),
+      records: wallets,
+      getMeta: (wallet) => ({
+        name: wallet.name,
+        allAddresses: accountService
+          .filterAccountsByWallet(allAccounts, wallet.id)
+          .map((account) => toAddress(account.accountId, { prefix: chain.addressPrefix }))
+          .join(' '),
+      }),
+      weights: {
+        name: 1,
+        allAddresses: 0.8,
+      },
+    });
 
     const walletsByType = filteredWallets.reduce(
       (groups, wallet) => {
