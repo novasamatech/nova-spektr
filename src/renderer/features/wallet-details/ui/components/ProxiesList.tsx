@@ -44,7 +44,7 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
     },
   });
 
-  const handleDeleteProxy = (proxyAccount: ProxyAccount) => {
+  const handleDeleteProxy = (proxyAccount: Omit<ProxyAccount, 'id' | 'delay'>) => {
     const proxiedAccount = walletAccounts.find(account => accountUtils.isProxiedAccount(account));
 
     if (proxiedAccount) {
