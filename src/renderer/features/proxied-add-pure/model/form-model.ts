@@ -1,6 +1,7 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 
+import { chainsService } from '@/shared/api/network';
 import { type Chain, type ProxiedAccount, type Transaction, TransactionType, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -167,10 +168,10 @@ const $availableChains = combine(
   },
   ({ chains, walletAccounts }) => {
     const proxyChains = Object.values(chains).filter(proxiesUtils.isPureProxy);
-
-    return proxyChains.filter(chain => {
+    const filteredChains = proxyChains.filter(chain => {
       return walletAccounts.some(account => accountService.isAccountAvailableOnChain(account, chain));
     });
+    return chainsService.sortChains(filteredChains);
   },
 );
 

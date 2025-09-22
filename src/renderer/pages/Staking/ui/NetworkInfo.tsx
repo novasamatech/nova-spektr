@@ -7,9 +7,8 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { getRelaychainAsset, nullable } from '@/shared/lib/utils';
 import { FootnoteText, IconButton, Plate } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
-import { Select, Skeleton } from '@/shared/ui-kit';
-import { ChainTitle } from '@/entities/chain';
+import { AssetBalance, ChainSelect } from '@/shared/ui-entities';
+import { Skeleton } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
 
@@ -61,19 +60,12 @@ export const NetworkInfo = ({
       <div className="grid grid-cols-[178px_repeat(2,122px)_28px] items-start gap-x-6">
         <div className="flex flex-col gap-y-2">
           <FootnoteText className="text-text-secondary">{t('staking.overview.networkLabel')}</FootnoteText>
-          <Select
+          <ChainSelect
             placeholder={t('staking.overview.networkPlaceholder')}
-            value={chain?.chainId ?? null}
-            onChange={onNetworkChange}
-          >
-            {Object.values(chains)
-              .filter(({ assets }) => getRelaychainAsset(assets))
-              .map((chain) => (
-                <Select.Item key={chain.chainId} value={chain.chainId}>
-                  <ChainTitle className="overflow-hidden" fontClass="text-text-primary truncate" chain={chain} />
-                </Select.Item>
-              ))}
-          </Select>
+            value={chain}
+            options={Object.values(chains).filter(({ assets }) => getRelaychainAsset(assets))}
+            onChange={(selectedChain) => onNetworkChange(selectedChain.chainId)}
+          />
         </div>
         {totalInfo.map(({ isLoading, title, amount, asset }) =>
           isLoading || nullable(asset) ? (

@@ -6,7 +6,7 @@ import { CryptoType, type HexString, SigningType, WalletType } from '@/shared/co
 import { waitFor } from '@/shared/effector';
 import { nonNullable, nullable, toAccountId, toShortAddress } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
-import { type AnyAccountDraft } from '@/domains/network';
+import { type AnyAccountDraft, accountSync } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationModel } from '@/features/navigation';
@@ -159,6 +159,11 @@ sample({
 sample({
   clock: walletCreated,
   target: walletSelect.select,
+});
+
+sample({
+  clock: walletCreated,
+  target: accountSync.syncAccounts,
 });
 
 // Steps

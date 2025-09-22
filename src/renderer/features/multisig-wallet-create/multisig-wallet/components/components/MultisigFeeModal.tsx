@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, memo, useEffect, useMemo, useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
@@ -33,7 +34,7 @@ export const MultisigFeeModal = memo(({ children }: PropsWithChildren) => {
   };
 
   return (
-    <Modal size="md" height="full" isOpen={isOpen} onToggle={setToggle}>
+    <Modal size="md" height="full" testId={TEST_IDS.MULTISIG.FEE_MODAL} isOpen={isOpen} onToggle={setToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('createMultisigAccount.networkSelect.feeTitle')}</Modal.Title>
       <Modal.Content>
@@ -56,7 +57,7 @@ export const MultisigFeeModal = memo(({ children }: PropsWithChildren) => {
         </Box>
       </Modal.Content>
       <Modal.Footer>
-        <Button disabled={!selectedChainId} onClick={handleApply}>
+        <Button disabled={!selectedChainId} testId={TEST_IDS.COMMON.APPLY_BUTTON} onClick={handleApply}>
           {t('general.button.applyButton')}
         </Button>
       </Modal.Footer>
