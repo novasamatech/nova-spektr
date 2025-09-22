@@ -20,7 +20,7 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
   const fx = createEffect<{ args: Args; id: number }, Value>(({ args }) => params.fn(args));
 
   const incrementFxId = createEvent();
-  const $lastFxId = createStore(0).on(incrementFxId, id => id + 1);
+  const $lastFxId = createStore(0).on(incrementFxId, id => (id + 1) % Number.MAX_SAFE_INTEGER);
 
   sample({
     clock: $source,
