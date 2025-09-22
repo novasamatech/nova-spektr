@@ -78,10 +78,6 @@ const { $: $proxiesInfo } = createStoreFromEffect({
   defaultValue: null,
 });
 
-// const $oldProxyDeposit = createStoreFromEffect({fn: ({ api, accountId }: ProxyParams): ProxyAccounts => {
-//   return proxyService.getProxiesForAccount(api, accountId);
-// })});
-
 sample({
   clock: flow.open,
   source: $chain,
