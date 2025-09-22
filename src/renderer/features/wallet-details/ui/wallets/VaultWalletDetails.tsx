@@ -29,6 +29,7 @@ import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { WalletFiatBalance } from '../components';
+import { ProxiesCount } from '../components/ProxiesCount';
 import { ProxiesList } from '../components/ProxiesList';
 import { ShardsList } from '../components/ShardsList';
 import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
@@ -238,7 +239,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
                 <Tabs.Trigger value="proxies">
                   <span className="flex items-center gap-1">
                     {t('walletDetails.common.proxiesTabTitle')}
-                    <span className="text-text-tertiary">{proxiesCount}</span>
+                    <ProxiesCount count={proxiesCount} />
                   </span>
                 </Tabs.Trigger>
               </Tabs.List>

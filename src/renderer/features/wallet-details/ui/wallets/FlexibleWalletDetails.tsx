@@ -23,6 +23,7 @@ import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details'
 import { walletDetailsModel } from '../../model/wallet-details-model';
 import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { WalletFiatBalance } from '../components';
+import { ProxiesCount } from '../components/ProxiesCount';
 import { ProxiesList } from '../components/ProxiesList';
 import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
 
@@ -185,7 +186,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
       title: (
         <span className="flex items-center gap-1">
           {t('walletDetails.common.proxiesTabTitleShort')}
-          <span className="text-text-tertiary">{proxiesCount}</span>
+          <ProxiesCount count={proxiesCount} />
         </span>
       ),
       panel: <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />,
