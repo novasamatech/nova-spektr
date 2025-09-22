@@ -1,7 +1,9 @@
-import { type Store, combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { type Store, combine, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { nonNullableMap, nullableMap } from '@/shared/lib/utils';
+
+import { takeLast } from './takeLast';
 
 type Stores<Args> = {
   [K in keyof Args]: Store<Args[K] | null>;
@@ -17,21 +19,15 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
   const $source = combine(params.params, x => x);
   const $ = createStore<Value>(params.defaultValue);
 
-  const fx = createEffect<{ args: Args; id: number }, Value>(({ args }) => params.fn(args));
-
-  const incrementFxId = createEvent();
-  const $lastFxId = createStore(0).on(incrementFxId, id => (id + 1) % Number.MAX_SAFE_INTEGER);
+  const fx = takeLast({
+    key: () => 'createStoreFromEffect',
+    fn: async (args: Args): Promise<Awaited<Value>> => await params.fn(args),
+  });
 
   sample({
     clock: $source,
     filter: nonNullableMap,
-    target: incrementFxId,
-  });
-
-  sample({
-    clock: incrementFxId,
-    source: { source: $source, id: $lastFxId },
-    fn: ({ source, id }) => ({ args: source as Args, id }),
+    fn: source => source as Args,
     target: fx,
   });
 
@@ -43,10 +39,11 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
   });
 
   sample({
-    clock: fx.done,
-    source: { source: $source, lastFxId: $lastFxId },
-    filter: ({ source, lastFxId }, data) => nonNullableMap(source) && data.params.id === lastFxId,
-    fn: (_, data) => data.result,
+    clock: fx.doneData,
+    source: $source,
+    // source should be still valid
+    filter: nonNullableMap,
+    fn: (_, res: Value) => res,
     target: $,
   });
 
