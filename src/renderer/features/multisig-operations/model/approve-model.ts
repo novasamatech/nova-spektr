@@ -15,6 +15,7 @@ import {
 import {
   type AnyAccount,
   type MultisigOperation,
+  accountService,
   accounts,
   multisigOperationService,
   transactionService,
@@ -72,7 +73,7 @@ const $unsignedAccounts = combine(
       multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
     );
 
-    const signatoriesOnChain = signatories.filter(s => (s.type === 'chain' ? s.chainId === chain.chainId : true));
+    const signatoriesOnChain = signatories.filter(s => accountService.isAccountAvailableOnChain(s, chain));
 
     const filteredSignatories = signatoriesOnChain.filter(
       a => !operation.events.some(e => e.accountId === a.accountId),
