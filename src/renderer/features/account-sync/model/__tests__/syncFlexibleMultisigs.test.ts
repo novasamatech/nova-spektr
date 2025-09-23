@@ -183,4 +183,60 @@ describe('syncFlexibleMultisigs', () => {
       deleteWallets: [],
     });
   });
+
+  test('should delete wallet of non-existent account', () => {
+    const nonExistentFlexMultisigAccount = {
+      ...flexMultisigAccount1,
+      accountId: '0xnonexistentaccountid123456789abcdef0000000000000000000000000000',
+      walletId: 999,
+      id: '999 0xnonexistentaccountid123456789abcdef0000000000000000000000000000 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
+    };
+
+    const walletToDelete = {
+      name: 'Non-existent Wallet',
+      type: 'wallet_fxms',
+      id: 999,
+      accounts: [nonExistentFlexMultisigAccount],
+    };
+
+    const result = syncFlexibleMultisigs({
+      allWallets: [...allWallets, walletToDelete],
+      allAccounts: [...allAccounts, nonExistentFlexMultisigAccount],
+      syncResult,
+      identities: {},
+    } as unknown as SyncFlexibleMultisigParams);
+
+    expect(result.deleteWallets).toEqual([999]);
+    expect(result.createWallets).toEqual([]);
+  });
+
+  test('should not rename wallet if just signatories have changed for flexible multisig', () => {
+    const modifiedSyncResult = {
+      ...syncResult,
+      accounts: [
+        ...syncResult.accounts.filter(
+          (acc) => acc.type !== 'multisig' || acc.accountId !== flexMultisigAccount1.multisigAccountId,
+        ),
+        {
+          type: 'multisig',
+          accountId: flexMultisigAccount1.multisigAccountId,
+          signatories: [
+            '0x589f4a92b7e88c0ac1172e429f12bde262d34fac77b0931eb94963996a207724',
+            '0xdifferentsignatory123456789abcdef0000000000000000000000000000000',
+          ],
+          threshold: 2,
+        },
+      ],
+    };
+
+    const result = syncFlexibleMultisigs({
+      allWallets,
+      allAccounts,
+      syncResult: modifiedSyncResult,
+      identities: {},
+    } as unknown as SyncFlexibleMultisigParams);
+
+    expect(result.createWallets).toEqual([]);
+    expect(result.deleteWallets).toEqual([]);
+  });
 });
