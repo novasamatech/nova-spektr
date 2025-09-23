@@ -27,7 +27,9 @@ import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
 import { vaultDetailsModel } from '../../model/vault-details-model';
 import { walletDetailsModel } from '../../model/wallet-details-model';
+import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { WalletFiatBalance } from '../components';
+import { ProxiesCount } from '../components/ProxiesCount';
 import { ProxiesList } from '../components/ProxiesList';
 import { ShardsList } from '../components/ShardsList';
 import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
@@ -41,13 +43,14 @@ type Props = {
 
 export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(walletDetailsModel.flow, { wallet });
+  useGate(walletProxiesModel.flow, { wallet });
   const { t } = useI18n();
 
   const allChains = useUnit(networkModel.$chains);
-  const hasProxies = useUnit(walletDetailsModel.$hasProxies);
+  const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
   const keysToAdd = useUnit(vaultDetailsModel.$keysToAdd);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
-  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
+  const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
 
   const [isModalOpen, closeModal] = useModalClose(true, onClose);
 
@@ -236,7 +239,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
                 <Tabs.Trigger value="proxies">
                   <span className="flex items-center gap-1">
                     {t('walletDetails.common.proxiesTabTitle')}
-                    <span className="text-text-tertiary">{proxiesCount}</span>
+                    <ProxiesCount count={proxiesCount} />
                   </span>
                 </Tabs.Trigger>
               </Tabs.List>

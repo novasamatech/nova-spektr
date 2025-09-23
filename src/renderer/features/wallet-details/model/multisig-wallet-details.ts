@@ -1,13 +1,14 @@
-import { combine } from 'effector';
+import { combine, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type ChainId, type Contact, type ProxyAccount, type Wallet } from '@/shared/core';
-import { dictionary, keys, nullable } from '@/shared/lib/utils';
+import { type Contact, type Wallet } from '@/shared/core';
+import { dictionary, keys, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { contactModel } from '@/entities/contact';
 import { networkModel } from '@/entities/network';
-import { proxyModel, proxyUtils } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+
+import { walletProxiesModel } from './wallet-proxies-model';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
@@ -62,27 +63,32 @@ const $signatories = combine(
   },
 );
 
-const $chainsProxies = combine(
-  {
+sample({
+  clock: $wallet,
+  filter: nonNullable,
+  target: walletProxiesModel.resetWalletProxies,
+});
+
+sample({
+  source: {
     wallet: $wallet,
     chains: networkModel.$chains,
-    proxies: proxyModel.$proxies,
+    apis: networkModel.$apis,
   },
-  ({ wallet, chains, proxies }): Record<ChainId, ProxyAccount[]> => {
-    if (nullable(wallet)) return {};
+  filter: ({ wallet }) => nonNullable(wallet),
+  fn: ({ wallet, chains, apis }) => ({ wallet: wallet!, chains, apis }),
+  target: walletProxiesModel.fetchWalletProxiesFx,
+});
 
-    return proxyUtils.getProxyAccountsOnChain(wallet.accounts, keys(chains), proxies);
-  },
-);
-
-const $hasProxies = combine($chainsProxies, chainsProxies => {
-  return Object.values(chainsProxies).some(accounts => accounts.length > 0);
+sample({
+  clock: walletProxiesModel.fetchWalletProxiesFx.doneData,
+  target: walletProxiesModel.$walletProxies,
 });
 
 export const multisigWalletDetailsModel = {
   flow,
   $signatories,
 
-  $chainsProxies,
-  $hasProxies,
+  $chainsProxies: walletProxiesModel.$walletProxies,
+  $hasProxies: walletProxiesModel.$hasWalletProxies,
 };
