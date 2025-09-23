@@ -1,14 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type SignerOptions } from '@polkadot/api/types/submittable';
-import { GenericSignerPayload } from '@polkadot/types';
+import { Compact, Enum, GenericCall, GenericMultiAddress, GenericSignerPayload } from '@polkadot/types';
 import { type ExtrinsicEra, type Weight } from '@polkadot/types/interfaces';
+import { type CallBase, type Codec } from '@polkadot/types/types';
 import { hexToU8a, u8aToHex } from '@polkadot/util';
 import { blake2AsU8a, signatureVerify } from '@polkadot/util-crypto';
 import { merkleizeMetadata } from '@polkadot-api/merkleize-metadata';
 
 import {
   type Address,
+  type CallData,
+  type Chain,
   type HexString,
   type MultisigAccount,
   type MultisigTxWrapper,
@@ -19,7 +22,9 @@ import {
   type Wallet,
   WrapperKind,
 } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
 import { type TxMetadata, createTxMetadata, dictionary, nullable, upgradeNonce } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 // TODO transaction service should be inside network domain
 // eslint-disable-next-line boundaries/element-types
@@ -48,6 +53,9 @@ export const transactionService = {
   getExtrinsicWeight,
   getTxWeight,
   verifySignature,
+
+  createCallFromCallData,
+  formatCall,
 
   logPayload,
 };
@@ -361,6 +369,84 @@ function verifySignature(payload: Uint8Array, signature: HexString, accountId: A
   } catch {
     return false;
   }
+}
+
+function formatArg(arg: Codec, chain: Chain): unknown {
+  if (Array.isArray(arg)) {
+    return arg.map((a) => formatArg(a, chain));
+  }
+
+  if (arg instanceof GenericCall) {
+    const args: Record<string, unknown> = {};
+
+    for (const [key, value] of arg.argsEntries) {
+      args[key] = formatArg(value, chain);
+    }
+
+    return {
+      section: arg.section,
+      method: arg.method,
+      args,
+    };
+  }
+
+  if (arg instanceof GenericMultiAddress) {
+    if (arg.type === 'Id' || arg.type === 'Address20' || arg.type === 'Address32') {
+      return toAddress(arg.value.toString(), { prefix: chain.addressPrefix });
+    } else {
+      return arg.toHuman();
+    }
+  }
+
+  const isAccount = pjsSchema.accountId.safeParse(arg);
+  if (isAccount.success) {
+    return toAddress(isAccount.data, { prefix: chain.addressPrefix });
+  }
+
+  if (arg instanceof Compact) {
+    return formatArg(arg.unwrap(), chain);
+  }
+
+  if (arg instanceof Enum) {
+    return {
+      [arg.type]: formatArg(arg.value, chain),
+    };
+  }
+
+  if (arg instanceof Map) {
+    const result: Record<string, unknown> = {};
+
+    for (const [key, value] of arg) {
+      result[key] = formatArg(value, chain);
+    }
+
+    return result;
+  }
+
+  return arg.toHuman();
+}
+
+function createCallFromCallData(callData: CallData, api: ApiPromise): CallBase<any> | null {
+  try {
+    return api.createType('Call', callData);
+  } catch {
+    return null;
+  }
+}
+
+function formatCall(call: CallBase<any>, chain: Chain): object {
+  const args: Record<string, unknown> = {};
+
+  // @ts-expect-error argsEntries are not defined in extrinsic type
+  for (const [key, value] of call.argsEntries as [string, Codec][]) {
+    args[key] = formatArg(value, chain);
+  }
+
+  return {
+    section: call.section,
+    method: call.method,
+    args,
+  };
 }
 
 function logPayload(info: Awaited<ReturnType<typeof createPayloadWithMetadata | typeof createPayloadWithProof>>[]) {
