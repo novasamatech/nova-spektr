@@ -40,6 +40,7 @@ const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis 
     tx: transaction.coreTx,
     coreTx: transaction.coreTx,
     amount: transaction.coreTx.args.value,
+    rawAmount: transaction.coreTx.args.value,
     destination: transaction.coreTx.args.dest,
 
     fee,
