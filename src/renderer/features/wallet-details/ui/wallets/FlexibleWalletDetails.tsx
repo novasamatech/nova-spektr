@@ -52,8 +52,6 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   const walletAccounts = accountService.filterAccountsByWallet(accountList, wallet.id);
 
-  console.log({ walletAccounts, wallet });
-
   const multisigAccount = walletAccounts.find(accountUtils.isFlexibleMultisigAccount);
 
   assert(multisigAccount, 'Multisig account not found.');
