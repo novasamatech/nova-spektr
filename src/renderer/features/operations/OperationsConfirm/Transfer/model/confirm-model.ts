@@ -1,27 +1,21 @@
-import { type BN } from '@polkadot/util';
-import { type Store, createEffect, createEvent, createStore, sample } from 'effector';
+import { BN } from '@polkadot/util';
+import { combine, createEvent, sample } from 'effector';
 
-import { type Address, type Asset, type BalanceMap, type Chain } from '@/shared/core';
-import { getNativeAsset, nonNullable, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
-import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
-import { balanceModel, balanceUtils } from '@/entities/balance';
+import { type Address, type Asset, type Chain } from '@/shared/core';
+import { getNativeAsset } from '@/shared/lib/utils';
+import { type TxConfirmInfo, createTransactionConfirmStore, createTxValidationStore } from '@/shared/transactions';
+import { accountService } from '@/domains/network';
+import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { accountUtils, walletModel } from '@/entities/wallet';
+import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
-import {
-  type NetworkStore,
-  type TransferAccountStore,
-  type TransferAmountFeeStore,
-  TransferRules,
-  type TransferSignatoryFeeStore,
-  type ValidatorBalanceMap,
-  validationUtils,
-} from '@/features/operations/OperationsValidation';
+import { transferValidator } from '@/features/operations/OperationsValidation';
 
 export type TransferConfirmStore = TxConfirmInfo & {
   destinationChain: Chain;
   asset: Asset;
   amount: string;
+  rawAmount: string; // Original amount from form for validation
   destination: Address;
 
   fee: BN;
@@ -39,225 +33,60 @@ const { $confirmMap, $confirms, $isMultisigExists, init, startSigning } =
 
 const confirmed = createEvent();
 
-const $error = createStore<Error | null>(null);
+const $currentConfirm = $confirmMap.map((store) => store?.[0]?.meta ?? null);
 
-type ValidateParams = {
-  store: TransferConfirmStore;
-  balances: BalanceMap;
-};
-
-const validateFx = createEffect(({ store, balances }: ValidateParams) => {
-  const proxyAccount = store.route.find(accountUtils.isProxiedAccount);
-  const hasMultisigAccount = store.route.find(accountUtils.isAnyMultisigAccount);
-
-  const rules = [
-    {
-      value: store.signatory,
-      form: {},
-      ...TransferRules.account.noProxyFee({} as Store<TransferAccountStore>),
-      source: {
-        fee: store.fee,
-        isProxy: nonNullable(proxyAccount),
-        proxyBalance: {
-          native:
-            proxyAccount &&
-            transferableAmount(
-              balanceUtils.getBalance(
-                balances,
-                proxyAccount.accountId,
-                store.chain.chainId,
-                getNativeAsset(store.chain.assets).assetId,
-              ),
-            ),
-        },
-      },
-    },
-    {
-      value: undefined,
-      form: {},
-      ...TransferRules.signatory.notEnoughTokens({} as Store<TransferSignatoryFeeStore>),
-      source: {
-        fee: store.fee,
-        isMultisig: nonNullable(hasMultisigAccount),
-        multisigDeposit: store.multisigDeposit,
-        balance:
-          store.signatory &&
-          withdrawableAmount(
-            balanceUtils.getBalance(
-              balances,
-              store.signatory.accountId,
-              store.chain.chainId,
-              getNativeAsset(store.chain.assets).assetId,
-            ),
-          ),
-      } as TransferSignatoryFeeStore,
-    },
-    {
-      value: store.amount,
-      form: {},
-      ...TransferRules.amount.notEnoughBalance(
-        {} as Store<{ network: NetworkStore | null; balance: ValidatorBalanceMap }>,
-        {
-          withFormatAmount: false,
-        },
-      ),
-      source: {
-        network: { chain: store.chain, asset: store.asset },
-        balance: {
-          native: transferableAmount(
-            balanceUtils.getBalance(
-              balances,
-              store.initiator.accountId,
-              store.chain.chainId,
-              getNativeAsset(store.chain.assets).assetId,
-            ),
-          ),
-          balance: transferableAmount(
-            balanceUtils.getBalance(balances, store.initiator.accountId, store.chain.chainId, store.asset.assetId),
-          ),
-        },
-      } as { network: NetworkStore | null; balance: ValidatorBalanceMap },
-    },
-    {
-      value: store.amount,
-      form: {},
-      ...TransferRules.amount.insufficientBalanceForFee({} as Store<TransferAmountFeeStore>, {
-        withFormatAmount: false,
-      }),
-      source: {
-        network: { chain: store.chain, asset: store.asset },
-        isMultisig: nonNullable(hasMultisigAccount),
-        multisigDeposit: store.multisigDeposit,
-        fee: store.fee,
-        xcmFee: store.xcmFee,
-        deliveryFee: store.deliveryFee,
-        isProxy: nonNullable(proxyAccount),
-        isNative: getNativeAsset(store.chain.assets).assetId === store.asset.assetId,
-        isXcm: store.destinationChain.chainId !== store.chain.chainId,
-        balance: {
-          native: transferableAmount(
-            balanceUtils.getBalance(
-              balances,
-              store.initiator.accountId,
-              store.chain.chainId,
-              getNativeAsset(store.chain.assets).assetId,
-            ),
-          ),
-          balance: transferableAmount(
-            balanceUtils.getBalance(balances, store.initiator.accountId, store.chain.chainId, store.asset.assetId),
-          ),
-        },
-      } as TransferAmountFeeStore,
-    },
-    {
-      value: store.amount,
-      form: {},
-      ...TransferRules.amount.insufficientBalanceForDeliveryFee({} as Store<TransferAmountFeeStore>, {
-        withFormatAmount: false,
-      }),
-      source: {
-        network: { chain: store.chain, asset: store.asset },
-        isMultisig: nonNullable(hasMultisigAccount),
-        multisigDeposit: store.multisigDeposit,
-        fee: store.fee,
-        xcmFee: store.xcmFee,
-        deliveryFee: store.deliveryFee,
-        isProxy: !nonNullable(proxyAccount),
-        isNative: getNativeAsset(store.chain.assets).assetId === store.asset.assetId,
-        isXcm: store.destinationChain.chainId !== store.chain.chainId,
-        balance: {
-          native: transferableAmount(
-            balanceUtils.getBalance(
-              balances,
-              store.initiator.accountId,
-              store.chain.chainId,
-              getNativeAsset(store.chain.assets).assetId,
-            ),
-          ),
-          balance: transferableAmount(
-            balanceUtils.getBalance(balances, store.initiator.accountId, store.chain.chainId, store.asset.assetId),
-          ),
-        },
-      } as TransferAmountFeeStore,
-    },
-    {
-      value: store.amount,
-      form: {},
-      ...TransferRules.amount.insufficientBalanceForXcmFee({} as Store<TransferAmountFeeStore>, {
-        withFormatAmount: false,
-      }),
-      source: {
-        network: { chain: store.chain, asset: store.asset },
-        isMultisig: nonNullable(hasMultisigAccount),
-        multisigDeposit: store.multisigDeposit,
-        fee: store.fee,
-        xcmFee: store.xcmFee,
-        deliveryFee: store.deliveryFee,
-        isProxy: nonNullable(proxyAccount),
-        isNative: getNativeAsset(store.chain.assets).assetId === store.asset.assetId,
-        isXcm: store.destinationChain.chainId !== store.chain.chainId,
-        balance: {
-          native: transferableAmount(
-            balanceUtils.getBalance(
-              balances,
-              store.initiator.accountId,
-              store.chain.chainId,
-              getNativeAsset(store.chain.assets).assetId,
-            ),
-          ),
-          balance: transferableAmount(
-            balanceUtils.getBalance(balances, store.initiator.accountId, store.chain.chainId, store.asset.assetId),
-          ),
-        },
-      } as TransferAmountFeeStore,
-    },
-  ];
-
-  const result = validationUtils.applyValidationRules(rules);
-
-  if (!result) return;
-
-  const error = new Error(result.errorText);
-  console.error(error);
-
-  throw error;
+const $api = combine({ apis: networkModel.$apis, confirm: $currentConfirm }, ({ apis, confirm }) => {
+  if (!confirm?.chain) return null;
+  return apis[confirm.chain.chainId] ?? null;
 });
 
-sample({
-  clock: startSigning,
-  source: {
-    store: $confirmMap,
+const $sourceChain = $currentConfirm.map((confirm) => confirm?.chain ?? null);
+const $sourceAsset = $currentConfirm.map((confirm) => confirm?.asset ?? null);
+const $destinationChain = $currentConfirm.map((confirm) => confirm?.destinationChain ?? null);
+const $asset = $currentConfirm.map((confirm) => (confirm?.chain ? getNativeAsset(confirm.chain.assets) : null));
+const $amount = $currentConfirm.map((confirm) => confirm?.rawAmount ?? '0');
+const $route = $currentConfirm.map((confirm) => confirm?.route ?? []);
+const $transaction = $currentConfirm.map((confirm) => confirm?.tx ?? null);
+const $xcmFee = $currentConfirm.map((confirm) => confirm?.xcmFee ?? new BN(0));
+const $deliveryFee = $currentConfirm.map((confirm) => confirm?.deliveryFee ?? new BN(0));
+
+const { $errors: $validationErrors } = createTxValidationStore({
+  validator: transferValidator,
+  params: {
+    api: $api,
+    sourceChain: $sourceChain,
+    sourceAsset: $sourceAsset,
+    destinationChain: $destinationChain,
+    asset: $asset,
+    amount: $amount,
     balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $transaction,
+    xcmFee: $xcmFee,
+    deliveryFee: $deliveryFee,
   },
-  filter: ({ store }) => nonNullable(store),
-  fn: ({ store, balances }) => ({
-    store: store[0].meta,
-    balances,
-  }),
-  target: validateFx,
 });
 
-sample({
-  clock: validateFx.done,
-  target: confirmed,
-});
-
-sample({
-  clock: validateFx.failData,
-  target: $error,
-});
+const $canSubmit = combine(
+  {
+    errors: $validationErrors,
+  },
+  ({ errors }) => {
+    return !accountService.hasTransactionValidationErrors(errors);
+  },
+);
 
 sample({
   clock: startSigning,
-  fn: () => null,
-  target: $error,
+  target: confirmed,
 });
 
 export const confirmModel = {
   $confirmMap,
   $confirms,
   $isMultisigExists,
-  $error,
+  $validationErrors,
+  $canSubmit,
 
   init,
   startSigning,
