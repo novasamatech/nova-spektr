@@ -26,8 +26,12 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
     key: () => 'feeCalculation',
   });
 
-  const logErrorFx = createEffect((res: UnitValue<typeof fetchFeeFx.fail>) => {
-    console.error('fee calculation faied', res);
+  const logErrorFx = createEffect((err: UnitValue<typeof fetchFeeFx.failData>) => {
+    if (err && 'name' in err && err.name === 'AbortError') {
+      return;
+    }
+
+    console.error('fee calculation faied', err);
   });
 
   sample({
@@ -66,7 +70,7 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
   });
 
   sample({
-    clock: fetchFeeFx.fail,
+    clock: fetchFeeFx.failData,
     target: logErrorFx,
   });
 

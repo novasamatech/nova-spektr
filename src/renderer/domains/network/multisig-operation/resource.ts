@@ -226,9 +226,9 @@ const fetchAllOnchainOperations = async (
   chains: Record<ChainId, Chain>,
 ) => {
   const requests = Object.values(apis).map(api => fetchOnchainOperations(api, accountId, chains));
-  const operations = await Promise.all(requests);
+  const operations = await Promise.allSettled(requests);
 
-  return operations.flat();
+  return operations.map(result => (result.status === 'fulfilled' ? result.value : [])).flat();
 };
 
 const multisigEvent = z.union([

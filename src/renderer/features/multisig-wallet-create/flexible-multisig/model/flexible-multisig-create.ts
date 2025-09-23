@@ -48,6 +48,8 @@ const $signatory = restore(signatorySelected, null).reset(flow.close);
 const $initiator = createStore<AnyAccount | null>(null).reset(flow.close);
 const $initiatorWallet = createStore<Wallet | null>(null).reset(flow.close);
 
+const $route = $signatory.map(s => (s ? [s] : []));
+
 sample({
   clock: signatoryModel.$ownedSignatoriesWallets,
   source: signatoryModel.$signatories,
@@ -211,25 +213,14 @@ const $fee = combine($proxyFee, $multisigFee, (proxyFee, multisigFee) => multisi
 
 // Validation
 const validator = createTxValidator(); //should validate all fee (proxy  deposit + existential)
-const { $errors: $firstErrors } = createTxValidationStore({
+const { $errors } = createTxValidationStore({
   validator,
   params: {
     api: $api,
     asset: $asset,
     balances: balanceModel.$balanceMap,
-    route: createStore([]),
-    transaction: $tx,
-  },
-});
-
-const { $errors: $secondErrors } = createTxValidationStore({
-  validator,
-  params: {
-    api: $api,
-    asset: $asset,
-    balances: balanceModel.$balanceMap,
-    route: createStore([]),
-    transaction: $fakeFinalTx,
+    route: $route,
+    transaction: combine($tx, $fakeFinalTx, (first, second) => [first, second]),
   },
 });
 
@@ -254,9 +245,10 @@ const formSubmitted = sample({
     coreTx: $tx,
     initiator: $initiator,
     signatory: $signatory,
+    route: $route,
     chain: formModel.$chain,
   },
-}).filterMap(({ chain, tx, coreTx, initiator, signatory }) => {
+}).filterMap(({ chain, tx, coreTx, initiator, route, signatory }) => {
   if (
     nonNullable(coreTx) &&
     nonNullable(chain) &&
@@ -268,7 +260,7 @@ const formSubmitted = sample({
       {
         tx,
         coreTx,
-        route: [],
+        route,
         signatory,
         initiator,
         chain,
@@ -417,7 +409,7 @@ export const flexibleMultisigModel = {
   $signatoryBalance,
   $asset,
 
-  $errors: combine($firstErrors, $secondErrors, (first, second) => [...first, ...second]),
+  $errors,
   $fee,
   $proxyDeposit,
   $existentialDeposit,

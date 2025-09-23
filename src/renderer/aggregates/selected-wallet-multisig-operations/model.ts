@@ -5,6 +5,7 @@ import { multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { multisigService } from '@/features/multisig-wallet';
 
 const $list = combine(
   {
@@ -16,9 +17,7 @@ const $list = combine(
     const account = accounts.find(accountUtils.isAnyMultisigAccount);
     if (nullable(account)) return [];
 
-    const multisigAccountId = accountUtils.isFlexibleMultisigAccount(account)
-      ? account.multisigAccountId
-      : account.accountId;
+    const multisigAccountId = multisigService.getMultisigAccountId(account);
     const accountOperations = operations.filter(tx => multisigAccountId === tx.accountId && tx.chainId in chains);
 
     if (accounts.some(accountUtils.isFlexibleMultisigAccount)) {

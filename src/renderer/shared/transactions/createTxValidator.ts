@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type AssetId, type Balance, type ChainId, type Transaction } from '@/shared/core';
-import { assert, nonNullable } from '@/shared/lib/utils';
+import { assert, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type TransactionValidationBalanceError,
@@ -18,7 +18,7 @@ type CombinedParams = Parameters<typeof accountService.validateRouteBalances>[0]
 type ValidatorParams<A> = Omit<CombinedParams, 'transaction'> &
   A & {
     // for backward compatability
-    transaction: Transaction | AnyTransaction;
+    transaction: Transaction | AnyTransaction | (Transaction | AnyTransaction | null)[];
   };
 
 type RulesParams<A> = Omit<ValidatorParams<A>, 'transaction'> & {
@@ -39,14 +39,10 @@ export function createTxValidator<A>(params?: {
   return async ({ transaction, ...rest }: ValidatorParams<A>): Promise<Result> => {
     try {
       const chainId = rest.api.genesisHash.toHex();
-      const normalizedTransaction = convertTransaction(transaction, rest.api);
+      const transactionList = Array.isArray(transaction) ? transaction : [transaction];
 
-      const fixedArgs = { ...rest, transaction: normalizedTransaction };
-
-      // basic validations
-
-      const permissionErrors = accountService.validateCallPermission(fixedArgs);
-      const balanceValidationResults = await accountService.validateRouteBalances(fixedArgs);
+      let result: Result = [];
+      let balanceValidationResults: TransactionValidationBalanceError[] = [];
 
       const getBalance = (accountId: AccountId, chainId: ChainId, assetId: AssetId) => {
         const validationResult = balanceValidationResults.findLast((r) => {
@@ -60,36 +56,53 @@ export function createTxValidator<A>(params?: {
         return validationResult?.balance.balance ?? balanceUtils.getBalance(rest.balances, accountId, chainId, assetId);
       };
 
-      // fee validation
+      for (const tx of transactionList) {
+        if (nullable(tx)) continue;
 
-      const signatory = accountService.findSignatory(rest.route);
-      assert(signatory, 'Signatory not found');
+        const normalizedTransaction = convertTransaction(tx, rest.api);
+        const fixedArgs = { ...rest, transaction: normalizedTransaction };
 
-      const fee = await transactionService.getTransactionFee(normalizedTransaction, rest.api);
-      const balanceForFee = getBalance(signatory.accountId, chainId, rest.asset.assetId);
-      assert(balanceForFee, 'Balance for fee not found');
+        // basic validations
 
-      balanceValidationResults.push({
-        asset: rest.asset,
-        balance: balanceService.tryWithdraw(balanceForFee, fee, 'keepAlive'),
-        account: signatory,
-        action: 'fee',
-      });
+        const transactionPermissionErrors = accountService.validateCallPermission(fixedArgs);
+        const transactionBalanceValidation = await accountService.validateRouteBalances(fixedArgs);
 
-      // additional validations
+        result = result.concat(transactionPermissionErrors);
+        balanceValidationResults = balanceValidationResults.concat(transactionBalanceValidation);
 
-      const ruleArgs: RulesParams<A> = { ...rest, getBalance, transaction: normalizedTransaction };
+        // fee validation
 
-      if (params?.additionalBalanceRules) {
-        for (const rule of params.additionalBalanceRules) {
-          const res = rule(ruleArgs);
-          if (nonNullable(res)) {
-            balanceValidationResults.push(res);
+        const signatory = accountService.findSignatory(rest.route);
+        assert(signatory, 'Signatory not found');
+
+        const fee = await transactionService.getTransactionFee(normalizedTransaction, rest.api);
+        const balanceForFee = getBalance(signatory.accountId, chainId, rest.asset.assetId);
+        assert(balanceForFee, 'Balance for fee not found');
+
+        balanceValidationResults.push({
+          asset: rest.asset,
+          balance: balanceService.tryWithdraw(balanceForFee, fee, 'keepAlive'),
+          account: signatory,
+          action: 'fee',
+        });
+
+        // additional validations
+
+        const ruleArgs: RulesParams<A> = { ...rest, getBalance, transaction: normalizedTransaction };
+
+        if (params?.additionalBalanceRules) {
+          for (const rule of params.additionalBalanceRules) {
+            const res = rule(ruleArgs);
+            if (nonNullable(res)) {
+              balanceValidationResults.push(res);
+            }
           }
         }
       }
 
-      return [...permissionErrors, ...balanceValidationResults.filter((x) => x.balance.success === false)];
+      result = result.concat(balanceValidationResults.filter((x) => x.balance.success === false));
+
+      return result;
     } catch (error) {
       if (params?.DEBUG) {
         const message: TransactionValidationFatalError = {

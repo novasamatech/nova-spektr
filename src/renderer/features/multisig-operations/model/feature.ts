@@ -54,9 +54,7 @@ const $input = combine(
       availableChains = chain ? [chain] : [];
       accountId = account.multisigAccountId;
     } else {
-      availableChains = Object.values(chains).filter(chain => {
-        return networkUtils.isMultisigSupported(chain.options) && accountService.isCryptoMatch(account, chain);
-      });
+      availableChains = Object.values(chains).filter(chain => accountService.isAccountAvailableOnChain(account, chain));
       accountId = account.accountId;
     }
 

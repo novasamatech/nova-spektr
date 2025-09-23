@@ -22,6 +22,7 @@ import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { multisigService } from '@/features/multisig-wallet';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
 import { submitModel } from '@/features/operations/OperationSubmit';
@@ -140,7 +141,7 @@ const $reassignTx = combine(
 
     return transactionBuilder.buildProxyReassign({
       chain,
-      oldAccountId: multisigAccount.multisigAccountId,
+      oldAccountId: multisigService.getMultisigAccountId(multisigAccount),
       newAccountId: newMultisigAccountId,
       signerAccountId: signer.accountId,
     });
