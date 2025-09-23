@@ -21,7 +21,7 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
 
   const fx = takeLast({
     key: () => 'createStoreFromEffect',
-    fn: async (args: Args): Promise<Awaited<Value>> => await params.fn(args),
+    fn: (args: Args) => params.fn(args),
   });
 
   sample({
