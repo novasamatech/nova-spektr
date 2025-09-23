@@ -385,7 +385,6 @@ export const syncFlexibleMultisigs = ({
   syncResult,
   identities,
 }: SyncFlexibleMultisigParams) => {
-  console.log({ syncResult });
   const syncedMultisigAccounts = syncResult.accounts.filter(accountSyncService.isSyncedMultisigAccount);
   const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
   const flexibleMultisigAccounts = allAccounts.filter(accountUtils.isFlexibleMultisigAccount);
@@ -464,17 +463,10 @@ export const syncFlexibleMultisigs = ({
     }
   }
 
-  const result = {
+  return {
     createWallets,
     deleteWallets: Array.from(deleteWallets).map((w) => w.id),
   };
-
-  console.log('syncFlexibleMultisigs - OUTPUT:', result);
-  console.log({
-    result: JSON.stringify(result),
-  });
-
-  return result;
 };
 
 sample({
