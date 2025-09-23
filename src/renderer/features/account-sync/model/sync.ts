@@ -368,7 +368,7 @@ sample({
 
 // flexible multisig sync
 
-type SyncFlexibleMultisigParams = {
+export type SyncFlexibleMultisigParams = {
   allAccounts: AnyAccount[];
   allWallets: Wallet[];
   syncResult: {
@@ -379,7 +379,13 @@ type SyncFlexibleMultisigParams = {
   identities: Record<AccountId, AccountIdentity>;
 };
 
-const syncFlexibleMultisigs = ({ allAccounts, allWallets, syncResult, identities }: SyncFlexibleMultisigParams) => {
+export const syncFlexibleMultisigs = ({
+  allAccounts,
+  allWallets,
+  syncResult,
+  identities,
+}: SyncFlexibleMultisigParams) => {
+  console.log({ syncResult });
   const syncedMultisigAccounts = syncResult.accounts.filter(accountSyncService.isSyncedMultisigAccount);
   const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
   const flexibleMultisigAccounts = allAccounts.filter(accountUtils.isFlexibleMultisigAccount);
@@ -458,10 +464,17 @@ const syncFlexibleMultisigs = ({ allAccounts, allWallets, syncResult, identities
     }
   }
 
-  return {
+  const result = {
     createWallets,
     deleteWallets: Array.from(deleteWallets).map((w) => w.id),
   };
+
+  console.log('syncFlexibleMultisigs - OUTPUT:', result);
+  console.log({
+    result: JSON.stringify(result),
+  });
+
+  return result;
 };
 
 sample({
