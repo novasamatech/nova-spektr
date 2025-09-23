@@ -391,7 +391,7 @@ sample({
     };
 
     const wallet: Omit<NoID<MultisigWallet>, 'accounts'> = {
-      name: toShortAddress(toAddress(multisigAccountId!), 5),
+      name: toShortAddress(toAddress(multisigAccountId!, { prefix: chain?.addressPrefix }), 5),
       type: WalletType.MULTISIG,
     };
 
