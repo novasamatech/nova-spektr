@@ -1,4 +1,3 @@
-// Individual account entities
 export const userAccount = {
   walletId: 1,
   accountType: 'extension',
