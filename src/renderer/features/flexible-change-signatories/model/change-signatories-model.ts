@@ -5,9 +5,9 @@ import { createGate } from 'effector-react';
 import { delay, spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
-import { type Wallet } from '@/shared/core';
+import { type FlexibleMultisigAccount, type Wallet } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
-import { Step, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { Step, assert, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import {
@@ -19,12 +19,12 @@ import {
 import { accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
-import { transactionBuilder } from '@/entities/transaction';
+import { type ExtrinsicResultParams, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { navigationModel } from '@/features/navigation';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
-import { submitModel } from '@/features/operations/OperationSubmit';
+import { submitModel, submitUtils } from '@/features/operations/OperationSubmit';
 
 import { confirmModel } from './confirm-model';
 import { formModel } from './form-model';
@@ -368,6 +368,41 @@ sample({
     event: submitModel.init,
     step: stepChanged,
   }),
+});
+
+// Update flexible multisig account blockNumber with timepoint from successful transaction
+sample({
+  clock: submitModel.output.formSubmitted,
+  source: {
+    flexibleMultisigAccount: $flexibleMultisigAccount,
+    signatories: signatoryModel.$signatories,
+    threshold: formModel.$threshold,
+    newMultisigAccountId: formModel.$newMultisigAccountId,
+  },
+  filter: ({ flexibleMultisigAccount, newMultisigAccountId, threshold }, results) =>
+    nonNullable(flexibleMultisigAccount) &&
+    nonNullable(results) &&
+    nonNullable(threshold) &&
+    nonNullable(newMultisigAccountId),
+  fn: ({ flexibleMultisigAccount, signatories, threshold, newMultisigAccountId }, results) => {
+    const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
+    assert(successResult, 'Success result not found');
+    const params = successResult.params as ExtrinsicResultParams;
+
+    const flexibleProxiedUpdate: FlexibleMultisigAccount = {
+      ...flexibleMultisigAccount!,
+      blockNumber: params.timepoint.height,
+      extrinsicIndex: params.timepoint.index,
+      multisigAccountId: newMultisigAccountId!,
+      signatories: signatories.map((s) => ({
+        accountId: toAccountId(s.address),
+      })),
+      threshold: threshold!,
+    };
+
+    return [flexibleProxiedUpdate];
+  },
+  target: accounts.updateAccounts,
 });
 
 const viewOperation = createEvent();

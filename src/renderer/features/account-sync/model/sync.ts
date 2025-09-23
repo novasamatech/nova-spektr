@@ -366,6 +366,7 @@ sample({
     allWallets: walletModel.$allWallets,
   },
   fn({ allAccounts, allWallets }, [syncResult, identities]) {
+    console.log('sync flex', { allAccounts, allWallets, syncResult });
     const syncedMultisigAccounts = syncResult.accounts.filter(accountSyncService.isSyncedMultisigAccount);
     const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
     const flexibleMultisigAccounts = allAccounts.filter(accountUtils.isFlexibleMultisigAccount);
@@ -388,6 +389,8 @@ sample({
         }
       }),
     );
+
+    console.log('deleteAccounts', Array.from(deleteAccounts));
 
     for (const syncedMultisig of syncedMultisigAccounts) {
       const matchingProxies = syncedProxyAccounts.filter((proxy) =>
