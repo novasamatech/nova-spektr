@@ -7,10 +7,10 @@ import { Box, Copy, Dropdown, Popover } from '@/shared/ui-kit';
 import { ProxyAccount as ProxyAccountComponent } from '@/entities/proxy';
 
 type Props = {
-  account: ProxyAccount;
+  account: Omit<ProxyAccount, 'id' | 'delay'>;
   chain: Chain;
   canCreateProxy?: boolean;
-  onRemoveProxy: (proxyAccount: ProxyAccount) => void;
+  onRemoveProxy: (proxyAccount: Omit<ProxyAccount, 'id' | 'delay'>) => void;
 };
 
 export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemoveProxy }: Props) => {
