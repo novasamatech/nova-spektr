@@ -1,9 +1,10 @@
 import { type PropsWithChildren, useState } from 'react';
 import { Trans } from 'react-i18next';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { Button, FootnoteText, HeaderTitleText, Icon, InfoLink } from '@/shared/ui';
+import { BodyText, Button, HeaderTitleText, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { Modal, RadioGroup } from '@/shared/ui-kit';
 
 import { type MultisigWalletType, flexibleMultisigFeatures, regularMultisigFeatures } from './constants';
@@ -88,84 +89,88 @@ const SelectMultisig = ({ onContinue }: SelectProps) => {
         <RadioGroup
           className="mx-5 my-4 flex flex-row gap-x-6"
           value={walletType}
-          onChange={value => setWalletType(value as MultisigWalletType)}
+          onChange={(value: MultisigWalletType) => setWalletType(value)}
         >
           <div className="max-w-[300px] flex-1">
-            <RadioGroup.CardOption option={flexibleMultisigOption}>
-              <div className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-x-3">
-                  <Icon name="flexibleMultisigBackground" className="shrink-0" size={32} />
-                  <HeaderTitleText as="p" className="text-tab-text-accent">
-                    {flexibleMultisigOption.title}
-                  </HeaderTitleText>
+            <RadioGroup.CardOption option={flexibleMultisigOption} testId={TEST_IDS.MULTISIG.FLEXIBLE_MULTISIG}>
+              <div className="flex h-[280px] flex-col">
+                <div className="mb-8 flex items-center justify-between">
+                  <div className="flex items-center gap-x-3">
+                    <Icon name="flexibleMultisigBackground" className="shrink-0" size={32} />
+                    <HeaderTitleText as="p" className="text-tab-text-accent">
+                      {flexibleMultisigOption.title}
+                    </HeaderTitleText>
+                  </div>
+                  <RadioGroup.RadioButton />
                 </div>
-                <RadioGroup.RadioButton />
-              </div>
-              <div className="flex flex-1 flex-col">
-                <div className="flex flex-col gap-4">
-                  {flexibleMultisigFeatures.map(item => (
-                    <div className="flex items-start gap-x-2" key={item.text}>
-                      <span className="shrink-0 font-bold text-text-primary">•</span>
-                      <FootnoteText>
-                        <Trans
-                          t={t}
-                          i18nKey={item.text}
-                          components={{
-                            header: <FootnoteText as="span" className="font-bold" />,
-                          }}
-                        />
-                      </FootnoteText>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-auto pt-6">
-                  <InfoLink
-                    url="https://docs.novaspektr.io/wallet-management/flexible-multisig-wallet"
-                    className="flex items-center gap-x-1"
-                  >
-                    <Trans t={t} i18nKey="createMultisigAccount.selectMultisigDescription.flexibleWikiLink" />
-                    <Icon name="link" size={12} className="text-inherit" />
-                  </InfoLink>
+                <div className="flex flex-1 flex-col">
+                  <div className="flex flex-col gap-3">
+                    {flexibleMultisigFeatures.map(item => (
+                      <div className="flex items-start gap-x-2" key={item.text}>
+                        <span className="shrink-0 font-bold text-text-primary">•</span>
+                        <BodyText>
+                          <Trans
+                            t={t}
+                            i18nKey={item.text}
+                            components={{
+                              header: <SmallTitleText as="span" />,
+                            }}
+                          />
+                        </BodyText>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-auto pt-6">
+                    <InfoLink
+                      url="https://docs.novaspektr.io/wallet-management/flexible-multisig-wallet"
+                      className="flex items-center gap-x-1"
+                    >
+                      <Trans t={t} i18nKey="createMultisigAccount.selectMultisigDescription.flexibleWikiLink" />
+                      <Icon name="link" size={12} className="text-inherit" />
+                    </InfoLink>
+                  </div>
                 </div>
               </div>
             </RadioGroup.CardOption>
           </div>
           <div className="max-w-[300px] flex-1">
-            <RadioGroup.CardOption option={regularMultisigOption}>
-              <div className="mb-8 flex items-center justify-between">
-                <div className="flex items-center gap-x-3">
-                  <Icon name="multisigBackground" className="shrink-0" size={32} />
-                  <HeaderTitleText as="p" className="text-tab-text-accent">
-                    {regularMultisigOption.title}
-                  </HeaderTitleText>
+            <RadioGroup.CardOption option={regularMultisigOption} testId={TEST_IDS.MULTISIG.REGULAR_MULTISIG}>
+              <div className="flex h-[280px] flex-col">
+                <div className="mb-8 flex items-center justify-between">
+                  <div className="flex items-center gap-x-3">
+                    <Icon name="multisigBackground" className="shrink-0" size={32} />
+                    <HeaderTitleText as="p" className="text-tab-text-accent">
+                      {regularMultisigOption.title}
+                    </HeaderTitleText>
+                  </div>
+                  <RadioGroup.RadioButton />
                 </div>
-                <RadioGroup.RadioButton />
-              </div>
-              <div className="flex flex-1 flex-col">
-                <div className="flex flex-col gap-4">
-                  {regularMultisigFeatures.map(item => (
-                    <div className="flex items-start gap-x-2" key={item.text}>
-                      <span className="shrink-0 font-bold text-text-primary">•</span>
-                      <FootnoteText>
-                        <Trans
-                          t={t}
-                          i18nKey={item.text}
-                          components={{
-                            header: <FootnoteText as="span" className="font-bold" />,
-                          }}
-                        />
-                      </FootnoteText>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-auto pt-6">
-                  <InfoLink
-                    url="https://docs.novaspektr.io/wallet-management/multisig-wallet"
-                    className="flex items-center gap-x-1"
-                  >
-                    <Trans t={t} i18nKey="createMultisigAccount.selectMultisigDescription.regularWikiLink" />
-                    <Icon name="link" size={12} className="text-inherit" />
-                  </InfoLink>
+                <div className="flex flex-1 flex-col">
+                  <div className="flex flex-col gap-3">
+                    {regularMultisigFeatures.map(item => (
+                      <div className="flex items-start gap-x-2" key={item.text}>
+                        <span className="shrink-0 font-bold text-text-primary">•</span>
+                        <BodyText>
+                          <Trans
+                            t={t}
+                            i18nKey={item.text}
+                            components={{
+                              header: <SmallTitleText as="span" />,
+                            }}
+                          />
+                        </BodyText>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-auto pt-6">
+                    <InfoLink
+                      url="https://docs.novaspektr.io/wallet-management/multisig-wallet"
+                      className="flex items-center gap-x-1"
+                    >
+                      <Trans t={t} i18nKey="createMultisigAccount.selectMultisigDescription.regularWikiLink" />
+                      <Icon name="link" size={12} className="text-inherit" />
+                    </InfoLink>
+                  </div>
                 </div>
               </div>
             </RadioGroup.CardOption>

@@ -13,8 +13,8 @@ type Props = {
   isOpen?: boolean;
   size: 'sm' | 'md' | 'mdlg' | 'lg' | 'xl' | 'xxl' | 'full' | 'fit';
   height?: 'full' | 'lg' | 'fit';
-  onToggle?: (open: boolean) => void;
   testId?: string;
+  onToggle?: (open: boolean) => void;
 };
 
 const Root = ({
@@ -117,7 +117,7 @@ const HeaderContent = ({ children }: PropsWithChildren) => {
 
 const Content = ({ disableScroll, children }: PropsWithChildren<{ disableScroll?: boolean }>) => {
   return disableScroll ? (
-    <div className="flex h-full min-h-0 grow flex-col overflow-hidden">{children}</div>
+    <div className="relative flex h-full min-h-0 grow flex-col overflow-hidden">{children}</div>
   ) : (
     <ScrollArea>{children}</ScrollArea>
   );

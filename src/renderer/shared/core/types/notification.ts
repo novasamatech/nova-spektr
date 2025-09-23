@@ -11,6 +11,7 @@ export const enum NotificationType {
   MULTISIG_CANCELLED = 'MultisigCancelledNotification',
 
   FLEXIBLE_MULTISIG_CREATED = 'FlexibleMultisigCreatedNotification',
+  FLEXIBLE_MULTISIG_EDITED = 'FlexibleMultisigEditedNotification',
 
   PROXY_CREATED = 'ProxyCreatedNotification',
   PROXY_REMOVED = 'ProxyRemovedNotification',
@@ -33,7 +34,7 @@ export type MultisigCreated = MultisigBaseNotification & {
   multisigAccountName: string;
 };
 
-export type FlexibleMultisigCreated = BaseNotification & {
+export type FlexibleMultisigOperationNotification = MultisigBaseNotification & {
   walletId: number;
   accountId: AccountId;
   accountName: string;
@@ -58,4 +59,8 @@ export type ProxyAction = BaseNotification & {
   proxiedWalletName: string;
 };
 
-export type Notification = FlexibleMultisigCreated | MultisigCreated | MultisigOperationNotification | ProxyAction;
+export type Notification =
+  | MultisigCreated
+  | FlexibleMultisigOperationNotification
+  | MultisigOperationNotification
+  | ProxyAction;

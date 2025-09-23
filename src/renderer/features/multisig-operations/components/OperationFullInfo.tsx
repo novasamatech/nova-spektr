@@ -47,13 +47,19 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
   );
 
   const jsonArgs = useMemo(() => {
-    if (!operation.callData || !api || !chain) return null;
+    if (!operation.callData) {
+      return null;
+    }
 
-    const call = transactionService.createCallFromCallData(operation.callData, api);
-    if (!call) return null;
+    try {
+      const call = transactionService.createCallFromCallData(operation.callData, api);
+      if (!call) return null;
 
-    return transactionService.formatCall(call, chain);
-  }, [api, operation.callData, chain]);
+      return transactionService.formatCall(call, chain);
+    } catch {
+      return null;
+    }
+  }, [api, chain, operation.callData]);
 
   const hasAccount = allAccounts.some(a => {
     return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);
