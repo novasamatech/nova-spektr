@@ -21,7 +21,7 @@ export const SignerSelection = () => {
   const chain = useUnit(formModel.$chain);
 
   const onSubmit = (event: FormEvent, account: AnyAccount) => {
-    flexibleMultisigModel.signerSelected(account);
+    flexibleMultisigModel.signatorySelected(account);
     event.preventDefault();
     submit();
   };

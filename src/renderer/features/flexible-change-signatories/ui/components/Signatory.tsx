@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { uniqBy } from 'lodash';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
@@ -70,24 +71,25 @@ export const Signatory = ({
     if (!chain || accountsList.length === 0 || (!isOwnAccount && validateAddress(query, chain))) return [];
 
     const filteredAccounts = accountsList.filter((account) => {
-      const isCorrectAccount =
-        !accountUtils.isWatchOnlyAccount(account) && !accountUtils.isFlexibleMultisigAccount(account);
+      const isNotWatchOnly = !accountUtils.isWatchOnlyAccount(account);
 
       const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
-      if (isOwnAccount) return isChainMatch && isCorrectAccount;
+      if (isOwnAccount) return isChainMatch && isNotWatchOnly;
 
       const queryPass = includesMultiple([account.name, address], query);
 
-      return isChainMatch && isCorrectAccount && queryPass;
+      return isChainMatch && isNotWatchOnly && queryPass;
     });
 
-    if (filteredAccounts.length === 0) return [];
+    const uniqueAccounts = uniqBy(filteredAccounts, 'accountId');
+
+    if (uniqueAccounts.length === 0) return [];
 
     const accountOptions = new Map<string, ComboboxItem>();
 
-    for (const account of filteredAccounts) {
+    for (const account of uniqueAccounts) {
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
       if (!isOwnAccount && selectedSignatories.some((s) => toAccountId(s.address) === account.accountId)) continue;

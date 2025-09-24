@@ -76,6 +76,30 @@ export const Multiple: Story = {
         action: 'fee',
         asset: dotAsset,
       },
+      // second fee, should be merged with previous one
+      {
+        account,
+        balance: {
+          success: false,
+          balance: {} as BalanceType,
+          required: BN_MILLION,
+          imbalance: BN_MILLION,
+        },
+        action: 'fee',
+        asset: dotAsset,
+      },
+      // third fee, should be separated because of different asset
+      {
+        account,
+        balance: {
+          success: false,
+          balance: {} as BalanceType,
+          required: BN_MILLION,
+          imbalance: BN_MILLION,
+        },
+        action: 'fee',
+        asset: kusamaAsset,
+      },
       {
         account,
         balance: {

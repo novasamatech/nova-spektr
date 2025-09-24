@@ -7,6 +7,7 @@ import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '
 import { accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { multisigService } from '@/features/multisig-wallet';
 
 import { signatoryModel } from './signatory-model';
 
@@ -118,7 +119,7 @@ const $existingProxy = combine(
         }
 
         if (accountUtils.isFlexibleMultisigAccount(a)) {
-          return a.multisigAccountId === existingMultisig.accountId;
+          return multisigService.getMultisigAccountId(a) === existingMultisig.accountId;
         }
 
         return false;

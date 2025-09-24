@@ -21,3 +21,8 @@
 [data-state="checked"] > div.rounded-sm.border {
   border-color: var(--primary-button-background-default);
 }
+
+/* Ensure the card border changes when checked */
+[data-state="checked"] > div.rounded-sm.border {
+  border-color: var(--primary-button-background-default);
+}
