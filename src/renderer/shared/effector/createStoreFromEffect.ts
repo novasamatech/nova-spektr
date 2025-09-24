@@ -1,7 +1,9 @@
-import { type Store, combine, createEffect, createStore, sample } from 'effector';
+import { type Store, combine, createStore, sample } from 'effector';
 import { readonly } from 'patronum';
 
 import { nonNullableMap, nullableMap } from '@/shared/lib/utils';
+
+import { takeLast } from './takeLast';
 
 type Stores<Args> = {
   [K in keyof Args]: Store<Args[K] | null>;
@@ -17,12 +19,15 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
   const $source = combine(params.params, x => x);
   const $ = createStore<Value>(params.defaultValue);
 
-  const fx = createEffect<Args, Value>(params.fn);
+  const fx = takeLast({
+    key: () => 'createStoreFromEffect',
+    fn: (args: Args) => params.fn(args),
+  });
 
   sample({
     clock: $source,
     filter: nonNullableMap,
-    fn: x => x as Args,
+    fn: source => source as Args,
     target: fx,
   });
 
@@ -38,7 +43,7 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
     source: $source,
     // source should be still valid
     filter: nonNullableMap,
-    fn: (_, res) => res,
+    fn: (_, res: Value) => res,
     target: $,
   });
 
