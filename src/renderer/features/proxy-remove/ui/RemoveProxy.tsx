@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
+import { accountService } from '@/domains/network';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult } from '@/entities/transaction';
@@ -27,7 +28,11 @@ export const RemoveProxy = ({ wallet }: Props) => {
   const { t } = useI18n();
 
   const step = useUnit(removeProxyModel.$step);
-  const chainId = useUnit(removeProxyModel.$proxiedAccount.map((account) => account?.chainId ?? null));
+  const chainId = useUnit(
+    removeProxyModel.$proxiedAccount.map((account) =>
+      account && accountService.isChainAccount(account) ? account.chainId : null,
+    ),
+  );
   const initiatorWallet = useUnit(removeProxyModel.$wallet);
   const isPureProxiedNeedToBeKilled = useUnit(removeProxyModel.$isPureProxiedNeedToBeKilled);
 
