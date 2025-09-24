@@ -1,4 +1,5 @@
 import { combine, createEvent, restore, sample } from 'effector';
+import { throttle } from 'patronum';
 
 import { TransactionType } from '@/shared/core';
 import { type AnyAccount, type MultisigOperation, accountService, multisigOperation } from '@/domains/network';
@@ -88,7 +89,8 @@ const $filteredOperations = combine(
 );
 
 sample({
-  clock: multisigOperationsFeature.running,
+  // TODO: costil' around dynamic array of apis
+  clock: throttle(multisigOperationsFeature.running, 500),
   target: [multisigOperation.subscribe, multisigOperation.subscribeEvents],
 });
 
