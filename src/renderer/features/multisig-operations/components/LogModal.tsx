@@ -11,7 +11,7 @@ import {
 } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod, getExtrinsicExplorer, sortByDateAsc, toAddress } from '@/shared/lib/utils';
+import { formatSectionAndMethod, sortByDateAsc, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
@@ -71,6 +71,7 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
   const { status, events } = operation;
+
   const groupedEvents = useMemo(() => {
     const groups = groupBy(events, ({ timestamp }) => formatDate(timestamp || 0, 'PP'));
     return Object.entries(groups).sort(sortByDateAsc);
@@ -150,16 +151,20 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
                           <BodyText className="flex-1 text-text-secondary">{getEventMessage(event)}</BodyText>
                           <BodyText className="text-text-tertiary">{formatDate(Number(event.timestamp), 'p')}</BodyText>
 
-                          {event.extrinsicHash && connection?.explorers && (
+                          {event.blockCreated && Number.isInteger(event.blockCreated) && connection?.explorers && (
                             <div>
                               <ContextMenu button={<IconButton name="info" size={16} />}>
                                 <ContextMenu.Group>
-                                  <ul className="flex flex-col gap-y-2">
+                                  <ul className="flex flex-col space-y-2">
                                     {connection.explorers.map(explorer => (
                                       <li key={explorer.name}>
                                         <ExplorerLink
                                           name={explorer.name}
-                                          href={getExtrinsicExplorer(explorer, event.extrinsicHash!)}
+                                          href={operationDetailsUtils.getMultisigEventLink(
+                                            event.indexCreated,
+                                            event.blockCreated,
+                                            explorer,
+                                          )}
                                         />
                                       </li>
                                     ))}
