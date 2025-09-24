@@ -21,7 +21,9 @@ import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
 import { multisigWalletDetailsModel } from '../../model/multisig-wallet-details';
 import { walletDetailsModel } from '../../model/wallet-details-model';
+import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { WalletFiatBalance } from '../components';
+import { ProxiesCount } from '../components/ProxiesCount';
 import { ProxiesList } from '../components/ProxiesList';
 import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
 
@@ -35,14 +37,15 @@ export const overviewSlot = createSlot<{ walletAccounts: AnyAccount[] }>();
 export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
   useGate(multisigWalletDetailsModel.flow, { wallet });
   useGate(walletDetailsModel.flow, { wallet });
+  useGate(walletProxiesModel.flow, { wallet });
 
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
-  const hasProxies = useUnit(multisigWalletDetailsModel.$hasProxies);
+  const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
   const signatories = useUnit(multisigWalletDetailsModel.$signatories);
   const accountList = useUnit(accounts.$list);
-  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
+  const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
   const contacts = useUnit(contactModel.$contacts);
   const walletsList = useUnit(walletModel.$wallets);
 
@@ -183,7 +186,7 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
       title: (
         <span className="flex items-center gap-1">
           {t('walletDetails.common.proxiesTabTitleShort')}
-          <span className="text-text-tertiary">{proxiesCount}</span>
+          <ProxiesCount count={proxiesCount} />
         </span>
       ),
       panel: <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />,
