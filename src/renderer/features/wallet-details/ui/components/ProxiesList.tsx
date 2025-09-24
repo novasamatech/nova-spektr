@@ -55,7 +55,7 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
 
   const renderProxyGroups = () => {
     if (isLoading) {
-      return Array.from({ length: 3 }, (_, index) => <LoadingSkeleton key={index} />);
+      return <LoadingSkeleton />;
     }
 
     return walletProxyGroups
