@@ -1,7 +1,7 @@
 import { createEffect } from 'effector';
 
 type Params<P, R> = {
-  fn(params: P, abort: AbortSignal): Awaited<R> | Promise<Awaited<R>>;
+  fn(params: P, abort: AbortSignal): R | Promise<R>;
   key(params: P): string;
 };
 
