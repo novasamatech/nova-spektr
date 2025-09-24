@@ -9,6 +9,7 @@ import { createStoreFromEffect } from '@/shared/effector';
 import { entries, keys, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
+import { proxyModel } from '@/entities/proxy';
 import { accountUtils } from '@/entities/wallet';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });

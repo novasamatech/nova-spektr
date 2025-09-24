@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample, split
 import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
-import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
+import { type ChainId, type ProxyAccount, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, keys, nonNullable, nullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
@@ -40,7 +40,7 @@ const wentBackFromConfirm = createEvent();
 const stepChangedToInit = stepChanged.prepend(() => Step.INIT);
 
 type Input = {
-  proxied: ProxiedAccount;
+  proxied: AnyAccount;
   proxy: Omit<ProxyAccount, 'id' | 'delay'>;
 };
 
@@ -271,7 +271,7 @@ sample({
     apis: networkModel.$apis,
   },
   fn: ({ chains, apis }, { proxy, proxied }) => {
-    const chain = chains[proxied.chainId || proxy.chainId];
+    const chain = chains[(proxied as any).chainId || proxy.chainId];
 
     if (!chain) return null;
 

@@ -1,4 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import { type ProxyAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -6,10 +6,9 @@ import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText, HelpText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Accordion } from '@/shared/ui-kit';
-import { accountService, accounts } from '@/domains/network';
+import { accounts } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { accountUtils } from '@/entities/wallet';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
 import { walletProxiesModel } from '../../model/wallet-proxies-model';
 
@@ -34,17 +33,10 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   const chains = useUnit(networkModel.$chains);
   const chainsProxies = useUnit(walletProxiesModel.$walletProxies);
   const walletProxyGroups = useUnit(walletProxiesModel.$walletProxyGroups);
-
-  const walletAccounts = useStoreMap({
-    store: accounts.$list,
-    keys: [wallet],
-    fn: (accounts, [wallet]) => {
-      return accountService.filterAccountsByWallet(accounts, wallet.id);
-    },
-  });
+  const allAccounts = useUnit(accounts.$list);
 
   const handleDeleteProxy = (proxyAccount: Omit<ProxyAccount, 'id' | 'delay'>) => {
-    const proxiedAccount = walletAccounts.find(account => accountUtils.isProxiedAccount(account));
+    const proxiedAccount = allAccounts.find(account => account.accountId === proxyAccount.proxiedAccountId);
 
     if (proxiedAccount) {
       removeProxyModel.flowStarted({
