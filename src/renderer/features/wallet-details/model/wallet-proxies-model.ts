@@ -1,29 +1,27 @@
 import { type ApiPromise } from '@polkadot/api';
-import { combine } from 'effector';
+import { combine, createEvent, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { proxyService } from '@/shared/api/proxy';
 import { type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { type ProxyAccount } from '@/shared/core/types/proxy';
 import { createStoreFromEffect } from '@/shared/effector';
-import { entries, keys, nonNullable, nullable } from '@/shared/lib/utils';
+import { keys, nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { proxyModel } from '@/entities/proxy';
-import { accountUtils } from '@/entities/wallet';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
 const $wallet = flow.state.map(({ wallet }) => wallet);
 
-const { $: $walletProxies } = createStoreFromEffect<
+const { $: $walletProxies, fx: _fetchWalletProxiesFx } = createStoreFromEffect<
   {
     wallet: Wallet;
     chains: Record<ChainId, Chain>;
     allAccounts: AnyAccount[];
     apis: Record<ChainId, ApiPromise>;
   },
-  Record<ChainId, Omit<ProxyAccount, 'id' | 'delay'>[]>
+  Record<ChainId, (Omit<ProxyAccount, 'id' | 'delay'> & { deposit: string })[]>
 >({
   defaultValue: {},
   params: {
@@ -35,7 +33,9 @@ const { $: $walletProxies } = createStoreFromEffect<
   async fn({ wallet, chains, apis, allAccounts }) {
     const chainIds = keys(chains);
 
-    const fetchChainProxies = async (chainId: ChainId): Promise<[ChainId, Omit<ProxyAccount, 'id' | 'delay'>[]]> => {
+    const fetchChainProxies = async (
+      chainId: ChainId,
+    ): Promise<[ChainId, (Omit<ProxyAccount, 'id' | 'delay'> & { deposit: string })[]]> => {
       const api = apis[chainId];
       const chain = chains[chainId];
       if (!api || !chain) return [chainId, []];
@@ -58,6 +58,7 @@ const { $: $walletProxies } = createStoreFromEffect<
             proxiedAccountId: account.accountId,
             chainId,
             proxyType: proxy.proxyType,
+            deposit: result.deposit,
           }));
         } catch (error) {
           console.log(`Failed to fetch proxies for account ${account.accountId} on chain ${chainId}:`, error);
@@ -66,7 +67,16 @@ const { $: $walletProxies } = createStoreFromEffect<
       });
 
       const accountsProxies = await Promise.all(accountProxiesPromises);
-      return [chainId, accountsProxies.flat().filter(nonNullable)];
+      const allProxies = accountsProxies.flat().filter(nonNullable);
+      const uniqueProxies = allProxies.reduce((acc, proxy) => {
+        const key = `${proxy.accountId}_${proxy.proxiedAccountId}`;
+        if (!acc.has(key)) {
+          acc.set(key, proxy);
+        }
+        return acc;
+      }, new Map<string, (typeof allProxies)[0]>());
+
+      return [chainId, Array.from(uniqueProxies.values())];
     };
 
     const chainProxiesPromises = chainIds.map(fetchChainProxies);
@@ -78,6 +88,8 @@ const { $: $walletProxies } = createStoreFromEffect<
   },
 });
 
+export const resetWalletProxies = createEvent();
+
 const $hasWalletProxies = $walletProxies.map(chainsProxies => {
   return Object.values(chainsProxies).some(accounts => accounts.length > 0);
 });
@@ -86,50 +98,36 @@ const $walletProxiesCount = $walletProxies.map(chainsProxies => {
   return Object.values(chainsProxies).reduce((total, accounts) => total + accounts.length, 0);
 });
 
+sample({
+  clock: $wallet,
+  filter: nonNullable,
+  target: resetWalletProxies,
+});
+
 const $walletProxyGroups = combine(
   {
     wallet: $wallet,
     chainsProxies: $walletProxies,
-    accounts: accounts.$list,
   },
-  ({ wallet, chainsProxies, accounts }) => {
+  ({ wallet, chainsProxies }) => {
     if (!wallet) return [];
 
-    const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
-    const proxiedAccounts = walletAccounts.filter(accountUtils.isProxiedAccount);
-
-    const initialGroups = proxiedAccounts.map(account => {
-      return {
-        chainId: account.chainId,
-        proxiedAccountId: account.accountId,
-        walletId: account.walletId,
-        totalDeposit: account.deposit,
-      };
-    });
-
-    if (initialGroups.length !== 0) {
-      return initialGroups;
-    }
-
-    const derivedGroups: { chainId: ChainId; proxiedAccountId: string; walletId: number; totalDeposit: string }[] = [];
-    for (const [chainId, proxyAccounts] of entries(chainsProxies)) {
+    const groups = [];
+    for (const [chainIdStr, proxyAccounts] of Object.entries(chainsProxies)) {
       if (proxyAccounts.length > 0) {
-        const proxiedAccountId = proxyAccounts[0].proxiedAccountId;
-        if (nullable(proxiedAccountId)) continue;
+        const chainId = chainIdStr;
+        const totalDeposit = proxyAccounts[0].deposit || '0';
 
-        const proxiedAccount = accounts.find(
-          account => account.accountId === proxiedAccountId && accountUtils.isProxiedAccount(account),
-        );
-
-        derivedGroups.push({
+        groups.push({
           chainId,
-          proxiedAccountId,
+          proxiedAccountId: proxyAccounts[0].proxiedAccountId, // Use first proxy's proxied account
           walletId: wallet.id,
-          totalDeposit: proxiedAccount && accountUtils.isProxiedAccount(proxiedAccount) ? proxiedAccount.deposit : '0',
+          totalDeposit: String(totalDeposit),
         });
       }
     }
-    return derivedGroups;
+
+    return groups;
   },
 );
 

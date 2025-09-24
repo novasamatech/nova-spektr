@@ -10,6 +10,7 @@ export type ProxyAccount = {
   chainId: ChainId;
   proxyType: ProxyType;
   delay: number;
+  deposit?: string;
 };
 
 export type ProxyType =
