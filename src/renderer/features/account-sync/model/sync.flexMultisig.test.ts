@@ -11,7 +11,7 @@ import {
   flexMultisigWallet3,
   syncResult,
   userAccount,
-} from './__mocks__/sync.flexMultisig.test';
+} from './__mocks__/sync.flexMultisig.mock';
 import { type SyncFlexibleMultisigParams, syncFlexibleMultisigs } from './sync';
 
 describe('syncFlexibleMultisigs', () => {
