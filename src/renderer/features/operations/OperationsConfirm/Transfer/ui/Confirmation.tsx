@@ -4,8 +4,8 @@ import { type ReactNode } from 'react';
 import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, toAccountId } from '@/shared/lib/utils';
-import { Alert, Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
-import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
+import { Account, AssetBalance, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
@@ -26,7 +26,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const wallets = useUnit(walletModel.$wallets);
   const isMultisigExists = useUnit(confirmModel.$isMultisigExists);
-  const error = useUnit(confirmModel.$error);
+  const validationErrors = useUnit(confirmModel.$validationErrors);
+  const canSubmit = useUnit(confirmModel.$canSubmit);
 
   const confirms = useUnit(confirmModel.$confirms);
   const confirm = useStoreMap({
@@ -54,6 +55,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   return (
     <div className="flex w-modal flex-col items-center gap-y-4 px-5 pt-4 pb-4">
+      <TransactionValidationError errors={validationErrors} wallets={wallets} />
+
       <div className="mb-2 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={isXcm ? 'crossChainConfirm' : 'transferConfirm'} size={60} />
 
@@ -147,10 +150,6 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         )}
       </TransactionDetails>
 
-      <Alert title={t('operation.status.error')} variant="error" active={nonNullable(error)}>
-        <Alert.Item withDot={false}>{error ? t(error.message) : null}</Alert.Item>
-      </Alert>
-
       <div className="mt-3 flex w-full justify-between">
         {nonNullable(onGoBack) && (
           <Button variant="text" onClick={onGoBack}>
@@ -164,6 +163,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
             <SignButton
               isDefault={Boolean(secondaryActionButton)}
               type={signatory.type}
+              disabled={!canSubmit}
               onClick={confirmModel.startSigning}
             />
           )}
