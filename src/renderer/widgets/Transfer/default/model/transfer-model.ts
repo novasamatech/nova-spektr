@@ -114,6 +114,7 @@ const readyToConfirm = sample({
       destination: form.destination,
       route: form.route,
       amount: form.amount,
+      rawAmount: form.rawAmount,
       fee: form.fee,
       xcmFee: form.xcmFee,
       deliveryFee: form.deliveryFee,
