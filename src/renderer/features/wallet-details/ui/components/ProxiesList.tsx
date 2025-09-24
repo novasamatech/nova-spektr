@@ -25,12 +25,6 @@ type Props = {
   className?: string;
 };
 
-const LoadingSkeleton = () => (
-  <div className="flex items-center py-2">
-    <Skeleton width="100%" height={10} />
-  </div>
-);
-
 export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
@@ -111,3 +105,9 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
     </div>
   );
 };
+
+const LoadingSkeleton = () => (
+  <div className="flex items-center py-2">
+    <Skeleton width="100%" height={10} />
+  </div>
+);
