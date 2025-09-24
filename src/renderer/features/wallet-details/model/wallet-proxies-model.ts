@@ -136,7 +136,7 @@ const $walletProxyGroups = combine(
 
         groups.push({
           chainId,
-          proxiedAccountId: proxyAccounts[0].proxiedAccountId, // Use first proxy's proxied account
+          proxiedAccountId: proxyAccounts[0].proxiedAccountId,
           walletId: wallet.id,
           totalDeposit: String(totalDeposit),
         });
