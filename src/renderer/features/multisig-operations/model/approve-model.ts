@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { createGate } from 'effector-react';
 
 import { type Chain } from '@/shared/core';
-import { getNativeAsset, groupBy, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
   createMultisigDeposit,
@@ -23,7 +23,6 @@ import {
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { MAX_WEIGHT, getExtrinsic, transactionBuilder } from '@/entities/transaction';
-import { accountUtils } from '@/entities/wallet';
 
 import { operationsContextModel } from './context';
 
@@ -79,25 +78,7 @@ const $unsignedAccounts = combine(
       a => !operation.events.some(e => e.accountId === a.accountId),
     );
 
-    const signatoriesGroupedByAccountId = groupBy(filteredSignatories, a => a.accountId);
-
-    let result: AnyAccount[] = [];
-
-    for (const group of Object.values(signatoriesGroupedByAccountId)) {
-      if (nullable(group)) continue;
-
-      if (group.length > 1) {
-        const flexibleMultisigAccount = group.find(accountUtils.isFlexibleMultisigAccount);
-        if (flexibleMultisigAccount) {
-          result.push(flexibleMultisigAccount);
-          continue;
-        }
-      }
-
-      result = result.concat(group);
-    }
-
-    return result;
+    return filteredSignatories;
   },
 );
 

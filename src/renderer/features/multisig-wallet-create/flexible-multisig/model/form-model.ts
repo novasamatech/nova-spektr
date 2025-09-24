@@ -118,7 +118,7 @@ const $existingProxy = combine(
           return a.connections.some(c => c.proxyAccountId === existingMultisig.accountId);
         }
 
-        if (accountUtils.isAnyMultisigAccount(a)) {
+        if (accountUtils.isFlexibleMultisigAccount(a)) {
           return multisigService.getMultisigAccountId(a) === existingMultisig.accountId;
         }
 

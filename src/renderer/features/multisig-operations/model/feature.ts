@@ -6,11 +6,11 @@ import { debounce } from 'patronum';
 import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { multisigService } from '@/features/multisig-wallet';
 
 const $trigger = createStore<string>('');
 const $debouncedApis = createStore<Record<ChainId, ApiPromise>>({});
@@ -47,15 +47,11 @@ const $input = combine(
     if (nullable(account)) return null;
 
     let availableChains;
-    let accountId: AccountId;
-
-    if (accountUtils.isFlexibleMultisigAccount(account)) {
+    if (accountService.isChainAccount(account)) {
       const chain = chains[account.chainId];
       availableChains = chain ? [chain] : [];
-      accountId = account.multisigAccountId;
     } else {
       availableChains = Object.values(chains).filter(chain => accountService.isAccountAvailableOnChain(account, chain));
-      accountId = account.accountId;
     }
 
     const availableApis: Record<ChainId, ApiPromise> = {};
@@ -72,7 +68,7 @@ const $input = combine(
     return {
       chains: availableChainsRecord,
       apis: availableApis,
-      accountId,
+      accountId: multisigService.getMultisigAccountId(account),
     };
   },
 );
