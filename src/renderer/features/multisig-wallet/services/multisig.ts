@@ -1,8 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { AccountType, CryptoType, type MultisigSignatoryAccount, type Signatory, SigningType } from '@/shared/core';
+import {
+  AccountType,
+  CryptoType,
+  type FlexibleMultisigAccount,
+  type MultisigAccount,
+  type MultisigSignatoryAccount,
+  type Signatory,
+  SigningType,
+} from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyDecodedTransaction } from '@/domains/network';
+import { accountUtils } from '@/entities/wallet';
 import { type MultisigTransaction } from '../types';
 
 function isMultisigTransaction(transaction: AnyDecodedTransaction): transaction is MultisigTransaction {
@@ -33,8 +42,13 @@ function createSignatoryVirtualAccount(
   };
 }
 
+function getMultisigAccountId(account: MultisigAccount | FlexibleMultisigAccount) {
+  return accountUtils.isFlexibleMultisigAccount(account) ? account.multisigAccountId : account.accountId;
+}
+
 export const multisigService = {
   isMultisigTransaction,
   getMultisigDeposit,
   createSignatoryVirtualAccount,
+  getMultisigAccountId,
 };

@@ -1,10 +1,11 @@
 import { combine } from 'effector';
 
-import { toAccountId } from '@/shared/lib/utils';
+import { nullable, toAccountId } from '@/shared/lib/utils';
 import { multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { multisigService } from '@/features/multisig-wallet';
 
 const $list = combine(
   {
@@ -13,19 +14,23 @@ const $list = combine(
     chains: networkModel.$chains,
   },
   ({ accounts, operations, chains }) => {
-    const accountIds = accounts.map(a => a.accountId);
+    const account = accounts.find(accountUtils.isAnyMultisigAccount);
+    if (nullable(account)) return [];
+
+    const multisigAccountId = multisigService.getMultisigAccountId(account);
+    const accountOperations = operations.filter(tx => multisigAccountId === tx.accountId && tx.chainId in chains);
 
     if (accounts.some(accountUtils.isFlexibleMultisigAccount)) {
-      return operations.filter(
-        tx =>
-          tx.method === 'proxy' &&
-          tx.section === 'proxy' &&
-          accountIds.includes(toAccountId(tx.transaction?.args.real)) &&
-          tx.chainId in chains,
-      );
+      const proxiedAccountId = account.accountId;
+
+      return accountOperations.filter(tx => {
+        return (
+          tx.method === 'proxy' && tx.section === 'proxy' && proxiedAccountId === toAccountId(tx.transaction?.args.real)
+        );
+      });
     }
 
-    return operations.filter(tx => accountIds.includes(tx.accountId) && tx.chainId in chains);
+    return accountOperations;
   },
 );
 

@@ -96,7 +96,7 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
 
           {nonNullable(firstInitiator) && (
             <DetailRow label={t('transaction.details.initiatorAccount', { type: initiatorWalletType })}>
-              <AccountComponent accountId={firstInitiator.accountId} chain={chain} />
+              <AccountComponent variant="short" accountId={firstInitiator.accountId} chain={chain} />
             </DetailRow>
           )}
 
@@ -113,7 +113,7 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
 
           {nonNullable(signatory) && (
             <DetailRow label={t('transaction.details.sinatoryAccount')}>
-              <AccountComponent accountId={signatory?.accountId} chain={chain} />{' '}
+              <AccountComponent variant="short" accountId={signatory?.accountId} chain={chain} />{' '}
             </DetailRow>
           )}
         </>
