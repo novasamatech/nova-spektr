@@ -29,9 +29,11 @@ import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { ForgetStep } from '../../lib/constants';
 import { walletDetailsUtils, wcDetailsUtils } from '../../lib/utils';
 import { walletDetailsModel } from '../../model/wallet-details-model';
+import { walletProxiesModel } from '../../model/wallet-proxies-model';
 import { walletConnectForget } from '../../model/walletConnectForgot';
 import { walletConnectReconnect } from '../../model/walletConnectReconnect';
 import { WalletFiatBalance } from '../components';
+import { ProxiesCount } from '../components/ProxiesCount';
 import { ProxiesList } from '../components/ProxiesList';
 import { Action, type WalletAction, WalletActions } from '../components/WalletActions';
 import { WalletConnectAccounts } from '../components/WalletConnectAccounts';
@@ -46,15 +48,16 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
   useGate(walletConnectForget.flow, { accounts: wallet.accounts });
   useGate(walletConnectReconnect.flow, { accounts: wallet.accounts });
   useGate(walletDetailsModel.flow, { wallet });
+  useGate(walletProxiesModel.flow, { wallet });
 
   const { t } = useI18n();
 
-  const hasProxies = useUnit(walletDetailsModel.$hasProxies);
+  const hasProxies = useUnit(walletProxiesModel.$hasWalletProxies);
   const connected = useUnit(walletConnectReconnect.$connected);
   const forgetStep = useUnit(walletConnectForget.$forgetStep);
   const reconnectStep = useUnit(walletConnectReconnect.$reconnectStep);
   const canCreateProxy = useUnit(walletDetailsModel.$canCreateProxy);
-  const proxiesCount = useUnit(walletDetailsModel.$proxiesCount);
+  const proxiesCount = useUnit(walletProxiesModel.$walletProxiesCount);
   const accountList = useUnit(accounts.$list);
 
   const [_, startTransition] = useTransition();
@@ -173,7 +176,7 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
                 <Tabs.Trigger value="proxies">
                   <span className="flex items-center gap-1">
                     {t('walletDetails.common.proxiesTabTitle')}
-                    <span className="text-text-tertiary">{proxiesCount}</span>
+                    <ProxiesCount count={proxiesCount} />
                   </span>
                 </Tabs.Trigger>
               </Tabs.List>

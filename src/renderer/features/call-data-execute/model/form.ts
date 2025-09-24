@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
+import { type CallBase } from '@polkadot/types/types';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { readonly, throttle } from 'patronum';
@@ -25,6 +26,7 @@ import {
 } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { transactionService as transactionEntitiesService } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
@@ -32,7 +34,6 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { type TransactionSigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { Step } from '../lib/types';
-import { callDataExecuteService } from '../service';
 
 import { type ConfirmInput, confirmModel } from './confirm';
 import { callDataExecuteFeature } from './feature';
@@ -106,11 +107,11 @@ const $transaction = $throttledCallData.map((callData): EncodedTransaction | nul
   };
 });
 
-const $extrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
-const $args = combine($extrinsic, form.fields.chain.$value, (extrinsic, chain) => {
-  if (!extrinsic || !chain) return null;
+const $call = createStore<CallBase<any> | null>(null);
+const $args = combine($call, form.fields.chain.$value, (call, chain) => {
+  if (!call || !chain) return null;
 
-  return callDataExecuteService.formatExtrinsic(extrinsic, chain);
+  return transactionEntitiesService.formatCall(call, chain);
 });
 
 const $route = createRouteStore({
@@ -129,7 +130,7 @@ const { $tx: $wrappedTx } = createWrappedTxStore({
 const $wrappedExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
 
 const $wrappedArgs = combine($wrappedExtrinsic, form.fields.chain.$value, (extrinsic, chain) => {
-  return extrinsic && chain ? callDataExecuteService.formatExtrinsic(extrinsic, chain) : null;
+  return extrinsic && chain ? transactionEntitiesService.formatCall(extrinsic.method, chain) : null;
 });
 
 const createWrappedExtrinsicFx = createQueuedEffect(
@@ -161,27 +162,25 @@ sample({
   target: form.fields.callData.setErrors,
 });
 
-const createExtrinsicFx = createQueuedEffect(
-  ({ transaction, api }: { transaction: AnyTransaction | null; api: ApiPromise | null }) => {
-    if (nullable(transaction) || nullable(api)) return null;
-    return transactionService.createExtrinsic(transaction, api);
-  },
-);
-
-sample({
-  source: { transaction: $transaction, api: $api },
-  target: createExtrinsicFx,
+const createCallFx = createQueuedEffect(({ callData, api }: { callData: string; api: ApiPromise | null }) => {
+  if (!callData || nullable(api)) return null;
+  return transactionEntitiesService.createCallFromCallData(callData as CallData, api);
 });
 
 sample({
-  clock: createExtrinsicFx.doneData,
-  target: $extrinsic,
+  source: { callData: $throttledCallData, api: $api },
+  target: createCallFx,
 });
 
 sample({
-  clock: createExtrinsicFx.fail,
+  clock: createCallFx.doneData,
+  target: $call,
+});
+
+sample({
+  clock: createCallFx.fail,
   fn: () => null,
-  target: $extrinsic,
+  target: $call,
 });
 
 const { $: $fee, $pending: $pendingFee } = createFeeCalculator({
@@ -454,7 +453,7 @@ export const formModel = {
   $canSubmit,
   $step,
   $api,
-  $extrinsic,
+  $call,
   $args,
   $fee,
   $pendingFee,
