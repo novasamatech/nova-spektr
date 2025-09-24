@@ -3,14 +3,7 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { str } from 'parity-scale-codec';
 import { type Encoder } from 'raptorq/raptorq';
 
-import {
-  type Address,
-  type Chain,
-  type ChainId,
-  SigningType,
-  type VaultChainAccount,
-  type VaultShardAccount,
-} from '@/shared/core';
+import { type Address, type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { CryptoType, CryptoTypeString } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { DYNAMIC_DERIVATIONS_REQUEST, EXPORT_ADDRESS } from '../../common/constants';
@@ -22,26 +15,11 @@ const MULTIPART = new Uint8Array([0]);
 
 export const encodeNumber = (value: number): Uint8Array => new Uint8Array([value >> 8, value & 0xff]);
 
-export const createSubstrateSignPayload = (
-  address: string,
-  payload: string | Uint8Array,
-  genesisHash: ChainId | Uint8Array,
-  signingType: SigningType,
-  derivationPath = '',
-  cryptoType = CryptoType.SR25519,
-): Uint8Array => {
-  if (signingType === SigningType.POLKADOT_VAULT) {
-    return createDynamicDerivationsSignPayload(address, payload, genesisHash, derivationPath, cryptoType);
-  }
-
-  return createSignPayload(address, payload, genesisHash, cryptoType);
-};
-
 export const createSignPayload = (
   address: string,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
-  cryptoType = CryptoType.SR25519,
+  cryptoType: CryptoType,
 ): Uint8Array => {
   return u8aConcat(
     new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
@@ -52,52 +30,12 @@ export const createSignPayload = (
   );
 };
 
-export const createDynamicDerivationsSignPayload = (
-  address: string,
-  payload: string | Uint8Array,
-  genesisHash: ChainId | Uint8Array,
-  derivationPath: string,
-  cryptoType = CryptoType.SR25519,
-): Uint8Array => {
-  return u8aConcat(
-    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
-    new Uint8Array([Command.DynamicDerivationsTransaction]),
-    decodeAddress(address),
-    str.encode(derivationPath),
-    u8aToU8a(payload),
-    u8aToU8a(genesisHash),
-  );
-};
-
-export const createSubstrateSignWithProofPayload = (
-  address: string,
-  metadataProof: Uint8Array,
-  payload: Uint8Array,
-  genesisHash: ChainId | Uint8Array,
-  signingType: SigningType,
-  derivationPath = '',
-  cryptoType = CryptoType.SR25519,
-): Uint8Array => {
-  if (signingType === SigningType.POLKADOT_VAULT) {
-    return createDynamicDerivationsSignWithProofPayload(
-      address,
-      metadataProof,
-      payload,
-      genesisHash,
-      derivationPath,
-      cryptoType,
-    );
-  }
-
-  return createSignWithProofPayload(address, metadataProof, payload, genesisHash, cryptoType);
-};
-
 export const createSignWithProofPayload = (
   address: string,
   metadataProof: Uint8Array,
   payload: Uint8Array,
   genesisHash: ChainId | Uint8Array,
-  cryptoType = CryptoType.SR25519,
+  cryptoType: CryptoType,
 ): Uint8Array => {
   return u8aConcat(
     new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
@@ -109,18 +47,35 @@ export const createSignWithProofPayload = (
   );
 };
 
+export const createDynamicDerivationsSignPayload = (
+  rootAccountId: string,
+  payload: string | Uint8Array,
+  genesisHash: ChainId | Uint8Array,
+  derivationPath: string,
+  cryptoType: CryptoType,
+): Uint8Array => {
+  return u8aConcat(
+    new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
+    new Uint8Array([Command.DynamicDerivationsTransaction]),
+    decodeAddress(rootAccountId),
+    str.encode(derivationPath),
+    u8aToU8a(payload),
+    u8aToU8a(genesisHash),
+  );
+};
+
 export const createDynamicDerivationsSignWithProofPayload = (
-  address: string,
+  rootAccountId: string,
   metadataProof: Uint8Array,
   payload: string | Uint8Array,
   genesisHash: ChainId | Uint8Array,
   derivationPath: string,
-  cryptoType = CryptoType.SR25519,
+  cryptoType: CryptoType,
 ): Uint8Array => {
   return u8aConcat(
     new Uint8Array([cryptoTypeToMultisignerIndex(cryptoType)]),
     new Uint8Array([Command.DynamicDerivationsTransactionWithProof]),
-    decodeAddress(address),
+    decodeAddress(rootAccountId),
     str.encode(derivationPath),
     u8aToU8a(metadataProof),
     u8aToU8a(payload),
