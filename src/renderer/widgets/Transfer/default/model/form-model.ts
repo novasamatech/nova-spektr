@@ -59,7 +59,7 @@ type FormSubmitEvent = FormParams & {
   xcmFee: BN;
   deliveryFee: BN;
   multisigDeposit: BN;
-  rawAmount: string; // Original amount before formatting
+  rawAmount: string;
 };
 
 const formInitiated = createEvent<NetworkStore>();
@@ -507,7 +507,7 @@ const formSubmitFinished = sample({
       initiator: initiator,
       signatory: form.signatory,
       amount: formatAmount(form.amount, network!.asset.precision),
-      rawAmount: form.amount, // Original amount before formatting
+      rawAmount: form.amount,
       destination: form.destination,
       destinationChain: form.destinationChain ?? chain,
       multisigDeposit,

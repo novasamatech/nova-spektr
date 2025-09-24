@@ -113,8 +113,8 @@ const readyToConfirm = sample({
       destinationChain: form.destinationChain,
       destination: form.destination,
       route: form.route,
-      amount: form.amount, // Formatted amount for display
-      rawAmount: form.rawAmount, // Original amount for validation (before formatting)
+      amount: form.amount,
+      rawAmount: form.rawAmount,
       fee: form.fee,
       xcmFee: form.xcmFee,
       deliveryFee: form.deliveryFee,

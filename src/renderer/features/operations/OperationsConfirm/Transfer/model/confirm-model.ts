@@ -15,7 +15,7 @@ export type TransferConfirmStore = TxConfirmInfo & {
   destinationChain: Chain;
   asset: Asset;
   amount: string;
-  rawAmount: string; // Original amount from form for validation
+  rawAmount: string;
   destination: Address;
 
   fee: BN;
