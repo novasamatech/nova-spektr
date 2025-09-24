@@ -41,7 +41,7 @@ const stepChangedToInit = stepChanged.prepend(() => Step.INIT);
 
 type Input = {
   proxied: ProxiedAccount;
-  proxy: ProxyAccount;
+  proxy: Omit<ProxyAccount, 'id' | 'delay'>;
 };
 
 const flowStarted = createEvent<Input>();

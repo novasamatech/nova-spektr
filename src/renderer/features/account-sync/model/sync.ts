@@ -6,7 +6,7 @@ import {
   type ChainId,
   CryptoType,
   type FlexibleMultisigAccount,
-  type FlexibleMultisigCreated,
+  type FlexibleMultisigOperationNotification,
   type FlexibleMultisigWallet,
   type MultisigAccount,
   type MultisigCreated,
@@ -34,7 +34,16 @@ import {
   toShortAddress,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { accountSync, accountSyncService, accounts, identity, identityService } from '@/domains/network';
+import {
+  type AccountIdentity,
+  type AnyAccount,
+  type SyncedAccount,
+  accountSync,
+  accountSyncService,
+  accounts,
+  identity,
+  identityService,
+} from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
@@ -112,7 +121,7 @@ sample({
           return true;
         } else {
           const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-          return lastIndexedBlock && lastIndexedBlock >= account.blockNumber;
+          return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
         }
       }),
     );
@@ -301,7 +310,7 @@ sample({
               return true;
             } else {
               const lastIndexedBlock = syncResult.indexedBlocks.get(account.remarkChainId);
-              return lastIndexedBlock && lastIndexedBlock >= account.blockNumber;
+              return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
             }
           })
         : [],
@@ -359,6 +368,107 @@ sample({
 
 // flexible multisig sync
 
+export type SyncFlexibleMultisigParams = {
+  allAccounts: AnyAccount[];
+  allWallets: Wallet[];
+  syncResult: {
+    accounts: SyncedAccount[];
+    chains: ChainId[];
+    indexedBlocks: Map<ChainId, number>;
+  };
+  identities: Record<AccountId, AccountIdentity>;
+};
+
+export const syncFlexibleMultisigs = ({
+  allAccounts,
+  allWallets,
+  syncResult,
+  identities,
+}: SyncFlexibleMultisigParams) => {
+  const syncedMultisigAccounts = syncResult.accounts.filter(accountSyncService.isSyncedMultisigAccount);
+  const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
+  const flexibleMultisigAccounts = allAccounts.filter(accountUtils.isFlexibleMultisigAccount);
+  const syncedChains = new Set(syncResult.chains);
+
+  const createWallets: WalletCreateParams<FlexibleMultisigAccount, FlexibleMultisigWallet>[] = [];
+
+  const deleteWallets = new Set<Wallet>();
+  const deleteAccounts = new Set(
+    flexibleMultisigAccounts.filter((account) => {
+      if (!syncedChains.has(account.chainId)) {
+        return false;
+      }
+
+      if (!account.blockNumber) {
+        return true;
+      } else {
+        const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
+        return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
+      }
+    }),
+  );
+
+  for (const syncedMultisig of syncedMultisigAccounts) {
+    const matchingProxies = syncedProxyAccounts.filter((proxy) =>
+      accountSyncService.isFlexibleMultisigPair(proxy, syncedMultisig),
+    );
+
+    for (const matchedSyncedProxy of matchingProxies) {
+      const existingFlexibleMultisig = flexibleMultisigAccounts.find(
+        (flexMulAcc) => flexMulAcc.accountId === matchedSyncedProxy.accountId,
+      );
+
+      if (existingFlexibleMultisig) {
+        deleteAccounts.delete(existingFlexibleMultisig);
+      } else {
+        const proxiedIdentity = identities[matchedSyncedProxy.accountId];
+        const proxiedName = proxiedIdentity
+          ? identityService.getFullName(proxiedIdentity)
+          : toShortAddress(toAddress(matchedSyncedProxy.accountId), 5);
+
+        const newFlexibleMultisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
+          accountType: AccountType.FLEX_MULTISIG,
+          type: 'chain',
+          chainId: matchedSyncedProxy.chainId,
+          name: proxiedName,
+          accountId: matchedSyncedProxy.accountId,
+
+          multisigAccountId: syncedMultisig.accountId,
+          threshold: syncedMultisig.threshold,
+          signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
+
+          deposit: matchedSyncedProxy.deposit.toString(),
+          blockNumber: matchedSyncedProxy.blockNumber,
+          extrinsicIndex: matchedSyncedProxy.extrinsicIndex,
+
+          cryptoType: isEthereumAccountId(matchedSyncedProxy.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
+          signingType: SigningType.MULTISIG,
+        };
+
+        createWallets.push({
+          wallet: {
+            name: proxiedName,
+            type: WalletType.FLEXIBLE_MULTISIG,
+          },
+          accounts: [newFlexibleMultisigAccount],
+        });
+      }
+    }
+  }
+
+  for (const account of deleteAccounts) {
+    const wallet = allWallets.find((w) => w.id === account.walletId);
+    if (wallet) {
+      deleteWallets.add(wallet);
+    }
+  }
+
+  return {
+    createWallets,
+    deleteWallets: Array.from(deleteWallets).map((w) => w.id),
+  };
+};
+
 sample({
   clock: accountsSynced,
   source: {
@@ -366,97 +476,12 @@ sample({
     allWallets: walletModel.$allWallets,
   },
   fn({ allAccounts, allWallets }, [syncResult, identities]) {
-    const syncedMultisigAccounts = syncResult.accounts.filter(accountSyncService.isSyncedMultisigAccount);
-    const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
-    const flexibleMultisigAccounts = allAccounts.filter(accountUtils.isFlexibleMultisigAccount);
-    const syncedChains = new Set(syncResult.chains);
-
-    const createWallets: WalletCreateParams<FlexibleMultisigAccount, FlexibleMultisigWallet>[] = [];
-
-    const deleteWallets = new Set<Wallet>();
-    const deleteAccounts = new Set(
-      flexibleMultisigAccounts.filter((account) => {
-        if (!syncedChains.has(account.chainId)) {
-          return false;
-        }
-
-        if (!account.blockNumber) {
-          return true;
-        } else {
-          const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-          return lastIndexedBlock && lastIndexedBlock >= account.blockNumber;
-        }
-      }),
-    );
-
-    for (const syncedMultisig of syncedMultisigAccounts) {
-      const matchingProxies = syncedProxyAccounts.filter((proxy) =>
-        accountSyncService.isFlexibleMultisigPair(proxy, syncedMultisig),
-      );
-
-      if (matchingProxies.length === 0) continue;
-
-      const existingFlexibleMultisig = flexibleMultisigAccounts.find(
-        (account) => account.multisigAccountId === syncedMultisig.accountId,
-      );
-
-      if (existingFlexibleMultisig) {
-        deleteAccounts.delete(existingFlexibleMultisig);
-      } else {
-        const chainGroups = groupBy(matchingProxies, (proxy) => proxy.chainId);
-
-        for (const [chainId, proxieds] of entries(chainGroups)) {
-          if (nullable(proxieds)) continue;
-
-          const firstProxied = proxieds.at(0);
-          if (nullable(firstProxied)) continue;
-
-          const proxiedIdentity = identities[firstProxied.accountId];
-          const proxiedName = proxiedIdentity
-            ? identityService.getFullName(proxiedIdentity)
-            : toShortAddress(toAddress(firstProxied.accountId), 5);
-
-          const multisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
-            accountType: AccountType.FLEX_MULTISIG,
-            type: 'chain',
-            chainId: chainId,
-            name: proxiedName,
-            accountId: firstProxied.accountId,
-
-            multisigAccountId: syncedMultisig.accountId,
-            threshold: syncedMultisig.threshold,
-            signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
-
-            deposit: firstProxied.deposit.toString(),
-            blockNumber: firstProxied.blockNumber,
-            extrinsicIndex: firstProxied.extrinsicIndex,
-
-            cryptoType: isEthereumAccountId(firstProxied.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
-            signingType: SigningType.MULTISIG,
-          };
-
-          createWallets.push({
-            wallet: {
-              name: proxiedName,
-              type: WalletType.FLEXIBLE_MULTISIG,
-            },
-            accounts: [multisigAccount],
-          });
-        }
-      }
-    }
-
-    for (const account of deleteAccounts) {
-      const wallet = allWallets.find((w) => w.id === account.walletId);
-      if (wallet) {
-        deleteWallets.add(wallet);
-      }
-    }
-
-    return {
-      createWallets,
-      deleteWallets: Array.from(deleteWallets).map((w) => w.id),
-    };
+    return syncFlexibleMultisigs({
+      allAccounts,
+      allWallets,
+      syncResult,
+      identities,
+    });
   },
   target: spread({
     createWallets: createWalletsFx,
@@ -466,42 +491,52 @@ sample({
 
 // notifications
 
+const createNotificationsFromWallets = (wallets: { wallet: { id: number }; accounts: AnyAccount[] }[]) => {
+  const notifications = wallets.flatMap(({ wallet, accounts }) => {
+    return accounts.map((account) => {
+      if (accountUtils.isMultisigAccount(account)) {
+        return {
+          read: false,
+          type: NotificationType.MULTISIG_CREATED,
+          dateCreated: Date.now(),
+          multisigAccountId: account.accountId,
+          multisigAccountName: account.name,
+          signatories: account.signatories.map((signatory) => signatory.accountId),
+          threshold: account.threshold,
+        } satisfies NoID<MultisigCreated>;
+      }
+
+      if (accountUtils.isFlexibleMultisigAccount(account)) {
+        return {
+          read: false,
+          walletId: wallet.id,
+          type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
+          dateCreated: Date.now(),
+          multisigAccountId: account.accountId,
+          accountId: account.accountId,
+          accountName: account.name,
+          signatories: account.signatories.map((signatory) => signatory.accountId),
+          threshold: account.threshold,
+        } satisfies NoID<FlexibleMultisigOperationNotification>;
+      }
+
+      return null;
+    });
+  });
+
+  return notifications.filter(nonNullable);
+};
+
 sample({
   clock: createWalletsFx.doneData,
-  fn: (drafts) => {
-    const notifications = drafts.flatMap(({ wallet, accounts }) => {
-      return accounts.map((account) => {
-        if (accountUtils.isMultisigAccount(account)) {
-          return {
-            read: false,
-            type: NotificationType.MULTISIG_CREATED,
-            dateCreated: Date.now(),
-            multisigAccountId: account.accountId,
-            multisigAccountName: account.name,
-            signatories: account.signatories.map((signatory) => signatory.accountId),
-            threshold: account.threshold,
-          } satisfies NoID<MultisigCreated>;
-        }
+  fn: createNotificationsFromWallets,
+  target: notificationModel.events.notificationsAdded,
+});
 
-        if (accountUtils.isFlexibleMultisigAccount(account)) {
-          return {
-            read: false,
-            walletId: wallet.id,
-            type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
-            dateCreated: Date.now(),
-            accountId: account.accountId,
-            accountName: account.name,
-            signatories: account.signatories.map((signatory) => signatory.accountId),
-            threshold: account.threshold,
-          } satisfies NoID<FlexibleMultisigCreated>;
-        }
-
-        return null;
-      });
-    });
-
-    return notifications.filter(nonNullable);
-  },
+sample({
+  clock: walletModel.createWallet.doneData,
+  filter: (result) => result !== undefined,
+  fn: (result) => createNotificationsFromWallets([result!]),
   target: notificationModel.events.notificationsAdded,
 });
 
