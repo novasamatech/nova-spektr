@@ -39,4 +39,5 @@ export interface SyncedMultisigAccount extends SyncedAccount {
   type: 'multisig';
   signatories: AccountId[];
   threshold: number;
+  remarkChainId: ChainId;
 }

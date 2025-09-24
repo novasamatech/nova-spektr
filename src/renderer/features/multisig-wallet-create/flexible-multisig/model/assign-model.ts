@@ -386,7 +386,7 @@ sample({
       accountType: AccountType.MULTISIG,
       type: 'universal',
       blockNumber: timepoint.height,
-      remarkChainId: chain?.chainId,
+      remarkChainId: chain?.chainId ?? null,
     };
 
     const wallet: Omit<NoID<MultisigWallet>, 'accounts'> = {

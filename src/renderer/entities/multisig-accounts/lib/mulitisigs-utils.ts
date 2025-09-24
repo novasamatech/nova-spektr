@@ -1,6 +1,7 @@
 import {
   AccountType,
   type Chain,
+  type ChainId,
   ChainOptions,
   CryptoType,
   type MultisigAccount,
@@ -30,9 +31,10 @@ type BuildMultisigParams = {
   accountId: AccountId;
   signatories: AccountId[];
   name: string;
+  remarkChainId: ChainId | null;
 };
 
-function buildMultisigAccount({ threshold, accountId, signatories, name }: BuildMultisigParams) {
+function buildMultisigAccount({ threshold, accountId, signatories, name, remarkChainId }: BuildMultisigParams) {
   const account: NoID<Omit<MultisigAccount, 'walletId'>> = {
     threshold: threshold,
     accountId: accountId,
@@ -44,6 +46,7 @@ function buildMultisigAccount({ threshold, accountId, signatories, name }: Build
     signingType: SigningType.MULTISIG,
     accountType: AccountType.MULTISIG,
     type: 'universal',
+    remarkChainId,
   };
 
   return account;

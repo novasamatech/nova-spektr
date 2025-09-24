@@ -37,7 +37,7 @@ export interface MultisigAccount extends UniversalAccount {
 
   // Temp fields for freshly created user accounts , used for sync comparison with indexer metadata
   blockNumber?: number; // Block number when this account was created
-  remarkChainId?: ChainId; // Chain ID where the remark was submitted
+  remarkChainId: ChainId | null; // Chain ID where the remark was submitted
 }
 
 /**

@@ -201,6 +201,7 @@ const multisigSchema = z.object({
               }),
             ),
           }),
+          remarkChainId: chainIdSchema,
         }),
       }),
     ),
@@ -244,6 +245,7 @@ export const multisigAccountsProvider: AccountProvider<SyncedMultisigAccount> = 
             accountId,
             signatories,
             threshold: multisig.threshold,
+            remarkChainId: multisig.remarkChainId ?? null,
           });
           processed.add(accountId);
         }

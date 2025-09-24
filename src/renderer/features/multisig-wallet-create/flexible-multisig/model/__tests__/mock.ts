@@ -42,6 +42,7 @@ export const multisigWallet: Wallet = {
       threshold: 1,
       name: '',
       signatories: [],
+      remarkChainId: null,
     } satisfies MultisigAccount,
   ],
 };

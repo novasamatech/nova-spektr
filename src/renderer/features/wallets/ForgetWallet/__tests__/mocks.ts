@@ -40,6 +40,7 @@ export const accounts = {
     ],
     type: 'universal',
     walletId: 3,
+    remarkChainId: null,
   } satisfies MultisigAccount,
   multisig2: {
     id: '4 0xf9e94d71f4e3695e07e21b574e1ce2e56b228a020a34824884ed9987e6a4e4ad universal',
@@ -59,6 +60,7 @@ export const accounts = {
         accountId: '0x11' as AccountId,
       },
     ],
+    remarkChainId: null,
   } satisfies MultisigAccount,
   proxy1: {
     id: '9 0x468cb8efc1544cd5000a14ad97e7750585f3378fe786046f11725c2acd5123a0 0x67f9723393ef76214df0118c34bbbd3dbebc8ed46a10973a8c969d48fe7598c9',

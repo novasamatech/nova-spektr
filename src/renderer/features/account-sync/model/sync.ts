@@ -304,16 +304,18 @@ sample({
 
     const deleteWallets = new Set<Wallet>();
     const deleteAccounts = new Set(
-      syncedChains.size > 0
-        ? multisigAccounts.filter((account) => {
-            if (!account.remarkChainId || !account.blockNumber) {
-              return true;
-            } else {
-              const lastIndexedBlock = syncResult.indexedBlocks.get(account.remarkChainId);
-              return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
-            }
-          })
-        : [],
+      multisigAccounts.filter((account) => {
+        if (account.remarkChainId && !syncedChains.has(account.remarkChainId)) {
+          return false;
+        }
+
+        if (!account.remarkChainId || !account.blockNumber) {
+          return true;
+        } else {
+          const lastIndexedBlock = syncResult.indexedBlocks.get(account.remarkChainId);
+          return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
+        }
+      }),
     );
 
     for (const syncedAccount of syncedMultisigAccounts) {
@@ -342,6 +344,7 @@ sample({
               cryptoType: isEthereumAccountId(syncedAccount.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,
               signingType: SigningType.MULTISIG,
               signatories: syncedAccount.signatories.map((accountId) => ({ accountId })),
+              remarkChainId: syncedAccount.remarkChainId,
             },
           ],
         });
