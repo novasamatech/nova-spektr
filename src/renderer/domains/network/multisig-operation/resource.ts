@@ -263,7 +263,7 @@ export const fetchResource = createRemoteResource<RequestParams, MultisigOperati
 });
 
 export const subscribeResource = createSubscriptionResource<RequestParams, MultisigOperation[]>({
-  pool: params => params.accountId,
+  pool: params => `${params.accountId}_${Object.keys(params.apis).join('_')}`,
   fn({ accountId, apis, chains }, callback) {
     const unsubscribeFns: VoidFunction[] = [];
 
