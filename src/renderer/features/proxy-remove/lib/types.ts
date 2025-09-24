@@ -22,7 +22,7 @@ export const enum SubmitStep {
 export type RemoveProxyStore = {
   api: ApiPromise;
   chain: Chain;
-  proxyAccount: ProxyAccount;
+  proxyAccount: Omit<ProxyAccount, 'id' | 'delay'>;
   proxiedAccount: ProxiedAccount;
   spawner: AccountId;
   proxyType: ProxyType;
