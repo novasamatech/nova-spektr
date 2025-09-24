@@ -596,7 +596,7 @@ function buildAddProxy({ chain, accountId, delegateAccountId, type }: AddProxyPa
 
 type CreateFlexibleMultisigParams = {
   chain: Chain;
-  signerAccountId: AccountId;
+  signatoryAccountId: AccountId;
   multisigAccountId: AccountId;
   proxyAccountId: AccountId;
   threshold: number;
@@ -611,14 +611,14 @@ function buildCreateFlexibleMultisig({
   proxyAccountId,
   threshold,
   signatories,
-  signerAccountId,
+  signatoryAccountId,
   proxyDeposit,
   isMultisigExists,
 }: CreateFlexibleMultisigParams): Transaction {
   // transfer deposit to proxy account
   const transferTransaction = {
     chainId: chain.chainId,
-    accountId: signerAccountId,
+    accountId: signatoryAccountId,
     type: TransactionType.TRANSFER,
     args: {
       dest: proxyAccountId,
@@ -629,15 +629,15 @@ function buildCreateFlexibleMultisig({
   // reassign proxy to multisig account
   const addProxyTx = transactionBuilder.buildAddProxy({
     chain,
-    accountId: signerAccountId,
+    accountId: signatoryAccountId,
     delegateAccountId: multisigAccountId,
     type: 'Any',
   });
 
   const removeProxyTx = transactionBuilder.buildRemoveProxy({
     chain,
-    accountId: signerAccountId,
-    delegate: signerAccountId,
+    accountId: signatoryAccountId,
+    delegate: signatoryAccountId,
     proxyType: 'Any',
     delay: 0,
   });
@@ -645,14 +645,14 @@ function buildCreateFlexibleMultisig({
   // create inner batch containing both proxy operations
   const innerBatch = buildBatchAll({
     chain,
-    accountId: signerAccountId,
+    accountId: signatoryAccountId,
     transactions: [addProxyTx, removeProxyTx],
   });
 
   // wrap inner batch in single proxy call
   const proxyWrapper = {
     chainId: chain.chainId,
-    accountId: signerAccountId,
+    accountId: signatoryAccountId,
     type: TransactionType.PROXY,
     args: {
       real: proxyAccountId,
@@ -667,7 +667,7 @@ function buildCreateFlexibleMultisig({
   } else {
     const remarkTx = transactionBuilder.buildRemark({
       chainId: chain.chainId,
-      accountId: signerAccountId,
+      accountId: signatoryAccountId,
       threshold,
       signatories: signatories.map((s) => s.accountId),
     });
@@ -675,7 +675,7 @@ function buildCreateFlexibleMultisig({
     transactions = [transferTransaction, remarkTx, proxyWrapper];
   }
 
-  return buildBatchAll({ chain, accountId: signerAccountId, transactions });
+  return buildBatchAll({ chain, accountId: signatoryAccountId, transactions });
 }
 
 type ProxyReassignParams = {

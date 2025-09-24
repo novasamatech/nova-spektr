@@ -13,6 +13,7 @@ import {
   syncResult,
   userAccount,
 } from './__mocks__/sync.flexMultisig.mocks';
+
 import { type SyncFlexibleMultisigParams, syncFlexibleMultisigs } from './sync';
 
 describe('syncFlexibleMultisigs', () => {

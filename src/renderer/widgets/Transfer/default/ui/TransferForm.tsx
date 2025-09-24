@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
+import { uniqBy } from 'lodash';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
@@ -268,12 +269,12 @@ const Destination = () => {
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
       const queryPass = includesMultiple([account.name, address], query);
       const isMyself = nonNullable(initiator.value) && initiator.value.accountId === account.accountId;
-      const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(account);
 
-      return isChainMatch && queryPass && !isMyself && !isFlexibleMultisigAccount;
+      return isChainMatch && queryPass && !isMyself;
     });
+    const uniqueAccounts = uniqBy(filteredAccounts, 'accountId');
 
-    const accountByGroup = services.walletSelect.getWalletFamilyByAccounts(wallets, filteredAccounts);
+    const accountByGroup = services.walletSelect.getWalletFamilyByAccounts(wallets, uniqueAccounts);
     const ownAccountOptions: ComboboxGroup[] = [];
 
     for (const [walletFamily, accountsGroup] of entries(accountByGroup)) {

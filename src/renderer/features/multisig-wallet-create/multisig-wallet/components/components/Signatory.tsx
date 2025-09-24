@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { uniqBy } from 'lodash';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants/testIds';
@@ -94,22 +95,23 @@ export const Signatory = ({
     if (!chain || accountsList.length === 0 || (!isOwnAccount && validateAddress(query, chain))) return [];
 
     const availableAccounts = accountsList.filter(account => {
-      const isCorrectAccount =
-        !accountUtils.isWatchOnlyAccount(account) && !accountUtils.isFlexibleMultisigAccount(account);
+      const isNotWatchOnly = !accountUtils.isWatchOnlyAccount(account);
 
-      if (isOwnAccount) return isCorrectAccount;
+      if (isOwnAccount) return isNotWatchOnly;
 
       const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
       const queryPass = includesMultiple([account.name, address], query);
 
-      return isChainMatch && isCorrectAccount && queryPass;
+      return isChainMatch && isNotWatchOnly && queryPass;
     });
 
-    if (availableAccounts.length === 0) return [];
+    const uniqueAccounts = uniqBy(availableAccounts, 'accountId');
+
+    if (uniqueAccounts.length === 0) return [];
 
     const filteredAccounts = performSearch({
-      records: availableAccounts,
+      records: uniqueAccounts,
       query: signatoryQuery,
       weights: { name: 1, address: 0.5, id: 0.5, accountId: 0.5 },
     });

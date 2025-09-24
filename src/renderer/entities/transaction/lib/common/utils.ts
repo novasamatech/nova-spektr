@@ -102,10 +102,20 @@ export const isUnlockTransaction = (transaction?: Transaction | DecodedTransacti
 
 export const isEditFlexibleTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
   if (transaction?.type === TransactionType.BATCH_ALL) {
-    const addProxy = transaction.args.transactions?.some(isAddProxyTransaction);
-    const removeProxy = transaction.args.transactions?.some(isRemoveProxyTransaction);
+    if (transaction.args.transactions?.length !== 2) {
+      return false;
+    }
 
-    return addProxy && removeProxy;
+    const removeProxyTransaction = transaction.args.transactions.at(0);
+    const addProxyTransaction = transaction.args.transactions.at(1);
+
+    if (isRemoveProxyTransaction(removeProxyTransaction) && isAddProxyTransaction(addProxyTransaction)) {
+      if (addProxyTransaction.args.proxyType === 'Any') {
+        return true;
+      }
+    }
+
+    return true;
   }
 
   return false;

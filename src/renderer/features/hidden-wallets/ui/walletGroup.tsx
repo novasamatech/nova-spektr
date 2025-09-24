@@ -90,7 +90,7 @@ export const WalletGroup = (props: Props) => {
       <Accordion.Content>
         <Box gap={1} padding={[1, 0, 0]}>
           {wallets.map((wallet) => {
-            const accountId = wallet.accounts[0]?.accountId;
+            const accountId = wallet.accounts.at(0)?.accountId;
             const isSelected = selectedWalletSet.has(wallet);
 
             let chain: Chain | null = null;
