@@ -38,6 +38,20 @@ export const getMultisigExtrinsicLink = (
   return multisigLink.replace('{index}', `${blockCreated}-${indexCreated}`).replace('{callHash}', callHash);
 };
 
+export const getMultisigEventLink = (
+  indexCreated: number,
+  blockCreated: number,
+  explorers: Explorer,
+): string | undefined => {
+  if (!indexCreated || !blockCreated || !explorers) return;
+
+  const multisigLink = explorers.extrinsic;
+
+  if (!multisigLink) return;
+
+  return multisigLink.replace('{hash}', `${blockCreated}-${indexCreated}`);
+};
+
 export const getSignatoryName = (
   signatoryId: AccountId,
   txSignatories: Signatory[],
