@@ -380,6 +380,8 @@ export const allWallets = [
   flexMultisigWallet3,
 ];
 
+export const allChains = { '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42': { addressPrefix: 0 } };
+
 export const syncResult = {
   accounts: [syncMultisig1, syncMultisig2, syncProxy1, syncProxy2, syncProxy3, syncProxy4],
   chains: ['0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42'],

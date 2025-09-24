@@ -182,8 +182,10 @@ const Root = <T extends string>({
               ref={triggerRef}
               data-testid={testId}
               className={cnTw(
-                'relative box-border cursor-pointer border pr-6.5 pl-2.75 text-text-secondary',
+                'relative box-border',
+                'cursor-pointer border pr-6.5 pl-2.75 text-text-secondary',
                 'w-full overflow-y-clip rounded-md text-left text-footnote hover:shadow-card-shadow',
+                'focus:border-active-container-border focus-visible:outline-none!',
                 {
                   'h-8.5': height === 'sm',
                   'h-10.5': height === 'md',
@@ -198,7 +200,9 @@ const Root = <T extends string>({
                 !disabled && onOpenChange(true);
               }}
             >
-              {valueNode || selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
+              <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
+                {valueNode || selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
+              </div>
 
               <div className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2">
                 <Icon name="down" size={16} />
@@ -212,8 +216,8 @@ const Root = <T extends string>({
               placeholder={placeholder}
               readOnly={!onSearch}
               className={cnTw(
-                'min-h-[34px] w-full rounded-md border-none px-3 pr-8 outline-1 placeholder:text-footnote placeholder:text-text-secondary focus-visible:outline-2',
-                { 'h-10.5': height === 'md' },
+                'box-border w-full rounded-md border border-filter-border px-2.75 outline-none placeholder:text-footnote placeholder:text-text-secondary focus:border-active-container-border focus-visible:outline-none!',
+                { 'h-8.5': height === 'sm', 'h-10.5': height === 'md' },
                 { 'cursor-default': !onSearch },
               )}
               onBlur={() => {
@@ -233,7 +237,6 @@ const Root = <T extends string>({
           portal
           className={cnTw(
             'pointer-events-auto relative z-[9999]', // necessary for proper render in portal
-            'text-body', // duplicate of the root rule bc the content will be rendered outside
             'flex max-h-[300px] flex-col overflow-auto overscroll-contain rounded-md border p-1 shadow-lg',
             {
               'border-filter-border bg-input-background': theme === 'light',
@@ -291,9 +294,11 @@ const Item = memo(({ value, testId, indent = 0, children }: PropsWithChildren<It
       value={value}
       data-testid={testId}
       className={cnTw(
-        'flex cursor-pointer scroll-m-2 items-center gap-2 rounded p-2 outline-none data-[active-item]:outline-2',
+        'flex items-center gap-2',
+        'cursor-pointer scroll-m-2 rounded px-3 py-2 text-footnote outline-none data-[active-item]:outline-2',
         {
-          'hover:bg-action-background-hover data-[active-item]:bg-tab-background': theme === 'light',
+          'text-text-secondary hover:bg-action-background-hover data-[active-item]:bg-tab-background':
+            theme === 'light',
           'text-text-tertiary hover:bg-background-item-hover data-[active-item]:bg-background-item-hover':
             theme === 'dark',
         },

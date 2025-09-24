@@ -130,21 +130,24 @@ export const Staking = () => {
   }, [activeChain]);
   const { api: timelineApi } = useNetworkData(timelineChainId);
 
-  const accounts =
-    selectedAccounts.filter((account, _, collection) => {
-      if (!activeChain) return false;
+  const accounts = useMemo(() => {
+    if (!selectedAccounts.length || !activeChain) return [];
 
+    const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
+
+    const filteredAccounts = selectedAccounts.filter((account, _, collection) => {
       const isBaseAccount = accountUtils.isVaultBaseAccount(account);
-      const isPolkadotVault = walletUtils.isPolkadotVault(activeWallet);
       const hasManyAccounts = collection.length > 1;
-      const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(account);
 
-      if ((isPolkadotVault && isBaseAccount && hasManyAccounts) || isFlexibleMultisigAccount) {
+      if (isPolkadotVault && isBaseAccount && hasManyAccounts) {
         return false;
       }
 
       return accountService.isAccountAvailableOnChain(account, activeChain);
-    }) || [];
+    });
+
+    return uniqBy(filteredAccounts, 'accountId');
+  }, [selectedAccounts, activeChain, activeWallet]);
 
   const accountIds = accounts.map((a) => a.accountId);
 

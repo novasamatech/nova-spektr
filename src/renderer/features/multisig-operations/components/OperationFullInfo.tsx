@@ -35,7 +35,7 @@ export const operationDetailsSlot = createSlot<SlotProps>();
 
 export const OperationFullInfo = memo(({ operation, account }: Props) => {
   const { t } = useI18n();
-  const { api, chain, connection, extendedChain } = useNetworkData(operation.chainId);
+  const { api, chain, extendedChain } = useNetworkData(operation.chainId);
   const allAccounts = useUnit(accounts.$list);
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
 
@@ -126,14 +126,14 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
         </div>
 
         <div className="mt-3 flex items-center">
-          {connection && isRejectAvailable && account && (
+          {isRejectAvailable && account && (
             <RejectTxModal api={api} operation={operation} account={account} chain={chain}>
               <Button pallet="error" variant="fill">
                 {t('operation.rejectButton')}
               </Button>
             </RejectTxModal>
           )}
-          {account && isApproveAvailable && connection && (
+          {account && isApproveAvailable && (
             <ApproveTxModal api={api} operation={operation} account={account} chain={chain}>
               <Button className="ml-auto">{t('operation.approveButton')}</Button>
             </ApproveTxModal>

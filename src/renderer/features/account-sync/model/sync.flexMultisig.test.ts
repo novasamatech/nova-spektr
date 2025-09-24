@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import {
   allAccounts,
+  allChains,
   allWallets,
   flexMultisigAccount1,
   flexMultisigAccount2,
@@ -11,7 +12,7 @@ import {
   flexMultisigWallet3,
   syncResult,
   userAccount,
-} from './__mocks__/sync.flexMultisig.test';
+} from './__mocks__/sync.flexMultisig.mocks';
 import { type SyncFlexibleMultisigParams, syncFlexibleMultisigs } from './sync';
 
 describe('syncFlexibleMultisigs', () => {
@@ -19,6 +20,7 @@ describe('syncFlexibleMultisigs', () => {
     const result = syncFlexibleMultisigs({
       allWallets,
       allAccounts: [userAccount],
+      allChains: allChains,
       syncResult,
       identities: {},
     } as unknown as SyncFlexibleMultisigParams);
@@ -93,6 +95,7 @@ describe('syncFlexibleMultisigs', () => {
     const result = syncFlexibleMultisigs({
       allWallets,
       allAccounts,
+      allChains: allChains,
       syncResult,
       identities: {},
     } as unknown as SyncFlexibleMultisigParams);
@@ -120,6 +123,7 @@ describe('syncFlexibleMultisigs', () => {
     const result = syncFlexibleMultisigs({
       allWallets: [...allWallets, walletToDelete],
       allAccounts: [...allAccounts, nonExistentFlexMultisigAccount],
+      allChains: allChains,
       syncResult,
       identities: {},
     } as unknown as SyncFlexibleMultisigParams);
@@ -150,6 +154,7 @@ describe('syncFlexibleMultisigs', () => {
     const result = syncFlexibleMultisigs({
       allWallets,
       allAccounts,
+      allChains: allChains,
       syncResult: modifiedSyncResult,
       identities: {},
     } as unknown as SyncFlexibleMultisigParams);
@@ -167,6 +172,7 @@ describe('syncFlexibleMultisigs', () => {
     const result = syncFlexibleMultisigs({
       allWallets,
       allAccounts: [flexMultisigAccount1, flexMultisigAccount2, flexMultisigAccount3],
+      allChains: allChains,
       syncResult: emptySyncResult,
       identities: {},
     } as unknown as SyncFlexibleMultisigParams);

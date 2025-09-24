@@ -371,6 +371,7 @@ sample({
 export type SyncFlexibleMultisigParams = {
   allAccounts: AnyAccount[];
   allWallets: Wallet[];
+  allChains: Record<ChainId, { addressPrefix?: number }>;
   syncResult: {
     accounts: SyncedAccount[];
     chains: ChainId[];
@@ -382,6 +383,7 @@ export type SyncFlexibleMultisigParams = {
 export const syncFlexibleMultisigs = ({
   allAccounts,
   allWallets,
+  allChains,
   syncResult,
   identities,
 }: SyncFlexibleMultisigParams) => {
@@ -422,9 +424,10 @@ export const syncFlexibleMultisigs = ({
         deleteAccounts.delete(existingFlexibleMultisig);
       } else {
         const proxiedIdentity = identities[matchedSyncedProxy.accountId];
+        const chain = allChains[matchedSyncedProxy.chainId];
         const proxiedName = proxiedIdentity
           ? identityService.getFullName(proxiedIdentity)
-          : toShortAddress(toAddress(matchedSyncedProxy.accountId), 5);
+          : toShortAddress(toAddress(matchedSyncedProxy.accountId, { prefix: chain?.addressPrefix }), 5);
 
         const newFlexibleMultisigAccount: Omit<FlexibleMultisigAccount, 'id' | 'walletId'> = {
           accountType: AccountType.FLEX_MULTISIG,
@@ -474,11 +477,13 @@ sample({
   source: {
     allAccounts: accounts.$list,
     allWallets: walletModel.$allWallets,
+    allChains: networkModel.$chains,
   },
-  fn({ allAccounts, allWallets }, [syncResult, identities]) {
+  fn({ allAccounts, allWallets, allChains }, [syncResult, identities]) {
     return syncFlexibleMultisigs({
       allAccounts,
       allWallets,
+      allChains,
       syncResult,
       identities,
     });

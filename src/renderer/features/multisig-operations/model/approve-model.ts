@@ -15,6 +15,7 @@ import {
 import {
   type AnyAccount,
   type MultisigOperation,
+  accountService,
   accounts,
   multisigOperationService,
   transactionService,
@@ -57,6 +58,30 @@ const $api = combine(
   },
 );
 
+const $unsignedAccounts = combine(
+  {
+    multisigAccount: operationsContextModel.$multisigAccount,
+    chain: $chain,
+    accountsList: accounts.$list,
+    operation: $operation,
+  },
+  ({ multisigAccount, chain, accountsList, operation }) => {
+    if (!multisigAccount || !chain || !operation) return [];
+
+    const signatories = accountsList.filter(a =>
+      multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
+    );
+
+    const signatoriesOnChain = signatories.filter(s => accountService.isAccountAvailableOnChain(s, chain));
+
+    const filteredSignatories = signatoriesOnChain.filter(
+      a => !operation.events.some(e => e.accountId === a.accountId),
+    );
+
+    return filteredSignatories;
+  },
+);
+
 const $signatories = createSignatoriesStore({
   chain: $chain,
   initiator: $initiator,
@@ -64,9 +89,15 @@ const $signatories = createSignatoriesStore({
 });
 
 sample({
+  clock: $unsignedAccounts,
+  filter: $unsignedAccounts.map(unsignedAccounts => unsignedAccounts.length === 1),
+  fn: unsignedAccounts => unsignedAccounts.at(0) ?? null,
+  target: $initiator,
+});
+sample({
   clock: $signatories,
   filter: $signatories.map(signatories => signatories.length === 1),
-  fn: signatories => signatories[0],
+  fn: signatories => signatories.at(0) ?? null,
   target: $signatory,
 });
 
@@ -195,6 +226,7 @@ export const approveModel = {
   $signatory,
   $signingPayloads,
   $initiator,
+  $unsignedAccounts,
 
   $signatories,
   selectSignatory,

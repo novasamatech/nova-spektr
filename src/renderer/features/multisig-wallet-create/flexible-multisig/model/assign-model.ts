@@ -59,7 +59,6 @@ const subscribePureEventFx = createEffect(({ api, signatory }: SubscribePureEven
     const unsubscribe = polkadotjsHelpers.subscribeSystemEvents(
       { api, section: `proxy`, methods: ['PureCreated'] },
       event => {
-        if (!api) return unsubscribe.then(fn => fn());
         const data = eventSchema.parse(event.data.toHuman());
         const accountId = toAccountId(data.who);
 
@@ -104,7 +103,7 @@ sample({
 // Second transaction
 const $coreTx = combine(
   {
-    signatory: flexibleMultisigModel.$signer,
+    signatory: flexibleMultisigModel.$signatory,
     totalDeposit: flexibleMultisigModel.$totalDeposit,
     isMultisigExists: formModel.$multisigAlreadyExists,
     threshold: formModel.form.fields.threshold.$value,
@@ -129,7 +128,7 @@ const $coreTx = combine(
 
     return transactionBuilder.buildCreateFlexibleMultisig({
       chain,
-      signerAccountId: signatory.accountId,
+      signatoryAccountId: signatory.accountId,
       signatories: signatoriesWrapped,
       multisigAccountId: toAccountId(multisigAccountId),
       threshold,
@@ -143,7 +142,7 @@ const $coreTx = combine(
 const { $tx } = createComplexTxStore({
   api: $api,
   initiator: flexibleMultisigModel.$initiator,
-  signatory: flexibleMultisigModel.$signer,
+  signatory: flexibleMultisigModel.$signatory,
   accounts: accounts.$list,
   chain: formModel.$chain,
   transaction: $coreTx,
@@ -156,7 +155,7 @@ sample({
   source: {
     chain: formModel.$chain,
     tx: $tx,
-    signatory: flexibleMultisigModel.$signer,
+    signatory: flexibleMultisigModel.$signatory,
     initiator: flexibleMultisigModel.$initiator,
   },
   filter: ({ chain, tx, signatory, initiator }) =>
@@ -391,7 +390,7 @@ sample({
     };
 
     const wallet: Omit<NoID<MultisigWallet>, 'accounts'> = {
-      name: toShortAddress(toAddress(multisigAccountId!), 5),
+      name: toShortAddress(toAddress(multisigAccountId!, { prefix: chain?.addressPrefix }), 5),
       type: WalletType.MULTISIG,
     };
 
