@@ -12,6 +12,13 @@ import {
   flexMultisigAccount5,
   flexMultisigAccount6,
   flexMultisigAccount7,
+  flexMultisigWallet1,
+  flexMultisigWallet2,
+  flexMultisigWallet3,
+  flexMultisigWallet4,
+  flexMultisigWallet5,
+  flexMultisigWallet6,
+  flexMultisigWallet7,
   syncResult,
   userAccount,
 } from './mocks/syncFlexibleMultisigs-data';
@@ -238,5 +245,38 @@ describe('syncFlexibleMultisigs', () => {
 
     expect(result.createWallets).toEqual([]);
     expect(result.deleteWallets).toEqual([]);
+  });
+
+  test('should delete all flexible multisig wallets when sync result accounts is empty', () => {
+    const emptySyncResult = {
+      ...syncResult,
+      accounts: [],
+    };
+
+    const result = syncFlexibleMultisigs({
+      allWallets,
+      allAccounts: [
+        flexMultisigAccount1,
+        flexMultisigAccount2,
+        flexMultisigAccount3,
+        flexMultisigAccount4,
+        flexMultisigAccount5,
+        flexMultisigAccount6,
+        flexMultisigAccount7,
+      ],
+      syncResult: emptySyncResult,
+      identities: {},
+    } as unknown as SyncFlexibleMultisigParams);
+
+    expect(result.createWallets).toEqual([]);
+    expect(result.deleteWallets).toEqual([
+      flexMultisigWallet1.id,
+      flexMultisigWallet2.id,
+      flexMultisigWallet3.id,
+      flexMultisigWallet4.id,
+      flexMultisigWallet5.id,
+      flexMultisigWallet6.id,
+      flexMultisigWallet7.id,
+    ]);
   });
 });

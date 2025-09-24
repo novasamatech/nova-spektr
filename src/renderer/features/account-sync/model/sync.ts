@@ -121,7 +121,7 @@ sample({
           return true;
         } else {
           const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-          return lastIndexedBlock && lastIndexedBlock >= account.blockNumber;
+          return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
         }
       }),
     );
@@ -310,7 +310,7 @@ sample({
               return true;
             } else {
               const lastIndexedBlock = syncResult.indexedBlocks.get(account.remarkChainId);
-              return lastIndexedBlock && lastIndexedBlock >= account.blockNumber;
+              return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
             }
           })
         : [],
@@ -403,7 +403,7 @@ export const syncFlexibleMultisigs = ({
         return true;
       } else {
         const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-        return lastIndexedBlock && lastIndexedBlock >= account.blockNumber;
+        return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
       }
     }),
   );

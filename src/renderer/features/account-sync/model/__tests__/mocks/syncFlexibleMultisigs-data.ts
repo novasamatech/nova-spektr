@@ -489,10 +489,52 @@ export const oneGuyWallet = {
 };
 
 export const flexMultisigWallet1 = {
-  name: 'qwwwq',
+  name: 'first wallet',
   type: 'wallet_fxms',
   id: 68,
   accounts: [flexMultisigAccount1],
+};
+
+export const flexMultisigWallet2 = {
+  name: 'second wallet',
+  type: 'wallet_fxms',
+  id: 69,
+  accounts: [flexMultisigAccount2],
+};
+
+export const flexMultisigWallet3 = {
+  name: 'third wallet',
+  type: 'wallet_fxms',
+  id: 70,
+  accounts: [flexMultisigAccount3],
+};
+
+export const flexMultisigWallet4 = {
+  name: 'fourth wallet',
+  type: 'wallet_fxms',
+  id: 71,
+  accounts: [flexMultisigAccount4],
+};
+
+export const flexMultisigWallet5 = {
+  name: 'fifth wallet',
+  type: 'wallet_fxms',
+  id: 72,
+  accounts: [flexMultisigAccount5],
+};
+
+export const flexMultisigWallet6 = {
+  name: 'sixth wallet',
+  type: 'wallet_fxms',
+  id: 73,
+  accounts: [flexMultisigAccount6],
+};
+
+export const flexMultisigWallet7 = {
+  name: 'seventh wallet',
+  type: 'wallet_fxms',
+  id: 74,
+  accounts: [flexMultisigAccount7],
 };
 
 export const multisigWallet1 = {
@@ -532,9 +574,9 @@ export const allAccounts = [
   proxiedAccount3,
   proxiedAccount4,
   proxiedAccount5,
+  proxiedAccount6,
   flexMultisigAccount1,
   flexMultisigAccount2,
-  proxiedAccount6,
   flexMultisigAccount3,
   flexMultisigAccount4,
   flexMultisigAccount5,
@@ -588,7 +630,12 @@ export const allWallets = [
   },
   multisigWallet1,
   flexMultisigWallet1,
-  // ... (other flex multisig wallets)
+  flexMultisigWallet2,
+  flexMultisigWallet3,
+  flexMultisigWallet4,
+  flexMultisigWallet5,
+  flexMultisigWallet6,
+  flexMultisigWallet7,
 ];
 
 export const syncResult = {
