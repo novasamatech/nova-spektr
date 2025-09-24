@@ -83,7 +83,17 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
 
   return (
     <div className={cnTw('flex flex-col', className)}>
-      {hasProxies ? (
+      {isLoading ? (
+        <>
+          <div className="flex items-center px-5 py-2">
+            <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
+          </div>
+
+          <ul className="flex h-full flex-col divide-y divide-divider overflow-x-hidden overflow-y-auto px-5">
+            {renderProxyGroups()}
+          </ul>
+        </>
+      ) : hasProxies ? (
         <>
           <div className="flex items-center px-5 py-2">
             <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>

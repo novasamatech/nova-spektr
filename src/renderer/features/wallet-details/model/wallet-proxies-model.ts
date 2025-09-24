@@ -7,14 +7,18 @@ import { type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { type ProxyAccount } from '@/shared/core/types/proxy';
 import { createStoreFromEffect } from '@/shared/effector';
 import { keys, nonNullable } from '@/shared/lib/utils';
-import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accountSync, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
 const $wallet = flow.state.map(({ wallet }) => wallet);
 
-const { $: $walletProxies, fx: _fetchWalletProxiesFx } = createStoreFromEffect<
+const {
+  $: $walletProxies,
+  fx: _fetchWalletProxiesFx,
+  $pending: $walletProxiesPending,
+} = createStoreFromEffect<
   {
     wallet: Wallet;
     chains: Record<ChainId, Chain>;
@@ -100,10 +104,22 @@ const $walletProxiesCount = $walletProxies.map(chainsProxies => {
 
 sample({
   clock: $wallet,
-  filter: nonNullable,
+  source: { wallet: $wallet },
+  filter: ({ wallet }) => nonNullable(wallet),
   target: resetWalletProxies,
 });
 
+sample({
+  clock: accountSync.syncAccounts.doneData,
+  source: {
+    wallet: $wallet,
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+  },
+  filter: ({ wallet }) => nonNullable(wallet),
+  fn: ({ wallet, chains, apis }) => ({ wallet: wallet!, chains, apis, allAccounts: [] }),
+  target: _fetchWalletProxiesFx,
+});
 const $walletProxyGroups = combine(
   {
     wallet: $wallet,
@@ -135,6 +151,7 @@ export const walletProxiesModel = {
   flow,
   $wallet,
   $walletProxies,
+  $walletProxiesPending,
   $hasWalletProxies,
   $walletProxiesCount,
   $walletProxyGroups,
