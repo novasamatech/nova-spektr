@@ -1,7 +1,5 @@
 import { describe, expect, test } from 'vitest';
 
-import { type SyncFlexibleMultisigParams, syncFlexibleMultisigs } from '../sync';
-
 import {
   allAccounts,
   allWallets,
@@ -13,7 +11,8 @@ import {
   flexMultisigWallet3,
   syncResult,
   userAccount,
-} from './mocks/syncFlexibleMultisigs-data';
+} from './__mocks__/sync.flexMultisig.test';
+import { type SyncFlexibleMultisigParams, syncFlexibleMultisigs } from './sync';
 
 describe('syncFlexibleMultisigs', () => {
   test('should index all accounts when initialised', () => {
