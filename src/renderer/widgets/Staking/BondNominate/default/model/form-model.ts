@@ -1,5 +1,6 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { uniqBy } from 'lodash';
 import { spread } from 'patronum';
 
 import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
@@ -17,7 +18,7 @@ import {
   validateAddress,
 } from '@/shared/lib/utils';
 import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
@@ -172,19 +173,20 @@ const $destinationAccounts = combine(
   ({ wallets, network, query }) => {
     if (!network) return [];
 
-    return walletUtils.getAccountsBy(wallets, (account, wallet) => {
+    const filteredAccounts = walletUtils.getAccountsBy(wallets, (account, wallet) => {
       const isPvWallet = walletUtils.isPolkadotVault(wallet);
       const isBaseAccount = accountUtils.isVaultBaseAccount(account);
-      const isFlexibleMultisigAccount = accountUtils.isFlexibleMultisigAccount(account);
 
-      if ((isBaseAccount && isPvWallet) || isFlexibleMultisigAccount) return false;
+      if (isBaseAccount && isPvWallet) return false;
 
       const isShardAccount = accountUtils.isVaultShardAccount(account);
-      const isChainAndCryptoMatch = accountUtils.isChainAndCryptoMatch(account, network.chain);
+      const isChainAndCryptoMatch = accountService.isAccountAvailableOnChain(account, network.chain);
       const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
       return isChainAndCryptoMatch && !isShardAccount && isStringsMatchQuery(query, [account.name, address]);
     });
+
+    return uniqBy(filteredAccounts, 'accountId');
   },
 );
 

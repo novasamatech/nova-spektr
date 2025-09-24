@@ -12,6 +12,7 @@ const containerStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
+const COUPLE_OF_PIXELS_FIX = 2;
 const MIN_START_SYMBOLS = 5;
 const MIN_END_SYMBOLS = 5;
 
@@ -50,7 +51,7 @@ export const Truncate = memo(({ text, ellipsis = '...' }: Props) => {
     }
 
     const charWidth = divWithPrecision(textWidth, text.length);
-    const delta = Math.ceil(textWidth - containerWidth + ellipsisWidth + charWidth / 2);
+    const delta = Math.ceil(textWidth - containerWidth + ellipsisWidth + charWidth / 2 + COUPLE_OF_PIXELS_FIX);
 
     const lettersToRemove = Math.ceil(divWithPrecision(delta, charWidth));
 

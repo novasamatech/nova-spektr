@@ -1,4 +1,5 @@
 import { combine, createEvent, sample } from 'effector';
+import { uniqBy } from 'lodash';
 
 import { type TrackId, type VotingMap } from '@/shared/core';
 import { nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
@@ -52,13 +53,13 @@ const $possibleAccountsForVoting = combine(
     const accounts = wallet.accounts.filter((a) => {
       return (
         accountService.isAccountAvailableOnChain(a, chain) &&
-        (accountUtils.isVaultShardAccount(a) ||
-          accountUtils.isVaultChainAccount(a) ||
-          accountUtils.isFlexibleMultisigAccount(a))
+        (accountUtils.isVaultShardAccount(a) || accountUtils.isVaultChainAccount(a))
       );
     });
 
-    if (accounts.length > 0) return accounts;
+    const uniqueAccounts = uniqBy(accounts, 'accountId');
+
+    if (uniqueAccounts.length > 0) return uniqueAccounts;
 
     return wallet.accounts.filter((a) => {
       return accountUtils.isVaultBaseAccount(a) && accountService.isAccountAvailableOnChain(a, chain);

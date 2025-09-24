@@ -1,15 +1,16 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createStore, sample } from 'effector';
+import { keyBy } from 'lodash';
 import { debounce } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { multisigService } from '@/features/multisig-wallet';
 
 const $trigger = createStore<string>('');
 const $debouncedApis = createStore<Record<ChainId, ApiPromise>>({});
@@ -42,35 +43,33 @@ const $input = combine(
   ({ apis, chains, wallet }) => {
     if (nullable(wallet) || !walletUtils.isMultisig(wallet)) return null;
 
-    const input = [];
+    const account = wallet.accounts.find(accountUtils.isAnyMultisigAccount);
+    if (nullable(account)) return null;
 
-    for (const account of wallet.accounts) {
-      let availableChains;
-      let accountId: AccountId;
-      if (accountUtils.isFlexibleMultisigAccount(account)) {
-        const chain = chains[account.chainId];
-        availableChains = chain ? [chain] : [];
-        accountId = account.multisigAccountId;
-      } else {
-        availableChains = Object.values(chains).filter(chain => networkUtils.isMultisigSupported(chain.options));
-        accountId = account.accountId;
-      }
+    let availableChains;
+    if (accountService.isChainAccount(account)) {
+      const chain = chains[account.chainId];
+      availableChains = chain ? [chain] : [];
+    } else {
+      availableChains = Object.values(chains).filter(chain => accountService.isAccountAvailableOnChain(account, chain));
+    }
 
-      for (const chain of availableChains) {
-        const api = apis[chain.chainId];
+    const availableApis: Record<ChainId, ApiPromise> = {};
 
-        if (api && accountService.isCryptoMatch(account, chain)) {
-          input.push({
-            api,
-            chains,
-            chain,
-            accountId,
-          });
-        }
+    for (const chain of availableChains) {
+      const api = apis[chain.chainId];
+      if (api) {
+        availableApis[chain.chainId] = api;
       }
     }
 
-    return input;
+    const availableChainsRecord = keyBy(availableChains, c => c.chainId);
+
+    return {
+      chains: availableChainsRecord,
+      apis: availableApis,
+      accountId: multisigService.getMultisigAccountId(account),
+    };
   },
 );
 

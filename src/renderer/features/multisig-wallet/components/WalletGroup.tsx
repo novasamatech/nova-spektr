@@ -61,9 +61,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
       <Accordion.Content>
         <Box gap={1} padding={[1, 0, 0]}>
           {filteredWallets.map(wallet => {
-            const accountId = walletUtils.isRegularMultisig(wallet)
-              ? wallet.accounts.find(accountUtils.isMultisigAccount)?.accountId
-              : wallet.accounts.find(accountUtils.isFlexibleMultisigAccount)?.accountId;
+            const accountId = wallet.accounts.at(0)?.accountId;
 
             let chain: Chain | null = null;
             let label: string | null = null;
