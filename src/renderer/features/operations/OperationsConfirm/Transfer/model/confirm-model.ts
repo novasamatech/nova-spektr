@@ -67,14 +67,7 @@ const { $errors: $validationErrors } = createTxValidationStore({
   },
 });
 
-const $canSubmit = combine(
-  {
-    errors: $validationErrors,
-  },
-  ({ errors }) => {
-    return !accountService.hasTransactionValidationErrors(errors);
-  },
-);
+const $canSubmit = $validationErrors.map((errors) => !accountService.hasTransactionValidationErrors(errors));
 
 sample({
   clock: startSigning,
