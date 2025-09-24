@@ -246,7 +246,7 @@ const $isTheSameMultisig = combine(
   ({ multisigAccount, newMultisigAccountId }) => {
     if (!newMultisigAccountId || !multisigAccount) return false;
 
-    return newMultisigAccountId === multisigAccount.accountId;
+    return newMultisigAccountId === multisigService.getMultisigAccountId(multisigAccount);
   },
 );
 
