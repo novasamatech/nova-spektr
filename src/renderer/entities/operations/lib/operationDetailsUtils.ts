@@ -39,9 +39,9 @@ export const getMultisigExtrinsicLink = (
 };
 
 export const getMultisigEventLink = (
-  indexCreated?: number,
-  blockCreated?: number,
-  explorers?: Explorer,
+  indexCreated: number,
+  blockCreated: number,
+  explorers: Explorer,
 ): string | undefined => {
   if (!indexCreated || !blockCreated || !explorers) return;
 
