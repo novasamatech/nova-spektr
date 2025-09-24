@@ -17,6 +17,7 @@ import {
   createTxValidationStore,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { accountSync } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
@@ -514,6 +515,17 @@ sample({
   filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
   target: $redirectAfterSubmitPath,
+});
+
+sample({
+  clock: submitModel.output.formSubmitted,
+  filter: (results) => submitUtils.isSuccessResult(results[0].result),
+  target: flowFinished,
+});
+
+sample({
+  clock: flowFinished,
+  target: accountSync.syncAccounts,
 });
 
 sample({

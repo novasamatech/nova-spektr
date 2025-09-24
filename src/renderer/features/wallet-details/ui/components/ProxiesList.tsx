@@ -1,19 +1,17 @@
 import { useUnit } from 'effector-react';
 
-import { type ProxyAccount, type Wallet } from '@/shared/core';
+import { type ChainId, type ProxyAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, HelpText } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
-import { Accordion } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
-import { ChainTitle } from '@/entities/chain';
+import { FootnoteText } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
+import { accountSync, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
 import { walletProxiesModel } from '../../model/wallet-proxies-model';
 
+import { ChainProxyGroup } from './ChainProxyGroup';
 import { NoProxiesAction } from './NoProxiesAction';
-import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 
 const {
   models: { removeProxyModel },
@@ -27,6 +25,12 @@ type Props = {
   className?: string;
 };
 
+const LoadingSkeleton = () => (
+  <div className="flex items-center py-2">
+    <Skeleton width="100%" height={10} />
+  </div>
+);
+
 export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
@@ -34,6 +38,9 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   const chainsProxies = useUnit(walletProxiesModel.$walletProxies);
   const walletProxyGroups = useUnit(walletProxiesModel.$walletProxyGroups);
   const allAccounts = useUnit(accounts.$list);
+  const isProxiesLoading = useUnit(walletProxiesModel.fetchWalletProxiesFx.pending);
+  const isAccountSyncPending = useUnit(accountSync.syncAccounts.pending);
+  const isLoading = isProxiesLoading || isAccountSyncPending;
 
   const handleDeleteProxy = (proxyAccount: Omit<ProxyAccount, 'id' | 'delay'>) => {
     const proxiedAccount = allAccounts.find(account => account.accountId === proxyAccount.proxiedAccountId);
@@ -46,6 +53,34 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
     }
   };
 
+  const renderProxyGroups = () => {
+    if (isLoading) {
+      return Array.from({ length: 3 }, (_, index) => <LoadingSkeleton key={index} />);
+    }
+
+    return walletProxyGroups
+      .filter(({ chainId }) => {
+        const typedChainId = chainId as ChainId;
+        return chainsProxies[typedChainId]?.length > 0;
+      })
+      .map(({ chainId, totalDeposit }) => {
+        const typedChainId = chainId as ChainId;
+        const chain = chains[typedChainId];
+        const proxies = chainsProxies[typedChainId] || [];
+
+        return (
+          <ChainProxyGroup
+            key={chainId}
+            chain={chain}
+            proxies={proxies}
+            totalDeposit={totalDeposit}
+            canCreateProxy={canCreateProxy}
+            onRemoveProxy={handleDeleteProxy}
+          />
+        );
+      });
+  };
+
   return (
     <div className={cnTw('flex flex-col', className)}>
       {hasProxies ? (
@@ -55,46 +90,7 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
           </div>
 
           <ul className="flex h-full flex-col divide-y divide-divider overflow-x-hidden overflow-y-auto px-5">
-            {walletProxyGroups.map(({ chainId, totalDeposit }) => {
-              if (!chainsProxies[chainId]?.length) {
-                return null;
-              }
-
-              return (
-                <li key={chainId} className="flex items-center py-2">
-                  <Accordion initialOpen>
-                    <Accordion.Trigger>
-                      <div className="flex items-center justify-between gap-x-2 pr-2 normal-case">
-                        <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chains[chainId]} />
-                        <HelpText className="text-text-tertiary">
-                          {t('walletDetails.common.proxyDeposit')}
-                          &nbsp;
-                          <AssetBalance
-                            value={totalDeposit.replaceAll(',', '')}
-                            asset={chains[chainId].assets[0]}
-                            className="text-help-text"
-                          />
-                        </HelpText>
-                      </div>
-                    </Accordion.Trigger>
-                    <Accordion.Content>
-                      <ul className="flex flex-col gap-y-2">
-                        {chainsProxies[chainId].map(proxy => (
-                          <li className="px-2 py-1.5" key={`${proxy.accountId}_${proxy.proxyType}`}>
-                            <ProxyAccountWithActions
-                              account={proxy}
-                              chain={chains[chainId]}
-                              canCreateProxy={canCreateProxy}
-                              onRemoveProxy={handleDeleteProxy}
-                            />
-                          </li>
-                        ))}
-                      </ul>
-                    </Accordion.Content>
-                  </Accordion>
-                </li>
-              );
-            })}
+            {renderProxyGroups()}
           </ul>
         </>
       ) : (
