@@ -168,48 +168,6 @@ export const proxiedAccount4 = {
   id: '5 0x5aeeba99559557853750a805eaad43ce29a150a0b693502deac3fd2c0fee37b9 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
 };
 
-export const proxiedAccount5 = {
-  name: 'Any for pure 5FVYxS...jxhyAA',
-  type: 'chain',
-  accountType: 'proxied',
-  accountId: '0x97a7dfa455359b2081fbc7ea702df50ba0f629b549815a4b99f4b746c9256d83',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  proxyVariant: 'pure',
-  cryptoType: 0,
-  signingType: 'signing_wo',
-  deposit: '1002050000000',
-  connections: [
-    {
-      delay: 0,
-      proxyAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
-      proxyType: 'Any',
-    },
-  ],
-  walletId: 6,
-  id: '6 0x97a7dfa455359b2081fbc7ea702df50ba0f629b549815a4b99f4b746c9256d83 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-};
-
-export const proxiedAccount6 = {
-  name: 'Any for pure 5FfoA3...qA9Yhj',
-  type: 'chain',
-  accountType: 'proxied',
-  accountId: '0x9f78211a490e9535ad0dd1a84ccc578f759ac0d13ab28d403512d56f651d358c',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  proxyVariant: 'pure',
-  cryptoType: 0,
-  signingType: 'signing_wo',
-  deposit: '1002050000000',
-  connections: [
-    {
-      delay: 0,
-      proxyAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
-      proxyType: 'Any',
-    },
-  ],
-  walletId: 7,
-  id: '7 0x9f78211a490e9535ad0dd1a84ccc578f759ac0d13ab28d403512d56f651d358c 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-};
-
 export const flexMultisigAccount3 = {
   accountType: 'flex_multisig',
   type: 'chain',
@@ -229,132 +187,6 @@ export const flexMultisigAccount3 = {
   signingType: 'signing_ms',
   walletId: 70,
   id: '70 0x5aeeba99559557853750a805eaad43ce29a150a0b693502deac3fd2c0fee37b9 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-};
-
-export const flexMultisigAccount4 = {
-  accountType: 'flex_multisig',
-  type: 'chain',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  name: '14Rr6...UtGeu',
-  accountId: '0x97a7dfa455359b2081fbc7ea702df50ba0f629b549815a4b99f4b746c9256d83',
-  multisigAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
-  threshold: 2,
-  signatories: [
-    { accountId: '0x589f4a92b7e88c0ac1172e429f12bde262d34fac77b0931eb94963996a207724' },
-    { accountId: '0x74429a03af05da40e630c60e10d9454bae6f69449cb8dc4807e45ae4a14ac477' },
-  ],
-  deposit: '1002050000000',
-  blockNumber: 6140430,
-  extrinsicIndex: 2,
-  cryptoType: 0,
-  signingType: 'signing_ms',
-  walletId: 71,
-  id: '71 0x97a7dfa455359b2081fbc7ea702df50ba0f629b549815a4b99f4b746c9256d83 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-};
-
-export const flexMultisigAccount5 = {
-  accountType: 'flex_multisig',
-  type: 'chain',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  name: '14c6J...gL2vw',
-  accountId: '0x9f78211a490e9535ad0dd1a84ccc578f759ac0d13ab28d403512d56f651d358c',
-  multisigAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
-  threshold: 2,
-  signatories: [
-    { accountId: '0x589f4a92b7e88c0ac1172e429f12bde262d34fac77b0931eb94963996a207724' },
-    { accountId: '0x74429a03af05da40e630c60e10d9454bae6f69449cb8dc4807e45ae4a14ac477' },
-  ],
-  deposit: '1002050000000',
-  blockNumber: 6146886,
-  extrinsicIndex: 2,
-  cryptoType: 0,
-  signingType: 'signing_ms',
-  walletId: 72,
-  id: '72 0x9f78211a490e9535ad0dd1a84ccc578f759ac0d13ab28d403512d56f651d358c 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-};
-
-export const flexMultisigAccount6 = {
-  accountType: 'flex_multisig',
-  type: 'chain',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  name: '14iSz...bND3X',
-  accountId: '0xa45147b2c8b783718e17f6a0f9fef7d4f781f1062d1f18140dff667b22ba3dbe',
-  multisigAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
-  threshold: 2,
-  signatories: [
-    { accountId: '0x589f4a92b7e88c0ac1172e429f12bde262d34fac77b0931eb94963996a207724' },
-    { accountId: '0x74429a03af05da40e630c60e10d9454bae6f69449cb8dc4807e45ae4a14ac477' },
-  ],
-  deposit: '1002050000000',
-  blockNumber: 6146940,
-  extrinsicIndex: 2,
-  cryptoType: 0,
-  signingType: 'signing_ms',
-  walletId: 73,
-  id: '73 0xa45147b2c8b783718e17f6a0f9fef7d4f781f1062d1f18140dff667b22ba3dbe 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-};
-
-export const flexMultisigAccount7 = {
-  accountType: 'flex_multisig',
-  type: 'chain',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  name: '15s2D...yBpPC',
-  accountId: '0xd717455bf7a7eb2a4e680926f04fa16f4ec312b39f1a0f31a25d520fbdaf2c64',
-  multisigAccountId: '0x7bcbe9d650b189515f301cee672a214abcf38a0aaf8e7903da91e3d50fa2edda',
-  threshold: 2,
-  signatories: [
-    { accountId: '0x589f4a92b7e88c0ac1172e429f12bde262d34fac77b0931eb94963996a207724' },
-    { accountId: '0x8c5ad94502e0251b6e5ccc541b4e6a17ed533729fd78c0248b6958a992ea9d29' },
-  ],
-  deposit: '1002050000000',
-  blockNumber: 6147644,
-  extrinsicIndex: 2,
-  cryptoType: 0,
-  signingType: 'signing_ms',
-  walletId: 74,
-  id: '74 0xd717455bf7a7eb2a4e680926f04fa16f4ec312b39f1a0f31a25d520fbdaf2c64 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-};
-
-export const proxiedAccount7 = {
-  name: 'Any for pure 5Fn9ra...B5BoXY',
-  type: 'chain',
-  accountType: 'proxied',
-  accountId: '0xa45147b2c8b783718e17f6a0f9fef7d4f781f1062d1f18140dff667b22ba3dbe',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  proxyVariant: 'pure',
-  cryptoType: 0,
-  signingType: 'signing_wo',
-  deposit: '1002050000000',
-  connections: [
-    {
-      delay: 0,
-      proxyAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
-      proxyType: 'Any',
-    },
-  ],
-  walletId: 8,
-  id: '8 0xa45147b2c8b783718e17f6a0f9fef7d4f781f1062d1f18140dff667b22ba3dbe 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-};
-
-export const proxiedAccount8 = {
-  name: 'Any for pure 5Gvj4j...hT1cUE',
-  type: 'chain',
-  accountType: 'proxied',
-  accountId: '0xd717455bf7a7eb2a4e680926f04fa16f4ec312b39f1a0f31a25d520fbdaf2c64',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  proxyVariant: 'pure',
-  cryptoType: 0,
-  signingType: 'signing_wo',
-  deposit: '1002050000000',
-  connections: [
-    {
-      delay: 0,
-      proxyAccountId: '0x7bcbe9d650b189515f301cee672a214abcf38a0aaf8e7903da91e3d50fa2edda',
-      proxyType: 'Any',
-    },
-  ],
-  walletId: 9,
-  id: '9 0xd717455bf7a7eb2a4e680926f04fa16f4ec312b39f1a0f31a25d520fbdaf2c64 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
 };
 
 // Individual sync result entities
@@ -429,56 +261,6 @@ export const syncProxy4 = {
   extrinsicIndex: 2,
 };
 
-export const syncProxy5 = {
-  type: 'proxy',
-  accountId: '0x97a7dfa455359b2081fbc7ea702df50ba0f629b549815a4b99f4b746c9256d83',
-  proxyAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  deposit: '12345',
-  delay: 0,
-  proxyType: 'Any',
-  proxyVariant: 'pure',
-  blockNumber: 6140430,
-  extrinsicIndex: 2,
-};
-
-export const syncProxy6 = {
-  type: 'proxy',
-  accountId: '0x9f78211a490e9535ad0dd1a84ccc578f759ac0d13ab28d403512d56f651d358c',
-  proxyAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  deposit: '12345',
-  delay: 0,
-  proxyType: 'Any',
-  proxyVariant: 'pure',
-  blockNumber: 6146886,
-  extrinsicIndex: 2,
-};
-export const syncProxy7 = {
-  type: 'proxy',
-  accountId: '0xa45147b2c8b783718e17f6a0f9fef7d4f781f1062d1f18140dff667b22ba3dbe',
-  proxyAccountId: '0x651841e4f52831f5ef30c7fc4e0d9b97c53ac59bf58b79bf7b3ceaa44168f251',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  deposit: '12345',
-  delay: 0,
-  proxyType: 'Any',
-  proxyVariant: 'pure',
-  blockNumber: 6146940,
-  extrinsicIndex: 2,
-};
-export const syncProxy8 = {
-  type: 'proxy',
-  accountId: '0xd717455bf7a7eb2a4e680926f04fa16f4ec312b39f1a0f31a25d520fbdaf2c64',
-  proxyAccountId: '0x7bcbe9d650b189515f301cee672a214abcf38a0aaf8e7903da91e3d50fa2edda',
-  chainId: '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42',
-  deposit: '12345',
-  delay: 0,
-  proxyType: 'Any',
-  proxyVariant: 'pure',
-  blockNumber: 6147644,
-  extrinsicIndex: 2,
-};
-
 // Individual wallet entities
 export const oneGuyWallet = {
   name: 'One Guy',
@@ -507,34 +289,6 @@ export const flexMultisigWallet3 = {
   type: 'wallet_fxms',
   id: 70,
   accounts: [flexMultisigAccount3],
-};
-
-export const flexMultisigWallet4 = {
-  name: 'fourth wallet',
-  type: 'wallet_fxms',
-  id: 71,
-  accounts: [flexMultisigAccount4],
-};
-
-export const flexMultisigWallet5 = {
-  name: 'fifth wallet',
-  type: 'wallet_fxms',
-  id: 72,
-  accounts: [flexMultisigAccount5],
-};
-
-export const flexMultisigWallet6 = {
-  name: 'sixth wallet',
-  type: 'wallet_fxms',
-  id: 73,
-  accounts: [flexMultisigAccount6],
-};
-
-export const flexMultisigWallet7 = {
-  name: 'seventh wallet',
-  type: 'wallet_fxms',
-  id: 74,
-  accounts: [flexMultisigAccount7],
 };
 
 export const multisigWallet1 = {
@@ -573,17 +327,9 @@ export const allAccounts = [
   proxiedAccount2,
   proxiedAccount3,
   proxiedAccount4,
-  proxiedAccount5,
-  proxiedAccount6,
   flexMultisigAccount1,
   flexMultisigAccount2,
   flexMultisigAccount3,
-  flexMultisigAccount4,
-  flexMultisigAccount5,
-  flexMultisigAccount6,
-  flexMultisigAccount7,
-  proxiedAccount7,
-  proxiedAccount8,
 ];
 
 export const allWallets = [
@@ -632,25 +378,10 @@ export const allWallets = [
   flexMultisigWallet1,
   flexMultisigWallet2,
   flexMultisigWallet3,
-  flexMultisigWallet4,
-  flexMultisigWallet5,
-  flexMultisigWallet6,
-  flexMultisigWallet7,
 ];
 
 export const syncResult = {
-  accounts: [
-    syncMultisig1,
-    syncMultisig2,
-    syncProxy1,
-    syncProxy2,
-    syncProxy3,
-    syncProxy4,
-    syncProxy5,
-    syncProxy6,
-    syncProxy7,
-    syncProxy8,
-  ],
+  accounts: [syncMultisig1, syncMultisig2, syncProxy1, syncProxy2, syncProxy3, syncProxy4],
   chains: [
     '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',

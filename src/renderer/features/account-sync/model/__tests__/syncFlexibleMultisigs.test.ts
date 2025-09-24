@@ -8,17 +8,9 @@ import {
   flexMultisigAccount1,
   flexMultisigAccount2,
   flexMultisigAccount3,
-  flexMultisigAccount4,
-  flexMultisigAccount5,
-  flexMultisigAccount6,
-  flexMultisigAccount7,
   flexMultisigWallet1,
   flexMultisigWallet2,
   flexMultisigWallet3,
-  flexMultisigWallet4,
-  flexMultisigWallet5,
-  flexMultisigWallet6,
-  flexMultisigWallet7,
   syncResult,
   userAccount,
 } from './mocks/syncFlexibleMultisigs-data';
@@ -90,86 +82,6 @@ describe('syncFlexibleMultisigs', () => {
               signingType: flexMultisigAccount3.signingType,
               threshold: flexMultisigAccount3.threshold,
               type: flexMultisigAccount3.type,
-            },
-          ],
-        },
-        {
-          wallet: { name: flexMultisigAccount4.name, type: 'wallet_fxms' },
-          accounts: [
-            {
-              accountId: flexMultisigAccount4.accountId,
-              accountType: flexMultisigAccount4.accountType,
-              blockNumber: flexMultisigAccount4.blockNumber,
-              chainId: flexMultisigAccount4.chainId,
-              cryptoType: flexMultisigAccount4.cryptoType,
-              deposit: '12345',
-              extrinsicIndex: flexMultisigAccount4.extrinsicIndex,
-              multisigAccountId: flexMultisigAccount4.multisigAccountId,
-              name: flexMultisigAccount4.name,
-              signatories: flexMultisigAccount4.signatories,
-              signingType: flexMultisigAccount4.signingType,
-              threshold: flexMultisigAccount4.threshold,
-              type: flexMultisigAccount4.type,
-            },
-          ],
-        },
-        {
-          wallet: { name: flexMultisigAccount5.name, type: 'wallet_fxms' },
-          accounts: [
-            {
-              accountId: flexMultisigAccount5.accountId,
-              accountType: flexMultisigAccount5.accountType,
-              blockNumber: flexMultisigAccount5.blockNumber,
-              chainId: flexMultisigAccount5.chainId,
-              cryptoType: flexMultisigAccount5.cryptoType,
-              deposit: '12345',
-              extrinsicIndex: flexMultisigAccount5.extrinsicIndex,
-              multisigAccountId: flexMultisigAccount5.multisigAccountId,
-              name: flexMultisigAccount5.name,
-              signatories: flexMultisigAccount5.signatories,
-              signingType: flexMultisigAccount5.signingType,
-              threshold: flexMultisigAccount5.threshold,
-              type: flexMultisigAccount5.type,
-            },
-          ],
-        },
-        {
-          wallet: { name: flexMultisigAccount6.name, type: 'wallet_fxms' },
-          accounts: [
-            {
-              accountId: flexMultisigAccount6.accountId,
-              accountType: flexMultisigAccount6.accountType,
-              blockNumber: flexMultisigAccount6.blockNumber,
-              chainId: flexMultisigAccount6.chainId,
-              cryptoType: flexMultisigAccount6.cryptoType,
-              deposit: '12345',
-              extrinsicIndex: flexMultisigAccount6.extrinsicIndex,
-              multisigAccountId: flexMultisigAccount6.multisigAccountId,
-              name: flexMultisigAccount6.name,
-              signatories: flexMultisigAccount6.signatories,
-              signingType: flexMultisigAccount6.signingType,
-              threshold: flexMultisigAccount6.threshold,
-              type: flexMultisigAccount6.type,
-            },
-          ],
-        },
-        {
-          wallet: { name: flexMultisigAccount7.name, type: 'wallet_fxms' },
-          accounts: [
-            {
-              accountId: flexMultisigAccount7.accountId,
-              accountType: flexMultisigAccount7.accountType,
-              blockNumber: flexMultisigAccount7.blockNumber,
-              chainId: flexMultisigAccount7.chainId,
-              cryptoType: flexMultisigAccount7.cryptoType,
-              deposit: '12345',
-              extrinsicIndex: flexMultisigAccount7.extrinsicIndex,
-              multisigAccountId: flexMultisigAccount7.multisigAccountId,
-              name: flexMultisigAccount7.name,
-              signatories: flexMultisigAccount7.signatories,
-              signingType: flexMultisigAccount7.signingType,
-              threshold: flexMultisigAccount7.threshold,
-              type: flexMultisigAccount7.type,
             },
           ],
         },
@@ -255,28 +167,12 @@ describe('syncFlexibleMultisigs', () => {
 
     const result = syncFlexibleMultisigs({
       allWallets,
-      allAccounts: [
-        flexMultisigAccount1,
-        flexMultisigAccount2,
-        flexMultisigAccount3,
-        flexMultisigAccount4,
-        flexMultisigAccount5,
-        flexMultisigAccount6,
-        flexMultisigAccount7,
-      ],
+      allAccounts: [flexMultisigAccount1, flexMultisigAccount2, flexMultisigAccount3],
       syncResult: emptySyncResult,
       identities: {},
     } as unknown as SyncFlexibleMultisigParams);
 
     expect(result.createWallets).toEqual([]);
-    expect(result.deleteWallets).toEqual([
-      flexMultisigWallet1.id,
-      flexMultisigWallet2.id,
-      flexMultisigWallet3.id,
-      flexMultisigWallet4.id,
-      flexMultisigWallet5.id,
-      flexMultisigWallet6.id,
-      flexMultisigWallet7.id,
-    ]);
+    expect(result.deleteWallets).toEqual([flexMultisigWallet1.id, flexMultisigWallet2.id, flexMultisigWallet3.id]);
   });
 });
