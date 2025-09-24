@@ -17,7 +17,7 @@ export const encodeNumber = (value: number): Uint8Array => new Uint8Array([value
 
 export const createSignPayload = (
   address: string,
-  payload: string | Uint8Array,
+  payload: Uint8Array,
   genesisHash: ChainId | Uint8Array,
   cryptoType: CryptoType,
 ): Uint8Array => {
@@ -49,7 +49,7 @@ export const createSignWithProofPayload = (
 
 export const createDynamicDerivationsSignPayload = (
   rootAccountId: string,
-  payload: string | Uint8Array,
+  payload: Uint8Array,
   genesisHash: ChainId | Uint8Array,
   derivationPath: string,
   cryptoType: CryptoType,
@@ -67,7 +67,7 @@ export const createDynamicDerivationsSignPayload = (
 export const createDynamicDerivationsSignWithProofPayload = (
   rootAccountId: string,
   metadataProof: Uint8Array,
-  payload: string | Uint8Array,
+  payload: Uint8Array,
   genesisHash: ChainId | Uint8Array,
   derivationPath: string,
   cryptoType: CryptoType,
