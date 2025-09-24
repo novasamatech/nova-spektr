@@ -1,6 +1,7 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 
+import { chainsService } from '@/shared/api/network';
 import { type Chain, type ProxiedAccount, type Transaction, TransactionType, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -167,10 +168,10 @@ const $availableChains = combine(
   },
   ({ chains, walletAccounts }) => {
     const proxyChains = Object.values(chains).filter(proxiesUtils.isPureProxy);
-
-    return proxyChains.filter(chain => {
+    const filteredChains = proxyChains.filter(chain => {
       return walletAccounts.some(account => accountService.isAccountAvailableOnChain(account, chain));
     });
+    return chainsService.sortChains(filteredChains);
   },
 );
 
@@ -244,14 +245,14 @@ const { $errors } = createTxValidationStore({
   },
 });
 
-const $isProxy = $route.map(route => nonNullable(route.find(account => accountUtils.isProxiedAccount(account))));
-const $isMultisig = $route.map(route => nonNullable(route.find(account => accountUtils.isMultisigAccount(account))));
+const $isProxy = $route.map(route => route.some(account => accountUtils.isProxiedAccount(account)));
+const $isMultisig = $route.map(route => route.some(account => accountUtils.isAnyMultisigAccount(account)));
 
 const $multisigThreshold = $route.map(route => {
-  const multisig = route.find(accountUtils.isMultisigAccount);
-  if (!multisig) return null;
+  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+  if (!multisigAccount) return null;
 
-  return multisig.threshold;
+  return multisigAccount.threshold;
 });
 
 const { $multisigDeposit, $pending: $pendingMultisigDeposit } = createMultisigDeposit({

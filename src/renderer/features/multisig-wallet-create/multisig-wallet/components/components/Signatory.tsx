@@ -55,6 +55,7 @@ export const Signatory = ({
   const accountsList = useUnit(walletModel.$availableAccounts);
 
   const [query, setQuery] = useState(signatoryAddress);
+  const [signatoryQuery, setSignatoryQuery] = useState('');
 
   const filteredContacts = useMemo(() => {
     if (isOwnAccount) return [];
@@ -92,7 +93,7 @@ export const Signatory = ({
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (!chain || accountsList.length === 0 || (!isOwnAccount && validateAddress(query, chain))) return [];
 
-    const filteredAccounts = accountsList.filter(account => {
+    const availableAccounts = accountsList.filter(account => {
       const isCorrectAccount =
         !accountUtils.isWatchOnlyAccount(account) && !accountUtils.isFlexibleMultisigAccount(account);
 
@@ -105,7 +106,13 @@ export const Signatory = ({
       return isChainMatch && isCorrectAccount && queryPass;
     });
 
-    if (filteredAccounts.length === 0) return [];
+    if (availableAccounts.length === 0) return [];
+
+    const filteredAccounts = performSearch({
+      records: availableAccounts,
+      query: signatoryQuery,
+      weights: { name: 1, address: 0.5, id: 0.5, accountId: 0.5 },
+    });
 
     const accountOptions = new Map<string, ComboboxItem>();
 
@@ -135,7 +142,7 @@ export const Signatory = ({
         items: Array.from(accountOptions.values()),
       },
     ];
-  }, [query, chain, wallets, isOwnAccount, selectedSignatories]);
+  }, [query, signatoryQuery, chain, wallets, isOwnAccount, selectedSignatories]);
 
   // Build Contacts options
   const contactOptions = useMemo<ComboboxGroup[]>(() => {
@@ -207,15 +214,17 @@ export const Signatory = ({
   const isInvalid = isInvalidAddress || signatoryAddress !== query;
 
   return (
-    <div className="grid grid-cols-[1fr_232px_44px] gap-x-4">
-      <Box width="100%" direction="row" verticalAlign="end" gap={3}>
-        <FootnoteText className="pb-2 text-text-tertiary">{1 + signatoryIndex}</FootnoteText>
+    <div className="grid grid-cols-[1fr_232px_44px] items-start gap-x-4">
+      <Box width="100%" direction="row" verticalAlign="start" gap={3}>
+        <FootnoteText className="pt-8.5 text-text-tertiary">{1 + signatoryIndex}</FootnoteText>
 
         {isOwnAccount ? (
           <Field text={t('createMultisigAccount.myAccount')}>
             <Select
               placeholder={t('createMultisigAccount.signatorySelection')}
               value={toAddress(signatoryAddress, { prefix: POLKADOT_ADDRESS_PREFFIX })}
+              testId={TEST_IDS.MULTISIG.SIGNER_SELECTOR}
+              onSearch={setSignatoryQuery}
               onChange={onAddressChange}
             >
               {walletsOptions.map(group =>
@@ -276,16 +285,19 @@ export const Signatory = ({
           invalid={false}
           value={signatoryName}
           disabled={!!ownAccountName}
+          {...(!isOwnAccount && { testId: TEST_IDS.MULTISIG.SIGNATORY_NAME })}
           onChange={onNameChange}
         />
       </Field>
       {!isOwnAccount && onDelete && (
-        <IconButton
-          className="mb-1 self-end justify-self-center"
-          name="delete"
-          size={16}
-          onClick={() => onDelete(signatoryIndex)}
-        />
+        <div className="pt-7">
+          <IconButton
+            className="justify-self-center"
+            name="delete"
+            size={16}
+            onClick={() => onDelete(signatoryIndex)}
+          />
+        </div>
       )}
     </div>
   );

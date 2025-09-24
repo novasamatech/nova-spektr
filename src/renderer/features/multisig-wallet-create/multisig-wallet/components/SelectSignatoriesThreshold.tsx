@@ -2,11 +2,12 @@ import { useUnit } from 'effector-react';
 import { type FormEvent } from 'react';
 import { Trans } from 'react-i18next';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, toAccountId } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
-import { TransactionValidationError } from '@/shared/ui-entities';
+import { Address, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
 import { Fee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -35,6 +36,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
   const chain = useUnit(formModel.$chain);
   const wallets = useUnit(walletModel.$wallets);
+  const existingMultisig = useUnit(formModel.$existingMultisig);
 
   const initiator = useUnit(flowModel.$initiator);
   const fee = useUnit(flowModel.$fee);
@@ -93,6 +95,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                   placeholder={t('createMultisigAccount.namePlaceholder')}
                   invalid={name.hasError}
                   value={name.value}
+                  testId={TEST_IDS.MULTISIG.MULTISIG_WALLET_NAME}
                   onChange={name.onChange}
                 />
 
@@ -111,10 +114,11 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                   invalid={threshold.hasError}
                   disabled={thresholdDisabled}
                   height="md"
+                  testId={TEST_IDS.MULTISIG.THRESHOLD_SELECTOR}
                   onChange={value => threshold.onChange(Number(value))}
                 >
                   {Array.from({ length: signatories.length - 1 }, (_, index) => (
-                    <Select.Item key={index} value={(index + 2).toString()}>
+                    <Select.Item testId={TEST_IDS.MULTISIG.THRESHOLD_OPTION} key={index} value={(index + 2).toString()}>
                       {index + 2}
                     </Select.Item>
                   ))}
@@ -149,11 +153,31 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
 
             {nonNullable(initiator) && (
               <Alert
-                variant="error"
+                variant="info"
                 active={multisigAlreadyExists}
                 title={t('createMultisigAccount.multisigExistTitle')}
               >
-                <Alert.Item withDot={false}>{t('createMultisigAccount.multisigExistText')}</Alert.Item>
+                <Alert.Item withDot={false}>
+                  <Trans
+                    t={t}
+                    i18nKey="createMultisigAccount.multisigExistText"
+                    components={{
+                      account: (
+                        <span className="mx-1 inline-flex w-auto align-sub">
+                          {existingMultisig && (
+                            <Address
+                              address={toAddress(existingMultisig.accountId, { prefix: chain?.addressPrefix })}
+                              title={existingMultisig.name}
+                              hideAddress
+                              showIcon
+                              canCopy
+                            />
+                          )}
+                        </span>
+                      ),
+                    }}
+                  />
+                </Alert.Item>
               </Alert>
             )}
 
@@ -182,7 +206,12 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                 )}
 
                 <MultisigFeeModal>
-                  <IconButton size={16} name="edit" className="text-icon-default" />
+                  <IconButton
+                    size={16}
+                    name="edit"
+                    className="text-icon-default"
+                    testId={TEST_IDS.MULTISIG.NETWORK_EDIT_BUTTON}
+                  />
                 </MultisigFeeModal>
               </div>
             )}

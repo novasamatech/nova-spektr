@@ -187,7 +187,7 @@ const $realAccount = combine(
     if (nullable(initiator)) return null;
     if (route.length === 0) return initiator;
 
-    const multisigAccount = route.find(accountUtils.isMultisigAccount);
+    const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
     if (multisigAccount) {
       return multisigAccount;
     }
@@ -198,7 +198,7 @@ const $realAccount = combine(
 );
 
 const $isMultisig = $route.map((route) => {
-  return route.some((acc) => accountUtils.isMultisigAccount(acc));
+  return route.some((acc) => accountUtils.isAnyMultisigAccount(acc));
 });
 
 const $isProxy = $route.map((route) => {

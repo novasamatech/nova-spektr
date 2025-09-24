@@ -161,7 +161,7 @@ export const TransferRules = {
             isXcm,
             isNative,
             isProxy,
-            isMultisig,
+            isMultisig: isMultisig,
             ...fee,
           },
           config,

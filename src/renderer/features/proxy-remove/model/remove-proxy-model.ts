@@ -41,7 +41,7 @@ const stepChangedToInit = stepChanged.prepend(() => Step.INIT);
 
 type Input = {
   proxied: ProxiedAccount;
-  proxy: ProxyAccount;
+  proxy: Omit<ProxyAccount, 'id' | 'delay'>;
 };
 
 const flowStarted = createEvent<Input>();
@@ -189,10 +189,10 @@ const { $errors } = createTxValidationStore({
   },
 });
 const $multisigThreshold = $route.map((route) => {
-  const multisig = route.find(accountUtils.isMultisigAccount);
-  if (!multisig) return null;
+  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+  if (!multisigAccount) return null;
 
-  return multisig.threshold;
+  return multisigAccount.threshold;
 });
 
 const { $multisigDeposit } = createMultisigDeposit({

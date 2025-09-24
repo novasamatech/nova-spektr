@@ -78,7 +78,7 @@ export const Confirmation = ({
     ? formatAmount(confirm.meta.amount, confirm.meta.asset.precision)
     : confirm.meta.amount;
 
-  const multisigAccount = confirm.meta.route.find(accountUtils.isMultisigAccount);
+  const hasMultisig = confirm.meta.route.some(accountUtils.isAnyMultisigAccount);
 
   const nativeAsset = getNativeAsset(confirm.meta.chain.assets);
 
@@ -131,7 +131,7 @@ export const Confirmation = ({
 
           <hr className="w-full border-filter-border pr-2" />
 
-          {multisigAccount && (
+          {hasMultisig && (
             <DetailRow
               className="text-text-primary"
               label={

@@ -250,7 +250,7 @@
     "multisig": "Multisig",
     "multisigCreationFeeLabel": "Additional cost",
     "multisigDeposit": "Multisig deposit:",
-    "multisigExistText": "The multisig wallet with the selected signatories and threshold already exists. Please change the signatories or threshold to create a new one.",
+    "multisigExistText": "The multisig wallet <account/> with the selected signatories and threshold already exists and will be used for the flexible one.",
     "multisigExistTitle": "Multisig wallet already exists",
     "multisigHiddenExistText": "The multisig wallet with the selected signatories and threshold already exists but was previously removed by you.<br />Would you like to restore it now?",
     "multisigStep": "Step {step}.",
@@ -286,14 +286,14 @@
     "restoreButton": "Restore",
     "searchContactPlaceholder": "Search",
     "selectMultisigDescription": {
-      "flexibleFeatureOne": "<header>Update signatories as needed</header> while maintaining a fixed address.",
-      "flexibleFeatureThree": "<header>Works only on the network</header> where it was created.",
+      "flexibleFeatureOne": "<header>Update signatories</header> as needed while maintaining a fixed address.",
+      "flexibleFeatureThree": "<header>Works only</header> on the network where it was created.",
       "flexibleFeatureTwo": "<header>Deposit is needed</header> to create the wallet (returned when deleted).",
       "flexibleNote": "Pure Proxy deposit will be reserved on your account. This wallet <header>only works on the network</header> it was created on.",
       "flexibleWikiLink": "Flexible Multisigs on Wiki",
-      "regularFeatureOne": "<header>Changing signatories or the threshold</header> requires creating a new multisig address.",
-      "regularFeatureThree": "<header>Works on all supported chains</header> from the start.",
-      "regularFeatureTwo": "<header>No deposit required</header>, you only pay standard network fees.",
+      "regularFeatureOne": "<header>Changing signatories</header> or the threshold requires creating a new multisig address.",
+      "regularFeatureThree": "<header>Works on all</header> supported chains from the start.",
+      "regularFeatureTwo": "<header>No deposit</header> required, you only pay standard network fees.",
       "regularNote": "Only fee is required. This wallet <header>works on all networks.</header>",
       "regularWikiLink": "Multisigs on Wiki"
     },
@@ -419,12 +419,14 @@
   },
   "emptyState": {
     "accountDescription": "You don't have an account in that network.",
+    "accountsNotFound": "Accounts not found",
     "addAccountButton": "Add account",
     "addNewAccountButton": "Add new account",
     "createAccount": "Create a new account",
     "createFlexibleMultisig": "Create a new flexible multisig wallet",
     "createMultisig": "Create a new multisig wallet",
-    "createOrImportAccount": "Create a new account or import an existing one"
+    "createOrImportAccount": "Create a new account or import an existing one",
+    "searchEmpty": "Nothing was found for the \"{query}\""
   },
   "fallbackScreen": {
     "message": "Sorry, something went wrong",
@@ -1288,8 +1290,10 @@
   },
   "notifications": {
     "details": {
-      "flexibleMultisigWalletSignAction": "Sign operation",
-      "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
+      "flexibleMultisigCreatedTitle": "New flexible multisig wallet added",
+      "flexibleMultisigDescription": "<strong>{name}</strong> on <chain /> with threshold { threshold } out of { signatoriesLength } signatories.",
+      "flexibleMultisigEditedTitle": "Flexible multisig has been edited",
+      "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",

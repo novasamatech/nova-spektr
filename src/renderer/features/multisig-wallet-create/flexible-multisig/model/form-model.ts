@@ -1,5 +1,6 @@
 import { combine, sample } from 'effector';
 
+import { chainsService } from '@/shared/api/network';
 import { type Chain, type ChainId, CryptoType } from '@/shared/core';
 import { createForm } from '@/shared/forms';
 import { addUnique, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
@@ -41,9 +42,10 @@ const form = createForm<FormParams>({
 const $multisigChains = combine(
   { chains: networkModel.$chains, statuses: networkModel.$connectionStatuses },
   ({ chains, statuses }) => {
-    return Object.values(chains).filter(
+    const filteredChains = Object.values(chains).filter(
       c => networkUtils.isMultisigSupported(c.options) && networkUtils.isConnectedStatus(statuses[c.chainId]),
     );
+    return chainsService.sortChains(filteredChains);
   },
 );
 
@@ -96,10 +98,7 @@ const $existingMultisig = combine(
 
     return (
       accounts.find(a => {
-        return (
-          a.accountId === multisigAccountId &&
-          (accountUtils.isMultisigAccount(a) || accountUtils.isFlexibleMultisigAccount(a))
-        );
+        return a.accountId === multisigAccountId && accountUtils.isAnyMultisigAccount(a);
       }) ?? null
     );
   },

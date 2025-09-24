@@ -9,9 +9,9 @@ import { validateCallData } from '@/shared/lib/utils';
 import { Button, Icon, InfoLink, SmallTitleText } from '@/shared/ui';
 import { Box, Json, Modal } from '@/shared/ui-kit';
 import { type MultisigOperation, accounts, multisigOperation } from '@/domains/network';
-import { networkModel, useNetworkData } from '@/entities/network';
+import { useNetworkData } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
-import { decodeCallData } from '@/entities/transaction';
+import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 
 import { OperationAdvancedDetails } from './OperationAdvancedDetails';
@@ -38,7 +38,6 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
   const { api, chain, connection, extendedChain } = useNetworkData(operation.chainId);
   const allAccounts = useUnit(accounts.$list);
   const [isCallDataModalOpen, toggleCallDataModal] = useToggle();
-  const chains = useUnit(networkModel.$chains);
 
   const explorerLink = operationDetailsUtils.getMultisigExtrinsicLink(
     operation.callHash,
@@ -47,10 +46,20 @@ export const OperationFullInfo = memo(({ operation, account }: Props) => {
     chain?.explorers,
   );
 
-  const jsonArgs = useMemo(
-    () => operation.callData && decodeCallData(api, account.accountId, operation.callData, chains),
-    [api, account.accountId, operation.callData, chains],
-  );
+  const jsonArgs = useMemo(() => {
+    if (!operation.callData) {
+      return null;
+    }
+
+    try {
+      const call = transactionService.createCallFromCallData(operation.callData, api);
+      if (!call) return null;
+
+      return transactionService.formatCall(call, chain);
+    } catch {
+      return null;
+    }
+  }, [api, chain, operation.callData]);
 
   const hasAccount = allAccounts.some(a => {
     return a.accountId === operation.depositor && !accountUtils.isWatchOnlyAccount(a);

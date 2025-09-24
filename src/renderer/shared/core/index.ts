@@ -66,7 +66,7 @@ export { ProxyVariant } from './types/proxy';
 export type {
   Notification,
   MultisigCreated,
-  FlexibleMultisigCreated,
+  FlexibleMultisigOperationNotification,
   MultisigOperationNotification,
   ProxyAction,
 } from './types/notification';
