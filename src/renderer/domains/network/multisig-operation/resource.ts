@@ -267,15 +267,15 @@ export const subscribeResource = createSubscriptionResource<RequestParams, Multi
   fn({ accountId, apis, chains }, callback) {
     const unsubscribeFns: VoidFunction[] = [];
 
-    for (const api of Object.values(apis)) {
-      fetchAllOnchainOperations(apis, accountId, chains).then(chainOperations => {
-        callback({ done: true, value: chainOperations });
+    fetchAllOnchainOperations(apis, accountId, chains).then(chainOperations => {
+      callback({ done: true, value: chainOperations });
 
-        fetchOperationsHistory(accountId, apis, chainOperations, chains).then(historicOperations => {
-          callback({ done: true, value: historicOperations });
-        });
+      fetchOperationsHistory(accountId, apis, chainOperations, chains).then(historicOperations => {
+        callback({ done: true, value: historicOperations });
       });
+    });
 
+    for (const api of Object.values(apis)) {
       const unsubscribeFn = polkadotjsHelpers.subscribeSystemEvents(
         { api, section: 'multisig', methods: ['NewMultisig'] },
         () => {
@@ -299,6 +299,7 @@ export const subscribeEventsResource = createSubscriptionResource<
   RequestParams,
   { event: MultisigEvent; operationId: string; chainId: ChainId }
 >({
+  pool: params => `${params.accountId}_${Object.keys(params.apis).join('_')}`,
   fn: ({ accountId, apis }, callback) => {
     const unsubscribeFns: Promise<VoidFunction>[] = [];
 
