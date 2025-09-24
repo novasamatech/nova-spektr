@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
-import { useUnit } from 'effector-react';
-import { memo, useMemo, useState } from 'react';
+import { useGate, useUnit } from 'effector-react';
+import { memo, useState } from 'react';
 
 import { type Chain, type FlexibleMultisigAccount, type HexString, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -8,7 +8,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
-import { type MultisigOperation, accounts } from '@/domains/network';
+import { type MultisigOperation } from '@/domains/network';
 import { OperationTitle } from '@/entities/chain';
 import { OperationResult, isXcmTransaction, useTransactionAsset } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -39,9 +39,10 @@ const enum Step {
 const AllSteps = [Step.FORM, Step.CONFIRMATION, Step.SIGNING, Step.SUBMIT];
 
 export const ApproveTxModal = memo(({ operation, account, api, chain, children }: Props) => {
+  useGate(approveModel.flow, { chain, operation });
+
   const { t } = useI18n();
   const wallets = useUnit(walletModel.$wallets);
-  const accountsList = useUnit(accounts.$list);
   const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
 
   const approveTx = useUnit(approveModel.$transaction);
@@ -50,9 +51,11 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const initiator = useUnit(approveModel.$initiator);
   const fee = useUnit(approveModel.$fee);
   const isFeeLoading = useUnit(approveModel.$isFeeLoading);
+
   const isDepositLoading = useUnit(approveModel.$isDepositLoading);
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
   const signingPayloads = useUnit(approveModel.$signingPayloads);
+  const unsignedAccounts = useUnit(approveModel.$unsignedAccounts);
 
   const [isFeeModalOpen, toggleFeeModal] = useToggle();
 
@@ -65,22 +68,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
 
   const nativeAsset = getNativeAsset(chain.assets);
   const asset = useTransactionAsset(operation);
-
-  const unsignedAccounts = useMemo(() => {
-    if (!multisigAccount || !chain) return [];
-
-    const signatories = accountsList.filter(a =>
-      multisigAccount.signatories.some(s => s.accountId === a.accountId && (s.id ? s.id === a.walletId : true)),
-    );
-
-    const signatoriesOnChain = signatories.filter(s => (s.type === 'chain' ? s.chainId === chain.chainId : true));
-
-    const filteredSignatories = signatoriesOnChain.filter(
-      a => !operation.events.some(e => e.accountId === a.accountId),
-    );
-
-    return filteredSignatories;
-  }, [operation, multisigAccount, chain, accountsList]);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -97,17 +84,9 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   };
 
   const toggleModal = (open: boolean) => {
-    if (open) {
-      approveModel.flow.open({ chain, operation });
-      if (unsignedAccounts.length === 1) {
-        approveModel.selectInitiator(unsignedAccounts[0]);
-        setActiveStep(Step.CONFIRMATION);
-      }
-      return;
+    if (!open) {
+      setActiveStep(Step.FORM);
     }
-
-    approveModel.flow.close({ chain: null, operation: null });
-    setActiveStep(Step.FORM);
   };
 
   // wtf do we need it?

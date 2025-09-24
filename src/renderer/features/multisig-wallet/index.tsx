@@ -21,7 +21,7 @@ import { walletsModel } from './model/wallets';
 import { multisigService } from './services/multisig';
 import { type MultisigTransaction } from './types';
 
-export { walletActionsSlot, WalletGroup };
+export { walletActionsSlot, multisigService, WalletGroup };
 
 export const multisigWalletFeature = createFeature({
   name: 'wallet/multisig',

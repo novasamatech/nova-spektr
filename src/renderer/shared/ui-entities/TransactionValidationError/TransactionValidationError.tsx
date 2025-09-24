@@ -4,7 +4,7 @@ import { Trans } from 'react-i18next';
 
 import { type Asset, type ProxyType, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { formatAsset, groupBy, nullable } from '@/shared/lib/utils';
+import { formatAsset, groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import { Alert } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, type BalanceUpdateResult } from '@/domains/network';
@@ -132,7 +132,8 @@ const TransactionBalanceError = ({
   const wallet = wallets.find(w => w.id === account.walletId);
   if (nullable(wallet)) return null;
 
-  const assetGroups = groupBy(errors, e => e.asset.assetId);
+  const assetGroups = groupBy(errors, e => e.asset.symbol);
+  const groupedByActionErrors = groupBy(errors, e => `${e.action}_${e.asset.symbol}`);
 
   const imbalances: { asset: Asset; imbalance: BN }[] = [];
 
@@ -154,6 +155,20 @@ const TransactionBalanceError = ({
     }
   }
 
+  const groupedErrors = Object.values(groupedByActionErrors)
+    .map(errors => {
+      if (nullable(errors)) return null;
+
+      const action = errors.at(0)?.action;
+      const asset = errors.at(0)?.asset;
+      if (nullable(action) || nullable(asset)) return null;
+
+      const required = errors.reduce((acc, e) => e.balance.required.add(acc), BN_ZERO);
+
+      return { required, action, asset };
+    })
+    .filter(nonNullable);
+
   return (
     <Box as="span" gap={0.5}>
       <span>
@@ -168,16 +183,16 @@ const TransactionBalanceError = ({
             ),
           }}
         />{' '}
-        {errors
-          .flatMap((e, index) => {
+        {groupedErrors
+          .flatMap(({ asset, action, required }, index) => {
             return [
               <Trans
                 key={index}
                 t={t}
                 i18nKey="general.transactionErrors.balance.section"
                 values={{
-                  action: e.action,
-                  balance: formatAsset(e.balance.required, e.asset),
+                  action: action,
+                  balance: formatAsset(required, asset),
                 }}
               />,
               <span key={index + 100}>, </span>,
