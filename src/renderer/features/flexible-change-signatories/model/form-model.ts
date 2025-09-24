@@ -52,10 +52,6 @@ const $newMultisigAccountId = combine(
     if (!chain || !threshold) return null;
 
     const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
-    // const sortedSignatories = sortBy(
-    //   Array.from(signatories.values()).map((a) => ({ address: a.address, accountId: toAccountId(a.address) })),
-    //   'accountId',
-    // );
 
     return accountUtils.getMultisigAccountId(
       Array.from(signatories).map((s) => toAccountId(s.address)),
