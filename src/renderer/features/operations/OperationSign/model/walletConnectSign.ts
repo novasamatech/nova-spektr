@@ -129,7 +129,7 @@ sample({
   fn: ({ error }) => {
     return {
       step: 'rejected' as const,
-      error: error,
+      error,
     };
   },
   target: spread({
@@ -147,7 +147,7 @@ sample({
   fn: (_, { error }) => {
     return {
       step: 'failed' as const,
-      error: error,
+      error,
     };
   },
   target: spread({

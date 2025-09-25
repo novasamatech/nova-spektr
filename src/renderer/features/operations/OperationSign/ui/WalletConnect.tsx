@@ -120,7 +120,7 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
         </Button>
       </div>
 
-      <Modal size="fit" isOpen={isErrorModalOpen} onToggle={() => onGoBack()}>
+      <Modal size="fit" isOpen={isErrorModalOpen} onToggle={(open) => !open && onGoBack()}>
         <Modal.Content>
           <div className="flex w-full max-w-[240px] flex-col items-center justify-center px-1">
             <Animation variant="error" />
