@@ -109,6 +109,48 @@ describe('QrCode/QrGenerator/onChainUtils', () => {
     );
   });
 
+  test('should encode a payload for EVM account properly', () => {
+    expect(
+      u8aToHex(
+        createSignPayload(
+          '0x563db1de8239fd6fa0ad90859925fec29541989e',
+          hexToU8a('0x12345678'),
+          '0xf6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9',
+          CryptoType.ETHEREUM,
+        ),
+      ),
+    ).toEqual(
+      '0x' + // prefix
+        '03' + // ethereum
+        '00' + // sign tx
+        '563db1de8239fd6fa0ad90859925fec29541989e' + // accountId
+        '12345678' + // payload
+        'f6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9', // genesisHash
+    );
+  });
+
+  test('should encode a dynamic derivation payload for EVM account properly', () => {
+    expect(
+      u8aToHex(
+        createDynamicDerivationsSignPayload(
+          '0x36a6c21c4a9af54b4c4b2d5443967f347fd393a39da9bce481468663dfd1bf46',
+          hexToU8a('0x12345678'),
+          '0xf6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9',
+          '//mythos',
+          CryptoType.ETHEREUM,
+        ),
+      ),
+    ).toEqual(
+      '0x' + // prefix
+        '03' + // ethereum
+        '05' + // sign dd tx
+        '36a6c21c4a9af54b4c4b2d5443967f347fd393a39da9bce481468663dfd1bf46' + // accountId
+        '202f2f6d7974686f73' + // derivation path
+        '12345678' + // payload
+        'f6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9', // genesisHash
+    );
+  });
+
   test('should encode frames properly', () => {
     expect(
       createFrames(
