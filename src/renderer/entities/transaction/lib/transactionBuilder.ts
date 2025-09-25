@@ -130,7 +130,7 @@ type BondParams = {
   chain: Chain;
   asset: Asset;
   accountId: AccountId;
-  destination: Address;
+  destination: string;
   amount: string;
 };
 function buildBond({ chain, asset, accountId, destination, amount }: BondParams): Transaction {
