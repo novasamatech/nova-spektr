@@ -1,22 +1,23 @@
 import { u8aConcat } from '@polkadot/util';
-import { encodeAddress } from '@polkadot/util-crypto';
 import { useEffect, useRef, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type ChainId, SigningType, type Wallet } from '@/shared/core';
+import { type ChainId, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { type TxMetadata, createTxMetadata, upgradeNonce } from '@/shared/lib/utils';
+import { type TxMetadata, assert, createTxMetadata, upgradeNonce } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
-import { accountUtils, walletUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { type ExtrinsicSigningPayload } from '@/features/operations/OperationSign';
 import { transactionService } from '../../lib';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
 import {
+  createDynamicDerivationsSignPayload,
+  createDynamicDerivationsSignWithProofPayload,
   createMultipleSignPayload,
-  createSubstrateSignPayload,
-  createSubstrateSignWithProofPayload,
+  createSignPayload,
+  createSignWithProofPayload,
 } from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 import { TRANSACTION_BULK } from '../QrCode/common/constants';
@@ -24,7 +25,7 @@ import { TRANSACTION_BULK } from '../QrCode/common/constants';
 type Props = {
   signingPayloads: ExtrinsicSigningPayload[];
   countdown: number;
-  signerWallet: Wallet;
+  rootAccountId: AccountId;
   onGoBack: () => void;
   onResetCountdown: () => void;
   onResult: (txPayloads: Uint8Array[]) => void;
@@ -32,7 +33,7 @@ type Props = {
 
 export const ScanMultiframeQr = ({
   signingPayloads,
-  signerWallet,
+  rootAccountId,
   countdown,
   onGoBack,
   onResetCountdown,
@@ -76,14 +77,10 @@ export const ScanMultiframeQr = ({
 
     const transactionPromises = signingPayloads.map(async (signingPayload, nonceIncrement) => {
       const signatory = signingPayload.signatory;
-      const address = walletUtils.isPolkadotVault(signerWallet)
-        ? encodeAddress(signerWallet.rootAccountId)
-        : encodeAddress(signatory.accountId, signingPayload.chain.addressPrefix);
-
       const derivationPath =
-        accountUtils.isVaultShardAccount(signatory) || accountUtils.isVaultChainAccount(signatory)
+        accountUtils.isVaultChainAccount(signatory) || accountUtils.isVaultShardAccount(signatory)
           ? signatory.derivationPath
-          : undefined;
+          : null;
 
       if (tab === 'new' && isMetadataProofsSupported) {
         const info = await transactionService.createPayloadWithProof(
@@ -92,15 +89,27 @@ export const ScanMultiframeQr = ({
           signingPayload.api,
           nonceIncrement,
         );
-        const signPayload = createSubstrateSignWithProofPayload(
-          encodeAddress(signatory.accountId, signingPayload.chain.addressPrefix),
-          info.metadataProof,
-          info.payload,
-          signingPayload.chain.chainId,
-          signatory.signingType,
-          derivationPath,
-          signatory.cryptoType,
-        );
+
+        let signPayload: Uint8Array;
+        if (isPV) {
+          assert(derivationPath, 'Derivation path not found');
+          signPayload = createDynamicDerivationsSignWithProofPayload(
+            rootAccountId,
+            info.metadataProof,
+            info.payload,
+            signingPayload.chain.chainId,
+            derivationPath,
+            signatory.cryptoType,
+          );
+        } else {
+          signPayload = createSignWithProofPayload(
+            signatory.accountId,
+            info.metadataProof,
+            info.payload,
+            signingPayload.chain.chainId,
+            signatory.cryptoType,
+          );
+        }
 
         return {
           info,
@@ -108,24 +117,28 @@ export const ScanMultiframeQr = ({
         };
       } else {
         const chainId = signingPayload.chain.chainId;
-        const accountId = signatory.accountId;
 
         const info = transactionService.createPayloadWithMetadata(
           signingPayload.extrinsic,
           signingPayload.api,
-          metadataMap[accountId][chainId],
+          metadataMap[signatory.accountId][chainId],
         );
 
-        metadataMap[accountId][chainId] = upgradeNonce(metadataMap[accountId][chainId], 1);
+        metadataMap[signatory.accountId][chainId] = upgradeNonce(metadataMap[signatory.accountId][chainId], 1);
 
-        const signPayload = createSubstrateSignPayload(
-          address,
-          info.payload,
-          chainId,
-          signatory.signingType,
-          derivationPath,
-          signatory.cryptoType,
-        );
+        let signPayload: Uint8Array;
+        if (isPV) {
+          assert(derivationPath, 'Derivation path not found');
+          signPayload = createDynamicDerivationsSignPayload(
+            rootAccountId,
+            info.payload,
+            chainId,
+            derivationPath,
+            signatory.cryptoType,
+          );
+        } else {
+          signPayload = createSignPayload(signatory.accountId, info.payload, chainId, signatory.cryptoType);
+        }
 
         return {
           info,

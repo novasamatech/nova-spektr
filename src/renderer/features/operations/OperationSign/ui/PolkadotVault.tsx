@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { type HexString } from '@/shared/core';
+import { type HexString, type PolkadotVaultWallet, type SingleShardWallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useCountdown } from '@/shared/lib/hooks';
 import { ValidationErrors, nullable } from '@/shared/lib/utils';
@@ -19,8 +19,9 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
   const [validationError, setValidationError] = useState<ValidationErrors>();
 
   const isScanStep = !txPayloads.length;
-  const isMultiframe = signingPayloads.length > 1;
+  const isMultiTx = signingPayloads.length > 1;
   const chain = signingPayloads[0].chain;
+  const rootAccountId = (signerWallet as PolkadotVaultWallet | SingleShardWallet)?.rootAccountId;
 
   useEffect(() => {
     if (countdown === 0) {
@@ -86,10 +87,10 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
             </div>
           )}
 
-          {isMultiframe ? (
+          {isMultiTx ? (
             <ScanMultiframeQr
               countdown={countdown}
-              signerWallet={signerWallet!}
+              rootAccountId={rootAccountId}
               signingPayloads={signingPayloads}
               onGoBack={onGoBack}
               onResetCountdown={resetCountdown}
@@ -100,6 +101,7 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
               chain={chain}
               api={signingPayloads[0].api}
               countdown={countdown}
+              rootAccountId={rootAccountId}
               account={signingPayloads[0].signatory}
               extrinsic={signingPayloads[0].extrinsic}
               onGoBack={onGoBack}
@@ -115,7 +117,7 @@ export const PolkadotVault = ({ signingPayloads, signerWallet, validateBalance, 
   return (
     <div className="flex w-[440px] flex-col items-center overflow-hidden rounded-lg">
       <QrReaderWrapper
-        isMultiFrame={isMultiframe}
+        isMultiFrame={isMultiTx}
         countdown={countdown || 0}
         validationError={validationError}
         onResult={handleSignature}
