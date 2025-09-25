@@ -272,7 +272,7 @@ sample({
     apis: networkModel.$apis,
   },
   fn: ({ chains, apis }, { proxy, proxied }) => {
-    const chain = chains[(proxied as any).chainId || proxy.chainId];
+    const chain = chains[proxy.chainId];
 
     if (!chain) return null;
 
