@@ -4,7 +4,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample, split
 import { createGate } from 'effector-react';
 import { spread } from 'patronum';
 
-import { type ChainId, type ProxyAccount, type Wallet } from '@/shared/core';
+import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import { getNativeAsset, keys, nonNullable, nullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
@@ -41,7 +41,7 @@ const wentBackFromConfirm = createEvent();
 const stepChangedToInit = stepChanged.prepend(() => Step.INIT);
 
 type Input = {
-  proxied: AnyAccount;
+  proxied: ProxiedAccount;
   proxy: Omit<ProxyAccount, 'id' | 'delay'>;
 };
 
@@ -139,7 +139,6 @@ const $coreTx = combine(
   },
   ({ signatory, proxiedAccount, data, isPureProxiedNeedToBeKilled, chain }) => {
     if (!signatory || !data || !proxiedAccount || !chain) return null;
-
     if (isPureProxiedNeedToBeKilled) {
       return transactionBuilder.buildKillPureProxy({
         chain,
