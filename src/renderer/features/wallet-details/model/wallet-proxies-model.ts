@@ -110,17 +110,6 @@ sample({
   target: resetWalletProxies,
 });
 
-sample({
-  clock: accountSync.syncAccounts.doneData,
-  source: {
-    wallet: $wallet,
-    chains: networkModel.$chains,
-    apis: networkModel.$apis,
-  },
-  filter: ({ wallet }) => nonNullable(wallet),
-  fn: ({ wallet, chains, apis }) => ({ wallet: wallet!, chains, apis, allAccounts: [] }),
-  target: _fetchWalletProxiesFx,
-});
 const $walletProxyGroups = combine(
   {
     wallet: $wallet,
