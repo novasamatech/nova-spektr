@@ -7,7 +7,8 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const proxyService = {
   getMaxProxies,
-  getProxyDeposit,
+  getProxyDepositDelta,
+  getPureProxyDeposit,
   getProxiesForAccount,
 };
 
@@ -38,9 +39,20 @@ async function getProxiesForAccount(api: ApiPromise, account: AccountId): Promis
   return { accounts, deposit: firstRecord.deposit.toString() };
 }
 
-function getProxyDeposit(api: ApiPromise, deposit: string, proxyNumber: number): string {
+/**
+ * Calculate deposit delta for new proxy connection based on existing proxied
+ */
+function getProxyDepositDelta(api: ApiPromise, existingDeposit: string, proxyNumber: number) {
   const { proxyDepositFactor, proxyDepositBase } = api.consts.proxy;
   const proxyDeposit = proxyDepositFactor.muln(proxyNumber).add(proxyDepositBase);
 
-  return proxyDeposit.sub(new BN(deposit)).toString();
+  return proxyDeposit.sub(new BN(existingDeposit));
+}
+
+/**
+ * Calculate pure proxy deposit, that will be locked on spawner
+ */
+function getPureProxyDeposit(api: ApiPromise) {
+  const { proxyDepositFactor, proxyDepositBase } = api.consts.proxy;
+  return proxyDepositFactor.add(proxyDepositBase);
 }

@@ -33,7 +33,7 @@ export const ProxyDeposit = memo(
       setIsLoading(true);
 
       if (api && deposit && proxyNumber) {
-        const txDeposit = proxyService.getProxyDeposit(api, deposit, proxyNumber);
+        const txDeposit = proxyService.getProxyDepositDelta(api, deposit, proxyNumber).toString();
 
         setProxyDeposit(txDeposit);
         setIsLoading(false);

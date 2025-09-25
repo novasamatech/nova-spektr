@@ -1,4 +1,5 @@
 import { type Store } from 'effector';
+import { and, not } from 'patronum';
 
 import { createStoreFromEffect } from '@/shared/effector';
 
@@ -18,7 +19,7 @@ type Params<Validator extends AnyValidator> = {
 };
 
 export const createTxValidationStore = <Validator extends AnyValidator>({ params, validator }: Params<Validator>) => {
-  const { $ } = createStoreFromEffect({
+  const { $, $isDefaultValue } = createStoreFromEffect({
     params,
     defaultValue: { errors: [], balanceValidationResults: [] },
     fn: validator,
@@ -26,9 +27,16 @@ export const createTxValidationStore = <Validator extends AnyValidator>({ params
 
   const $errors = $.map((v) => v.errors);
   const $balanceValidationResults = $.map((v) => v.balanceValidationResults);
+  const $validated = not($isDefaultValue);
+  const $valid = and(
+    $validated,
+    $errors.map((errors) => errors.length === 0),
+  );
 
   return {
     $errors,
     $balanceValidationResults,
+    $validated,
+    $valid,
   };
 };
