@@ -1,35 +1,34 @@
 import { type Store } from 'effector';
 
 import { createStoreFromEffect } from '@/shared/effector';
-import {
-  type TransactionValidationBalanceError,
-  type TransactionValidationFatalError,
-  type TransactionValidationPermissionError,
-} from '@/shared/ui-entities';
 
-type AnyValidator = (
-  ...args: any[]
-) => Promise<
-  (TransactionValidationBalanceError | TransactionValidationPermissionError | TransactionValidationFatalError)[]
->;
+import { type ValidationResult } from './createTxValidator';
+
+type AnyValidator = (...args: any[]) => Promise<ValidationResult>;
 
 type Stores<Args> = {
   [K in keyof Args]: Store<Args[K] | null>;
 };
 
+type ValidatorParams<Validator extends AnyValidator> = Parameters<Validator>[0];
+
 type Params<Validator extends AnyValidator> = {
-  params: Stores<Parameters<Validator>[0]>;
+  params: Stores<ValidatorParams<Validator>>;
   validator: Validator;
 };
 
 export const createTxValidationStore = <Validator extends AnyValidator>({ params, validator }: Params<Validator>) => {
-  const { $: $errors } = createStoreFromEffect({
+  const { $ } = createStoreFromEffect({
     params,
-    defaultValue: [],
+    defaultValue: { errors: [], balanceValidationResults: [] },
     fn: validator,
   });
 
+  const $errors = $.map((v) => v.errors);
+  const $balanceValidationResults = $.map((v) => v.balanceValidationResults);
+
   return {
     $errors,
+    $balanceValidationResults,
   };
 };

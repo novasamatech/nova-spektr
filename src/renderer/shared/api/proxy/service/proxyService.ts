@@ -1,7 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
-import { type Address, type ProxyType } from '@/shared/core';
+import { type ProxyType } from '@/shared/core';
+import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const proxyService = {
@@ -15,18 +16,26 @@ function getMaxProxies(api: ApiPromise): number {
 }
 
 type ProxyAccounts = {
-  accounts: { address: Address; proxyType: ProxyType }[];
+  accounts: { accountId: AccountId; proxyType: ProxyType }[];
   deposit: string;
 };
 async function getProxiesForAccount(api: ApiPromise, account: AccountId): Promise<ProxyAccounts> {
-  const proxies = await api.query.proxy.proxies(account);
+  const proxies = await proxyPallet.storage.proxies(api, [account]);
+  const firstRecord = proxies.at(0)?.value;
 
-  const accounts = proxies[0].map((value) => ({
-    address: value.delegate.toHuman() as Address,
-    proxyType: value.proxyType.toHuman() as ProxyType,
+  if (!firstRecord) {
+    return {
+      accounts: [],
+      deposit: '0',
+    };
+  }
+
+  const accounts = firstRecord.proxies.map((value) => ({
+    accountId: value.delegate,
+    proxyType: value.proxyType as ProxyType,
   }));
 
-  return { accounts, deposit: proxies[1].toString() };
+  return { accounts, deposit: firstRecord.deposit.toString() };
 }
 
 function getProxyDeposit(api: ApiPromise, deposit: string, proxyNumber: number): string {

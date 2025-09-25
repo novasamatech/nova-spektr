@@ -54,6 +54,7 @@ export const ScanSingleframeQr = ({
 
   const isPV = account.signingType === SigningType.POLKADOT_VAULT;
   const isMetadataProofsSupported = chain.additional?.supportsGenericLedgerApp ?? false;
+  const isEthereumAccount = accountUtils.isEthereumBased(account);
 
   useEffect(() => {
     if (txPayload && qrPayload && tab === prevTab.current) return;
@@ -105,7 +106,7 @@ export const ScanSingleframeQr = ({
         const { payload } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
 
         let signPayload: Uint8Array;
-        if (isPV) {
+        if (isPV && !isEthereumAccount) {
           assert(derivationPath, 'Derivation path not found');
           signPayload = createDynamicDerivationsSignPayload(
             rootAccountId,
