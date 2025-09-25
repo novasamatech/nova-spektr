@@ -11,7 +11,7 @@ type Props = {
 };
 
 export const ProxiesCount = ({ count, className }: Props) => {
-  const isProxiesLoading = useUnit(walletProxiesModel.fetchWalletProxiesFx.pending);
+  const isProxiesLoading = useUnit(walletProxiesModel.$walletProxiesPending);
   const isAccountSyncPending = useUnit(accountSync.syncAccounts.pending);
   const isLoading = isProxiesLoading || isAccountSyncPending;
 
