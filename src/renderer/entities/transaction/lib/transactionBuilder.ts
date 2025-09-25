@@ -145,7 +145,7 @@ function buildBond({ chain, asset, accountId, destination, amount }: BondParams)
     args: {
       value: formatAmount(amount, asset.precision),
       controller: accountId,
-      payee: destination === 'Staked' ? destination : { Account: destination.destination },
+      payee: destination === 'Staked' ? 'Staked' : { Account: destination.destination },
     },
   };
 }
