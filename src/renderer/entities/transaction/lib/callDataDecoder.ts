@@ -190,9 +190,12 @@ const getDecodedTransaction = (
 };
 
 const getNativeAssetId = (chains: Record<ChainId, Chain>, chainId: ChainId) => {
-  const nativeAsset = getNativeAsset(chains[chainId].assets);
-  const typeExtras = nativeAsset.typeExtras;
-  const nativeAssetId = (typeExtras && 'assetId' in typeExtras && typeExtras.assetId) || nativeAsset.assetId;
+  const chain = chains[chainId];
+  if (!chain) return null;
+
+  const nativeAsset = getNativeAsset(chain.assets);
+  const typeExtras = nativeAsset?.typeExtras;
+  const nativeAssetId = (typeExtras && 'assetId' in typeExtras && typeExtras.assetId) || nativeAsset?.assetId;
   return nativeAssetId?.toString();
 };
 

@@ -114,6 +114,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     expect(transaction).toEqual({
       accountId: TEST_ACCOUNT_ID,
       args: {
+        assetId: null,
         dest: 'Evo4vR5tHsTVvNqYZNo4GVQc2xHcB5J8i7gKv4cwXKRynK3',
         value: '1000000000000',
       },
