@@ -1547,9 +1547,9 @@
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
       "errors": {
+        "otherError": "The request was rejected due to a technical issue. Check your internet connection or try to reconnect your wallet.",
         "rejected": "Operation rejected",
-        "userRejected": "You rejected the request in WalletConnect.",
-        "otherError": "The request was rejected due to a technical issue. Check your internet connection or try to reconnect your wallet."
+        "userRejected": "You rejected the request in WalletConnect."
       },
       "expiredDescription": "The operation isn’t valid anymore",
       "failedDescription": "Scan with your mobile wallet to connect",
