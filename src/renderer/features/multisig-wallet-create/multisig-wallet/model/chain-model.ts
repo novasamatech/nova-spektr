@@ -12,7 +12,7 @@ import { transactionBuilder, transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 
 import { flowModel } from './flow-model';
-import { DEFAULT_CHAIN, DEFAULT_EVM_CHAIN, formModel } from './form-model';
+import { DEFAULT_EVM_CHAIN, DEFAULT_SUBSTRATE_CHAIN, formModel } from './form-model';
 
 type ChainWithFeeAndBalance = {
   chain: Chain;
@@ -196,12 +196,12 @@ sample({
 
     return (
       (hasEthereumBased && chain.chainId !== DEFAULT_EVM_CHAIN) ||
-      (hasNonEthereumBased && chain.chainId !== DEFAULT_CHAIN)
+      (hasNonEthereumBased && chain.chainId !== DEFAULT_SUBSTRATE_CHAIN)
     );
   },
   fn: ({ initiators }) => {
     const hasEthereumBased = initiators!.some(initiator => accountUtils.isEthereumBased(initiator));
-    return hasEthereumBased ? DEFAULT_EVM_CHAIN : DEFAULT_CHAIN;
+    return hasEthereumBased ? DEFAULT_EVM_CHAIN : DEFAULT_SUBSTRATE_CHAIN;
   },
   target: formModel.form.fields.chainId.change,
 });
