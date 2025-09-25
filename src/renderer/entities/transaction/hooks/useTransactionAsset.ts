@@ -24,14 +24,8 @@ export const useTransactionAsset = (transaction: DecodedTransaction | null, chai
       const targetAssetId: string = coreTx.args.assetId;
 
       const foundAsset = api && getAssetByTypeExtras(api, chain.assets, targetAssetId);
-
       if (foundAsset) {
         return foundAsset;
-      }
-
-      const assetByTypeExtras = api && getAssetByTypeExtras(api, chain.assets, targetAssetId);
-      if (assetByTypeExtras) {
-        return assetByTypeExtras;
       }
 
       return getAssetById(coreTx.args.assetId, chain.assets) ?? null;
