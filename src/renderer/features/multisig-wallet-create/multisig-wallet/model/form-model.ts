@@ -10,7 +10,8 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { signatoryModel } from './signatory-model';
 
 const MIN_THRESHOLD = 2;
-const DEFAULT_CHAIN: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'; // Polkadot
+export const DEFAULT_SUBSTRATE_CHAIN: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'; // Polkadot
+export const DEFAULT_EVM_CHAIN: ChainId = '0xf6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9'; // Mythos
 
 export type FormParams = {
   threshold: number;
@@ -29,7 +30,7 @@ const form = createForm<FormParams>({
       },
     },
     chainId: {
-      defaultValue: DEFAULT_CHAIN,
+      defaultValue: DEFAULT_SUBSTRATE_CHAIN,
     },
     threshold: {
       defaultValue: 0,
