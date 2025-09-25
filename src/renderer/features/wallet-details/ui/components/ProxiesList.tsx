@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { type ChainId, type ProxyAccount, type Wallet } from '@/shared/core';
+import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
@@ -39,7 +39,7 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
 
     if (proxiedAccount) {
       removeProxyModel.flowStarted({
-        proxied: proxiedAccount,
+        proxied: proxiedAccount as ProxiedAccount,
         proxy: proxyAccount,
       });
     }
