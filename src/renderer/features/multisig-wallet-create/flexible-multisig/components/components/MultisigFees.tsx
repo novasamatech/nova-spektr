@@ -1,4 +1,3 @@
-import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
@@ -16,10 +15,11 @@ export const MultisigFees = () => {
   const fee = useUnit(flexibleMultisigModel.$fee);
   const proxyDeposit = useUnit(flexibleMultisigModel.$proxyDeposit);
   const existentialDeposit = useUnit(flexibleMultisigModel.$existentialDeposit);
+  const totalDeposit = useUnit(flexibleMultisigModel.$totalDeposit);
   const isLoading = useUnit(flexibleMultisigModel.$isLoading);
   const asset = useUnit(flexibleMultisigModel.$asset);
 
-  const totalFee = fee.add(existentialDeposit).add(new BN(proxyDeposit ?? 0));
+  const totalFee = fee.add(totalDeposit);
 
   if (!asset) return;
 

@@ -11,7 +11,7 @@ import {
 } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod, getExtrinsicExplorer, sortByDateAsc, toAddress } from '@/shared/lib/utils';
+import { formatSectionAndMethod, nonNullable, sortByDateAsc, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, ContextMenu, ExplorerLink, FootnoteText, IconButton } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
@@ -71,6 +71,7 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(account);
 
   const { status, events } = operation;
+
   const groupedEvents = useMemo(() => {
     const groups = groupBy(events, ({ timestamp }) => formatDate(timestamp || 0, 'PP'));
     return Object.entries(groups).sort(sortByDateAsc);
@@ -139,6 +140,20 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
                     const account = filteredAccountMap[event.accountId];
                     const wallet = filteredWalletsMap[account?.walletId];
 
+                    const explorerLinks =
+                      event.blockCreated && Number.isInteger(event.blockCreated) && connection?.explorers
+                        ? connection.explorers
+                            .map(explorer => ({
+                              name: explorer.name,
+                              href: operationDetailsUtils.getMultisigEventLink(
+                                event.indexCreated,
+                                event.blockCreated,
+                                explorer,
+                              ),
+                            }))
+                            .filter(link => nonNullable(link.href))
+                        : [];
+
                     return (
                       <li key={`${event.accountId}_${event.status}`} className="flex flex-col">
                         <div className="flex w-full items-center gap-x-2">
@@ -150,17 +165,14 @@ const LogModal = ({ isOpen, onClose, operation, account, connection, contacts }:
                           <BodyText className="flex-1 text-text-secondary">{getEventMessage(event)}</BodyText>
                           <BodyText className="text-text-tertiary">{formatDate(Number(event.timestamp), 'p')}</BodyText>
 
-                          {event.extrinsicHash && connection?.explorers && (
+                          {explorerLinks.length > 0 && (
                             <div>
                               <ContextMenu button={<IconButton name="info" size={16} />}>
                                 <ContextMenu.Group>
-                                  <ul className="flex flex-col gap-y-2">
-                                    {connection.explorers.map(explorer => (
-                                      <li key={explorer.name}>
-                                        <ExplorerLink
-                                          name={explorer.name}
-                                          href={getExtrinsicExplorer(explorer, event.extrinsicHash!)}
-                                        />
+                                  <ul className="flex flex-col space-y-2">
+                                    {explorerLinks.map(({ name, href }) => (
+                                      <li key={name}>
+                                        <ExplorerLink name={name} href={href} />
                                       </li>
                                     ))}
                                   </ul>

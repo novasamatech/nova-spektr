@@ -1,7 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { sortBy } from 'lodash';
 
 import { balanceService } from '@/shared/api/balances';
 import { proxyService } from '@/shared/api/proxy';
@@ -53,13 +52,9 @@ const $newMultisigAccountId = combine(
     if (!chain || !threshold) return null;
 
     const cryptoType = networkUtils.isEthereumBased(chain.options) ? CryptoType.ETHEREUM : CryptoType.SR25519;
-    const sortedSignatories = sortBy(
-      Array.from(signatories.values()).map((a) => ({ address: a.address, accountId: toAccountId(a.address) })),
-      'accountId',
-    );
 
     return accountUtils.getMultisigAccountId(
-      sortedSignatories.map((s) => toAccountId(s.address)),
+      Array.from(signatories).map((s) => toAccountId(s.address)),
       threshold,
       cryptoType,
     );

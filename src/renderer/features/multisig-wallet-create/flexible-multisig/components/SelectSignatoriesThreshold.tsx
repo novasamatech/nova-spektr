@@ -142,7 +142,7 @@ export const SelectSignatoriesThreshold = () => {
                     i18nKey="createMultisigAccount.flexibleMultisig.multisigAndProxyExistText"
                     components={{
                       account: (
-                        <span className="mx-1 inline-flex w-auto align-sub">
+                        <span className="mx-1 inline-flex w-auto max-w-[200px] align-top">
                           <Address
                             address={toAddress(existingMultisig.accountId, { prefix: chain?.addressPrefix })}
                             title={existingMultisig.name}
@@ -153,7 +153,7 @@ export const SelectSignatoriesThreshold = () => {
                         </span>
                       ),
                       proxy: (
-                        <span className="mx-1 inline-flex w-auto align-sub">
+                        <span className="mx-1 inline-flex w-auto max-w-[200px] align-top">
                           <Address
                             address={toAddress(existingProxy.accountId, { prefix: chain?.addressPrefix })}
                             title={existingProxy.name}
@@ -181,7 +181,7 @@ export const SelectSignatoriesThreshold = () => {
                     i18nKey="createMultisigAccount.flexibleMultisig.multisigExistText"
                     components={{
                       account: (
-                        <span className="mx-1 inline-flex w-auto align-sub">
+                        <span className="mx-1 inline-flex w-auto max-w-[200px] align-top">
                           <Address
                             address={toAddress(existingMultisig.accountId, { prefix: chain?.addressPrefix })}
                             title={existingMultisig.name}

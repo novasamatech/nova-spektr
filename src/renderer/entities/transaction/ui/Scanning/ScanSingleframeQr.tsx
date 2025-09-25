@@ -1,12 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { u8aConcat } from '@polkadot/util';
-import { encodeAddress } from '@polkadot/util-crypto';
 import { useEffect, useRef, useState } from 'react';
 
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Chain, SigningType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { createTxMetadata } from '@/shared/lib/utils';
+import { assert, createTxMetadata } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
 import { Box, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, type Extrinsic } from '@/domains/network';
@@ -14,7 +14,12 @@ import { accountUtils } from '@/entities/wallet';
 import { transactionService } from '../../lib';
 import { QrTxGenerator } from '../QrCode/QrGenerator/QrTxGenerator';
 import { SUBSTRATE_ID } from '../QrCode/QrGenerator/common/constants';
-import { createSubstrateSignPayload, createSubstrateSignWithProofPayload } from '../QrCode/QrGenerator/common/utils';
+import {
+  createDynamicDerivationsSignPayload,
+  createDynamicDerivationsSignWithProofPayload,
+  createSignPayload,
+  createSignWithProofPayload,
+} from '../QrCode/QrGenerator/common/utils';
 import { QrGeneratorContainer } from '../QrCode/QrGeneratorContainer/QrGeneratorContainer';
 
 type Props = {
@@ -23,6 +28,7 @@ type Props = {
   extrinsic: Extrinsic;
   account: AnyAccount;
   countdown: number;
+  rootAccountId: AccountId;
   onGoBack: () => void;
   onResetCountdown: () => void;
   onResult: (txPayload: Uint8Array) => void;
@@ -34,6 +40,7 @@ export const ScanSingleframeQr = ({
   extrinsic,
   account,
   countdown,
+  rootAccountId,
   onGoBack,
   onResetCountdown,
   onResult,
@@ -47,6 +54,7 @@ export const ScanSingleframeQr = ({
 
   const isPV = account.signingType === SigningType.POLKADOT_VAULT;
   const isMetadataProofsSupported = chain.additional?.supportsGenericLedgerApp ?? false;
+  const isEthereumAccount = accountUtils.isEthereumBased(account);
 
   useEffect(() => {
     if (txPayload && qrPayload && tab === prevTab.current) return;
@@ -59,7 +67,7 @@ export const ScanSingleframeQr = ({
       const derivationPath =
         accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)
           ? account.derivationPath
-          : undefined;
+          : null;
 
       if (tab === 'new' && isMetadataProofsSupported) {
         const { payload, metadataProof } = await transactionService.createPayloadWithProof(
@@ -67,15 +75,28 @@ export const ScanSingleframeQr = ({
           account.accountId,
           api,
         );
-        const signPayload = createSubstrateSignWithProofPayload(
-          encodeAddress(account.accountId, chain.addressPrefix),
-          metadataProof,
-          payload,
-          chain.chainId,
-          account.signingType,
-          derivationPath,
-          account.cryptoType,
-        );
+
+        let signPayload: Uint8Array;
+        if (isPV) {
+          assert(derivationPath, 'Derivation path not found');
+          signPayload = createDynamicDerivationsSignWithProofPayload(
+            rootAccountId,
+            metadataProof,
+            payload,
+            chain.chainId,
+            derivationPath,
+            account.cryptoType,
+          );
+        } else {
+          signPayload = createSignWithProofPayload(
+            account.accountId,
+            metadataProof,
+            payload,
+            chain.chainId,
+            account.cryptoType,
+          );
+        }
+
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
 
         setTxPayload(payload);
@@ -84,14 +105,20 @@ export const ScanSingleframeQr = ({
         const metadata = await createTxMetadata(account.accountId, api);
         const { payload } = transactionService.createPayloadWithMetadata(extrinsic, api, metadata);
 
-        const signPayload = createSubstrateSignPayload(
-          encodeAddress(account.accountId, chain.addressPrefix),
-          payload,
-          chain.chainId,
-          account.signingType,
-          derivationPath,
-          account.cryptoType,
-        );
+        let signPayload: Uint8Array;
+        if (isPV && !isEthereumAccount) {
+          assert(derivationPath, 'Derivation path not found');
+          signPayload = createDynamicDerivationsSignPayload(
+            rootAccountId,
+            payload,
+            chain.chainId,
+            derivationPath,
+            account.cryptoType,
+          );
+        } else {
+          signPayload = createSignPayload(account.accountId, payload, chain.chainId, account.cryptoType);
+        }
+
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
 
         setTxPayload(payload);

@@ -1,13 +1,13 @@
 import { useGate, useUnit } from 'effector-react';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { type FlexibleMultisigWallet, type MultisigWallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
-import { assert, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
+import { isEthereumAccountId, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { BodyText, FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
+import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
 import { Account, AccountExplorers, Address, ChainIcon, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
@@ -57,15 +57,29 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
 
   const multisigAccount = walletAccounts.find(accountUtils.isFlexibleMultisigAccount);
 
-  assert(multisigAccount, 'Multisig account not found.');
+  useEffect(() => {
+    if (nullable(multisigAccount)) {
+      closeModal();
+    }
+  }, [multisigAccount, closeModal]);
 
   const getSignatoryName = (accountId: AccountId) => {
+    if (nullable(multisigAccount)) {
+      return '';
+    }
+
     return walletDetailsUtils.getSignatoryName(accountId, multisigAccount.signatories, contacts, walletsList);
   };
 
-  const chain = chains[multisigAccount.chainId];
+  let chain = null;
+  if (nonNullable(multisigAccount)) {
+    chain = chains[multisigAccount.chainId];
+  }
 
-  const multisigAccountName = getSignatoryName(multisigAccount.multisigAccountId);
+  let multisigAccountName = '';
+  if (nonNullable(multisigAccount)) {
+    multisigAccountName = getSignatoryName(multisigAccount.multisigAccountId);
+  }
 
   const canCreateProxy = useMemo(() => {
     const anyProxy = permissionUtils.canCreateAnyProxy(wallet);
@@ -79,10 +93,14 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
     return anyProxy && networkUtils.isPureProxySupported(chain?.options);
   }, [chain]);
 
+  if (nullable(multisigAccount) || nullable(chain)) {
+    return null;
+  }
+
   const actions: WalletAction[] = [
     {
       component: (
-        <ChangeSignatories wallet={wallet} onClose={closeModal}>
+        <ChangeSignatories wallet={wallet}>
           <Action title={t('walletDetails.multisig.changeSignatories')} icon="changeSignatories" />
         </ChangeSignatories>
       ),
@@ -129,13 +147,9 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
           <FootnoteText className="text-text-tertiary"></FootnoteText>
 
           <div className="-mx-2">
-            {multisigAccount ? (
-              <ContactItem address={multisigAccount.accountId} addressPrefix={chain.addressPrefix}>
-                <AccountExplorers accountId={multisigAccount.accountId} chain={chain} />
-              </ContactItem>
-            ) : (
-              <BodyText>{t('walletDetails.multisig.addressInProgress')}</BodyText>
-            )}
+            <ContactItem address={multisigAccount.accountId} addressPrefix={chain.addressPrefix}>
+              <AccountExplorers accountId={multisigAccount.accountId} chain={chain} />
+            </ContactItem>
           </div>
         </div>
 
@@ -231,32 +245,30 @@ export const FlexibleWalletDetails = ({ wallet, onClose }: Props) => {
               </div>
             )}
           </Box>
-          {nonNullable(chain) && (
-            <div className="flex items-center pl-4">
-              <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
-              <div className="flex items-center gap-1 text-footnote">
-                <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
-                <WalletIcon type={WalletType.MULTISIG} size={16} />
-                <Account
-                  accountId={multisigAccount.multisigAccountId}
-                  chain={chain}
-                  hideIcon
-                  hideAddress
-                  variant="short"
-                  title={multisigAccountName}
-                />
-                <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
-                <ChainIcon chain={chain} size={16} />
-                <FootnoteText className="truncate">{chain.name}</FootnoteText>
-                <FootnoteText className="shrink-0">
-                  {t('walletDetails.multisig.chainTitle', {
-                    threshold: multisigAccount.threshold,
-                    signatories: multisigAccount.signatories.length,
-                  })}
-                </FootnoteText>
-              </div>
+          <div className="flex items-center pl-4">
+            <Icon name="arrowCurveLeftRight" size={16} className="mr-1" />
+            <div className="flex items-center gap-1 text-footnote">
+              <FootnoteText>{t('walletDetails.common.proxyVia')}</FootnoteText>
+              <WalletIcon type={WalletType.MULTISIG} size={16} />
+              <Account
+                accountId={multisigAccount.multisigAccountId}
+                chain={chain}
+                hideIcon
+                hideAddress
+                variant="short"
+                title={multisigAccountName}
+              />
+              <FootnoteText className="shrink-0">{t('walletDetails.multisig.on')}</FootnoteText>
+              <ChainIcon chain={chain} size={16} />
+              <FootnoteText className="truncate">{chain.name}</FootnoteText>
+              <FootnoteText className="shrink-0">
+                {t('walletDetails.multisig.chainTitle', {
+                  threshold: multisigAccount.threshold,
+                  signatories: multisigAccount.signatories.length,
+                })}
+              </FootnoteText>
             </div>
-          )}
+          </div>
         </div>
 
         <WalletActions actions={actions} />
