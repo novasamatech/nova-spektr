@@ -1,21 +1,19 @@
 import { type Chain } from '@/shared/core';
-import { type ProxyAccount } from '@/shared/core/types/proxy';
 import { useI18n } from '@/shared/i18n';
 import { HelpText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Accordion } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
+import { type Proxy } from '../../model/wallet-proxies-model';
 
 import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 
-type ProxyWithDeposit = Omit<ProxyAccount, 'id' | 'delay'> & { deposit: string };
-
 type Props = {
   chain: Chain;
-  proxies: ProxyWithDeposit[];
+  proxies: Proxy[];
   totalDeposit: string;
   canCreateProxy?: boolean;
-  onRemoveProxy: (proxyAccount: Omit<ProxyAccount, 'id' | 'delay'>) => void;
+  onRemoveProxy: (proxyAccount: Proxy) => void;
 };
 
 export const ChainProxyGroup = ({ chain, proxies, totalDeposit, canCreateProxy, onRemoveProxy }: Props) => {
