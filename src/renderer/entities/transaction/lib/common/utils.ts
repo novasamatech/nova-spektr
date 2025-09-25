@@ -158,7 +158,7 @@ export const findCoreBatchAll = (coreTx: Transaction | DecodedTransaction): Tran
 export const findCoreTransaction = (tx: DecodedTransaction | null): DecodedTransaction | null => {
   if (!tx) return null;
 
-  if (isProxyTransaction(tx) || isXcmTransaction(tx)) {
+  if (isProxyTransaction(tx)) {
     return findCoreTransaction(tx.args?.transaction) || tx;
   }
 
