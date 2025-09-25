@@ -206,22 +206,27 @@ const $coreTx = combine(
     signatory: form.fields.signatory.$value,
     amount: form.fields.amount.$value,
     destination: form.fields.destination.$value,
+    destinationType: $destinationType,
     validators: $validators,
     networkStore: $networkStore,
   },
-  ({ chain, signatory, amount, destination, validators, networkStore }) => {
-    if (nullable(chain) || nullable(signatory) || nullable(networkStore) || nullable(destination)) {
+  ({ chain, signatory, amount, destination, destinationType, validators, networkStore }) => {
+    if (nullable(chain) || nullable(signatory) || nullable(networkStore)) {
       return null;
     }
 
-    if (!validateAddress(destination)) return null;
+    if (destinationType !== RewardsDestination.RESTAKE) {
+      if (nullable(destination) || !validateAddress(destination)) {
+        return null;
+      }
+    }
 
     return transactionBuilder.buildBondNominate({
       chain: chain,
       asset: networkStore.asset,
       accountId: signatory.accountId,
       amount: amount,
-      destination: destination,
+      destination: toAddress(destination!),
       nominators: validators.map(({ accountId }) => accountId),
     });
   },
