@@ -148,12 +148,20 @@ const $walletProxyGroups = combine(
   },
 );
 
+const $isLoading = combine(
+  {
+    isProxiesLoading: $walletProxiesPending,
+    isAccountSyncPending: accountSync.syncAccounts.pending,
+  },
+  ({ isProxiesLoading, isAccountSyncPending }) => isProxiesLoading || isAccountSyncPending,
+);
+
 export const walletProxiesModel = {
   flow,
   $wallet,
   $walletProxies,
-  $walletProxiesPending,
   $hasWalletProxies,
   $walletProxiesCount,
   $walletProxyGroups,
+  $isLoading,
 };

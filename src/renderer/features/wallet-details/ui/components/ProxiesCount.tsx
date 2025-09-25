@@ -2,7 +2,6 @@ import { useUnit } from 'effector-react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Skeleton } from '@/shared/ui-kit';
-import { accountSync } from '@/domains/network';
 import { walletProxiesModel } from '../../model/wallet-proxies-model';
 
 type Props = {
@@ -11,9 +10,7 @@ type Props = {
 };
 
 export const ProxiesCount = ({ count, className }: Props) => {
-  const isProxiesLoading = useUnit(walletProxiesModel.$walletProxiesPending);
-  const isAccountSyncPending = useUnit(accountSync.syncAccounts.pending);
-  const isLoading = isProxiesLoading || isAccountSyncPending;
+  const isLoading = useUnit(walletProxiesModel.$isLoading);
 
   if (isLoading) {
     return <Skeleton width={2} height={2.5} />;

@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { accountSync, accounts } from '@/domains/network';
+import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
 import { walletProxiesModel } from '../../model/wallet-proxies-model';
@@ -32,9 +32,7 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   const chainsProxies = useUnit(walletProxiesModel.$walletProxies);
   const walletProxyGroups = useUnit(walletProxiesModel.$walletProxyGroups);
   const allAccounts = useUnit(accounts.$list);
-  const isProxiesLoading = useUnit(walletProxiesModel.$walletProxiesPending);
-  const isAccountSyncPending = useUnit(accountSync.syncAccounts.pending);
-  const isLoading = isProxiesLoading || isAccountSyncPending;
+  const isLoading = useUnit(walletProxiesModel.$isLoading);
 
   const handleDeleteProxy = (proxyAccount: Omit<ProxyAccount, 'id' | 'delay'>) => {
     const proxiedAccount = allAccounts.find(account => account.accountId === proxyAccount.proxiedAccountId);
