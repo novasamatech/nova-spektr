@@ -1445,6 +1445,7 @@
     "advanced": "Advanced",
     "approveButton": "Approve",
     "cancelTitle": "Reject",
+    "closeButton": "Close",
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "createFlexibleMultisig": {
@@ -1546,10 +1547,9 @@
     "walletConnect": {
       "defaultWalletName": "WalletConnect",
       "errors": {
-        "networkError": "Rejected. Some transport error, try to reconnect your wallet",
-        "sessionError": "Rejected. Connection lost, please reconnect your wallet",
-        "unknownError": "Rejected. An unexpected error occurred",
-        "userRejected": "Rejected. Request on sign was rejected"
+        "rejected": "Operation rejected",
+        "userRejected": "You rejected the request in WalletConnect.",
+        "otherError": "The request was rejected due to a technical issue. Check your internet connection or try to reconnect your wallet."
       },
       "expiredDescription": "The operation isn’t valid anymore",
       "failedDescription": "Scan with your mobile wallet to connect",
