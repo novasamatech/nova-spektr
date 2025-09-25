@@ -269,7 +269,7 @@ sample({
       signatories: sortedSignatories,
       threshold: threshold,
 
-      deposit: proxyService.getProxyDeposit(api!, '0', 1),
+      deposit: proxyService.getProxyDepositDelta(api!, '0', 1).toString(),
       blockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
 
@@ -336,7 +336,7 @@ sample({
         },
       ],
       proxyVariant: ProxyVariant.PURE,
-      deposit: proxyService.getProxyDeposit(api!, '0', 1),
+      deposit: proxyService.getPureProxyDeposit(api!).toString(),
       blockNumber: timepoint.height,
       extrinsicIndex: undefined,
     };
