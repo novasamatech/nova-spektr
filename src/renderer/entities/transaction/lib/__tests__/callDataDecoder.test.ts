@@ -4,7 +4,7 @@ import { TypeRegistry } from '@polkadot/types';
 
 import { type Chain, type ChainId } from '@/shared/core';
 import { TEST_ADDRESS, toAccountId } from '@/shared/lib/utils';
-import { polkadotChain, polkadotChainId } from '@/shared/mocks';
+import { polkadotChain } from '@/shared/mocks';
 import { decodeCallData } from '../callDataDecoder';
 
 import { metadata } from './metadata';
@@ -36,7 +36,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     });
 
     chains = {
-      [polkadotChainId]: polkadotChain,
+      [genesisHash]: polkadotChain,
     };
   });
 
@@ -114,7 +114,7 @@ describe('entities/transaction/lib/callDataDecoder', () => {
     expect(transaction).toEqual({
       accountId: TEST_ACCOUNT_ID,
       args: {
-        assetId: null,
+        assetId: '0',
         dest: 'Evo4vR5tHsTVvNqYZNo4GVQc2xHcB5J8i7gKv4cwXKRynK3',
         value: '1000000000000',
       },
