@@ -193,10 +193,7 @@ const getNativeAssetId = (chains: Record<ChainId, Chain>, chainId: ChainId) => {
   const chain = chains[chainId];
   if (!chain) return null;
 
-  const nativeAsset = getNativeAsset(chain.assets);
-  const typeExtras = nativeAsset?.typeExtras;
-  const nativeAssetId = (typeExtras && 'assetId' in typeExtras && typeExtras.assetId) || nativeAsset?.assetId;
-  return nativeAssetId?.toString();
+  return getNativeAsset(chain.assets)?.assetId.toString();
 };
 
 const getCallDataParser: Record<
