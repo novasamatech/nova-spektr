@@ -1,5 +1,4 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { delay, spread } from 'patronum';
@@ -207,17 +206,16 @@ const validator = createTxValidator<{ deposit: string; proxyNumber: number }>({
   additionalBalanceRules: [
     ({ route, getBalance, asset, api, deposit, proxyNumber }) => {
       const initiator = accountService.findInitiator(route);
-      if (!initiator || !accountUtils.isFlexibleMultisigAccount(initiator)) return;
+      if (nullable(initiator) || !accountUtils.isFlexibleMultisigAccount(initiator)) return;
 
       const balance = getBalance(initiator.accountId, initiator.chainId, asset.assetId);
-
       if (nullable(balance)) return;
 
-      const proxyDeposit = proxyService.getProxyDeposit(api, deposit, proxyNumber + 1);
+      const proxyDeposit = proxyService.getProxyDepositDelta(api, deposit, proxyNumber + 1);
 
       return {
         account: initiator,
-        balance: balanceService.tryReserve(balance, new BN(proxyDeposit), 'legacy'),
+        balance: balanceService.tryReserve(balance, proxyDeposit, 'legacy'),
         asset: asset,
         action: 'proxy deposit',
       };

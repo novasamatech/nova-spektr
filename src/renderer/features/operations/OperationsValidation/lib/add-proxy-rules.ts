@@ -88,7 +88,7 @@ export const addProxyValidator = createTxValidator<{ proxyNumber: number; deposi
 
       if (nullable(balance)) return;
 
-      const proxyDeposit = proxyService.getProxyDeposit(api, deposit, proxyNumber + 1);
+      const proxyDeposit = proxyService.getProxyDepositDelta(api, deposit, proxyNumber + 1);
 
       return {
         account: initiator,
