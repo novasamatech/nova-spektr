@@ -85,7 +85,7 @@ sample({
   target: $existentialDeposit,
 });
 
-const $proxyDeposit = combine($api, (api) => (api && proxyService.getProxyDeposit(api, '0', 1)) ?? null);
+const $proxyDeposit = combine($api, (api) => (api && proxyService.getProxyDepositDelta(api, '0', 1)) ?? null);
 
 const $totalDeposit = combine($existentialDeposit, $proxyDeposit, (existentialDeposit, proxyDeposit) => {
   if (nullable(proxyDeposit)) return null;

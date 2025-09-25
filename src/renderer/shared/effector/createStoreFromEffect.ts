@@ -1,5 +1,5 @@
 import { type Store, combine, createStore, sample } from 'effector';
-import { readonly } from 'patronum';
+import { readonly, spread } from 'patronum';
 
 import { nonNullableMap, nullableMap } from '@/shared/lib/utils';
 
@@ -18,6 +18,7 @@ type Params<Args, Value> = {
 export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) => {
   const $source = combine(params.params, x => x);
   const $ = createStore<Value>(params.defaultValue);
+  const $isDefaultValue = createStore(true);
 
   const fx = takeLast({
     key: () => 'createStoreFromEffect',
@@ -34,8 +35,14 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
   sample({
     clock: $source,
     filter: nullableMap,
-    fn: () => params.defaultValue,
-    target: $,
+    fn: () => ({
+      value: params.defaultValue,
+      isDefaultValue: true,
+    }),
+    target: spread({
+      value: $,
+      isDefaultValue: $isDefaultValue,
+    }),
   });
 
   sample({
@@ -43,20 +50,34 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
     source: $source,
     // source should be still valid
     filter: nonNullableMap,
-    fn: (_, res: Value) => res,
-    target: $,
+    fn: (_, value: Value) => ({
+      value,
+      isDefaultValue: false,
+    }),
+    target: spread({
+      value: $,
+      isDefaultValue: $isDefaultValue,
+    }),
   });
 
   sample({
     clock: fx.failData,
+    // filtering out abort error from takeLast
     filter: err => !err || !('name' in err) || err.name !== 'AbortError',
-    fn: () => params.defaultValue,
-    target: $,
+    fn: () => ({
+      value: params.defaultValue,
+      isDefaultValue: true,
+    }),
+    target: spread({
+      value: $,
+      isDefaultValue: $isDefaultValue,
+    }),
   });
 
   return {
     $: readonly($),
     $pending: fx.pending,
+    $isDefaultValue: readonly($isDefaultValue),
     fx,
   };
 };
