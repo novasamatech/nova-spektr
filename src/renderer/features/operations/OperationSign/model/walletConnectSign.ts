@@ -20,11 +20,16 @@ type SignResponse = {
   signature: HexString;
 };
 
+type WalletConnectError = {
+  code?: number;
+  message?: string;
+};
+
 const flow = createGate<{ payloads: ExtrinsicSigningPayload[]; accounts: AnyAccount[] }>({
   defaultState: { payloads: [], accounts: [] },
 });
 const $step = createStore<Step>('idle');
-const $error = createStore<any | null>(null);
+const $error = createStore<WalletConnectError | null>(null);
 
 const $signingPayloads = flow.state.map(({ payloads }) => payloads);
 const $accounts = flow.state.map(({ accounts }) => accounts);
@@ -121,7 +126,7 @@ sample({
 
 sample({
   clock: getSessionFx.fail,
-  fn: (error) => {
+  fn: ({ error }) => {
     return {
       step: 'rejected' as const,
       error: error,
