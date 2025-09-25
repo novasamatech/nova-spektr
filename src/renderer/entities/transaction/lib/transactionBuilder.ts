@@ -126,11 +126,15 @@ function buildBondNominate({
   };
 }
 
+type Staked = 'Staked';
+type Payout = { destination: Address };
+type RewardDestination = Staked | Payout;
+
 type BondParams = {
   chain: Chain;
   asset: Asset;
   accountId: AccountId;
-  destination: string;
+  destination: RewardDestination;
   amount: string;
 };
 function buildBond({ chain, asset, accountId, destination, amount }: BondParams): Transaction {
@@ -141,7 +145,7 @@ function buildBond({ chain, asset, accountId, destination, amount }: BondParams)
     args: {
       value: formatAmount(amount, asset.precision),
       controller: accountId,
-      payee: destination === '' ? 'Staked' : { Account: destination },
+      payee: destination === 'Staked' ? destination : { Account: destination.destination },
     },
   };
 }

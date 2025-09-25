@@ -226,7 +226,7 @@ const $coreTx = combine(
       asset: networkStore.asset,
       accountId: signatory.accountId,
       amount: amount,
-      destination: destinationType !== RewardsDestination.RESTAKE ? '' : toAddress(destination!),
+      destination: destinationType === RewardsDestination.RESTAKE ? 'Staked' : { destination: toAddress(destination!) },
       nominators: validators.map(({ accountId }) => accountId),
     });
   },
