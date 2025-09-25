@@ -542,6 +542,7 @@ export const removeProxyModel = {
   form,
   $chain,
   $proxiedAccount,
+  $proxyAccount,
   $signatories,
   $multisigDeposit,
   $fee,
