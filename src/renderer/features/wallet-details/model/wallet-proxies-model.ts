@@ -10,6 +10,9 @@ import { keys, nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, accountSync, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 
+type Proxy = Omit<ProxyAccount, 'id' | 'delay'> & { deposit: string };
+type WalletProxiesByChain = Record<ChainId, Proxy[]>;
+
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
 const $wallet = flow.state.map(({ wallet }) => wallet);
@@ -25,7 +28,7 @@ const {
     allAccounts: AnyAccount[];
     apis: Record<ChainId, ApiPromise>;
   },
-  Record<ChainId, (Omit<ProxyAccount, 'id' | 'delay'> & { deposit: string })[]>
+  WalletProxiesByChain
 >({
   defaultValue: {},
   params: {
@@ -37,9 +40,7 @@ const {
   async fn({ wallet, chains, apis, allAccounts }) {
     const chainIds = keys(chains);
 
-    const fetchChainProxies = async (
-      chainId: ChainId,
-    ): Promise<[ChainId, (Omit<ProxyAccount, 'id' | 'delay'> & { deposit: string })[]]> => {
+    const fetchChainProxies = async (chainId: ChainId): Promise<[ChainId, Proxy[]]> => {
       const api = apis[chainId];
       const chain = chains[chainId];
       if (!api || !chain) return [chainId, []];
@@ -73,12 +74,12 @@ const {
       const accountsProxies = await Promise.all(accountProxiesPromises);
       const allProxies = accountsProxies.flat().filter(nonNullable);
       const uniqueProxies = allProxies.reduce((acc, proxy) => {
-        const key = `${proxy.accountId}_${proxy.proxiedAccountId}`;
+        const key = `${proxy.accountId}_${proxy.proxiedAccountId}_${proxy.proxyType}`;
         if (!acc.has(key)) {
           acc.set(key, proxy);
         }
         return acc;
-      }, new Map<string, (typeof allProxies)[0]>());
+      }, new Map<string, Proxy>());
 
       return [chainId, Array.from(uniqueProxies.values())];
     };
