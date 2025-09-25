@@ -77,7 +77,6 @@ export const ScanMultiframeQr = ({
 
     const transactionPromises = signingPayloads.map(async (signingPayload, nonceIncrement) => {
       const signatory = signingPayload.signatory;
-      const accountId = isPV ? rootAccountId : signatory.accountId;
       const derivationPath =
         accountUtils.isVaultChainAccount(signatory) || accountUtils.isVaultShardAccount(signatory)
           ? signatory.derivationPath
@@ -95,7 +94,7 @@ export const ScanMultiframeQr = ({
         if (isPV) {
           assert(derivationPath, 'Derivation path not found');
           signPayload = createDynamicDerivationsSignWithProofPayload(
-            accountId,
+            rootAccountId,
             info.metadataProof,
             info.payload,
             signingPayload.chain.chainId,
@@ -104,7 +103,7 @@ export const ScanMultiframeQr = ({
           );
         } else {
           signPayload = createSignWithProofPayload(
-            accountId,
+            signatory.accountId,
             info.metadataProof,
             info.payload,
             signingPayload.chain.chainId,
@@ -131,14 +130,14 @@ export const ScanMultiframeQr = ({
         if (isPV) {
           assert(derivationPath, 'Derivation path not found');
           signPayload = createDynamicDerivationsSignPayload(
-            accountId,
+            rootAccountId,
             info.payload,
             chainId,
             derivationPath,
             signatory.cryptoType,
           );
         } else {
-          signPayload = createSignPayload(accountId, info.payload, chainId, signatory.cryptoType);
+          signPayload = createSignPayload(signatory.accountId, info.payload, chainId, signatory.cryptoType);
         }
 
         return {
