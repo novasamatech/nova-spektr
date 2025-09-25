@@ -32,7 +32,7 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   const chainsProxies = useUnit(walletProxiesModel.$walletProxies);
   const walletProxyGroups = useUnit(walletProxiesModel.$walletProxyGroups);
   const allAccounts = useUnit(accounts.$list);
-  const isProxiesLoading = useUnit(walletProxiesModel.fetchWalletProxiesFx.pending);
+  const isProxiesLoading = useUnit(walletProxiesModel.$walletProxiesPending);
   const isAccountSyncPending = useUnit(accountSync.syncAccounts.pending);
   const isLoading = isProxiesLoading || isAccountSyncPending;
 
