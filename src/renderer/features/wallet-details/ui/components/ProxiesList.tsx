@@ -1,6 +1,6 @@
 import { useUnit } from 'effector-react';
 
-import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
+import { type ChainId, type ProxiedAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
@@ -8,7 +8,7 @@ import { Skeleton } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
-import { walletProxiesModel } from '../../model/wallet-proxies-model';
+import { type Proxy, walletProxiesModel } from '../../model/wallet-proxies-model';
 
 import { ChainProxyGroup } from './ChainProxyGroup';
 import { NoProxiesAction } from './NoProxiesAction';
@@ -34,7 +34,7 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   const allAccounts = useUnit(accounts.$list);
   const isLoading = useUnit(walletProxiesModel.$isLoading);
 
-  const handleDeleteProxy = (proxyAccount: Omit<ProxyAccount, 'id' | 'delay'>) => {
+  const handleDeleteProxy = (proxyAccount: Proxy) => {
     const proxiedAccount = allAccounts.find(account => account.accountId === proxyAccount.proxiedAccountId);
 
     if (proxiedAccount) {

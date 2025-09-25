@@ -10,7 +10,7 @@ import { keys, nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, accountSync, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 
-type Proxy = Omit<ProxyAccount, 'id' | 'delay'> & { deposit: string };
+export type Proxy = Omit<ProxyAccount, 'id' | 'delay'> & { deposit: string };
 type WalletProxiesByChain = Record<ChainId, Proxy[]>;
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
@@ -133,7 +133,7 @@ const $walletProxyGroups = combine(
     for (const [chainIdStr, proxyAccounts] of Object.entries(chainsProxies)) {
       if (proxyAccounts.length > 0) {
         const chainId = chainIdStr;
-        const totalDeposit = proxyAccounts[0].deposit || '0';
+        const totalDeposit = proxyAccounts[0].deposit;
 
         groups.push({
           chainId,
