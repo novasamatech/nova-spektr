@@ -200,7 +200,7 @@ const getCallDataParser: Record<
   },
   [TransactionType.ASSET_TRANSFER]: (decoded): Record<string, any> => {
     return {
-      assetId: decoded.args[0].toString(),
+      asset: decoded.args[0].toString(),
       dest: decoded.args[1].toString(),
       value: decoded.args[2].toString(),
     };
@@ -208,7 +208,7 @@ const getCallDataParser: Record<
   [TransactionType.ORML_TRANSFER]: (decoded): Record<string, any> => {
     return {
       dest: decoded.args[0].toString(),
-      assetId: decoded.args[1].toString(),
+      asset: decoded.args[1].toString(),
       value: decoded.args[2].toString(),
     };
   },

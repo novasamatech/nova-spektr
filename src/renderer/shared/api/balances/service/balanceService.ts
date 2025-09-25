@@ -20,7 +20,7 @@ import {
   type OrmlExtras,
 } from '@/shared/core';
 import {
-  getAssetId,
+  getOnChainAssetId,
   getRepeatedIndex,
   getRoundedValue,
   groupBy,
@@ -202,7 +202,7 @@ function subscribeStatemineAssetsChange(
   }
 
   const assetsTuples = assets.reduce<[string | Codec, AccountId][]>((acc, asset) => {
-    const assetId = getAssetId(asset);
+    const assetId = getOnChainAssetId(asset);
     // @ts-expect-error type argument in createType has incorrect types
     const location = api.createType(type, assetId);
 
@@ -502,7 +502,7 @@ async function fetchStatemineAssets(
   }
 
   const assetsTuples = assets.reduce<[string | Codec, AccountId][]>((acc, asset) => {
-    const assetId = getAssetId(asset);
+    const assetId = getOnChainAssetId(asset);
     // @ts-expect-error type argument in createType has incorrect types
     const location = api.createType(type, assetId);
 
@@ -659,7 +659,7 @@ async function getExistentialDeposit(api: ApiPromise, asset: Asset): Promise<BN>
         pallet = 'assets';
       }
 
-      const assetId = getAssetId(asset);
+      const assetId = getOnChainAssetId(asset);
 
       return await api.query[pallet].asset(assetId).then((balance) => {
         if ((balance as Option<PalletAssetsAssetDetails>).isNone) {

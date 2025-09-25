@@ -3,7 +3,7 @@ import { type SignerOptions } from '@polkadot/api/submittable/types';
 import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, stakeableAmount, transferableAmount } from '@/shared/lib/utils';
+import { getAssetByOnChainId, stakeableAmount, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -69,7 +69,7 @@ const validateFx = attach({
   mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
-    const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0];
+    const asset = getAssetByOnChainId(transaction.args.asset, chain.assets) || chain.assets[0];
 
     return {
       id,

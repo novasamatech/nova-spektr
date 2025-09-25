@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { getAssetById } from '@/shared/lib/utils';
+import { getAssetByOnChainId } from '@/shared/lib/utils';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
@@ -21,7 +21,7 @@ export const GovernanceOperationTitle = ({ operation, title }: Props) => {
 
   const transaction = operation.transaction;
 
-  const asset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
+  const asset = transaction && getAssetByOnChainId(transaction.args.asset, chains[operation.chainId]?.assets);
   const amount = transaction && getTransactionAmount(transaction);
 
   return (

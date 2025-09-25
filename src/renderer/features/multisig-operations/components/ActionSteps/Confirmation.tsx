@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { type Asset, type Chain } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { getAssetById, getAssetByTypeExtras, getNativeAsset } from '@/shared/lib/utils';
+import { getAssetByOnChainId, getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, Icon } from '@/shared/ui';
 import {
   type TransactionValidationBalanceError,
@@ -70,11 +70,7 @@ export const Confirmation = ({
   const transaction = operation.transaction;
   let asset: Asset | null = null;
   if (transaction) {
-    if (transaction.args.assetId) {
-      asset = getAssetByTypeExtras(api, chain.assets, transaction.args.assetId) ?? getNativeAsset(chain.assets);
-    } else {
-      asset = getAssetById(transaction.args.asset, chain.assets) ?? getNativeAsset(chain.assets);
-    }
+    asset = getAssetByOnChainId(transaction.args.asset, chain.assets) ?? getNativeAsset(chain.assets);
   }
 
   const xcmApi = useStoreMap({

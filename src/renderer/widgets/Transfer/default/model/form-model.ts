@@ -10,8 +10,8 @@ import {
   TEST_EVM_ADDRESS,
   assert,
   formatAmount,
-  getAssetId,
   getNativeAsset,
+  isNativeAsset,
   nonNullable,
   nullable,
   toAccountId,
@@ -382,7 +382,7 @@ sample({
 
 sample({
   clock: formInitiated,
-  fn: ({ chain, asset }) => getAssetId(getNativeAsset(chain.assets)!) === getAssetId(asset),
+  fn: ({ asset }) => isNativeAsset(asset),
   target: $isNative,
 });
 

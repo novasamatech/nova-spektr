@@ -1,6 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
-import { isString } from 'lodash';
 
 import {
   type Address,
@@ -16,7 +15,7 @@ import {
   TransactionType,
   type Wallet,
 } from '@/shared/core';
-import { toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { OnChainAssetId, toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { convictionVotingPallet } from '@/shared/pallet/convictionVoting';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigEvent, type MultisigOperation } from '@/domains/network';
@@ -77,9 +76,8 @@ export const getSignatoryName = (
   return toShortAddress(toAddress(signatoryId, { prefix: addressPrefix }), 5);
 };
 
-export const getAssetId = (operation: MultisigOperation) => {
-  const asset = operation.transaction?.args.assetId;
-  return isString(asset) ? asset : null;
+export const getAssetId = (operation: MultisigOperation): OnChainAssetId => {
+  return operation.transaction?.args.asset;
 };
 
 export const getDestination = (

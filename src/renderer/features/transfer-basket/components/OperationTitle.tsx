@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { getAssetById } from '@/shared/lib/utils';
+import { getAssetByOnChainId } from '@/shared/lib/utils';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { ChainTitle, XcmChains } from '@/entities/chain';
@@ -16,7 +16,7 @@ type Props = {
 export const OperationTitle = ({ coreTx }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
-  const asset = getAssetById(coreTx.args.asset, chains[coreTx.chainId]?.assets);
+  const asset = getAssetByOnChainId(coreTx.args.asset, chains[coreTx.chainId]?.assets);
   const amount = getTransactionAmount(coreTx);
 
   return (

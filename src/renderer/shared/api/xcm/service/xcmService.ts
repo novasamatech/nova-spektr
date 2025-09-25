@@ -4,7 +4,13 @@ import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { camelCase, get } from 'lodash';
 
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
-import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
+import {
+  type OnChainAssetId,
+  getOnChainAssetId,
+  getTypeName,
+  getTypeVersion,
+  toLocalChainId, assert,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
@@ -299,7 +305,7 @@ function parseXTokensExtrinsic(args: Omit<XTokenPalletTransferArgs, 'destWeight'
 }
 
 type DecodedPayload = {
-  assetId?: number | string;
+  assetId: OnChainAssetId;
   destinationChain?: HexString;
   value: string;
   dest: string;
@@ -326,7 +332,7 @@ function decodeXcm(
 
   const configOriginChain = config.chains.find((c) => `0x${c.chainId}` === chainId);
 
-  let assetId: number | string | undefined;
+  let assetId: OnChainAssetId | undefined;
   if (!data.isRelayToken && configOriginChain) {
     const filteredAssetLocations = configOriginChain.assets.reduce<[number, AssetLocation][]>((acc, asset) => {
       acc.push([asset.assetId, config.assetsLocation[asset.assetLocation]]);
@@ -351,12 +357,14 @@ function decodeXcm(
     if (assetKeyVal) {
       const assetFromChain = chains[chainId]?.assets.find((asset) => asset.assetId === assetKeyVal[0]);
       if (assetFromChain) {
-        assetId = getAssetId(assetFromChain);
+        assetId = getOnChainAssetId(assetFromChain);
       }
     } else {
       console.log(`XCM config cannot handle - ${data}`);
     }
   }
+
+  assert(assetId, 'Asset id not detected');
 
   return {
     assetId,

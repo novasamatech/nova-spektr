@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { type Address, type Transaction, TransactionType, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { cnTw, getAssetById, keys, toAccountId } from '@/shared/lib/utils';
+import { cnTw, getAssetByOnChainId, keys, toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, Icon } from '@/shared/ui';
 import { type MultisigOperation, identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -57,7 +57,7 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
     allValidators.filter((v) => (transaction?.args.targets || startStakingValidators).includes(v.accountId)) || [];
   const selectedValidatorsAddress = selectedValidators.map((validator) => validator.accountId);
   const notSelectedValidators = allValidators.filter((v) => !selectedValidatorsAddress.includes(v.accountId));
-  const validatorsAsset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
+  const validatorsAsset = transaction && getAssetByOnChainId(transaction.args.asset, chains[operation.chainId]?.assets);
 
   if (Boolean(selectedValidators?.length) && defaultAsset) {
     result.push(
@@ -80,7 +80,7 @@ export const ValidatorsOperationDetails = ({ operation }: Props) => {
 
         <ValidatorsModal
           isOpen={isValidatorsOpen}
-          asset={validatorsAsset}
+          asset={validatorsAsset!}
           identities={identities}
           selectedValidators={selectedValidators}
           notSelectedValidators={notSelectedValidators}

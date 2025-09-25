@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { getAssetById } from '@/shared/lib/utils';
+import { getAssetByOnChainId } from '@/shared/lib/utils';
 import { OperationTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { isTransferTransaction, isXcmTransaction } from '@/entities/transaction';
@@ -16,7 +16,7 @@ export const ConfirmTitle = ({ transaction }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const tx = basketOperationsService.getCoreTx(transaction);
   const chain = chains[tx.chainId];
-  const asset = getAssetById(tx.args.assetId, chain.assets);
+  const asset = getAssetByOnChainId(tx.args.assetId, chain.assets);
 
   if (isTransferTransaction(tx)) {
     return (

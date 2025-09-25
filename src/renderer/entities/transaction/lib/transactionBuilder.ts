@@ -15,7 +15,7 @@ import {
   type Transaction,
   TransactionType,
 } from '@/shared/core';
-import { formatAmount, getAssetId } from '@/shared/lib/utils';
+import { formatAmount, getOnChainAssetId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigOperation } from '@/domains/network';
 import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
@@ -100,7 +100,7 @@ function buildTransfer({
       palletName,
       dest: destination,
       value: formatAmount(amount, asset.precision),
-      ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
+      ...(Boolean(asset.type) && { asset: getOnChainAssetId(asset) }),
       ...xcmData?.args,
     },
   };

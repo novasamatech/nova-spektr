@@ -440,7 +440,7 @@ export const Staking = () => {
       </div>
 
       <ValidatorsModal
-        asset={relaychainAsset}
+        asset={relaychainAsset!}
         selectedValidators={selectedValidators}
         notSelectedValidators={notSelectedValidators}
         identities={identities}

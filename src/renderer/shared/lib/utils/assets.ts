@@ -1,36 +1,48 @@
-import { type ApiPromise } from '@polkadot/api';
-
-import { type Asset, AssetType, type OrmlExtras, StakingType, type StatemineExtras } from '@/shared/core/types/asset';
+import {
+  type Asset,
+  type AssetId,
+  AssetType,
+  type OrmlExtras,
+  StakingType,
+  type StatemineExtras,
+} from '@/shared/core/types/asset';
 import { assert } from '@/shared/lib/utils';
 
-export const getNativeAsset = (assets: Asset[]): Asset => {
-  const nativeAsset = assets.find((asset) => asset.type === AssetType.NATIVE);
-  if (!nativeAsset) {
-    // some networks use orml assets as native (cringe)
-    const firstAsset = assets.at(0);
-    assert(firstAsset, 'Native asset is not found');
-    return firstAsset;
-  }
+/**
+ * Asset id as seen by the chain. Useful when we want to transact specifying
+ * this asset. Note that this can have different type depending on the type of
+ * the corresponding asset
+ */
+export type OnChainAssetId = string | number | 'Native';
 
+export const getNativeAsset = (assets: Asset[]): Asset => {
+  const nativeId = getNativeAssetId();
+  const nativeAsset = assets.find((asset) => asset.assetId == nativeId);
+  assert(nativeAsset, 'Native asset is not found');
   return nativeAsset;
 };
 
-/**
- * Get ID of the asset by type
- *
- * @param asset Network asset
- *
- * @returns {String}
- */
-export const getAssetId = (asset: Asset): string => {
-  if (asset.type === AssetType.STATEMINE) {
-    return (asset.typeExtras as StatemineExtras).assetId;
-  }
-  if (asset.type === AssetType.ORML) {
-    return (asset.typeExtras as OrmlExtras).currencyIdScale;
-  }
+export const getNativeAssetId = (): AssetId => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  return 0 as AssetId;
+};
 
-  return asset.assetId.toString();
+export const isNativeAsset = (asset: Asset): boolean => {
+  return getNativeAssetId() === asset.assetId;
+};
+
+export const getOnChainAssetId = (asset: Asset): OnChainAssetId => {
+  const type = asset.type;
+  switch (type) {
+    case AssetType.NATIVE:
+      return 'Native';
+    case AssetType.ORML:
+      return (asset.typeExtras as OrmlExtras).currencyIdScale;
+    case AssetType.STATEMINE:
+      return (asset.typeExtras as StatemineExtras).assetId;
+    default:
+      throw type satisfies never;
+  }
 };
 
 /**
@@ -41,30 +53,15 @@ export const getAssetId = (asset: Asset): string => {
  *
  * @returns {Asset | undefined}
  */
-export const getAssetById = (id: string, assets?: Asset[]): Asset | undefined => {
-  if (!assets || assets.length === 0) return undefined;
+export const getAssetByOnChainId = (id: OnChainAssetId, assets: Asset[]): Asset | null => {
+  if (!assets || assets.length === 0) return null;
 
-  return assets.find((asset) => getAssetId(asset) === id);
-};
-
-/**
- * Get asset by type extras
- */
-export const getAssetByTypeExtras = (api: ApiPromise, assets: Asset[], assetId: string): Asset | null => {
-  return (
-    assets.find((asset) => {
-      if (!asset.typeExtras) return;
-
-      if ('assetId' in asset.typeExtras) {
-        return asset.typeExtras.assetId === assetId;
-      }
-
-      const id = api.createType(asset.typeExtras.currencyIdType, asset.typeExtras.currencyIdScale).toJSON();
-      const currencyId = api.createType(asset.typeExtras.currencyIdType, assetId).toJSON();
-
-      return id === currencyId;
-    }) ?? null
-  );
+  const res = assets.find((asset) => getOnChainAssetId(asset) === id);
+  if (res) {
+    return res;
+  } else {
+    return null;
+  }
 };
 
 /**

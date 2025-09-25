@@ -4,7 +4,7 @@ import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type ChainId } from '@/shared/core';
-import { getAssetById, nonNullable, nullable } from '@/shared/lib/utils';
+import { getAssetByOnChainId, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { isTransferTransaction, isXcmTransaction } from '@/entities/transaction';
@@ -25,7 +25,7 @@ const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis 
   const { chain, account, fee } = await basketOperationsService.getTransactionData(transaction, apis, chains, accounts);
 
   const destinationChain = chains[transaction.coreTx.args.destinationChain] || chain;
-  const asset = getAssetById(transaction.coreTx.args.asset, chain.assets);
+  const asset = getAssetByOnChainId(transaction.coreTx.args.asset, chain.assets);
 
   if (nullable(account) || nullable(asset)) return null;
 
