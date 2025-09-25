@@ -32,6 +32,7 @@ export const SelectSignatoriesThreshold = () => {
   const existingMultisig = useUnit(formModel.$existingMultisig);
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
   const canSubmit = useUnit(formModel.$canSubmit);
+  const validated = useUnit(flexibleMultisigModel.$validated);
   const invalidAddresses = useUnit(formModel.$invalidAddresses);
 
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
@@ -142,7 +143,7 @@ export const SelectSignatoriesThreshold = () => {
                     i18nKey="createMultisigAccount.flexibleMultisig.multisigAndProxyExistText"
                     components={{
                       account: (
-                        <span className="mx-1 inline-flex w-auto align-sub">
+                        <span className="mx-1 inline-flex w-auto max-w-[200px] align-top">
                           <Address
                             address={toAddress(existingMultisig.accountId, { prefix: chain?.addressPrefix })}
                             title={existingMultisig.name}
@@ -153,7 +154,7 @@ export const SelectSignatoriesThreshold = () => {
                         </span>
                       ),
                       proxy: (
-                        <span className="mx-1 inline-flex w-auto align-sub">
+                        <span className="mx-1 inline-flex w-auto max-w-[200px] align-top">
                           <Address
                             address={toAddress(existingProxy.accountId, { prefix: chain?.addressPrefix })}
                             title={existingProxy.name}
@@ -181,7 +182,7 @@ export const SelectSignatoriesThreshold = () => {
                     i18nKey="createMultisigAccount.flexibleMultisig.multisigExistText"
                     components={{
                       account: (
-                        <span className="mx-1 inline-flex w-auto align-sub">
+                        <span className="mx-1 inline-flex w-auto max-w-[200px] align-top">
                           <Address
                             address={toAddress(existingMultisig.accountId, { prefix: chain?.addressPrefix })}
                             title={existingMultisig.name}
@@ -217,12 +218,7 @@ export const SelectSignatoriesThreshold = () => {
           <div className="flex items-center justify-end gap-x-6">
             <MultisigFees />
 
-            <Button
-              key="create"
-              type="submit"
-              disabled={!canSubmit || errors.length !== 0 || isLoading}
-              onClick={onSubmit}
-            >
+            <Button key="create" type="submit" disabled={!canSubmit || !validated || isLoading} onClick={onSubmit}>
               {t('createMultisigAccount.continueButton')}
             </Button>
           </div>

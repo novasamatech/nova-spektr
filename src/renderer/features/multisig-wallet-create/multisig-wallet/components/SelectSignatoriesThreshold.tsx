@@ -5,12 +5,14 @@ import { Trans } from 'react-i18next';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { Alert, Button, FootnoteText, Icon, IconButton, InputHint, SmallTitleText } from '@/shared/ui';
 import { Address, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal, Select } from '@/shared/ui-kit';
+import { accountService, accounts } from '@/domains/network';
 import { Fee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { flowModel } from '../model/flow-model';
 import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';
@@ -20,9 +22,10 @@ import { MultisigFeeModal } from './components/MultisigFeeModal';
 
 interface Props {
   onGoBack: () => void;
+  onToggle: (open: boolean) => void;
 }
 
-export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
+export const SelectSignatoriesThreshold = ({ onGoBack, onToggle }: Props) => {
   const { t } = useI18n();
 
   const {
@@ -36,6 +39,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
   const chain = useUnit(formModel.$chain);
   const wallets = useUnit(walletModel.$wallets);
+  const allAccounts = useUnit(accounts.$list);
   const existingMultisig = useUnit(formModel.$existingMultisig);
 
   const initiator = useUnit(flowModel.$initiator);
@@ -49,6 +53,20 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
     submit();
+  };
+
+  const handleOpenMultisigWallet = () => {
+    if (!existingMultisig) return;
+
+    const wallet = wallets.find(w => {
+      const walletAccounts = accountService.filterAccountsByWallet(allAccounts, w.id);
+      return walletAccounts.some(account => account.accountId === existingMultisig.accountId);
+    });
+
+    if (wallet) {
+      walletSelect.select(wallet.id);
+      onToggle(false);
+    }
   };
 
   const asset = getNativeAsset(chain?.assets || []);
@@ -153,8 +171,8 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
 
             {nonNullable(initiator) && (
               <Alert
-                variant="info"
-                active={multisigAlreadyExists}
+                variant="error"
+                active={multisigAlreadyExists && nullable(hiddenMultisig)}
                 title={t('createMultisigAccount.multisigExistTitle')}
               >
                 <Alert.Item withDot={false}>
@@ -163,7 +181,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                     i18nKey="createMultisigAccount.multisigExistText"
                     components={{
                       account: (
-                        <span className="mx-1 inline-flex w-auto align-sub">
+                        <span className="mx-1 inline-flex w-auto max-w-[200px] align-top">
                           {existingMultisig && (
                             <Address
                               address={toAddress(existingMultisig.accountId, { prefix: chain?.addressPrefix })}
@@ -177,6 +195,11 @@ export const SelectSignatoriesThreshold = ({ onGoBack }: Props) => {
                       ),
                     }}
                   />
+                </Alert.Item>
+                <Alert.Item withDot={false}>
+                  <Button variant="text" size="sm" className="p-0" onClick={handleOpenMultisigWallet}>
+                    {t('createMultisigAccount.openMultisigButton')}
+                  </Button>
                 </Alert.Item>
               </Alert>
             )}

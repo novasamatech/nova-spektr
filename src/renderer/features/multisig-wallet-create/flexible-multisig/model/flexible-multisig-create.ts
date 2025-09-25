@@ -1,15 +1,14 @@
 import { type ApiPromise } from '@polkadot/api';
-import { BN, BN_ZERO } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { delay, or, spread } from 'patronum';
+import { and, delay, or, spread } from 'patronum';
 
 import { balanceService as deprecatedBalanceService } from '@/shared/api/balances';
 import { proxyService } from '@/shared/api/proxy';
 import { type Asset, type Chain, type Contact, type Transaction, type Wallet } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { Step, TEST_ACCOUNTS, getNativeAsset, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   createFeeCalculator,
   createSignatoriesStore,
@@ -38,11 +37,16 @@ const $api = combine(flexibleMultisigFeature.state, (state): ApiPromise | null =
 const flow = createGate();
 
 const stepChanged = createEvent<Step>();
-const signatorySelected = createEvent<AnyAccount>();
+
+const $asset = formModel.$chain.map(chain => (chain ? getNativeAsset(chain.assets) : null));
 
 const $step = restore(stepChanged, Step.NAME_NETWORK).reset(flow.close);
 
 const $error = createStore('').reset(flow.close);
+
+// working with accounts
+
+const signatorySelected = createEvent<AnyAccount>();
 
 const $signatory = restore(signatorySelected, null).reset(flow.close);
 
@@ -94,7 +98,21 @@ sample({
   target: signatoryModel.events.getSignatoriesBalance,
 });
 
-const $asset = formModel.$chain.map(chain => (chain ? getNativeAsset(chain.assets) : null));
+const $signatoryBalance = combine(
+  {
+    signatory: $signatory,
+    balances: balanceModel.$balanceMap,
+    chain: formModel.$chain,
+  },
+  ({ signatory, balances, chain }) => {
+    if (nullable(signatory) || nullable(chain)) return null;
+    const asset = getNativeAsset(chain.assets);
+
+    return balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId) ?? null;
+  },
+);
+
+// deposits
 
 const { $: $existentialDeposit, $pending: $existentialDepositPending } = createStoreFromEffect<
   { api: ApiPromise; asset: Asset },
@@ -108,28 +126,36 @@ const { $: $existentialDeposit, $pending: $existentialDepositPending } = createS
   fn: ({ api, asset }) => deprecatedBalanceService.getExistentialDeposit(api, asset),
 });
 
-const { $: $proxiesInfo } = createStoreFromEffect({
-  fn: ({ api, accountId }: { api: ApiPromise; accountId: AccountId }) => {
-    return proxyService.getProxiesForAccount(api, accountId);
+const $pureProxyDeposit = $api.map(api => {
+  if (nullable(api)) return null;
+  return proxyService.getPureProxyDeposit(api);
+});
+
+const $proxyReassignDeposit = combine($api, $pureProxyDeposit, (api, pureProxyDeposit) => {
+  if (nullable(api) || nullable(pureProxyDeposit)) return null;
+  return proxyService.getProxyDepositDelta(api, pureProxyDeposit.toString(), 2);
+});
+
+const $totalProxyDeposit = combine(
+  {
+    pureProxyDeposit: $pureProxyDeposit,
+    proxyReassignDeposit: $proxyReassignDeposit,
   },
-  defaultValue: null,
-  params: {
-    api: $api,
-    accountId: $initiator.map(account => account?.accountId ?? null),
+  ({ pureProxyDeposit, proxyReassignDeposit }) => {
+    return (pureProxyDeposit ?? BN_ZERO).add(proxyReassignDeposit ?? BN_ZERO);
   },
-});
+);
 
-const $proxyDeposit = combine($api, $proxiesInfo, (api, proxiesInfo) => {
-  if (nullable(api) || nullable(proxiesInfo)) return null;
+const $totalDeposit = combine(
+  {
+    existentialDeposit: $existentialDeposit,
+    totalProxyDeposit: $totalProxyDeposit,
+  },
+  ({ existentialDeposit, totalProxyDeposit }) => existentialDeposit.add(totalProxyDeposit),
+);
 
-  return new BN(proxyService.getProxyDeposit(api, proxiesInfo.deposit, proxiesInfo.accounts.length + 1));
-});
+// transactions
 
-const $totalDeposit = combine($existentialDeposit, $proxyDeposit, (existentialDeposit, proxyDeposit) => {
-  return existentialDeposit.add(proxyDeposit ?? BN_ZERO);
-});
-
-// Transactions
 const $createPureProxyTx = combine(
   {
     chain: formModel.$chain,
@@ -190,6 +216,8 @@ const $reassignFakeTx = combine(
   },
 );
 
+// fee
+
 const $fakeProxyExtrinsic = combine($api, $fakeProxyTx, (api, tx) => {
   if (nullable(api)) return null;
   if (nullable(tx)) return null;
@@ -212,8 +240,45 @@ const { $: $multisigFee, $pending: $pendingMultisigFee } = createFeeCalculator({
 
 const $fee = combine($proxyFee, $multisigFee, (proxyFee, multisigFee) => multisigFee.add(proxyFee));
 
-// Validation
-const createPureProxyValidator = createTxValidator<{ chain: Chain; proxyDeposit: BN }>({
+// validation
+
+const createPureProxyValidator = createTxValidator<{ chain: Chain; pureProxyDeposit: BN }>({
+  additionalBalanceRules: [
+    ({ route, getBalance, asset, chain, pureProxyDeposit }) => {
+      const initiator = accountService.findInitiator(route);
+      if (nullable(initiator)) return;
+
+      const balance = getBalance(initiator.accountId, chain.chainId, asset.assetId);
+      if (nullable(balance)) return;
+
+      return {
+        account: initiator,
+        balance: balanceService.tryReserve(balance, pureProxyDeposit, 'legacy'),
+        asset: asset,
+        action: 'proxy deposit',
+      };
+    },
+  ],
+});
+
+const {
+  $errors: $createPureProxyValidationErrors,
+  $balanceValidationResults: $createPureProxyBalancesResults,
+  $valid: $createPureProxyValid,
+} = createTxValidationStore({
+  validator: createPureProxyValidator,
+  params: {
+    api: $api,
+    asset: $asset,
+    chain: formModel.$chain,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $createPureProxyTx,
+    pureProxyDeposit: $pureProxyDeposit,
+  },
+});
+
+const reassignProxyValidator = createTxValidator<{ chain: Chain; proxyDeposit: BN }>({
   additionalBalanceRules: [
     ({ route, getBalance, asset, chain, proxyDeposit }) => {
       const initiator = accountService.findInitiator(route);
@@ -231,49 +296,25 @@ const createPureProxyValidator = createTxValidator<{ chain: Chain; proxyDeposit:
     },
   ],
 });
-
-const { $errors: $createPureProxyValidationErrors, $balanceValidationResults: $createPureProxyBalancesResults } =
-  createTxValidationStore({
-    validator: createPureProxyValidator,
-    params: {
-      api: $api,
-      asset: $asset,
-      chain: formModel.$chain,
-      balances: balanceModel.$balanceMap,
-      route: $route,
-      transaction: $createPureProxyTx,
-      proxyDeposit: $proxyDeposit,
-    },
-  });
-
-const reassignProxyValidator = createTxValidator(); //should validate all fee (proxy  deposit + existential)
-const { $errors: $reassignProxyValidationResults } = createTxValidationStore({
+const { $errors: $reassignProxyValidationResults, $valid: $reassignProxyValid } = createTxValidationStore({
   validator: reassignProxyValidator,
   params: {
     balanceValidationResults: $createPureProxyBalancesResults,
     api: $api,
+    chain: formModel.$chain,
     asset: $asset,
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $reassignFakeTx,
+    proxyDeposit: $proxyReassignDeposit,
   },
 });
 
 const $errors = combine($createPureProxyValidationErrors, $reassignProxyValidationResults, (e1, e2) => e1.concat(e2));
 
-const $signatoryBalance = combine(
-  {
-    signatory: $signatory,
-    balances: balanceModel.$balanceMap,
-    chain: formModel.$chain,
-  },
-  ({ signatory, balances, chain }) => {
-    if (!signatory || !chain) return null;
-    const asset = getNativeAsset(chain.assets);
+const $validated = and($createPureProxyValid, $reassignProxyValid);
 
-    return balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId) ?? null;
-  },
-);
+// actual flow
 
 const formSubmitted = sample({
   clock: formModel.form.validate,
@@ -447,8 +488,9 @@ export const flexibleMultisigModel = {
   $asset,
 
   $errors,
+  $validated,
   $fee,
-  $proxyDeposit,
+  $proxyDeposit: $totalProxyDeposit,
   $existentialDeposit,
   $totalDeposit,
   $isLoading: or($pendingProxyFee, $pendingMultisigFee, $existentialDepositPending),

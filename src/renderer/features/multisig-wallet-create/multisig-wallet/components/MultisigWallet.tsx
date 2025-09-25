@@ -43,7 +43,9 @@ export const MultisigWallet = ({ isOpen, onToggle, onGoBack, children }: Props) 
     >
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('createMultisigAccount.title')}</Modal.Title>
-      {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && <SelectSignatoriesThreshold onGoBack={onGoBack} />}
+      {isStep(activeStep, Step.SIGNATORIES_THRESHOLD) && (
+        <SelectSignatoriesThreshold onGoBack={onGoBack} onToggle={onToggle} />
+      )}
       {/* {isStep(activeStep, Step.SIGNER_SELECTION) && <SignerSelection />} */}
       {isStep(activeStep, Step.CONFIRM) && <ConfirmationStep />}
       {isStep(activeStep, Step.SIGN) && (
