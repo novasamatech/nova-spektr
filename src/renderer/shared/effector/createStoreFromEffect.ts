@@ -48,7 +48,8 @@ export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) 
   });
 
   sample({
-    clock: fx.fail,
+    clock: fx.failData,
+    filter: err => !err || !('name' in err) || err.name !== 'AbortError',
     fn: () => params.defaultValue,
     target: $,
   });
