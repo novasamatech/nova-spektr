@@ -63,7 +63,6 @@ export const ScanSingleframeQr = ({
 
   const setupTransaction = async (): Promise<void> => {
     try {
-      const accountId = isPV ? rootAccountId : account.accountId;
       const derivationPath =
         accountUtils.isVaultChainAccount(account) || accountUtils.isVaultShardAccount(account)
           ? account.derivationPath
@@ -80,7 +79,7 @@ export const ScanSingleframeQr = ({
         if (isPV) {
           assert(derivationPath, 'Derivation path not found');
           signPayload = createDynamicDerivationsSignWithProofPayload(
-            accountId,
+            rootAccountId,
             metadataProof,
             payload,
             chain.chainId,
@@ -89,7 +88,7 @@ export const ScanSingleframeQr = ({
           );
         } else {
           signPayload = createSignWithProofPayload(
-            accountId,
+            account.accountId,
             metadataProof,
             payload,
             chain.chainId,
@@ -109,14 +108,14 @@ export const ScanSingleframeQr = ({
         if (isPV) {
           assert(derivationPath, 'Derivation path not found');
           signPayload = createDynamicDerivationsSignPayload(
-            accountId,
+            rootAccountId,
             payload,
             chain.chainId,
             derivationPath,
             account.cryptoType,
           );
         } else {
-          signPayload = createSignPayload(accountId, payload, chain.chainId, account.cryptoType);
+          signPayload = createSignPayload(account.accountId, payload, chain.chainId, account.cryptoType);
         }
 
         const qrPayload = u8aConcat(SUBSTRATE_ID, signPayload);
