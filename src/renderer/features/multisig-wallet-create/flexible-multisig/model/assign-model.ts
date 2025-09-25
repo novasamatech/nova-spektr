@@ -338,7 +338,7 @@ sample({
       proxyVariant: ProxyVariant.PURE,
       deposit: proxyService.getPureProxyDeposit(api!).toString(),
       blockNumber: timepoint.height,
-      extrinsicIndex: undefined,
+      extrinsicIndex: timepoint.index,
     };
 
     const wallet: Omit<NoID<ProxiedWallet>, 'accounts'> = {

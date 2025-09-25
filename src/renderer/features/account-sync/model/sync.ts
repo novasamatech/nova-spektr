@@ -208,6 +208,8 @@ sample({
                 signingType: SigningType.WATCH_ONLY,
                 deposit: firstAccount.deposit.toString(),
                 connections,
+                blockNumber: firstAccount.blockNumber,
+                extrinsicIndex: firstAccount.extrinsicIndex,
               },
             ],
           });
@@ -275,6 +277,7 @@ sample({
         });
       }
     }
+    console.log('proxiesToAdd', proxiesToAdd);
 
     return {
       proxiesToAdd,
