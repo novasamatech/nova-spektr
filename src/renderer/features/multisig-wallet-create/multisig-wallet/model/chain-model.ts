@@ -9,9 +9,10 @@ import { accountService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder, transactionService } from '@/entities/transaction';
+import { accountUtils } from '@/entities/wallet';
 
 import { flowModel } from './flow-model';
-import { formModel } from './form-model';
+import { DEFAULT_CHAIN, DEFAULT_EVM_CHAIN, formModel } from './form-model';
 
 type ChainWithFeeAndBalance = {
   chain: Chain;
@@ -181,6 +182,27 @@ sample({
     return availableChains.length > 0 && !availableChains.some(chain => chain.chain.chainId === currentChainId);
   },
   fn: (_: string | null, availableChains: ChainWithFeeAndBalance[]) => availableChains.at(0)!.chain.chainId,
+  target: formModel.form.fields.chainId.change,
+});
+
+sample({
+  clock: $availableChains,
+  source: { initiators: flowModel.$initiators, chain: formModel.$chain },
+  filter: ({ initiators, chain }, availableChains) => {
+    if (availableChains.length !== 0 || nullable(initiators) || nullable(chain)) return false;
+
+    const hasEthereumBased = initiators.some(initiator => accountUtils.isEthereumBased(initiator));
+    const hasNonEthereumBased = initiators.some(initiator => !accountUtils.isEthereumBased(initiator));
+
+    return (
+      (hasEthereumBased && chain.chainId !== DEFAULT_EVM_CHAIN) ||
+      (hasNonEthereumBased && chain.chainId !== DEFAULT_CHAIN)
+    );
+  },
+  fn: ({ initiators }) => {
+    const hasEthereumBased = initiators!.some(initiator => accountUtils.isEthereumBased(initiator));
+    return hasEthereumBased ? DEFAULT_EVM_CHAIN : DEFAULT_CHAIN;
+  },
   target: formModel.form.fields.chainId.change,
 });
 
