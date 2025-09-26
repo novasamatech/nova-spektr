@@ -22,6 +22,7 @@ import {
   migrateMultishardAccounts,
   migrateMultisigAccounts,
   migratePVAccounts,
+  migrateRevoteToVote,
   migrateWallets,
   removeDeprecatedProxiedAccounts,
 } from '../migration';
@@ -124,6 +125,8 @@ class DexieStorage extends Dexie {
     this.version(34).upgrade(removeDeprecatedProxiedAccounts);
 
     this.version(35).upgrade((t) => t.table('balances').clear());
+
+    this.version(36).upgrade(migrateRevoteToVote);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');

@@ -72,6 +72,8 @@ const createProxiedAccount = (
   name: proxyType,
   walletId: 0,
   deposit: '100',
+  blockNumber: 0,
+  extrinsicIndex: 0,
 });
 
 const createApi = () => {

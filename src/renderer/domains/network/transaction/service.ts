@@ -215,6 +215,11 @@ async function getExtrinsicWeight(extrinsic: Extrinsic) {
   return weight;
 }
 
+async function getTransactionWeight(transaction: AnyTransaction, api: ApiPromise) {
+  const extrinsic = createExtrinsic(transaction, api);
+  return getExtrinsicWeight(extrinsic);
+}
+
 function isBatchExtrinsic(extrinsic: Extrinsic) {
   return (
     extrinsic.method.section === 'utility' && ['batchAll', 'batch', 'forceBatch'].includes(extrinsic.method.method)
@@ -432,6 +437,7 @@ export const transactionService = {
   getExtrinsicFee,
   getTransactionFee,
   getExtrinsicWeight,
+  getTransactionWeight,
 
   splitExtrinsic,
   submitExtrinsic,

@@ -4,6 +4,7 @@ import { type ReactNode } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, HeadlineText, Icon, LargeTitleText, Loader } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
@@ -56,7 +57,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
   const { asset, existingVote, tx, coreTx, api, initiator } = confirm.meta;
 
-  if (!voteTransactionService.isVoteTransaction(coreTx) && !voteTransactionService.isRevoteTransaction(coreTx)) {
+  if (!voteTransactionService.isVoteTransaction(coreTx)) {
     return null;
   }
 
@@ -133,7 +134,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
 
           {!hideSignButton && !isMultisigExists && (
             <SignButton
-              isDefault={Boolean(secondaryActionButton)}
+              isDefault={nonNullable(secondaryActionButton)}
               type={confirm.wallets.signatory.type}
               onClick={confirmModel.startSigning}
             />

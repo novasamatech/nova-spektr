@@ -39,12 +39,6 @@ const isVoteTransaction = (t: Transaction): boolean => {
   return coreTx.type === TransactionType.VOTE;
 };
 
-const isRevoteTransaction = (t: Transaction): boolean => {
-  const coreTx = getCoreTx(t);
-
-  return coreTx.type === TransactionType.REVOTE;
-};
-
 const isRemoveVoteTransaction = (t: Transaction): boolean => {
   if (t.type === TransactionType.BATCH_ALL) {
     return t.args.transactions?.some(isRemoveVoteTransaction);
@@ -107,7 +101,6 @@ export const voteTransactionService = {
   getVote,
 
   isVoteTransaction,
-  isRevoteTransaction,
   isRemoveVoteTransaction,
   isStandardVote,
   isSplitAbstainVote,
