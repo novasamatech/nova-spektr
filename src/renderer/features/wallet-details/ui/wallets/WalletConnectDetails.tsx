@@ -19,7 +19,7 @@ import {
 } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { type IdenticonIconTheme, WalletAccountIcon } from '@/shared/ui-entities';
-import { Box, Modal, Tabs } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { permissionUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
@@ -185,12 +185,9 @@ export const WalletConnectDetails = ({ wallet, onClose }: Props) => {
               <WalletConnectAccounts wallet={wallet} />
             </Tabs.Content>
             <Tabs.Content value="proxies">
-              <ProxiesList
-                wallet={wallet}
-                hasProxies={hasProxies}
-                className="h-[379px]"
-                canCreateProxy={canCreateProxy}
-              />
+              <ScrollArea>
+                <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />
+              </ScrollArea>
             </Tabs.Content>
           </Tabs>
         </Modal.Content>
