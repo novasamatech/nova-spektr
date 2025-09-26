@@ -55,16 +55,16 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
         const data = proxiesData[i];
 
         try {
-          const [proxiesVec, depositBalance] = data;
+          const [proxies, depositBalance] = data;
 
-          const validProxies = proxiesVec.map(proxy => ({
+          const mappedProxies = proxies.map(proxy => ({
             accountId: proxy.delegate.toString() as AccountId,
             proxiedAccountId: account,
             chainId: chain.chainId,
             proxyType: proxy.proxyType.toString() as ProxyType,
           }));
 
-          allProxies.push(...validProxies);
+          allProxies.push(...mappedProxies);
 
           if (!deposit) {
             deposit = depositBalance.toString();
