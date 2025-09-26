@@ -19,7 +19,6 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
   const Title: { [key in TransactionType]?: string } = {
     [TransactionType.UNLOCK]: t('operations.titles.unlock'),
     [TransactionType.VOTE]: t('operations.titles.vote'),
-    [TransactionType.REVOTE]: t('operations.titles.revote'),
     [TransactionType.REMOVE_VOTE]: t('operations.titles.removeVote'),
     [TransactionType.DELEGATE]: t('operations.titles.delegate'),
     [TransactionType.UNDELEGATE]: t('operations.titles.undelegate'),
@@ -33,7 +32,6 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
   const Title: { [key in TransactionType]?: IconNames } = {
     [TransactionType.UNLOCK]: 'unlockMst',
     [TransactionType.VOTE]: 'voteMst',
-    [TransactionType.REVOTE]: 'revoteMst',
     [TransactionType.REMOVE_VOTE]: 'retractMst',
     [TransactionType.DELEGATE]: 'delegateMst',
     [TransactionType.UNDELEGATE]: 'undelegateMst',
@@ -71,9 +69,7 @@ multisigOperationsSDK(governanceOperationDetailFeature, {
 
     if (
       transaction?.type &&
-      [TransactionType.UNLOCK, TransactionType.VOTE, TransactionType.REVOTE, TransactionType.REMOVE_VOTE].includes(
-        transaction.type,
-      )
+      [TransactionType.UNLOCK, TransactionType.VOTE, TransactionType.REMOVE_VOTE].includes(transaction.type)
     ) {
       return <GovernanceVoteDetails operation={operation} />;
     }

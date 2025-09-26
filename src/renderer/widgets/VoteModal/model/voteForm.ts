@@ -23,10 +23,10 @@ import {
   delegationAggregate,
   getLocksForAccount,
   networkSelectorModel,
+  votingAssetModel,
 } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
-import { votingAssetModel } from '@/features/governance/model/votingAsset';
 import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { voteValidator } from '@/features/operations/OperationsValidation';
 
@@ -155,25 +155,14 @@ const $coreTx = combine(
   {
     chain: networkSelectorModel.$governanceChain,
     referendum: $referendum,
-    existingVote: $existingVote,
     conviction: form.fields.conviction.$value,
     signatory: form.fields.signatory.$value,
     amount: form.fields.amount.$value,
     decision: form.fields.decision.$value,
   },
-  ({ chain, referendum, signatory, amount, conviction, decision, existingVote }) => {
-    if (nullable(referendum) || nullable(chain) || nullable(signatory)) {
+  ({ chain, referendum, signatory, amount, conviction, decision }) => {
+    if (nullable(referendum) || nullable(chain) || nullable(signatory) || nullable(decision) || nullable(amount)) {
       return null;
-    }
-
-    if (existingVote) {
-      return transactionBuilder.buildRevote({
-        chain: chain,
-        accountId: signatory.accountId,
-        trackId: referendum.track,
-        referendumId: referendum.referendumId,
-        vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
-      });
     }
 
     return transactionBuilder.buildVote({
@@ -181,7 +170,7 @@ const $coreTx = combine(
       accountId: signatory.accountId,
       trackId: referendum.track,
       referendumId: referendum.referendumId,
-      vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
+      vote: voteTransactionService.createTransactionVote(decision, amount, conviction),
     });
   },
 );

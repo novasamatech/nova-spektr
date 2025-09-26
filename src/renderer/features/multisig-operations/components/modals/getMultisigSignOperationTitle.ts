@@ -52,7 +52,6 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   // Governance
   [TransactionType.UNLOCK]: () => 'operations.modalTitles.unlockOn',
   [TransactionType.VOTE]: () => 'operations.modalTitles.vote',
-  [TransactionType.REVOTE]: () => 'operations.modalTitles.revote',
   [TransactionType.REMOVE_VOTE]: () => 'operations.modalTitles.removeVote',
   [TransactionType.DELEGATE]: () => 'operations.modalTitles.delegateOn',
   [TransactionType.UNDELEGATE]: () => 'operations.modalTitles.undelegateOn',

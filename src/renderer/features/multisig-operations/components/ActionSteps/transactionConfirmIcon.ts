@@ -41,7 +41,6 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   // Governance
   [TransactionType.UNLOCK]: 'unlockMst',
   [TransactionType.VOTE]: 'voteMst',
-  [TransactionType.REVOTE]: 'revoteMst',
   [TransactionType.REMOVE_VOTE]: 'retractMst',
   [TransactionType.DELEGATE]: 'addDelegationConfirm',
   [TransactionType.UNDELEGATE]: 'revokeDelegationConfirm',

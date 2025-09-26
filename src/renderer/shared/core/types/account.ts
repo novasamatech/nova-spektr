@@ -75,8 +75,8 @@ export interface ProxiedAccount extends ChainAccount {
   connections: ProxiedConnection[];
   proxyVariant: ProxyVariant;
   deposit: string;
-  blockNumber?: number;
-  extrinsicIndex?: number;
+  blockNumber: number;
+  extrinsicIndex: number;
 }
 
 export interface ProxiedConnection {
