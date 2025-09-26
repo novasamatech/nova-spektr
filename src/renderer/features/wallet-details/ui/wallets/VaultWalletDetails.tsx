@@ -256,12 +256,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
             </Tabs.Content>
             <Tabs.Content value="proxies">
               <ScrollArea>
-                <ProxiesList
-                  wallet={wallet}
-                  hasProxies={hasProxies}
-                  className="mt-4 h-[371px]"
-                  canCreateProxy={canCreateProxy}
-                />
+                <ProxiesList wallet={wallet} hasProxies={hasProxies} className="mt-4" canCreateProxy={canCreateProxy} />
               </ScrollArea>
             </Tabs.Content>
           </Tabs>

@@ -8,7 +8,7 @@ import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { toAddress } from '@/shared/lib/utils';
 import { Button, HeadlineText, IconButton } from '@/shared/ui';
 import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
-import { Box, Modal, Tabs } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
@@ -129,12 +129,9 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
               <ChainAccountsList accounts={accountsIds} />
             </Tabs.Content>
             <Tabs.Content value="proxies">
-              <ProxiesList
-                wallet={wallet}
-                hasProxies={hasProxies}
-                canCreateProxy={canCreateProxy}
-                className="h-[388px]"
-              />
+              <ScrollArea>
+                <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />
+              </ScrollArea>
             </Tabs.Content>
           </Tabs>
         )}
