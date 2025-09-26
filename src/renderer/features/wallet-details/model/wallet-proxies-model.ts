@@ -66,7 +66,7 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
 
           allProxies.push(...validProxies);
 
-          if (!deposit && !depositBalance.isZero()) {
+          if (!deposit) {
             deposit = depositBalance.toString();
           }
         } catch (error) {
