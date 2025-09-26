@@ -1,11 +1,11 @@
 import { useStoreMap } from 'effector-react';
 
-import { type ChainId, type DecodedTransaction } from '@/shared/core';
+import { type Asset, type ChainId, type DecodedTransaction } from '@/shared/core';
 import { getAssetById, getAssetByTypeExtras } from '@/shared/lib/utils';
 import { networkModel } from '@/entities/network';
 import { findCoreTransaction } from '../lib/common/utils';
 
-export const useTransactionAsset = (transaction: DecodedTransaction | null, chainId: ChainId) => {
+export const useTransactionAsset = (transaction: DecodedTransaction | null, chainId: ChainId): Asset | null => {
   const chain = useStoreMap({
     store: networkModel.$chains,
     keys: [chainId],
@@ -30,8 +30,6 @@ export const useTransactionAsset = (transaction: DecodedTransaction | null, chai
 
       return getAssetById(coreTx.args.assetId, chain.assets) ?? null;
     }
-
-    return getAssetById(coreTx.args.asset, chain.assets) ?? null;
   }
 
   return null;
