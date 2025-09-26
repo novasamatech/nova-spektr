@@ -74,21 +74,21 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: {
     api: $api,
-    initiator: flexibleMultisigModel.$initiator,
+    signatory: flexibleMultisigModel.$signatory,
     proxiedAddress: $proxiedAddress,
   },
-  filter: ({ api, initiator, proxiedAddress }, results) => {
+  filter: ({ api, signatory, proxiedAddress }, results) => {
     return (
       nonNullable(api) &&
       nullable(proxiedAddress) &&
-      nonNullable(initiator) &&
+      nonNullable(signatory) &&
       results.some(({ result }) => submitUtils.isSuccessResult(result))
     );
   },
-  fn: ({ api, initiator }) => {
+  fn: ({ api, signatory }) => {
     return {
       api: api!,
-      signatory: initiator!,
+      signatory: signatory!,
     };
   },
   target: subscribePureEventFx,
@@ -103,7 +103,7 @@ sample({
 const $coreTx = combine(
   {
     signatory: flexibleMultisigModel.$signatory,
-    totalDeposit: flexibleMultisigModel.$totalDeposit,
+    pureTopUpAmount: flexibleMultisigModel.$pureTopUpAmount,
     isMultisigExists: formModel.$multisigAlreadyExists,
     threshold: formModel.form.fields.threshold.$value,
     chain: formModel.$chain,
@@ -111,14 +111,17 @@ const $coreTx = combine(
     signatories: signatoryModel.$signatories,
     proxiedAddress: $proxiedAddress,
   },
-  ({ signatories, chain, threshold, signatory, multisigAccountId, proxiedAddress, totalDeposit, isMultisigExists }) => {
-    if (
-      nullable(multisigAccountId) ||
-      nullable(signatory) ||
-      nullable(chain) ||
-      nullable(totalDeposit) ||
-      nullable(proxiedAddress)
-    ) {
+  ({
+    signatories,
+    chain,
+    threshold,
+    signatory,
+    multisigAccountId,
+    proxiedAddress,
+    pureTopUpAmount,
+    isMultisigExists,
+  }) => {
+    if (nullable(multisigAccountId) || nullable(signatory) || nullable(chain) || nullable(proxiedAddress)) {
       return null;
     }
     const signatoriesWrapped = signatories
@@ -132,7 +135,7 @@ const $coreTx = combine(
       multisigAccountId: toAccountId(multisigAccountId),
       threshold,
       proxyAccountId: toAccountId(proxiedAddress),
-      proxyDeposit: totalDeposit.toString(),
+      pureTopUpAmount,
       isMultisigExists,
     });
   },
