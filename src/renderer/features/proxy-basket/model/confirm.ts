@@ -37,7 +37,9 @@ const prepareAddProxyDataFx = createEffect(async ({ transaction, accounts, chain
   );
 
   const proxy = await proxyService.getProxiesForAccount(apis[chainId], transaction.coreTx.accountId);
-  const proxyDeposit = proxyService.getProxyDeposit(apis[chainId], proxy.deposit, proxy.accounts.length + 1);
+  const proxyDeposit = proxyService
+    .getProxyDepositDelta(apis[chainId], proxy.deposit, proxy.accounts.length + 1)
+    .toString();
 
   return {
     id: transaction.id,
@@ -65,7 +67,7 @@ const prepareAddPureProxiedDataFx = createEffect(async ({ transaction, accounts,
     accounts,
   );
 
-  const proxyDeposit = proxyService.getProxyDeposit(apis[chainId], '0', 1);
+  const proxyDeposit = proxyService.getProxyDepositDelta(apis[chainId], '0', 1).toString();
 
   return {
     id: transaction.id,
