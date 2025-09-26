@@ -27,7 +27,8 @@ export const RemoveProxy = ({ wallet }: Props) => {
   const { t } = useI18n();
 
   const step = useUnit(removeProxyModel.$step);
-  const chainId = useUnit(removeProxyModel.$proxiedAccount.map((account) => account?.chainId ?? null));
+  const chainId = useUnit(removeProxyModel.$proxyAccount.map((proxy) => proxy?.chainId ?? null));
+
   const initiatorWallet = useUnit(removeProxyModel.$wallet);
   const isPureProxiedNeedToBeKilled = useUnit(removeProxyModel.$isPureProxiedNeedToBeKilled);
 
