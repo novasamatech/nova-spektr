@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type ClipboardEvent, type FormEvent, useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
@@ -44,10 +44,6 @@ const WarningKill = ({ onGoBack }: Props) => {
     }
   };
 
-  const handlePaste = (event: ClipboardEvent) => {
-    event.preventDefault();
-  };
-
   return (
     <div className="px-5 pb-4">
       <form id="remove-pure-proxy-warning-form" className="mt-4 flex flex-col gap-y-4" onSubmit={revokeAuthority}>
@@ -57,7 +53,6 @@ const WarningKill = ({ onGoBack }: Props) => {
           invalid={passphrase !== '' && !isPassphraseValid}
           value={passphrase}
           onChange={setPassphrase}
-          onPaste={handlePaste}
         />
         <FootnoteText as="p" className="text-text-tertiary">
           <Trans t={t} i18nKey="pureProxyRemove.warning.inputHint" />

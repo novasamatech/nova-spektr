@@ -108,13 +108,16 @@ type ExtrinsicSigningPayload = {
 };
 
 const getWeightFx = createEffect(async ({ operation, api }: ExtrinsicSigningPayload) => {
-  const transaction = operation.transaction;
-  if (!transaction?.type) return null;
+  if (!operation.callData) return null;
 
-  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   try {
-    return await transactionService.getExtrinsicWeight(extrinsic);
-  } catch {
+    const weight = await transactionService.getTransactionWeight(
+      { type: 'encoded', callData: operation.callData },
+      api,
+    );
+    return weight;
+  } catch (error) {
+    console.log(error);
     return api.createType('Weight', MAX_WEIGHT);
   }
 });
@@ -143,6 +146,7 @@ const $transaction = combine(
   },
   ({ multisigAccount, chain, operation, signatory, weight, initiator }) => {
     if (!multisigAccount || !operation || !chain || !signatory || !weight || !initiator) return null;
+
     const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, initiator.accountId);
     const hasCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
 
