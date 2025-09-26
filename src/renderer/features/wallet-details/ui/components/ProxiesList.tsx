@@ -53,12 +53,13 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
     return walletProxyGroups
       .filter(({ chainId }) => {
         const typedChainId = chainId as ChainId;
-        return chainsProxies[typedChainId]?.length > 0;
+        return chainsProxies[typedChainId]?.proxies.length > 0;
       })
       .map(({ chainId, totalDeposit }) => {
         const typedChainId = chainId as ChainId;
         const chain = chains[typedChainId];
-        const proxies = chainsProxies[typedChainId] || [];
+        const chainProxies = chainsProxies[typedChainId];
+        const proxies = chainProxies?.proxies || [];
 
         return (
           <ChainProxyGroup

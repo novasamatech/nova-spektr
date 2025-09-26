@@ -11,7 +11,7 @@ import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 type Props = {
   chain: Chain;
   proxies: Proxy[];
-  totalDeposit: string;
+  totalDeposit: string | null;
   canCreateProxy?: boolean;
   onRemoveProxy: (proxyAccount: Proxy) => void;
 };
@@ -28,11 +28,15 @@ export const ChainProxyGroup = ({ chain, proxies, totalDeposit, canCreateProxy, 
             <HelpText className="text-text-tertiary">
               {t('walletDetails.common.proxyDeposit')}
               &nbsp;
-              <AssetBalance
-                value={totalDeposit.replaceAll(',', '')}
-                asset={chain.assets[0]}
-                className="text-help-text"
-              />
+              {totalDeposit ? (
+                <AssetBalance
+                  value={totalDeposit.replaceAll(',', '')}
+                  asset={chain.assets[0]}
+                  className="text-help-text"
+                />
+              ) : (
+                <span className="text-help-text">—</span>
+              )}
             </HelpText>
           </div>
         </Accordion.Trigger>
