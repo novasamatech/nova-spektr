@@ -82,17 +82,10 @@ const {
       }
 
       const allProxies = validResults.flatMap(result => result.proxies);
-      const uniqueProxies = allProxies.reduce((acc, proxy) => {
-        const key = `${proxy.accountId}_${proxy.proxiedAccountId}_${proxy.proxyType}`;
-        if (!acc.has(key)) {
-          acc.set(key, proxy);
-        }
-        return acc;
-      }, new Map<string, Proxy>());
-
+      const uniqueProxies = deduplicateProxies(allProxies);
       const deposit = validResults[0].deposit;
 
-      return [chainId, { proxies: Array.from(uniqueProxies.values()), deposit }];
+      return [chainId, { proxies: uniqueProxies, deposit }];
     };
 
     const chainProxiesPromises = chainIds.map(fetchChainProxies);
@@ -103,6 +96,18 @@ const {
     return Object.fromEntries(chainProxiesResults);
   },
 });
+
+function deduplicateProxies(proxies: Proxy[]): Proxy[] {
+  const uniqueProxies = proxies.reduce((acc, proxy) => {
+    const key = `${proxy.accountId}_${proxy.proxiedAccountId}_${proxy.proxyType}`;
+    if (!acc.has(key)) {
+      acc.set(key, proxy);
+    }
+    return acc;
+  }, new Map<string, Proxy>());
+
+  return Array.from(uniqueProxies.values());
+}
 
 export const resetWalletProxies = createEvent();
 
