@@ -6,11 +6,12 @@ import { spread } from 'patronum';
 import {
   type MultisigTxWrapper,
   type ProxyTxWrapper,
+  RewardsDestination,
   type Transaction,
   type TxWrapper,
   WrapperKind,
 } from '@/shared/core';
-import { TEST_ADDRESS, getNativeAsset, getRelaychainAsset, nonNullable } from '@/shared/lib/utils';
+import { TEST_ADDRESS, getNativeAsset, getRelaychainAsset, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -193,16 +194,20 @@ sample({
 
 sample({
   clock: $bondNominateData.updates,
-  source: $walletData,
-  filter: (walletData, bondData) => Boolean(walletData) && Boolean(bondData),
-  fn: (walletData, bondData) => {
+  source: {
+    walletData: $walletData,
+    destinationType: formModel.$destinationType,
+  },
+  filter: ({ walletData }, bondData) => Boolean(walletData) && Boolean(bondData),
+  fn: ({ walletData, destinationType }, bondData) => {
     return bondData!.shards.map((shard) => {
       return transactionBuilder.buildBondNominate({
         chain: walletData!.chain,
         asset: getNativeAsset(walletData!.chain.assets)!,
         accountId: shard.accountId,
         amount: bondData!.amount,
-        destination: bondData!.destination,
+        destination:
+          destinationType === RewardsDestination.RESTAKE ? 'Staked' : { destination: toAddress(bondData!.destination) },
         nominators: bondData!.validators.map(({ accountId }) => accountId),
       });
     });
