@@ -74,8 +74,7 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
         }
       }
 
-      const uniqueProxies = deduplicateProxies(allProxies);
-      callback({ done: true, value: { proxies: uniqueProxies, deposit } });
+      callback({ done: true, value: { proxies: allProxies, deposit } });
     });
   },
 });
@@ -143,18 +142,6 @@ sample({
   }),
   target: subscribeToChainsFx,
 });
-
-function deduplicateProxies(proxies: Proxy[]): Proxy[] {
-  const uniqueProxies = proxies.reduce((acc, proxy) => {
-    const key = `${proxy.accountId}_${proxy.proxiedAccountId}_${proxy.proxyType}`;
-    if (!acc.has(key)) {
-      acc.set(key, proxy);
-    }
-    return acc;
-  }, new Map<string, Proxy>());
-
-  return Array.from(uniqueProxies.values());
-}
 
 export const resetWalletProxies = createEvent();
 
