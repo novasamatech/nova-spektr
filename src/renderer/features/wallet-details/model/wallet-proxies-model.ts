@@ -70,7 +70,7 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
             deposit = depositBalance.toString();
           }
         } catch (error) {
-          console.error('Failed to parse proxies for account', account, error);
+          console.error(`Failed to fetch proxies for account ${account} on chain ${chain.chainId}:`, error);
         }
       }
 
