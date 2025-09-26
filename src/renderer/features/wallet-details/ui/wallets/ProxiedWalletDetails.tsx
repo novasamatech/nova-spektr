@@ -8,7 +8,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, Icon, IconButton, Separator } from '@/shared/ui';
 import { ChainAccountsList, WalletAccountIcon, WalletIcon } from '@/shared/ui-entities';
-import { Box, Modal, Tabs } from '@/shared/ui-kit';
+import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { permissionUtils, walletModel, walletUtils } from '@/entities/wallet';
@@ -192,12 +192,9 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
             <ChainAccountsList accounts={accounts} />
           </Tabs.Content>
           <Tabs.Content value="proxies">
-            <ProxiesList
-              wallet={wallet}
-              hasProxies={hasProxies}
-              canCreateProxy={canCreateProxy}
-              className="h-[361px]"
-            />
+            <ScrollArea>
+              <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />
+            </ScrollArea>
           </Tabs.Content>
         </Tabs>
       </Modal.Content>
