@@ -4,7 +4,6 @@ import { sortBy } from 'lodash';
 import { spread } from 'patronum';
 import { z } from 'zod';
 
-import { proxyService } from '@/shared/api/proxy';
 import {
   AccountType,
   CryptoType,
@@ -75,21 +74,21 @@ sample({
   clock: submitModel.output.formSubmitted,
   source: {
     api: $api,
-    initiator: flexibleMultisigModel.$initiator,
+    signatory: flexibleMultisigModel.$signatory,
     proxiedAddress: $proxiedAddress,
   },
-  filter: ({ api, initiator, proxiedAddress }, results) => {
+  filter: ({ api, signatory, proxiedAddress }, results) => {
     return (
       nonNullable(api) &&
       nullable(proxiedAddress) &&
-      nonNullable(initiator) &&
+      nonNullable(signatory) &&
       results.some(({ result }) => submitUtils.isSuccessResult(result))
     );
   },
-  fn: ({ api, initiator }) => {
+  fn: ({ api, signatory }) => {
     return {
       api: api!,
-      signatory: initiator!,
+      signatory: signatory!,
     };
   },
   target: subscribePureEventFx,
@@ -104,7 +103,7 @@ sample({
 const $coreTx = combine(
   {
     signatory: flexibleMultisigModel.$signatory,
-    totalDeposit: flexibleMultisigModel.$totalDeposit,
+    pureTopUpAmount: flexibleMultisigModel.$pureTopUpAmount,
     isMultisigExists: formModel.$multisigAlreadyExists,
     threshold: formModel.form.fields.threshold.$value,
     chain: formModel.$chain,
@@ -112,14 +111,17 @@ const $coreTx = combine(
     signatories: signatoryModel.$signatories,
     proxiedAddress: $proxiedAddress,
   },
-  ({ signatories, chain, threshold, signatory, multisigAccountId, proxiedAddress, totalDeposit, isMultisigExists }) => {
-    if (
-      nullable(multisigAccountId) ||
-      nullable(signatory) ||
-      nullable(chain) ||
-      nullable(totalDeposit) ||
-      nullable(proxiedAddress)
-    ) {
+  ({
+    signatories,
+    chain,
+    threshold,
+    signatory,
+    multisigAccountId,
+    proxiedAddress,
+    pureTopUpAmount,
+    isMultisigExists,
+  }) => {
+    if (nullable(multisigAccountId) || nullable(signatory) || nullable(chain) || nullable(proxiedAddress)) {
       return null;
     }
     const signatoriesWrapped = signatories
@@ -133,7 +135,7 @@ const $coreTx = combine(
       multisigAccountId: toAccountId(multisigAccountId),
       threshold,
       proxyAccountId: toAccountId(proxiedAddress),
-      proxyDeposit: totalDeposit.toString(),
+      pureTopUpAmount,
       isMultisigExists,
     });
   },
@@ -230,27 +232,26 @@ const createMultisigWalletFx = attach({ effect: walletModel.createWallet });
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
-    api: $api,
     name: formModel.form.fields.name.$value,
     threshold: formModel.form.fields.threshold.$value,
     signatories: signatoryModel.$signatories,
     chain: formModel.$chain,
     flexibleMultisigCreated: $flexibleMultisigCreated,
     multisigAccountId: formModel.$multisigAccountId,
+    proxyDeposit: flexibleMultisigModel.$proxyDeposit,
     proxiedAddress: $proxiedAddress,
     successResult: $successResult,
   },
-  filter: ({ api, flexibleMultisigCreated, chain, multisigAccountId, proxiedAddress, successResult }) => {
+  filter: ({ flexibleMultisigCreated, chain, multisigAccountId, proxiedAddress, successResult }) => {
     return (
-      nonNullable(api) &&
-      nonNullable(chain) &&
       flexibleMultisigCreated &&
+      nonNullable(chain) &&
       nonNullable(multisigAccountId) &&
       nonNullable(proxiedAddress) &&
       nonNullable(successResult)
     );
   },
-  fn: ({ api, signatories, chain, name, threshold, multisigAccountId, proxiedAddress, successResult }) => {
+  fn: ({ signatories, chain, name, threshold, multisigAccountId, proxiedAddress, proxyDeposit, successResult }) => {
     const timepoint = successResult!.params.timepoint;
     const sortedSignatories = sortBy(
       signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address), walletId: a.walletId })),
@@ -269,7 +270,7 @@ sample({
       signatories: sortedSignatories,
       threshold: threshold,
 
-      deposit: proxyService.getProxyDepositDelta(api!, '0', 1).toString(),
+      deposit: proxyDeposit.toString(),
       blockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
 
@@ -300,23 +301,19 @@ sample({
 sample({
   clock: flexibleMultisigCreated,
   source: {
-    api: $api,
     name: formModel.form.fields.name.$value,
     chain: formModel.$chain,
     multisigAccountId: formModel.$multisigAccountId,
     proxiedAddress: $proxiedAddress,
+    proxyDeposit: flexibleMultisigModel.$proxyDeposit,
     successResult: $successResult,
   },
-  filter: ({ api, chain, multisigAccountId, proxiedAddress, successResult }) => {
+  filter: ({ chain, multisigAccountId, proxiedAddress, successResult }) => {
     return (
-      nonNullable(api) &&
-      nonNullable(chain) &&
-      nonNullable(multisigAccountId) &&
-      nonNullable(proxiedAddress) &&
-      nonNullable(successResult)
+      nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(proxiedAddress) && nonNullable(successResult)
     );
   },
-  fn: ({ api, chain, name, multisigAccountId, proxiedAddress, successResult }) => {
+  fn: ({ chain, name, multisigAccountId, proxiedAddress, proxyDeposit, successResult }) => {
     const timepoint = successResult!.params.timepoint;
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
 
@@ -336,7 +333,7 @@ sample({
         },
       ],
       proxyVariant: ProxyVariant.PURE,
-      deposit: proxyService.getPureProxyDeposit(api!).toString(),
+      deposit: proxyDeposit.toString(),
       blockNumber: timepoint.height,
       extrinsicIndex: undefined,
     };
