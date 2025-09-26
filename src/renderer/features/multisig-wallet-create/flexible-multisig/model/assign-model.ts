@@ -4,7 +4,6 @@ import { sortBy } from 'lodash';
 import { spread } from 'patronum';
 import { z } from 'zod';
 
-import { proxyService } from '@/shared/api/proxy';
 import {
   AccountType,
   CryptoType,
@@ -230,27 +229,26 @@ const createMultisigWalletFx = attach({ effect: walletModel.createWallet });
 sample({
   clock: submitModel.output.formSubmitted,
   source: {
-    api: $api,
     name: formModel.form.fields.name.$value,
     threshold: formModel.form.fields.threshold.$value,
     signatories: signatoryModel.$signatories,
     chain: formModel.$chain,
     flexibleMultisigCreated: $flexibleMultisigCreated,
     multisigAccountId: formModel.$multisigAccountId,
+    proxyDeposit: flexibleMultisigModel.$proxyDeposit,
     proxiedAddress: $proxiedAddress,
     successResult: $successResult,
   },
-  filter: ({ api, flexibleMultisigCreated, chain, multisigAccountId, proxiedAddress, successResult }) => {
+  filter: ({ flexibleMultisigCreated, chain, multisigAccountId, proxiedAddress, successResult }) => {
     return (
-      nonNullable(api) &&
-      nonNullable(chain) &&
       flexibleMultisigCreated &&
+      nonNullable(chain) &&
       nonNullable(multisigAccountId) &&
       nonNullable(proxiedAddress) &&
       nonNullable(successResult)
     );
   },
-  fn: ({ api, signatories, chain, name, threshold, multisigAccountId, proxiedAddress, successResult }) => {
+  fn: ({ signatories, chain, name, threshold, multisigAccountId, proxiedAddress, proxyDeposit, successResult }) => {
     const timepoint = successResult!.params.timepoint;
     const sortedSignatories = sortBy(
       signatories.map(a => ({ address: a.address, accountId: toAccountId(a.address), walletId: a.walletId })),
@@ -269,7 +267,7 @@ sample({
       signatories: sortedSignatories,
       threshold: threshold,
 
-      deposit: proxyService.getProxyDepositDelta(api!, '0', 1).toString(),
+      deposit: proxyDeposit.toString(),
       blockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
 
@@ -300,23 +298,19 @@ sample({
 sample({
   clock: flexibleMultisigCreated,
   source: {
-    api: $api,
     name: formModel.form.fields.name.$value,
     chain: formModel.$chain,
     multisigAccountId: formModel.$multisigAccountId,
     proxiedAddress: $proxiedAddress,
+    proxyDeposit: flexibleMultisigModel.$proxyDeposit,
     successResult: $successResult,
   },
-  filter: ({ api, chain, multisigAccountId, proxiedAddress, successResult }) => {
+  filter: ({ chain, multisigAccountId, proxiedAddress, successResult }) => {
     return (
-      nonNullable(api) &&
-      nonNullable(chain) &&
-      nonNullable(multisigAccountId) &&
-      nonNullable(proxiedAddress) &&
-      nonNullable(successResult)
+      nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(proxiedAddress) && nonNullable(successResult)
     );
   },
-  fn: ({ api, chain, name, multisigAccountId, proxiedAddress, successResult }) => {
+  fn: ({ chain, name, multisigAccountId, proxiedAddress, proxyDeposit, successResult }) => {
     const timepoint = successResult!.params.timepoint;
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
 
@@ -336,7 +330,7 @@ sample({
         },
       ],
       proxyVariant: ProxyVariant.PURE,
-      deposit: proxyService.getPureProxyDeposit(api!).toString(),
+      deposit: proxyDeposit.toString(),
       blockNumber: timepoint.height,
       extrinsicIndex: undefined,
     };
