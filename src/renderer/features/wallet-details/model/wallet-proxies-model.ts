@@ -1,17 +1,18 @@
 import { type ApiPromise } from '@polkadot/api';
+import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { type ProxyAccount, type ProxyType } from '@/shared/core/types/proxy';
 import { nonNullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createSubscriptionResource, deriveFromResources } from '@/shared/resource';
 import { type AnyAccount, accountService, accountSync, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 
 export type Proxy = Omit<ProxyAccount, 'id' | 'delay'>;
-type ChainProxies = { proxies: Proxy[]; deposit: string | null };
+type ChainProxies = { proxies: Proxy[]; deposit: BN | null };
 type WalletProxiesByChain = Record<ChainId, ChainProxies>;
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
@@ -48,7 +49,7 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
 
     return api.query.proxy.proxies.multi(accountIds, proxiesData => {
       const allProxies: Proxy[] = [];
-      let deposit: string | null = null;
+      let totalDeposit = new BN(0);
 
       for (let i = 0; i < accountIds.length; i++) {
         const account = accountIds[i];
@@ -58,7 +59,7 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
           const [proxies, depositBalance] = data;
 
           const mappedProxies = proxies.map(proxy => ({
-            accountId: proxy.delegate.toString() as AccountId,
+            accountId: pjsSchema.helpers.toAccountId(proxy.delegate.toHex()),
             proxiedAccountId: account,
             chainId: chain.chainId,
             proxyType: proxy.proxyType.toString() as ProxyType,
@@ -66,14 +67,13 @@ const walletProxiesSubscription = createSubscriptionResource<WalletProxiesSubscr
 
           allProxies.push(...mappedProxies);
 
-          if (!deposit) {
-            deposit = depositBalance.toString();
-          }
+          totalDeposit = totalDeposit.add(depositBalance.toBn());
         } catch (error) {
           console.error(`Failed to fetch proxies for account ${account} on chain ${chain.chainId}:`, error);
         }
       }
 
+      const deposit = totalDeposit.gt(new BN(0)) ? totalDeposit : null;
       callback({ done: true, value: { proxies: allProxies, deposit } });
     });
   },
@@ -188,7 +188,7 @@ const $walletProxyGroups = combine(
           chainId,
           proxiedAccountId: chainProxies.proxies[0].proxiedAccountId,
           walletId: wallet.id,
-          totalDeposit: totalDeposit ? String(totalDeposit) : null,
+          totalDeposit: totalDeposit ? totalDeposit.toString() : null,
         });
       }
     }

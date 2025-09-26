@@ -107,6 +107,6 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
 
 const LoadingSkeleton = () => (
   <div className="flex items-center py-2">
-    <Skeleton width="100%" height={10} />
+    <Skeleton width="100%" height={14} />
   </div>
 );
