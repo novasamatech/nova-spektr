@@ -288,10 +288,6 @@ export const Staking = () => {
         // @ts-expect-error TODO fix
         acc.push(shardsGroup);
       } else {
-        if (accountUtils.isFlexibleMultisigAccount(account)) {
-          return acc;
-        }
-
         acc.push(getInfo(account));
       }
 
