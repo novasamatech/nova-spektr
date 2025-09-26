@@ -10,8 +10,9 @@ import { keys, nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount, accountService, accountSync, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 
-export type Proxy = Omit<ProxyAccount, 'id' | 'delay'> & { deposit: string };
-type WalletProxiesByChain = Record<ChainId, Proxy[]>;
+export type Proxy = Omit<ProxyAccount, 'id' | 'delay'>;
+type ChainProxies = { proxies: Proxy[]; deposit: string | null };
+type WalletProxiesByChain = Record<ChainId, ChainProxies>;
 
 const flow = createGate<{ wallet: Wallet | null }>({ defaultState: { wallet: null } });
 
@@ -40,13 +41,13 @@ const {
   async fn({ wallet, chains, apis, allAccounts }) {
     const chainIds = keys(chains);
 
-    const fetchChainProxies = async (chainId: ChainId): Promise<[ChainId, Proxy[]]> => {
+    const fetchChainProxies = async (chainId: ChainId): Promise<[ChainId, ChainProxies]> => {
       const api = apis[chainId];
       const chain = chains[chainId];
-      if (!api || !chain) return [chainId, []];
+      if (!api || !chain) return [chainId, { proxies: [], deposit: null }];
 
       if (!networkUtils.isProxySupported(chain.options)) {
-        return [chainId, []];
+        return [chainId, { proxies: [], deposit: null }];
       }
 
       const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
@@ -58,21 +59,29 @@ const {
         try {
           const result = await proxyService.getProxiesForAccount(api, account.accountId);
 
-          return result.accounts.map(proxy => ({
-            accountId: proxy.accountId,
-            proxiedAccountId: account.accountId,
-            chainId,
-            proxyType: proxy.proxyType,
+          return {
+            proxies: result.accounts.map(proxy => ({
+              accountId: proxy.accountId,
+              proxiedAccountId: account.accountId,
+              chainId,
+              proxyType: proxy.proxyType,
+            })),
             deposit: result.deposit,
-          }));
+          };
         } catch (error) {
           console.log(`Failed to fetch proxies for account ${account.accountId} on chain ${chainId}:`, error);
-          return [];
+          return { proxies: [], deposit: null };
         }
       });
 
       const accountsProxies = await Promise.all(accountProxiesPromises);
-      const allProxies = accountsProxies.flat().filter(nonNullable);
+      const validResults = accountsProxies.filter(nonNullable);
+
+      if (validResults.length === 0) {
+        return [chainId, { proxies: [], deposit: null }];
+      }
+
+      const allProxies = validResults.flatMap(result => result.proxies);
       const uniqueProxies = allProxies.reduce((acc, proxy) => {
         const key = `${proxy.accountId}_${proxy.proxiedAccountId}_${proxy.proxyType}`;
         if (!acc.has(key)) {
@@ -81,7 +90,9 @@ const {
         return acc;
       }, new Map<string, Proxy>());
 
-      return [chainId, Array.from(uniqueProxies.values())];
+      const deposit = validResults[0].deposit;
+
+      return [chainId, { proxies: Array.from(uniqueProxies.values()), deposit }];
     };
 
     const chainProxiesPromises = chainIds.map(fetchChainProxies);
@@ -96,11 +107,11 @@ const {
 export const resetWalletProxies = createEvent();
 
 const $hasWalletProxies = $walletProxies.map(chainsProxies => {
-  return Object.values(chainsProxies).some(accounts => accounts.length > 0);
+  return Object.values(chainsProxies).some(chainProxies => chainProxies.proxies.length > 0);
 });
 
 const $walletProxiesCount = $walletProxies.map(chainsProxies => {
-  return Object.values(chainsProxies).reduce((total, accounts) => total + accounts.length, 0);
+  return Object.values(chainsProxies).reduce((total, chainProxies) => total + chainProxies.proxies.length, 0);
 });
 
 sample({
@@ -119,16 +130,16 @@ const $walletProxyGroups = combine(
     if (!wallet) return [];
 
     const groups = [];
-    for (const [chainIdStr, proxyAccounts] of Object.entries(chainsProxies)) {
-      if (proxyAccounts.length > 0) {
+    for (const [chainIdStr, chainProxies] of Object.entries(chainsProxies)) {
+      if (chainProxies.proxies.length > 0) {
         const chainId = chainIdStr;
-        const totalDeposit = proxyAccounts[0].deposit;
+        const totalDeposit = chainProxies.deposit;
 
         groups.push({
           chainId,
-          proxiedAccountId: proxyAccounts[0].proxiedAccountId,
+          proxiedAccountId: chainProxies.proxies[0].proxiedAccountId,
           walletId: wallet.id,
-          totalDeposit: String(totalDeposit),
+          totalDeposit: totalDeposit ? String(totalDeposit) : null,
         });
       }
     }
