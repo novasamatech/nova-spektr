@@ -1,18 +1,19 @@
+import { type ChainId, type DecodedTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { TransactionTitle, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 
 type Props = {
-  operation: MultisigOperation;
+  transaction: DecodedTransaction | null;
+  chainId: ChainId;
 };
 
-export const TransferOperationTitle = ({ operation }: Props) => {
+export const TransferOperationTitle = ({ transaction, chainId }: Props) => {
   const { t } = useI18n();
-  const transaction = operation.transaction;
-  const asset = useTransactionAsset(operation);
+
+  const asset = useTransactionAsset(transaction, chainId);
   const amount = transaction ? getTransactionAmount(transaction) : null;
 
   return (
@@ -29,7 +30,7 @@ export const TransferOperationTitle = ({ operation }: Props) => {
         </Box>
       )}
 
-      <ChainTitle chainId={operation.chainId} className="w-[114px]" />
+      <ChainTitle chainId={chainId} className="w-[114px]" />
     </>
   );
 };

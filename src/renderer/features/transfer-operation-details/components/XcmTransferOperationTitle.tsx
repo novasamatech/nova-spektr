@@ -1,19 +1,25 @@
+import { type ChainId, type DecodedTransaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type MultisigOperation } from '@/domains/network';
 import { XcmChains } from '@/entities/chain';
-import { TransactionTitle, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
+import {
+  TransactionTitle,
+  findCoreTransaction,
+  getTransactionAmount,
+  useTransactionAsset,
+} from '@/entities/transaction';
 
 type Props = {
-  operation: MultisigOperation;
+  transaction: DecodedTransaction | null;
+  chainId: ChainId;
 };
 
-export const XcmTransferOperationTitle = ({ operation }: Props) => {
+export const XcmTransferOperationTitle = ({ transaction, chainId }: Props) => {
   const { t } = useI18n();
-  const transaction = operation.transaction;
-  const asset = useTransactionAsset(operation);
-  const amount = transaction ? getTransactionAmount(transaction) : null;
+  const coreTx = findCoreTransaction(transaction);
+  const asset = useTransactionAsset(coreTx, chainId);
+  const amount = coreTx ? getTransactionAmount(coreTx) : null;
 
   return (
     <>
@@ -29,7 +35,7 @@ export const XcmTransferOperationTitle = ({ operation }: Props) => {
         </Box>
       )}
 
-      <XcmChains chainIdFrom={operation.chainId} chainIdTo={transaction?.args.destinationChain} className="w-[114px]" />
+      <XcmChains chainIdFrom={chainId} chainIdTo={transaction?.args.destinationChain} className="w-[114px]" />
     </>
   );
 };
