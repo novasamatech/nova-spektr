@@ -277,7 +277,6 @@ sample({
         });
       }
     }
-    console.log('proxiesToAdd', proxiesToAdd);
 
     return {
       proxiesToAdd,
