@@ -67,7 +67,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(transaction), t, approveTx?.type, operation);
 
   const nativeAsset = getNativeAsset(chain.assets);
-  const asset = useTransactionAsset(operation);
+  const asset = useTransactionAsset(transaction, operation.chainId);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
