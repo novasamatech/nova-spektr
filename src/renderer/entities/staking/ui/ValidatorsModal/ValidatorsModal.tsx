@@ -14,7 +14,7 @@ type Props = {
   selectedValidators: Validator[];
   notSelectedValidators: Validator[];
   identities: Record<AccountId, AccountIdentity>;
-  asset?: Asset;
+  asset: Asset;
   chain?: Chain;
   onClose: () => void;
 };
