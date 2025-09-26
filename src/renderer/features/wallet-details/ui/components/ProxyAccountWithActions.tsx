@@ -1,16 +1,17 @@
-import { type Chain, type ProxyAccount } from '@/shared/core';
+import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box, Copy, Dropdown, Popover } from '@/shared/ui-kit';
 import { ProxyAccount as ProxyAccountComponent } from '@/entities/proxy';
+import { type Proxy } from '../../model/wallet-proxies-model';
 
 type Props = {
-  account: Omit<ProxyAccount, 'id' | 'delay'>;
+  account: Proxy;
   chain: Chain;
   canCreateProxy?: boolean;
-  onRemoveProxy: (proxyAccount: Omit<ProxyAccount, 'id' | 'delay'>) => void;
+  onRemoveProxy: (proxyAccount: Proxy) => void;
 };
 
 export const ProxyAccountWithActions = ({ account, chain, canCreateProxy, onRemoveProxy }: Props) => {

@@ -17,6 +17,7 @@ import {
   createTxValidationStore,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { accountSync } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
@@ -138,7 +139,6 @@ const $coreTx = combine(
   },
   ({ signatory, proxiedAccount, data, isPureProxiedNeedToBeKilled, chain }) => {
     if (!signatory || !data || !proxiedAccount || !chain) return null;
-
     if (isPureProxiedNeedToBeKilled) {
       return transactionBuilder.buildKillPureProxy({
         chain,
@@ -271,7 +271,7 @@ sample({
     apis: networkModel.$apis,
   },
   fn: ({ chains, apis }, { proxy, proxied }) => {
-    const chain = chains[proxied.chainId || proxy.chainId];
+    const chain = chains[proxy.chainId];
 
     if (!chain) return null;
 
@@ -517,6 +517,17 @@ sample({
 });
 
 sample({
+  clock: submitModel.output.formSubmitted,
+  filter: (results) => submitUtils.isSuccessResult(results[0].result),
+  target: flowFinished,
+});
+
+sample({
+  clock: flowFinished,
+  target: accountSync.syncAccounts,
+});
+
+sample({
   clock: flowFinished,
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
@@ -531,6 +542,7 @@ export const removeProxyModel = {
   form,
   $chain,
   $proxiedAccount,
+  $proxyAccount,
   $signatories,
   $multisigDeposit,
   $fee,
