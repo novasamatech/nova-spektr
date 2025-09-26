@@ -501,6 +501,7 @@ export const flexibleMultisigModel = {
   $proxyDeposit: $totalProxyDeposit,
   $existentialDeposit,
   $totalDeposit,
+  $pureTopUpAmount,
   $isLoading: or($pendingProxyFee, $pendingMultisigFee, $existentialDepositPending),
 
   signatorySelected: signatorySelected,
