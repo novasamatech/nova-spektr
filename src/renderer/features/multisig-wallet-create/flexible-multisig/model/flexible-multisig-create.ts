@@ -154,6 +154,14 @@ const $totalDeposit = combine(
   ({ existentialDeposit, totalProxyDeposit }) => existentialDeposit.add(totalProxyDeposit),
 );
 
+const $pureTopUpAmount = combine(
+  {
+    existentialDeposit: $existentialDeposit,
+    proxyReassignDeposit: $proxyReassignDeposit,
+  },
+  ({ existentialDeposit, proxyReassignDeposit }) => existentialDeposit.add(proxyReassignDeposit ?? BN_ZERO),
+);
+
 // transactions
 
 const $createPureProxyTx = combine(
@@ -194,10 +202,10 @@ const $reassignFakeTx = combine(
     api: $api,
     signatories: signatoryModel.$signatories,
     threshold: formModel.form.fields.threshold.$value,
-    totalDeposit: $totalDeposit,
+    pureTopUpAmount: $pureTopUpAmount,
     signatory: $signatory,
   },
-  ({ isConnected, chain, api, signatories, threshold, totalDeposit, signatory }): Transaction | null => {
+  ({ isConnected, chain, api, signatories, threshold, pureTopUpAmount, signatory }): Transaction | null => {
     if (!chain || !isConnected || !api) return null;
 
     const signatoriesWrapped = signatories
@@ -211,7 +219,7 @@ const $reassignFakeTx = combine(
       multisigAccountId: TEST_ACCOUNTS[0],
       threshold: threshold || 2,
       proxyAccountId: TEST_ACCOUNTS[1],
-      proxyDeposit: totalDeposit?.toString() || '0',
+      pureTopUpAmount,
     });
   },
 );
