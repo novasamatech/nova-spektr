@@ -116,8 +116,7 @@ const getWeightFx = createEffect(async ({ operation, api }: ExtrinsicSigningPayl
       api,
     );
     return weight;
-  } catch (error) {
-    console.log(error);
+  } catch {
     return api.createType('Weight', MAX_WEIGHT);
   }
 });
