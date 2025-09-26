@@ -219,6 +219,8 @@ export const syncProxiedAccounts = ({
               signingType: SigningType.WATCH_ONLY,
               deposit: firstAccount.deposit.toString(),
               connections,
+              blockNumber: firstAccount.blockNumber,
+              extrinsicIndex: firstAccount.extrinsicIndex,
             },
           ],
         });

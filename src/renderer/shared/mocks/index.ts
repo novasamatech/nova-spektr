@@ -254,6 +254,8 @@ export const createProxiedAccount = (id: string | number = createRandomId(), wal
   signingType: SigningType.POLKADOT_VAULT,
   walletId,
   type: 'chain',
+  blockNumber: 0,
+  extrinsicIndex: 0,
 });
 
 export const createSingleShardWallet = (

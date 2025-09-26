@@ -32,7 +32,6 @@ const getOperationTitle = (transaction: Transaction): string | undefined => {
   const title: { [key in TransactionType]?: string } = {
     [TransactionType.UNLOCK]: t('operations.titles.unlock'),
     [TransactionType.VOTE]: t('operations.titles.vote'),
-    [TransactionType.REVOTE]: t('operations.titles.revote'),
     [TransactionType.REMOVE_VOTE]: t('operations.titles.removeVote'),
     [TransactionType.DELEGATE]: t('operations.titles.delegate'),
     [TransactionType.UNDELEGATE]: t('operations.titles.undelegate'),
@@ -46,7 +45,6 @@ const getOperationIcon = (transaction: Transaction): IconNames | undefined => {
   const icon: { [key in TransactionType]?: IconNames } = {
     [TransactionType.UNLOCK]: 'unlockMst',
     [TransactionType.VOTE]: 'voteMst',
-    [TransactionType.REVOTE]: 'revoteMst',
     [TransactionType.REMOVE_VOTE]: 'retractMst',
     [TransactionType.DELEGATE]: 'delegateMst',
     [TransactionType.UNDELEGATE]: 'undelegateMst',
@@ -63,7 +61,6 @@ const getModalTitle = (transaction: Transaction): string | undefined => {
     [TransactionType.EDIT_DELEGATION]: t('operations.modalTitles.editDelegationOn'),
     [TransactionType.UNDELEGATE]: t('operations.modalTitles.undelegateOn'),
     [TransactionType.VOTE]: t('operations.modalTitles.vote'),
-    [TransactionType.REVOTE]: t('operations.modalTitles.revote'),
     [TransactionType.REMOVE_VOTE]: t('operations.modalTitles.removeVote'),
   };
 
@@ -113,7 +110,6 @@ basketSDK(governanceBasketFeature, {
       return <RevokeDelegationConfirmation id={transaction.id} config={{ withFormatAmount: false }} hideSignButton />;
     if (tx.type === TransactionType.UNLOCK) return <UnlockConfirmation id={transaction.id} hideSignButton />;
     if (tx.type === TransactionType.VOTE) return <VoteConfirmation id={transaction.id} hideSignButton />;
-    if (tx.type === TransactionType.REVOTE) return <VoteConfirmation id={transaction.id} hideSignButton />;
     if (tx.type === TransactionType.REMOVE_VOTE) return <RemoveVoteConfirmation id={transaction.id} hideSignButton />;
 
     return null;
@@ -135,7 +131,7 @@ basketSDK(governanceBasketFeature, {
         });
     }
 
-    if (transaction.coreTx.type === TransactionType.VOTE || transaction.coreTx.type === TransactionType.REVOTE) {
+    if (transaction.coreTx.type === TransactionType.VOTE) {
       return voteValidateModel
         .validate({ id: transaction.id, transaction: transaction.coreTx, feeMap: {} })
         .then(({ result }) => {
