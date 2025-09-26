@@ -1,4 +1,5 @@
 import { type Weight } from '@polkadot/types/interfaces';
+import { type BN } from '@polkadot/util';
 import { camelCase } from 'lodash';
 
 import { type ClaimAction } from '@/shared/api/governance';
@@ -604,7 +605,7 @@ type CreateFlexibleMultisigParams = {
   multisigAccountId: AccountId;
   proxyAccountId: AccountId;
   threshold: number;
-  proxyDeposit: string;
+  pureTopUpAmount: BN;
   signatories: Signatory[];
   isMultisigExists?: boolean;
 };
@@ -616,7 +617,7 @@ function buildCreateFlexibleMultisig({
   threshold,
   signatories,
   signatoryAccountId,
-  proxyDeposit,
+  pureTopUpAmount,
   isMultisigExists,
 }: CreateFlexibleMultisigParams): Transaction {
   // transfer deposit to proxy account
@@ -626,7 +627,7 @@ function buildCreateFlexibleMultisig({
     type: TransactionType.TRANSFER,
     args: {
       dest: proxyAccountId,
-      value: proxyDeposit,
+      value: pureTopUpAmount.toString(),
     },
   };
 

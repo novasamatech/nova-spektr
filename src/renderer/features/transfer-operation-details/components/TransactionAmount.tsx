@@ -13,7 +13,7 @@ type Props = {
 export const TransactionAmount = ({ operation, className }: Props) => {
   const transaction = operation.transaction;
   const value = transaction ? getTransactionAmount(transaction) : null;
-  const asset = useTransactionAsset(operation);
+  const asset = useTransactionAsset(transaction, operation.chainId);
 
   if (!asset || !value) {
     return null;

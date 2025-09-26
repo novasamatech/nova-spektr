@@ -5,10 +5,17 @@ import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { Accordion } from '@/shared/ui';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
-import { TransactionTitle, findCoreTransaction } from '@/entities/transaction';
+import {
+  TransactionTitle,
+  findCoreTransaction,
+  getTransactionAmount,
+  useTransactionAsset,
+} from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 
 import { OperationFullInfo } from './OperationFullInfo';
@@ -28,6 +35,9 @@ export const Operation = memo(({ operation, multisigAccount }: Props) => {
   const { t } = useI18n();
 
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
+  const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+  const asset = useTransactionAsset(coreTx, operation.chainId);
+
   const externalTitleNode = useTransformer(operationTitleTransformer, {
     operation,
     showCoreTransaction,
@@ -37,7 +47,7 @@ export const Operation = memo(({ operation, multisigAccount }: Props) => {
   if (externalTitleNode) {
     titleNode = externalTitleNode;
   } else {
-    const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+    const amount = coreTx ? getTransactionAmount(coreTx) : null;
 
     const title =
       coreTx?.section && coreTx?.method
@@ -46,6 +56,14 @@ export const Operation = memo(({ operation, multisigAccount }: Props) => {
     titleNode = (
       <>
         <TransactionTitle className="flex-1" title={title} />
+
+        {asset && amount && (
+          <Box width="160px" direction="row" gap={2} verticalAlign="center">
+            <AssetIcon asset={asset} size={32} />
+            <AssetBalance value={amount} asset={asset} />
+          </Box>
+        )}
+
         <ChainTitle chainId={operation.chainId} className="w-[114px]" />
       </>
     );

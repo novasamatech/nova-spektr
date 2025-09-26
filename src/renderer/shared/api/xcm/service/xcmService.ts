@@ -4,7 +4,7 @@ import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { camelCase, get } from 'lodash';
 
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
-import { getAssetId, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
+import { getAssetId, getNativeAsset, getTypeName, getTypeVersion, toLocalChainId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type XTokenPalletTransferArgs, type XcmPalletTransferArgs } from '@/entities/transaction';
 import { localStorageService } from '../../local-storage';
@@ -327,7 +327,9 @@ function decodeXcm(
   const configOriginChain = config.chains.find((c) => `0x${c.chainId}` === chainId);
 
   let assetId: number | string | undefined;
-  if (!data.isRelayToken && configOriginChain) {
+  if (data.isRelayToken) {
+    assetId = getNativeAsset(chains[chainId].assets)?.assetId;
+  } else if (configOriginChain) {
     const filteredAssetLocations = configOriginChain.assets.reduce<[number, AssetLocation][]>((acc, asset) => {
       acc.push([asset.assetId, config.assetsLocation[asset.assetLocation]]);
 
@@ -359,7 +361,7 @@ function decodeXcm(
   }
 
   return {
-    assetId,
+    assetId: assetId?.toString(),
     destinationChain,
     value: data.amount,
     dest: data.destAccountId,
