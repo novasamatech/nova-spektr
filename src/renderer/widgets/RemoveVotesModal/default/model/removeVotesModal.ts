@@ -130,7 +130,7 @@ const { $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = networkSelectorModel.$governanceChain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: removeVoteValidator,
   params: {
     api: networkSelectorModel.$governanceChainApi,
@@ -331,4 +331,5 @@ export const removeVotesModel = {
     flow,
   },
   $errors,
+  $valid,
 };

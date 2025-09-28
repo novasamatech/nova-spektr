@@ -50,6 +50,7 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
   const wallets = useUnit(walletModel.$wallets);
 
   const rejectTx = useUnit(rejectModel.$transaction);
+  const valid = useUnit(rejectModel.$valid);
   const errors = useUnit(rejectModel.$errors);
   const fee = useUnit(rejectModel.$fee);
   const isFeeLoading = useUnit(rejectModel.$isFeeLoading);
@@ -112,7 +113,7 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
   };
 
   const handleConfirm = () => {
-    if (errors.length === 0) {
+    if (valid) {
       setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
@@ -154,6 +155,7 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
             signAccount={signAccount}
             multisigDeposit={multisigDeposit}
             errors={errors}
+            valid={valid}
             onSign={handleConfirm}
           />
         )}
