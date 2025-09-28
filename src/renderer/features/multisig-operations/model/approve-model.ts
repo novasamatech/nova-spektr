@@ -207,7 +207,7 @@ const $signingPayloads = combine(
 );
 
 const validator = createTxValidator();
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator,
   params: {
     api: $api,
@@ -230,6 +230,8 @@ export const approveModel = {
   $signingPayloads,
   $initiator,
   $unsignedAccounts,
+
+  $valid,
 
   $signatories,
   selectSignatory,

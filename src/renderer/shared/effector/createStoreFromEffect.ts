@@ -15,14 +15,19 @@ type Params<Args, Value> = {
   fn: (args: Args) => Value | Promise<Value>;
 };
 
+/**
+ * Creates a store that is automatically updated based on the result of an
+ * effect function. Will return to default value if any of the parameter is
+ * null.
+ */
 export const createStoreFromEffect = <Args, Value>(params: Params<Args, Value>) => {
   const $source = combine(params.params, x => x);
   const $ = createStore<Value>(params.defaultValue);
   const $isDefaultValue = createStore(true);
 
-  const fx = takeLast({
+  const fx = takeLast<Args, Value>({
     key: () => 'createStoreFromEffect',
-    fn: (args: Args) => params.fn(args),
+    fn: params.fn,
   });
 
   sample({

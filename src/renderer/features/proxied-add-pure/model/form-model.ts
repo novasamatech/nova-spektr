@@ -234,7 +234,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = form.fields.chain.$value.map(chain => (chain ? getNativeAsset(chain.assets) : null));
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: addPureProxiedValidator,
   params: {
     api: $api,
@@ -263,11 +263,12 @@ const { $multisigDeposit, $pending: $pendingMultisigDeposit } = createMultisigDe
 const $canSubmit = combine(
   {
     isFormValid: form.$isValid,
+    isValid: $valid,
     isFeeLoading: $pendingFee,
     isProxyDepositLoading: $isProxyDepositLoading,
   },
-  ({ isFormValid, isFeeLoading, isProxyDepositLoading }) => {
-    return isFormValid && !isFeeLoading && !isProxyDepositLoading;
+  ({ isValid, isFormValid, isFeeLoading, isProxyDepositLoading }) => {
+    return isValid && isFormValid && !isFeeLoading && !isProxyDepositLoading;
   },
 );
 

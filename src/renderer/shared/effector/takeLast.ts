@@ -54,6 +54,7 @@ export const takeLast = <P, R>({ fn, key }: Params<P, R>) => {
     controllers[effectKey] = controller;
 
     try {
+      // await is necessary to catch errors with try/catch
       return await fn(params, controller.signal);
     } finally {
       if (controllers[effectKey] === controller) {

@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { createGate } from 'effector-react';
-import { spread } from 'patronum';
+import { and, not, spread } from 'patronum';
 
 import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -178,7 +178,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = $chain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: removeProxyValidator,
   params: {
     api: $api,
@@ -225,13 +225,7 @@ const $chainProxies = combine(
   },
 );
 
-const $canSubmit = combine(
-  {
-    isFormValid: form.$isValid,
-    isFeeLoading: $pendingFee,
-  },
-  ({ isFormValid, isFeeLoading }) => isFormValid && !isFeeLoading,
-);
+const $canSubmit = and($valid, form.$isValid, not($pendingFee));
 
 sample({
   clock: $signatories,

@@ -4,7 +4,6 @@ import { combine, createEvent, sample } from 'effector';
 import { type Address, type Asset, type Chain } from '@/shared/core';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { type TxConfirmInfo, createTransactionConfirmStore, createTxValidationStore } from '@/shared/transactions';
-import { accountService } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -50,7 +49,7 @@ const $transaction = $currentConfirm.map((confirm) => confirm?.tx ?? null);
 const $xcmFee = $currentConfirm.map((confirm) => confirm?.xcmFee ?? new BN(0));
 const $deliveryFee = $currentConfirm.map((confirm) => confirm?.deliveryFee ?? new BN(0));
 
-const { $errors: $validationErrors } = createTxValidationStore({
+const { $errors: $validationErrors, $valid: $canSubmit } = createTxValidationStore({
   validator: transferValidator,
   params: {
     api: $api,
@@ -66,8 +65,6 @@ const { $errors: $validationErrors } = createTxValidationStore({
     deliveryFee: $deliveryFee,
   },
 });
-
-const $canSubmit = $validationErrors.map((errors) => !accountService.hasTransactionValidationErrors(errors));
 
 sample({
   clock: startSigning,
