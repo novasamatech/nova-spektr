@@ -37,6 +37,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack, onToggle }: Props) => {
   const hiddenMultisig = useUnit(formModel.$hiddenMultisig);
   const invalidAddresses = useUnit(formModel.$invalidAddresses);
   const canSubmit = useUnit(formModel.$canSubmit);
+  const valid = useUnit(flowModel.$valid);
   const chain = useUnit(formModel.$chain);
   const wallets = useUnit(walletModel.$wallets);
   const allAccounts = useUnit(accounts.$list);
@@ -238,12 +239,7 @@ export const SelectSignatoriesThreshold = ({ onGoBack, onToggle }: Props) => {
                 </MultisigFeeModal>
               </div>
             )}
-            <Button
-              key="create"
-              type="submit"
-              disabled={!canSubmit || errors.length !== 0 || isFeeLoading || !!errors.length}
-              onClick={onSubmit}
-            >
+            <Button key="create" type="submit" disabled={!canSubmit || !valid || isFeeLoading} onClick={onSubmit}>
               {t('createMultisigAccount.continueButton')}
             </Button>
           </div>

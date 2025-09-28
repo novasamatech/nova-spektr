@@ -1,7 +1,7 @@
 import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { uniqBy } from 'lodash';
-import { spread } from 'patronum';
+import { and, not, spread } from 'patronum';
 
 import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -243,7 +243,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: bondNominateValidator,
   params: {
     api: $api,
@@ -254,15 +254,7 @@ const { $errors } = createTxValidationStore({
   },
 });
 
-const $canSubmit = combine(
-  {
-    isValid: form.$isValid,
-    isFeePending: $pendingFee,
-  },
-  ({ isValid, isFeePending }) => {
-    return isValid && !isFeePending;
-  },
-);
+const $canSubmit = and($valid, form.$isValid, not($pendingFee));
 
 // Fields connections
 

@@ -23,7 +23,6 @@ import {
   delegationAggregate,
   getLocksForAccount,
   networkSelectorModel,
-  votingAssetModel,
 } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
@@ -50,8 +49,6 @@ const $voters = createStore<AccountId[]>([]);
 const $existingVote = createStore<AccountVote | null>(null);
 const $referendum = restore(setReferendum, null);
 const $lockForAccount = createStore(BN_ZERO);
-
-const $canSubmit = createStore(false);
 
 const formSubmitted = createEvent<FormInput>();
 
@@ -186,7 +183,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = networkSelectorModel.$governanceChain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: voteValidator,
   params: {
     api: networkSelectorModel.$governanceChainApi,
@@ -238,15 +235,7 @@ reset({
 
 // Submit
 
-sample({
-  clock: and(
-    not($pendingFee),
-    not(empty($tx)),
-    not(empty(votingAssetModel.$votingAsset)),
-    not(empty(networkSelectorModel.$governanceChainId)),
-  ),
-  target: $canSubmit,
-});
+const $canSubmit = and($valid, form.$isValid, not($pendingFee), not(empty($tx)));
 
 sample({
   clock: form.submit.doneData,

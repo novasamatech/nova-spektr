@@ -207,7 +207,7 @@ const $signatoryBalance = combine(
 // validations
 
 const validator = createTxValidator();
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator,
   params: {
     api: $api,
@@ -367,11 +367,12 @@ sample({
 
 const $canSubmit = combine(
   {
-    isValid: form.$isValid,
+    formValid: form.$isValid,
+    valid: $valid,
     extrinsic: $wrappedExtrinsic,
     fee: $fee,
   },
-  ({ isValid, extrinsic, fee }) => isValid && nonNullable(extrinsic) && !fee.isZero(),
+  ({ formValid, valid, extrinsic, fee }) => formValid && valid && nonNullable(extrinsic) && !fee.isZero(),
 );
 
 // submit flow

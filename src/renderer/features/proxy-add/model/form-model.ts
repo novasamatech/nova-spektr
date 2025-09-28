@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { and, not } from 'patronum';
 
 import { chainsService } from '@/shared/api/network';
 import { proxyService } from '@/shared/api/proxy';
@@ -388,7 +389,7 @@ const $activeProxies = $proxiesInfo.map((info) => info?.accounts ?? []);
 const $oldProxyDeposit = $proxiesInfo.map((info) => info?.deposit ?? '0');
 
 const $asset = form.fields.chain.$value.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: addProxyValidator,
   params: {
     api: $api,
@@ -417,16 +418,7 @@ const { $multisigDeposit } = createMultisigDeposit({
   $api: $api,
 });
 
-const $canSubmit = combine(
-  {
-    isFormValid: form.$isValid,
-    isFeeLoading: $pendingFee,
-    isProxyDepositLoading: $isProxyDepositLoading,
-  },
-  ({ isFormValid, isFeeLoading, isProxyDepositLoading }) => {
-    return isFormValid && !isFeeLoading && !isProxyDepositLoading;
-  },
-);
+const $canSubmit = and($valid, form.$isValid, not($pendingFee), not($isProxyDepositLoading));
 
 const getMaxProxiesFx = createEffect((api: ApiPromise): number => {
   return proxyService.getMaxProxies(api);
