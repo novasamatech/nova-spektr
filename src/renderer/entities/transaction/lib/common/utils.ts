@@ -101,22 +101,22 @@ export const isUnlockTransaction = (transaction?: Transaction | DecodedTransacti
 };
 
 export const isEditFlexibleTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
-  if (transaction?.type === TransactionType.BATCH_ALL) {
-    if (!transaction.args?.transactions || transaction.args.transactions.length !== 2) {
-      return false;
-    }
-
-    const addProxyTransaction = transaction.args.transactions.at(0);
-    const removeProxyTransaction = transaction.args.transactions.at(1);
-
-    return (
-      isRemoveProxyTransaction(removeProxyTransaction) &&
-      isAddProxyTransaction(addProxyTransaction) &&
-      addProxyTransaction.args.proxyType === 'Any'
-    );
+  if (transaction?.type !== TransactionType.BATCH_ALL) {
+    return false;
   }
 
-  return false;
+  if (!transaction.args?.transactions || transaction.args.transactions.length !== 2) {
+    return false;
+  }
+
+  const addProxyTransaction = transaction.args.transactions.at(0);
+  const removeProxyTransaction = transaction.args.transactions.at(1);
+
+  return (
+    isRemoveProxyTransaction(removeProxyTransaction) &&
+    isAddProxyTransaction(addProxyTransaction) &&
+    addProxyTransaction.args.proxyType === 'Any'
+  );
 };
 
 export const hasTransaction = (
