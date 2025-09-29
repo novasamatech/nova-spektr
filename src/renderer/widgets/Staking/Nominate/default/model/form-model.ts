@@ -9,7 +9,7 @@ import {
   getRelaychainAsset,
   nonNullable,
   nullable,
-  stakeableAmount,
+  reservableAmountBN,
   transferableAmount,
 } from '@/shared/lib/utils';
 import {
@@ -92,8 +92,9 @@ const $availableBalance = combine(
     const { chain, asset } = network;
 
     const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
+    if (nullable(balance)) return null;
 
-    return stakeableAmount(balance);
+    return reservableAmountBN(balance);
   },
 );
 
