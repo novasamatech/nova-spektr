@@ -2,6 +2,7 @@ import { allSettled, fork } from 'effector';
 
 import { type CurrencyItem, type PriceObject, coingekoService, fiatService } from '@/shared/api/price-provider';
 import { kernelModel } from '@/shared/core';
+import { networkModel } from '@/entities/network';
 import { PriceApiProvider } from '../../lib/types';
 import { currencyModel } from '../currency-model';
 import { priceProviderModel } from '../price-provider-model';
@@ -91,17 +92,75 @@ describe('entities/price/model/price-provider-model', () => {
         eur: { price: 11.1, change: 22.2 },
       },
     };
-    jest.spyOn(coingekoService, 'getPrice').mockResolvedValue(newPrices);
 
     const scope = fork({
       values: new Map()
         .set(priceProviderModel.$assetsPrices, prices)
+        .set(networkModel.$chains, {
+          '0x123': {
+            chainId: '0x123',
+            name: 'Test Chain',
+            assets: [{ priceId: 'kusama' }],
+          },
+        })
         .set(currencyModel.$currencyConfig, config)
         .set(priceProviderModel.$priceProvider, PriceApiProvider.COINGEKO),
     });
 
+    jest.spyOn(coingekoService, 'getPrice').mockResolvedValue(prices);
+    await allSettled(currencyModel.events.currencyChanged, { scope, params: 0 });
     expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(prices);
+
+    jest.spyOn(coingekoService, 'getPrice').mockResolvedValue(newPrices);
     await allSettled(currencyModel.events.currencyChanged, { scope, params: 1 });
     expect(scope.getState(priceProviderModel.$assetsPrices)).toEqual(newPrices);
+  });
+
+  test('should not call fetchAssetsPricesFx when chains store is empty', async () => {
+    const getPrice = jest.spyOn(coingekoService, 'getPrice').mockResolvedValue({});
+
+    const scope = fork({
+      values: new Map()
+        .set(networkModel.$chains, {}) // Empty chains object
+        .set(priceProviderModel.$priceProvider, PriceApiProvider.COINGEKO)
+        .set(currencyModel.$currencyConfig, config),
+    });
+
+    // Trigger currency change to potentially fire the sample
+    await allSettled(currencyModel.events.currencyChanged, { scope, params: 1 });
+
+    // fetchAssetsPricesFx should not be called because chains is empty
+    expect(getPrice).not.toHaveBeenCalled();
+  });
+
+  test('should call fetchAssetsPricesFx with correct params when chains has assets', async () => {
+    const getPrice = jest.spyOn(coingekoService, 'getPrice').mockResolvedValue({});
+
+    const mockChain = {
+      chainId: '0x123',
+      name: 'Test Chain',
+      assets: [
+        { priceId: 'kusama' },
+        { priceId: 'polkadot' },
+        { priceId: null }, // Should be filtered out
+      ],
+    };
+
+    const scope = fork({
+      values: new Map()
+        .set(networkModel.$chains, { '0x123': mockChain })
+        .set(priceProviderModel.$priceProvider, PriceApiProvider.COINGEKO)
+        .set(currencyModel.$currencyConfig, config),
+    });
+
+    // Trigger currency change to fire the sample
+    await allSettled(currencyModel.events.currencyChanged, { scope, params: 1 });
+
+    // fetchAssetsPricesFx should be called with filtered priceIds
+    expect(getPrice).toHaveBeenCalledWith(
+      ['kusama', 'polkadot'], // Only non-null priceIds
+      ['eur'], // EUR currency coingeckoId (config[1])
+      true, // includeRates
+    );
   });
 });
