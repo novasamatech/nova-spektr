@@ -8,6 +8,8 @@
 /coverage
 coverage.txt
 junit.xml
+.stryker-tmp
+reports/
 
 # production
 /build
