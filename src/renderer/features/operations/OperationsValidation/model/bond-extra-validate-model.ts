@@ -1,9 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
+import { BN_ZERO } from '@polkadot/util';
 import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, stakeableAmount, transferableAmount } from '@/shared/lib/utils';
+import { getAssetById, reservableAmountBN, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionService } from '@/entities/transaction';
@@ -35,7 +36,7 @@ const rootValidateFx = createEffect(
         ...BondExtraRules.amount.notEnoughBalance({} as Store<BondAmountBalanceStore>, { withFormatAmount: false }),
         source: {
           network: { chain, asset },
-          bondBalanceRange: [stakeableAmount(shardBalance)],
+          bondBalanceRange: [(shardBalance ? reservableAmountBN(shardBalance) : BN_ZERO).toString()],
         } as BondAmountBalanceStore,
       },
       {
