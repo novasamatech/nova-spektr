@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
+import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { and, not, spread } from 'patronum';
 
@@ -37,8 +37,6 @@ import { removeProxyUtils } from '../lib/remove-proxy-utils';
 import { type RemoveProxyStore, Step } from '../lib/types';
 
 const stepChanged = createEvent<Step>();
-const wentBackFromConfirm = createEvent();
-const stepChangedToInit = stepChanged.prepend(() => Step.INIT);
 
 type Input = {
   proxied: ProxiedAccount;
@@ -244,18 +242,6 @@ sample({
     return proxies.map((el) => el.delegate);
   },
   target: $activeProxiesForAccount,
-});
-
-split({
-  clock: wentBackFromConfirm,
-  source: $isMultisig,
-  match: {
-    multisigWallet: (isMultisig) => isMultisig,
-  },
-  cases: {
-    multisigWallet: stepChangedToInit,
-    __: flowFinished,
-  },
 });
 
 sample({
@@ -547,7 +533,6 @@ export const removeProxyModel = {
   $step,
   $wallet,
   stepChanged,
-  wentBackFromConfirm,
   txSaved,
   $errors,
 };

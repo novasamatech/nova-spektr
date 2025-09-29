@@ -96,7 +96,7 @@ export const RemoveProxy = ({ wallet }: Props) => {
                 </Button>
               )
             }
-            onGoBack={removeProxyModel.wentBackFromConfirm}
+            onGoBack={closeModal}
           />
         )}
         {removeProxyUtils.isSignStep(step) && (
