@@ -58,11 +58,14 @@ type ComboboxGroup = {
 export const TransferForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
   const errors = useUnit(formModel.$errors);
+  const canSubmit = useUnit(formModel.$canSubmit);
   const wallets = useUnit(walletModel.$wallets);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
-    submit();
+    if (canSubmit) {
+      submit();
+    }
   };
 
   return (

@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample, scopeBind } from 'effector';
 import { noop } from 'lodash';
-import { spread } from 'patronum';
+import { and, not, spread } from 'patronum';
 
 import { type Asset, type Chain, type ChainId } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -220,7 +220,7 @@ const $proxyWallet = combine(
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: restakeValidator,
   params: {
     api: $api,
@@ -257,16 +257,7 @@ const $signatories = createSignatoriesStore({
   accounts: accounts.$list,
 });
 
-const $canSubmit = combine(
-  {
-    isFormValid: form.$isValid,
-    isFeeLoading: $pendingFee,
-    isStakingLoading: subscribeStakingFx.pending,
-  },
-  ({ isFormValid, isFeeLoading, isStakingLoading }) => {
-    return isFormValid && !isFeeLoading && !isStakingLoading;
-  },
-);
+const $canSubmit = and($valid, form.$isValid, not($pendingFee), not(subscribeStakingFx.pending));
 
 // Fields connections
 

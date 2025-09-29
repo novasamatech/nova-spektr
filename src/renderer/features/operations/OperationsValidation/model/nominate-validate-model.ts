@@ -1,9 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
+import { BN_ZERO } from '@polkadot/util';
 import { type Store, attach, createEffect } from 'effector';
 
 import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, stakeableAmount } from '@/shared/lib/utils';
+import { getAssetById, reservableAmountBN } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { NominateRules } from '../lib/nominate-rules';
@@ -34,7 +35,7 @@ const rootValidateFx = createEffect(async ({ id, chain, asset, transaction, bala
       source: {
         isProxy: false,
         network: { chain, asset },
-        accountsBalances: [stakeableAmount(shardBalance)],
+        accountsBalances: [(shardBalance ? reservableAmountBN(shardBalance) : BN_ZERO).toString()],
       } as ShardsBondBalanceStore,
     },
   ];

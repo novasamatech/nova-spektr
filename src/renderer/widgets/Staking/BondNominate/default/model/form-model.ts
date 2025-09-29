@@ -1,18 +1,16 @@
-import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { uniqBy } from 'lodash';
-import { spread } from 'patronum';
+import { and, not, spread } from 'patronum';
 
 import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
-  formatAmount,
   getRelaychainAsset,
   isStringsMatchQuery,
   nonNullable,
   nullable,
-  stakeableAmount,
+  reservableAmountBN,
   toAddress,
   transferableAmount,
   validateAddress,
@@ -75,38 +73,6 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
     amount: {
       defaultValue: '',
-      validator: () => {
-        return {
-          source: combine({
-            network: $networkStore,
-            bondBalanceRange: $bondBalanceRange,
-            fee: $fee,
-            isMultisig: $isMultisig,
-            accountBalance: $accountBalance,
-          }),
-          fn: (amount, _f, { network, bondBalanceRange, fee, isMultisig, accountBalance }) => {
-            if (nullable(amount) || amount === '') {
-              return { message: 'transfer.requiredAmountError' };
-            }
-
-            if (amount === ZERO_BALANCE) {
-              return { message: 'transfer.notZeroAmountError' };
-            }
-
-            const amountBN = new BN(formatAmount(amount, network.asset.precision));
-            const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[1] : bondBalanceRange;
-            const isNotEnoughBalance = amountBN.gt(new BN(bondBalance));
-            if (isNotEnoughBalance) {
-              return { message: 'staking.notEnoughBalanceError' };
-            }
-
-            const isNotEnoughBalanceForFee = !isMultisig && amountBN.add(fee).gt(new BN(accountBalance));
-            if (isNotEnoughBalanceForFee) {
-              return { message: 'transfer.notEnoughBalanceForFeeError' };
-            }
-          },
-        };
-      },
     },
     destination: {
       defaultValue: '',
@@ -153,8 +119,7 @@ const $accountBalance = combine(
     const { chain, asset } = network;
 
     const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
-
-    return stakeableAmount(balance);
+    return balance ? reservableAmountBN(balance) : null;
   },
 );
 
@@ -243,26 +208,20 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: bondNominateValidator,
   params: {
     api: $api,
+    chain: $chain,
     asset: $asset,
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
+    amount: form.fields.amount.$value,
   },
 });
 
-const $canSubmit = combine(
-  {
-    isValid: form.$isValid,
-    isFeePending: $pendingFee,
-  },
-  ({ isValid, isFeePending }) => {
-    return isValid && !isFeePending;
-  },
-);
+const $canSubmit = and($valid, form.$isValid, not($pendingFee));
 
 // Fields connections
 
@@ -316,10 +275,10 @@ const $bondBalanceRange = combine(
     accountBalance: $accountBalance,
   },
   ({ accountBalance }) => {
-    if (nullable(accountBalance) || accountBalance === '') return ZERO_BALANCE;
+    if (nullable(accountBalance)) return ZERO_BALANCE;
 
     const minBondBalance = accountBalance;
-    return minBondBalance === ZERO_BALANCE ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance];
+    return minBondBalance.isZero() ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance.toString()];
   },
 );
 

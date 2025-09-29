@@ -223,7 +223,7 @@ const validator = createTxValidator<{ deposit: string; proxyNumber: number }>({
   ],
 });
 
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator,
   params: {
     api: formModel.$api,
@@ -263,9 +263,9 @@ const $canSubmit = combine(
     hasEmptySignatories: signatoryModel.$hasEmptySignatories,
     hasDuplicateSignatories: signatoryModel.$hasDuplicateSignatories,
     isTheSameMultisig: $isTheSameMultisig,
-    errors: $errors,
+    valid: $valid,
   },
-  ({ threshold, isLoading, hasEmptySignatories, hasDuplicateSignatories, isTheSameMultisig, errors }) => {
+  ({ threshold, isLoading, hasEmptySignatories, hasDuplicateSignatories, isTheSameMultisig, valid }) => {
     return (
       !isLoading &&
       nonNullable(threshold) &&
@@ -273,7 +273,7 @@ const $canSubmit = combine(
       !hasEmptySignatories &&
       !hasDuplicateSignatories &&
       !isTheSameMultisig &&
-      errors.length === 0
+      valid
     );
   },
 );

@@ -2,10 +2,10 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 import { t } from 'i18next';
 
-import { RewardsDestination, type VaultShardAccount } from '@/shared/core';
-import { formatAmount, validateAddress } from '@/shared/lib/utils';
+import { type Chain, RewardsDestination, type VaultShardAccount } from '@/shared/core';
+import { assert, formatAmount, validateAddress } from '@/shared/lib/utils';
 import { createTxValidator } from '@/shared/transactions';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService, balanceService } from '@/domains/network';
 import {
   type AmountFeeStore,
   type BondAmountBalanceStore,
@@ -137,4 +137,24 @@ export const BondNominateRules = {
   },
 };
 
-export const bondNominateValidator = createTxValidator();
+export const bondNominateValidator = createTxValidator<{ chain: Chain; amount: string }>({
+  additionalBalanceRules: [
+    ({ route, asset, chain, amount, getBalance }) => {
+      const initiator = accountService.findInitiator(route);
+      assert(initiator, 'Initiator not found');
+
+      const amountBN = new BN(formatAmount(amount, asset.precision));
+      if (amountBN.isZero()) return;
+
+      const balance = getBalance(initiator.accountId, chain.chainId, asset.assetId);
+      assert(balance, `Balance for account ${initiator.accountId} not found`);
+
+      return {
+        account: initiator,
+        balance: balanceService.tryReserve(balance, amountBN),
+        asset: asset,
+        action: 'amount',
+      };
+    },
+  ],
+});

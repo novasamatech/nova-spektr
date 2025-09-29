@@ -41,6 +41,7 @@ type Props = {
     | TransactionValidationPermissionError
     | TransactionValidationFatalError
   )[];
+  valid: boolean;
   isFeeLoading: boolean;
   isDepositLoading: boolean;
   onSign: () => void;
@@ -54,6 +55,7 @@ export const Confirmation = ({
   fee,
   multisigDeposit,
   errors,
+  valid,
   isFeeLoading,
   isDepositLoading,
   onSign,
@@ -125,7 +127,7 @@ export const Confirmation = ({
           </Button>
         )}
         <SignButton
-          disabled={isFeeLoading || isDepositLoading || errors.length !== 0}
+          disabled={isFeeLoading || isDepositLoading || !valid}
           className="ml-auto"
           type={signerWallet?.type}
           onClick={onSign}

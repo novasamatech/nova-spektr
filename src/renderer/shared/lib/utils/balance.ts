@@ -270,17 +270,6 @@ export const stakedAmount = (balance: Balance): string => {
   return stakedAmountBN(balance).toString();
 };
 
-export const stakeableAmountBN = (balance: Balance) => {
-  const total = totalAmountBN(balance);
-  const staked = stakedAmountBN(balance);
-
-  return BN.max(BN_ZERO, total.sub(staked));
-};
-
-export const stakeableAmount = (balance: Balance | null): string => {
-  return balance ? stakeableAmountBN(balance).toString() : ZERO_BALANCE;
-};
-
 export const unlockingAmount = (unlocking: Unlocking[] = []): string => {
   if (unlocking.length === 0) return ZERO_BALANCE;
 

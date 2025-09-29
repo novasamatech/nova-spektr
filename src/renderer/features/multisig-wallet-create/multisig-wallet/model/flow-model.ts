@@ -233,7 +233,7 @@ const $route = combine($signer, signer => (signer ? [signer] : []));
 const $asset = combine(formModel.$chain, chain => (chain ? getNativeAsset(chain.assets) : null));
 
 const validator = createTxValidator();
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator,
   params: {
     api: $api,
@@ -511,6 +511,8 @@ export const flowModel = {
   $multisigChains,
 
   $allChainsSignatories,
+
+  $valid,
 
   flow,
 };

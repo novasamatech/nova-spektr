@@ -1,8 +1,8 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { type AssetBalance, type AssetId, type Balance, type BalanceId, LockTypes } from '@/shared/core';
+import { type AssetBalance, type AssetId, type Balance, type BalanceId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { formatAmount, formatBalance, stakeableAmountBN, transferableAmountBN, withdrawableAmount } from '../balance';
+import { formatAmount, formatBalance, transferableAmountBN, withdrawableAmount } from '../balance';
 
 const createBalance = (params: {
   free?: string | number;
@@ -190,30 +190,6 @@ describe('shared/lib/onChainUtils/balance', () => {
     ])('$name', ({ balance, expected }) => {
       const result = withdrawableAmount(balance);
       expect(result).toEqual(expected);
-    });
-  });
-
-  describe('stakeableAmount', () => {
-    test.each([
-      {
-        name: 'should return available amount',
-        balance: createBalance({ free: '100' }),
-        expected: '100',
-      },
-      {
-        name: 'should take staked into account',
-        balance: createBalance({
-          free: '100',
-          locked: [
-            { amount: new BN(25), type: LockTypes.STAKING },
-            { amount: new BN(25), type: LockTypes.STAKING },
-          ],
-        }),
-        expected: '50',
-      },
-    ])('$name', ({ balance, expected }) => {
-      const result = stakeableAmountBN(balance);
-      expect(result.toString()).toEqual(expected);
     });
   });
 });
