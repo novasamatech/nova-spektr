@@ -26,6 +26,7 @@ import {
   migrateWallets,
   removeDeprecatedProxiedAccounts,
 } from '../migration';
+import { migrateBasketTransactionAfterAddressRemoval } from '../migration/migration-11';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -127,6 +128,11 @@ class DexieStorage extends Dexie {
     this.version(35).upgrade((t) => t.table('balances').clear());
 
     this.version(36).upgrade(migrateRevoteToVote);
+
+    // fixing transaction in basket and multisig operations
+    this.version(37)
+      .upgrade(migrateBasketTransactionAfterAddressRemoval)
+      .upgrade((t) => t.table('multisigOperations').clear());
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');
