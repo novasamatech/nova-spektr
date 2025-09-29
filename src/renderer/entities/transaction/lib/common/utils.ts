@@ -106,16 +106,14 @@ export const isEditFlexibleTransaction = (transaction?: Transaction | DecodedTra
       return false;
     }
 
-    const removeProxyTransaction = transaction.args.transactions.at(0);
-    const addProxyTransaction = transaction.args.transactions.at(1);
+    const addProxyTransaction = transaction.args.transactions.at(0);
+    const removeProxyTransaction = transaction.args.transactions.at(1);
 
-    if (isRemoveProxyTransaction(removeProxyTransaction) && isAddProxyTransaction(addProxyTransaction)) {
-      if (addProxyTransaction.args.proxyType === 'Any') {
-        return true;
-      }
-    }
-
-    return true;
+    return (
+      isRemoveProxyTransaction(removeProxyTransaction) &&
+      isAddProxyTransaction(addProxyTransaction) &&
+      addProxyTransaction.args.proxyType === 'Any'
+    );
   }
 
   return false;
