@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { t } from 'i18next';
@@ -10,7 +10,7 @@ import {
   formatAmount,
   getRelaychainAsset,
   isStringsMatchQuery,
-  stakeableAmount,
+  reservableAmountBN,
   toAddress,
   transferableAmount,
   validateAddress,
@@ -231,7 +231,7 @@ const $accounts = combine(
     return shards.map((shard) => {
       const balance = balanceUtils.getBalance(balances, shard.accountId, chain.chainId, asset.assetId);
 
-      return { account: shard, balance: stakeableAmount(balance) };
+      return { account: shard, balance: (balance ? reservableAmountBN(balance) : BN_ZERO).toString() };
     });
   },
 );
