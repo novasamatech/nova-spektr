@@ -30,8 +30,8 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
 
   return (
     <div className={cnTw('flex flex-col overflow-y-auto', className)}>
-      {groups.map(([consensusChainId, chains], groupIndex) => {
-        const consensusAccounts = chains
+      {groups.map(([consensusChainId, consensusChains], groupIndex) => {
+        const consensusAccounts = consensusChains
           .map((chain) => accountsMap[chain.chainId])
           .flat()
           .filter(nonNullable);
