@@ -102,7 +102,7 @@ export const isUnlockTransaction = (transaction?: Transaction | DecodedTransacti
 
 export const isEditFlexibleTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
   if (transaction?.type === TransactionType.BATCH_ALL) {
-    if (transaction.args.transactions?.length !== 2) {
+    if (!transaction.args?.transactions || transaction.args.transactions.length !== 2) {
       return false;
     }
 
