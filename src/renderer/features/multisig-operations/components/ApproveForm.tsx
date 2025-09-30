@@ -6,7 +6,7 @@ import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nullable, transferableAmount } from '@/shared/lib/utils';
 import { Button, Icon, Separator } from '@/shared/ui';
-import { AccountSelect, SignatorySelect } from '@/shared/ui-entities';
+import { AccountSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -36,6 +36,8 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
   const isFeeLoading = useUnit(approveModel.$isFeeLoading);
   const isDepositLoading = useUnit(approveModel.$isDepositLoading);
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
+  const wallets = useUnit(walletModel.$wallets);
+  const errors = useUnit(approveModel.$errors);
 
   const initiator = useUnit(approveModel.$initiator);
   const signatory = useUnit(approveModel.$signatory);
@@ -53,6 +55,8 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
 
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
+      <TransactionValidationError errors={errors} wallets={wallets} />
+
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(operation.transaction)} size={60} />
 
@@ -93,7 +97,7 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
         </>
       )}
 
-      <Button disabled={nullable(signatory)} className="ml-auto" onClick={onSubmit}>
+      <Button disabled={nullable(signatory) || errors.length > 0} className="ml-auto" onClick={onSubmit}>
         {t('operation.continueButton')}
       </Button>
     </div>
