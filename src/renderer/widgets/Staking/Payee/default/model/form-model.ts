@@ -1,5 +1,5 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { spread } from 'patronum';
+import { and, not, spread } from 'patronum';
 
 import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -182,7 +182,7 @@ const $isMultisig = $multisigAccount.map((account) => nonNullable(account));
 
 // Transaction validation
 const $asset = $networkStore.map((network) => network?.asset ?? null);
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: payeeValidator,
   params: {
     api: $api,
@@ -226,13 +226,7 @@ const $proxyBalance = combine(
   },
 );
 
-const $canSubmit = combine(
-  {
-    isFormValid: form.$isValid,
-    isFeeLoading: $pendingFee,
-  },
-  ({ isFormValid, isFeeLoading }) => isFormValid && !isFeeLoading,
-);
+const $canSubmit = and($valid, form.$isValid, not($pendingFee));
 
 // Fields connections
 

@@ -5,9 +5,10 @@ import wallet_connect_confirm from '@/shared/assets/video/wallet_connect_confirm
 import wallet_connect_confirm_webm from '@/shared/assets/video/wallet_connect_confirm.webm';
 import { type HexString, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { ValidationErrors, getTranslatedErrorMessage } from '@/shared/lib/utils';
-import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
+import { ValidationErrors } from '@/shared/lib/utils';
+import { Button, FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
+import { Modal } from '@/shared/ui-kit';
 import { transactionService } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { WalletConnectQrCode } from '@/features/wallet-connect-wallet-pairing';
@@ -69,29 +70,11 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
 
   const walletName = signerWallet?.type === WalletType.NOVA_WALLET ? 'Nova Wallet' : 'WalletConnect';
 
-  const getStatusProps = () => {
-    if (step === 'rejected' || step === 'failed') {
-      const errorMessage = error?.type
-        ? getTranslatedErrorMessage(error.type, t)
-        : t('operation.walletConnect.rejected');
-
-      return {
-        isOpen: true,
-        title: errorMessage,
-        content: <Animation variant="error" />,
-        onClose: () => {
-          onGoBack();
-        },
-      };
-    }
-
-    return {
-      isOpen: false,
-      title: '',
-      content: null,
-      onClose: () => {},
-    };
-  };
+  const isErrorModalOpen = step === 'rejected' || step === 'failed';
+  const isUserRejected = error?.code === 4001;
+  const errorMessage = isUserRejected
+    ? t('operation.walletConnect.errors.userRejected')
+    : t('operation.walletConnect.errors.otherError');
 
   return (
     <div className="flex w-[440px] flex-col items-center gap-y-2.5 rounded-b-lg p-4">
@@ -137,7 +120,20 @@ export const WalletConnect = ({ signerWallet, signingPayloads, validateBalance, 
         </Button>
       </div>
 
-      <StatusModal {...getStatusProps()} />
+      <Modal size="fit" isOpen={isErrorModalOpen} onToggle={(open) => !open && onGoBack()}>
+        <Modal.Content>
+          <div className="flex w-full max-w-[240px] flex-col items-center justify-center px-1">
+            <Animation variant="error" />
+            <SmallTitleText className="mb-4">{t('operation.walletConnect.errors.rejected')}</SmallTitleText>
+            <FootnoteText className="text-center text-text-secondary">{errorMessage}</FootnoteText>
+          </div>
+        </Modal.Content>
+        <Modal.Footer>
+          <Button className="w-full" size="sm" onClick={onGoBack}>
+            {t('operation.closeButton')}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

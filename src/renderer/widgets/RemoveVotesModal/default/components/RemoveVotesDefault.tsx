@@ -35,6 +35,7 @@ export const RemoveVotesDefaultModal = ({ single, chain, asset, onClose }: Props
   const initiatorWallet = useUnit(removeVotesModel.$initiatorWallet);
   const votesList = useUnit(removeVotesModel.$votesList);
   const errors = useUnit(removeVotesModel.$errors);
+  const valid = useUnit(removeVotesModel.$valid);
   const wallets = useUnit(walletModel.$wallets);
 
   const [isModalOpen, closeModal] = useModalClose(!isStep(step, Step.NONE), onClose);
@@ -69,7 +70,7 @@ export const RemoveVotesDefaultModal = ({ single, chain, asset, onClose }: Props
               secondaryActionButton={
                 nonNullable(initiatorWallet) &&
                 basketUtils.isBasketAvailable(initiatorWallet) && (
-                  <Button pallet="secondary" onClick={() => removeVotesModel.events.txSaved()}>
+                  <Button pallet="secondary" disabled={!valid} onClick={() => removeVotesModel.events.txSaved()}>
                     {t('operation.addToBasket')}
                   </Button>
                 )
