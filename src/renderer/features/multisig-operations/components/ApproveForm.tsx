@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { type Asset, type Chain } from '@/shared/core';
 import { Slot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nullable, transferableAmount } from '@/shared/lib/utils';
+import { transferableAmount } from '@/shared/lib/utils';
 import { Button, Icon, Separator } from '@/shared/ui';
 import { AccountSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Field } from '@/shared/ui-kit';
@@ -38,6 +38,7 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
   const wallets = useUnit(walletModel.$wallets);
   const errors = useUnit(approveModel.$errors);
+  const canSubmit = useUnit(approveModel.$canSubmit);
 
   const initiator = useUnit(approveModel.$initiator);
   const signatory = useUnit(approveModel.$signatory);
@@ -97,7 +98,7 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
         </>
       )}
 
-      <Button disabled={nullable(signatory) || errors.length > 0} className="ml-auto" onClick={onSubmit}>
+      <Button disabled={!canSubmit} className="ml-auto" onClick={onSubmit}>
         {t('operation.continueButton')}
       </Button>
     </div>
