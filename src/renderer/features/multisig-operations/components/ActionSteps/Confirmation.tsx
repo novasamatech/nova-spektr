@@ -36,16 +36,16 @@ type Props = {
   api: ApiPromise;
   fee: BN;
   multisigDeposit: BN;
-  errors: (
-    | TransactionValidationBalanceError
-    | TransactionValidationPermissionError
-    | TransactionValidationFatalError
-  )[];
   valid: boolean;
   isFeeLoading: boolean;
   isDepositLoading: boolean;
   onSign: () => void;
   onGoBack?: () => void;
+  errors?: (
+    | TransactionValidationBalanceError
+    | TransactionValidationPermissionError
+    | TransactionValidationFatalError
+  )[];
 };
 export const Confirmation = ({
   api,
@@ -54,12 +54,12 @@ export const Confirmation = ({
   signAccount,
   fee,
   multisigDeposit,
-  errors,
   valid,
   isFeeLoading,
   isDepositLoading,
   onSign,
   onGoBack,
+  errors,
 }: Props) => {
   const { t } = useI18n();
 
@@ -99,7 +99,7 @@ export const Confirmation = ({
 
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
-      <TransactionValidationError errors={errors} wallets={wallets} />
+      {errors && <TransactionValidationError errors={errors} wallets={wallets} />}
 
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
