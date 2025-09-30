@@ -8,6 +8,12 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, getAssetByTypeExtras, getNativeAsset } from '@/shared/lib/utils';
 import { Button, DetailRow, Icon } from '@/shared/ui';
+import {
+  type TransactionValidationBalanceError,
+  TransactionValidationError,
+  type TransactionValidationFatalError,
+  type TransactionValidationPermissionError,
+} from '@/shared/ui-entities';
 import { type AnyAccount, type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
@@ -35,6 +41,11 @@ type Props = {
   isDepositLoading: boolean;
   onSign: () => void;
   onGoBack?: () => void;
+  errors?: (
+    | TransactionValidationBalanceError
+    | TransactionValidationPermissionError
+    | TransactionValidationFatalError
+  )[];
 };
 export const Confirmation = ({
   api,
@@ -48,6 +59,7 @@ export const Confirmation = ({
   isDepositLoading,
   onSign,
   onGoBack,
+  errors,
 }: Props) => {
   const { t } = useI18n();
 
@@ -87,6 +99,8 @@ export const Confirmation = ({
 
   return (
     <div className="flex flex-col items-center gap-y-3 px-5 pb-4">
+      {errors && <TransactionValidationError errors={errors} wallets={wallets} />}
+
       <div className="mb-6 flex flex-col items-center gap-y-3">
         <Icon className="text-icon-default" name={getIconName(transaction)} size={60} />
 
