@@ -11,7 +11,7 @@ import { ChainAccountsList, ConsensusAccountsList, WalletAccountIcon } from '@/s
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, permissionUtils } from '@/entities/wallet';
+import { accountUtils, permissionUtils, walletUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
@@ -156,10 +156,10 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
             </Tabs.List>
           </Box>
           <Tabs.Content value="accounts">
-            {isEthereumBased ? (
-              <ChainAccountsList accounts={accountsIds} />
-            ) : (
+            {walletUtils.isSingleShard(wallet) ? (
               <ConsensusAccountsList accounts={accountsIds} />
+            ) : (
+              <ChainAccountsList accounts={accountsIds} />
             )}
           </Tabs.Content>
           <Tabs.Content value="proxies">

@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { toAddress } from '@/shared/lib/utils';
 import { Button, HeadlineText, IconButton } from '@/shared/ui';
-import { ConsensusAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
+import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -123,7 +123,7 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
             </Tabs.List>
           </Box>
           <Tabs.Content value="accounts">
-            <ConsensusAccountsList accounts={accountsIds} />
+            <ChainAccountsList accounts={accountsIds} />
           </Tabs.Content>
           <Tabs.Content value="proxies">
             <ScrollArea>
