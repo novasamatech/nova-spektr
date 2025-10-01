@@ -2259,6 +2259,7 @@
       "forgetButton": "Remove",
       "hideButton": "Hide",
       "hideWallet": "Hide wallet",
+      "keyTabTitle": "Keys",
       "linkedWalletsWillBeRemovedDescription": "This wallet is a signatory in multisigs or as a proxy for other wallets. These related accounts will be automatically hidden. They’ll reappear if you pair this wallet again.",
       "linkedWalletsWillBeRemovedTitle": "Linked wallets will be removed",
       "nameExistsError": "This wallet name already exists",
