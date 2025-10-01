@@ -57,7 +57,7 @@ const Trigger = ({ sticky, children }: TriggerProps) => {
             name="shelfRight"
             size={16}
           />
-          <div className="flex min-w-0 grow">{children}</div>
+          <div className="flex min-w-0 grow truncate">{children}</div>
         </RadixAccordion.Trigger>
       </div>
     </RadixAccordion.Header>
