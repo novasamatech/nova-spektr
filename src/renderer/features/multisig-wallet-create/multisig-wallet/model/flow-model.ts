@@ -487,6 +487,12 @@ sample({
   target: [formModel.form.reset, signatoryModel.$signatories.reinit],
 });
 
+sample({
+  clock: flow.close,
+  fn: () => Step.NONE,
+  target: $step,
+});
+
 export const flowModel = {
   $errors,
   $step,

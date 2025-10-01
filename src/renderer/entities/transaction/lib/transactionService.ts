@@ -251,14 +251,14 @@ async function createPayloadWithProof(
   if (nonceIncrement) {
     metadata = upgradeNonce(metadata, nonceIncrement);
   }
-  const { signerPayloadBase } = metadata;
+  const { signerPayloadBase, mortalLength } = metadata;
 
   if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
     signerPayloadBase.assetId = undefined;
   }
 
   // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
-  const era = createEra(api, signerPayloadBase.blockNumber);
+  const era = createEra(api, signerPayloadBase.blockNumber, mortalLength);
 
   const metadataHex = api.runtimeMetadata.toHex();
 
@@ -304,18 +304,18 @@ async function createPayloadWithProof(
   };
 }
 
-function createEra(api: ApiPromise, blockNumber: HexString) {
-  const mortalLength = 64;
+function createEra(api: ApiPromise, blockNumber: HexString, mortalLength: number) {
   return api.registry.createTypeUnsafe<ExtrinsicEra>('ExtrinsicEra', [{ current: blockNumber, period: mortalLength }]);
 }
 
-function createPayloadWithMetadata(extrinsic: Extrinsic, api: ApiPromise, { signerPayloadBase }: TxMetadata) {
+function createPayloadWithMetadata(extrinsic: Extrinsic, api: ApiPromise, metadata: TxMetadata) {
+  const { signerPayloadBase, mortalLength } = metadata;
   if (api.registry.signedExtensions?.includes('ChargeAssetTxPayment')) {
     signerPayloadBase.assetId = undefined;
   }
 
   // Set era explicitly for security reason - immortal transactions can be used in replay attacks.
-  const era = createEra(api, signerPayloadBase.blockNumber);
+  const era = createEra(api, signerPayloadBase.blockNumber, mortalLength);
 
   const signingPayload = new GenericSignerPayload(api.registry, {
     ...signerPayloadBase,
