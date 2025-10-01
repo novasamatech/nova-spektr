@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { isEthereumAccountId, toAddress } from '@/shared/lib/utils';
 import { HeadlineText, IconButton, Separator } from '@/shared/ui';
-import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
+import { ChainAccountsList, ConsensusAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -159,7 +159,11 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
               </Tabs.List>
             </Box>
             <Tabs.Content value="accounts">
-              <ChainAccountsList accounts={accountsIds} />
+              {isEthereumBased ? (
+                <ChainAccountsList accounts={accountsIds} />
+              ) : (
+                <ConsensusAccountsList accounts={accountsIds} />
+              )}
             </Tabs.Content>
             <Tabs.Content value="proxies">
               <ScrollArea>
