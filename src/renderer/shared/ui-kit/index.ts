@@ -10,7 +10,6 @@ export { ScrollArea } from './ScrollArea/ScrollArea';
 export { Accordion } from './Accordion/Accordion';
 export { AsyncItem } from './AsyncItem/AsyncItem';
 export { CardStack } from './CardStack/CardStack';
-export { Collapsible } from './Collapsible/Collapsible';
 export { InputFile } from './InputFile/InputFile';
 export { Progress } from './Progress/Progress';
 export { Markdown } from './Markdown/Markdown';

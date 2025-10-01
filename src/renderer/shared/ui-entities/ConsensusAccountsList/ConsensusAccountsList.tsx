@@ -8,9 +8,11 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText } from '@/shared/ui';
-import { Collapsible, ScrollArea } from '@/shared/ui-kit';
+import { ScrollArea } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { Account } from '../Account/Account';
+
+import { Collapsible } from './Collapsible';
 
 type Props = {
   accounts: (readonly [chain: Chain, accountId: AccountId])[];
