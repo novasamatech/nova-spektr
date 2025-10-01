@@ -1,5 +1,5 @@
 /* eslint-disable import-x/max-dependencies */
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
@@ -157,36 +157,6 @@ const $initiators = createInitiatorsStore({
   accounts: walletSelect.$selectedAccounts,
 });
 
-const $initiatorBalance = combine(
-  {
-    initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balanceMap,
-    chain: $chain,
-    asset: $asset,
-  },
-  ({ initiator, asset, chain, balances }) => {
-    if (nullable(initiator) || nullable(chain) || nullable(asset)) {
-      return {
-        transferable: BN_ZERO,
-        native: BN_ZERO,
-      };
-    }
-
-    const transferable = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
-    const native = balanceUtils.getBalance(
-      balances,
-      initiator.accountId,
-      chain.chainId,
-      getNativeAsset(chain.assets).assetId,
-    );
-
-    return {
-      transferable: transferableAmountBN(transferable),
-      native: transferableAmountBN(native),
-    };
-  },
-);
-
 // signatories
 
 const $signatories = createSignatoriesStore({
@@ -276,6 +246,44 @@ const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   transaction: $coreTx,
   feeTransaction: $feeCoreTx,
 });
+
+const $totalFee = combine($fee, xcmTransferModel.$deliveryFee, (fee, deliveryFee) => fee.add(deliveryFee));
+
+const $initiatorBalance = combine(
+  {
+    initiator: form.fields.initiator.$value,
+    balances: balanceModel.$balanceMap,
+    chain: $chain,
+    asset: $asset,
+    totalFee: $totalFee,
+  },
+  ({ initiator, asset, chain, balances, totalFee }) => {
+    if (nullable(initiator) || nullable(chain) || nullable(asset)) {
+      return {
+        transferable: BN_ZERO,
+        native: BN_ZERO,
+      };
+    }
+
+    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
+    const native = balanceUtils.getBalance(
+      balances,
+      initiator.accountId,
+      chain.chainId,
+      getNativeAsset(chain.assets).assetId,
+    );
+
+    const transferable = transferableAmountBN(balance);
+    const nonTransferable = BN.min(balance?.frozen || BN_ZERO, balance?.reserved || BN_ZERO);
+    const deductible = BN.max(nonTransferable, balance?.ed || BN_ZERO);
+    const available = transferable.sub(deductible).sub(totalFee); // totalFee = fee + deliveryFee (0 for non XCM)
+
+    return {
+      available,
+      native: transferableAmountBN(native),
+    };
+  },
+);
 
 const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
 
@@ -553,6 +561,7 @@ export const formModel = {
   $fee,
   $pendingFee,
   $multisigDeposit,
+  $xcmFee: xcmTransferModel.$xcmFee,
   $deliveryFee: xcmTransferModel.$deliveryFee,
 
   $coreTx,

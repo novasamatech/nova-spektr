@@ -410,6 +410,12 @@ const Amount = () => {
   } = useForm(formModel.form);
 
   const accountBalance = useUnit(formModel.$initiatorBalance);
+  console.log({
+    accountBalance: {
+      available: accountBalance.available?.toString(),
+      native: accountBalance.native.toString(),
+    },
+  });
   const network = useUnit(formModel.$networkStore);
 
   if (!network) {
@@ -421,7 +427,7 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError}
         value={amount.value}
-        balance={accountBalance.transferable.toString() ?? null}
+        balance={accountBalance.available?.toString() ?? null}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
@@ -448,6 +454,8 @@ const FeeSection = () => {
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
   const deliveryFee = useUnit(formModel.$deliveryFee);
+  const xcmFee = useUnit(formModel.$xcmFee);
+  console.log({ deliveryFee: deliveryFee.toString(), xcmFee: xcmFee.toString() });
 
   if (!network) {
     return null;
