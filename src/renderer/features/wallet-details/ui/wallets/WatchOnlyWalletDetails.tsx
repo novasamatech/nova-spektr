@@ -7,11 +7,11 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
 import { toAddress } from '@/shared/lib/utils';
 import { Button, HeadlineText, IconButton } from '@/shared/ui';
-import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
+import { ConsensusAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, walletUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -105,8 +105,8 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
         </div>
       </Modal.HeaderContent>
       <Modal.Content disableScroll>
-        {walletUtils.isWatchOnly(wallet) && !hasProxies ? (
-          <ChainAccountsList accounts={accountsIds} />
+        {!hasProxies ? (
+          <ConsensusAccountsList accounts={accountsIds} />
         ) : (
           <Tabs value={tab} onChange={setTab}>
             <Box padding={[0, 5]} shrink={0}>
@@ -126,7 +126,7 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
               </Tabs.List>
             </Box>
             <Tabs.Content value="accounts">
-              <ChainAccountsList accounts={accountsIds} />
+              <ConsensusAccountsList accounts={accountsIds} />
             </Tabs.Content>
             <Tabs.Content value="proxies">
               <ScrollArea>
