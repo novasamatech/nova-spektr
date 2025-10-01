@@ -137,7 +137,11 @@ export const SelectSignatoriesThreshold = ({ onGoBack, onToggle }: Props) => {
                   onChange={value => threshold.onChange(Number(value))}
                 >
                   {Array.from({ length: signatories.length - 1 }, (_, index) => (
-                    <Select.Item testId={TEST_IDS.MULTISIG.THRESHOLD_OPTION} key={index} value={(index + 2).toString()}>
+                    <Select.Item
+                      itemTestId={TEST_IDS.MULTISIG.THRESHOLD_OPTION}
+                      key={index}
+                      value={(index + 2).toString()}
+                    >
                       {index + 2}
                     </Select.Item>
                   ))}
