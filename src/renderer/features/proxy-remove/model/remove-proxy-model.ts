@@ -248,9 +248,12 @@ sample({
 
 split({
   clock: wentBackFromConfirm,
-  source: $isMultisig,
+  source: combine({
+    isMultisig: $isMultisig,
+    signatories: $signatories,
+  }),
   match: {
-    multisigWallet: (isMultisig) => isMultisig,
+    multisigWallet: ({ isMultisig, signatories }) => isMultisig && signatories.length !== 1,
   },
   cases: {
     multisigWallet: stepChangedToInit,
