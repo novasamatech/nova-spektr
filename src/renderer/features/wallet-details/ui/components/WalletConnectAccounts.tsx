@@ -8,7 +8,7 @@ import { type Chain, type WalletConnectGroup, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
-import { ConsensusAccountsList } from '@/shared/ui-entities';
+import { ChainAccountsList } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';
 import { WalletConnectQrCode } from '@/features/wallet-connect-wallet-pairing';
 import { wcDetailsUtils } from '../../lib/utils';
@@ -46,7 +46,7 @@ export const WalletConnectAccounts = memo(({ wallet }: Props) => {
 
   return (
     <>
-      {wcDetailsUtils.isNotStarted(reconnectStep, connected) && <ConsensusAccountsList accounts={accountsList} />}
+      {wcDetailsUtils.isNotStarted(reconnectStep, connected) && <ChainAccountsList accounts={accountsList} />}
 
       {wcDetailsUtils.isReadyToReconnect(reconnectStep, connected) && (
         <div className="mx-auto flex h-[390px] w-[208px] flex-col items-center justify-center">
