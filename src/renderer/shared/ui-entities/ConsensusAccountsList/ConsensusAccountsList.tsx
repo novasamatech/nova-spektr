@@ -1,15 +1,15 @@
-import { entries, groupBy } from 'lodash';
+import { entries, groupBy, partition } from 'lodash';
 import { memo, useMemo } from 'react';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
-import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText } from '@/shared/ui';
 import { ScrollArea } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
+import { networkUtils } from '@/entities/network';
 import { Account } from '../Account/Account';
 
 import { Collapsible } from './Collapsible';
@@ -22,17 +22,30 @@ export const ConsensusAccountsList = memo(({ accounts }: Props) => {
   const { t } = useI18n();
   const { list } = useDeferredList({ list: accounts, forceFirstRender: true });
 
-  const groups = useMemo(() => {
-    return entries(groupBy(list, ([chain]) => chain.parentId ?? chain.chainId))
-      .map(([consensusChainId, chains]) => {
-        const consensus = chains.find(([chain]) => chain.chainId === consensusChainId);
-        if (!consensus) return null;
-        const parachains = chains.filter(([chain]) => chain.chainId !== consensusChainId);
+  const [evmAccounts, substrateAccounts] = useMemo(
+    () => partition(list, ([chain]) => networkUtils.isEthereumBased(chain.options)),
+    [list],
+  );
 
-        return { consensus, parachains };
-      })
-      .filter(nonNullable);
-  }, [list]);
+  const groups = useMemo(() => {
+    const result: { consensus: Props['accounts'][number]; parachains: Props['accounts'] }[] = [];
+
+    const substrateAccountGroups = entries(groupBy(substrateAccounts, ([chain]) => chain.parentId ?? chain.chainId));
+
+    for (const [consensusChainId, chains] of substrateAccountGroups) {
+      const consensus = chains.find(([chain]) => chain.chainId === consensusChainId);
+      if (consensus) {
+        const parachains = chains.filter(([chain]) => chain.chainId !== consensusChainId);
+        result.push({ consensus, parachains });
+      }
+    }
+
+    for (const account of evmAccounts) {
+      result.push({ consensus: account, parachains: [] });
+    }
+
+    return result;
+  }, [evmAccounts, substrateAccounts]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
