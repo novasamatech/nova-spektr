@@ -169,7 +169,8 @@ export const signModel = {
 
   events: {
     /**
-     * @deprecated Use signModel.init instead
+     * @deprecated Use signModel.init instead. New method requires
+     *   AnyTransaction type in tx.
      */
     formInitiated,
   },
