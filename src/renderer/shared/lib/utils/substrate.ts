@@ -13,6 +13,7 @@ import {
   type ProxyType,
   XcmPallets,
 } from '@/shared/core';
+import { assert } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { toAddress } from './address';
@@ -20,6 +21,7 @@ import { DEFAULT_TIME, ONE_DAY, THRESHOLD } from './constants';
 
 export type TxMetadata = {
   signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'>;
+  mortalLength: number;
 };
 
 const SUPPORTED_VERSIONS = ['V2', 'V3', 'V4'];
@@ -30,7 +32,8 @@ const UNUSED_LABEL = 'unused';
  */
 export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): Promise<TxMetadata> => {
   const chainId = api.genesisHash.toHex();
-  const [header, nonce] = await Promise.all([api.rpc.chain.getHeader(), api.rpc.system.accountNextIndex(accountId)]);
+  const { header, nonce, mortalLength } = await api.derive.tx.signingInfo(accountId);
+  assert(header);
 
   const signerPayloadBase: Omit<SignerPayloadJSON, 'method' | 'version' | 'era'> = {
     address: toAddress(accountId, { prefix: api.consts.system.ss58Prefix.toNumber() }),
@@ -44,7 +47,7 @@ export const createTxMetadata = async (accountId: AccountId, api: ApiPromise): P
     signedExtensions: api.registry.signedExtensions,
   };
 
-  return { signerPayloadBase };
+  return { signerPayloadBase, mortalLength };
 };
 
 export const getCallHash = (callData: HexString) => blake2AsHex(hexToU8a(callData));
