@@ -410,12 +410,6 @@ const Amount = () => {
   } = useForm(formModel.form);
 
   const accountBalance = useUnit(formModel.$initiatorBalance);
-  console.log({
-    accountBalance: {
-      available: accountBalance.available?.toString(),
-      native: accountBalance.native.toString(),
-    },
-  });
   const network = useUnit(formModel.$networkStore);
 
   if (!network) {
@@ -454,8 +448,6 @@ const FeeSection = () => {
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
   const deliveryFee = useUnit(formModel.$deliveryFee);
-  const xcmFee = useUnit(formModel.$xcmFee);
-  console.log({ deliveryFee: deliveryFee.toString(), xcmFee: xcmFee.toString() });
 
   if (!network) {
     return null;
@@ -512,7 +504,7 @@ const AlertForDeliveryFee = () => {
 
   const hasDeliveryError = amount.errorMessage === 'transfer.notEnoughBalanceForDeliveryFeeError';
 
-  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !initiatorBalance) {
+  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !initiatorBalance.native) {
     return null;
   }
 

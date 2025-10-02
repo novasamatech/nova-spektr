@@ -281,12 +281,14 @@ const { $errors, $valid, $balanceValidationResults, $validationDone } = createTx
 
 const $totalFee = combine(
   {
+    validationDone: $validationDone,
     validationResults: $balanceValidationResults,
-    initiator: form.fields.initiator.$value,
     asset: $asset,
   },
-  ({ validationResults, initiator, asset }) => {
-    console.log({ validationResults, initiator, asset });
+  ({ validationResults, asset, validationDone }) => {
+    if (!validationDone) {
+      return null;
+    }
     return (
       validationResults
         // add "sending amount" to exclide array in the future util
@@ -306,10 +308,10 @@ const $initiatorBalance = combine(
     totalFee: $totalFee,
   },
   ({ initiator, asset, chain, balances, totalFee }) => {
-    if (nullable(initiator) || nullable(chain) || nullable(asset)) {
+    if (nullable(initiator) || nullable(chain) || nullable(asset) || nullable(totalFee)) {
       return {
-        transferable: BN_ZERO,
-        native: BN_ZERO,
+        available: null,
+        native: null,
       };
     }
 
