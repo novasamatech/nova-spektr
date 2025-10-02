@@ -23,7 +23,7 @@ export class AssetsSettingsModalWindow extends BaseModal<AssetsSettingsModalElem
 
   public async getpageViewStatus(): Promise<string> {
     return await step('Get current Page View status', async () => {
-      const status = await this.page.getByLabel(this.pageElements.pageView).innerText();
+      const status = await this.page.getByTestId(this.pageElements.pageView).getByTestId('Select').innerText();
 
       return status;
     });
