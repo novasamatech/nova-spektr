@@ -4,7 +4,7 @@ import { type FormEvent, useMemo } from 'react';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, withdrawableAmount } from '@/shared/lib/utils';
-import { Alert, Button } from '@/shared/ui';
+import { Button } from '@/shared/ui';
 import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
@@ -33,7 +33,6 @@ export const RemoveProxyForm = ({ onGoBack }: Props) => {
       </form>
       <div className="flex flex-col gap-y-6 pt-6 pb-4">
         <FeeSection />
-        <FeeError />
       </div>
       <ActionSection onGoBack={onGoBack} />
     </div>
@@ -107,20 +106,6 @@ const FeeSection = () => {
 
       <FeeWithLabel asset={getNativeAsset(chain.assets)} fee={fee} />
     </div>
-  );
-};
-
-const FeeError = () => {
-  const { t } = useI18n();
-
-  const {
-    fields: { signatory },
-  } = useForm(removeProxyModel.form);
-
-  return (
-    <Alert title={t('proxy.addProxy.balanceAlertTitle')} active={signatory.hasError} variant="error">
-      <Alert.Item withDot={false}>{t(signatory.errorMessage)}</Alert.Item>
-    </Alert>
   );
 };
 

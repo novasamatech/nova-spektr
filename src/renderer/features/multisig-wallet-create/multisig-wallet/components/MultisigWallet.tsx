@@ -30,6 +30,10 @@ export const MultisigWallet = ({ isOpen, onToggle, onGoBack, children }: Props) 
 
   const activeStep = useUnit(flowModel.$step);
 
+  if (isStep(activeStep, Step.NONE)) {
+    return null;
+  }
+
   if (isStep(activeStep, Step.SUBMIT)) {
     return <OperationSubmit isOpen={isOpen} onClose={() => onToggle(false)} />;
   }
