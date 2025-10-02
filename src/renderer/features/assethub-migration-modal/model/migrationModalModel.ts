@@ -6,8 +6,8 @@ import { RelayChains } from '@/shared/lib/utils/constants';
 import { block } from '@/domains/network';
 
 // Migration block numbers when AssetHub migration alerts should start showing
-const KUSAMA_MIGRATION_BLOCK = 28026491;
-const POLKADOT_MIGRATION_BLOCK = 28026491;
+const KUSAMA_MIGRATION_BLOCK = 30_423_691;
+const POLKADOT_MIGRATION_BLOCK = 100_000_000; // TODO: REPLACE WITH AN ACTUAL POLKADOT MIGRATION BLOCK!
 
 // Hide alert after 5,000,000 blocks (~347 days)
 const HIDE_AFTER_BLOCKS = 5_000_000;
