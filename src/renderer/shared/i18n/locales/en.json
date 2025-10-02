@@ -2383,5 +2383,38 @@
     "omniEnterpriseLabel": "Nova Spektr",
     "welcomeToLabel": "Welcome to"
   },
+  "assethubMigration": {
+    "title": {
+      "migratedTo": "Migrated to",
+      "kusamaAssetHub": "Kusama Asset Hub",
+      "polkadotAssetHub": "Polkadot Asset Hub"
+    },
+    "kusama": {
+      "description": "Starting October 7, 2025 your KSM balance, Staking and Governance are now on Kusama Asset Hub",
+      "bullets": {
+        "minimalBalance": "100x reduction in minimal balance (from 0.00033 KSM to 0.0000033 KSM).",
+        "lowerFees": "10x lower transaction fees (from 0.0005 KSM to 0.00005 KSM).",
+        "moreTokens": "More tokens supported: USDT, USDC, ETH, DOT, and other ecosystem tokens.",
+        "unifiedAccess": "Unified access to KSM, assets, staking, and governance."
+      }
+    },
+    "polkadot": {
+      "description": "Starting November 4, 2025 your DOT balance, Staking and Governance are now on Polkadot Asset Hub",
+      "bullets": {
+        "minimalBalance": "100x reduction in minimal balance (from 1 DOT to 0.01 DOT).",
+        "lowerFees": "10x lower transaction fees (from 0.016 DOT to 0.0016 DOT).",
+        "moreTokens": "More tokens supported: USDT, USDC, ETH, KSM, and other ecosystem tokens.",
+        "unifiedAccess": "Unified access to DOT, assets, staking, and governance."
+      }
+    },
+    "bullets": {
+      "title": "What makes Asset Hub awesome?",
+      "feePayment": "Ability to pay fees in any token."
+    },
+    "automaticMigration": "Migration happens automatically, no action needed.",
+    "learnMore": "Learn more",
+    "learnAboutPolkadot": "Learn about Polkadot",
+    "gotIt": "Got it"
+  },
   "{index}": "{index}"
 }
