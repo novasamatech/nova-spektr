@@ -35,7 +35,7 @@ export const AssetsSettings = memo(() => {
             {t('balances.hideZeroBalancesLabel')}
           </Switch>
           <hr className="-mx-3 my-4 border-divider" />
-          <Field text={t('balances.pageView')}>
+          <Field text={t('balances.pageView')} testId={TEST_IDS.ASSETS.PAGE_VIEW}>
             <Select
               placeholder={t('settings.networks.selectorPlaceholder')}
               value={assetsView.toString()}
