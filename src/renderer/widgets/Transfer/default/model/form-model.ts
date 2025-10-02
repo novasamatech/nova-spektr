@@ -247,7 +247,55 @@ const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   feeTransaction: $feeCoreTx,
 });
 
-const $totalFee = combine($fee, xcmTransferModel.$deliveryFee, (fee, deliveryFee) => fee.add(deliveryFee));
+// const $totalFee = combine($fee, xcmTransferModel.$deliveryFee, (fee, deliveryFee) => fee.add(deliveryFee));
+
+const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
+
+const $calculationExtrinsic = combine(
+  {
+    api: $api,
+    tx: $calculationTx,
+  },
+  ({ api, tx }) => {
+    if (!api || !tx) return null;
+    return getExtrinsic[tx.type](tx.args, api);
+  },
+);
+
+const { $errors, $valid, $balanceValidationResults, $validationDone } = createTxValidationStore({
+  validator: transferValidator,
+  params: {
+    api: $api,
+    sourceChain: $chain,
+    sourceAsset: $asset,
+    destinationChain: form.fields.destinationChain.$value,
+    asset: $nativeAsset,
+    amount: form.fields.amount.$value,
+    balances: balanceModel.$balanceMap,
+    route: $route,
+    transaction: $calculationTx,
+    xcmFee: xcmTransferModel.$xcmFee,
+    deliveryFee: xcmTransferModel.$deliveryFee,
+  },
+});
+
+const $totalFee = combine(
+  {
+    validationResults: $balanceValidationResults,
+    initiator: form.fields.initiator.$value,
+    asset: $asset,
+  },
+  ({ validationResults, initiator, asset }) => {
+    console.log({ validationResults, initiator, asset });
+    return (
+      validationResults
+        // add "sending amount" to exclide array in the future util
+        .filter((result) => result.action !== 'sending amount' && result.asset.assetId === asset?.assetId)
+        .map((result) => result.balance.required)
+        .reduce((acc, segment) => acc.add(segment), BN_ZERO)
+    );
+  },
+);
 
 const $initiatorBalance = combine(
   {
@@ -284,36 +332,6 @@ const $initiatorBalance = combine(
     };
   },
 );
-
-const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
-
-const $calculationExtrinsic = combine(
-  {
-    api: $api,
-    tx: $calculationTx,
-  },
-  ({ api, tx }) => {
-    if (!api || !tx) return null;
-    return getExtrinsic[tx.type](tx.args, api);
-  },
-);
-
-const { $errors, $valid } = createTxValidationStore({
-  validator: transferValidator,
-  params: {
-    api: $api,
-    sourceChain: $chain,
-    sourceAsset: $asset,
-    destinationChain: form.fields.destinationChain.$value,
-    asset: $nativeAsset,
-    amount: form.fields.amount.$value,
-    balances: balanceModel.$balanceMap,
-    route: $route,
-    transaction: $calculationTx,
-    xcmFee: xcmTransferModel.$xcmFee,
-    deliveryFee: xcmTransferModel.$deliveryFee,
-  },
-});
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
 const $isMultisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
