@@ -7,6 +7,7 @@ export const enum DecodeQrError {
   FRAME_METADATA = 1000,
   NOT_RAPTOR_PACKAGE = 1001,
   NOT_SAME_QR = 1002,
+  INVALID_ERROR = 1003,
 }
 
 export type Progress = {
