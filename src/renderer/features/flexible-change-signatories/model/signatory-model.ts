@@ -2,7 +2,6 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 
 import { type Wallet } from '@/shared/core';
-import { series } from '@/shared/effector';
 import { toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceSubModel } from '@/features/assets-balances';
@@ -12,7 +11,7 @@ const addSignatory = createEvent<Omit<SignatoryInfo, 'index'>>();
 const changeSignatory = createEvent<SignatoryInfo>();
 const populateSignatories = createEvent<SignatoryInfo[]>();
 const deleteSignatory = createEvent<number>();
-const getSignatoriesBalance = createEvent<Wallet[]>();
+const getSignatoriesBalance = createEvent<Wallet>();
 const resetSignatories = createEvent();
 
 const $signatories = createStore<Omit<SignatoryInfo, 'index'>[]>([{ address: '', walletId: '' }]);
@@ -43,7 +42,7 @@ const $hasEmptySignatories = $signatories.map((signatories) => {
 
 sample({
   clock: getSignatoriesBalance,
-  target: series(balanceSubModel.fetchWallet),
+  target: balanceSubModel.fetchWallet,
 });
 
 sample({
