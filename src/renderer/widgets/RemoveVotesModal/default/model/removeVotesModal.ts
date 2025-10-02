@@ -109,13 +109,17 @@ sample({
 
 // Transaction
 
-const $coreTx = combine(flow.state, $selectedSignatory, ({ chain, votes }, account) => {
-  if (nullable(account) || nullable(chain) || nullable(votes)) return null;
+const $coreTx = combine({ state: flow.state, initiator: $initiator }, ({ state: { chain, votes }, initiator }) => {
+  if (nullable(initiator) || nullable(chain) || nullable(votes)) return null;
+
+  const filteredVotes = votes.filter((vote) => vote.voter === initiator.accountId);
+
+  if (filteredVotes.length === 0) return null;
 
   return transactionBuilder.buildRemoveVotes({
-    accountId: account!.accountId,
+    accountId: initiator.accountId,
     chain,
-    votes: votes.filter((vote) => vote.voter === account.accountId),
+    votes: filteredVotes,
   });
 });
 
@@ -130,7 +134,7 @@ const { $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = networkSelectorModel.$governanceChain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: removeVoteValidator,
   params: {
     api: networkSelectorModel.$governanceChainApi,
@@ -331,4 +335,5 @@ export const removeVotesModel = {
     flow,
   },
   $errors,
+  $valid,
 };

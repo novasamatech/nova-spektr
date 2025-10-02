@@ -38,16 +38,16 @@ multisigOperationsSDK(transferOperationDetailFeature, {
   title({ operation, showCoreTransaction }) {
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     if (isTransferTransaction(transaction)) {
-      return <TransferOperationTitle operation={operation} />;
+      return <TransferOperationTitle transaction={transaction} chainId={operation.chainId} />;
     }
     if (isXcmTransaction(transaction)) {
-      return <XcmTransferOperationTitle operation={operation} />;
+      return <XcmTransferOperationTitle transaction={transaction} chainId={operation.chainId} />;
     }
   },
   logTitle({ operation, showCoreTransaction }) {
     const { t } = useI18n();
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-    const asset = useTransactionAsset(operation);
+    const asset = useTransactionAsset(transaction, operation.chainId);
     const amount = transaction ? getTransactionAmount(transaction) : null;
 
     if (isTransferTransaction(transaction)) {

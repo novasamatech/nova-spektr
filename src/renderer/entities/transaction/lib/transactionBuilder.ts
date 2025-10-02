@@ -19,7 +19,7 @@ import {
 import { formatAmount, getAssetId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type MultisigOperation } from '@/domains/network';
-import { type RevoteTransaction, type TransactionVote, type VoteTransaction } from '@/entities/governance';
+import { type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
 
@@ -37,7 +37,6 @@ export const transactionBuilder = {
   buildEditDelegation,
   buildUnlock,
   buildVote,
-  buildRevote,
   buildRemoveVote,
   buildRemoveVotes,
   buildRejectMultisigTx,
@@ -427,27 +426,6 @@ function buildVote({ chain, accountId, referendumId, trackId, vote }: VoteParams
     chainId: chain.chainId,
     accountId: accountId,
     type: TransactionType.VOTE,
-    args: {
-      track: trackId,
-      referendum: referendumId,
-      vote,
-    },
-  };
-}
-
-type RevoteParams = {
-  chain: Chain;
-  accountId: AccountId;
-  trackId: TrackId;
-  referendumId: ReferendumId;
-  vote: TransactionVote;
-};
-
-function buildRevote({ chain, accountId, referendumId, trackId, vote }: RevoteParams): RevoteTransaction {
-  return {
-    chainId: chain.chainId,
-    accountId: accountId,
-    type: TransactionType.REVOTE,
     args: {
       track: trackId,
       referendum: referendumId,

@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample, split } from 'effector';
 import { createGate } from 'effector-react';
-import { spread } from 'patronum';
+import { and, not, spread } from 'patronum';
 
 import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -17,6 +17,7 @@ import {
   createTxValidationStore,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
+import { accountSync } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { proxyModel, proxyUtils } from '@/entities/proxy';
@@ -138,7 +139,6 @@ const $coreTx = combine(
   },
   ({ signatory, proxiedAccount, data, isPureProxiedNeedToBeKilled, chain }) => {
     if (!signatory || !data || !proxiedAccount || !chain) return null;
-
     if (isPureProxiedNeedToBeKilled) {
       return transactionBuilder.buildKillPureProxy({
         chain,
@@ -146,8 +146,8 @@ const $coreTx = combine(
         spawner: data.spawner,
         proxyType: data.proxyType,
         index: 0,
-        height: proxiedAccount.blockNumber!,
-        extIndex: proxiedAccount.extrinsicIndex!,
+        height: proxiedAccount.blockNumber,
+        extIndex: proxiedAccount.extrinsicIndex,
       });
     }
 
@@ -178,7 +178,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = $chain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: removeProxyValidator,
   params: {
     api: $api,
@@ -225,13 +225,7 @@ const $chainProxies = combine(
   },
 );
 
-const $canSubmit = combine(
-  {
-    isFormValid: form.$isValid,
-    isFeeLoading: $pendingFee,
-  },
-  ({ isFormValid, isFeeLoading }) => isFormValid && !isFeeLoading,
-);
+const $canSubmit = and($valid, form.$isValid, not($pendingFee));
 
 sample({
   clock: $signatories,
@@ -254,9 +248,12 @@ sample({
 
 split({
   clock: wentBackFromConfirm,
-  source: $isMultisig,
+  source: combine({
+    isMultisig: $isMultisig,
+    signatories: $signatories,
+  }),
   match: {
-    multisigWallet: (isMultisig) => isMultisig,
+    multisigWallet: ({ isMultisig, signatories }) => isMultisig && signatories.length !== 1,
   },
   cases: {
     multisigWallet: stepChangedToInit,
@@ -271,7 +268,7 @@ sample({
     apis: networkModel.$apis,
   },
   fn: ({ chains, apis }, { proxy, proxied }) => {
-    const chain = chains[proxied.chainId || proxy.chainId];
+    const chain = chains[proxy.chainId];
 
     if (!chain) return null;
 
@@ -517,6 +514,17 @@ sample({
 });
 
 sample({
+  clock: submitModel.output.formSubmitted,
+  filter: (results) => submitUtils.isSuccessResult(results[0].result),
+  target: flowFinished,
+});
+
+sample({
+  clock: flowFinished,
+  target: accountSync.syncAccounts,
+});
+
+sample({
   clock: flowFinished,
   source: $redirectAfterSubmitPath,
   filter: nonNullable,
@@ -531,6 +539,7 @@ export const removeProxyModel = {
   form,
   $chain,
   $proxiedAccount,
+  $proxyAccount,
   $signatories,
   $multisigDeposit,
   $fee,

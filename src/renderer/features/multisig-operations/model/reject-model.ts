@@ -119,7 +119,7 @@ const { $multisigDeposit, $pending: $pendingMultisigDepositFee } = createMultisi
 });
 
 const validator = createTxValidator();
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator,
   params: {
     api: $api,
@@ -140,4 +140,5 @@ export const rejectModel = {
   $signatory,
   $initiator,
   $errors,
+  $valid,
 };

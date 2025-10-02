@@ -290,7 +290,7 @@ const $calculationExtrinsic = combine(
   },
 );
 
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: transferValidator,
   params: {
     api: $api,
@@ -359,13 +359,15 @@ const $canSubmit = combine(
     errors: $errors,
     isXcm: $isXcm,
     isFormValid: form.$isValid,
+    valid: $valid,
     isFeeLoading: $pendingFee,
     isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
     isDeliveryFeeLoading: xcmTransferModel.$isDeliveryFeeLoading,
   },
-  ({ errors, isXcm, isFormValid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
+  ({ errors, isXcm, isFormValid, valid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
     return (
       !accountService.hasTransactionValidationErrors(errors) &&
+      valid &&
       isFormValid &&
       !isFeeLoading &&
       (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading)

@@ -46,7 +46,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
 
   const approveTx = useUnit(approveModel.$transaction);
-  const errors = useUnit(approveModel.$errors);
+  const valid = useUnit(approveModel.$valid);
   const signAccount = useUnit(approveModel.$signatory);
   const initiator = useUnit(approveModel.$initiator);
   const fee = useUnit(approveModel.$fee);
@@ -67,7 +67,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   const transactionTitle = getMultisigSignOperationTitle(isXcmTransaction(transaction), t, approveTx?.type, operation);
 
   const nativeAsset = getNativeAsset(chain.assets);
-  const asset = useTransactionAsset(operation);
+  const asset = useTransactionAsset(transaction, operation.chainId);
 
   const goBack = () => {
     setActiveStep(AllSteps.indexOf(activeStep) - 1);
@@ -80,7 +80,9 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
   };
 
   const onFormSubmit = () => {
-    setActiveStep(Step.CONFIRMATION);
+    if (valid) {
+      setActiveStep(Step.CONFIRMATION);
+    }
   };
 
   const toggleModal = (open: boolean) => {
@@ -91,7 +93,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
 
   // wtf do we need it?
   const handleConfirm = () => {
-    if (errors.length === 0) {
+    if (valid) {
       setActiveStep(Step.SIGNING);
     } else {
       toggleFeeModal();
@@ -153,7 +155,7 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
             isDepositLoading={isDepositLoading}
             signAccount={signAccount}
             multisigDeposit={multisigDeposit}
-            errors={errors}
+            valid={valid}
             onSign={handleConfirm}
             onGoBack={() => setActiveStep(Step.FORM)}
           />

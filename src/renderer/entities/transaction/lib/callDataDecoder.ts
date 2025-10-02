@@ -6,6 +6,7 @@ import { type HexString } from '@polkadot/util/types';
 
 import { xcmService } from '@/shared/api/xcm';
 import { type CallData, type Chain, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
+import { getNativeAsset } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import {
@@ -188,15 +189,26 @@ const getDecodedTransaction = (
   };
 };
 
+const getNativeAssetId = (chains: Record<ChainId, Chain>, chainId: ChainId) => {
+  const chain = chains[chainId];
+  if (!chain) return null;
+
+  return getNativeAsset(chain.assets)?.assetId.toString();
+};
+
 const getCallDataParser: Record<
   TransactionType,
   (decoded: SubmittableExtrinsic<'promise'>, chainId: ChainId, chains: Record<ChainId, Chain>) => Record<string, any>
 > = {
-  [TransactionType.TRANSFER]: (decoded): Record<string, any> => {
-    return { dest: decoded.args[0].toString(), value: decoded.args[1].toString() };
+  [TransactionType.TRANSFER]: (decoded, chainId, chains): Record<string, any> => {
+    return {
+      assetId: getNativeAssetId(chains, chainId),
+      dest: decoded.args[0].toString(),
+      value: decoded.args[1].toString(),
+    };
   },
-  [TransactionType.TRANSFER_ALL]: (decoded): Record<string, any> => {
-    return { dest: decoded.args[0].toString() };
+  [TransactionType.TRANSFER_ALL]: (decoded, chainId, chains): Record<string, any> => {
+    return { assetId: getNativeAssetId(chains, chainId), dest: decoded.args[0].toString() };
   },
   [TransactionType.ASSET_TRANSFER]: (decoded): Record<string, any> => {
     return {
@@ -416,12 +428,6 @@ const getCallDataParser: Record<
       vote: decoded.args[1].toHuman(),
     };
   },
-  [TransactionType.REVOTE]: (decoded): Record<string, any> => {
-    return {
-      referendum: decoded.args[0].toString(),
-      vote: decoded.args[1].toHuman(),
-    };
-  },
   [TransactionType.REMOVE_VOTE]: (decoded): Record<string, any> => {
     return {
       track: decoded.args[0].toString(),
@@ -583,7 +589,6 @@ const getGovernanceTxType = (method: string, section: string): TransactionType |
     removeVote: TransactionType.REMOVE_VOTE,
     vote: TransactionType.VOTE,
     unlock: TransactionType.UNLOCK,
-    revote: TransactionType.REVOTE,
     delegate: TransactionType.DELEGATE,
     undelegate: TransactionType.UNDELEGATE,
   }[method];

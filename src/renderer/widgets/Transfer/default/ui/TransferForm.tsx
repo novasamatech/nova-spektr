@@ -58,11 +58,14 @@ type ComboboxGroup = {
 export const TransferForm = ({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
   const errors = useUnit(formModel.$errors);
+  const canSubmit = useUnit(formModel.$canSubmit);
   const wallets = useUnit(walletModel.$wallets);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
-    submit();
+    if (canSubmit) {
+      submit();
+    }
   };
 
   return (
@@ -206,13 +209,13 @@ const XcmChainSelector = () => {
         onChange={selectChain}
       >
         <Select.Group title={t('transfer.onChainPlaceholder')}>
-          <Select.Item value={nativeChain.chainId}>
+          <Select.Item value={nativeChain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
             <ChainTitle chainId={nativeChain.chainId} fontClass="text-text-primary" />
           </Select.Item>
         </Select.Group>
         <Select.Group title={t('transfer.crossChainPlaceholder')}>
           {xcmChains.map((chain) => (
-            <Select.Item key={chain.chainId} value={chain.chainId}>
+            <Select.Item key={chain.chainId} value={chain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
               <ChainTitle chainId={chain.chainId} fontClass="text-text-primary" />
             </Select.Item>
           ))}

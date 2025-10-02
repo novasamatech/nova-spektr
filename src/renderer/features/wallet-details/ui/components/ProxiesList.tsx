@@ -1,20 +1,17 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 
-import { type ProxyAccount, type Wallet } from '@/shared/core';
+import { type ChainId, type ProxiedAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
-import { FootnoteText, HelpText } from '@/shared/ui';
-import { AssetBalance } from '@/shared/ui-entities';
-import { Accordion } from '@/shared/ui-kit';
+import { FootnoteText } from '@/shared/ui';
+import { Skeleton } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
-import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
-import { accountUtils } from '@/entities/wallet';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
-import { walletProxiesModel } from '../../model/wallet-proxies-model';
+import { type Proxy, walletProxiesModel } from '../../model/wallet-proxies-model';
 
+import { ChainProxyGroup } from './ChainProxyGroup';
 import { NoProxiesAction } from './NoProxiesAction';
-import { ProxyAccountWithActions } from './ProxyAccountWithActions';
 
 const {
   models: { removeProxyModel },
@@ -34,75 +31,74 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   const chains = useUnit(networkModel.$chains);
   const chainsProxies = useUnit(walletProxiesModel.$walletProxies);
   const walletProxyGroups = useUnit(walletProxiesModel.$walletProxyGroups);
+  const allAccounts = useUnit(accounts.$list);
+  const isLoading = useUnit(walletProxiesModel.$isLoading);
 
-  const walletAccounts = useStoreMap({
-    store: accounts.$list,
-    keys: [wallet],
-    fn: (accounts, [wallet]) => {
-      return accountService.filterAccountsByWallet(accounts, wallet.id);
-    },
-  });
-
-  const handleDeleteProxy = (proxyAccount: Omit<ProxyAccount, 'id' | 'delay'>) => {
-    const proxiedAccount = walletAccounts.find(account => accountUtils.isProxiedAccount(account));
+  const handleDeleteProxy = (proxyAccount: Proxy) => {
+    const chain = chains[proxyAccount.chainId];
+    if (!chain) return;
+    const proxiedAccount = allAccounts.find(
+      account =>
+        account.accountId === proxyAccount.proxiedAccountId && accountService.isAccountAvailableOnChain(account, chain),
+    );
 
     if (proxiedAccount) {
       removeProxyModel.flowStarted({
-        proxied: proxiedAccount,
+        proxied: proxiedAccount as ProxiedAccount,
         proxy: proxyAccount,
       });
     }
   };
 
+  const renderProxyGroups = () => {
+    if (isLoading) {
+      return <LoadingSkeleton />;
+    }
+
+    return walletProxyGroups
+      .filter(({ chainId }) => {
+        const typedChainId = chainId as ChainId;
+        return chainsProxies[typedChainId]?.proxies.length > 0;
+      })
+      .map(({ chainId, totalDeposit }) => {
+        const typedChainId = chainId as ChainId;
+        const chain = chains[typedChainId];
+        const chainProxies = chainsProxies[typedChainId];
+        const proxies = chainProxies?.proxies || [];
+
+        return (
+          <ChainProxyGroup
+            key={chainId}
+            chain={chain}
+            proxies={proxies}
+            totalDeposit={totalDeposit}
+            canCreateProxy={canCreateProxy}
+            onRemoveProxy={handleDeleteProxy}
+          />
+        );
+      });
+  };
+
   return (
     <div className={cnTw('flex flex-col', className)}>
-      {hasProxies ? (
+      {isLoading ? (
         <>
           <div className="flex items-center px-5 py-2">
             <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
           </div>
 
           <ul className="flex h-full flex-col divide-y divide-divider overflow-x-hidden overflow-y-auto px-5">
-            {walletProxyGroups.map(({ chainId, totalDeposit }) => {
-              if (!chainsProxies[chainId]?.length) {
-                return null;
-              }
+            {renderProxyGroups()}
+          </ul>
+        </>
+      ) : hasProxies ? (
+        <>
+          <div className="flex items-center px-5 py-2">
+            <FootnoteText className="flex-1 px-2 text-text-tertiary">{t('accountList.addressColumn')}</FootnoteText>
+          </div>
 
-              return (
-                <li key={chainId} className="flex items-center py-2">
-                  <Accordion initialOpen>
-                    <Accordion.Trigger>
-                      <div className="flex items-center justify-between gap-x-2 pr-2 normal-case">
-                        <ChainTitle className="flex-1" fontClass="text-text-primary" chain={chains[chainId]} />
-                        <HelpText className="text-text-tertiary">
-                          {t('walletDetails.common.proxyDeposit')}
-                          &nbsp;
-                          <AssetBalance
-                            value={totalDeposit.replaceAll(',', '')}
-                            asset={chains[chainId].assets[0]}
-                            className="text-help-text"
-                          />
-                        </HelpText>
-                      </div>
-                    </Accordion.Trigger>
-                    <Accordion.Content>
-                      <ul className="flex flex-col gap-y-2">
-                        {chainsProxies[chainId].map(proxy => (
-                          <li className="px-2 py-1.5" key={`${proxy.accountId}_${proxy.proxyType}`}>
-                            <ProxyAccountWithActions
-                              account={proxy}
-                              chain={chains[chainId]}
-                              canCreateProxy={canCreateProxy}
-                              onRemoveProxy={handleDeleteProxy}
-                            />
-                          </li>
-                        ))}
-                      </ul>
-                    </Accordion.Content>
-                  </Accordion>
-                </li>
-              );
-            })}
+          <ul className="flex h-full flex-col divide-y divide-divider overflow-x-hidden overflow-y-auto px-5">
+            {renderProxyGroups()}
           </ul>
         </>
       ) : (
@@ -113,3 +109,9 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
     </div>
   );
 };
+
+const LoadingSkeleton = () => (
+  <div className="flex items-center py-2">
+    <Skeleton width="100%" height={14} />
+  </div>
+);

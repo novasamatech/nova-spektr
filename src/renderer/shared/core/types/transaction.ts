@@ -45,7 +45,6 @@ export const enum TransactionType {
 
   UNLOCK = 'unlock',
   VOTE = 'vote',
-  REVOTE = 'revote',
   REMOVE_VOTE = 'remove_vote',
   DELEGATE = 'delegate',
   UNDELEGATE = 'undelegate',

@@ -1,6 +1,8 @@
+import { BN_ZERO } from '@polkadot/util';
+
 import { type Asset, type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, stakeableAmount, toAddress } from '@/shared/lib/utils';
+import { cnTw, reservableAmountBN, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, HelpText } from '@/shared/ui';
 import { AssetBalance, Hash, Identicon } from '@/shared/ui-entities';
@@ -28,9 +30,9 @@ export const AccountsModal = ({ isOpen, accounts, asset, chainId, addressPrefix,
     assetId: asset.assetId,
   });
 
-  const findBalance = (accountId: AccountId): string => {
+  const findBalance = (accountId: AccountId) => {
     const balance = balances.find((b) => b.accountId === accountId) ?? null;
-    return stakeableAmount(balance);
+    return balance ? reservableAmountBN(balance) : BN_ZERO;
   };
 
   return (

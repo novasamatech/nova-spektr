@@ -108,12 +108,14 @@ type ExtrinsicSigningPayload = {
 };
 
 const getWeightFx = createEffect(async ({ operation, api }: ExtrinsicSigningPayload) => {
-  const transaction = operation.transaction;
-  if (!transaction?.type) return null;
+  if (!operation.callData) return null;
 
-  const extrinsic = getExtrinsic[transaction.type](transaction.args, api);
   try {
-    return await transactionService.getExtrinsicWeight(extrinsic);
+    const weight = await transactionService.getTransactionWeight(
+      { type: 'encoded', callData: operation.callData },
+      api,
+    );
+    return weight;
   } catch {
     return api.createType('Weight', MAX_WEIGHT);
   }
@@ -143,6 +145,7 @@ const $transaction = combine(
   },
   ({ multisigAccount, chain, operation, signatory, weight, initiator }) => {
     if (!multisigAccount || !operation || !chain || !signatory || !weight || !initiator) return null;
+
     const otherSignatories = multisigOperationService.getOtherSignatories(multisigAccount, initiator.accountId);
     const hasCallData = operation.callData && validateCallData(operation.callData, operation.callHash);
 
@@ -204,7 +207,7 @@ const $signingPayloads = combine(
 );
 
 const validator = createTxValidator();
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator,
   params: {
     api: $api,
@@ -214,6 +217,17 @@ const { $errors } = createTxValidationStore({
     transaction: $tx,
   },
 });
+
+const $canSubmit = combine(
+  {
+    valid: $valid,
+    isFeeLoading: $isFeeLoading,
+    isDepositLoading: $isDepositLoading,
+    signatory: $signatory,
+  },
+  ({ valid, isFeeLoading, isDepositLoading, signatory }) =>
+    valid && !isFeeLoading && !isDepositLoading && nonNullable(signatory),
+);
 
 export const approveModel = {
   flow,
@@ -227,6 +241,8 @@ export const approveModel = {
   $signingPayloads,
   $initiator,
   $unsignedAccounts,
+  $canSubmit,
+  $valid,
 
   $signatories,
   selectSignatory,

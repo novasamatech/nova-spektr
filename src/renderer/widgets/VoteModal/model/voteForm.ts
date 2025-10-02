@@ -26,7 +26,6 @@ import {
 } from '@/features/governance';
 import { locksAggregate } from '@/features/governance/aggregates/locks';
 import { voteValidateModel } from '@/features/governance/model/vote/voteValidateModel';
-import { votingAssetModel } from '@/features/governance/model/votingAsset';
 import { type VoteConfirm, voteConfirmModel } from '@/features/operations/OperationsConfirm';
 import { voteValidator } from '@/features/operations/OperationsValidation';
 
@@ -50,8 +49,6 @@ const $voters = createStore<AccountId[]>([]);
 const $existingVote = createStore<AccountVote | null>(null);
 const $referendum = restore(setReferendum, null);
 const $lockForAccount = createStore(BN_ZERO);
-
-const $canSubmit = createStore(false);
 
 const formSubmitted = createEvent<FormInput>();
 
@@ -155,25 +152,14 @@ const $coreTx = combine(
   {
     chain: networkSelectorModel.$governanceChain,
     referendum: $referendum,
-    existingVote: $existingVote,
     conviction: form.fields.conviction.$value,
     signatory: form.fields.signatory.$value,
     amount: form.fields.amount.$value,
     decision: form.fields.decision.$value,
   },
-  ({ chain, referendum, signatory, amount, conviction, decision, existingVote }) => {
-    if (nullable(referendum) || nullable(chain) || nullable(signatory)) {
+  ({ chain, referendum, signatory, amount, conviction, decision }) => {
+    if (nullable(referendum) || nullable(chain) || nullable(signatory) || nullable(decision) || nullable(amount)) {
       return null;
-    }
-
-    if (existingVote) {
-      return transactionBuilder.buildRevote({
-        chain: chain,
-        accountId: signatory.accountId,
-        trackId: referendum.track,
-        referendumId: referendum.referendumId,
-        vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
-      });
     }
 
     return transactionBuilder.buildVote({
@@ -181,7 +167,7 @@ const $coreTx = combine(
       accountId: signatory.accountId,
       trackId: referendum.track,
       referendumId: referendum.referendumId,
-      vote: voteTransactionService.createTransactionVote(decision ?? 'aye', amount || BN_ZERO, conviction),
+      vote: voteTransactionService.createTransactionVote(decision, amount, conviction),
     });
   },
 );
@@ -197,7 +183,7 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
 
 // Transaction validation
 const $asset = networkSelectorModel.$governanceChain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
-const { $errors } = createTxValidationStore({
+const { $errors, $valid } = createTxValidationStore({
   validator: voteValidator,
   params: {
     api: networkSelectorModel.$governanceChainApi,
@@ -249,15 +235,7 @@ reset({
 
 // Submit
 
-sample({
-  clock: and(
-    not($pendingFee),
-    not(empty($tx)),
-    not(empty(votingAssetModel.$votingAsset)),
-    not(empty(networkSelectorModel.$governanceChainId)),
-  ),
-  target: $canSubmit,
-});
+const $canSubmit = and($valid, form.$isValid, not($pendingFee), not(empty($tx)));
 
 sample({
   clock: form.submit.doneData,

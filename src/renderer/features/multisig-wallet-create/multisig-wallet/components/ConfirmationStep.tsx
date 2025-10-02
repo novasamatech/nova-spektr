@@ -24,6 +24,7 @@ export const ConfirmationStep = () => {
   const fee = useUnit(flowModel.$fee);
   const route = useUnit(flowModel.$route);
   const errors = useUnit(flowModel.$errors);
+  const valid = useUnit(flowModel.$valid);
   const multisigDeposit = useUnit(flowModel.$multisigDeposit);
   const isDepositLoading = useUnit(flowModel.$isDepositLoading);
 
@@ -112,7 +113,7 @@ export const ConfirmationStep = () => {
             {t('createMultisigAccount.backButton')}
           </Button>
 
-          <SignButton disabled={errors.length > 0} type={signerWallet.type} onClick={confirmModel.startSigning} />
+          <SignButton disabled={!valid} type={signerWallet.type} onClick={confirmModel.startSigning} />
         </Box>
       </Modal.Footer>
     </>
