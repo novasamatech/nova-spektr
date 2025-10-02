@@ -2189,6 +2189,13 @@
     "incorrectRecipientError": "Please enter correct recipient address",
     "invalidAddress": "Invalid address",
     "invalidSignature": "Error occurred while decoding QR code. Scan again.",
+    "max": {
+      "buttonTitle": "MAX",
+      "ed": {
+        "tooltip": "Existential Deposit is the minimum balance to keep your account on-chain storage",
+        "title": "Include Existential Deposit"
+      }
+    },
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"

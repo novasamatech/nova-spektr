@@ -19,7 +19,7 @@ import {
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
-import { Button, CaptionText, InputHint } from '@/shared/ui';
+import { Button, CaptionText, FootnoteText, Icon, InputHint, Switch } from '@/shared/ui';
 import {
   AccountSelect,
   Address,
@@ -28,7 +28,7 @@ import {
   TransactionValidationError,
   WalletIcon,
 } from '@/shared/ui-entities';
-import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
+import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
@@ -411,10 +411,18 @@ const Amount = () => {
 
   const accountBalance = useUnit(formModel.$initiatorBalance);
   const network = useUnit(formModel.$networkStore);
+  const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
+  const isMaxModeEnabled = useUnit(formModel.$isMaxModeEnabled);
 
   if (!network) {
     return null;
   }
+
+  const onAmountChange = (value: string) => {
+    amount.onChange(value);
+    // ToDo: check if triggered only on user input
+    formModel.events.toggleMaxMode(false);
+  };
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -425,12 +433,35 @@ const Amount = () => {
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
+        suffixElement={
+          <Button pallet="secondary" variant="fill" size="sm" onClick={() => formModel.events.toggleMaxMode(true)}>
+            {t('transfer.max.buttonTitle')}
+          </Button>
+        }
         testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
-        onChange={amount.onChange}
+        onChange={onAmountChange}
       />
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}
       </InputHint>
+
+      {isMaxModeEnabled && (
+        <div className="flex justify-end">
+          <Switch checked={isExistentialDepositEnabled} onChange={() => formModel.events.toggleExistentialDeposit()}>
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div tabIndex={0}>
+                    <Icon name="info" className="hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('transfer.max.ed.tooltip')}</Tooltip.Content>
+              </Tooltip>
+              <FootnoteText>{t('transfer.max.ed.title')}</FootnoteText>
+            </div>
+          </Switch>
+        </div>
+      )}
     </div>
   );
 };

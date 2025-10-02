@@ -71,6 +71,18 @@ const myselfClicked = createEvent();
 const xcmDestinationSelected = createEvent<AccountId>();
 const xcmDestinationCancelled = createEvent();
 
+const setMaxMode = createEvent<boolean>();
+const $isMaxModeEnabled = createStore(false).on(setMaxMode, (_, update) => update);
+
+const toggleExistentialDeposit = createEvent<boolean | void>();
+const $isExistentialDepositEnabled = createStore(false).on(toggleExistentialDeposit, (state, update) => {
+  if (nonNullable(update)) {
+    return update;
+  } else {
+    return !state;
+  }
+});
+
 const $networkStore = restore(formInitiated, null);
 const $isNative = createStore<boolean>(false);
 
@@ -568,6 +580,9 @@ export const formModel = {
   $xcmConfig: xcmTransferModel.$config,
   $xcmApi: xcmTransferModel.$apiDestination,
 
+  $isExistentialDepositEnabled,
+  $isMaxModeEnabled,
+
   formInitiated,
   formCleared: form.reset,
 
@@ -580,4 +595,9 @@ export const formModel = {
   xcmFeeChanged: xcmTransferModel.events.xcmFeeChanged,
 
   formSubmitted,
+
+  events: {
+    toggleExistentialDeposit,
+    toggleMaxMode: setMaxMode,
+  },
 };
