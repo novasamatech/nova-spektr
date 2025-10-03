@@ -224,6 +224,8 @@
       "createPureProxy": "Create Pure Proxy",
       "creatingFlexibleProxy": "Creating flexible multisig",
       "description": "A multisig wallet used to create a flexible multisig (proxied) is not displayed in the multisig wallet group to prevent duplication. Use the flexible multisig for all signing operations",
+      "editOperationExistsDescription": "Multisig operation for edit already exists in operations tab, you can approve of reject previous operation before creating a new one",
+      "editOperationExistsTitle": "This flexible multisig account is already edited",
       "existentialDeposit": "Existential deposit:",
       "flexible": "Flexible multisig",
       "leaveButton": "Leave",

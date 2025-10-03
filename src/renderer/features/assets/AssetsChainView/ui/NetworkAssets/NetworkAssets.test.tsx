@@ -10,7 +10,6 @@ import {
   type BalanceId,
   type BalanceMap,
   CryptoType,
-  LockTypes,
   SigningType,
   type VaultBaseAccount,
   type VaultChainAccount,
@@ -52,7 +51,7 @@ const testBalances: Balance[] = [
     chainId: testChain.chainId,
     accountId: TEST_ACCOUNTS[0],
     free: new BN(10),
-    locked: [{ type: LockTypes.CONVICTION_VOTE, amount: new BN(1) }],
+    locked: [],
     frozen: BN_ZERO,
     reserved: BN_ZERO,
     ed: BN_ZERO,
@@ -68,7 +67,7 @@ const testBalances: Balance[] = [
     reserved: BN_ZERO,
     ed: BN_ZERO,
     transferableMode: 'holdAndFreezes',
-    locked: [{ type: LockTypes.CONVICTION_VOTE, amount: new BN(1) }],
+    locked: [],
   },
 ];
 

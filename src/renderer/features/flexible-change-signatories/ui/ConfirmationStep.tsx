@@ -25,8 +25,8 @@ export const ConfirmationStep = () => {
   const initiatorWallet = useUnit(changeSignatoriesModel.$initiatorWallet);
 
   const threshold = useUnit(formModel.$threshold);
-  const multisigDeposit = useUnit(formModel.$multisigDeposit);
-  const proxyDeposit = useUnit(formModel.$proxyDeposit);
+  const multisigDeposit = useUnit(changeSignatoriesModel.$multisigDeposit);
+  const proxyDeposit = useUnit(changeSignatoriesModel.$proxyDeposit);
 
   const signatories = useUnit(signatoryModel.$signatories);
 
