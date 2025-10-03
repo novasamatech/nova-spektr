@@ -6,7 +6,7 @@ import { RelayChains } from '@/shared/lib/utils/constants';
 import { Button } from '@/shared/ui/Buttons';
 import { InfoLink } from '@/shared/ui/InfoLink/InfoLink';
 import { FootnoteText, HeaderTitleText, SmallTitleText } from '@/shared/ui/Typography';
-import { ChainIcon } from '@/shared/ui-entities/ChainIcon/ChainIcon';
+import { ChainIcon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
 import { RELAY_TO_ASSET_HUB_CHAIN_IDS } from '../model/constants';
