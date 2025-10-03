@@ -1,5 +1,5 @@
 import { createFeature } from '@/shared/feature';
-import { findCoreTransaction, isEditFlexibleTransaction } from '@/entities/transaction';
+import { isEditFlexibleTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
 import { FlexibleOperationTitle } from './components/FlexibleOperationTitle';
@@ -9,24 +9,18 @@ export const flexibleOperationDetailFeature = createFeature({
 });
 
 multisigOperationsSDK(flexibleOperationDetailFeature, {
-  icon({ operation, showCoreTransaction }) {
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-
-    if (isEditFlexibleTransaction(transaction)) {
+  icon({ operation }) {
+    if (isEditFlexibleTransaction(operation.transaction)) {
       return 'proxyMst';
     }
   },
-  title({ operation, showCoreTransaction }) {
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-
-    if (isEditFlexibleTransaction(transaction)) {
+  title({ operation }) {
+    if (isEditFlexibleTransaction(operation.transaction)) {
       return <FlexibleOperationTitle operation={operation} title="operations.titles.editFlexible" />;
     }
   },
-  logTitle({ operation, showCoreTransaction }) {
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-
-    if (isEditFlexibleTransaction(transaction)) {
+  logTitle({ operation }) {
+    if (isEditFlexibleTransaction(operation.transaction)) {
       return <FlexibleOperationTitle operation={operation} title="operations.titles.editFlexible" />;
     }
   },
