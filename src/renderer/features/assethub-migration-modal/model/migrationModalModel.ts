@@ -1,4 +1,4 @@
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, split } from 'effector';
 import { persist } from 'effector-storage/local';
 
 import { type ChainId } from '@/shared/core';
@@ -66,20 +66,13 @@ const $modalState = combine(
 const $isModalOpen = $modalState.map(({ shouldShow }) => shouldShow);
 const $chainId = $modalState.map(({ chainId }) => chainId);
 
-sample({
-  clock: closeModal,
-  source: $chainId,
-  filter: (chainId: ChainId) => chainId === POLKADOT_CHAIN_ID,
-  fn: () => true,
-  target: [$seenPolkadot, $seenKusama],
-});
-
-sample({
-  clock: closeModal,
-  source: $chainId,
-  filter: (chainId: ChainId) => chainId === KUSAMA_CHAIN_ID,
-  fn: () => true,
-  target: [$seenKusama],
+split({
+  source: closeModal.map(() => true),
+  match: $chainId,
+  cases: {
+    [POLKADOT_CHAIN_ID]: [$seenPolkadot, $seenKusama],
+    [KUSAMA_CHAIN_ID]: [$seenKusama],
+  },
 });
 
 export const migrationModalModel = {
