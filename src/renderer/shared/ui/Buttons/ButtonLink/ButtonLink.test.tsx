@@ -39,9 +39,9 @@ describe('ui/Buttons/ButtonLink', () => {
     expect(disabledContainer).toBeInTheDocument();
   });
 
-  test('should call callback on page transition', async () => {
+  test('should call onClick on page transition', async () => {
     const spyCallback = jest.fn();
-    render(<ButtonLink to="test_page" callback={spyCallback} />, {
+    render(<ButtonLink to="test_page" onClick={spyCallback} />, {
       wrapper: MemoryRouter,
     });
 
