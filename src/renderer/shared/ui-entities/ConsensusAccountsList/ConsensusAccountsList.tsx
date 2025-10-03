@@ -57,7 +57,7 @@ export const ConsensusAccountsList = memo(({ accounts }: Props) => {
         <section className="flex flex-col divide-y divide-divider px-5 pb-3">
           {groups.map(({ consensus, parachains }) => {
             const [consensusChain, consensusAccountId] = consensus;
-            if (parachains.length) {
+            if (parachains.length > 0) {
               return (
                 <Collapsible key={consensusChain.chainId}>
                   <Collapsible.Trigger sticky>
