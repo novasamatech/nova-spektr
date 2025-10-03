@@ -29,6 +29,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
   const validationErrors = useUnit(confirmModel.$validationErrors);
   const canSubmit = useUnit(confirmModel.$canSubmit);
 
+  console.log({ validationErrors });
+
   const confirms = useUnit(confirmModel.$confirms);
   const confirm = useStoreMap({
     store: confirmModel.$confirmMap,

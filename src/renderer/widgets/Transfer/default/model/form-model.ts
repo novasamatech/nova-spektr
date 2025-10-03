@@ -62,6 +62,7 @@ type FormSubmitEvent = FormParams & {
   deliveryFee: BN;
   multisigDeposit: BN;
   rawAmount: string;
+  includeExistentialDeposit: boolean;
 };
 
 const formInitiated = createEvent<NetworkStore>();
@@ -297,7 +298,7 @@ const { $errors, $valid, $balanceValidationResults, $validationDone } = createTx
     transaction: $calculationTx,
     xcmFee: xcmTransferModel.$xcmFee,
     deliveryFee: xcmTransferModel.$deliveryFee,
-    includeED: $isExistentialDepositEnabled,
+    includeExistentialDeposit: $isExistentialDepositEnabled,
   },
 });
 
@@ -576,8 +577,24 @@ const formSubmitFinished = sample({
     xcmFee: xcmTransferModel.$xcmFee,
     deliveryFee: xcmTransferModel.$deliveryFee,
     multisigDeposit: $multisigDeposit,
+    isExistentialDepositEnabled: $isExistentialDepositEnabled,
   },
-  fn: ({ chain, initiator, network, route, coreTx, tx, multisigDeposit, fee, xcmFee, deliveryFee }, form) => {
+  fn: (
+    {
+      chain,
+      initiator,
+      network,
+      route,
+      coreTx,
+      tx,
+      multisigDeposit,
+      fee,
+      xcmFee,
+      deliveryFee,
+      isExistentialDepositEnabled,
+    },
+    form,
+  ) => {
     if (
       nullable(chain) ||
       nullable(coreTx) ||
@@ -602,6 +619,7 @@ const formSubmitFinished = sample({
       fee,
       xcmFee,
       deliveryFee: deliveryFee,
+      includeExistentialDeposit: isExistentialDepositEnabled,
     } satisfies FormSubmitEvent;
   },
 });
