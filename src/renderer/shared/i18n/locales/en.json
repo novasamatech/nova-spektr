@@ -936,7 +936,7 @@
   },
   "qrReader": {
     "parsingLabel": "Parsing data",
-    "parsingProgress": "{decoded} of {total}",
+    "parsingProgress": "{decodedFrames} of {totalFrames}",
     "videoError": "Your browser doesn't support video",
     "parsingSubLabel": "Please hold still..."
   },

@@ -38,7 +38,7 @@ const CryptoTypes: Record<string, Exclude<CryptoTypeString, CryptoTypeString.ETH
 
 const createFrame = (metadata?: Uint8Array[]): RaptorFrame => {
   if (!metadata) {
-    throw QR_READER_DECODE_ERRORS[DecodeQrError.INVALID_ERROR];
+    throw QR_READER_DECODE_ERRORS[DecodeQrError.INVALID];
   }
 
   return new RaptorFrame(metadata[0]);
@@ -63,7 +63,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
   const [activeCamera, setActiveCamera] = useState<string | null>(null);
   const [availableCameras, setAvailableCameras] = useState<Record<'title' | 'value', string>[]>([]);
-  const [{ decoded, total }, setProgress] = useState({ decoded: 0, total: 0 });
+  const [{ decodedFrames, totalFrames }, setProgress] = useState({ decodedFrames: 0, totalFrames: 0 });
 
   const { t } = useI18n();
 
@@ -83,8 +83,8 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
     CameraState.INVALID_ERROR,
   ].includes(cameraState);
 
-  let errorLabel = '';
-  let errorDescription = '';
+  let errorLabel;
+  let errorDescription;
 
   switch (cameraState) {
     case CameraState.INVALID_ERROR:
@@ -121,7 +121,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
 
   const resetCamera = () => {
     setActiveCamera(null);
-    setProgress({ decoded: 0, total: 0 });
+    setProgress({ decodedFrames: 0, totalFrames: 0 });
   };
 
   const makeResultPayload = (data: ScanResult): (SeedInfo | DdSeedInfo)[] => {
@@ -151,7 +151,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
     }
 
     isComplete.current = true;
-    setProgress({ decoded: 1, total: 1 });
+    setProgress({ decodedFrames: 1, totalFrames: 1 });
     onScanResult(makeResultPayload(signerAddress));
 
     return true;
@@ -178,7 +178,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
       onScanResult(makeResultPayload(result));
     } else {
       // if there is more than 1 frame --> proceed scanning and keep the progress
-      setProgress({ decoded: 1, total: frameData.total });
+      setProgress({ decodedFrames: 1, totalFrames: frameData.total });
       status.current = Status.NEXT_FRAME;
       progress.current = {
         size: frameData.size,
@@ -199,7 +199,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
     if (collected.has(blockNumber)) return;
 
     collected.add(blockNumber);
-    setProgress({ decoded: collected.size, total });
+    setProgress({ decodedFrames: collected.size, totalFrames: total });
 
     let previousPacket;
     for (const [key, packet] of packets.current) {
@@ -209,7 +209,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
         //check if packet has correct size. If not remove it and wait when get it on next QR code rotation
         packets.current.delete(key);
         collected.delete(blockNumber);
-        setProgress({ decoded: collected.size, total });
+        setProgress({ decodedFrames: collected.size, totalFrames: total });
         break;
       }
 
@@ -218,7 +218,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
       } catch {
         packets.current.delete(key);
         collected.delete(blockNumber);
-        setProgress({ decoded: collected.size, total });
+        setProgress({ decodedFrames: collected.size, totalFrames: total });
         break;
       }
 
@@ -241,7 +241,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
   };
 
   const onScanResult = (scanResult: (SeedInfo | DdSeedInfo)[]) => {
-    if (scanResult.length > 1) {
+    if (!isDynamicDerivations && scanResult.length > 1) {
       setCameraState(CameraState.MULTISHARD_ERROR);
       resetCamera();
       return;
@@ -267,7 +267,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
       const resultMetadata = result.getResultMetadata().get(FRAME_KEY) as Uint8Array[];
       if (!resultMetadata?.length) {
         // If no metadata, it's not a multiframe QR - this is an invalid QR for Polkadot Vault
-        onError?.(QR_READER_DECODE_ERRORS[DecodeQrError.INVALID_ERROR]);
+        onError?.(QR_READER_DECODE_ERRORS[DecodeQrError.INVALID]);
         return;
       }
 
@@ -290,7 +290,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
       }
     } catch (error) {
       if (!isQrErrorObject(error)) {
-        onError?.(QR_READER_DECODE_ERRORS[DecodeQrError.INVALID_ERROR]);
+        onError?.(QR_READER_DECODE_ERRORS[DecodeQrError.INVALID]);
       } else if ((error as ErrorObject).code === DecodeQrError.NOT_SAME_QR) {
         // Restart process for new QR
         packets.current = new Map();
@@ -353,7 +353,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
   const sizeStyle = Array.isArray(size) ? { width: size[0], height: size[1] } : { width: size, height: size };
 
   return (
-    <div className="flex w-full flex-col justify-between gap-4 px-5 pt-3">
+    <div className="flex w-full min-w-80 flex-col justify-between gap-4 px-5 pt-3">
       <SmallTitleText>{t('onboarding.vault.scanTitle')}</SmallTitleText>
 
       {isCameraPending && (
@@ -463,16 +463,16 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
         </Select>
       )}
 
-      {total > 1 && (
+      {totalFrames > 1 && (
         <div className="flex items-center justify-center gap-2">
           <FootnoteText className="text-text-tertiary">{t('qrReader.parsingLabel')}</FootnoteText>
           <CaptionText
             className={cnTw(
               'rounded-full bg-label-background-gray px-2 py-1 text-white uppercase',
-              total === decoded && 'bg-label-background-green',
+              totalFrames === decodedFrames && 'bg-label-background-green',
             )}
           >
-            {t('qrReader.parsingProgress', { decoded, total })}
+            {t('qrReader.parsingProgress', { decodedFrames, totalFrames })}
           </CaptionText>
         </div>
       )}
