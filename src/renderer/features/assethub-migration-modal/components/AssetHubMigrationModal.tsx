@@ -12,10 +12,10 @@ import { networkModel } from '@/entities/network';
 import { RELAY_TO_ASSET_HUB_CHAIN_IDS } from '../model/constants';
 import { migrationModalModel } from '../model/migrationModalModel';
 
-const getChainName = (chainId: ChainId): string => {
+const getChainName = (chainId: ChainId): string | null => {
   if (chainId === RelayChains.POLKADOT) return 'polkadot';
   if (chainId === RelayChains.KUSAMA) return 'kusama';
-  return 'polkadot';
+  return null;
 };
 
 const getContent = (t: ReturnType<typeof useI18n>['t'], chainId: ChainId) => {
@@ -55,7 +55,7 @@ export const AssetHubMigrationModal = () => {
         </Box>
       </Modal.Title>
       <Modal.Content>
-        <div className="w-[440px]">
+        <div className="mt-4 mb-4 w-[440px]">
           <Box direction="column" gap={6} padding={[0, 5, 0, 5]}>
             <Box direction="column" gap={4}>
               <SmallTitleText>{currentContent.description}</SmallTitleText>
@@ -87,15 +87,14 @@ export const AssetHubMigrationModal = () => {
                 {t('assethubMigration.learnMore')}
               </InfoLink>
             </Box>
-
-            <Box direction="row" gap={3} verticalAlign="end" horizontalAlign="end">
-              <Button variant="fill" pallet="primary" size="md" className="mb-4" onClick={closeModal}>
-                {t('assethubMigration.gotIt')}
-              </Button>
-            </Box>
           </Box>
         </div>
       </Modal.Content>
+      <Modal.Footer>
+        <Button variant="fill" pallet="primary" size="md" onClick={closeModal}>
+          {t('assethubMigration.gotIt')}
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 };
