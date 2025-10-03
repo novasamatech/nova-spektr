@@ -218,6 +218,17 @@ const { $errors, $valid } = createTxValidationStore({
   },
 });
 
+const $canSubmit = combine(
+  {
+    valid: $valid,
+    isFeeLoading: $isFeeLoading,
+    isDepositLoading: $isDepositLoading,
+    signatory: $signatory,
+  },
+  ({ valid, isFeeLoading, isDepositLoading, signatory }) =>
+    valid && !isFeeLoading && !isDepositLoading && nonNullable(signatory),
+);
+
 export const approveModel = {
   flow,
   $transaction: $tx,
@@ -230,7 +241,7 @@ export const approveModel = {
   $signingPayloads,
   $initiator,
   $unsignedAccounts,
-
+  $canSubmit,
   $valid,
 
   $signatories,

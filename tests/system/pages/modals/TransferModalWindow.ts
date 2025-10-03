@@ -88,7 +88,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
   public async chooseXcmChain(chainName: string): Promise<void> {
     await step(`Select destination XCM chain: ${chainName}`, async () => {
       await this.page.getByTestId(TransferModalElements.xcmSelectorLocator).click();
-      await this.page.getByRole('option', { name: chainName }).click();
+      await this.page.getByTestId(TransferModalElements.networkOption).filter({ hasText: chainName }).first().click();
     });
   }
 

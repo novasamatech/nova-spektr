@@ -1,3 +1,4 @@
+import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type ReactNode, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 
@@ -28,7 +29,7 @@ type Props = {
   disabled?: boolean;
   asset: Asset;
   balancePlaceholder?: string;
-  balance?: string | string[] | null;
+  balance?: string | BN | (string | BN)[] | null;
   invalid?: boolean;
   showCurrency?: boolean;
   testId?: string;
@@ -119,11 +120,7 @@ export const AmountInput = ({
       );
     }
 
-    if (typeof balance === 'string') {
-      return <AssetBalance className="inline text-footnote text-text-primary" value={balance} asset={asset} />;
-    }
-
-    return balance;
+    return <AssetBalance className="inline text-footnote text-text-primary" value={balance} asset={asset} />;
   }, [balance]);
 
   const label = (

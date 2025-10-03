@@ -1,4 +1,3 @@
-import { BN } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { and, not, spread } from 'patronum';
 
@@ -6,11 +5,10 @@ import { type Asset, type Chain } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
-  formatAmount,
   getRelaychainAsset,
   nonNullable,
   nullable,
-  stakeableAmount,
+  reservableAmountBN,
   transferableAmount,
 } from '@/shared/lib/utils';
 import {
@@ -62,39 +60,6 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
     amount: {
       defaultValue: '',
-      validator: () => {
-        return {
-          source: combine({
-            network: $networkStore,
-            bondBalanceRange: $bondBalanceRange,
-            fee: $fee,
-            isMultisig: $isMultisig,
-            initiatorBalance: $initiatorBalance,
-          }),
-          fn: (value: string, form: FormParams, { network, bondBalanceRange, fee, isMultisig, initiatorBalance }) => {
-            if (nullable(value)) {
-              return { message: 'transfer.requiredAmountError' };
-            }
-
-            if (value === ZERO_BALANCE) {
-              return { message: 'transfer.notZeroAmountError' };
-            }
-
-            const amountBN = new BN(formatAmount(value, network.asset.precision));
-            const bondBalance = Array.isArray(bondBalanceRange) ? bondBalanceRange[1] : bondBalanceRange;
-
-            if (amountBN.gt(new BN(bondBalance))) {
-              return { message: 'staking.notEnoughBalanceError' };
-            }
-
-            if (!isMultisig && form.initiator) {
-              if (amountBN.add(fee).gt(new BN(initiatorBalance))) {
-                return { message: 'transfer.notEnoughBalanceForFeeError' };
-              }
-            }
-          },
-        };
-      },
     },
   },
   validateOn: ['submit'],
@@ -115,18 +80,18 @@ const $initiatorBalance = combine(
     balances: balanceModel.$balanceMap,
   },
   ({ network, wallet, initiator, balances }) => {
-    if (!wallet || !network || !initiator) return ZERO_BALANCE;
+    if (!wallet || !network || !initiator) return null;
 
     const { chain, asset } = network;
 
     const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
 
-    return stakeableAmount(balance);
+    return balance ? reservableAmountBN(balance) : null;
   },
 );
 
 const $bondBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
-  if (!initiatorBalance || initiatorBalance === ZERO_BALANCE) return ZERO_BALANCE;
+  if (!initiatorBalance || initiatorBalance.isZero()) return ZERO_BALANCE;
 
   return [ZERO_BALANCE, initiatorBalance];
 });
@@ -171,10 +136,12 @@ const { $errors, $valid } = createTxValidationStore({
   validator: bondExtraValidator,
   params: {
     api: $api,
+    chain: $chain,
     asset: $asset,
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
+    amount: form.fields.amount.$value,
   },
 });
 

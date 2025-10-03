@@ -47,7 +47,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
 
   const approveTx = useUnit(approveModel.$transaction);
   const valid = useUnit(approveModel.$valid);
-  const errors = useUnit(approveModel.$errors);
   const signAccount = useUnit(approveModel.$signatory);
   const initiator = useUnit(approveModel.$initiator);
   const fee = useUnit(approveModel.$fee);
@@ -156,7 +155,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
             isDepositLoading={isDepositLoading}
             signAccount={signAccount}
             multisigDeposit={multisigDeposit}
-            errors={errors}
             valid={valid}
             onSign={handleConfirm}
             onGoBack={() => setActiveStep(Step.FORM)}

@@ -49,7 +49,7 @@ export const ChainSelect = memo(({ value, options, placeholder, itemTestId, onCh
       onSearch={handleSearch}
     >
       {filteredOptions.map(chain => (
-        <Select.Item key={chain.chainId} value={chain.chainId} data-testid={itemTestId}>
+        <Select.Item key={chain.chainId} value={chain.chainId} itemTestId={itemTestId}>
           <Box direction="row" gap={2}>
             <ChainIcon chain={chain} />
             <span>{chain.name}</span>

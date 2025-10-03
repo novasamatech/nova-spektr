@@ -29,7 +29,7 @@ export const xcmTransferTestCases = [
   {
     chainName: 'Polkadot',
     assetId: 0,
-    xcmChainName: 'Polkadot Asset Hub Polkadot',
+    xcmChainName: 'Polkadot Asset Hub',
     amount: '1',
     recipient: '14tqRfiFfYeB12o7d9YK4X9LiCMKLNCt1LoVdWZypWbwNp2Y',
   },
@@ -43,14 +43,14 @@ export const xcmTransferTestCases = [
   {
     chainName: 'Hydration',
     assetId: 1,
-    xcmChainName: 'Moonbeam Moonbeam',
+    xcmChainName: 'Moonbeam',
     amount: '0.01',
     recipient: '0xcdc1e6538f09d8a52059f41a7f580bde6a35e994',
   },
   {
     chainName: 'Karura',
     assetId: 2,
-    xcmChainName: 'Moonriver Moonriver',
+    xcmChainName: 'Moonriver',
     amount: '0.01',
     recipient: '0xcdc1e6538f09d8a52059f41a7f580bde6a35e994',
   },
