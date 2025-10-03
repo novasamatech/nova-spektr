@@ -81,6 +81,39 @@
     "reserved": "Reserved",
     "transferable": "Transferable"
   },
+  "assethubMigration": {
+    "automaticMigration": "Migration happens automatically, no action needed.",
+    "bullets": {
+      "feePayment": "Ability to pay fees in any token.",
+      "title": "What makes Asset Hub awesome?"
+    },
+    "gotIt": "Got it",
+    "kusama": {
+      "bullets": {
+        "lowerFees": "10x lower transaction fees (from 0.0005 KSM to 0.00005 KSM).",
+        "minimalBalance": "100x reduction in minimal balance (from 0.00033 KSM to 0.0000033 KSM).",
+        "moreTokens": "More tokens supported: USDT, USDC, ETH, DOT, and other ecosystem tokens.",
+        "unifiedAccess": "Unified access to KSM, assets, staking, and governance."
+      },
+      "description": "Starting October 7, 2025 your KSM balance, Staking and Governance are now on Kusama Asset Hub"
+    },
+    "learnAboutPolkadot": "Learn about Polkadot",
+    "learnMore": "Learn more",
+    "polkadot": {
+      "bullets": {
+        "lowerFees": "10x lower transaction fees (from 0.016 DOT to 0.0016 DOT).",
+        "minimalBalance": "100x reduction in minimal balance (from 1 DOT to 0.01 DOT).",
+        "moreTokens": "More tokens supported: USDT, USDC, ETH, KSM, and other ecosystem tokens.",
+        "unifiedAccess": "Unified access to DOT, assets, staking, and governance."
+      },
+      "description": "Starting November 4, 2025 your DOT balance, Staking and Governance are now on Polkadot Asset Hub"
+    },
+    "title": {
+      "kusamaAssetHub": "Kusama Asset Hub",
+      "migratedTo": "Migrated to",
+      "polkadotAssetHub": "Polkadot Asset Hub"
+    }
+  },
   "balances": {
     "accountsModalTitle": "Your accounts",
     "allAccounts": "All accounts",
