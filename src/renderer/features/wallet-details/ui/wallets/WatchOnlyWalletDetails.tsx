@@ -11,7 +11,7 @@ import { ChainAccountsList, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
-import { accountUtils, walletUtils } from '@/entities/wallet';
+import { accountUtils } from '@/entities/wallet';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsModel } from '../../model/wallet-details-model';
@@ -105,36 +105,32 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
         </div>
       </Modal.HeaderContent>
       <Modal.Content disableScroll>
-        {walletUtils.isWatchOnly(wallet) && !hasProxies ? (
-          <ChainAccountsList accounts={accountsIds} />
-        ) : (
-          <Tabs value={tab} onChange={setTab}>
-            <Box padding={[0, 5]} shrink={0}>
-              <Tabs.List>
-                <Tabs.Trigger value="accounts">
-                  <span className="flex items-center gap-1">
-                    {t('walletDetails.common.accountTabTitle')}
-                    <span className="text-text-tertiary">{accountsIds.length}</span>
-                  </span>
-                </Tabs.Trigger>
-                <Tabs.Trigger value="proxies">
-                  <span className="flex items-center gap-1">
-                    {t('walletDetails.common.proxiesTabTitle')}
-                    <ProxiesCount count={proxiesCount} />
-                  </span>
-                </Tabs.Trigger>
-              </Tabs.List>
-            </Box>
-            <Tabs.Content value="accounts">
-              <ChainAccountsList accounts={accountsIds} />
-            </Tabs.Content>
-            <Tabs.Content value="proxies">
-              <ScrollArea>
-                <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />
-              </ScrollArea>
-            </Tabs.Content>
-          </Tabs>
-        )}
+        <Tabs value={tab} onChange={setTab}>
+          <Box padding={[0, 5]} shrink={0}>
+            <Tabs.List>
+              <Tabs.Trigger value="accounts">
+                <span className="flex items-center gap-1">
+                  {t('walletDetails.common.accountTabTitle')}
+                  <span className="text-text-tertiary">{accountsIds.length}</span>
+                </span>
+              </Tabs.Trigger>
+              <Tabs.Trigger value="proxies">
+                <span className="flex items-center gap-1">
+                  {t('walletDetails.common.proxiesTabTitle')}
+                  <ProxiesCount count={proxiesCount} />
+                </span>
+              </Tabs.Trigger>
+            </Tabs.List>
+          </Box>
+          <Tabs.Content value="accounts">
+            <ChainAccountsList accounts={accountsIds} />
+          </Tabs.Content>
+          <Tabs.Content value="proxies">
+            <ScrollArea>
+              <ProxiesList wallet={wallet} hasProxies={hasProxies} canCreateProxy={canCreateProxy} />
+            </ScrollArea>
+          </Tabs.Content>
+        </Tabs>
       </Modal.Content>
     </Modal>
   );
