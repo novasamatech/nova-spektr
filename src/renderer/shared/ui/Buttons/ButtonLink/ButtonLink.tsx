@@ -14,7 +14,7 @@ type Props = {
   disabled?: boolean;
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
-  callback?: () => void;
+  onClick?: VoidFunction;
 };
 
 export const ButtonLink = ({
@@ -27,7 +27,7 @@ export const ButtonLink = ({
   children,
   prefixElement,
   suffixElement,
-  callback,
+  onClick,
 }: PropsWithChildren<Props>) => {
   const classes = cnTw(
     'flex cursor-pointer items-center justify-center gap-x-2 font-medium outline-offset-1 select-none',
@@ -58,7 +58,7 @@ export const ButtonLink = ({
   return disabled ? (
     <div className={classes}>{content}</div>
   ) : (
-    <Link to={to} className={classes} onClick={callback}>
+    <Link to={to} className={classes} onClick={onClick}>
       {content}
     </Link>
   );
