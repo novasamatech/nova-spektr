@@ -3,13 +3,14 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
+import { type Address, type Asset, type AssetId, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ADDRESS,
   TEST_EVM_ADDRESS,
   assert,
   formatAmount,
+  formatBalance,
   getAssetId,
   getNativeAsset,
   nonNullable,
@@ -28,6 +29,7 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { type TransactionValidationBalanceError } from '@/shared/ui-entities';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -75,13 +77,15 @@ const setMaxMode = createEvent<boolean>();
 const $isMaxModeEnabled = createStore(false).on(setMaxMode, (_, update) => update);
 
 const toggleExistentialDeposit = createEvent<boolean | void>();
-const $isExistentialDepositEnabled = createStore(false).on(toggleExistentialDeposit, (state, update) => {
-  if (nonNullable(update)) {
-    return update;
-  } else {
-    return !state;
-  }
-});
+const $isExistentialDepositEnabled = createStore(false)
+  .on(toggleExistentialDeposit, (state, update) => {
+    if (nonNullable(update)) {
+      return update;
+    } else {
+      return !state;
+    }
+  })
+  .on(setMaxMode, (state, enable) => (enable ? state : false));
 
 const $networkStore = restore(formInitiated, null);
 const $isNative = createStore<boolean>(false);
@@ -298,18 +302,28 @@ const $totalFee = combine(
     asset: $asset,
   },
   ({ validationResults, asset, validationDone }) => {
-    if (!validationDone) {
+    if (!validationDone || !asset) {
       return null;
     }
-    return (
-      validationResults
-        // add "sending amount" to exclide array in the future util
-        .filter((result) => result.action !== 'sending amount' && result.asset.assetId === asset?.assetId)
-        .map((result) => result.balance.required)
-        .reduce((acc, segment) => acc.add(segment), BN_ZERO)
-    );
+
+    return calculateTotalFee({ validationResults, assetId: asset.assetId, excludeActions: ['sending amount'] });
   },
 );
+
+function calculateTotalFee({
+  validationResults,
+  assetId,
+  excludeActions,
+}: {
+  validationResults: TransactionValidationBalanceError[];
+  assetId: AssetId;
+  excludeActions: string[];
+}) {
+  return validationResults
+    .filter((result) => result.asset.assetId === assetId && !excludeActions.includes(result.action))
+    .map((result) => result.balance.required)
+    .reduce((acc, segment) => acc.add(segment), BN_ZERO);
+}
 
 const $initiatorBalance = combine(
   {
@@ -318,8 +332,9 @@ const $initiatorBalance = combine(
     chain: $chain,
     asset: $asset,
     totalFee: $totalFee,
+    isExistentialDepositEnabled: $isExistentialDepositEnabled,
   },
-  ({ initiator, asset, chain, balances, totalFee }) => {
+  ({ initiator, asset, chain, balances, totalFee, isExistentialDepositEnabled }) => {
     if (nullable(initiator) || nullable(chain) || nullable(asset) || nullable(totalFee)) {
       return {
         available: null,
@@ -337,8 +352,9 @@ const $initiatorBalance = combine(
 
     const transferable = transferableAmountBN(balance);
     const nonTransferable = BN.min(balance?.frozen || BN_ZERO, balance?.reserved || BN_ZERO);
-    const deductible = BN.max(nonTransferable, balance?.ed || BN_ZERO);
-    const available = transferable.sub(deductible).sub(totalFee); // totalFee = fee + deliveryFee (0 for non XCM)
+    const deductibleDeposit = isExistentialDepositEnabled ? null : balance?.ed;
+    const deductible = BN.max(nonTransferable, deductibleDeposit || BN_ZERO);
+    const available = transferable.sub(deductible).sub(totalFee);
 
     return {
       available,
@@ -514,6 +530,23 @@ sample({
   filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
   fn: ({ asset }, amount) => formatAmount(amount, asset.precision),
   target: xcmTransferModel.events.amountChanged,
+});
+
+// Max Mode: update amount field when max mode is enabled and available balance changes
+sample({
+  clock: [$initiatorBalance, setMaxMode.filter({ fn: (enabled) => enabled })],
+  source: {
+    isMaxModeEnabled: $isMaxModeEnabled,
+    balance: $initiatorBalance,
+    network: $networkStore,
+  },
+  filter: ({ isMaxModeEnabled, balance, network }) => {
+    return isMaxModeEnabled && nonNullable(balance.available) && nonNullable(network);
+  },
+  fn: ({ balance, network }) => {
+    return formatBalance(balance.available!, network!.asset.precision).value;
+  },
+  target: form.fields.amount.change,
 });
 
 // Submit
