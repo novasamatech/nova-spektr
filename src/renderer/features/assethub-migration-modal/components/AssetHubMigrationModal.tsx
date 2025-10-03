@@ -15,7 +15,7 @@ import { migrationModalModel } from '../model/migrationModalModel';
 const getChainName = (chainId: ChainId): string | null => {
   if (chainId === RelayChains.POLKADOT) return 'polkadot';
   if (chainId === RelayChains.KUSAMA) return 'kusama';
-  return null;
+  throw new Error(`Unknown chain ID: ${chainId}`);
 };
 
 const getContent = (t: ReturnType<typeof useI18n>['t'], chainId: ChainId) => {
