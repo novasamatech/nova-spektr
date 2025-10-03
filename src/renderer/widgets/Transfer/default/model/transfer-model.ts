@@ -93,8 +93,6 @@ sample({
       multisigDeposit,
     };
 
-    console.log({ store });
-
     return {
       tx,
       coreTx,
