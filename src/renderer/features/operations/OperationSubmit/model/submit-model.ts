@@ -241,6 +241,7 @@ export const submitModel = {
   $failedTxs: $results.map((result) => result.filter((r) => r.result === ExtrinsicResult.ERROR)),
 
   init,
+  done: formSubmitted,
   submitToNetwork,
 
   events: {
@@ -250,6 +251,9 @@ export const submitModel = {
     formInitiated,
   },
   output: {
+    /**
+     * @deprecated Use submitModel.done instead
+     */
     formSubmitted,
     extrinsicSucceeded,
     extrinsicFailed,

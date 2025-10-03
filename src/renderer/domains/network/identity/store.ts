@@ -3,11 +3,12 @@ import { isEmpty } from 'lodash';
 import { readonly } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
-import { createAsyncTaskPool, entries, fromEntries, groupBy, nullable } from '@/shared/lib/utils';
+import { assert, createAsyncTaskPool, entries, fromEntries, groupBy, nullable } from '@/shared/lib/utils';
 import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
+import { accountService } from '../account/service';
 
 import { POLKADOT_PEOPLE_CHAIN_ID } from './constants';
 import { fetchIdentity } from './resource';
@@ -16,7 +17,7 @@ import { type AccountIdentity } from './types';
 const fetchPool = createAsyncTaskPool({
   poolSize: 1,
   retryCount: 15,
-  retryDelay: 2000,
+  retryDelay: 1000,
 });
 
 const $list = createStore<Record<ChainId, Record<AccountId, AccountIdentity>>>({});
@@ -58,22 +59,23 @@ const requestFx = attach({
   },
   effect({ chains, apis }, { accounts, chainId = POLKADOT_PEOPLE_CHAIN_ID }: RequestParams) {
     const bound = scopeBind(fetchIdentity.request, { safe: true });
-    const identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
+
+    let identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
+    let identityChain = chains[identityChainId];
     let api = apis[identityChainId];
 
-    if (nullable(api)) {
-      throw new Error(`Api for chain ${identityChainId} not found`);
+    if (nullable(api) || !identityPallet.supportedOn(api)) {
+      identityChainId = POLKADOT_PEOPLE_CHAIN_ID;
+      api = apis[identityChainId];
+      identityChain = chains[identityChainId];
     }
 
-    if (!identityPallet.supportedOn(api)) {
-      api = apis[POLKADOT_PEOPLE_CHAIN_ID];
+    assert(identityChain, `Chain ${identityChainId} not found`);
+    assert(api, `Api for chain ${identityChainId} not found`);
 
-      if (nullable(api)) {
-        throw new Error(`Polkadot People chain not found`);
-      }
-    }
+    const supportedAccounts = accounts.filter(id => accountService.isAccountSchemeMatchChain(id, identityChain));
 
-    return bound({ accounts, chainId, api });
+    return bound({ accounts: supportedAccounts, chainId, api });
   },
 });
 
