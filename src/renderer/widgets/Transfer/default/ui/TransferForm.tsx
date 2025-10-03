@@ -447,6 +447,7 @@ const Amount = () => {
         {t(amount.errorMessage)}
       </InputHint>
 
+      {/* ToDo: hide only ed < locked */}
       {isMaxModeEnabled && (
         <div className="flex justify-end">
           <Switch checked={isExistentialDepositEnabled} onChange={() => formModel.events.toggleExistentialDeposit()}>

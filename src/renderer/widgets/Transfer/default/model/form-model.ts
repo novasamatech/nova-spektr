@@ -272,8 +272,6 @@ const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   feeTransaction: $feeCoreTx,
 });
 
-// const $totalFee = combine($fee, xcmTransferModel.$deliveryFee, (fee, deliveryFee) => fee.add(deliveryFee));
-
 const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
 
 const $calculationExtrinsic = combine(
