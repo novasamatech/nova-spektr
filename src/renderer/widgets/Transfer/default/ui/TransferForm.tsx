@@ -413,6 +413,7 @@ const Amount = () => {
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
   const isMaxModeEnabled = useUnit(formModel.$isMaxModeEnabled);
+  const isAmountInputDisabled = useUnit(formModel.$isAmountInputDisabled);
 
   if (!network) {
     return null;
@@ -433,6 +434,7 @@ const Amount = () => {
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
+        disabled={isAmountInputDisabled}
         suffixElement={
           <Button pallet="secondary" variant="fill" size="sm" onClick={() => formModel.events.toggleMaxMode(true)}>
             {t('transfer.max.buttonTitle')}

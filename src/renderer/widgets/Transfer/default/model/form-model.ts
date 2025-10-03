@@ -208,11 +208,15 @@ const $coreTx = combine(
     xcmData: xcmTransferModel.$xcmData,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
+    isExistentialDepositEnabled: $isExistentialDepositEnabled,
+    isMaxModeEnabled: $isMaxModeEnabled,
   },
-  ({ network, isXcm, form, xcmData, isConnected, initiator }) => {
+  ({ network, isXcm, form, xcmData, isConnected, initiator, isExistentialDepositEnabled, isMaxModeEnabled }) => {
     if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
       return null;
     }
+
+    const transferAll = isMaxModeEnabled && isExistentialDepositEnabled;
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
@@ -221,6 +225,7 @@ const $coreTx = combine(
       amount: form.amount,
       destination: form.destination,
       xcmData,
+      transferAll,
     });
   },
 );
@@ -408,6 +413,12 @@ const $isMyselfXcmEnabled = combine(
     destinationAccounts: $destinationAccounts,
   },
   ({ isXcm, destinationAccounts }) => isXcm && destinationAccounts.length > 0,
+);
+
+const $isAmountInputDisabled = combine(
+  $isMaxModeEnabled,
+  $isExistentialDepositEnabled,
+  (isMaxModeEnabled, isExistentialDepositEnabled) => isMaxModeEnabled && isExistentialDepositEnabled,
 );
 
 const $canSubmit = combine(
@@ -644,6 +655,7 @@ export const formModel = {
 
   $isExistentialDepositEnabled,
   $isMaxModeEnabled,
+  $isAmountInputDisabled,
 
   formInitiated,
   formCleared: form.reset,
