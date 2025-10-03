@@ -26,6 +26,7 @@ export const DerivedAccount = ({
   const isShardedAccount = accountUtils.isAccountWithShards(account);
   const chainWithAccountId = !isShardedAccount && account.accountId;
   const chainWithoutAccountId = !isShardedAccount && !account.accountId;
+  const derivationPath = accountUtils.getDerivationPath(account);
 
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLElement>) => {
@@ -79,10 +80,10 @@ export const DerivedAccount = ({
           <BodyText
             className={cnTw(
               'truncate text-text-secondary transition-colors',
-              'group-focus-within:text-text-primary group-hover:text-text-primary',
+              'group-focus-within:text-text-secondary group-hover:text-text-secondary',
             )}
           >
-            {isShardedAccount ? account[0].name : account.name}
+            {derivationPath}
           </BodyText>
           {chainWithAccountId && (
             <HelpText className="truncate text-text-tertiary">
@@ -113,7 +114,7 @@ export const DerivedAccount = ({
           )}
         >
           <FootnoteText align="right" className="text-text-tertiary">
-            {accountUtils.getDerivationPath(account)}
+            {derivationPath}
           </FootnoteText>
         </div>
       </div>

@@ -2280,6 +2280,7 @@
   "walletDetails": {
     "common": {
       "accountTabTitle": "Accounts",
+      "accountsColumn": "Accounts",
       "addProxyAction": "Delegate",
       "addProxyButton": "Delegate",
       "addPureProxiedAction": "Create pure proxy",
@@ -2288,12 +2289,14 @@
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
       "confirmRemoveProxySubmit": "Delete",
       "confirmRemoveProxyTitle": "Revoke delegated authority?",
+      "consensusColumn": "Consensus",
       "doNotShowAgain": "Do not show this again",
       "emptyProxyDescription": "Add new proxies to work with them",
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",
       "forgetButton": "Remove",
       "hideButton": "Hide",
       "hideWallet": "Hide wallet",
+      "keyTabTitle": "Keys",
       "linkedWalletsWillBeRemovedDescription": "This wallet is a signatory in multisigs or as a proxy for other wallets. These related accounts will be automatically hidden. They’ll reappear if you pair this wallet again.",
       "linkedWalletsWillBeRemovedTitle": "Linked wallets will be removed",
       "nameExistsError": "This wallet name already exists",
