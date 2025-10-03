@@ -9,7 +9,7 @@ import { FootnoteText, HeaderTitleText, SmallTitleText } from '@/shared/ui/Typog
 import { ChainIcon } from '@/shared/ui-entities/ChainIcon/ChainIcon';
 import { Box, Modal } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
-import { ASSET_HUB_CHAIN_IDS } from '../model/constants';
+import { RELAY_TO_ASSET_HUB_CHAIN_IDS } from '../model/constants';
 import { migrationModalModel } from '../model/migrationModalModel';
 
 const getChainName = (chainId: ChainId): string => {
@@ -42,7 +42,7 @@ export const AssetHubMigrationModal = () => {
   const chains = useUnit(networkModel.$chains);
 
   const currentContent = getContent(t, chainId);
-  const assetHubChainId = ASSET_HUB_CHAIN_IDS[chainId];
+  const assetHubChainId = RELAY_TO_ASSET_HUB_CHAIN_IDS[chainId];
   const assetHubChain = chains[assetHubChainId];
 
   return (
