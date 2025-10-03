@@ -4,7 +4,8 @@ import { type ComponentProps, type PropsWithChildren, useState } from 'react';
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Step, isStep, toAccountId } from '@/shared/lib/utils';
-import { Alert, Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
+import { Paths } from '@/shared/routes';
+import { Alert, Button, ButtonLink, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
@@ -154,6 +155,17 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
                   >
                     <Alert.Item withDot={false}>
                       {t('createMultisigAccount.flexibleMultisig.editOperationExistsDescription')}
+                    </Alert.Item>
+                    <Alert.Item withDot={false}>
+                      <ButtonLink
+                        className="h-auto p-0"
+                        variant="text"
+                        size="sm"
+                        to={Paths.OPERATIONS}
+                        onClick={onClose}
+                      >
+                        {t('createMultisigAccount.flexibleMultisig.editOperationExistsAction')}
+                      </ButtonLink>
                     </Alert.Item>
                   </Alert>
                 )}
