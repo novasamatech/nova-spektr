@@ -2247,6 +2247,7 @@
   "walletDetails": {
     "common": {
       "accountTabTitle": "Accounts",
+      "accountsColumn": "Accounts",
       "addProxyAction": "Delegate",
       "addProxyButton": "Delegate",
       "addPureProxiedAction": "Create pure proxy",
@@ -2255,6 +2256,7 @@
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
       "confirmRemoveProxySubmit": "Delete",
       "confirmRemoveProxyTitle": "Revoke delegated authority?",
+      "consensusColumn": "Consensus",
       "doNotShowAgain": "Do not show this again",
       "emptyProxyDescription": "Add new proxies to work with them",
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",
