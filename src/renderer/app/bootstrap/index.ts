@@ -132,6 +132,7 @@ export const bootstrap = () => {
 
     import('@/features/import-db').then(({ importDBFeature }) => importDBFeature),
     import('@/features/hidden-wallets').then(({ hiddenWalletsFeature }) => hiddenWalletsFeature),
+    import('@/features/assethub-migration-modal').then(({ assethubMigrationModalFeature }) => assethubMigrationModalFeature),
   ]);
 
   populate();
