@@ -9,6 +9,7 @@ import { FootnoteText, HeaderTitleText, SmallTitleText } from '@/shared/ui/Typog
 import { ChainIcon } from '@/shared/ui-entities/ChainIcon/ChainIcon';
 import { Box, Modal } from '@/shared/ui-kit';
 import { networkModel } from '@/entities/network';
+import { ASSET_HUB_CHAIN_IDS } from '../model/constants';
 import { migrationModalModel } from '../model/migrationModalModel';
 
 const getChainName = (chainId: ChainId): string => {
@@ -32,21 +33,16 @@ const getContent = (t: ReturnType<typeof useI18n>['t'], chainId: ChainId) => {
   };
 };
 
-const ASSET_HUB_CHAIN_IDS = {
-  [RelayChains.KUSAMA]: '0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a',
-  [RelayChains.POLKADOT]: '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f',
-} as const;
-
 export const AssetHubMigrationModal = () => {
   const { t } = useI18n();
 
   const isModalOpen = useUnit(migrationModalModel.$isModalOpen);
-  const closeModal = useUnit(migrationModalModel.events.closeModal);
-  const chainName = useUnit(migrationModalModel.$chainName);
+  const closeModal = useUnit(migrationModalModel.closeModal);
+  const chainId = useUnit(migrationModalModel.$chainId);
   const chains = useUnit(networkModel.$chains);
 
-  const currentContent = getContent(t, chainName);
-  const assetHubChainId = ASSET_HUB_CHAIN_IDS[chainName];
+  const currentContent = getContent(t, chainId);
+  const assetHubChainId = ASSET_HUB_CHAIN_IDS[chainId];
   const assetHubChain = chains[assetHubChainId];
 
   return (
