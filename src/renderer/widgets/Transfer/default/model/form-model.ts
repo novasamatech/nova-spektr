@@ -297,6 +297,7 @@ const { $errors, $valid, $balanceValidationResults, $validationDone } = createTx
     transaction: $calculationTx,
     xcmFee: xcmTransferModel.$xcmFee,
     deliveryFee: xcmTransferModel.$deliveryFee,
+    includeED: $isExistentialDepositEnabled,
   },
 });
 
