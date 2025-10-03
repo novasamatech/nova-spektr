@@ -242,7 +242,7 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, isScanComplete
   };
 
   const onScanResult = (scanResult: (SeedInfo | DdSeedInfo)[]) => {
-    if (!isDynamicDerivations && scanResult.length > 1) {
+    if (scanResult.length > 1) {
       setCameraState(CameraState.MULTISHARD_ERROR);
       resetCamera();
       return;
