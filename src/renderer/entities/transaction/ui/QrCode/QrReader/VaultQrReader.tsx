@@ -55,11 +55,12 @@ type ScanResult = string | SeedInfo[] | ({ addr: SeedInfo } & WithFeatures) | { 
 type Props = {
   size?: number | [number, number];
   isDynamicDerivations?: boolean;
+  isScanComplete?: boolean;
   onResult(scanResult: (SeedInfo | DdSeedInfo)[]): void;
   onBack(): void;
 };
 
-export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBack }: Props) => {
+export const VaultQrReader = ({ size = 300, isDynamicDerivations, isScanComplete, onResult, onBack }: Props) => {
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.LOADING);
   const [activeCamera, setActiveCamera] = useState<string | null>(null);
   const [availableCameras, setAvailableCameras] = useState<Record<'title' | 'value', string>[]>([]);
@@ -446,6 +447,12 @@ export const VaultQrReader = ({ size = 300, isDynamicDerivations, onResult, onBa
             onError={onError}
             onTryAgain={onRetryCamera}
           />
+          {isScanComplete && (
+            <div className="absolute top-0 left-0 z-10 flex h-full w-full items-center justify-center">
+              <div className="rounded-2lg backdrop-blur-xs after:absolute after:inset-0 after:bg-white/50" />
+              <Icon size={100} name="checkmarkCutout" className="text-success" />
+            </div>
+          )}
         </div>
       )}
 

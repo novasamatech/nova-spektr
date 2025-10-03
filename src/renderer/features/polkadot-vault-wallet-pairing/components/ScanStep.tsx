@@ -18,7 +18,7 @@ export const ScanStep = ({ onBack, onComplete }: Props) => {
     <div className="flex h-full w-full">
       <div className="flex w-[472px] flex-col">
         <Modal.Title>{t('onboarding.vault.title')}</Modal.Title>
-        <div className="flex grow">
+        <div className="relative flex grow">
           <KeyQrReader size={[432, 288]} onComplete={onComplete} onBack={onBack} />
         </div>
       </div>

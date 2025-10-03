@@ -3,7 +3,6 @@ import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { useState } from 'react';
 
 import { CryptoTypeString } from '@/shared/core';
-import { Icon } from '@/shared/ui';
 import { type SeedInfo, VaultQrReader } from '@/entities/transaction';
 
 const RESULT_DELAY = 250;
@@ -35,15 +34,5 @@ export const KeyQrReader = ({ size = 300, onComplete, onBack }: Props) => {
     setTimeout(() => onComplete(qr), RESULT_DELAY);
   };
 
-  return (
-    <>
-      <VaultQrReader size={size} onResult={onScanResult} onBack={onBack} />
-      {isScanComplete && (
-        <div className="absolute inset-0 flex h-full w-full items-center justify-center">
-          <div className="rounded-2lg backdrop-blur-xs after:absolute after:inset-0 after:bg-white/50" />
-          <Icon size={100} name="checkmarkCutout" className="text-success" />
-        </div>
-      )}
-    </>
-  );
+  return <VaultQrReader size={size} isScanComplete={isScanComplete} onResult={onScanResult} onBack={onBack} />;
 };
