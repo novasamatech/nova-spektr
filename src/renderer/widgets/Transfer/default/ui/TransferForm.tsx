@@ -537,12 +537,12 @@ const AlertForDeliveryFee = () => {
 
   const hasDeliveryError = amount.errorMessage === 'transfer.notEnoughBalanceForDeliveryFeeError';
 
-  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !initiatorBalance.native) {
+  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !initiatorBalance.available) {
     return null;
   }
 
   const formattedFee = formatBalance(deliveryFee, asset.precision).value;
-  const formattedBalance = formatBalance(initiatorBalance.native, asset.precision).value;
+  const formattedBalance = formatBalance(initiatorBalance.available, asset.precision).value;
 
   return (
     <DeliveryFeeAlert

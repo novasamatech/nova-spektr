@@ -3,7 +3,7 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
-import { type Address, type Asset, type AssetId, type Chain, type ChainId, type Transaction } from '@/shared/core';
+import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ADDRESS,
@@ -24,12 +24,12 @@ import {
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
+  combineTotalRequiredFee,
   createComplexTxStore,
   createInitiatorsStore,
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
-import { type TransactionValidationBalanceError } from '@/shared/ui-entities';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -313,24 +313,9 @@ const $totalFee = combine(
       return null;
     }
 
-    return calculateTotalFee({ validationResults, assetId: asset.assetId, excludeActions: ['sending amount'] });
+    return combineTotalRequiredFee({ validationResults, assetId: asset.assetId, excludeActions: ['sending amount'] });
   },
 );
-
-function calculateTotalFee({
-  validationResults,
-  assetId,
-  excludeActions,
-}: {
-  validationResults: TransactionValidationBalanceError[];
-  assetId: AssetId;
-  excludeActions: string[];
-}) {
-  return validationResults
-    .filter((result) => result.asset.assetId === assetId && !excludeActions.includes(result.action))
-    .map((result) => result.balance.required)
-    .reduce((acc, segment) => acc.add(segment), BN_ZERO);
-}
 
 const $initiatorBalance = combine(
   {
@@ -345,18 +330,12 @@ const $initiatorBalance = combine(
     if (nullable(initiator) || nullable(chain) || nullable(asset) || nullable(totalFee)) {
       return {
         available: null,
-        native: null,
+        ed: null,
+        nonTransferable: null,
       };
     }
 
-    // here
     const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
-    const native = balanceUtils.getBalance(
-      balances,
-      initiator.accountId,
-      chain.chainId,
-      getNativeAsset(chain.assets).assetId,
-    );
 
     const transferable = transferableAmountBN(balance);
     const nonTransferable = BN.min(balance?.frozen || BN_ZERO, balance?.reserved || BN_ZERO);
@@ -365,8 +344,7 @@ const $initiatorBalance = combine(
     const available = transferable.sub(deductible).sub(totalFee);
 
     return {
-      available,
-      native: transferableAmountBN(native),
+      available: available && BN.max(BN_ZERO, available),
       ed: balance?.ed,
       nonTransferable: nonTransferable,
     };
