@@ -2192,8 +2192,8 @@
     "max": {
       "buttonTitle": "MAX",
       "ed": {
-        "tooltip": "Existential Deposit is the minimum balance to keep your account on-chain storage",
-        "title": "Include Existential Deposit"
+        "title": "Include Existential Deposit",
+        "tooltip": "Existential Deposit is the minimum balance to keep your account on-chain storage"
       }
     },
     "multiple": {
