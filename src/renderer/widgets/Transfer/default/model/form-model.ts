@@ -331,28 +331,27 @@ const $initiatorBalance = combine(
       return {
         available: null,
         ed: null,
-        nonTransferable: null,
+        reserved: null,
       };
     }
 
     const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
 
     const transferable = transferableAmountBN(balance);
-    const nonTransferable = BN.min(balance?.frozen || BN_ZERO, balance?.reserved || BN_ZERO);
     const deductibleDeposit = isExistentialDepositEnabled ? null : balance?.ed;
-    const deductible = BN.max(nonTransferable, deductibleDeposit || BN_ZERO);
+    const deductible = BN.max(balance?.reserved || BN_ZERO, deductibleDeposit || BN_ZERO);
     const available = transferable.sub(deductible).sub(totalFee);
 
     return {
       available: available && BN.max(BN_ZERO, available),
       ed: balance?.ed,
-      nonTransferable: nonTransferable,
+      reserved: balance?.reserved,
     };
   },
 );
 
 const $showEDSwitch = $initiatorBalance.map(
-  ({ ed, nonTransferable }) => nonNullable(ed) && nonNullable(nonTransferable) && ed >= nonTransferable,
+  ({ ed, reserved }) => nonNullable(ed) && nonNullable(reserved) && ed >= reserved,
 );
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
