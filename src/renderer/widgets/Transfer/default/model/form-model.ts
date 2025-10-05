@@ -88,7 +88,6 @@ const $isExistentialDepositEnabled = createStore(false)
       return !state;
     }
   })
-  .on(setMaxMode, (state, enable) => (enable ? state : false))
   .reset(formInitiated);
 
 const $networkStore = restore(formInitiated, null);
@@ -350,6 +349,7 @@ const $initiatorBalance = combine(
       };
     }
 
+    // here
     const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
     const native = balanceUtils.getBalance(
       balances,
@@ -367,8 +367,14 @@ const $initiatorBalance = combine(
     return {
       available,
       native: transferableAmountBN(native),
+      ed: balance?.ed,
+      nonTransferable: nonTransferable,
     };
   },
+);
+
+const $showEDSwitch = $initiatorBalance.map(
+  ({ ed, nonTransferable }) => nonNullable(ed) && nonNullable(nonTransferable) && ed >= nonTransferable,
 );
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
@@ -676,6 +682,7 @@ export const formModel = {
   $isExistentialDepositEnabled,
   $isMaxModeEnabled,
   $isAmountInputDisabled,
+  $showEDSwitch,
 
   formInitiated,
   formCleared: form.reset,

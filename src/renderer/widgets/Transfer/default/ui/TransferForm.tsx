@@ -412,7 +412,7 @@ const Amount = () => {
   const accountBalance = useUnit(formModel.$initiatorBalance);
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
-  const isMaxModeEnabled = useUnit(formModel.$isMaxModeEnabled);
+  const showEDSwitch = useUnit(formModel.$showEDSwitch);
   const isAmountInputDisabled = useUnit(formModel.$isAmountInputDisabled);
 
   if (!network) {
@@ -421,7 +421,6 @@ const Amount = () => {
 
   const onAmountChange = (value: string) => {
     amount.onChange(value);
-    // ToDo: check if triggered only on user input
     formModel.events.toggleMaxMode(false);
   };
 
@@ -448,7 +447,7 @@ const Amount = () => {
       </InputHint>
 
       {/* ToDo: hide only ed < locked */}
-      {isMaxModeEnabled && (
+      {showEDSwitch && (
         <div className="flex justify-end">
           <Switch checked={isExistentialDepositEnabled} onChange={() => formModel.events.toggleExistentialDeposit()}>
             <div className="flex items-center gap-1">
