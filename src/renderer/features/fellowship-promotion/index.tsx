@@ -1,11 +1,11 @@
 import { profileInfoSlot } from '@/features/fellowship-profile';
 
-import { PromotionWidget } from './components/widget';
 import { fellowshipPromotionFeature } from './models/feature';
+import { PromotionWidget } from './ui/PromotionWidget';
 
 export { fellowshipPromotionFeature };
 
-export { referendumWidgetActionSlot } from './components/widget';
+export { referendumWidgetActionSlot } from './ui/PromotionWidget';
 
 fellowshipPromotionFeature.inject(profileInfoSlot, {
   order: 0,

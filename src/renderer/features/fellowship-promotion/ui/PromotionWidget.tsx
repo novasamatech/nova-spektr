@@ -4,14 +4,15 @@ import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { cnTw } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, TitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Member, type Referendum } from '@/domains/collectives';
 import { WidgetState, fellowshipPromotion } from '../models/promotion';
 import { votesModel } from '../models/votes';
 
-import { TimelineWithRanks } from './timeline-with-ranks';
-import { TimerToBlock } from './timer-to-block';
+import { TimelineWithRanks } from './TimelineWithRanks';
+import { TimerToBlock } from './TimerToBlock';
 
 export const referendumWidgetActionSlot = createSlot<{ referendum: Referendum }>();
 
@@ -29,8 +30,8 @@ export const PromotionWidget = memo(({ member }: Props) => {
   const timelineSteps = useMemo(
     () => [
       {
-        baseColorClass: 'bg-icon-blue-line',
-        filledColorClass: 'bg-accent-background',
+        baseColorClass: cnTw('bg-icon-blue-line'),
+        filledColorClass: cnTw('bg-accent-background'),
         onHoverTooltipText: t('fellowship.promotion.canSubmit.promotionPeriodTooltip', {
           from: fromDateFormatted,
           to: toDateFormatted,
@@ -38,8 +39,8 @@ export const PromotionWidget = memo(({ member }: Props) => {
         length: 8,
       },
       {
-        baseColorClass: 'bg-badge-green-background',
-        filledColorClass: 'bg-text-positive',
+        baseColorClass: cnTw('bg-badge-green-background'),
+        filledColorClass: cnTw('bg-text-positive'),
         onHoverTooltipText: t('fellowship.promotion.canSubmit.submitEvidenceTooltip', { to: toDateFormatted }),
         length: 2,
       },
@@ -116,8 +117,8 @@ export const EvidenceSubmitted = memo(() => {
   const timelineSteps = useMemo(
     () => [
       {
-        baseColorClass: 'bg-icon-blue-line',
-        filledColorClass: 'bg-accent-background',
+        baseColorClass: cnTw('bg-icon-blue-line'),
+        filledColorClass: cnTw('bg-accent-background'),
         onHoverTooltipText: t('fellowship.promotion.canSubmit.promotionPeriodTooltip', {
           from: fromDateFormatted,
           to: toDateFormatted,
