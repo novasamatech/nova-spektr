@@ -1,15 +1,11 @@
-import { type ApiPromise } from '@polkadot/api';
-import { BN, BN_ZERO } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 
-import { balanceService } from '@/shared/api/balances';
-import { proxyService } from '@/shared/api/proxy';
-import { type Asset, type Chain, CryptoType } from '@/shared/core';
-import { addUnique, getNativeAsset, nonNullable, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
-import { createMultisigDeposit } from '@/shared/transactions';
+import { type Chain, CryptoType } from '@/shared/core';
+import { addUnique, getNativeAsset, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import { accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
+import { multisigService } from '@/features/multisig-wallet';
 
 import { signatoryModel } from './signatory-model';
 
@@ -20,7 +16,6 @@ const formSubmit = createEvent();
 
 const $chain = createStore<Chain | null>(null).reset(resetForm);
 
-const $existentialDeposit = createStore(BN_ZERO).reset(resetForm);
 const $threshold = restore(thresholdChanged, null).reset(resetForm);
 
 sample({
@@ -61,43 +56,6 @@ const $newMultisigAccountId = combine(
   },
 );
 
-type GetDepositParams = {
-  api: ApiPromise;
-  asset: Asset;
-};
-
-const getExistentialDepositFx = createEffect(async ({ api, asset }: GetDepositParams): Promise<BN> => {
-  const existentialDeposit = await balanceService.getExistentialDeposit(api, asset);
-
-  return existentialDeposit;
-});
-
-sample({
-  clock: $api,
-  source: $asset,
-  filter: (asset, api) => nonNullable(api) && nonNullable(asset),
-  fn: (asset, api) => ({ api: api!, asset: asset! }),
-  target: getExistentialDepositFx,
-});
-
-sample({
-  clock: getExistentialDepositFx.doneData,
-  target: $existentialDeposit,
-});
-
-const $proxyDeposit = combine($api, (api) => (api && proxyService.getProxyDepositDelta(api, '0', 1)) ?? null);
-
-const $totalDeposit = combine($existentialDeposit, $proxyDeposit, (existentialDeposit, proxyDeposit) => {
-  if (nullable(proxyDeposit)) return null;
-
-  return existentialDeposit.add(new BN(proxyDeposit));
-});
-
-const { $multisigDeposit, $pending: $pendingMultisigDeposit } = createMultisigDeposit({
-  $threshold: $threshold,
-  $api: $api,
-});
-
 const $invalidAddresses = combine(
   {
     chain: $chain,
@@ -126,27 +84,20 @@ const $isMultisigExists = combine(
   ({ multisigAccountId, accounts }) => {
     if (nullable(multisigAccountId)) return false;
 
-    return nonNullable(
-      accounts.find((a) => {
-        if (!accountUtils.isMultisigAccount(a)) return false;
-        return a.accountId === multisigAccountId;
-      }),
+    return accounts.some(
+      (a) => accountUtils.isAnyMultisigAccount(a) && multisigService.getMultisigAccountId(a) === multisigAccountId,
     );
   },
 );
 
 export const formModel = {
   $api,
-  $totalDeposit,
-  $multisigDeposit,
-  $pendingMultisigDeposit,
   $invalidAddresses,
   $isMultisigExists,
   $chain,
 
   $threshold,
   $newMultisigAccountId,
-  $proxyDeposit,
   $asset,
 
   resetForm,

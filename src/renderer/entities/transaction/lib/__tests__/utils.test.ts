@@ -81,9 +81,15 @@ describe('entities/transaction/lib/onChainUtils', () => {
       } as unknown as Transaction;
 
       const editFlexibleTransaction: Transaction = {
-        type: TransactionType.BATCH_ALL,
+        type: TransactionType.PROXY,
         args: {
-          transactions: [addProxyTransaction, removeProxyTransaction],
+          real: '0x00',
+          transaction: {
+            type: TransactionType.BATCH_ALL,
+            args: {
+              transactions: [addProxyTransaction, removeProxyTransaction],
+            },
+          },
         },
       } as unknown as Transaction;
 
