@@ -409,7 +409,7 @@ const Amount = () => {
     fields: { amount },
   } = useForm(formModel.form);
 
-  const accountBalance = useUnit(formModel.$initiatorBalance);
+  const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
   const showEDSwitch = useUnit(formModel.$showEDSwitch);
@@ -429,7 +429,7 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError}
         value={amount.value}
-        balance={accountBalance.available?.toString() ?? null}
+        balance={accountAvailableBalance?.toString() ?? null}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
@@ -531,18 +531,18 @@ const AlertForDeliveryFee = () => {
   const initiator = useUnit(formModel.form.fields.initiator.$value);
 
   const deliveryFee = useUnit(formModel.$deliveryFee);
-  const initiatorBalance = useUnit(formModel.$initiatorBalance);
+  const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
   const asset = getNativeAsset(network?.chain.assets ?? []);
 
   const hasDeliveryError = amount.errorMessage === 'transfer.notEnoughBalanceForDeliveryFeeError';
 
-  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !initiatorBalance.available) {
+  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !accountAvailableBalance) {
     return null;
   }
 
   const formattedFee = formatBalance(deliveryFee, asset.precision).value;
-  const formattedBalance = formatBalance(initiatorBalance.available, asset.precision).value;
+  const formattedBalance = formatBalance(accountAvailableBalance, asset.precision).value;
 
   return (
     <DeliveryFeeAlert

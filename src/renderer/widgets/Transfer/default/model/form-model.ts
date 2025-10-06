@@ -1,5 +1,5 @@
 /* eslint-disable import-x/max-dependencies */
-import { BN, BN_ZERO } from '@polkadot/util';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
@@ -18,7 +18,6 @@ import {
   toAccountId,
   toAddress,
   toPrecision,
-  transferableAmountBN,
   validateAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
@@ -37,6 +36,7 @@ import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { transferValidator } from '@/features/operations/OperationsValidation';
+import { getAvailableAmount } from '../../shared/services/getAvailableAmount';
 import { type NetworkStore } from '../lib/types';
 
 import { xcmTransferModel } from './xcm-transfer-model';
@@ -317,42 +317,40 @@ const $totalFee = combine(
   },
 );
 
-const $initiatorBalance = combine(
+const $initiatorAccountBalance = combine(
   {
     initiator: form.fields.initiator.$value,
     balances: balanceModel.$balanceMap,
     chain: $chain,
     asset: $asset,
+  },
+  ({ initiator, asset, chain, balances }) => {
+    if (nullable(initiator) || nullable(chain) || nullable(asset)) {
+      return null;
+    }
+
+    return balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
+  },
+);
+
+const $available = combine(
+  {
+    balance: $initiatorAccountBalance,
+    chain: $chain,
+    asset: $asset,
     totalFee: $totalFee,
     isExistentialDepositEnabled: $isExistentialDepositEnabled,
   },
-  ({ initiator, asset, chain, balances, totalFee, isExistentialDepositEnabled }) => {
-    if (nullable(initiator) || nullable(chain) || nullable(asset) || nullable(totalFee)) {
-      return {
-        available: null,
-        ed: null,
-        reserved: null,
-      };
+  ({ asset, chain, balance, totalFee, isExistentialDepositEnabled }) => {
+    if (nullable(balance) || nullable(chain) || nullable(asset) || nullable(totalFee)) {
+      return null;
     }
 
-    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
-
-    const transferable = transferableAmountBN(balance);
-    const deductibleDeposit = isExistentialDepositEnabled ? null : balance?.ed;
-    const deductible = BN.max(balance?.reserved || BN_ZERO, deductibleDeposit || BN_ZERO);
-    const available = transferable.sub(deductible).sub(totalFee);
-
-    return {
-      available: available && BN.max(BN_ZERO, available),
-      ed: balance?.ed,
-      reserved: balance?.reserved,
-    };
+    return getAvailableAmount({ balance, totalFee, includeED: isExistentialDepositEnabled });
   },
 );
 
-const $showEDSwitch = $initiatorBalance.map(
-  ({ ed, reserved }) => nonNullable(ed) && nonNullable(reserved) && ed >= reserved,
-);
+const $showEDSwitch = $initiatorAccountBalance.map((balance) => nonNullable(balance) && balance.ed >= balance.reserved);
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
 const $isMultisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
@@ -531,17 +529,17 @@ sample({
 
 // Max Mode: update amount field when max mode is enabled and available balance changes
 sample({
-  clock: [$initiatorBalance, setMaxMode.filter({ fn: (enabled) => enabled })],
+  clock: [$available, setMaxMode.filter({ fn: (enabled) => enabled })],
   source: {
     isMaxModeEnabled: $isMaxModeEnabled,
-    balance: $initiatorBalance,
+    available: $available,
     network: $networkStore,
   },
-  filter: ({ isMaxModeEnabled, balance, network }) => {
-    return isMaxModeEnabled && nonNullable(balance.available) && nonNullable(network);
+  filter: ({ isMaxModeEnabled, available, network }) => {
+    return isMaxModeEnabled && nonNullable(available) && nonNullable(network);
   },
-  fn: ({ balance, network }) => {
-    return formatBalance(balance.available!, network!.asset.precision).value;
+  fn: ({ available, network }) => {
+    return formatBalance(available!, network!.asset.precision).value;
   },
   target: form.fields.amount.change,
 });
@@ -625,7 +623,7 @@ export const formModel = {
   $initiators,
   $signatories,
 
-  $initiatorBalance,
+  $available,
   $signatoryBalance,
 
   $proxyAccount,
