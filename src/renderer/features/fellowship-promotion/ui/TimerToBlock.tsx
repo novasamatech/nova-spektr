@@ -25,7 +25,7 @@ export const TimerToBlock = memo(({ endBlock, shortDateFormat }: Props) => {
         setEndTime(date / 1000);
       });
     }
-  }, [endBlock, input]);
+  }, [endBlock, input?.api]);
 
   if (!endTime || !input) return null;
 

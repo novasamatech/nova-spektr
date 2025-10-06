@@ -36,7 +36,7 @@ export const ReferendumEndTimer = ({ endBlock, shortDateFormat, dateThresholds }
         setEndTime(date / 1000);
       });
     }
-  }, [endBlock, input]);
+  }, [endBlock, input?.api]);
 
   if (!endTime || !input) return null;
   const variant = getTimerColor(endTime, dateThresholds);
