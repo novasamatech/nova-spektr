@@ -25,6 +25,7 @@ export { Tooltip } from './Tooltip/Tooltip';
 export { Popover } from './Popover/Popover';
 export { Surface } from './Surface/Surface';
 export { Timeout } from './Timeout/Timeout';
+export { Timeline, type TimelineStep } from './Timeline/Timeline';
 export { Select } from './Select/Select';
 export { Slider } from './Slider/Slider';
 export { Label, type LabelVariant } from './Label/Label';

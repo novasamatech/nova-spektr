@@ -22,9 +22,10 @@ export const referendumActionsSlot = createSlot<{ referendum?: Referendum | null
 type Props = PropsWithChildren<{
   referendum: Referendum;
   title?: string;
+  isCurrentUser?: boolean;
 }>;
 
-export const ReferendumDetailsModal = memo(({ referendum, children, title }: Props) => {
+export const ReferendumDetailsModal = memo(({ referendum, children, title, isCurrentUser }: Props) => {
   const { t } = useI18n();
 
   const tracks = useUnit(tracksModel.$list);
@@ -53,7 +54,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
     <Modal size="xl" height="fit">
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{modalTitle}</Modal.Title>
-      <Modal.Content disableScroll>
+      <Modal.Content>
         <div className="flex h-full bg-main-app-background">
           <ScrollArea>
             <Box direction="row" width="100%" height="100%" gap={4} padding={[4, 6]} fillContainer>
@@ -67,7 +68,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
 
                 <Slot id={referendumAdditionalInfoSlot} props={{ referendum }} />
 
-                <Slot id={referendumActionsSlot} props={{ referendum, evidence }} />
+                {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence }} />}
 
                 <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
               </Box>
