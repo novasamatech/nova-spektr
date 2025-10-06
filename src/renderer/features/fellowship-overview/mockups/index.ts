@@ -1,0 +1,2 @@
+export * from './ranks-data';
+
