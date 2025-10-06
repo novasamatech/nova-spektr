@@ -1,6 +1,7 @@
 import { combine } from 'effector';
+import { createGate } from 'effector-react';
 
-import { createFlow, createStoreFromEffect } from '@/shared/effector';
+import { createStoreFromEffect } from '@/shared/effector';
 import { getCreatedDateFromApi, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type Member,
@@ -22,9 +23,9 @@ export enum WidgetState {
   REFERENDUM_CREATED = 'referendum_created',
 }
 
-const flow = createFlow<{ member: Member | null }>({ member: null });
+const flow = createGate<Member | null>({ defaultState: null });
 
-const $member = flow.state.map(s => s.member);
+const $member = flow.state;
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 const $evidences = fellowship.$store.map(store => store?.evidence ?? null);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? null);
@@ -130,6 +131,7 @@ const $promotionPeriodDates = createStoreFromEffect({
 });
 
 export const fellowshipPromotion = {
+  flow,
   $member,
   $leftToPromotion,
   $widgetState,

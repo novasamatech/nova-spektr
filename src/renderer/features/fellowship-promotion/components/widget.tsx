@@ -1,5 +1,5 @@
 import { formatDate } from 'date-fns';
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
@@ -20,6 +20,8 @@ type Props = {
 };
 
 export const PromotionWidget = memo(({ member }: Props) => {
+  useGate(fellowshipPromotion.flow, member);
+
   const { t } = useI18n();
   const state = useUnit(fellowshipPromotion.$widgetState);
   const { fromDateFormatted, toDateFormatted, promotionPeriod, timelineValue } = usePromotionData();
