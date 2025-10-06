@@ -11,3 +11,5 @@ export type Vote = {
   votes: number;
   decision: 'Aye' | 'Nay';
 };
+
+export type VotingRating = 'NotGood' | 'Controversial' | 'Good';

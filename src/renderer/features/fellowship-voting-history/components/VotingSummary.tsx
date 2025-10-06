@@ -2,9 +2,10 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { type Referendum, referendumService, trackService } from '@/domains/collectives';
+import { type Referendum, referendumService, trackService, votingHistoryService } from '@/domains/collectives';
 import { fellowshipModel } from '../model/fellowship';
 import { votesModel } from '../model/votes';
 
@@ -32,29 +33,17 @@ export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
   const isRetentionReferendum = trackId ? trackService.isRetentionTrack(trackId) : false;
   const isPromotionRetentionReferendum = isPromotionReferendum || isRetentionReferendum;
 
-  const totalAyes = useMemo(
-    () => votes.filter(vote => vote.decision === 'Aye').reduce((acc, v) => acc + v.votes, 0),
-    [votes],
-  );
-  const totalNays = useMemo(
-    () => votes.filter(vote => vote.decision === 'Nay').reduce((acc, v) => acc + v.votes, 0),
-    [votes],
-  );
-
-  const totalVotes = totalAyes + totalNays;
-  const nobodyVoted = totalVotes === 0;
+  const votingRating = useMemo(() => votingHistoryService.getApprovalRating(votes), [votes]);
 
   const { levelTextKey, levelClassName } = useMemo(() => {
-    const ayePercentage = totalVotes > 0 ? (totalAyes / totalVotes) * 100 : 0;
-
-    if (ayePercentage <= 25) {
+    if (votingRating === 'NotGood') {
       return { levelTextKey: 'fellowship.votingHistory.level.notGood', levelClassName: 'text-text-negative' };
     }
-    if (ayePercentage <= 75) {
+    if (votingRating === 'Controversial') {
       return { levelTextKey: 'fellowship.votingHistory.level.controversial', levelClassName: 'text-text-warning' };
     }
     return { levelTextKey: 'fellowship.votingHistory.level.good', levelClassName: 'text-text-positive' };
-  }, [totalAyes, totalNays]);
+  }, [votingRating]);
 
   let title = t('fellowship.votingHistory.default');
 
@@ -74,13 +63,13 @@ export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
     }
   }
 
-  if (nobodyVoted) {
+  if (nullable(votingRating)) {
     title = t('fellowship.votingHistory.noVotes');
   }
 
   let voteLevel = null;
 
-  if (!nobodyVoted) {
+  if (nonNullable(votingRating)) {
     if (pending) {
       voteLevel = <Skeleton width={12} height="1lh" />;
     } else {

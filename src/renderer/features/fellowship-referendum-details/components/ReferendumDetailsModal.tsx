@@ -4,7 +4,7 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { Box, Modal, ScrollArea } from '@/shared/ui-kit';
+import { Box, Modal } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
 import { details } from '../model/details';
 import { tracksModel } from '../model/tracks';
@@ -56,24 +56,22 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title, isCur
       <Modal.Title close>{modalTitle}</Modal.Title>
       <Modal.Content>
         <div className="flex h-full bg-main-app-background">
-          <ScrollArea>
-            <Box direction="row" width="100%" height="100%" gap={4} padding={[4, 6]} fillContainer>
-              <Box width="100%" height="100%" gap={4}>
-                <ReferendumDescription referendum={referendum} />
-              </Box>
-              <Box width="350px" shrink={0} gap={4}>
-                <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
-
-                <MemberProfile referendum={referendum} />
-
-                <Slot id={referendumAdditionalInfoSlot} props={{ referendum }} />
-
-                {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence }} />}
-
-                <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
-              </Box>
+          <Box direction="row" width="100%" height="100%" gap={4} padding={[4, 6]} fillContainer>
+            <Box width="100%" height="100%" gap={4}>
+              <ReferendumDescription referendum={referendum} />
             </Box>
-          </ScrollArea>
+            <Box width="350px" shrink={0} gap={4}>
+              <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
+
+              <MemberProfile referendum={referendum} />
+
+              <Slot id={referendumAdditionalInfoSlot} props={{ referendum }} />
+
+              {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence }} />}
+
+              <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
+            </Box>
+          </Box>
         </div>
       </Modal.Content>
     </Modal>

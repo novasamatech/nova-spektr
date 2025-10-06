@@ -62,4 +62,5 @@ export { votingService } from './voting/service';
 export type { VotingTransaction } from './voting/types';
 
 export { voting } from './votingHistory/store';
-export type { Vote } from './votingHistory/types';
+export type { Vote, VotingRating } from './votingHistory/types';
+export { votingHistoryService } from './votingHistory/service';

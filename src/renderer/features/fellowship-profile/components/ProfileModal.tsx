@@ -81,7 +81,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
         </Box>
         <Separator />
       </Modal.HeaderContent>
-      <Modal.Content disableScroll>
+      <Modal.Content>
         <div className="bg-background-suffix-hover p-4">
           <Slot id={profileInfoSlot} props={{ member }} />
         </div>

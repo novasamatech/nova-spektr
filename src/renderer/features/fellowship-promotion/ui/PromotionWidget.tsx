@@ -4,10 +4,10 @@ import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, nullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, TitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { type Member, type Referendum } from '@/domains/collectives';
+import { type Member, type Referendum, votingHistoryService } from '@/domains/collectives';
 import { WidgetState, fellowshipPromotion } from '../models/promotion';
 import { votesModel } from '../models/votes';
 
@@ -179,26 +179,18 @@ const ReferendumCreated = memo(() => {
   const votes = useUnit(votesModel.$votesList);
   const pending = useUnit(votesModel.$pending);
 
-  const { totalAyes, totalNays } = useMemo(() => {
-    const ayes = votes.filter(v => v.decision === 'Aye').reduce((acc, v) => acc + v.votes, 0);
-    const nays = votes.filter(v => v.decision === 'Nay').reduce((acc, v) => acc + v.votes, 0);
-    return { totalAyes: ayes, totalNays: nays };
-  }, [votes]);
-
-  const totalVotes = totalAyes + totalNays;
-  const nobodyVoted = totalVotes === 0;
+  const votingRating = useMemo(() => votingHistoryService.getApprovalRating(votes), [votes]);
+  const nobodyVoted = nullable(votingRating);
 
   const { levelTextKey, levelClassName } = useMemo(() => {
-    const ayePercentage = totalVotes > 0 ? (totalAyes / totalVotes) * 100 : 0;
-
-    if (ayePercentage <= 25) {
+    if (votingRating === 'NotGood') {
       return { levelTextKey: 'fellowship.votingHistory.level.notGood', levelClassName: 'text-text-negative' };
     }
-    if (ayePercentage <= 75) {
+    if (votingRating === 'Controversial') {
       return { levelTextKey: 'fellowship.votingHistory.level.controversial', levelClassName: 'text-text-warning' };
     }
     return { levelTextKey: 'fellowship.votingHistory.level.good', levelClassName: 'text-text-positive' };
-  }, [totalAyes, totalVotes]);
+  }, [votingRating]);
 
   const title = nobodyVoted
     ? t('fellowship.votingHistory.noVotes')

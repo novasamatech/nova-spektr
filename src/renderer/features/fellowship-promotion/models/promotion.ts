@@ -114,7 +114,7 @@ const $promotionPeriod = combine({ member: $member, periods: $periods, feed: $fe
   };
 });
 
-const $promotionPeriodDates = createStoreFromEffect({
+const { $: $promotionPeriodDates } = createStoreFromEffect({
   params: {
     period: $promotionPeriod,
     api: fellowshipNetwork.$network.map(network => network?.api ?? null),
@@ -138,7 +138,7 @@ export const fellowshipPromotion = {
   $promotionEvidence,
   $promotionReferendum,
   $promotionPeriod,
-  $promotionPeriodDates: $promotionPeriodDates.$,
+  $promotionPeriodDates,
   $currentBlock: fellowshipNetwork.$currentBlock,
   $promotionEvidenceSubmissionDate,
 };
