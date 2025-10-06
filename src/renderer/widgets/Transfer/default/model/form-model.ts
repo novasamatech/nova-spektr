@@ -346,7 +346,17 @@ const $available = combine(
       return null;
     }
 
-    return getAvailableAmount({ balance, totalFee, includeED: isExistentialDepositEnabled });
+    const available = getAvailableAmount({ balance, totalFee, includeED: isExistentialDepositEnabled });
+    console.log({
+      asset,
+      balance: {
+        ed: balance.ed.toString(),
+        reserved: balance.reserved.toString(),
+        free: balance.free.toString(),
+      },
+      available: available.toString(),
+    });
+    return available;
   },
 );
 
@@ -643,6 +653,7 @@ export const formModel = {
   $signatories,
 
   $available,
+  $initiatorAccountBalance,
   $signatoryBalance,
 
   $proxyAccount,
@@ -667,6 +678,7 @@ export const formModel = {
   $isXcm,
   $isChainConnected,
   $canSubmit,
+  $asset,
 
   $errors,
 
@@ -678,6 +690,7 @@ export const formModel = {
   $isAmountInputDisabled,
   $showEDSwitch,
   $showAccountDeathAlert,
+  $isNative,
 
   formInitiated,
   formCleared: form.reset,

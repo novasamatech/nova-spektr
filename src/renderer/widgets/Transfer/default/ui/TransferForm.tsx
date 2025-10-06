@@ -11,6 +11,7 @@ import { useI18n } from '@/shared/i18n';
 import {
   entries,
   formatBalance,
+  fromPrecision,
   getNativeAsset,
   includesMultiple,
   nonNullable,
@@ -587,6 +588,12 @@ const MyselfAccountModal = () => {
 const AlertForAccountDeath = () => {
   const { t } = useI18n();
   const showAccountDeathAlert = useUnit(formModel.$showAccountDeathAlert);
+  const initiatorAccountBalance = useUnit(formModel.$initiatorAccountBalance);
+  const asset = useUnit(formModel.$asset);
+
+  if (nullable(initiatorAccountBalance) || nullable(asset)) {
+    return null;
+  }
 
   return (
     showAccountDeathAlert && (
@@ -596,6 +603,7 @@ const AlertForAccountDeath = () => {
             t={t}
             i18nKey="transfer.accountDeathWarning.description"
             components={{ b: <b className="font-semibold" /> }}
+            values={{ ed: fromPrecision(initiatorAccountBalance.ed, asset.precision), asset: asset.symbol }}
           />
         </FootnoteText>
       </Alert>
