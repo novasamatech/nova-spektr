@@ -312,7 +312,6 @@ const $canSubmit = and(
   not($isLoading),
   not($isTheSameMultisig),
   not($isEditOperationAlreadyExists),
-  not(formModel.$isMultisigExists),
   not(signatoryModel.$hasEmptySignatories),
   not(signatoryModel.$hasDuplicateSignatories),
 );
