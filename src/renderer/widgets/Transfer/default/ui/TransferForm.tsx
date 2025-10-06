@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { uniqBy } from 'lodash';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type ChainId, type Wallet } from '@/shared/core';
@@ -19,7 +20,7 @@ import {
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
-import { Button, CaptionText, FootnoteText, Icon, InputHint, Switch } from '@/shared/ui';
+import { Alert, Button, CaptionText, FootnoteText, Icon, InputHint, Switch } from '@/shared/ui';
 import {
   AccountSelect,
   Address,
@@ -81,7 +82,10 @@ export const TransferForm = ({ onGoBack }: Props) => {
       <div className="flex flex-col gap-y-6">
         <FeeSection />
       </div>
+
       <AlertForDeliveryFee />
+      <AlertForAccountDeath />
+
       <ActionsSection onGoBack={onGoBack} />
 
       <MyselfAccountModal />
@@ -412,6 +416,7 @@ const Amount = () => {
   const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
+  const isMaxModeEnabled = useUnit(formModel.$isMaxModeEnabled);
   const showEDSwitch = useUnit(formModel.$showEDSwitch);
   const isAmountInputDisabled = useUnit(formModel.$isAmountInputDisabled);
 
@@ -446,8 +451,7 @@ const Amount = () => {
         {t(amount.errorMessage)}
       </InputHint>
 
-      {/* ToDo: hide only ed < locked */}
-      {showEDSwitch && (
+      {isMaxModeEnabled && showEDSwitch && (
         <div className="flex justify-end">
           <Switch checked={isExistentialDepositEnabled} onChange={() => formModel.events.toggleExistentialDeposit()}>
             <div className="flex items-center gap-1">
@@ -577,6 +581,25 @@ const MyselfAccountModal = () => {
       onClose={formModel.xcmDestinationCancelled}
       onSelect={({ accountId }) => formModel.xcmDestinationSelected(accountId)}
     />
+  );
+};
+
+const AlertForAccountDeath = () => {
+  const { t } = useI18n();
+  const showAccountDeathAlert = useUnit(formModel.$showAccountDeathAlert);
+
+  return (
+    showAccountDeathAlert && (
+      <Alert title={t('transfer.accountDeathWarning.title')} variant="warn" active>
+        <FootnoteText className="max-w-full text-text-primary">
+          <Trans
+            t={t}
+            i18nKey="transfer.accountDeathWarning.description"
+            components={{ b: <b className="font-semibold" /> }}
+          />
+        </FootnoteText>
+      </Alert>
+    )
   );
 };
 

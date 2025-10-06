@@ -350,6 +350,25 @@ const $available = combine(
   },
 );
 
+const $showAccountDeathAlert = combine(
+  {
+    isMaxMode: $isMaxModeEnabled,
+    balance: $initiatorAccountBalance,
+    totalFee: $totalFee,
+    amount: form.fields.amount.$value,
+    asset: $asset,
+  },
+  ({ isMaxMode, balance, totalFee, amount, asset }) => {
+    if (!isMaxMode || !totalFee || !asset) {
+      return false;
+    }
+
+    const availableWithKeepAlive = getAvailableAmount({ balance, totalFee, includeED: false });
+    const transferAmount = toPrecision(amount, asset.precision);
+    return availableWithKeepAlive.lt(transferAmount);
+  },
+);
+
 const $showEDSwitch = $initiatorAccountBalance.map((balance) => nonNullable(balance) && balance.ed >= balance.reserved);
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
@@ -658,6 +677,7 @@ export const formModel = {
   $isMaxModeEnabled,
   $isAmountInputDisabled,
   $showEDSwitch,
+  $showAccountDeathAlert,
 
   formInitiated,
   formCleared: form.reset,
