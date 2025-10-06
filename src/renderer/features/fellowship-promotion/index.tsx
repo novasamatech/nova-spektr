@@ -9,5 +9,5 @@ export { referendumWidgetActionSlot } from './components/widget';
 
 fellowshipPromotionFeature.inject(profileInfoSlot, {
   order: 0,
-  render: () => <PromotionWidget />,
+  render: ({ member }) => <PromotionWidget member={member} />,
 });

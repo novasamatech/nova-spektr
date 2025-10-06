@@ -1,12 +1,12 @@
 import { formatDate } from 'date-fns';
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, type ReactNode, useMemo } from 'react';
+import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText, Icon, TitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { type Referendum } from '@/domains/collectives';
+import { type Member, type Referendum } from '@/domains/collectives';
 import { WidgetState, fellowshipPromotion } from '../models/promotion';
 import { votesModel } from '../models/votes';
 
@@ -15,10 +15,14 @@ import { TimerToBlock } from './timer-to-block';
 
 export const referendumWidgetActionSlot = createSlot<{ referendum: Referendum }>();
 
-export const PromotionWidget = () => {
+type Props = {
+  member: Member;
+};
+
+export const PromotionWidget = memo(({ member }: Props) => {
   const { t } = useI18n();
   const state = useUnit(fellowshipPromotion.$widgetState);
-  const { member, fromDateFormatted, toDateFormatted, promotionPeriod, timelineValue } = usePromotionData();
+  const { fromDateFormatted, toDateFormatted, promotionPeriod, timelineValue } = usePromotionData();
 
   const timelineSteps = useMemo(
     () => [
@@ -93,11 +97,14 @@ export const PromotionWidget = () => {
   }
 
   return null;
-};
+});
 
-export const EvidenceSubmitted = () => {
+export const EvidenceSubmitted = memo(() => {
   const { t } = useI18n();
-  const { member, fromDateFormatted, toDateFormatted, promotionPeriodDates, timelineValue } = usePromotionData();
+
+  const member = useUnit(fellowshipPromotion.$member);
+
+  const { fromDateFormatted, toDateFormatted, promotionPeriodDates, timelineValue } = usePromotionData();
   const promotionEvidenceSubmissionDate = useUnit(fellowshipPromotion.$promotionEvidenceSubmissionDate);
 
   const submissionDateFormatted = promotionEvidenceSubmissionDate
@@ -160,9 +167,9 @@ export const EvidenceSubmitted = () => {
       />
     </WidgetContainer>
   );
-};
+});
 
-const ReferendumCreated = () => {
+const ReferendumCreated = memo(() => {
   const { t } = useI18n();
 
   const referendum = useUnit(fellowshipPromotion.$promotionReferendum);
@@ -218,10 +225,9 @@ const ReferendumCreated = () => {
       </FootnoteText>
     </WidgetContainer>
   );
-};
+});
 
 const usePromotionData = () => {
-  const member = useUnit(fellowshipPromotion.$member);
   const promotionPeriodDates = useUnit(fellowshipPromotion.$promotionPeriodDates);
   const promotionPeriod = useUnit(fellowshipPromotion.$promotionPeriod);
   const currentBlock = useUnit(fellowshipPromotion.$currentBlock);
@@ -238,7 +244,6 @@ const usePromotionData = () => {
   );
 
   return {
-    member,
     promotionPeriod,
     currentBlock,
     fromDateFormatted,
@@ -254,7 +259,7 @@ type WidgetContainerProps = PropsWithChildren<{
   description?: string;
 }>;
 
-const WidgetContainer = ({ title, description, children, footer }: WidgetContainerProps) => (
+const WidgetContainer = memo(({ title, description, children, footer }: WidgetContainerProps) => (
   <div className="rounded-lg bg-block-background-default p-4">
     <Box gap={4}>
       <Box gap={3}>
@@ -273,4 +278,4 @@ const WidgetContainer = ({ title, description, children, footer }: WidgetContain
       )}
     </Box>
   </div>
-);
+));

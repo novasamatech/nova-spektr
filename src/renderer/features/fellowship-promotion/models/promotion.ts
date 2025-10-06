@@ -1,8 +1,9 @@
 import { combine } from 'effector';
 
-import { createStoreFromEffect } from '@/shared/effector';
+import { createFlow, createStoreFromEffect } from '@/shared/effector';
 import { getCreatedDateFromApi, nonNullable, nullable } from '@/shared/lib/utils';
 import {
+  type Member,
   type OngoingReferendum,
   evidenceService,
   memberService,
@@ -21,7 +22,9 @@ export enum WidgetState {
   REFERENDUM_CREATED = 'referendum_created',
 }
 
-const $member = fellowshipMember.$currentMember;
+const flow = createFlow<{ member: Member | null }>({ member: null });
+
+const $member = flow.state.map(s => s.member);
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 const $evidences = fellowship.$store.map(store => store?.evidence ?? null);
 const $referendums = fellowship.$store.map(store => store?.referendums ?? null);
@@ -127,8 +130,8 @@ const $promotionPeriodDates = createStoreFromEffect({
 });
 
 export const fellowshipPromotion = {
-  $leftToPromotion,
   $member,
+  $leftToPromotion,
   $widgetState,
   $promotionEvidence,
   $promotionReferendum,

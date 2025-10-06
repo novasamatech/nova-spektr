@@ -7,7 +7,7 @@ import { cnTw, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeaderTitleText, Separator, Switch } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
-import { memberService } from '@/domains/collectives';
+import { type Member, memberService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
@@ -16,7 +16,7 @@ import { memberSalary } from '../model/salary';
 import { ActivityFeed } from './ActivityFeed';
 import { SetActiveModal } from './SetActiveModal';
 
-export const profileInfoSlot = createSlot();
+export const profileInfoSlot = createSlot<{ member: Member }>();
 
 export const ProfileModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
@@ -83,7 +83,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
       </Modal.HeaderContent>
       <Modal.Content disableScroll>
         <div className="bg-background-suffix-hover p-4">
-          <Slot id={profileInfoSlot} />
+          <Slot id={profileInfoSlot} props={{ member }} />
         </div>
         <ActivityFeed />
       </Modal.Content>
