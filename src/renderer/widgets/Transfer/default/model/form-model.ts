@@ -346,17 +346,7 @@ const $available = combine(
       return null;
     }
 
-    const available = getAvailableAmount({ balance, totalFee, includeED: isExistentialDepositEnabled });
-    console.log({
-      asset,
-      balance: {
-        ed: balance.ed.toString(),
-        reserved: balance.reserved.toString(),
-        free: balance.free.toString(),
-      },
-      available: available.toString(),
-    });
-    return available;
+    return getAvailableAmount({ balance, totalFee, includeED: isExistentialDepositEnabled });
   },
 );
 

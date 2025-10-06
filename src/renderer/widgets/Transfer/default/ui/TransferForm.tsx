@@ -454,7 +454,11 @@ const Amount = () => {
 
       {isMaxModeEnabled && showEDSwitch && (
         <div className="flex justify-end">
-          <Switch checked={isExistentialDepositEnabled} onChange={() => formModel.events.toggleExistentialDeposit()}>
+          <Switch
+            checked={isExistentialDepositEnabled}
+            variant="accent"
+            onChange={() => formModel.events.toggleExistentialDeposit()}
+          >
             <div className="flex items-center gap-1">
               <Tooltip>
                 <Tooltip.Trigger>
