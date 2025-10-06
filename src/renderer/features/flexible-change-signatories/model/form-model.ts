@@ -5,6 +5,7 @@ import { addUnique, getNativeAsset, nullable, toAccountId, validateAddress } fro
 import { accounts } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
+import { multisigService } from '@/features/multisig-wallet';
 
 import { signatoryModel } from './signatory-model';
 
@@ -83,7 +84,9 @@ const $isMultisigExists = combine(
   ({ multisigAccountId, accounts }) => {
     if (nullable(multisigAccountId)) return false;
 
-    return accounts.some((a) => accountUtils.isMultisigAccount(a) && a.accountId === multisigAccountId);
+    return accounts.some(
+      (a) => accountUtils.isAnyMultisigAccount(a) && multisigService.getMultisigAccountId(a) === multisigAccountId,
+    );
   },
 );
 

@@ -12,7 +12,6 @@ import { OperationTitle } from '@/entities/chain';
 import { walletModel } from '@/entities/wallet';
 import { OperationSign } from '@/features/operations';
 import { OperationSubmitWithAction } from '@/features/operations/OperationSubmit';
-import { MultisigExistsAlert } from '@/features/operations/OperationsConfirm';
 import { changeSignatoriesModel } from '../model/change-signatories-model';
 import { formModel } from '../model/form-model';
 import { signatoryModel } from '../model/signatory-model';
@@ -45,7 +44,6 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
   const threshold = useUnit(formModel.$threshold);
   const invalidAddresses = useUnit(formModel.$invalidAddresses);
   const isEditOperationAlreadyExists = useUnit(changeSignatoriesModel.$isEditOperationAlreadyExists);
-  const isMultisigExists = useUnit(formModel.$isMultisigExists);
 
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
   const signatories = useUnit(signatoryModel.$signatories);
@@ -147,8 +145,6 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
               </div>
 
               <div className="mt-auto flex flex-col gap-2">
-                <MultisigExistsAlert active={isMultisigExists} />
-
                 <TransactionValidationError errors={errors} wallets={wallets} />
 
                 {isEditOperationAlreadyExists && (
