@@ -261,7 +261,7 @@ type WidgetContainerProps = PropsWithChildren<{
   description?: string;
 }>;
 
-const WidgetContainer = memo(({ title, description, children, footer }: WidgetContainerProps) => (
+const WidgetContainer = ({ title, description, children, footer }: WidgetContainerProps) => (
   <div className="rounded-lg bg-block-background-default p-4">
     <Box gap={4}>
       <Box gap={3}>
@@ -280,4 +280,4 @@ const WidgetContainer = memo(({ title, description, children, footer }: WidgetCo
       )}
     </Box>
   </div>
-));
+);
