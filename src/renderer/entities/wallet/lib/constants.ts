@@ -6,6 +6,8 @@ export const KEY_NAMES = {
   [KeyType.HOT]: 'Hot wallet account',
   [KeyType.PUBLIC]: 'Pub account',
   [KeyType.CUSTOM]: '',
+  [KeyType.STAKING]: 'Staking account',
+  [KeyType.GOVERNANCE]: 'Governance account',
 };
 
 export const SHARDED_KEY_NAMES = {
@@ -13,6 +15,8 @@ export const SHARDED_KEY_NAMES = {
   [KeyType.HOT]: '',
   [KeyType.PUBLIC]: '',
   [KeyType.CUSTOM]: '',
+  [KeyType.STAKING]: '',
+  [KeyType.GOVERNANCE]: '',
 };
 
 export const KeyIcon: Record<KeyType, IconNames> = {
@@ -20,4 +24,6 @@ export const KeyIcon: Record<KeyType, IconNames> = {
   [KeyType.HOT]: 'keyHot',
   [KeyType.MAIN]: 'keyMain',
   [KeyType.PUBLIC]: 'keyPublic',
+  [KeyType.STAKING]: 'keyStaking',
+  [KeyType.GOVERNANCE]: 'keyGovernance',
 };
