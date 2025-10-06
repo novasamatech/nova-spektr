@@ -1,4 +1,5 @@
 import { useUnit } from 'effector-react';
+import { Trans } from 'react-i18next';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -23,12 +24,12 @@ const getContent = (t: ReturnType<typeof useI18n>['t'], chainId: ChainId) => {
   return {
     title: t(`assethubMigration.title.${chainName}AssetHub`),
     description: t(`assethubMigration.${chainName}.description`),
-    bullets: [
-      t(`assethubMigration.${chainName}.bullets.minimalBalance`),
-      t(`assethubMigration.${chainName}.bullets.lowerFees`),
-      t(`assethubMigration.${chainName}.bullets.moreTokens`),
-      t(`assethubMigration.${chainName}.bullets.unifiedAccess`),
-      t('assethubMigration.bullets.feePayment'),
+    bulletKeys: [
+      `assethubMigration.${chainName}.bullets.minimalBalance`,
+      `assethubMigration.${chainName}.bullets.lowerFees`,
+      `assethubMigration.${chainName}.bullets.moreTokens`,
+      `assethubMigration.${chainName}.bullets.unifiedAccess`,
+      'assethubMigration.bullets.feePayment',
     ],
   };
 };
@@ -49,7 +50,7 @@ export const AssetHubMigrationModal = () => {
     <Modal isOpen={isModalOpen} size="fit" preventOutsideClick onToggle={(open) => !open && closeModal()}>
       <Modal.Title close>
         <Box direction="row" gap={1.5} verticalAlign="center">
-          <HeaderTitleText>{t('assethubMigration.title.migratedTo')}</HeaderTitleText>
+          <HeaderTitleText>{t(`assethubMigration.title.${getChainName(chainId)}Migration`)}</HeaderTitleText>
           {assetHubChain && <ChainIcon chain={assetHubChain} size={20} />}
           <HeaderTitleText>{currentContent.title}</HeaderTitleText>
         </Box>
@@ -63,12 +64,20 @@ export const AssetHubMigrationModal = () => {
               <Box direction="column" gap={2}>
                 <SmallTitleText>{t('assethubMigration.bullets.title')}</SmallTitleText>
                 <Box direction="column" gap={2}>
-                  {currentContent.bullets.map((bullet) => (
-                    <Box key={bullet} direction="row" gap={1.5} verticalAlign="start">
+                  {currentContent.bulletKeys.map((bulletKey, index) => (
+                    <Box key={index} direction="row" gap={1.5} verticalAlign="start">
                       <div className="flex h-[18px] w-1 flex-shrink-0 items-center justify-center">
                         <span className="text-[12px] text-text-primary">•</span>
                       </div>
-                      <FootnoteText className="flex-1">{bullet}</FootnoteText>
+                      <FootnoteText className="flex-1">
+                        <Trans
+                          t={t}
+                          i18nKey={bulletKey}
+                          components={{
+                            nowrap: <span className="whitespace-nowrap" />,
+                          }}
+                        />
+                      </FootnoteText>
                     </Box>
                   ))}
                 </Box>

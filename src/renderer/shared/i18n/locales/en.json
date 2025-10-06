@@ -91,7 +91,7 @@
     "kusama": {
       "bullets": {
         "lowerFees": "10x lower transaction fees (from 0.0005 KSM to 0.00005 KSM).",
-        "minimalBalance": "100x reduction in minimal balance (from 0.00033 KSM to 0.0000033 KSM).",
+        "minimalBalance": "100x reduction in minimal balance (from 0.00033 KSM to <nowrap>0.0000033 KSM</nowrap>).",
         "moreTokens": "More tokens supported: USDT, USDC, ETH, DOT, and other ecosystem tokens.",
         "unifiedAccess": "Unified access to KSM, assets, staking, and governance."
       },
@@ -109,8 +109,9 @@
       "description": "Starting November 4, 2025 your DOT balance, Staking and Governance are now on Polkadot Asset Hub"
     },
     "title": {
+      "kusamaMigration": "KSM Migration to",
+      "polkadotMigration": "DOT Migration to",
       "kusamaAssetHub": "Kusama Asset Hub",
-      "migratedTo": "Migrated to",
       "polkadotAssetHub": "Polkadot Asset Hub"
     }
   },
