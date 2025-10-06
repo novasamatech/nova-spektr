@@ -13,6 +13,7 @@ import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
 import { memberSalary } from '../model/salary';
 
+import { ActivityFeed } from './ActivityFeed';
 import { SetActiveModal } from './SetActiveModal';
 
 export const profileInfoSlot = createSlot();
@@ -77,17 +78,6 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
               </SetActiveModal>
             </Box>
           </Box>
-          {/* <div className="flex items-center justify-between whitespace-nowrap">
-            <DetailRow label={t('fellowship.profile.activeSalary')}>
-              {salaryService.formatSalaryAmount(salary.active)}
-            </DetailRow>
-            <div className="w-full grow" />
-            <div className="h-4.5 w-px border-r border-divider" />
-            <div className="w-full grow" />
-            <DetailRow label={t('fellowship.profile.passiveSalary')}>
-              {salaryService.formatSalaryAmount(salary.passive)}
-            </DetailRow>
-          </div> */}
         </Box>
         <Separator />
       </Modal.HeaderContent>
@@ -95,7 +85,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
         <div className="bg-background-suffix-hover p-4">
           <Slot id={profileInfoSlot} />
         </div>
-        {/* <ActivityFeed /> */}
+        <ActivityFeed />
       </Modal.Content>
     </Modal>
   );
