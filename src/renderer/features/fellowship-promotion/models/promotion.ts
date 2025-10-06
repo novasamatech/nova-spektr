@@ -3,14 +3,7 @@ import { createGate } from 'effector-react';
 
 import { createStoreFromEffect } from '@/shared/effector';
 import { getCreatedDateFromApi, nonNullable, nullable } from '@/shared/lib/utils';
-import {
-  type Member,
-  type OngoingReferendum,
-  evidenceService,
-  memberService,
-  referendumService,
-  trackService,
-} from '@/domains/collectives';
+import { type Member, evidenceService, memberService, referendumService, trackService } from '@/domains/collectives';
 import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
@@ -67,12 +60,12 @@ const $promotionReferendum = combine(
   ({ referendums, member, promotionEvidence }) => {
     if (nullable(referendums) || nullable(member)) return null;
 
-    const referendum = referendums.find(r => {
+    const referendum = referendums.filter(referendumService.isOngoing).find(r => {
       const proposer = referendumService.getProposer(r) || promotionEvidence?.accountId;
-      return referendumService.isOngoing(r) && trackService.isPromotionTrack(r.track) && proposer === member.accountId;
+      return trackService.isPromotionTrack(r.track) && proposer === member.accountId;
     });
 
-    return (referendum as OngoingReferendum) ?? null;
+    return referendum ?? null;
   },
 );
 
