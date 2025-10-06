@@ -26,6 +26,7 @@ function tryFreeze(balance: Balance, amount: BN): BalanceUpdateResult {
       balance: updated,
       required: amount,
       imbalance: afterFreeze.abs(),
+      burned: BN_ZERO,
     };
   }
 
@@ -33,6 +34,7 @@ function tryFreeze(balance: Balance, amount: BN): BalanceUpdateResult {
     success: true,
     balance: updated,
     required: amount,
+    burned: BN_ZERO,
   };
 }
 
@@ -51,6 +53,7 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
       balance: updated,
       required: amount,
       imbalance: afterReservation.abs(),
+      burned: BN_ZERO,
     };
   }
 
@@ -58,6 +61,7 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
     success: true,
     balance: updated,
     required: amount,
+    burned: BN_ZERO,
   };
 }
 
@@ -76,12 +80,13 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
       balance: updated,
       required: amount,
       imbalance: afterWithdraw.abs(),
+      burned: BN_ZERO,
     };
   }
 
   const free = balance.free.sub(amount);
   // in case of exceeding the ED, we burn all tokens
-  const burnedTokens = free.lt(balance.ed) ? balance.ed : BN_ZERO;
+  const burnedTokens = free.lt(balance.ed) ? balance.ed.sub(free) : BN_ZERO;
 
   return {
     success: true,
@@ -89,6 +94,7 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
       free: BN.max(free.sub(burnedTokens), BN_ZERO),
     }),
     required: amount,
+    burned: burnedTokens,
   };
 }
 
