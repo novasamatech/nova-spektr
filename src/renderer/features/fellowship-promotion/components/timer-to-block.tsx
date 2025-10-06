@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import { getTimeToBlock } from '@/shared/lib/utils';
 import { Timeout } from '@/shared/ui-kit';
@@ -15,7 +15,7 @@ type Props = {
   shortDateFormat?: boolean;
 };
 
-export const TimerToBlock = ({ endBlock, shortDateFormat }: Props) => {
+export const TimerToBlock = memo(({ endBlock, shortDateFormat }: Props) => {
   const input = useUnit(fellowshipPromotionFeature.input);
   const [endTime, setEndTime] = useState<number>();
 
@@ -32,4 +32,4 @@ export const TimerToBlock = ({ endBlock, shortDateFormat }: Props) => {
   return (
     <Timeout secondsToEnd={endTime} variant="idle" shortDateFormat={shortDateFormat} textColor="text-text-primary" />
   );
-};
+});
