@@ -36,6 +36,7 @@ export { Json } from './Json/Json';
 export { Tabs } from './Tabs/Tabs';
 export { Box } from './Box/Box';
 export { QrReader, type QrScanResult } from './QrReader/QrReader';
+export { RankProgress } from './RankProgress/RankProgress';
 export { QrCode } from './QrCode/QrCode';
 export { ConfirmModal } from './ConfirmModal/ConfirmModal';
 export { RadioGroup } from './RadioGroup/RadioGroup';
