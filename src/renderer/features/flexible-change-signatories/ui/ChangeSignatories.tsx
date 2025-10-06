@@ -4,7 +4,8 @@ import { type ComponentProps, type PropsWithChildren, useState } from 'react';
 import { type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Step, isStep, toAccountId } from '@/shared/lib/utils';
-import { Button, Icon, InputHint, SmallTitleText } from '@/shared/ui';
+import { Paths } from '@/shared/routes';
+import { Alert, Button, ButtonLink, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, Modal, Select } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
@@ -42,6 +43,7 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
   const errors = useUnit(changeSignatoriesModel.$errors);
   const threshold = useUnit(formModel.$threshold);
   const invalidAddresses = useUnit(formModel.$invalidAddresses);
+  const isEditOperationAlreadyExists = useUnit(changeSignatoriesModel.$isEditOperationAlreadyExists);
 
   const duplicateSignatories = useUnit(signatoryModel.$duplicateSignatories);
   const signatories = useUnit(signatoryModel.$signatories);
@@ -142,8 +144,31 @@ export const ChangeSignatories = ({ wallet, onClose, children }: Props) => {
                 </InputHint>
               </div>
 
-              <div className="mt-auto flex flex-col">
+              <div className="mt-auto flex flex-col gap-2">
                 <TransactionValidationError errors={errors} wallets={wallets} />
+
+                {isEditOperationAlreadyExists && (
+                  <Alert
+                    active
+                    variant="error"
+                    title={t('createMultisigAccount.flexibleMultisig.editOperationExistsTitle')}
+                  >
+                    <Alert.Item withDot={false}>
+                      {t('createMultisigAccount.flexibleMultisig.editOperationExistsDescription')}
+                    </Alert.Item>
+                    <Alert.Item withDot={false}>
+                      <ButtonLink
+                        className="h-auto p-0"
+                        variant="text"
+                        size="sm"
+                        to={Paths.OPERATIONS}
+                        onClick={onClose}
+                      >
+                        {t('createMultisigAccount.flexibleMultisig.editOperationExistsAction')}
+                      </ButtonLink>
+                    </Alert.Item>
+                  </Alert>
+                )}
               </div>
             </div>
           </Modal.Content>

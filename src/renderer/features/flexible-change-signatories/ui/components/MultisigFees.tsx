@@ -1,11 +1,10 @@
-import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { FootnoteText, IconButton } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
 import { changeSignatoriesModel } from '../../model/change-signatories-model';
 import { formModel } from '../../model/form-model';
@@ -13,19 +12,17 @@ import { formModel } from '../../model/form-model';
 export const MultisigFees = () => {
   const { t } = useI18n();
 
-  const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
-  const fee = useUnit(changeSignatoriesModel.$fee);
   const isLoading = useUnit(changeSignatoriesModel.$isLoading);
-  const proxyDeposit = useUnit(formModel.$proxyDeposit);
-  const multisigDeposit = useUnit(formModel.$multisigDeposit);
+  const fee = useUnit(changeSignatoriesModel.$fee);
+  const proxyDeposit = useUnit(changeSignatoriesModel.$proxyDeposit);
+  const multisigDeposit = useUnit(changeSignatoriesModel.$multisigDeposit);
+  const totalDeposit = useUnit(changeSignatoriesModel.$totalDeposit);
   const asset = useUnit(formModel.$asset);
-
-  const totalFee = fee.add(multisigDeposit).add(new BN(proxyDeposit ?? 0));
 
   if (!asset) return;
 
   if (isLoading) {
-    return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+    return <FeeLoader fiatFlag={false} />;
   }
 
   return (
@@ -57,7 +54,7 @@ export const MultisigFees = () => {
         </Tooltip>
       </div>
 
-      <AssetBalance value={totalFee.toString()} asset={asset} />
+      {nonNullable(totalDeposit) && <AssetBalance value={totalDeposit} asset={asset} />}
     </div>
   );
 };

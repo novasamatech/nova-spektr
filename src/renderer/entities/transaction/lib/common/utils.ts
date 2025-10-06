@@ -1,6 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
+import { toAccountId } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type VoteTransaction, voteTransactionService } from '@/entities/governance';
 
 import {
@@ -100,17 +102,30 @@ export const isUnlockTransaction = (transaction?: Transaction | DecodedTransacti
   return !!transaction && hasTransaction(transaction, (tx) => tx.type === TransactionType.UNLOCK);
 };
 
-export const isEditFlexibleTransaction = (transaction?: Transaction | DecodedTransaction | null): boolean => {
-  if (transaction?.type !== TransactionType.BATCH_ALL) {
+export const isEditFlexibleTransaction = (
+  transaction?: Transaction | DecodedTransaction | null,
+  proxiedAccountId?: AccountId,
+): boolean => {
+  if (transaction?.type !== TransactionType.PROXY) {
     return false;
   }
 
-  if (!transaction.args?.transactions || transaction.args.transactions.length !== 2) {
+  if (proxiedAccountId && toAccountId(transaction.args?.real) !== proxiedAccountId) {
     return false;
   }
 
-  const addProxyTransaction = transaction.args.transactions.at(0);
-  const removeProxyTransaction = transaction.args.transactions.at(1);
+  const batchTransaction = transaction.args?.transaction;
+
+  if (batchTransaction?.type !== TransactionType.BATCH_ALL) {
+    return false;
+  }
+
+  if (!batchTransaction.args?.transactions || batchTransaction.args.transactions.length !== 2) {
+    return false;
+  }
+
+  const addProxyTransaction = batchTransaction.args.transactions.at(0);
+  const removeProxyTransaction = batchTransaction.args.transactions.at(1);
 
   return (
     isRemoveProxyTransaction(removeProxyTransaction) &&

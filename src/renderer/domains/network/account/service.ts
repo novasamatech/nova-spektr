@@ -1,16 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import {
-  type Asset,
-  type AssetId,
-  type Balance,
-  type BalanceMap,
-  type Chain,
-  type ChainId,
-  CryptoType,
-} from '@/shared/core';
+import { type Asset, type AssetId, type Balance, type BalanceMap, type Chain, type ChainId } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
-import { nullable } from '@/shared/lib/utils';
+import { isEthereumAccountId, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type TransactionValidationBalanceError,
@@ -70,16 +62,12 @@ function uniqId(account: AnyAccountDraft) {
   throw new Error('Unsupported account type.');
 }
 
-function isCryptoMatch(account: Pick<AnyAccount, 'cryptoType'>, chain: Chain): boolean {
-  if (!chain) {
-    return false;
-  }
+function isAccountSchemeMatchChain(accountId: AccountId, chain: Chain): boolean {
+  return networkUtils.isEthereumBased(chain.options) === isEthereumAccountId(accountId);
+}
 
-  const supportedCryptoTypes = networkUtils.isEthereumBased(chain.options)
-    ? [CryptoType.ECDSA, CryptoType.ETHEREUM]
-    : [CryptoType.SR25519, CryptoType.ED25519];
-
-  return supportedCryptoTypes.includes(account.cryptoType);
+function isCryptoMatch(account: Pick<AnyAccount, 'accountId'>, chain: Chain): boolean {
+  return isAccountSchemeMatchChain(account.accountId, chain);
 }
 
 function isChainMatch(account: ChainAccount, chain: Chain) {
@@ -385,6 +373,7 @@ export const accountService = {
   isChainAccount,
   isUniversalAccount,
   isAccountAvailableOnChain,
+  isAccountSchemeMatchChain,
   isCryptoMatch,
   isChainMatch,
 
