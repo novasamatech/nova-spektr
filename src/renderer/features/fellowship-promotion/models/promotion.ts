@@ -14,14 +14,12 @@ import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
 import { fellowship } from './fellowship';
 
-export enum PromotionState {
+export enum WidgetState {
   WAITING_OPPORTUNITY = 'waiting_opportunity',
   EVIDENCE_CAN_BE_SUBMITTED = 'evidence_can_be_submitted',
   EVIDENCE_SUBMITTED = 'evidence_submitted',
   REFERENDUM_CREATED = 'referendum_created',
 }
-
-// periods
 
 const $member = fellowshipMember.$currentMember;
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
@@ -76,7 +74,7 @@ const $promotionReferendum = combine(
 
 const $hasPromotionReferendum = $promotionReferendum.map(nonNullable);
 
-const $state = combine(
+const $widgetState = combine(
   {
     leftToPromotion: $leftToPromotion,
     hasPromotionReferendum: $hasPromotionReferendum,
@@ -84,18 +82,18 @@ const $state = combine(
   },
   ({ leftToPromotion, hasPromotionEvidence, hasPromotionReferendum }) => {
     if (nullable(leftToPromotion) || leftToPromotion > 0) {
-      return PromotionState.WAITING_OPPORTUNITY;
+      return WidgetState.WAITING_OPPORTUNITY;
     }
 
     if (hasPromotionReferendum) {
-      return PromotionState.REFERENDUM_CREATED;
+      return WidgetState.REFERENDUM_CREATED;
     }
 
     if (hasPromotionEvidence) {
-      return PromotionState.EVIDENCE_SUBMITTED;
+      return WidgetState.EVIDENCE_SUBMITTED;
     }
 
-    return PromotionState.EVIDENCE_CAN_BE_SUBMITTED;
+    return WidgetState.EVIDENCE_CAN_BE_SUBMITTED;
   },
 );
 
@@ -131,13 +129,11 @@ const $promotionPeriodDates = createStoreFromEffect({
 export const fellowshipPromotion = {
   $leftToPromotion,
   $member,
-  $state,
+  $widgetState,
   $promotionEvidence,
   $promotionReferendum,
   $promotionPeriod,
   $promotionPeriodDates: $promotionPeriodDates.$,
-  $promotionPeriodDatesPending: $promotionPeriodDates.$pending,
-  $promotionPeriodDatesIsDefault: $promotionPeriodDates.$isDefaultValue,
   $currentBlock: fellowshipNetwork.$currentBlock,
   $promotionEvidenceSubmissionDate,
 };

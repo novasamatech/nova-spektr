@@ -7,7 +7,7 @@ import { voting } from '@/domains/collectives';
 
 import { fellowshipPromotionFeature } from './feature';
 import { fellowship } from './fellowship';
-import { fellowshipPromotion } from './state';
+import { fellowshipPromotion } from './promotion';
 
 const $voting = fellowship.$store.map(store => store?.voting ?? []);
 const $members = fellowship.$store.map(store => store?.members ?? []);

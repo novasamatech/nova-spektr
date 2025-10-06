@@ -4,21 +4,20 @@ import { type PropsWithChildren, type ReactNode, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
-import { Button, FootnoteText, HelpText, Icon, TitleText } from '@/shared/ui';
-import { CollectiveRank } from '@/shared/ui-entities';
-import { Box, Skeleton, Timeline, type TimelineStep, Tooltip } from '@/shared/ui-kit';
+import { Button, FootnoteText, Icon, TitleText } from '@/shared/ui';
+import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Referendum } from '@/domains/collectives';
-import { PromotionState, fellowshipPromotion } from '../models/state';
+import { WidgetState, fellowshipPromotion } from '../models/promotion';
 import { votesModel } from '../models/votes';
 
+import { TimelineWithRanks } from './timeline-with-ranks';
 import { TimerToBlock } from './timer-to-block';
 
 export const referendumWidgetActionSlot = createSlot<{ referendum: Referendum }>();
 
 export const PromotionWidget = () => {
   const { t } = useI18n();
-  const state = useUnit(fellowshipPromotion.$state);
+  const state = useUnit(fellowshipPromotion.$widgetState);
   const { member, fromDateFormatted, toDateFormatted, promotionPeriod, timelineValue } = usePromotionData();
 
   const timelineSteps = useMemo(
@@ -44,7 +43,7 @@ export const PromotionWidget = () => {
 
   if (!member) return null;
 
-  if (state === PromotionState.WAITING_OPPORTUNITY) {
+  if (state === WidgetState.WAITING_OPPORTUNITY) {
     return (
       <WidgetContainer
         title={t('fellowship.promotion.waiting.title')}
@@ -65,7 +64,7 @@ export const PromotionWidget = () => {
     );
   }
 
-  if (state === PromotionState.EVIDENCE_CAN_BE_SUBMITTED) {
+  if (state === WidgetState.EVIDENCE_CAN_BE_SUBMITTED) {
     return (
       <WidgetContainer
         title={t('fellowship.promotion.canSubmit.title')}
@@ -85,11 +84,11 @@ export const PromotionWidget = () => {
     );
   }
 
-  if (state === PromotionState.EVIDENCE_SUBMITTED) {
+  if (state === WidgetState.EVIDENCE_SUBMITTED) {
     return <EvidenceSubmitted />;
   }
 
-  if (state === PromotionState.REFERENDUM_CREATED) {
+  if (state === WidgetState.REFERENDUM_CREATED) {
     return <ReferendumCreated />;
   }
 
@@ -251,8 +250,8 @@ const usePromotionData = () => {
 
 type WidgetContainerProps = PropsWithChildren<{
   title: string;
+  footer: ReactNode;
   description?: string;
-  footer?: ReactNode;
 }>;
 
 const WidgetContainer = ({ title, description, children, footer }: WidgetContainerProps) => (
@@ -275,50 +274,3 @@ const WidgetContainer = ({ title, description, children, footer }: WidgetContain
     </Box>
   </div>
 );
-
-type TimelineWithRanksProps = {
-  currentRank: number;
-  steps: TimelineStep[];
-  value: number;
-  submissionPosition?: number;
-  submissionDate?: string;
-};
-
-const TimelineWithRanks = ({
-  currentRank,
-  steps,
-  value,
-  submissionPosition,
-  submissionDate,
-}: TimelineWithRanksProps) => {
-  const { t } = useI18n();
-
-  return (
-    <div className="relative">
-      <Timeline steps={steps} value={value} />
-      <span className="absolute -top-1.5 left-0 z-10 bg-white pr-0.5">
-        <CollectiveRank rank={currentRank} />
-      </span>
-      {nonNullable(submissionPosition) && nonNullable(submissionDate) && (
-        <Tooltip side="top" sideOffset={2} enableHover>
-          <Tooltip.Trigger>
-            <div
-              className="absolute -top-1.5 z-10 -translate-x-1/2 rounded-full bg-white p-0.5"
-              style={{ left: `${submissionPosition}%` }}
-            >
-              <Icon name="checkmarkOutline" size={16} className="text-text-positive" />
-            </div>
-          </Tooltip.Trigger>
-          <Tooltip.Content>
-            <HelpText className="px-2 py-1 text-center whitespace-pre-line text-white">
-              {t('fellowship.promotion.submitted.submittedOnTooltip', { date: submissionDate })}
-            </HelpText>
-          </Tooltip.Content>
-        </Tooltip>
-      )}
-      <span className="absolute -top-1.5 right-0 z-10 bg-white pl-0.5">
-        <CollectiveRank rank={currentRank + 1} />
-      </span>
-    </div>
-  );
-};
