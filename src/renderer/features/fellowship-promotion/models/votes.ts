@@ -24,7 +24,7 @@ const $votesList = combine(
 const requestVotes = combineEvents({
   events: {
     accounts: $members.updates.map(members => members.map(m => m.accountId)),
-    referendumId: fellowshipPromotion.$promotionReferendum.updates.map(s => s?.id).filter({ fn: nonNullable }),
+    referendumId: fellowshipPromotion.$promotionReferendum.updates.map(r => r?.id).filter({ fn: nonNullable }),
   },
 });
 

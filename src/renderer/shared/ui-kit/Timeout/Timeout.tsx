@@ -32,12 +32,14 @@ export const Timeout = memo(
     useEffect(() => {
       if (countdown <= 0) return;
 
-      const countdownUnit =
-        countdown < 60
-          ? 1 // if less then a minute, countdown each second
-          : countdown < 3600
-            ? 60 // if less then an hour, countdown each minute
-            : 3600; // countdown each hour
+      let countdownUnit = 3600; // countdown each hour
+
+      if (countdown < 3600) {
+        countdownUnit = 60; // if less then an hour, countdown each minute
+      }
+      if (countdown < 60) {
+        countdownUnit = 1; // if less then a minute, countdown each second
+      }
 
       const timer = setTimeout(() => setCountdown(countdown - countdownUnit), countdownUnit * 1000);
 
