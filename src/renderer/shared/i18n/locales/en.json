@@ -81,6 +81,40 @@
     "reserved": "Reserved",
     "transferable": "Transferable"
   },
+  "assethubMigration": {
+    "automaticMigration": "Migration happens automatically, no action needed.",
+    "bullets": {
+      "feePayment": "Ability to pay fees in any token.",
+      "title": "What makes Asset Hub awesome?"
+    },
+    "gotIt": "Got it",
+    "kusama": {
+      "bullets": {
+        "lowerFees": "10x lower transaction fees (from 0.0005 KSM to 0.00005 KSM).",
+        "minimalBalance": "100x reduction in minimal balance (from 0.00033 KSM to <nowrap>0.0000033 KSM</nowrap>).",
+        "moreTokens": "More tokens supported: USDT, USDC, ETH, DOT, and other ecosystem tokens.",
+        "unifiedAccess": "Unified access to KSM, assets, staking, and governance."
+      },
+      "description": "Starting October 7, 2025 your KSM balance, Staking and Governance are now on Kusama Asset Hub"
+    },
+    "learnAboutPolkadot": "Learn about Polkadot",
+    "learnMore": "Learn more",
+    "polkadot": {
+      "bullets": {
+        "lowerFees": "10x lower transaction fees (from 0.016 DOT to 0.0016 DOT).",
+        "minimalBalance": "100x reduction in minimal balance (from 1 DOT to 0.01 DOT).",
+        "moreTokens": "More tokens supported: USDT, USDC, ETH, KSM, and other ecosystem tokens.",
+        "unifiedAccess": "Unified access to DOT, assets, staking, and governance."
+      },
+      "description": "Starting November 4, 2025 your DOT balance, Staking and Governance are now on Polkadot Asset Hub"
+    },
+    "title": {
+      "kusamaMigration": "KSM Migration to",
+      "polkadotMigration": "DOT Migration to",
+      "kusamaAssetHub": "Kusama Asset Hub",
+      "polkadotAssetHub": "Polkadot Asset Hub"
+    }
+  },
   "balances": {
     "accountsModalTitle": "Your accounts",
     "allAccounts": "All accounts",
@@ -224,6 +258,9 @@
       "createPureProxy": "Create Pure Proxy",
       "creatingFlexibleProxy": "Creating flexible multisig",
       "description": "A multisig wallet used to create a flexible multisig (proxied) is not displayed in the multisig wallet group to prevent duplication. Use the flexible multisig for all signing operations",
+      "editOperationExistsAction": "Open operations",
+      "editOperationExistsDescription": "You can't create more than one edit operation. Please reject the existing one first.",
+      "editOperationExistsTitle": "Edit flexible multisig operation already exists",
       "existentialDeposit": "Existential deposit:",
       "flexible": "Flexible multisig",
       "leaveButton": "Leave",
@@ -1339,20 +1376,36 @@
     },
     "paritySigner": {
       "accessDeniedDescription": "Please make sure you grant access to camera",
-      "accessDeniedLabel": "Access denied!",
+      "accessDeniedDescriptionDesktopLinux": "Allow camera access in the system settings (Settings → Privacy → Camera).",
+      "accessDeniedDescriptionDesktopMac": "Please grant camera access in System Preferences > Security & Privacy > Camera, then restart the app",
+      "accessDeniedDescriptionDesktopWindows": "Please grant camera access in Windows Settings > Privacy > Camera, then restart the app",
+      "accessDeniedDescriptionWeb": "Allow camera access in the browser settings (Privacy → Camera).",
+      "accessDeniedLabel": "Spektr cannot use camera.",
       "accountNamePlaceholder": "Enter a name for this account",
+      "allowCameraPrefix": "Allow camera access in ",
+      "allowCameraSuffix": " (Settings → Privacy → Camera).",
+      "cameraAccessDeniedDescription": "onboarding.paritySigner.cameraAccessDeniedDescription",
+      "cameraAccessDeniedLabel": "onboarding.paritySigner.cameraAccessDeniedLabel",
       "checkAddress": "Check address",
       "continueButton": "Continue",
-      "decodeErrorDescription": "Error occurred while decoding QR code",
-      "decodeErrorLabel": "Recognition error!",
+      "decodeErrorDescription": "Make sure the QR code is easy to scan. Try scanning in a place with good light.",
+      "decodeErrorLabel": "The app cannot read the QR code data.",
       "generateAddressesModalTitle": "Generate accounts addresses",
-      "multishardQRCodeDescription": "Multishard wallets no longer supported",
-      "multishardQRCodeLabel": "Multishard QR not supported!",
+      "invalidQrDescription": "Make sure the QR code is correct.",
+      "invalidQrLabel": "The QR code may be broken or not supported.",
+      "multishardQRCodeDescription": "Please choose one key set and continue.",
+      "multishardQRCodeLabel": "You cannot import many key sets.",
+      "noVideoInputDescription": "Connect the camera or use a new device.",
+      "noVideoInputLabel": "We cannot find the camera.",
+      "notSameQrErrorDescription": "Keep the QR code and your device still while scanning. Do not move the code or thе camera.",
+      "notSameQrErrorLabel": "The app found different data in the QR code while scanning.",
       "notWorkingDescription": "Please make sure you camera is turned on",
       "notWorkingLabel": "Camera is not working!",
       "scanAgainButton": "Scan again",
       "selectCameraLabel": "Select camera",
       "startCameraLabel": "Starting camera",
+      "systemSettings": "the system settings",
+      "systemSettingsAria": "Open system settings",
       "tryAgainButton": "Try again",
       "typeNameButton": "Type a name to finish...",
       "walletNameLabel": "Wallet name",
@@ -1772,7 +1825,7 @@
   },
   "qrReader": {
     "parsingLabel": "Parsing data",
-    "parsingProgress": "{decoded} of {total}",
+    "parsingProgress": "{decodedFrames} of {totalFrames}",
     "parsingSubLabel": "Please hold still...",
     "videoError": "Your browser doesn't support video"
   },
@@ -2245,6 +2298,7 @@
   "walletDetails": {
     "common": {
       "accountTabTitle": "Accounts",
+      "accountsColumn": "Accounts",
       "addProxyAction": "Delegate",
       "addProxyButton": "Delegate",
       "addPureProxiedAction": "Create pure proxy",
@@ -2253,12 +2307,14 @@
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
       "confirmRemoveProxySubmit": "Delete",
       "confirmRemoveProxyTitle": "Revoke delegated authority?",
+      "consensusColumn": "Consensus",
       "doNotShowAgain": "Do not show this again",
       "emptyProxyDescription": "Add new proxies to work with them",
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",
       "forgetButton": "Remove",
       "hideButton": "Hide",
       "hideWallet": "Hide wallet",
+      "keyTabTitle": "Keys",
       "linkedWalletsWillBeRemovedDescription": "This wallet is a signatory in multisigs or as a proxy for other wallets. These related accounts will be automatically hidden. They’ll reappear if you pair this wallet again.",
       "linkedWalletsWillBeRemovedTitle": "Linked wallets will be removed",
       "nameExistsError": "This wallet name already exists",

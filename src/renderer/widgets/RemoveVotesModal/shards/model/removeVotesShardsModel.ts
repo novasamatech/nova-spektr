@@ -125,7 +125,7 @@ sample({
 });
 
 sample({
-  clock: removeVoteConfirmModel.submitStarted,
+  clock: submitModel.init,
   fn: () => Step.SUBMIT,
   target: $step,
 });
@@ -200,33 +200,22 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
-  source: removeVoteConfirmModel.$confirmMap,
-  filter: (stores) => nonNullable(stores[0]),
-  fn: (stores, signParams) => {
-    const store = stores[0];
-    const { meta } = store;
-
-    return {
-      signatures: signParams.signatures,
-      txPayloads: signParams.txPayloads,
-      chain: meta.chain,
-      account: meta.initiator,
-      signatory: meta.signatory,
-      wrappedTxs: [meta.tx],
-      coreTxs: [meta.coreTx],
-    };
-  },
-  target: submitModel.events.formInitiated,
+  clock: signModel.signed,
+  source: flow.status,
+  filter: (open) => open,
+  fn: (_, signed) => signed,
+  target: submitModel.init,
 });
 
 sample({
-  clock: removeVoteConfirmModel.submitFinished,
+  clock: submitModel.done,
+  source: flow.status,
+  filter: (open) => open,
   target: locksModel.events.subscribeLocks,
 });
 
 sample({
-  clock: removeVoteConfirmModel.submitFinished,
+  clock: submitModel.done,
   source: $availableAccounts,
   fn: (accounts) => {
     const accountIds = accounts.filter(nonNullable).map((a) => a.accountId);
