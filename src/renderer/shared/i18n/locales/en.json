@@ -558,6 +558,7 @@
       }
     },
     "promotion": {
+      "title": "PROMOTION PERIOD",
       "canSubmit": {
         "description": "Recommend to prepare promotion evidence before the retention period ends to avoid delays in referendum creation.",
         "promotionPeriodTooltip": "Promotion period\n{from} - {to}",
@@ -629,6 +630,49 @@
         "retainAtIvDan": "Retain At IV Dan",
         "retainAtVDan": "Retain At V Dan",
         "retainAtViDan": "Retain At VI Dan"
+      }
+    },
+    "retention": {
+      "title": "RETENTION PERIOD",
+      "button": {
+        "edit": "Edit",
+        "submitReport": "Submit report",
+        "view": "View"
+      },
+      "criticalExpired": {
+        "description": "You must to submit report",
+        "title": "Last call to submit retention report"
+      },
+      "criticalLastCall": {
+        "description": "You risk being bumped if you don't submit retention report before {to}",
+        "title": "Last call to submit retention report"
+      },
+      "normal": {
+        "description": "Be prepared to submit the report between {from} – {to}",
+        "title": "Contribute according to rank requirements"
+      },
+      "referendumCreated": {
+        "description": "until the referendum ends",
+        "title": "Retention referendum created"
+      },
+      "submitted": {
+        "description": "Report is on review. It is editable until referendum is created.",
+        "title": "Retention report submitted"
+      },
+      "timeline": {
+        "dangerZone": "Danger zone - report must be submitted urgently",
+        "safeZone": "Safe zone - plenty of time remaining",
+        "submittedOn": "Retention report submitted\n{date}",
+        "warningZone": "Warning zone - retention period approaching end"
+      },
+      "timer": {
+        "ensureAwareness": "Ensure fellows are aware of the report",
+        "riskBumped": "Risk being bumped anytime",
+        "untilEnd": "until the end of retention period"
+      },
+      "warningUrgent": {
+        "description": "Might not be enough time to create a referendum. Submit report before {to}",
+        "title": "Submit retention report now"
       }
     },
     "salary": {

@@ -14,7 +14,7 @@ import { Card } from './Card';
 
 export const AdditionalContext = () => {
   const { t } = useTranslation();
-  const evidence = useUnit(details.$evidence);
+  const evidenceContent = useUnit(details.$evidenceContent);
   const description = useUnit(details.$description);
   const pendingMeta = useUnit(details.$pendingMeta);
 
@@ -25,7 +25,7 @@ export const AdditionalContext = () => {
   });
 
   const proposer = useUnit(details.$proposer);
-  const memberId = proposer || evidence?.accountId;
+  const memberId = proposer || evidenceContent?.accountId;
 
   const identity = useStoreMap({
     store: details.$identities,

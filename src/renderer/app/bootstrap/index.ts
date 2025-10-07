@@ -134,6 +134,7 @@ export const bootstrap = () => {
     import('@/features/hidden-wallets').then(({ hiddenWalletsFeature }) => hiddenWalletsFeature),
 
     import('@/features/fellowship-promotion').then(({ fellowshipPromotionFeature }) => fellowshipPromotionFeature),
+    import('@/features/fellowship-retention').then(({ fellowshipRetentionFeature }) => fellowshipRetentionFeature),
   ]);
 
   populate();
