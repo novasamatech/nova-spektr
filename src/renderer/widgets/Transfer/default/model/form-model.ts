@@ -349,12 +349,9 @@ const $available = combine(
   },
 );
 
-const $showAccountDeathAlert = $balanceValidationResults.map((results) => {
-  const totalBurned = results.reduce((acc, item) => {
-    return acc.add(item.balance.burned);
-  }, BN_ZERO);
-  return totalBurned.gt(BN_ZERO);
-});
+const $showAccountDeathAlert = $balanceValidationResults.map((results) =>
+  results.some((item) => item.balance.burned.gt(BN_ZERO)),
+);
 
 const $showEDSwitch = $initiatorAccountBalance.map((balance) => {
   if (nullable(balance)) {
