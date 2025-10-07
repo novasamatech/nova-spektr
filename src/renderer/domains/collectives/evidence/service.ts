@@ -36,7 +36,7 @@ function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
   return period;
 }
 
-function getBlockUntilNextPropotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+function getBlockUntilNextPromotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
   const promotionPeriod = getPromotionPeriod(member, periods);
   const gone = currentBlock - member.lastPromotion;
   return Math.max(0, promotionPeriod - gone);
@@ -101,7 +101,7 @@ export const evidenceService = {
   getCidByEvidence,
   getEvidenceFromCid,
   getPromotionPeriod,
-  getBlockUntilNextPropotion,
+  getBlockUntilNextPromotion,
   getDemotionPeriod,
   getBlocksUntilDemotion,
   getEndDemotionBlock,

@@ -4,10 +4,10 @@ import { type PropsWithChildren } from 'react';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable, toAddress } from '@/shared/lib/utils';
-import { DetailRow, FootnoteText, HeaderTitleText, Separator, Switch } from '@/shared/ui';
+import { FootnoteText, HeaderTitleText, Separator, Switch } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
-import { type Member, memberService, salaryService } from '@/domains/collectives';
+import { type Member, memberService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
@@ -78,22 +78,13 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
               </SetActiveModal>
             </Box>
           </Box>
-          <div className="flex items-center justify-between whitespace-nowrap">
-            <DetailRow label={t('fellowship.profile.activeSalary')}>
-              {salaryService.formatSalaryAmount(salary.active)}
-            </DetailRow>
-            <div className="w-full grow" />
-            <div className="h-4.5 w-px border-r border-divider" />
-            <div className="w-full grow" />
-            <DetailRow label={t('fellowship.profile.passiveSalary')}>
-              {salaryService.formatSalaryAmount(salary.passive)}
-            </DetailRow>
-          </div>
-          <Slot id={profileInfoSlot} props={{ member }} />
         </Box>
         <Separator />
       </Modal.HeaderContent>
-      <Modal.Content disableScroll>
+      <Modal.Content>
+        <div className="bg-background-suffix-hover p-4">
+          <Slot id={profileInfoSlot} props={{ member }} />
+        </div>
         <ActivityFeed />
       </Modal.Content>
     </Modal>

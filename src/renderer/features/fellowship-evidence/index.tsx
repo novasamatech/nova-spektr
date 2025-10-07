@@ -4,7 +4,6 @@ import React from 'react';
 import { useI18n } from '@/shared/i18n';
 import { ButtonCard } from '@/shared/ui';
 import { evidenceSlot } from '@/features/fellowship-evidence-salary';
-import { profileInfoSlot } from '@/features/fellowship-profile';
 import { evidenceActionsSlot } from '@/features/fellowship-referendum-details';
 import {
   evidenceVotingTaskActionSlot,
@@ -13,7 +12,6 @@ import {
 } from '@/features/fellowship-tasks';
 
 import { EvidencePostFlowModal } from './components/EvidencePostFlowModal';
-import { PromotionInfo } from './components/PromotionInfo';
 import { RetentionInfo } from './components/RetentionInfo';
 import { SubmitEvidenceConfirmation } from './components/SubmitEvidenceConfirmation';
 import { VotingActions } from './components/VotingActions';
@@ -38,10 +36,6 @@ fellowshipEvidenceFeature.inject(requestPromotionTaskActionSlot, () => {
       </ButtonCard>
     </EvidencePostFlowModal>
   );
-});
-
-fellowshipEvidenceFeature.inject(profileInfoSlot, () => {
-  return <PromotionInfo />;
 });
 
 fellowshipEvidenceFeature.inject(evidenceVotingTaskActionSlot, ({ evidence, endBlock }) => {

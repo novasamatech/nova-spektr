@@ -557,6 +557,41 @@
         "title": "Switching status on"
       }
     },
+    "promotion": {
+      "canSubmit": {
+        "description": "Recommend to prepare promotion evidence before the retention period ends to avoid delays in referendum creation.",
+        "promotionPeriodTooltip": "Promotion period\n{from} - {to}",
+        "submitAnytime": "Submit evidence anytime",
+        "submitButton": "Submit evidence",
+        "submitEvidenceTooltip": "Submit promotion evidence\nfrom {to}",
+        "title": "You can submit promotion evidence"
+      },
+      "referendumCreated": {
+        "description": "until the referendum ends",
+        "title": "Promotion referendum created",
+        "viewButton": "View referendum"
+      },
+      "submitted": {
+        "dangerZoneTooltip": "Danger zone - evidence may be demoted",
+        "description": "Evidence is on approval. It is editable until referendum is created.",
+        "editButton": "Edit",
+        "ensureAwareness": "Ensure fellows are aware of the evidence",
+        "safeZoneTooltip": "Safe zone - evidence is being reviewed",
+        "statusGood": "Good",
+        "submittedOnTooltip": "Promotion evidence submitted\n{date}",
+        "title": "Promotion evidence submitted",
+        "viewButton": "View",
+        "warningZoneTooltip": "Warning zone - consider promoting evidence"
+      },
+      "waiting": {
+        "dangerZoneTooltip": "Danger zone - promotion opportunity very close",
+        "description": "You be eligible for promotion from {from}",
+        "safeZoneTooltip": "Safe zone - plenty of time until promotion",
+        "title": "Waiting promotion opportunity",
+        "untilOpportunity": "until promotion opportunity",
+        "warningZoneTooltip": "Warning zone - promotion opportunity approaching"
+      }
+    },
     "rank": {
       "0": "Candidate",
       "1": "Humble",

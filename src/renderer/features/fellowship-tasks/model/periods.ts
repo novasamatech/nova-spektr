@@ -17,7 +17,7 @@ const $leftToPromotion = combine(
   ({ periods, currentBlock, member }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member) || nullable(currentBlock))
       return null;
-    return evidenceService.getBlockUntilNextPropotion(member, periods, currentBlock);
+    return evidenceService.getBlockUntilNextPromotion(member, periods, currentBlock);
   },
 );
 
