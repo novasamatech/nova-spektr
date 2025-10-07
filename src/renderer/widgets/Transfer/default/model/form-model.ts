@@ -79,7 +79,7 @@ const $isMaxModeEnabled = createStore(false)
   .on(setMaxMode, (_, update) => update)
   .reset(formInitiated);
 
-const toggleExistentialDeposit = createEvent<boolean | void>();
+const toggleExistentialDeposit = createEvent();
 const $isExistentialDepositEnabled = createStore(false)
   .on(toggleExistentialDeposit, (state, update) => {
     if (nonNullable(update)) {
