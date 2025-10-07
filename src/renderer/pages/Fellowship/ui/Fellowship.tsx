@@ -63,11 +63,11 @@ export const Fellowship = () => {
 
       <Box horizontalAlign="center" height="100%" width="100%" padding={[4, 0]}>
         <Box direction="row" gap={2} width="1089px" height="100%">
-          <Box width="276px" height="100%" gap={2.5} shrink={0}>
-            <Slot id={fellowshipSidebarSlot} />
-          </Box>
           <Box width="805px" height="100%" gap={2.5} shrink={0}>
             <Slot id={fellowshipContentSlot} />
+          </Box>
+          <Box width="276px" height="100%" gap={2.5} shrink={0}>
+            <Slot id={fellowshipSidebarSlot} />
           </Box>
         </Box>
         <Outlet />
