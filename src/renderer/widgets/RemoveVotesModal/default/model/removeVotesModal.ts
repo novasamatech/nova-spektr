@@ -226,7 +226,6 @@ sample({
     coreTx: $coreTx,
   },
   filter: ({ tx, initiator, signatory, state: { votes, asset, chain, api } }) => {
-    console.log({ tx, initiator, signatory, votes, asset, chain, api });
     return (
       nonNullable(initiator) &&
       nonNullable(signatory) &&

@@ -1,5 +1,5 @@
 /* eslint-disable import-x/max-dependencies */
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { spread } from 'patronum';
 
@@ -369,7 +369,13 @@ const $showAccountDeathAlert = combine(
   },
 );
 
-const $showEDSwitch = $initiatorAccountBalance.map((balance) => nonNullable(balance) && balance.ed >= balance.reserved);
+const $showEDSwitch = $initiatorAccountBalance.map((balance) => {
+  if (nullable(balance)) {
+    return false;
+  }
+  const locked = BN.max(balance.frozen, balance.reserved);
+  return balance.ed.gt(locked);
+});
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
 const $isMultisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);

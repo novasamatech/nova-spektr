@@ -911,7 +911,7 @@
     "transactionErrors": {
       "balance": {
         "intro": "Wallet <wallet/> has insufficient funds to cover",
-        "required": "Please top up the balance of this wallet by { balances } and try again.",
+        "required": "Please top up the balance of this wallet by { balances } or use the MAX button.",
         "section": "the {action} of {balance}"
       },
       "fatal": {
@@ -2229,7 +2229,7 @@
   "transfer": {
     "FIX": "Please enter amount",
     "accountDeathWarning": {
-      "description": "After this transfer, your balance will <b>fall below the Existential Deposit ({ed} {asset}).</b> If any tokens remain, <b>they will be burned, and your account will be removed from on-chain storage.</b>",
+      "description": "After this transfer, your balance will <b>fall below the Existential Deposit ({ed} {asset}) and your account will be removed from on-chain storage.</b>",
       "title": "Balance below network minimum"
     },
     "amountPlaceholder": "0",
