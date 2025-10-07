@@ -82,6 +82,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
     />
   );
 
+  const showReuseLockBtn = lock.gte(amount.value || BN_ZERO);
+
   return (
     <>
       <div className="flex flex-col gap-6 px-5 py-4">
@@ -138,7 +140,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
               errorText={amount.errorMessage}
               onChange={amount.onChange}
             />
-            {lock.gt(BN_ZERO) && (
+            {showReuseLockBtn && (
               <div className="flex justify-end">
                 <Button size="sm" pallet="secondary" onClick={() => amount.onChange(lock)}>
                   {t('governance.vote.reuseLock')}: {formatAsset(lock, asset)}
