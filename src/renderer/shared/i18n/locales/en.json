@@ -1241,6 +1241,7 @@
         "votingPower": "Voting power"
       },
       "noVoteForReferendum": "There're no existing votes for this referendum",
+      "reuseLock": "Reuse lock",
       "timeoutReferendumError": "This referendum has already passed"
     },
     "voteHistory": {
