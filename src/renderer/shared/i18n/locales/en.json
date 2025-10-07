@@ -109,10 +109,10 @@
       "description": "Starting November 4, 2025 your DOT balance, Staking and Governance are now on Polkadot Asset Hub"
     },
     "title": {
-      "kusamaMigration": "KSM Migration to",
-      "polkadotMigration": "DOT Migration to",
       "kusamaAssetHub": "Kusama Asset Hub",
-      "polkadotAssetHub": "Polkadot Asset Hub"
+      "kusamaMigration": "KSM Migration to",
+      "polkadotAssetHub": "Polkadot Asset Hub",
+      "polkadotMigration": "DOT Migration to"
     }
   },
   "balances": {
