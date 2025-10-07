@@ -349,24 +349,12 @@ const $available = combine(
   },
 );
 
-const $showAccountDeathAlert = combine(
-  {
-    isMaxMode: $isMaxModeEnabled,
-    balance: $initiatorAccountBalance,
-    totalFee: $totalFee,
-    amount: form.fields.amount.$value,
-    asset: $asset,
-  },
-  ({ isMaxMode, balance, totalFee, amount, asset }) => {
-    if (!isMaxMode || !totalFee || !asset) {
-      return false;
-    }
-
-    const availableWithKeepAlive = getAvailableAmount({ balance, totalFee, includeED: false });
-    const transferAmount = toPrecision(amount, asset.precision);
-    return availableWithKeepAlive.lt(transferAmount);
-  },
-);
+const $showAccountDeathAlert = $balanceValidationResults.map((results) => {
+  const totalBurned = results.reduce((acc, item) => {
+    return acc.add(item.balance.burned);
+  }, BN_ZERO);
+  return totalBurned.gt(BN_ZERO);
+});
 
 const $showEDSwitch = $initiatorAccountBalance.map((balance) => {
   if (nullable(balance)) {
