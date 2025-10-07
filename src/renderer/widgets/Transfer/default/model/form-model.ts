@@ -219,8 +219,6 @@ const $coreTx = combine(
       return null;
     }
 
-    const transferAll = isMaxModeEnabled && isExistentialDepositEnabled;
-
     return transactionBuilder.buildTransfer({
       chain: network.chain,
       asset: network.asset,
@@ -228,7 +226,8 @@ const $coreTx = combine(
       amount: form.amount,
       destination: form.destination,
       xcmData,
-      transferAll,
+      transferAll: isMaxModeEnabled,
+      allowDeath: isMaxModeEnabled && isExistentialDepositEnabled,
     });
   },
 );
