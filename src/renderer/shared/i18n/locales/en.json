@@ -457,7 +457,7 @@
         },
         "title": "All events"
       },
-      "lastActivityCardTitle": "Last events",
+      "lastActivityCardTitle": "Latest events",
       "record": {
         "activeChanged": "changed his status to {status}",
         "demoted": "has been bumped to rank {rank}",
@@ -607,6 +607,7 @@
     "referendums": {
       "completed": "Completed referendums",
       "ongoing": "Ongoing referendums",
+      "tab": "Referendums",
       "tracks": {
         "architects": "Architects",
         "architectsAdept": "Architects Adept",
@@ -713,6 +714,7 @@
       }
     },
     "tasks": {
+      "active": "Active",
       "cardTitle": "Actions Required",
       "completed": "Completed",
       "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
@@ -729,6 +731,7 @@
       "reviewBasket": "Confirm now",
       "reviewBasketTitle_one": "Decision",
       "reviewBasketTitle_other": "Decisions",
+      "tab": "Tasks",
       "task": {
         "anyReferendum": {
           "noDescription": "No description provided",
@@ -789,7 +792,8 @@
           "rfcOrWhitelist": "What do you think?",
           "spend": "How do you find this payment request?"
         }
-      }
+      },
+      "voted": "Voted"
     },
     "title": "Fellowship",
     "tooltips": {

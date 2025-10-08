@@ -1,16 +1,9 @@
 import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activity-feed';
-import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
-import { EntrypointCard } from './components/EntrypointCard';
 import { evidenceSlot, salarySlot } from './components/EvidenceSalaryModal';
 import { fellowshipEvidenceSalaryFeature } from './model/feature';
 
 export { evidenceSlot, salarySlot, fellowshipEvidenceSalaryFeature };
-
-fellowshipEvidenceSalaryFeature.inject(fellowshipSidebarSlot, {
-  order: 1,
-  render: () => <EntrypointCard />,
-});
 
 fellowshipEvidenceSalaryFeature.inject(activityFeedRecordDescriptionSlot, ({ t, record }) => {
   switch (record.type) {
