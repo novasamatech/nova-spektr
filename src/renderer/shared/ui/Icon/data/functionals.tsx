@@ -23,6 +23,7 @@ import ExportIcon from '@/shared/assets/images/functionals/export.svg?jsx';
 import EyeSlashedIcon from '@/shared/assets/images/functionals/eye-slashed.svg?jsx';
 import EyeIcon from '@/shared/assets/images/functionals/eye.svg?jsx';
 import ForgetIcon from '@/shared/assets/images/functionals/forget.svg?jsx';
+import HistoryIcon from '@/shared/assets/images/functionals/history.svg?jsx';
 import ImportIcon from '@/shared/assets/images/functionals/import.svg?jsx';
 import LinkIcon from '@/shared/assets/images/functionals/link.svg?jsx';
 import LockIcon from '@/shared/assets/images/functionals/lock.svg?jsx';
@@ -122,6 +123,7 @@ const FunctionalImages = {
   createPureProxy: { svg: CreatePureProxyIcon },
   delegate: { svg: DelegateIcon },
   changeSignatories: { svg: ChangeSignatoriesIcon },
+  history: { svg: HistoryIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

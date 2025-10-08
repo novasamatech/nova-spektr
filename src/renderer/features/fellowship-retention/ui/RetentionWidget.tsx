@@ -262,6 +262,11 @@ const ReferendumCreated = memo(() => {
   return (
     <WidgetContainer
       title={t('fellowship.retention.referendumCreated.title')}
+      description={
+        <FootnoteText>
+          {title} {voteLevel}
+        </FootnoteText>
+      }
       footer={
         <>
           <TimerToBlock endBlock={referendum.ends} shortDateFormat />
@@ -271,11 +276,7 @@ const ReferendumCreated = memo(() => {
           <Slot id={referendumWidgetActionSlot} props={{ referendum }} />
         </>
       }
-    >
-      <FootnoteText>
-        {title} {voteLevel}
-      </FootnoteText>
-    </WidgetContainer>
+    />
   );
 });
 
@@ -354,7 +355,7 @@ const useRetentionData = () => {
 type WidgetContainerProps = PropsWithChildren<{
   title: string;
   footer: ReactNode;
-  description?: string;
+  description?: ReactNode;
   icon?: ReactNode;
 }>;
 
