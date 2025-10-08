@@ -20,13 +20,12 @@ import { RetentionTimeline } from './RetentionTimeline';
 import { TimerToBlock } from './TimerToBlock';
 
 /**
- * Timeline length constants (in arbitrary units matching Timeline component)
- * Proportions: ~78% safe, ~17% warning, ~4% danger Total visual width is
- * distributed across retention period zones
+ * Timeline length constants in percentages. Total visual width is distributed
+ * across retention period zones
  */
-const SAFE_ZONE_LENGTH = 292;
-const WARNING_ZONE_LENGTH = 64;
-const DANGER_ZONE_LENGTH = 16;
+const SAFE_ZONE_LENGTH = 78.5;
+const WARNING_ZONE_LENGTH = 17;
+const DANGER_ZONE_LENGTH = 4.5;
 const TOTAL_LENGTH = SAFE_ZONE_LENGTH + WARNING_ZONE_LENGTH + DANGER_ZONE_LENGTH;
 
 export const referendumWidgetActionSlot = createSlot<{ referendum: Referendum }>();
@@ -167,8 +166,20 @@ export const RetentionWidget = memo(({ member }: Props) => {
 const ReportSubmitted = memo(() => {
   const { t } = useI18n();
 
-  const { retentionPeriodDates, submittedTimelineSteps, timelineValue } = useRetentionData();
+  const { retentionPeriodDates, timelineValue } = useRetentionData();
   const retentionEvidenceSubmissionDate = useUnit(fellowshipRetention.$retentionEvidenceSubmissionDate);
+
+  const submittedTimelineSteps: TimelineStep[] = useMemo(
+    () => [
+      {
+        baseColorClass: cnTw('bg-accent-background'),
+        filledColorClass: cnTw('bg-icon-blue-line'),
+        onHoverTooltipText: t('fellowship.retention.timeline.safeZone'),
+        length: TOTAL_LENGTH,
+      },
+    ],
+    [t],
+  );
 
   const submissionPosition = useMemo(() => {
     if (!retentionEvidenceSubmissionDate || !retentionPeriodDates) return 50;
@@ -276,13 +287,11 @@ const useRetentionData = () => {
   const fromDateFormatted = retentionPeriodDates ? formatDate(retentionPeriodDates.from, 'dd.MM.yy') : null;
   const toDateFormatted = retentionPeriodDates ? formatDate(retentionPeriodDates.to, 'dd.MM.yy') : null;
 
-  // Timeline steps for active retention period (3 zones: safe, warning, danger)
   const timelineSteps: TimelineStep[] = useMemo(() => {
     if (!retentionPeriodDates) return [];
 
     const periodEndDate = retentionPeriodDates.to;
 
-    // Calculate end of safe zone (when warning period begins)
     const warningStartDate = subDays(periodEndDate, WARNING_THRESHOLD_DAYS);
     const dangerStartDate = subDays(periodEndDate, DANGER_THRESHOLD_DAYS);
 
@@ -317,19 +326,6 @@ const useRetentionData = () => {
     ];
   }, [t, retentionPeriodDates, fromDateFormatted, toDateFormatted]);
 
-  // Timeline steps for submitted report (single safe zone)
-  const submittedTimelineSteps: TimelineStep[] = useMemo(
-    () => [
-      {
-        baseColorClass: cnTw('bg-accent-background'),
-        filledColorClass: cnTw('bg-icon-blue-line'),
-        onHoverTooltipText: t('fellowship.retention.timeline.safeZone'),
-        length: TOTAL_LENGTH,
-      },
-    ],
-    [t],
-  );
-
   // Calculate timeline position directly from elapsed time
   const timelineValue = useMemo(() => {
     if (!retentionPeriodDates) return 0;
@@ -352,7 +348,6 @@ const useRetentionData = () => {
     retentionPeriodDates,
     timelineSteps,
     timelineValue,
-    submittedTimelineSteps,
   };
 };
 
