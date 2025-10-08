@@ -1,7 +1,7 @@
 /* eslint-disable import-x/max-dependencies */
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { spread } from 'patronum';
+import { debounce, spread } from 'patronum';
 
 import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
@@ -341,7 +341,12 @@ const $calculationExtrinsic = combine(
   },
 );
 
-const { $errors, $valid, $balanceValidationResults, $validationDone } = createTxValidationStore({
+const {
+  $errors: $errorsImmediate,
+  $valid,
+  $balanceValidationResults,
+  $validationDone,
+} = createTxValidationStore({
   validator: transferValidator,
   params: {
     api: $api,
@@ -358,6 +363,13 @@ const { $errors, $valid, $balanceValidationResults, $validationDone } = createTx
     includeExistentialDeposit: $isExistentialDepositEnabled,
   },
 });
+
+const errorsDebounced = debounce({
+  source: $errorsImmediate,
+  timeout: 100,
+});
+
+const $errors = restore(errorsDebounced, []);
 
 const $totalFee = combine(
   {
@@ -392,9 +404,16 @@ sample({
   target: setAvailable,
 });
 
-const $accountDeath = $balanceValidationResults.map((results) =>
+const $accountDeathImmediate = $balanceValidationResults.map((results) =>
   results.some((item) => item.balance.burned.gt(BN_ZERO)),
 );
+
+const accountDeathDebounced = debounce({
+  source: $accountDeathImmediate,
+  timeout: 100,
+});
+
+const $accountDeath = restore(accountDeathDebounced, false);
 
 const $showEDSwitch = combine($isEdSwitchVisible, $initiatorAccountBalance, (isEdSwitchVisible, balance) => {
   if (!isEdSwitchVisible || nullable(balance)) {
@@ -453,7 +472,7 @@ const $isMyselfXcmEnabled = combine(
 
 const $canSubmit = combine(
   {
-    errors: $errors,
+    errors: $errorsImmediate,
     isXcm: $isXcm,
     isFormValid: form.$isValid,
     valid: $valid,
