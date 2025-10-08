@@ -86,7 +86,7 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
 
   const free = balance.free.sub(amount);
   // in case of exceeding the ED, we burn all tokens
-  const burnedTokens = free.lt(balance.ed) ? balance.ed.sub(free) : BN_ZERO;
+  const burnedTokens = free.lt(balance.ed) ? free : BN_ZERO;
 
   return {
     success: true,
