@@ -346,14 +346,19 @@ const $totalFee = combine(
     validationDone: $validationDone,
     validationResults: $balanceValidationResults,
     asset: $asset,
+    initiator: form.fields.initiator.$value,
   },
-  ({ validationResults, asset, validationDone }) => {
-    console.log({ validationResults });
-    if (!validationDone || !asset) {
+  ({ validationResults, asset, initiator, validationDone }) => {
+    if (!validationDone || nullable(asset) || nullable(initiator)) {
       return null;
     }
 
-    return combineTotalRequiredFee({ validationResults, assetId: asset.assetId, excludeActions: ['sending amount'] });
+    return combineTotalRequiredFee({
+      validationResults,
+      account: initiator,
+      assetId: asset.assetId,
+      excludeActions: ['sending amount'],
+    });
   },
 );
 
