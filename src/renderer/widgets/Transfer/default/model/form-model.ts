@@ -10,13 +10,13 @@ import {
   TEST_EVM_ADDRESS,
   assert,
   formatAmount,
-  formatBalance,
   getAssetId,
   getNativeAsset,
   nonNullable,
   nullable,
   toAccountId,
   toAddress,
+  toAssetPrecision,
   toPrecision,
   validateAddress,
   withdrawableAmountBN,
@@ -88,6 +88,10 @@ const $isExistentialDepositEnabled = createStore(false)
       return !state;
     }
   })
+  .reset(formInitiated);
+
+const $isEdSwitchVisible = createStore(false)
+  .on(setMaxMode, () => true)
   .reset(formInitiated);
 
 const $networkStore = restore(formInitiated, null);
@@ -201,6 +205,22 @@ const $signatoryBalance = combine(
   },
 );
 
+const $initiatorAccountBalance = combine(
+  {
+    initiator: form.fields.initiator.$value,
+    balances: balanceModel.$balanceMap,
+    chain: $chain,
+    asset: $asset,
+  },
+  ({ initiator, asset, chain, balances }) => {
+    if (nullable(initiator) || nullable(chain) || nullable(asset)) {
+      return null;
+    }
+
+    return balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
+  },
+);
+
 // transaction
 
 const $coreTx = combine(
@@ -213,11 +233,31 @@ const $coreTx = combine(
     initiator: form.fields.initiator.$value,
     isExistentialDepositEnabled: $isExistentialDepositEnabled,
     isMaxModeEnabled: $isMaxModeEnabled,
+    balance: $initiatorAccountBalance,
   },
-  ({ network, isXcm, form, xcmData, isConnected, initiator, isExistentialDepositEnabled, isMaxModeEnabled }) => {
-    if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
+  ({
+    network,
+    isXcm,
+    form,
+    xcmData,
+    isConnected,
+    initiator,
+    isExistentialDepositEnabled,
+    isMaxModeEnabled,
+    balance,
+  }) => {
+    if (
+      !network ||
+      !initiator ||
+      !isConnected ||
+      (isXcm && !xcmData) ||
+      !validateAddress(form.destination) ||
+      nullable(balance)
+    ) {
       return null;
     }
+
+    console.log({ frr: balance.free.toString(), amount: form.amount });
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
@@ -226,8 +266,8 @@ const $coreTx = combine(
       amount: form.amount,
       destination: form.destination,
       xcmData,
-      transferAll: isMaxModeEnabled,
-      allowDeath: isMaxModeEnabled && isExistentialDepositEnabled,
+      allowDeath: isMaxModeEnabled && isExistentialDepositEnabled, // ToDo: add a check that we have burned tokens
+      transferAll: isMaxModeEnabled && isExistentialDepositEnabled, // check amount === all available
     });
   },
 );
@@ -308,27 +348,12 @@ const $totalFee = combine(
     asset: $asset,
   },
   ({ validationResults, asset, validationDone }) => {
+    console.log({ validationResults });
     if (!validationDone || !asset) {
       return null;
     }
 
     return combineTotalRequiredFee({ validationResults, assetId: asset.assetId, excludeActions: ['sending amount'] });
-  },
-);
-
-const $initiatorAccountBalance = combine(
-  {
-    initiator: form.fields.initiator.$value,
-    balances: balanceModel.$balanceMap,
-    chain: $chain,
-    asset: $asset,
-  },
-  ({ initiator, asset, chain, balances }) => {
-    if (nullable(initiator) || nullable(chain) || nullable(asset)) {
-      return null;
-    }
-
-    return balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
   },
 );
 
@@ -349,12 +374,12 @@ const $available = combine(
   },
 );
 
-const $showAccountDeathAlert = $balanceValidationResults.map((results) =>
+const $accountDeath = $balanceValidationResults.map((results) =>
   results.some((item) => item.balance.burned.gt(BN_ZERO)),
 );
 
-const $showEDSwitch = $initiatorAccountBalance.map((balance) => {
-  if (nullable(balance)) {
+const $showEDSwitch = combine($isEdSwitchVisible, $initiatorAccountBalance, (isEdSwitchVisible, balance) => {
+  if (!isEdSwitchVisible || nullable(balance)) {
     return false;
   }
   const locked = BN.max(balance.frozen, balance.reserved);
@@ -406,12 +431,6 @@ const $isMyselfXcmEnabled = combine(
     destinationAccounts: $destinationAccounts,
   },
   ({ isXcm, destinationAccounts }) => isXcm && destinationAccounts.length > 0,
-);
-
-const $isAmountInputDisabled = combine(
-  $isMaxModeEnabled,
-  $isExistentialDepositEnabled,
-  (isMaxModeEnabled, isExistentialDepositEnabled) => isMaxModeEnabled && isExistentialDepositEnabled,
 );
 
 const $canSubmit = combine(
@@ -544,12 +563,9 @@ sample({
     available: $available,
     network: $networkStore,
   },
-  filter: ({ isMaxModeEnabled, available, network }) => {
-    return isMaxModeEnabled && nonNullable(available) && nonNullable(network);
-  },
-  fn: ({ available, network }) => {
-    return formatBalance(available!, network!.asset.precision).value;
-  },
+  filter: ({ isMaxModeEnabled, available, network }) =>
+    isMaxModeEnabled && nonNullable(available) && nonNullable(network),
+  fn: ({ available, network }) => toAssetPrecision(available!, network!.asset.precision),
   target: form.fields.amount.change,
 });
 
@@ -667,9 +683,8 @@ export const formModel = {
 
   $isExistentialDepositEnabled,
   $isMaxModeEnabled,
-  $isAmountInputDisabled,
   $showEDSwitch,
-  $showAccountDeathAlert,
+  $accountDeath,
   $isNative,
 
   formInitiated,

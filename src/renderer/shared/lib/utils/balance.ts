@@ -134,6 +134,10 @@ export const toPrecision = (balance: string | BN, precision: number): BN => {
   return balance ? new BN(formatAmount(balance.toString(), precision)) : BN_ZERO;
 };
 
+export const toAssetPrecision = (value: BN, precision: number): string => {
+  return new BigNumber(value.toString()).div(new BigNumber(10).pow(precision)).toString();
+};
+
 export const toNumberWithPrecision = (value: number | BN, precision: number): number => {
   if (BN.isBN(value)) {
     const fixedValue = value.div(BN_TEN.pow(new BN(precision)));

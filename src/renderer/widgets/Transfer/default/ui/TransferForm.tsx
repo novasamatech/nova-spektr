@@ -417,9 +417,7 @@ const Amount = () => {
   const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
-  const isMaxModeEnabled = useUnit(formModel.$isMaxModeEnabled);
   const showEDSwitch = useUnit(formModel.$showEDSwitch);
-  const isAmountInputDisabled = useUnit(formModel.$isAmountInputDisabled);
 
   if (!network) {
     return null;
@@ -439,7 +437,6 @@ const Amount = () => {
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
-        disabled={isAmountInputDisabled}
         suffixElement={
           <Button pallet="secondary" variant="fill" size="sm" onClick={() => formModel.events.toggleMaxMode(true)}>
             {t('transfer.max.buttonTitle')}
@@ -452,7 +449,7 @@ const Amount = () => {
         {t(amount.errorMessage)}
       </InputHint>
 
-      {isMaxModeEnabled && showEDSwitch && (
+      {showEDSwitch && (
         <div className="flex justify-end">
           <Switch
             checked={isExistentialDepositEnabled}
@@ -591,7 +588,7 @@ const MyselfAccountModal = () => {
 
 const AlertForAccountDeath = () => {
   const { t } = useI18n();
-  const showAccountDeathAlert = useUnit(formModel.$showAccountDeathAlert);
+  const showAccountDeathAlert = useUnit(formModel.$accountDeath);
   const initiatorAccountBalance = useUnit(formModel.$initiatorAccountBalance);
   const asset = useUnit(formModel.$asset);
 

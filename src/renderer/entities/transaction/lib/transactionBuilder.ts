@@ -94,6 +94,8 @@ function buildTransfer({
     transactionType = TransactionType.TRANSFER_ALLOW_DEATH;
   }
 
+  console.log({ transactionType });
+
   const palletName =
     asset.typeExtras && 'palletName' in asset.typeExtras ? camelCase(asset.typeExtras.palletName) : 'assets';
 
