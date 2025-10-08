@@ -24,7 +24,7 @@ export const Tasks = () => {
 
   const activeCount = groups.active?.length ?? 0;
   const tasksCount = groups.tasks?.length ?? 0;
-  const referendumCount = (groups.active?.length ?? 0) + (groups.voted?.length ?? 0) + (groups.completed?.length ?? 0);
+  const referendumCount = activeCount + (groups.voted?.length ?? 0) + (groups.completed?.length ?? 0);
 
   if (nullable(input) || pending) {
     return (
