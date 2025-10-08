@@ -31,6 +31,12 @@ export class BaseLoginPage extends BasePage<LoginPageElements> {
     await step('Go to the onboarding page', async () => {
       await this.goto(this.pageElements.url);
       await this.page.getByText(this.pageElements.onboardingLabel).waitFor();
+      await step('Mark "read" flag for migration info modal', async () => {
+        await this.page.evaluate(() => {
+          localStorage.setItem('assethub_migration_modal_seen_kusama', 'true');
+          localStorage.setItem('assethub_migration_modal_seen_polkadot', 'true');
+        });
+      });
     });
 
     return this;

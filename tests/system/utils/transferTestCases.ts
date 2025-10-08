@@ -1,13 +1,13 @@
 export const transferTestCases = [
   {
-    chainName: 'Polkadot',
+    chainName: 'Polkadot Relay',
     assetId: 0,
     amount: '0.1',
     validationAmount: '1000',
     recipient: '13mAjFVjFDpfa42k2dLdSnUyrSzK8vAySsoudnxX2EKVtfaq',
   },
   {
-    chainName: 'Kusama',
+    chainName: 'Kusama Relay',
     assetId: 0,
     amount: '0.01',
     validationAmount: '1000',
@@ -31,7 +31,7 @@ export const transferTestCases = [
 
 export const xcmTransferTestCases = [
   {
-    chainName: 'Polkadot',
+    chainName: 'Polkadot Relay',
     assetId: 0,
     xcmChainName: 'Polkadot Asset Hub',
     amount: '1',
@@ -39,7 +39,7 @@ export const xcmTransferTestCases = [
     recipient: '14tqRfiFfYeB12o7d9YK4X9LiCMKLNCt1LoVdWZypWbwNp2Y',
   },
   {
-    chainName: 'Polkadot',
+    chainName: 'Polkadot Relay',
     assetId: 0,
     xcmChainName: 'Hydration',
     amount: '0.01',
