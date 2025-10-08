@@ -74,6 +74,17 @@ const myselfClicked = createEvent();
 const xcmDestinationSelected = createEvent<AccountId>();
 const xcmDestinationCancelled = createEvent();
 
+const $available = createStore<BN | null>(null).reset(formInitiated);
+const setAvailable = createEvent<BN>();
+
+sample({
+  clock: setAvailable,
+  source: $available,
+  filter: (state, update) => !state || !state.eq(update),
+  fn: (_, newValue) => newValue,
+  target: $available,
+});
+
 const setMaxMode = createEvent<boolean>();
 const $isMaxModeEnabled = createStore(false)
   .on(setMaxMode, (_, update) => update)
@@ -234,6 +245,8 @@ const $coreTx = combine(
     isExistentialDepositEnabled: $isExistentialDepositEnabled,
     isMaxModeEnabled: $isMaxModeEnabled,
     balance: $initiatorAccountBalance,
+    asset: $asset,
+    available: $available,
   },
   ({
     network,
@@ -245,6 +258,8 @@ const $coreTx = combine(
     isExistentialDepositEnabled,
     isMaxModeEnabled,
     balance,
+    asset,
+    available,
   }) => {
     if (
       !network ||
@@ -252,12 +267,11 @@ const $coreTx = combine(
       !isConnected ||
       (isXcm && !xcmData) ||
       !validateAddress(form.destination) ||
-      nullable(balance)
+      nullable(balance) ||
+      nullable(asset)
     ) {
       return null;
     }
-
-    console.log({ frr: balance.free.toString(), amount: form.amount });
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
@@ -266,8 +280,12 @@ const $coreTx = combine(
       amount: form.amount,
       destination: form.destination,
       xcmData,
-      allowDeath: isMaxModeEnabled && isExistentialDepositEnabled, // ToDo: add a check that we have burned tokens
-      transferAll: isMaxModeEnabled && isExistentialDepositEnabled, // check amount === all available
+      transferAll: isMaxModeEnabled && isExistentialDepositEnabled,
+      allowDeath:
+        !isMaxModeEnabled &&
+        isExistentialDepositEnabled &&
+        nonNullable(available) &&
+        toPrecision(form.amount, asset.precision).gt(available.sub(balance.ed)),
     });
   },
 );
@@ -362,22 +380,17 @@ const $totalFee = combine(
   },
 );
 
-const $available = combine(
-  {
+sample({
+  source: {
     balance: $initiatorAccountBalance,
-    chain: $chain,
-    asset: $asset,
     totalFee: $totalFee,
     isExistentialDepositEnabled: $isExistentialDepositEnabled,
   },
-  ({ asset, chain, balance, totalFee, isExistentialDepositEnabled }) => {
-    if (nullable(balance) || nullable(chain) || nullable(asset) || nullable(totalFee)) {
-      return null;
-    }
-
-    return getAvailableAmount({ balance, totalFee, includeED: isExistentialDepositEnabled });
-  },
-);
+  filter: ({ balance, totalFee }) => nonNullable(balance) || nonNullable(totalFee),
+  fn: ({ balance, totalFee, isExistentialDepositEnabled }) =>
+    getAvailableAmount({ balance: balance!, totalFee: totalFee!, includeED: isExistentialDepositEnabled }),
+  target: setAvailable,
+});
 
 const $accountDeath = $balanceValidationResults.map((results) =>
   results.some((item) => item.balance.burned.gt(BN_ZERO)),
