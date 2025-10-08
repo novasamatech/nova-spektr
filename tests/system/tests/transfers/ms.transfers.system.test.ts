@@ -3,7 +3,7 @@ import * as allure from 'allure-js-commons';
 import { substrateChains } from '../../data/chains/chainsList';
 import { test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
-import { transferTestCases } from '../../utils/transferTestCases';
+import { transferConstants, transferTestCases } from '../../utils/transferTestCases';
 
 const feature = 'Wallet. Multisig wallet.';
 const story = 'Transfers';
@@ -19,7 +19,7 @@ test.describe('Multisig wallet transfers', { tag: ['@multisig-transfers', '@regr
       const assetsPage = await multisigWallet.gotoMain();
 
       const walletModal = await assetsPage.openWalletManagement();
-      await walletModal.searchAndSelectWallet('14KLy...dJEaM');
+      await walletModal.searchAndSelectWallet(transferConstants.multisigName);
 
       const chain = getChainByName(substrateChains, chainName);
       const transferModal = await assetsPage.openTransfer(chain, assetId);

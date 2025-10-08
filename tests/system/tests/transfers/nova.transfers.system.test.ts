@@ -9,7 +9,7 @@ const feature = 'Wallets. Nova. Single wallet';
 const story = 'Transfers';
 
 test.describe('Regular nova transfers', { tag: ['@regular-nova-transfers', '@regress'] }, () => {
-  for (const { chainName, assetId, amount, recipient } of transferTestCases) {
+  for (const { chainName, assetId, amount, validationAmount, recipient } of transferTestCases) {
     test(`Nova, single wallet, can make regular transfer on ${chainName}`, async ({ loginPage }) => {
       await allure.feature(feature);
       await allure.story(story);
@@ -19,8 +19,15 @@ test.describe('Regular nova transfers', { tag: ['@regular-nova-transfers', '@reg
       const chain = getChainByName(substrateChains, chainName);
       const transferModal = await assetsPage.openTransfer(chain, assetId);
 
-      await transferModal.fillAmount(amount);
       await transferModal.fillRecipient(recipient);
+      await transferModal.checkFeeforAsset();
+
+      await transferModal.fillAmount(validationAmount);
+      await transferModal.isBalanceValidationOnPage();
+
+      await transferModal.fillAmount(amount);
+      await transferModal.waitForAlertToDisapeear();
+
       const confirmationModal = await transferModal.openConfirmationModal();
       const signingModal = await confirmationModal.confirm();
 
