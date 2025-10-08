@@ -1,4 +1,4 @@
-import { formatDate } from 'date-fns';
+import { differenceInMilliseconds, formatDate, subDays } from 'date-fns';
 import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 
@@ -8,12 +8,22 @@ import { cnTw, nullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon, TitleText } from '@/shared/ui';
 import { Box, Skeleton, type TimelineStep } from '@/shared/ui-kit';
 import { type Member, type Referendum, votingHistoryService } from '@/domains/collectives';
-import { RetentionWidgetState, fellowshipRetention } from '../models/retention';
+import {
+  DANGER_THRESHOLD_DAYS,
+  RetentionWidgetState,
+  WARNING_THRESHOLD_DAYS,
+  fellowshipRetention,
+} from '../models/retention';
 import { votesModel } from '../models/votes';
 
 import { RetentionTimeline } from './RetentionTimeline';
 import { TimerToBlock } from './TimerToBlock';
 
+/**
+ * Timeline length constants (in arbitrary units matching Timeline component)
+ * Proportions: ~78% safe, ~17% warning, ~4% danger Total visual width is
+ * distributed across retention period zones
+ */
 const SAFE_ZONE_LENGTH = 292;
 const WARNING_ZONE_LENGTH = 64;
 const DANGER_ZONE_LENGTH = 16;
@@ -25,6 +35,8 @@ type Props = {
   member: Member;
 };
 
+const SkeletonLoader = () => <Skeleton width="100%" height="132px" />;
+
 export const RetentionWidget = memo(({ member }: Props) => {
   useGate(fellowshipRetention.flow, member);
 
@@ -32,7 +44,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
   const state = useUnit(fellowshipRetention.$widgetState);
   const { fromDateFormatted, toDateFormatted, retentionPeriod, timelineSteps, timelineValue } = useRetentionData();
 
-  if (!member) return null;
+  if (!retentionPeriod) return <SkeletonLoader />;
 
   if (state === RetentionWidgetState.WAITING) {
     return (
@@ -43,12 +55,10 @@ export const RetentionWidget = memo(({ member }: Props) => {
           to: toDateFormatted,
         })}
         footer={
-          retentionPeriod && (
-            <>
-              <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat />
-              <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
-            </>
-          )
+          <>
+            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat />
+            <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
+          </>
         }
       >
         <RetentionTimeline steps={timelineSteps} value={timelineValue} />
@@ -65,15 +75,14 @@ export const RetentionWidget = memo(({ member }: Props) => {
           to: toDateFormatted,
         })}
         footer={
-          retentionPeriod && (
-            <>
-              <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat />
-              <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
-              <Button size="sm" className="ml-auto" onClick={() => {}}>
-                {t('fellowship.retention.button.submitReport')}
-              </Button>
-            </>
-          )
+          <>
+            {/* TODO: Change icon to hourglass when available */}
+            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="warning" />
+            <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
+            <Button size="sm" className="ml-auto" onClick={() => {}}>
+              {t('fellowship.retention.button.submitReport')}
+            </Button>
+          </>
         }
       >
         <RetentionTimeline steps={timelineSteps} value={timelineValue} />
@@ -88,15 +97,13 @@ export const RetentionWidget = memo(({ member }: Props) => {
         title={t('fellowship.retention.warningUrgent.title')}
         description={t('fellowship.retention.warningUrgent.description', { to: toDateFormatted })}
         footer={
-          retentionPeriod && (
-            <>
-              <Icon name="clock" size={16} className="text-chip-icon" />
-              <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
-              <Button size="sm" className="ml-auto" onClick={() => {}}>
-                {t('fellowship.retention.button.submitReport')}
-              </Button>
-            </>
-          )
+          <>
+            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" />
+            <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
+            <Button size="sm" className="ml-auto" onClick={() => {}}>
+              {t('fellowship.retention.button.submitReport')}
+            </Button>
+          </>
         }
       >
         <RetentionTimeline steps={timelineSteps} value={timelineValue} />
@@ -111,15 +118,13 @@ export const RetentionWidget = memo(({ member }: Props) => {
         title={t('fellowship.retention.criticalLastCall.title')}
         description={t('fellowship.retention.criticalLastCall.description', { to: toDateFormatted })}
         footer={
-          retentionPeriod && (
-            <>
-              <Icon name="fire" size={16} className="text-badge-red-background" />
-              <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
-              <Button size="sm" className="ml-auto" onClick={() => {}}>
-                {t('fellowship.retention.button.submitReport')}
-              </Button>
-            </>
-          )
+          <>
+            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" />
+            <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
+            <Button size="sm" className="ml-auto" onClick={() => {}}>
+              {t('fellowship.retention.button.submitReport')}
+            </Button>
+          </>
         }
       >
         <RetentionTimeline steps={timelineSteps} value={timelineValue} />
@@ -135,7 +140,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
         description={t('fellowship.retention.criticalExpired.description')}
         footer={
           <>
-            <Icon name="fire" size={16} className="text-badge-red-background" />
+            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.riskBumped')}</FootnoteText>
             <Button size="sm" className="ml-auto" onClick={() => {}}>
               {t('fellowship.retention.button.submitReport')}
@@ -156,23 +161,22 @@ export const RetentionWidget = memo(({ member }: Props) => {
     return <ReferendumCreated />;
   }
 
-  return null;
+  return <SkeletonLoader />;
 });
 
 const ReportSubmitted = memo(() => {
   const { t } = useI18n();
 
-  const member = useUnit(fellowshipRetention.$member);
-  const { retentionPeriodDates, submittedTimelineSteps, submittedTimelineValue } = useRetentionData();
+  const { retentionPeriodDates, submittedTimelineSteps, timelineValue } = useRetentionData();
   const retentionEvidenceSubmissionDate = useUnit(fellowshipRetention.$retentionEvidenceSubmissionDate);
 
   const submissionPosition = useMemo(() => {
-    if (!retentionEvidenceSubmissionDate) return 50;
+    if (!retentionEvidenceSubmissionDate || !retentionPeriodDates) return 50;
 
-    const submissionTime = new Date(retentionEvidenceSubmissionDate).getTime();
-    const fromTime = retentionPeriodDates.from.getTime();
-    const toTime = retentionPeriodDates.to.getTime();
-    const position = ((submissionTime - fromTime) / (toTime - fromTime)) * 100;
+    const submissionDate = new Date(retentionEvidenceSubmissionDate);
+    const totalDuration = differenceInMilliseconds(retentionPeriodDates.to, retentionPeriodDates.from);
+    const elapsed = differenceInMilliseconds(submissionDate, retentionPeriodDates.from);
+    const position = (elapsed / totalDuration) * 100;
 
     return Math.max(10, Math.min(90, position));
   }, [retentionEvidenceSubmissionDate, retentionPeriodDates]);
@@ -183,8 +187,6 @@ const ReportSubmitted = memo(() => {
     return t('fellowship.retention.timeline.submittedOn', { date });
   }, [retentionEvidenceSubmissionDate, t]);
 
-  if (!member) return null;
-
   return (
     <WidgetContainer
       icon={<Icon name="checkmarkOutline" size={16} className="text-text-positive" />}
@@ -192,7 +194,6 @@ const ReportSubmitted = memo(() => {
       description={t('fellowship.retention.submitted.description')}
       footer={
         <>
-          <Icon name="clock" size={16} className="mr-1 text-chip-icon" />
           <FootnoteText>{t('fellowship.retention.timer.ensureAwareness')}</FootnoteText>
           <div className="ml-auto flex gap-2">
             <Button size="sm" onClick={() => {}}>
@@ -207,7 +208,7 @@ const ReportSubmitted = memo(() => {
     >
       <RetentionTimeline
         steps={submittedTimelineSteps}
-        value={submittedTimelineValue}
+        value={timelineValue}
         submissionPosition={submissionPosition}
         submissionTooltip={submissionTooltip}
       />
@@ -271,36 +272,50 @@ const useRetentionData = () => {
   const { t } = useI18n();
   const retentionPeriodDates = useUnit(fellowshipRetention.$retentionPeriodDates);
   const retentionPeriod = useUnit(fellowshipRetention.$retentionPeriod);
-  const currentBlock = useUnit(fellowshipRetention.$currentBlock);
-  const leftToEnd = useUnit(fellowshipRetention.$leftToEndOfPeriod);
 
-  const fromDateFormatted = formatDate(retentionPeriodDates.from, 'dd.MM.yy');
-  const toDateFormatted = formatDate(retentionPeriodDates.to, 'dd.MM.yy');
+  const fromDateFormatted = retentionPeriodDates ? formatDate(retentionPeriodDates.from, 'dd.MM.yy') : null;
+  const toDateFormatted = retentionPeriodDates ? formatDate(retentionPeriodDates.to, 'dd.MM.yy') : null;
 
   // Timeline steps for active retention period (3 zones: safe, warning, danger)
-  const timelineSteps: TimelineStep[] = useMemo(
-    () => [
+  const timelineSteps: TimelineStep[] = useMemo(() => {
+    if (!retentionPeriodDates) return [];
+
+    const periodEndDate = retentionPeriodDates.to;
+
+    // Calculate end of safe zone (when warning period begins)
+    const warningStartDate = subDays(periodEndDate, WARNING_THRESHOLD_DAYS);
+    const dangerStartDate = subDays(periodEndDate, DANGER_THRESHOLD_DAYS);
+
+    return [
       {
         baseColorClass: cnTw('bg-icon-blue-line'),
         filledColorClass: cnTw('bg-accent-background'),
-        onHoverTooltipText: t('fellowship.retention.timeline.safeZone'),
+        onHoverTooltipText: t('fellowship.retention.timeline.safeZone', {
+          from: fromDateFormatted,
+          to: formatDate(warningStartDate, 'dd.MM.yy'),
+        }),
         length: SAFE_ZONE_LENGTH,
       },
       {
         baseColorClass: cnTw('bg-badge-orange-background-default'),
         filledColorClass: cnTw('bg-icon-warning'),
-        onHoverTooltipText: t('fellowship.retention.timeline.warningZone'),
+        onHoverTooltipText: t('fellowship.retention.timeline.warningZone', {
+          from: formatDate(warningStartDate, 'dd.MM.yy'),
+          to: formatDate(dangerStartDate, 'dd.MM.yy'),
+        }),
         length: WARNING_ZONE_LENGTH,
       },
       {
         baseColorClass: cnTw('bg-badge-red-background'),
         filledColorClass: cnTw('bg-icon-negative'),
-        onHoverTooltipText: t('fellowship.retention.timeline.dangerZone'),
+        onHoverTooltipText: t('fellowship.retention.timeline.dangerZone', {
+          from: formatDate(dangerStartDate, 'dd.MM.yy'),
+          to: toDateFormatted,
+        }),
         length: DANGER_ZONE_LENGTH,
       },
-    ],
-    [t],
-  );
+    ];
+  }, [t, retentionPeriodDates, fromDateFormatted, toDateFormatted]);
 
   // Timeline steps for submitted report (single safe zone)
   const submittedTimelineSteps: TimelineStep[] = useMemo(
@@ -315,61 +330,29 @@ const useRetentionData = () => {
     [t],
   );
 
-  // Calculate timeline progress based on current block position
-  const timelineProgress = useMemo(() => {
-    if (!retentionPeriod || !currentBlock || !leftToEnd) {
-      return { safe: 0, warning: 0, danger: 0 };
-    }
-
-    const totalBlocks = retentionPeriod.to - retentionPeriod.from;
-    const elapsed = currentBlock - retentionPeriod.from;
-
-    const DANGER_BLOCKS = 2880; // ~2 days
-    const WARNING_BLOCKS = 20160; // ~2 weeks
-    const SAFE_BLOCKS = totalBlocks - WARNING_BLOCKS - DANGER_BLOCKS;
-
-    if (leftToEnd <= 0) {
-      return { safe: 100, warning: 100, danger: 100 };
-    }
-
-    if (leftToEnd <= DANGER_BLOCKS) {
-      const dangerProgress = ((DANGER_BLOCKS - leftToEnd) / DANGER_BLOCKS) * 100;
-      return { safe: 100, warning: 100, danger: dangerProgress };
-    }
-
-    if (leftToEnd <= WARNING_BLOCKS) {
-      const warningProgress = ((WARNING_BLOCKS - leftToEnd) / WARNING_BLOCKS) * 100;
-      return { safe: 100, warning: warningProgress, danger: 0 };
-    }
-
-    const safeProgress = (elapsed / SAFE_BLOCKS) * 100;
-    return { safe: Math.min(safeProgress, 100), warning: 0, danger: 0 };
-  }, [retentionPeriod, currentBlock, leftToEnd]);
-
-  // Convert progress percentages to timeline value
+  // Calculate timeline position directly from elapsed time
   const timelineValue = useMemo(() => {
-    const safeValue = (timelineProgress.safe / 100) * SAFE_ZONE_LENGTH;
-    const warningValue = (timelineProgress.warning / 100) * WARNING_ZONE_LENGTH;
-    const dangerValue = (timelineProgress.danger / 100) * DANGER_ZONE_LENGTH;
+    if (!retentionPeriodDates) return 0;
 
-    return safeValue + warningValue + dangerValue;
-  }, [timelineProgress]);
+    const now = new Date();
+    const totalDuration = differenceInMilliseconds(retentionPeriodDates.to, retentionPeriodDates.from);
 
-  // Timeline value for submitted report
-  const submittedTimelineValue = useMemo(() => {
-    return (timelineProgress.safe / 100) * TOTAL_LENGTH;
-  }, [timelineProgress.safe]);
+    if (totalDuration <= 0) return 0;
+
+    const elapsed = differenceInMilliseconds(now, retentionPeriodDates.from);
+    const progress = Math.min(elapsed / totalDuration, 1);
+
+    return progress * TOTAL_LENGTH;
+  }, [retentionPeriodDates]);
 
   return {
     retentionPeriod,
-    currentBlock,
     fromDateFormatted,
     toDateFormatted,
     retentionPeriodDates,
     timelineSteps,
     timelineValue,
     submittedTimelineSteps,
-    submittedTimelineValue,
   };
 };
 

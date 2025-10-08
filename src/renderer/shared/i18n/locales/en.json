@@ -558,7 +558,6 @@
       }
     },
     "promotion": {
-      "title": "PROMOTION PERIOD",
       "canSubmit": {
         "description": "Recommend to prepare promotion evidence before the retention period ends to avoid delays in referendum creation.",
         "promotionPeriodTooltip": "Promotion period\n{from} - {to}",
@@ -584,6 +583,7 @@
         "viewButton": "View",
         "warningZoneTooltip": "Warning zone - consider promoting evidence"
       },
+      "title": "PROMOTION PERIOD",
       "waiting": {
         "dangerZoneTooltip": "Danger zone - promotion opportunity very close",
         "description": "You be eligible for promotion from {from}",
@@ -633,7 +633,6 @@
       }
     },
     "retention": {
-      "title": "RETENTION PERIOD",
       "button": {
         "edit": "Edit",
         "submitReport": "Submit report",
@@ -660,16 +659,17 @@
         "title": "Retention report submitted"
       },
       "timeline": {
-        "dangerZone": "Danger zone - report must be submitted urgently",
-        "safeZone": "Safe zone - plenty of time remaining",
+        "dangerZone": "Deadline for evidence submission {from} – {to}.\nYou risk not start the referenda on time and fall out of the retention period.",
+        "safeZone": "Active working period.\nBe prepared to submit retention report\n{from} – {to}",
         "submittedOn": "Retention report submitted\n{date}",
-        "warningZone": "Warning zone - retention period approaching end"
+        "warningZone": "Recommended period for submit retention report\n{from} – {to}"
       },
       "timer": {
         "ensureAwareness": "Ensure fellows are aware of the report",
         "riskBumped": "Risk being bumped anytime",
         "untilEnd": "until the end of retention period"
       },
+      "title": "RETENTION PERIOD",
       "warningUrgent": {
         "description": "Might not be enough time to create a referendum. Submit report before {to}",
         "title": "Submit retention report now"

@@ -1,3 +1,4 @@
+import { differenceInDays } from 'date-fns';
 import { combine } from 'effector';
 import { createGate } from 'effector-react';
 
@@ -18,9 +19,9 @@ export enum RetentionWidgetState {
   REFERENDUM_CREATED = 'referendum_created',
 }
 
-const DANGER_THRESHOLD = 2880; // ~2 days (assuming 6s block time)
-const WARNING_THRESHOLD = 20160; // ~2 weeks
-const APPROACHING_THRESHOLD = 43200; // ~30 days
+export const DANGER_THRESHOLD_DAYS = 2;
+export const WARNING_THRESHOLD_DAYS = 14;
+export const APPROACHING_THRESHOLD_DAYS = 30;
 
 const flow = createGate<Member | null>({ defaultState: null });
 
@@ -87,14 +88,37 @@ const $leftToEndOfPeriod = combine(
   },
 );
 
+const { $: $retentionPeriodDates } = createStoreFromEffect({
+  params: {
+    period: $retentionPeriod,
+    api: fellowshipNetwork.$network.map(network => network?.api ?? null),
+  },
+  defaultValue: null,
+  fn: async ({ period, api }) => {
+    if (!period || !api) return null;
+
+    const [from, to] = await Promise.all([
+      getCreatedDateFromApi(period.from, api),
+      getCreatedDateFromApi(period.to, api),
+    ]);
+
+    return { from: new Date(from), to: new Date(to) };
+  },
+});
+
+const $daysUntilEnd = $retentionPeriodDates.map(dates => {
+  if (!dates) return null;
+  return differenceInDays(dates.to, new Date());
+});
+
 const $widgetState = combine(
   {
-    leftToEnd: $leftToEndOfPeriod,
+    daysUntilEnd: $daysUntilEnd,
     hasRetentionReferendum: $hasRetentionReferendum,
     hasRetentionEvidence: $hasRetentionEvidence,
   },
-  ({ leftToEnd, hasRetentionEvidence, hasRetentionReferendum }) => {
-    if (nullable(leftToEnd)) return RetentionWidgetState.WAITING;
+  ({ daysUntilEnd, hasRetentionEvidence, hasRetentionReferendum }) => {
+    if (nullable(daysUntilEnd)) return null;
 
     if (hasRetentionReferendum) {
       return RetentionWidgetState.REFERENDUM_CREATED;
@@ -104,41 +128,25 @@ const $widgetState = combine(
       return RetentionWidgetState.REPORT_SUBMITTED;
     }
 
-    if (leftToEnd <= 0) {
+    if (daysUntilEnd <= 0) {
       return RetentionWidgetState.CRITICAL_EXPIRED;
     }
 
-    if (leftToEnd <= DANGER_THRESHOLD) {
+    if (daysUntilEnd <= DANGER_THRESHOLD_DAYS) {
       return RetentionWidgetState.CRITICAL_LAST_CALL;
     }
 
-    if (leftToEnd <= WARNING_THRESHOLD) {
+    if (daysUntilEnd <= WARNING_THRESHOLD_DAYS) {
       return RetentionWidgetState.WARNING_URGENT;
     }
 
-    if (leftToEnd <= APPROACHING_THRESHOLD) {
+    if (daysUntilEnd <= APPROACHING_THRESHOLD_DAYS) {
       return RetentionWidgetState.WARNING_APPROACHING;
     }
 
     return RetentionWidgetState.WAITING;
   },
 );
-
-const { $: $retentionPeriodDates } = createStoreFromEffect({
-  params: {
-    period: $retentionPeriod,
-    api: fellowshipNetwork.$network.map(network => network?.api ?? null),
-  },
-  defaultValue: { from: new Date(), to: new Date() },
-  fn: async ({ period, api }) => {
-    const [from, to] = await Promise.all([
-      getCreatedDateFromApi(period.from, api),
-      getCreatedDateFromApi(period.to, api),
-    ]);
-
-    return { from: new Date(from), to: new Date(to) };
-  },
-});
 
 export const fellowshipRetention = {
   flow,
@@ -149,6 +157,5 @@ export const fellowshipRetention = {
   $retentionReferendum,
   $retentionPeriod,
   $retentionPeriodDates,
-  $currentBlock: fellowshipNetwork.$currentBlock,
   $retentionEvidenceSubmissionDate,
 };
