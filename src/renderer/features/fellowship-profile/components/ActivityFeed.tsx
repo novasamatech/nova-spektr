@@ -52,7 +52,7 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
   return (
     <Modal size="md" height="lg">
       <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>{t('fellowship.profile.activity')}</Modal.Title>
+      <Modal.Title close>{t('fellowship.profile.history')}</Modal.Title>
       <Modal.Content>
         <Box padding={[0, 3, 5]} gap={6}>
           {list.map(x => (

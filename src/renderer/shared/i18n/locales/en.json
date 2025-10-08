@@ -529,7 +529,7 @@
     "profile": {
       "active": "Active",
       "activeSalary": "Active salary",
-      "activity": "Activity",
+      "history": "History",
       "activityFeed": {
         "activeFalse": "Status passive",
         "activeTrue": "Status active",
