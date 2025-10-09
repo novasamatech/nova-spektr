@@ -45,15 +45,17 @@ describe('getAvailableAmount', () => {
         includeED: false,
       });
 
-      // Available = 100 - max(0, 1) - 0.1 = 98.9 DOT
+      // Transferable = 100 - max(0, 0 - 0) = 100 DOT
+      // Deductible = max(0, 1 - 0) = 1 DOT (ED not covered by reserved)
+      // Available = 100 - 1 - 0.1 = 98.9 DOT
       expect(result.toString()).toBe('98900000000000');
     });
 
-    test('should subtract reserved when reserved > ED', () => {
+    test('should not subtract ED when frozen >= ED', () => {
       const balance = createBalance({
         free: '100000000000000', // 100 DOT
-        frozen: '0',
-        reserved: '5000000000000', // 5 DOT
+        frozen: '5000000000000', // 5 DOT
+        reserved: '0',
         ed: '1000000000000', // 1 DOT
       });
       const totalFee = new BN('100000000000'); // 0.1 DOT
@@ -64,9 +66,10 @@ describe('getAvailableAmount', () => {
         includeED: false,
       });
 
-      // Transferable = 100 - max(0, 0 - 5) = 100 - 0 = 100 DOT
-      // Available = 100 - 1 (ED) - 0.1 (fee) = 98.9 DOT
-      expect(result.toString()).toBe('98900000000000');
+      // Transferable = 100 - max(0, 5 - 0) = 95 DOT
+      // Deductible = max(0, 1 - 5) = 0 (ED covered by frozen)
+      // Available = 95 - 0 - 0.1 = 94.9 DOT
+      expect(result.toString()).toBe('94900000000000');
     });
 
     test('should handle case when frozen > reserved (holdAndFreezes mode)', () => {
@@ -85,9 +88,10 @@ describe('getAvailableAmount', () => {
         includeED: false,
       });
 
-      // Transferable = 100 - max(0, 60 - 5) = 100 - 55 = 45 DOT
-      // Available = 45 - 1 (ED) - 0.1 (fee) = 43.9 DOT
-      expect(result.toString()).toBe('43900000000000');
+      // Transferable = 100 - max(0, 60 - 5) = 45 DOT
+      // Deductible = max(0, 1 - 60) = 0 (ED covered by frozen)
+      // Available = 45 - 0 - 0.1 = 44.9 DOT
+      expect(result.toString()).toBe('44900000000000');
     });
 
     test('should not allow negative amounts', () => {
@@ -143,7 +147,9 @@ describe('getAvailableAmount', () => {
         includeED: false,
       });
 
-      // Available = 2.1 - max(0, 1) - 0.1 = 1 DOT
+      // Transferable = 2.1 DOT
+      // Deductible = max(0, 1 - 0) = 1 DOT
+      // Available = 2.1 - 1 - 0.1 = 1 DOT
       expect(result.toString()).toBe('1000000000000');
     });
 
@@ -164,8 +170,9 @@ describe('getAvailableAmount', () => {
       });
 
       // Transferable (legacy) = 100 - 60 = 40 DOT
-      // Available = 40 - 1 (ED) - 0.1 (fee) = 38.9 DOT
-      expect(result.toString()).toBe('38900000000000');
+      // Deductible = max(0, 1 - 60) = 0 (ED covered by frozen)
+      // Available = 40 - 0 - 0.1 = 39.9 DOT
+      expect(result.toString()).toBe('39900000000000');
     });
   });
 
@@ -185,11 +192,13 @@ describe('getAvailableAmount', () => {
         includeED: true,
       });
 
-      // Available = 100 - max(0, 0) - 0.1 = 99.9 DOT (ED not deducted)
+      // Transferable = 100 DOT
+      // Deductible = 0 (ED included, so not deducted)
+      // Available = 100 - 0 - 0.1 = 99.9 DOT
       expect(result.toString()).toBe('99900000000000');
     });
 
-    test('should still subtract reserved when ED is included', () => {
+    test('should not deduct ED when includeED is true, even without reserved', () => {
       const balance = createBalance({
         free: '100000000000000', // 100 DOT
         frozen: '0',
@@ -205,11 +214,12 @@ describe('getAvailableAmount', () => {
       });
 
       // Transferable = 100 - max(0, 0 - 5) = 100 DOT
-      // Available = 100 - 0 (ED not deducted) - 0.1 (fee) = 99.9 DOT
+      // Deductible = 0 (ED included)
+      // Available = 100 - 0 - 0.1 = 99.9 DOT
       expect(result.toString()).toBe('99900000000000');
     });
 
-    test('should allow transferring entire balance minus fee and reserved', () => {
+    test('should allow transferring entire balance minus fee', () => {
       const balance = createBalance({
         free: '10000000000000', // 10 DOT
         frozen: '0',
@@ -224,7 +234,9 @@ describe('getAvailableAmount', () => {
         includeED: true,
       });
 
-      // Available = 10 - max(0, 0) - 0.1 = 9.9 DOT (can spend ED)
+      // Transferable = 10 DOT
+      // Deductible = 0 (ED included)
+      // Available = 10 - 0 - 0.1 = 9.9 DOT (can spend ED)
       expect(result.toString()).toBe('9900000000000');
     });
 
@@ -243,12 +255,13 @@ describe('getAvailableAmount', () => {
         includeED: true,
       });
 
-      // Transferable = 100 - max(0, 60 - 5) = 100 - 55 = 45 DOT
-      // Available = 45 - 0 (ED not deducted) - 0.1 (fee) = 44.9 DOT
+      // Transferable = 100 - max(0, 60 - 5) = 45 DOT
+      // Deductible = 0 (ED included)
+      // Available = 45 - 0 - 0.1 = 44.9 DOT
       expect(result.toString()).toBe('44900000000000');
     });
 
-    test('should correctly calculate when ED is larger than reserved', () => {
+    test('should not deduct ED even when ED > reserved', () => {
       const balance = createBalance({
         free: '100000000000000', // 100 DOT
         frozen: '0',
@@ -264,7 +277,8 @@ describe('getAvailableAmount', () => {
       });
 
       // Transferable = 100 - max(0, 0 - 0.5) = 100 DOT
-      // Available = 100 - 0 (ED not deducted) - 0.1 (fee) = 99.9 DOT
+      // Deductible = 0 (ED included, so not deducted)
+      // Available = 100 - 0 - 0.1 = 99.9 DOT
       expect(result.toString()).toBe('99900000000000');
     });
   });
@@ -314,7 +328,9 @@ describe('getAvailableAmount', () => {
         includeED: false,
       });
 
-      // Available = 100 - max(0, 0) - 0.1 = 99.9 DOT
+      // Transferable = 100 DOT
+      // Deductible = max(0, 0 - 0) = 0
+      // Available = 100 - 0 - 0.1 = 99.9 DOT
       expect(result.toString()).toBe('99900000000000');
     });
 
@@ -353,8 +369,9 @@ describe('getAvailableAmount', () => {
       });
 
       // Transferable = 1B - max(0, 500M - 10M) = 1B - 490M = 510M DOT
-      // Available = 510M - 1 (ED) - 100 (fee) = 509,999,899 DOT
-      expect(result.toString()).toBe('509999899000000000000');
+      // Deductible = max(0, 1 - 10M) = 0 (ED covered by reserved)
+      // Available = 510M - 0 - 100 = 509,999,900 DOT
+      expect(result.toString()).toBe('509999900000000000000');
     });
 
     test('should handle all zero values', () => {
@@ -402,11 +419,11 @@ describe('getAvailableAmount', () => {
       expect(difference.toString()).toBe(balance.ed.toString());
     });
 
-    test('difference should be exactly ED when reserved > ED', () => {
+    test('difference should be exactly ED when frozen > ED', () => {
       const balance = createBalance({
         free: '100000000000000', // 100 DOT
-        frozen: '0',
-        reserved: '5000000000000', // 5 DOT
+        frozen: '5000000000000', // 5 DOT
+        reserved: '0',
         ed: '1000000000000', // 1 DOT
       });
       const totalFee = new BN('100000000000'); // 0.1 DOT
@@ -423,9 +440,9 @@ describe('getAvailableAmount', () => {
         includeED: true,
       });
 
-      // Difference should still be exactly ED amount
+      // When frozen > ED, ED is covered by frozen, so no difference
       const difference = withED.sub(withoutED);
-      expect(difference.toString()).toBe(balance.ed.toString());
+      expect(difference.toString()).toBe('0');
     });
   });
 });

@@ -244,32 +244,9 @@ const $coreTx = combine(
     initiator: form.fields.initiator.$value,
     isExistentialDepositEnabled: $isExistentialDepositEnabled,
     isMaxModeEnabled: $isMaxModeEnabled,
-    balance: $initiatorAccountBalance,
-    asset: $asset,
-    available: $available,
   },
-  ({
-    network,
-    isXcm,
-    form,
-    xcmData,
-    isConnected,
-    initiator,
-    isExistentialDepositEnabled,
-    isMaxModeEnabled,
-    balance,
-    asset,
-    available,
-  }) => {
-    if (
-      !network ||
-      !initiator ||
-      !isConnected ||
-      (isXcm && !xcmData) ||
-      !validateAddress(form.destination) ||
-      nullable(balance) ||
-      nullable(asset)
-    ) {
+  ({ network, isXcm, form, xcmData, isConnected, initiator, isExistentialDepositEnabled, isMaxModeEnabled }) => {
+    if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
       return null;
     }
 
@@ -280,14 +257,8 @@ const $coreTx = combine(
       amount: form.amount,
       destination: form.destination,
       xcmData,
-      transferAll:
-        isExistentialDepositEnabled &&
-        (isMaxModeEnabled || (nonNullable(available) && toPrecision(form.amount, asset.precision).eq(available))),
-      allowDeath:
-        !isMaxModeEnabled &&
-        isExistentialDepositEnabled &&
-        nonNullable(available) &&
-        toPrecision(form.amount, asset.precision).gt(available.sub(balance.ed)),
+      transferAll: isMaxModeEnabled && isExistentialDepositEnabled,
+      allowDeath: !isMaxModeEnabled && isExistentialDepositEnabled,
     });
   },
 );
