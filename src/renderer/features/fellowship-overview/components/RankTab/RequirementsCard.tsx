@@ -3,9 +3,9 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, InfoLink, TitleText } from '@/shared/ui';
 import { Box, Markdown, Surface } from '@/shared/ui-kit';
-import { getRankDataByRank } from '../../data';
 import { FELLOWSHIP_TABS } from '../../model/constants';
 import { modal } from '../../model/modal';
+import { getRankDataByRank } from '../../utils/rankHelpers';
 
 interface RequirementsCardProps {
   rankId: number;

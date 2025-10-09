@@ -3,8 +3,7 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, TitleText } from '@/shared/ui';
 import { Box, Markdown, Surface } from '@/shared/ui-kit';
-import { getRankDataByRank } from '../../data';
-import { getRankIcon } from '../../utils/rankHelpers';
+import { getRankDataByRank, getRankIcon } from '../../utils/rankHelpers';
 
 interface RankCardProps {
   rankId: number;

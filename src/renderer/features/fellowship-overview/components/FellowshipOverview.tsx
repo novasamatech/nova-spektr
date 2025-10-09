@@ -8,11 +8,10 @@ import { ProgressWithSegments, Skeleton } from '@/shared/ui-kit';
 import { type CoreMember, memberService } from '@/domains/collectives';
 import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
-import { getAllRanks } from '../data';
 import { READY_FOR_PROMOTION } from '../model/constants';
 import { modal } from '../model/modal';
 import { promotion } from '../model/promotion';
-import { createRankSegmentFellowshipSlot } from '../utils/rankHelpers';
+import { createRankSegmentFellowshipSlot, getAllRanks } from '../utils/rankHelpers';
 
 type TimeToNextRank = number | 'ready' | null;
 

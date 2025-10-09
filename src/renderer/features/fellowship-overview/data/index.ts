@@ -140,16 +140,3 @@ export const RANKS_DATA: RankData[] = [
     meta: rank9Meta,
   },
 ];
-
-export const getRankDataByRank = (rank: number): RankData | null => {
-  return RANKS_DATA.find(rankData => rankData.rank === rank) || null;
-};
-
-export const getAllRanks = (): RankData[] => {
-  return RANKS_DATA;
-};
-
-export const getRankByRankNumber = (rankNumber: number): number | null => {
-  const rankData = RANKS_DATA.find(rank => rank.rank === rankNumber);
-  return rankData ? rankData.rank : null;
-};
