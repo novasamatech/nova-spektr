@@ -74,9 +74,6 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
       ? calculateBalanceCountedTowardsEd(balance).sub(balance.ed.add(amount))
       : BN_ZERO;
   const totalImbalance = BN.min(transferableImbalance, countedTowardsEDImbalance);
-  // const wanted = balancePreservation === 'keepAlive' ? amount.add(balance.ed) : amount;
-  // BN.max(BN_ZERO, balance.ed.sub(balance.frozen))
-  // const afterWithdraw = transferable.sub(wanted);
 
   if (totalImbalance.isNeg()) {
     const updated = copyBalance(balance, {
