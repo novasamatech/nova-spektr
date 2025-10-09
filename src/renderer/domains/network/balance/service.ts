@@ -68,17 +68,17 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
 function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
   const transferable = transferableAmountBN(balance);
 
-  const transferableImbalance = transferable.sub(amount).abs();
+  const transferableImbalance = transferable.sub(amount);
   const countedTowardsEDImbalance =
     balancePreservation === 'keepAlive'
-      ? calculateBalanceCountedTowardsEd(balance).sub(balance.ed.add(amount)).abs()
+      ? calculateBalanceCountedTowardsEd(balance).sub(balance.ed.add(amount))
       : BN_ZERO;
-  const totalImbalance = BN.max(transferableImbalance, countedTowardsEDImbalance);
+  const totalImbalance = BN.min(transferableImbalance, countedTowardsEDImbalance);
   // const wanted = balancePreservation === 'keepAlive' ? amount.add(balance.ed) : amount;
   // BN.max(BN_ZERO, balance.ed.sub(balance.frozen))
   // const afterWithdraw = transferable.sub(wanted);
 
-  if (totalImbalance.gt(BN_ZERO)) {
+  if (totalImbalance.isNeg()) {
     const updated = copyBalance(balance, {
       free: balancePreservation === 'keepAlive' ? balance.ed : BN_ZERO,
     });
