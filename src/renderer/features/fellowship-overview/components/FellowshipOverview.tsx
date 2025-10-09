@@ -8,25 +8,10 @@ import { ProgressWithSegments, Skeleton } from '@/shared/ui-kit';
 import { memberService } from '@/domains/collectives';
 import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
-import { type RankData, getAllRanks } from '../data';
+import { getAllRanks } from '../data';
 import { openFellowshipOverviewModal } from '../model/modal';
 import { promotion } from '../model/promotion';
-
-const getRankWidth = (rank: number): number => {
-  if (rank === 1) return 16;
-  if (rank === 2) return 20;
-  if (rank >= 3 && rank <= 5) return 28;
-  if (rank >= 6 && rank <= 7) return 32;
-  return 44;
-};
-
-const createRankSegment = (rank: RankData) => ({
-  id: `rank-${rank.rank}`,
-  label: rank.label,
-  width: getRankWidth(rank.rank),
-  color: rank.color,
-  filled: 0,
-});
+import { createRankSegmentFellowshipSlot } from '../utils/rankHelpers';
 
 export const FellowshipOverview = () => {
   const { t } = useTranslation();
@@ -46,7 +31,7 @@ export const FellowshipOverview = () => {
     const ranks = getAllRanks();
 
     return ranks.map(rank => {
-      const segment = createRankSegment(rank);
+      const segment = createRankSegmentFellowshipSlot(rank);
 
       if (!member || !memberService.isCoreMember(member) || !promotionProgress) {
         return segment;
@@ -76,7 +61,7 @@ export const FellowshipOverview = () => {
         : null;
 
   return (
-    <div className="w-[324px] flex-col overflow-hidden rounded-xl border border-filter-border bg-card-background">
+    <div className="w-full flex-col overflow-hidden rounded-xl border border-filter-border bg-card-background">
       <div className="flex h-11 shrink-0 items-center justify-between border-b border-filter-border bg-card-background pr-2 pl-4">
         <span className="text-button-small">{t('fellowship.overview.title')}</span>
         <Button variant="text" pallet="primary" size="sm" onClick={openModal}>

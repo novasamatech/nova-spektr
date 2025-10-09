@@ -7,7 +7,7 @@ import Rank6Icon from '@/shared/assets/images/ranks/rank6.svg?jsx';
 import Rank7Icon from '@/shared/assets/images/ranks/rank7.svg?jsx';
 import Rank8Icon from '@/shared/assets/images/ranks/rank8.svg?jsx';
 import Rank9Icon from '@/shared/assets/images/ranks/rank9.svg?jsx';
-import { getAllRanks } from '../data';
+import { type RankData, getAllRanks } from '../data';
 import { PROGRESS_WITH_DIVIDERS_WIDTHS } from '../model/constants';
 
 export const getRankIcon = (rankId: number) => {
@@ -35,7 +35,23 @@ export const getRankIcon = (rankId: number) => {
   }
 };
 
-export const createRankSegments = () => {
+export const getRankWidthFellowshipSlot = (rank: number): number => {
+  if (rank === 1) return 16;
+  if (rank === 2) return 20;
+  if (rank >= 3 && rank <= 5) return 28;
+  if (rank >= 6 && rank <= 7) return 32;
+  return 44;
+};
+
+export const createRankSegmentFellowshipSlot = (rank: RankData) => ({
+  id: `rank-${rank.rank}`,
+  label: rank.label,
+  width: getRankWidthFellowshipSlot(rank.rank),
+  color: rank.color,
+  filled: 0,
+});
+
+export const createRankSegmentsRankTab = () => {
   return getAllRanks().map(rank => ({
     id: rank.rank.toString(),
     title: rank.name,

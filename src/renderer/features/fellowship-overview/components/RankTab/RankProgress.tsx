@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { TitleText } from '@/shared/ui';
 import { Box, ProgressWithDividers, Surface } from '@/shared/ui-kit';
 import { promotion } from '../../model/promotion';
-import { createRankSegments } from '../../utils/rankHelpers';
+import { createRankSegmentsRankTab } from '../../utils/rankHelpers';
 
 interface RankProgressProps {
   onRankClick: (rankId: number) => void;
@@ -19,7 +19,7 @@ export const RankProgress = memo(({ onRankClick }: RankProgressProps) => {
     return currentRank?.toString() ?? null;
   }, [currentRank]);
 
-  const rankSegments = useMemo(() => createRankSegments(), []);
+  const rankSegments = useMemo(() => createRankSegmentsRankTab(), []);
 
   const handleSegmentClick = (segmentId: string) => {
     const rankId = parseInt(segmentId, 10);
