@@ -4,7 +4,7 @@ import { type PropsWithChildren } from 'react';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, HeaderTitleText, Separator, Switch } from '@/shared/ui';
+import { FootnoteText, HeaderTitleText, Switch } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
@@ -93,7 +93,6 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
               </Box>
             </Box>
           </div>
-          <Separator />
           <Slot id={profileInfoSlot} props={{ member }} />
         </div>
       </Modal.Content>

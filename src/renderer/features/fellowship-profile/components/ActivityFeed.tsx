@@ -1,10 +1,10 @@
 import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
-import { type PropsWithChildren, useMemo, useState } from 'react';
+import { type PropsWithChildren, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { entries, nonNullable } from '@/shared/lib/utils';
+import { entries, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { Duration, FootnoteText, HelpText, Separator } from '@/shared/ui';
 import { Box, Modal, Select } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
@@ -20,19 +20,19 @@ const getMessage = (t: TFunction, record: FeedRecord) => {
   }
 
   if (record.type === 'imported') {
-    return t('fellowship.profile.activityFeed.imported', { rank: record.rank });
+    return t('fellowship.profile.activityFeed.imported', { rank: toRomanNumeral(record.rank) });
   }
 
   if (record.type === 'promoted') {
-    return t('fellowship.profile.activityFeed.promoted', { rank: record.rank });
+    return t('fellowship.profile.activityFeed.promoted', { rank: toRomanNumeral(record.rank) });
   }
 
   if (record.type === 'demoted') {
-    return t('fellowship.profile.activityFeed.demoted', { rank: record.rank });
+    return t('fellowship.profile.activityFeed.demoted', { rank: toRomanNumeral(record.rank) });
   }
 
   if (record.type === 'proven') {
-    return t('fellowship.profile.activityFeed.proven', { rank: record.rank });
+    return t('fellowship.profile.activityFeed.proven', { rank: toRomanNumeral(record.rank) });
   }
 
   if (record.type === 'paid') {
@@ -62,8 +62,11 @@ const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 export const ActivityFeed = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const list = useUnit(activity.$list);
-  const now = Date.now();
   const [filter, setFilter] = useState<FilterType | null>(null);
+
+  console.log('list', list);
+
+  const now = useRef(Date.now());
 
   const filteredList = useMemo(() => {
     if (filter === null) return list;
@@ -106,7 +109,7 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
             </div>
             {nonNullable(filter) && (
               <button
-                className="text-text-link hover:text-text-link-hover shrink-0 text-footnote"
+                className="shrink-0 cursor-pointer text-footnote font-semibold text-primary-button-background-default"
                 onClick={handleClearFilter}
               >
                 {t('fellowship.profile.activityFeed.clear')}
@@ -115,7 +118,7 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
           </div>
           <Box padding={[0, 2, 5]} gap={3}>
             {filteredList.map(x => {
-              const age = now - x.at.getTime();
+              const age = now.current - x.at.getTime();
               const isOlderThanMonth = age > ONE_MONTH_MS;
 
               return (
