@@ -83,9 +83,10 @@ const Root = ({
 type TitleProps = PropsWithChildren<{
   action?: ReactNode;
   close?: boolean;
+  gap?: 'none' | 'small' | 'medium' | 'large';
 }>;
 
-const Title = ({ action, close, children }: TitleProps) => {
+const Title = ({ action, close, children, gap = 'medium' }: TitleProps) => {
   const headerExist = nonNullable(children) || nonNullable(action) || nonNullable(close);
 
   return (
@@ -93,7 +94,14 @@ const Title = ({ action, close, children }: TitleProps) => {
       <header className="flex w-full items-center justify-between py-3 ps-5 pe-3 contain-inline-size">
         <h1 className="truncate py-1 font-manrope text-header-title font-bold text-text-primary">{children}</h1>
 
-        <div className="z-20 flex h-7.5 items-center gap-x-4">
+        <div
+          className={cnTw('z-20 flex h-7.5 items-center', {
+            'gap-x-0': gap === 'none',
+            'gap-x-2': gap === 'small',
+            'gap-x-4': gap === 'medium',
+            'gap-x-6': gap === 'large',
+          })}
+        >
           {action}
 
           {close && (

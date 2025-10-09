@@ -5,6 +5,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeaderTitleText, Separator, Switch } from '@/shared/ui';
+import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
@@ -41,51 +42,60 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
   return (
     <Modal size="md" height="fit">
       <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>{t('fellowship.profile.modalTitle')}</Modal.Title>
-      <Modal.HeaderContent>
-        <Box padding={5} gap={6}>
-          <Box direction="row" verticalAlign="center" gap={2}>
-            <Identicon address={toAddress(member.accountId)} size={48} />
-            <Box gap={2} grow={1}>
-              <HeaderTitleText>
-                <Account
-                  accountId={member.accountId}
-                  title={identity?.name}
-                  chain={featureInput.chain}
-                  variant="short"
-                  hideIcon
-                  hideAddress
-                />
-              </HeaderTitleText>
-              <Box direction="row" gap={2}>
-                <CollectiveRank rank={member.rank} showName />
+      <Modal.Title
+        close
+        action={
+          <ActivityFeed>
+            <IconButton name="history" size={20} />
+          </ActivityFeed>
+        }
+        gap="none"
+      >
+        {t('fellowship.profile.modalTitle')}
+      </Modal.Title>
+      <Modal.Content>
+        <div className="flex flex-col gap-4 bg-background-suffix-hover p-4">
+          <div className="rounded-lg bg-white p-2">
+            <Box gap={6}>
+              <Box direction="row" verticalAlign="center" gap={2}>
+                <Identicon address={toAddress(member.accountId)} size={48} />
+                <Box gap={2} grow={1}>
+                  <HeaderTitleText>
+                    <Account
+                      accountId={member.accountId}
+                      title={identity?.name}
+                      chain={featureInput.chain}
+                      variant="short"
+                      hideIcon
+                      hideAddress
+                    />
+                  </HeaderTitleText>
+                  <Box direction="row" gap={2}>
+                    <CollectiveRank rank={member.rank} showName />
+                  </Box>
+                </Box>
+                <Box direction="row" verticalAlign="center" gap={2}>
+                  {active ? (
+                    <FootnoteText className="text-text-positive">{t('fellowship.profile.active')}</FootnoteText>
+                  ) : null}
+                  <SetActiveModal isActive={!active} disabled={setActiveDisabled} salary={salary}>
+                    <div>
+                      <div className="pointer-events-none">
+                        <Switch
+                          switchClassName={cnTw(active && 'bg-qr-valid-background')}
+                          checked={active}
+                          disabled={setActiveDisabled}
+                        />
+                      </div>
+                    </div>
+                  </SetActiveModal>
+                </Box>
               </Box>
             </Box>
-            <Box direction="row" verticalAlign="center" gap={2}>
-              {active ? (
-                <FootnoteText className="text-text-positive">{t('fellowship.profile.active')}</FootnoteText>
-              ) : null}
-              <SetActiveModal isActive={!active} disabled={setActiveDisabled} salary={salary}>
-                <div>
-                  <div className="pointer-events-none">
-                    <Switch
-                      switchClassName={cnTw(active && 'bg-qr-valid-background')}
-                      checked={active}
-                      disabled={setActiveDisabled}
-                    />
-                  </div>
-                </div>
-              </SetActiveModal>
-            </Box>
-          </Box>
-        </Box>
-        <Separator />
-      </Modal.HeaderContent>
-      <Modal.Content>
-        <div className="bg-background-suffix-hover p-4">
+          </div>
+          <Separator />
           <Slot id={profileInfoSlot} props={{ member }} />
         </div>
-        <ActivityFeed />
       </Modal.Content>
     </Modal>
   );

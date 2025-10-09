@@ -21,16 +21,16 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
 
   const referendumMeta = useUnit(details.$referendumMeta);
   const pendingEvidence = useUnit(details.$pendingEvidence);
-  const evidence = useUnit(details.$evidence);
+  const evidenceContent = useUnit(details.$evidenceContent);
 
   const canHaveEvidence =
     nonNullable(referendum) &&
     nonNullable(referendumMeta) &&
     (trackService.isPromotionTrack(referendumMeta.track) || trackService.isRetentionTrack(referendumMeta.track));
 
-  const shouldRenderEvidence = nonNullable(evidence) && !pendingEvidence;
-  const shouldRenderEvidencePending = canHaveEvidence && nullable(evidence) && pendingEvidence;
-  const shouldRenderEvidenceAlert = canHaveEvidence && nullable(evidence) && !pendingEvidence;
+  const shouldRenderEvidence = nonNullable(evidenceContent) && !pendingEvidence;
+  const shouldRenderEvidencePending = canHaveEvidence && nullable(evidenceContent) && pendingEvidence;
+  const shouldRenderEvidenceAlert = canHaveEvidence && nullable(evidenceContent) && !pendingEvidence;
 
   return (
     <div className="flex h-full flex-col">
@@ -38,7 +38,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
       {shouldRenderEvidence ? (
         <Card>
           <Box padding={6}>
-            <Markdown>{evidence.content ?? ''}</Markdown>
+            <Markdown>{evidenceContent.content ?? ''}</Markdown>
           </Box>
         </Card>
       ) : null}

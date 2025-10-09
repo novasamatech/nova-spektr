@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
@@ -7,6 +7,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
 import { details } from '../model/details';
+import { fellowshipReferendumsDetailsFeature } from '../model/feature';
 import { tracksModel } from '../model/tracks';
 import { detailsService } from '../service';
 
@@ -26,10 +27,12 @@ type Props = PropsWithChildren<{
 }>;
 
 export const ReferendumDetailsModal = memo(({ referendum, children, title, isCurrentUser }: Props) => {
+  useGate(fellowshipReferendumsDetailsFeature.gate);
+
   const { t } = useI18n();
 
   const tracks = useUnit(tracksModel.$list);
-  const evidence = useUnit(details.$evidence);
+  const evidenceContent = useUnit(details.$evidenceContent);
 
   const referendumId = referendum?.id;
 
@@ -67,9 +70,9 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title, isCur
 
               <Slot id={referendumAdditionalInfoSlot} props={{ referendum }} />
 
-              {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence }} />}
+              {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence: evidenceContent }} />}
 
-              <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
+              <AdditionalInfo referendumId={referendumId} evidenceHash={evidenceContent?.hash} />
             </Box>
           </Box>
         </div>

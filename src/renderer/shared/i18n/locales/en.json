@@ -529,7 +529,6 @@
     "profile": {
       "active": "Active",
       "activeSalary": "Active salary",
-      "activity": "Activity",
       "activityFeed": {
         "activeFalse": "Status passive",
         "activeTrue": "Status active",
@@ -542,6 +541,7 @@
         "requestedRetention": "Retention requested"
       },
       "fellow": "Fellow",
+      "history": "History",
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
       "ready": "Ready",
@@ -583,6 +583,7 @@
         "viewButton": "View",
         "warningZoneTooltip": "Warning zone - consider promoting evidence"
       },
+      "title": "PROMOTION PERIOD",
       "waiting": {
         "dangerZoneTooltip": "Danger zone - promotion opportunity is imminent",
         "description": "You will be eligible for promotion starting from {from}",
@@ -630,6 +631,49 @@
         "retainAtIvDan": "Retain At IV Dan",
         "retainAtVDan": "Retain At V Dan",
         "retainAtViDan": "Retain At VI Dan"
+      }
+    },
+    "retention": {
+      "button": {
+        "edit": "Edit",
+        "submitReport": "Submit report",
+        "view": "View"
+      },
+      "criticalExpired": {
+        "description": "You must to submit report",
+        "title": "Last call to submit retention report"
+      },
+      "criticalLastCall": {
+        "description": "You risk being bumped if you don't submit retention report before {to}",
+        "title": "Last call to submit retention report"
+      },
+      "normal": {
+        "description": "Be prepared to submit the report between {from} – {to}",
+        "title": "Contribute according to rank requirements"
+      },
+      "referendumCreated": {
+        "description": "until the referendum ends",
+        "title": "Retention referendum created"
+      },
+      "submitted": {
+        "description": "Report is on review. It is editable until referendum is created.",
+        "title": "Retention report submitted"
+      },
+      "timeline": {
+        "dangerZone": "Deadline for evidence submission {from} – {to}.\nYou risk not start the referenda on time and fall out of the retention period.",
+        "safeZone": "Active working period.\nBe prepared to submit retention report\n{from} – {to}",
+        "submittedOn": "Retention report submitted\n{date}",
+        "warningZone": "Recommended period for submit retention report\n{from} – {to}"
+      },
+      "timer": {
+        "ensureAwareness": "Ensure fellows are aware of the report",
+        "riskBumped": "Risk being bumped anytime",
+        "untilEnd": "until the end of retention period"
+      },
+      "title": "RETENTION PERIOD",
+      "warningUrgent": {
+        "description": "Might not be enough time to create a referendum. Submit report before {to}",
+        "title": "Submit retention report now"
       }
     },
     "salary": {

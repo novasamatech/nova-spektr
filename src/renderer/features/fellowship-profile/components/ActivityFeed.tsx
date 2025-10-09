@@ -1,9 +1,10 @@
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
+import { type PropsWithChildren } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
-import { Box, ScrollArea } from '@/shared/ui-kit';
+import { Box, Modal } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
 import { activity } from '../model/activity';
 
@@ -43,18 +44,16 @@ const getMessage = (t: TFunction, record: FeedRecord) => {
   return '';
 };
 
-export const ActivityFeed = () => {
+export const ActivityFeed = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const list = useUnit(activity.$list);
   const now = Date.now();
 
   return (
-    <Box>
-      <Box direction="row" padding={[5.5, 5]} gap={2}>
-        <span className="text-caption text-text-secondary uppercase">{t('fellowship.profile.activity')}</span>
-        <span className="text-caption text-text-tertiary uppercase">{list.length}</span>
-      </Box>
-      <ScrollArea>
+    <Modal size="md" height="lg">
+      <Modal.Trigger>{children}</Modal.Trigger>
+      <Modal.Title close>{t('fellowship.profile.history')}</Modal.Title>
+      <Modal.Content>
         <Box padding={[0, 3, 5]} gap={6}>
           {list.map(x => (
             <div key={`${x.type}-${x.block}`} className="flex px-2">
@@ -65,7 +64,7 @@ export const ActivityFeed = () => {
             </div>
           ))}
         </Box>
-      </ScrollArea>
-    </Box>
+      </Modal.Content>
+    </Modal>
   );
 };

@@ -8,6 +8,8 @@ export { fellowshipPromotionFeature };
 export { referendumWidgetActionSlot } from './ui/PromotionWidget';
 
 fellowshipPromotionFeature.inject(profileInfoSlot, {
-  order: 0,
-  render: ({ member }) => <PromotionWidget member={member} />,
+  order: 1,
+  render: ({ member }) => {
+    return <PromotionWidget member={member} />;
+  },
 });
