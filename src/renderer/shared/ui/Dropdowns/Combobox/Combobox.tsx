@@ -45,7 +45,7 @@ export const Combobox = ({
       <div className="relative">
         <HeadlessCombobox.Input
           as={Input}
-          displayValue={(option: ComboboxOption) => option.value}
+          displayValue={((option: ComboboxOption) => option.value) as (option: unknown) => any}
           onChangeEvent={(e: ChangeEvent<HTMLInputElement>) => onInput(e.target.value)}
           {...inputProps}
         />
