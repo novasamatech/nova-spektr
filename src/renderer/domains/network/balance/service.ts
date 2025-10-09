@@ -66,11 +66,16 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
 }
 
 function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
-  const withdrawable = transferableAmountBN(balance);
-  const wanted = balancePreservation === 'keepAlive' ? amount.add(balance.ed) : amount;
-  const afterWithdraw = withdrawable.sub(wanted);
+  const transferable = transferableAmountBN(balance);
 
-  if (afterWithdraw.isNeg()) {
+  const transferableImbalance = transferable.sub(amount);
+  const countedTowardsEDImbalance =
+    balancePreservation === 'keepAlive'
+      ? calculateBalanceCountedTowardsEd(balance).sub(balance.ed.add(amount))
+      : BN_ZERO;
+  const totalImbalance = BN.min(transferableImbalance, countedTowardsEDImbalance);
+
+  if (totalImbalance.isNeg()) {
     const updated = copyBalance(balance, {
       free: balancePreservation === 'keepAlive' ? balance.ed : BN_ZERO,
     });
@@ -79,7 +84,7 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
       success: false,
       balance: updated,
       required: amount,
-      imbalance: afterWithdraw.abs(),
+      imbalance: totalImbalance.abs(),
       burned: BN_ZERO,
     };
   }
@@ -96,6 +101,17 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
     required: amount,
     burned: burnedTokens,
   };
+}
+
+function calculateBalanceCountedTowardsEd(balance: Balance, transferableMode?: TransferableMode): BN {
+  const mode = transferableMode ?? balance.transferableMode;
+
+  switch (mode) {
+    case 'holdAndFreezes':
+      return balance.free;
+    case 'legacy':
+      return totalAmountBN(balance);
+  }
 }
 
 export const balanceService = {

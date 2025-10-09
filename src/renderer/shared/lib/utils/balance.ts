@@ -191,7 +191,6 @@ export const fromPrecision = (balance: string | BN, precision: number): string =
 };
 
 export const totalAmountBN = (balance: Balance) => {
-  if (nullable(balance)) return BN_ZERO;
   return balance.free.add(balance.reserved);
 };
 

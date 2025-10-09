@@ -244,32 +244,9 @@ const $coreTx = combine(
     initiator: form.fields.initiator.$value,
     isExistentialDepositEnabled: $isExistentialDepositEnabled,
     isMaxModeEnabled: $isMaxModeEnabled,
-    balance: $initiatorAccountBalance,
-    asset: $asset,
-    available: $available,
   },
-  ({
-    network,
-    isXcm,
-    form,
-    xcmData,
-    isConnected,
-    initiator,
-    isExistentialDepositEnabled,
-    isMaxModeEnabled,
-    balance,
-    asset,
-    available,
-  }) => {
-    if (
-      !network ||
-      !initiator ||
-      !isConnected ||
-      (isXcm && !xcmData) ||
-      !validateAddress(form.destination) ||
-      nullable(balance) ||
-      nullable(asset)
-    ) {
+  ({ network, isXcm, form, xcmData, isConnected, initiator, isExistentialDepositEnabled, isMaxModeEnabled }) => {
+    if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
       return null;
     }
 
@@ -280,16 +257,8 @@ const $coreTx = combine(
       amount: form.amount,
       destination: form.destination,
       xcmData,
-      // transferAll: nonNullable(available) && toPrecision(form.amount, asset.precision).eq(available),
-      // allowDeath: nonNullable(available) && toPrecision(form.amount, asset.precision).gt(available.sub(balance.ed)),
-      transferAll:
-        isExistentialDepositEnabled &&
-        (isMaxModeEnabled || (nonNullable(available) && toPrecision(form.amount, asset.precision).eq(available))),
-      allowDeath:
-        !isMaxModeEnabled &&
-        isExistentialDepositEnabled &&
-        nonNullable(available) &&
-        toPrecision(form.amount, asset.precision).gt(available.sub(balance.ed)),
+      transferAll: isMaxModeEnabled && isExistentialDepositEnabled,
+      allowDeath: !isMaxModeEnabled && isExistentialDepositEnabled,
     });
   },
 );
@@ -412,8 +381,9 @@ sample({
     isExistentialDepositEnabled: $isExistentialDepositEnabled,
   },
   filter: ({ balance, totalFee }) => nonNullable(balance) && nonNullable(totalFee),
-  fn: ({ balance, totalFee, isExistentialDepositEnabled }) =>
-    getAvailableAmount({ balance: balance!, totalFee: totalFee!, includeED: isExistentialDepositEnabled }),
+  fn: ({ balance, totalFee, isExistentialDepositEnabled }) => {
+    return getAvailableAmount({ balance: balance!, totalFee: totalFee!, includeED: isExistentialDepositEnabled });
+  },
   target: setAvailable,
 });
 
@@ -437,7 +407,6 @@ sample({
 });
 
 const $showEDSwitch = combine($isEdSwitchVisible, $initiatorAccountBalance, (isEdSwitchVisible, balance) => {
-  console.log({ isEdSwitchVisible });
   if (!isEdSwitchVisible || nullable(balance)) {
     return false;
   }
