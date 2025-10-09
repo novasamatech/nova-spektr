@@ -280,8 +280,6 @@ const $coreTx = combine(
       amount: form.amount,
       destination: form.destination,
       xcmData,
-      // transferAll: nonNullable(available) && toPrecision(form.amount, asset.precision).eq(available),
-      // allowDeath: nonNullable(available) && toPrecision(form.amount, asset.precision).gt(available.sub(balance.ed)),
       transferAll:
         isExistentialDepositEnabled &&
         (isMaxModeEnabled || (nonNullable(available) && toPrecision(form.amount, asset.precision).eq(available))),
@@ -438,7 +436,6 @@ sample({
 });
 
 const $showEDSwitch = combine($isEdSwitchVisible, $initiatorAccountBalance, (isEdSwitchVisible, balance) => {
-  console.log({ isEdSwitchVisible });
   if (!isEdSwitchVisible || nullable(balance)) {
     return false;
   }

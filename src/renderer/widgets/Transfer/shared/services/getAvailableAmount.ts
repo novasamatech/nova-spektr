@@ -14,11 +14,6 @@ export function getAvailableAmount({
 }) {
   if (!balance) return BN_ZERO;
 
-  console.log({
-    frozen: balance.frozen.toString(),
-    reserved: balance.reserved.toString(),
-  })
-
   const transferable = transferableAmountBN(balance);
   const deductible = includeED ? BN_ZERO : BN.max(BN_ZERO, balance.ed.sub(balance.frozen));
   const available = transferable.sub(deductible).sub(totalFee);
