@@ -1,18 +1,22 @@
+import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { Duration, FootnoteText, HelpText } from '@/shared/ui';
-import { Box, Modal } from '@/shared/ui-kit';
+import { entries, nonNullable } from '@/shared/lib/utils';
+import { Duration, FootnoteText, HelpText, Separator } from '@/shared/ui';
+import { Box, Modal, Select } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
 import { activity } from '../model/activity';
 
 const getMessage = (t: TFunction, record: FeedRecord) => {
   if (record.type === 'activeChanged') {
-    return record.isActive
-      ? t('fellowship.profile.activityFeed.activeTrue')
-      : t('fellowship.profile.activityFeed.activeFalse');
+    return t('fellowship.profile.activityFeed.status', {
+      status: record.isActive
+        ? t('fellowship.profile.activityFeed.statusActive')
+        : t('fellowship.profile.activityFeed.statusInactive'),
+    });
   }
 
   if (record.type === 'imported') {
@@ -44,25 +48,89 @@ const getMessage = (t: TFunction, record: FeedRecord) => {
   return '';
 };
 
+const FILTER_TYPES_TITLES = {
+  promotion: 'fellowship.profile.activityFeed.filterPromotion',
+  retention: 'fellowship.profile.activityFeed.filterRetention',
+  status: 'fellowship.profile.activityFeed.filterStatus',
+  salary: 'fellowship.profile.activityFeed.filterSalary',
+} as const;
+
+type FilterType = keyof typeof FILTER_TYPES_TITLES;
+
+const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+
 export const ActivityFeed = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const list = useUnit(activity.$list);
   const now = Date.now();
+  const [filter, setFilter] = useState<FilterType | null>(null);
+
+  const filteredList = useMemo(() => {
+    if (filter === null) return list;
+
+    return list.filter(record => {
+      switch (filter) {
+        case 'promotion':
+          return record.type === 'promoted' || (record.type === 'requested' && record.wish === 'Promotion');
+        case 'retention':
+          return record.type === 'proven' || (record.type === 'requested' && record.wish === 'Retention');
+        case 'status':
+          return record.type === 'activeChanged';
+        case 'salary':
+          return record.type === 'paid';
+        default:
+          return true;
+      }
+    });
+  }, [list, filter]);
+
+  const handleClearFilter = () => {
+    setFilter(null);
+  };
 
   return (
     <Modal size="md" height="lg">
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.profile.history')}</Modal.Title>
       <Modal.Content>
-        <Box padding={[0, 3, 5]} gap={6}>
-          {list.map(x => (
-            <div key={`${x.type}-${x.block}`} className="flex px-2">
-              <FootnoteText className="grow items-center">{getMessage(t, x)}</FootnoteText>
-              <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-                <Duration seconds={(now - x.at.getTime()) / 1000} />
-              </HelpText>
+        <Box padding={[0, 3, 0]} gap={0}>
+          <div className="flex w-full items-center gap-2 px-2 pb-4">
+            <div className="grow">
+              <Select placeholder={t('fellowship.profile.activityFeed.filterAll')} value={filter} onChange={setFilter}>
+                {entries(FILTER_TYPES_TITLES).map(([key, title]) => (
+                  <Select.Item key={key} value={key}>
+                    {t(title)}
+                  </Select.Item>
+                ))}
+              </Select>
             </div>
-          ))}
+            {nonNullable(filter) && (
+              <button
+                className="text-text-link hover:text-text-link-hover shrink-0 text-footnote"
+                onClick={handleClearFilter}
+              >
+                {t('fellowship.profile.activityFeed.clear')}
+              </button>
+            )}
+          </div>
+          <Box padding={[0, 2, 5]} gap={3}>
+            {filteredList.map(x => {
+              const age = now - x.at.getTime();
+              const isOlderThanMonth = age > ONE_MONTH_MS;
+
+              return (
+                <div key={`${x.type}-${x.block}`} className="flex flex-col gap-2">
+                  <div className="flex items-start gap-2">
+                    <FootnoteText className="grow font-bold">{getMessage(t, x)}</FootnoteText>
+                    <HelpText className="shrink-0 text-text-secondary">
+                      {isOlderThanMonth ? format(x.at, 'dd/MM/yyyy') : <Duration seconds={age / 1000} />}
+                    </HelpText>
+                  </div>
+                  <Separator />
+                </div>
+              );
+            })}
+          </Box>
         </Box>
       </Modal.Content>
     </Modal>
