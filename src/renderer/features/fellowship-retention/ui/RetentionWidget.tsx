@@ -5,9 +5,9 @@ import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable } from '@/shared/lib/utils';
-import { Button, FootnoteText, Icon, TitleText } from '@/shared/ui';
+import { Button, CaptionText, FootnoteText, Icon, TitleText } from '@/shared/ui';
 import { Box, Skeleton, type TimelineStep } from '@/shared/ui-kit';
-import { type Member, type Referendum, votingHistoryService } from '@/domains/collectives';
+import { type Member, type Referendum, memberService, votingHistoryService } from '@/domains/collectives';
 import {
   DANGER_THRESHOLD_DAYS,
   RetentionWidgetState,
@@ -43,6 +43,8 @@ export const RetentionWidget = memo(({ member }: Props) => {
   const state = useUnit(fellowshipRetention.$widgetState);
   const { fromDateFormatted, toDateFormatted, retentionPeriod, timelineSteps, timelineValue } = useRetentionData();
 
+  if (!memberService.shouldProve(member)) return null;
+
   if (!retentionPeriod) return <SkeletonLoader />;
 
   if (state === RetentionWidgetState.WAITING) {
@@ -75,8 +77,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
         })}
         footer={
           <>
-            {/* TODO: Change icon to hourglass when available */}
-            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="warning" />
+            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="hourglass" variant="warning" />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
             <Button size="sm" className="ml-auto" onClick={() => {}}>
               {t('fellowship.retention.button.submitReport')}
@@ -359,24 +360,31 @@ type WidgetContainerProps = PropsWithChildren<{
   icon?: ReactNode;
 }>;
 
-const WidgetContainer = ({ title, description, icon, children, footer }: WidgetContainerProps) => (
-  <div className="rounded-lg bg-block-background-default p-4">
-    <Box gap={4}>
-      <Box gap={3}>
-        <Box gap={1}>
-          <Box direction="row" gap={2} verticalAlign="center">
-            {icon}
-            <TitleText className="text-medium-title font-extrabold text-text-primary">{title}</TitleText>
+const WidgetContainer = ({ title, description, icon, children, footer }: WidgetContainerProps) => {
+  const { t } = useI18n();
+
+  return (
+    <Box gap={2}>
+      <CaptionText>{t('fellowship.retention.title')}</CaptionText>
+      <div className="rounded-lg bg-block-background-default p-4">
+        <Box gap={4}>
+          <Box gap={3}>
+            <Box gap={1}>
+              <Box direction="row" gap={2} verticalAlign="center">
+                {icon}
+                <TitleText className="text-medium-title font-extrabold text-text-primary">{title}</TitleText>
+              </Box>
+              {description && <FootnoteText className="text-text-primary">{description}</FootnoteText>}
+            </Box>
+            {children}
           </Box>
-          {description && <FootnoteText className="text-text-primary">{description}</FootnoteText>}
+          {footer && (
+            <Box width="100%" direction="row" verticalAlign="center">
+              {footer}
+            </Box>
+          )}
         </Box>
-        {children}
-      </Box>
-      {footer && (
-        <Box width="100%" direction="row" verticalAlign="center">
-          {footer}
-        </Box>
-      )}
+      </div>
     </Box>
-  </div>
-);
+  );
+};

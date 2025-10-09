@@ -457,7 +457,7 @@
         },
         "title": "All events"
       },
-      "lastActivityCardTitle": "Last events",
+      "lastActivityCardTitle": "Latest events",
       "record": {
         "activeChanged": "changed his status to {status}",
         "demoted": "has been bumped to rank {rank}",
@@ -549,6 +549,7 @@
         "requestedRetention": "Retention requested"
       },
       "fellow": "Fellow",
+      "history": "History",
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
       "ready": "Ready",
@@ -566,7 +567,7 @@
     },
     "promotion": {
       "canSubmit": {
-        "description": "Recommend to prepare promotion evidence before the retention period ends to avoid delays in referendum creation.",
+        "description": "It is recommended to submit promotion evidence before the promotion period ends to avoid delays in referendum creation.",
         "promotionPeriodTooltip": "Promotion period\n{from} - {to}",
         "submitAnytime": "Submit evidence anytime",
         "submitButton": "Submit evidence",
@@ -580,24 +581,24 @@
       },
       "submitted": {
         "dangerZoneTooltip": "Danger zone - evidence may be demoted",
-        "description": "Evidence is on approval. It is editable until referendum is created.",
+        "description": "Evidence is under approval. It is editable until referendum is created.",
         "editButton": "Edit",
         "ensureAwareness": "Ensure fellows are aware of the evidence",
         "safeZoneTooltip": "Safe zone - evidence is being reviewed",
         "statusGood": "Good",
-        "submittedOnTooltip": "Promotion evidence submitted\n{date}",
+        "submittedOnTooltip": "Promotion evidence submitted on\n{date}",
         "title": "Promotion evidence submitted",
         "viewButton": "View",
         "warningZoneTooltip": "Warning zone - consider promoting evidence"
       },
       "title": "PROMOTION PERIOD",
       "waiting": {
-        "dangerZoneTooltip": "Danger zone - promotion opportunity very close",
-        "description": "You be eligible for promotion from {from}",
+        "dangerZoneTooltip": "Danger zone - promotion opportunity is imminent",
+        "description": "You will be eligible for promotion starting from {from}",
         "safeZoneTooltip": "Safe zone - plenty of time until promotion",
-        "title": "Waiting promotion opportunity",
+        "title": "Awaiting promotion opportunity",
         "untilOpportunity": "until promotion opportunity",
-        "warningZoneTooltip": "Warning zone - promotion opportunity approaching"
+        "warningZoneTooltip": "Warning zone - promotion opportunity ahead"
       }
     },
     "rank": {
@@ -615,6 +616,7 @@
     "referendums": {
       "completed": "Completed referendums",
       "ongoing": "Ongoing referendums",
+      "tab": "Referendums",
       "tracks": {
         "architects": "Architects",
         "architectsAdept": "Architects Adept",
@@ -764,6 +766,7 @@
       }
     },
     "tasks": {
+      "active": "Active",
       "cardTitle": "Actions Required",
       "completed": "Completed",
       "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
@@ -780,6 +783,7 @@
       "reviewBasket": "Confirm now",
       "reviewBasketTitle_one": "Decision",
       "reviewBasketTitle_other": "Decisions",
+      "tab": "Tasks",
       "task": {
         "anyReferendum": {
           "noDescription": "No description provided",
@@ -840,7 +844,8 @@
           "rfcOrWhitelist": "What do you think?",
           "spend": "How do you find this payment request?"
         }
-      }
+      },
+      "voted": "Voted"
     },
     "title": "Fellowship",
     "tooltips": {
@@ -895,8 +900,8 @@
       "noVotes": "No opinions have been submitted yet",
       "showHistoryButton": "View more",
       "spend": "Other members find the payment request to be",
-      "subtitle": "Other members find the evidence to be",
-      "subtitlePromotionRetention": "Other members find it to be",
+      "subtitle": "Other members find it to be",
+      "subtitlePromotionRetention": "Other members find the evidence to be",
       "voteEnded": "Opinion collection has concluded, the fellowship oracle identified it to be",
       "voteEndedPromotionRetention": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
       "votes_one": "{ count } vote",

@@ -15,6 +15,17 @@ function getTimerColor(variant: Props['variant']) {
   }
 }
 
+function getTimerIcon(variant: Props['variant']): IconNames {
+  switch (variant) {
+    case 'urgent':
+      return 'fire';
+    case 'warning':
+      return 'hourglass';
+    default:
+      return 'clock';
+  }
+}
+
 type Props = {
   secondsToEnd: number;
   icon?: IconNames;
@@ -24,7 +35,7 @@ type Props = {
 };
 
 export const Timeout = memo(
-  ({ secondsToEnd, icon = 'clock', variant, shortDateFormat, textColor = 'text-text-secondary' }: Props) => {
+  ({ secondsToEnd, icon, variant, shortDateFormat, textColor = 'text-text-secondary' }: Props) => {
     const { t } = useI18n();
 
     const [countdown, setCountdown] = useState(secondsToEnd);
@@ -49,10 +60,11 @@ export const Timeout = memo(
     }, [countdown]);
 
     const timerColor = getTimerColor(variant);
+    const timerIcon = icon || getTimerIcon(variant);
 
     return (
       <div className={cnTw('mr-0.5 flex items-center gap-x-1', timerColor)}>
-        <Icon name={icon} size={16} className="text-inherit" />
+        <Icon name={timerIcon} size={16} className="text-inherit" />
         <FootnoteText className={`${textColor}`}>
           {countdown > 0 ? (
             <Duration seconds={countdown} shortFormat={shortDateFormat} />
