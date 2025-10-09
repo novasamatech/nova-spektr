@@ -412,8 +412,9 @@ sample({
     isExistentialDepositEnabled: $isExistentialDepositEnabled,
   },
   filter: ({ balance, totalFee }) => nonNullable(balance) && nonNullable(totalFee),
-  fn: ({ balance, totalFee, isExistentialDepositEnabled }) =>
-    getAvailableAmount({ balance: balance!, totalFee: totalFee!, includeED: isExistentialDepositEnabled }),
+  fn: ({ balance, totalFee, isExistentialDepositEnabled }) => {
+    return getAvailableAmount({ balance: balance!, totalFee: totalFee!, includeED: isExistentialDepositEnabled });
+  },
   target: setAvailable,
 });
 
