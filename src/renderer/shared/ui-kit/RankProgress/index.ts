@@ -1,1 +1,0 @@
-export { RankProgress } from './RankProgress';
