@@ -1,3 +1,7 @@
+export const ERROR = {
+  NETWORK_DISABLED: 'Network is disabled',
+} as const;
+
 export const FELLOWSHIP_TABS = {
   RANKS: 'ranks',
   MEMBERS: 'members',
@@ -5,6 +9,8 @@ export const FELLOWSHIP_TABS = {
 } as const;
 
 export type FellowshipTab = (typeof FELLOWSHIP_TABS)[keyof typeof FELLOWSHIP_TABS];
+
+export const READY_FOR_PROMOTION = 'ready' as const;
 
 export const PROGRESS_WITH_DIVIDERS_WIDTHS: Record<number, number> = {
   1: 48,

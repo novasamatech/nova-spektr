@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
 import { type FellowshipTab } from '../model/constants';
-import { $activeTab, $isFellowshipOverviewModalOpen, closeFellowshipOverviewModal, switchTab } from '../model/modal';
+import { modal } from '../model/modal';
 
 import { CodexTab } from './CodexTab';
 import { MembersTab } from './MembersTab';
@@ -11,12 +11,12 @@ import { RanksTab } from './RankTab';
 
 export const FellowshipOverviewModal = () => {
   const { t } = useTranslation();
-  const isOpen = useUnit($isFellowshipOverviewModalOpen);
-  const activeTab = useUnit($activeTab);
-  const closeModal = useUnit(closeFellowshipOverviewModal);
+  const isOpen = useUnit(modal.$isFellowshipOverviewModalOpen);
+  const activeTab = useUnit(modal.$activeTab);
+  const closeModal = useUnit(modal.closeFellowshipOverviewModal);
 
   const handleTabChange = (tab: string) => {
-    switchTab(tab as FellowshipTab);
+    modal.switchTab(tab as FellowshipTab);
   };
 
   return (

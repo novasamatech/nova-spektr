@@ -5,7 +5,7 @@ import { FootnoteText, InfoLink, TitleText } from '@/shared/ui';
 import { Box, Markdown, Surface } from '@/shared/ui-kit';
 import { getRankDataByRank } from '../../data';
 import { FELLOWSHIP_TABS } from '../../model/constants';
-import { switchTab } from '../../model/modal';
+import { modal } from '../../model/modal';
 
 interface RequirementsCardProps {
   rankId: number;
@@ -21,7 +21,7 @@ export const RequirementsCard = memo(({ rankId }: RequirementsCardProps) => {
 
   const handleCodexClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    switchTab(FELLOWSHIP_TABS.CODEX);
+    modal.switchTab(FELLOWSHIP_TABS.CODEX);
   };
 
   return (

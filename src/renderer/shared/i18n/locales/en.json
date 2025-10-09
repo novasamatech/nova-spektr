@@ -536,6 +536,7 @@
         "ranks": "Ranks"
       },
       "title": "Fellowship overview",
+      "toNextRank": "to next rank",
       "viewDetails": "View details"
     },
     "profile": {
