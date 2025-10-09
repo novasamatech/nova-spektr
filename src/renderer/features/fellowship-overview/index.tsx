@@ -10,7 +10,7 @@ import { promotion } from './model/promotion';
 export { fellowshipOverviewFeature, FellowshipOverviewModal, fellowship, modal, promotion };
 
 fellowshipOverviewFeature.inject(fellowshipSidebarSlot, {
-  order: 2.5, // TODO: Replace with actual order when overview relayout is merged
+  order: 1,
   render: () => (
     <>
       <FellowshipOverview />
