@@ -529,7 +529,6 @@
     "profile": {
       "active": "Active",
       "activeSalary": "Active salary",
-      "history": "History",
       "activityFeed": {
         "activeFalse": "Status passive",
         "activeTrue": "Status active",
@@ -542,6 +541,7 @@
         "requestedRetention": "Retention requested"
       },
       "fellow": "Fellow",
+      "history": "History",
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
       "ready": "Ready",
