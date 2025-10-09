@@ -37,7 +37,7 @@ import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
-import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
+import { type DerivationKeyDraft, DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
 
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { manageVaultModel } from './model/manage-vault-model';
@@ -64,7 +64,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
-  const [chainElements, setChainElements] = useState<[string, (VaultChainAccount | VaultShardAccount[])[]][]>([]);
+  const [chainElements, setChainElements] = useState<[ChainId, (VaultChainAccount | VaultShardAccount[])[]][]>([]);
 
   const {
     submit,
@@ -85,8 +85,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   }, [onComplete]);
 
   useEffect(() => {
-    const chainsMap = Object.fromEntries(
-      Object.keys(chains).map(chainId => [chainId, [] as (VaultChainAccount | VaultShardAccount[])[]]),
+    const chainsMap: Record<ChainId, (VaultChainAccount | VaultShardAccount[])[]> = Object.fromEntries(
+      Object.keys(chains).map(chainId => [chainId, []]),
     );
 
     for (const account of keysGroups) {
@@ -94,7 +94,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       chainsMap[chainId].push(account);
     }
 
-    setChainElements(Object.entries(chainsMap));
+    setChainElements(Object.entries(chainsMap) as [ChainId, (VaultChainAccount | VaultShardAccount[])[]][]);
   }, [keysGroups]);
 
   const submitForm = (event: FormEvent) => {
@@ -141,12 +141,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     toggleIsImportModalOpen();
   };
 
-  const handleConstructorKeys = (
-    keysToAdd: (VaultChainAccount | VaultShardAccount[])[],
-    keysToRemove: (VaultChainAccount | VaultShardAccount[])[],
-  ) => {
-    manageVaultModel.events.keysRemoved(keysToRemove.flat());
-    manageVaultModel.events.keysAdded(keysToAdd.flat());
+  const handleConstructorKeys = (keys: DerivationKeyDraft[]) => {
+    manageVaultModel.events.derivationsConstructed(keys);
     toggleConstructorModal();
   };
 
@@ -259,7 +255,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                     <Accordion open={isAltPressed}>
                       <Accordion.Trigger>
                         <div className="flex gap-x-2 normal-case">
-                          <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
+                          <ChainTitle fontClass="text-text-primary" chainId={chainId} />
                           <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
                         </div>
                       </Accordion.Trigger>
@@ -298,7 +294,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       <KeyConstructor
         isOpen={isConstructorModalOpen}
         title={name?.value}
-        existingKeys={keys}
+        existingKeys={keys as (VaultChainAccount | VaultShardAccount)[]}
         onClose={toggleConstructorModal}
         onConfirm={handleConstructorKeys}
       />
@@ -314,7 +310,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       <DerivationsAddressModal
         isOpen={isAddressModalOpen}
         rootAccountId={publicKey}
-        keys={keys as (VaultShardAccount | VaultChainAccount)[]}
+        keys={keys}
         onClose={toggleIsAddressModalOpen}
         onComplete={handleCreateVault}
       />

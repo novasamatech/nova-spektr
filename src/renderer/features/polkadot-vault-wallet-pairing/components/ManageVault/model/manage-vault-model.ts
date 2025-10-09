@@ -13,10 +13,11 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import { AccountType, CryptoType, KeyType } from '@/shared/core';
-import { dictionary, nullable } from '@/shared/lib/utils';
+import { groupShardedDerivations, nonNullable, nullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { KEY_NAMES, accountUtils, walletModel } from '@/entities/wallet';
+import { type DerivationKeyDraft } from '@/features/wallets';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -34,8 +35,7 @@ type VaultCreateParams = {
 };
 
 const formInitiated = createEvent<SeedInfo>();
-const keysRemoved = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
-const keysAdded = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
+const derivationsConstructed = createEvent<DerivationKeyDraft[]>();
 const derivationsImported = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const vaultCreated = createEvent<VaultCreateParams>();
 
@@ -131,22 +131,39 @@ sample({
 });
 
 sample({
-  clock: keysRemoved,
-  source: $keys,
-  filter: (_, keysToAdd) => keysToAdd.length > 0,
-  fn: (existingKeys, keysToRemove) => {
-    const derivationsMap = dictionary(keysToRemove, 'derivationPath', () => true);
+  clock: derivationsConstructed,
+  source: networkModel.$chains,
+  filter: (_, draftKeys) => draftKeys.length > 0,
+  fn: (chains, draftKeys) => {
+    const shardedKeyGroups = groupShardedDerivations(draftKeys);
 
-    return existingKeys.filter(key => !derivationsMap[key.derivationPath]);
+    const derivationToGroupId = new Map<string, string>();
+    for (const [_, keys] of Object.entries(shardedKeyGroups)) {
+      const groupId = crypto.randomUUID();
+      for (const key of keys) {
+        derivationToGroupId.set(key.derivationPath, groupId);
+      }
+    }
+
+    return draftKeys.map(key => {
+      const isEthereumBased = networkUtils.isEthereumBased(chains[key.chainId].options);
+      const groupId = derivationToGroupId.get(key.derivationPath);
+      const isSharded = nonNullable(groupId);
+
+      const account = {
+        type: 'chain',
+        name: key.derivationPath,
+        keyType: KeyType.CUSTOM,
+        chainId: key.chainId,
+        accountType: isSharded ? AccountType.SHARD : AccountType.CHAIN,
+        cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
+        signingType: SigningType.POLKADOT_VAULT,
+        derivationPath: key.derivationPath,
+        ...(isSharded && { groupId }),
+      };
+      return account as DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>;
+    });
   },
-  target: $keys,
-});
-
-sample({
-  clock: keysAdded,
-  source: $keys,
-  filter: (_, keysToAdd) => keysToAdd.length > 0,
-  fn: (existingKeys, keysToAdd) => existingKeys.concat(keysToAdd),
   target: $keys,
 });
 
@@ -173,8 +190,7 @@ export const manageVaultModel = {
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,
-    keysRemoved,
-    keysAdded,
+    derivationsConstructed,
     derivationsImported,
     vaultCreated,
   },
