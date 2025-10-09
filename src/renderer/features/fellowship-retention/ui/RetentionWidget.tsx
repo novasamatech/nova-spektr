@@ -77,8 +77,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
         })}
         footer={
           <>
-            {/* TODO: Change icon to hourglass when available */}
-            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="warning" />
+            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="hourglass" variant="warning" />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
             <Button size="sm" className="ml-auto" onClick={() => {}}>
               {t('fellowship.retention.button.submitReport')}
