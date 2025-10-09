@@ -13,7 +13,7 @@ import {
 } from '../common/constants';
 import { type ComboboxOption, type Position, type Theme } from '../common/types';
 
-type Props = Omit<ComponentProps<typeof Input>, 'onChange' | 'value'> & {
+type Props = Omit<ComponentProps<typeof Input>, 'onChange' | 'value' | 'onInput'> & {
   query?: string;
   value?: ComboboxOption['value'];
   options: ComboboxOption[];
