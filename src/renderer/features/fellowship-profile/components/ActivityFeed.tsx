@@ -64,8 +64,6 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
   const list = useUnit(activity.$list);
   const [filter, setFilter] = useState<FilterType | null>(null);
 
-  console.log('list', list);
-
   const now = useRef(Date.now());
 
   const filteredList = useMemo(() => {
