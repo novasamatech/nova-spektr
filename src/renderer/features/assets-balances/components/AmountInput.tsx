@@ -34,6 +34,7 @@ type Props = {
   showCurrency?: boolean;
   suffixElement?: ReactNode;
   testId?: string;
+  onKeyDown?: () => void;
   onChange?: (value: string) => void;
 };
 
@@ -49,6 +50,7 @@ export const AmountInput = ({
   showCurrency = true,
   testId,
   onChange,
+  onKeyDown,
   suffixElement,
 }: Props) => {
   const { t } = useI18n();
@@ -90,7 +92,7 @@ export const AmountInput = ({
     if (currencyMode) {
       setInputValue(getRoundedValue(currencyValue, 1, 0));
     } else {
-      handleChange(getRoundedValue(value || undefined, 1, 0, 1));
+      handleChange(value);
     }
   }, [currencyMode]);
 
@@ -115,14 +117,31 @@ export const AmountInput = ({
     if (Array.isArray(balance)) {
       return (
         <span className="flex gap-x-1">
-          <AssetBalance className="text-footnote text-text-primary" value={balance[0]} asset={asset} />
+          <AssetBalance
+            className="text-footnote text-text-primary"
+            value={balance[0]}
+            asset={asset}
+            keepPrecision={true}
+          />
           <span>-</span>
-          <AssetBalance className="text-footnote text-text-primary" value={balance[1]} asset={asset} />
+          <AssetBalance
+            className="text-footnote text-text-primary"
+            value={balance[1]}
+            asset={asset}
+            keepPrecision={true}
+          />
         </span>
       );
     }
 
-    return <AssetBalance className="inline text-footnote text-text-primary" value={balance} asset={asset} />;
+    return (
+      <AssetBalance
+        className="inline text-footnote text-text-primary"
+        value={balance}
+        asset={asset}
+        keepPrecision={true}
+      />
+    );
   }, [balance]);
 
   const label = (
@@ -162,7 +181,7 @@ export const AmountInput = ({
   );
 
   const { value: altValue, suffix: altValueSuffix } = currencyMode
-    ? formatBalance(value || undefined)
+    ? formatBalance(value || undefined, 0, { keepPrecision: true })
     : formatFiatBalance(currencyValue);
 
   const captionElement = showCurrency && nonNullable(rate) && nonNullable(activeCurrency) && (
@@ -189,6 +208,7 @@ export const AmountInput = ({
       disabled={disabled}
       testId={testId}
       onChange={handleChange}
+      onKeyDown={onKeyDown}
     />
   );
 };
@@ -207,6 +227,7 @@ type InputProps = {
   suffixElement?: ReactNode;
   captionElement?: ReactNode;
   testId?: string;
+  onKeyDown?: () => void;
   onChange: (value: string) => void;
 };
 export const Input = ({
@@ -220,6 +241,7 @@ export const Input = ({
   suffixElement,
   captionElement,
   testId,
+  onKeyDown,
   onChange,
 }: InputProps) => {
   const id = useId();
@@ -272,6 +294,7 @@ export const Input = ({
           type="text"
           disabled={disabled}
           data-testid={testId}
+          onKeyDown={onKeyDown}
           onChange={(event) => onChange?.(event.target.value)}
         />
         {suffixElement && <div className="absolute top-3.5 right-3">{suffixElement}</div>}

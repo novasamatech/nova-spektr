@@ -43,6 +43,7 @@ type FormatBalanceShorthands = Record<Suffix, boolean>;
 type FormatBalanceConfig = Partial<{
   round: 'up' | 'down';
   shorthands: Partial<FormatBalanceShorthands>;
+  keepPrecision: boolean;
 }>;
 
 type FormattedBalance = {
@@ -64,6 +65,7 @@ export const formatBalance = (
 ): FormattedBalance => {
   const shorthands = config?.shorthands ?? defaultBalanceShorthands;
   const round = config?.round ?? 'down';
+  const keepPrecision = config?.keepPrecision ?? false;
   const mergedShorthands =
     shorthands === defaultBalanceShorthands ? defaultBalanceShorthands : { ...defaultBalanceShorthands, ...shorthands };
 
@@ -116,12 +118,13 @@ export const formatBalance = (
     }
   }
 
-  const value = new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat();
+  const dividedBalance = new BNWithConfig(bnBalance).div(divider);
+  const value = keepPrecision ? dividedBalance.toFormat() : dividedBalance.decimalPlaces(decimalPlaces).toFormat();
 
   return {
     value,
     suffix,
-    decimalPlaces,
+    decimalPlaces: keepPrecision ? precision : decimalPlaces,
     formatted: formatGroups(value) + suffix,
   };
 };

@@ -423,11 +423,6 @@ const Amount = () => {
     return null;
   }
 
-  const onAmountChange = (value: string) => {
-    amount.onChange(value);
-    formModel.events.toggleMaxMode(false);
-  };
-
   return (
     <div className="flex flex-col gap-y-2">
       <AmountInput
@@ -443,7 +438,8 @@ const Amount = () => {
           </Button>
         }
         testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
-        onChange={onAmountChange}
+        onChange={(value: string) => amount.onChange(value)}
+        onKeyDown={() => formModel.events.toggleMaxMode(false)}
       />
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}

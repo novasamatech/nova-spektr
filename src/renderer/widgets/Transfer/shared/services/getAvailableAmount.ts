@@ -15,7 +15,7 @@ export function getAvailableAmount({
   if (!balance) return BN_ZERO;
 
   const transferable = transferableAmountBN(balance);
-  const deductible = includeED ? BN_ZERO : balance?.ed;
+  const deductible = includeED ? BN_ZERO : balance.ed;
   const available = transferable.sub(deductible).sub(totalFee);
 
   return BN.max(BN_ZERO, available);

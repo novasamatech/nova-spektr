@@ -366,7 +366,7 @@ const {
 
 const errorsDebounced = debounce({
   source: $errorsImmediate,
-  timeout: 100,
+  timeout: 300,
 });
 
 const $errors = restore(errorsDebounced, []);
@@ -398,7 +398,7 @@ sample({
     totalFee: $totalFee,
     isExistentialDepositEnabled: $isExistentialDepositEnabled,
   },
-  filter: ({ balance, totalFee }) => nonNullable(balance) || nonNullable(totalFee),
+  filter: ({ balance, totalFee }) => nonNullable(balance) && nonNullable(totalFee),
   fn: ({ balance, totalFee, isExistentialDepositEnabled }) =>
     getAvailableAmount({ balance: balance!, totalFee: totalFee!, includeED: isExistentialDepositEnabled }),
   target: setAvailable,
@@ -410,7 +410,7 @@ const $accountDeathImmediate = $balanceValidationResults.map((results) =>
 
 const accountDeathDebounced = debounce({
   source: $accountDeathImmediate,
-  timeout: 100,
+  timeout: 300,
 });
 
 const $accountDeath = restore(accountDeathDebounced, false);
