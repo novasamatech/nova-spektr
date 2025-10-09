@@ -1,0 +1,4 @@
+This grade is the highest rank to be arrived at through purely technical prowess and to attain it, the individual must demonstrate they can match or better others of this rank in their absolute technical ability. As a benchmark, they must have played an advisory role in the architecture, design and implementation of at least five major protocol components and actively designed and built at least two from start to finish. They must have demonstrated beyond doubt the ability to nurture into greatness not only new Fellows but also new Architects.
+
+
+This is the first rank for which pre-specified discussion points become a crucial part of the grading and where those voting on the promotion must make a qualitative assessment on the outcome of the discussion in comparison to the precedent of prior promotions.

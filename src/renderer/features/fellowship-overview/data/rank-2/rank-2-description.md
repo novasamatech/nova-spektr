@@ -1,0 +1,1 @@
+At this level, members have demonstrated consistent participation and a solid understanding of the protocol. They are expected to contribute more substantially to discussions and may begin taking on small projects or tasks within the fellowship. This rank represents a significant step up from the initial level, requiring demonstrated competence and commitment.

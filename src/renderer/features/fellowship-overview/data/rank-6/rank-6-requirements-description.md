@@ -1,0 +1,3 @@
+- Devised, lead the design and overseen (or lead) the implementation of a major protocol innovation
+- At least three published long-form articles about technology relevant to but not specifically concerning Polkadot
+- Discuss: What have you learnt from this individual which you might ultimately find useful in your efforts to help Polkadot succeed?

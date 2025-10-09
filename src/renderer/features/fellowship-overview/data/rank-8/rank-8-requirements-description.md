@@ -1,0 +1,6 @@
+- Over a decade of consistent, exceptional contributions
+- Recognized as a pioneer in the field
+- Mentored multiple members to senior ranks
+- Legacy contributions that have fundamentally shaped the protocol
+- Serve as advisor and statesman for the fellowship
+- Demonstrate unwavering commitment to protocol advancement
