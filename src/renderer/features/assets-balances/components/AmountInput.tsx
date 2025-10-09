@@ -117,31 +117,14 @@ export const AmountInput = ({
     if (Array.isArray(balance)) {
       return (
         <span className="flex gap-x-1">
-          <AssetBalance
-            className="text-footnote text-text-primary"
-            value={balance[0]}
-            asset={asset}
-            keepPrecision={true}
-          />
+          <AssetBalance className="text-footnote text-text-primary" value={balance[0]} asset={asset} />
           <span>-</span>
-          <AssetBalance
-            className="text-footnote text-text-primary"
-            value={balance[1]}
-            asset={asset}
-            keepPrecision={true}
-          />
+          <AssetBalance className="text-footnote text-text-primary" value={balance[1]} asset={asset} />
         </span>
       );
     }
 
-    return (
-      <AssetBalance
-        className="inline text-footnote text-text-primary"
-        value={balance}
-        asset={asset}
-        keepPrecision={true}
-      />
-    );
+    return <AssetBalance className="inline text-footnote text-text-primary" value={balance} asset={asset} />;
   }, [balance]);
 
   const label = (

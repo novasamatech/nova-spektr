@@ -102,7 +102,7 @@ const $isExistentialDepositEnabled = createStore(false)
   .reset(formInitiated);
 
 const $isEdSwitchVisible = createStore(false)
-  .on(setMaxMode, () => true)
+  .on(setMaxMode.filter({ fn: (value) => value }), () => true)
   .reset(formInitiated);
 
 const $networkStore = restore(formInitiated, null);
@@ -280,7 +280,11 @@ const $coreTx = combine(
       amount: form.amount,
       destination: form.destination,
       xcmData,
-      transferAll: isMaxModeEnabled && isExistentialDepositEnabled,
+      // transferAll: nonNullable(available) && toPrecision(form.amount, asset.precision).eq(available),
+      // allowDeath: nonNullable(available) && toPrecision(form.amount, asset.precision).gt(available.sub(balance.ed)),
+      transferAll:
+        isExistentialDepositEnabled &&
+        (isMaxModeEnabled || (nonNullable(available) && toPrecision(form.amount, asset.precision).eq(available))),
       allowDeath:
         !isMaxModeEnabled &&
         isExistentialDepositEnabled &&
@@ -346,6 +350,7 @@ const {
   $valid,
   $balanceValidationResults,
   $validationDone,
+  $pending: $validationPending,
 } = createTxValidationStore({
   validator: transferValidator,
   params: {
@@ -369,7 +374,15 @@ const errorsDebounced = debounce({
   timeout: 300,
 });
 
-const $errors = restore(errorsDebounced, []);
+const $errors = createStore($errorsImmediate.defaultState).reset(formInitiated);
+
+sample({
+  clock: errorsDebounced,
+  source: $validationPending,
+  filter: (pending) => !pending,
+  fn: (_, errors) => errors,
+  target: $errors,
+});
 
 const $totalFee = combine(
   {
@@ -413,9 +426,18 @@ const accountDeathDebounced = debounce({
   timeout: 300,
 });
 
-const $accountDeath = restore(accountDeathDebounced, false);
+const $accountDeath = createStore(false).reset(formInitiated);
+
+sample({
+  clock: accountDeathDebounced,
+  source: $validationPending,
+  filter: (pending) => !pending,
+  fn: (_, accountDeath) => accountDeath,
+  target: $accountDeath,
+});
 
 const $showEDSwitch = combine($isEdSwitchVisible, $initiatorAccountBalance, (isEdSwitchVisible, balance) => {
+  console.log({ isEdSwitchVisible });
   if (!isEdSwitchVisible || nullable(balance)) {
     return false;
   }
