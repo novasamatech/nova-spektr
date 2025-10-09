@@ -75,7 +75,9 @@ export const FellowshipOverview = () => {
         onMouseLeave={() => setIsProgressHovered(false)}
       >
         {isLoading ? (
-          <Skeleton height="32px" />
+          <div className="min-h-18 w-full">
+            <Skeleton height="32px" />
+          </div>
         ) : (
           <>
             <ProgressWithSegments
