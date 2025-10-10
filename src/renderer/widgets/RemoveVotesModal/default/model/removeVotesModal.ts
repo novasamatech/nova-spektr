@@ -109,13 +109,17 @@ sample({
 
 // Transaction
 
-const $coreTx = combine(flow.state, $selectedSignatory, ({ chain, votes }, account) => {
-  if (nullable(account) || nullable(chain) || nullable(votes)) return null;
+const $coreTx = combine({ state: flow.state, initiator: $initiator }, ({ state: { chain, votes }, initiator }) => {
+  if (nullable(initiator) || nullable(chain) || nullable(votes)) return null;
+
+  const filteredVotes = votes.filter((vote) => vote.voter === initiator.accountId);
+
+  if (filteredVotes.length === 0) return null;
 
   return transactionBuilder.buildRemoveVotes({
-    accountId: account!.accountId,
+    accountId: initiator.accountId,
     chain,
-    votes: votes.filter((vote) => vote.voter === account.accountId),
+    votes: filteredVotes,
   });
 });
 
@@ -190,7 +194,9 @@ sample({
 });
 
 sample({
-  clock: removeVoteConfirmModel.submitStarted,
+  clock: submitModel.init,
+  source: flow.status,
+  filter: (open) => open,
   fn: () => Step.SUBMIT,
   target: $step,
 });
@@ -219,9 +225,11 @@ sample({
     tx: $tx,
     coreTx: $coreTx,
   },
-  filter: ({ tx, initiator, state: { votes, asset, chain, api } }) => {
+  filter: ({ tx, initiator, signatory, state: { votes, asset, chain, api } }) => {
+    console.log({ tx, initiator, signatory, votes, asset, chain, api });
     return (
       nonNullable(initiator) &&
+      nonNullable(signatory) &&
       nonNullable(tx) &&
       nonNullable(votes) &&
       nonNullable(asset) &&
@@ -247,14 +255,10 @@ sample({
 
 sample({
   clock: removeVoteConfirmModel.startSigning,
-  source: { confirms: removeVoteConfirmModel.$confirmMap },
-  fn: ({ confirms }): { signingPayloads: SigningPayload[] } => {
-    if (!confirms) {
-      return { signingPayloads: [] };
-    }
-
+  source: removeVoteConfirmModel.$confirms,
+  fn: (confirms) => {
     return {
-      signingPayloads: Object.values(confirms).map(({ meta }) => ({
+      signingPayloads: confirms.map<SigningPayload>(({ meta }) => ({
         account: meta.initiator,
         chain: meta.chain,
         transaction: meta.tx,
@@ -266,40 +270,27 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
-  source: removeVoteConfirmModel.$confirmMap,
-  filter: (stores) => nonNullable(stores[0]),
-  fn: (stores, signParams) => {
-    const store = stores[0];
-    const { meta } = store;
-
-    return {
-      signatures: signParams.signatures,
-      txPayloads: signParams.txPayloads,
-
-      chain: meta.chain,
-      account: meta.initiator,
-      signatory: meta.signatory,
-      wrappedTxs: [meta.tx],
-      coreTxs: [meta.coreTx],
-    };
-  },
-  target: submitModel.events.formInitiated,
+  clock: signModel.signed,
+  source: flow.status,
+  filter: (open) => open,
+  fn: (_, signParams) => signParams,
+  target: submitModel.init,
 });
 
 sample({
-  clock: removeVoteConfirmModel.submitFinished,
+  clock: submitModel.done,
+  source: flow.status,
+  filter: (open) => open,
   target: locksModel.events.subscribeLocks,
 });
 
 sample({
-  clock: removeVoteConfirmModel.submitFinished,
-  source: $availableAccounts,
-  fn: (accounts) => {
-    const accountIds = accounts.filter(nonNullable).map((a) => a.accountId);
-
-    return { accounts: accountIds };
-  },
+  clock: submitModel.done,
+  source: { open: flow.status, accounts: $availableAccounts },
+  filter: ({ open }) => open,
+  fn: ({ accounts }) => ({
+    accounts: accounts.map((a) => a.accountId),
+  }),
   target: votingAggregate.events.requestVoting,
 });
 

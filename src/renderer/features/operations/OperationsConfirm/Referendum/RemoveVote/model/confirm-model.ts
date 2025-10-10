@@ -5,7 +5,6 @@ import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/tran
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
-import { submitModel } from '@/features/operations/OperationSubmit';
 
 export type RemoveVoteConfirm = TxConfirmInfo & {
   api: ApiPromise;
@@ -25,6 +24,7 @@ const confirmStore = createTransactionConfirmStore<RemoveVoteConfirm>({
 
 export const confirmModel = {
   $confirmMap: confirmStore.$confirmMap,
+  $confirms: confirmStore.$confirms,
   $isMultisigExists: confirmStore.$isMultisigExists,
 
   startSigning: confirmStore.startSigning,
@@ -32,7 +32,4 @@ export const confirmModel = {
   replaceWithConfirm: confirmStore.replaceWithConfirm,
   init: confirmStore.init,
   resetConfirm: confirmStore.resetConfirm,
-
-  submitStarted: submitModel.events.formInitiated,
-  submitFinished: submitModel.output.formSubmitted,
 };

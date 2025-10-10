@@ -181,6 +181,40 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   transaction: $coreTx,
 });
 
+// used only to calc fee before decision made
+const $feeTx = combine(
+  {
+    chain: networkSelectorModel.$governanceChain,
+    referendum: $referendum,
+    conviction: form.fields.conviction.$value,
+    signatory: form.fields.signatory.$value,
+    amount: form.fields.amount.$value,
+  },
+  ({ chain, referendum, signatory, conviction, amount }) => {
+    if (nullable(referendum) || nullable(chain) || nullable(signatory)) {
+      return null;
+    }
+
+    return transactionBuilder.buildVote({
+      chain: chain,
+      accountId: signatory.accountId,
+      trackId: referendum.track,
+      referendumId: referendum.referendumId,
+      // abstain is used because it's more expensive
+      vote: voteTransactionService.createTransactionVote('abstain', amount || BN_ZERO, conviction),
+    });
+  },
+);
+
+const feeTxStore = createComplexTxStore({
+  api: networkSelectorModel.$governanceChainApi,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: networkSelectorModel.$governanceChain,
+  transaction: $feeTx,
+});
+
 // Transaction validation
 const $asset = networkSelectorModel.$governanceChain.map((chain) => (chain ? getNativeAsset(chain.assets) : null));
 const { $errors, $valid } = createTxValidationStore({
@@ -214,15 +248,16 @@ const $availableBalance = combine(
     chain: networkSelectorModel.$governanceChain,
     balances: balanceModel.$balanceMap,
     accounts: accounts.$list,
+    fee: feeTxStore.$fee,
   },
-  ({ referendum, balances, chain, initiator }) => {
+  ({ referendum, balances, chain, initiator, fee }) => {
     if (!initiator || !referendum || !chain) return BN_ZERO;
 
     const nativeAsset = getNativeAsset(chain.assets);
     const accountBalance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, nativeAsset.assetId);
     if (!accountBalance) return BN_ZERO;
 
-    return locksService.getAvailableBalance(accountBalance);
+    return locksService.getAvailableBalance(accountBalance).sub(fee);
   },
 );
 

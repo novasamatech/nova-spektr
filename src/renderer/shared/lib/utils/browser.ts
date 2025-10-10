@@ -31,3 +31,23 @@ export const isWeb = () => {
 export const isDev = () => {
   return import.meta.env.MODE === 'development';
 };
+
+export type PlatformType = 'web' | 'desktop-mac' | 'desktop-windows' | 'desktop-linux';
+
+export const getPlatformType = (): PlatformType => {
+  if (isElectron()) {
+    const os = getOperatingSystem();
+    switch (os) {
+      case 'macOS':
+        return 'desktop-mac';
+      case 'Windows':
+        return 'desktop-windows';
+      case 'Linux':
+        return 'desktop-linux';
+      default:
+        return 'desktop-linux';
+    }
+  }
+
+  return 'web';
+};
