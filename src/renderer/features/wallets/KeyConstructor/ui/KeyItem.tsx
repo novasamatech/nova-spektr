@@ -1,6 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { t } from 'i18next';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -33,11 +33,15 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
   const [showHints, setShowHints] = useState(false);
 
   const chains = useUnit(networkModel.$chains);
+  const chainsList = useMemo(() => Object.values(chains), [chains]);
+
   const keyData = useStoreMap({
     store: constructorModel.$keys,
     keys: [keyId],
     fn: (keys, [id]) => keys[id] ?? null,
   });
+  if (!keyData) return null;
+
   const error = useStoreMap({
     store: constructorModel.$errors,
     keys: [keyId],
@@ -45,6 +49,7 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
   });
 
   const chain = chains[keyData.chainId];
+  if (!chain) return null;
 
   const handleInputBlur = useCallback(() => {
     setShowHints(false);
@@ -74,33 +79,32 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
   );
 
   return (
-    <div className="mb-6 grid grid-cols-[20px_12px_60px_0px_1fr_24px_28px] gap-y-2">
-      <div className="col-start-1 flex justify-center">
+    <div className="mb-6 grid grid-cols-[34px_60px_1fr_54px] gap-y-2">
+      <div className="col-start-1 flex items-center justify-start">
         <HelpText className="text-text-tertiary">{t('dynamicDerivations.keysConstructor.indexLabel')}</HelpText>
       </div>
-      <div className="col-start-3">
+      <div className="col-start-2">
         <HelpText className="text-text-tertiary">{t('dynamicDerivations.keysConstructor.networkLabel')}</HelpText>
       </div>
-      <div className="col-start-5">
+      <div className="col-start-3">
         <HelpText className="text-text-tertiary">
           {t('dynamicDerivations.keysConstructor.derivationPathLabel')}
         </HelpText>
       </div>
-      <div className="col-start-7" />
 
-      <div className="col-start-1 flex items-center justify-center">
+      <div className="col-start-1 flex items-center justify-start">
         <HelpText className="text-text-tertiary">{String(keyIndex)}</HelpText>
       </div>
-      <div className="col-start-3">
+      <div className="col-start-2">
         <Select name={chain.name} placeholder="" value={keyData.chainId} onChange={handleUpdateChainId}>
-          {Object.values(chains).map((chain) => (
+          {chainsList.map((chain) => (
             <Select.Item value={chain.chainId} key={chain.chainId}>
               <ChainTitle fontClass="text-text-primary truncate" key={chain.chainId} chain={chain} />
             </Select.Item>
           ))}
         </Select>
       </div>
-      <div className="col-start-5">
+      <div className="col-start-3">
         <Input
           name={keyData.derivationPath}
           placeholder={t('dynamicDerivations.keysConstructor.derivationPlaceholder')}
@@ -111,17 +115,17 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
           onFocus={handleInputFocus}
         />
       </div>
-      <div className="col-start-7 flex items-center justify-center">
+      <div className="col-start-4 flex items-center justify-end">
         <IconButton
           name="delete"
-          className="mr-9 ml-2 w-max shrink-0 hover:text-text-negative focus:text-text-negative"
+          className="w-max shrink-0 hover:text-text-negative focus:text-text-negative"
           onClick={handleKeyRemove}
         />
       </div>
-      <div className={cnTw('col-start-5', { hidden: !error })}>
+      <div className={cnTw('col-start-3', { hidden: !error })}>
         <FootnoteText className="text-text-negative">{DerivationErrorText[error]}</FootnoteText>
       </div>
-      <div className={cnTw('col-start-5', { hidden: !showHints })}>
+      <div className={cnTw('col-start-3', { hidden: !showHints })}>
         <HintChips keyId={keyId} derivationPath={keyData.derivationPath} chainName={chain.specName} />
       </div>
     </div>
