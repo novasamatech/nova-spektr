@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { uniqBy } from 'lodash';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type ChainId, type Wallet } from '@/shared/core';
@@ -10,6 +11,7 @@ import { useI18n } from '@/shared/i18n';
 import {
   entries,
   formatBalance,
+  fromPrecision,
   getNativeAsset,
   includesMultiple,
   nonNullable,
@@ -19,7 +21,7 @@ import {
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
-import { Button, CaptionText, InputHint } from '@/shared/ui';
+import { Alert, Button, CaptionText, FootnoteText, Icon, InputHint, Switch } from '@/shared/ui';
 import {
   AccountSelect,
   Address,
@@ -28,7 +30,7 @@ import {
   TransactionValidationError,
   WalletIcon,
 } from '@/shared/ui-entities';
-import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
+import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
@@ -81,7 +83,10 @@ export const TransferForm = ({ onGoBack }: Props) => {
       <div className="flex flex-col gap-y-6">
         <FeeSection />
       </div>
+
       <AlertForDeliveryFee />
+      <AlertForAccountDeath />
+
       <ActionsSection onGoBack={onGoBack} />
 
       <MyselfAccountModal />
@@ -409,8 +414,10 @@ const Amount = () => {
     fields: { amount },
   } = useForm(formModel.form);
 
-  const accountBalance = useUnit(formModel.$initiatorBalance);
+  const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
+  const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
+  const showEDSwitch = useUnit(formModel.$showEDSwitch);
 
   if (!network) {
     return null;
@@ -421,16 +428,44 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError}
         value={amount.value}
-        balance={accountBalance.transferable.toString() ?? null}
+        balance={accountAvailableBalance?.toString() ?? null}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
+        suffixElement={
+          <Button pallet="secondary" variant="fill" size="sm" onClick={() => formModel.events.toggleMaxMode(true)}>
+            {t('transfer.max.buttonTitle')}
+          </Button>
+        }
         testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
-        onChange={amount.onChange}
+        onChange={(value: string) => amount.onChange(value)}
+        onKeyDown={() => formModel.events.toggleMaxMode(false)}
       />
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}
       </InputHint>
+
+      {showEDSwitch && (
+        <div className="flex justify-end">
+          <Switch
+            checked={isExistentialDepositEnabled}
+            variant="accent"
+            onChange={() => formModel.events.toggleExistentialDeposit()}
+          >
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div tabIndex={0}>
+                    <Icon name="info" className="hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('transfer.max.ed.tooltip')}</Tooltip.Content>
+              </Tooltip>
+              <FootnoteText>{t('transfer.max.ed.title')}</FootnoteText>
+            </div>
+          </Switch>
+        </div>
+      )}
     </div>
   );
 };
@@ -498,18 +533,18 @@ const AlertForDeliveryFee = () => {
   const initiator = useUnit(formModel.form.fields.initiator.$value);
 
   const deliveryFee = useUnit(formModel.$deliveryFee);
-  const initiatorBalance = useUnit(formModel.$initiatorBalance);
+  const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
   const asset = getNativeAsset(network?.chain.assets ?? []);
 
   const hasDeliveryError = amount.errorMessage === 'transfer.notEnoughBalanceForDeliveryFeeError';
 
-  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !initiatorBalance) {
+  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !accountAvailableBalance) {
     return null;
   }
 
   const formattedFee = formatBalance(deliveryFee, asset.precision).value;
-  const formattedBalance = formatBalance(initiatorBalance.native, asset.precision).value;
+  const formattedBalance = formatBalance(accountAvailableBalance, asset.precision).value;
 
   return (
     <DeliveryFeeAlert
@@ -544,6 +579,32 @@ const MyselfAccountModal = () => {
       onClose={formModel.xcmDestinationCancelled}
       onSelect={({ accountId }) => formModel.xcmDestinationSelected(accountId)}
     />
+  );
+};
+
+const AlertForAccountDeath = () => {
+  const { t } = useI18n();
+  const showAccountDeathAlert = useUnit(formModel.$accountDeath);
+  const initiatorAccountBalance = useUnit(formModel.$initiatorAccountBalance);
+  const asset = useUnit(formModel.$asset);
+
+  if (nullable(initiatorAccountBalance) || nullable(asset)) {
+    return null;
+  }
+
+  return (
+    showAccountDeathAlert && (
+      <Alert title={t('transfer.accountDeathWarning.title')} variant="warn" active>
+        <FootnoteText className="max-w-full text-text-primary">
+          <Trans
+            t={t}
+            i18nKey="transfer.accountDeathWarning.description"
+            components={{ b: <b className="font-semibold" /> }}
+            values={{ ed: fromPrecision(initiatorAccountBalance.ed, asset.precision), asset: asset.symbol }}
+          />
+        </FootnoteText>
+      </Alert>
+    )
   );
 };
 

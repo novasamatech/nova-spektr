@@ -59,6 +59,7 @@ type TransferParams = {
   destination: string;
   amount: string;
   transferAll?: boolean;
+  allowDeath?: boolean;
   xcmData?: {
     args: {
       xcmFee: string;
@@ -80,6 +81,7 @@ function buildTransfer({
   amount,
   xcmData,
   transferAll,
+  allowDeath,
 }: TransferParams): Transaction {
   let transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
   if (xcmData) {
@@ -87,6 +89,9 @@ function buildTransfer({
   }
   if (transferAll) {
     transactionType = TransactionType.TRANSFER_ALL;
+  }
+  if (allowDeath) {
+    transactionType = TransactionType.TRANSFER_ALLOW_DEATH;
   }
 
   const palletName =
