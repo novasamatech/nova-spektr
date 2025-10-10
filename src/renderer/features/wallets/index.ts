@@ -1,4 +1,4 @@
-export { type DerivationKeyDraft, KeyConstructor, populateDraftAccounts } from './KeyConstructor';
+export { type DerivationKeyDraft, KeyConstructor } from './KeyConstructor';
 export { ShardSelectorModal, ShardSelectorButton } from './ShardSelectorModal';
 export { DerivationsAddressModal } from './DerivationsAddressModal/ui/DerivationsAddressModal';
 export { ImportKeysModal } from './ImportKeys/ui/ImportKeysModal';
