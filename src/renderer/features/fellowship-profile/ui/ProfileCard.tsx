@@ -1,19 +1,19 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, memo, useEffect, useState } from 'react';
+import { type PropsWithChildren, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, getRelativeTimeFromApi, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, Button, Duration, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { BodyText, Button, FootnoteText, Icon } from '@/shared/ui';
 import { CollectiveRank, Hash, Identicon } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { ERROR } from '../constants';
-import { evidenceInfo } from '../model/evidence';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
 import { ProfileModal } from './ProfileModal';
+import { VotingRecordWidget } from './VotingRecord';
 
 export const ProfileCard = memo(() => {
   const pending = useUnit(profile.$pending);
@@ -168,69 +168,8 @@ const Member = () => {
           </Box>
         </Box>
 
-        <div className="grid grid-cols-3 gap-x-4 gap-y-2">
-          <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
-          <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
-          <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
-          <SmallTitleText>
-            <Activity />
-          </SmallTitleText>
-          <SmallTitleText>
-            <Agreement />
-          </SmallTitleText>
-          <SmallTitleText>
-            <NextRankTimeout />
-          </SmallTitleText>
-        </div>
+        <VotingRecordWidget />
       </Box>
     </Card>
-  );
-};
-
-const Activity = () => {
-  const { t } = useI18n();
-  const activityInfo = useUnit(profile.$activityInfo);
-
-  if (nullable(activityInfo)) {
-    return <Skeleton height="1lh" />;
-  }
-
-  return <span>{nonNullable(activityInfo.activity) ? `${activityInfo.activity}%` : t('fellowship.n/a')}</span>;
-};
-
-const Agreement = () => {
-  const { t } = useI18n();
-  const activityInfo = useUnit(profile.$activityInfo);
-
-  if (nullable(activityInfo)) {
-    return <Skeleton height="1lh" />;
-  }
-
-  return <span>{nonNullable(activityInfo.agreement) ? `${activityInfo.agreement}%` : t('fellowship.n/a')}</span>;
-};
-
-const NextRankTimeout = () => {
-  const { t } = useI18n();
-  const [timeLeft, setTimeLeft] = useState(0);
-
-  const input = useUnit(fellowshipProfileFeature.input);
-  const leftToPromotion = useUnit(evidenceInfo.$leftToPromotion);
-
-  useEffect(() => {
-    if (input?.api && nonNullable(leftToPromotion)) {
-      if (leftToPromotion > 0) {
-        getRelativeTimeFromApi(leftToPromotion, input.api).then(setTimeLeft);
-      } else {
-        setTimeLeft(0);
-      }
-    }
-  }, [input?.api, leftToPromotion]);
-
-  if (!input) return null;
-
-  return timeLeft === 0 ? (
-    <span>{t('fellowship.profile.ready')}</span>
-  ) : (
-    <Duration seconds={timeLeft / 1000} shortFormat />
   );
 };

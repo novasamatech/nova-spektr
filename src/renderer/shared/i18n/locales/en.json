@@ -515,7 +515,9 @@
     "members": {
       "active": "Active",
       "activity": "Activity",
+      "activityTooltip": "Minimum participation rate in eligible votes required to maintain rank. Lower ranks must vote more often; requirement decreases with higher ranks.",
       "agreement": "Agreement",
+      "agreementTooltip": "Minimum percentage of votes that should align with consensus of higher-ranked members, ensuring decisions follow established Fellowship norms.",
       "emptyList": "There is no members",
       "modalAccountTitle": "Account",
       "modalTitle": "Fellowship members",
@@ -528,7 +530,9 @@
     "noProfile": "Profile doesn’t exist",
     "profile": {
       "active": "Active",
+      "inactive": "Inactive",
       "activeSalary": "Active salary",
+      "switchStatus": "Switch status",
       "activityFeed": {
         "activeFalse": "Status passive",
         "activeTrue": "Status active",
