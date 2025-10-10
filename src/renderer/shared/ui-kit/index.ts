@@ -40,6 +40,7 @@ export { QrCode } from './QrCode/QrCode';
 export { ConfirmModal } from './ConfirmModal/ConfirmModal';
 export { RadioGroup } from './RadioGroup/RadioGroup';
 export { NotificationProvider, useNotification } from './NotificationContext';
+export { Speedometer } from './Speedometer/Speedomenter';
 
 export { QR_READER_ERRORS } from './QrReader/errors';
 export { QrReaderErrorCode, type QrReaderCamera, type QrReaderError } from './QrReader/types';
