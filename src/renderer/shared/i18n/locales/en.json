@@ -911,7 +911,7 @@
     "transactionErrors": {
       "balance": {
         "intro": "Wallet <wallet/> has insufficient funds to cover",
-        "required": "Please top up the balance of this wallet by { balances } and try again.",
+        "required": "Please top up the balance of this wallet by { balances } or use the MAX button.",
         "section": "the {action} of {balance}"
       },
       "fatal": {
@@ -2229,6 +2229,10 @@
   },
   "transfer": {
     "FIX": "Please enter amount",
+    "accountDeathWarning": {
+      "description": "After this transfer, your balance will <b>fall below the Existential Deposit ({ed} {asset}).</b> If any tokens remain, <b>they will be burned, and your account will be removed from on-chain storage.</b>. <br /> We recommend <b>using the MAX button for a safe Transfer</b>",
+      "title": "Balance below network minimum"
+    },
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",
@@ -2243,6 +2247,13 @@
     "incorrectRecipientError": "Please enter correct recipient address",
     "invalidAddress": "Invalid address",
     "invalidSignature": "Error occurred while decoding QR code. Scan again.",
+    "max": {
+      "buttonTitle": "MAX",
+      "ed": {
+        "title": "Include Existential Deposit",
+        "tooltip": "Existential Deposit is the minimum balance to keep your account on-chain storage"
+      }
+    },
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"

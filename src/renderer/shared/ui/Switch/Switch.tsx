@@ -12,6 +12,7 @@ type Props = {
   knobClassName?: string;
   switchClassName?: string;
   labelPosition?: 'left' | 'right';
+  variant?: 'primary' | 'accent';
   onChange?: (checked: boolean) => void;
 };
 
@@ -25,6 +26,7 @@ export const Switch = ({
   onChange,
   children,
   labelPosition = 'left',
+  variant = 'primary',
 }: PropsWithChildren<Props>) => {
   const label = (
     <HeadlessSwitch.Label as={LabelText} className="cursor-pointer text-text-secondary">
@@ -41,10 +43,12 @@ export const Switch = ({
         defaultChecked={defaultChecked}
         className={cnTw(
           checked || defaultChecked
-            ? 'border border-transparent bg-switch-background-active'
-            : 'border border-container-border bg-switch-background-inactive',
+            ? variant === 'accent'
+              ? 'border-transparent bg-label-background-green'
+              : 'border-transparent bg-switch-background-active'
+            : 'border-container-border bg-switch-background-inactive',
           disabled && 'opacity-50',
-          'relative inline-flex w-7.5 transform cursor-pointer items-center rounded-full p-px transition',
+          'relative inline-flex w-7.5 transform cursor-pointer items-center rounded-full border p-px transition',
           switchClassName,
         )}
         onChange={onChange}
