@@ -17,7 +17,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useAltOrCtrlKeyPressed, useToggle } from '@/shared/lib/hooks';
+import { useKeyCombo, useToggle } from '@/shared/lib/hooks';
 import { IS_MAC, toAddress } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import {
@@ -51,10 +51,12 @@ type Props = {
   onComplete: () => void;
 };
 
+const SHOW_DETAILS_SHORTCUT = IS_MAC ? ['alt'] : ['ctrl'];
+
 export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) => {
   const { t } = useI18n();
   const { showStatus } = useStatusContext();
-  const isAltPressed = useAltOrCtrlKeyPressed();
+  const isDetailsShortcutPressed = useKeyCombo(SHOW_DETAILS_SHORTCUT);
 
   const keys = useUnit(manageVaultModel.$keys);
   const keysGroups = useUnit(manageVaultModel.$keysGroups);
@@ -74,7 +76,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
   const publicKey = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo.multiSigner.public));
   const publicKeyAddress = toAddress(publicKey, { prefix: 1 });
-  const walletName = isAltPressed || !name?.value ? publicKeyAddress : name?.value;
+  const walletName = isDetailsShortcutPressed || !name?.value ? publicKeyAddress : name?.value;
 
   useEffect(() => {
     manageVaultModel.events.formInitiated(seedInfo);
@@ -252,7 +254,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
                 return (
                   <Box key={chainId} padding={[2, 0, 0]}>
-                    <Accordion open={isAltPressed}>
+                    <Accordion open={isDetailsShortcutPressed}>
                       <Accordion.Trigger>
                         <div className="flex gap-x-2 normal-case">
                           <ChainTitle fontClass="text-text-primary" chainId={chainId} />
@@ -267,7 +269,11 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                             <Popover key={derivationPath} align="end">
                               <Popover.Trigger>
                                 <div className="w-full pt-2">
-                                  <DerivedAccount key={derivationPath} account={account} showSuffix={isAltPressed} />
+                                  <DerivedAccount
+                                    key={derivationPath}
+                                    account={account}
+                                    showSuffix={isDetailsShortcutPressed}
+                                  />
                                 </div>
                               </Popover.Trigger>
                               <Popover.Content>
