@@ -240,7 +240,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
               <Tabs.List>
                 <Tabs.Trigger value="accounts">
                   <span className="flex items-center gap-1">
-                    {t('walletDetails.common.accountTabTitle')}
+                    {t('walletDetails.common.keyTabTitle')}
                     <span className="text-text-tertiary">{accountsCount}</span>
                   </span>
                 </Tabs.Trigger>

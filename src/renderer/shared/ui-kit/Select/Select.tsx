@@ -66,7 +66,7 @@ type RootProps<T extends string> = PropsWithChildren<
 type ItemProps = PropsWithChildren<{
   value: string;
   indent?: number;
-  testId?: string;
+  itemTestId?: string;
 }>;
 
 type GroupProps = PropsWithChildren<{
@@ -273,7 +273,7 @@ const Group = ({ title, children }: PropsWithChildren<GroupProps>) => {
   );
 };
 
-const Item = memo(({ value, testId, indent = 0, children }: PropsWithChildren<ItemProps>) => {
+const Item = memo(({ value, itemTestId, indent = 0, children }: PropsWithChildren<ItemProps>) => {
   const { registerItem, unregisterItem, onItemSelect } = useContext(Context);
   const { theme } = useTheme();
 
@@ -292,7 +292,7 @@ const Item = memo(({ value, testId, indent = 0, children }: PropsWithChildren<It
       clickOnSpace={true}
       clickOnEnter={true}
       value={value}
-      data-testid={testId}
+      data-testid={itemTestId}
       className={cnTw(
         'flex items-center gap-2',
         'cursor-pointer scroll-m-2 rounded px-3 py-2 text-footnote outline-none data-[active-item]:outline-2',

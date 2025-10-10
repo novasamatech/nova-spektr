@@ -192,14 +192,6 @@ export const totalAmount = (balance: Balance | null): string => {
   return balance ? totalAmountBN(balance).toString() : ZERO_BALANCE;
 };
 
-export const lockedAmountBN = (balance: Balance): BN => {
-  return balance.locked.reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
-};
-
-export const lockedAmount = (balance: Balance): string => {
-  return lockedAmountBN(balance).toString();
-};
-
 export const transferableAmountBN = (balance: Balance | null, transferableMode?: TransferableMode): BN => {
   if (nullable(balance)) return BN_ZERO;
 

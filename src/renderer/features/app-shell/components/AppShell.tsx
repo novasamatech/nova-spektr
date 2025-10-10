@@ -6,9 +6,11 @@ import { createSlot, useSlot } from '@/shared/di';
 import { Navigation } from './Navigation';
 
 export const navigationHeaderSlot = createSlot();
+export const modalsSlot = createSlot();
 
 export const AppShell = memo(() => {
   const headerNodes = useSlot(navigationHeaderSlot);
+  const modals = useSlot(modalsSlot);
 
   return (
     <div className="flex h-full animate-in fade-in">
@@ -19,6 +21,7 @@ export const AppShell = memo(() => {
       <main className="flex-1 bg-main-app-background">
         <Outlet />
       </main>
+      {modals}
     </div>
   );
 });
