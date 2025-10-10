@@ -1,5 +1,5 @@
-import { useUnit } from 'effector-react';
-import { uniqBy } from 'lodash';
+import { useStoreMap, useUnit } from 'effector-react';
+import { keyBy, uniqBy } from 'lodash';
 import { type PropsWithChildren, type ReactNode, useMemo, useState } from 'react';
 
 import { type Address as AccountAddress, type ID } from '@/shared/core';
@@ -35,26 +35,25 @@ type ComboboxGroup = {
 
 export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
   const { t } = useI18n();
+  const chain = useStoreMap(fellowshipSalaryFeature.input, input => input?.chain ?? null);
+  const currentBeneficiary = useUnit($beneficiary);
+  const accountsList = useUnit(walletModel.$availableAccounts);
+  const wallets = useUnit(walletModel.$wallets);
+
   const [open, setOpen] = useState(false);
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<AccountId | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [inputValue, setInputValue] = useState('');
 
-  const input = useUnit(fellowshipSalaryFeature.input);
-  const currentBeneficiary = useUnit($beneficiary);
-  const accountsList = useUnit(walletModel.$availableAccounts);
-  const wallets = useUnit(walletModel.$wallets);
-
   const handleToggle = (isOpen: boolean) => {
-    if (disabled) return;
     setOpen(isOpen);
-    if (isOpen) {
-      setSelectedBeneficiary(currentBeneficiary);
-      const addr =
-        currentBeneficiary && input?.chain ? toAddress(currentBeneficiary, { prefix: input.chain.addressPrefix }) : '';
-      setInputValue(addr);
-      setSearchQuery('');
-    }
+
+    if (!isOpen) return;
+
+    setSelectedBeneficiary(currentBeneficiary);
+    const addr = currentBeneficiary && chain ? toAddress(currentBeneficiary, { prefix: chain.addressPrefix }) : '';
+    setInputValue(addr);
+    setSearchQuery('');
   };
 
   const handleSave = () => {
@@ -67,20 +66,15 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
     setInputValue(value);
   };
 
-  const walletsMap = useMemo(() => {
-    return wallets.reduce<Record<number, (typeof wallets)[0]>>((acc, wallet) => {
-      acc[wallet.id] = wallet;
-      return acc;
-    }, {});
-  }, [wallets]);
+  const walletsMap = useMemo(() => keyBy(wallets, 'id'), [wallets]);
 
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
-    if (!input || !input.chain || accountsList.length === 0) return [];
+    if (!chain || accountsList.length === 0) return [];
 
     const filteredAccounts = accountsList.filter(account => {
       const isNotWatchOnly = !accountUtils.isWatchOnlyAccount(account);
-      const isChainMatch = accountService.isAccountAvailableOnChain(account, input.chain);
-      const address = toAddress(account.accountId, { prefix: input.chain.addressPrefix });
+      const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
+      const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
       const queryPass = includesMultiple([account.name, address], searchQuery);
 
       return isChainMatch && isNotWatchOnly && queryPass;
@@ -100,7 +94,7 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
 
       for (const account of accountsGroup) {
         const wallet = walletsMap[account.walletId];
-        const address = toAddress(account.accountId, { prefix: input.chain.addressPrefix });
+        const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
         const title = wallet
           ? account.name === wallet.name
@@ -132,7 +126,7 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
     }
 
     return ownAccountOptions;
-  }, [input?.chain?.chainId, accountsList, wallets, walletsMap, searchQuery]);
+  }, [chain?.chainId, accountsList, wallets, walletsMap, searchQuery]);
 
   return (
     <Modal size="md" isOpen={open} onToggle={handleToggle}>
@@ -149,7 +143,7 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
                   <div className="flex h-auto items-center">
                     <Identicon
                       size={20}
-                      address={toAddress(inputValue, { prefix: input?.chain?.addressPrefix })}
+                      address={toAddress(inputValue, { prefix: chain?.addressPrefix })}
                       background={false}
                     />
                   </div>
