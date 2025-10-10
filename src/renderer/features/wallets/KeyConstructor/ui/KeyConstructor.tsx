@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { isEmpty } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
 
-import { type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useKeyCombo } from '@/shared/lib/hooks';
 import { validateDerivation } from '@/shared/lib/utils';
@@ -13,6 +13,8 @@ import { type DerivationKeyDraft, constructorModel } from '../model/constructor-
 import { KeyItem } from './KeyItem';
 import { ShortcutIcon } from './ShortcutIcon';
 import { WarningModal } from './WarningModal';
+
+const ADD_NEW_KEY_SHORTCUT = ['shift', 'enter'];
 
 type Props = {
   title: string;
@@ -25,7 +27,7 @@ type Props = {
 export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm }: Props) => {
   const { t } = useI18n();
   const [isWarningOpen, setIsWarningOpen] = useState(false);
-  const addNewKeyShortcutPressed = useKeyCombo(['shift', 'enter']);
+  const addNewKeyShortcutPressed = useKeyCombo(ADD_NEW_KEY_SHORTCUT);
 
   const keys = useUnit(constructorModel.$keys);
   const hasChanged = useUnit(constructorModel.$hasChanged);
@@ -34,7 +36,7 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
     if (!isOpen) return;
 
     constructorModel.init(existingKeys);
-  }, [isOpen]);
+  }, [isOpen, existingKeys]);
 
   useEffect(() => {
     if (!addNewKeyShortcutPressed) return;
@@ -55,28 +57,30 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
     onClose();
   };
 
-  const validate = useCallback(
-    (keyId: string, derivationPath: string, chainId: ChainId) => {
+  const areAllKeysValid = useCallback(() => {
+    return Object.entries(keys).every(([keyId, key]) => {
       const existingPaths = Object.entries(keys)
-        .filter(([id, keyData]) => id !== keyId && keyData.chainId === chainId)
+        .filter(([existingId, existingKey]) => existingId !== keyId && existingKey.chainId === key.chainId)
         .map(([_, key]) => key.derivationPath);
-      const errors = validateDerivation(derivationPath, existingPaths);
+      const errors = validateDerivation(key.derivationPath, existingPaths);
 
-      return errors;
-    },
-    [keys],
-  );
+      return isEmpty(errors);
+    });
+  }, [keys]);
 
-  const saveKeys = useCallback(() => {
-    const areKeysValid = Object.entries(keys).every(([keyId, key]) =>
-      isEmpty(validate(keyId, key.derivationPath, key.chainId)),
-    );
-    if (areKeysValid) {
-      onConfirm(Object.values(keys));
-    } else {
-      Object.keys(keys).map((keyId) => constructorModel.validateKey(keyId));
+  const validateAllKeys = useCallback(() => {
+    for (const keyId of Object.keys(keys)) {
+      constructorModel.validateKey(keyId);
     }
   }, [keys]);
+
+  const saveKeys = useCallback(() => {
+    if (areAllKeysValid()) {
+      onConfirm(Object.values(keys));
+    } else {
+      validateAllKeys();
+    }
+  }, [keys, validateAllKeys]);
 
   return (
     <Modal isOpen={isOpen} size="lg" height="full" onToggle={closeConstructor}>
