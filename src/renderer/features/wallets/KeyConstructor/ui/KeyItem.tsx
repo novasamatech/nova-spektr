@@ -93,7 +93,7 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
       </div>
 
       <div className="col-start-1 flex items-center justify-start">
-        <HelpText className="text-text-tertiary">{String(keyIndex)}</HelpText>
+        <HelpText className="text-text-tertiary">{keyIndex}</HelpText>
       </div>
       <div className="col-start-2">
         <Select name={chain.name} placeholder="" value={keyData.chainId} onChange={handleUpdateChainId}>
