@@ -12,33 +12,37 @@ type Props = {
 };
 
 const SHARD_COUNT = 10;
-const HARD_SOFT_HINTS = ['//', '/'];
+const HARD_DERIVATION = '//';
+const SOFT_DERIVATION = '/';
+const DERIVATION_SEPARATORS = [HARD_DERIVATION, SOFT_DERIVATION];
 const TYPE_HINTS = ['main', 'hot', 'public', 'sharded'];
+
+const generateShardHints = () => Array.from({ length: SHARD_COUNT }, (_, index) => String(index));
 
 export const HintChips = memo(({ keyId, derivationPath, chainName }: Props) => {
   const { t } = useI18n();
   const hints = useMemo(() => {
     if (derivationPath === '' || /[a-z0-9]$/i.test(derivationPath)) {
-      return HARD_SOFT_HINTS;
+      return DERIVATION_SEPARATORS;
     }
     if (derivationPath === '//' || derivationPath === '/') {
       return [chainName];
     }
     if (derivationPath.endsWith('sharded//') || derivationPath.endsWith('sharded/')) {
-      return Array.from({ length: SHARD_COUNT }, (_, i) => String(i));
+      return generateShardHints();
     }
     if (derivationPath.endsWith('//') || derivationPath.endsWith('/')) {
       return TYPE_HINTS;
     }
-    return HARD_SOFT_HINTS;
+    return DERIVATION_SEPARATORS;
   }, [derivationPath]);
 
   const insertHint = useCallback(
-    (keyId: string, hint: string) => {
+    (hint: string) => {
       const newDerivationPath = derivationPath + hint;
       constructorModel.updateKey([keyId, { derivationPath: newDerivationPath }]);
     },
-    [derivationPath],
+    [keyId, derivationPath],
   );
 
   return (
@@ -52,16 +56,16 @@ export const HintChips = memo(({ keyId, derivationPath, chainName }: Props) => {
               pallet="secondary"
               onMouseDown={(e) => {
                 e.preventDefault();
-                insertHint(keyId, hint);
+                insertHint(hint);
               }}
             >
               {hint}
             </Button>
           </Tooltip.Trigger>
-          {HARD_SOFT_HINTS.includes(hint) && (
+          {DERIVATION_SEPARATORS.includes(hint) && (
             <Tooltip.Content>
-              {hint === '/' && t('dynamicDerivations.keysConstructor.softDerivationTooltip')}
-              {hint === '//' && t('dynamicDerivations.keysConstructor.hardDerivationTooltip')}
+              {hint === HARD_DERIVATION && t('dynamicDerivations.keysConstructor.hardDerivationTooltip')}
+              {hint === SOFT_DERIVATION && t('dynamicDerivations.keysConstructor.softDerivationTooltip')}
             </Tooltip.Content>
           )}
         </Tooltip>
