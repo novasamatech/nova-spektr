@@ -19,7 +19,7 @@ type Params<Validator extends AnyValidator> = {
 };
 
 export const createTxValidationStore = <Validator extends AnyValidator>({ params, validator }: Params<Validator>) => {
-  const { $, $isDefaultValue } = createStoreFromEffect({
+  const { $, $isDefaultValue, $pending } = createStoreFromEffect({
     params,
     defaultValue: { errors: [], balanceValidationResults: [] },
     fn: validator,
@@ -46,6 +46,7 @@ export const createTxValidationStore = <Validator extends AnyValidator>({ params
      * All balance validation results, with successful too.
      */
     $balanceValidationResults,
+    $pending,
     /**
      * True if validation is done, can be used to show loading state.
      *
