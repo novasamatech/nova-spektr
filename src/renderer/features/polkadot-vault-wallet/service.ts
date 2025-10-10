@@ -11,9 +11,9 @@ import {
 } from '@/shared/core';
 import { groupShardedDerivations, nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '@/entities/network';
-import { type DerivationKeyDraft } from '../model/constructor-model';
+import { type DerivationKeyDraft } from '@/features/wallets';
 
-export function populateDraftAccounts(draftKeys: DerivationKeyDraft[], chains: Record<ChainId, Chain>) {
+function populateDraftAccounts(draftKeys: DerivationKeyDraft[], chains: Record<ChainId, Chain>) {
   const shardedKeyGroups = groupShardedDerivations(draftKeys);
 
   const derivationToGroupId = new Map<string, string>();
@@ -24,7 +24,7 @@ export function populateDraftAccounts(draftKeys: DerivationKeyDraft[], chains: R
     }
   }
 
-  return draftKeys.map((key) => {
+  return draftKeys.map(key => {
     const isEthereumBased = networkUtils.isEthereumBased(chains[key.chainId].options);
     const groupId = derivationToGroupId.get(key.derivationPath);
     const isSharded = nonNullable(groupId);
@@ -43,3 +43,7 @@ export function populateDraftAccounts(draftKeys: DerivationKeyDraft[], chains: R
     return account as DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>;
   });
 }
+
+export const polkadotVaultService = {
+  populateDraftAccounts,
+};

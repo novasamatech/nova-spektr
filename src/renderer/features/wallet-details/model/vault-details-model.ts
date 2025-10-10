@@ -3,7 +3,8 @@ import { attach, createEvent, createStore, sample } from 'effector';
 import { type Chain, type DraftAccount, type ID, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { accountSync, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { type DerivationKeyDraft, populateDraftAccounts } from '@/features/wallets';
+import { polkadotVaultService } from '@/features/polkadot-vault-wallet';
+import { type DerivationKeyDraft } from '@/features/wallets';
 
 type AccountsCreatedParams = {
   walletId: ID;
@@ -43,7 +44,7 @@ sample({
   clock: keysAdded,
   source: networkModel.$chains,
   filter: (_, draftKeys) => draftKeys.length > 0,
-  fn: (chains, draftKeys) => populateDraftAccounts(draftKeys, chains),
+  fn: (chains, draftKeys) => polkadotVaultService.populateDraftAccounts(draftKeys, chains),
   target: $keysToAdd,
 });
 

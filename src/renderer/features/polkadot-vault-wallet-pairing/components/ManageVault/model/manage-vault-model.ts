@@ -17,7 +17,8 @@ import { nullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { KEY_NAMES, accountUtils, walletModel } from '@/entities/wallet';
-import { type DerivationKeyDraft, populateDraftAccounts } from '@/features/wallets';
+import { polkadotVaultService } from '@/features/polkadot-vault-wallet';
+import { type DerivationKeyDraft } from '@/features/wallets';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -134,7 +135,7 @@ sample({
   clock: derivationsConstructed,
   source: networkModel.$chains,
   filter: (_, draftKeys) => draftKeys.length > 0,
-  fn: (chains, draftKeys) => populateDraftAccounts(draftKeys, chains),
+  fn: (chains, draftKeys) => polkadotVaultService.populateDraftAccounts(draftKeys, chains),
   target: $keys,
 });
 
