@@ -4,6 +4,7 @@ import { type TFunction } from 'i18next';
 import { type PropsWithChildren, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { useDeferredList } from '@/shared/lib/hooks/useDeferredList';
 import { entries, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { Duration, FootnoteText, HelpText, Separator } from '@/shared/ui';
 import { Box, Modal, Select } from '@/shared/ui-kit';
@@ -85,6 +86,8 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
     });
   }, [list, filter]);
 
+  const { list: deferredList } = useDeferredList({ list: filteredList });
+
   const handleClearFilter = () => {
     setFilter(null);
   };
@@ -115,7 +118,7 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
             )}
           </div>
           <Box padding={[0, 2, 5]} gap={3}>
-            {filteredList.map(x => {
+            {deferredList.map(x => {
               const age = now.current - x.at.getTime();
               const isOlderThanMonth = age > ONE_MONTH_MS;
 
