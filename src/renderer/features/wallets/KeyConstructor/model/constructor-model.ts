@@ -15,20 +15,24 @@ const removeKey = createEvent<string>();
 const updateKey = createEvent<[string, Partial<DerivationKeyDraft>]>();
 const validateKey = createEvent<string>();
 
+const $keys = createStore<Record<string, DerivationKeyDraft>>({});
 const $hasChanged = createStore(false).reset(init);
 const $errors = createStore<Record<string, DerivationError[]>>({}).reset(init);
 
-const $keys = createStore<Record<string, DerivationKeyDraft>>({}).on(init, (_, existingKeys) => {
-  return produce<Record<string, DerivationKeyDraft>>({}, (draft) => {
-    for (const existingKey of existingKeys) {
-      const id = nanoid();
+sample({
+  clock: init,
+  fn: (existingKeys) =>
+    produce<Record<string, DerivationKeyDraft>>({}, (draft) => {
+      for (const existingKey of existingKeys) {
+        const id = nanoid();
 
-      draft[id] = {
-        chainId: existingKey.chainId,
-        derivationPath: existingKey.derivationPath,
-      };
-    }
-  });
+        draft[id] = {
+          chainId: existingKey.chainId,
+          derivationPath: existingKey.derivationPath,
+        };
+      }
+    }),
+  target: $keys,
 });
 
 sample({
@@ -77,14 +81,14 @@ sample({
 sample({
   clock: validateKey,
   source: { errors: $errors, keys: $keys },
-  fn: ({ errors, keys }, id) => {
-    const { derivationPath, chainId } = keys[id];
+  fn: ({ errors, keys }, keyId) => {
+    const { derivationPath, chainId } = keys[keyId];
     const existingPaths = Object.entries(keys)
-      .filter(([keyId, keyData]) => keyId !== id && keyData.chainId === chainId)
+      .filter(([existingId, existingKey]) => existingId !== keyId && existingKey.chainId === chainId)
       .map(([_, key]) => key.derivationPath);
 
     return produce(errors, (draft) => {
-      draft[id] = validateDerivation(derivationPath, existingPaths);
+      draft[keyId] = validateDerivation(derivationPath, existingPaths);
     });
   },
   target: $errors,
