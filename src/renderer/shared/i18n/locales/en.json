@@ -530,9 +530,7 @@
     "noProfile": "Profile doesn’t exist",
     "profile": {
       "active": "Active",
-      "inactive": "Inactive",
       "activeSalary": "Active salary",
-      "switchStatus": "Switch status",
       "activityFeed": {
         "activeFalse": "Status passive",
         "activeTrue": "Status active",
@@ -546,6 +544,7 @@
       },
       "fellow": "Fellow",
       "history": "History",
+      "inactive": "Inactive",
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
       "ready": "Ready",
@@ -559,7 +558,8 @@
           "title": "Review changes before switching status"
         },
         "title": "Switching status on"
-      }
+      },
+      "switchStatus": "Switch status"
     },
     "promotion": {
       "canSubmit": {
