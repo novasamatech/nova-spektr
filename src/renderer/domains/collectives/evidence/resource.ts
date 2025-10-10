@@ -57,7 +57,6 @@ export const evidenceContentResource = createRemoteResource<EvidenceContentReque
     ttl: 30 * 1000,
   },
   async fn({ palletType, api, chainId, accountId, blockHash }) {
-    console.log('penis content', { palletType, api, chainId, accountId, blockHash });
     const apiInstance = blockHash ? await api.at(blockHash) : api;
     const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, apiInstance as ApiPromise, [
       accountId,

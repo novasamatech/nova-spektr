@@ -76,7 +76,6 @@ const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta
 
 const proposeEvidenceRequested = attachToFeatureInput(fellowshipReferendumsDetailsFeature, $proposer).filterMap(
   ({ input, data }) => {
-    console.log('penis requested', { input, data });
     if (nullable(data)) return;
 
     return {
