@@ -1,20 +1,9 @@
 import { attach, createEvent, createStore, sample } from 'effector';
 
-import {
-  AccountType,
-  type Chain,
-  CryptoType,
-  type DraftAccount,
-  type ID,
-  KeyType,
-  SigningType,
-  type VaultChainAccount,
-  type VaultShardAccount,
-} from '@/shared/core';
-import { groupShardedDerivations, nonNullable } from '@/shared/lib/utils';
+import { type Chain, type DraftAccount, type ID, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { accountSync, accounts } from '@/domains/network';
-import { networkModel, networkUtils } from '@/entities/network';
-import { type DerivationKeyDraft } from '@/features/wallets';
+import { networkModel } from '@/entities/network';
+import { type DerivationKeyDraft, populateDraftAccounts } from '@/features/wallets';
 
 type AccountsCreatedParams = {
   walletId: ID;
@@ -54,36 +43,7 @@ sample({
   clock: keysAdded,
   source: networkModel.$chains,
   filter: (_, draftKeys) => draftKeys.length > 0,
-  fn: (chains, draftKeys) => {
-    const shardedKeyGroups = groupShardedDerivations(draftKeys);
-
-    const derivationToGroupId = new Map<string, string>();
-    for (const [_, keys] of Object.entries(shardedKeyGroups)) {
-      const groupId = crypto.randomUUID();
-      for (const key of keys) {
-        derivationToGroupId.set(key.derivationPath, groupId);
-      }
-    }
-
-    return draftKeys.map(key => {
-      const isEthereumBased = networkUtils.isEthereumBased(chains[key.chainId].options);
-      const groupId = derivationToGroupId.get(key.derivationPath);
-      const isSharded = nonNullable(groupId);
-
-      const account = {
-        type: 'chain',
-        name: key.derivationPath,
-        keyType: KeyType.CUSTOM,
-        chainId: key.chainId,
-        accountType: isSharded ? AccountType.SHARD : AccountType.CHAIN,
-        cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
-        signingType: SigningType.POLKADOT_VAULT,
-        derivationPath: key.derivationPath,
-        ...(isSharded && { groupId }),
-      };
-      return account as DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>;
-    });
-  },
+  fn: (chains, draftKeys) => populateDraftAccounts(draftKeys, chains),
   target: $keysToAdd,
 });
 

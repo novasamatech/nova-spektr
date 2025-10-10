@@ -13,11 +13,11 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import { AccountType, CryptoType, KeyType } from '@/shared/core';
-import { groupShardedDerivations, nonNullable, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { KEY_NAMES, accountUtils, walletModel } from '@/entities/wallet';
-import { type DerivationKeyDraft } from '@/features/wallets';
+import { type DerivationKeyDraft, populateDraftAccounts } from '@/features/wallets';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -134,36 +134,7 @@ sample({
   clock: derivationsConstructed,
   source: networkModel.$chains,
   filter: (_, draftKeys) => draftKeys.length > 0,
-  fn: (chains, draftKeys) => {
-    const shardedKeyGroups = groupShardedDerivations(draftKeys);
-
-    const derivationToGroupId = new Map<string, string>();
-    for (const [_, keys] of Object.entries(shardedKeyGroups)) {
-      const groupId = crypto.randomUUID();
-      for (const key of keys) {
-        derivationToGroupId.set(key.derivationPath, groupId);
-      }
-    }
-
-    return draftKeys.map(key => {
-      const isEthereumBased = networkUtils.isEthereumBased(chains[key.chainId].options);
-      const groupId = derivationToGroupId.get(key.derivationPath);
-      const isSharded = nonNullable(groupId);
-
-      const account = {
-        type: 'chain',
-        name: key.derivationPath,
-        keyType: KeyType.CUSTOM,
-        chainId: key.chainId,
-        accountType: isSharded ? AccountType.SHARD : AccountType.CHAIN,
-        cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
-        signingType: SigningType.POLKADOT_VAULT,
-        derivationPath: key.derivationPath,
-        ...(isSharded && { groupId }),
-      };
-      return account as DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>;
-    });
-  },
+  fn: (chains, draftKeys) => populateDraftAccounts(draftKeys, chains),
   target: $keys,
 });
 
