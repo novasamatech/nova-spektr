@@ -73,7 +73,16 @@ const Root = () => {
     <ThemeProvider theme="light" iconStyle="colored">
       <HashRouter>
         <I18Provider>
-          <ErrorBoundary FallbackComponent={FallbackScreen} onError={console.error}>
+          <ErrorBoundary
+            FallbackComponent={FallbackScreen}
+            onError={(error, errorInfo) => {
+              console.error(error.message);
+              console.error(errorInfo.componentStack);
+              if (error.message.includes('Failed to fetch dynamically imported module')) {
+                location.reload();
+              }
+            }}
+          >
             <NotificationProvider>
               <Suspense fallback={splashScreen}>
                 <App onReady={() => setAppLoaded(true)} />

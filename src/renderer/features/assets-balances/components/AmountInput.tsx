@@ -32,7 +32,9 @@ type Props = {
   balance?: string | BN | (string | BN)[] | null;
   invalid?: boolean;
   showCurrency?: boolean;
+  suffixElement?: ReactNode;
   testId?: string;
+  onKeyDown?: () => void;
   onChange?: (value: string) => void;
 };
 
@@ -48,6 +50,8 @@ export const AmountInput = ({
   showCurrency = true,
   testId,
   onChange,
+  onKeyDown,
+  suffixElement,
 }: Props) => {
   const { t } = useI18n();
 
@@ -88,7 +92,7 @@ export const AmountInput = ({
     if (currencyMode) {
       setInputValue(getRoundedValue(currencyValue, 1, 0));
     } else {
-      handleChange(getRoundedValue(value || undefined, 1, 0, 1));
+      handleChange(value);
     }
   }, [currencyMode]);
 
@@ -160,10 +164,10 @@ export const AmountInput = ({
   );
 
   const { value: altValue, suffix: altValueSuffix } = currencyMode
-    ? formatBalance(value || undefined)
+    ? formatBalance(value || undefined, 0, { keepPrecision: true })
     : formatFiatBalance(currencyValue);
 
-  const suffixElement = showCurrency && nonNullable(rate) && nonNullable(activeCurrency) && (
+  const captionElement = showCurrency && nonNullable(rate) && nonNullable(activeCurrency) && (
     <div className="flex items-center gap-x-2">
       <IconButton name="swapArrow" onClick={toggleCurrencyMode} />
       <FootnoteText className="text-text-tertiary uppercase">
@@ -183,9 +187,11 @@ export const AmountInput = ({
       invalid={invalid}
       prefixElement={currencyMode ? currencyIcon : prefixElement}
       suffixElement={suffixElement}
+      captionElement={captionElement}
       disabled={disabled}
       testId={testId}
       onChange={handleChange}
+      onKeyDown={onKeyDown}
     />
   );
 };
@@ -202,7 +208,9 @@ type InputProps = {
   disabled?: boolean;
   prefixElement: ReactNode;
   suffixElement?: ReactNode;
+  captionElement?: ReactNode;
   testId?: string;
+  onKeyDown?: () => void;
   onChange: (value: string) => void;
 };
 export const Input = ({
@@ -214,7 +222,9 @@ export const Input = ({
   disabled,
   prefixElement,
   suffixElement,
+  captionElement,
   testId,
+  onKeyDown,
   onChange,
 }: InputProps) => {
   const id = useId();
@@ -238,8 +248,8 @@ export const Input = ({
         <div
           ref={prefixRef}
           className={cnTw('absolute left-3 flex', {
-            'top-3': suffixElement,
-            'top-1/2 -translate-y-1/2': !suffixElement,
+            'top-3': captionElement,
+            'top-1/2 -translate-y-1/2': !captionElement,
           })}
         >
           {prefixElement}
@@ -251,7 +261,8 @@ export const Input = ({
             'placeholder:text-text-secondary focus:outline-hidden focus-visible:outline-hidden!',
             'text-right font-manrope text-title text-text-primary outline-offset-1',
             {
-              'pb-[37px]': suffixElement,
+              'pb-[37px]': captionElement,
+              'pr-18': suffixElement,
               'border-filter-border-negative': invalid,
               'focus-within:border-active-container-border': !invalid,
               'hover:shadow-card-shadow': !disabled,
@@ -266,9 +277,19 @@ export const Input = ({
           type="text"
           disabled={disabled}
           data-testid={testId}
+          onKeyDown={onKeyDown}
           onChange={(event) => onChange?.(event.target.value)}
         />
-        <div className={cnTw(!suffixElement && 'hidden', 'absolute right-3 bottom-3')}>{suffixElement}</div>
+        {suffixElement && <div className="absolute top-3.5 right-3">{suffixElement}</div>}
+        <div
+          className={cnTw('absolute right-3', {
+            hidden: !captionElement,
+            'bottom-3': !suffixElement,
+            'bottom-2': suffixElement,
+          })}
+        >
+          {captionElement}
+        </div>
       </div>
     </div>
   );

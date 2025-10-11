@@ -43,6 +43,7 @@ type FormatBalanceShorthands = Record<Suffix, boolean>;
 type FormatBalanceConfig = Partial<{
   round: 'up' | 'down';
   shorthands: Partial<FormatBalanceShorthands>;
+  keepPrecision: boolean;
 }>;
 
 type FormattedBalance = {
@@ -64,6 +65,7 @@ export const formatBalance = (
 ): FormattedBalance => {
   const shorthands = config?.shorthands ?? defaultBalanceShorthands;
   const round = config?.round ?? 'down';
+  const keepPrecision = config?.keepPrecision ?? false;
   const mergedShorthands =
     shorthands === defaultBalanceShorthands ? defaultBalanceShorthands : { ...defaultBalanceShorthands, ...shorthands };
 
@@ -116,12 +118,13 @@ export const formatBalance = (
     }
   }
 
-  const value = new BNWithConfig(bnBalance).div(divider).decimalPlaces(decimalPlaces).toFormat();
+  const dividedBalance = new BNWithConfig(bnBalance).div(divider);
+  const value = keepPrecision ? dividedBalance.toFormat() : dividedBalance.decimalPlaces(decimalPlaces).toFormat();
 
   return {
     value,
     suffix,
-    decimalPlaces,
+    decimalPlaces: keepPrecision ? precision : decimalPlaces,
     formatted: formatGroups(value) + suffix,
   };
 };
@@ -132,6 +135,10 @@ export const formatAsset = (value: BN | string, asset: Asset, config?: FormatBal
 
 export const toPrecision = (balance: string | BN, precision: number): BN => {
   return balance ? new BN(formatAmount(balance.toString(), precision)) : BN_ZERO;
+};
+
+export const toAssetPrecision = (value: BN, precision: number): string => {
+  return new BigNumber(value.toString()).div(new BigNumber(10).pow(precision)).toString();
 };
 
 export const toNumberWithPrecision = (value: number | BN, precision: number): number => {
@@ -184,7 +191,6 @@ export const fromPrecision = (balance: string | BN, precision: number): string =
 };
 
 export const totalAmountBN = (balance: Balance) => {
-  if (nullable(balance)) return BN_ZERO;
   return balance.free.add(balance.reserved);
 };
 

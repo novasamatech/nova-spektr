@@ -8,6 +8,7 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.ORML_TRANSFER]: 'transferConfirm',
   [TransactionType.TRANSFER]: 'transferConfirm',
   [TransactionType.TRANSFER_ALL]: 'transferConfirm',
+  [TransactionType.TRANSFER_ALLOW_DEATH]: 'transferConfirm',
   [TransactionType.MULTISIG_AS_MULTI]: 'transferConfirm',
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'transferConfirm',
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'transferConfirm',
