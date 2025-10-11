@@ -140,7 +140,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
         description={t('fellowship.retention.criticalExpired.description')}
         footer={
           <>
-            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat />
+            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.riskBumped')}</FootnoteText>
             <Button size="sm" className="ml-auto" onClick={() => {}}>
               {t('fellowship.retention.button.submitReport')}
@@ -250,9 +250,7 @@ const ReferendumCreated = memo(() => {
     return { levelTextKey: 'fellowship.votingHistory.level.good', levelClassName: 'text-text-positive' };
   }, [votingRating]);
 
-  const title = nobodyVoted
-    ? t('fellowship.votingHistory.noVotes')
-    : t('fellowship.votingHistory.subtitlePromotionRetention');
+  const title = nobodyVoted ? t('fellowship.votingHistory.noVotes') : t('fellowship.votingHistory.subtitleRetention');
 
   const voteLevel =
     !nobodyVoted &&
@@ -260,9 +258,11 @@ const ReferendumCreated = memo(() => {
 
   if (!referendum) return null;
 
+  const referendumId = referendum?.id ?? '—';
+
   return (
     <WidgetContainer
-      title={t('fellowship.retention.referendumCreated.title')}
+      title={t('fellowship.retention.referendumCreated.title', { referendumId })}
       description={
         <FootnoteText>
           {title} {voteLevel}
