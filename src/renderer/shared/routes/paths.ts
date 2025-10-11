@@ -45,6 +45,8 @@ export const Paths = {
 
   // Call data
   CALL_DATA: '/call-data',
+
+  DAPP: '/dapp/:id',
 } as const;
 
 type ReplaceDynamicParts<T extends string> = T extends `${infer Start}/:${string}/${infer End}`

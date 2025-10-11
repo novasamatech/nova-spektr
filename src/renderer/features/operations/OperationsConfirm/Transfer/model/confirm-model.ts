@@ -21,6 +21,7 @@ export type TransferConfirmStore = TxConfirmInfo & {
   xcmFee: BN;
   deliveryFee: BN;
   multisigDeposit: BN;
+  includeExistentialDeposit: boolean;
 };
 
 const { $confirmMap, $confirms, $isMultisigExists, init, startSigning } =
@@ -48,6 +49,7 @@ const $route = $currentConfirm.map((confirm) => confirm?.route ?? []);
 const $transaction = $currentConfirm.map((confirm) => confirm?.tx ?? null);
 const $xcmFee = $currentConfirm.map((confirm) => confirm?.xcmFee ?? new BN(0));
 const $deliveryFee = $currentConfirm.map((confirm) => confirm?.deliveryFee ?? new BN(0));
+const $isExistentialDepositEnabled = $currentConfirm.map((confirm) => confirm?.includeExistentialDeposit ?? false);
 
 const { $errors: $validationErrors, $valid: $canSubmit } = createTxValidationStore({
   validator: transferValidator,
@@ -63,6 +65,7 @@ const { $errors: $validationErrors, $valid: $canSubmit } = createTxValidationSto
     transaction: $transaction,
     xcmFee: $xcmFee,
     deliveryFee: $deliveryFee,
+    includeExistentialDeposit: $isExistentialDepositEnabled,
   },
 });
 

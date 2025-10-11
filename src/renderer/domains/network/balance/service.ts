@@ -26,6 +26,7 @@ function tryFreeze(balance: Balance, amount: BN): BalanceUpdateResult {
       balance: updated,
       required: amount,
       imbalance: afterFreeze.abs(),
+      burned: BN_ZERO,
     };
   }
 
@@ -33,6 +34,7 @@ function tryFreeze(balance: Balance, amount: BN): BalanceUpdateResult {
     success: true,
     balance: updated,
     required: amount,
+    burned: BN_ZERO,
   };
 }
 
@@ -51,6 +53,7 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
       balance: updated,
       required: amount,
       imbalance: afterReservation.abs(),
+      burned: BN_ZERO,
     };
   }
 
@@ -58,15 +61,21 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
     success: true,
     balance: updated,
     required: amount,
+    burned: BN_ZERO,
   };
 }
 
 function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
-  const withdrawable = transferableAmountBN(balance);
-  const wanted = balancePreservation === 'keepAlive' ? amount.add(balance.ed) : amount;
-  const afterWithdraw = withdrawable.sub(wanted);
+  const transferable = transferableAmountBN(balance);
 
-  if (afterWithdraw.isNeg()) {
+  const transferableImbalance = transferable.sub(amount);
+  const countedTowardsEDImbalance =
+    balancePreservation === 'keepAlive'
+      ? calculateBalanceCountedTowardsEd(balance).sub(balance.ed.add(amount))
+      : BN_ZERO;
+  const totalImbalance = BN.min(transferableImbalance, countedTowardsEDImbalance);
+
+  if (totalImbalance.isNeg()) {
     const updated = copyBalance(balance, {
       free: balancePreservation === 'keepAlive' ? balance.ed : BN_ZERO,
     });
@@ -75,13 +84,14 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
       success: false,
       balance: updated,
       required: amount,
-      imbalance: afterWithdraw.abs(),
+      imbalance: totalImbalance.abs(),
+      burned: BN_ZERO,
     };
   }
 
   const free = balance.free.sub(amount);
   // in case of exceeding the ED, we burn all tokens
-  const burnedTokens = free.lt(balance.ed) ? balance.ed : BN_ZERO;
+  const burnedTokens = free.lt(balance.ed) ? free : BN_ZERO;
 
   return {
     success: true,
@@ -89,7 +99,19 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
       free: BN.max(free.sub(burnedTokens), BN_ZERO),
     }),
     required: amount,
+    burned: burnedTokens,
   };
+}
+
+function calculateBalanceCountedTowardsEd(balance: Balance, transferableMode?: TransferableMode): BN {
+  const mode = transferableMode ?? balance.transferableMode;
+
+  switch (mode) {
+    case 'holdAndFreezes':
+      return balance.free;
+    case 'legacy':
+      return totalAmountBN(balance);
+  }
 }
 
 export const balanceService = {

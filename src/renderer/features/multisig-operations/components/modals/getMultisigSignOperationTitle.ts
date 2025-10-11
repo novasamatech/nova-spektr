@@ -14,6 +14,8 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
   [TransactionType.ORML_TRANSFER]: crossChain => `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.TRANSFER]: crossChain => `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.TRANSFER_ALL]: crossChain => `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.TRANSFER_ALLOW_DEATH]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.MULTISIG_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: () => 'operations.modalTitles.approveMultisig',
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: () => 'operations.modalTitles.cancelMultisig',

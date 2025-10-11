@@ -48,6 +48,7 @@ const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis 
     deliveryFee: BN_ZERO,
     xcmFee: transaction.coreTx.args.xcmFee || '0',
     multisigDeposit: BN_ZERO,
+    includeExistentialDeposit: false,
   } satisfies TransferConfirmStore;
 });
 
