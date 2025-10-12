@@ -1,7 +1,7 @@
 import type * as CSS from 'csstype';
 import { type PropsWithChildren, forwardRef, useMemo } from 'react';
 
-import { cnTw } from '@/shared/lib/utils';
+import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
 
 type SpacingUnit = number;
@@ -113,7 +113,7 @@ export const Box = forwardRef<HTMLDivElement, BoxProps>(
         alignItems: isHorizontal ? verticalAlign : horizontalAlign,
         alignSelf: alignSelf,
         justifyContent: isHorizontal ? horizontalAlign : verticalAlign,
-        flexShrink: shrink,
+        flexShrink: nonNullable(shrink) ? shrink.toString() : undefined,
         gap: getBoxSize<CSS.Property.Gap>(gap),
         flexGrow: grow,
       }),

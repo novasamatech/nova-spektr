@@ -23,7 +23,19 @@ export type SubmitInputDeprecated = {
 
 type SubmitInput = SignatureResult[];
 
-type Result = { id: number; result: ExtrinsicResult; params: ExtrinsicResultParams | string };
+export type SuccessResult = {
+  id: number;
+  result: ExtrinsicResult.SUCCESS;
+  params: ExtrinsicResultParams;
+};
+
+export type ErrorResult = {
+  id: number;
+  result: ExtrinsicResult.ERROR;
+  params: string;
+};
+
+type Result = SuccessResult | ErrorResult;
 
 /**
  * Flow entry point
@@ -170,13 +182,13 @@ sample({
   clock: extrinsicSucceeded,
   source: $results,
   fn: (results, extrinsicResult) => {
-    return [
-      ...results,
-      {
-        result: ExtrinsicResult.SUCCESS,
-        ...extrinsicResult,
-      },
-    ];
+    const succeedResult: SuccessResult = {
+      result: ExtrinsicResult.SUCCESS,
+      params: extrinsicResult.params,
+      id: extrinsicResult.id,
+    };
+
+    return [...results, succeedResult];
   },
   target: $results,
 });
@@ -185,13 +197,13 @@ sample({
   clock: extrinsicFailed,
   source: $results,
   fn: (results, extrinsicResult) => {
-    return [
-      ...results,
-      {
-        result: ExtrinsicResult.ERROR,
-        ...extrinsicResult,
-      },
-    ];
+    const failedResults: ErrorResult = {
+      result: ExtrinsicResult.ERROR,
+      params: extrinsicResult.params,
+      id: extrinsicResult.id,
+    };
+
+    return [...results, failedResults];
   },
   target: $results,
 });
@@ -239,6 +251,7 @@ export const submitModel = {
   $submitStore,
   $submitStep,
   $failedTxs: $results.map((result) => result.filter((r) => r.result === ExtrinsicResult.ERROR)),
+  $succeedTxs: $results.map((result) => result.filter((r) => r.result === ExtrinsicResult.SUCCESS)),
 
   init,
   done: formSubmitted,

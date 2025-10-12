@@ -12,7 +12,7 @@ dappBrowserFeature.inject(navigationTopLinksPipeline, (links) => {
   return links.concat(
     DAPP_LIST.map((dapp, index) => ({
       title: dapp.title,
-      icon: 'stake',
+      icon: <img src={dapp.icon} alt={dapp.title} className="h-full w-full object-contain" />,
       order: 1000 + index,
       link: createLink(Paths.DAPP, { id: dapp.id }),
     })),
