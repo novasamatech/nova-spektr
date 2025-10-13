@@ -7,7 +7,7 @@ export const transferTestCases = [
     recipient: '13mAjFVjFDpfa42k2dLdSnUyrSzK8vAySsoudnxX2EKVtfaq',
   },
   {
-    chainName: 'Kusama Relay',
+    chainName: 'Kusama Asset Hub',
     assetId: 0,
     amount: '0.01',
     validationAmount: '1000',
@@ -63,3 +63,20 @@ export const xcmTransferTestCases = [
     recipient: '0xcdc1e6538f09d8a52059f41a7f580bde6a35e994',
   },
 ];
+
+export const proxyTransferTestCases = [
+  {
+    chainName: 'Novasama Testnet - Governance',
+    amount: '0.1',
+    validationAmount: '1000',
+    recipient: '5Gy5tdSg9KLxZMkHRTkFTEHz3QGYrmKbFzBGoyZjkg45JFNP',
+  },
+];
+
+export const transferConstants = {
+  multisigName: 'autotest_msig',
+  proxyName: 'Nova_autotest proxy',
+  amount: '0.1',
+  validationAmount: '1000',
+  recipient: '5Gy5tdSg9KLxZMkHRTkFTEHz3QGYrmKbFzBGoyZjkg45JFNP',
+};

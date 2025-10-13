@@ -42,6 +42,7 @@ export const TEST_IDS = {
     SIGNATORY_SELECTOR: 'operations-signatory-selector',
     SIGNATORY_SELECTOR_OPTION: 'Address',
     XCM_SELECTOR: 'operations-xcm-selector',
+    MYSELF_BUTTON: 'myself-button',
   },
   GOVERNANCE: {
     FILTER_BUTTON: 'governance-filter-button',
@@ -74,7 +75,8 @@ export const TEST_IDS = {
   CLOSE_BUTTON: 'Icon:close',
   VALIDATIONS: {
     PERMISSION: 'permission-error',
+    MISSING_ACCOUNT: 'missing-account-error',
     BALANCE: 'balance-error',
-    FATAL: 'balance-error',
+    FATAL: 'fatal-error',
   },
 } as const;

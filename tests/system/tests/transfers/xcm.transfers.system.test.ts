@@ -8,8 +8,8 @@ import { xcmTransferTestCases } from '../../utils/transferTestCases';
 const feature = 'Wallets. XCM transfers.';
 const story = 'Transfers';
 
-test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress'] }, () => {
-  for (const { chainName, assetId, xcmChainName, amount, recipient } of xcmTransferTestCases) {
+test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress', '@validations'] }, () => {
+  for (const { chainName, assetId, xcmChainName, amount, validationAmount, recipient } of xcmTransferTestCases) {
     test(`Polkadot Vault, single wallet, can make regular xcm transfer from ${chainName} to ${xcmChainName}`, async ({
       loginPage,
     }) => {
@@ -22,8 +22,15 @@ test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress'] }, () => {
 
       const transferModal = await assetsPage.openTransfer(chain, assetId);
       await transferModal.chooseXcmChain(xcmChainName);
-      await transferModal.fillAmount(amount);
+
       await transferModal.fillRecipient(recipient);
+      await transferModal.checkFeeforAsset();
+
+      await transferModal.fillAmount(validationAmount);
+      await transferModal.isSendingAmountValidationOnPage();
+
+      await transferModal.fillAmount(amount);
+      await transferModal.waitForAlertToDisapeear();
 
       const confirmationModal = await transferModal.openConfirmationModal();
       const signingModal = await confirmationModal.confirm();
