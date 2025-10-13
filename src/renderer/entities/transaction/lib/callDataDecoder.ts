@@ -32,6 +32,10 @@ const getDataFromCallData = (
   let decoded: SubmittableExtrinsic<'promise'> | null = null;
   try {
     decoded = api.tx(callData);
+    if (decoded.toHex() !== callData) {
+      throw new Error('Cannot decode data as extrinsic, length mismatch');
+    }
+
     extrinsicCall = api.createType('Call', decoded.method);
   } catch {
     extrinsicCall = api.createType('Call', callData);

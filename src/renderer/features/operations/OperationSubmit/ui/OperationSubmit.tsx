@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui';
 import { OperationResult } from '@/entities/transaction';
 import { submitUtils } from '../lib/submit-utils';
 import { type SubmitStep } from '../lib/types';
-import { submitModel } from '../model/submit-model';
+import { type ErrorResult, type SuccessResult, submitModel } from '../model/submit-model';
 
 type ResultProps = Pick<
   ComponentProps<typeof OperationResult>,
@@ -16,14 +16,17 @@ type ResultProps = Pick<
 type Props = {
   isOpen: boolean;
   autoCloseTimeout?: number;
+  onSuccess?: (results: SuccessResult[]) => void;
+  onFail?: (results: ErrorResult[]) => void;
   onClose: () => void;
 };
 
-export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Props) => {
+export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onSuccess, onFail, onClose }: Props) => {
   const { t } = useI18n();
 
   const submitStore = useUnit(submitModel.$submitStore);
   const failedTxs = useUnit(submitModel.$failedTxs);
+  const succeedTxs = useUnit(submitModel.$succeedTxs);
   const { step, message } = useUnit(submitModel.$submitStep);
 
   useEffect(() => {
@@ -35,6 +38,14 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onClose }: Pr
   const handleModalClose = () => {
     if (submitUtils.isLoadingStep(step)) {
       return;
+    }
+
+    if (onSuccess && failedTxs.length === 0 && succeedTxs.length > 0) {
+      onSuccess(succeedTxs);
+    }
+
+    if (onFail && failedTxs.length > 0) {
+      onFail(failedTxs);
     }
 
     onClose();
