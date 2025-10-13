@@ -117,6 +117,7 @@ describe.skip('Create multisig wallet flow-model', () => {
               height: 1,
               index: 1,
             },
+            signature: '0x00',
             extrinsicHash: '0x00',
             isFinalApprove: true,
             multisigError: '',

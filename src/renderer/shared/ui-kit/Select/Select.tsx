@@ -177,37 +177,37 @@ const Root = <T extends string>({
         }}
       >
         {!isOpen ? (
-          <ComboboxDisclosure clickOnEnter={true} clickOnSpace={true} className="w-full rounded-md">
-            <button
-              ref={triggerRef}
-              data-testid={testId}
-              className={cnTw(
-                'relative box-border',
-                'cursor-pointer border pr-6.5 pl-2.75 text-text-secondary',
-                'w-full overflow-y-clip rounded-md text-left text-footnote hover:shadow-card-shadow',
-                'focus:border-active-container-border focus-visible:outline-none!',
-                {
-                  'h-8.5': height === 'sm',
-                  'h-10.5': height === 'md',
-                  'border-filter-border bg-input-background text-text-primary': theme === 'light',
-                  'border-border-dark bg-background-dark text-white': theme === 'dark',
-                  'cursor-not-allowed bg-input-background-disabled text-text-tertiary': disabled,
-                  'border-filter-border-negative': invalid,
-                },
-              )}
-              disabled={disabled}
-              onClick={() => {
-                !disabled && onOpenChange(true);
-              }}
-            >
-              <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
-                {valueNode || selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
-              </div>
+          <ComboboxDisclosure
+            ref={triggerRef}
+            clickOnEnter={true}
+            clickOnSpace={true}
+            className={cnTw(
+              'relative box-border',
+              'cursor-pointer border pr-6.5 pl-2.75 text-text-secondary',
+              'w-full overflow-y-clip rounded-md text-left text-footnote hover:shadow-card-shadow',
+              'focus:border-active-container-border focus-visible:outline-none!',
+              {
+                'h-8.5': height === 'sm',
+                'h-10.5': height === 'md',
+                'border-filter-border bg-input-background text-text-primary': theme === 'light',
+                'border-border-dark bg-background-dark text-white': theme === 'dark',
+                'cursor-not-allowed bg-input-background-disabled text-text-tertiary': disabled,
+                'border-filter-border-negative': invalid,
+              },
+            )}
+            disabled={disabled}
+            data-testid={testId}
+            onClick={() => {
+              !disabled && onOpenChange(true);
+            }}
+          >
+            <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
+              {valueNode || selectedItemContent || <span className="text-text-secondary">{placeholder}</span>}
+            </div>
 
-              <div className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2">
-                <Icon name="down" size={16} />
-              </div>
-            </button>
+            <div className="absolute top-1/2 right-1.5 shrink-0 -translate-y-1/2">
+              <Icon name="down" size={16} />
+            </div>
           </ComboboxDisclosure>
         ) : (
           <div className="relative" data-testid={testId}>
