@@ -660,9 +660,10 @@
         "title": "Retention report submitted"
       },
       "timeline": {
-        "dangerZone": "Evidence submission deadline: {from} – {to}.\nFailing to submit may delay the referendum and remove you from the retention period.",
-        "safeZone": "Active work period.\nBe ready to submit your retention report\n{from} – {to}",
-        "submittedOn": "Retention report submitted\n{date}",
+        "dangerZone": "Evidence submission deadline: {from} – {to}.\nYou risk not starting the referendum on time and falling out of the retention period.",
+        "safeZone": "Active work period.\nBe ready to submit retention report\n{from} – {to}",
+        "safeZoneSubmitted": "Active work period.\nRetention report submitted on\n{submissionDate}",
+        "submittedOn": "Retention report submitted\n{submissionDate}",
         "warningZone": "Recommended period to submit the retention report\n{from} – {to}"
       },
       "timer": {
