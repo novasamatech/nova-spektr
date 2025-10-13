@@ -12,7 +12,7 @@ const amount = proxyTransferTestCases[0].amount;
 const validationAmount = proxyTransferTestCases[0].validationAmount;
 const chainName = proxyTransferTestCases[0].chainName;
 
-test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }, () => {
+test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress', '@validations'] }, () => {
   test('Proxy wallet can make regular transfer', async ({ loginPage }) => {
     await allure.feature(feature);
     await allure.story(story);
@@ -30,7 +30,7 @@ test.describe('Proxy wallets transfers', { tag: ['@proxy-wallets', '@regress'] }
     await transferModal.checkFeeforAsset();
 
     await transferModal.fillAmount(validationAmount);
-    await transferModal.isBalanceValidationOnPage();
+    await transferModal.isSendingAmountValidationOnPage();
 
     await transferModal.fillAmount(amount);
     await transferModal.waitForAlertToDisapeear();

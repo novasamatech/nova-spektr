@@ -8,7 +8,7 @@ import { transferTestCases } from '../../utils/transferTestCases';
 const feature = 'Wallets. Polkadot Vault. Single wallet';
 const story = 'Transfers';
 
-test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, () => {
+test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress', '@validations'] }, () => {
   for (const { chainName, assetId, amount, validationAmount, recipient } of transferTestCases) {
     test(`Polkadot Vault, single wallet, can make regular transfer on ${chainName}`, async ({ loginPage }) => {
       await allure.feature(feature);
@@ -23,7 +23,7 @@ test.describe('Regular transfers', { tag: ['@regular-transfers', '@regress'] }, 
       await transferModal.checkFeeforAsset();
 
       await transferModal.fillAmount(validationAmount);
-      await transferModal.isBalanceValidationOnPage();
+      await transferModal.isSendingAmountValidationOnPage();
 
       await transferModal.fillAmount(amount);
       await transferModal.waitForAlertToDisapeear();

@@ -7,11 +7,15 @@ export class TransferModalElements {
   static feeValueLocator = 'AssetBalance';
   static amountInputLocator = TEST_IDS.OPERATIONS.AMOUNT_INPUT;
   static recipientInputLocator = TEST_IDS.OPERATIONS.RECIPIENT_INPUT;
+  static myselfButton = TEST_IDS.OPERATIONS.MYSELF_BUTTON;
   static signatoryLocator = TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR;
   static signatoryOptionLocator = TEST_IDS.OPERATIONS.SIGNATORY_SELECTOR_OPTION;
   static xcmSelectorLocator = TEST_IDS.OPERATIONS.XCM_SELECTOR;
   static networkOption = TEST_IDS.MULTISIG.NETWORK_OPTION;
   static sendingAmountError = `${TEST_IDS.VALIDATIONS.BALANCE}-sending-amount`;
+  static networkFeeAmountError = `${TEST_IDS.VALIDATIONS.BALANCE}-fee`;
+  static crossChainFeeAmountError = `${TEST_IDS.VALIDATIONS.BALANCE}-cross-chain-fee`;
+  static deliveryFeeAmountError = `${TEST_IDS.VALIDATIONS.BALANCE}-delivery-fee`;
 
   static getUrl(chainId: string, assetId: number): string {
     if (chainId === undefined || assetId === undefined) {

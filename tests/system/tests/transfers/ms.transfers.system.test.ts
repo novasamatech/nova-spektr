@@ -8,7 +8,7 @@ import { transferConstants, transferTestCases } from '../../utils/transferTestCa
 const feature = 'Wallet. Multisig wallet.';
 const story = 'Transfers';
 
-test.describe('Multisig wallet transfers', { tag: ['@multisig-transfers', '@regress'] }, () => {
+test.describe('Multisig wallet transfers', { tag: ['@multisig-transfers', '@regress', '@validations'] }, () => {
   for (const { chainName, assetId, amount, validationAmount, recipient } of transferTestCases) {
     test(`Multisig can make regular transfer on ${chainName}`, async ({ loginPage }) => {
       await allure.feature(feature);
@@ -28,7 +28,7 @@ test.describe('Multisig wallet transfers', { tag: ['@multisig-transfers', '@regr
       await transferModal.checkFeeforAsset();
 
       await transferModal.fillAmount(validationAmount);
-      await transferModal.isBalanceValidationOnPage();
+      await transferModal.isSendingAmountValidationOnPage();
 
       await transferModal.fillAmount(amount);
       await transferModal.waitForAlertToDisapeear();
