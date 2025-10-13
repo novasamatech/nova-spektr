@@ -691,6 +691,7 @@
     "salary": {
       "beneficiary": "Beneficiary",
       "cardTitle": "Evidence & Salary",
+      "editBeneficiary": "Edit beneficiary",
       "evidence": "Evidence",
       "evidenceForm": {
         "areas": {
@@ -742,15 +743,22 @@
       "salaryInduct": "Induct salary on",
       "salaryInfo": {
         "beneficiary": "Beneficiary",
-        "inductSalary": "Payments activation:",
+        "editBeneficiary": "Edit Beneficiary",
+        "inductSalary": "Activate to start receiving",
         "inductSalaryAction": "Activate",
         "inductSalaryCall": "Your salary: {salary}, activate it.",
+        "inductSalarySuccess": "Payments activated",
         "payoutSalary": "Withdraw",
-        "payoutSalaryCall": "Payout a {salary} salary within:",
-        "payoutSalarySuccess": "Salary payout was completed successfully.",
+        "payoutSalaryCall": "{salary} to the next payout",
+        "payoutSalarySuccess": "Withdrawal completed",
         "requestSalary": "Request",
         "requestSalaryCall": "Request a {salary} salary within:",
-        "requestSalarySuccess": "Salary request was completed successfully."
+        "requestSalarySuccess": "Salary requested",
+        "selectBeneficiary": "Select beneficiary",
+        "timeToNextCircle": "until next circle",
+        "timeToNextPayout": "to the next payout",
+        "timeToRequest": "to request",
+        "timeToWithdraw": "to withdraw"
       },
       "salaryPayout": "Request payout on",
       "salaryRequest": "Request salary on",
