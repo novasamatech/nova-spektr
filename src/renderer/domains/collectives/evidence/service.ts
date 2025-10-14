@@ -36,6 +36,15 @@ function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
   return period;
 }
 
+function getEndPromotionBlock(member: Member, periods: EvidencePeriods) {
+  if (memberService.isCoreMember(member)) {
+    const promotionPeriod = getPromotionPeriod(member, periods);
+    return promotionPeriod + member.lastPromotion;
+  }
+
+  return Number.POSITIVE_INFINITY;
+}
+
 function getBlockUntilNextPromotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
   const promotionPeriod = getPromotionPeriod(member, periods);
   const gone = currentBlock - member.lastPromotion;
@@ -101,6 +110,7 @@ export const evidenceService = {
   getCidByEvidence,
   getEvidenceFromCid,
   getPromotionPeriod,
+  getEndPromotionBlock,
   getBlockUntilNextPromotion,
   getDemotionPeriod,
   getBlocksUntilDemotion,
