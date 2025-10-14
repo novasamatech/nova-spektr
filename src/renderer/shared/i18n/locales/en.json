@@ -515,7 +515,9 @@
     "members": {
       "active": "Active",
       "activity": "Activity",
+      "activityTooltip": "Minimum participation rate in eligible votes required to maintain rank. Lower ranks must vote more often; requirement decreases with higher ranks.",
       "agreement": "Agreement",
+      "agreementTooltip": "Minimum percentage of votes that should align with consensus of higher-ranked members, ensuring decisions follow established Fellowship norms.",
       "emptyList": "There is no members",
       "modalAccountTitle": "Account",
       "modalTitle": "Fellowship members",
@@ -529,19 +531,28 @@
     "profile": {
       "active": "Active",
       "activeSalary": "Active salary",
+      "history": "History",
       "activityFeed": {
-        "activeFalse": "Status passive",
-        "activeTrue": "Status active",
+        "status": "Status switched to {status}",
+        "statusActive": "active",
+        "statusInactive": "passive",
+        "clear": "Clear",
         "demoted": "Demoted to rank {rank}",
+        "filterAll": "All events",
+        "filterPromotion": "Promotion",
+        "filterRetention": "Retention",
+        "filterSalary": "Salary",
+        "filterStatus": "Status",
         "imported": "Imported to rank {rank}",
-        "paid": "Salary",
+        "paid": "Salary payout completed",
         "promoted": "Promoted to rank {rank}",
-        "proven": "Proven at rank {rank}",
+        "proven": "Retained at rank {rank}",
         "requestedPromotion": "Promotion requested",
         "requestedRetention": "Retention requested"
       },
       "fellow": "Fellow",
       "history": "History",
+      "inactive": "Inactive",
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
       "ready": "Ready",
@@ -555,7 +566,8 @@
           "title": "Review changes before switching status"
         },
         "title": "Switching status on"
-      }
+      },
+      "switchStatus": "Switch status"
     },
     "promotion": {
       "canSubmit": {
@@ -680,6 +692,7 @@
     "salary": {
       "beneficiary": "Beneficiary",
       "cardTitle": "Evidence & Salary",
+      "editBeneficiary": "Edit beneficiary",
       "evidence": "Evidence",
       "evidenceForm": {
         "areas": {
@@ -731,15 +744,22 @@
       "salaryInduct": "Induct salary on",
       "salaryInfo": {
         "beneficiary": "Beneficiary",
-        "inductSalary": "Payments activation:",
+        "editBeneficiary": "Edit Beneficiary",
+        "inductSalary": "Activate to start receiving",
         "inductSalaryAction": "Activate",
         "inductSalaryCall": "Your salary: {salary}, activate it.",
+        "inductSalarySuccess": "Payments activated",
         "payoutSalary": "Withdraw",
-        "payoutSalaryCall": "Payout a {salary} salary within:",
-        "payoutSalarySuccess": "Salary payout was completed successfully.",
+        "payoutSalaryCall": "{salary} to the next payout",
+        "payoutSalarySuccess": "Withdrawal completed",
         "requestSalary": "Request",
         "requestSalaryCall": "Request a {salary} salary within:",
-        "requestSalarySuccess": "Salary request was completed successfully."
+        "requestSalarySuccess": "Salary requested",
+        "selectBeneficiary": "Select beneficiary",
+        "timeToNextCircle": "until next circle",
+        "timeToNextPayout": "to the next payout",
+        "timeToRequest": "to request",
+        "timeToWithdraw": "to withdraw"
       },
       "salaryPayout": "Request payout on",
       "salaryRequest": "Request salary on",

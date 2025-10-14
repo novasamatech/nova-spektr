@@ -2,9 +2,10 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable } from '@/shared/lib/utils';
-import { CaptionText, HelpText, Icon, SmallTitleText } from '@/shared/ui';
+import { nullable } from '@/shared/lib/utils';
+import { CaptionText, HelpText, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
+import { Speedometer } from '@/shared/ui-kit/Speedometer/Speedomenter';
 import { type Evidence, memberService, referendumMetaService } from '@/domains/collectives';
 import { details } from '../model/details';
 import { fellowship } from '../model/fellowship';
@@ -42,65 +43,45 @@ export const VotingRecord = memo(({ evidence }: Props) => {
   const { activity: activityThreshold, agreement: agreementThreshold } =
     memberService.getActivityAndAgreementThresholds(member.rank);
 
-  const isActivityFit =
-    nullable(activityThreshold) || (nonNullable(activity?.activity) && activity?.activity >= activityThreshold);
-  const isAgreementFit =
-    nullable(agreementThreshold) || (nonNullable(activity?.agreement) && activity?.agreement >= agreementThreshold);
+  if (nullable(activity) || nullable(activity.activity) || nullable(activity.agreement)) {
+    return <Skeleton height={5} />;
+  }
+
+  const actualActivityThreshold = activityThreshold ?? 100;
+  const actualAgreementThreshold = agreementThreshold ?? 100;
+
+  const isActivityFit = activity.activity >= actualActivityThreshold;
+  const isAgreementFit = activity.agreement >= actualAgreementThreshold;
+
+  const actualActivity = Math.min(activity.activity, actualActivityThreshold);
+  const actualAgreement = Math.min(activity.agreement, actualAgreementThreshold);
 
   return (
     <Box direction="row" width="100%">
       <Box width="100%" grow={1} gap={1.5}>
         <Box direction="row" verticalAlign="start" gap={3}>
-          <Icon
-            size={32}
-            name="checkmarkCutout"
-            className={isActivityFit ? 'text-icon-positive' : 'text-icon-default'}
-          />
+          <Speedometer size={40} value={actualActivity} max={100} variant={isActivityFit ? 'green' : 'grey'} />
+
           <Box>
             <HelpText>{t('fellowship.members.activity')}</HelpText>
-            {nullable(activity) ? (
-              <Skeleton height={5} />
-            ) : nullable(activity.activity) ? (
-              <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
-            ) : (
-              <Box direction="row" verticalAlign="end">
-                <SmallTitleText>
-                  {nonNullable(activityThreshold) ? Math.min(activity?.activity, activityThreshold).toString() : '100'}
-                </SmallTitleText>
-                <CaptionText className="ml-1 text-[10px] text-text-secondary">
-                  {activityThreshold || '100'}%
-                </CaptionText>
-              </Box>
-            )}
+            <Box direction="row" verticalAlign="end">
+              <SmallTitleText>{actualActivity}%</SmallTitleText>
+              <CaptionText className="ml-1 text-[10px] text-text-secondary">{actualActivityThreshold}%</CaptionText>
+            </Box>
           </Box>
         </Box>
       </Box>
 
       <Box width="100%" grow={1} gap={1.5}>
         <Box direction="row" verticalAlign="start" gap={3}>
-          <Icon
-            size={32}
-            name="checkmarkCutout"
-            className={isAgreementFit ? 'text-icon-positive' : 'text-icon-default'}
-          />
+          <Speedometer size={40} value={actualAgreement} max={100} variant={isAgreementFit ? 'green' : 'grey'} />
+
           <Box>
             <HelpText>{t('fellowship.members.agreement')}</HelpText>
-            {nullable(activity) ? (
-              <Skeleton height={5} />
-            ) : nullable(activity.agreement) ? (
-              <SmallTitleText>{t('fellowship.n/a')}</SmallTitleText>
-            ) : (
-              <Box direction="row" verticalAlign="end">
-                <SmallTitleText>
-                  {nonNullable(agreementThreshold)
-                    ? Math.min(activity?.agreement, agreementThreshold).toString()
-                    : '100'}
-                </SmallTitleText>
-                <CaptionText className="ml-1 text-[10px] text-text-secondary">
-                  {agreementThreshold || '100'}%
-                </CaptionText>
-              </Box>
-            )}
+            <Box direction="row" verticalAlign="end">
+              <SmallTitleText>{actualAgreement}%</SmallTitleText>
+              <CaptionText className="ml-1 text-[10px] text-text-secondary">{actualAgreementThreshold}%</CaptionText>
+            </Box>
           </Box>
         </Box>
       </Box>
