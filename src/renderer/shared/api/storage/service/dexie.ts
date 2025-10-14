@@ -16,7 +16,9 @@ import {
 } from '../lib/types';
 import {
   migrateAccounts,
+  migrateBasketTransactionAfterAddressRemoval,
   migrateCASBasket,
+  migrateDuplicateVaultDerivations,
   migrateEVMAccountsCryptoType,
   migrateEvents,
   migrateMultishardAccounts,
@@ -26,7 +28,6 @@ import {
   migrateWallets,
   removeDeprecatedProxiedAccounts,
 } from '../migration';
-import { migrateBasketTransactionAfterAddressRemoval } from '../migration/migration-11';
 
 class DexieStorage extends Dexie {
   connections: TConnection;
@@ -133,6 +134,8 @@ class DexieStorage extends Dexie {
     this.version(37)
       .upgrade(migrateBasketTransactionAfterAddressRemoval)
       .upgrade((t) => t.table('multisigOperations').clear());
+
+    this.version(38).upgrade(migrateDuplicateVaultDerivations);
 
     this.connections = this.table('connections');
     this.balances = this.table('balances');
