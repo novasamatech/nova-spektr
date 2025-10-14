@@ -183,7 +183,7 @@ const ReportSubmitted = memo(() => {
       {
         baseColorClass: cnTw('bg-accent-background'),
         filledColorClass: cnTw('bg-icon-blue-line'),
-        onHoverTooltipText: t('fellowship.retention.timeline.safeZoneSubmitted', { submissionDate }),
+        onHoverTooltipText: t('fellowship.retention.timeline.submittedOn', { submissionDate }),
         length: TOTAL_LENGTH,
       },
     ],

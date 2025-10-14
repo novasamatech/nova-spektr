@@ -531,11 +531,7 @@
     "profile": {
       "active": "Active",
       "activeSalary": "Active salary",
-      "history": "History",
       "activityFeed": {
-        "status": "Status switched to {status}",
-        "statusActive": "active",
-        "statusInactive": "passive",
         "clear": "Clear",
         "demoted": "Demoted to rank {rank}",
         "filterAll": "All events",
@@ -548,7 +544,10 @@
         "promoted": "Promoted to rank {rank}",
         "proven": "Retained at rank {rank}",
         "requestedPromotion": "Promotion requested",
-        "requestedRetention": "Retention requested"
+        "requestedRetention": "Retention requested",
+        "status": "Status switched to {status}",
+        "statusActive": "active",
+        "statusInactive": "passive"
       },
       "fellow": "Fellow",
       "history": "History",
@@ -674,7 +673,6 @@
       "timeline": {
         "dangerZone": "Evidence submission deadline: {from} – {to}.\nYou risk not starting the referendum on time and falling out of the retention period.",
         "safeZone": "Active work period.\nBe ready to submit retention report\n{from} – {to}",
-        "safeZoneSubmitted": "Active work period.\nRetention report submitted on\n{submissionDate}",
         "submittedOn": "Retention report submitted\n{submissionDate}",
         "warningZone": "Recommended period to submit the retention report\n{from} – {to}"
       },
