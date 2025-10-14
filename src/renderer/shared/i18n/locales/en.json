@@ -531,11 +531,7 @@
     "profile": {
       "active": "Active",
       "activeSalary": "Active salary",
-      "history": "History",
       "activityFeed": {
-        "status": "Status switched to {status}",
-        "statusActive": "active",
-        "statusInactive": "passive",
         "clear": "Clear",
         "demoted": "Demoted to rank {rank}",
         "filterAll": "All events",
@@ -548,7 +544,10 @@
         "promoted": "Promoted to rank {rank}",
         "proven": "Retained at rank {rank}",
         "requestedPromotion": "Promotion requested",
-        "requestedRetention": "Retention requested"
+        "requestedRetention": "Retention requested",
+        "status": "Status switched to {status}",
+        "statusActive": "active",
+        "statusInactive": "passive"
       },
       "fellow": "Fellow",
       "history": "History",
@@ -809,7 +808,7 @@
           "description": "To be promoted to Rank {rank}, you must submit your work evidence for the past year.",
           "request": "Submit",
           "title": "Submit promotion evidence",
-					"until": "Submit until {date}"
+          "until": "Submit until {date}"
         },
         "promotionVoting": {
           "mergedPullRequests": "Merged",
