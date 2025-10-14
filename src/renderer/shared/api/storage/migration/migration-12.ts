@@ -16,7 +16,7 @@ export async function migrateDuplicateVaultDerivations(t: Transaction): Promise<
   for (const account of accounts) {
     if (nullable(account.derivationPath)) continue;
 
-    const uniqKey = account.accountId + account.derivationPath;
+    const uniqKey = account.walletId + account.accountId + account.derivationPath;
     const existing = seen.get(uniqKey);
 
     if (existing) {
