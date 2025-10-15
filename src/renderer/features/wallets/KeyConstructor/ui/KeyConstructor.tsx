@@ -1,11 +1,9 @@
 import { useUnit } from 'effector-react';
-import { isEmpty } from 'lodash';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useKeyCombo } from '@/shared/lib/hooks';
-import { validateDerivation } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { type DerivationKeyDraft, constructorModel } from '../model/constructor-model';
@@ -31,6 +29,7 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
 
   const keys = useUnit(constructorModel.$keys);
   const hasChanged = useUnit(constructorModel.$hasChanged);
+  const canSubmit = useUnit(constructorModel.$canSubmit);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -44,6 +43,12 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
     constructorModel.addKey();
   }, [addNewKeyShortcutPressed]);
 
+  useEffect(() => {
+    if (!canSubmit) return;
+
+    onConfirm(Object.values(keys));
+  }, [canSubmit, keys]);
+
   const closeConstructor = () => {
     if (hasChanged) {
       setIsWarningOpen(true);
@@ -56,31 +61,6 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
     setIsWarningOpen(false);
     onClose();
   };
-
-  const areAllKeysValid = useCallback(() => {
-    return Object.entries(keys).every(([keyId, key]) => {
-      const existingPaths = Object.entries(keys)
-        .filter(([existingId, existingKey]) => existingId !== keyId && existingKey.chainId === key.chainId)
-        .map(([_, key]) => key.derivationPath);
-      const errors = validateDerivation(key.derivationPath, existingPaths);
-
-      return isEmpty(errors);
-    });
-  }, [keys]);
-
-  const validateAllKeys = useCallback(() => {
-    for (const keyId of Object.keys(keys)) {
-      constructorModel.validateKey(keyId);
-    }
-  }, [keys]);
-
-  const saveKeys = useCallback(() => {
-    if (areAllKeysValid()) {
-      onConfirm(Object.values(keys));
-    } else {
-      validateAllKeys();
-    }
-  }, [keys, validateAllKeys]);
 
   return (
     <Modal isOpen={isOpen} size="lg" height="full" onToggle={closeConstructor}>
@@ -107,7 +87,7 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
         <Button variant="text" onClick={closeConstructor}>
           {t('dynamicDerivations.keysConstructor.backButton')}
         </Button>
-        <Button onClick={saveKeys}>{t('dynamicDerivations.keysConstructor.saveButton')}</Button>
+        <Button onClick={() => constructorModel.submit()}>{t('dynamicDerivations.keysConstructor.saveButton')}</Button>
       </Modal.Footer>
 
       <WarningModal
