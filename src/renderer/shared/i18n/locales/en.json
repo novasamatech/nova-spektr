@@ -442,16 +442,16 @@
   "fellowship": {
     "activityFeed": {
       "activityModal": {
-        "nothing-found": {
-          "clear": "Clear search",
-            "description": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
+        "no-results": {
+          "filters": "No members match the current filters.",
+          "general": "No members found.",
+          "search": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
           "title": "Nothing found"
         },
-        "no-results": {
-          "title": "Nothing found",
-          "search": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
-          "filters": "No members match the current filters.",
-          "general": "No members found."
+        "nothing-found": {
+          "clear": "Clear search",
+          "description": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
+          "title": "Nothing found"
         },
         "search-placeholder": "Search by event, address or identity",
         "sort": {
@@ -534,7 +534,6 @@
     "noProfile": "Profile doesn’t exist",
     "overview": {
       "members": {
-        "you": "You",
         "clearAll": "Clear all",
         "filters": {
           "allRanks": "All ranks",
@@ -545,11 +544,12 @@
           "passive": "Passive"
         },
         "table": {
-          "rank": "Rank",
           "account": "Account",
-          "status": "Status",
-          "salary": "Salary (USDT)"
-        }
+          "rank": "Rank",
+          "salary": "Salary (USDT)",
+          "status": "Status"
+        },
+        "you": "You"
       },
       "modalTitle": "Fellowship overview",
       "readyForPromotion": "Ready for promotion",
