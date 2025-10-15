@@ -1,9 +1,11 @@
-import { createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 import { nanoid } from 'nanoid';
+import { spread } from 'patronum';
 
-import { type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { type DerivationError, validateDerivation } from '@/shared/lib/utils';
+import { networkModel, networkUtils } from '@/entities/network';
 
 export const DEFAULT_CHAIN = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
@@ -14,10 +16,60 @@ const addKey = createEvent();
 const removeKey = createEvent<string>();
 const updateKey = createEvent<[string, Partial<DerivationKeyDraft>]>();
 const validateKey = createEvent<string>();
+const submit = createEvent();
 
 const $keys = createStore<Record<string, DerivationKeyDraft>>({});
 const $hasChanged = createStore(false).reset(init);
 const $errors = createStore<Record<string, DerivationError[]>>({}).reset(init);
+const $canSubmit = createStore(false).reset(init);
+
+const getKeyValidationErrors = (
+  keyId: string,
+  keys: Record<string, DerivationKeyDraft>,
+  chains: Record<ChainId, Chain>,
+): DerivationError[] => {
+  const { derivationPath, chainId } = keys[keyId];
+  const chain = chains[chainId];
+  const isEthereumBased = networkUtils.isEthereumBased(chain.options);
+  const relayChainId = chain.parentId ?? chain.chainId;
+
+  const relatedPaths: string[] = [];
+  for (const [otherKeyId, otherKey] of Object.entries(keys)) {
+    if (otherKeyId === keyId) continue;
+    const otherChain = chains[otherKey.chainId];
+    const shouldInclude = isEthereumBased
+      ? networkUtils.isEthereumBased(otherChain.options)
+      : (otherChain.parentId ?? otherChain.chainId) === relayChainId;
+    if (shouldInclude) {
+      relatedPaths.push(otherKey.derivationPath);
+    }
+  }
+
+  return validateDerivation(derivationPath, relatedPaths);
+};
+
+const submitFx = createEffect<
+  { keys: Record<string, DerivationKeyDraft>; chains: Record<ChainId, Chain> },
+  Record<string, DerivationError[]>,
+  Record<string, DerivationError[]>
+>(({ keys, chains }) => {
+  const errors: Record<string, DerivationError[]> = {};
+  let hasErrors = false;
+
+  for (const keyId of Object.keys(keys)) {
+    const validationErrors = getKeyValidationErrors(keyId, keys, chains);
+    errors[keyId] = validationErrors;
+    if (validationErrors.length > 0) {
+      hasErrors = true;
+    }
+  }
+
+  if (hasErrors) {
+    throw errors;
+  }
+
+  return errors;
+});
 
 sample({
   clock: init,
@@ -80,18 +132,36 @@ sample({
 
 sample({
   clock: validateKey,
-  source: { errors: $errors, keys: $keys },
-  fn: ({ errors, keys }, keyId) => {
-    const { derivationPath, chainId } = keys[keyId];
-    const existingPaths = Object.entries(keys)
-      .filter(([existingId, existingKey]) => existingId !== keyId && existingKey.chainId === chainId)
-      .map(([_, key]) => key.derivationPath);
-
-    return produce(errors, (draft) => {
-      draft[keyId] = validateDerivation(derivationPath, existingPaths);
-    });
-  },
+  source: { errors: $errors, keys: $keys, chains: networkModel.$chains },
+  fn: ({ errors, keys, chains }, keyId) =>
+    produce(errors, (draft) => {
+      draft[keyId] = getKeyValidationErrors(keyId, keys, chains);
+    }),
   target: $errors,
+});
+
+sample({
+  clock: submit,
+  source: { keys: $keys, chains: networkModel.$chains },
+  target: submitFx,
+});
+
+sample({
+  clock: submitFx.doneData,
+  fn: (errors) => ({ canSubmit: true, errors }),
+  target: spread({
+    canSubmit: $canSubmit,
+    errros: $errors,
+  }),
+});
+
+sample({
+  clock: submitFx.failData,
+  fn: (errors) => ({ canSubmit: false, errors }),
+  target: spread({
+    canSubmit: $canSubmit,
+    errros: $errors,
+  }),
 });
 
 export const constructorModel = {
@@ -100,8 +170,10 @@ export const constructorModel = {
   removeKey,
   updateKey,
   validateKey,
+  submit,
 
   $keys,
   $hasChanged,
   $errors,
+  $canSubmit,
 };

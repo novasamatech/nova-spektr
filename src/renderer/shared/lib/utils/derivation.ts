@@ -12,7 +12,7 @@ export const enum DerivationError {
  * Validate derivation path
  *
  * @param path Derivation path
- * @param otherPaths Optional array of existing paths to detect duplicates
+ * @param otherPaths Optional array of other paths to detect duplicates
  *
  * @returns {DerivationError[]} Array of errors. Empty if valid
  */
