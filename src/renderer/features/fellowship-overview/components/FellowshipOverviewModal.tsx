@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
+import { useI18n } from '@/shared/i18n';
 import { Modal, SearchInput, Tabs } from '@/shared/ui-kit';
 import { FELLOWSHIP_TABS } from '../model/constants';
 import { modal } from '../model/modal';
@@ -11,7 +11,7 @@ import { MembersTab } from './MembersTab';
 import { RanksTab } from './RankTab';
 
 export const FellowshipOverviewModal = () => {
-  const { t } = useTranslation();
+  const { t } = useI18n();
   const isOpen = useUnit(modal.$isFellowshipOverviewModalOpen);
   const activeTab = useUnit(modal.$activeTab);
   const closeModal = useUnit(modal.closeFellowshipOverviewModal);

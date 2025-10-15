@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
+import { useI18n } from '@/shared/i18n';
 import { getRelativeTimeFromApi, nullable } from '@/shared/lib/utils';
 import { Button, Duration } from '@/shared/ui';
 import { ProgressWithSegments, Skeleton } from '@/shared/ui-kit';
@@ -16,7 +16,7 @@ import { createRankSegmentFellowshipSlot, getAllRanks } from '../utils/rankHelpe
 type TimeToNextRank = number | 'ready' | null;
 
 const FellowshipHeader = ({ isLoading }: { isLoading: boolean }) => {
-  const { t } = useTranslation();
+  const { t } = useI18n();
   const openModal = useUnit(modal.openFellowshipOverviewModal);
 
   return (
@@ -91,7 +91,7 @@ const calculateFilledProgress = (rankLevel: number, currentRank: number, progres
 };
 
 const TimeDisplay = ({ timeToNextRank }: { timeToNextRank: TimeToNextRank }): ReactNode => {
-  const { t } = useTranslation();
+  const { t } = useI18n();
 
   if (timeToNextRank === READY_FOR_PROMOTION) {
     return t('fellowship.overview.readyForPromotion');
