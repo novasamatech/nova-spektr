@@ -11,21 +11,21 @@ export const enum DerivationError {
 /**
  * Validate derivation path
  *
- * @param value Derivation path
- * @param existingPaths Optional array of existing paths to detect duplicates
+ * @param path Derivation path
+ * @param otherPaths Optional array of existing paths to detect duplicates
  *
  * @returns {DerivationError[]} Array of errors. Empty if valid
  */
-export function validateDerivation(value: string, existingPaths?: string[]): DerivationError[] {
+export function validateDerivation(path: string, otherPaths?: string[]): DerivationError[] {
   const errors: DerivationError[] = [];
 
-  if (!value) return [DerivationError.EMPTY];
+  if (!path) return [DerivationError.EMPTY];
 
-  if (value.trim() !== value) {
+  if (path.trim() !== path) {
     errors.push(DerivationError.TRIM_SPACES);
   }
 
-  const trimmed = value.trim();
+  const trimmed = path.trim();
 
   if (/\s/.test(trimmed)) {
     errors.push(DerivationError.HAS_SPACES);
@@ -43,7 +43,7 @@ export function validateDerivation(value: string, existingPaths?: string[]): Der
     errors.push(DerivationError.PASSWORD_NOT_SUPPORTED);
   }
 
-  if (existingPaths && existingPaths.includes(trimmed)) {
+  if (otherPaths && otherPaths.includes(trimmed)) {
     errors.push(DerivationError.DUPLICATE);
   }
 
@@ -53,12 +53,12 @@ export function validateDerivation(value: string, existingPaths?: string[]): Der
 /**
  * Validate that derivation path has password
  *
- * @param value Derivation path
+ * @param path Derivation path
  *
  * @returns {Boolean}
  */
-export function derivationHasPassword(value: string): boolean {
-  return /\/\/\//g.test(value);
+export function derivationHasPassword(path: string): boolean {
+  return /\/\/\//g.test(path);
 }
 
 const SHARDED_PATH_REGEX = /^(.*\/)(\d+)$/;
