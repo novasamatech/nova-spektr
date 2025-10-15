@@ -216,7 +216,7 @@ const Confirmation = memo(({ onBack, onSign }: { onBack: VoidFunction; onSign: V
             </ButtonWebLink>
           </DetailRow>
           <DetailRow label={t('callData.confirmation.fields.details.label')}>
-            <Modal size="lg" height="fit">
+            <Modal size="fit" height="fit">
               <Modal.Trigger>
                 <Button className="p-0" size="sm" variant="text">
                   {t('callData.confirmation.fields.details.value')}

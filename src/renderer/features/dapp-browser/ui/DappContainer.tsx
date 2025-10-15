@@ -17,9 +17,17 @@ import {
 import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { walletSelect } from '@/aggregates/wallet-select';
 import { DAPP_LIST } from '../constants';
 
 import { SignCustomPayloadModal } from './SignCustomPayloadModal';
+
+function sortAccounts(a: AnyAccount, b: AnyAccount, selectedWalletId: number | null) {
+  const selectedWeight = a.walletId === selectedWalletId ? -2 : 2;
+  const aChainWeight = accountService.isChainAccount(a) ? -1 : 1;
+  const bChainWeight = accountService.isChainAccount(b) ? -1 : 1;
+  return selectedWeight + (aChainWeight - bChainWeight);
+}
 
 function anyAccountToInjectedAccount(account: AnyAccount, chains: Record<ChainId, Chain>) {
   const chain = accountService.isChainAccount(account) ? chains[account.chainId] : null;
@@ -50,15 +58,19 @@ export const DappContainer = ({ id }: Props) => {
     if (!iframe) return;
     if (!Object.keys(allChains).length) return;
 
-    const iframeContainer = createIframeProvider(iframe, config.link);
-    const container = createContainer(iframeContainer);
+    const iframeProvider = createIframeProvider(iframe, config.link);
+    const container = createContainer(iframeProvider);
 
     container.handleAccounts({
       async get() {
         // eslint-disable-next-line effector/no-getState
         const allAccounts = accounts.$list.getState();
+        // eslint-disable-next-line effector/no-getState
+        const selectedWalletId = walletSelect.$selectedWalletId.getState();
 
-        return allAccounts.map((account) => anyAccountToInjectedAccount(account, allChains));
+        return allAccounts
+          .toSorted((a, b) => sortAccounts(a, b, selectedWalletId))
+          .map((account) => anyAccountToInjectedAccount(account, allChains));
       },
       subscribe(callback) {
         return accounts.$list.subscribe((allAccounts) => {
@@ -81,9 +93,9 @@ export const DappContainer = ({ id }: Props) => {
       },
     });
 
-    container.handleChainSupportCheck((chainId) => chainId in allChains);
+    container.handleChainSupportCheck(async (chainId) => chainId in allChains);
 
-    container.handleLocationChange((location) => {
+    container.subscribeLocationChange((location) => {
       setUrl(location);
     });
 
