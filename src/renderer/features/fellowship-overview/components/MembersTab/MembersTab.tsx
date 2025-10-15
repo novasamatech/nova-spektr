@@ -1,0 +1,94 @@
+import { useUnit } from 'effector-react';
+import { useDeferredValue, useMemo, useState } from 'react';
+
+import { useDeferredList } from '@/shared/lib/hooks';
+import { performSearch, toAddress } from '@/shared/lib/utils';
+import { fellowshipOverviewFeature } from '../../model/feature';
+import { membersModel } from '../../model/members';
+
+import { MembersEmptyState } from './MembersEmptyState';
+import { MembersFilters } from './MembersFilters';
+import { MembersTable } from './MembersTable';
+
+export type MembersTabProps = {
+  searchQuery?: string;
+  onClearSearch?: () => void;
+};
+
+export const MembersTab = ({ searchQuery = '', onClearSearch }: MembersTabProps) => {
+  const [rankFilter, setRankFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const deferredQuery = useDeferredValue(searchQuery);
+
+  const input = useUnit(fellowshipOverviewFeature.input);
+  const membersWithSalary = useUnit(membersModel.$membersWithSalary);
+
+  const chain = input?.chain ?? null;
+  const { list } = useDeferredList({ list: membersWithSalary });
+
+  const filteredMembers = useMemo(() => {
+    let filtered = performSearch({
+      query: deferredQuery,
+      records: list,
+      getMeta: member => ({
+        address: toAddress(member.accountId, { prefix: chain?.addressPrefix }),
+        name: member.name ?? '',
+      }),
+      weights: {
+        name: 1,
+        address: 0.5,
+      },
+    });
+
+    if (rankFilter !== 'all') {
+      const rank = parseInt(rankFilter);
+      filtered = filtered.filter(member => member.rank === rank);
+    }
+
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(member => {
+        if (statusFilter === 'active') return member.isActive;
+        if (statusFilter === 'passive') return !member.isActive;
+        return true;
+      });
+    }
+
+    return filtered.map(member => ({
+      ...member,
+      address: toAddress(member.accountId, { prefix: chain?.addressPrefix }),
+    }));
+  }, [list, chain, deferredQuery, rankFilter, statusFilter]);
+
+  const handleClearFilters = () => {
+    setRankFilter('all');
+    setStatusFilter('all');
+  };
+
+  const handleClearSearch = () => {
+    onClearSearch?.();
+    handleClearFilters();
+  };
+
+  const isEmpty = filteredMembers.length === 0 && (deferredQuery || rankFilter !== 'all' || statusFilter !== 'all');
+
+  return (
+    <div className="flex h-full flex-col">
+      <MembersFilters
+        rankFilter={rankFilter}
+        statusFilter={statusFilter}
+        onRankFilterChange={setRankFilter}
+        onStatusFilterChange={setStatusFilter}
+        onClearFilters={handleClearFilters}
+      />
+      {isEmpty ? (
+        <MembersEmptyState
+          searchQuery={deferredQuery}
+          hasActiveFilters={rankFilter !== 'all' || statusFilter !== 'all'}
+          onClearSearch={handleClearSearch}
+        />
+      ) : (
+        <MembersTable data={filteredMembers} />
+      )}
+    </div>
+  );
+};

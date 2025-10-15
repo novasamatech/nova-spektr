@@ -41,6 +41,8 @@ export { ProgressWithDividers } from './ProgressWithDividers/ProgressWithDivider
 export { QrCode } from './QrCode/QrCode';
 export { ConfirmModal } from './ConfirmModal/ConfirmModal';
 export { RadioGroup } from './RadioGroup/RadioGroup';
+export { Table, type Column, type SortDirection } from './Table';
+export { Indicator } from './Indicator/Indicator';
 export { NotificationProvider, useNotification } from './NotificationContext';
 
 export { QR_READER_ERRORS } from './QrReader/errors';
