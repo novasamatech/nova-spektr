@@ -12,10 +12,11 @@ type Props = {
   icon?: IconNames;
   variant?: 'urgent' | 'warning' | 'idle';
   passedText?: string;
+  hideIconText?: boolean;
 };
 
 export const TimerToBlock = memo(
-  ({ endBlock, shortDateFormat, icon = 'clock', variant = 'idle', passedText }: Props) => {
+  ({ endBlock, shortDateFormat, icon = 'clock', variant = 'idle', passedText, hideIconText }: Props) => {
     const input = useUnit(fellowshipRetentionFeature.input);
     const [endTime, setEndTime] = useState<number>();
 
@@ -37,6 +38,7 @@ export const TimerToBlock = memo(
         shortDateFormat={shortDateFormat}
         textColor="text-text-primary"
         text={passedText}
+        hideIconText={hideIconText}
       />
     );
   },

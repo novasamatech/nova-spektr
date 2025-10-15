@@ -143,7 +143,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
         description={t('fellowship.retention.criticalExpired.description')}
         footer={
           <>
-            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" passedText="" />
+            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" hideIconText />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.riskBumped')}</FootnoteText>
             <Button size="sm" className="ml-auto" onClick={() => {}}>
               {t('fellowship.retention.button.submitReport')}

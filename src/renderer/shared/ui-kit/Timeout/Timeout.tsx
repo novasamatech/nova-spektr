@@ -32,11 +32,20 @@ type Props = {
   variant: 'urgent' | 'warning' | 'idle';
   shortDateFormat?: boolean;
   textColor?: string;
+  hideIconText?: boolean;
   text?: string;
 };
 
 export const Timeout = memo(
-  ({ secondsToEnd, icon, variant, shortDateFormat, textColor = 'text-text-secondary', text }: Props) => {
+  ({
+    secondsToEnd,
+    icon,
+    variant,
+    shortDateFormat,
+    textColor = 'text-text-secondary',
+    text,
+    hideIconText = false,
+  }: Props) => {
     const { t } = useI18n();
 
     const [countdown, setCountdown] = useState(secondsToEnd);
@@ -70,7 +79,7 @@ export const Timeout = memo(
         <FootnoteText className={`${textColor}`}>
           {countdown > 0 ? (
             <Duration seconds={countdown} shortFormat={shortDateFormat} />
-          ) : (
+          ) : hideIconText ? null : (
             <span data-testid="ExpiredMsg">{displayText}</span>
           )}
         </FootnoteText>
