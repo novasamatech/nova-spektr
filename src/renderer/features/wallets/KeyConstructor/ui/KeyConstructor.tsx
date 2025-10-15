@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import { type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -22,7 +22,7 @@ type Props = {
   onConfirm: (keys: DerivationKeyDraft[]) => void;
 };
 
-export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm }: Props) => {
+export const KeyConstructor = memo(({ title, isOpen, existingKeys, onClose, onConfirm }: Props) => {
   const { t } = useI18n();
   const [isWarningOpen, setIsWarningOpen] = useState(false);
   const addNewKeyShortcutPressed = useKeyCombo(ADD_NEW_KEY_SHORTCUT);
@@ -97,4 +97,6 @@ export const KeyConstructor = ({ title, isOpen, existingKeys, onClose, onConfirm
       />
     </Modal>
   );
-};
+});
+
+KeyConstructor.displayName = 'KeyConstructor';

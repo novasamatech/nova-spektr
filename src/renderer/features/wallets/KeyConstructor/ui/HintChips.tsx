@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
@@ -19,31 +19,35 @@ const TYPE_HINTS = ['main', 'hot', 'public', 'sharded'];
 
 const generateShardHints = () => Array.from({ length: SHARD_COUNT }, (_, index) => String(index));
 
+const getDerivationPathHints = (derivationPath: string, chainName: string): string[] => {
+  if (derivationPath === '' || /[a-z0-9]$/i.test(derivationPath)) {
+    return DERIVATION_SEPARATORS;
+  }
+
+  if (derivationPath === '//' || derivationPath === '/') {
+    return [chainName];
+  }
+
+  if (derivationPath.endsWith('sharded//') || derivationPath.endsWith('sharded/')) {
+    return generateShardHints();
+  }
+
+  if (derivationPath.endsWith('//') || derivationPath.endsWith('/')) {
+    return TYPE_HINTS;
+  }
+
+  return DERIVATION_SEPARATORS;
+};
+
 export const HintChips = memo(({ keyId, derivationPath, chainName }: Props) => {
   const { t } = useI18n();
-  const hints = useMemo(() => {
-    if (derivationPath === '' || /[a-z0-9]$/i.test(derivationPath)) {
-      return DERIVATION_SEPARATORS;
-    }
-    if (derivationPath === '//' || derivationPath === '/') {
-      return [chainName];
-    }
-    if (derivationPath.endsWith('sharded//') || derivationPath.endsWith('sharded/')) {
-      return generateShardHints();
-    }
-    if (derivationPath.endsWith('//') || derivationPath.endsWith('/')) {
-      return TYPE_HINTS;
-    }
-    return DERIVATION_SEPARATORS;
-  }, [derivationPath]);
 
-  const insertHint = useCallback(
-    (hint: string) => {
-      const newDerivationPath = derivationPath + hint;
-      constructorModel.updateKey([keyId, { derivationPath: newDerivationPath }]);
-    },
-    [keyId, derivationPath],
-  );
+  const hints = getDerivationPathHints(derivationPath, chainName);
+
+  const insertHint = (hint: string) => {
+    const newDerivationPath = derivationPath + hint;
+    constructorModel.updateKey([keyId, { derivationPath: newDerivationPath }]);
+  };
 
   return (
     <div className="flex flex-row gap-x-2">
@@ -73,3 +77,5 @@ export const HintChips = memo(({ keyId, derivationPath, chainName }: Props) => {
     </div>
   );
 });
+
+HintChips.displayName = 'HintChips';

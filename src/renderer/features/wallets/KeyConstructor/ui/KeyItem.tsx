@@ -1,6 +1,6 @@
 import { useStoreMap, useUnit } from 'effector-react';
 import { t } from 'i18next';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 
 import { type ChainId } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -51,32 +51,26 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
   const chain = chains[keyData.chainId];
   if (!chain) return null;
 
-  const handleInputBlur = useCallback(() => {
+  const handleInputBlur = () => {
     setShowHints(false);
     constructorModel.validateKey(keyId);
-  }, [keyId]);
+  };
 
-  const handleInputFocus = useCallback(() => {
+  const handleInputFocus = () => {
     setShowHints(true);
-  }, []);
+  };
 
-  const handleKeyRemove = useCallback(() => {
+  const handleKeyRemove = () => {
     constructorModel.removeKey(keyId);
-  }, [keyId]);
+  };
 
-  const handleUpdateChainId = useCallback(
-    (newChainId: ChainId) => {
-      constructorModel.updateKey([keyId, { chainId: newChainId }]);
-    },
-    [keyId],
-  );
+  const handleUpdateChainId = (newChainId: ChainId) => {
+    constructorModel.updateKey([keyId, { chainId: newChainId }]);
+  };
 
-  const handleUpdateDerivation = useCallback(
-    (newDerivationPath: string) => {
-      constructorModel.updateKey([keyId, { derivationPath: newDerivationPath }]);
-    },
-    [keyId],
-  );
+  const handleUpdateDerivation = (newDerivationPath: string) => {
+    constructorModel.updateKey([keyId, { derivationPath: newDerivationPath }]);
+  };
 
   return (
     <div className="mb-6 grid grid-cols-[34px_60px_1fr_54px] gap-y-2">
@@ -131,3 +125,5 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
     </div>
   );
 });
+
+KeyItem.displayName = 'KeyItem';
