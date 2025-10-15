@@ -453,11 +453,10 @@
           "description": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
           "title": "Nothing found"
         },
-        "no-results": {
-          "title": "Nothing found",
-          "search": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
-          "filters": "No members match the current filters.",
-          "general": "No members found."
+        "nothing-found": {
+          "clear": "Clear search",
+          "description": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
+          "title": "Nothing found"
         },
         "search-placeholder": "Search by event, address or identity",
         "sort": {
