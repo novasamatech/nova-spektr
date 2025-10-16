@@ -1,1 +1,1 @@
-export const INDEXER_URL = 'https://subquery-account-manager-stg.novasama-tech.org';
+export const INDEXER_URL = 'https://subquery-accounts-stg.novasama-tech.org';
