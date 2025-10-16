@@ -108,7 +108,7 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
               </ul>
             </Accordion.Content>
           </Accordion>
-          {groupIndex !== chainGroups.length - 1 && <Separator className="my-1 w-full" />}
+          {groupIndex !== chainGroups.length - 1 && <Separator className="my-4 w-full" />}
         </>
       ))}
     </div>
