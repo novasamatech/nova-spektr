@@ -21,6 +21,9 @@ export const getExtrinsic: Record<
   [TransactionType.TRANSFER_ALL]: ({ dest }, api) => {
     return api.tx.balances.transferAll(dest, false);
   },
+  [TransactionType.TRANSFER_ALLOW_DEATH]: ({ dest, value }, api) => {
+    return api.tx.balances.transferAllowDeath(dest, value);
+  },
   [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset, palletName = 'assets' }, api) => {
     const type = api.tx[palletName].transfer.meta.args[0].type;
     // @ts-expect-error Incorrect polkadot-js/api types

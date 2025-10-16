@@ -15,6 +15,10 @@ export const QR_READER_DECODE_ERRORS: Record<DecodeQrError, ErrorObject> = {
     code: DecodeQrError.NOT_SAME_QR,
     message: 'QR was changed by another one',
   },
+  [DecodeQrError.INVALID]: {
+    code: DecodeQrError.INVALID,
+    message: 'The QR code may be broken or not supported.',
+  },
 };
 
 export const ALL_QR_READER_ERRORS = {

@@ -9,7 +9,7 @@ export type Props = {
   order?: number;
   title: string;
   link: string;
-  icon: IconNames;
+  icon: IconNames | ReactNode;
   badge?: ReactNode;
 };
 
@@ -28,7 +28,22 @@ export const NavItem = ({ title, link, icon, badge }: Props) => {
     >
       {({ isActive }) => (
         <>
-          <Icon className={cnTw(isActive ? 'text-tab-icon-active' : 'text-tab-icon-inactive')} name={icon} size={20} />
+          {typeof icon === 'string' ? (
+            <Icon
+              className={cnTw(isActive ? 'text-tab-icon-active' : 'text-tab-icon-inactive')}
+              name={icon as IconNames}
+              size={20}
+            />
+          ) : (
+            <span
+              className={cnTw(
+                'h-5 w-5 shrink-0 overflow-hidden',
+                isActive ? 'text-tab-icon-active' : 'text-tab-icon-inactive',
+              )}
+            >
+              {icon}
+            </span>
+          )}
           <BodyText className={cnTw('ml-3', isActive ? 'text-text-primary' : 'text-text-secondary')}>
             {t(title)}
           </BodyText>

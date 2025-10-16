@@ -911,7 +911,7 @@
     "transactionErrors": {
       "balance": {
         "intro": "Wallet <wallet/> has insufficient funds to cover",
-        "required": "Please top up the balance of this wallet by { balances } and try again.",
+        "required": "Please top up the balance of this wallet by { balances } or use the MAX button.",
         "section": "the {action} of {balance}"
       },
       "fatal": {
@@ -1241,6 +1241,7 @@
         "votingPower": "Voting power"
       },
       "noVoteForReferendum": "There're no existing votes for this referendum",
+      "reuseLock": "Reuse lock",
       "timeoutReferendumError": "This referendum has already passed"
     },
     "voteHistory": {
@@ -1376,20 +1377,36 @@
     },
     "paritySigner": {
       "accessDeniedDescription": "Please make sure you grant access to camera",
-      "accessDeniedLabel": "Access denied!",
+      "accessDeniedDescriptionDesktopLinux": "Allow camera access in the system settings (Settings → Privacy → Camera).",
+      "accessDeniedDescriptionDesktopMac": "Please grant camera access in System Preferences > Security & Privacy > Camera, then restart the app",
+      "accessDeniedDescriptionDesktopWindows": "Please grant camera access in Windows Settings > Privacy > Camera, then restart the app",
+      "accessDeniedDescriptionWeb": "Allow camera access in the browser settings (Privacy → Camera).",
+      "accessDeniedLabel": "Spektr cannot use camera.",
       "accountNamePlaceholder": "Enter a name for this account",
+      "allowCameraPrefix": "Allow camera access in ",
+      "allowCameraSuffix": " (Settings → Privacy → Camera).",
+      "cameraAccessDeniedDescription": "onboarding.paritySigner.cameraAccessDeniedDescription",
+      "cameraAccessDeniedLabel": "onboarding.paritySigner.cameraAccessDeniedLabel",
       "checkAddress": "Check address",
       "continueButton": "Continue",
-      "decodeErrorDescription": "Error occurred while decoding QR code",
-      "decodeErrorLabel": "Recognition error!",
+      "decodeErrorDescription": "Make sure the QR code is easy to scan. Try scanning in a place with good light.",
+      "decodeErrorLabel": "The app cannot read the QR code data.",
       "generateAddressesModalTitle": "Generate accounts addresses",
-      "multishardQRCodeDescription": "Multishard wallets no longer supported",
-      "multishardQRCodeLabel": "Multishard QR not supported!",
+      "invalidQrDescription": "Make sure the QR code is correct.",
+      "invalidQrLabel": "The QR code may be broken or not supported.",
+      "multishardQRCodeDescription": "Please choose one key set and continue.",
+      "multishardQRCodeLabel": "You cannot import many key sets.",
+      "noVideoInputDescription": "Connect the camera or use a new device.",
+      "noVideoInputLabel": "We cannot find the camera.",
+      "notSameQrErrorDescription": "Keep the QR code and your device still while scanning. Do not move the code or thе camera.",
+      "notSameQrErrorLabel": "The app found different data in the QR code while scanning.",
       "notWorkingDescription": "Please make sure you camera is turned on",
       "notWorkingLabel": "Camera is not working!",
       "scanAgainButton": "Scan again",
       "selectCameraLabel": "Select camera",
       "startCameraLabel": "Starting camera",
+      "systemSettings": "the system settings",
+      "systemSettingsAria": "Open system settings",
       "tryAgainButton": "Try again",
       "typeNameButton": "Type a name to finish...",
       "walletNameLabel": "Wallet name",
@@ -1809,7 +1826,7 @@
   },
   "qrReader": {
     "parsingLabel": "Parsing data",
-    "parsingProgress": "{decoded} of {total}",
+    "parsingProgress": "{decodedFrames} of {totalFrames}",
     "parsingSubLabel": "Please hold still...",
     "videoError": "Your browser doesn't support video"
   },
@@ -2212,6 +2229,10 @@
   },
   "transfer": {
     "FIX": "Please enter amount",
+    "accountDeathWarning": {
+      "description": "After this transfer, your balance will <b>fall below the Existential Deposit ({ed} {asset}).</b> If any tokens remain, <b>they will be burned, and your account will be removed from on-chain storage.</b>. <br /> We recommend <b>using the MAX button for a safe Transfer</b>",
+      "title": "Balance below network minimum"
+    },
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",
@@ -2226,6 +2247,13 @@
     "incorrectRecipientError": "Please enter correct recipient address",
     "invalidAddress": "Invalid address",
     "invalidSignature": "Error occurred while decoding QR code. Scan again.",
+    "max": {
+      "buttonTitle": "MAX",
+      "ed": {
+        "title": "Include Existential Deposit",
+        "tooltip": "Existential Deposit is the minimum balance to keep your account on-chain storage"
+      }
+    },
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"
@@ -2282,6 +2310,7 @@
   "walletDetails": {
     "common": {
       "accountTabTitle": "Accounts",
+      "accountsColumn": "Accounts",
       "addProxyAction": "Delegate",
       "addProxyButton": "Delegate",
       "addPureProxiedAction": "Create pure proxy",
@@ -2290,12 +2319,14 @@
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
       "confirmRemoveProxySubmit": "Delete",
       "confirmRemoveProxyTitle": "Revoke delegated authority?",
+      "consensusColumn": "Consensus",
       "doNotShowAgain": "Do not show this again",
       "emptyProxyDescription": "Add new proxies to work with them",
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",
       "forgetButton": "Remove",
       "hideButton": "Hide",
       "hideWallet": "Hide wallet",
+      "keyTabTitle": "Keys",
       "linkedWalletsWillBeRemovedDescription": "This wallet is a signatory in multisigs or as a proxy for other wallets. These related accounts will be automatically hidden. They’ll reappear if you pair this wallet again.",
       "linkedWalletsWillBeRemovedTitle": "Linked wallets will be removed",
       "nameExistsError": "This wallet name already exists",

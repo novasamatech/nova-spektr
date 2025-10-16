@@ -134,8 +134,7 @@ sample({
           ...tx,
           error: {
             type: 'chain',
-            // params will be a string for failed transaction
-            message: result.params as string,
+            message: result.params,
             at: Date.now(),
           },
         });

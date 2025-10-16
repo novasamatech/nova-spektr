@@ -8,3 +8,4 @@ export { createTransactionConfirmStore, type TxConfirmInfo, type ConfirmItem } f
 export { createExtrinsicConfirmStore, type ExtrinsicConfirmInfo } from './createExtrinsicConfirmStore';
 export { createTxValidationStore } from './createTxValidationStore';
 export { createTxValidator, getActionRequiredAmount } from './createTxValidator';
+export { combineTotalRequiredFee } from './combineTotalRequiredFee';

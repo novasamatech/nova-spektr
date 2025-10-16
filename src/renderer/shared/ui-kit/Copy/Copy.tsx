@@ -1,17 +1,31 @@
 import { Slot } from '@radix-ui/react-slot';
-import { type MouseEvent, type ReactElement, memo } from 'react';
+import { type HTMLAttributes, type MouseEvent, type ReactElement, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { copyToClipboard } from '@/shared/lib/utils';
 import { useNotification } from '../NotificationContext';
 
-type Props = {
+// TODO move outside as generic type and reuse in all components that can integrate one into another
+type RadixIntegration = Pick<
+  HTMLAttributes<Element>,
+  | 'onClick'
+  | 'onMouseDown'
+  | 'onMouseUp'
+  | 'onMouseEnter'
+  | 'onMouseLeave'
+  | 'onPointerDown'
+  | 'onPointerUp'
+  | 'onPointerMove'
+  | 'onPointerLeave'
+>;
+
+type Props = RadixIntegration & {
   value: string;
   notification?: string;
   children: ReactElement;
 };
 
-export const Copy = memo(({ value, notification, children }: Props) => {
+export const Copy = memo(({ value, notification, children, ...radix }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
 
@@ -21,7 +35,12 @@ export const Copy = memo(({ value, notification, children }: Props) => {
     e.stopPropagation();
     await copyToClipboard(value);
     toast.success(toastMessage);
+    radix.onClick?.(e);
   };
 
-  return <Slot onClick={onCopyToClipboard}>{children}</Slot>;
+  return (
+    <Slot {...radix} onClick={onCopyToClipboard}>
+      {children}
+    </Slot>
+  );
 });
