@@ -24,12 +24,10 @@ export const RanksTab = () => {
     <div className="flex h-full flex-col">
       <div className="mb-13 min-h-0 flex-1 overflow-hidden">
         <ScrollArea>
-          <div className="p-5">
-            <Box gap={6}>
-              <RankProgress onRankClick={handleRankClick} />
-              <RankDetails selectedRankId={selectedRankId} />
-            </Box>
-          </div>
+          <Box gap={6} padding={5}>
+            <RankProgress onRankClick={handleRankClick} />
+            <RankDetails selectedRankId={selectedRankId} />
+          </Box>
         </ScrollArea>
       </div>
     </div>
