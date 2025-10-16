@@ -27,21 +27,35 @@ export const Segment = memo(({ calculatedSegment, bottomLabelPrefix, onSegmentCl
           {state.nextIsActive && !state.hasSelection && (
             <div className={cnTw('absolute top-0 right-0 left-0 h-[8px]', calculatedSegment.color)} />
           )}
-          {state.hasSelection &&
-            (state.nextIsActive || state.isSelected) &&
-            (!state.isPartialProgress || !state.isSelected) && (
-              <div
-                className={cnTw('absolute top-0 right-0 left-0 h-[8px]', calculatedSegment.color, {
-                  'opacity-30': !state.isSelected,
-                })}
-              />
-            )}
-          {state.hasSelection &&
-            state.isSelected &&
-            !state.nextIsActive &&
-            (!state.isPartialProgress || !state.isSelected) && (
-              <div className={cnTw('absolute top-0 right-0 left-0 h-[8px]', calculatedSegment.color)} />
-            )}
+          {(() => {
+            const shouldShowProgress =
+              state.hasSelection &&
+              (state.nextIsActive || state.isSelected) &&
+              (!state.isPartialProgress || !state.isSelected);
+
+            return (
+              shouldShowProgress && (
+                <div
+                  className={cnTw('absolute top-0 right-0 left-0 h-[8px]', calculatedSegment.color, {
+                    'opacity-30': !state.isSelected,
+                  })}
+                />
+              )
+            );
+          })()}
+          {(() => {
+            const shouldShowSelectedProgress =
+              state.hasSelection &&
+              state.isSelected &&
+              !state.nextIsActive &&
+              (!state.isPartialProgress || !state.isSelected);
+
+            return (
+              shouldShowSelectedProgress && (
+                <div className={cnTw('absolute top-0 right-0 left-0 h-[8px]', calculatedSegment.color)} />
+              )
+            );
+          })()}
           {state.isPartialProgress && (
             <div
               className={cnTw('absolute top-0 left-0 h-[8px]', calculatedSegment.color, {

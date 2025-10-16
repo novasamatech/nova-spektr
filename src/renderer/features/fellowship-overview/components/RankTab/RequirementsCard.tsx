@@ -27,35 +27,29 @@ export const RequirementsCard = memo(({ rankId }: RequirementsCardProps) => {
   return (
     <Surface className="flex-1">
       <Box gap={4} padding={4}>
-        <TitleText className="text-header-title text-text-primary">{t('fellowship.ranks.requirements')}</TitleText>
+        <TitleText className="text-header-title">{t('fellowship.ranks.requirements')}</TitleText>
         <div className="flex items-center gap-6">
           <div className="min-w-0 flex-1">
             <Box gap={1}>
-              <FootnoteText className="text-text-primary">{t('fellowship.ranks.activity')}</FootnoteText>
-              <TitleText className="text-header-title text-text-primary">
-                {rankData.meta.activity || t('fellowship.n/a')}
-              </TitleText>
+              <FootnoteText>{t('fellowship.ranks.activity')}</FootnoteText>
+              <TitleText className="text-header-title">{rankData.meta.activity || t('fellowship.n/a')}</TitleText>
             </Box>
           </div>
           <div className="min-w-0 flex-1">
             <Box gap={1}>
-              <FootnoteText className="text-text-primary">{t('fellowship.ranks.agreement')}</FootnoteText>
-              <TitleText className="text-header-title text-text-primary">
-                {rankData.meta.agreement || t('fellowship.n/a')}
-              </TitleText>
+              <FootnoteText>{t('fellowship.ranks.agreement')}</FootnoteText>
+              <TitleText className="text-header-title">{rankData.meta.agreement || t('fellowship.n/a')}</TitleText>
             </Box>
           </div>
           <div className="min-w-0 flex-1">
             <Box gap={1}>
-              <FootnoteText className="text-text-primary">{t('fellowship.ranks.fromIDan')}</FootnoteText>
-              <TitleText className="text-header-title text-text-primary">
-                {rankData.meta.timeRequired || t('fellowship.n/a')}
-              </TitleText>
+              <FootnoteText>{t('fellowship.ranks.fromIDan')}</FootnoteText>
+              <TitleText className="text-header-title">{rankData.meta.timeRequired || t('fellowship.n/a')}</TitleText>
             </Box>
           </div>
         </div>
 
-        <FootnoteText className="text-text-primary">
+        <FootnoteText>
           {t('fellowship.ranks.activityDescription')}
           <br />
           {t('fellowship.ranks.agreementDescription')}

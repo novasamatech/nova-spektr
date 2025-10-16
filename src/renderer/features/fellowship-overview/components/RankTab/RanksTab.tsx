@@ -21,11 +21,9 @@ export const RanksTab = () => {
   };
 
   return (
-    <div className="p-5">
-      <Box gap={6}>
-        <RankProgress onRankClick={handleRankClick} />
-        <RankDetails selectedRankId={selectedRankId} />
-      </Box>
-    </div>
+    <Box padding={5} gap={6}>
+      <RankProgress onRankClick={handleRankClick} />
+      <RankDetails selectedRankId={selectedRankId} />
+    </Box>
   );
 };

@@ -28,7 +28,7 @@ export const RankCard = memo(({ rankId, isCurrentRank = false }: RankCardProps) 
 
           <Box gap={1.5} grow={1}>
             <Box direction="row" gap={2} horizontalAlign="space-between" verticalAlign="center">
-              <TitleText className="text-header-title text-text-primary">
+              <TitleText className="text-header-title">
                 {rankData.label} {rankData.name}
               </TitleText>
               {isCurrentRank && (
@@ -37,11 +37,11 @@ export const RankCard = memo(({ rankId, isCurrentRank = false }: RankCardProps) 
             </Box>
 
             <Box gap={0}>
-              <FootnoteText className="text-text-primary">
+              <FootnoteText>
                 <span>{t('fellowship.ranks.approxAcademicAnalogue')} </span>
                 <span className="font-bold">{rankData.meta.analogue || t('fellowship.n/a')}</span>
               </FootnoteText>
-              <FootnoteText className="text-text-primary">
+              <FootnoteText>
                 <span>{t('fellowship.ranks.material')} </span>
                 <span className="font-bold">{rankData.meta.material || t('fellowship.n/a')}</span>
               </FootnoteText>

@@ -57,7 +57,7 @@ const useTimeToNextRank = () => {
     };
 
     calculateTime();
-  }, [leftToPromotion, currentBlock, network, promotionProgress]);
+  }, [leftToPromotion, currentBlock, network?.api, promotionProgress]);
 
   return timeToNextRank;
 };
