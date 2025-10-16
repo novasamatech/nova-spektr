@@ -528,6 +528,19 @@
     "n/a": "N/A",
     "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
+    "overview": {
+      "modalTitle": "Fellowship overview",
+      "readyForPromotion": "Ready for promotion",
+      "retentionProgress": "Retention progress: {progress}%",
+      "tabs": {
+        "codex": "Codex",
+        "members": "Members",
+        "ranks": "Ranks"
+      },
+      "title": "Fellowship overview",
+      "toNextRank": "to next rank",
+      "viewDetails": "View details"
+    },
     "profile": {
       "active": "Active",
       "activeSalary": "Active salary",
@@ -615,6 +628,21 @@
       "7": "Free master",
       "8": "Masters constant",
       "9": "Grand master"
+    },
+    "ranks": {
+      "activity": "Activity",
+      "activityDescription": "Activity shows how much you participate in referenda.",
+      "agreement": "Agreement",
+      "agreementDescription": "Agreement reflects how closely your votes align with other members.",
+      "approxAcademicAnalogue": "Approx. academic analogue:",
+      "codex": "Codex",
+      "currentProgressDescription": "From Humble to Master, each rank defines expectations, evaluation criteria, and growing influence on the protocol.",
+      "currentProgressTitle": "Current progress & rank specifications",
+      "detailsInCodexText": "Details can be found in the",
+      "fromIDan": "From I Dan",
+      "material": "Material:",
+      "requirements": "Requirements",
+      "youreHere": "You're here"
     },
     "referendums": {
       "completed": "Completed referendums",

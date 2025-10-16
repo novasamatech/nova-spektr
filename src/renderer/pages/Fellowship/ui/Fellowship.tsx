@@ -72,7 +72,7 @@ export const Fellowship = () => {
             <Box width="805px" height="100%" gap={2.5} shrink={0}>
               <Slot id={fellowshipContentSlot} />
             </Box>
-            <Box width="276px" height="100%" gap={2.5} shrink={0}>
+            <Box width="324px" height="100%" gap={2.5} shrink={0}>
               <Slot id={fellowshipSidebarSlot} />
             </Box>
           </Box>

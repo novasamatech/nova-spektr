@@ -1,0 +1,6 @@
+- Demonstrate sustained excellence over many years
+- Lead strategic initiatives that shape the future of the protocol
+- Significant contributions to the broader blockchain community
+- Evidence of thought leadership through publications, talks, or other venues
+- Mentor and develop other high-ranking members
+- Drive ecosystem-wide innovation and adoption

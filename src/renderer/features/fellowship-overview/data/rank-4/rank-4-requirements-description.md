@@ -1,0 +1,6 @@
+- Lead the design of a major protocol component
+- Demonstrate deep technical expertise across multiple areas
+- Contribute to strategic technical planning
+- Mentor Fellows and help them advance their skills
+- Publish technical papers or documentation
+- Lead cross-functional technical initiatives
