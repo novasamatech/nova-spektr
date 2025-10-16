@@ -107,6 +107,17 @@ export const calculateTotalWidth = (segments: SegmentConfig[]): number => {
   return segments.reduce((sum, segment) => sum + segment.width, 0);
 };
 
+export const getSegmentLabelTextColor = (state: SegmentState) => {
+  if (state.isCurrent) return 'text-text-positive';
+  if (
+    (!state.hasSelection && !state.isCurrent && state.isActive) ||
+    (state.hasSelection && state.isSelected && !state.isCurrent)
+  ) {
+    return 'text-text-primary';
+  }
+  return 'text-text-tertiary';
+};
+
 export const calculateSegmentsWithState = (
   segments: SegmentConfig[],
   currentSegmentId: string,

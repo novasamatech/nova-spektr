@@ -42,21 +42,35 @@ export const TimelineSegment = memo(
             {nextIsActive && !hasSelection && (
               <div className={cnTw('absolute top-0 right-0 left-0 h-[8px]', segment.color)} />
             )}
-            {hasSelection &&
-              (nextIsActive || isSelected) &&
-              (!isPartialProgress || selectedSegmentId !== segments[currentIndex]?.id) && (
-                <div
-                  className={cnTw('absolute top-0 right-0 left-0 h-[8px]', segment.color, {
-                    'opacity-30': !isSelected,
-                  })}
-                />
-              )}
-            {hasSelection &&
-              isSelected &&
-              !nextIsActive &&
-              (!isPartialProgress || selectedSegmentId !== segments[currentIndex]?.id) && (
-                <div className={cnTw('absolute top-0 right-0 left-0 h-[8px]', segment.color)} />
-              )}
+            {(() => {
+              const shouldShowProgress =
+                hasSelection &&
+                (nextIsActive || isSelected) &&
+                (!isPartialProgress || selectedSegmentId !== segments[currentIndex]?.id);
+
+              return (
+                shouldShowProgress && (
+                  <div
+                    className={cnTw('absolute top-0 right-0 left-0 h-[8px]', segment.color, {
+                      'opacity-30': !isSelected,
+                    })}
+                  />
+                )
+              );
+            })()}
+            {(() => {
+              const shouldShowSelectedProgress =
+                hasSelection &&
+                isSelected &&
+                !nextIsActive &&
+                (!isPartialProgress || selectedSegmentId !== segments[currentIndex]?.id);
+
+              return (
+                shouldShowSelectedProgress && (
+                  <div className={cnTw('absolute top-0 right-0 left-0 h-[8px]', segment.color)} />
+                )
+              );
+            })()}
             {isPartialProgress && currentIndex >= 0 && (
               <div
                 className={cnTw('absolute top-0 left-0 h-[8px]', segments[currentIndex]?.color || 'bg-gray-300', {
@@ -74,16 +88,28 @@ export const TimelineSegment = memo(
               {isActive && !hasSelection && (
                 <div className={cnTw('absolute top-0 right-0 left-0 h-[8px]', segment.color)} />
               )}
-              {hasSelection && (isActive || isSelected) && (
-                <div
-                  className={cnTw('absolute top-0 right-0 left-0 h-[8px]', segment.color, {
-                    'opacity-30': !isSelected,
-                  })}
-                />
-              )}
-              {hasSelection && isSelected && !isActive && (
-                <div className={cnTw('absolute top-0 right-0 left-0 h-[8px]', segment.color)} />
-              )}
+              {(() => {
+                const shouldShowActiveOrSelected = hasSelection && (isActive || isSelected);
+
+                return (
+                  shouldShowActiveOrSelected && (
+                    <div
+                      className={cnTw('absolute top-0 right-0 left-0 h-[8px]', segment.color, {
+                        'opacity-30': !isSelected,
+                      })}
+                    />
+                  )
+                );
+              })()}
+              {(() => {
+                const shouldShowSelectedOnly = hasSelection && isSelected && !isActive;
+
+                return (
+                  shouldShowSelectedOnly && (
+                    <div className={cnTw('absolute top-0 right-0 left-0 h-[8px]', segment.color)} />
+                  )
+                );
+              })()}
             </div>
             <div
               className={cnTw('h-[12px] w-[2px] shrink-0 rounded-tl-[100px] rounded-tr-[100px]', {

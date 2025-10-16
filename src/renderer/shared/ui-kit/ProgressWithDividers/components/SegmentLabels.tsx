@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { cnTw } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText } from '@/shared/ui/Typography';
 import { type SegmentLabelsProps } from '../types';
+import { getSegmentLabelTextColor } from '../utils';
 
 export const SegmentLabels = memo(({ calculatedSegments, bottomLabelPrefix }: SegmentLabelsProps) => {
   const totalWidth = calculatedSegments.reduce((sum, segment) => sum + segment.width, 0);
@@ -27,13 +28,7 @@ export const SegmentLabels = memo(({ calculatedSegments, bottomLabelPrefix }: Se
               <div className="font-inter relative flex w-full shrink-0 flex-col justify-end font-semibold uppercase">
                 <CaptionText
                   className={cnTw('text-center leading-[12px]', {
-                    'text-text-positive': state.isCurrent,
-                    'text-text-primary':
-                      (!state.hasSelection && !state.isCurrent && state.isActive) ||
-                      (state.hasSelection && state.isSelected && !state.isCurrent),
-                    'text-text-tertiary':
-                      (!state.hasSelection && !state.isCurrent && !state.isActive) ||
-                      (state.hasSelection && !state.isSelected && !state.isCurrent),
+                    [getSegmentLabelTextColor(state)]: true,
                   })}
                 >
                   {bottomLabelPrefix} {calculatedSegment.id}
@@ -42,13 +37,7 @@ export const SegmentLabels = memo(({ calculatedSegments, bottomLabelPrefix }: Se
               <div className="font-inter relative flex w-full shrink-0 flex-col justify-end font-medium">
                 <FootnoteText
                   className={cnTw('text-center leading-[14px]', {
-                    'text-text-positive': state.isCurrent,
-                    'text-text-primary':
-                      (!state.hasSelection && !state.isCurrent && state.isActive) ||
-                      (state.hasSelection && state.isSelected && !state.isCurrent),
-                    'text-text-tertiary':
-                      (!state.hasSelection && !state.isCurrent && !state.isActive) ||
-                      (state.hasSelection && !state.isSelected && !state.isCurrent),
+                    [getSegmentLabelTextColor(state)]: true,
                   })}
                 >
                   {calculatedSegment.title}
