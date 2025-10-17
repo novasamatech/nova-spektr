@@ -39,8 +39,6 @@ type Props = {
 export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
   const { t } = useI18n();
 
-  if (errors.length === 0) return null;
-
   const fatalErrors = errors.filter(e => 'message' in e);
   const permissionErrors = errors.filter(e => 'permission' in e);
   const balanceErrors = groupBy(
@@ -74,7 +72,7 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
   const renderDot = errorNodes.length > 1;
 
   return (
-    <Alert active variant="error" title={t('general.transactionErrors.title')}>
+    <Alert active={errors.length > 0} variant="error" title={t('general.transactionErrors.title')}>
       <Box as="span" gap={2}>
         {errorNodes.map((n, i) => (
           <Alert.Item key={i} withDot={renderDot}>

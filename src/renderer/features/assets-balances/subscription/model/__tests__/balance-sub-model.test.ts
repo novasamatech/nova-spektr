@@ -73,7 +73,7 @@ describe('balance sub model', () => {
   test('should set $subscribedAccounts', async () => {
     const scope = setupScope();
 
-    await allSettled(balanceSubModel.subscribeAccounts, { scope, params: balanceSubMock.accountMocks });
+    await allSettled(balanceSubModel.subscribeKnownAccounts, { scope, params: balanceSubMock.accountMocks });
 
     expect(scope.getState(balanceSubModel.__test.$subscribedAccounts)).toEqual(balanceSubMock.accountMocks);
   });

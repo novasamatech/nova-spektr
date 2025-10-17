@@ -3,7 +3,7 @@ import { type Store } from 'effector';
 import { t } from 'i18next';
 
 import { type Asset, type Chain } from '@/shared/core';
-import { assert, formatAmount, toPrecision, validateAddress } from '@/shared/lib/utils';
+import { assert, formatAmount, validateAddress } from '@/shared/lib/utils';
 import { createTxValidator } from '@/shared/transactions';
 import { type AnyAccount, type BalancePreservation, balanceService } from '@/domains/network';
 import { accountService } from '@/domains/network';
@@ -57,7 +57,7 @@ export const TransferRules = {
   destination: {
     required: {
       name: 'required',
-      errorText: t('transfer.requiredRecipientError'),
+      errorText: t('transfer.requiredDestinationError'),
       validator: Boolean,
     },
     incorrectRecipient: (source: Store<Chain | null>) => ({
@@ -204,7 +204,7 @@ export const TransferRules = {
 };
 
 export const transferValidator = createTxValidator<{
-  amount: string;
+  amount: BN;
   sourceChain: Chain;
   sourceAsset: Asset;
   destinationChain: Chain;
@@ -240,8 +240,7 @@ export const transferValidator = createTxValidator<{
       const initiator = accountService.findInitiator(route);
       assert(initiator, 'Initiator not found');
 
-      const desiredAmount = toPrecision(amount, sourceAsset.precision);
-      if (desiredAmount.isZero()) return;
+      if (amount.isZero()) return;
 
       const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
       assert(balance, `Balance for account ${initiator.accountId} not found`);
@@ -250,7 +249,7 @@ export const transferValidator = createTxValidator<{
 
       return {
         account: initiator,
-        balance: balanceService.tryWithdraw(balance, desiredAmount, balancePreservation),
+        balance: balanceService.tryWithdraw(balance, amount, balancePreservation),
         asset: sourceAsset,
         action: 'sending amount',
       };

@@ -9,7 +9,7 @@ type CallbackFn<V> = (value: IteratorResult<V, V | void>) => unknown;
 type UnsubscribeFn = (() => void) | Promise<() => void>;
 type SubscribeFn<P, V> = (params: P, callback: CallbackFn<V>) => UnsubscribeFn;
 
-interface SubscriptionResource<Params, Data> extends Resource<Data, Data, Params> {
+export interface SubscriptionResource<Params, Data> extends Resource<Data, Data, Params> {
   subscribed: Store<boolean>;
   subscribe: EventCallable<Params>;
   unsubscribe: EventCallable<void>;

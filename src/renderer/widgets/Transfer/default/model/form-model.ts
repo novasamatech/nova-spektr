@@ -1,9 +1,10 @@
 /* eslint-disable import-x/max-dependencies */
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { debounce, spread } from 'patronum';
+import { and, debounce, not, or, spread } from 'patronum';
 
 import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
+import { createSubscription } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
   TEST_ADDRESS,
@@ -18,6 +19,7 @@ import {
   toAddress,
   toAssetPrecision,
   toPrecision,
+  totalAmountBN,
   validateAddress,
   withdrawableAmountBN,
 } from '@/shared/lib/utils';
@@ -35,6 +37,7 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { balanceSubModel } from '@/features/assets-balances';
 import { transferValidator } from '@/features/operations/OperationsValidation';
 import { getAvailableAmount } from '../../shared/services/getAvailableAmount';
 import { type NetworkStore } from '../lib/types';
@@ -129,6 +132,18 @@ const form: Form<FormParams> = createForm<FormParams>({
     },
     destination: {
       defaultValue: '',
+      validator() {
+        return (destination, { destinationChain }) => {
+          if (!validateAddress(destination)) {
+            return { message: 'transfer.destinationFormatError' };
+          }
+
+          if (nullable(destinationChain)) return;
+          if (!validateAddress(destination, destinationChain)) {
+            return { message: 'transfer.destinationCryptoError', values: { network: destinationChain.name } };
+          }
+        };
+      },
     },
     amount: {
       defaultValue: '',
@@ -148,12 +163,19 @@ const form: Form<FormParams> = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
+const $destinationChain = form.fields.destinationChain.$value;
+
+const $amount = combine($asset, form.fields.amount.$value, (asset, amount) => {
+  if (nullable(asset)) return BN_ZERO;
+  return toPrecision(amount, asset.precision);
+});
+
 // Computed
 
 const $isXcm = combine(
   {
     source: $chain,
-    destination: form.fields.destinationChain.$value,
+    destination: $destinationChain,
   },
   ({ source, destination }) => {
     return nonNullable(source) && nonNullable(destination) && source.chainId !== destination.chainId;
@@ -231,6 +253,49 @@ const $initiatorAccountBalance = combine(
     return balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
   },
 );
+
+// destination account
+
+const $destinationAccountId = form.fields.destination.$value.map((destination) =>
+  validateAddress(destination) ? toAccountId(destination) : null,
+);
+
+const $destinationBalance = combine(
+  {
+    balances: balanceModel.$balanceMap,
+    accountId: $destinationAccountId,
+    chain: $destinationChain,
+    asset: $asset,
+  },
+  ({ balances, accountId, chain, asset }) => {
+    if (nullable(accountId) || nullable(chain) || nullable(asset)) {
+      return null;
+    }
+
+    return balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
+  },
+);
+
+const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed ?? BN_ZERO);
+
+const $hasDestinationBalanceError = combine($amount, $destinationBalance, (amount, balance) => {
+  if (nullable(balance)) return false;
+  if (amount.isZero()) return false;
+
+  const total = totalAmountBN(balance);
+  return total.lt(balance.ed) && amount.lt(balance.ed);
+});
+
+const $destinationBalanceSubscriptionSource = combine({
+  chain: $destinationChain,
+  accountId: $destinationAccountId,
+});
+
+createSubscription({
+  params: $destinationBalanceSubscriptionSource,
+  subscribe: balanceSubModel.subscribeAccounts.prepend((a: { accountId: AccountId; chain: Chain }) => [a]),
+  unsubscribe: balanceSubModel.unsubscribeAccounts.prepend((a: { accountId: AccountId; chain: Chain }) => [a]),
+});
 
 // transaction
 
@@ -326,9 +391,9 @@ const {
     api: $api,
     sourceChain: $chain,
     sourceAsset: $asset,
-    destinationChain: form.fields.destinationChain.$value,
+    destinationChain: $destinationChain,
     asset: $nativeAsset,
-    amount: form.fields.amount.$value,
+    amount: $amount,
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $calculationTx,
@@ -445,7 +510,7 @@ const $destinationAccounts = combine(
   {
     isXcm: $isXcm,
     accounts: walletSelect.$selectedAccounts,
-    chain: form.fields.destinationChain.$value,
+    chain: $destinationChain,
   },
   ({ isXcm, accounts, chain }) => {
     if (!isXcm || !chain) return [];
@@ -461,25 +526,12 @@ const $isMyselfXcmEnabled = combine(
   ({ isXcm, destinationAccounts }) => isXcm && destinationAccounts.length > 0,
 );
 
-const $canSubmit = combine(
-  {
-    errors: $errorsImmediate,
-    isXcm: $isXcm,
-    isFormValid: form.$isValid,
-    valid: $valid,
-    isFeeLoading: $pendingFee,
-    isXcmFeeLoading: xcmTransferModel.$isXcmFeeLoading,
-    isDeliveryFeeLoading: xcmTransferModel.$isDeliveryFeeLoading,
-  },
-  ({ errors, isXcm, isFormValid, valid, isFeeLoading, isXcmFeeLoading, isDeliveryFeeLoading }) => {
-    return (
-      !accountService.hasTransactionValidationErrors(errors) &&
-      valid &&
-      isFormValid &&
-      !isFeeLoading &&
-      (!isXcm || !isXcmFeeLoading || !isDeliveryFeeLoading)
-    );
-  },
+const $canSubmit = and(
+  form.$isValid,
+  $valid,
+  $destinationBalance.map(nonNullable),
+  not($hasDestinationBalanceError),
+  or(not($isXcm), not(xcmTransferModel.$isXcmFeeLoading), not(xcmTransferModel.$isDeliveryFeeLoading)),
 );
 
 // Fields connections
@@ -524,7 +576,7 @@ sample({
 sample({
   clock: myselfClicked,
   source: {
-    xcmChain: form.fields.destinationChain.$value,
+    xcmChain: $destinationChain,
     destinationAccounts: $destinationAccounts,
   },
   filter: ({ xcmChain, destinationAccounts }) => {
@@ -549,7 +601,7 @@ sample({
 
 sample({
   clock: xcmDestinationSelected,
-  source: form.fields.destinationChain.$value,
+  source: $destinationChain,
   filter: nonNullable,
   fn: (xcmChain, accountId) => ({
     canSelect: false,
@@ -688,6 +740,8 @@ export const formModel = {
 
   $destinationAccounts,
   $destinationChains,
+  $destinationBalanceEd,
+  $hasDestinationBalanceError,
 
   $fee,
   $pendingFee,

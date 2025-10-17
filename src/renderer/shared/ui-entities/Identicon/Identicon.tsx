@@ -15,6 +15,10 @@ type Props = {
   size?: number;
   background?: boolean;
   canCopy?: boolean;
+  /**
+   * Force default indentity icon placeholder
+   */
+  invalid?: boolean;
   testId?: string;
 };
 
@@ -23,7 +27,7 @@ const PolkadotIdenticon = lazy(() =>
 );
 
 export const Identicon = memo(
-  ({ theme, address, size = 24, background = true, canCopy: canCopyProp, testId = 'Identicon' }: Props) => {
+  ({ theme, address, size = 24, background = true, canCopy: canCopyProp, invalid, testId = 'Identicon' }: Props) => {
     const { t } = useI18n();
     const { preferStaticContent } = useTheme();
     const valid = address && validateAddress(address);
@@ -33,19 +37,20 @@ export const Identicon = memo(
 
     const emptyIcon = <Icon name="emptyIdenticon" size={background ? size * 0.75 : size} />;
 
-    const icon = valid ? (
-      <Suspense fallback={emptyIcon}>
-        <PolkadotIdenticon
-          theme={theme || defaultTheme}
-          value={address}
-          size={background ? size * 0.75 : size}
-          // &>svg>circle:first-of-type - background selector
-          className="pointer-events-none overflow-hidden rounded-full [&>svg>circle:first-of-type]:fill-none"
-        />
-      </Suspense>
-    ) : (
-      emptyIcon
-    );
+    const icon =
+      valid && !invalid ? (
+        <Suspense fallback={emptyIcon}>
+          <PolkadotIdenticon
+            theme={theme || defaultTheme}
+            value={address}
+            size={background ? size * 0.75 : size}
+            // &>svg>circle:first-of-type - background selector
+            className="pointer-events-none overflow-hidden rounded-full [&>svg>circle:first-of-type]:fill-none"
+          />
+        </Suspense>
+      ) : (
+        emptyIcon
+      );
 
     const shouldCopy = canCopy && valid;
 

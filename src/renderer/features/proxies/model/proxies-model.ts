@@ -16,7 +16,6 @@ import {
 } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { type IdentityMap, accounts, identity, identityService } from '@/domains/network';
-import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { proxyUtils } from '@/entities/proxy';
@@ -94,12 +93,6 @@ sample({
     return proxiedAccounts.map((p) => p.walletId);
   },
   target: walletModel.walletsRemoved,
-});
-
-sample({
-  clock: proxiedAccountsRemoved,
-  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.accountId),
-  target: balanceModel.events.balancesRemoved,
 });
 
 sample({

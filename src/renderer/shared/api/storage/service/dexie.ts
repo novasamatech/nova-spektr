@@ -30,7 +30,7 @@ import { migrateBasketTransactionAfterAddressRemoval } from '../migration/migrat
 
 class DexieStorage extends Dexie {
   connections: TConnection;
-  balances: TBalance;
+  balances2: TBalance;
   wallets: TWallet;
   /**
    * @deprecated For now it's replaced by accounts2 table, but not wiped for
@@ -134,8 +134,14 @@ class DexieStorage extends Dexie {
       .upgrade(migrateBasketTransactionAfterAddressRemoval)
       .upgrade((t) => t.table('multisigOperations').clear());
 
+    this.version(38)
+      .stores({
+        balances2: 'id',
+      })
+      .upgrade((t) => t.table('balances').clear());
+
     this.connections = this.table('connections');
-    this.balances = this.table('balances');
+    this.balances2 = this.table('balances2');
     this.wallets = this.table('wallets');
     this.accounts = this.table('accounts');
     this.accounts2 = this.table('accounts2');
@@ -169,14 +175,13 @@ export const deleteDb = async () => {
 
 export const dexieStorage = {
   wallets: dexie.wallets,
-  accounts: dexie.accounts,
   accounts2: dexie.accounts2,
   contacts: dexie.contacts,
   connections: dexie.connections,
   proxies: dexie.proxies,
   notifications: dexie.notifications,
   metadata: dexie.metadata,
-  balances: dexie.balances,
+  balances2: dexie.balances2,
   basketTransactions: dexie.basketTransactions,
   multisigOperations: dexie.multisigOperations,
 };
