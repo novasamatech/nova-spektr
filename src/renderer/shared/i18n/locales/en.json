@@ -587,7 +587,7 @@
         "promotionPeriodTooltip": "Promotion period\n{from} - {to}",
         "submitAnytime": "Submit evidence anytime",
         "submitButton": "Submit evidence",
-        "submitEvidenceTooltip": "Submit promotion evidence\nfrom {to}",
+        "submitEvidenceTooltip": "Submit promotion evidence\nby {to}",
         "title": "You can submit promotion evidence"
       },
       "referendumCreated": {
