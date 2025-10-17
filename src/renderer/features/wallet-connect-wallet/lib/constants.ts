@@ -49,6 +49,7 @@ export const REGIONALIZED_RELAYER_ENDPOINTS: RelayerType[] = [
 ];
 
 export const EXTEND_PAIRING = 60 * 60 * 24 * 30; // 30 days
+export const SESSION_PING_INTERVAL = 30 * 1000; // 30 seconds
 
 export const FIRST_CHAIN_ID_SYMBOL = 2;
 export const LAST_CHAIN_ID_SYMBOL = 34;
