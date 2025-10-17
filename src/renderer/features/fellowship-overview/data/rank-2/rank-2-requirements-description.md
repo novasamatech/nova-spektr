@@ -1,0 +1,5 @@
+- Consistent participation in fellowship activities
+- Demonstrate growing technical knowledge
+- Contribute to at least one minor project or initiative
+- Show ability to work collaboratively
+- Demonstrate understanding of protocol fundamentals

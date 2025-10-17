@@ -528,6 +528,19 @@
     "n/a": "N/A",
     "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
+    "overview": {
+      "modalTitle": "Fellowship overview",
+      "readyForPromotion": "Ready for promotion",
+      "retentionProgress": "Retention progress: {progress}%",
+      "tabs": {
+        "codex": "Codex",
+        "members": "Members",
+        "ranks": "Ranks"
+      },
+      "title": "Fellowship overview",
+      "toNextRank": "to next rank",
+      "viewDetails": "View details"
+    },
     "profile": {
       "active": "Active",
       "activeSalary": "Active salary",
@@ -615,6 +628,21 @@
       "7": "Free master",
       "8": "Masters constant",
       "9": "Grand master"
+    },
+    "ranks": {
+      "activity": "Activity",
+      "activityDescription": "Activity shows how much you participate in referenda.",
+      "agreement": "Agreement",
+      "agreementDescription": "Agreement reflects how closely your votes align with other members.",
+      "approxAcademicAnalogue": "Approx. academic analogue:",
+      "codex": "Codex",
+      "currentProgressDescription": "From Humble to Master, each rank defines expectations, evaluation criteria, and growing influence on the protocol.",
+      "currentProgressTitle": "Current progress & rank specifications",
+      "detailsInCodexText": "Details can be found in the",
+      "fromIDan": "From I Dan",
+      "material": "Material:",
+      "requirements": "Requirements",
+      "youreHere": "You're here"
     },
     "referendums": {
       "completed": "Completed referendums",
@@ -780,7 +808,7 @@
       "active": "Active",
       "cardTitle": "Actions Required",
       "completed": "Completed",
-      "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
+      "emptyDescription": "Great job! You’ve finished all available tasks.",
       "emptyTitle": "All tasks completed",
       "general": "General",
       "labels": {
@@ -805,9 +833,10 @@
           "retentionTitle": "Review retention evidence"
         },
         "promotion": {
-          "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",
+          "description": "To be promoted to Rank {rank}, you must submit your work evidence for the past year.",
           "request": "Submit",
-          "title": "Feel ready for a promotion?"
+          "title": "Submit promotion evidence",
+          "until": "Submit until {date}"
         },
         "promotionVoting": {
           "mergedPullRequests": "Merged",
@@ -821,26 +850,27 @@
           "retentionTitle": "Retain at { rank }"
         },
         "requestPayout": {
-          "description": "Your current earnings are {salary}. Don’t forget to get your salary on time to receive your funds on time.",
+          "description": "Current earnings: {salary}. Withdraw your earnings on time to receive your funds as scheduled.",
           "request": "Withdraw",
           "title": "Withdraw your salary",
           "until": "Submit until {date}"
         },
         "requestSalary": {
-          "description": "Your current earnings are {salary}. Don’t forget to submit your request on time to receive your payout on time.",
+          "description": "Current earnings: {salary}. Submit your payout request on time to ensure timely payment.",
           "request": "Request",
           "title": "Request your salary",
           "until": "Submit until {date}"
         },
         "requestSalaryInduct": {
-          "description": "To start receiving regular payments, you need to request payment activation. Your current salary is {salary}.",
+          "description": "Activate your salary to start receiving regular payments. Current salary: {salary}.",
           "request": "Activate",
-          "title": "Activate your payments"
+          "title": "Activate your payments",
+          "until": "Activate until {date}"
         },
         "retention": {
-          "description": "To maintain your Rank {rank} position, you must submit evidence of your work from the past three months.",
+          "description": "To retain your Rank {rank}, you must submit your work report covering the past three months.",
           "request": "Submit",
-          "title": "Submit your retention evidence",
+          "title": "Submit retention evidence",
           "until": "Submit until {date}"
         },
         "retentionVoting": {
@@ -937,7 +967,7 @@
       "cancelButton": "Cancel",
       "closeButton": "Close",
       "continueButton": "Continue",
-      "networkSettingsLink": "Network settings",
+      "networkSettingsLink": "Open network settings",
       "pasteButton": "Paste",
       "refreshButton": "Refresh",
       "submitButton": "Submit",

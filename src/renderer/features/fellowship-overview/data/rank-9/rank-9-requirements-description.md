@@ -1,0 +1,6 @@
+- Nearly two decades or more of exceptional service
+- Recognized as one of the founding figures of the ecosystem
+- Profound and lasting impact on the protocol and community
+- Wisdom and guidance that shapes the fellowship itself
+- Serve as wise elder and mentor to all ranks
+- Demonstrate unparalleled dedication and contribution

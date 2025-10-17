@@ -1,0 +1,12 @@
+{
+  "id": "II",
+  "rank": 2,
+  "name": "Proficient",
+  "time": "~1 y",
+  "description": "Second rank in the Fellowship system",
+  "analogue": "Graduate Student",
+  "material": "Gypsum (2 Moh)",
+  "activity": "20%",
+  "agreement": "55%",
+  "timeRequired": "~1 year"
+}

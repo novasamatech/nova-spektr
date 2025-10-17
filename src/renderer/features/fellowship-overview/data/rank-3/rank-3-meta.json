@@ -1,0 +1,12 @@
+{
+  "id": "III",
+  "rank": 3,
+  "name": "Fellow",
+  "time": "~2 y",
+  "description": "Third rank in the Fellowship system",
+  "analogue": "PhD Candidate",
+  "material": "Calcite (3 Moh)",
+  "activity": "25%",
+  "agreement": "60%",
+  "timeRequired": "~2 years"
+}
