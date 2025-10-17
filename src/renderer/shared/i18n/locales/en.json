@@ -679,7 +679,7 @@
         "view": "View"
       },
       "criticalExpired": {
-        "description": "You must to submit report",
+        "description": "You must submit report",
         "title": "Last call to submit retention report"
       },
       "criticalLastCall": {
@@ -692,17 +692,17 @@
       },
       "referendumCreated": {
         "description": "until the referendum ends",
-        "title": "Retention referendum created"
+        "title": "Retention referendum #{referendumId} created"
       },
       "submitted": {
-        "description": "Report is on review. It is editable until referendum is created.",
+        "description": "Report is under review. It is editable until referendum is created.",
         "title": "Retention report submitted"
       },
       "timeline": {
-        "dangerZone": "Deadline for evidence submission {from} – {to}.\nYou risk not start the referenda on time and fall out of the retention period.",
-        "safeZone": "Active working period.\nBe prepared to submit retention report\n{from} – {to}",
-        "submittedOn": "Retention report submitted\n{date}",
-        "warningZone": "Recommended period for submit retention report\n{from} – {to}"
+        "dangerZone": "Evidence submission deadline: {from} – {to}.\nYou risk not starting the referendum on time and falling out of the retention period.",
+        "safeZone": "Active work period.\nBe ready to submit retention report\n{from} – {to}",
+        "submittedOn": "Retention report submitted\n{submissionDate}",
+        "warningZone": "Recommended period to submit the retention report\n{from} – {to}"
       },
       "timer": {
         "ensureAwareness": "Ensure fellows are aware of the report",
@@ -943,6 +943,7 @@
       "spend": "Other members find the payment request to be",
       "subtitle": "Other members find it to be",
       "subtitlePromotionRetention": "Other members find the evidence to be",
+      "subtitleRetention": "Other members find the report to be",
       "voteEnded": "Opinion collection has concluded, the fellowship oracle identified it to be",
       "voteEndedPromotionRetention": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
       "votes_one": "{ count } vote",
