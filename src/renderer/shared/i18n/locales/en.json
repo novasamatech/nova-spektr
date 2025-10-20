@@ -521,7 +521,9 @@
     "members": {
       "active": "Active",
       "activity": "Activity",
+      "activityTooltip": "Minimum participation rate in eligible votes required to maintain rank. Lower ranks must vote more often; requirement decreases with higher ranks.",
       "agreement": "Agreement",
+      "agreementTooltip": "Minimum percentage of votes that should align with consensus of higher-ranked members, ensuring decisions follow established Fellowship norms.",
       "emptyList": "There is no members",
       "modalAccountTitle": "Account",
       "modalTitle": "Fellowship members",
@@ -569,18 +571,26 @@
       "active": "Active",
       "activeSalary": "Active salary",
       "activityFeed": {
-        "activeFalse": "Status passive",
-        "activeTrue": "Status active",
+        "clear": "Clear",
         "demoted": "Demoted to rank {rank}",
+        "filterAll": "All events",
+        "filterPromotion": "Promotion",
+        "filterRetention": "Retention",
+        "filterSalary": "Salary",
+        "filterStatus": "Status",
         "imported": "Imported to rank {rank}",
-        "paid": "Salary",
+        "paid": "Salary payout completed",
         "promoted": "Promoted to rank {rank}",
-        "proven": "Proven at rank {rank}",
+        "proven": "Retained at rank {rank}",
         "requestedPromotion": "Promotion requested",
-        "requestedRetention": "Retention requested"
+        "requestedRetention": "Retention requested",
+        "status": "Status switched to {status}",
+        "statusActive": "active",
+        "statusInactive": "passive"
       },
       "fellow": "Fellow",
       "history": "History",
+      "inactive": "Inactive",
       "modalTitle": "Profile",
       "passiveSalary": "Passive salary",
       "ready": "Ready",
@@ -594,7 +604,8 @@
           "title": "Review changes before switching status"
         },
         "title": "Switching status on"
-      }
+      },
+      "switchStatus": "Switch status"
     },
     "promotion": {
       "canSubmit": {
@@ -602,7 +613,7 @@
         "promotionPeriodTooltip": "Promotion period\n{from} - {to}",
         "submitAnytime": "Submit evidence anytime",
         "submitButton": "Submit evidence",
-        "submitEvidenceTooltip": "Submit promotion evidence\nfrom {to}",
+        "submitEvidenceTooltip": "Submit promotion evidence\nby {to}",
         "title": "You can submit promotion evidence"
       },
       "referendumCreated": {
@@ -694,7 +705,7 @@
         "view": "View"
       },
       "criticalExpired": {
-        "description": "You must to submit report",
+        "description": "You must submit report",
         "title": "Last call to submit retention report"
       },
       "criticalLastCall": {
@@ -707,17 +718,17 @@
       },
       "referendumCreated": {
         "description": "until the referendum ends",
-        "title": "Retention referendum created"
+        "title": "Retention referendum #{referendumId} created"
       },
       "submitted": {
-        "description": "Report is on review. It is editable until referendum is created.",
+        "description": "Report is under review. It is editable until referendum is created.",
         "title": "Retention report submitted"
       },
       "timeline": {
-        "dangerZone": "Deadline for evidence submission {from} – {to}.\nYou risk not start the referenda on time and fall out of the retention period.",
-        "safeZone": "Active working period.\nBe prepared to submit retention report\n{from} – {to}",
-        "submittedOn": "Retention report submitted\n{date}",
-        "warningZone": "Recommended period for submit retention report\n{from} – {to}"
+        "dangerZone": "Evidence submission deadline: {from} – {to}.\nYou risk not starting the referendum on time and falling out of the retention period.",
+        "safeZone": "Active work period.\nBe ready to submit retention report\n{from} – {to}",
+        "submittedOn": "Retention report submitted\n{submissionDate}",
+        "warningZone": "Recommended period to submit the retention report\n{from} – {to}"
       },
       "timer": {
         "ensureAwareness": "Ensure fellows are aware of the report",
@@ -733,6 +744,7 @@
     "salary": {
       "beneficiary": "Beneficiary",
       "cardTitle": "Evidence & Salary",
+      "editBeneficiary": "Edit beneficiary",
       "evidence": "Evidence",
       "evidenceForm": {
         "areas": {
@@ -784,15 +796,22 @@
       "salaryInduct": "Induct salary on",
       "salaryInfo": {
         "beneficiary": "Beneficiary",
-        "inductSalary": "Payments activation:",
+        "editBeneficiary": "Edit Beneficiary",
+        "inductSalary": "Activate to start receiving",
         "inductSalaryAction": "Activate",
         "inductSalaryCall": "Your salary: {salary}, activate it.",
+        "inductSalarySuccess": "Payments activated",
         "payoutSalary": "Withdraw",
-        "payoutSalaryCall": "Payout a {salary} salary within:",
-        "payoutSalarySuccess": "Salary payout was completed successfully.",
+        "payoutSalaryCall": "{salary} to the next payout",
+        "payoutSalarySuccess": "Withdrawal completed",
         "requestSalary": "Request",
         "requestSalaryCall": "Request a {salary} salary within:",
-        "requestSalarySuccess": "Salary request was completed successfully."
+        "requestSalarySuccess": "Salary requested",
+        "selectBeneficiary": "Select beneficiary",
+        "timeToNextCircle": "until next circle",
+        "timeToNextPayout": "to the next payout",
+        "timeToRequest": "to request",
+        "timeToWithdraw": "to withdraw"
       },
       "salaryPayout": "Request payout on",
       "salaryRequest": "Request salary on",
@@ -815,7 +834,7 @@
       "active": "Active",
       "cardTitle": "Actions Required",
       "completed": "Completed",
-      "emptyDescription": "Great job! You’ve finished all available tasks.\nCheck back later for new ones.",
+      "emptyDescription": "Great job! You’ve finished all available tasks.",
       "emptyTitle": "All tasks completed",
       "general": "General",
       "labels": {
@@ -840,9 +859,10 @@
           "retentionTitle": "Review retention evidence"
         },
         "promotion": {
-          "description": "From now you can submit an evidence that will demonstrate that you are qualified for a new Rank (Rank {rank}). Submit the promotion request form, and your submission will be reviewed by other fellows to determine if you meet the requirements for this Rank.",
+          "description": "To be promoted to Rank {rank}, you must submit your work evidence for the past year.",
           "request": "Submit",
-          "title": "Feel ready for a promotion?"
+          "title": "Submit promotion evidence",
+          "until": "Submit until {date}"
         },
         "promotionVoting": {
           "mergedPullRequests": "Merged",
@@ -856,26 +876,27 @@
           "retentionTitle": "Retain at { rank }"
         },
         "requestPayout": {
-          "description": "Your current earnings are {salary}. Don’t forget to get your salary on time to receive your funds on time.",
+          "description": "Current earnings: {salary}. Withdraw your earnings on time to receive your funds as scheduled.",
           "request": "Withdraw",
           "title": "Withdraw your salary",
           "until": "Submit until {date}"
         },
         "requestSalary": {
-          "description": "Your current earnings are {salary}. Don’t forget to submit your request on time to receive your payout on time.",
+          "description": "Current earnings: {salary}. Submit your payout request on time to ensure timely payment.",
           "request": "Request",
           "title": "Request your salary",
           "until": "Submit until {date}"
         },
         "requestSalaryInduct": {
-          "description": "To start receiving regular payments, you need to request payment activation. Your current salary is {salary}.",
+          "description": "Activate your salary to start receiving regular payments. Current salary: {salary}.",
           "request": "Activate",
-          "title": "Activate your payments"
+          "title": "Activate your payments",
+          "until": "Activate until {date}"
         },
         "retention": {
-          "description": "To maintain your Rank {rank} position, you must submit evidence of your work from the past three months.",
+          "description": "To retain your Rank {rank}, you must submit your work report covering the past three months.",
           "request": "Submit",
-          "title": "Submit your retention evidence",
+          "title": "Submit retention evidence",
           "until": "Submit until {date}"
         },
         "retentionVoting": {
@@ -948,6 +969,7 @@
       "spend": "Other members find the payment request to be",
       "subtitle": "Other members find it to be",
       "subtitlePromotionRetention": "Other members find the evidence to be",
+      "subtitleRetention": "Other members find the report to be",
       "voteEnded": "Opinion collection has concluded, the fellowship oracle identified it to be",
       "voteEndedPromotionRetention": "Opinion collection has concluded, the fellowship oracle identified the evidence to be",
       "votes_one": "{ count } vote",
@@ -971,7 +993,7 @@
       "cancelButton": "Cancel",
       "closeButton": "Close",
       "continueButton": "Continue",
-      "networkSettingsLink": "Network settings",
+      "networkSettingsLink": "Open network settings",
       "pasteButton": "Paste",
       "refreshButton": "Refresh",
       "submitButton": "Submit",

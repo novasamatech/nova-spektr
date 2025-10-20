@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { ButtonCard } from '@/shared/ui';
 import { PeriodEndTimer } from '@/shared/ui-entities/PeriodEndTimer/PeriodEndTimer';
 import { basketUtils } from '@/entities/basket';
-import { salarySlot } from '@/features/fellowship-evidence-salary';
+import { profileInfoSlot } from '@/features/fellowship-profile';
 import {
   payoutSalaryTaskActionSlot,
   requestSalaryInductTaskActionSlot,
@@ -26,7 +26,7 @@ import { salaryRequest } from './model/salaryRequest';
 
 export { fellowshipSalaryFeature, SalaryInfo, SalaryPayoutConfirmation, SalaryRegisterConfirmation };
 
-fellowshipSalaryFeature.inject(salarySlot, () => {
+fellowshipSalaryFeature.inject(profileInfoSlot, () => {
   return <SalaryInfo />;
 });
 

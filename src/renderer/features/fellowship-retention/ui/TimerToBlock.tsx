@@ -11,29 +11,35 @@ type Props = {
   shortDateFormat?: boolean;
   icon?: IconNames;
   variant?: 'urgent' | 'warning' | 'idle';
+  passedText?: string;
+  hideIconText?: boolean;
 };
 
-export const TimerToBlock = memo(({ endBlock, shortDateFormat, icon = 'clock', variant = 'idle' }: Props) => {
-  const input = useUnit(fellowshipRetentionFeature.input);
-  const [endTime, setEndTime] = useState<number>();
+export const TimerToBlock = memo(
+  ({ endBlock, shortDateFormat, icon = 'clock', variant = 'idle', passedText, hideIconText }: Props) => {
+    const input = useUnit(fellowshipRetentionFeature.input);
+    const [endTime, setEndTime] = useState<number>();
 
-  useEffect(() => {
-    if (endBlock && input) {
-      getTimeToBlock(endBlock, input.api).then(date => {
-        setEndTime(date / 1000);
-      });
-    }
-  }, [endBlock, input?.api]);
+    useEffect(() => {
+      if (endBlock && input) {
+        getTimeToBlock(endBlock, input.api).then(date => {
+          setEndTime(date / 1000);
+        });
+      }
+    }, [endBlock, input?.api]);
 
-  if (!endTime || !input) return null;
+    if (!endTime || !input) return null;
 
-  return (
-    <Timeout
-      secondsToEnd={endTime}
-      icon={icon}
-      variant={variant}
-      shortDateFormat={shortDateFormat}
-      textColor="text-text-primary"
-    />
-  );
-});
+    return (
+      <Timeout
+        secondsToEnd={endTime}
+        icon={icon}
+        variant={variant}
+        shortDateFormat={shortDateFormat}
+        textColor="text-text-primary"
+        text={passedText}
+        hideIconText={hideIconText}
+      />
+    );
+  },
+);

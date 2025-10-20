@@ -32,7 +32,7 @@ export const RequestSalary = () => {
   return (
     <Box direction="row" padding={4} gap={2} verticalAlign="flex-end">
       <Box alignSelf="flex-start" shrink={0}>
-        <BadgeIcon iconName="withdrawSalary" />
+        <BadgeIcon iconName="requestSalary" />
       </Box>
       <Box gap={3} grow={1} alignSelf="flex-start">
         <SmallTitleText>{t('fellowship.tasks.task.requestSalary.title')}</SmallTitleText>

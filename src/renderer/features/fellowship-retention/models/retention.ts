@@ -128,7 +128,7 @@ const $widgetState = combine(
       return RetentionWidgetState.REPORT_SUBMITTED;
     }
 
-    if (daysUntilEnd <= 0) {
+    if (daysUntilEnd < 0) {
       return RetentionWidgetState.CRITICAL_EXPIRED;
     }
 

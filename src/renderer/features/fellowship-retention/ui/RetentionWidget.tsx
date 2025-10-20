@@ -59,6 +59,9 @@ export const RetentionWidget = memo(({ member }: Props) => {
           <>
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
+            <Button size="sm" className="ml-auto" onClick={() => {}}>
+              {t('fellowship.retention.button.submitReport')}
+            </Button>
           </>
         }
       >
@@ -140,7 +143,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
         description={t('fellowship.retention.criticalExpired.description')}
         footer={
           <>
-            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat />
+            <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" hideIconText />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.riskBumped')}</FootnoteText>
             <Button size="sm" className="ml-auto" onClick={() => {}}>
               {t('fellowship.retention.button.submitReport')}
@@ -170,12 +173,17 @@ const ReportSubmitted = memo(() => {
   const { retentionPeriodDates, timelineValue } = useRetentionData();
   const retentionEvidenceSubmissionDate = useUnit(fellowshipRetention.$retentionEvidenceSubmissionDate);
 
+  const submissionDate = useMemo(
+    () => (retentionEvidenceSubmissionDate ? formatDate(retentionEvidenceSubmissionDate, 'dd.MM.yy') : '—'),
+    [retentionEvidenceSubmissionDate],
+  );
+
   const submittedTimelineSteps: TimelineStep[] = useMemo(
     () => [
       {
         baseColorClass: cnTw('bg-accent-background'),
         filledColorClass: cnTw('bg-icon-blue-line'),
-        onHoverTooltipText: t('fellowship.retention.timeline.safeZone'),
+        onHoverTooltipText: t('fellowship.retention.timeline.submittedOn', { submissionDate }),
         length: TOTAL_LENGTH,
       },
     ],
@@ -194,9 +202,8 @@ const ReportSubmitted = memo(() => {
   }, [retentionEvidenceSubmissionDate, retentionPeriodDates]);
 
   const submissionTooltip = useMemo(() => {
-    if (!retentionEvidenceSubmissionDate) return undefined;
-    const date = formatDate(new Date(retentionEvidenceSubmissionDate), 'dd.MM.yy');
-    return t('fellowship.retention.timeline.submittedOn', { date });
+    if (!submissionDate) return undefined;
+    return t('fellowship.retention.timeline.submittedOn', { submissionDate });
   }, [retentionEvidenceSubmissionDate, t]);
 
   return (
@@ -206,6 +213,7 @@ const ReportSubmitted = memo(() => {
       description={t('fellowship.retention.submitted.description')}
       footer={
         <>
+          <Icon name="clock" size={16} className="mr-1 text-chip-icon" />
           <FootnoteText>{t('fellowship.retention.timer.ensureAwareness')}</FootnoteText>
           <div className="ml-auto flex gap-2">
             <Button size="sm" onClick={() => {}}>
@@ -250,9 +258,7 @@ const ReferendumCreated = memo(() => {
     return { levelTextKey: 'fellowship.votingHistory.level.good', levelClassName: 'text-text-positive' };
   }, [votingRating]);
 
-  const title = nobodyVoted
-    ? t('fellowship.votingHistory.noVotes')
-    : t('fellowship.votingHistory.subtitlePromotionRetention');
+  const title = nobodyVoted ? t('fellowship.votingHistory.noVotes') : t('fellowship.votingHistory.subtitleRetention');
 
   const voteLevel =
     !nobodyVoted &&
@@ -260,9 +266,11 @@ const ReferendumCreated = memo(() => {
 
   if (!referendum) return null;
 
+  const referendumId = referendum?.id ?? '—';
+
   return (
     <WidgetContainer
-      title={t('fellowship.retention.referendumCreated.title')}
+      title={t('fellowship.retention.referendumCreated.title', { referendumId })}
       description={
         <FootnoteText>
           {title} {voteLevel}
