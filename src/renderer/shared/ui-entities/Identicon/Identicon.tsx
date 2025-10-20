@@ -30,15 +30,16 @@ export const Identicon = memo(
   ({ theme, address, size = 24, background = true, canCopy: canCopyProp, invalid, testId = 'Identicon' }: Props) => {
     const { t } = useI18n();
     const { preferStaticContent } = useTheme();
-    const valid = address && validateAddress(address);
+    const validAddress = address && validateAddress(address);
     const canCopy = typeof canCopyProp === 'undefined' ? !preferStaticContent : canCopyProp;
 
-    const defaultTheme: IdenticonIconTheme = address && valid && isEthereumAccountId(address) ? 'ethereum' : 'polkadot';
+    const defaultTheme: IdenticonIconTheme =
+      address && validAddress && isEthereumAccountId(address) ? 'ethereum' : 'polkadot';
 
     const emptyIcon = <Icon name="emptyIdenticon" size={background ? size * 0.75 : size} />;
 
     const icon =
-      valid && !invalid ? (
+      validAddress && !invalid ? (
         <Suspense fallback={emptyIcon}>
           <PolkadotIdenticon
             theme={theme || defaultTheme}
@@ -52,7 +53,7 @@ export const Identicon = memo(
         emptyIcon
       );
 
-    const shouldCopy = canCopy && valid;
+    const shouldCopy = canCopy && validAddress;
 
     const node = (
       <span
