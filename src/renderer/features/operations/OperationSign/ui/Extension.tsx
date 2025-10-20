@@ -1,4 +1,3 @@
-import { u8aToHex } from '@polkadot/util';
 import { useGate, useUnit } from 'effector-react';
 import { t } from 'i18next';
 import { useEffect, useState } from 'react';
@@ -51,8 +50,6 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
     let balanceValidationError;
 
     for (const { signature, txPayload } of response) {
-      console.log('txPayload.payload', u8aToHex(txPayload.payload));
-
       isVerified = transactionService.verifySignature(txPayload.payload, signature, payload.signatory.accountId);
       balanceValidationError = validateBalance && (await validateBalance());
     }

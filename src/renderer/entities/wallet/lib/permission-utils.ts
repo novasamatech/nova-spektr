@@ -1,5 +1,4 @@
 import { type Wallet } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
 
 import { accountUtils } from './account-utils';
 import { walletUtils } from './wallet-utils';
@@ -20,10 +19,7 @@ export const permissionUtils = {
 };
 
 function canTransfer(wallet: Wallet): boolean {
-  if (walletUtils.isWatchOnly(wallet)) return false;
-  if (walletUtils.isProxied(wallet)) return accountUtils.isAnyProxyType(wallet.accounts[0]);
-
-  return true;
+  return !walletUtils.isWatchOnly(wallet);
 }
 
 function canReceive(wallet: Wallet): boolean {
@@ -31,61 +27,18 @@ function canReceive(wallet: Wallet): boolean {
 }
 
 function canStake(wallet: Wallet): boolean {
-  if (walletUtils.isWatchOnly(wallet)) return false;
-  if (walletUtils.isProxied(wallet)) {
-    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
-    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
-    const isStaking = accountUtils.isStakingProxyType(wallet.accounts[0]);
-
-    return isAnyProxy || isNonTransfer || isStaking;
-  }
-
-  return true;
+  return !walletUtils.isWatchOnly(wallet);
 }
+
 function canCreateMultisigTx(wallet: Wallet): boolean {
-  if (walletUtils.isWatchOnly(wallet)) return false;
-  if (walletUtils.isMultisig(wallet)) return false;
-  if (!wallet.accounts?.at(0)) return false;
-
-  if (walletUtils.isProxied(wallet)) {
-    const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
-    const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
-
-    return isAnyProxy || isNonTransfer;
-  }
-
-  return true;
+  return !walletUtils.isWatchOnly(wallet);
 }
+
 function canApproveMultisigTx(wallet: Wallet): boolean {
-  if (walletUtils.isWatchOnly(wallet)) return false;
-  if (walletUtils.isMultisig(wallet)) return false;
-
-  if (walletUtils.isProxied(wallet)) {
-    return false;
-
-    // TODO: Uncomment when we support proxied wallets for approve mst
-    // const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
-    // const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
-
-    // return isAnyProxy || isNonTransfer;
-  }
-
-  return true;
+  return !walletUtils.isWatchOnly(wallet);
 }
 function canRejectMultisigTx(wallet: Wallet): boolean {
-  if (walletUtils.isWatchOnly(wallet)) return false;
-  if (walletUtils.isMultisig(wallet)) return false;
-  if (walletUtils.isProxied(wallet)) {
-    return false;
-
-    // TODO: Uncomment when we support proxied wallets for reject mst
-    // const isAnyProxy = accountUtils.isAnyProxyType(wallet.accounts[0]);
-    // const isNonTransfer = accountUtils.isNonTransferProxyType(wallet.accounts[0]);
-
-    // return isAnyProxy || isNonTransfer;
-  }
-
-  return true;
+  return !walletUtils.isWatchOnly(wallet);
 }
 
 function canCreateAnyProxy(wallet: Wallet): boolean {
@@ -128,18 +81,7 @@ function canRemoveProxy(wallet: Wallet): boolean {
 }
 
 function canUseGovernance(wallet: Wallet): boolean {
-  if (walletUtils.isWatchOnly(wallet) || nullable(wallet.accounts.at(0))) return false;
-  if (walletUtils.isProxied(wallet)) {
-    const firstAccount = wallet.accounts[0];
-    if (!firstAccount) return false;
-    const isAnyProxy = accountUtils.isAnyProxyType(firstAccount);
-    const isGovernanceProxy = accountUtils.isGovernanceProxyType(firstAccount);
-    const isNonTransferProxy = accountUtils.isNonTransferProxyType(firstAccount);
-
-    return isAnyProxy || isGovernanceProxy || isNonTransferProxy;
-  }
-
-  return true;
+  return !walletUtils.isWatchOnly(wallet);
 }
 
 function canUnlock(wallet: Wallet): boolean {

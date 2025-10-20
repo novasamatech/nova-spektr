@@ -40,6 +40,7 @@ const config: UserConfigFnPromise = async (options) => {
       environmentMatchGlobs: [
         // This list should dissapear over time, simple logic tests shouldn't depend on environment.
         ['src/renderer/shared/lib/hooks/**/*.ts', 'happy-dom'],
+        ['src/renderer/shared/lib/utils/**/*.ts', 'happy-dom'],
         ['src/renderer/shared/i18n/**/*.ts', 'happy-dom'],
         ['src/renderer/shared/api/**/*.ts', 'happy-dom'],
         ['src/renderer/domains/**/*.ts', 'happy-dom'],
