@@ -2365,6 +2365,7 @@
     },
     "vault": {
       "editKeys": "Edit keys",
+      "evmGroup": "EVM Compatible",
       "export": "Export keyset",
       "import": "Import keyset",
       "networksTab": "Networks",
