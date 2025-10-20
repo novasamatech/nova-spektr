@@ -1,15 +1,17 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
+import { produce } from 'immer';
 import { readonly, spread } from 'patronum';
 
 import { balanceMapper, storageService } from '@/shared/api/storage';
 import { type Balance, type BalanceDraft, type BalanceMap } from '@/shared/core';
-import { createBuffer } from '@/shared/effector';
+import { createBuffer, createQueuedEffect } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { balanceUtils } from '../lib/balance-utils';
 
 const balancesSet = createEvent<Balance[]>();
 const balancesUpdated = createEvent<(Balance | BalanceDraft)[]>();
 const balancesRemoved = createEvent<AccountId[]>();
+const clearUnwantedBalances = createEvent<{ existingAccounts: AccountId[] }>();
 
 const $balanceMap = createStore<BalanceMap>({});
 const $balances = $balanceMap.map((m) => Object.values(m));
@@ -23,16 +25,16 @@ const logErrorFx = createEffect(async (error: Error) => {
   console.error('Error while working with balances', error);
 });
 
-const insertBalancesFx = createEffect(async (balances: Balance[]) => {
+const insertBalancesFx = createQueuedEffect(async (balances: Balance[]) => {
   await storageService.balances.insertAll(balances.map(balanceMapper.toDB));
   return balances;
 });
 
-const removeBalancesFx = createEffect(async (balances: Balance[]) => {
-  await storageService.balances.deleteAll(balances.map((b) => b.id));
+const removeBalancesFx = createQueuedEffect(async (balances: Balance[]) => {
+  return storageService.balances.deleteAll(balances.map((b) => b.id)).then((ids) => ids ?? []);
 });
 
-const populateFx = createEffect(async (): Promise<Balance[]> => {
+const populateFx = createQueuedEffect(async (): Promise<Balance[]> => {
   return storageService.balances.readAll().then((balances) => balances.map(balanceMapper.fromDB));
 });
 
@@ -61,6 +63,30 @@ sample({
 });
 
 sample({
+  clock: clearUnwantedBalances,
+  source: $balances,
+  fn: (balances, { existingAccounts }) => {
+    if (existingAccounts.length === 0) return balances;
+    return balances.filter((b) => !existingAccounts.includes(b.accountId));
+  },
+  target: removeBalancesFx,
+});
+
+sample({
+  clock: removeBalancesFx.doneData,
+  source: $balanceMap,
+  filter: (_, removed) => removed.length > 0,
+  fn(map, removed) {
+    return produce(map, (draft) => {
+      for (const id of removed) {
+        delete draft[id];
+      }
+    });
+  },
+  target: $balanceMap,
+});
+
+sample({
   clock: populateFx.doneData,
   fn: (balances) => {
     return balances.reduce<BalanceMap>((acc, balance) => {
@@ -82,11 +108,10 @@ export const balanceModel = {
 
   populate: populateFx,
 
-  events: {
-    balancesSet,
-    balancesUpdated,
-    balancesRemoved,
-  },
+  balancesUpdated,
+  balancesRemoved,
+  clearUnwantedBalances,
+
   __test: {
     $balanceMap,
     removeBalancesFx,

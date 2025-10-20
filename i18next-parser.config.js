@@ -35,7 +35,7 @@ export default {
   sort: false,
   verbose: true,
   failOnWarnings: false,
-  failOnUpdate: true,
+  failOnUpdate: false,
   skipDefaultValues: true,
   customValueTemplate: null,
   resetDefaultValueLocale: null,
