@@ -5,3 +5,4 @@ export { ShardsList } from './ShardsList';
 export { WalletConnectAccounts } from './WalletConnectAccounts';
 export { WalletDetails } from './WalletDetails';
 export { WalletFiatBalance } from './WalletFiatBalance';
+export { ConsensusAccountsList } from './ConsensusAccountsList';
