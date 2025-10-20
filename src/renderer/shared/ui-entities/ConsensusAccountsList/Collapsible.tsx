@@ -36,17 +36,17 @@ const Root = ({ initialOpen = false, children }: RootProps) => {
 
 type TriggerProps = PropsWithChildren<{
   sticky?: boolean;
+  bgColor?: string;
 }>;
 
-const Trigger = ({ sticky, children }: TriggerProps) => {
+const Trigger = ({ sticky, bgColor, children }: TriggerProps) => {
   return (
     <RadixAccordion.Header asChild>
-      <div className={cnTw('block w-full', sticky && 'sticky top-0 z-10')}>
+      <div className={cnTw('block w-full', sticky && 'sticky top-0 z-10', bgColor ?? 'bg-block-background-default')}>
         <RadixAccordion.Trigger
           className={cnTw(
             'group flex w-full cursor-pointer items-center gap-2 rounded-md text-caption text-text-secondary',
-            'transition-colors duration-100 hover:bg-block-background-hover',
-            sticky && 'bg-block-background-default',
+            'transition-colors duration-100',
           )}
         >
           <Icon

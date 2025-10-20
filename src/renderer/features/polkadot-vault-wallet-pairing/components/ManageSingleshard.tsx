@@ -16,7 +16,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Button, FootnoteText, IconButton, InputHint, Loader, SmallTitleText } from '@/shared/ui';
-import { ChainAccountsList } from '@/shared/ui-entities';
+import { ConsensusAccountsList } from '@/shared/ui-entities';
 import { Box, Field, Input, Modal } from '@/shared/ui-kit';
 import { identity as identityModel, identityService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -193,7 +193,7 @@ export const ManageSingleshard = ({ seedInfo, onBack, onClose, onComplete }: Pro
         <IconButton name="close" size={20} className="absolute top-3 right-3 m-1" onClick={onClose} />
 
         <SmallTitleText className="mt-15 px-5">{t('onboarding.vault.accountsTitle')}</SmallTitleText>
-        <ChainAccountsList accounts={accounts} />
+        <ConsensusAccountsList accounts={accounts} bgColor="bg-background-default" />
       </div>
     </div>
   );
