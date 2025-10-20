@@ -65,12 +65,13 @@ type GroupItemProps = {
   groupChain: Chain;
   groupAccountId: AccountId;
   parachains: ChainAccountPair[];
+  bgColor?: string;
 };
-const GroupItem = memo<GroupItemProps>(({ groupChain, groupAccountId, parachains }) => {
+const GroupItem = memo<GroupItemProps>(({ groupChain, groupAccountId, parachains, bgColor }) => {
   if (parachains.length > 0) {
     return (
       <Collapsible>
-        <Collapsible.Trigger sticky>
+        <Collapsible.Trigger sticky bgColor={bgColor}>
           <ListItem chain={groupChain} accountId={groupAccountId} />
         </Collapsible.Trigger>
         <Collapsible.Content>
@@ -99,7 +100,7 @@ const SectionHeader = memo<{ label: string }>(({ label }) => (
 ));
 SectionHeader.displayName = 'SectionHeader';
 
-const ConsensusSection = memo<{ groups: ConsensusGroup[] }>(({ groups }) => (
+const ConsensusSection = memo<{ groups: ConsensusGroup[]; bgColor?: string }>(({ groups, bgColor }) => (
   <>
     <SectionHeader label={t('walletDetails.common.consensusColumn')} />
     <section className="flex flex-col divide-y divide-divider px-5 pb-3">
@@ -109,6 +110,7 @@ const ConsensusSection = memo<{ groups: ConsensusGroup[] }>(({ groups }) => (
           groupChain={consensusChain}
           groupAccountId={consensusAccountId}
           parachains={parachains}
+          bgColor={bgColor}
         />
       ))}
     </section>
@@ -119,7 +121,8 @@ ConsensusSection.displayName = 'ConsensusSection';
 const OtherNetworksSection = memo<{
   evmAccounts: ChainAccountPair[];
   otherAccounts: ChainAccountPair[];
-}>(({ evmAccounts, otherAccounts }) => (
+  bgColor?: string;
+}>(({ evmAccounts, otherAccounts, bgColor }) => (
   <>
     <SectionHeader label={t('walletDetails.common.otherNetworkColumn')} />
     <section className="flex flex-col divide-y divide-divider px-5 pb-3">
@@ -129,6 +132,7 @@ const OtherNetworksSection = memo<{
           groupChain={EVM_CHAIN_CONFIG as unknown as Chain}
           groupAccountId={evmAccounts[0]![1]}
           parachains={evmAccounts}
+          bgColor={bgColor}
         />
       )}
       {otherAccounts.map(([chain, accountId]) => (
@@ -143,8 +147,9 @@ OtherNetworksSection.displayName = 'OtherNetworksSection';
 
 type Props = {
   accounts: ChainAccountPair[];
+  bgColor?: string;
 };
-export const ConsensusAccountsList = memo(({ accounts }: Props) => {
+export const ConsensusAccountsList = memo(({ accounts, bgColor }: Props) => {
   const { list } = useDeferredList({ list: accounts, forceFirstRender: true });
 
   const [evmAccounts, restAccounts] = partition(list, ([chain]) => networkUtils.isEthereumBased(chain.options));
@@ -157,8 +162,10 @@ export const ConsensusAccountsList = memo(({ accounts }: Props) => {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <ScrollArea>
-        {shouldShowConsensusChains && <ConsensusSection groups={consensusGroups} />}
-        {shouldShowOtherChains && <OtherNetworksSection evmAccounts={evmAccounts} otherAccounts={otherAccounts} />}
+        {shouldShowConsensusChains && <ConsensusSection groups={consensusGroups} bgColor={bgColor} />}
+        {shouldShowOtherChains && (
+          <OtherNetworksSection evmAccounts={evmAccounts} otherAccounts={otherAccounts} bgColor={bgColor} />
+        )}
       </ScrollArea>
     </div>
   );
