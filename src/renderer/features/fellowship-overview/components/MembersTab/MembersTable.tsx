@@ -52,7 +52,9 @@ export const MembersTable = ({ data }: MembersTableProps) => {
           const isCurrentUser = currentMember?.accountId === member.accountId;
           return (
             <div className="flex items-center gap-[8px]">
-              <Account accountId={member.accountId} title={member.name} chain={chain!} iconSize={20} hideAddress />
+              {chain && (
+                <Account accountId={member.accountId} title={member.name} chain={chain} iconSize={20} hideAddress />
+              )}
               {isCurrentUser && (
                 <BodyText className="font-medium tracking-[-0.12px] text-text-positive">
                   {t('fellowship.overview.members.you')}

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Surface } from '@/shared/ui-kit';
@@ -14,11 +16,8 @@ export const MembersEmptyState = ({ searchQuery, onClearSearch, hasActiveFilters
   const isSearchOnly = searchQuery && !hasActiveFilters;
   const isFilterOnly = hasActiveFilters && !searchQuery;
 
-  const getTitle = () => {
-    return t('fellowship.activityFeed.activityModal.no-results.title');
-  };
-
-  const getDescription = () => {
+  const title = t('fellowship.activityFeed.activityModal.no-results.title');
+  const description = useMemo(() => {
     if (isSearchOnly) {
       return t('fellowship.activityFeed.activityModal.no-results.search', {
         query: searchQuery,
@@ -28,7 +27,7 @@ export const MembersEmptyState = ({ searchQuery, onClearSearch, hasActiveFilters
       return t('fellowship.activityFeed.activityModal.no-results.filters');
     }
     return t('fellowship.activityFeed.activityModal.no-results.general');
-  };
+  }, [isSearchOnly, isFilterOnly, searchQuery, t]);
 
   return (
     <Surface className="mx-5 flex h-[430px] flex-col items-center justify-center py-10">
@@ -37,10 +36,8 @@ export const MembersEmptyState = ({ searchQuery, onClearSearch, hasActiveFilters
 
         <div className="flex flex-col items-center gap-4">
           <div className="flex flex-col items-center gap-2">
-            <SmallTitleText className="text-center text-text-primary">{getTitle()}</SmallTitleText>
-            <FootnoteText className="text-center whitespace-pre-line text-text-tertiary">
-              {getDescription()}
-            </FootnoteText>
+            <SmallTitleText className="text-center text-text-primary">{title}</SmallTitleText>
+            <FootnoteText className="text-center whitespace-pre-line text-text-tertiary">{description}</FootnoteText>
           </div>
 
           <Button size="sm" variant="fill" pallet="primary" onClick={onClearSearch}>

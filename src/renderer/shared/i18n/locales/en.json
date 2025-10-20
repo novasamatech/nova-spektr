@@ -537,7 +537,8 @@
         "clearAll": "Clear all",
         "filters": {
           "allRanks": "All ranks",
-          "allStatuses": "All Statuses"
+          "allStatuses": "All Statuses",
+          "selectRank": "Select rank"
         },
         "status": {
           "active": "Active",

@@ -34,7 +34,7 @@ export const MembersFilters = ({
         if (rank === 0) {
           return {
             value: '0',
-            label: '0 - Candidate',
+            label: `0 - ${t('fellowship.rank.0')}`,
           };
         }
         const rankData = getRankDataByRank(rank);
@@ -52,7 +52,11 @@ export const MembersFilters = ({
     <div className="flex shrink-0 items-center justify-between px-5 pt-3 pb-5">
       <div className="flex items-center gap-4">
         <div className="w-[180px]">
-          <Select value={rankFilter} placeholder="Select rank" onChange={onRankFilterChange}>
+          <Select
+            value={rankFilter}
+            placeholder={t('fellowship.overview.members.filters.selectRank')}
+            onChange={onRankFilterChange}
+          >
             {rankOptions.map(option => (
               <Select.Item key={option.value} value={option.value}>
                 {option.label}
