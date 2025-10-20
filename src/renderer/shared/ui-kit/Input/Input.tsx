@@ -9,8 +9,6 @@ import {
 
 import { cnTw } from '@/shared/lib/utils';
 
-type HTMLInputProps = 'value' | 'disabled' | 'placeholder' | 'name' | 'autoFocus' | 'type' | 'spellCheck';
-
 type ComponentProps = {
   invalid?: boolean;
   height?: 'sm' | 'md';
@@ -24,8 +22,7 @@ type ComponentProps = {
   onPaste?: (event: ClipboardEvent) => void;
 };
 
-export type InputProps = Pick<ComponentPropsWithoutRef<'input'>, HTMLInputProps> & ComponentProps;
-
+export type InputProps = Omit<ComponentPropsWithoutRef<'input'>, 'onChange' | 'onPaste'> & ComponentProps;
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {

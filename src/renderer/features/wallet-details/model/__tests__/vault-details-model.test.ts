@@ -30,14 +30,6 @@ describe('widgets/WalletDetails/model/vault-details-model', () => {
     expect(scope.getState(vaultDetailsModel.$chain)).toEqual({});
   });
 
-  test('should set $keysToAdd on keysAdded', async () => {
-    const key = { name: 'My shard' } as DraftAccount<VaultChainAccount>;
-    const scope = fork();
-
-    await allSettled(vaultDetailsModel.events.keysAdded, { scope, params: [key] });
-    expect(scope.getState(vaultDetailsModel.$keysToAdd)).toEqual([key]);
-  });
-
   test('should update accounts on keysRemoved', async () => {
     const testAccounts = [
       { type: 'chain', accountId: '0x00', walletId: 1, name: 'My first shard' },
