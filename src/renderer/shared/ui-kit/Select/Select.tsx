@@ -237,7 +237,7 @@ const Root = <T extends string>({
           portal
           className={cnTw(
             'pointer-events-auto relative z-[9999]', // necessary for proper render in portal
-            'flex max-h-[300px] flex-col overflow-auto overscroll-contain rounded-md border p-1 shadow-lg',
+            'flex max-h-[300px] min-w-max flex-col overflow-auto overscroll-contain rounded-md border p-1 shadow-lg',
             {
               'border-filter-border bg-input-background': theme === 'light',
               'border-border-dark bg-background-dark': theme === 'dark',

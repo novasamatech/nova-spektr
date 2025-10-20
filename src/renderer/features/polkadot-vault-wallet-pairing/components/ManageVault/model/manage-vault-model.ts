@@ -13,10 +13,12 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import { AccountType, CryptoType, KeyType } from '@/shared/core';
-import { dictionary, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { KEY_NAMES, accountUtils, walletModel } from '@/entities/wallet';
+import { polkadotVaultService } from '@/features/polkadot-vault-wallet';
+import { type DerivationKeyDraft } from '@/features/wallets';
 
 const WALLET_NAME_MAX_LENGTH = 256;
 
@@ -34,8 +36,7 @@ type VaultCreateParams = {
 };
 
 const formInitiated = createEvent<SeedInfo>();
-const keysRemoved = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
-const keysAdded = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
+const derivationsConstructed = createEvent<DerivationKeyDraft[]>();
 const derivationsImported = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const vaultCreated = createEvent<VaultCreateParams>();
 
@@ -131,22 +132,10 @@ sample({
 });
 
 sample({
-  clock: keysRemoved,
-  source: $keys,
-  filter: (_, keysToAdd) => keysToAdd.length > 0,
-  fn: (existingKeys, keysToRemove) => {
-    const derivationsMap = dictionary(keysToRemove, 'derivationPath', () => true);
-
-    return existingKeys.filter(key => !derivationsMap[key.derivationPath]);
-  },
-  target: $keys,
-});
-
-sample({
-  clock: keysAdded,
-  source: $keys,
-  filter: (_, keysToAdd) => keysToAdd.length > 0,
-  fn: (existingKeys, keysToAdd) => existingKeys.concat(keysToAdd),
+  clock: derivationsConstructed,
+  source: networkModel.$chains,
+  filter: (_, draftKeys) => draftKeys.length > 0,
+  fn: (chains, draftKeys) => polkadotVaultService.populateDraftAccounts(draftKeys, chains),
   target: $keys,
 });
 
@@ -173,8 +162,7 @@ export const manageVaultModel = {
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,
-    keysRemoved,
-    keysAdded,
+    derivationsConstructed,
     derivationsImported,
     vaultCreated,
   },

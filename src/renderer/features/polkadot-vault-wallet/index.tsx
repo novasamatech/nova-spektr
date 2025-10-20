@@ -15,6 +15,7 @@ import { WalletGroup, walletActionsSlot } from './components/WalletGroup';
 import { walletsModel } from './model/wallets';
 
 export { walletActionsSlot };
+export { polkadotVaultService } from './service';
 
 export const polkadotVaultWalletFeature = createFeature({
   name: 'wallet/polkadot vault',
