@@ -4,9 +4,10 @@ import { attachToFeatureInput } from '@/shared/feature';
 import { identity } from '@/domains/network';
 
 import { fellowshipMembersFeature } from './feature';
-import { membersModel } from './members';
+import { fellowshipModel } from './fellowship';
 
-const membersUpdate = attachToFeatureInput(fellowshipMembersFeature, membersModel.$list);
+const $members = fellowshipModel.$store.map(store => store?.members ?? []);
+const membersUpdate = attachToFeatureInput(fellowshipMembersFeature, $members);
 
 const $identity = combine(identity.$list, fellowshipMembersFeature.state, (list, state) => {
   if (state.status !== 'running') return {};

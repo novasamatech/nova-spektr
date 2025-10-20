@@ -7,14 +7,14 @@ import { identityService } from '@/domains/network';
 import { identityModel } from '../model/identity';
 
 type Props = {
-  item: CoreMember;
+  member: CoreMember;
   chain: Chain;
 };
 
-export const Member = ({ item, chain }: Props) => {
+export const Member = ({ member, chain }: Props) => {
   const identity = useStoreMap({
     store: identityModel.$identity,
-    keys: [item.accountId],
+    keys: [member.accountId],
     fn: (identity, [accountId]) => identity[accountId] ?? null,
   });
 
@@ -22,10 +22,10 @@ export const Member = ({ item, chain }: Props) => {
     <div className="rounded-md text-text-secondary hover:bg-action-background-hover hover:text-text-primary">
       <RankedAccount
         chain={chain}
-        rank={item.rank}
+        rank={member.rank}
         name={identity ? identityService.getFullName(identity) : undefined}
-        isActive={item.isActive}
-        accountId={item.accountId}
+        isActive={member.isActive}
+        accountId={member.accountId}
       />
     </div>
   );

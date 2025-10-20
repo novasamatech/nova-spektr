@@ -8,10 +8,10 @@ import { type AnyResource } from './types';
 type ResourceParams<Params, Cache, Value> = {
   params: Params | null;
   defaultValue: Value;
-  map(cache: Cache, params: Params): Value;
+  map(cache: Cache, params: Params): Value | undefined;
 };
 
-export const useResource = <Params, Cache, Value>(
+export const useResource = <const Params, Cache, Value>(
   resource: AnyResource<Params, any, Cache>,
   { params, map, defaultValue }: ResourceParams<Params, Cache, Value>,
 ) => {
@@ -20,8 +20,10 @@ export const useResource = <Params, Cache, Value>(
   const data = useStoreMap({
     store: resource.$cache,
     keys: [key, defaultValue],
-    fn: (cache) => (nonNullable(params) ? map(cache, params) : defaultValue),
+    fn: (cache) => (nonNullable(params) ? (map(cache, params) ?? defaultValue) : defaultValue),
   });
+
+  const pending = data === defaultValue;
 
   useEffect(() => {
     if (nonNullable(params) && nonNullable(key)) {
@@ -32,5 +34,5 @@ export const useResource = <Params, Cache, Value>(
     }
   }, [key]);
 
-  return { data };
+  return { data, pending };
 };

@@ -1,19 +1,30 @@
-import { type StoreWritable, createDomain, sample } from 'effector';
+import { type Domain, type EventCallable, type StoreWritable, createDomain, sample } from 'effector';
 
-import { type MutableResource, type ResourceRequestKey } from './types';
+import { type ResourceRequestKey } from './types';
+
+export interface MutableResource<Params, Response, Cache> {
+  domain: Domain;
+
+  push: EventCallable<{ params: Params; result: Response }>;
+  start: EventCallable<Params>;
+  stop: EventCallable<ResourceRequestKey>;
+  $cache: StoreWritable<Cache>;
+
+  createKey(params: Params): ResourceRequestKey;
+}
 
 type GenericParams<Params, Response, Cache> = {
   name: string;
-  key(params: Params): string;
+  key(params: Params): string | string[];
   cache: StoreWritable<Cache>;
-  toCache(cache: Cache, result: Response, params: Params): Cache;
+  map(cache: Cache, result: Response, params: Params): Cache;
 };
 
 export const createMutableResource = <Params, Response, Cache>({
   name,
   key,
   cache,
-  toCache,
+  map,
 }: GenericParams<Params, Response, Cache>): MutableResource<Params, Response, Cache> => {
   const domain = createDomain({ name });
 
@@ -24,12 +35,22 @@ export const createMutableResource = <Params, Response, Cache>({
   sample({
     clock: push,
     source: cache,
-    fn: (cache, { result, params }) => toCache(cache, result, params),
+    fn: (cache, { result, params }) => map(cache, result, params),
     target: cache,
   });
 
+  function createKey(params: Params): ResourceRequestKey {
+    const result = key(params);
+
+    if (Array.isArray(result)) {
+      return result.join(' ') as ResourceRequestKey;
+    }
+
+    return result as ResourceRequestKey;
+  }
+
   return {
-    createKey: (params) => key(params) as ResourceRequestKey,
+    createKey,
     domain,
     push,
     $cache: cache,

@@ -5,8 +5,8 @@ import { useI18n } from '@/shared/i18n';
 import { Icon } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { ERROR } from '../constants';
+import { useCoreMembers } from '../hooks/useCoreMembers';
 import { fellowshipMembersFeature } from '../model/feature';
-import { membersModel } from '../model/members';
 
 import { MembersModal } from './MembersModal';
 
@@ -14,7 +14,9 @@ export const MembersCard = memo(() => {
   const { t } = useI18n();
 
   const featureState = useUnit(fellowshipMembersFeature.state);
-  const [members, pending] = useUnit([membersModel.$list, membersModel.$pending]);
+  const input = useUnit(fellowshipMembersFeature.input);
+  const { data: members, pending } = useCoreMembers(input?.api);
+
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
   return (

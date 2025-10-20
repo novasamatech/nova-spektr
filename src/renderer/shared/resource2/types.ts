@@ -1,18 +1,7 @@
-import { type Domain, type Event, type EventCallable, type Store, type StoreWritable } from 'effector';
+import { type Event, type EventCallable, type Store } from 'effector';
 import { type z } from 'zod';
 
 export type ResourceRequestKey = string & z.$brand<'subscriptionKey'>;
-
-export interface MutableResource<Params, Response, Cache> {
-  domain: Domain;
-
-  push: EventCallable<{ params: Params; result: Response }>;
-  start: EventCallable<Params>;
-  stop: EventCallable<ResourceRequestKey>;
-  $cache: StoreWritable<Cache>;
-
-  createKey(params: Params): ResourceRequestKey;
-}
 
 export interface Resource<Params, Response, Cache> {
   push: Event<{ params: Params; result: Response }>;

@@ -16,10 +16,10 @@ interface SubscriptionResource<Params, Response, Cache> extends Resource<Params,
 
 type SubscriptionParams<Params, Response, Cache> = {
   name?: string;
-  key(params: Params): ResourceRequestKey;
+  key(params: Params): string;
   fn: SubscribeFn<Params, Response>;
   cache: StoreWritable<Cache>;
-  store(cache: Cache, result: Response, params: Params): Cache;
+  map(cache: Cache, result: Response, params: Params): Cache;
   // For testing purposes
   scope?: Scope;
 };
@@ -29,13 +29,13 @@ export const createSubscriptionResource = <Params, Response, Cache>({
   key,
   fn,
   cache,
-  store,
+  map,
   scope,
 }: SubscriptionParams<Params, Response, Cache>): SubscriptionResource<Params, Response, Cache> => {
   const { domain, $cache, createKey, start, stop, push } = createMutableResource({
     name: `${name}/subscription`,
     cache,
-    toCache: store,
+    map,
     key,
   });
 
@@ -98,14 +98,6 @@ export const createSubscriptionResource = <Params, Response, Cache>({
       });
     },
     target: $subscriptions,
-  });
-
-  // map to cache
-
-  sample({
-    clock: push,
-    source: cache,
-    fn: (cache, { result, params }) => store(cache, result, params),
   });
 
   return {
