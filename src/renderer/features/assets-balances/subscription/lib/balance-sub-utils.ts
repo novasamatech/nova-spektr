@@ -2,16 +2,20 @@ import { type Chain, type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AccountNode, type AnyAccount, accountService } from '@/domains/network';
 
-import { type SubscriptionKey } from './types';
+import { type RequestedAccount, type SubscriptionKey } from './types';
 
 export const balanceSubUtils = {
   getSiblingAccounts,
+  getRequestedAccounts,
   getSubscriptionKey,
 };
 
-function getSiblingAccounts(selectedAccounts: AnyAccount[], accounts: AnyAccount[], chains: Chain[]) {
-  const chainSiblings = new Map<SubscriptionKey, AnyAccount>();
-  const universalSiblings = new Set<AnyAccount>();
+function getSiblingAccounts(
+  selectedAccounts: AnyAccount[],
+  accounts: AnyAccount[],
+  chains: Chain[],
+): RequestedAccount[] {
+  const siblings = new Map<SubscriptionKey, RequestedAccount>();
   const graphs = new Map<Chain, Map<AnyAccount, AccountNode>>();
 
   for (const chain of chains) {
@@ -28,11 +32,11 @@ function getSiblingAccounts(selectedAccounts: AnyAccount[], accounts: AnyAccount
       if (node) {
         accountService.traverseGraph(node, {
           enter(node) {
-            if (accountService.isUniversalAccount(node.account)) {
-              universalSiblings.add(node.account);
-            } else {
-              const key = getSubscriptionKey(node.account.accountId, node.account.chainId);
-              chainSiblings.set(key, node.account);
+            for (const chain of chains) {
+              if (accountService.isAccountAvailableOnChain(node.account, chain)) {
+                const key = getSubscriptionKey(node.account.accountId, chain.chainId);
+                siblings.set(key, { accountId: node.account.accountId, chain });
+              }
             }
           },
         });
@@ -40,7 +44,22 @@ function getSiblingAccounts(selectedAccounts: AnyAccount[], accounts: AnyAccount
     }
   }
 
-  return Array.from(chainSiblings.values()).concat(Array.from(universalSiblings));
+  return Array.from(siblings.values());
+}
+
+function getRequestedAccounts(accounts: AnyAccount[], chains: Chain[]): RequestedAccount[] {
+  const siblings = new Map<SubscriptionKey, RequestedAccount>();
+
+  for (const chain of chains) {
+    for (const account of accounts) {
+      if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
+
+      const key = getSubscriptionKey(account.accountId, chain.chainId);
+      siblings.set(key, { accountId: account.accountId, chain });
+    }
+  }
+
+  return Array.from(siblings.values());
 }
 
 function getSubscriptionKey(account: AccountId, chain: ChainId): SubscriptionKey {

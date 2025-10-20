@@ -12,6 +12,7 @@ type HookField<Value> = {
   resetError(): void;
   hasError: boolean;
   errorMessage: string;
+  errorValues?: Record<string, unknown>;
   errors: ValidationError[];
 };
 
@@ -39,6 +40,7 @@ export const useForm = <Fields>(form: Form<Fields>): Hook<Fields> => {
       onChange: field.change,
       hasError: errors.length > 0,
       errorMessage: errors.at(0)?.message ?? '',
+      errorValues: errors.at(0)?.values,
     };
   }
 

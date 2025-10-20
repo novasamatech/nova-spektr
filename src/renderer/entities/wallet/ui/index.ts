@@ -5,7 +5,6 @@ export { WalletCardLg } from './Cards/WalletCardLg';
 export { RootAccountLg } from './Cards/RootAccountLg';
 export { RootAccountMd } from './Cards/RootAccountMd';
 export { DerivedAccount } from './Cards/DerivedAccount';
-export { DeliveryFeeAlert } from './DeliveryFeeAlert/DeliveryFeeAlert';
 export { MultiAccountsList } from './MultiAccountsList/MultiAccountsList';
 export { VaultAccountsList } from './VaultAccountsList/VaultAccountsList';
 export { ContactItem } from './ContactItem/ContactItem';
