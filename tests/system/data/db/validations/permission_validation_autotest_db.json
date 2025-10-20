@@ -13,7 +13,7 @@
       {
         "name": "wallets",
         "schema": "++id",
-        "rowCount": 3
+        "rowCount": 4
       },
       {
         "name": "accounts",
@@ -43,7 +43,7 @@
       {
         "name": "accounts2",
         "schema": "id",
-        "rowCount": 49
+        "rowCount": 50
       },
       {
         "name": "multisigOperations",
@@ -60,13 +60,13 @@
       "inbound": true,
       "rows": [
         {
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "type": "wallet_nw",
           "signingType": "signing_wc",
           "id": 1
         },
         {
-          "name": "Proxy_transfer",
+          "name": "Any by Autotest-1",
           "type": "wallet_pxd",
           "id": 2
         },
@@ -74,6 +74,11 @@
           "name": "12Q3b...UXLjL",
           "type": "wallet_ms",
           "id": 3
+        },
+        {
+          "name": "NonTransfer by Autotest-1",
+          "type": "wallet_pxd",
+          "id": 5
         }
       ]
     },{
@@ -119,7 +124,7 @@
       "rows": [
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -134,7 +139,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -149,7 +154,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -164,7 +169,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -179,7 +184,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -194,7 +199,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -209,7 +214,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -224,7 +229,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -239,7 +244,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -254,7 +259,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -269,7 +274,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -284,7 +289,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -299,7 +304,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -314,7 +319,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -329,7 +334,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -344,7 +349,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -359,7 +364,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -374,7 +379,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -389,7 +394,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -404,7 +409,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -419,7 +424,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -434,7 +439,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -449,7 +454,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -464,7 +469,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -479,7 +484,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -494,7 +499,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -509,7 +514,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -524,7 +529,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -539,7 +544,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -554,7 +559,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -569,7 +574,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -584,7 +589,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -599,7 +604,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -614,7 +619,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -629,7 +634,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -644,7 +649,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -659,7 +664,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -674,7 +679,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -689,7 +694,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -704,7 +709,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -719,7 +724,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -734,7 +739,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -749,7 +754,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -764,7 +769,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -779,7 +784,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0xc355200831ba30815f1ba113b3f1b147a1a551d7",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -794,7 +799,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0xc355200831ba30815f1ba113b3f1b147a1a551d7",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -809,7 +814,7 @@
         },
         {
           "type": "chain",
-          "name": "Nova_autotest1",
+          "name": "Nova Autotest-1",
           "accountId": "0xc355200831ba30815f1ba113b3f1b147a1a551d7",
           "accountType": "wallet_connect",
           "signingType": "signing_wc",
@@ -823,7 +828,7 @@
           "id": "1 0xc355200831ba30815f1ba113b3f1b147a1a551d7 0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d"
         },
         {
-          "name": "Proxy_transfer",
+          "name": "Any by Autotest-1",
           "type": "chain",
           "accountType": "proxied",
           "accountId": "0xc67a145050e7054a4e9f06462ea4e95446aa694e123fc3c3612f436fccd05f63",
@@ -867,6 +872,31 @@
           "id": "3 0x3dcf9ec0eb0e02b5fe84548ff514a5bdea65c0c82b25ef1dc5e4a49c70c7806a universal",
           "$types": {
             "signatories": "arrayNonindexKeys"
+          }
+        },
+        {
+          "name": "NonTransfer by Autotest-1",
+          "type": "chain",
+          "accountType": "proxied",
+          "accountId": "0xba616b7915819965305b7b3d3fdf0eb072e21ee8337242c1e929edfafc6b4325",
+          "chainId": "0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42",
+          "proxyVariant": "regular",
+          "cryptoType": 0,
+          "signingType": "signing_wo",
+          "deposit": "1003700000000",
+          "connections": [
+            {
+              "delay": 0,
+              "proxyAccountId": "0x521bd0519407b03a2ac0b9dcc5b0e859848610c39c3f5cdbf30d7f454d2f4a25",
+              "proxyType": "NonTransfer"
+            }
+          ],
+          "blockNumber": 6507964,
+          "extrinsicIndex": 2,
+          "walletId": 5,
+          "id": "5 0xba616b7915819965305b7b3d3fdf0eb072e21ee8337242c1e929edfafc6b4325 0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42",
+          "$types": {
+            "connections": "arrayNonindexKeys"
           }
         }
       ]

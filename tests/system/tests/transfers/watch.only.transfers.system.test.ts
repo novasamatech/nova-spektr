@@ -8,7 +8,7 @@ import { transferTestCases } from '../../utils/transferTestCases';
 const feature = 'Wallets. Watch-only. Single wallet';
 const story = 'Transfers';
 
-test.describe('Watch-only transfers', { tag: ['@watch-only-transfers', '@regress', '@validations'] }, () => {
+test.describe('Watch-only transfers', { tag: ['@watch-only-transfers', '@regress'] }, () => {
   test('Watch-only transfer buttons should not be visible', async ({ loginPage }) => {
     await allure.feature(feature);
     await allure.story(story);

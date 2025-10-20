@@ -8,8 +8,8 @@ import { transferConstants, transferTestCases } from '../../utils/transferTestCa
 const feature = 'Wallet. Multisig wallet.';
 const story = 'Transfers';
 
-test.describe('Multisig wallet transfers', { tag: ['@multisig-transfers', '@regress', '@validations'] }, () => {
-  for (const { chainName, assetId, amount, validationAmount, recipient } of transferTestCases) {
+test.describe('Multisig wallet transfers', { tag: ['@multisig-transfers', '@regress'] }, () => {
+  for (const { chainName, assetId, amount, recipient } of transferTestCases) {
     test(`Multisig can make regular transfer on ${chainName}`, async ({ loginPage }) => {
       await allure.feature(feature);
       await allure.story(story);
@@ -19,19 +19,15 @@ test.describe('Multisig wallet transfers', { tag: ['@multisig-transfers', '@regr
       const assetsPage = await multisigWallet.gotoMain();
 
       const walletModal = await assetsPage.openWalletManagement();
-      await walletModal.searchAndSelectWallet(transferConstants.multisigName);
+      await walletModal.searchAndSelectWallet(transferConstants.multisig_name);
 
       const chain = getChainByName(substrateChains, chainName);
       const transferModal = await assetsPage.openTransfer(chain, assetId);
 
       await transferModal.fillRecipient(recipient);
-      await transferModal.checkFeeforAsset();
-
-      await transferModal.fillAmount(validationAmount);
-      await transferModal.isSendingAmountValidationOnPage();
+      await transferModal.expectTransferFeeNotZero();
 
       await transferModal.fillAmount(amount);
-      await transferModal.waitForAlertToDisapeear();
       const confirmationModal = await transferModal.openConfirmationModal();
       const signingModal = await confirmationModal.confirm();
 

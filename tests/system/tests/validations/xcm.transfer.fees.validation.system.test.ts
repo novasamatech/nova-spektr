@@ -3,18 +3,18 @@ import * as allure from 'allure-js-commons';
 import { substrateChains } from '../../data/chains/chainsList';
 import { test } from '../../utils/baseRegularFixture';
 import { getChainByName } from '../../utils/readConfig';
-import { feeValidationConstants } from '../../utils/validationTestCases';
+import { Validation, feeValidationConstants } from '../../utils/validationTestCases';
 
-const feature = 'Validation.';
-const story = 'Transfer fee validation';
+const feature = 'Validations';
+const story = 'XCM-Transfer fee validation';
 
-test.describe('Transfer fee validation', { tag: ['@xcm-transfers', '@regress', '@validations'] }, () => {
-  test(`Should validate all fees for a transfer`, async ({ loginPage }) => {
+test.describe('XCM-Transfer fee validation', { tag: ['@regress', '@validations'] }, () => {
+  test(`Should validate all fees for an xcm-transfer`, async ({ loginPage }) => {
     await allure.feature(feature);
     await allure.story(story);
     test.slow();
-    const vaultWallet = await loginPage.importDatabase('validations/fee-validations.json');
-    const assetsPage = await vaultWallet.gotoMain();
+    const extensionWallet = await loginPage.importDatabase('validations/fee-validations.json');
+    const assetsPage = await extensionWallet.gotoMain();
     const chain = getChainByName(substrateChains, feeValidationConstants.chainName);
 
     const walletModal = await assetsPage.openWalletManagement();
@@ -26,9 +26,11 @@ test.describe('Transfer fee validation', { tag: ['@xcm-transfers', '@regress', '
     await transferModal.clickMyselfButton();
 
     await transferModal.fillAmount(feeValidationConstants.validationAmount);
-    await transferModal.isSendingAmountValidationOnPage();
-    await transferModal.isNetworkFeeValidationOnPage();
-    await transferModal.isXChainFeeValidationOnPage();
-    await transferModal.isDeliveryFeeValidationOnPage();
+    await transferModal.expectValidationsVisible([
+      Validation.sendingAmount,
+      Validation.networkFee,
+      Validation.xcmFee,
+      Validation.deliveryFee,
+    ]);
   });
 });

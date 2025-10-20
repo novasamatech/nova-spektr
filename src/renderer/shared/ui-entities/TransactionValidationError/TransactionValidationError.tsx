@@ -150,12 +150,6 @@ const TransactionBalanceError = ({
 
   const imbalances: { asset: Asset; imbalance: BN }[] = [];
 
-  const toTestId = (s: string) =>
-    s
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-
   for (const assetGroup of Object.values(assetGroups)) {
     if (nullable(assetGroup)) continue;
 
@@ -210,7 +204,7 @@ const TransactionBalanceError = ({
                 t={t}
                 i18nKey="general.transactionErrors.balance.section"
                 parent="span"
-                data-testid={`${TEST_IDS.VALIDATIONS.BALANCE}-${toTestId(action)}`}
+                data-testid={`${TEST_IDS.VALIDATIONS.BALANCE}:${action}`}
                 values={{
                   action: action,
                   balance: formatAsset(required, asset),

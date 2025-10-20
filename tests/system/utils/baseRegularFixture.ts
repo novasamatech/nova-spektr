@@ -20,6 +20,16 @@ export const test = base.extend<BaseFixture>({
 
   context: async ({ browser }, use) => {
     const context = await browser.newContext({ ignoreHTTPSErrors: true, permissions: [] });
+    await context.addInitScript(() => {
+      const flags = {
+        assethub_migration_modal_seen_kusama: 'true',
+        assethub_migration_modal_seen_polkadot: 'true',
+      };
+
+      for (const [key, value] of Object.entries(flags)) {
+        window.localStorage.setItem(key, value);
+      }
+    });
     await use(context);
     await context.close();
   },

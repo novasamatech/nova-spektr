@@ -4,6 +4,7 @@ import { step } from 'allure-js-commons';
 import { TEST_IDS } from '@/shared/constants/testIds';
 import { type ChainModel } from '../../data/chains/testChainModel';
 import { readConfig } from '../../utils/readConfig';
+import { Validation } from '../../utils/validationTestCases';
 import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
 import { ConfirmationModalElements } from '../_elements/ConfirmationModalElements';
@@ -46,40 +47,35 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     });
   }
 
-  public async checkFeeforAsset(): Promise<void> {
-    await step('Check that transfer fee is greater than zero', async () => {
-      await this.expectTransferFeeNotZero();
-    });
-  }
-
-  private async expectTransferFeeNotZero(): Promise<void> {
+  public async expectTransferFeeNotZero(): Promise<void> {
     const feeRow = this.page.getByTestId(TransferModalElements.feeRowLocator);
     const assetBalance = feeRow.getByTestId(TransferModalElements.feeValueLocator);
 
-    await expect(async () => {
-      const feeText = await assetBalance.textContent();
-      const numericMatch = feeText?.match(/(\d+\.?\d*)/);
-      const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
+    await step('Expect transfer fee to be greater than 0', async () => {
+      await expect(async () => {
+        const feeText = await assetBalance.textContent();
+        const numericMatch = feeText?.match(/(\d+\.?\d*)/);
+        const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
 
-      expect(feeValue).toBeGreaterThan(0);
-    }).toPass({ timeout: 5000, intervals: [200, 300, 500] });
+        expect(feeValue).toBeGreaterThan(0);
+      }).toPass({
+        intervals: [1000, 1000],
+        timeout: 3000,
+      });
+    });
   }
 
   private async waitForContinueButtonToBeEnabled(): Promise<void> {
-    let isEnabled = false;
-    while (!isEnabled) {
-      isEnabled = await this.page.getByRole('button', { name: 'Continue' }).isEnabled();
-      if (!isEnabled) {
-        await this.page.waitForTimeout(500);
-      }
-    }
+    const button = this.page.getByRole('button', { name: 'Continue' });
+    await expect(button).toBeVisible();
+    await expect(button).toBeEnabled();
   }
 
-  public async waitForAlertToDisapeear(): Promise<void> {
+  public async waitForAlertToDisappear(): Promise<void> {
     const alert = this.page.getByTestId('alert');
 
     await step('Wait for alert to disappear', async () => {
-      await expect(alert).toHaveCount(0, { timeout: 5000 });
+      await expect(alert).toHaveCount(0);
     });
   }
 
@@ -116,86 +112,6 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     });
   }
 
-  public async isSendingAmountValidationOnPage(): Promise<void> {
-    await step('Check sending amount validation on transfer modal', async () => {
-      const balanceError = this.page.getByTestId(TEST_IDS.VALIDATIONS.BALANCE);
-      const amountError = this.page.getByTestId(TransferModalElements.sendingAmountError);
-
-      await Promise.race([
-        balanceError.waitFor({ state: 'visible', timeout: 5000 }),
-        amountError.waitFor({ state: 'visible', timeout: 5000 }),
-      ]).catch(async () => {
-        throw new Error('Sending amount validation did not appear within 5s.');
-      });
-
-      await expect(balanceError).toBeVisible({ timeout: 2000 });
-      await expect(amountError).toBeVisible({ timeout: 2000 });
-    });
-  }
-
-  public async isNetworkFeeValidationOnPage(): Promise<void> {
-    await step('Check network fee validation on transfer modal', async () => {
-      const balanceError = this.page.getByTestId(TEST_IDS.VALIDATIONS.BALANCE);
-      const feeError = this.page.getByTestId(TransferModalElements.networkFeeAmountError);
-
-      await Promise.race([
-        balanceError.waitFor({ state: 'visible', timeout: 5000 }),
-        feeError.waitFor({ state: 'visible', timeout: 5000 }),
-      ]).catch(async () => {
-        throw new Error('Network fee validation did not appear within 5s.');
-      });
-
-      await expect(balanceError).toBeVisible({ timeout: 2000 });
-      await expect(feeError).toBeVisible({ timeout: 2000 });
-    });
-  }
-
-  public async isXChainFeeValidationOnPage(): Promise<void> {
-    await step('Check cross-chain fee validation on transfer modal', async () => {
-      const balanceError = this.page.getByTestId(TEST_IDS.VALIDATIONS.BALANCE);
-      const feeError = this.page.getByTestId(TransferModalElements.crossChainFeeAmountError);
-
-      await Promise.race([
-        balanceError.waitFor({ state: 'visible', timeout: 5000 }),
-        feeError.waitFor({ state: 'visible', timeout: 5000 }),
-      ]).catch(async () => {
-        throw new Error('Cross-chain fee validation did not appear within 5s.');
-      });
-
-      await expect(balanceError).toBeVisible({ timeout: 2000 });
-      await expect(feeError).toBeVisible({ timeout: 2000 });
-    });
-  }
-
-  public async isDeliveryFeeValidationOnPage(): Promise<void> {
-    await step('Check delivery fee validation on transfer modal', async () => {
-      const balanceError = this.page.getByTestId(TEST_IDS.VALIDATIONS.BALANCE);
-      const feeError = this.page.getByTestId(TransferModalElements.deliveryFeeAmountError);
-
-      await Promise.race([
-        balanceError.waitFor({ state: 'visible', timeout: 5000 }),
-        feeError.waitFor({ state: 'visible', timeout: 5000 }),
-      ]).catch(async () => {
-        throw new Error('Delivery fee validation did not appear within 5s.');
-      });
-
-      await expect(balanceError).toBeVisible({ timeout: 2000 });
-      await expect(feeError).toBeVisible({ timeout: 2000 });
-    });
-  }
-
-  public async isMissingAccountValidationOnPage(): Promise<void> {
-    await step('Check missing account validation on transfer modal', async () => {
-      const missingAccountError = this.page.getByTestId(TEST_IDS.VALIDATIONS.MISSING_ACCOUNT);
-
-      await Promise.race([missingAccountError.waitFor({ state: 'visible', timeout: 5000 })]).catch(async () => {
-        throw new Error('Missing account validation did not appear within 5s.');
-      });
-
-      await expect(missingAccountError).toBeVisible({ timeout: 2000 });
-    });
-  }
-
   public async openConfirmationModal(): Promise<ConfirmationModalWindow> {
     await step('Open confirmation modal', async () => {
       await this.checkForAlerts();
@@ -226,5 +142,62 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     });
 
     return this.previousPage;
+  }
+
+  private validationLocators(v: Validation) {
+    const fatal = this.page.getByTestId(TEST_IDS.VALIDATIONS.FATAL);
+    const missingAccount = this.page.getByTestId(TEST_IDS.VALIDATIONS.MISSING_ACCOUNT);
+    const permission = this.page.getByTestId(TEST_IDS.VALIDATIONS.PERMISSION);
+    const balance = this.page.getByTestId(TEST_IDS.VALIDATIONS.BALANCE);
+
+    switch (v) {
+      case Validation.fatal:
+        return [fatal];
+      case Validation.missingAccount:
+        return [missingAccount];
+      case Validation.permission:
+        return [permission];
+      case Validation.balance:
+        return [balance];
+      case Validation.sendingAmount:
+        return [balance, this.page.getByTestId(TransferModalElements.sendingAmountError)];
+      case Validation.networkFee:
+        return [balance, this.page.getByTestId(TransferModalElements.networkFeeAmountError)];
+      case Validation.xcmFee:
+        return [balance, this.page.getByTestId(TransferModalElements.xcmSelectorLocator)];
+      case Validation.deliveryFee:
+        return [balance, this.page.getByTestId(TransferModalElements.deliveryFeeAmountError)];
+    }
+  }
+
+  public async expectValidationsVisible(validations: Validation | Validation[]): Promise<void> {
+    const list = Array.isArray(validations) ? validations : [validations];
+
+    await step(`Check validations visible: ${list.join(', ')}`, async () => {
+      for (const v of list) {
+        const locs = this.validationLocators(v);
+
+        await Promise.race(locs.map((l) => l.waitFor({ state: 'visible' }))).catch(() => {
+          throw new Error(`Validation "${v}" did not appear.`);
+        });
+
+        for (const l of locs) {
+          await expect(l).toBeVisible();
+        }
+      }
+    });
+  }
+
+  public async expectValidationsHidden(validations: Validation | Validation[]): Promise<void> {
+    const list = Array.isArray(validations) ? validations : [validations];
+
+    await step(`Check validations hidden: ${list.join(', ')}`, async () => {
+      for (const v of list) {
+        const locs = this.validationLocators(v);
+        for (const l of locs) {
+          await expect(l).toHaveCount(0);
+        }
+      }
+    });
   }
 }
