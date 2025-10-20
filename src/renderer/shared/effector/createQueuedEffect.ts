@@ -27,7 +27,7 @@ type Config<P> = Partial<{
  *   )
  *   ```
  */
-export const createQueuedEffect = <Params, Result, Fail = Error>(
+export const createQueuedEffect = <Params = void, Result = void, Fail = Error>(
   fn: (params: Params) => Result | Promise<Result>,
   config?: Config<NoInfer<Params>>,
 ) => {
