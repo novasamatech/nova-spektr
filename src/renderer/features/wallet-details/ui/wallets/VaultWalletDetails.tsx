@@ -21,7 +21,13 @@ import { networkModel } from '@/entities/network';
 import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
-import { DerivationsAddressModal, ExportKeysModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
+import {
+  type DerivationKeyDraft,
+  DerivationsAddressModal,
+  ExportKeysModal,
+  ImportKeysModal,
+  KeyConstructor,
+} from '@/features/wallets';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
@@ -79,21 +85,23 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
     setChains(filteredChains);
   }, []);
 
-  const handleConstructorKeys = (
-    keysToAdd: (VaultChainAccount | VaultShardAccount[])[],
-    keysToRemove: (VaultChainAccount | VaultShardAccount[])[],
-  ) => {
+  const handleConstructorKeys = (keys: DerivationKeyDraft[]) => {
     toggleConstructorModal();
 
+    const draftKeySet = new Set(keys.map(k => k.chainId + k.derivationPath));
+    const existingKeySet = new Set(wallet.accounts.map(a => a.chainId + a.derivationPath));
+
+    const keysToRemove = wallet.accounts.filter(a => !draftKeySet.has(a.chainId + a.derivationPath));
+
     if (keysToRemove.length > 0) {
-      vaultDetailsModel.events.keysRemoved(keysToRemove.flat());
+      vaultDetailsModel.events.keysRemoved(keysToRemove);
     }
 
-    if (keysToAdd.length > 0) {
-      const vaultAccounts = Object.values(accountsMap).flat();
-      const mainAccounts = walletDetailsUtils.getMainAccounts(vaultAccounts);
+    const keysToAdd = keys.filter(k => !existingKeySet.has(k.chainId + k.derivationPath));
 
-      vaultDetailsModel.events.keysAdded([...mainAccounts, ...keysToAdd.flat()]);
+    if (keysToAdd.length > 0) {
+      vaultDetailsModel.events.keysAdded(keysToAdd);
+
       toggleScanModal();
     }
   };
