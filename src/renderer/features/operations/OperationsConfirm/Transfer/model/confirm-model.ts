@@ -44,7 +44,7 @@ const $sourceChain = $currentConfirm.map((confirm) => confirm?.chain ?? null);
 const $sourceAsset = $currentConfirm.map((confirm) => confirm?.asset ?? null);
 const $destinationChain = $currentConfirm.map((confirm) => confirm?.destinationChain ?? null);
 const $asset = $currentConfirm.map((confirm) => (confirm?.chain ? getNativeAsset(confirm.chain.assets) : null));
-const $amount = $currentConfirm.map((confirm) => confirm?.rawAmount ?? '0');
+const $amount = $currentConfirm.map((confirm) => new BN(confirm?.amount ?? '0'));
 const $route = $currentConfirm.map((confirm) => confirm?.route ?? []);
 const $transaction = $currentConfirm.map((confirm) => confirm?.tx ?? null);
 const $xcmFee = $currentConfirm.map((confirm) => confirm?.xcmFee ?? new BN(0));
