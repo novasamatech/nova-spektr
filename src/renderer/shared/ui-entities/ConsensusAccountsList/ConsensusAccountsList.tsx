@@ -17,10 +17,6 @@ import { Collapsible } from './Collapsible';
 
 type ChainAccountPair = readonly [chain: Chain, accountId: AccountId];
 
-type Props = {
-  accounts: ChainAccountPair[];
-};
-
 const EVM_CHAIN_CONFIG = {
   chainId: 'evm',
   icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Ethereum.svg',
@@ -145,6 +141,9 @@ const OtherNetworksSection = memo<{
 ));
 OtherNetworksSection.displayName = 'OtherNetworksSection';
 
+type Props = {
+  accounts: ChainAccountPair[];
+};
 export const ConsensusAccountsList = memo(({ accounts }: Props) => {
   const { list } = useDeferredList({ list: accounts, forceFirstRender: true });
 
