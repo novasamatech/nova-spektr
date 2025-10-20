@@ -1,8 +1,8 @@
+import { u8aToHex } from '@polkadot/util';
 import { useGate, useUnit } from 'effector-react';
 import { t } from 'i18next';
 import { useEffect, useState } from 'react';
 
-import { type HexString } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { ValidationErrors } from '@/shared/lib/utils';
 import { Button, FootnoteText, SmallTitleText, StatusModal } from '@/shared/ui';
@@ -51,11 +51,9 @@ export const Extension = ({ signingPayloads, signerWallet, validateBalance, onGo
     let balanceValidationError;
 
     for (const { signature, txPayload } of response) {
-      isVerified = transactionService.verifySignature(
-        txPayload.payload,
-        signature as HexString,
-        payload.signatory.accountId,
-      );
+      console.log('txPayload.payload', u8aToHex(txPayload.payload));
+
+      isVerified = transactionService.verifySignature(txPayload.payload, signature, payload.signatory.accountId);
       balanceValidationError = validateBalance && (await validateBalance());
     }
 
