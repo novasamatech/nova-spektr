@@ -163,6 +163,7 @@ const form: Form<FormParams> = createForm<FormParams>({
   validateOn: ['submit'],
 });
 
+const $destination = form.fields.destination.$value;
 const $destinationChain = form.fields.destinationChain.$value;
 
 const $amount = combine($asset, form.fields.amount.$value, (asset, amount) => {
@@ -256,9 +257,10 @@ const $initiatorAccountBalance = combine(
 
 // destination account
 
-const $destinationAccountId = form.fields.destination.$value.map((destination) =>
-  validateAddress(destination) ? toAccountId(destination) : null,
-);
+const $destinationAccountId = combine($destination, $destinationChain, (destination, chain) => {
+  if (nullable(chain)) return null;
+  return validateAddress(destination, chain) ? toAccountId(destination) : null;
+});
 
 const $destinationBalance = combine(
   {
@@ -278,13 +280,18 @@ const $destinationBalance = combine(
 
 const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed ?? BN_ZERO);
 
-const $hasDestinationBalanceError = combine($amount, $destinationBalance, (amount, balance) => {
-  if (nullable(balance)) return false;
-  if (amount.isZero()) return false;
+const $hasDestinationBalanceError = combine(
+  { amount: $amount, accountId: $destinationAccountId, balance: $destinationBalance },
+  ({ amount, accountId, balance }) => {
+    if (nullable(balance)) {
+      return nonNullable(accountId);
+    }
+    if (amount.isZero()) return false;
 
-  const total = totalAmountBN(balance);
-  return total.lt(balance.ed) && amount.lt(balance.ed);
-});
+    const total = totalAmountBN(balance);
+    return total.lt(balance.ed) && amount.lt(balance.ed);
+  },
+);
 
 const $destinationBalanceSubscriptionSource = combine({
   chain: $destinationChain,
@@ -529,7 +536,6 @@ const $isMyselfXcmEnabled = combine(
 const $canSubmit = and(
   form.$isValid,
   $valid,
-  $destinationBalance.map(nonNullable),
   not($hasDestinationBalanceError),
   or(not($isXcm), not(xcmTransferModel.$isXcmFeeLoading), not(xcmTransferModel.$isDeliveryFeeLoading)),
 );
