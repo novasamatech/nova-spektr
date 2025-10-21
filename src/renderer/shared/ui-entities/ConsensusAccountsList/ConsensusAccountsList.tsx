@@ -6,7 +6,6 @@ import { type Chain } from '@/shared/core';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { RelayChains } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { ScrollArea } from '@/shared/ui-kit';
 import { networkUtils } from '@/entities/network';
 
 import { EthAccountsGroup } from './EthAccountsGroup';
@@ -61,38 +60,36 @@ export const ConsensusAccountsList = memo(({ accounts, bgColor }: Props) => {
   const shouldShowOtherChains = evmAccounts.length > 0 || otherAccounts.length > 0;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <ScrollArea>
-        {shouldShowConsensusChains && (
-          <>
-            <SectionHeader label={t('walletDetails.common.consensusColumn')} />
-            <section className="flex flex-col divide-y divide-divider px-5 pb-3">
-              {consensusGroups.map(({ consensus: [consensusChain, consensusAccountId], parachains }) => (
-                <GroupItem
-                  key={consensusChain.chainId}
-                  groupChain={consensusChain}
-                  groupAccountId={consensusAccountId}
-                  parachains={parachains}
-                  bgColor={bgColor}
-                />
-              ))}
-            </section>
-          </>
-        )}
-        {shouldShowOtherChains && (
-          <>
-            <SectionHeader label={t('walletDetails.common.otherNetworkColumn')} />
-            <section className="flex flex-col divide-y divide-divider px-5 pb-3">
-              {evmAccounts.length > 0 && <EthAccountsGroup chains={evmAccounts} bgColor={bgColor} />}
-              {otherAccounts.map(([chain, accountId]) => (
-                <div key={chain.chainId} className="pl-6">
-                  <ListItem chain={chain} accountId={accountId} />
-                </div>
-              ))}
-            </section>
-          </>
-        )}
-      </ScrollArea>
+    <div className="flex flex-col">
+      {shouldShowConsensusChains && (
+        <>
+          <SectionHeader label={t('walletDetails.common.consensusColumn')} />
+          <section className="flex flex-col divide-y divide-divider px-5 pb-3">
+            {consensusGroups.map(({ consensus: [consensusChain, consensusAccountId], parachains }) => (
+              <GroupItem
+                key={consensusChain.chainId}
+                groupChain={consensusChain}
+                groupAccountId={consensusAccountId}
+                parachains={parachains}
+                bgColor={bgColor}
+              />
+            ))}
+          </section>
+        </>
+      )}
+      {shouldShowOtherChains && (
+        <>
+          <SectionHeader label={t('walletDetails.common.otherNetworkColumn')} />
+          <section className="flex flex-col divide-y divide-divider px-5 pb-3">
+            {evmAccounts.length > 0 && <EthAccountsGroup chains={evmAccounts} bgColor={bgColor} />}
+            {otherAccounts.map(([chain, accountId]) => (
+              <div key={chain.chainId} className="pl-6">
+                <ListItem chain={chain} accountId={accountId} />
+              </div>
+            ))}
+          </section>
+        </>
+      )}
     </div>
   );
 });
