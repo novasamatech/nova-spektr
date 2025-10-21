@@ -437,6 +437,8 @@ const Amount = memo(() => {
   const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
+
+  const showMaxButton = accountAvailableBalance?.gtn(0) ?? false;
   const showEDSwitch = useUnit(formModel.$showEDSwitch);
 
   if (!network) {
@@ -453,9 +455,11 @@ const Amount = memo(() => {
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
         suffixElement={
-          <Button pallet="secondary" variant="fill" size="sm" onClick={() => formModel.events.toggleMaxMode(true)}>
-            {t('transfer.max.buttonTitle')}
-          </Button>
+          showMaxButton && (
+            <Button pallet="secondary" variant="fill" size="sm" onClick={() => formModel.events.toggleMaxMode(true)}>
+              {t('transfer.max.buttonTitle')}
+            </Button>
+          )
         }
         testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
         onChange={(value: string) => amount.onChange(value)}
