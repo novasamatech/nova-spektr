@@ -6,6 +6,7 @@ import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
 import { MultisigModalElements } from '../_elements/MultisigModalElements';
 import { type WalletModalElements } from '../_elements/WalletModalElements';
+import { DelegateAuthorityModalWindow } from '../modals/DelegateAuthorityModalWindow';
 
 import { MultisigModalWindow } from './MultisigModalWindow';
 
@@ -51,6 +52,26 @@ export class WalletModalWindow extends BaseModal<WalletModalElements> {
         .click();
 
       return this;
+    });
+  }
+
+  public async openWalletDetails(walletName: string): Promise<WalletModalWindow> {
+    return await step(`Open wallet details modal for ${walletName} from the wallets list`, async () => {
+      await this.searchWallet(walletName);
+      await this.page.getByTestId(TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ACTIONS).click();
+      await this.page.getByTestId(TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ITEM_VIEW_DETAILS).click();
+
+      return this;
+    });
+  }
+
+  public async openDelegateProxyModal(walletName: string): Promise<DelegateAuthorityModalWindow> {
+    return await step(`Open delegate proxy modal for ${walletName} from the wallets list`, async () => {
+      await this.searchWallet(walletName);
+      await this.page.getByTestId(TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ACTIONS).click();
+      await this.page.getByTestId(TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ITEM_DELEGATE).click();
+
+      return new DelegateAuthorityModalWindow(this.page, this);
     });
   }
 

@@ -9,6 +9,7 @@ import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
 import { ConfirmationModalElements } from '../_elements/ConfirmationModalElements';
 import { TransferModalElements } from '../_elements/TransferModalElements';
+import { ValidationElements } from '../_elements/ValidationElements';
 
 import { ConfirmationModalWindow } from './ConfirmationModalWindow';
 
@@ -160,13 +161,17 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
       case Validation.balance:
         return [balance];
       case Validation.sendingAmount:
-        return [balance, this.page.getByTestId(TransferModalElements.sendingAmountError)];
+        return [balance, this.page.getByTestId(ValidationElements.sendingAmountError)];
       case Validation.networkFee:
-        return [balance, this.page.getByTestId(TransferModalElements.networkFeeAmountError)];
+        return [balance, this.page.getByTestId(ValidationElements.networkFeeAmountError)];
       case Validation.xcmFee:
-        return [balance, this.page.getByTestId(TransferModalElements.xcmSelectorLocator)];
+        return [balance, this.page.getByTestId(ValidationElements.crossChainFeeAmountError)];
       case Validation.deliveryFee:
-        return [balance, this.page.getByTestId(TransferModalElements.deliveryFeeAmountError)];
+        return [balance, this.page.getByTestId(ValidationElements.deliveryFeeAmountError)];
+      case Validation.multisigDeposit:
+        return [balance, this.page.getByTestId(ValidationElements.multisigDepositError)];
+      case Validation.proxyDeposit:
+        return [balance, this.page.getByTestId(ValidationElements.proxyDepositError)];
     }
   }
 

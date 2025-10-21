@@ -32,6 +32,9 @@ export const TEST_IDS = {
   WALLET_MANAGEMENT: {
     WALLET_SEARCH: 'wallet-search-input',
     WALLET_ITEM: 'wallet_item',
+    DROPDOWN_ITEM_VIEW_DETAILS: 'view_wallet_details',
+    DROPDOWN_ITEM_DELEGATE: 'delegate-proxy',
+    DROPDOWN_ACTIONS: 'wallet-actions',
   },
   OPERATIONS: {
     CONFIRM_NETWORK_FEE: 'operations-confirm-network-fee',
@@ -70,6 +73,9 @@ export const TEST_IDS = {
   },
   TRANSFER: {
     MODAL: 'transfer-modal',
+  },
+  PROXY_FORM: {
+    ADDRESS_INPUT: 'proxy-address-input',
   },
   ADD_BUTTON: 'button-add',
   CLOSE_BUTTON: 'Icon:close',
