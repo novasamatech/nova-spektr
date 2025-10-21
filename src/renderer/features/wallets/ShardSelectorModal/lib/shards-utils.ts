@@ -7,7 +7,7 @@ import {
 } from '@/shared/core';
 import { entries, isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 
@@ -99,34 +99,21 @@ function getStructForVault(
 }
 
 function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {
-  const selectedByChain = new Map<ChainId, Set<AccountId>>();
+  const selectedAccountIds = new Set<AccountId>();
 
   for (const rootData of Object.values(struct)) {
-    const { total: _total, checked: _checked, ...chains } = rootData;
-    for (const [chainId, chainData] of entries(chains)) {
-      const selected = new Set<AccountId>();
+    const { total: _total, checked: _checked, ...chainGroups } = rootData;
 
+    for (const chainData of Object.values(chainGroups)) {
       for (const [accountId, isSelected] of entries(chainData.accounts)) {
         if (isSelected) {
-          selected.add(accountId);
+          selectedAccountIds.add(accountId);
         }
       }
-
-      selectedByChain.set(chainId as ChainId, selected);
     }
   }
 
-  const selectedAccounts = Array.from(selectedByChain.values()).reduce((set, item) => {
-    return new Set<AccountId>([...set, ...item]);
-  }, new Set<AccountId>());
-
-  return accounts.filter((account) => {
-    if (accountService.isChainAccount(account)) {
-      return selectedByChain.get(account.chainId)?.has(account.accountId) ?? false;
-    }
-
-    return selectedAccounts.has(account.accountId);
-  });
+  return accounts.filter((account) => selectedAccountIds.has(account.accountId));
 }
 
 export const shardsUtils = {
