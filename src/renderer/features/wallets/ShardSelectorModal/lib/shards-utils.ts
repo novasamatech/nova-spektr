@@ -97,6 +97,10 @@ function getStructForVault(
     }
   }
 
+  for (const accounts of chainMap.values()) {
+    accounts.sort((a, b) => a.derivationPath.localeCompare(b.derivationPath));
+  }
+
   const sortedChains = chainsService.sortChains(Object.values(chains));
   const chainOrder = new Map(sortedChains.map((chain, index) => [chain.chainId, index]));
 
