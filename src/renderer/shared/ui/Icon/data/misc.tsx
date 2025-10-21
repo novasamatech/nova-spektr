@@ -1,6 +1,7 @@
 /* eslint-disable import-x/max-dependencies */
 
 import DocumentIcon from '@/shared/assets/images/misc/document.svg?jsx';
+import EthereumIcon from '@/shared/assets/images/misc/ethereum.svg?jsx';
 import LogoTitleIcon from '@/shared/assets/images/misc/logo-title.svg?jsx';
 import LogoIcon from '@/shared/assets/images/misc/logo.svg?jsx';
 import NoResultsIcon from '@/shared/assets/images/misc/no-results.svg?jsx';
@@ -14,6 +15,7 @@ const MiscImages = {
   noResults: { svg: NoResultsIcon },
   noWallets: { svg: NoWalletsIcon },
   document: { svg: DocumentIcon, img: Document },
+  ethereum: { svg: EthereumIcon },
 } as const;
 
 export type Misc = keyof typeof MiscImages;
