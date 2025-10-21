@@ -459,23 +459,21 @@ sample({
   target: setAvailable,
 });
 
-const $accountDeathImmediate = $balanceValidationResults.map((results) =>
-  results.some((item) => item.balance.burned.gt(BN_ZERO)),
+const $burnedAmount = $balanceValidationResults.map((results) =>
+  results.reduce((acc, item) => acc.add(item.balance.burned), BN_ZERO),
 );
 
-const accountDeathDebounced = debounce({
-  source: $accountDeathImmediate,
-  timeout: 300,
-});
-
-const $accountDeath = createStore(false).reset(formInitiated);
+const $showAccountDeathAlert = createStore(false).reset(formInitiated);
 
 sample({
-  clock: accountDeathDebounced,
+  clock: debounce({
+    source: $burnedAmount.map((burnedAmount) => burnedAmount.gtn(0)),
+    timeout: 300,
+  }),
   source: $validationPending,
   filter: (pending) => !pending,
   fn: (_, accountDeath) => accountDeath,
-  target: $accountDeath,
+  target: $showAccountDeathAlert,
 });
 
 const $showEDSwitch = combine($isEdSwitchVisible, $initiatorAccountBalance, (isEdSwitchVisible, balance) => {
