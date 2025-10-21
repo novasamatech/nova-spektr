@@ -51,70 +51,68 @@ export const ShardsStructure = () => {
   const { rootAccountId, rootAccountName, chainTuples } = shardsStructure;
 
   return (
-    <ul className="max-h-[470px]">
-      <li>
-        <SelectableRoot
-          accountId={rootAccountId}
-          accountName={rootAccountName}
-          checked={selectorUtils.isChecked(selectedStructure[rootAccountId])}
-          semiChecked={selectorUtils.isSemiChecked(selectedStructure[rootAccountId])}
-          onChange={(value) => shardsModel.events.rootToggled({ root: rootAccountId, value })}
-        />
+    <div className="max-h-[470px]">
+      <SelectableRoot
+        accountId={rootAccountId}
+        accountName={rootAccountName}
+        checked={selectorUtils.isChecked(selectedStructure[rootAccountId])}
+        semiChecked={selectorUtils.isSemiChecked(selectedStructure[rootAccountId])}
+        onChange={(value) => shardsModel.events.rootToggled({ root: rootAccountId, value })}
+      />
 
-        <ul className="ml-6">
-          {chainTuples.map(([chainId, accounts]) => {
-            const isChecked = selectorUtils.isChecked(selectedStructure[rootAccountId][chainId]);
-            const isSemiChecked = selectorUtils.isSemiChecked(selectedStructure[rootAccountId][chainId]);
+      <ul className="ml-6">
+        {chainTuples.map(([chainId, accounts]) => {
+          const isChecked = selectorUtils.isChecked(selectedStructure[rootAccountId][chainId]);
+          const isSemiChecked = selectorUtils.isSemiChecked(selectedStructure[rootAccountId][chainId]);
 
-            return (
-              <li key={chainId} className="mt-2">
-                <Accordion initialOpen>
-                  <Accordion.Trigger>
-                    <div className="w-full" onClick={(e) => e.stopPropagation()}>
-                      <Checkbox
-                        checked={isChecked}
-                        semiChecked={isSemiChecked}
-                        onChange={(checked) => toggleChain(rootAccountId, chainId, checked)}
-                      >
-                        <div className="flex items-center gap-2">
-                          {chainId === shardsUtils.EVM_GROUP_ID ? (
-                            <EvmChainTitle
-                              fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
-                            />
-                          ) : (
-                            <ChainTitle
-                              chain={chains[chainId]}
-                              fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
-                            />
-                          )}
-                          <HelpText className="text-text-tertiary">
-                            {selectedStructure[rootAccountId][chainId].checked} /{' '}
-                            {selectedStructure[rootAccountId][chainId].total}
-                          </HelpText>
-                        </div>
-                      </Checkbox>
-                    </div>
-                  </Accordion.Trigger>
-                  <Accordion.Content>
-                    <div className="ml-6">
-                      {accounts.map((account) => (
-                        <div key={account.id} className="mt-2">
-                          <SelectableShard
-                            account={account}
-                            chain={chains[account.chainId]}
-                            checked={selectedStructure[rootAccountId][chainId].accounts[account.accountId]}
-                            onChange={(value) => toggleAccount(rootAccountId, chainId, account.accountId, value)}
+          return (
+            <li key={chainId} className="mt-2">
+              <Accordion initialOpen>
+                <Accordion.Trigger>
+                  <div className="w-full" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={isChecked}
+                      semiChecked={isSemiChecked}
+                      onChange={(checked) => toggleChain(rootAccountId, chainId, checked)}
+                    >
+                      <div className="flex items-center gap-2">
+                        {chainId === shardsUtils.EVM_GROUP_ID ? (
+                          <EvmChainTitle
+                            fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
                           />
-                        </div>
-                      ))}
-                    </div>
-                  </Accordion.Content>
-                </Accordion>
-              </li>
-            );
-          })}
-        </ul>
-      </li>
-    </ul>
+                        ) : (
+                          <ChainTitle
+                            chain={chains[chainId]}
+                            fontClass={cnTw(isChecked || isSemiChecked ? 'text-text-primary' : 'text-text-secondary')}
+                          />
+                        )}
+                        <HelpText className="text-text-tertiary">
+                          {selectedStructure[rootAccountId][chainId].checked} /{' '}
+                          {selectedStructure[rootAccountId][chainId].total}
+                        </HelpText>
+                      </div>
+                    </Checkbox>
+                  </div>
+                </Accordion.Trigger>
+                <Accordion.Content>
+                  <div className="ml-6">
+                    {accounts.map((account) => (
+                      <div key={account.id} className="mt-2">
+                        <SelectableShard
+                          account={account}
+                          chain={chains[account.chainId]}
+                          checked={selectedStructure[rootAccountId][chainId].accounts[account.accountId]}
+                          onChange={(value) => toggleAccount(rootAccountId, chainId, account.accountId, value)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </Accordion.Content>
+              </Accordion>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 };
