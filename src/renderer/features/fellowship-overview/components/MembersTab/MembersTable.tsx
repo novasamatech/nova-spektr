@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -22,10 +22,14 @@ type MembersTableProps = {
 
 export const MembersTable = memo(({ data }: MembersTableProps) => {
   const { t } = useI18n();
-  const input = useUnit(fellowshipOverviewFeature.input);
-  const currentMember = useUnit(fellowshipMember.$currentMember);
 
-  const chain = input?.chain ?? null;
+  const chain = useStoreMap({
+    store: fellowshipOverviewFeature.input,
+    keys: [],
+    fn: input => input?.chain ?? null,
+  });
+
+  const currentMember = useUnit(fellowshipMember.$currentMember);
 
   const columns: Column<MemberRow>[] = useMemo(
     () => [

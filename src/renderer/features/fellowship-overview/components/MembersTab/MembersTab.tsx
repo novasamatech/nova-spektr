@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { memo, useCallback, useDeferredValue, useMemo, useState } from 'react';
 
 import { useDeferredList } from '@/shared/lib/hooks';
@@ -20,10 +20,13 @@ export const MembersTab = memo(({ searchQuery = '', onClearSearch }: MembersTabP
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const deferredQuery = useDeferredValue(searchQuery);
 
-  const input = useUnit(fellowshipOverviewFeature.input);
-  const membersWithSalary = useUnit(membersModel.$membersWithSalary);
+  const chain = useStoreMap({
+    store: fellowshipOverviewFeature.input,
+    keys: [],
+    fn: input => input?.chain ?? null,
+  });
 
-  const chain = input?.chain ?? null;
+  const membersWithSalary = useUnit(membersModel.$membersWithSalary);
   const { list } = useDeferredList({ list: membersWithSalary });
 
   const filteredMembers = useMemo(() => {
