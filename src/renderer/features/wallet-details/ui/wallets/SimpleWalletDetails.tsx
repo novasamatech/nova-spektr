@@ -157,7 +157,11 @@ export const SimpleWalletDetails = ({ wallet, onClose }: Props) => {
           </Box>
           <Tabs.Content value="accounts">
             {walletUtils.isSingleShard(wallet) ? (
-              <ConsensusAccountsList accounts={accountsIds} />
+              <div className="h-full min-h-0">
+                <ScrollArea>
+                  <ConsensusAccountsList accounts={accountsIds} />
+                </ScrollArea>
+              </div>
             ) : (
               <ChainAccountsList accounts={accountsIds} />
             )}
