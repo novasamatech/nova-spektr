@@ -48,7 +48,7 @@ const useTimeToNextRank = () => {
       }
 
       if (leftToPromotion && currentBlock && network?.api) {
-        const timeInMs = await getRelativeTimeFromApi(leftToPromotion + currentBlock, network.api);
+        const timeInMs = await getRelativeTimeFromApi(leftToPromotion, network.api);
         setTimeToNextRank(timeInMs);
         return;
       }

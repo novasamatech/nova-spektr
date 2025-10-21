@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { Box } from '@/shared/ui-kit';
+import { Box, ScrollArea } from '@/shared/ui-kit';
 import { promotion } from '../../model/promotion';
 
 import { RankDetails, RankProgress } from './index';
@@ -21,9 +21,11 @@ export const RanksTab = () => {
   };
 
   return (
-    <Box padding={5} gap={6}>
-      <RankProgress onRankClick={handleRankClick} />
-      <RankDetails selectedRankId={selectedRankId} />
-    </Box>
+    <ScrollArea>
+      <Box padding={5} margin={[0, 0, 12]} gap={6}>
+        <RankProgress onRankClick={handleRankClick} />
+        <RankDetails selectedRankId={selectedRankId} />
+      </Box>
+    </ScrollArea>
   );
 };
