@@ -29,7 +29,7 @@ describe('features/wallet/model/shards-model', () => {
     const expectedStruct = {
       rootAccountId: vaultWallet.rootAccountId,
       rootAccountName: vaultWallet.name,
-      chainTuples: [shards, accounts_1, accounts_2],
+      chainTuples: [accounts_2, accounts_1, shards],
     };
 
     expect(scope.getState(shardsModel.$shardsStructure)).toEqual(expectedStruct);
