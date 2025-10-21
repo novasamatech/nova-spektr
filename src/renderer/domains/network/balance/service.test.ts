@@ -1,6 +1,6 @@
 import { BN, BN_TEN } from '@polkadot/util';
 
-import { type AssetId, type Balance, type BalanceId, type TransferableMode } from '@/shared/core';
+import { type AssetId, AssetType, type Balance, type BalanceId, type TransferableMode } from '@/shared/core';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
@@ -10,7 +10,7 @@ import { type BalanceUpdateResult } from './types';
 const TEST_ED = new BN(1);
 
 describe('balanceService', () => {
-  describe('update balance', () => {
+  describe('withdraw', () => {
     it('should withdraw without crossing ed (keepAlive)', () => {
       const initial = createBalance({ free: 100, reserved: 0, frozen: 0 });
       const actual = balanceService.tryWithdraw(initial, BN_TEN, 'keepAlive');
@@ -23,6 +23,13 @@ describe('balanceService', () => {
       const actual = balanceService.tryWithdraw(initial, BN_TEN, 'allowDeath');
 
       expectBalanceToUpdated(actual, { free: 0, reserved: 0, frozen: 0 });
+    });
+
+    it('should force keepAlive strategy if there are some consumers of the balance', () => {
+      const initial = createBalance({ free: 10, reserved: 0, frozen: 0, consumers: 1 });
+      const actual = balanceService.tryWithdraw(initial, BN_TEN, 'allowDeath');
+
+      expectToImbalanced(actual, 1, { free: 1, reserved: 0, frozen: 0 });
     });
 
     it('should withdraw failing to cross ed', () => {
@@ -72,34 +79,6 @@ describe('balanceService', () => {
       expectToImbalanced(third, 20, { free: 10, reserved: 0, frozen: 0 });
     });
 
-    it('should do simple reserve', () => {
-      const initial = createBalance({ free: 20, reserved: 0, frozen: 0 });
-      const actual = balanceService.tryReserve(initial, new BN(5));
-
-      expectBalanceToUpdated(actual, { free: 15, reserved: 5, frozen: 0 });
-    });
-
-    it('should fail reserve', () => {
-      const initial = createBalance({ free: 20, reserved: 0, frozen: 0, ed: 10 });
-      const actual = balanceService.tryReserve(initial, new BN(15));
-
-      expectToImbalanced(actual, 5);
-    });
-
-    it('should freeze', () => {
-      const initial = createBalance({ free: 20, reserved: 10, frozen: 5 });
-      const actual = balanceService.tryFreeze(initial, new BN(30));
-
-      expectBalanceToUpdated(actual, { free: 20, reserved: 10, frozen: 30 });
-    });
-
-    it('should fail freeze', () => {
-      const initial = createBalance({ free: 20, reserved: 10, frozen: 5 });
-      const actual = balanceService.tryFreeze(initial, new BN(35));
-
-      expectToImbalanced(actual, 5);
-    });
-
     it('should combine multiple withdraws', () => {
       const initial = createBalance({ free: 20, reserved: 0, frozen: 0, ed: 10 });
 
@@ -114,6 +93,38 @@ describe('balanceService', () => {
       expectToImbalanced(deliveryFee, 5, { free: 0, reserved: 0, frozen: 0 });
     });
   });
+
+  describe('reserve', () => {
+    it('should do simple reserve', () => {
+      const initial = createBalance({ free: 20, reserved: 0, frozen: 0 });
+      const actual = balanceService.tryReserve(initial, new BN(5));
+
+      expectBalanceToUpdated(actual, { free: 15, reserved: 5, frozen: 0 });
+    });
+
+    it('should fail reserve', () => {
+      const initial = createBalance({ free: 20, reserved: 0, frozen: 0, ed: 10 });
+      const actual = balanceService.tryReserve(initial, new BN(15));
+
+      expectToImbalanced(actual, 5);
+    });
+  });
+
+  describe('freeze', () => {
+    it('should freeze', () => {
+      const initial = createBalance({ free: 20, reserved: 10, frozen: 5 });
+      const actual = balanceService.tryFreeze(initial, new BN(30));
+
+      expectBalanceToUpdated(actual, { free: 20, reserved: 10, frozen: 30 });
+    });
+
+    it('should fail freeze', () => {
+      const initial = createBalance({ free: 20, reserved: 10, frozen: 5 });
+      const actual = balanceService.tryFreeze(initial, new BN(35));
+
+      expectToImbalanced(actual, 5);
+    });
+  });
 });
 
 type BalanceBoilerplate = {
@@ -122,19 +133,33 @@ type BalanceBoilerplate = {
   frozen: number;
   ed?: number;
   transferableMode?: TransferableMode;
+  providers?: number;
+  consumers?: number;
 };
 
-const createBalance = ({ free, reserved, frozen, ed, transferableMode }: BalanceBoilerplate): Balance => ({
+const createBalance = ({
+  free,
+  reserved,
+  frozen,
+  ed,
+  transferableMode,
+  providers,
+  consumers,
+}: BalanceBoilerplate): Balance => ({
   id: '0' as BalanceId,
   accountId: '0x00' as AccountId,
   chainId: '0x00',
   assetId: 0 as AssetId,
+  assetType: AssetType.NATIVE,
   ed: nonNullable(ed) ? new BN(ed) : TEST_ED,
   transferableMode: transferableMode ?? 'holdAndFreezes',
   free: new BN(free),
   reserved: new BN(reserved),
   frozen: new BN(frozen),
   locked: [],
+  providers: providers ?? 1,
+  consumers: consumers ?? 0,
+  sufficients: 0,
 });
 
 const expectBalance = (actual: BalanceUpdateResult, expected: BalanceBoilerplate) => {
