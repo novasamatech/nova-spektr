@@ -1,3 +1,4 @@
+import { chainsService } from '@/shared/api/network';
 import {
   type Chain,
   type ChainId,
@@ -82,18 +83,31 @@ function getStructForVault(
   accounts: (VaultChainAccount | VaultShardAccount)[],
   chains: Record<ChainId, Chain>,
 ): RootStruct {
-  const chainTuples: ChainTuple[] = [];
+  const chainMap = new Map<ChainId | typeof EVM_GROUP_ID, (VaultChainAccount | VaultShardAccount)[]>();
 
   for (const account of accounts) {
     const chain = chains[account.chainId];
     const groupId = getConsensusChainId(chain);
-    const group = chainTuples.find(([id]) => id === groupId);
+
+    const group = chainMap.get(groupId);
     if (group) {
-      group[1].push(account);
+      group.push(account);
     } else {
-      chainTuples.push([groupId, [account]]);
+      chainMap.set(groupId, [account]);
     }
   }
+
+  const sortedChains = chainsService.sortChains(Object.values(chains));
+  const chainOrder = new Map(sortedChains.map((chain, index) => [chain.chainId, index]));
+
+  const chainTuples: ChainTuple[] = Array.from(chainMap.entries()).sort((a, b) => {
+    if (a[0] === EVM_GROUP_ID) return 1;
+    if (b[0] === EVM_GROUP_ID) return -1;
+
+    const orderA = chainOrder.get(a[0]) ?? Infinity;
+    const orderB = chainOrder.get(b[0]) ?? Infinity;
+    return orderA - orderB;
+  });
 
   return { rootAccountId, rootAccountName, chainTuples };
 }
