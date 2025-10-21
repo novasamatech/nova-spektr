@@ -283,8 +283,8 @@ const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed ?? BN_ZERO);
 const $hasDestinationBalanceError = combine(
   { amount: $amount, accountId: $destinationAccountId, balance: $destinationBalance },
   ({ amount, accountId, balance }) => {
-    if (nullable(balance)) {
-      return nonNullable(accountId);
+    if (nullable(accountId) || nullable(balance)) {
+      return false;
     }
     if (amount.isZero()) return false;
 
