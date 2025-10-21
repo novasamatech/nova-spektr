@@ -519,6 +519,7 @@
       "agreement": "Agreement",
       "agreementTooltip": "Minimum percentage of votes that should align with consensus of higher-ranked members, ensuring decisions follow established Fellowship norms.",
       "emptyList": "There is no members",
+      "inactive": "Inactive",
       "modalAccountTitle": "Account",
       "modalTitle": "Fellowship members",
       "myProfile": "My profile",

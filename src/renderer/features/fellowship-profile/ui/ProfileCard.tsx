@@ -3,7 +3,7 @@ import { type PropsWithChildren, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, Button, FootnoteText, Icon } from '@/shared/ui';
+import { BodyText, Button, Icon } from '@/shared/ui';
 import { CollectiveRank, Hash, Identicon } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
@@ -12,6 +12,7 @@ import { ERROR } from '../constants';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
+import { ActiveIndicator } from './ActiveIndicator';
 import { ProfileModal } from './ProfileModal';
 import { VotingRecordWidget } from './VotingRecord';
 
@@ -156,12 +157,7 @@ const Member = () => {
                 )}
               </BodyText>
 
-              {memberService.isCoreMember(member) && member.isActive ? (
-                <Box direction="row" verticalAlign="center" gap={1} shrink={0}>
-                  <span className="h-[9px] w-[9px] rounded-full bg-icon-positive" />
-                  <FootnoteText>{t('fellowship.members.active')}</FootnoteText>
-                </Box>
-              ) : null}
+              {memberService.isCoreMember(member) && <ActiveIndicator isActive={member.isActive} />}
             </Box>
 
             <CollectiveRank rank={member.rank ?? 0} showName />
