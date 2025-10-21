@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { BodyText } from '@/shared/ui';
@@ -20,7 +20,7 @@ type MembersTableProps = {
   data: MemberRow[];
 };
 
-export const MembersTable = ({ data }: MembersTableProps) => {
+export const MembersTable = memo(({ data }: MembersTableProps) => {
   const { t } = useI18n();
   const input = useUnit(fellowshipOverviewFeature.input);
   const currentMember = useUnit(fellowshipMember.$currentMember);
@@ -104,4 +104,4 @@ export const MembersTable = ({ data }: MembersTableProps) => {
       </ScrollArea>
     </div>
   );
-};
+});

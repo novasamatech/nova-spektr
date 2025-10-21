@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, memo, useMemo, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 
@@ -21,7 +21,7 @@ type TableProps<T> = {
   onSort?: (key: keyof T, direction: SortDirection) => void;
 };
 
-export const Table = <T,>({ columns, data, className, onSort }: TableProps<T>) => {
+const TableComponent = <T,>({ columns, data, className, onSort }: TableProps<T>) => {
   const [sortKey, setSortKey] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
@@ -110,3 +110,5 @@ export const Table = <T,>({ columns, data, className, onSort }: TableProps<T>) =
     </div>
   );
 };
+
+export const Table = memo(TableComponent) as typeof TableComponent;

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
@@ -10,7 +10,7 @@ type Props = {
   hasActiveFilters?: boolean;
 };
 
-export const MembersEmptyState = ({ searchQuery, onClearSearch, hasActiveFilters }: Props) => {
+export const MembersEmptyState = memo(({ searchQuery, onClearSearch, hasActiveFilters }: Props) => {
   const { t } = useI18n();
 
   const isSearchOnly = searchQuery && !hasActiveFilters;
@@ -47,4 +47,4 @@ export const MembersEmptyState = ({ searchQuery, onClearSearch, hasActiveFilters
       </div>
     </Surface>
   );
-};
+});

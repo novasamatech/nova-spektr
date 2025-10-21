@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useDeferredValue, useMemo, useState } from 'react';
+import { memo, useCallback, useDeferredValue, useMemo, useState } from 'react';
 
 import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
@@ -15,7 +15,7 @@ export type MembersTabProps = {
   onClearSearch?: () => void;
 };
 
-export const MembersTab = ({ searchQuery = '', onClearSearch }: MembersTabProps) => {
+export const MembersTab = memo(({ searchQuery = '', onClearSearch }: MembersTabProps) => {
   const [rankFilter, setRankFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const deferredQuery = useDeferredValue(searchQuery);
@@ -59,15 +59,15 @@ export const MembersTab = ({ searchQuery = '', onClearSearch }: MembersTabProps)
     }));
   }, [list, chain, deferredQuery, rankFilter, statusFilter]);
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setRankFilter('all');
     setStatusFilter('all');
-  };
+  }, []);
 
-  const handleClearSearch = () => {
+  const handleClearSearch = useCallback(() => {
     onClearSearch?.();
     handleClearFilters();
-  };
+  }, [onClearSearch, handleClearFilters]);
 
   const isEmpty = filteredMembers.length === 0 && (deferredQuery || rankFilter !== 'all' || statusFilter !== 'all');
 
@@ -91,4 +91,4 @@ export const MembersTab = ({ searchQuery = '', onClearSearch }: MembersTabProps)
       )}
     </div>
   );
-};
+});

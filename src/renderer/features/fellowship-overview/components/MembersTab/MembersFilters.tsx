@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
@@ -16,69 +16,65 @@ type MembersFiltersProps = {
   onClearFilters: () => void;
 };
 
-export const MembersFilters = ({
-  rankFilter,
-  statusFilter,
-  onRankFilterChange,
-  onStatusFilterChange,
-  onClearFilters,
-}: MembersFiltersProps) => {
-  const { t } = useI18n();
-  const membersWithSalary = useUnit(membersModel.$membersWithSalary);
+export const MembersFilters = memo(
+  ({ rankFilter, statusFilter, onRankFilterChange, onStatusFilterChange, onClearFilters }: MembersFiltersProps) => {
+    const { t } = useI18n();
+    const membersWithSalary = useUnit(membersModel.$membersWithSalary);
 
-  const rankOptions = useMemo(() => {
-    const ranks = Array.from(new Set(membersWithSalary.map(m => m.rank))).sort((a, b) => a - b);
-    return [
-      { value: 'all', label: t('fellowship.overview.members.filters.allRanks') },
-      ...ranks.map(rank => {
-        if (rank === 0) {
+    const rankOptions = useMemo(() => {
+      const ranks = Array.from(new Set(membersWithSalary.map(m => m.rank))).sort((a, b) => a - b);
+      return [
+        { value: 'all', label: t('fellowship.overview.members.filters.allRanks') },
+        ...ranks.map(rank => {
+          if (rank === 0) {
+            return {
+              value: '0',
+              label: `0 - ${t('fellowship.rank.0')}`,
+            };
+          }
+          const rankData = getRankDataByRank(rank);
           return {
-            value: '0',
-            label: `0 - ${t('fellowship.rank.0')}`,
+            value: rank.toString(),
+            label: rankData ? `${rankData.label} - ${rankData.name}` : `Rank ${rank}`,
           };
-        }
-        const rankData = getRankDataByRank(rank);
-        return {
-          value: rank.toString(),
-          label: rankData ? `${rankData.label} - ${rankData.name}` : `Rank ${rank}`,
-        };
-      }),
-    ];
-  }, [membersWithSalary, t]);
+        }),
+      ];
+    }, [membersWithSalary, t]);
 
-  const hasActiveFilters = rankFilter !== 'all' || statusFilter !== 'all';
+    const hasActiveFilters = rankFilter !== 'all' || statusFilter !== 'all';
 
-  return (
-    <div className="flex shrink-0 items-center justify-between px-5 pt-3 pb-5">
-      <div className="flex items-center gap-4">
-        <div className="w-[180px]">
-          <Select
-            value={rankFilter}
-            placeholder={t('fellowship.overview.members.filters.selectRank')}
-            onChange={onRankFilterChange}
-          >
-            {rankOptions.map(option => (
-              <Select.Item key={option.value} value={option.value}>
-                {option.label}
-              </Select.Item>
-            ))}
-          </Select>
+    return (
+      <div className="flex shrink-0 items-center justify-between px-5 pt-3 pb-5">
+        <div className="flex items-center gap-4">
+          <div className="w-[180px]">
+            <Select
+              value={rankFilter}
+              placeholder={t('fellowship.overview.members.filters.selectRank')}
+              onChange={onRankFilterChange}
+            >
+              {rankOptions.map(option => (
+                <Select.Item key={option.value} value={option.value}>
+                  {option.label}
+                </Select.Item>
+              ))}
+            </Select>
+          </div>
+          <div className="w-[140px]">
+            <Select value={statusFilter} placeholder="Status" onChange={onStatusFilterChange}>
+              <Select.Item value="all">{t('fellowship.overview.members.filters.allStatuses')}</Select.Item>
+              <Select.Item value="active">{t('fellowship.overview.members.status.active')}</Select.Item>
+              <Select.Item value="passive">{t('fellowship.overview.members.status.passive')}</Select.Item>
+            </Select>
+          </div>
         </div>
-        <div className="w-[140px]">
-          <Select value={statusFilter} placeholder="Status" onChange={onStatusFilterChange}>
-            <Select.Item value="all">{t('fellowship.overview.members.filters.allStatuses')}</Select.Item>
-            <Select.Item value="active">{t('fellowship.overview.members.status.active')}</Select.Item>
-            <Select.Item value="passive">{t('fellowship.overview.members.status.passive')}</Select.Item>
-          </Select>
-        </div>
+        <Button
+          variant="text"
+          className={cnTw(!hasActiveFilters && 'pointer-events-none opacity-0')}
+          onClick={onClearFilters}
+        >
+          {t('fellowship.overview.members.clearAll')}
+        </Button>
       </div>
-      <Button
-        variant="text"
-        className={cnTw(!hasActiveFilters && 'pointer-events-none opacity-0')}
-        onClick={onClearFilters}
-      >
-        {t('fellowship.overview.members.clearAll')}
-      </Button>
-    </div>
-  );
-};
+    );
+  },
+);
