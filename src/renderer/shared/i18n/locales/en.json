@@ -453,11 +453,6 @@
           "description": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
           "title": "Nothing found"
         },
-        "nothing-found": {
-          "clear": "Clear search",
-          "description": "\"{query}\" did not match any address or identity.\nPlease try searching with another term.",
-          "title": "Nothing found"
-        },
         "search-placeholder": "Search by event, address or identity",
         "sort": {
           "duration-asc": "Newest",
@@ -541,6 +536,9 @@
     "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
     "overview": {
+      "match": "match",
+      "matches": "matches",
+      "matchingArticles": "matching articles",
       "members": {
         "clearAll": "Clear all",
         "filters": {
@@ -564,9 +562,6 @@
       "readyForPromotion": "Ready for promotion",
       "retentionProgress": "Retention progress: {progress}%",
       "searchPlaceholder": "Search by address or identity",
-      "matchingArticles": "matching articles",
-      "matches": "matches",
-      "match": "match",
       "tabs": {
         "codex": "Codex",
         "members": "Members",
