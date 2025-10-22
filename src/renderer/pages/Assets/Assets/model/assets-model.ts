@@ -8,9 +8,9 @@ import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { assetsSearchModel, assetsSettingsModel, portfolioModel } from '@/features/assets';
 
-const activeShardsSet = createEvent<AnyAccount[]>();
+const setSelectedAccounts = createEvent<AnyAccount[]>();
 
-const $activeShards = createStore<AnyAccount[]>([]);
+const $selectedAccounts = createStore<AnyAccount[]>([]);
 
 sample({
   clock: [assetsSettingsModel.$assetsView, once(assetsSettingsModel.events.assetsStarted)],
@@ -29,7 +29,7 @@ sample({
 });
 
 sample({
-  clock: activeShardsSet,
+  clock: setSelectedAccounts,
   source: walletSelect.$selectedWallet,
   filter: (wallet: Wallet | null) => nonNullable(wallet),
   fn: (wallet, accounts) => {
@@ -37,7 +37,7 @@ sample({
 
     return accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
   },
-  target: $activeShards,
+  target: $selectedAccounts,
 });
 
 sample({
@@ -50,12 +50,11 @@ sample({
 
     return wallet.accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
   },
-  target: $activeShards,
+  target: $selectedAccounts,
 });
 
 export const assetsModel = {
-  $activeShards,
-  events: {
-    activeShardsSet,
-  },
+  $selectedAccounts,
+
+  setSelectedAccounts,
 };

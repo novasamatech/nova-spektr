@@ -19,11 +19,11 @@ import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 
 type Props = {
   query: string;
-  activeShards: AnyAccount[];
+  selectedAccounts: AnyAccount[];
   hideZeroBalances: boolean;
   assetsView: AssetsListView;
 };
-export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsView }: Props) => {
+export const AssetsChainView = ({ query, selectedAccounts, hideZeroBalances, assetsView }: Props) => {
   const activeWallet = useUnit(walletSelect.$selectedWallet);
   const balances = useUnit(balanceModel.$balanceMap);
 
@@ -39,7 +39,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
   const { list, isLoading } = useDeferredList({ list: filteredChains, forceFirstRender: true });
 
   useEffect(() => {
-    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
+    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !selectedAccounts.length) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
 
@@ -52,7 +52,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
 
       for (const account of activeWallet.accounts) {
         if (
-          !activeShards.find((a) => a.accountId === account.accountId) ||
+          !selectedAccounts.find((a) => a.accountId === account.accountId) ||
           !accountUtils.isNonBaseVaultAccount(account, activeWallet) ||
           !accountUtils.isChainAndCryptoMatch(account, chain)
         )
@@ -73,7 +73,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     );
 
     setSortedChains(sortedChains);
-  }, [activeWallet, balances, assetsPrices, assetsView, connections, activeShards]);
+  }, [activeWallet, balances, assetsPrices, assetsView, connections, selectedAccounts]);
 
   useEffect(() => {
     let filteredChains: Chain[] = [];
@@ -112,7 +112,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     }
   }, [sortedChains, query]);
 
-  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) {
+  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !selectedAccounts.length) {
     return null;
   }
 
@@ -129,7 +129,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
           <NetworkAssets
             key={chain.chainId}
             chain={chain}
-            accounts={activeShards}
+            accounts={selectedAccounts}
             hideZeroBalances={hideZeroBalances}
             query={query}
             wallet={activeWallet}
