@@ -67,7 +67,7 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
 
 function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
   const transferable = transferableAmountBN(balance);
-  // reset strategy to keep alive if withdraw will lead to account slashing
+  // reset strategy to keep alive if withdraw will lead to account reaping
   const preservationStrategy = canDecrementProvider(balance) ? balancePreservation : 'keepAlive';
 
   const transferableImbalance = transferable.sub(amount);
