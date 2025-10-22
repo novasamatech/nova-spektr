@@ -168,7 +168,7 @@ export const CodexTab = () => {
           />
         </div>
       </div>
-      <div className="relative min-h-0 flex-1 rounded-[12px] bg-[#f4f4f8]">
+      <div className="relative min-h-0 flex-1 rounded-[12px]">
         <style>
           {`
             mark {
