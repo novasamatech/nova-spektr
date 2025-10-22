@@ -292,8 +292,7 @@ const $reusableLock = combine(
       return null;
     }
 
-    const locked = BN.max(balance.frozen, balance.reserved);
-    const reusableLock = locked.sub(stakedAmount);
+    const reusableLock = balance.frozen.sub(stakedAmount);
 
     if (reusableLock.isZero() || reusableLock.isNeg()) {
       return BN_ZERO;
