@@ -19,11 +19,11 @@ import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 
 type Props = {
   query: string;
-  selectedAccounts: AnyAccount[];
+  visibleAccounts: AnyAccount[];
   hideZeroBalances: boolean;
   assetsView: AssetsListView;
 };
-export const AssetsChainView = ({ query, selectedAccounts, hideZeroBalances, assetsView }: Props) => {
+export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, assetsView }: Props) => {
   const activeWallet = useUnit(walletSelect.$selectedWallet);
   const balances = useUnit(balanceModel.$balanceMap);
 
@@ -39,10 +39,10 @@ export const AssetsChainView = ({ query, selectedAccounts, hideZeroBalances, ass
   const { list, isLoading } = useDeferredList({ list: filteredChains, forceFirstRender: true });
 
   useEffect(() => {
-    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !selectedAccounts.length) return;
+    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !visibleAccounts.length) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
-    const selectedAccountIds = new Set(selectedAccounts.map((a) => a.accountId));
+    const selectedAccountIds = new Set(visibleAccounts.map((a) => a.accountId));
 
     const filteredChains = Object.values(chains).filter((chain) => {
       const connection = connections[chain.chainId];
@@ -72,7 +72,7 @@ export const AssetsChainView = ({ query, selectedAccounts, hideZeroBalances, ass
     );
 
     setSortedChains(sortedChains);
-  }, [activeWallet, balances, assetsPrices, assetsView, connections, selectedAccounts]);
+  }, [activeWallet, balances, assetsPrices, assetsView, connections, visibleAccounts]);
 
   useEffect(() => {
     let filteredChains: Chain[] = [];
@@ -111,7 +111,7 @@ export const AssetsChainView = ({ query, selectedAccounts, hideZeroBalances, ass
     }
   }, [sortedChains, query]);
 
-  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !selectedAccounts.length) {
+  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !visibleAccounts.length) {
     return null;
   }
 
@@ -128,7 +128,7 @@ export const AssetsChainView = ({ query, selectedAccounts, hideZeroBalances, ass
           <NetworkAssets
             key={chain.chainId}
             chain={chain}
-            accounts={selectedAccounts}
+            accounts={visibleAccounts}
             hideZeroBalances={hideZeroBalances}
             query={query}
             wallet={activeWallet}

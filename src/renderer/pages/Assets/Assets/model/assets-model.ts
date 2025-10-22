@@ -5,9 +5,9 @@ import { type AnyAccount } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { assetsSearchModel, assetsSettingsModel, portfolioModel } from '@/features/assets';
 
-const setSelectedAccounts = createEvent<AnyAccount[]>();
+const setVisibleAccounts = createEvent<AnyAccount[]>();
 
-const $selectedAccounts = createStore<AnyAccount[]>([]);
+const $visibleAccounts = createStore<AnyAccount[]>([]);
 
 sample({
   clock: [assetsSettingsModel.$assetsView, once(assetsSettingsModel.events.assetsStarted)],
@@ -26,12 +26,12 @@ sample({
 });
 
 sample({
-  clock: [walletSelect.$selectedAccounts, setSelectedAccounts],
-  target: $selectedAccounts,
+  clock: [walletSelect.$selectedAccounts, setVisibleAccounts],
+  target: $visibleAccounts,
 });
 
 export const assetsModel = {
-  $selectedAccounts,
+  $visibleAccounts,
 
-  setSelectedAccounts,
+  setVisibleAccounts,
 };
