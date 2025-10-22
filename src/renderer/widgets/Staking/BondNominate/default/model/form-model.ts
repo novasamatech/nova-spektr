@@ -278,7 +278,6 @@ sample({
 });
 
 const $bondBalanceRange = $reservableAmount.map((reservableAmount) => {
-  console.log({ reservableAmount: reservableAmount?.toString() });
   if (nullable(reservableAmount)) return ZERO_BALANCE;
 
   const minBondBalance = reservableAmount;
