@@ -1,6 +1,8 @@
+import { Trans } from 'react-i18next';
+
 import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { BodyText } from '@/shared/ui';
+import { BodyText, TitleText } from '@/shared/ui';
 import { Graphics } from '@/shared/ui-kit';
 
 type Props = {
@@ -18,11 +20,16 @@ export const EmptyOperations = ({ multisigAccount, isEmptyFromFilters }: Props) 
     : 'operations.noOperationsWalletNotMulti';
 
   return (
-    <div className="flex w-full flex-1 flex-col items-center justify-center gap-y-8">
+    <div className="flex w-full flex-1 flex-col items-center justify-center gap-y-6">
       <Graphics name="emptyList" alt={t('operations.noOperationsDescription')} size={178} />
-      <BodyText align="center" className="max-w-[340px] text-text-tertiary">
-        {t(emptyText)}
-      </BodyText>
+
+      <div className="flex flex-col items-center gap-y-4">
+        {multisigAccount && <TitleText>{t('operations.noOperationsTitle')}</TitleText>}
+
+        <BodyText align="center" className="max-w-[560px] text-text-tertiary">
+          <Trans t={t} i18nKey={emptyText} />
+        </BodyText>
+      </div>
     </div>
   );
 };
