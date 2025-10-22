@@ -564,6 +564,9 @@
       "readyForPromotion": "Ready for promotion",
       "retentionProgress": "Retention progress: {progress}%",
       "searchPlaceholder": "Search by address or identity",
+      "matchingArticles": "matching articles",
+      "matches": "matches",
+      "match": "match",
       "tabs": {
         "codex": "Codex",
         "members": "Members",
