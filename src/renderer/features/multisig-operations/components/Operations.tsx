@@ -40,7 +40,7 @@ export const Operations = () => {
 
   return (
     <ScrollArea>
-      <Box horizontalAlign="center" padding={[0, 0, 10]}>
+      <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
         {operations.length > 0 && <OperationsFilter operations={operations} />}
 
         {filteredTxs.length === 0 && (
