@@ -15,7 +15,9 @@ import { MembersTable } from './MembersTable';
 
 export type MembersTabProps = Record<string, never>;
 
-export const MembersTab = memo(({ searchQuery = '', onClearSearch }: MembersTabProps) => {
+export const MembersTab = memo((_props: MembersTabProps) => {
+  const { t } = useI18n();
+  const [searchQuery, setSearchQuery] = useState('');
   const [rankFilter, setRankFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const deferredQuery = useDeferredValue(searchQuery);
@@ -27,6 +29,7 @@ export const MembersTab = memo(({ searchQuery = '', onClearSearch }: MembersTabP
   });
 
   const membersWithSalary = useUnit(membersModel.$membersWithSalary);
+  const features = useUnit($features);
   const { list } = useDeferredList({ list: membersWithSalary });
 
   const filteredMembers = useMemo(() => {
@@ -68,9 +71,9 @@ export const MembersTab = memo(({ searchQuery = '', onClearSearch }: MembersTabP
   }, []);
 
   const handleClearSearch = useCallback(() => {
-    onClearSearch?.();
+    setSearchQuery('');
     handleClearFilters();
-  }, [onClearSearch, handleClearFilters]);
+  }, [handleClearFilters]);
 
   const isEmpty = filteredMembers.length === 0 && (deferredQuery || rankFilter !== 'all' || statusFilter !== 'all');
 
