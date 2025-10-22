@@ -22,7 +22,6 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
 
     await transferModal.fillRecipient(constants.permissionsValidation.recipient);
     await transferModal.fillAmount(constants.permissionsValidation.amount);
-    await transferModal.expectTransferFeeNotZero();
 
     await transferModal.expectValidationsVisible(Validation.permission);
 
@@ -71,7 +70,7 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     await transferModal.fillRecipient(constants.amountValidation.recipient);
 
     await transferModal.fillAmount(constants.amountValidation.validationAmount);
-    await transferModal.expectTransferFeeNotZero();
+
     await transferModal.expectValidationsVisible(Validation.sendingAmount);
 
     await transferModal.fillAmount(constants.amountValidation.amount);

@@ -56,6 +56,9 @@ export class DelegateAuthorityModalWindow extends BaseModal<DelegateModalElement
 
   public async expectValidationsVisible(validations: Validation | Validation[]): Promise<void> {
     const list = Array.isArray(validations) ? validations : [validations];
+    await this.isContinueButtonDisabled();
+    await this.expectTransferFeeNotZero();
+    await this.isContinueButtonDisabled();
 
     await step(`Check validations visible: ${list.join(', ')}`, async () => {
       for (const v of list) {
@@ -70,6 +73,7 @@ export class DelegateAuthorityModalWindow extends BaseModal<DelegateModalElement
         }
       }
     });
+    await this.isContinueButtonDisabled();
   }
 
   public async expectValidationsHidden(validations: Validation | Validation[]): Promise<void> {
@@ -82,6 +86,35 @@ export class DelegateAuthorityModalWindow extends BaseModal<DelegateModalElement
           await expect(l).toHaveCount(0);
         }
       }
+    });
+  }
+
+  public async expectContinueButtonToBeDisabled(): Promise<void> {
+    await step('Expect Continue button to be disabled', async () => {
+      const button = this.page.getByRole('button', { name: 'Continue' });
+      await expect(button).toBeDisabled();
+    });
+  }
+
+  public async isContinueButtonDisabled(): Promise<void> {
+    await step('Check that Continue button is disabled', async () => {
+      const button = this.page.getByRole('button', { name: 'Continue' });
+      if (await button.isEnabled()) {
+        throw new Error(`Continue button is enabled by error`);
+      }
+    });
+  }
+
+  public async expectTransferFeeNotZero(): Promise<void> {
+    const feeRow = this.page.getByTestId(DelegateModalElements.feeRowLocator);
+    const fee = feeRow.getByTestId(DelegateModalElements.tokenAmountLocator);
+
+    await step('Expect transfer fee to be greater than 0', async () => {
+      const feeText = await fee.textContent();
+      const numericMatch = feeText?.match(/(\d+\.?\d*)/);
+      const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
+
+      expect(feeValue).toBeGreaterThan(0);
     });
   }
 }

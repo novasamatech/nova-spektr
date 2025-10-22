@@ -50,26 +50,57 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
 
   public async expectTransferFeeNotZero(): Promise<void> {
     const feeRow = this.page.getByTestId(TransferModalElements.feeRowLocator);
-    const assetBalance = feeRow.getByTestId(TransferModalElements.feeValueLocator);
+    const fee = feeRow.getByTestId(TransferModalElements.tokenAmountLocator);
+    const feeLoaders = feeRow.getByTestId(TEST_IDS.OPERATIONS.FEE_LOADER);
+
+    await step('Wait until all fees are loaded', async () => {
+      const loaders = await feeLoaders.all();
+      for (const loader of loaders) {
+        await expect(loader).toBeHidden();
+      }
+    });
 
     await step('Expect transfer fee to be greater than 0', async () => {
-      await expect(async () => {
-        const feeText = await assetBalance.textContent();
-        const numericMatch = feeText?.match(/(\d+\.?\d*)/);
-        const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
+      const feeText = await fee.textContent();
 
-        expect(feeValue).toBeGreaterThan(0);
-      }).toPass({
-        intervals: [1000, 1000],
-        timeout: 3000,
-      });
+      const numericMatch = feeText?.match(/(\d+\.?\d*)/);
+      const feeValue = numericMatch ? parseFloat(numericMatch[0]) : 0;
+
+      expect(feeValue, `Fee should be > 0, got "${feeText}"`).toBeGreaterThan(0);
+    });
+  }
+
+  public async waitUntilAvailableAmountLoaded(): Promise<void> {
+    const balanceRow = this.page.getByTestId(TransferModalElements.balanceRowLocator);
+    const assetBalance = balanceRow.getByTestId(TransferModalElements.tokenAmountLocator);
+
+    await step('Expect available balance to be visible', async () => {
+      expect(assetBalance).toBeVisible();
     });
   }
 
   private async waitForContinueButtonToBeEnabled(): Promise<void> {
-    const button = this.page.getByRole('button', { name: 'Continue' });
-    await expect(button).toBeVisible();
-    await expect(button).toBeEnabled();
+    await step('Wait for Continue button to be enabled', async () => {
+      const button = this.page.getByRole('button', { name: 'Continue' });
+      await expect(button).toBeVisible();
+      await expect(button).toBeEnabled();
+    });
+  }
+
+  public async expectContinueButtonToBeDisabled(): Promise<void> {
+    await step('Expect Continue button to be disabled', async () => {
+      const button = this.page.getByRole('button', { name: 'Continue' });
+      await expect(button).toBeDisabled();
+    });
+  }
+
+  public async isContinueButtonDisabled(): Promise<void> {
+    await step('Check that Continue button is disabled', async () => {
+      const button = this.page.getByRole('button', { name: 'Continue' });
+      if (await button.isEnabled()) {
+        throw new Error(`Continue button is enabled by error`);
+      }
+    });
   }
 
   public async waitForAlertToDisappear(): Promise<void> {
@@ -177,6 +208,10 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
 
   public async expectValidationsVisible(validations: Validation | Validation[]): Promise<void> {
     const list = Array.isArray(validations) ? validations : [validations];
+    await this.isContinueButtonDisabled();
+    await this.expectTransferFeeNotZero();
+    await this.waitUntilAvailableAmountLoaded();
+    await this.isContinueButtonDisabled();
 
     await step(`Check validations visible: ${list.join(', ')}`, async () => {
       for (const v of list) {
@@ -191,6 +226,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
         }
       }
     });
+    await this.isContinueButtonDisabled();
   }
 
   public async expectValidationsHidden(validations: Validation | Validation[]): Promise<void> {
