@@ -2318,6 +2318,7 @@
       "nameExistsError": "This wallet name already exists",
       "nameRequiredError": "Name is required",
       "openInfoAction": "Open info",
+      "otherNetworkColumn": "Other network",
       "proxiedAddressTitle": "Delegated from",
       "proxiesTabTitle": "Delegated to",
       "proxiesTabTitleShort": "Delegated",

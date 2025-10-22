@@ -4,7 +4,14 @@ import { type FormEvent, useMemo, useState } from 'react';
 import { RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, toAddress, toShortAddress, transferableAmount } from '@/shared/lib/utils';
+import {
+  formatAsset,
+  fromPrecision,
+  getNativeAsset,
+  toAddress,
+  toShortAddress,
+  transferableAmount,
+} from '@/shared/lib/utils';
 import { Button, Combobox, DetailRow, FootnoteText, Icon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
 import { AssetBalance, Identicon, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
@@ -104,10 +111,13 @@ const Amount = () => {
 
   const network = useUnit(formModel.$networkStore);
   const bondBalanceRange = useUnit(formModel.$bondBalanceRange);
+  const reusableLock = useUnit(formModel.$reusableLock);
 
   if (!network) {
     return null;
   }
+
+  const showReuseLockBtn = !!reusableLock?.gtn(0);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -123,6 +133,18 @@ const Amount = () => {
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}
       </InputHint>
+
+      {reusableLock && showReuseLockBtn && (
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            pallet="secondary"
+            onClick={() => amount.onChange(fromPrecision(reusableLock, network.asset.precision))}
+          >
+            {t('governance.vote.reuseLock')}: {formatAsset(reusableLock, network.asset)}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
