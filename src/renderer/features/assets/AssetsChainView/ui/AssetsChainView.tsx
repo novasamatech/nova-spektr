@@ -53,9 +53,7 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
       return activeWalletAccounts.some((account) => {
         if (!visibleAccountIds.has(account.accountId)) return false;
 
-        if (!accountService.isAccountAvailableOnChain(account, chain)) return false;
-
-        return true;
+        return accountService.isAccountAvailableOnChain(account, chain);
       });
     });
 
