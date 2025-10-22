@@ -38,16 +38,18 @@ export type ValidationResult = {
   balanceValidationResults: TransactionValidationBalanceError[];
 };
 
+export type Validator<A> = (params: ValidatorParams<A>) => Promise<ValidationResult>;
+
 export function createTxValidator<A>(params?: {
   DEBUG?: boolean;
   additionalBalanceRules?: ((params: RulesParams<A>) => TransactionValidationBalanceError | undefined)[];
-}) {
-  return async ({
+}): Validator<A> {
+  const validator: Validator<A> = async ({
     transaction,
     balances,
     balanceValidationResults: previousBalanceValidationResults,
     ...rest
-  }: ValidatorParams<A>): Promise<ValidationResult> => {
+  }) => {
     const baseParams = rest as BaseParams<A>;
 
     const result: ValidationResult = {
@@ -56,8 +58,6 @@ export function createTxValidator<A>(params?: {
     };
 
     try {
-      const chainId = baseParams.api.genesisHash.toHex();
-
       const getBalance = (accountId: AccountId, chainId: ChainId, assetId: AssetId) => {
         const validationResult = result.balanceValidationResults.findLast((r) => {
           return (
@@ -88,22 +88,21 @@ export function createTxValidator<A>(params?: {
         return balanceUtils.getBalance(balances, accountId, chainId, assetId);
       };
 
-      const normalizedTransaction = convertTransaction(transaction, baseParams.api);
-      const fixedArgs = { ...baseParams, getBalance, transaction: normalizedTransaction };
+      // Common data preparation
 
-      // basic validations
+      const chainId = baseParams.api.genesisHash.toHex();
+      const newTransactionInterface = convertTransaction(transaction, baseParams.api);
 
-      const transactionPermissionErrors = accountService.validateCallPermission(fixedArgs);
-      const transactionBalanceValidation = await accountService.validateRouteBalances(fixedArgs);
-
-      result.balanceValidationResults = result.balanceValidationResults.concat(transactionBalanceValidation);
-
-      // fee validation
+      // Fee validation. Should be first because it's entry point validation for every operation
 
       const signatory = accountService.findSignatory(baseParams.route);
       assert(signatory, 'Signatory not found');
 
-      const fee = await transactionService.getTransactionFee(normalizedTransaction, baseParams.api);
+      const fee = await transactionService.getTransactionFee(
+        newTransactionInterface,
+        signatory.accountId,
+        baseParams.api,
+      );
       const balanceForFee = getBalance(signatory.accountId, chainId, baseParams.asset.assetId);
       assert(balanceForFee, 'Balance for fee not found');
 
@@ -114,9 +113,18 @@ export function createTxValidator<A>(params?: {
         action: 'fee',
       });
 
-      // additional validations
+      // External validations
 
-      const ruleArgs: RulesParams<A> = { ...baseParams, getBalance, transaction: normalizedTransaction };
+      const fixedArgs = { ...baseParams, getBalance, transaction: newTransactionInterface };
+
+      const transactionPermissionErrors = accountService.validateCallPermission(fixedArgs);
+      const transactionBalanceValidation = await accountService.validateRouteBalances(fixedArgs);
+
+      result.balanceValidationResults = result.balanceValidationResults.concat(transactionBalanceValidation);
+
+      // Additional local validations
+
+      const ruleArgs: RulesParams<A> = { ...baseParams, getBalance, transaction: newTransactionInterface };
 
       if (params?.additionalBalanceRules) {
         for (const rule of params.additionalBalanceRules) {
@@ -148,6 +156,8 @@ export function createTxValidator<A>(params?: {
       return result;
     }
   };
+
+  return validator;
 }
 
 function convertTransaction(transaction: Transaction | AnyTransaction, api: ApiPromise): AnyTransaction {

@@ -10,7 +10,6 @@ import { camelCase, noop, uniq } from 'lodash';
 
 import {
   type Asset,
-  type AssetId,
   AssetType,
   type BalanceDraft,
   type BalanceMap,
@@ -170,10 +169,14 @@ async function subscribeNativeAssetsChange(
         accountId: accountIds[index],
         chainId: chain.chainId,
         assetId: asset.assetId,
+        assetType: asset.type,
         free: systemAccountInfo.data.free.toBn(),
         reserved: systemAccountInfo.data.reserved.toBn(),
         frozen,
         ed,
+        providers: systemAccountInfo.providers.toNumber(),
+        consumers: systemAccountInfo.consumers.toNumber(),
+        sufficients: systemAccountInfo.sufficients.toNumber(),
         transferableMode: hasHoldAndFreezesFlag(systemAccountInfo.data.flags) ? 'holdAndFreezes' : 'legacy',
       });
     }
@@ -234,10 +237,14 @@ function subscribeStatemineAssetsChange(
         accountId,
         chainId: chain.chainId,
         assetId: asset.assetId,
+        assetType: asset.type,
         frozen: BN_ZERO,
         reserved: BN_ZERO,
         free,
         ed,
+        providers: 0,
+        consumers: 0,
+        sufficients: 0,
         transferableMode: 'legacy',
       });
     }
@@ -298,9 +305,13 @@ function subscribeOrmlAssetsChange(
         accountId,
         chainId: chain.chainId,
         assetId: asset.assetId,
+        assetType: asset.type,
         free: accountInfo.free.toBn(),
         frozen: accountInfo.frozen.toBn(),
         reserved: accountInfo.reserved.toBn(),
+        providers: 0,
+        consumers: 0,
+        sufficients: 0,
         transferableMode: 'legacy',
         ed,
       });
@@ -330,6 +341,7 @@ function subscribeLockNativeAssetChange(
         accountId: accountIds[index],
         chainId: chain.chainId,
         assetId: asset.assetId,
+        assetType: asset.type,
         locked,
       });
     }
@@ -366,6 +378,7 @@ function subscribeLockOrmlAssetChange(
         accountId: accountIds[accountIndex],
         chainId: chain.chainId,
         assetId: assets[assetIndex].assetId,
+        assetType: assets[assetIndex].type,
         locked,
       });
     }
@@ -434,7 +447,7 @@ async function fetchLockBalances(api: ApiPromise, chain: Chain, accountIds: Acco
   );
 
   const [native, orml] = await Promise.all([
-    nativeAsset ? fetchLockNativeAsset(api, chain, nativeAsset?.assetId, accountIds) : [],
+    nativeAsset ? fetchLockNativeAsset(api, chain, nativeAsset, accountIds) : [],
     fetchLockOrmlAsset(api, chain, ormlAssets, accountIds),
   ]);
 
@@ -472,10 +485,14 @@ async function fetchNativeAssets(
       accountId: accountIds[index],
       chainId: chain.chainId,
       assetId: asset.assetId,
+      assetType: asset.type,
       free: systemAccountInfo.data.free.toBn(),
       reserved: systemAccountInfo.data.reserved.toBn(),
       frozen,
       ed,
+      providers: systemAccountInfo.providers.toNumber(),
+      consumers: systemAccountInfo.consumers.toNumber(),
+      sufficients: systemAccountInfo.sufficients.toNumber(),
       transferableMode: hasHoldAndFreezesFlag(systemAccountInfo.data.flags) ? 'holdAndFreezes' : 'legacy',
     });
   }
@@ -534,10 +551,14 @@ async function fetchStatemineAssets(
       accountId,
       chainId: chain.chainId,
       assetId: asset.assetId,
+      assetType: asset.type,
       frozen: BN_ZERO,
       reserved: BN_ZERO,
       free,
       ed,
+      providers: 0,
+      consumers: 0,
+      sufficients: 0,
       transferableMode: 'legacy',
     });
   }
@@ -574,11 +595,15 @@ async function fetchOrmlAssets(
     result.push({
       accountId: accountIds[accountIndex],
       chainId: chain.chainId,
-      assetId: assets[assetIndex].assetId,
+      assetId: asset.assetId,
+      assetType: asset.type,
       free: accountInfo.free.toBn(),
       frozen: accountInfo.frozen.toBn(),
       reserved: accountInfo.reserved.toBn(),
       ed,
+      providers: 0,
+      consumers: 0,
+      sufficients: 0,
       transferableMode: 'legacy',
     });
   }
@@ -589,7 +614,7 @@ async function fetchOrmlAssets(
 async function fetchLockNativeAsset(
   api: ApiPromise,
   chain: Chain,
-  assetId: AssetId,
+  asset: Asset,
   accountIds: AccountId[],
 ): Promise<BalanceDraft[]> {
   const data = await api.query.balances.locks.multi(accountIds);
@@ -604,7 +629,8 @@ async function fetchLockNativeAsset(
     result.push({
       accountId: accountIds[index],
       chainId: chain.chainId,
-      assetId,
+      assetId: asset.assetId,
+      assetType: asset.type,
       locked,
     });
   }
@@ -639,6 +665,7 @@ async function fetchLockOrmlAsset(
       accountId: accountIds[accountIndex],
       chainId: chain.chainId,
       assetId: assets[assetIndex].assetId,
+      assetType: assets[assetIndex].type,
       locked,
     });
   }
