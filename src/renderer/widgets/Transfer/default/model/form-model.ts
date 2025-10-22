@@ -283,8 +283,8 @@ const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed ?? BN_ZERO);
 const $hasDestinationBalanceError = combine(
   { amount: $amount, accountId: $destinationAccountId, balance: $destinationBalance },
   ({ amount, accountId, balance }) => {
-    if (nullable(balance)) {
-      return nonNullable(accountId);
+    if (nullable(accountId) || nullable(balance)) {
+      return false;
     }
     if (amount.isZero()) return false;
 
@@ -459,24 +459,25 @@ sample({
   target: setAvailable,
 });
 
-const $accountDeathImmediate = $balanceValidationResults.map((results) =>
-  results.some((item) => item.balance.burned.gt(BN_ZERO)),
+const $burnedAmount = $balanceValidationResults.map((results) =>
+  results.reduce((acc, item) => acc.add(item.balance.burned), BN_ZERO),
 );
 
-const accountDeathDebounced = debounce({
-  source: $accountDeathImmediate,
-  timeout: 300,
-});
-
-const $accountDeath = createStore(false).reset(formInitiated);
+const $showAccountDeathAlert = createStore(false).reset(formInitiated);
 
 sample({
-  clock: accountDeathDebounced,
+  clock: debounce({
+    source: $burnedAmount.map((burnedAmount) => burnedAmount.gtn(0)),
+    timeout: 300,
+  }),
   source: $validationPending,
   filter: (pending) => !pending,
   fn: (_, accountDeath) => accountDeath,
-  target: $accountDeath,
+  target: $showAccountDeathAlert,
 });
+
+// calc keepAliveAvailable
+// calc allowDeathAvailable
 
 const $showEDSwitch = combine($isEdSwitchVisible, $initiatorAccountBalance, (isEdSwitchVisible, balance) => {
   if (!isEdSwitchVisible || nullable(balance)) {
@@ -772,7 +773,7 @@ export const formModel = {
   $isExistentialDepositEnabled,
   $isMaxModeEnabled,
   $showEDSwitch,
-  $accountDeath,
+  $showAccountDeathAlert,
   $isNative,
 
   formInitiated,

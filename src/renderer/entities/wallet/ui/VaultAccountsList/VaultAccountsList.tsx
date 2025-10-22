@@ -1,12 +1,11 @@
 import { useUnit } from 'effector-react';
-import { t } from 'i18next';
 import { entries, groupBy } from 'lodash';
 import { memo, useMemo } from 'react';
 
 import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
-import { FootnoteText, HelpText, Separator } from '@/shared/ui';
+import { FootnoteText, HelpText, Icon, Separator } from '@/shared/ui';
 import { AccountExplorers } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
@@ -21,14 +20,10 @@ type Props = {
   onShardClick?: (shards: VaultShardAccount[]) => void;
 };
 
-const EVM_CHAIN_CONFIG = {
-  chainId: 'evm',
-  icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Ethereum.svg',
-  name: t('walletDetails.vault.evmGroup'),
-};
+const EVM_GROUP_ID = 'evm' as const;
 
 const getConsensusChainId = (chain: Chain): string => {
-  return networkUtils.isEthereumBased(chain.options) ? EVM_CHAIN_CONFIG.chainId : (chain.parentId ?? chain.chainId);
+  return networkUtils.isEthereumBased(chain.options) ? EVM_GROUP_ID : (chain.parentId ?? chain.chainId);
 };
 
 const buildChainGroups = (
@@ -47,17 +42,29 @@ const buildChainGroups = (
 
       if (accounts.length === 0) return null;
 
-      const isEvm = consensusChainId === EVM_CHAIN_CONFIG.chainId;
-      const evmChain = EVM_CHAIN_CONFIG as unknown as Chain;
+      const isEvm = consensusChainId === EVM_GROUP_ID;
 
       return {
         id: consensusChainId,
-        chain: isEvm ? evmChain : allChains[consensusChainId as ChainId],
+        chain: isEvm ? EVM_GROUP_ID : allChains[consensusChainId as ChainId],
         accounts,
       };
     })
     .filter(nonNullable)
-    .toSorted((a) => (a.id === EVM_CHAIN_CONFIG.chainId ? 1 : 0));
+    .toSorted((a) => (a.id === EVM_GROUP_ID ? 1 : 0));
+};
+
+const EvmChainTitle = () => {
+  const { t } = useI18n();
+
+  return (
+    <div className="flex items-center gap-x-2">
+      <Icon name="ethereum" size={16} />
+      <FootnoteText as="span" className="text-text-secondary uppercase">
+        {t('walletDetails.vault.evmGroup')}
+      </FootnoteText>
+    </div>
+  );
 };
 
 export const VaultAccountsList = memo(({ chains, accountsMap, className, onShardClick }: Props) => {
@@ -72,7 +79,11 @@ export const VaultAccountsList = memo(({ chains, accountsMap, className, onShard
           <Accordion initialOpen key={group.id}>
             <Accordion.Trigger>
               <span className="normal-case">
-                <ChainTitle fontClass="text-text-secondary uppercase" chain={group.chain} />
+                {group.chain === EVM_GROUP_ID ? (
+                  <EvmChainTitle />
+                ) : (
+                  <ChainTitle fontClass="text-text-secondary uppercase" chain={group.chain} />
+                )}
               </span>
               <FootnoteText className="text-text-tertiary">{group.accounts.length}</FootnoteText>
             </Accordion.Trigger>
