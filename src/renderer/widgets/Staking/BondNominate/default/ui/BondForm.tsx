@@ -1,4 +1,3 @@
-import { BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type FormEvent, useMemo, useState } from 'react';
 
@@ -118,7 +117,7 @@ const Amount = () => {
     return null;
   }
 
-  const showReuseLockBtn = !!reusableLock?.gt(BN_ZERO); // lock > staked
+  const showReuseLockBtn = !!reusableLock?.gtn(0);
 
   return (
     <div className="flex flex-col gap-y-2">

@@ -82,7 +82,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
     />
   );
 
-  const showReuseLockBtn = lock.gte(BN_ZERO);
+  const showReuseLockBtn = lock.gtn(0);
 
   return (
     <>
