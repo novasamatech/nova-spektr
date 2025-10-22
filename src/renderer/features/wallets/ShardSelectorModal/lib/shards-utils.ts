@@ -1,3 +1,4 @@
+import { chainsService } from '@/shared/api/network';
 import {
   type Chain,
   type ChainId,
@@ -5,19 +6,18 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { entries, isStringsMatchQuery, keys, toAddress } from '@/shared/lib/utils';
+import { entries, isStringsMatchQuery, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type AnyAccount, accountService } from '@/domains/network';
+import { type AnyAccount } from '@/domains/network';
+import { networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 
-import { type ChainTuple, type ChainsMap, type RootTuple, type SelectedStruct } from './types';
+import { type ChainTuple, type RootStruct, type SelectedStruct } from './types';
 
-export const shardsUtils = {
-  getFilteredAccounts,
-  getChainsMap,
-  getStructForVault,
-  getVaultChainsCounter,
-  getSelectedShards,
+const EVM_GROUP_ID = 'evm' as const;
+
+const getConsensusChainId = (chain: Chain): ChainId | typeof EVM_GROUP_ID => {
+  return networkUtils.isEthereumBased(chain.options) ? EVM_GROUP_ID : (chain.parentId ?? chain.chainId);
 };
 
 function getFilteredAccounts(
@@ -32,16 +32,8 @@ function getFilteredAccounts(
 
       const address = toAddress(account.accountId, { prefix: chains[account.chainId].addressPrefix });
 
-      return isStringsMatchQuery(query, [account.name, address]);
+      return isStringsMatchQuery(query, [account.derivationPath, address]);
     });
-}
-
-function getChainsMap<T>(chains: Record<ChainId, Chain>): ChainsMap<T> {
-  return keys(chains).reduce<ChainsMap<T>>((acc, chainId) => {
-    acc[chainId] = {};
-
-    return acc;
-  }, {});
 }
 
 function getVaultChainsCounter(
@@ -57,116 +49,95 @@ function getVaultChainsCounter(
   root[rootAccountId].total = shards.length;
 
   for (const shard of shards) {
-    root[rootAccountId][shard.chainId].checked += 1;
-    root[rootAccountId][shard.chainId].total += 1;
-    root[rootAccountId][shard.chainId].accounts[shard.accountId] = true;
-
-    if (accountUtils.isVaultShardAccount(shard)) {
-      const existingGroup = root[rootAccountId][shard.chainId].sharded[shard.groupId];
-      if (existingGroup) {
-        existingGroup.checked += 1;
-        existingGroup.total += 1;
-        existingGroup[shard.accountId] = true;
-      } else {
-        root[rootAccountId][shard.chainId].sharded[shard.groupId] = { checked: 1, total: 1 };
-        root[rootAccountId][shard.chainId].sharded[shard.groupId][shard.accountId] = true;
-      }
-    }
+    const chain = chains[shard.chainId];
+    const chainId = getConsensusChainId(chain);
+    root[rootAccountId][chainId].checked += 1;
+    root[rootAccountId][chainId].total += 1;
+    root[rootAccountId][chainId].accounts[shard.accountId] = true;
   }
 
   return root;
 }
 
 function getChainCounter(chains: Record<ChainId, Chain>) {
-  return keys(chains).reduce<any>((acc, chainId) => {
-    acc[chainId] = {
+  const chainRoot = {
+    checked: 0,
+    total: 0,
+  } as SelectedStruct[AccountId];
+
+  for (const chain of Object.values(chains)) {
+    const chainId = getConsensusChainId(chain);
+    chainRoot[chainId] = {
       accounts: {},
-      sharded: {},
       checked: 0,
       total: 0,
     };
+  }
 
-    return acc;
-  }, {});
+  return chainRoot;
 }
 
 function getStructForVault(
   rootAccountId: AccountId,
   rootAccountName: string,
-  accounts: AnyAccount[],
-  chainsMap: ChainsMap<AnyAccount>,
-): RootTuple[] {
-  for (const account of accounts) {
-    if (accountUtils.isVaultChainAccount(account)) {
-      let group = chainsMap[account.chainId]['accounts'];
-      if (!group) {
-        group = [];
-        chainsMap[account.chainId]['accounts'] = group;
-      }
-      group.push(account);
-    }
+  accounts: (VaultChainAccount | VaultShardAccount)[],
+  chains: Record<ChainId, Chain>,
+): RootStruct {
+  const chainMap = new Map<ChainId | typeof EVM_GROUP_ID, (VaultChainAccount | VaultShardAccount)[]>();
 
-    if (accountUtils.isVaultShardAccount(account)) {
-      let group = chainsMap[account.chainId][account.groupId];
-      if (!group) {
-        group = [];
-        chainsMap[account.chainId][account.groupId] = group;
-      }
+  for (const account of accounts) {
+    const chain = chains[account.chainId];
+    const groupId = getConsensusChainId(chain);
+
+    const group = chainMap.get(groupId);
+    if (group) {
       group.push(account);
+    } else {
+      chainMap.set(groupId, [account]);
     }
   }
 
-  const chainsTuples = entries(chainsMap).reduce<ChainTuple[]>((acc, entries) => {
-    const [chainId, { accounts = [], ...sharded }] = entries;
-    const accountsGroup = [...accounts, ...Object.values(sharded)] as (VaultChainAccount | VaultShardAccount[])[];
+  for (const accounts of chainMap.values()) {
+    accounts.sort((a, b) => a.derivationPath.localeCompare(b.derivationPath));
+  }
 
-    if (accountsGroup.length > 0) {
-      acc.push([chainId, accountsGroup]);
-    }
+  const sortedChains = chainsService.sortChains(Object.values(chains));
+  const chainOrder = new Map(sortedChains.map((chain, index) => [chain.chainId, index]));
 
-    return acc;
-  }, []);
+  const chainTuples: ChainTuple[] = Array.from(chainMap.entries()).sort((a, b) => {
+    if (a[0] === EVM_GROUP_ID) return 1;
+    if (b[0] === EVM_GROUP_ID) return -1;
 
-  return [[rootAccountId, rootAccountName, chainsTuples]];
+    const orderA = chainOrder.get(a[0]) ?? Infinity;
+    const orderB = chainOrder.get(b[0]) ?? Infinity;
+    return orderA - orderB;
+  });
+
+  return { rootAccountId, rootAccountName, chainTuples };
 }
 
 function getSelectedShards(struct: SelectedStruct, accounts: AnyAccount[]) {
-  const selectedByChain = new Map<ChainId, Set<AccountId>>();
+  const selectedAccountIds = new Set<AccountId>();
 
   for (const rootData of Object.values(struct)) {
-    const { total: _total, checked: _checked, ...chains } = rootData;
-    for (const [chainId, chainData] of entries(chains)) {
-      const selected = new Set<AccountId>();
+    const { total: _total, checked: _checked, ...chainGroups } = rootData;
 
+    for (const chainData of Object.values(chainGroups)) {
       for (const [accountId, isSelected] of entries(chainData.accounts)) {
         if (isSelected) {
-          selected.add(accountId);
+          selectedAccountIds.add(accountId);
         }
       }
-
-      for (const shardData of Object.values(chainData.sharded)) {
-        const { total: _total, checked: _checked, ...shards } = shardData;
-
-        for (const [accountId, isSelected] of entries(shards)) {
-          if (isSelected) {
-            selected.add(accountId);
-          }
-        }
-      }
-
-      selectedByChain.set(chainId as ChainId, selected);
     }
   }
 
-  const selectedAccounts = Array.from(selectedByChain.values()).reduce((set, item) => {
-    return new Set<AccountId>([...set, ...item]);
-  }, new Set<AccountId>());
-
-  return accounts.filter((account) => {
-    if (accountService.isChainAccount(account)) {
-      return selectedByChain.get(account.chainId)?.has(account.accountId) ?? false;
-    }
-
-    return selectedAccounts.has(account.accountId);
-  });
+  return accounts.filter((account) => selectedAccountIds.has(account.accountId));
 }
+
+export const shardsUtils = {
+  getFilteredAccounts,
+  getStructForVault,
+  getVaultChainsCounter,
+  getSelectedShards,
+  EVM_GROUP_ID,
+};
