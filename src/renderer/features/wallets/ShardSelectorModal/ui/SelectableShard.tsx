@@ -32,42 +32,29 @@ export const SelectableShard = ({ account, chain, checked, semiChecked, onChange
       <div className="overflow-hidden">
         <Checkbox checked={checked} semiChecked={semiChecked} onChange={(checked) => onChange(checked)}>
           <div className="flex w-full grow items-center gap-x-2 overflow-hidden">
-            {isChain ? (
-              <>
-                <div className="flex flex-row">
-                  <Identicon
-                    address={toAddress(account.accountId, { prefix: chain?.addressPrefix })}
-                    size={20}
-                    background={false}
-                    canCopy={false}
-                  />
-                  <Icon
-                    className="z-10 -ml-2.5 rounded-full border bg-white text-text-secondary"
-                    size={20}
-                    name={KeyIcon[account.keyType]}
-                  />
-                </div>
-                <div className="flex flex-col overflow-hidden">
-                  <FootnoteText
-                    className={cnTw('truncate', checked || semiChecked ? 'text-text-primary' : 'text-text-secondary')}
-                  >
-                    {account.name}
-                  </FootnoteText>
-                  <HelpText className="text-text-tertiary">
-                    <Hash value={address} variant="truncate" />
-                  </HelpText>
-                </div>
-              </>
-            ) : (
-              <>
-                <Identicon address={toAddress(account.accountId)} size={20} background={false} canCopy={false} />
-                <FootnoteText
-                  className={cnTw('min-w-0', checked || semiChecked ? 'text-text-primary' : 'text-text-secondary')}
-                >
-                  <Hash value={address} variant="truncate" />
-                </FootnoteText>
-              </>
-            )}
+            <div className="flex flex-row">
+              <Identicon
+                address={toAddress(account.accountId, { prefix: chain?.addressPrefix })}
+                size={20}
+                background={false}
+                canCopy={false}
+              />
+              <Icon
+                className="z-10 -ml-2.5 rounded-full border bg-white text-text-secondary"
+                size={20}
+                name={KeyIcon[account.keyType]}
+              />
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <FootnoteText
+                className={cnTw('truncate', checked || semiChecked ? 'text-text-primary' : 'text-text-secondary')}
+              >
+                {account.derivationPath}
+              </FootnoteText>
+              <HelpText className="text-text-tertiary">
+                <Hash value={address} variant="truncate" />
+              </HelpText>
+            </div>
           </div>
         </Checkbox>
       </div>
