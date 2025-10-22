@@ -1,10 +1,7 @@
 import { createEvent, createStore, sample } from 'effector';
 import { once } from 'patronum';
 
-import { type Wallet } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
-import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { assetsSearchModel, assetsSettingsModel, portfolioModel } from '@/features/assets';
 
@@ -29,27 +26,7 @@ sample({
 });
 
 sample({
-  clock: setSelectedAccounts,
-  source: walletSelect.$selectedWallet,
-  filter: (wallet: Wallet | null) => nonNullable(wallet),
-  fn: (wallet, accounts) => {
-    if (!walletUtils.isPolkadotVault(wallet)) return accounts;
-
-    return accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
-  },
-  target: $selectedAccounts,
-});
-
-sample({
-  clock: walletSelect.$selectedWallet,
-  filter: (wallet: Wallet | null) => nonNullable(wallet),
-  fn: (wallet) => {
-    if (!walletUtils.isPolkadotVault(wallet)) {
-      return wallet?.accounts;
-    }
-
-    return wallet.accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
-  },
+  clock: [walletSelect.$selectedAccounts, setSelectedAccounts],
   target: $selectedAccounts,
 });
 
