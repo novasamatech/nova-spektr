@@ -20,7 +20,7 @@ export const Assets = () => {
   const { t } = useI18n();
 
   const assetsView = useUnit(assetsSettingsModel.$assetsView);
-  const selectedAccounts = useUnit(assetsModel.$selectedAccounts);
+  const visibleAccounts = useUnit(assetsModel.$visibleAccounts);
   const query = useUnit(assetsSearchModel.$query);
   const hideZeroBalances = useUnit(assetsSettingsModel.$hideZeroBalances);
 
@@ -38,7 +38,7 @@ export const Assets = () => {
           <AssetsPortfolioView />
           <AssetsChainView
             query={query}
-            selectedAccounts={selectedAccounts}
+            visibleAccounts={visibleAccounts}
             hideZeroBalances={hideZeroBalances}
             assetsView={assetsView}
           />
@@ -46,7 +46,7 @@ export const Assets = () => {
       </section>
 
       <AssetTransactionModal />
-      <ShardSelectorModal onConfirm={assetsModel.setSelectedAccounts} />
+      <ShardSelectorModal onConfirm={assetsModel.setVisibleAccounts} />
       <Outlet />
     </>
   );
