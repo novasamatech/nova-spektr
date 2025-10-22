@@ -471,16 +471,14 @@ sample({
   target: $showAccountDeathAlert,
 });
 
-// calc keepAliveAvailable
-// calc allowDeathAvailable
-
 const $showEDSwitch = combine($isEdSwitchVisible, $availableBalance, (isEdSwitchVisible, balance) => {
   if (!isEdSwitchVisible) return false;
   if (nullable(balance)) return false;
 
-  return !balanceService
-    .withdrawableAmount(balance, 'allowDeath')
-    .eq(balanceService.withdrawableAmount(balance, 'keepAlive'));
+  const keepAliveAvailable = balanceService.withdrawableAmount(balance, 'keepAlive');
+  const allowDeathAvailable = balanceService.withdrawableAmount(balance, 'allowDeath');
+
+  return !allowDeathAvailable.eq(keepAliveAvailable);
 });
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
