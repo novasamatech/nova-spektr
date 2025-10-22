@@ -155,22 +155,22 @@ export const SearchWithDropdown = ({
         suffixElement={
           showNavigation && totalMatches > 0 ? (
             <div className="flex items-center gap-1">
+              <span className="px-1 text-[12px] text-text-secondary">
+                {currentMatchIndex === -1 ? '0' : currentMatchIndex + 1} of {totalMatches} matches
+              </span>
+              <div className="mx-1 h-4 w-px bg-text-tertiary" />
               <IconButton
-                name="arrowLeft"
+                name="up"
                 size={16}
                 disabled={currentMatchIndex <= -1}
                 onClick={() => onNavigateMatch?.('prev')}
               />
-              <span className="px-1 text-[12px] text-text-secondary">
-                {currentMatchIndex === -1 ? '0' : currentMatchIndex + 1}/{totalMatches}
-              </span>
               <IconButton
-                name="arrowRight"
+                name="down"
                 size={16}
                 disabled={currentMatchIndex >= totalMatches - 1}
                 onClick={() => onNavigateMatch?.('next')}
               />
-              <div className="mx-1 h-4 w-px bg-text-tertiary" />
               <IconButton name="close" onClick={handleClearSearch} />
             </div>
           ) : searchQuery ? (
