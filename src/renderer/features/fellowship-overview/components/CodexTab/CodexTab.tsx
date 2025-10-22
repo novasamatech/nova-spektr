@@ -52,13 +52,11 @@ export const CodexTab = () => {
   const sections = filterSectionsByQuery(searchQuery, matches);
   const hasSearchResults = searchQuery.trim() && (matches.length > 0 || sections.length > 0);
 
-  // Filter table of contents to only show sections that are currently visible
   const visibleSectionIds = new Set(sections.map((section: Section) => section.id));
   const tableOfContentsItems = getTableOfContents().filter(item => {
     if (visibleSectionIds.has(item.id)) {
       return true;
     }
-    // Also include items that have visible children
     if (item.children) {
       const hasVisibleChildren = item.children.some(child => visibleSectionIds.has(child.id));
       return hasVisibleChildren;
@@ -67,7 +65,6 @@ export const CodexTab = () => {
   });
 
   const handleSectionClick = (sectionId: string) => {
-    // Check if the section exists in the current filtered sections
     const sectionExists = sections.some((section: Section) => section.id === sectionId);
     if (!sectionExists) {
       console.warn(`Section ${sectionId} is not currently visible (filtered out by search)`);
@@ -78,71 +75,60 @@ export const CodexTab = () => {
     scrollToSection(sectionId);
   };
 
-  // Handle search result click
   const handleCodexSearchResultClick = (sectionId: string, query: string, allMatches: string[]) => {
     setSearchQuery(query);
-    // Convert section matches to matches
     const convertedMatches: Match[] = allMatches.map((sectionId, index) => ({
       sectionId,
       sectionTitle: sectionId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
       matchText: query,
-      position: index * 1000, // Approximate position
+      position: index * 1000,
     }));
     setMatches(convertedMatches);
     setCurrentMatchIndex(allMatches.indexOf(sectionId));
   };
 
-  // Handle individual text match click
   const handleTextMatchClick = (match: Match, allMatches: Match[]) => {
     setSearchQuery(match.matchText);
     setMatches(allMatches);
     setCurrentMatchIndex(allMatches.indexOf(match));
   };
 
-  // Handle navigation between matches
   const handleNavigateMatch = (direction: 'prev' | 'next') => {
     if (direction === 'prev' && currentMatchIndex > 0) {
       setCurrentMatchIndex(currentMatchIndex - 1);
     } else if (direction === 'next' && currentMatchIndex < matches.length - 1) {
       setCurrentMatchIndex(currentMatchIndex + 1);
     } else if (direction === 'next' && currentMatchIndex === -1 && matches.length > 0) {
-      // If we're at the initial state (-1) and going next, go to first match
       setCurrentMatchIndex(0);
     } else if (direction === 'prev' && currentMatchIndex === 0) {
-      // If we're at first match and going prev, go back to initial state
       setCurrentMatchIndex(-1);
     }
   };
 
-  // Clear search
   const handleClearSearch = () => {
     setSearchQuery('');
     setMatches([]);
     setCurrentMatchIndex(-1);
   };
 
-  // Update matches when search query changes
   useEffect(() => {
     if (searchQuery.trim()) {
       const newMatches = generateMatches(searchQuery);
       setMatches(newMatches);
-      setCurrentMatchIndex(-1); // Reset to initial state
+      setCurrentMatchIndex(-1);
     } else {
       setMatches([]);
       setCurrentMatchIndex(-1);
     }
   }, [searchQuery, generateMatches]);
 
-  // Update active section when sections change to ensure it's valid
   useEffect(() => {
     const currentActiveSectionExists = sections.some((section: Section) => section.id === activeSection);
     if (!currentActiveSectionExists && sections.length > 0) {
-      // If current active section is not visible, set to first visible section
       setActiveSection(sections[0].id);
     }
   }, [sections, activeSection]);
 
-  // Handle navigation and scrolling
   useEffect(() => {
     if (matches.length > 0 && currentMatchIndex >= 0 && currentMatchIndex < matches.length) {
       const currentMatch = matches[currentMatchIndex];
