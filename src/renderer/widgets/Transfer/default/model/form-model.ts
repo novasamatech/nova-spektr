@@ -11,6 +11,7 @@ import {
   TEST_EVM_ADDRESS,
   assert,
   formatAmount,
+  fromPrecision,
   getAssetId,
   getNativeAsset,
   nonNullable,
@@ -255,6 +256,17 @@ const $initiatorAccountBalance = combine(
   },
 );
 
+$initiatorAccountBalance.subscribe((initiatorAccountBalance) => {
+  if (initiatorAccountBalance) {
+    console.log({
+      free: fromPrecision(initiatorAccountBalance.free, 10),
+      frozen: fromPrecision(initiatorAccountBalance.frozen, 10),
+      reserved: fromPrecision(initiatorAccountBalance.reserved, 10),
+      ed: fromPrecision(initiatorAccountBalance.ed, 10),
+    });
+  }
+});
+
 // destination account
 
 const $destinationAccountId = combine($destination, $destinationChain, (destination, chain) => {
@@ -475,6 +487,9 @@ sample({
   fn: (_, accountDeath) => accountDeath,
   target: $showAccountDeathAlert,
 });
+
+// calc keepAliveAvailable
+// calc allowDeathAvailable
 
 const $showEDSwitch = combine($isEdSwitchVisible, $initiatorAccountBalance, (isEdSwitchVisible, balance) => {
   if (!isEdSwitchVisible || nullable(balance)) {
@@ -770,7 +785,7 @@ export const formModel = {
   $isExistentialDepositEnabled,
   $isMaxModeEnabled,
   $showEDSwitch,
-  $accountDeath,
+  $showAccountDeathAlert,
   $isNative,
 
   formInitiated,

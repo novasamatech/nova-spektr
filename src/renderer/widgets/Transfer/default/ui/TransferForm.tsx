@@ -577,7 +577,7 @@ const MyselfAccountModal = memo(() => {
 
 const AlertForAccountDeath = memo(() => {
   const { t } = useI18n();
-  const showAccountDeathAlert = useUnit(formModel.$accountDeath);
+  const showAccountDeathAlert = useUnit(formModel.$showAccountDeathAlert);
   const initiatorAccountBalance = useUnit(formModel.$initiatorAccountBalance);
   const asset = useUnit(formModel.$asset);
 
