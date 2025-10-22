@@ -3,9 +3,9 @@ import { and, not } from 'patronum';
 
 import { createStoreFromEffect } from '@/shared/effector';
 
-import { type ValidationResult } from './createTxValidator';
+import { type Validator } from './createTxValidator';
 
-type AnyValidator = (...args: any[]) => Promise<ValidationResult>;
+type AnyValidator = Validator<any>;
 
 type Stores<Args> = {
   [K in keyof Args]: Store<Args[K] | null>;

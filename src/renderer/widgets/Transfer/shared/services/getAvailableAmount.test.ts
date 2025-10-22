@@ -1,7 +1,7 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { describe, expect, test } from 'vitest';
 
-import { type AssetBalance, type AssetId, type Balance, type BalanceId } from '@/shared/core';
+import { type AssetBalance, type AssetId, AssetType, type Balance, type BalanceId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { getAvailableAmount } from './getAvailableAmount';
@@ -19,11 +19,15 @@ const createBalance = (params: {
     transferableMode: params.transferableMode || 'holdAndFreezes',
     accountId: '0x00' as AccountId,
     assetId: 0 as AssetId,
+    assetType: AssetType.NATIVE,
     chainId: '0x00',
     ed: new BN(params.ed || '1000000000000'), // 1 DOT default ED
     free: new BN(params.free || '0'),
     frozen: new BN(params.frozen || '0'),
     reserved: new BN(params.reserved || '0'),
+    providers: 0,
+    consumers: 0,
+    sufficients: 0,
     locked: params.locked || [],
   };
 };

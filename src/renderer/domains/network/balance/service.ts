@@ -1,6 +1,6 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 
-import { type Balance, type TransferableMode } from '@/shared/core';
+import { AssetType, type Balance, type TransferableMode } from '@/shared/core';
 import { reservableAmountBN, totalAmountBN, transferableAmountBN } from '@/shared/lib/utils';
 
 import { type BalancePreservation, type BalanceUpdateResult } from './types';
@@ -67,17 +67,19 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
 
 function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
   const transferable = transferableAmountBN(balance);
+  // reset strategy to keep alive if withdraw will lead to account reaping
+  const preservationStrategy = canDecrementProvider(balance) ? balancePreservation : 'keepAlive';
 
   const transferableImbalance = transferable.sub(amount);
   const countedTowardsEDImbalance =
-    balancePreservation === 'keepAlive'
+    preservationStrategy === 'keepAlive'
       ? calculateBalanceCountedTowardsEd(balance).sub(balance.ed.add(amount))
       : BN_ZERO;
   const totalImbalance = BN.min(transferableImbalance, countedTowardsEDImbalance);
 
   if (totalImbalance.isNeg()) {
     const updated = copyBalance(balance, {
-      free: balancePreservation === 'keepAlive' ? balance.ed : BN_ZERO,
+      free: preservationStrategy === 'keepAlive' ? balance.ed : BN_ZERO,
     });
 
     return {
@@ -101,6 +103,17 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
     required: amount,
     burned: burnedTokens,
   };
+}
+
+/**
+ * True if the account has no outstanding consumer references or more than one
+ * provider. This check is usefull in context of balance preservation strategy.
+ */
+function canDecrementProvider(balance: Balance) {
+  if (balance.assetType === AssetType.NATIVE) {
+    return balance.consumers === 0 || balance.providers > 1;
+  }
+  return true;
 }
 
 function calculateBalanceCountedTowardsEd(balance: Balance, transferableMode?: TransferableMode): BN {
