@@ -28,7 +28,7 @@ fellowshipReferendumsDetailsFeature.inject(promotionReferendumWidgetActionSlot, 
   const { t } = useI18n();
 
   return (
-    <ReferendumDetailsModal referendum={referendum} isCurrentUser>
+    <ReferendumDetailsModal referendumId={referendum.id} isCurrentUser>
       <Button className="ml-auto" size="sm" onClick={() => {}}>
         {t('fellowship.promotion.referendumCreated.viewButton')}
       </Button>
@@ -40,7 +40,7 @@ fellowshipReferendumsDetailsFeature.inject(retentionReferendumWidgetActionSlot, 
   const { t } = useI18n();
 
   return (
-    <ReferendumDetailsModal referendum={referendum} isCurrentUser>
+    <ReferendumDetailsModal referendumId={referendum.id} isCurrentUser>
       <Button className="ml-auto" size="sm" onClick={() => {}}>
         {t('fellowship.promotion.referendumCreated.viewButton')}
       </Button>
