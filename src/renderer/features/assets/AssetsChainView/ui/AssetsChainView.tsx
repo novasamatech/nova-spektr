@@ -12,7 +12,6 @@ import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';
@@ -40,9 +39,8 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
   const { list, isLoading } = useDeferredList({ list: filteredChains, forceFirstRender: true });
 
   useEffect(() => {
-    if (nullable(activeWallet) || assetsView !== AssetsListView.CHAIN_CENTRIC || !visibleAccounts.length) return;
+    if (assetsView !== AssetsListView.CHAIN_CENTRIC || !visibleAccounts.length) return;
 
-    const isMultisig = walletUtils.isMultisig(activeWallet);
     const visibleAccountIds = new Set(visibleAccounts.map((a) => a.accountId));
 
     const filteredChains = Object.values(chains).filter((chain) => {
@@ -57,10 +55,6 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
 
         if (!accountService.isAccountAvailableOnChain(account, chain)) return false;
 
-        if (isMultisig && !networkUtils.isMultisigSupported(chain.options)) {
-          return false;
-        }
-
         return true;
       });
     });
@@ -73,7 +67,7 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
     );
 
     setSortedChains(sortedChains);
-  }, [activeWallet, balances, assetsPrices, assetsView, connections, visibleAccounts]);
+  }, [activeWalletAccounts, balances, assetsPrices, assetsView, connections, visibleAccounts]);
 
   useEffect(() => {
     let filteredChains: Chain[] = [];
