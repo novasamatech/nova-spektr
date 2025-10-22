@@ -25,6 +25,7 @@ type Props = {
 };
 export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, assetsView }: Props) => {
   const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const activeWalletAccounts = useUnit(walletSelect.$selectedAccounts);
   const balances = useUnit(balanceModel.$balanceMap);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -39,10 +40,10 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
   const { list, isLoading } = useDeferredList({ list: filteredChains, forceFirstRender: true });
 
   useEffect(() => {
-    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !visibleAccounts.length) return;
+    if (nullable(activeWallet) || assetsView !== AssetsListView.CHAIN_CENTRIC || !visibleAccounts.length) return;
 
     const isMultisig = walletUtils.isMultisig(activeWallet);
-    const selectedAccountIds = new Set(visibleAccounts.map((a) => a.accountId));
+    const visibleAccountIds = new Set(visibleAccounts.map((a) => a.accountId));
 
     const filteredChains = Object.values(chains).filter((chain) => {
       const connection = connections[chain.chainId];
@@ -51,8 +52,8 @@ export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, asse
         return false;
       }
 
-      return activeWallet.accounts.some((account) => {
-        if (!selectedAccountIds.has(account.accountId)) return false;
+      return activeWalletAccounts.some((account) => {
+        if (!visibleAccountIds.has(account.accountId)) return false;
 
         if (!accountService.isAccountAvailableOnChain(account, chain)) return false;
 
