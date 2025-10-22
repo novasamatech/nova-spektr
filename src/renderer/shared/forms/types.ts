@@ -25,4 +25,5 @@ export type ValidateEvent = 'submit' | 'change';
 
 export type ValidationError = {
   message: string;
+  values?: Record<string, unknown>;
 };
