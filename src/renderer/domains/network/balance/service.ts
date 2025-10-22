@@ -67,19 +67,17 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
 
 function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
   const transferable = transferableAmountBN(balance);
-  // reset strategy to keep alive if withdraw will lead to account reaping
-  const preservationStrategy = canDecrementProvider(balance) ? balancePreservation : 'keepAlive';
 
   const transferableImbalance = transferable.sub(amount);
-  const countedTowardsEDImbalance =
-    preservationStrategy === 'keepAlive'
+  const countedTowardsEdImbalance =
+    balancePreservation === 'keepAlive'
       ? calculateBalanceCountedTowardsEd(balance).sub(balance.ed.add(amount))
       : BN_ZERO;
-  const totalImbalance = BN.min(transferableImbalance, countedTowardsEDImbalance);
+  const totalImbalance = BN.min(transferableImbalance, countedTowardsEdImbalance);
 
   if (totalImbalance.isNeg()) {
     const updated = copyBalance(balance, {
-      free: preservationStrategy === 'keepAlive' ? balance.ed : BN_ZERO,
+      free: balancePreservation === 'keepAlive' ? balance.ed : BN_ZERO,
     });
 
     return {
@@ -105,9 +103,29 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
   };
 }
 
+function withdrawableAmount(balance: Balance, balancePreservation: BalancePreservation): BN {
+  switch (balancePreservation) {
+    case 'keepAlive': {
+      const transferable = transferableAmountBN(balance);
+      const countedTowardsEd = calculateBalanceCountedTowardsEd(balance).sub(balance.ed);
+
+      return BN.max(BN_ZERO, BN.min(transferable, countedTowardsEd));
+    }
+    case 'allowDeath': {
+      const transferable = transferableAmountBN(balance);
+      return transferable;
+    }
+  }
+}
+
+function getPreservationStrategy(balance: Balance, balancePreservation: BalancePreservation) {
+  // reset strategy to keep alive if withdraw will lead to account reaping
+  return canDecrementProvider(balance) ? balancePreservation : 'keepAlive';
+}
+
 /**
  * True if the account has no outstanding consumer references or more than one
- * provider. This check is usefull in context of balance preservation strategy.
+ * provider. This check is useful in context of balance preservation strategy.
  */
 function canDecrementProvider(balance: Balance) {
   if (balance.assetType === AssetType.NATIVE) {
@@ -131,4 +149,7 @@ export const balanceService = {
   tryFreeze,
   tryWithdraw,
   tryReserve,
+  calculateBalanceCountedTowardsEd,
+  withdrawableAmount,
+  getPreservationStrategy,
 };

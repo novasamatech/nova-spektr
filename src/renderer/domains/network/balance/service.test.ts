@@ -25,13 +25,6 @@ describe('balanceService', () => {
       expectBalanceToUpdated(actual, { free: 0, reserved: 0, frozen: 0 });
     });
 
-    it('should force keepAlive strategy if there are some consumers of the balance', () => {
-      const initial = createBalance({ free: 10, reserved: 0, frozen: 0, consumers: 1 });
-      const actual = balanceService.tryWithdraw(initial, BN_TEN, 'allowDeath');
-
-      expectToImbalanced(actual, 1, { free: 1, reserved: 0, frozen: 0 });
-    });
-
     it('should withdraw failing to cross ed', () => {
       const initial = createBalance({ free: 10, reserved: 0, frozen: 0 });
       const actual = balanceService.tryWithdraw(initial, BN_TEN, 'keepAlive');
@@ -123,6 +116,22 @@ describe('balanceService', () => {
       const actual = balanceService.tryFreeze(initial, new BN(35));
 
       expectToImbalanced(actual, 5);
+    });
+  });
+
+  describe('withdrawable amount', () => {
+    it('should calculate withdrawable for keepAlive', () => {
+      const initial = createBalance({ free: 20, reserved: 0, frozen: 0 });
+      const withdrawable = balanceService.withdrawableAmount(initial, 'keepAlive');
+
+      expect(withdrawable.toNumber()).toEqual(19);
+    });
+
+    it('should calculate withdrawable for allowDeath', () => {
+      const initial = createBalance({ free: 20, reserved: 0, frozen: 0 });
+      const withdrawable = balanceService.withdrawableAmount(initial, 'allowDeath');
+
+      expect(withdrawable.toNumber()).toEqual(20);
     });
   });
 });
