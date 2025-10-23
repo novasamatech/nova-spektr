@@ -132,11 +132,12 @@ const Group = ({ label, children }: GroupProps) => {
 
 type ItemProps = PropsWithChildren<{
   disabled?: boolean;
+  testId?: string;
   onSelect?: VoidFunction;
   onClick?: VoidFunction;
 }>;
 
-const Item = ({ onSelect, onClick, disabled, children }: ItemProps) => {
+const Item = ({ onSelect, onClick, disabled, testId, children }: ItemProps) => {
   const { keepOpen } = useContext(Context);
 
   const callback = keepOpen
@@ -149,6 +150,7 @@ const Item = ({ onSelect, onClick, disabled, children }: ItemProps) => {
   return (
     <DropdownMenu.Item
       asChild
+      data-testid={testId}
       className={cnTw(
         'flex items-center gap-2 rounded-sm px-3 py-2 text-footnote text-text-secondary',
         'cursor-default bg-block-background-default',

@@ -151,6 +151,8 @@ const NoSignatoryAlert = ({ initiator, allAccounts, chain, allWallets }: NoSigna
         <Trans
           t={t}
           i18nKey="operation.noSignatoryErrorDescription"
+          parent="span"
+          data-testid={TEST_IDS.VALIDATIONS.MISSING_ACCOUNT}
           values={{ network: chain.name }}
           components={{ wallet: component }}
         />

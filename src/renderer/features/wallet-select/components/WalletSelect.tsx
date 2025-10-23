@@ -89,6 +89,7 @@ const WalletSelectDropdown = memo(() => {
         <SearchInput
           value={filterQuery}
           placeholder={t('wallets.searchPlaceholder')}
+          data-testid={TEST_IDS.WALLET_MANAGEMENT.WALLET_SEARCH}
           onChange={walletList.changeQuery}
         />
       </div>

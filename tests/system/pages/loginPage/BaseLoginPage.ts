@@ -3,6 +3,7 @@ import { cwd } from 'process';
 
 import { step } from 'allure-js-commons';
 
+import { TEST_IDS } from '@/shared/constants';
 import { baseTestConfig } from '../../BaseTestConfig';
 import {
   vaultDPPolkadotTestAccount,
@@ -86,6 +87,7 @@ export class BaseLoginPage extends BasePage<LoginPageElements> {
       const fileInput = this.page.locator('input[type="file"]');
       await fileInput.setInputFiles(dbFilePath);
       await this.click('Button');
+      await this.page.getByTestId(TEST_IDS.COMMON.WALLET_BUTTON).waitFor({ state: 'visible' });
 
       return new VaultAssetsPage(this.page, new AssetsPageElements());
     });

@@ -2,6 +2,7 @@ import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { type ReactNode, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Asset } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
@@ -111,7 +112,7 @@ export const AmountInput = ({
 
   const getBalance = useCallback(() => {
     if (!balance) {
-      return <Skeleton width={12} height={4} />;
+      return <Skeleton width={12} height={4} testId={TEST_IDS.OPERATIONS.AVAILABLE_BALANCE_LOADER} />;
     }
 
     if (Array.isArray(balance)) {
@@ -128,7 +129,7 @@ export const AmountInput = ({
   }, [balance]);
 
   const label = (
-    <div className="gax-x-2 flex items-center justify-between">
+    <div data-testid={TEST_IDS.OPERATIONS.AVAILABLE_BALANCE} className="gax-x-2 flex items-center justify-between">
       <FootnoteText className="text-text-tertiary">{placeholder}</FootnoteText>
       <span className="flex items-center gap-x-1.5">
         <FootnoteText as="span" className="text-text-tertiary">

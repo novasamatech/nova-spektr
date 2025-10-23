@@ -36,13 +36,9 @@ export class MultisigModalWindow extends BaseModal<MultisigModalElements> {
   }
 
   private async waitForContinueButtonToBeEnabled(): Promise<void> {
-    let isEnabled = false;
-    while (!isEnabled) {
-      isEnabled = await this.page.getByRole('button', { name: 'Continue' }).isEnabled();
-      if (!isEnabled) {
-        await this.page.waitForTimeout(500);
-      }
-    }
+    const button = this.page.getByRole('button', { name: 'Continue' });
+    await expect(button).toBeVisible();
+    await expect(button).toBeEnabled();
   }
 
   public async selectMultisigType(multisigType: string): Promise<void> {

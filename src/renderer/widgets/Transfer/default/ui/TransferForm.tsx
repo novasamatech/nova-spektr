@@ -414,7 +414,7 @@ const Destination = memo(() => {
         </Combobox>
 
         {isMyselfXcmEnabled && (
-          <Button pallet="secondary" onClick={handleChange}>
+          <Button pallet="secondary" testId={TEST_IDS.OPERATIONS.MYSELF_BUTTON} onClick={handleChange}>
             {t('transfer.myselfButton')}
           </Button>
         )}

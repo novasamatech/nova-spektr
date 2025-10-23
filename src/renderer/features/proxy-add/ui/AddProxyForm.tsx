@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type FormEvent, useMemo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, toAddress, toShortAddress, transferableAmount, withdrawableAmount } from '@/shared/lib/utils';
@@ -246,6 +247,7 @@ const ProxyInput = () => {
       <Combobox
         placeholder={t('proxy.addProxy.delegatePlaceholder')}
         query={proxyQuery}
+        testId={TEST_IDS.PROXY_FORM.ADDRESS_INPUT}
         options={options}
         value={delegate.value}
         invalid={delegate.hasError}
