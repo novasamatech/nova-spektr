@@ -1,4 +1,4 @@
-import { useGate, useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
@@ -37,10 +37,12 @@ export const ReferendumDetailsModal = memo(
 
     const tracks = useUnit(tracksModel.$list);
     const evidenceContent = useUnit(details.$evidenceContent);
-    const store = useUnit(fellowship.$store);
-    const referendum = useMemo(() => {
-      return store?.referendums?.find(r => r.id === referendumId) ?? null;
-    }, [store, referendumId]);
+
+    const referendum = useStoreMap({
+      store: fellowship.$store,
+      keys: [referendumId],
+      fn: (store, [id]) => store?.referendums?.find(r => r.id === id) ?? null,
+    });
 
     const modalTitle = useMemo(() => {
       if (title) {
