@@ -1,7 +1,7 @@
 export const substrateChains = [
-  { name: 'Polkadot' },
-  { name: 'Kusama' },
-  { name: 'Westend' },
+  { name: 'Polkadot Relay' },
+  { name: 'Kusama Relay' },
+  { name: 'Westend Relay' },
   { name: 'Westend Asset Hub (TESTNET)' },
   { name: 'Kusama Asset Hub' },
   { name: 'Karura' },
@@ -35,7 +35,6 @@ export const substrateChains = [
   { name: 'Polkadot Collectives' },
   { name: 'Polkadot People' },
   { name: 'Kusama People' },
-  { name: 'Polimec' },
   { name: 'Westend Bridge Hub' },
   { name: 'Avail' },
   { name: 'Novasama Testnet - Governance' },

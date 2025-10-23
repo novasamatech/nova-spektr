@@ -2,6 +2,7 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import { type ReactNode, memo } from 'react';
 import { Trans } from 'react-i18next';
 
+import { TEST_IDS } from '@/shared/constants/testIds';
 import { type Asset, type ProxyType, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { formatAsset, groupBy, nonNullable, nullable } from '@/shared/lib/utils';
@@ -51,7 +52,7 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
   if (fatalErrors.length > 0) {
     for (const error of fatalErrors) {
       errorNodes.push(
-        <span>
+        <span data-testid={TEST_IDS.VALIDATIONS.FATAL}>
           <span className="font-bold">{t('general.transactionErrors.fatal.intro')}</span>
           <br />
           <span className="break-all">{error.message}</span>
@@ -61,12 +62,20 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
   }
 
   if (permissionErrors.length > 0) {
-    errorNodes.push(<TransactionPermissionError wallets={wallets} errors={permissionErrors} />);
+    errorNodes.push(
+      <TransactionPermissionError
+        dataTestId={TEST_IDS.VALIDATIONS.PERMISSION}
+        wallets={wallets}
+        errors={permissionErrors}
+      />,
+    );
   }
 
   for (const errors of Object.values(balanceErrors)) {
     if (nullable(errors)) continue;
-    errorNodes.push(<TransactionBalanceError wallets={wallets} errors={errors} />);
+    errorNodes.push(
+      <TransactionBalanceError dataTestId={TEST_IDS.VALIDATIONS.BALANCE} wallets={wallets} errors={errors} />,
+    );
   }
 
   const renderDot = errorNodes.length > 1;
@@ -87,9 +96,11 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
 const TransactionPermissionError = ({
   wallets,
   errors,
+  dataTestId,
 }: {
   wallets: Wallet[];
   errors: TransactionValidationPermissionError[];
+  dataTestId?: string;
 }) => {
   const { t } = useI18n();
 
@@ -111,7 +122,7 @@ const TransactionPermissionError = ({
           </Box>
         );
       })}
-      <span>{t('general.transactionErrors.permission.message')}</span>
+      <span data-testid={dataTestId}>{t('general.transactionErrors.permission.message')}</span>
     </Box>
   );
 };
@@ -119,9 +130,11 @@ const TransactionPermissionError = ({
 const TransactionBalanceError = ({
   wallets,
   errors,
+  dataTestId,
 }: {
   wallets: Wallet[];
   errors: TransactionValidationBalanceError[];
+  dataTestId?: string;
 }) => {
   const { t } = useI18n();
 
@@ -188,6 +201,8 @@ const TransactionBalanceError = ({
                 key={index}
                 t={t}
                 i18nKey="general.transactionErrors.balance.section"
+                parent="span"
+                data-testid={`${TEST_IDS.VALIDATIONS.BALANCE}:${action}`}
                 values={{
                   action: action,
                   balance: formatAsset(required, asset),
@@ -198,7 +213,7 @@ const TransactionBalanceError = ({
           })
           .slice(0, -1)}
       </span>
-      <span>
+      <span data-testid={dataTestId}>
         {t('general.transactionErrors.balance.required', {
           balances: imbalances.map(({ asset, imbalance }) => formatAsset(imbalance, asset, { round: 'up' })).join(', '),
         })}

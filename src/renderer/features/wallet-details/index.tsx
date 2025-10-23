@@ -1,6 +1,7 @@
 import { useGate } from 'effector-react';
 import { useState } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type XOR } from '@/shared/core/types/utility';
 import { combineIdentifiers } from '@/shared/di';
 import { createFeature } from '@/shared/feature';
@@ -59,6 +60,7 @@ type DropdownItemProps = XOR<
   {
     icon: IconNames;
     title: string;
+    testId?: string;
     onClick: () => void;
   },
   {
@@ -72,7 +74,7 @@ const DropdownItem = (props: DropdownItemProps) => {
   }
 
   return (
-    <Dropdown.Item onClick={props.onClick}>
+    <Dropdown.Item testId={props.testId} onClick={props.onClick}>
       <div className="flex items-center gap-2">
         <Icon name={props.icon} size={20} className="text-icon-accent" />
         {props.title}
@@ -97,6 +99,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
     {
       icon: 'info',
       title: t('walletDetails.common.viewDetails'),
+      testId: TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ITEM_VIEW_DETAILS,
       onClick: () => setIsWalletDetailsOpen(true),
     },
     {
@@ -164,7 +167,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
     items.push({
       component: (
         <AddProxy wallet={wallet} onClose={createModalCloseHandler()}>
-          <Dropdown.Item>
+          <Dropdown.Item testId={TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ITEM_DELEGATE}>
             <div className="flex items-center gap-2">
               <Icon name="delegate" size={20} className="text-icon-accent" />
               {t('walletDetails.common.addProxyAction')}
@@ -209,7 +212,7 @@ walletDetailsFeature.inject(walletActionSlot, ({ wallet }) => {
     <>
       <Dropdown keepOpen avoidCollisions open={isDropdownOpen} onToggle={setIsDropdownOpen}>
         <Dropdown.Trigger>
-          <IconButton name="more" />
+          <IconButton testId={TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ACTIONS} name="more" />
         </Dropdown.Trigger>
         <Dropdown.Content>
           {items.map((item, index) => (

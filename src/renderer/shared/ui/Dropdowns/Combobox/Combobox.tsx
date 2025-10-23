@@ -20,6 +20,7 @@ type Props = Omit<ComponentProps<typeof Input>, 'onChange' | 'value' | 'onInput'
   position?: Position;
   tabIndex?: number;
   theme?: Theme;
+  testId?: string;
   onInput: (value: string) => void;
   onChange: (data: ComboboxOption) => void;
 };
@@ -31,6 +32,7 @@ export const Combobox = ({
   disabled,
   position = 'down',
   theme = 'light',
+  testId,
   onInput,
   onChange,
   ...inputProps
@@ -45,6 +47,7 @@ export const Combobox = ({
       <div className="relative">
         <HeadlessCombobox.Input
           as={Input}
+          data-testid={testId}
           displayValue={((option: ComboboxOption) => option.value) as (option: unknown) => any}
           onChangeEvent={(e: ChangeEvent<HTMLInputElement>) => onInput(e.target.value)}
           {...inputProps}
