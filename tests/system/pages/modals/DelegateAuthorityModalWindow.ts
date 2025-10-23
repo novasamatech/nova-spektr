@@ -1,12 +1,11 @@
 import { type Page, expect } from '@playwright/test';
 import { step } from 'allure-js-commons';
 
-import { TEST_IDS } from '@/shared/constants/testIds';
-import { Validation } from '../../utils/validationTestCases';
+import { getValidationLocators } from '../../utils/validationHelpers';
+import { type Validation } from '../../utils/validationTestCases';
 import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
 import { DelegateModalElements } from '../_elements/DelegateModalElements';
-import { ValidationElements } from '../_elements/ValidationElements';
 
 export class DelegateAuthorityModalWindow extends BaseModal<DelegateModalElements> {
   public previousPage: BasePage | BaseModal<any>;
@@ -24,36 +23,6 @@ export class DelegateAuthorityModalWindow extends BaseModal<DelegateModalElement
     });
   }
 
-  private validationLocators(v: Validation) {
-    const fatal = this.page.getByTestId(TEST_IDS.VALIDATIONS.FATAL);
-    const missingAccount = this.page.getByTestId(TEST_IDS.VALIDATIONS.MISSING_ACCOUNT);
-    const permission = this.page.getByTestId(TEST_IDS.VALIDATIONS.PERMISSION);
-    const balance = this.page.getByTestId(TEST_IDS.VALIDATIONS.BALANCE);
-
-    switch (v) {
-      case Validation.fatal:
-        return [fatal];
-      case Validation.missingAccount:
-        return [missingAccount];
-      case Validation.permission:
-        return [permission];
-      case Validation.balance:
-        return [balance];
-      case Validation.sendingAmount:
-        return [balance, this.page.getByTestId(ValidationElements.sendingAmountError)];
-      case Validation.networkFee:
-        return [balance, this.page.getByTestId(ValidationElements.networkFeeAmountError)];
-      case Validation.xcmFee:
-        return [balance, this.page.getByTestId(ValidationElements.crossChainFeeAmountError)];
-      case Validation.deliveryFee:
-        return [balance, this.page.getByTestId(ValidationElements.deliveryFeeAmountError)];
-      case Validation.multisigDeposit:
-        return [balance, this.page.getByTestId(ValidationElements.multisigDepositError)];
-      case Validation.proxyDeposit:
-        return [balance, this.page.getByTestId(ValidationElements.proxyDepositError)];
-    }
-  }
-
   public async expectValidationsVisible(validations: Validation | Validation[]): Promise<void> {
     const list = Array.isArray(validations) ? validations : [validations];
     await this.isContinueButtonDisabled();
@@ -62,7 +31,7 @@ export class DelegateAuthorityModalWindow extends BaseModal<DelegateModalElement
 
     await step(`Check validations visible: ${list.join(', ')}`, async () => {
       for (const v of list) {
-        const locs = this.validationLocators(v);
+        const locs = getValidationLocators(this.page, v);
 
         await Promise.race(locs.map((l) => l.waitFor({ state: 'visible' }))).catch(() => {
           throw new Error(`Validation "${v}" did not appear.`);
@@ -81,7 +50,7 @@ export class DelegateAuthorityModalWindow extends BaseModal<DelegateModalElement
 
     await step(`Check validations hidden: ${list.join(', ')}`, async () => {
       for (const v of list) {
-        const locs = this.validationLocators(v);
+        const locs = getValidationLocators(this.page, v);
         for (const l of locs) {
           await expect(l).toHaveCount(0);
         }
