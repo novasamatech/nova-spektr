@@ -113,6 +113,7 @@ export const bootstrap = () => {
     import('@/features/fellowship-tasks').then(({ fellowshipTasksFeature }) => fellowshipTasksFeature),
     import('@/features/fellowship-voting').then(({ fellowshipVotingFeature }) => fellowshipVotingFeature),
     import('@/features/fellowship-voting-history').then(({ fellowshipVotingHistoryFeature }) => fellowshipVotingHistoryFeature),
+    import('@/features/fellowship-overview').then(({ fellowshipOverviewFeature }) => fellowshipOverviewFeature),
 
     import('@/features/basket-operations').then(({ basketOperationsFeature }) => basketOperationsFeature),
 

@@ -1,21 +1,32 @@
 import { useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { toRomanNumeral } from '@/shared/lib/utils';
-import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
-import { CollectiveRank } from '@/shared/ui-entities';
+import { getCreatedDateFromApi, toRomanNumeral } from '@/shared/lib/utils';
+import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
+import { fellowshipTasksFeature } from '../../model/feature';
+import { periods } from '../../model/periods';
 import { tracks } from '../../model/tracks';
+import { PromotionEndTimer } from '../PromotionEndTimer';
 import { BadgeIcon } from '../TaskBadge';
 
 export const requestPromotionTaskActionSlot = createSlot();
 
 export const RequestPromotion = () => {
-  const { t } = useI18n();
+  const { t, formatDate } = useI18n();
+  const [periodEnd, setPeriodEnd] = useState(0);
 
-  const currentTrack = useUnit(tracks.$currentTrack);
+  const input = useUnit(fellowshipTasksFeature.input);
   const nextTrack = useUnit(tracks.$nextTrack);
+  const endPromotionPeriod = useUnit(periods.$endPromotionPeriod);
+
+  useEffect(() => {
+    if (input?.api && endPromotionPeriod) {
+      getCreatedDateFromApi(endPromotionPeriod, input.api).then(setPeriodEnd);
+    }
+  }, [input?.api, endPromotionPeriod]);
 
   return (
     <Box direction="row" padding={4} gap={2} verticalAlign="flex-end">
@@ -24,16 +35,17 @@ export const RequestPromotion = () => {
       </Box>
       <Box grow={1} gap={3} alignSelf="flex-start">
         <SmallTitleText>{t('fellowship.tasks.task.promotion.title')}</SmallTitleText>
-        <Box direction="row" gap={2.5}>
-          {currentTrack ? <CollectiveRank rank={currentTrack.id} showName /> : null}
-          <Icon name="right" size={16} className="text-text-primary" />
-          {nextTrack ? <CollectiveRank rank={nextTrack.id} showName /> : null}
-        </Box>
         <FootnoteText>
           {t('fellowship.tasks.task.promotion.description', { rank: toRomanNumeral(nextTrack?.id ?? 0) })}
         </FootnoteText>
+        <FootnoteText className="text-text-secondary">
+          {t('fellowship.tasks.task.promotion.until', {
+            date: periodEnd !== 0 ? formatDate(periodEnd, 'dd.MM.yyyy') : null,
+          })}
+        </FootnoteText>
       </Box>
-      <Box verticalAlign="center" shrink={0} width="102px">
+      <Box alignSelf="flex-start" gap={8} horizontalAlign="end" shrink={0} height="100%">
+        <PromotionEndTimer endBlock={endPromotionPeriod} shortDateFormat />
         <Slot id={requestPromotionTaskActionSlot} />
       </Box>
     </Box>

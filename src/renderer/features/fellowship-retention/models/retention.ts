@@ -1,9 +1,8 @@
-import { differenceInDays } from 'date-fns';
 import { combine } from 'effector';
 import { createGate } from 'effector-react';
 
 import { createStoreFromEffect } from '@/shared/effector';
-import { getCreatedDateFromApi, nonNullable, nullable } from '@/shared/lib/utils';
+import { getCreatedDateFromApi, getExpectedBlockTime, nonNullable, nullable } from '@/shared/lib/utils';
 import { type Member, evidenceService, memberService, referendumService, trackService } from '@/domains/collectives';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
@@ -19,6 +18,7 @@ export enum RetentionWidgetState {
   REFERENDUM_CREATED = 'referendum_created',
 }
 
+// Time thresholds in days (for reference and UI display)
 export const DANGER_THRESHOLD_DAYS = 2;
 export const WARNING_THRESHOLD_DAYS = 14;
 export const APPROACHING_THRESHOLD_DAYS = 30;
@@ -88,6 +88,20 @@ const $leftToEndOfPeriod = combine(
   },
 );
 
+// Calculate block thresholds based on network's expected block time
+const $blockThresholds = fellowshipNetwork.$network.map(network => {
+  if (nullable(network)) return null;
+
+  const blockTimeMs = getExpectedBlockTime(network.api).toNumber();
+  const msPerDay = 24 * 60 * 60 * 1000;
+
+  return {
+    danger: Math.ceil((DANGER_THRESHOLD_DAYS * msPerDay) / blockTimeMs),
+    warning: Math.ceil((WARNING_THRESHOLD_DAYS * msPerDay) / blockTimeMs),
+    approaching: Math.ceil((APPROACHING_THRESHOLD_DAYS * msPerDay) / blockTimeMs),
+  };
+});
+
 const { $: $retentionPeriodDates } = createStoreFromEffect({
   params: {
     period: $retentionPeriod,
@@ -106,19 +120,15 @@ const { $: $retentionPeriodDates } = createStoreFromEffect({
   },
 });
 
-const $daysUntilEnd = $retentionPeriodDates.map(dates => {
-  if (!dates) return null;
-  return differenceInDays(dates.to, new Date());
-});
-
 const $widgetState = combine(
   {
-    daysUntilEnd: $daysUntilEnd,
+    blocksLeft: $leftToEndOfPeriod,
+    blockThresholds: $blockThresholds,
     hasRetentionReferendum: $hasRetentionReferendum,
     hasRetentionEvidence: $hasRetentionEvidence,
   },
-  ({ daysUntilEnd, hasRetentionEvidence, hasRetentionReferendum }) => {
-    if (nullable(daysUntilEnd)) return null;
+  ({ blocksLeft, blockThresholds, hasRetentionEvidence, hasRetentionReferendum }) => {
+    if (nullable(blocksLeft) || nullable(blockThresholds)) return null;
 
     if (hasRetentionReferendum) {
       return RetentionWidgetState.REFERENDUM_CREATED;
@@ -128,19 +138,19 @@ const $widgetState = combine(
       return RetentionWidgetState.REPORT_SUBMITTED;
     }
 
-    if (daysUntilEnd <= 0) {
+    if (blocksLeft < 0) {
       return RetentionWidgetState.CRITICAL_EXPIRED;
     }
 
-    if (daysUntilEnd <= DANGER_THRESHOLD_DAYS) {
+    if (blocksLeft <= blockThresholds.danger) {
       return RetentionWidgetState.CRITICAL_LAST_CALL;
     }
 
-    if (daysUntilEnd <= WARNING_THRESHOLD_DAYS) {
+    if (blocksLeft <= blockThresholds.warning) {
       return RetentionWidgetState.WARNING_URGENT;
     }
 
-    if (daysUntilEnd <= APPROACHING_THRESHOLD_DAYS) {
+    if (blocksLeft <= blockThresholds.approaching) {
       return RetentionWidgetState.WARNING_APPROACHING;
     }
 
@@ -152,6 +162,7 @@ export const fellowshipRetention = {
   flow,
   $member,
   $leftToEndOfPeriod,
+  $blockThresholds,
   $widgetState,
   $retentionEvidence,
   $retentionReferendum,

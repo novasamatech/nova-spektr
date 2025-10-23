@@ -1,0 +1,6 @@
+- Complete at least one significant technical contribution
+- Mentor newer fellowship members
+- Demonstrate expertise in specific areas of the protocol
+- Publish articles or documentation about the protocol
+- Show leadership in community discussions
+- Contribute to protocol development or research

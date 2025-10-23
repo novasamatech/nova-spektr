@@ -14,6 +14,7 @@ import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
 import { memberSalary } from '../model/salary';
 
+import { ActiveIndicator } from './ActiveIndicator';
 import { ActivityFeed } from './ActivityFeed';
 import { SetActiveModal } from './SetActiveModal';
 import { VotingRecord } from './VotingRecord';
@@ -77,17 +78,8 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
                     </Box>
                   </Box>
                   <Box verticalAlign="center" horizontalAlign="flex-end" gap={2}>
-                    {active ? (
-                      <div className="flex items-center gap-1">
-                        <span className="h-[9px] w-[9px] rounded-full bg-icon-positive" />
-                        <FootnoteText>{t('fellowship.profile.active')}</FootnoteText>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1">
-                        <span className="h-[9px] w-[9px] rounded-full bg-icon-negative" />
-                        <FootnoteText>{t('fellowship.profile.inactive')}</FootnoteText>
-                      </div>
-                    )}
+                    <ActiveIndicator isActive={active} />
+
                     <SetActiveModal isActive={!active} disabled={setActiveDisabled} salary={salary}>
                       <div>
                         <FootnoteText className="cursor-pointer text-primary-button-background-default">
