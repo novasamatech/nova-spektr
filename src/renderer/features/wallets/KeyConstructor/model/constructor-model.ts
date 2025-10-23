@@ -17,6 +17,7 @@ export type Callbacks = {
 const $callbacks = createStore<Callbacks | null>(null);
 const callbacksApi = createApi($callbacks, {
   callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
+  reset: () => null,
 });
 
 const init = createEvent<(VaultChainAccount | VaultShardAccount)[]>();
