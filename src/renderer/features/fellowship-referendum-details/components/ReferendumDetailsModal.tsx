@@ -59,15 +59,14 @@ export const ReferendumDetailsModal = memo(
       return t('governance.referendums.referendumTitle', { index: referendumId });
     }, [title, referendum, tracks, referendumId]);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleToggle = (open: any) => {
-      if (!open && onClose) {
-        onClose();
+    const handleToggle = (open: boolean) => {
+      if (!open) {
+        onClose?.();
       }
     };
 
     return (
-      <Modal size="xl" height="fit" isOpen={isOpen} onToggle={onClose ? handleToggle : undefined}>
+      <Modal size="xl" height="fit" isOpen={isOpen} onToggle={handleToggle}>
         {children && <Modal.Trigger>{children}</Modal.Trigger>}
         <Modal.Title close>{modalTitle}</Modal.Title>
         <Modal.Content>
