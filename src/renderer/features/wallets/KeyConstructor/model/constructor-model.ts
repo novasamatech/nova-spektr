@@ -1,7 +1,6 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { attach, createApi, createEffect, createEvent, createStore, sample } from 'effector';
 import { produce } from 'immer';
 import { nanoid } from 'nanoid';
-import { spread } from 'patronum';
 
 import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { type DerivationError, validateDerivation } from '@/shared/lib/utils';
@@ -10,6 +9,15 @@ import { networkModel, networkUtils } from '@/entities/network';
 export const DEFAULT_CHAIN = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
 export type DerivationKeyDraft = Pick<VaultChainAccount, 'chainId' | 'derivationPath'>;
+
+export type Callbacks = {
+  onConfirm: (keys: DerivationKeyDraft[]) => void;
+};
+
+const $callbacks = createStore<Callbacks | null>(null);
+const callbacksApi = createApi($callbacks, {
+  callbacksChanged: (state, props: Callbacks) => ({ ...state, ...props }),
+});
 
 const init = createEvent<(VaultChainAccount | VaultShardAccount)[]>();
 const addKey = createEvent();
@@ -21,7 +29,6 @@ const submit = createEvent();
 const $keys = createStore<Record<string, DerivationKeyDraft>>({});
 const $hasChanged = createStore(false).reset(init);
 const $errors = createStore<Record<string, DerivationError[]>>({}).reset(init);
-const $canSubmit = createStore(false).reset(init);
 
 const getKeyValidationErrors = (
   keyId: string,
@@ -148,20 +155,15 @@ sample({
 
 sample({
   clock: submitFx.doneData,
-  fn: (errors) => ({ canSubmit: true, errors }),
-  target: spread({
-    canSubmit: $canSubmit,
-    errros: $errors,
+  target: attach({
+    source: { callbacks: $callbacks, keys: $keys },
+    effect: ({ callbacks, keys }) => callbacks?.onConfirm(Object.values(keys)),
   }),
 });
 
 sample({
-  clock: submitFx.failData,
-  fn: (errors) => ({ canSubmit: false, errors }),
-  target: spread({
-    canSubmit: $canSubmit,
-    errros: $errors,
-  }),
+  clock: [submitFx.doneData, submitFx.failData],
+  target: $errors,
 });
 
 export const constructorModel = {
@@ -171,9 +173,9 @@ export const constructorModel = {
   updateKey,
   validateKey,
   submit,
+  callbacksApi,
 
   $keys,
   $hasChanged,
   $errors,
-  $canSubmit,
 };
