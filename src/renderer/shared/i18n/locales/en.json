@@ -536,6 +536,9 @@
     "noAccount": "Account not found",
     "noProfile": "Profile doesn’t exist",
     "overview": {
+      "match": "match",
+      "matches": "matches",
+      "matchingArticles": "matching articles",
       "members": {
         "clearAll": "Clear all",
         "filters": {

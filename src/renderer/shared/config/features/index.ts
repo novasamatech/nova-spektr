@@ -15,6 +15,7 @@ export const $defaultFeatures = createStore({
   staking: true,
   governance: true,
   fellowship: true,
+  codex: false,
   importDB: isDev(),
   operations: true,
   basket: true,

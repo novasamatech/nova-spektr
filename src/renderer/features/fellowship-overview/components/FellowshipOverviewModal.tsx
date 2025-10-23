@@ -1,8 +1,8 @@
 import { useUnit } from 'effector-react';
-import { useState } from 'react';
 
+import { $features } from '@/shared/config/features';
 import { useI18n } from '@/shared/i18n';
-import { Modal, SearchInput, Tabs } from '@/shared/ui-kit';
+import { Modal, Tabs } from '@/shared/ui-kit';
 import { FELLOWSHIP_TABS } from '../model/constants';
 import { modal } from '../model/modal';
 
@@ -15,10 +15,14 @@ export const FellowshipOverviewModal = () => {
   const isOpen = useUnit(modal.$isFellowshipOverviewModalOpen);
   const activeTab = useUnit(modal.$activeTab);
   const closeModal = useUnit(modal.closeFellowshipOverviewModal);
-  const [searchQuery, setSearchQuery] = useState('');
+  const features = useUnit($features);
 
   const handleTabChange = (tab: string) => {
-    if (tab === FELLOWSHIP_TABS.RANKS || tab === FELLOWSHIP_TABS.MEMBERS || tab === FELLOWSHIP_TABS.CODEX) {
+    if (
+      tab === FELLOWSHIP_TABS.RANKS ||
+      tab === FELLOWSHIP_TABS.MEMBERS ||
+      (features.codex && tab === FELLOWSHIP_TABS.CODEX)
+    ) {
       modal.switchTab(tab);
     }
   };
@@ -29,24 +33,13 @@ export const FellowshipOverviewModal = () => {
 
       <div className="flex h-full flex-col bg-block-background">
         <Tabs value={activeTab} onChange={handleTabChange}>
-          <div className="flex shrink-0 items-start gap-5 px-5 pt-5">
-            <div className="shrink-0">
+          <div className="relative shrink-0 px-5 pt-5">
+            <div className={`absolute top-5 left-5 z-10 ${features.codex ? 'w-[240px]' : 'w-[160px]'}`}>
               <Tabs.List>
                 <Tabs.Trigger value="ranks">{t('fellowship.overview.tabs.ranks')}</Tabs.Trigger>
                 <Tabs.Trigger value="members">{t('fellowship.overview.tabs.members')}</Tabs.Trigger>
-                <Tabs.Trigger value="codex">{t('fellowship.overview.tabs.codex')}</Tabs.Trigger>
+                {features.codex && <Tabs.Trigger value="codex">{t('fellowship.overview.tabs.codex')}</Tabs.Trigger>}
               </Tabs.List>
-            </div>
-            <div className="flex-1 pb-3">
-              <Tabs.Content value="members">
-                <SearchInput
-                  value={searchQuery}
-                  placeholder={t('fellowship.overview.searchPlaceholder')}
-                  height="sm"
-                  width="full"
-                  onChange={setSearchQuery}
-                />
-              </Tabs.Content>
             </div>
           </div>
 
@@ -54,11 +47,13 @@ export const FellowshipOverviewModal = () => {
             <RanksTab />
           </Tabs.Content>
           <Tabs.Content value={FELLOWSHIP_TABS.MEMBERS}>
-            <MembersTab searchQuery={searchQuery} onClearSearch={() => setSearchQuery('')} />
+            <MembersTab />
           </Tabs.Content>
-          <Tabs.Content value={FELLOWSHIP_TABS.CODEX}>
-            <CodexTab />
-          </Tabs.Content>
+          {features.codex && (
+            <Tabs.Content value={FELLOWSHIP_TABS.CODEX}>
+              <CodexTab />
+            </Tabs.Content>
+          )}
         </Tabs>
       </div>
     </Modal>
