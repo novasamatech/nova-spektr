@@ -1666,9 +1666,10 @@
       "unstakeOn": "Unstake { asset } on",
       "vote": "Vote { asset } on"
     },
-    "noOperationsDescription": "Your operation history will appear here",
+    "noOperationsDescription": "You haven't made any operations yet. <br /> If you updated your Flexible Multisig, previous operations are available on the old multisig.",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
-    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
+    "noOperationsTitle": "Operation list is empty",
+    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. <br /> Transaction history for other types of wallets will be available later. Stay tuned.",
     "operationCreated": "Operation created",
     "title": "Operations",
     "titles": {
