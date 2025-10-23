@@ -1,9 +1,9 @@
 import { type SubmittableExtrinsic } from '@polkadot/api/types/submittable';
 import { BN, BN_ZERO } from '@polkadot/util';
-import { type Store, type UnitValue, createEffect, createStore, sample } from 'effector';
+import { type Store, type UnitValue, combine, createEffect, createStore, sample } from 'effector';
 
 import { takeLast } from '@/shared/effector';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { transactionService } from '@/domains/network';
 
 type Params = {
@@ -17,6 +17,7 @@ type FeeCalculationRequest = {
 
 export const createFeeCalculator = ({ active = createStore(true), extrinsic }: Params) => {
   const $fee = createStore(BN_ZERO);
+  const $isInitialized = createStore(false);
 
   const fetchFeeFx = takeLast({
     fn: async ({ extrinsic }: FeeCalculationRequest): Promise<BN> => {
@@ -37,8 +38,8 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
   sample({
     clock: extrinsic,
     filter: nullable,
-    fn: () => BN_ZERO,
-    target: $fee,
+    fn: () => false,
+    target: $isInitialized,
   });
 
   const feeRequested = sample({
@@ -62,11 +63,9 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
   });
 
   sample({
-    clock: fetchFeeFx.fail,
-    source: extrinsic,
-    filter: nonNullable,
-    fn: (_) => BN_ZERO,
-    target: $fee,
+    clock: fetchFeeFx.doneData,
+    fn: () => true,
+    target: $isInitialized,
   });
 
   sample({
@@ -74,8 +73,10 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
     target: logErrorFx,
   });
 
+  const $pendingFee = combine(fetchFeeFx.pending, $isInitialized, (pending, initialized) => pending || !initialized);
+
   return {
     $: $fee,
-    $pending: fetchFeeFx.pending,
+    $pending: $pendingFee,
   };
 };
