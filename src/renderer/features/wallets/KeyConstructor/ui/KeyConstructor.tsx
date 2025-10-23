@@ -44,6 +44,8 @@ export const KeyConstructor = memo(({ title, isOpen, existingKeys, onClose, onCo
 
   useEffect(() => {
     constructorModel.callbacksApi.callbacksChanged({ onConfirm });
+
+    return () => constructorModel.callbacksApi.reset();
   }, [onConfirm]);
 
   const closeConstructor = () => {
