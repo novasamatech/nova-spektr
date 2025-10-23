@@ -66,18 +66,18 @@ function tryReserve(balance: Balance, amount: BN, transferableMode?: Transferabl
 }
 
 function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalancePreservation): BalanceUpdateResult {
+  const strategy = getPreservationStrategy(balance, balancePreservation);
+
   const transferable = transferableAmountBN(balance);
 
   const transferableImbalance = transferable.sub(amount);
   const countedTowardsEdImbalance =
-    balancePreservation === 'keepAlive'
-      ? calculateBalanceCountedTowardsEd(balance).sub(balance.ed.add(amount))
-      : BN_ZERO;
+    strategy === 'keepAlive' ? calculateBalanceCountedTowardsEd(balance).sub(balance.ed.add(amount)) : BN_ZERO;
   const totalImbalance = BN.min(transferableImbalance, countedTowardsEdImbalance);
 
   if (totalImbalance.isNeg()) {
     const updated = copyBalance(balance, {
-      free: balancePreservation === 'keepAlive' ? balance.ed : BN_ZERO,
+      free: strategy === 'keepAlive' ? balance.ed : BN_ZERO,
     });
 
     return {
@@ -104,7 +104,9 @@ function tryWithdraw(balance: Balance, amount: BN, balancePreservation: BalanceP
 }
 
 function withdrawableAmount(balance: Balance, balancePreservation: BalancePreservation): BN {
-  switch (balancePreservation) {
+  const strategy = getPreservationStrategy(balance, balancePreservation);
+
+  switch (strategy) {
     case 'keepAlive': {
       const transferable = transferableAmountBN(balance);
       const countedTowardsEd = calculateBalanceCountedTowardsEd(balance).sub(balance.ed);
