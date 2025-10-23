@@ -26,7 +26,7 @@ const parseFileContentFx = createEffect(async (file: File) => {
 });
 
 const updateDBFx = createEffect(async (file: File) => {
-  importDb(file);
+  return importDb(file);
 });
 
 const populateWalletsFx = attach({ effect: walletModel.populate });
