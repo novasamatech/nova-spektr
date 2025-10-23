@@ -1,5 +1,5 @@
-import { useGate, useUnit } from 'effector-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { useEffect, useState } from 'react';
 
 import {
   type Chain,
@@ -16,7 +16,7 @@ import { isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Hash, type IdenticonIconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Copy, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
@@ -68,12 +68,14 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const [tab, setTab] = useState('accounts');
   const [chains, setChains] = useState<Chain[]>([]);
 
-  const accountsMap = useMemo(() => {
-    const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
-    //todo sort these accounts
-
-    return accountsMap;
-  }, [wallet.accounts]);
+  const accountsMap = useStoreMap({
+    store: accounts.$list,
+    keys: [wallet.id],
+    fn: (accounts, [walletId]) => {
+      const walletAccounts = accountService.filterAccountsByWallet(accounts, walletId);
+      return walletDetailsUtils.getVaultAccountsMap(walletAccounts as (VaultChainAccount | VaultShardAccount)[]);
+    },
+  });
 
   useEffect(() => {
     const filteredChains = Object.values(allChains).filter(c => {
