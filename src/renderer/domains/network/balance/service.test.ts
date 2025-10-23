@@ -125,6 +125,29 @@ describe('balanceService', () => {
       expectToImbalanced(actual, 5);
     });
   });
+
+  describe('withdrawable amount', () => {
+    it('should calculate withdrawable for keepAlive', () => {
+      const initial = createBalance({ free: 20, reserved: 0, frozen: 0 });
+      const withdrawable = balanceService.withdrawableAmount(initial, 'keepAlive');
+
+      expect(withdrawable.toNumber()).toEqual(19);
+    });
+
+    it('should calculate withdrawable for allowDeath', () => {
+      const initial = createBalance({ free: 20, reserved: 0, frozen: 0 });
+      const withdrawable = balanceService.withdrawableAmount(initial, 'allowDeath');
+
+      expect(withdrawable.toNumber()).toEqual(20);
+    });
+
+    it('should calculate withdrawable for allowDeath when there are still some consumers', () => {
+      const initial = createBalance({ free: 20, reserved: 0, frozen: 0, consumers: 1 });
+      const withdrawable = balanceService.withdrawableAmount(initial, 'allowDeath');
+
+      expect(withdrawable.toNumber()).toEqual(19);
+    });
+  });
 });
 
 type BalanceBoilerplate = {

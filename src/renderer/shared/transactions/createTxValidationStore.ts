@@ -1,6 +1,7 @@
-import { type Store } from 'effector';
+import { type Store, createStore } from 'effector';
 import { and, not } from 'patronum';
 
+import { type Balance } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 
 import { type Validator } from './createTxValidator';
@@ -16,12 +17,19 @@ type ValidatorParams<Validator extends AnyValidator> = Parameters<Validator>[0];
 type Params<Validator extends AnyValidator> = {
   params: Stores<ValidatorParams<Validator>>;
   validator: Validator;
+  calculateAvailable?: {
+    exclude: string[];
+  };
 };
 
-export const createTxValidationStore = <Validator extends AnyValidator>({ params, validator }: Params<Validator>) => {
+export const createTxValidationStore = <Validator extends AnyValidator>({
+  params,
+  validator,
+  calculateAvailable,
+}: Params<Validator>) => {
   const { $, $isDefaultValue, $pending } = createStoreFromEffect({
     params,
-    defaultValue: { errors: [], balanceValidationResults: [] },
+    defaultValue: { errors: [], balanceValidationResults: [], available: [] },
     fn: validator,
   });
 
@@ -36,6 +44,22 @@ export const createTxValidationStore = <Validator extends AnyValidator>({ params
     $validationDone,
     $errors.map((errors) => errors.length > 0),
   );
+
+  let $available: Store<Balance[]>;
+  if (calculateAvailable) {
+    const { $: $localAvailable } = createStoreFromEffect({
+      params: {
+        ...params,
+        excludeActions: createStore(calculateAvailable.exclude),
+      },
+      defaultValue: { errors: [], balanceValidationResults: [], available: [] },
+      fn: validator,
+    });
+
+    $available = $localAvailable.map((v) => v.available);
+  } else {
+    $available = $.map((v) => v.available);
+  }
 
   return {
     /**
@@ -62,5 +86,10 @@ export const createTxValidationStore = <Validator extends AnyValidator>({ params
      * True if validation is done but there are some errors.
      */
     $failed,
+
+    /**
+     * Available balances after all withdraws and deposits are done.
+     */
+    $available,
   };
 };

@@ -4,6 +4,7 @@ import { combine, createEvent, sample } from 'effector';
 import { type Address, type Asset, type Chain } from '@/shared/core';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { type TxConfirmInfo, createTransactionConfirmStore, createTxValidationStore } from '@/shared/transactions';
+import { type BalancePreservation } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -21,7 +22,7 @@ export type TransferConfirmStore = TxConfirmInfo & {
   xcmFee: BN;
   deliveryFee: BN;
   multisigDeposit: BN;
-  includeExistentialDeposit: boolean;
+  balancePreservation: BalancePreservation;
 };
 
 const { $confirmMap, $confirms, $isMultisigExists, init, startSigning } =
@@ -49,7 +50,7 @@ const $route = $currentConfirm.map((confirm) => confirm?.route ?? []);
 const $transaction = $currentConfirm.map((confirm) => confirm?.tx ?? null);
 const $xcmFee = $currentConfirm.map((confirm) => confirm?.xcmFee ?? new BN(0));
 const $deliveryFee = $currentConfirm.map((confirm) => confirm?.deliveryFee ?? new BN(0));
-const $isExistentialDepositEnabled = $currentConfirm.map((confirm) => confirm?.includeExistentialDeposit ?? false);
+const $balancePreservation = $currentConfirm.map((confirm) => confirm?.balancePreservation ?? false);
 
 const { $errors: $validationErrors, $valid: $canSubmit } = createTxValidationStore({
   validator: transferValidator,
@@ -65,7 +66,7 @@ const { $errors: $validationErrors, $valid: $canSubmit } = createTxValidationSto
     transaction: $transaction,
     xcmFee: $xcmFee,
     deliveryFee: $deliveryFee,
-    includeExistentialDeposit: $isExistentialDepositEnabled,
+    balancePreservation: $balancePreservation,
   },
 });
 

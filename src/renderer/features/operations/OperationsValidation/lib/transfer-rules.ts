@@ -210,7 +210,7 @@ export const transferValidator = createTxValidator<{
   destinationChain: Chain;
   xcmFee: BN;
   deliveryFee: BN;
-  includeExistentialDeposit?: boolean;
+  balancePreservation: BalancePreservation;
 }>({
   // ATTENTION - this order is important, this is how it's calculated on chain
   additionalBalanceRules: [
@@ -236,7 +236,7 @@ export const transferValidator = createTxValidator<{
     },
     // amount
     // withdraws from initiator in source asset (can be any asset)
-    ({ route, amount, sourceChain, sourceAsset, getBalance, includeExistentialDeposit }) => {
+    ({ route, amount, sourceChain, sourceAsset, getBalance, balancePreservation }) => {
       const initiator = accountService.findInitiator(route);
       assert(initiator, 'Initiator not found');
 
@@ -244,8 +244,6 @@ export const transferValidator = createTxValidator<{
 
       const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
       assert(balance, `Balance for account ${initiator.accountId} not found`);
-
-      const balancePreservation: BalancePreservation = includeExistentialDeposit ? 'allowDeath' : 'keepAlive';
 
       return {
         account: initiator,
