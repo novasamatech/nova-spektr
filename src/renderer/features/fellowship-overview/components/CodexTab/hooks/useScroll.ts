@@ -4,6 +4,12 @@ const SCROLL_OFFSET = 20;
 
 export const useScroll = () => {
   const findScrollContainer = useCallback((element: Element): Element | null => {
+    /*
+
+    TODO: Implement proper anchoring logic
+
+    */
+
     return (
       element.closest('[data-radix-scroll-area-viewport]') ||
       element.closest('.scrollArea') ||
