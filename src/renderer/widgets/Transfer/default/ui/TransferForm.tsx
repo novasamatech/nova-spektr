@@ -509,11 +509,6 @@ const FeeSection = memo(() => {
   const pendingFee = useUnit(formModel.$pendingFee);
   const deliveryFee = useUnit(formModel.$deliveryFee);
 
-  console.log({
-    fee: fee?.toString(),
-    pendingFee,
-  });
-
   if (!network) {
     return null;
   }
@@ -549,9 +544,7 @@ const FeeSection = memo(() => {
         />
       )}
 
-      {isXcm && !deliveryFee.isZero() && (
-        <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
-      )}
+      {isXcm && deliveryFee && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
     </div>
   );
 });
