@@ -6,6 +6,7 @@ import { getRelativeTimeFromApi, nonNullable, nullable, toAddress, toShortAddres
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText, Duration, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
@@ -67,93 +68,100 @@ export const SalaryInfo = memo(() => {
     nonNullable(currentPeriod) &&
     salaryService.canRequestSalaryPayout(claimStatus, currentPeriod);
   const isSalaryRequested =
-    nonNullable(claimStatus) &&
-    nonNullable(currentPeriod) &&
-    salaryService.isClaimantRequestedSalary(claimStatus, currentPeriod);
+    nonNullable(claimStatus) && nonNullable(currentPeriod) && salaryService.isClaimantRequestedSalary(claimStatus);
   const isPayoutRequested =
     nonNullable(claimStatus) &&
     nonNullable(currentPeriod) &&
-    salaryService.isClaimantRequestedSalaryPayout(claimStatus, currentPeriod);
+    salaryService.isClaimantRequestedSalaryPayout(claimStatus);
 
   return (
-    <div className="my-3">
-      <CaptionText className="caption mb-2 uppercase">{t('fellowship.salary.salary')}</CaptionText>
+    <Box gap={2}>
+      <CaptionText className="caption uppercase">{t('fellowship.salary.salary')}</CaptionText>
 
       <div className="flex gap-2">
         <div className="flex max-w-[50%] grow gap-2 rounded-lg bg-block-background-default p-4">
-          {canInteractWithSalary && (
+          {currentMember && currentMember.rank === 0 ? (
+            <div className="flex grow flex-col gap-1">
+              <FootnoteText className="text-text-secondary">
+                {t('fellowship.salary.salaryInfo.insufficientRank')}
+              </FootnoteText>
+            </div>
+          ) : (
             <>
-              {currentPeriod?.type === 'registration' && (
-                <div className="flex grow flex-col gap-1">
-                  <FootnoteText className="text-text-secondary">
-                    <Duration seconds={timeLeft / 1000} />{' '}
-                    {isSalaryRequested
-                      ? t('fellowship.salary.salaryInfo.timeToNextPayout')
-                      : t('fellowship.salary.salaryInfo.timeToRequest')}
-                  </FootnoteText>
+              {canInteractWithSalary && (
+                <>
+                  {currentPeriod?.type === 'registration' && (
+                    <div className="flex grow flex-col gap-1">
+                      <FootnoteText className="text-text-secondary">
+                        <Duration shortFormat seconds={timeLeft / 1000} />{' '}
+                        {isSalaryRequested
+                          ? t('fellowship.salary.salaryInfo.timeToNextPayout')
+                          : t('fellowship.salary.salaryInfo.timeToRequest')}
+                      </FootnoteText>
 
-                  <SmallTitleText>{salaryService.formatSalaryAmount(salary.active)}</SmallTitleText>
+                      <SmallTitleText>{salaryService.formatSalaryAmount(salary.active)}</SmallTitleText>
 
-                  {isSalaryRequested && (
-                    <FootnoteText className="mt-auto flex items-center gap-1 pt-2 pb-1 text-tab-text-accent">
-                      <Icon name="voted" size={16} className="text-inherit" />
-                      <span>{t('fellowship.salary.salaryInfo.requestSalarySuccess')}</span>
-                    </FootnoteText>
+                      {isSalaryRequested && (
+                        <FootnoteText className="mt-auto flex items-center gap-1 pt-2 pb-1 text-tab-text-accent">
+                          <Icon name="voted" size={16} className="text-inherit" />
+                          <span>{t('fellowship.salary.salaryInfo.requestSalarySuccess')}</span>
+                        </FootnoteText>
+                      )}
+                      {canRequestSalary && (
+                        <SalaryRegisterModal>
+                          <Button className="mt-auto w-fit" size="sm" variant="fill" disabled={disabled}>
+                            {t('fellowship.salary.salaryInfo.requestSalary')}
+                          </Button>
+                        </SalaryRegisterModal>
+                      )}
+                    </div>
                   )}
 
-                  {canRequestSalary && (
-                    <SalaryRegisterModal>
-                      <Button className="mt-auto w-fit" size="sm" variant="fill" disabled={disabled}>
-                        {t('fellowship.salary.salaryInfo.requestSalary')}
-                      </Button>
-                    </SalaryRegisterModal>
+                  {currentPeriod?.type === 'payout' && (
+                    <div className="flex grow flex-col gap-1">
+                      <FootnoteText className="text-text-secondary">
+                        <Duration shortFormat seconds={timeLeft / 1000} />{' '}
+                        {isPayoutRequested
+                          ? t('fellowship.salary.salaryInfo.timeToNextCircle')
+                          : t('fellowship.salary.salaryInfo.timeToWithdraw')}
+                      </FootnoteText>
+
+                      <SmallTitleText>{salaryService.formatSalaryAmount(salary.active)}</SmallTitleText>
+
+                      {isPayoutRequested && (
+                        <FootnoteText className="mt-auto flex items-center gap-1 pt-2 pb-1 text-tab-text-accent">
+                          <Icon name="voted" size={16} className="text-inherit" />
+                          <span>{t('fellowship.salary.salaryInfo.payoutSalarySuccess')}</span>
+                        </FootnoteText>
+                      )}
+
+                      {canRequestSalaryPayout && (
+                        <SalaryPayoutModal>
+                          <Button size="sm" variant="fill" className="mt-auto w-fit" disabled={disabled}>
+                            {t('fellowship.salary.salaryInfo.payoutSalary')}
+                          </Button>
+                        </SalaryPayoutModal>
+                      )}
+                    </div>
                   )}
-                </div>
+                </>
               )}
-
-              {currentPeriod?.type === 'payout' && (
+              {canInductSalary && (
                 <div className="flex grow flex-col gap-1">
                   <FootnoteText className="text-text-secondary">
-                    <Duration seconds={timeLeft / 1000} />{' '}
-                    {isPayoutRequested
-                      ? t('fellowship.salary.salaryInfo.timeToNextCircle')
-                      : t('fellowship.salary.salaryInfo.timeToWithdraw')}
+                    {t('fellowship.salary.salaryInfo.inductSalary')}
                   </FootnoteText>
 
                   <SmallTitleText>{salaryService.formatSalaryAmount(salary.active)}</SmallTitleText>
 
-                  {isPayoutRequested && (
-                    <FootnoteText className="mt-auto flex items-center gap-1 pt-2 pb-1 text-tab-text-accent">
-                      <Icon name="voted" size={16} className="text-inherit" />
-                      <span>{t('fellowship.salary.salaryInfo.payoutSalarySuccess')}</span>
-                    </FootnoteText>
-                  )}
-
-                  {canRequestSalaryPayout && (
-                    <SalaryPayoutModal>
-                      <Button size="sm" variant="fill" className="mt-auto w-fit">
-                        {t('fellowship.salary.salaryInfo.payoutSalary')}
-                      </Button>
-                    </SalaryPayoutModal>
-                  )}
+                  <SalaryInductModal>
+                    <Button className="mt-auto w-fit" size="sm" variant="fill" disabled={disabled}>
+                      {t('fellowship.salary.salaryInfo.inductSalaryAction')}
+                    </Button>
+                  </SalaryInductModal>
                 </div>
               )}
             </>
-          )}
-          {canInductSalary && (
-            <div className="flex grow flex-col gap-1">
-              <FootnoteText className="text-text-secondary">
-                {t('fellowship.salary.salaryInfo.inductSalary')}
-              </FootnoteText>
-
-              <SmallTitleText>{salaryService.formatSalaryAmount(salary.active)}</SmallTitleText>
-
-              <SalaryInductModal>
-                <Button className="mt-auto w-fit" size="sm" variant="fill" disabled={disabled}>
-                  {t('fellowship.salary.salaryInfo.inductSalaryAction')}
-                </Button>
-              </SalaryInductModal>
-            </div>
           )}
         </div>
         <div className="flex max-w-[50%] grow flex-col gap-2 rounded-lg bg-block-background-default p-4">
@@ -172,12 +180,12 @@ export const SalaryInfo = memo(() => {
           )}
 
           <SalaryEditBeneficiaryModal>
-            <Button className="mt-2 w-fit" size="sm" variant="fill" pallet="secondary">
+            <Button className="mt-2 w-fit" size="sm" variant="fill" pallet="secondary" disabled={disabled}>
               {t('fellowship.salary.salaryInfo.editBeneficiary')}
             </Button>
           </SalaryEditBeneficiaryModal>
         </div>
       </div>
-    </div>
+    </Box>
   );
 });

@@ -531,11 +531,7 @@
     "profile": {
       "active": "Active",
       "activeSalary": "Active salary",
-      "history": "History",
       "activityFeed": {
-        "status": "Status switched to {status}",
-        "statusActive": "active",
-        "statusInactive": "passive",
         "clear": "Clear",
         "demoted": "Demoted to rank {rank}",
         "filterAll": "All events",
@@ -548,7 +544,10 @@
         "promoted": "Promoted to rank {rank}",
         "proven": "Retained at rank {rank}",
         "requestedPromotion": "Promotion requested",
-        "requestedRetention": "Retention requested"
+        "requestedRetention": "Retention requested",
+        "status": "Status switched to {status}",
+        "statusActive": "active",
+        "statusInactive": "passive"
       },
       "fellow": "Fellow",
       "history": "History",
@@ -740,7 +739,7 @@
       "retentionLeft": "Retention evidence within:",
       "retentionSubmit": "Submit evidence",
       "salary": "Salary",
-      "salaryInduct": "Induct salary on",
+      "salaryInduct": "Activate salary on",
       "salaryInfo": {
         "beneficiary": "Beneficiary",
         "editBeneficiary": "Edit Beneficiary",
@@ -748,6 +747,7 @@
         "inductSalaryAction": "Activate",
         "inductSalaryCall": "Your salary: {salary}, activate it.",
         "inductSalarySuccess": "Payments activated",
+        "insufficientRank": "To start receiving salary you need to achieve Rank I",
         "payoutSalary": "Withdraw",
         "payoutSalaryCall": "{salary} to the next payout",
         "payoutSalarySuccess": "Withdrawal completed",
@@ -757,10 +757,10 @@
         "selectBeneficiary": "Select beneficiary",
         "timeToNextCircle": "until next circle",
         "timeToNextPayout": "to the next payout",
-        "timeToRequest": "to request",
-        "timeToWithdraw": "to withdraw"
+        "timeToRequest": "left to request",
+        "timeToWithdraw": "left to withdraw"
       },
-      "salaryPayout": "Request payout on",
+      "salaryPayout": "Withdraw salary on",
       "salaryRequest": "Request salary on",
       "submitEvidenceConfirm": {
         "evidence": "Evidence",
