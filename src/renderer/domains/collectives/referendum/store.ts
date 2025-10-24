@@ -1,6 +1,7 @@
 import { createStore } from 'effector';
 import { readonly } from 'patronum';
 
+import { populated } from '@/shared/effector';
 import { deriveFromResources } from '@/shared/resource';
 import { mergeNested } from '../_lib/helpers';
 import { type CollectivesStruct } from '../_lib/types';
@@ -28,9 +29,12 @@ deriveFromResources({
   },
 });
 
+const $referendumsWithEvidencePopulated = populated(referendumsWithEvidenceResource.request);
+
 export const referendum = {
   $list: readonly($list),
   $referendumsWithEvidence: readonly($referendumsWithEvidence),
+  $referendumsWithEvidencePopulated: readonly($referendumsWithEvidencePopulated),
   request: fetchResource.request,
   subscribe: subscriptionResource.subscribe,
   unsubscribe: subscriptionResource.unsubscribe,
