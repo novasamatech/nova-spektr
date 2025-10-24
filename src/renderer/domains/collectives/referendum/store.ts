@@ -35,6 +35,5 @@ export const referendum = {
   subscribe: subscriptionResource.subscribe,
   unsubscribe: subscriptionResource.unsubscribe,
   fulfilled: subscriptionResource.fulfilled,
-
   requestReferendumsWithEvidence: referendumsWithEvidenceResource.request,
 };

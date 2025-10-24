@@ -1,7 +1,7 @@
 import { combine } from 'effector';
 import { or } from 'patronum';
 
-import { groupBy, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type CompletedReferendum,
   type OngoingReferendum,
@@ -226,11 +226,7 @@ const $evidenceTasks = combine(
 
     for (const evidence of evidences) {
       if (evidenceHashesWithReferendums.has(evidence.hash)) {
-        const referendumIndex = referendumsWithEvidence.find(r =>
-          r.evidence.some(e => e.hash === evidence.hash),
-        )?.index;
-        console.log('PETUH 1337', toAddress(evidence.accountId), referendumIndex);
-        // continue;
+        continue;
       }
 
       const proposer = members.find(m => m.accountId === evidence.accountId);

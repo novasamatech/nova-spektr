@@ -109,8 +109,3 @@ export const evidenceService = {
   createEvidenceTransaction,
   isEvidenceTransaction,
 };
-
-console.log(
-  'pedik 228',
-  evidenceService.getEvidenceIpfsUrl('0x03bab3cc7ce76f74ef4ad753801db84ff63eb7643d1812aedff371851a6e6947'),
-);
