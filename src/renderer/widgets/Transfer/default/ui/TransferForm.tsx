@@ -107,7 +107,7 @@ const DestinationBalanceAlert = memo(() => {
         <Trans
           t={t}
           i18nKey="transfer.destinationBalanceAlertDescription"
-          values={{ ed: asset ? formatAsset(destinationBalanceEd, asset) : '0' }}
+          values={{ ed: asset && destinationBalanceEd ? formatAsset(destinationBalanceEd, asset) : '0' }}
           components={{ b: <b /> }}
         />
       </span>
@@ -501,12 +501,18 @@ const FeeSection = memo(() => {
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
   const coreTx = useUnit(formModel.$coreTx);
+  const feeTx = useUnit(formModel.$feeTx);
   const isXcm = useUnit(formModel.$isXcm);
   const xcmConfig = useUnit(formModel.$xcmConfig);
   const xcmApi = useUnit(formModel.$xcmApi);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
   const deliveryFee = useUnit(formModel.$deliveryFee);
+
+  console.log({
+    fee: fee?.toString(),
+    pendingFee,
+  });
 
   if (!network) {
     return null;
@@ -528,7 +534,7 @@ const FeeSection = memo(() => {
       <FeeWithLabel
         label={t('operation.networkFee')}
         asset={getNativeAsset(network.chain.assets)!}
-        fee={fee.toString()}
+        fee={fee}
         isLoading={pendingFee}
       />
 
@@ -537,7 +543,7 @@ const FeeSection = memo(() => {
           api={xcmApi}
           config={xcmConfig}
           asset={network.asset}
-          transaction={coreTx}
+          transaction={feeTx || coreTx}
           onFeeChange={formModel.xcmFeeChanged}
           onFeeLoading={formModel.isXcmFeeLoadingChanged}
         />

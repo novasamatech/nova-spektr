@@ -75,9 +75,9 @@ const myselfClicked = createEvent();
 const xcmDestinationSelected = createEvent<AccountId>();
 const xcmDestinationCancelled = createEvent();
 
-const setAvailable = createEvent<BN>();
+const setAvailable = createEvent<BN | null>();
 const $available = createStore<BN | null>(null)
-  .on(setAvailable, (state, payload) => (!state || !state.eq(payload) ? payload : state))
+  .on(setAvailable, (state, payload) => (!state || !payload || !state.eq(payload) ? payload : state))
   .reset(formInitiated);
 
 const setMaxMode = createEvent<boolean>();
@@ -148,7 +148,8 @@ const $destination = form.fields.destination.$value;
 const $destinationChain = form.fields.destinationChain.$value;
 
 const $amount = combine($asset, form.fields.amount.$value, (asset, amount) => {
-  if (nullable(asset)) return BN_ZERO;
+  if (nullable(asset)) return null;
+
   return toPrecision(amount, asset.precision);
 });
 
@@ -211,12 +212,13 @@ const $signatoryBalance = combine(
   },
   ({ signatory, balances, chain }) => {
     if (nullable(signatory) || nullable(chain)) {
-      return BN_ZERO;
+      return null;
     }
 
     const asset = getNativeAsset(chain.assets);
     const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId);
-    return balance ? withdrawableAmountBN(balance) : BN_ZERO;
+
+    return balance ? withdrawableAmountBN(balance) : null;
   },
 );
 
@@ -259,12 +261,12 @@ const $destinationBalance = combine(
   },
 );
 
-const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed ?? BN_ZERO);
+const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed);
 
 const $hasDestinationBalanceError = combine(
   { amount: $amount, accountId: $destinationAccountId, balance: $destinationBalance },
   ({ amount, accountId, balance }) => {
-    if (nullable(accountId) || nullable(balance)) {
+    if (nullable(accountId) || nullable(balance) || nullable(amount)) {
       return false;
     }
     if (amount.isZero()) return false;
@@ -320,6 +322,8 @@ const $coreTx = combine(
       return null;
     }
 
+    console.log({ form });
+
     return transactionBuilder.buildTransfer({
       chain: network.chain,
       asset: network.asset,
@@ -350,6 +354,15 @@ const $feeCoreTx = combine(
     const destinationChain = isXcm ? xcmChain : network.chain;
     const destination = networkUtils.isEthereumBased(destinationChain?.options) ? TEST_EVM_ADDRESS : TEST_ADDRESS;
 
+    console.log('$feeCoreTx', {
+      chain: network.chain,
+      asset: network.asset,
+      accountId: initiator.accountId,
+      amount: '1',
+      destination,
+      xcmData,
+    });
+
     return transactionBuilder.buildTransfer({
       chain: network.chain,
       asset: network.asset,
@@ -360,6 +373,25 @@ const $feeCoreTx = combine(
     });
   },
 );
+
+combine({
+  api: $api,
+  initiator: form.fields.initiator.$value,
+  signatory: form.fields.signatory.$value,
+  accounts: accounts.$list,
+  chain: $chain,
+  transaction: $coreTx,
+  feeTransaction: $feeCoreTx,
+}).subscribe(({ initiator, signatory, accounts, chain, transaction, feeTransaction }) => {
+  console.log('createComplexTxStore network fee', {
+    initiator,
+    signatory,
+    accounts,
+    chain,
+    transaction,
+    feeTransaction,
+  });
+});
 
 const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   api: $api,
@@ -447,7 +479,7 @@ sample({
     balancePreservationStrategy: $balancePreservationStrategy,
   },
   fn: ({ balance, balancePreservationStrategy }) => {
-    if (nullable(balance)) return BN_ZERO;
+    if (nullable(balance)) return null;
 
     return balanceService.withdrawableAmount(balance, balancePreservationStrategy);
   },
@@ -675,6 +707,7 @@ const formSubmitFinished = sample({
       nullable(chain) ||
       nullable(coreTx) ||
       nullable(tx) ||
+      nullable(fee) ||
       nullable(initiator) ||
       nullable(form.signatory) ||
       !validateAddress(form.destination)
@@ -739,6 +772,7 @@ export const formModel = {
   $deliveryFee: xcmTransferModel.$deliveryFee,
 
   $coreTx,
+  $feeTx,
   $tx,
   $api,
   $networkStore,
