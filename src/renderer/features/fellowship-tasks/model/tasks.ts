@@ -1,7 +1,7 @@
 import { combine } from 'effector';
 import { or } from 'patronum';
 
-import { groupBy, nonNullable, nullable } from '@/shared/lib/utils';
+import { groupBy, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import {
   type CompletedReferendum,
   type OngoingReferendum,
@@ -43,6 +43,7 @@ const $evidencePeriods = fellowship.$store.map(store => store?.evidencePeriods ?
 const $maxRank = fellowship.$store.map(input => input?.maxRank ?? 0);
 const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
+const $referendumsWithEvidence = fellowship.$store.map(store => store?.referendumsWithEvidence ?? []);
 
 const $voting = fellowship.$store.map(store => store?.voting ?? []);
 const $accountsVotes = combine({ voting: $voting, account: $member }, ({ voting, account }) => {
@@ -210,15 +211,28 @@ const $evidenceTasks = combine(
     members: $members,
     evidencePopulated: evidence.$populated,
     currentBlock: fellowshipNetwork.$currentBlock,
+    referendumsWithEvidence: $referendumsWithEvidence,
   },
-  ({ evidences, periods, member, members, evidencePopulated, currentBlock }) => {
+  ({ evidences, periods, member, members, evidencePopulated, currentBlock, referendumsWithEvidence }) => {
     if (!evidencePopulated || nullable(member) || nullable(periods) || nullable(currentBlock)) {
       return [];
     }
 
+    const evidenceHashesWithReferendums = new Set(
+      referendumsWithEvidence.filter(r => r.completed).flatMap(r => r.evidence.map(e => e.hash)),
+    );
+
     const tasks: TaskDescription[] = [];
 
     for (const evidence of evidences) {
+      if (evidenceHashesWithReferendums.has(evidence.hash)) {
+        const referendumIndex = referendumsWithEvidence.find(r =>
+          r.evidence.some(e => e.hash === evidence.hash),
+        )?.index;
+        console.log('PETUH 1337', toAddress(evidence.accountId), referendumIndex);
+        // continue;
+      }
+
       const proposer = members.find(m => m.accountId === evidence.accountId);
       if (nullable(proposer)) continue;
 
