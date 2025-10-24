@@ -376,8 +376,9 @@ sample({
     network: $networkStore,
     transaction: $tx,
     isProxy: $isProxy,
-    fee: $fee.map((fee) => fee.toString()),
-    totalFee: $fee.map((fee) => fee.toString()),
+    // ToDo: handle nullable fee, do not map to zero
+    fee: $fee.map((fee) => fee?.toString() || '0'),
+    totalFee: $fee.map((fee) => fee?.toString() || '0'),
     multisigDeposit: $multisigDeposit,
   },
   filter: ({ network, transaction }) => {

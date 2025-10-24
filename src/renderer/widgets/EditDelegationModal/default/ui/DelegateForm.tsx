@@ -233,7 +233,7 @@ const FeeSection = () => {
       )}
 
       <FeeWithLabel
-        fee={fee.toString()}
+        fee={fee}
         isLoading={pendingFee}
         asset={network.chain.assets[0]}
         label={t('staking.networkFee', { count: 1 })}

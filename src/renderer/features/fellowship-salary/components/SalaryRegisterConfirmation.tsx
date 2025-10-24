@@ -12,7 +12,7 @@ type Props = {
   wallets: Wallet[];
   chain: Chain;
   asset: Asset;
-  fee: BN;
+  fee: BN | null;
 };
 
 export const SalaryRegisterConfirmation = ({ fee, account, wallets, chain, asset }: Props) => {
@@ -20,7 +20,7 @@ export const SalaryRegisterConfirmation = ({ fee, account, wallets, chain, asset
 
   return (
     <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={account}>
-      <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
+      {fee && <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>}
     </TransactionDetails>
   );
 };

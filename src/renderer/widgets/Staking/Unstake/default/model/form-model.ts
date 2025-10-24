@@ -396,7 +396,8 @@ sample({
     network: $networkStore,
     transaction: $tx,
     route: $route,
-    fee: $fee.map((fee) => fee.toString()),
+    // ToDo: handle nullable fee, do not map to zero
+    fee: $fee.map((fee) => fee?.toString() || '0'),
     multisigDeposit: $multisigDeposit,
     selectedSignatory: form.fields.signatory.$value,
   },

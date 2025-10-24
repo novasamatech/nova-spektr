@@ -169,6 +169,7 @@ const formSubmitted = sample({
     nonNullable(nominateForm.initiator) &&
     nonNullable(nominateForm.signatory) &&
     nonNullable(coreTx) &&
+    nonNullable(fee) &&
     nonNullable(tx)
   ) {
     return [

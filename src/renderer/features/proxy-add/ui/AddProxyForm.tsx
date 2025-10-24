@@ -328,7 +328,7 @@ const FeeSection = () => {
 
       {isMultisig && <MultisigDepositFee asset={nativeAsset} multisigDeposit={multisigDeposit.toString()} />}
 
-      <FeeWithLabel asset={nativeAsset} fee={fee.toString()} isLoading={pendingFee} />
+      <FeeWithLabel asset={nativeAsset} fee={fee} isLoading={pendingFee} />
     </div>
   );
 };

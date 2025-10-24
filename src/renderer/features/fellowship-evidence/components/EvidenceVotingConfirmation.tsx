@@ -22,7 +22,7 @@ type Props = {
   proposerMember: Member;
   tracks: Track[];
   maxRank: number;
-  fee: BN;
+  fee: BN | null;
 };
 
 export const EvidenceVotingConfirmation = memo(
@@ -83,7 +83,7 @@ export const EvidenceVotingConfirmation = memo(
               {formatAsset(decisionDeposit, asset)}
             </DetailRow>
           )}
-          <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
+          {fee && <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>}
         </TransactionDetails>
       </Box>
     );

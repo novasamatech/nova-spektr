@@ -86,11 +86,11 @@ export const ConfirmationStep = () => {
             <Separator className="border-filter-border" />
             <div className="mb-4 flex flex-1 flex-col gap-y-4">
               <ProxyDepositLabel>
-                <Fee fee={proxyDeposit ?? ''} asset={asset} />
+                <Fee fee={proxyDeposit} asset={asset} />
               </ProxyDepositLabel>
               <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />
 
-              <FeeWithLabel fee={fee.toString()} asset={asset} />
+              <FeeWithLabel fee={fee} asset={asset} />
             </div>
           </div>
         </section>

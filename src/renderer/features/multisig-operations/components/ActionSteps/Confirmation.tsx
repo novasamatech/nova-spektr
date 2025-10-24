@@ -34,7 +34,7 @@ type Props = {
   signAccount?: AnyAccount | null;
   chain: Chain;
   api: ApiPromise;
-  fee: BN;
+  fee: BN | null;
   multisigDeposit: BN;
   valid: boolean;
   isFeeLoading: boolean;
