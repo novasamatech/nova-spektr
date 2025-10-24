@@ -43,6 +43,7 @@ const $evidencePeriods = fellowship.$store.map(store => store?.evidencePeriods ?
 const $maxRank = fellowship.$store.map(input => input?.maxRank ?? 0);
 const $members = fellowship.$store.map(input => input?.members ?? []);
 const $chainName = $chain.map(chain => chain?.name ?? 'Unknown');
+const $referendumsWithEvidence = fellowship.$store.map(store => store?.referendumsWithEvidence ?? []);
 
 const $voting = fellowship.$store.map(store => store?.voting ?? []);
 const $accountsVotes = combine({ voting: $voting, account: $member }, ({ voting, account }) => {
@@ -210,15 +211,24 @@ const $evidenceTasks = combine(
     members: $members,
     evidencePopulated: evidence.$populated,
     currentBlock: fellowshipNetwork.$currentBlock,
+    referendumsWithEvidence: $referendumsWithEvidence,
   },
-  ({ evidences, periods, member, members, evidencePopulated, currentBlock }) => {
+  ({ evidences, periods, member, members, evidencePopulated, currentBlock, referendumsWithEvidence }) => {
     if (!evidencePopulated || nullable(member) || nullable(periods) || nullable(currentBlock)) {
       return [];
     }
 
+    const evidenceHashesWithReferendums = new Set(
+      referendumsWithEvidence.filter(r => r.completed).flatMap(r => r.evidence.map(e => e.hash)),
+    );
+
     const tasks: TaskDescription[] = [];
 
     for (const evidence of evidences) {
+      if (evidenceHashesWithReferendums.has(evidence.hash)) {
+        continue;
+      }
+
       const proposer = members.find(m => m.accountId === evidence.accountId);
       if (nullable(proposer)) continue;
 

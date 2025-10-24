@@ -1,8 +1,11 @@
+import { gql } from '@apollo/client';
 import { type ApiPromise } from '@polkadot/api';
 import { Compact } from '@polkadot/types';
 import { u8aToHex } from '@polkadot/util';
+import { GraphQLClient } from 'graphql-request';
+import { z } from 'zod';
 
-import { type ChainId, type HexString } from '@/shared/core';
+import { type Chain, type ChainId, ExternalType, type HexString } from '@/shared/core';
 import { createPagesHandler } from '@/shared/effector';
 import { nullable } from '@/shared/lib/utils';
 import {
@@ -17,7 +20,7 @@ import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createRemoteResource, createSubscriptionResource } from '@/shared/resource';
 import { type CollectivePalletsType } from '../_lib/types';
 
-import { type Proposal, type Referendum } from './types';
+import { type Proposal, type Referendum, type ReferendumWithEvidence } from './types';
 
 async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPromise): Promise<Proposal | null> {
   let proposalHex: HexString | null = null;
@@ -281,5 +284,85 @@ export const fetchResource = createRemoteResource<ReferendumRequestParams, Refer
   async fn({ api, chainId, palletType, referendums }) {
     const response = await referendaPallet.storage.referendumInfoFor(palletType, api, referendums);
     return mapReferendums(response, api, palletType, chainId);
+  },
+});
+
+/**
+ * Use this query to map referendums with evidences. If possible use chain
+ * state.
+ */
+const GET_REFERENDUMS_QUERY = gql`
+  query Referendums {
+    referendums {
+      nodes {
+        index
+        evidence {
+          nodes {
+            hash
+          }
+        }
+        completed
+      }
+    }
+  }
+`;
+
+const referendumsGqlSchema = z.object({
+  referendums: z.object({
+    nodes: z.array(
+      z.object({
+        index: z.custom<ReferendumId>(),
+        evidence: z.object({
+          nodes: z.array(
+            z.object({
+              hash: z.custom<HexString>(),
+            }),
+          ),
+        }),
+        completed: z.boolean(),
+      }),
+    ),
+  }),
+});
+
+export type ReferendumsWithEvidence = z.infer<typeof referendumsGqlSchema>['referendums'];
+
+const requestReferendumsFromSubQuery = async (url: string) => {
+  const client = new GraphQLClient(url);
+  const result = await client.request(GET_REFERENDUMS_QUERY);
+
+  try {
+    const parsed = referendumsGqlSchema.parse(result);
+    return parsed.referendums.nodes;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+type RequestRefendumsParams = {
+  chain: Chain;
+  palletType: CollectivePalletsType;
+};
+
+export const referendumsWithEvidenceResource = createRemoteResource<RequestRefendumsParams, ReferendumWithEvidence[]>({
+  pool: ({ chain, palletType }) => `${palletType}:${chain.chainId}`,
+  cache: {
+    key: ({ chain, palletType }) => `${palletType}:${chain.chainId}`,
+    ttl: 60 * 1000,
+  },
+  async fn({ chain, palletType }) {
+    const externalApi = chain.externalApi?.[ExternalType.COLLECTIVES]?.at(0);
+    const sourceUrl = externalApi?.url;
+    if (!sourceUrl) return [];
+    const result = await requestReferendumsFromSubQuery(sourceUrl);
+
+    return result.map(item => ({
+      pallet: palletType,
+      chainId: chain.chainId,
+      index: item.index,
+      completed: item.completed,
+      evidence: item.evidence.nodes.map(e => ({ hash: e.hash })),
+    }));
   },
 });
