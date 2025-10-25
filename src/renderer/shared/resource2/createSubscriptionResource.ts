@@ -24,7 +24,7 @@ type SubscriptionParams<Params, Response, Cache> = {
   scope?: Scope;
 };
 
-export const createSubscriptionResource = <Params, Response, Cache>({
+const createSubscriptionResource = <Params, Response, Cache>({
   name = 'unknown',
   key,
   fn,
@@ -110,3 +110,67 @@ export const createSubscriptionResource = <Params, Response, Cache>({
     stop,
   };
 };
+
+type RequestFn<Params, Response> = (params: Params, callback: (response: Response) => void) => void;
+type MapCacheFn<Params, Response, Cache> = (cache: Cache, result: Response, params: Params) => Cache;
+
+type BuilderParams<Params, Response, Cache> = {
+  key: (params: Params) => string;
+  fn: RequestFn<Params, Response>;
+  store: StoreWritable<Cache>;
+  map: MapCacheFn<Params, Response, Cache>;
+};
+
+type SubscribeResourceBuilder<Params, Response, Cache> = {
+  subscribe<const Params, const Response>(params: {
+    key: (params: Params) => string;
+    fn: RequestFn<Params, Response>;
+  }): SubscribeResourceBuilder<Params, Response, Cache>;
+  cache<const Cache>(params: {
+    store: StoreWritable<Cache>;
+    map: MapCacheFn<Params, Response, Cache>;
+  }): SubscribeResourceBuilder<Params, Response, Cache>;
+  build(): Resource<Params, Response, Cache>;
+};
+
+export const createResource = <Params, Response, Cache>(
+  params: Partial<BuilderParams<Params, Response, Cache>> = {},
+) => {
+  return {
+    subscribe<Params, Response>({
+      fn,
+      key,
+    }: {
+      key: (params: Params) => string;
+      fn: RequestFn<Params, Response>;
+    }): SubscribeResourceBuilder<Params, Response, Cache> {
+      return createResource<Params, Response, Cache>({ ...params, fn, key });
+    },
+    cache<Cache>({
+      store,
+      map,
+    }: {
+      store: StoreWritable<Cache>;
+      map: MapCacheFn<Params, Response, Cache>;
+    }): SubscribeResourceBuilder<Params, Response, Cache> {
+      return createResource<Params, Response, Cache>({ ...params, store, map });
+    },
+    build(): Resource<Params, Response, Cache> {
+      return createSubscriptionResource({
+        cache: params.store,
+        map: params.map,
+        key: params.key,
+        fn: params.fn,
+      });
+    },
+  };
+};
+
+const a = createResource()
+  .subscribe<{ a: 1 }, { b: 2 }>({
+    key: (params) => params.a.toString(),
+    fn: (params, callback) => {
+      callback({ b: 2 });
+    },
+  })
+  .build();
