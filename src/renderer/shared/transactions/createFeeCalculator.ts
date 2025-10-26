@@ -19,9 +19,14 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
   const $fee = createStore<BN | null>(null);
 
   const fetchFeeFx = takeLast({
-    fn: async ({ extrinsic }: FeeCalculationRequest): Promise<BN> => {
-      const fee = await transactionService.getExtrinsicFee(extrinsic).then((x) => new BN(x));
-      return fee;
+    fn: async ({ extrinsic }: FeeCalculationRequest): Promise<BN | null> => {
+      return await transactionService
+        .getExtrinsicFee(extrinsic)
+        .then((x) => new BN(x))
+        .catch((err) => {
+          console.error(err);
+          return null;
+        });
     },
     key: () => 'feeCalculation',
   });
@@ -40,10 +45,7 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
   sample({
     clock: extrinsic,
     filter: nullable,
-    fn: () => {
-      console.log('set fee', { value: null });
-      return null;
-    },
+    fn: () => null,
     target: $fee,
   });
 
@@ -64,20 +66,14 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
 
   sample({
     clock: fetchFeeFx.doneData,
-    fn: (value) => {
-      console.log('set fee', { value: value.toString() });
-      return value;
-    },
+    fn: (value) => value,
     target: $fee,
   });
 
   sample({
     clock: fetchFeeFx.failData,
     filter: (error) => !isAbortError(error),
-    fn: (_) => {
-      console.log('set fee', { value: null });
-      return null;
-    },
+    fn: (_) => null,
     target: $fee,
   });
 

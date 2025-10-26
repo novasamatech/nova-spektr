@@ -60,7 +60,7 @@ const getDeliveryFeeFx = createEffect(
       return null;
     }
 
-    const deliveryFeeFromConfig = xcmService.getDeliveryFeeFromConfig({
+    return xcmService.getDeliveryFeeFromConfig({
       config,
       originApi: api,
       originChain: toLocalChainId(originChainId),
@@ -68,10 +68,6 @@ const getDeliveryFeeFx = createEffect(
       extrinsic,
       destinationChain,
     });
-
-    console.log('xcm', { deliveryFeeFromConfig });
-
-    return deliveryFeeFromConfig;
   },
 );
 
@@ -358,7 +354,6 @@ sample({
   // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
   // TODO refactor this shit
   filter: (state, update) => {
-    console.log('xcm xcmFeeChanged', { state: state?.toString(), update: update?.toString() });
     return !!update && !state.eq(update);
   },
   fn: (_, fee) => fee,

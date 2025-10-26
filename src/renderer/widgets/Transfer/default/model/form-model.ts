@@ -322,8 +322,6 @@ const $coreTx = combine(
       return null;
     }
 
-    console.log({ form });
-
     return transactionBuilder.buildTransfer({
       chain: network.chain,
       asset: network.asset,
@@ -354,15 +352,6 @@ const $feeCoreTx = combine(
     const destinationChain = isXcm ? xcmChain : network.chain;
     const destination = networkUtils.isEthereumBased(destinationChain?.options) ? TEST_EVM_ADDRESS : TEST_ADDRESS;
 
-    console.log('$feeCoreTx', {
-      chain: network.chain,
-      asset: network.asset,
-      accountId: initiator.accountId,
-      amount: '1',
-      destination,
-      xcmData,
-    });
-
     return transactionBuilder.buildTransfer({
       chain: network.chain,
       asset: network.asset,
@@ -373,25 +362,6 @@ const $feeCoreTx = combine(
     });
   },
 );
-
-combine({
-  api: $api,
-  initiator: form.fields.initiator.$value,
-  signatory: form.fields.signatory.$value,
-  accounts: accounts.$list,
-  chain: $chain,
-  transaction: $coreTx,
-  feeTransaction: $feeCoreTx,
-}).subscribe(({ initiator, signatory, accounts, chain, transaction, feeTransaction }) => {
-  console.log('createComplexTxStore network fee', {
-    initiator,
-    signatory,
-    accounts,
-    chain,
-    transaction,
-    feeTransaction,
-  });
-});
 
 const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   api: $api,
