@@ -12,7 +12,7 @@ import {
 import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getAssetByTypeExtras, getNativeAsset, nullable } from '@/shared/lib/utils';
+import { getAssetByTypeExtras, getNativeAsset, nonNullable, nullable } from "@/shared/lib/utils";
 import { Button } from '@/shared/ui';
 import { Modal } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
@@ -144,7 +144,7 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
         <OperationTitle title={t(transactionTitle || '', { asset: asset?.symbol })} chainId={operation.chainId} />
       </Modal.Title>
       <Modal.Content>
-        {activeStep === Step.CONFIRMATION && (
+        {activeStep === Step.CONFIRMATION && nonNullable(fee) && (
           <Confirmation
             operation={operation}
             api={api}

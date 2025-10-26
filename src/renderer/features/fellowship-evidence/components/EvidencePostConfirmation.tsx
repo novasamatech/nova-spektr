@@ -16,7 +16,7 @@ type Props = {
   asset: Asset;
   evidenceType: 'Promotion' | 'Retention';
   evidence: HexString;
-  fee: BN | null;
+  fee: BN;
   rank: string;
 };
 
@@ -56,7 +56,7 @@ export const EvidencePostConfirmation = ({
           <span className="uppercase">{rank}</span>
         </DetailRow>
         <Separator />
-        {fee && <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>}
+        <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
       </TransactionDetails>
     </Box>
   );
