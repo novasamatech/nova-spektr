@@ -106,10 +106,7 @@ export const createComplexTxStore = <T extends Transaction>({
     target: $tx,
   });
 
-  const $mergedTx = combine($tx, $feeTx, (tx, feeTx) => {
-    console.log({ tx, feeTx });
-    return tx || feeTx;
-  });
+  const $mergedTx = combine($tx, $feeTx, (tx, feeTx) => tx || feeTx);
 
   const $mergedExtrinsic = combine(api, $mergedTx, (api, tx) => {
     if (nullable(api)) return null;

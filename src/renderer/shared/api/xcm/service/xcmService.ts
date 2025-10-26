@@ -387,8 +387,6 @@ async function getDeliveryFeeFromConfig({
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
 
-  console.log('xcm getDeliveryFeeFromConfig', { deliveryFeeConfig });
-
   if (!deliveryFeeConfig) return null;
 
   const query = originApi.query[camelCase(deliveryFeeConfig.factorPallet)];
