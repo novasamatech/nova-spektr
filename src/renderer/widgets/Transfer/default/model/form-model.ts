@@ -335,29 +335,47 @@ const $coreTx = combine(
   },
 );
 
+const $mockDestination = combine(
+  {
+    network: $networkStore,
+    isXcm: $isXcm,
+    xcmChain: xcmTransferModel.$xcmChain,
+  },
+  ({ isXcm, xcmChain, network }) => {
+    if (nullable(network)) {
+      return null;
+    }
+    const destinationChain = isXcm ? xcmChain : network.chain;
+    return networkUtils.isEthereumBased(destinationChain?.options) ? TEST_EVM_ADDRESS : TEST_ADDRESS;
+  },
+);
+
 const $feeCoreTx = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
     xcmData: xcmTransferModel.$xcmData,
-    xcmChain: xcmTransferModel.$xcmChain,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
+    mockDestination: $mockDestination,
   },
-  ({ network, isXcm, xcmChain, xcmData, isConnected, initiator }) => {
-    if (!network || !initiator || !isConnected || (isXcm && !xcmData)) {
+  ({ network, isXcm, xcmData, isConnected, initiator, mockDestination }) => {
+    if (
+      nullable(network) ||
+      nullable(initiator) ||
+      nullable(isConnected) ||
+      nullable(mockDestination) ||
+      (isXcm && nullable(xcmData))
+    ) {
       return null;
     }
-
-    const destinationChain = isXcm ? xcmChain : network.chain;
-    const destination = networkUtils.isEthereumBased(destinationChain?.options) ? TEST_EVM_ADDRESS : TEST_ADDRESS;
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
       asset: network.asset,
       accountId: initiator.accountId,
       amount: '1',
-      destination,
+      destination: mockDestination,
       xcmData,
     });
   },
@@ -625,8 +643,17 @@ sample({
 });
 
 sample({
-  clock: form.fields.destination.change,
-  fn: (destination) => (validateAddress(destination) ? toAccountId(destination) : null),
+  clock: [form.fields.destination.change, $mockDestination],
+  source: {
+    destination: form.fields.destination.$value,
+    mockDestination: $mockDestination,
+  },
+  fn: ({ destination, mockDestination }) => {
+    const address = destination || mockDestination;
+
+    if (nullable(address)) return null;
+    return validateAddress(address) ? toAccountId(address) : null;
+  },
   target: xcmTransferModel.events.destinationChanged,
 });
 
