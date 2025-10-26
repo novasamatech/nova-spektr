@@ -129,7 +129,9 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
                   {isActive ? t('fellowship.profile.setActive.active') : t('fellowship.profile.setActive.inactive')}
                 </DetailRow>
                 <DetailRow label={t('fellowship.voting.confirmation.salary')}>{salaryChange}</DetailRow>
-                {fee && <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, input.asset)}</DetailRow>}
+                {fee && (
+                  <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, input.asset)}</DetailRow>
+                )}
               </TransactionDetails>
 
               {alertOpen && (
