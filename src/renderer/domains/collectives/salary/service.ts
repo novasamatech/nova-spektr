@@ -163,9 +163,8 @@ function canRequestSalary(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
 function canRequestSalaryPayout(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
   return (
     period.type === 'payout' &&
-    claimStatus.type !== 'payout' &&
-    claimStatus.type !== 'none' &&
-    claimStatus.lastActive <= period.cycleIndex
+    ((claimStatus.type === 'registered' && claimStatus.lastActive === period.cycleIndex) ||
+      (claimStatus.type === 'nothing' && claimStatus.lastActive < period.cycleIndex))
   );
 }
 
