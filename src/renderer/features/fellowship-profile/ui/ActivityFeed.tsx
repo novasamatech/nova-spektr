@@ -2,14 +2,31 @@ import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { type PropsWithChildren, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks/useDeferredList';
 import { entries, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
-import { Duration, FootnoteText, HelpText, Separator } from '@/shared/ui';
+import { Duration, FootnoteText, HelpText, Icon, Separator, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Select } from '@/shared/ui-kit';
-import { type FeedRecord } from '@/domains/collectives';
+import { type FeedRecord, evidenceService } from '@/domains/collectives';
 import { activity } from '../model/activity';
+
+import { ReferendumActivityItem } from './ReferendumActivityItem';
+
+const FILTER_TYPES_TITLES = {
+  promotion: 'fellowship.profile.activityFeed.filterPromotion',
+  retention: 'fellowship.profile.activityFeed.filterRetention',
+  status: 'fellowship.profile.activityFeed.filterStatus',
+  salary: 'fellowship.profile.activityFeed.filterSalary',
+  referendum: 'fellowship.profile.activityFeed.filterReferendum',
+} as const;
+
+type FilterType = keyof typeof FILTER_TYPES_TITLES;
+
+const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+
+const SUBSCAN_COLLECTIVES_URL = 'https://collectives-polkadot.subscan.io';
 
 const getMessage = (t: TFunction, record: FeedRecord) => {
   if (record.type === 'activeChanged') {
@@ -46,19 +63,35 @@ const getMessage = (t: TFunction, record: FeedRecord) => {
       : t('fellowship.profile.activityFeed.requestedRetention');
   }
 
+  if (record.type === 'referendum') {
+    return t('fellowship.profile.activityFeed.referendum');
+  }
+
   return '';
 };
 
-const FILTER_TYPES_TITLES = {
-  promotion: 'fellowship.profile.activityFeed.filterPromotion',
-  retention: 'fellowship.profile.activityFeed.filterRetention',
-  status: 'fellowship.profile.activityFeed.filterStatus',
-  salary: 'fellowship.profile.activityFeed.filterSalary',
-} as const;
+const getLink = (t: TFunction, record: FeedRecord): { text: string; url: string } | null => {
+  if (
+    record.type === 'imported' ||
+    record.type === 'promoted' ||
+    record.type === 'demoted' ||
+    record.type === 'proven'
+  ) {
+    return {
+      text: t('fellowship.profile.activityFeed.viewExtrinsic'),
+      url: `${SUBSCAN_COLLECTIVES_URL}/block/${record.block}`,
+    };
+  }
 
-type FilterType = keyof typeof FILTER_TYPES_TITLES;
+  if (record.type === 'requested') {
+    return {
+      text: t('fellowship.profile.activityFeed.viewEvidence'),
+      url: evidenceService.getEvidenceIpfsUrl(record.hash).toString(),
+    };
+  }
 
-const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+  return null;
+};
 
 export const ActivityFeed = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
@@ -80,6 +113,8 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
           return record.type === 'activeChanged';
         case 'salary':
           return record.type === 'paid';
+        case 'referendum':
+          return record.type === 'referendum';
         default:
           return true;
       }
@@ -97,7 +132,7 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.profile.history')}</Modal.Title>
       <Modal.Content>
-        <Box padding={[0, 3, 0]} gap={0}>
+        <Box padding={[0, 3, 0]} gap={0} height="100%">
           <div className="flex w-full items-center gap-2 px-2 pb-4">
             <div className="grow">
               <Select placeholder={t('fellowship.profile.activityFeed.filterAll')} value={filter} onChange={setFilter}>
@@ -117,24 +152,58 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
               </button>
             )}
           </div>
-          <Box padding={[0, 2, 5]} gap={3}>
-            {deferredList.map(x => {
-              const age = now.current - x.at.getTime();
-              const isOlderThanMonth = age > ONE_MONTH_MS;
+          {deferredList.length === 0 ? (
+            <div className="flex grow flex-col items-center justify-center gap-3">
+              <Icon name="document" size={64} />
+              <Box gap={2} horizontalAlign="center">
+                <SmallTitleText className="text-center">
+                  {t('fellowship.profile.activityFeed.noEventsTitle')}
+                </SmallTitleText>
+                <FootnoteText className="text-center text-text-tertiary">
+                  {t('fellowship.profile.activityFeed.noEventsDesc')}
+                </FootnoteText>
+              </Box>
+            </div>
+          ) : (
+            <Box padding={[0, 2, 5]} gap={3}>
+              {deferredList.map(x => {
+                const age = now.current - x.at.getTime();
+                const isOlderThanMonth = age > ONE_MONTH_MS;
+                const link = getLink(t, x);
+                const isShowIconLink =
+                  x.type === 'imported' || x.type === 'promoted' || x.type === 'demoted' || x.type === 'proven';
 
-              return (
-                <div key={`${x.type}-${x.block}`} className="flex flex-col gap-2">
-                  <div className="flex items-start gap-2">
-                    <FootnoteText className="grow font-bold">{getMessage(t, x)}</FootnoteText>
-                    <HelpText className="shrink-0 text-text-secondary">
-                      {isOlderThanMonth ? format(x.at, 'dd/MM/yyyy') : <Duration seconds={age / 1000} />}
-                    </HelpText>
+                return (
+                  <div key={`${x.type}-${x.block}`} className="flex flex-col gap-3">
+                    <div className="flex justify-between gap-2">
+                      {x.type === 'referendum' ? (
+                        <ReferendumActivityItem record={x} />
+                      ) : (
+                        <div className="flex flex-col gap-1">
+                          <FootnoteText className="grow font-bold">{getMessage(t, x)}</FootnoteText>
+                          {link && (
+                            <Link
+                              className="flex items-center gap-1 font-semibold text-primary-button-background-default"
+                              to={link.url}
+                              target="_blank"
+                            >
+                              {link.text}
+                              {isShowIconLink && <Icon name="link" size={16} className="text-icon-accent" />}
+                            </Link>
+                          )}
+                        </div>
+                      )}
+
+                      <HelpText className="mb-auto shrink-0 pt-[2px] text-text-secondary">
+                        {isOlderThanMonth ? format(x.at, 'dd/MM/yyyy') : <Duration seconds={age / 1000} />}
+                      </HelpText>
+                    </div>
+                    <Separator />
                   </div>
-                  <Separator />
-                </div>
-              );
-            })}
-          </Box>
+                );
+              })}
+            </Box>
+          )}
         </Box>
       </Modal.Content>
     </Modal>

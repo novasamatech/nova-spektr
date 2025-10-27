@@ -13,7 +13,7 @@ const $chainFeed = combine($feeds, fellowshipActivityFeedFeature.input, (feeds, 
 });
 
 const $activityFeed = $chainFeed.map(feed => {
-  return feed.filter(r => r.type !== 'paid');
+  return feed.filter(r => r.type !== 'paid' && r.type !== 'referendum');
 });
 
 sample({

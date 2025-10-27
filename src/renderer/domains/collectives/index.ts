@@ -40,7 +40,7 @@ export type {
 } from './evidence/types';
 
 export { feed } from './feed/store';
-export type { FeedRecord } from './feed/types';
+export type { FeedRecord, FeedEventReferendum } from './feed/types';
 
 export { rfcDetails } from './rfc/store';
 
