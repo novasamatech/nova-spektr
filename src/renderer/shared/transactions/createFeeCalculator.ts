@@ -66,14 +66,13 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
 
   sample({
     clock: fetchFeeFx.doneData,
-    fn: (value) => value,
     target: $fee,
   });
 
   sample({
     clock: fetchFeeFx.failData,
     filter: (error) => !isAbortError(error),
-    fn: (_) => null,
+    fn: () => null,
     target: $fee,
   });
 
