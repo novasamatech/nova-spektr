@@ -538,7 +538,7 @@ const FeeSection = memo(() => {
           api={xcmApi}
           config={xcmConfig}
           asset={network.asset}
-          transaction={feeTx || coreTx}
+          transaction={coreTx || feeTx}
           onFeeChange={formModel.xcmFeeChanged}
           onFeeLoading={formModel.isXcmFeeLoadingChanged}
         />
