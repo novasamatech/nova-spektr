@@ -29,7 +29,6 @@ export const KeyConstructor = memo(({ title, isOpen, existingKeys, onClose, onCo
 
   const keys = useUnit(constructorModel.$keys);
   const hasChanged = useUnit(constructorModel.$hasChanged);
-  const canSubmit = useUnit(constructorModel.$canSubmit);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -44,10 +43,10 @@ export const KeyConstructor = memo(({ title, isOpen, existingKeys, onClose, onCo
   }, [addNewKeyShortcutPressed]);
 
   useEffect(() => {
-    if (!canSubmit) return;
+    constructorModel.callbacksApi.callbacksChanged({ onConfirm });
 
-    onConfirm(Object.values(keys));
-  }, [canSubmit, keys]);
+    return () => constructorModel.callbacksApi.reset();
+  }, [onConfirm]);
 
   const closeConstructor = () => {
     if (hasChanged) {
