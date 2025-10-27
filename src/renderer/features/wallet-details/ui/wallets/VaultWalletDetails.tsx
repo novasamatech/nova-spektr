@@ -72,14 +72,16 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
     store: accounts.$list,
     keys: [wallet.id],
     fn: (accounts, [walletId]) =>
-      accountService.filterAccountsByWallet(accounts, walletId) as (VaultChainAccount | VaultShardAccount)[],
+      accountService
+        .filterAccountsByWallet(accounts, walletId)
+        .filter(a => accountUtils.isVaultChainAccount(a) || accountUtils.isVaultShardAccount(a)),
   });
 
   const accountsMap = useMemo(() => walletDetailsUtils.getVaultAccountsMap(walletAccounts), [walletAccounts]);
 
   useEffect(() => {
     const filteredChains = Object.values(allChains).filter(c => {
-      return walletAccounts.some(a => accountUtils.isChainAndCryptoMatch(a, c));
+      return walletAccounts.some(a => accountService.isAccountAvailableOnChain(a, c));
     });
 
     setChains(filteredChains);
