@@ -12,6 +12,11 @@ import { memberProfile } from './memberProfile';
 
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
 
+const $endPromotionPeriod = combine(memberProfile.$member, $periods, (member, periods) => {
+  if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+  return evidenceService.getEndPromotionBlock(member, periods);
+});
+
 const $leftToPromotion = combine(
   { periods: $periods, currentBlock: fellowshipNetwork.$currentBlock, member: memberProfile.$member },
   ({ periods, currentBlock, member }) => {
@@ -51,6 +56,7 @@ sample({
 });
 
 export const periods = {
+  $endPromotionPeriod,
   $endDemotionPeriod,
   $leftToPromotion,
   $leftToDemotion,

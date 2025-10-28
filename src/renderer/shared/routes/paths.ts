@@ -36,6 +36,7 @@ export const Paths = {
   // Fellowship
   FELLOWSHIP: '/fellowship',
   FELLOWSHIP_LIST: '/fellowship/:chainId',
+  FELLOWSHIP_REFERENDUM: '/fellowship/:chainId/referendum/:referendumId',
 
   // Staking
   STAKING: '/staking',
