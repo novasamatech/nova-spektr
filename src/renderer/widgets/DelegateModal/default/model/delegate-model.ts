@@ -112,6 +112,7 @@ const formSubmitted = sample({
       nonNullable(delegateData.signatory) &&
       nonNullable(coreTx) &&
       nonNullable(tx) &&
+      nonNullable(fee) &&
       isStep(step, Step.INIT)
     ) {
       const asset = getRelaychainAsset(walletData.chain.assets)!;

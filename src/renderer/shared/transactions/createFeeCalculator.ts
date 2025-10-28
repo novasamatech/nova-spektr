@@ -1,9 +1,9 @@
 import { type SubmittableExtrinsic } from '@polkadot/api/types/submittable';
-import { BN, BN_ZERO } from '@polkadot/util';
+import { BN } from '@polkadot/util';
 import { type Store, type UnitValue, createEffect, createStore, sample } from 'effector';
 
 import { takeLast } from '@/shared/effector';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { nullable } from '@/shared/lib/utils';
 import { transactionService } from '@/domains/network';
 
 type Params = {
@@ -16,28 +16,36 @@ type FeeCalculationRequest = {
 };
 
 export const createFeeCalculator = ({ active = createStore(true), extrinsic }: Params) => {
-  const $fee = createStore(BN_ZERO);
+  const $fee = createStore<BN | null>(null);
 
   const fetchFeeFx = takeLast({
-    fn: async ({ extrinsic }: FeeCalculationRequest): Promise<BN> => {
-      const fee = await transactionService.getExtrinsicFee(extrinsic).then((x) => new BN(x));
-      return fee;
+    fn: async ({ extrinsic }: FeeCalculationRequest): Promise<BN | null> => {
+      return await transactionService
+        .getExtrinsicFee(extrinsic)
+        .then((x) => new BN(x))
+        .catch((err) => {
+          console.error(err);
+          return null;
+        });
     },
     key: () => 'feeCalculation',
   });
 
+  const isAbortError = (err: UnitValue<typeof fetchFeeFx.failData>) =>
+    err && 'name' in err && err.name === 'AbortError';
+
   const logErrorFx = createEffect((err: UnitValue<typeof fetchFeeFx.failData>) => {
-    if (err && 'name' in err && err.name === 'AbortError') {
+    if (isAbortError(err)) {
       return;
     }
 
-    console.error('fee calculation faied', err);
+    console.error('fee calculation failed', err);
   });
 
   sample({
     clock: extrinsic,
     filter: nullable,
-    fn: () => BN_ZERO,
+    fn: () => null,
     target: $fee,
   });
 
@@ -62,10 +70,9 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
   });
 
   sample({
-    clock: fetchFeeFx.fail,
-    source: extrinsic,
-    filter: nonNullable,
-    fn: (_) => BN_ZERO,
+    clock: fetchFeeFx.failData,
+    filter: (error) => !isAbortError(error),
+    fn: () => null,
     target: $fee,
   });
 

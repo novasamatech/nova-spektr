@@ -254,20 +254,21 @@ sample({
   source: {
     network: $networkStore,
     route: $route,
-    fee: $fee.map((fee) => fee.toString()),
+    fee: $fee.map((fee) => fee?.toString()),
     multisigDeposit: $multisigDeposit,
     selectedSignatory: form.fields.signatory.$value,
   },
-  filter: ({ network, selectedSignatory }) => {
-    return nonNullable(network) && nonNullable(selectedSignatory);
+  filter: ({ network, selectedSignatory, fee }) => {
+    return nonNullable(network) && nonNullable(selectedSignatory) && nonNullable(fee);
   },
-  fn: ({ selectedSignatory, network, ...fee }, formData) => {
+  fn: ({ selectedSignatory, network, fee, multisigDeposit, ...rest }, formData) => {
     const { initiator } = formData;
 
     return {
-      ...fee,
-      multisigDeposit: fee.multisigDeposit.toString(),
-      totalFee: fee.fee.toString(),
+      ...rest,
+      multisigDeposit: multisigDeposit.toString(),
+      fee: fee!.toString(),
+      totalFee: fee!.toString(),
       chain: network!.chain,
       initiator: initiator!,
       signatory: selectedSignatory!,
@@ -284,7 +285,7 @@ export const formModel = {
   $proxyWallet,
   $proxyBalance,
 
-  $fee: $fee.map((fee) => fee.toString()),
+  $fee: $fee,
   $pendingFee,
   $multisigDeposit,
 

@@ -101,16 +101,18 @@ export const EvidencePostModal = ({ isOpen, onToggle, evidence, wish, children }
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              <EvidencePostConfirmation
-                evidenceType={wish}
-                evidence={evidence}
-                asset={input.asset}
-                chain={input.chain}
-                wallets={input.wallets}
-                account={account}
-                fee={fee}
-                rank={rankTitle}
-              />
+              {nonNullable(fee) && (
+                <EvidencePostConfirmation
+                  evidenceType={wish}
+                  evidence={evidence}
+                  asset={input.asset}
+                  chain={input.chain}
+                  wallets={input.wallets}
+                  account={account}
+                  fee={fee}
+                  rank={rankTitle}
+                />
+              )}
             </Box>
             <Modal.Footer>
               {wallet && basketUtils.isBasketAvailable(wallet) && (

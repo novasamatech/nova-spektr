@@ -522,7 +522,7 @@ const submitCompleted = sample({
     const delegate = formData.delegate;
 
     if (!validateAddress(delegate)) return null;
-    if (nullable(formData.initiator) || nullable(formData.signatory) || nullable(formData.chain)) {
+    if (nullable(formData.initiator) || nullable(formData.signatory) || nullable(formData.chain) || nullable(fee)) {
       return null;
     }
 

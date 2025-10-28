@@ -75,9 +75,9 @@ const myselfClicked = createEvent();
 const xcmDestinationSelected = createEvent<AccountId>();
 const xcmDestinationCancelled = createEvent();
 
-const setAvailable = createEvent<BN>();
+const setAvailable = createEvent<BN | null>();
 const $available = createStore<BN | null>(null)
-  .on(setAvailable, (state, payload) => (!state || !state.eq(payload) ? payload : state))
+  .on(setAvailable, (state, payload) => (!state || !payload || !state.eq(payload) ? payload : state))
   .reset(formInitiated);
 
 const setMaxMode = createEvent<boolean>();
@@ -148,7 +148,8 @@ const $destination = form.fields.destination.$value;
 const $destinationChain = form.fields.destinationChain.$value;
 
 const $amount = combine($asset, form.fields.amount.$value, (asset, amount) => {
-  if (nullable(asset)) return BN_ZERO;
+  if (nullable(asset)) return null;
+
   return toPrecision(amount, asset.precision);
 });
 
@@ -211,12 +212,13 @@ const $signatoryBalance = combine(
   },
   ({ signatory, balances, chain }) => {
     if (nullable(signatory) || nullable(chain)) {
-      return BN_ZERO;
+      return null;
     }
 
     const asset = getNativeAsset(chain.assets);
     const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId);
-    return balance ? withdrawableAmountBN(balance) : BN_ZERO;
+
+    return balance ? withdrawableAmountBN(balance) : null;
   },
 );
 
@@ -259,12 +261,12 @@ const $destinationBalance = combine(
   },
 );
 
-const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed ?? BN_ZERO);
+const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed);
 
 const $hasDestinationBalanceError = combine(
   { amount: $amount, accountId: $destinationAccountId, balance: $destinationBalance },
   ({ amount, accountId, balance }) => {
-    if (nullable(accountId) || nullable(balance)) {
+    if (nullable(accountId) || nullable(balance) || nullable(amount)) {
       return false;
     }
     if (amount.isZero()) return false;
@@ -333,29 +335,47 @@ const $coreTx = combine(
   },
 );
 
+const $mockDestination = combine(
+  {
+    network: $networkStore,
+    isXcm: $isXcm,
+    xcmChain: xcmTransferModel.$xcmChain,
+  },
+  ({ isXcm, xcmChain, network }) => {
+    if (nullable(network)) {
+      return null;
+    }
+    const destinationChain = isXcm ? xcmChain : network.chain;
+    return networkUtils.isEthereumBased(destinationChain?.options) ? TEST_EVM_ADDRESS : TEST_ADDRESS;
+  },
+);
+
 const $feeCoreTx = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
     xcmData: xcmTransferModel.$xcmData,
-    xcmChain: xcmTransferModel.$xcmChain,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
+    mockDestination: $mockDestination,
   },
-  ({ network, isXcm, xcmChain, xcmData, isConnected, initiator }) => {
-    if (!network || !initiator || !isConnected || (isXcm && !xcmData)) {
+  ({ network, isXcm, xcmData, isConnected, initiator, mockDestination }) => {
+    if (
+      nullable(network) ||
+      nullable(initiator) ||
+      nullable(isConnected) ||
+      nullable(mockDestination) ||
+      (isXcm && nullable(xcmData))
+    ) {
       return null;
     }
-
-    const destinationChain = isXcm ? xcmChain : network.chain;
-    const destination = networkUtils.isEthereumBased(destinationChain?.options) ? TEST_EVM_ADDRESS : TEST_ADDRESS;
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
       asset: network.asset,
       accountId: initiator.accountId,
       amount: '1',
-      destination,
+      destination: mockDestination,
       xcmData,
     });
   },
@@ -447,7 +467,7 @@ sample({
     balancePreservationStrategy: $balancePreservationStrategy,
   },
   fn: ({ balance, balancePreservationStrategy }) => {
-    if (nullable(balance)) return BN_ZERO;
+    if (nullable(balance)) return null;
 
     return balanceService.withdrawableAmount(balance, balancePreservationStrategy);
   },
@@ -623,8 +643,17 @@ sample({
 });
 
 sample({
-  clock: form.fields.destination.change,
-  fn: (destination) => (validateAddress(destination) ? toAccountId(destination) : null),
+  clock: [form.fields.destination.change, $mockDestination],
+  source: {
+    destination: form.fields.destination.$value,
+    mockDestination: $mockDestination,
+  },
+  fn: ({ destination, mockDestination }) => {
+    const address = destination || mockDestination;
+
+    if (nullable(address)) return null;
+    return validateAddress(address) ? toAccountId(address) : null;
+  },
   target: xcmTransferModel.events.destinationChanged,
 });
 
@@ -675,6 +704,7 @@ const formSubmitFinished = sample({
       nullable(chain) ||
       nullable(coreTx) ||
       nullable(tx) ||
+      nullable(fee) ||
       nullable(initiator) ||
       nullable(form.signatory) ||
       !validateAddress(form.destination)
@@ -739,6 +769,7 @@ export const formModel = {
   $deliveryFee: xcmTransferModel.$deliveryFee,
 
   $coreTx,
+  $feeTx,
   $tx,
   $api,
   $networkStore,
