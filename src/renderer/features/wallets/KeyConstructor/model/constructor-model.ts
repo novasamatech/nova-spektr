@@ -53,7 +53,7 @@ const getKeyValidationErrors = (
     }
   }
 
-  return validateDerivation(derivationPath, relatedPaths);
+  return validateDerivation(derivationPath, { otherPaths: relatedPaths, isEthereum: isEthereumBased });
 };
 
 const submitFx = createEffect<
