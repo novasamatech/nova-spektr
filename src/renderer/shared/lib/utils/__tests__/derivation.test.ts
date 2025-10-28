@@ -1,7 +1,6 @@
 import { derivationHasPassword, groupShardedDerivations, validateDerivation } from '@/shared/lib/utils';
 
-describe('shared/lib/onChainUtils/derivation#validateDerivation', () => {
-  // Array<[argument, result]>
+describe('validateDerivation - validate substrate derivation paths', () => {
   const cases: [string, boolean][] = [
     ['//polkadot', true],
     ['/polkadot', true],
@@ -24,6 +23,7 @@ describe('shared/lib/onChainUtils/derivation#validateDerivation', () => {
     ['//polkadot//', false],
     [' //polkadot//not_trimmed ', false],
     ['//polkadot///password', false],
+    ['//polkadot///multiple//slashes', false],
     ['//polkadot/key type', false],
     ['//polkadot/key type/12', false],
   ];
@@ -35,7 +35,39 @@ describe('shared/lib/onChainUtils/derivation#validateDerivation', () => {
   });
 });
 
-describe('shared/lib/onChainUtils/derivation#derivationHasPassword', () => {
+describe('validateDerivation - validate ethereum derivation paths', () => {
+  const cases: [string, boolean][] = [
+    ['//mythos', true],
+    ['//mythos//main', true],
+    ['//mythos/main', false],
+    ['/mythos/main', false],
+    ['/mythos//main', false],
+    ['//polkadot///password', false],
+  ];
+
+  test.each(cases)('should validate "%s" ethereum derivation path as "%s"', (firstArg, expectedResult) => {
+    const result = validateDerivation(firstArg, { isEthereum: true });
+    const isValid = result.length === 0;
+    expect(isValid).toEqual(expectedResult);
+  });
+});
+
+describe('validateDerivation - validates uniqueness against other paths', () => {
+  const cases: [string, boolean][] = [
+    ['//polkadot//unique', true],
+    ['//polkadot//duplicate', false],
+  ];
+
+  const otherPaths = ['//polkadot//duplicate', '//polkadot//duplicate2', '//polkadot//duplicate3'];
+
+  test.each(cases)('should validate "%s" derivation path as "%s"', (firstArg, expectedResult) => {
+    const result = validateDerivation(firstArg, { otherPaths });
+    const isValid = result.length === 0;
+    expect(isValid).toEqual(expectedResult);
+  });
+});
+
+describe('derivationHasPassword', () => {
   // Array<[argument, result]>
   const cases: [string, boolean][] = [
     ['/', false],
@@ -55,7 +87,7 @@ describe('shared/lib/onChainUtils/derivation#derivationHasPassword', () => {
   });
 });
 
-describe('shared/lib/onChainUtils/derivation#groupShardedDerivations', () => {
+describe('groupShardedDerivations', () => {
   // Array<[input keys, expected groups: { base: string, count: number }[]]>
   const cases: [{ derivationPath: string }[], { base: string; count: number }[]][] = [
     [
