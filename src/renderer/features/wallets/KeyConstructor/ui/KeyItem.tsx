@@ -21,6 +21,7 @@ const DerivationErrorText: Record<DerivationError, string> = {
   [DerivationError.MUST_START_WITH_SLASH]: t('dynamicDerivations.keysConstructor.derivationMustStartWithSlash'),
   [DerivationError.ENDS_WITH_SLASH]: t('dynamicDerivations.keysConstructor.derivationCannotEndWithSlash'),
   [DerivationError.DUPLICATE]: t('dynamicDerivations.keysConstructor.derivationDuplicate'),
+  [DerivationError.ETHEREUM_SINGLE_SLASH]: t('dynamicDerivations.keysConstructor.derivationEthereumSingleSlash'),
 };
 
 type Props = {
@@ -120,7 +121,7 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
         <FootnoteText className="text-text-negative">{DerivationErrorText[error]}</FootnoteText>
       </div>
       <div className={cnTw('col-start-3', { hidden: !showHints })}>
-        <HintChips keyId={keyId} derivationPath={keyData.derivationPath} chainName={chain.specName} />
+        <HintChips keyId={keyId} derivationPath={keyData.derivationPath} chain={chain} />
       </div>
     </div>
   );
