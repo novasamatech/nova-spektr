@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
-import { type PropsWithChildren, useMemo, useRef, useState } from 'react';
+import { type PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
@@ -11,6 +11,7 @@ import { Duration, FootnoteText, HelpText, Icon, Separator, SmallTitleText } fro
 import { Box, Modal, Select } from '@/shared/ui-kit';
 import { type FeedRecord, evidenceService } from '@/domains/collectives';
 import { activity } from '../model/activity';
+import { alertsModel } from '../model/alerts';
 
 import { ReferendumActivityItem } from './ReferendumActivityItem';
 
@@ -97,8 +98,15 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const list = useUnit(activity.$list);
   const [filter, setFilter] = useState<FilterType | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   const now = useRef(Date.now());
+
+  useEffect(() => {
+    if (isOpen) {
+      alertsModel.markAllAsSeen();
+    }
+  }, [isOpen]);
 
   const filteredList = useMemo(() => {
     if (filter === null) return list;
@@ -128,7 +136,7 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
   };
 
   return (
-    <Modal size="md" height="lg">
+    <Modal size="md" height="lg" isOpen={isOpen} onToggle={setIsOpen}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.profile.history')}</Modal.Title>
       <Modal.Content>
