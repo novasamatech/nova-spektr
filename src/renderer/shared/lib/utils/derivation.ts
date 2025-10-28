@@ -6,17 +6,22 @@ export const enum DerivationError {
   MUST_START_WITH_SLASH,
   ENDS_WITH_SLASH,
   DUPLICATE,
+  ETHEREUM_SINGLE_SLASH,
 }
+
+type ValidateDerivationOptions = { otherPaths?: string[]; isEthereum?: boolean };
 
 /**
  * Validate derivation path
  *
- * @param path Derivation path
- * @param otherPaths Optional array of other paths to detect duplicates
+ * @param path Derivation path to validate
+ * @param options Validation options
+ * @param options.otherPaths Optional array of other paths to detect duplicates
+ * @param options.isEthereum Whether to validate as an Ethereum derivation path
  *
  * @returns {DerivationError[]} Array of errors. Empty if valid
  */
-export function validateDerivation(path: string, otherPaths?: string[]): DerivationError[] {
+export function validateDerivation(path: string, options?: ValidateDerivationOptions): DerivationError[] {
   const errors: DerivationError[] = [];
 
   if (!path) return [DerivationError.EMPTY];
@@ -43,8 +48,12 @@ export function validateDerivation(path: string, otherPaths?: string[]): Derivat
     errors.push(DerivationError.PASSWORD_NOT_SUPPORTED);
   }
 
-  if (otherPaths && otherPaths.includes(trimmed)) {
+  if (options?.otherPaths && options.otherPaths.includes(trimmed)) {
     errors.push(DerivationError.DUPLICATE);
+  }
+
+  if (options?.isEthereum && /(?<!\/)\/(?!\/)/.test(trimmed)) {
+    errors.push(DerivationError.ETHEREUM_SINGLE_SLASH);
   }
 
   return errors;
