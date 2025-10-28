@@ -422,6 +422,7 @@
       "derivationPasswordNotSupported": "Derivation paths with ///password are not supported.",
       "derivationPathLabel": "Derivation path",
       "derivationPlaceholder": "//hard/soft",
+      "derivationEthereumSingleSlash": "Ethereum doesn't support soft derivations",
       "derivationTrimSpaces": "Remove spaces at the beginning or end of the path.",
       "hardDerivationTooltip": "Hard",
       "indexLabel": "№",

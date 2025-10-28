@@ -21,6 +21,7 @@ const DerivationErrorText: Record<DerivationError, string> = {
   [DerivationError.MUST_START_WITH_SLASH]: t('dynamicDerivations.keysConstructor.derivationMustStartWithSlash'),
   [DerivationError.ENDS_WITH_SLASH]: t('dynamicDerivations.keysConstructor.derivationCannotEndWithSlash'),
   [DerivationError.DUPLICATE]: t('dynamicDerivations.keysConstructor.derivationDuplicate'),
+  [DerivationError.ETHEREUM_SINGLE_SLASH]: t('dynamicDerivations.keysConstructor.derivationEthereumSingleSlash'),
 };
 
 type Props = {
