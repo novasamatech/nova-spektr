@@ -1,14 +1,16 @@
 import { memo } from 'react';
 
+import { type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Tooltip } from '@/shared/ui-kit';
+import { networkUtils } from '@/entities/network';
 import { constructorModel } from '../model/constructor-model';
 
 type Props = {
   keyId: string;
   derivationPath: string;
-  chainName: string;
+  chain: Chain;
 };
 
 const SHARD_COUNT = 10;
@@ -19,8 +21,12 @@ const TYPE_HINTS = ['main', 'hot', 'public', 'sharded'];
 
 const generateShardHints = () => Array.from({ length: SHARD_COUNT }, (_, index) => String(index));
 
-const getDerivationPathHints = (derivationPath: string, chainName: string): string[] => {
+const getDerivationPathHints = (derivationPath: string, chain: Chain): string[] => {
+  const isEthereumBased = networkUtils.isEthereumBased(chain.options);
+  const chainName = chain.name.trim().replaceAll(' ', '_').toLowerCase();
+
   if (derivationPath === '' || /[a-z0-9]$/i.test(derivationPath)) {
+    if (isEthereumBased) return [HARD_DERIVATION];
     return DERIVATION_SEPARATORS;
   }
 
@@ -39,10 +45,10 @@ const getDerivationPathHints = (derivationPath: string, chainName: string): stri
   return DERIVATION_SEPARATORS;
 };
 
-export const HintChips = memo(({ keyId, derivationPath, chainName }: Props) => {
+export const HintChips = memo(({ keyId, derivationPath, chain }: Props) => {
   const { t } = useI18n();
 
-  const hints = getDerivationPathHints(derivationPath, chainName);
+  const hints = getDerivationPathHints(derivationPath, chain);
 
   const insertHint = (hint: string) => {
     const newDerivationPath = derivationPath + hint;

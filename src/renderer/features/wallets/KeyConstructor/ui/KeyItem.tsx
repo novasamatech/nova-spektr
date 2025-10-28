@@ -121,7 +121,7 @@ export const KeyItem = memo(({ keyId, keyIndex }: Props) => {
         <FootnoteText className="text-text-negative">{DerivationErrorText[error]}</FootnoteText>
       </div>
       <div className={cnTw('col-start-3', { hidden: !showHints })}>
-        <HintChips keyId={keyId} derivationPath={keyData.derivationPath} chainName={chain.specName} />
+        <HintChips keyId={keyId} derivationPath={keyData.derivationPath} chain={chain} />
       </div>
     </div>
   );
