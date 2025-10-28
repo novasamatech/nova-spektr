@@ -1,16 +1,13 @@
 import { createEvent, createStore, sample } from 'effector';
 import { once } from 'patronum';
 
-import { type Wallet } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
-import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { assetsSearchModel, assetsSettingsModel, portfolioModel } from '@/features/assets';
 
-const activeShardsSet = createEvent<AnyAccount[]>();
+const setVisibleAccounts = createEvent<AnyAccount[]>();
 
-const $activeShards = createStore<AnyAccount[]>([]);
+const $visibleAccounts = createStore<AnyAccount[]>([]);
 
 sample({
   clock: [assetsSettingsModel.$assetsView, once(assetsSettingsModel.events.assetsStarted)],
@@ -29,33 +26,12 @@ sample({
 });
 
 sample({
-  clock: activeShardsSet,
-  source: walletSelect.$selectedWallet,
-  filter: (wallet: Wallet | null) => nonNullable(wallet),
-  fn: (wallet, accounts) => {
-    if (!walletUtils.isPolkadotVault(wallet)) return accounts;
-
-    return accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
-  },
-  target: $activeShards,
-});
-
-sample({
-  clock: walletSelect.$selectedWallet,
-  filter: (wallet: Wallet | null) => nonNullable(wallet),
-  fn: (wallet) => {
-    if (!walletUtils.isPolkadotVault(wallet)) {
-      return wallet?.accounts;
-    }
-
-    return wallet.accounts.filter((account) => !accountUtils.isVaultBaseAccount(account));
-  },
-  target: $activeShards,
+  clock: [walletSelect.$selectedAccounts, setVisibleAccounts],
+  target: $visibleAccounts,
 });
 
 export const assetsModel = {
-  $activeShards,
-  events: {
-    activeShardsSet,
-  },
+  $visibleAccounts,
+
+  setVisibleAccounts,
 };
