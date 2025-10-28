@@ -142,6 +142,7 @@ const formSubmitted = sample({
       nonNullable(target) &&
       nonNullable(tx) &&
       nonNullable(coreTx) &&
+      nonNullable(fee) &&
       nonNullable(delegateData.signatory) &&
       isStep(step, Step.INIT)
     ) {

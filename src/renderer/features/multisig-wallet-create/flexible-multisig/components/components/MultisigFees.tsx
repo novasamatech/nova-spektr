@@ -19,7 +19,7 @@ export const MultisigFees = () => {
   const isLoading = useUnit(flexibleMultisigModel.$isLoading);
   const asset = useUnit(flexibleMultisigModel.$asset);
 
-  const totalFee = fee.add(totalDeposit);
+  const totalFee = fee?.add(totalDeposit);
 
   if (!asset) return;
 
@@ -49,14 +49,14 @@ export const MultisigFees = () => {
               </div>
               <div>
                 {t('createMultisigAccount.networkFee')}
-                <AssetBalance value={fee} asset={asset} className="ml-1 text-help-text text-inherit" />
+                <AssetBalance value={fee ?? undefined} asset={asset} className="ml-1 text-help-text text-inherit" />
               </div>
             </div>
           </Tooltip.Content>
         </Tooltip>
       </div>
 
-      <AssetBalance value={totalFee.toString()} asset={asset} />
+      <AssetBalance value={totalFee ?? undefined} asset={asset} />
     </div>
   );
 };

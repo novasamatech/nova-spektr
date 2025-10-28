@@ -95,7 +95,7 @@ export const ConfirmationStep = () => {
                 <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
               )}
 
-              <FeeWithLabel fee={fee.toString()} asset={asset} />
+              <FeeWithLabel fee={fee} asset={asset} />
 
               <TransactionValidationError errors={errors} wallets={wallets} />
             </div>

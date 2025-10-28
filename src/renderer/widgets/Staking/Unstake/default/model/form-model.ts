@@ -396,22 +396,23 @@ sample({
     network: $networkStore,
     transaction: $tx,
     route: $route,
-    fee: $fee.map((fee) => fee.toString()),
+    fee: $fee.map((fee) => fee?.toString()),
     multisigDeposit: $multisigDeposit,
     selectedSignatory: form.fields.signatory.$value,
   },
-  filter: ({ network, transaction, selectedSignatory }) => {
-    return nonNullable(network) && nonNullable(transaction) && nonNullable(selectedSignatory);
+  filter: ({ network, transaction, selectedSignatory, fee }) => {
+    return nonNullable(network) && nonNullable(transaction) && nonNullable(selectedSignatory) && nonNullable(fee);
   },
-  fn: ({ network, transaction, selectedSignatory, multisigDeposit, ...fee }, formData) => {
+  fn: ({ network, transaction, selectedSignatory, multisigDeposit, route, fee }, formData) => {
     const { initiator, ...rest } = formData;
     const amount = formatAmount(rest.amount, network!.asset.precision);
 
     return {
       transaction,
       formData: {
-        ...fee,
-        totalFee: fee.fee,
+        route,
+        fee: fee!,
+        totalFee: fee!,
         amount,
         multisigDeposit: multisigDeposit.toString(),
         initiator: initiator!,

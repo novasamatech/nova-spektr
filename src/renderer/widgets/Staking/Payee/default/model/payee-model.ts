@@ -95,6 +95,7 @@ const formSubmitted = sample({
     nonNullable(payeeData.signatory) &&
     nonNullable(walletData) &&
     nonNullable(coreTx) &&
+    nonNullable(fee) &&
     nonNullable(tx)
   ) {
     return [
