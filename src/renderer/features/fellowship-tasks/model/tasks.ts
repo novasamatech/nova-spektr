@@ -110,7 +110,7 @@ const $memberSalaryTasks = combine(
         {
           id: 'salary_request',
           weight: 0,
-          group: 'tasks',
+          group: 'personal',
           body: RequestSalary,
           meta: { transaction: operations['salary_request']?.coreTx ?? null, tags: [] },
         },
@@ -122,7 +122,7 @@ const $memberSalaryTasks = combine(
         {
           id: 'salary_payout',
           weight: 0,
-          group: 'tasks',
+          group: 'personal',
           body: RequestPayout,
           meta: { transaction: operations['salary_payout']?.coreTx ?? null, tags: [] },
         },
@@ -134,7 +134,7 @@ const $memberSalaryTasks = combine(
         {
           id: 'salary_induct',
           weight: 0,
-          group: 'tasks',
+          group: 'personal',
           body: RequestSalaryInduct,
           meta: { transaction: operations['salary_induct']?.coreTx ?? null, tags: [] },
         },
@@ -171,7 +171,7 @@ const $memberEvidenceTasks = combine(
         {
           id: 'evidence',
           weight: 1,
-          group: 'tasks',
+          group: 'personal',
           body: RequestRetention,
           meta: { transaction: operations['evidence']?.coreTx ?? null, tags: [] },
         },
@@ -189,7 +189,7 @@ const $memberEvidenceTasks = combine(
         {
           id: 'evidence',
           weight: 1,
-          group: 'tasks',
+          group: 'personal',
           body: RequestPromotion,
           meta: { transaction: operations['evidence']?.coreTx ?? null, tags: [] },
         },
@@ -236,7 +236,7 @@ const $evidenceTasks = combine(
         tasks.push({
           id: `evidence_request_${proposer.accountId}`,
           weight: sortingScore,
-          group: 'active',
+          group: 'general',
           body: PromotionRetentionEvidenceVoting,
           meta: { evidence, transaction: null, endBlock, tags },
           hasVoted: false,
@@ -315,7 +315,7 @@ const $ongoingReferendumsTasks = combine(
           return {
             id: `referendum_${referendum.id}`,
             weight: weight.sortingScore,
-            group: hasUserVoted(referendum) ? 'voted' : 'active',
+            group: 'general',
             body: PromotionRetentionReferendumVoting,
             meta: {
               referendum,
@@ -333,7 +333,7 @@ const $ongoingReferendumsTasks = combine(
           return {
             id: `referendum_${referendum.id}`,
             weight: weight.sortingScore,
-            group: hasUserVoted(referendum) ? 'voted' : 'active',
+            group: 'general',
             body: OngoingReferendumVoting,
             meta: {
               referendum,

@@ -1,19 +1,19 @@
 import { useUnit } from 'effector-react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { groupBy, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, Loader, SmallTitleText } from '@/shared/ui';
-import { AsyncItem, Box, EmptyMessage, ScrollArea, Tabs } from '@/shared/ui-kit';
+import { Box, EmptyMessage, ScrollArea } from '@/shared/ui-kit';
 import { fellowshipTasksFeature } from '../model/feature';
 import { memberProfile } from '../model/memberProfile';
 import { tasks } from '../model/tasks';
 
 import { Basket } from './Basket';
 import { TasksGroup } from './TasksGroup';
+import { Title } from './Title';
 
 export const Tasks = () => {
-  const [selectedTab, setSelectedTab] = useState('referendums');
   const { t } = useI18n();
   const input = useUnit(fellowshipTasksFeature.input);
   const activeTasks = useUnit(tasks.$list);
@@ -22,9 +22,11 @@ export const Tasks = () => {
 
   const groups = useMemo(() => groupBy(activeTasks, task => task.group), [activeTasks]);
 
-  const activeCount = groups.active?.length ?? 0;
-  const tasksCount = groups.tasks?.length ?? 0;
-  const referendumCount = activeCount + (groups.voted?.length ?? 0) + (groups.completed?.length ?? 0);
+  const tasksCount = useMemo(() => {
+    const personalCount = groups.personal?.length ?? 0;
+    const generalCount = groups.general?.filter(task => !task.hasVoted).length ?? 0;
+    return personalCount + generalCount;
+  }, [groups]);
 
   if (nullable(input) || pending) {
     return (
@@ -36,60 +38,22 @@ export const Tasks = () => {
 
   return (
     <div className="flex h-full flex-col items-stretch justify-stretch overflow-hidden rounded-xl border border-filter-border">
-      <Tabs value={selectedTab} onChange={setSelectedTab}>
-        <div className="w-full border-b border-filter-border bg-white">
-          <Box padding={[4, 3, 2]} shrink={0} width="fit-content" alignSelf="flex-start">
-            <Tabs.List>
-              <Tabs.Trigger value="referendums">
-                <div className="flex min-w-[100px] items-center justify-center gap-1">
-                  <span>{t('fellowship.referendums.tab')}</span>
-                  <span className="text-text-tertiary">{activeCount.toString()}</span>
-                </div>
-              </Tabs.Trigger>
-              <Tabs.Trigger value="tasks">
-                <div className="flex min-w-[100px] items-center justify-center gap-1">
-                  <span>{t('fellowship.tasks.tab')}</span>
-                  <span className="text-text-tertiary">{tasksCount.toString()}</span>
-                </div>
-              </Tabs.Trigger>
-            </Tabs.List>
-          </Box>
-        </div>
-
-        <Tabs.Content value="referendums">
-          {hasAccount && referendumCount > 0 && (
-            <ScrollArea>
-              {groups.active && <TasksGroup key="active" title={t('fellowship.tasks.active')} group={groups.active} />}
-              {groups.voted && <TasksGroup key="voted" title={t('fellowship.tasks.voted')} group={groups.voted} />}
-              {groups.completed && (
-                <TasksGroup key="completed" title={t('fellowship.tasks.completed')} group={groups.completed} async />
-              )}
-            </ScrollArea>
-          )}
-        </Tabs.Content>
-
-        <Tabs.Content value="tasks">
-          <ScrollArea>
-            {hasAccount && tasksCount > 0 && (
-              <div className="divide-y divide-filter-border bg-card-background">
-                {groups?.tasks?.map(({ id, body: Component, meta }) => (
-                  <AsyncItem key={id} strategy="sync">
-                    <Component {...meta} />
-                  </AsyncItem>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-        </Tabs.Content>
-      </Tabs>
-
-      {hasAccount ? (
-        ((selectedTab === 'referendums' && referendumCount === 0) || (selectedTab === 'tasks' && tasksCount === 0)) && (
-          <AllDone />
-        )
-      ) : (
-        <AccountNotFound />
-      )}
+      <Title count={tasksCount} />
+      {hasAccount && activeTasks.length ? (
+        <ScrollArea>
+          {groups.personal ? (
+            <TasksGroup key="pesonal" title={t('fellowship.tasks.personal')} group={groups.personal} />
+          ) : null}
+          {groups.general ? (
+            <TasksGroup key="general" title={t('fellowship.tasks.general')} group={groups.general} />
+          ) : null}
+          {groups.completed ? (
+            <TasksGroup key="completed" title={t('fellowship.tasks.completed')} group={groups.completed} async />
+          ) : null}
+        </ScrollArea>
+      ) : null}
+      {hasAccount && !activeTasks.length ? <AllDone /> : null}
+      {!hasAccount ? <AccountNotFound /> : null}
       <Basket />
     </div>
   );
