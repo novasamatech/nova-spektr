@@ -5,14 +5,16 @@ import { type PropsWithChildren, type ReactNode, useMemo, useState } from 'react
 import { type Address as AccountAddress, type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { entries, includesMultiple, toAccountId, toAddress } from '@/shared/lib/utils';
+import { RelayChains } from '@/shared/lib/utils/constants';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText } from '@/shared/ui';
 import { Address, Identicon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Modal } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelectFeature } from '@/features/wallet-select';
-import { $beneficiary, beneficiaryChanged } from '../model/beneficiary';
+import { beneficiary } from '../model/beneficiary';
 import { fellowshipSalaryFeature } from '../model/feature';
 
 const { services, constants } = walletSelectFeature;
@@ -36,9 +38,11 @@ type ComboboxGroup = {
 export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
   const { t } = useI18n();
   const chain = useStoreMap(fellowshipSalaryFeature.input, input => input?.chain ?? null);
-  const currentBeneficiary = useUnit($beneficiary);
+  const currentBeneficiary = useUnit(beneficiary.$beneficiary);
   const accountsList = useUnit(walletModel.$availableAccounts);
   const wallets = useUnit(walletModel.$wallets);
+  const chains = useUnit(networkModel.$chains);
+  const polkadotChain = chains[RelayChains.POLKADOT];
 
   const [open, setOpen] = useState(false);
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<AccountId | null>(null);
@@ -57,7 +61,7 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
   };
 
   const handleSave = () => {
-    beneficiaryChanged(selectedBeneficiary);
+    beneficiary.change(selectedBeneficiary);
     setOpen(false);
   };
 
@@ -73,11 +77,11 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
 
     const filteredAccounts = accountsList.filter(account => {
       const isNotWatchOnly = !accountUtils.isWatchOnlyAccount(account);
-      const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
+      const isPolkadotChain = accountService.isAccountAvailableOnChain(account, polkadotChain);
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
       const queryPass = includesMultiple([account.name, address], searchQuery);
 
-      return isChainMatch && isNotWatchOnly && queryPass;
+      return isPolkadotChain && isNotWatchOnly && queryPass;
     });
 
     const uniqueAccounts = uniqBy(filteredAccounts, 'accountId');
