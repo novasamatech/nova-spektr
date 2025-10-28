@@ -1,4 +1,5 @@
 import { combine, createEvent, createStore, sample } from 'effector';
+import { persist } from 'effector-storage/local';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import {
@@ -15,34 +16,56 @@ import { evidenceInfo } from './evidence';
 import { fellowship } from './fellowship';
 import { profile } from './profile';
 
-const _ALERT_TYPES = [
-  'proven',
-  'promoted',
-  'retentionFailed',
-  'promotionFailed',
-  'retentionRequestWhenPromotionReferendumExists',
-  'promotionRequestWhenRetentionReferendumExists',
-  'bumped',
-  'severalReferendums', // TODO this should not exist!
-] as const;
-
-type AlertType = (typeof _ALERT_TYPES)[number];
-
-type Alert = {
+type BaseAlert = {
   id: string;
-  type: AlertType;
-  record?: FeedRecord;
   seen: boolean;
 };
+type ProvenAlert = BaseAlert & {
+  type: 'proven';
+  rank: number;
+  referendumId: number;
+};
+type PromotedAlert = BaseAlert & {
+  type: 'promoted';
+  rank: number;
+  referendumId: number;
+};
+type RetentionFailedAlert = BaseAlert & {
+  type: 'retentionFailed';
+  rank: number;
+  referendumId: number;
+};
+type PromotionFailedAlert = BaseAlert & {
+  type: 'promotionFailed';
+  rank: number;
+  referendumId: number;
+};
+type BumpedAlert = BaseAlert & {
+  type: 'bumped';
+  rank: number;
+};
+type RetentionRequestWhenPromotionReferendumExistsAlert = BaseAlert & {
+  type: 'retentionRequestWhenPromotionReferendumExists';
+};
+type PromotionRequestWhenRetentionReferendumExistsAlert = BaseAlert & {
+  type: 'promotionRequestWhenRetentionReferendumExists';
+};
 
-const $member = profile.$member;
-const $feedList = activity.$list;
+type Alert =
+  | ProvenAlert
+  | PromotedAlert
+  | RetentionFailedAlert
+  | PromotionFailedAlert
+  | RetentionRequestWhenPromotionReferendumExistsAlert
+  | PromotionRequestWhenRetentionReferendumExistsAlert
+  | BumpedAlert;
 
 const $memberEvidence = evidenceInfo.$memberEvidence;
 const $referendums = fellowship.$store.map(s => s?.referendums ?? null);
+const $tracks = fellowship.$store.map(s => s?.tracks ?? null);
 
 const $promotionReferendum = combine(
-  { referendums: $referendums, member: $member, memberEvidence: $memberEvidence },
+  { referendums: $referendums, member: profile.$member, memberEvidence: $memberEvidence },
   ({ referendums, member, memberEvidence }) => {
     if (nullable(referendums) || nullable(member) || nullable(memberEvidence) || memberEvidence.wish !== 'Promotion')
       return null;
@@ -57,7 +80,7 @@ const $promotionReferendum = combine(
 );
 
 const $retentionReferendum = combine(
-  { referendums: $referendums, member: $member, memberEvidence: $memberEvidence },
+  { referendums: $referendums, member: profile.$member, memberEvidence: $memberEvidence },
   ({ referendums, member, memberEvidence }) => {
     if (nullable(referendums) || nullable(member) || nullable(memberEvidence) || memberEvidence.wish !== 'Retention')
       return null;
@@ -73,6 +96,12 @@ const $retentionReferendum = combine(
 
 const $alertsWereSeen = createStore<Record<string, boolean>>({});
 
+persist({
+  key: 'fellowship-profile-alertsWereSeen',
+  store: $alertsWereSeen,
+  sync: true,
+});
+
 const getEvidenceAlertId = (memberEvidence: Evidence, referendum: Referendum) => {
   return `${memberEvidence.hash}-${referendum.id}`;
 };
@@ -85,31 +114,33 @@ const $evidenceAlerts = combine(
     memberEvidence: $memberEvidence,
   },
   ({ alertsWereSeen, promotionReferendum, retentionReferendum, memberEvidence }): Alert[] => {
-    const alerts: Alert[] = [];
-
     if (nonNullable(memberEvidence) && memberEvidence.wish === 'Promotion' && nonNullable(retentionReferendum)) {
       const id = getEvidenceAlertId(memberEvidence, retentionReferendum);
       if (!alertsWereSeen[id]) {
-        alerts.push({
-          id,
-          type: 'promotionRequestWhenRetentionReferendumExists',
-          seen: false,
-        });
+        return [
+          {
+            id,
+            type: 'promotionRequestWhenRetentionReferendumExists',
+            seen: false,
+          },
+        ];
       }
     }
 
     if (nonNullable(memberEvidence) && memberEvidence.wish === 'Retention' && nonNullable(promotionReferendum)) {
       const id = getEvidenceAlertId(memberEvidence, promotionReferendum);
       if (!alertsWereSeen[id]) {
-        alerts.push({
-          id,
-          type: 'retentionRequestWhenPromotionReferendumExists',
-          seen: false,
-        });
+        return [
+          {
+            id,
+            type: 'retentionRequestWhenPromotionReferendumExists',
+            seen: false,
+          },
+        ];
       }
     }
 
-    return alerts;
+    return [];
   },
 );
 
@@ -119,30 +150,34 @@ const getFeedAlertId = (record: FeedRecord, member: Member) => {
 
 const $feedAlerts = combine(
   {
-    member: $member,
-    feedList: $feedList,
+    member: profile.$member,
+    feedList: activity.$list,
     alertsWereSeen: $alertsWereSeen,
+    tracks: $tracks,
   },
-  ({ member, feedList, alertsWereSeen }): Alert[] => {
-    if (nullable(member) || nullable(feedList)) return [];
+  ({ member, feedList, alertsWereSeen, tracks }): Alert[] => {
+    if (nullable(member) || nullable(feedList) || nullable(tracks)) return [];
 
     const alerts: Alert[] = [];
 
     for (const record of feedList) {
       const id = getFeedAlertId(record, member);
-      const seen = alertsWereSeen[id];
-      if (seen) continue;
+      if (alertsWereSeen[id]) continue;
 
       if (record.type === 'demoted') {
         alerts.push({
           id,
           type: 'bumped',
-          record,
+          rank: record.rank,
           seen: false,
         });
       }
 
       if (record.type === 'referendum') {
+        const track = tracks.find(t => t.id === record.referendumTrackId);
+        if (nullable(track)) continue;
+
+        const rank = trackService.getRankFromTrack(track);
         const isRetention = trackService.isRetentionTrack(record.referendumTrackId);
         const isPromotion = trackService.isPromotionTrack(record.referendumTrackId);
 
@@ -150,7 +185,8 @@ const $feedAlerts = combine(
           alerts.push({
             id,
             type: 'proven',
-            record,
+            rank,
+            referendumId: record.referendumId,
             seen: false,
           });
         }
@@ -159,7 +195,8 @@ const $feedAlerts = combine(
           alerts.push({
             id,
             type: 'retentionFailed',
-            record,
+            rank,
+            referendumId: record.referendumId,
             seen: false,
           });
         }
@@ -168,7 +205,8 @@ const $feedAlerts = combine(
           alerts.push({
             id,
             type: 'promoted',
-            record,
+            rank,
+            referendumId: record.referendumId,
             seen: false,
           });
         }
@@ -177,7 +215,8 @@ const $feedAlerts = combine(
           alerts.push({
             id,
             type: 'promotionFailed',
-            record,
+            rank,
+            referendumId: record.referendumId,
             seen: false,
           });
         }
@@ -193,7 +232,7 @@ const $alerts = combine(
   ({ evidenceAlerts, feedAlerts }) => [...evidenceAlerts, ...feedAlerts],
 );
 
-const $firstAlert = $alerts.map(alerts => alerts[0] ?? null);
+const $alert = $alerts.map(alerts => alerts[0] ?? null);
 
 const markAsSeen = createEvent<string>();
 const markAllAsSeen = createEvent();
@@ -215,18 +254,29 @@ sample({
   target: $alertsWereSeen,
 });
 
-// persist({
-//   key: 'alertsWereSeen',
-//   store: $alertsWereSeen,
-//   sync: true,
-// });
+/**
+ * On first load, we should mark all alerts as seen because they are not new to
+ * the user.
+ */
+const $shouldMarkAlertsAsSeen = createStore(true);
+
+persist({
+  key: 'fellowship-profile-firstTimeAlertsMarkedSeen',
+  store: $shouldMarkAlertsAsSeen,
+  sync: true,
+});
+
+sample({
+  clock: $alerts,
+  source: $shouldMarkAlertsAsSeen,
+  filter: (shouldMarkAlertsAsSeen, alerts) => shouldMarkAlertsAsSeen && alerts.length > 0,
+  fn: () => false,
+  target: [$shouldMarkAlertsAsSeen, markAllAsSeen],
+});
 
 export const alertsModel = {
-  $alerts,
-  $firstAlert,
+  $alert,
 
   markAsSeen,
   markAllAsSeen,
 };
-
-export type { Alert };

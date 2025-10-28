@@ -572,40 +572,6 @@
       "viewDetails": "View details"
     },
     "profile": {
-      "alerts": {
-        "proven": {
-          "title": "Retention referendum passed successfully",
-          "description": "Positive fellows' opinion allowed retention of current rank."
-        },
-        "promoted": {
-          "title": "Promotion referendum passed successfully",
-          "description": "Positive fellows' opinion allowed promotion to Rank {rank}."
-        },
-        "promotionFailed": {
-          "title": "Promotion referendum failed",
-          "description": "Fellowship members found the evidence insufficient for promotion on Rank {rank}."
-        },
-        "retentionFailed": {
-          "title": "Retention referendum failed",
-          "description": "Fellowship members found the report insufficient for retention on Rank {rank}."
-        },
-        "retentionRequestWhenPromotionReferendumExists": {
-          "title": "Retention report submitted with an open promotion referendum",
-          "description": "The promotion referendum now references the retention report which may lead to unpredictable outcomes. To fix this, it is recommended to resubmit promotion evidence."
-        },
-        "promotionRequestWhenRetentionReferendumExists": {
-          "title": "Promotion report submitted with an open retention referendum",
-          "description": "The retention referendum now references the promotion report which may lead to unpredictable outcomes. To fix this, it is recommended to resubmit retention report."
-        },
-        "bumped": {
-          "title": "You have been bumped to rank {rank}",
-          "description": "Negative fellows' opinion resulted in rank downgrade."
-        },
-        "severalReferendums": {
-          "title": "Several referendums have ended during your absence",
-          "description": "You can find referemdums results by clicking View history."
-        }
-      },
       "active": "Active",
       "activeSalary": "Active salary",
       "activityFeed": {
@@ -634,6 +600,43 @@
         "statusInactive": "passive",
         "viewEvidence": "View evidence",
         "viewExtrinsic": "View on Subscan",
+        "viewReferendum": "View referendum"
+      },
+      "alerts": {
+        "bumped": {
+          "description": "Negative fellows' opinion resulted in rank downgrade.",
+          "title": "You have been bumped to rank {rank}"
+        },
+        "promoted": {
+          "description": "Positive fellows' opinion allowed promotion to Rank {rank}.",
+          "title": "Promotion referendum passed successfully"
+        },
+        "promotionFailed": {
+          "description": "Fellowship members found the evidence insufficient for promotion on Rank {rank}.",
+          "title": "Promotion referendum failed"
+        },
+        "promotionRequestWhenRetentionReferendumExists": {
+          "description": "The retention referendum now references the promotion report which may lead to unpredictable outcomes. To fix this, it is recommended to resubmit retention report.",
+          "title": "Promotion report submitted with an open retention referendum"
+        },
+        "proven": {
+          "description": "Positive fellows' opinion allowed retention of current rank.",
+          "title": "Retention referendum passed successfully"
+        },
+        "resubmitPromotionEvidence": "Resubmit promotion evidence",
+        "resubmitRetentionEvidence": "Resubmit retention evidence",
+        "retentionFailed": {
+          "description": "Fellowship members found the report insufficient for retention on Rank {rank}.",
+          "title": "Retention referendum failed"
+        },
+        "retentionRequestWhenPromotionReferendumExists": {
+          "description": "The promotion referendum now references the retention report which may lead to unpredictable outcomes. To fix this, it is recommended to resubmit promotion evidence.",
+          "title": "Retention report submitted with an open promotion referendum"
+        },
+        "severalReferendums": {
+          "description": "You can find referemdums results by clicking View history.",
+          "title": "Several referendums have ended during your absence"
+        },
         "viewReferendum": "View referendum"
       },
       "fellow": "Fellow",

@@ -1,11 +1,109 @@
 import { useUnit } from 'effector-react';
+import { type ReactNode } from 'react';
+import { generatePath } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, toRomanNumeral } from '@/shared/lib/utils';
+import { cnTw, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
+import { Paths } from '@/shared/routes';
 import { FootnoteText, HeadlineText, Icon, IconButton } from '@/shared/ui';
+import { navigationModel } from '@/features/navigation';
 import { alertsModel } from '../model/alerts';
+import { fellowshipProfileFeature } from '../model/feature';
 
-const CONFIG = {
+const ICONS = {
+  success: 'checkmarkOutline',
+  warn: 'warn',
+} as const;
+
+export const Alerts = () => {
+  const alert = useUnit(alertsModel.$alert);
+  const input = useUnit(fellowshipProfileFeature.input);
+
+  if (!alert || !input?.chainId) return null;
+
+  const handleClose = () => alertsModel.markAsSeen(alert.id);
+
+  if (
+    alert.type === 'proven' ||
+    alert.type === 'promoted' ||
+    alert.type === 'promotionFailed' ||
+    alert.type === 'retentionFailed'
+  ) {
+    return (
+      <ReferendumAlert
+        type={alert.type}
+        rank={alert.rank}
+        referendumId={alert.referendumId}
+        chainId={input.chainId}
+        onClose={handleClose}
+      />
+    );
+  }
+
+  if (
+    alert.type === 'retentionRequestWhenPromotionReferendumExists' ||
+    alert.type === 'promotionRequestWhenRetentionReferendumExists'
+  ) {
+    return <EvidenceConflictAlert type={alert.type} onClose={handleClose} />;
+  }
+
+  if (alert.type === 'bumped') {
+    return <BumpedAlert rank={alert.rank} onClose={handleClose} />;
+  }
+
+  return null;
+};
+
+type BaseAlertProps = {
+  variant: 'success' | 'warn';
+  title: string;
+  description: string;
+  action?: ReactNode;
+  onClose: () => void;
+};
+
+const BaseAlert = ({ variant, title, description, action, onClose }: BaseAlertProps) => {
+  return (
+    <div className="mb-3 flex flex-col gap-y-2">
+      <div
+        className={cnTw(
+          'w-full rounded-lg border p-4',
+          variant === 'success' && 'border-icon-positive bg-alert-background-positive',
+          variant === 'warn' && 'border-icon-warning bg-alert-background-warning',
+        )}
+      >
+        <div className="flex items-start gap-x-2">
+          <Icon
+            name={ICONS[variant]}
+            size={14}
+            className={cnTw('my-[3px] shrink-0', {
+              'text-icon-positive': variant === 'success',
+              'text-icon-warning': variant === 'warn',
+            })}
+          />
+          <div className="flex flex-1 flex-col gap-y-1">
+            <HeadlineText>{title}</HeadlineText>
+            <FootnoteText>{description}</FootnoteText>
+            {action}
+          </div>
+          <IconButton name="close" size={16} onClick={onClose} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+type ReferendumAlertType = 'proven' | 'promoted' | 'promotionFailed' | 'retentionFailed';
+
+type ReferendumAlertProps = {
+  type: ReferendumAlertType;
+  rank: number | null;
+  referendumId: number;
+  chainId: string;
+  onClose: () => void;
+};
+
+const REFERENDUM_CONFIG = {
   proven: {
     title: 'fellowship.profile.alerts.proven.title',
     description: 'fellowship.profile.alerts.proven.description',
@@ -26,84 +124,97 @@ const CONFIG = {
     description: 'fellowship.profile.alerts.retentionFailed.description',
     variant: 'warn',
   },
+} as const;
+
+const ReferendumAlert = ({ type, rank, referendumId, chainId, onClose }: ReferendumAlertProps) => {
+  const { t } = useI18n();
+
+  const config = REFERENDUM_CONFIG[type];
+  const title = nonNullable(rank) ? t(config.title, { rank: toRomanNumeral(rank) }) : t(config.title);
+  const description = nonNullable(rank) ? t(config.description, { rank: toRomanNumeral(rank) }) : t(config.description);
+
+  const handleActionClick = () => {
+    const path = generatePath(Paths.FELLOWSHIP_REFERENDUM, {
+      chainId,
+      referendumId: referendumId.toString(),
+    });
+    navigationModel.events.navigateTo(path);
+  };
+
+  return (
+    <BaseAlert
+      variant={config.variant}
+      title={title}
+      description={description}
+      action={
+        <button
+          className="cursor-pointer self-start font-semibold text-primary-button-background-default"
+          onClick={handleActionClick}
+        >
+          {t('fellowship.profile.alerts.viewReferendum')}
+        </button>
+      }
+      onClose={onClose}
+    />
+  );
+};
+
+type BumpedAlertProps = {
+  rank: number;
+  onClose: () => void;
+};
+
+const BumpedAlert = ({ rank, onClose }: BumpedAlertProps) => {
+  const { t } = useI18n();
+
+  return (
+    <BaseAlert
+      variant="warn"
+      title={t('fellowship.profile.alerts.bumped.title', { rank: toRomanNumeral(rank) })}
+      description={t('fellowship.profile.alerts.bumped.description')}
+      onClose={onClose}
+    />
+  );
+};
+
+type EvidenceConflictType =
+  | 'retentionRequestWhenPromotionReferendumExists'
+  | 'promotionRequestWhenRetentionReferendumExists';
+
+type EvidenceConflictAlertProps = {
+  type: EvidenceConflictType;
+  onClose: () => void;
+};
+
+const EVIDENCE_CONFLICT_CONFIG = {
   retentionRequestWhenPromotionReferendumExists: {
     title: 'fellowship.profile.alerts.retentionRequestWhenPromotionReferendumExists.title',
     description: 'fellowship.profile.alerts.retentionRequestWhenPromotionReferendumExists.description',
-    variant: 'warn',
+    action: 'fellowship.profile.alerts.resubmitPromotionEvidence',
   },
   promotionRequestWhenRetentionReferendumExists: {
     title: 'fellowship.profile.alerts.promotionRequestWhenRetentionReferendumExists.title',
     description: 'fellowship.profile.alerts.promotionRequestWhenRetentionReferendumExists.description',
-    variant: 'warn',
-  },
-  bumped: {
-    title: 'fellowship.profile.alerts.bumped.title',
-    description: 'fellowship.profile.alerts.bumped.description',
-    variant: 'warn',
-  },
-  severalReferendums: {
-    title: 'fellowship.profile.alerts.severalReferendums.title',
-    description: 'fellowship.profile.alerts.severalReferendums.description',
-    variant: 'info',
+    action: 'fellowship.profile.alerts.resubmitRetentionEvidence',
   },
 } as const;
 
-const ICONS = {
-  success: 'checkmarkOutline',
-  warn: 'warn',
-  info: 'info',
-} as const;
-
-export const Alerts = () => {
+const EvidenceConflictAlert = ({ type, onClose }: EvidenceConflictAlertProps) => {
   const { t } = useI18n();
 
-  const firstAlert = useUnit(alertsModel.$firstAlert);
-
-  if (!firstAlert) return null;
-
-  const { title, description, variant } = CONFIG[firstAlert.type];
-
-  let actualTitle = t(title);
-  if (
-    firstAlert.type === 'bumped' ||
-    firstAlert.type === 'promoted' ||
-    firstAlert.type === 'promotionFailed' ||
-    firstAlert.type === 'retentionFailed'
-  ) {
-    const rank = firstAlert.record && 'rank' in firstAlert.record ? firstAlert.record.rank : null;
-    if (rank) {
-      actualTitle = t(title, { rank: toRomanNumeral(rank) });
-    }
-  }
+  const config = EVIDENCE_CONFLICT_CONFIG[type];
 
   return (
-    <div className="mb-3 flex flex-col gap-y-2">
-      <div
-        key={firstAlert.id}
-        className={cnTw(
-          'w-full rounded-lg border p-4',
-          variant === 'success' && 'border-icon-positive bg-alert-background-positive',
-          variant === 'warn' && 'border-icon-warning bg-alert-background-warning',
-          variant === 'info' && 'border-icon-alert bg-alert-background',
-        )}
-      >
-        <div className="flex items-start gap-x-2">
-          <Icon
-            name={ICONS[variant]}
-            size={14}
-            className={cnTw('my-[3px] shrink-0', {
-              'text-icon-positive': variant === 'success',
-              'text-icon-warning': variant === 'warn',
-              'text-icon-alert': variant === 'info',
-            })}
-          />
-          <div className="flex flex-1 flex-col gap-y-1">
-            <HeadlineText>{actualTitle}</HeadlineText>
-            <FootnoteText>{t(description)}</FootnoteText>
-          </div>
-          <IconButton name="close" size={16} onClick={() => alertsModel.markAsSeen(firstAlert.id)} />
-        </div>
-      </div>
-    </div>
+    <BaseAlert
+      variant="warn"
+      title={t(config.title)}
+      description={t(config.description)}
+      action={
+        <button className="cursor-pointer self-start font-semibold text-primary-button-background-default">
+          {t(config.action)}
+        </button>
+      }
+      onClose={onClose}
+    />
   );
 };
