@@ -67,12 +67,8 @@ export const SalaryInfo = memo(() => {
     nonNullable(claimStatus) &&
     nonNullable(currentPeriod) &&
     salaryService.canRequestSalaryPayout(claimStatus, currentPeriod);
-  const isSalaryRequested =
-    nonNullable(claimStatus) && nonNullable(currentPeriod) && salaryService.isClaimantRequestedSalary(claimStatus);
-  const isPayoutRequested =
-    nonNullable(claimStatus) &&
-    nonNullable(currentPeriod) &&
-    salaryService.isClaimantRequestedSalaryPayout(claimStatus);
+  const isSalaryRequested = nonNullable(claimStatus) && claimStatus.type === 'registered';
+  const isPayoutRequested = nonNullable(claimStatus) && claimStatus.type === 'payout';
 
   return (
     <Box gap={2}>

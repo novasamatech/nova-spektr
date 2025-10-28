@@ -139,25 +139,12 @@ function isSalaryInductTransaction(transaction: Transaction): transaction is Sal
   return transaction.type === TransactionType.COLLECTIVE_SALARY_INDUCT;
 }
 
-function isClaimantRequestedSalary(claimStatus: ClaimStatus) {
-  return claimStatus && claimStatus.type === 'registered';
-}
-
-function isClaimantRequestedSalaryPayout(claimStatus: ClaimStatus) {
-  return claimStatus && claimStatus.type === 'payout';
-}
-
 function isInducted(claimStatus: ClaimStatus) {
   return claimStatus.type !== 'none';
 }
 
 function canRequestSalary(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
-  return (
-    period.type === 'registration' &&
-    claimStatus.type !== 'registered' &&
-    claimStatus.type !== 'none' &&
-    claimStatus.lastActive < period.cycleIndex
-  );
+  return period.type === 'registration' && claimStatus.type !== 'none' && claimStatus.lastActive < period.cycleIndex;
 }
 
 function canRequestSalaryPayout(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
@@ -175,8 +162,6 @@ export const salaryService = {
   getCurrentPeriod,
   getMemberSalary,
 
-  isClaimantRequestedSalary,
-  isClaimantRequestedSalaryPayout,
   isInducted,
 
   canRequestSalary,
