@@ -93,7 +93,7 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
       </Modal.Title>
       <Modal.Content>
         <Box horizontalAlign="center" padding={6}>
-          <Icon name="requestSalary" size={60} />
+          <Icon name="request" size={60} />
         </Box>
 
         {salary && (
