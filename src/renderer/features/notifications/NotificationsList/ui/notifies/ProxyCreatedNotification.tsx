@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap, useUnit } from 'effector-react';
 import { Trans } from 'react-i18next';
 
 import { type ProxyAction, ProxyVariant, WalletType } from '@/shared/core';
@@ -8,6 +8,8 @@ import { BodyText } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
+import { proxyUtils } from '@/entities/proxy';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { ProxyTypeOperation } from '../../lib/constants';
 
 type Props = {
@@ -19,10 +21,49 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
 
   const chains = useUnit(networkModel.$chains);
 
+  // Get proxy wallet from proxyAccountId
+  const proxyWallet = useStoreMap({
+    store: walletModel.$wallets,
+    keys: [notification.proxyAccountId],
+    fn: (wallets, [accountId]) => {
+      return walletUtils.getWalletFilteredAccounts(wallets, {
+        accountFn: (account) => account.accountId === accountId,
+      });
+    },
+  });
+
+  // Get proxied wallet from proxiedAccountId
+  const proxiedWallet = useStoreMap({
+    store: walletModel.$wallets,
+    keys: [notification.proxiedAccountId],
+    fn: (wallets, [accountId]) => {
+      return walletUtils.getWalletFilteredAccounts(wallets, {
+        accountFn: (account) => account.accountId === accountId,
+      });
+    },
+  });
+
   const accountId =
     notification.proxyVariant === ProxyVariant.PURE ? notification.proxiedAccountId : notification.proxyAccountId;
 
   const address = toAddress(accountId, { prefix: chains[notification.chainId]?.addressPrefix });
+
+  const chain = chains[notification.chainId];
+
+  // Determine the proxied wallet name
+  const proxiedWalletName =
+    proxiedWallet?.name ||
+    proxyUtils.getProxiedName(
+      {
+        accountId: notification.proxiedAccountId,
+        proxyVariant: notification.proxyVariant,
+        connections: [],
+      },
+      chain?.addressPrefix,
+    );
+
+  const proxyWalletName = proxyWallet?.name || '';
+  const proxyWalletType = proxyWallet?.type || WalletType.WATCH_ONLY;
 
   return (
     <div className="flex gap-x-2">
@@ -37,7 +78,7 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
           <Trans
             t={t}
             i18nKey="notifications.details.proxyWalletAction"
-            values={{ address, name: notification.proxiedWalletName }}
+            values={{ address, name: proxiedWalletName }}
             components={{
               identicon: (
                 <div className="mx-1 inline-flex">
@@ -53,14 +94,14 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
             t={t}
             i18nKey="notifications.details.proxyCreatedDetails"
             values={{
-              name: notification.proxyWalletName,
+              name: proxyWalletName,
               operations: t(ProxyTypeOperation[notification.proxyType]),
             }}
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
               walletIcon: (
                 <span className="mx-1">
-                  <WalletIcon size={16} type={notification.proxyWalletType} />
+                  <WalletIcon size={16} type={proxyWalletType} />
                 </span>
               ),
               wallet: <p className="inline-flex" />,

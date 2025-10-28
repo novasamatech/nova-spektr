@@ -8,6 +8,8 @@ import { BodyText } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
+import { proxyUtils } from '@/entities/proxy';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { ProxyTypeOperation } from '../../lib/constants';
 
 type Props = {
@@ -23,12 +25,51 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
     fn: (chains, [id]) => chains[id] ?? null,
   });
 
+  // Get proxy wallet from proxyAccountId
+  const proxyWallet = useStoreMap({
+    store: walletModel.$wallets,
+    keys: [notification.proxyAccountId],
+    fn: (wallets, [accountId]) => {
+      return walletUtils.getWalletFilteredAccounts(wallets, {
+        accountFn: (account) => account.accountId === accountId,
+      });
+    },
+  });
+
+  // Get proxied wallet from proxiedAccountId
+  const proxiedWallet = useStoreMap({
+    store: walletModel.$wallets,
+    keys: [notification.proxiedAccountId],
+    fn: (wallets, [accountId]) => {
+      return walletUtils.getWalletFilteredAccounts(wallets, {
+        accountFn: (account) => account.accountId === accountId,
+      });
+    },
+  });
+
+  console.log({ proxiedWallet, proxyWallet });
+
   const address = toAddress(notification.proxyAccountId, { prefix: chain?.addressPrefix });
+
+  // Determine the proxied wallet name
+  const proxiedWalletName =
+    proxiedWallet?.name ||
+    proxyUtils.getProxiedName(
+      {
+        accountId: notification.proxiedAccountId,
+        proxyVariant: notification.proxyVariant,
+        connections: [],
+      },
+      chain?.addressPrefix,
+    );
+
+  const proxyWalletName = proxyWallet?.name || '';
+  const proxyWalletType = proxyWallet?.type || WalletType.WATCH_ONLY;
 
   return (
     <div className="flex gap-x-2">
       <div className="relative">
-        <WalletIcon type={WalletType.PROXIED} />
+        <WalletIcon type={proxyWalletType} />
         <div className="absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white bg-icon-negative" />
       </div>
 
@@ -38,7 +79,7 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
           <Trans
             t={t}
             i18nKey="notifications.details.proxyWalletAction"
-            values={{ address, name: notification.proxiedWalletName }}
+            values={{ address, name: proxiedWalletName }}
             components={{
               identicon: (
                 <div className="mx-1 inline-flex">
@@ -54,14 +95,14 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
             t={t}
             i18nKey="notifications.details.proxyRemovedDetails"
             values={{
-              name: notification.proxyWalletName,
+              name: proxyWalletName,
               operations: t(ProxyTypeOperation[notification.proxyType]),
             }}
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
               walletIcon: (
                 <span className="mx-1">
-                  <WalletIcon size={16} type={notification.proxyWalletType} />
+                  <WalletIcon size={16} type={proxyWalletType} />
                 </span>
               ),
               wallet: <p className="inline-flex" />,
