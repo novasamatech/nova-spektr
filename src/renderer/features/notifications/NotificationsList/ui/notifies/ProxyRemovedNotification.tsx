@@ -47,8 +47,6 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
     },
   });
 
-  console.log({ proxiedWallet, proxyWallet });
-
   const address = toAddress(notification.proxyAccountId, { prefix: chain?.addressPrefix });
 
   // Determine the proxied wallet name
@@ -63,13 +61,13 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
       chain?.addressPrefix,
     );
 
-  const proxyWalletName = proxyWallet?.name || '';
-  const proxyWalletType = proxyWallet?.type || WalletType.WATCH_ONLY;
+  const proxyWalletName = proxyWallet?.name || toAddress(notification.proxyAccountId, { prefix: chain?.addressPrefix });
+  const proxyWalletType = proxyWallet?.type;
 
   return (
     <div className="flex gap-x-2">
       <div className="relative">
-        <WalletIcon type={proxyWalletType} />
+        <WalletIcon type={WalletType.PROXIED} />
         <div className="absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white bg-icon-negative" />
       </div>
 
@@ -101,9 +99,7 @@ export const ProxyRemovedNotification = ({ notification }: Props) => {
             components={{
               chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
               walletIcon: (
-                <span className="mx-1">
-                  <WalletIcon size={16} type={proxyWalletType} />
-                </span>
+                <span className="mx-1">{proxyWalletType && <WalletIcon size={16} type={proxyWalletType} />}</span>
               ),
               wallet: <p className="inline-flex" />,
             }}
