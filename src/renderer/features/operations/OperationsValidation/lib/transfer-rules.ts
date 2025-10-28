@@ -260,7 +260,10 @@ export const transferValidator = createTxValidator<{
       const initiator = accountService.findInitiator(route);
       assert(initiator, 'Initiator not found');
 
-      const balance = getBalance(initiator.accountId, sourceChain.chainId, asset.assetId);
+      // this is definitely not a final fix
+      // it only allows us to reuse burned from "sending amount"
+      // we still have incorrect burned amount bc after this subtract it should be smaller
+      const balance = getBalance(initiator.accountId, sourceChain.chainId, asset.assetId, { includeBurned: true });
       assert(balance, `Balance for account ${initiator.accountId} not found`);
 
       return {

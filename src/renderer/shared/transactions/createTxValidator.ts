@@ -28,7 +28,12 @@ type ValidatorParams<A> = BaseParams<A> & {
 
 type RulesParams<A> = BaseParams<A> & {
   transaction: AnyTransaction;
-  getBalance(accountId: AccountId, chainId: ChainId, assetId: AssetId): Balance | null;
+  getBalance(
+    accountId: AccountId,
+    chainId: ChainId,
+    assetId: AssetId,
+    params?: { includeBurned: boolean },
+  ): Balance | null;
 };
 
 type ValidatorRule<A> = (
@@ -67,7 +72,12 @@ export function createTxValidator<A>(params?: {
     };
 
     try {
-      const getBalance = (accountId: AccountId, chainId: ChainId, assetId: AssetId) => {
+      const getBalance = (
+        accountId: AccountId,
+        chainId: ChainId,
+        assetId: AssetId,
+        params?: { includeBurned: boolean },
+      ) => {
         const validationResult = result.balanceValidationResults.findLast((r) => {
           return (
             r.account.accountId === accountId &&
@@ -77,7 +87,14 @@ export function createTxValidator<A>(params?: {
         });
 
         if (validationResult) {
-          return validationResult.balance.balance;
+          if (params?.includeBurned) {
+            return {
+              ...validationResult.balance.balance,
+              free: validationResult.balance.balance.free.add(validationResult.balance.burned),
+            };
+          } else {
+            return validationResult.balance.balance;
+          }
         }
 
         if (previousBalanceValidationResults) {
