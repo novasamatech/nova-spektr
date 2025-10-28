@@ -163,7 +163,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
             <LockPeriodDiff from={initialConviction} to={conviction.value} lockPeriods={lockPeriods} />
           </DetailRow>
           <DetailRow label={t('governance.vote.field.networkFee')}>
-            {isFeeLoading && fee.isZero() ? (
+            {isFeeLoading || !fee ? (
               <Skeleton height={4.5} width={12.5} />
             ) : (
               <FootnoteText>{formatAsset(fee, asset)}</FootnoteText>

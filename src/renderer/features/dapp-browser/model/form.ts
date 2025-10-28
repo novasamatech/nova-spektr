@@ -263,7 +263,7 @@ const $canSubmit = combine(
     extrinsic: $wrappedExtrinsic,
     fee: $fee,
   },
-  ({ formValid, valid, extrinsic, fee }) => formValid && valid && nonNullable(extrinsic) && !fee.isZero(),
+  ({ formValid, valid, extrinsic, fee }) => formValid && valid && nonNullable(extrinsic) && !fee?.isZero(),
 );
 
 // submit flow

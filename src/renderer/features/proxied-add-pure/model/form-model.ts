@@ -335,7 +335,7 @@ sample({
     proxyDeposit: $proxyDeposit,
     coreTx: $coreTx,
   },
-  filter: ({ transaction }) => nonNullable(transaction),
+  filter: ({ transaction, fee }) => nonNullable(transaction) && nonNullable(fee),
   fn: ({ proxyDeposit, multisigDeposit, transaction, initiator, isProxy, fee, coreTx }, formData: FormParams) => {
     return {
       transactions: {
@@ -344,7 +344,7 @@ sample({
       },
       formData: {
         ...formData,
-        fee: fee.toString(),
+        fee: fee!.toString(),
         initiator,
         proxyDeposit,
         multisigDeposit: multisigDeposit.toString(),

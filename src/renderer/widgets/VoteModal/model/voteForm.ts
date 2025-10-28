@@ -251,7 +251,7 @@ const $availableBalance = combine(
     fee: feeTxStore.$fee,
   },
   ({ referendum, balances, chain, initiator, fee }) => {
-    if (!initiator || !referendum || !chain) return BN_ZERO;
+    if (!initiator || !referendum || !chain || !fee) return BN_ZERO;
 
     const nativeAsset = getNativeAsset(chain.assets);
     const accountBalance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, nativeAsset.assetId);

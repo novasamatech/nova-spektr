@@ -9,7 +9,7 @@ import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
-  fee: BN | string;
+  fee: BN | string | null;
   isLoading?: boolean;
   asset: Asset;
   className?: string;
@@ -20,7 +20,7 @@ type Props = {
 export const Fee = memo(({ fee, isLoading, asset, showSymbol, hideFiat, className }: Props) => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-  if (isLoading) {
+  if (isLoading || !fee) {
     return <FeeLoader testId={TEST_IDS.OPERATIONS.FEE_LOADER} fiatFlag={Boolean(fiatFlag) && !hideFiat} />;
   }
 

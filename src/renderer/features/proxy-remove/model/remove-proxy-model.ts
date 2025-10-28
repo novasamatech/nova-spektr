@@ -344,6 +344,7 @@ const confirmEvent = sample({
     nonNullable(initiator) &&
     nonNullable(removeProxyStore) &&
     nonNullable(signatory) &&
+    nonNullable(fee) &&
     nonNullable(coreTx)
   ) {
     return [

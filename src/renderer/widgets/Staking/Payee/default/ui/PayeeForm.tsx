@@ -226,7 +226,7 @@ const FeeSection = () => {
         </DetailRow>
       )}
 
-      <FeeWithLabel fee={fee.toString()} isLoading={isFeeLoading} asset={network.asset} />
+      <FeeWithLabel fee={fee} isLoading={isFeeLoading} asset={network.asset} />
     </div>
   );
 };

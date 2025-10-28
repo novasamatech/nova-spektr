@@ -121,7 +121,7 @@ const $chainsData = combine(
       let feeToUse = fee;
 
       if (currentChain && chain.chainId === currentChain.chainId) {
-        feeToUse = chosenChainFee.toString();
+        feeToUse = chosenChainFee?.toString() ?? null;
       }
 
       const asset = getNativeAsset(chain.assets);
