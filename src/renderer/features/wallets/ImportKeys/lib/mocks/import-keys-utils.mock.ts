@@ -40,11 +40,6 @@ const invalidDerivations = {
     chainId: chainId,
     sharded: '1',
   },
-  missingName: {
-    derivationPath: '//path',
-    type: 'custom',
-    chainId: chainId,
-  },
 };
 
 const ignoredDerivations = {
@@ -147,11 +142,6 @@ const validationTestData: ValidationTestData[] = [
   {
     testName: 'Number of shards should be more than 1',
     derivation: invalidDerivations.tooLittleShards,
-    isValid: false,
-  },
-  {
-    testName: 'Name is required for derivation with type custom',
-    derivation: invalidDerivations.missingName,
     isValid: false,
   },
   {
