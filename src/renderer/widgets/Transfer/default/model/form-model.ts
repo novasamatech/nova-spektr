@@ -289,7 +289,7 @@ createSubscription({
 
 // balance preservation strategy
 
-const toggleExistentialDeposit = createEvent<boolean | void>();
+const toggleExistentialDeposit = createEvent<boolean | null>();
 const $isExistentialDepositEnabled = createStore(false)
   .on(toggleExistentialDeposit, (state, update) => {
     if (nonNullable(update)) {
