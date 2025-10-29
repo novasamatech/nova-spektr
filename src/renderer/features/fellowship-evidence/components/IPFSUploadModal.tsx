@@ -101,7 +101,10 @@ export const IPFSUploadModal = ({ isOpen, onToggle, wish }: Props) => {
     onToggle(open);
   };
 
-  const title = wish === 'Promotion' ? 'Submit promotion report' : 'Submit retention report';
+  const title =
+    wish === 'Promotion'
+      ? t('fellowship.salary.evidence.submitPromotionReport')
+      : t('fellowship.salary.evidence.submitRetentionReport');
 
   return (
     <Modal size="lg" height="full" isOpen={isOpen} onToggle={handleClose}>

@@ -87,7 +87,10 @@ export const MarkdownPreviewModal = ({
     };
   }, [isOpen, pendingIPFSData, isViewingSubmittedEvidence, handleConfirm]);
 
-  const title = wish === 'Promotion' ? 'Submit promotion report' : 'Submit retention report';
+  const title =
+    wish === 'Promotion'
+      ? t('fellowship.salary.evidence.submitPromotionReport')
+      : t('fellowship.salary.evidence.submitRetentionReport');
 
   return (
     <Modal size="lg" height="full" isOpen={isOpen} onToggle={onToggle}>

@@ -790,6 +790,8 @@
           "fromScratch": "From scratch",
           "uploadFromIPFS": "Upload from IPFS"
         },
+        "submitPromotionReport": "Submit promotion report",
+        "submitRetentionReport": "Submit retention report",
         "uploadSuccess": "Upload successful",
         "uploadingToIPFS": "Uploading to IPFS...",
         "validating": "Validating..."
