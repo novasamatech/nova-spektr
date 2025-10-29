@@ -39,7 +39,7 @@ type ErrorsWithDetails = { error: ValidationError; details?: ErrorDetails };
 
 const $validationError = createStore<ErrorsWithDetails | null>(null);
 const $report = createStore<Report | null>(null);
-const $mergedKeys = createStore<(DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[]>([]);
+const $keysToAdd = createStore<(DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[]>([]);
 
 const $existingDerivations = createStore<ExistingDerivations | null>(null);
 
@@ -140,7 +140,6 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
 
   const existingByChain = groupBy(existingDerivations, 'chainId');
   const importedByChain = groupBy(imported, 'chainId');
-  const untouchedDerivations = existingDerivations.filter((d) => !importedByChain[d.chainId]);
 
   return entries(importedByChain).reduce<MergeResult>(
     (acc, [chain, derivations]) => {
@@ -162,7 +161,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
       return acc;
     },
     {
-      derivations: untouchedDerivations,
+      derivations: [],
       report: {
         addedKeys: 0,
         updatedNetworks: 0,
@@ -175,7 +174,7 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
 
 reset({
   clock: resetValues,
-  target: [$validationError, $mergedKeys, $report],
+  target: [$validationError, $keysToAdd, $report],
 });
 
 sample({
@@ -236,7 +235,7 @@ sample({
 sample({
   source: mergePathsFx.doneData,
   fn: (result) => result.derivations,
-  target: $mergedKeys,
+  target: $keysToAdd,
 });
 
 sample({
@@ -248,7 +247,7 @@ sample({
 export const importKeysModel = {
   $validationError,
   $successReport: $report,
-  $mergedKeys,
+  $keysToAdd,
   events: {
     fileUploaded,
     resetValues,
