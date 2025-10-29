@@ -1,4 +1,4 @@
-import { combine, createEvent, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { reshape } from 'patronum';
 
 import { createFlow } from '@/shared/effector';
@@ -10,6 +10,7 @@ import { type SigningPayload, signModel } from '@/features/operations/OperationS
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { evidenceForm } from './evidenceForm';
+import { evidenceIPFS } from './evidenceIPFS';
 import { fellowshipEvidenceFeature } from './feature';
 
 const flow = createFlow(null);
@@ -30,9 +31,13 @@ const $coreTx = combine(
     input: fellowshipEvidenceFeature.input,
     account: $account,
     wish: evidenceForm.$wish,
-    evidence: evidenceForm.$evidence,
+    fromScratchEvidence: evidenceForm.$evidence,
+    ipfsEvidence: evidenceIPFS.$evidence,
+    flowType: evidenceForm.$flowType,
   },
-  ({ input, account, wish, evidence }) => {
+  ({ input, account, wish, fromScratchEvidence, ipfsEvidence, flowType }) => {
+    const evidence = flowType === 'ipfsUpload' ? ipfsEvidence : fromScratchEvidence;
+
     if (nullable(input) || nullable(account) || nullable(wish) || nullable(evidence)) {
       return null;
     }
@@ -144,10 +149,24 @@ sample({
   target: evidence.request,
 });
 
-// Steps
-
 const setStep = createEvent<'closed' | 'form' | 'submit'>();
 const $step = restore(setStep, 'closed');
+
+const openSubmitModal = createEvent();
+const closeSubmitModal = createEvent();
+const $submitModalOpen = createStore(false);
+
+sample({
+  clock: openSubmitModal,
+  fn: () => true,
+  target: $submitModalOpen,
+});
+
+sample({
+  clock: closeSubmitModal,
+  fn: () => false,
+  target: $submitModalOpen,
+});
 
 sample({
   clock: evidenceForm.evidenceUploaded,
@@ -159,6 +178,11 @@ sample({
   clock: $step,
   filter: step => step === 'closed',
   target: evidenceForm.reset,
+});
+
+sample({
+  clock: evidenceIPFS.uploadFileToIPFS.done,
+  target: openSubmitModal,
 });
 
 // Basket
@@ -189,10 +213,13 @@ export const evidencePost = {
   flow,
   $fee,
   $step,
+  $submitModalOpen,
   $wallet,
   $account,
   $wrappedTx,
   sign,
   saveToBasket,
   setStep,
+  openSubmitModal,
+  closeSubmitModal,
 };

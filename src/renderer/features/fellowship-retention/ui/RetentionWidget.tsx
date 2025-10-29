@@ -7,7 +7,13 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, nullable } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, TitleText } from '@/shared/ui';
 import { Box, Skeleton, type TimelineStep } from '@/shared/ui-kit';
-import { type Member, type Referendum, memberService, votingHistoryService } from '@/domains/collectives';
+import {
+  type Member,
+  type Referendum,
+  evidenceService,
+  memberService,
+  votingHistoryService,
+} from '@/domains/collectives';
 import {
   DANGER_THRESHOLD_DAYS,
   RetentionWidgetState,
@@ -29,6 +35,7 @@ const DANGER_ZONE_LENGTH = 4.5;
 const TOTAL_LENGTH = SAFE_ZONE_LENGTH + WARNING_ZONE_LENGTH + DANGER_ZONE_LENGTH;
 
 export const referendumWidgetActionSlot = createSlot<{ referendum: Referendum }>();
+export const evidenceSubmitSlot = createSlot<{ wish: 'Promotion' | 'Retention'; mode?: 'submit' | 'edit' }>();
 
 type Props = {
   member: Member;
@@ -59,9 +66,9 @@ export const RetentionWidget = memo(({ member }: Props) => {
           <>
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
-            <Button size="sm" className="ml-auto" onClick={() => {}}>
-              {t('fellowship.retention.button.submitReport')}
-            </Button>
+            <div className="ml-auto">
+              <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const }} />
+            </div>
           </>
         }
       >
@@ -82,9 +89,9 @@ export const RetentionWidget = memo(({ member }: Props) => {
           <>
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="hourglass" variant="warning" />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
-            <Button size="sm" className="ml-auto" onClick={() => {}}>
-              {t('fellowship.retention.button.submitReport')}
-            </Button>
+            <div className="ml-auto">
+              <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const }} />
+            </div>
           </>
         }
       >
@@ -103,9 +110,9 @@ export const RetentionWidget = memo(({ member }: Props) => {
           <>
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
-            <Button size="sm" className="ml-auto" onClick={() => {}}>
-              {t('fellowship.retention.button.submitReport')}
-            </Button>
+            <div className="ml-auto">
+              <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const }} />
+            </div>
           </>
         }
       >
@@ -124,9 +131,9 @@ export const RetentionWidget = memo(({ member }: Props) => {
           <>
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
-            <Button size="sm" className="ml-auto" onClick={() => {}}>
-              {t('fellowship.retention.button.submitReport')}
-            </Button>
+            <div className="ml-auto">
+              <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const }} />
+            </div>
           </>
         }
       >
@@ -145,9 +152,9 @@ export const RetentionWidget = memo(({ member }: Props) => {
           <>
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" hideIconText />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.riskBumped')}</FootnoteText>
-            <Button size="sm" className="ml-auto" onClick={() => {}}>
-              {t('fellowship.retention.button.submitReport')}
-            </Button>
+            <div className="ml-auto">
+              <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const }} />
+            </div>
           </>
         }
       >
@@ -172,6 +179,7 @@ const ReportSubmitted = memo(() => {
 
   const { retentionPeriodDates, timelineValue } = useRetentionData();
   const retentionEvidenceSubmissionDate = useUnit(fellowshipRetention.$retentionEvidenceSubmissionDate);
+  const retentionEvidence = useUnit(fellowshipRetention.$retentionEvidence);
 
   const submissionDate = useMemo(
     () => (retentionEvidenceSubmissionDate ? formatDate(retentionEvidenceSubmissionDate, 'dd.MM.yy') : '—'),
@@ -216,12 +224,17 @@ const ReportSubmitted = memo(() => {
           <Icon name="clock" size={16} className="mr-1 text-chip-icon" />
           <FootnoteText>{t('fellowship.retention.timer.ensureAwareness')}</FootnoteText>
           <div className="ml-auto flex gap-2">
-            <Button size="sm" onClick={() => {}}>
+            <Button
+              size="sm"
+              onClick={() => {
+                if (retentionEvidence) {
+                  window.open(evidenceService.getEvidenceIpfsUrl(retentionEvidence.hash), '_blank');
+                }
+              }}
+            >
               {t('fellowship.retention.button.view')}
             </Button>
-            <Button size="sm" pallet="secondary" variant="fill" onClick={() => {}}>
-              {t('fellowship.retention.button.edit')}
-            </Button>
+            <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const, mode: 'edit' as const }} />
           </div>
         </>
       }
