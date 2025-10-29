@@ -7,6 +7,7 @@ import { nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { createTxStore } from '@/shared/transactions';
 import { type Evidence, trackService, votingService } from '@/domains/collectives';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -172,6 +173,30 @@ sample({
   target: submitModel.events.formInitiated,
 });
 
+// Basket
+
+const saveToBasket = createEvent();
+
+sample({
+  clock: saveToBasket,
+  source: $wrappedTx,
+  fn: transactions => {
+    if (nullable(transactions)) {
+      return [];
+    }
+
+    const tx: BasketTransactionDraft = {
+      initiatorAccountId: transactions.coreTx.accountId,
+      coreTx: transactions.coreTx,
+      route: [],
+      createdAt: Date.now(),
+    };
+
+    return [tx];
+  },
+  target: basketOperations.addTransactions,
+});
+
 // Steps
 
 const setStep = createEvent<'closed' | 'form' | 'submit'>();
@@ -194,4 +219,5 @@ export const evidenceVoting = {
   setStep,
 
   sign,
+  saveToBasket,
 };

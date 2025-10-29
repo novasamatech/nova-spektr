@@ -7,10 +7,12 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, referendumService, track, trackService } from '@/domains/collectives';
+import { basketUtils } from '@/entities/basket';
 import { Card } from '@/features/fellowship-referendum-details';
 import { tasksService } from '@/features/fellowship-tasks';
 import { fellowshipVotingFeature } from '../model/feature';
 import { members } from '../model/members';
+import { voting } from '../model/voting';
 import { votingStatus } from '../model/votingStatus';
 
 import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
@@ -31,12 +33,15 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
 
   const chain = useStoreMap(fellowshipVotingFeature.input, input => input?.chain ?? null);
 
+  const account = useUnit(votingStatus.$votingAccount);
   const canVote = useUnit(votingStatus.$canVote);
   const hasRequiredRank = useUnit(votingStatus.$hasRequiredRank);
-  const voting = useUnit(votingStatus.$referendumVoting);
+  const votingReferendum = useUnit(votingStatus.$referendumVoting);
   const currentMember = useUnit(votingStatus.$currentMember);
   const accountsVotes = useUnit(votingStatus.$accountsVotes);
   const maxRank = useUnit(votingStatus.$maxRank);
+
+  const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
 
@@ -89,8 +94,8 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
 
   const buttonDiabled = !canVote || !hasRequiredRank;
 
-  const alreadyVotedNay = nonNullable(voting) && voting.decision === 'Nay';
-  const alreadyVotedAye = nonNullable(voting) && voting.decision === 'Aye';
+  const alreadyVotedNay = nonNullable(votingReferendum) && votingReferendum.decision === 'Nay';
+  const alreadyVotedAye = nonNullable(votingReferendum) && votingReferendum.decision === 'Aye';
 
   const memberVoteWeight = trackService.getVoteWeight({
     pallet: 'fellowship',
@@ -104,6 +109,34 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
       totalReferendumVotes,
       referendumVote?.decision ? memberVoteWeight * 2 : memberVoteWeight,
     ) * 100;
+
+  const setNayDecision = () => {
+    if (alreadyVotedNay) return;
+
+    votingStatus.flow.open({ referendumId: referendum?.id });
+
+    if (canAddToBasket) {
+      voting.flow.open({ vote: 'nay' });
+      voting.saveToBasket();
+      voting.flow.close({ vote: null });
+    } else {
+      setDecision('nay');
+    }
+  };
+
+  const setAyeDecision = () => {
+    if (alreadyVotedAye) return;
+
+    votingStatus.flow.open({ referendumId: referendum?.id });
+
+    if (canAddToBasket) {
+      voting.flow.open({ vote: 'aye' });
+      voting.saveToBasket();
+      voting.flow.close({ vote: null });
+    } else {
+      setDecision('aye');
+    }
+  };
 
   return (
     <Card>
@@ -122,7 +155,7 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
               isVoted={alreadyVotedNay}
               checked={alreadyVotedNay}
               fullWidth
-              onClick={() => !alreadyVotedNay && setDecision('nay')}
+              onClick={setNayDecision}
             >
               {t('fellowship.voting.notGood')}
             </VotingButtonWithTooltip>
@@ -136,7 +169,7 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
               isVoted={alreadyVotedAye}
               checked={alreadyVotedAye}
               fullWidth
-              onClick={() => !alreadyVotedAye && setDecision('aye')}
+              onClick={setAyeDecision}
             >
               {t('fellowship.voting.good')}
             </VotingButtonWithTooltip>
