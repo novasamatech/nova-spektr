@@ -474,7 +474,7 @@ const Amount = memo(() => {
           <Switch
             checked={isExistentialDepositEnabled}
             variant="accent"
-            onChange={() => formModel.events.toggleExistentialDeposit()}
+            onChange={(checked) => formModel.events.toggleExistentialDeposit(checked)}
           >
             <div className="flex items-center gap-1">
               <Tooltip>
