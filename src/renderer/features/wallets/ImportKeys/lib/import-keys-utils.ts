@@ -279,7 +279,7 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
   });
 
   return {
-    mergedDerivations: [...existingDerivations, ...newDerivationsAccounts],
+    mergedDerivations: newDerivationsAccounts,
     added: addedKeys,
     duplicated: duplicatedKeys,
   };
