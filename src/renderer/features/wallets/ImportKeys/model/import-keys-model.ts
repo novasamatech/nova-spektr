@@ -115,7 +115,6 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
       {
         [DerivationValidationError.INVALID_PATH]: [],
         [DerivationValidationError.PASSWORD_PATH]: [],
-        [DerivationValidationError.MISSING_NAME]: [],
         [DerivationValidationError.WRONG_SHARDS_NUMBER]: [],
       },
     );

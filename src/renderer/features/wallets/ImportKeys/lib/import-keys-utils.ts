@@ -17,7 +17,6 @@ import {
 } from '@/shared/core';
 import { entries, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { KEY_NAMES, SHARDED_KEY_NAMES } from '@/entities/wallet';
 
 import { type ErrorDetails } from './derivation-import-error';
 import {
@@ -116,7 +115,7 @@ function parseTextFile(fileContent: string): ParsedData | null {
       currentChainId = chainIdMatch[1];
     }
 
-    const derivationPathMatch = line.match(/^(\/{1,2}[^\s:]*):\s*([^[]+?)\s*\[([^\]]+)\]$/);
+    const derivationPathMatch = line.match(/^(\/{1,2}[^\s:]*)/);
 
     if (derivationPathMatch) {
       const { path, shard } = processString(derivationPathMatch[1]);
@@ -124,8 +123,6 @@ function parseTextFile(fileContent: string): ParsedData | null {
       const derivationPathParams = {
         derivationPath: path,
         sharded: shard,
-        name: derivationPathMatch[2],
-        type: derivationPathMatch[3] as KeyType,
         chainId: currentChainId,
       };
       derivationPaths.push(derivationPathParams);
@@ -150,8 +147,6 @@ function updateTextStructure(parsedData: ParsedData): ParsedImportFile {
     const importFileKey: ImportFileKey = {
       key: {
         derivationPath: path.derivationPath,
-        name: path.name,
-        type: path.type,
         ...(path.sharded && { sharded: path.sharded }),
       },
     };
@@ -199,14 +194,9 @@ function getDerivationsFromFile(fileContent: ParsedImportFile): FormattedResult 
 function shouldIgnoreDerivation(derivation: ImportedDerivation, chains: Record<ChainId, Chain>): boolean {
   if (!derivation.derivationPath) return true;
 
-  const AllKeyTypes = [KeyType.MAIN, KeyType.PUBLIC, KeyType.HOT, KeyType.CUSTOM];
-
   const isChainParamValid = derivation.chainId && chains[derivation.chainId as ChainId];
-  const isTypeParamValid = derivation.type && Object.values(AllKeyTypes).includes(derivation.type as KeyType);
-  const isShardedAllowedForType =
-    !derivation.sharded || (derivation.type !== KeyType.PUBLIC && derivation.type !== KeyType.HOT);
 
-  return !isChainParamValid || !isTypeParamValid || !isShardedAllowedForType;
+  return !isChainParamValid;
 }
 
 function getDerivationError(derivation: DerivationWithPath): DerivationValidationError[] | undefined {
@@ -222,9 +212,6 @@ function getDerivationError(derivation: DerivationWithPath): DerivationValidatio
 
   const hasPasswordPath = derivation.derivationPath.includes('///');
   if (hasPasswordPath) errors.push(DerivationValidationError.PASSWORD_PATH);
-
-  const isNameValid = derivation.type !== KeyType.CUSTOM || derivation.name;
-  if (!isNameValid) errors.push(DerivationValidationError.MISSING_NAME);
 
   if (errors.length) return errors;
 }
@@ -242,13 +229,13 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
   const importedDerivationsAccounts = importedDerivations.reduce<DraftAccounts>((acc, d) => {
     if (!d.sharded) {
       acc.push({
-        name: d.name || KEY_NAMES[d.type],
+        name: d.derivationPath,
         derivationPath: d.derivationPath,
         chainId: d.chainId,
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.POLKADOT_VAULT,
         accountType: AccountType.CHAIN,
-        keyType: d.type,
+        keyType: KeyType.CUSTOM,
         type: 'chain',
       });
 
@@ -261,13 +248,13 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
 
     for (let i = 0; i < Number(d.sharded); i++) {
       acc.push({
-        name: d.name || SHARDED_KEY_NAMES[d.type],
+        name: d.derivationPath + '//' + i,
         derivationPath: d.derivationPath + '//' + i,
         chainId: d.chainId,
         cryptoType: CryptoType.SR25519,
         signingType: SigningType.POLKADOT_VAULT,
         accountType: AccountType.SHARD,
-        keyType: d.type,
+        keyType: KeyType.CUSTOM,
         groupId,
         type: 'chain',
       });
@@ -312,7 +299,6 @@ function renameDerivationPathKeyReviver(key: unknown, value: unknown) {
 const DERIVATION_ERROR_LABEL = {
   [DerivationValidationError.INVALID_PATH]: t('dynamicDerivations.importKeys.error.invalidPath'),
   [DerivationValidationError.PASSWORD_PATH]: t('dynamicDerivations.importKeys.error.invalidPasswordPath'),
-  [DerivationValidationError.MISSING_NAME]: t('dynamicDerivations.importKeys.error.missingName'),
   [DerivationValidationError.WRONG_SHARDS_NUMBER]: t('dynamicDerivations.importKeys.error.wrongShardsNumber'),
 };
 
