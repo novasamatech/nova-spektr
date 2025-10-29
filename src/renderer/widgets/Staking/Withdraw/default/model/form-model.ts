@@ -376,20 +376,21 @@ sample({
     network: $networkStore,
     transaction: $tx,
     isProxy: $isProxy,
-    fee: $fee.map((fee) => fee.toString()),
-    totalFee: $fee.map((fee) => fee.toString()),
+    fee: $fee.map((fee) => fee?.toString()),
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ network, transaction }) => {
-    return nonNullable(network) && nonNullable(transaction);
+  filter: ({ network, transaction, fee }) => {
+    return nonNullable(network) && nonNullable(transaction) && nonNullable(fee);
   },
-  fn: ({ proxyAccount, transaction, isProxy, ...rest }, formData) => {
+  fn: ({ proxyAccount, transaction, isProxy, fee, ...rest }, formData) => {
     return {
       transaction: transaction!,
       formData: {
         ...rest,
         ...formData,
         ...(isProxy && { proxiedAccount: proxyAccount as ProxiedAccount }),
+        fee: fee!,
+        totalFee: fee!,
         initiator: formData.initiator!,
         signatory: formData.signatory!,
       },

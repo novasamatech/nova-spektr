@@ -4,7 +4,6 @@ import { Children, type PropsWithChildren } from 'react';
 import { type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
-
 import './Skeleton.css';
 
 type Props = XOR<
@@ -16,11 +15,12 @@ type Props = XOR<
   {
     width?: number | string;
     height?: number | string;
+    testId?: string;
     circle?: boolean;
   }
 >;
 
-export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, children }: Props) => {
+export const Skeleton = ({ width, height, testId, circle, fullWidth, minWidth, active, children }: Props) => {
   const formattedMinWidth = isNumber(minWidth) ? `${gridSpaceConverter(minWidth)}px` : minWidth;
   const formattedWidth = isNumber(width) ? `${gridSpaceConverter(width)}px` : width;
   const formattedHeight = isNumber(height) ? `${gridSpaceConverter(height)}px` : height;
@@ -28,6 +28,7 @@ export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, c
   if (!children) {
     return (
       <span
+        data-testid={testId}
         className={cnTw(
           'spektr-shimmer block h-full max-h-full w-full max-w-full',
           circle ? 'rounded-full' : 'rounded-2lg',
@@ -44,6 +45,7 @@ export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, c
   if (active) {
     return (
       <span
+        data-testid={testId}
         className={cnTw('spektr-shimmer block h-fit rounded-2lg *:invisible', {
           'w-full': fullWidth,
           'w-fit': !fullWidth,

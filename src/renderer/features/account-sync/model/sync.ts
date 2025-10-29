@@ -17,6 +17,7 @@ import {
   type ProxiedConnection,
   type ProxiedWallet,
   type ProxyAccount,
+  type ProxyAction,
   type ProxyType,
   SigningType,
   type Wallet,
@@ -575,16 +576,31 @@ const createNotificationsFromWallets = (wallets: { wallet: { id: number }; accou
         } satisfies NoID<FlexibleMultisigOperationNotification>;
       }
 
+      if (accountUtils.isProxiedAccount(account)) {
+        return account.connections.map((connection) => {
+          return {
+            chainId: account.chainId,
+            dateCreated: Date.now(),
+            proxyType: connection.proxyType,
+            proxyAccountId: connection.proxyAccountId,
+            proxyVariant: account.proxyVariant,
+            proxiedAccountId: account.accountId,
+            read: false,
+            type: NotificationType.PROXY_CREATED,
+          } satisfies NoID<ProxyAction>;
+        });
+      }
+
       return null;
     });
   });
 
-  return notifications.filter(nonNullable);
+  return notifications.flat().filter(nonNullable);
 };
 
 sample({
   clock: createWalletsFx.doneData,
-  fn: createNotificationsFromWallets,
+  fn: (wallets) => createNotificationsFromWallets(wallets),
   target: notificationModel.events.notificationsAdded,
 });
 

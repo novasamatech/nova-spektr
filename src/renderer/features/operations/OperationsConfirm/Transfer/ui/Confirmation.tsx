@@ -64,6 +64,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           <AssetBalance
             value={meta.amount}
             asset={meta.asset}
+            keepPrecision={true}
             className="font-manrope text-[32px] leading-[36px] font-bold text-text-primary"
           />
           <AssetFiatBalance asset={meta.asset} amount={meta.amount} className="text-headline" />

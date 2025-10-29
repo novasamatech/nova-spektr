@@ -29,6 +29,12 @@ export const Invalid: Story = {
   },
 };
 
+export const ForcedInvalidState: Story = {
+  args: {
+    invalid: true,
+  },
+};
+
 export const EtheriumAddress: Story = {
   args: {
     address: TEST_EVM_ADDRESS,

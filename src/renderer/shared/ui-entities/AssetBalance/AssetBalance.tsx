@@ -9,10 +9,18 @@ type Props = {
   asset?: Asset | AssetByChains;
   className?: string;
   showSymbol?: boolean;
+  keepPrecision?: boolean;
   testId?: string;
 };
 
-export const AssetBalance = ({ value, asset, className, showSymbol = true, testId = 'AssetBalance' }: Props) => {
+export const AssetBalance = ({
+  value,
+  asset,
+  className,
+  showSymbol = true,
+  keepPrecision = false,
+  testId = 'AssetBalance',
+}: Props) => {
   const { t } = useI18n();
 
   if (!asset) {
@@ -20,7 +28,7 @@ export const AssetBalance = ({ value, asset, className, showSymbol = true, testI
   }
 
   const { precision, symbol } = asset;
-  const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision);
+  const { value: formattedValue, decimalPlaces, suffix } = formatBalance(value, precision, { keepPrecision });
 
   const balanceValue = t('assetBalance.number', {
     value: formattedValue,

@@ -3,7 +3,7 @@ import { combine, sample } from 'effector';
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
-import { feed } from '@/domains/collectives';
+import { feed, referendum } from '@/domains/collectives';
 import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { ERROR } from '../constants';
@@ -53,6 +53,11 @@ sample({
 sample({
   clock: fellowshipTasksFeature.running,
   target: feed.subscribe,
+});
+
+sample({
+  clock: fellowshipTasksFeature.running,
+  target: referendum.requestReferendumsWithEvidence,
 });
 
 sample({

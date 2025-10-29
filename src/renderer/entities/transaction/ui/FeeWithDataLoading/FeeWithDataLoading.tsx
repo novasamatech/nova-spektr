@@ -15,13 +15,14 @@ type Props = {
   asset: Asset;
   transaction?: Transaction | null;
   className?: string;
+  testId?: string;
   onFeeChange?: (fee: string) => void;
   onFeeLoading?: (loading: boolean) => void;
 };
 
 /** @deprecated Use Fee with complexTxStore instead */
 export const FeeWithDataLoading = memo(
-  ({ api, multiply = 1, asset, transaction, className, onFeeChange, onFeeLoading }: Props) => {
+  ({ api, multiply = 1, asset, testId, transaction, className, onFeeChange, onFeeLoading }: Props) => {
     const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
     const [fee, setFee] = useState('');
@@ -60,7 +61,7 @@ export const FeeWithDataLoading = memo(
     }, [transaction, api]);
 
     if (isLoading) {
-      return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+      return <FeeLoader testId={testId} fiatFlag={Boolean(fiatFlag)} />;
     }
 
     return (

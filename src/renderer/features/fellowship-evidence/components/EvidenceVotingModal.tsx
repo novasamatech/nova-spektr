@@ -110,7 +110,7 @@ export const EvidenceVotingModal = memo(({ evidence, aye, children }: Props) => 
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              {nonNullable(votingMember) && nonNullable(proposerMember) && (
+              {nonNullable(votingMember) && nonNullable(proposerMember) && nonNullable(fee) && (
                 <EvidenceVotingConfirmation
                   evidence={evidence}
                   asset={input.asset}

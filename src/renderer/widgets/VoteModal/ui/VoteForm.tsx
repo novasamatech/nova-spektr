@@ -7,7 +7,16 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAsset } from '@/shared/lib/utils';
-import { Alert, ButtonCard, ConfirmModal, DetailRow, FootnoteText, LabelHelpBox, SmallTitleText } from '@/shared/ui';
+import {
+  Alert,
+  Button,
+  ButtonCard,
+  ConfirmModal,
+  DetailRow,
+  FootnoteText,
+  LabelHelpBox,
+  SmallTitleText,
+} from '@/shared/ui';
 import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
 import { Popover, Skeleton } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
@@ -73,6 +82,8 @@ export const VoteForm = ({ chain, asset }: Props) => {
     />
   );
 
+  const showReuseLockBtn = lock.gtn(0);
+
   return (
     <>
       <div className="flex flex-col gap-6 px-5 py-4">
@@ -119,14 +130,24 @@ export const VoteForm = ({ chain, asset }: Props) => {
               onChange={signatory.onChange}
             />
           )}
-          <Amount
-            value={amount.value}
-            asset={asset}
-            availableBalance={availableBalance}
-            hasError={amount.hasError}
-            errorText={amount.errorMessage}
-            onChange={amount.onChange}
-          />
+
+          <div className="flex flex-col gap-2">
+            <Amount
+              value={amount.value}
+              asset={asset}
+              availableBalance={availableBalance}
+              hasError={amount.hasError}
+              errorText={amount.errorMessage}
+              onChange={amount.onChange}
+            />
+            {showReuseLockBtn && (
+              <div className="flex justify-end">
+                <Button size="sm" pallet="secondary" onClick={() => amount.onChange(lock)}>
+                  {t('governance.vote.reuseLock')}: {formatAsset(lock, asset)}
+                </Button>
+              </div>
+            )}
+          </div>
           <ConvictionSelect
             asset={asset}
             conviction={conviction.value}
@@ -142,7 +163,7 @@ export const VoteForm = ({ chain, asset }: Props) => {
             <LockPeriodDiff from={initialConviction} to={conviction.value} lockPeriods={lockPeriods} />
           </DetailRow>
           <DetailRow label={t('governance.vote.field.networkFee')}>
-            {isFeeLoading && fee.isZero() ? (
+            {isFeeLoading || !fee ? (
               <Skeleton height={4.5} width={12.5} />
             ) : (
               <FootnoteText>{formatAsset(fee, asset)}</FootnoteText>

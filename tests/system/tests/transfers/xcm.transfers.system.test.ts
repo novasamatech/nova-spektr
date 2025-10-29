@@ -22,8 +22,11 @@ test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress'] }, () => {
 
       const transferModal = await assetsPage.openTransfer(chain, assetId);
       await transferModal.chooseXcmChain(xcmChainName);
-      await transferModal.fillAmount(amount);
+
       await transferModal.fillRecipient(recipient);
+      await transferModal.expectTransferFeeNotZero();
+
+      await transferModal.fillAmount(amount);
 
       const confirmationModal = await transferModal.openConfirmationModal();
       const signingModal = await confirmationModal.confirm();

@@ -1,4 +1,5 @@
 import { type ApiPromise } from '@polkadot/api';
+import { uniqBy } from 'lodash';
 
 import { type AssetId, type Balance, type BalanceId, type ChainId, type Transaction } from '@/shared/core';
 import { assert, nonNullable } from '@/shared/lib/utils';
@@ -22,12 +23,17 @@ type ValidatorParams<A> = BaseParams<A> & {
   balanceValidationResults?: TransactionValidationBalanceError[];
   // for backward compatability
   transaction: Transaction | AnyTransaction;
+  excludeActions?: string[];
 };
 
 type RulesParams<A> = BaseParams<A> & {
   transaction: AnyTransaction;
   getBalance(accountId: AccountId, chainId: ChainId, assetId: AssetId): Balance | null;
 };
+
+type ValidatorRule<A> = (
+  params: RulesParams<A>,
+) => TransactionValidationBalanceError | Promise<TransactionValidationBalanceError> | undefined;
 
 export type ValidationResult = {
   errors: (
@@ -36,28 +42,31 @@ export type ValidationResult = {
     | TransactionValidationFatalError
   )[];
   balanceValidationResults: TransactionValidationBalanceError[];
+  available: Balance[];
 };
+
+export type Validator<A> = (params: ValidatorParams<A>) => Promise<ValidationResult>;
 
 export function createTxValidator<A>(params?: {
   DEBUG?: boolean;
-  additionalBalanceRules?: ((params: RulesParams<A>) => TransactionValidationBalanceError | undefined)[];
-}) {
-  return async ({
+  additionalBalanceRules?: ValidatorRule<A>[];
+}): Validator<A> {
+  const validator: Validator<A> = async ({
     transaction,
     balances,
     balanceValidationResults: previousBalanceValidationResults,
+    excludeActions = [],
     ...rest
-  }: ValidatorParams<A>): Promise<ValidationResult> => {
+  }) => {
     const baseParams = rest as BaseParams<A>;
 
     const result: ValidationResult = {
       errors: [],
       balanceValidationResults: [],
+      available: [],
     };
 
     try {
-      const chainId = baseParams.api.genesisHash.toHex();
-
       const getBalance = (accountId: AccountId, chainId: ChainId, assetId: AssetId) => {
         const validationResult = result.balanceValidationResults.findLast((r) => {
           return (
@@ -88,40 +97,40 @@ export function createTxValidator<A>(params?: {
         return balanceUtils.getBalance(balances, accountId, chainId, assetId);
       };
 
-      const normalizedTransaction = convertTransaction(transaction, baseParams.api);
-      const fixedArgs = { ...baseParams, getBalance, transaction: normalizedTransaction };
+      const acceptedAction = (result: TransactionValidationBalanceError) => {
+        return !excludeActions.includes(result.action);
+      };
 
-      // basic validations
+      // Common data preparation
+
+      const newTransactionInterface = convertTransaction(transaction, baseParams.api);
+      const fixedArgs = { ...baseParams, getBalance, transaction: newTransactionInterface };
+      const ruleArgs: RulesParams<A> = { ...baseParams, getBalance, transaction: newTransactionInterface };
+
+      // Basic rules. Should be first because it's entry point validation for every operation
+
+      for (const rule of basicRules) {
+        const res = await rule(ruleArgs);
+        if (nonNullable(res) && acceptedAction(res)) {
+          result.balanceValidationResults.push(res);
+        }
+      }
+
+      // External validations
 
       const transactionPermissionErrors = accountService.validateCallPermission(fixedArgs);
       const transactionBalanceValidation = await accountService.validateRouteBalances(fixedArgs);
 
-      result.balanceValidationResults = result.balanceValidationResults.concat(transactionBalanceValidation);
+      result.balanceValidationResults = result.balanceValidationResults.concat(
+        transactionBalanceValidation.filter(acceptedAction),
+      );
 
-      // fee validation
-
-      const signatory = accountService.findSignatory(baseParams.route);
-      assert(signatory, 'Signatory not found');
-
-      const fee = await transactionService.getTransactionFee(normalizedTransaction, baseParams.api);
-      const balanceForFee = getBalance(signatory.accountId, chainId, baseParams.asset.assetId);
-      assert(balanceForFee, 'Balance for fee not found');
-
-      result.balanceValidationResults.push({
-        asset: baseParams.asset,
-        balance: balanceService.tryWithdraw(balanceForFee, fee, 'keepAlive'),
-        account: signatory,
-        action: 'fee',
-      });
-
-      // additional validations
-
-      const ruleArgs: RulesParams<A> = { ...baseParams, getBalance, transaction: normalizedTransaction };
+      // Additional local validations
 
       if (params?.additionalBalanceRules) {
         for (const rule of params.additionalBalanceRules) {
-          const res = rule(ruleArgs);
-          if (nonNullable(res)) {
+          const res = await rule(ruleArgs);
+          if (nonNullable(res) && acceptedAction(res)) {
             result.balanceValidationResults.push(res);
           }
         }
@@ -131,6 +140,8 @@ export function createTxValidator<A>(params?: {
         transactionPermissionErrors,
         result.balanceValidationResults.filter((x) => x.balance.success === false),
       );
+
+      result.available = getAvailableBalances(result.balanceValidationResults);
 
       return result;
     } catch (error) {
@@ -142,12 +153,39 @@ export function createTxValidator<A>(params?: {
         return {
           errors: [message],
           balanceValidationResults: [],
+          available: [],
         };
       }
 
       return result;
     }
   };
+
+  return validator;
+}
+
+const basicRules: ValidatorRule<unknown>[] = [
+  async ({ route, transaction, api, asset, getBalance }) => {
+    const chainId = api.genesisHash.toHex();
+
+    const signatory = accountService.findSignatory(route);
+    assert(signatory, 'Signatory not found');
+
+    const fee = await transactionService.getTransactionFee(transaction, signatory.accountId, api);
+    const balanceForFee = getBalance(signatory.accountId, chainId, asset.assetId);
+    assert(balanceForFee, 'Balance for fee not found');
+
+    return {
+      asset,
+      balance: balanceService.tryWithdraw(balanceForFee, fee, 'keepAlive'),
+      account: signatory,
+      action: 'fee',
+    };
+  },
+];
+
+function getAvailableBalances(results: TransactionValidationBalanceError[]) {
+  return uniqBy([...results].reverse(), (result) => result.balance.balance.id).map((result) => result.balance.balance);
 }
 
 function convertTransaction(transaction: Transaction | AnyTransaction, api: ApiPromise): AnyTransaction {

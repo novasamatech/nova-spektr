@@ -154,7 +154,7 @@ const FeeSection = () => {
       <FeeWithLabel
         label={t('staking.networkFee', { count: 1 })}
         asset={getNativeAsset(network.chain.assets)!}
-        fee={fee.toString()}
+        fee={fee}
         isLoading={pendingFee}
       />
     </div>

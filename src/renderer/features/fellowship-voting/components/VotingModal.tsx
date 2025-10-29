@@ -49,6 +49,7 @@ export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
     nullable(vote) ||
     nullable(memberTrack) ||
     nullable(referendum) ||
+    nullable(fee) ||
     referendumService.isCompleted(referendum)
   ) {
     return null;

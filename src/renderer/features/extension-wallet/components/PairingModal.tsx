@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { toAddress } from '@/shared/lib/utils';
+import { performSearch, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, IconButton, Loader, SmallTitleText } from '@/shared/ui';
 import { ChainAccountsList, Identicon } from '@/shared/ui-entities';
@@ -30,7 +30,25 @@ export const PairingModal = ({ title, extension, children }: Props) => {
   const open = extension === flowExtension;
 
   const [name, setName] = useState<string>('');
+  const [search, setSearch] = useState<string>('');
   const [selectedAccount, setSelectedAccount] = useState<AccountId | null>(null);
+
+  const filteredAccounts = useMemo(() => {
+    return performSearch({
+      records: accounts,
+      query: search,
+      getMeta: (a) => {
+        const chain = a.type === 'chain' ? chains[a.chainId] : null;
+        return {
+          address: toAddress(a.accountId, { prefix: chain?.addressPrefix }),
+        };
+      },
+      weights: {
+        name: 1,
+        address: 0.8,
+      },
+    });
+  }, [accounts, search]);
 
   const account = useMemo(() => {
     return accounts.find((a) => a.accountId === selectedAccount) ?? null;
@@ -92,8 +110,9 @@ export const PairingModal = ({ title, extension, children }: Props) => {
                         value={selectedAccount}
                         placeholder={t('onboarding.extension.selectAccountPlaceholder')}
                         onChange={setSelectedAccount}
+                        onSearch={setSearch}
                       >
-                        {accounts.map((account) => (
+                        {filteredAccounts.map((account) => (
                           <Select.Item key={account.accountId} value={account.accountId}>
                             <Box direction="row" gap={2} verticalAlign="center">
                               <Identicon address={toAddress(account.accountId)} />

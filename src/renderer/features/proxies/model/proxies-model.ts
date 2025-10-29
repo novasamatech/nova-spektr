@@ -6,7 +6,6 @@ import {
   type ChainId,
   CryptoType,
   type NoID,
-  NotificationType,
   type PartialProxiedAccount,
   type ProxiedAccount,
   type ProxiedWallet,
@@ -16,12 +15,9 @@ import {
 } from '@/shared/core';
 import { series } from '@/shared/effector';
 import { type IdentityMap, accounts, identity, identityService } from '@/domains/network';
-import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { notificationModel } from '@/entities/notification';
 import { proxyUtils } from '@/entities/proxy';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
-import { proxiesUtils } from '../lib/proxies-utils';
 
 const proxiedAccountsRemoved = createEvent<ProxiedAccount[]>();
 const proxiedAccountsUpdated = createEvent<ProxiedAccount[]>();
@@ -97,33 +93,8 @@ sample({
 });
 
 sample({
-  clock: proxiedAccountsRemoved,
-  fn: (proxiedAccounts) => proxiedAccounts.map((p) => p.accountId),
-  target: balanceModel.events.balancesRemoved,
-});
-
-sample({
   clock: createProxiedWalletsFx.doneData,
   target: series(walletModel.events.createProxied),
-});
-
-sample({
-  clock: createProxiedWalletsFx.doneData,
-  source: {
-    chains: networkModel.$chains,
-    wallets: walletModel.$wallets,
-  },
-  fn: ({ chains, wallets }, walletDrafts) => {
-    const proxiedAccounts = walletDrafts.flatMap(({ accounts }) => accounts);
-
-    return proxiesUtils.getNotification({
-      wallets,
-      proxiedAccounts,
-      chains,
-      type: NotificationType.PROXY_CREATED,
-    });
-  },
-  target: notificationModel.events.notificationsAdded,
 });
 
 // TODO remove

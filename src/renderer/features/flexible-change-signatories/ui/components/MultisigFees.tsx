@@ -47,7 +47,7 @@ export const MultisigFees = () => {
               </div>
               <div>
                 {t('createMultisigAccount.networkFee')}
-                <AssetBalance value={fee} asset={asset} className="ml-1 text-help-text text-inherit" />
+                <AssetBalance value={fee ?? undefined} asset={asset} className="ml-1 text-help-text text-inherit" />
               </div>
             </div>
           </Tooltip.Content>

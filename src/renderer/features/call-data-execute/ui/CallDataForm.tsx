@@ -32,7 +32,7 @@ export const CallDataForm = () => {
 
   return (
     <>
-      <form id="transfer-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
+      <form id="call-data-form" className="flex flex-col gap-y-4 px-5 pb-4" onSubmit={submitForm}>
         <TransactionValidationError errors={errors} wallets={wallets} />
         <NetworkSelect />
         <InitiatorSelect />

@@ -1,12 +1,4 @@
-import {
-  type Contact,
-  KeyType,
-  type PolkadotVaultWallet,
-  type Signatory,
-  type VaultChainAccount,
-  type VaultShardAccount,
-  type Wallet,
-} from '@/shared/core';
+import { type Contact, type PolkadotVaultWallet, type Signatory, type Wallet } from '@/shared/core';
 import { toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
@@ -25,7 +17,6 @@ export const wcDetailsUtils = {
 export const walletDetailsUtils = {
   isForgetModalOpen,
   getVaultAccountsMap,
-  getMainAccounts,
   getSignatoryName,
 };
 
@@ -68,12 +59,6 @@ function getVaultAccountsMap(accounts: PolkadotVaultWallet['accounts']): VaultMa
 
     return acc;
   }, {});
-}
-
-function getMainAccounts(accounts: (VaultChainAccount | VaultShardAccount[])[]): VaultChainAccount[] {
-  return accounts.filter(account => {
-    return !accountUtils.isAccountWithShards(account) && account.keyType === KeyType.MAIN;
-  }) as VaultChainAccount[];
 }
 
 function getSignatoryName(
