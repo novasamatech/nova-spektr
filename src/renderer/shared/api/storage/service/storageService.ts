@@ -146,7 +146,7 @@ export const storageService = {
   proxies: new StorageService(dexieStorage.proxies),
   notifications: new StorageService(dexieStorage.notifications),
   metadata: new StorageService(dexieStorage.metadata),
-  balances: new StorageService(dexieStorage.balances),
+  balances: new StorageService(dexieStorage.balances2),
   basketTransactions: new StorageService(dexieStorage.basketTransactions),
   multisigOperations: new StorageService(dexieStorage.multisigOperations),
 };

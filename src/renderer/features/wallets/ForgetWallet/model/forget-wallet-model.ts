@@ -6,7 +6,6 @@ import { spread } from 'patronum';
 import { type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { accountService, accountSync, accounts } from '@/domains/network';
-import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { forgetService } from '../service';
@@ -102,15 +101,6 @@ sample({
     walletToHide: walletModel.walletHidden,
     walletsToRemove: walletsRemovedFx,
   }),
-});
-
-sample({
-  clock: walletsRemovedFx,
-  source: accounts.$list,
-  fn: (accounts, walletIds) => {
-    return accounts.filter((a) => walletIds.includes(a.walletId)).map((a) => a.accountId);
-  },
-  target: balanceModel.events.balancesRemoved,
 });
 
 sample({

@@ -1,3 +1,4 @@
+import { type BN } from '@polkadot/util';
 import { useCallback, useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
@@ -13,9 +14,17 @@ import { Address } from '../Address/Address';
 import { AssetBalance } from '../AssetBalance/AssetBalance';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
 
+function getAccount(v: { account: AnyAccount; balance: BN | string } | AnyAccount): AnyAccount {
+  return 'balance' in v ? v.account : v;
+}
+
+function getBalance(v: { account: AnyAccount; balance: BN | string } | AnyAccount) {
+  return 'balance' in v ? v.balance : '';
+}
+
 type Props = {
   signatory: AnyAccount | null;
-  signatories: { account: AnyAccount; balance: string }[];
+  signatories: { account: AnyAccount; balance: BN | string }[] | AnyAccount[];
   hasError: boolean;
   errorText: string;
   onChange: (signatory: AnyAccount) => void;
@@ -40,10 +49,10 @@ export const SignatorySelect = ({
 
   const selectSigner = useCallback(
     (signerId: string) => {
-      const selectedSigner = signatories.find(({ account: signer }) => signer.id === signerId);
+      const selectedSigner = signatories.find(v => getAccount(v).id === signerId);
       if (!selectedSigner) return;
 
-      onChange(selectedSigner.account);
+      onChange(getAccount(selectedSigner));
     },
     [onChange, signatories],
   );
@@ -73,7 +82,9 @@ export const SignatorySelect = ({
         height="md"
         onChange={value => selectSigner(value)}
       >
-        {signatories.map(({ account: signer, balance }) => {
+        {signatories.map(v => {
+          const signer = getAccount(v);
+          const balance = getBalance(v);
           const isShard = accountUtils.isVaultShardAccount(signer);
           const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
 
@@ -140,6 +151,8 @@ const NoSignatoryAlert = ({ initiator, allAccounts, chain, allWallets }: NoSigna
         <Trans
           t={t}
           i18nKey="operation.noSignatoryErrorDescription"
+          parent="span"
+          data-testid={TEST_IDS.VALIDATIONS.MISSING_ACCOUNT}
           values={{ network: chain.name }}
           components={{ wallet: component }}
         />

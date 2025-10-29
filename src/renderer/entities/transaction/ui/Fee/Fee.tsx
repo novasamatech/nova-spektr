@@ -2,13 +2,14 @@ import { type BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Asset } from '@/shared/core';
 import { AssetBalance } from '@/shared/ui-entities';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
 type Props = {
-  fee: BN | string;
+  fee: BN | string | null;
   isLoading?: boolean;
   asset: Asset;
   className?: string;
@@ -19,8 +20,8 @@ type Props = {
 export const Fee = memo(({ fee, isLoading, asset, showSymbol, hideFiat, className }: Props) => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-  if (isLoading) {
-    return <FeeLoader fiatFlag={Boolean(fiatFlag) && !hideFiat} />;
+  if (isLoading || !fee) {
+    return <FeeLoader testId={TEST_IDS.OPERATIONS.FEE_LOADER} fiatFlag={Boolean(fiatFlag) && !hideFiat} />;
   }
 
   return (

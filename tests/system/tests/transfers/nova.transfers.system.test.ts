@@ -19,8 +19,11 @@ test.describe('Regular nova transfers', { tag: ['@regular-nova-transfers', '@reg
       const chain = getChainByName(substrateChains, chainName);
       const transferModal = await assetsPage.openTransfer(chain, assetId);
 
-      await transferModal.fillAmount(amount);
       await transferModal.fillRecipient(recipient);
+      await transferModal.expectTransferFeeNotZero();
+
+      await transferModal.fillAmount(amount);
+
       const confirmationModal = await transferModal.openConfirmationModal();
       const signingModal = await confirmationModal.confirm();
 

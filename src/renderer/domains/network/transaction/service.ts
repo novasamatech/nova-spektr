@@ -95,21 +95,8 @@ async function unwrapTransaction(transaction: AnyTransaction, api: ApiPromise) {
 }
 
 function createExtrinsicFromCallData(callData: string, api: ApiPromise): Extrinsic {
-  try {
-    return api.tx(callData);
-  } catch {
-    const extrinsicCall = api.createType('Call', callData);
-    const { method, section } = api.registry.findMetaCall(extrinsicCall.callIndex);
-
-    const apiSection = api.tx[section];
-    if (!apiSection) throw new Error(`Section ${section} not found in api for chain ${api.genesisHash.toHex()}`);
-
-    const extrinsicFn = apiSection[method];
-    if (!extrinsicFn)
-      throw new Error(`Method ${section}.${method} not found in api for chain ${api.genesisHash.toHex()}`);
-
-    return extrinsicFn(...extrinsicCall.args);
-  }
+  const call = api.registry.createType('Call', callData);
+  return api.tx(call);
 }
 
 function createExtrinsic(transaction: AnyTransaction, api: ApiPromise): Extrinsic {
@@ -204,9 +191,9 @@ async function getExtrinsicFee(extrinsic: Extrinsic) {
   return partialFee.toBn();
 }
 
-async function getTransactionFee(transaction: AnyTransaction, api: ApiPromise) {
+async function getTransactionFee(transaction: AnyTransaction, signatory: AccountId, api: ApiPromise) {
   const extrinsic = createExtrinsic(transaction, api);
-  const { partialFee } = await extrinsic.paymentInfo(extrinsic.signer);
+  const { partialFee } = await extrinsic.paymentInfo(signatory);
   return partialFee.toBn();
 }
 
@@ -387,6 +374,7 @@ async function submitExtrinsic(
                       index: extrinsicIndex,
                       height: blockNumber.toNumber(),
                     },
+                    signature,
                     extrinsicHash: actualTxHash,
                     isFinalApprove,
                     multisigError,

@@ -3,7 +3,7 @@ import { BN_ZERO } from '@polkadot/util';
 import { createEffect, sample } from 'effector';
 import { createGate } from 'effector-react';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { type Chain, type ChainId, TransactionType } from '@/shared/core';
 import { getAssetById, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -48,6 +48,7 @@ const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis 
     deliveryFee: BN_ZERO,
     xcmFee: transaction.coreTx.args.xcmFee || '0',
     multisigDeposit: BN_ZERO,
+    balancePreservation: transaction.coreTx.type === TransactionType.TRANSFER ? 'keepAlive' : 'allowDeath',
   } satisfies TransferConfirmStore;
 });
 

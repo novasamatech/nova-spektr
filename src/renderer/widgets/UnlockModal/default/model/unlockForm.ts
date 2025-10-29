@@ -320,8 +320,8 @@ sample({
       chain: network!.chain,
       asset: network!.asset,
       totalLock,
-      fee: fee.toString(),
-      totalFee: fee.toString(),
+      fee: fee!.toString(),
+      totalFee: fee!.toString(),
       multisigDeposit: multisigDeposit.toString(),
     } satisfies FormSubmitEvent;
   },

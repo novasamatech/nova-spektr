@@ -14,17 +14,21 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubUtils } from '../lib/balance-sub-utils';
-import { type SubscriptionKey, type Subscriptions } from '../lib/types';
+import { type RequestedAccount, type SubscriptionKey, type Subscriptions } from '../lib/types';
 
 const subscribeWallet = createEvent<Wallet>();
 const unsubscribeWallet = createEvent<Wallet>();
 const fetchWallet = createEvent<Wallet>();
 
-const subscribeAccounts = createEvent<AnyAccount[]>();
-const unsubscribeAccounts = createEvent<AnyAccount[]>();
+const subscribeKnownAccounts = createEvent<AnyAccount[]>();
+// low level subscription
+const subscribeAccounts = createEvent<RequestedAccount[]>();
+const unsubscribeAccounts = createEvent<RequestedAccount[]>();
 const unsubscribeChain = createEvent<ChainId>();
 
 const fetchAccounts = createEvent<AnyAccount[]>();
+// low level request
+const fetchAccountIds = createEvent<RequestedAccount[]>();
 
 const updateBalances = createEvent<Omit<BalanceDraft, 'id'>[]>();
 
@@ -32,7 +36,7 @@ const updateBalances = createEvent<Omit<BalanceDraft, 'id'>[]>();
 const $subscriptions = createStore<Subscriptions>({});
 // subscribed accounts. this array exists because some chain can be in disconnected status and $subscriptions
 // doesn't represent subscription intention.
-const $subscribedAccounts = createStore<AnyAccount[]>([]);
+const $subscribedAccounts = createStore<RequestedAccount[]>([]);
 
 // effects
 
@@ -48,11 +52,7 @@ const fetchAccountsFx = createEffect(async ({ api, chain, accounts }: FetchAccou
   ]).then(([balances, lockBalances]) => balances.concat(lockBalances));
 });
 
-type SubscribeAccountParam = {
-  api: ApiPromise;
-  chain: Chain;
-  accountId: AccountId;
-};
+type SubscribeAccountParam = RequestedAccount & { api: ApiPromise };
 const subscribeAccountsFx = createEffect((subscriptions: SubscribeAccountParam[]) => {
   const boundUpdate = scopeBind(updateBalances, { safe: true });
   const result: Record<SubscriptionKey, VoidFunction> = {};
@@ -87,7 +87,7 @@ const unsubscribeFx = createEffect(({ keys, subscriptions }: UnsubscribeAccounts
 
 sample({
   clock: updateBalances,
-  target: balanceModel.events.balancesUpdated,
+  target: balanceModel.balancesUpdated,
 });
 
 // subscriptions updating
@@ -114,7 +114,7 @@ sample({
 const accountsUnsubscribed = sample({
   clock: unsubscribeAccounts,
   source: {
-    chains: networkModel.$chains,
+    chains: networkModel.$chainsList,
     subscriptions: $subscriptions,
   },
   fn({ subscriptions, chains }, accounts) {
@@ -171,11 +171,11 @@ sample({
   clock: subscribeWallet,
   source: {
     accounts: walletModel.$availableAccounts,
-    chains: networkModel.$chains,
+    chains: networkModel.$chainsList,
   },
   fn({ accounts, chains }, wallet) {
     const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
-    return balanceSubUtils.getSiblingAccounts(walletAccounts, accounts, Object.values(chains));
+    return balanceSubUtils.getSiblingAccounts(walletAccounts, accounts, chains);
   },
   target: subscribeAccounts,
 });
@@ -184,11 +184,11 @@ sample({
   clock: unsubscribeWallet,
   source: {
     accounts: walletModel.$availableAccounts,
-    chains: networkModel.$chains,
+    chains: networkModel.$chainsList,
   },
   fn({ accounts, chains }, wallet) {
     const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
-    return balanceSubUtils.getSiblingAccounts(walletAccounts, accounts, Object.values(chains));
+    return balanceSubUtils.getSiblingAccounts(walletAccounts, accounts, chains);
   },
   target: unsubscribeAccounts,
 });
@@ -208,11 +208,18 @@ sample({
 // fetch balances when a wallet is created
 sample({
   clock: walletModel.createWallet.doneData.filter({ fn: nonNullable }),
-  fn: ({ wallet }) => wallet as Wallet,
+  fn: ({ wallet }) => wallet,
   target: fetchWallet,
 });
 
 // account subscriptions
+
+sample({
+  clock: subscribeKnownAccounts,
+  source: networkModel.$chainsList,
+  fn: (chains, accounts) => balanceSubUtils.getRequestedAccounts(accounts, chains),
+  target: subscribeAccounts,
+});
 
 sample({
   clock: subscribeAccounts,
@@ -222,30 +229,28 @@ sample({
     chains: networkModel.$chains,
     statuses: networkModel.$connectionStatuses,
   },
-  fn({ subscriptions, chains, apis, statuses }, accounts) {
-    if (accounts.length === 0) return [];
-
+  fn({ subscriptions, chains, apis, statuses }, requests) {
     const params: Record<string, SubscribeAccountParam> = {};
 
     for (const [chainId, status] of entries(statuses)) {
       if (!networkUtils.isConnectedStatus(status)) continue;
 
-      const api = apis[chainId];
-      const chain = chains[chainId];
-      if (nullable(api) || nullable(chain)) continue;
+      for (const request of requests) {
+        if (request.chain.chainId !== chainId) continue;
 
-      for (const account of accounts) {
-        if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
+        const api = apis[chainId];
+        const chain = chains[chainId];
+        if (nullable(api) || nullable(chain)) continue;
 
-        const key = balanceSubUtils.getSubscriptionKey(account.accountId, chainId);
-        if (params[key] || subscriptions[key]) {
+        const key = balanceSubUtils.getSubscriptionKey(request.accountId, chainId);
+        if (subscriptions[key] || params[key]) {
           continue;
         }
 
         params[key] = {
           api,
           chain,
-          accountId: account.accountId,
+          accountId: request.accountId,
         };
       }
     }
@@ -262,8 +267,10 @@ sample({
   clock: unsubscribeAccounts,
   source: $subscribedAccounts,
   fn(subscribed, removed) {
-    const removedIds = removed.map((a) => a.id);
-    return subscribed.filter((s) => !removedIds.includes(s.id));
+    const removedIds = removed.map((a) => balanceSubUtils.getSubscriptionKey(a.accountId, a.chain.chainId));
+    return subscribed.filter((s) => {
+      return !removedIds.includes(balanceSubUtils.getSubscriptionKey(s.accountId, s.chain.chainId));
+    });
   },
   target: $subscribedAccounts,
 });
@@ -275,7 +282,7 @@ sample({
     return merge({
       a: subscribed,
       b: accounts,
-      mergeBy: (a) => a.id,
+      mergeBy: (a) => balanceSubUtils.getSubscriptionKey(a.accountId, a.chain.chainId),
     });
   },
   target: $subscribedAccounts,
@@ -300,16 +307,16 @@ sample({
 
     const params: SubscribeAccountParam[] = [];
 
-    for (const account of subscribedAccounts) {
-      const key = balanceSubUtils.getSubscriptionKey(account.accountId, chainId);
+    for (const subscribed of subscribedAccounts) {
+      const key = balanceSubUtils.getSubscriptionKey(subscribed.accountId, chainId);
       if (nonNullable(subscriptions[key])) continue;
 
-      if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
+      if (chain.chainId !== subscribed.chain.chainId) continue;
 
       params.push({
         api,
         chain,
-        accountId: account.accountId,
+        accountId: subscribed.accountId,
       });
     }
 
@@ -331,24 +338,31 @@ sample({
   clock: fetchWallet,
   source: {
     accounts: walletModel.$availableAccounts,
-    chains: networkModel.$chains,
+    chains: networkModel.$chainsList,
   },
   fn({ accounts, chains }, wallet) {
     const walletAccounts = accountService.filterAccountsByWallet(accounts, wallet.id);
-    return balanceSubUtils.getSiblingAccounts(walletAccounts, accounts, Object.values(chains));
+    return balanceSubUtils.getSiblingAccounts(walletAccounts, accounts, chains);
   },
-  target: fetchAccounts,
+  target: fetchAccountIds,
 });
 
 sample({
   clock: fetchAccounts,
+  source: networkModel.$chainsList,
+  fn: (chains, accounts) => balanceSubUtils.getRequestedAccounts(accounts, chains),
+  target: fetchAccountIds,
+});
+
+sample({
+  clock: fetchAccountIds,
   source: {
     apis: networkModel.$apis,
     chains: networkModel.$chains,
     statuses: networkModel.$connectionStatuses,
   },
-  fn({ chains, apis, statuses }, accounts) {
-    if (accounts.length === 0) return [];
+  fn({ chains, apis, statuses }, requests) {
+    if (requests.length === 0) return [];
 
     const params: FetchAccountParam[] = [];
 
@@ -361,10 +375,10 @@ sample({
 
       const accountIds: AccountId[] = [];
 
-      for (const account of accounts) {
-        if (!accountService.isAccountAvailableOnChain(account, chain)) continue;
-
-        accountIds.push(account.accountId);
+      for (const request of requests) {
+        if (request.chain.chainId === chainId) {
+          accountIds.push(request.accountId);
+        }
       }
 
       if (accountIds.length > 0) {
@@ -386,10 +400,19 @@ sample({
   target: updateBalances,
 });
 
+// removing old balances
+
+sample({
+  clock: walletModel.$availableAccounts,
+  fn: (accounts) => ({ existingAccounts: accounts.map((a) => a.accountId) }),
+  target: balanceModel.clearUnwantedBalances,
+});
+
 export const balanceSubModel = {
   subscribeWallet,
   unsubscribeWallet,
 
+  subscribeKnownAccounts,
   subscribeAccounts,
   unsubscribeAccounts,
 

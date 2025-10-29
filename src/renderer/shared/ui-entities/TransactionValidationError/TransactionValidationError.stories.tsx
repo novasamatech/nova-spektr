@@ -1,4 +1,4 @@
-import { BN_MILLION, BN_THOUSAND } from '@polkadot/util';
+import { BN_MILLION, BN_THOUSAND, BN_ZERO } from '@polkadot/util';
 import { type Meta, type StoryObj } from '@storybook/react-vite';
 
 import { type Balance as BalanceType } from '@/shared/core';
@@ -49,6 +49,7 @@ export const Balance: Story = {
           balance: {} as BalanceType,
           required: BN_THOUSAND,
           imbalance: BN_THOUSAND,
+          burned: BN_ZERO,
         },
         action: 'fee',
         asset: dotAsset,
@@ -72,6 +73,7 @@ export const Multiple: Story = {
           balance: {} as BalanceType,
           required: BN_MILLION,
           imbalance: BN_MILLION,
+          burned: BN_ZERO,
         },
         action: 'fee',
         asset: dotAsset,
@@ -84,6 +86,7 @@ export const Multiple: Story = {
           balance: {} as BalanceType,
           required: BN_MILLION,
           imbalance: BN_MILLION,
+          burned: BN_ZERO,
         },
         action: 'fee',
         asset: dotAsset,
@@ -96,6 +99,7 @@ export const Multiple: Story = {
           balance: {} as BalanceType,
           required: BN_MILLION,
           imbalance: BN_MILLION,
+          burned: BN_ZERO,
         },
         action: 'fee',
         asset: kusamaAsset,
@@ -107,6 +111,7 @@ export const Multiple: Story = {
           balance: {} as BalanceType,
           required: BN_MILLION,
           imbalance: BN_MILLION,
+          burned: BN_ZERO,
         },
         action: 'multisig deposit',
         asset: kusamaAsset,
