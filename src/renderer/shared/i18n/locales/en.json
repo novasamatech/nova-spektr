@@ -74,6 +74,10 @@
     "searchPlaceholder": "Search",
     "title": "Address Book"
   },
+  "common": {
+    "or": "or",
+    "continue": "Continue"
+  },
   "assetBalance": {
     "locked": "Locked",
     "number": "{value, number}",
@@ -764,9 +768,50 @@
         "evidence": {
           "label": "Evidence text",
           "placeholder": "Enter more about the work you did, add links, and tell about your future work plans",
-          "required": "Evidence are required"
+          "required": "Evidence URL/hash or file is required"
         },
-        "uploadError": "Upload error"
+        "uploadError": "Upload error",
+        "fetchError": "Failed to fetch content from IPFS",
+        "required": "Please provide either a hash/URL or select a file"
+      },
+      "evidence": {
+        "submitOptions": {
+          "fromScratch": "From scratch",
+          "uploadFromIPFS": "Upload from IPFS"
+        },
+        "fromScratch": {
+          "step1": "Write report",
+          "step2": "Review and submit"
+        },
+        "ipfsUpload": {
+          "title": "Upload Evidence from IPFS",
+          "description": "You can either input an IPFS hash/URL or upload a markdown file directly.",
+          "inputHash": "Input Hash/URL",
+          "uploadFile": "Upload File",
+          "hashLabel": "Report hash",
+          "hashPlaceholder": "Enter hash/URL",
+          "hashPlaceholderOptional": "Enter IPFS hash or URL (optional)",
+          "fileLabel": "Select File",
+          "selectedFile": "Selected: {name}",
+          "dragDropFile": "Select *.md file on your computer",
+          "fileHint": "Supports .md and .txt files",
+          "submit": "Process",
+          "step1": "Upload report",
+          "step2": "Review and submit",
+          "validationError": "Please enter a URL/hash or import a file"
+        },
+        "preview": {
+          "title": "Preview Evidence",
+          "description": "Review your evidence before submitting.",
+          "edit": "Edit",
+          "confirm": "Confirm & Submit",
+          "step2": "Review and submit",
+          "back": "Back"
+        },
+        "uploadingToIPFS": "Uploading to IPFS...",
+        "uploadSuccess": "Upload successful",
+        "fetchingContent": "Fetching content from IPFS...",
+        "validating": "Validating..."
       },
       "modalTitle": "Evidence & Salary",
       "promotionApplied": "Applied for promotion:",
