@@ -13,6 +13,7 @@ type Step = 'idle' | 'signing' | 'rejected' | 'failed' | 'success';
 
 export type SignResponse = {
   signature: HexString;
+  signedTransaction?: Uint8Array | HexString;
   txPayload: ReturnType<typeof transactionService.createPayloadWithMetadata>;
 };
 
@@ -41,10 +42,11 @@ const signFx = createEffect(async ({ api, extrinsic, signatory }: ExtrinsicSigni
   assert(signPayload, 'Signer not found');
 
   // @ts-expect-error No types for signPayload method
-  const { signature } = await signPayload(txPayload.unsigned);
+  const { signature, signedTransaction } = await signPayload(txPayload.unsigned);
 
   return {
     signature,
+    signedTransaction,
     txPayload: txPayload,
   };
 });

@@ -3,8 +3,7 @@ import { createGate } from 'effector-react';
 
 import { type Wallet } from '@/shared/core';
 import { type AnyAccount } from '@/domains/network';
-import { balanceModel } from '@/entities/balance';
-import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletConnect } from '@/features/wallet-connect-wallet';
 import { ForgetStep } from '../lib/constants';
 
@@ -14,17 +13,6 @@ const forget = createEvent<Wallet>();
 const abort = createEvent();
 
 const $forgetStep = createStore<ForgetStep>(ForgetStep.NOT_STARTED).reset(flow.close);
-
-sample({
-  clock: forget,
-  source: walletModel.$wallets,
-  fn: (wallets, wallet) => {
-    const accounts = walletUtils.getAccountsBy(wallets, account => account.walletId === wallet.id);
-
-    return accounts.map(account => account.accountId);
-  },
-  target: balanceModel.events.balancesRemoved,
-});
 
 // TODO simplify
 sample({

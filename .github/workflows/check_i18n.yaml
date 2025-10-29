@@ -18,5 +18,5 @@ jobs:
       - name: ⚙️Install dependencies
         uses: ./.github/workflows/install-pnpm
 
-      - name: 🔪 Check by typescript
+      - name: 🔪 Check i18n
         run: pnpm run i18n:check:strict

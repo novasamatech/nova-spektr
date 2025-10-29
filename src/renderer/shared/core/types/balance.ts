@@ -3,7 +3,7 @@ import { type z } from 'zod';
 
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-import { type AssetId } from './asset';
+import { type AssetId, type AssetType } from './asset';
 import { type ChainId } from './general';
 
 export type TransferableMode =
@@ -24,14 +24,22 @@ export type Balance = AssetBalance & {
   chainId: ChainId;
   accountId: AccountId;
   assetId: AssetId;
-  ed: BN;
+  assetType: AssetType;
+  providers: number;
+  consumers: number;
+  sufficients: number;
   transferableMode: TransferableMode;
+  ed: BN;
 };
 
 export type BalanceDraft = Partial<AssetBalance> & {
   chainId: ChainId;
   accountId: AccountId;
   assetId: AssetId;
+  assetType: AssetType;
+  providers?: number;
+  consumers?: number;
+  sufficients?: number;
   transferableMode?: TransferableMode;
   ed?: BN;
 };

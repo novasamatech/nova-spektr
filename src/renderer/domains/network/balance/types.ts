@@ -21,10 +21,12 @@ export type BalanceUpdateResult =
       success: true;
       required: BN;
       balance: Balance;
+      burned: BN;
     }
   | {
       success: false;
       imbalance: BN;
       required: BN;
       balance: Balance;
+      burned: BN;
     };

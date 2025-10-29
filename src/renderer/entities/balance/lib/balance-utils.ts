@@ -70,11 +70,15 @@ function completeBalance(id: BalanceId, balance: Balance | BalanceDraft): Balanc
     id,
     accountId: balance.accountId,
     assetId: balance.assetId,
+    assetType: balance.assetType,
     chainId: balance.chainId,
     free: balance.free ?? BN_ZERO,
     frozen: balance.frozen ?? BN_ZERO,
     reserved: balance.reserved ?? BN_ZERO,
     locked: balance.locked ?? [],
+    providers: balance.providers ?? 0,
+    consumers: balance.consumers ?? 0,
+    sufficients: balance.sufficients ?? 0,
     ed: balance.ed ?? BN_ZERO,
     transferableMode: balance.transferableMode ?? 'legacy',
   };
@@ -85,11 +89,15 @@ function mergeTwoBalances(id: BalanceId, a: Balance | BalanceDraft, b: Balance |
     id,
     chainId: a.chainId,
     assetId: a.assetId,
+    assetType: a.assetType,
     accountId: a.accountId,
     free: b.free ?? a.free ?? BN_ZERO,
     frozen: b.frozen ?? a.frozen ?? BN_ZERO,
     reserved: b.reserved ?? a.reserved ?? BN_ZERO,
     locked: b.locked ?? a.locked ?? [],
+    providers: b.providers ?? a.providers ?? 0,
+    consumers: b.consumers ?? a.consumers ?? 0,
+    sufficients: b.sufficients ?? a.sufficients ?? 0,
     ed: b.ed ?? a.ed ?? BN_ZERO,
     transferableMode: b.transferableMode ?? a.transferableMode ?? 'legacy',
   };
@@ -105,6 +113,9 @@ function areValuesAreTheSame(balance: Balance, draft: BalanceDraft) {
     (nullable(draft.frozen) || balance.frozen.eq(draft.frozen)) &&
     (nullable(draft.reserved) || balance.reserved.eq(draft.reserved)) &&
     (nullable(draft.ed) || balance.ed.eq(draft.ed)) &&
+    (nullable(draft.providers) || balance.providers === draft.providers) &&
+    (nullable(draft.consumers) || balance.consumers === draft.consumers) &&
+    (nullable(draft.sufficients) || balance.sufficients === draft.sufficients) &&
     (nullable(draft.transferableMode) || balance.transferableMode === draft.transferableMode) &&
     (nullable(draft.locked) || isEqual(balance.locked, draft.locked))
   );

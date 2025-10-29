@@ -1,7 +1,7 @@
 import { attach, combine, createApi, createEvent, createStore, sample } from 'effector';
 import { cloneDeep } from 'lodash';
 
-import { type Wallet } from '@/shared/core';
+import { type VaultChainAccount, type VaultShardAccount, type Wallet } from '@/shared/core';
 import { nullable } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -12,11 +12,9 @@ import { shardsUtils } from '../lib/shards-utils';
 import {
   type AccountToggleParams,
   type ChainToggleParams,
+  type RootStruct,
   type RootToggleParams,
-  type RootTuple,
   type SelectedStruct,
-  type ShardToggleParams,
-  type ShardedToggleParams,
 } from '../lib/types';
 
 export type Callbacks = {
@@ -37,8 +35,6 @@ const allToggled = createEvent<boolean>();
 const rootToggled = createEvent<RootToggleParams>();
 const chainToggled = createEvent<ChainToggleParams>();
 const accountToggled = createEvent<AccountToggleParams>();
-const shardedToggled = createEvent<ShardedToggleParams>();
-const shardToggled = createEvent<ShardToggleParams>();
 
 const $query = createStore<string>('');
 const $isModalOpen = createStore<boolean>(false);
@@ -57,7 +53,7 @@ const $filteredAccounts = combine(
     wallet: walletSelect.$selectedWallet,
     chains: networkModel.$chains,
   },
-  ({ query, wallet, chains }): AnyAccount[] => {
+  ({ query, wallet, chains }): (VaultChainAccount | VaultShardAccount)[] => {
     if (nullable(wallet) || !walletUtils.isPolkadotVault(wallet)) return [];
 
     return shardsUtils.getFilteredAccounts(wallet.accounts, chains, query);
@@ -71,11 +67,10 @@ const $shardsStructure = combine(
     accounts: $filteredAccounts,
     chains: networkModel.$chains,
   },
-  ({ proceed, wallet, accounts, chains }): RootTuple[] => {
-    if (!proceed || nullable(wallet) || !walletUtils.isPolkadotVault(wallet)) return [];
+  ({ proceed, wallet, accounts, chains }): RootStruct | null => {
+    if (!proceed || nullable(wallet) || !walletUtils.isPolkadotVault(wallet)) return null;
 
-    const chainsMap = shardsUtils.getChainsMap<AnyAccount>(chains);
-    return shardsUtils.getStructForVault(wallet.rootAccountId, wallet.name, accounts, chainsMap);
+    return shardsUtils.getStructForVault(wallet.rootAccountId, wallet.name, accounts, chains);
   },
 );
 
@@ -159,20 +154,6 @@ sample({
 });
 
 sample({
-  clock: shardedToggled,
-  source: $selectedStructure,
-  fn: (struct, params) => selectorUtils.getSelectedSharded(struct, params),
-  target: $selectedStructure,
-});
-
-sample({
-  clock: shardToggled,
-  source: $selectedStructure,
-  fn: (struct, params) => selectorUtils.getSelectedShard(struct, params),
-  target: $selectedStructure,
-});
-
-sample({
   clock: accountToggled,
   source: $selectedStructure,
   fn: (struct, params) => selectorUtils.getSelectedAccount(struct, params),
@@ -197,8 +178,6 @@ export const shardsModel = {
     allToggled,
     rootToggled,
     chainToggled,
-    shardedToggled,
-    shardToggled,
     accountToggled,
     shardsConfirmed,
     structureRequested,

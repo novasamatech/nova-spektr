@@ -29,9 +29,7 @@ const AlertRoot = ({
   dataTestId = 'alert',
   onClose,
 }: PropsWithChildren<Props>) => {
-  if (!active) {
-    return null;
-  }
+  if (active === false) return null;
 
   const isList = Children.toArray(children).length > 0;
 
@@ -40,17 +38,19 @@ const AlertRoot = ({
       data-testid={dataTestId}
       className={cnTw('w-full rounded-lg border p-[15px]', ViewStyle[variant], wrapperClassName)}
     >
-      <div className="flex items-start gap-x-1.5">
+      <div className="flex items-start gap-x-1.5 text-text-primary">
         <div className="flex max-w-full flex-1 flex-col gap-y-1">
           <div className="flex items-center gap-x-2">
             <Icon name={IconName[variant]} size={14} className={IconStyle[variant]} />
             <HeadlineText>{title}</HeadlineText>
           </div>
-          {isList ? (
-            <ul className={cnTw('flex list-none flex-col gap-y-1 pl-5.5', className)}>{children}</ul>
-          ) : (
-            children
-          )}
+          <div className="flex w-full flex-col gap-1 text-footnote tracking-tight">
+            {isList ? (
+              <ul className={cnTw('flex list-none flex-col gap-y-1 pl-5.5', className)}>{children}</ul>
+            ) : (
+              children
+            )}
+          </div>
         </div>
 
         {onClose && <IconButton size={14} name="close" onClick={onClose} />}

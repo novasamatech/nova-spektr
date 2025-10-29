@@ -6,6 +6,7 @@ import { BaseModal } from '../BaseModalWindow';
 import { type BasePage } from '../BasePage';
 import { MultisigModalElements } from '../_elements/MultisigModalElements';
 import { type WalletModalElements } from '../_elements/WalletModalElements';
+import { DelegateAuthorityModalWindow } from '../modals/DelegateAuthorityModalWindow';
 
 import { MultisigModalWindow } from './MultisigModalWindow';
 
@@ -32,5 +33,68 @@ export class WalletModalWindow extends BaseModal<WalletModalElements> {
     });
 
     return new MultisigModalWindow(this.page, new MultisigModalElements(), this.previousPage);
+  }
+
+  public async searchWallet(walletname: string): Promise<WalletModalWindow> {
+    return await step(`Search wallet ${walletname} in wallets list`, async () => {
+      await this.page.getByTestId(TEST_IDS.WALLET_MANAGEMENT.WALLET_SEARCH).fill(walletname);
+
+      return this;
+    });
+  }
+
+  public async selectWallet(walletname: string): Promise<WalletModalWindow> {
+    return await step(`Select wallet ${walletname} from the wallets list`, async () => {
+      await this.page
+        .getByTestId(TEST_IDS.WALLET_MANAGEMENT.WALLET_ITEM)
+        .filter({ hasText: walletname })
+        .first()
+        .click();
+
+      return this;
+    });
+  }
+
+  public async openWalletDetails(walletName: string): Promise<WalletModalWindow> {
+    return await step(`Open wallet details modal for ${walletName} from the wallets list`, async () => {
+      await this.searchWallet(walletName);
+      await this.page.getByTestId(TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ACTIONS).click();
+      await this.page.getByTestId(TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ITEM_VIEW_DETAILS).click();
+
+      return this;
+    });
+  }
+
+  public async openDelegateProxyModal(walletName: string): Promise<DelegateAuthorityModalWindow> {
+    return await step(`Open delegate proxy modal for ${walletName} from the wallets list`, async () => {
+      await this.searchWallet(walletName);
+      await this.page.getByTestId(TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ACTIONS).click();
+      await this.page.getByTestId(TEST_IDS.WALLET_MANAGEMENT.DROPDOWN_ITEM_DELEGATE).click();
+
+      return new DelegateAuthorityModalWindow(this.page, this);
+    });
+  }
+
+  public async closeWalletManagement(): Promise<BasePage> {
+    return await step('Close Wallet Management modal', async () => {
+      await this.page.getByTestId(TEST_IDS.COMMON.WALLET_BUTTON).click({ force: true });
+
+      await this.page
+        .getByTestId(TEST_IDS.WALLET_MANAGEMENT.WALLET_SEARCH)
+        .waitFor({ state: 'hidden' })
+        .catch(() => {});
+
+      return this.previousPage;
+    });
+  }
+
+  public async searchAndSelectWallet(walletname: string): Promise<BasePage> {
+    return await step(`Search and select wallet ${walletname} in the list of wallets`, async () => {
+      await this.searchWallet(walletname);
+      await this.selectWallet(walletname);
+      await this.closeWalletManagement();
+
+      return this.previousPage;
+    });
   }
 }

@@ -56,10 +56,6 @@ type ConvertParams = {
   apis: Record<ChainId, ApiPromise>;
 };
 
-/**
- * Some batch extrinsics can be too large for network. in this case we're
- * splitting them into multiple chunks.
- */
 const convertOldFormatToNewFx = createEffect(({ input, apis }: ConvertParams) => {
   const { signingPayloads } = input;
   const converted = signingPayloads.map<TransactionSigningPayload>(({ transaction, account, signatory, chain }) => {
@@ -169,7 +165,8 @@ export const signModel = {
 
   events: {
     /**
-     * @deprecated Use signModel.init instead
+     * @deprecated Use signModel.init instead. New method requires
+     *   AnyTransaction type in tx.
      */
     formInitiated,
   },

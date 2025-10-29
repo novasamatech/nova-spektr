@@ -30,6 +30,9 @@ const testKeyring = createTestKeyring();
 
 export const polkadotChainId: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 export const kusamaChainId: ChainId = '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe';
+export const polkadotAssetHubChainId: ChainId = '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f';
+export const kusamaAssetHubChainId: ChainId = '0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a';
+export const polkadotBifrostChainId: ChainId = '0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b';
 
 export const dotAsset: Asset = {
   assetId: 0 as AssetId,

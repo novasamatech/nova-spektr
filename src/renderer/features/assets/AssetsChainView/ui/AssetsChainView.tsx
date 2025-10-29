@@ -7,24 +7,24 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { includesMultiple, nullable } from '@/shared/lib/utils';
 import { Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService } from '@/domains/network';
 import { AssetsListView, EmptyAssetsState } from '@/entities/asset';
 import { balanceModel } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
 import { currencyModel, priceProviderModel } from '@/entities/price';
-import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 import { NetworkAssets } from './NetworkAssets/NetworkAssets';
 
 type Props = {
   query: string;
-  activeShards: AnyAccount[];
+  visibleAccounts: AnyAccount[];
   hideZeroBalances: boolean;
   assetsView: AssetsListView;
 };
-export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsView }: Props) => {
+export const AssetsChainView = ({ query, visibleAccounts, hideZeroBalances, assetsView }: Props) => {
   const activeWallet = useUnit(walletSelect.$selectedWallet);
+  const activeWalletAccounts = useUnit(walletSelect.$selectedAccounts);
   const balances = useUnit(balanceModel.$balanceMap);
 
   const assetsPrices = useUnit(priceProviderModel.$assetsPrices);
@@ -39,31 +39,23 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
   const { list, isLoading } = useDeferredList({ list: filteredChains, forceFirstRender: true });
 
   useEffect(() => {
-    if (!activeWallet || assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) return;
+    if (assetsView !== AssetsListView.CHAIN_CENTRIC || !visibleAccounts.length) return;
 
-    const isMultisig = walletUtils.isMultisig(activeWallet);
+    const visibleAccountIds = new Set(visibleAccounts.map((a) => a.accountId));
 
-    const filteredChains = [];
-    for (const chain of Object.values(chains)) {
+    const filteredChains = Object.values(chains).filter((chain) => {
       const connection = connections[chain.chainId];
 
-      if (nullable(connection)) continue;
-      if (networkUtils.isDisabledConnection(connection)) continue;
-
-      for (const account of activeWallet.accounts) {
-        if (
-          !activeShards.find((a) => a.accountId === account.accountId) ||
-          !accountUtils.isNonBaseVaultAccount(account, activeWallet) ||
-          !accountUtils.isChainAndCryptoMatch(account, chain)
-        )
-          continue;
-
-        if (!isMultisig || networkUtils.isMultisigSupported(chain.options)) {
-          filteredChains.push(chain);
-          break;
-        }
+      if (nullable(connection) || networkUtils.isDisabledConnection(connection)) {
+        return false;
       }
-    }
+
+      return activeWalletAccounts.some((account) => {
+        if (!visibleAccountIds.has(account.accountId)) return false;
+
+        return accountService.isAccountAvailableOnChain(account, chain);
+      });
+    });
 
     const sortedChains = chainsService.sortChainsByBalance(
       filteredChains,
@@ -73,7 +65,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     );
 
     setSortedChains(sortedChains);
-  }, [activeWallet, balances, assetsPrices, assetsView, connections, activeShards]);
+  }, [activeWalletAccounts, balances, assetsPrices, assetsView, connections, visibleAccounts]);
 
   useEffect(() => {
     let filteredChains: Chain[] = [];
@@ -112,7 +104,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
     }
   }, [sortedChains, query]);
 
-  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !activeShards.length) {
+  if (assetsView !== AssetsListView.CHAIN_CENTRIC || !visibleAccounts.length) {
     return null;
   }
 
@@ -129,7 +121,7 @@ export const AssetsChainView = ({ query, activeShards, hideZeroBalances, assetsV
           <NetworkAssets
             key={chain.chainId}
             chain={chain}
-            accounts={activeShards}
+            accounts={visibleAccounts}
             hideZeroBalances={hideZeroBalances}
             query={query}
             wallet={activeWallet}

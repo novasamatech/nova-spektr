@@ -377,13 +377,13 @@ sample({
     fee: $fee,
     multisigDeposit: $multisigDeposit,
   },
-  filter: ({ network }) => nonNullable(network),
+  filter: ({ network, fee }) => nonNullable(network) && nonNullable(fee),
   fn: ({ network, fee, multisigDeposit }, formData) => {
     const amount = formatAmount(formData.amount, network!.asset.precision);
 
     return {
-      fee: fee.toString(),
-      totalFee: fee.toString(),
+      fee: fee!.toString(),
+      totalFee: fee!.toString(),
       multisigDeposit,
       ...formData,
       amount,

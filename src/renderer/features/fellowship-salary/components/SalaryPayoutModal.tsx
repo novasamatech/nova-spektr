@@ -107,14 +107,16 @@ export const SalaryPayoutModal = ({ disabled, children }: Props) => {
 
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              <SalaryPayoutConfirmation
-                beneficiary={beneficiary}
-                asset={input.asset}
-                chain={input.chain}
-                wallets={input.wallets}
-                account={account}
-                fee={fee}
-              />
+              {nonNullable(fee) && (
+                <SalaryPayoutConfirmation
+                  beneficiary={beneficiary}
+                  asset={input.asset}
+                  chain={input.chain}
+                  wallets={input.wallets}
+                  account={account}
+                  fee={fee}
+                />
+              )}
             </Box>
             <Modal.Footer>
               {wallet && basketUtils.isBasketAvailable(wallet) && (

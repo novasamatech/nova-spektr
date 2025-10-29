@@ -14,6 +14,7 @@ type Props = {
   size: 'sm' | 'md' | 'mdlg' | 'lg' | 'xl' | 'xxl' | 'full' | 'fit';
   height?: 'full' | 'lg' | 'fit';
   testId?: string;
+  preventOutsideClick?: boolean;
   onToggle?: (open: boolean) => void;
 };
 
@@ -24,6 +25,7 @@ const Root = ({
   children,
   onToggle,
   testId = 'Modal',
+  preventOutsideClick = false,
 }: PropsWithChildren<Props>) => {
   const { portalContainer } = useTheme();
 
@@ -70,6 +72,7 @@ const Root = ({
                 'h-modal': height === 'lg',
               },
             )}
+            onInteractOutside={preventOutsideClick ? e => e.preventDefault() : undefined}
           >
             {hasTitle ? null : <Dialog.Title hidden />}
             {modalNodes}

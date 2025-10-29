@@ -3,6 +3,8 @@ import { attach, createEvent, createStore, sample } from 'effector';
 import { type Chain, type DraftAccount, type ID, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { accountSync, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { polkadotVaultService } from '@/features/polkadot-vault-wallet';
+import { type DerivationKeyDraft } from '@/features/wallets';
 
 type AccountsCreatedParams = {
   walletId: ID;
@@ -13,7 +15,7 @@ const shardsCleared = createEvent();
 const accountsCreated = createEvent<AccountsCreatedParams>();
 
 const keysRemoved = createEvent<(VaultChainAccount | VaultShardAccount)[]>();
-const keysAdded = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
+const keysAdded = createEvent<DerivationKeyDraft[]>();
 
 const $shards = createStore<VaultShardAccount[]>([]).reset(shardsCleared);
 const $chain = createStore<Chain>({} as Chain).reset(shardsCleared);
@@ -40,7 +42,9 @@ sample({
 
 sample({
   clock: keysAdded,
-  filter: keys => keys.length > 0,
+  source: networkModel.$chains,
+  filter: (_, draftKeys) => draftKeys.length > 0,
+  fn: (chains, draftKeys) => polkadotVaultService.populateDraftAccounts(draftKeys, chains),
   target: $keysToAdd,
 });
 

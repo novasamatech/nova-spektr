@@ -1,25 +1,27 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { delay, spread } from 'patronum';
+import { and, delay, not, or, spread } from 'patronum';
 
 import { proxyService } from '@/shared/api/proxy';
 import { type FlexibleMultisigOperationNotification, type NoID, NotificationType, type Wallet } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
-import { Step, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
+import { Step, assert, nonNullable, nullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import {
   createComplexTxStore,
+  createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
 } from '@/shared/transactions';
-import { accountService, accounts, balanceService } from '@/domains/network';
-import { balanceModel } from '@/entities/balance';
+import { accountService, accounts, balanceService, multisigOperation } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
-import { transactionBuilder } from '@/entities/transaction';
+import { isEditFlexibleTransaction, transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
@@ -49,6 +51,8 @@ const $flexibleMultisigAccount = $walletAccounts.map((acc) => acc.find(accountUt
 const $chainId = $flexibleMultisigAccount.map((acc) => acc?.chainId ?? null);
 const $chain = combine($chainId, networkModel.$chains, (chainId, chains) => (chainId ? chains[chainId] : null));
 
+// signatories
+
 const $walletSignatories = combine($flexibleMultisigAccount, accounts.$list, (account, accounts) => {
   if (!account) return null;
 
@@ -61,29 +65,6 @@ const $walletSignatories = combine($flexibleMultisigAccount, accounts.$list, (ac
     const bExists = ownAccounts.some((acc) => acc.accountId === b.accountId);
     return Number(bExists) - Number(aExists);
   });
-});
-
-type ProxyParams = {
-  api: ApiPromise;
-  accountId: AccountId;
-};
-
-const { $: $proxiesInfo } = createStoreFromEffect({
-  fn: ({ api, accountId }: ProxyParams) => {
-    return proxyService.getProxiesForAccount(api, accountId);
-  },
-  params: {
-    api: formModel.$api,
-    accountId: $flexibleMultisigAccount.map((account) => account?.accountId ?? null),
-  },
-  defaultValue: null,
-});
-
-sample({
-  clock: flow.open,
-  source: $chain,
-  filter: (chain) => nonNullable(chain),
-  target: formModel.populateForm,
 });
 
 sample({
@@ -104,16 +85,7 @@ sample({
 });
 
 sample({
-  clock: flow.open,
-  source: $flexibleMultisigAccount,
-  fn: (acc) => acc?.threshold ?? null,
-  target: formModel.thresholdChanged,
-});
-
-sample({
-  clock: $initiatorWallet,
-  filter: nonNullable,
-  fn: (wallet) => [wallet!],
+  clock: $initiatorWallet.updates.filter({ fn: nonNullable }),
   target: signatoryModel.getSignatoriesBalance,
 });
 
@@ -126,7 +98,72 @@ const $signatories = createSignatoriesStore({
 // in the current implementation, the first signatory is always the signer
 const $signatory = $signatories.map((signatories) => signatories.at(0) ?? null);
 
-// Transactions
+const $signatoryBalance = combine(
+  { balances: balanceModel.$balanceMap, signatory: $signatory, chain: formModel.$chain, asset: formModel.$asset },
+  ({ balances, signatory, chain, asset }) => {
+    if (nullable(signatory) || nullable(chain) || nullable(asset)) return null;
+
+    return balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId);
+  },
+);
+
+// deposits
+
+const { $: $proxiesInfo } = createStoreFromEffect({
+  fn: ({ api, accountId }: { api: ApiPromise; accountId: AccountId }) => {
+    return proxyService.getProxiesForAccount(api, accountId);
+  },
+  params: {
+    api: formModel.$api,
+    accountId: $flexibleMultisigAccount.map((account) => account?.accountId ?? null),
+  },
+  defaultValue: null,
+});
+
+const $existentialDeposit = $signatoryBalance.map((b) => (b ? b.ed : BN_ZERO));
+
+const $proxyDeposit = combine(formModel.$api, $proxiesInfo, (api, proxiesInfo) => {
+  if (nullable(proxiesInfo) || nullable(api)) return null;
+
+  return proxyService.getProxyDepositDelta(api, proxiesInfo.deposit, proxiesInfo.accounts.length + 1);
+});
+
+const { $multisigDeposit, $pending: $pendingMultisigDeposit } = createMultisigDeposit({
+  $threshold: formModel.$threshold,
+  $api: formModel.$api,
+});
+
+const $totalDeposit = combine(
+  {
+    existentialDeposit: $existentialDeposit,
+    proxyDeposit: $proxyDeposit,
+    multisigDeposit: $multisigDeposit,
+  },
+  ({ existentialDeposit, proxyDeposit, multisigDeposit }) => {
+    if (nullable(proxyDeposit)) return null;
+
+    return existentialDeposit.add(proxyDeposit).add(multisigDeposit);
+  },
+);
+
+// form management
+
+sample({
+  clock: flow.open,
+  source: $chain,
+  filter: (chain) => nonNullable(chain),
+  target: formModel.populateForm,
+});
+
+sample({
+  clock: flow.open,
+  source: $flexibleMultisigAccount,
+  fn: (acc) => acc?.threshold ?? null,
+  target: formModel.thresholdChanged,
+});
+
+// transactions
+
 const $reassignTx = combine(
   {
     chain: $chain,
@@ -201,17 +238,20 @@ const { $tx, $fee, $pendingFee } = createComplexTxStore({
   transaction: $coreTx,
 });
 
-//todo move to ... probably should have a file "validators" in the feature
-const validator = createTxValidator<{ deposit: string; proxyNumber: number }>({
+// validation
+
+const validator = createTxValidator<{ proxyDeposit: BN }>({
   additionalBalanceRules: [
-    ({ route, getBalance, asset, api, deposit, proxyNumber }) => {
+    ({ route, getBalance, asset, proxyDeposit }) => {
       const initiator = accountService.findInitiator(route);
-      if (nullable(initiator) || !accountUtils.isFlexibleMultisigAccount(initiator)) return;
+      assert(initiator, 'Initiator not found');
+
+      if (!accountUtils.isFlexibleMultisigAccount(initiator)) {
+        throw new Error('Initiator is not a flexible multisig account');
+      }
 
       const balance = getBalance(initiator.accountId, initiator.chainId, asset.assetId);
-      if (nullable(balance)) return;
-
-      const proxyDeposit = proxyService.getProxyDepositDelta(api, deposit, proxyNumber + 1);
+      assert(balance, 'Balance not found');
 
       return {
         account: initiator,
@@ -231,8 +271,7 @@ const { $errors, $valid } = createTxValidationStore({
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
-    deposit: $proxiesInfo.map((info) => info?.deposit ?? null),
-    proxyNumber: $proxiesInfo.map((info) => info?.accounts.length ?? 0),
+    proxyDeposit: $proxyDeposit,
   },
 });
 
@@ -248,37 +287,37 @@ const $isTheSameMultisig = combine(
   },
 );
 
-const $isLoading = combine(
+const $isEditOperationAlreadyExists = combine(
   {
-    multisigDeposit: formModel.$pendingMultisigDeposit,
-    isFeeLoading: $pendingFee,
+    operations: multisigOperation.$list,
+    flexibleMultisigAccount: $flexibleMultisigAccount,
   },
-  ({ multisigDeposit, isFeeLoading }) => multisigDeposit || isFeeLoading,
-);
+  ({ flexibleMultisigAccount, operations }) => {
+    if (nullable(flexibleMultisigAccount)) return false;
 
-const $canSubmit = combine(
-  {
-    threshold: formModel.$threshold,
-    isLoading: $isLoading,
-    hasEmptySignatories: signatoryModel.$hasEmptySignatories,
-    hasDuplicateSignatories: signatoryModel.$hasDuplicateSignatories,
-    isTheSameMultisig: $isTheSameMultisig,
-    valid: $valid,
-  },
-  ({ threshold, isLoading, hasEmptySignatories, hasDuplicateSignatories, isTheSameMultisig, valid }) => {
-    return (
-      !isLoading &&
-      nonNullable(threshold) &&
-      threshold > 1 &&
-      !hasEmptySignatories &&
-      !hasDuplicateSignatories &&
-      !isTheSameMultisig &&
-      valid
-    );
+    return operations.some((operation) => {
+      return (
+        isEditFlexibleTransaction(operation.transaction, flexibleMultisigAccount.accountId) &&
+        operation.status === 'pending'
+      );
+    });
   },
 );
 
-// Submit
+const $isLoading = or($pendingFee, $pendingMultisigDeposit);
+
+const $canSubmit = and(
+  $valid,
+  formModel.$threshold.map((threshold) => nonNullable(threshold) && threshold > 0),
+  not($isLoading),
+  not($isTheSameMultisig),
+  not($isEditOperationAlreadyExists),
+  not(signatoryModel.$hasEmptySignatories),
+  not(signatoryModel.$hasDuplicateSignatories),
+);
+
+// submit
+
 sample({
   clock: formModel.formSubmit,
   fn: () => Step.CONFIRM,
@@ -436,6 +475,10 @@ export const changeSignatoriesModel = {
   $step,
   $signer: $signatory,
   $initiatorWallet,
+  $proxyDeposit,
+  $multisigDeposit,
+  $totalDeposit,
+  $isEditOperationAlreadyExists,
   $chain,
   $canSubmit,
   $route,

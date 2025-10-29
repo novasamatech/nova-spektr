@@ -38,6 +38,7 @@ const FellowshipReferendumDetails = lazy(() =>
     default: FellowshipReferendumDetails,
   })),
 );
+const Dapp = lazy(() => import('./Dapp').then(({ DappPage }) => ({ default: DappPage })));
 
 // React routes v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
@@ -180,6 +181,14 @@ export const ROUTES_CONFIG: RouteObject[] = [
         element: (
           <Suspense fallback={<PageLoadingState />}>
             <Basket />
+          </Suspense>
+        ),
+      },
+      {
+        path: Paths.DAPP,
+        element: (
+          <Suspense fallback={<PageLoadingState />}>
+            <Dapp />
           </Suspense>
         ),
       },

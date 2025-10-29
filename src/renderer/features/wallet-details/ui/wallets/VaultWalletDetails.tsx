@@ -1,4 +1,4 @@
-import { useGate, useUnit } from 'effector-react';
+import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import {
@@ -16,12 +16,18 @@ import { isEthereumAccountId, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeadlineText, HelpText, IconButton, Separator } from '@/shared/ui';
 import { Hash, type IdenticonIconTheme, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Copy, Modal, Popover, ScrollArea, Tabs } from '@/shared/ui-kit';
-import { type AnyAccount } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { VaultAccountsList, accountUtils, permissionUtils } from '@/entities/wallet';
 import { AddPureProxied } from '@/features/proxied-add-pure';
 import { AddProxy } from '@/features/proxy-add';
-import { DerivationsAddressModal, ExportKeysModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
+import {
+  type DerivationKeyDraft,
+  DerivationsAddressModal,
+  ExportKeysModal,
+  ImportKeysModal,
+  KeyConstructor,
+} from '@/features/wallets';
 import { ForgetWalletConfirm } from '@/features/wallets/ForgetWallet';
 import { RenameWallet } from '@/features/wallets/RenameWallet';
 import { walletDetailsUtils } from '../../lib/utils';
@@ -62,38 +68,42 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const [tab, setTab] = useState('accounts');
   const [chains, setChains] = useState<Chain[]>([]);
 
-  const accountsMap = useMemo(() => {
-    const accountsMap = walletDetailsUtils.getVaultAccountsMap(wallet.accounts);
-    //todo sort these accounts
+  const walletAccounts = useStoreMap({
+    store: accounts.$list,
+    keys: [wallet.id],
+    fn: (accounts, [walletId]) =>
+      accountService
+        .filterAccountsByWallet(accounts, walletId)
+        .filter(a => accountUtils.isVaultChainAccount(a) || accountUtils.isVaultShardAccount(a)),
+  });
 
-    return accountsMap;
-  }, [wallet.accounts]);
+  const accountsMap = useMemo(() => walletDetailsUtils.getVaultAccountsMap(walletAccounts), [walletAccounts]);
 
   useEffect(() => {
     const filteredChains = Object.values(allChains).filter(c => {
-      const accounts = Object.values(accountsMap).flat(2);
-
-      return accounts.some(a => accountUtils.isChainAndCryptoMatch(a, c));
+      return walletAccounts.some(a => accountService.isAccountAvailableOnChain(a, c));
     });
 
     setChains(filteredChains);
-  }, []);
+  }, [allChains, walletAccounts]);
 
-  const handleConstructorKeys = (
-    keysToAdd: (VaultChainAccount | VaultShardAccount[])[],
-    keysToRemove: (VaultChainAccount | VaultShardAccount[])[],
-  ) => {
+  const handleConstructorKeys = (keys: DerivationKeyDraft[]) => {
     toggleConstructorModal();
 
+    const draftKeySet = new Set(keys.map(k => k.chainId + k.derivationPath));
+    const existingKeySet = new Set(walletAccounts.map(a => a.chainId + a.derivationPath));
+
+    const keysToRemove = walletAccounts.filter(a => !draftKeySet.has(a.chainId + a.derivationPath));
+
     if (keysToRemove.length > 0) {
-      vaultDetailsModel.events.keysRemoved(keysToRemove.flat());
+      vaultDetailsModel.events.keysRemoved(keysToRemove);
     }
 
-    if (keysToAdd.length > 0) {
-      const vaultAccounts = Object.values(accountsMap).flat();
-      const mainAccounts = walletDetailsUtils.getMainAccounts(vaultAccounts);
+    const keysToAdd = keys.filter(k => !existingKeySet.has(k.chainId + k.derivationPath));
 
-      vaultDetailsModel.events.keysAdded([...mainAccounts, ...keysToAdd.flat()]);
+    if (keysToAdd.length > 0) {
+      vaultDetailsModel.events.keysAdded(keysToAdd);
+
       toggleScanModal();
     }
   };
@@ -160,10 +170,9 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
     </ExportKeysModal>
   );
 
-  const accountsCount = Object.values(accountsMap).flat(2).length;
-
-  const isSingleAccount = wallet.accounts.length === 1;
-  const accoundId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+  const accountsCount = walletAccounts.length;
+  const isSingleAccount = accountsCount === 1;
+  const accoundId = isSingleAccount ? walletAccounts[0]?.accountId : wallet.rootAccountId;
   if (nullable(accoundId)) return null;
   const isEthereum = isEthereumAccountId(accoundId);
   const theme: IdenticonIconTheme = isEthereum ? 'ethereum' : isSingleAccount ? 'polkadot' : 'jdenticon';
@@ -217,7 +226,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
 
             {!isRenameInputOpen && (
               <div className="ml-2 shrink-0 duration-300 animate-in fade-in-0">
-                <Slot id={overviewSlot} props={{ walletAccounts: wallet.accounts }} />
+                <Slot id={overviewSlot} props={{ walletAccounts }} />
               </div>
             )}
           </div>
@@ -232,7 +241,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
               <Tabs.List>
                 <Tabs.Trigger value="accounts">
                   <span className="flex items-center gap-1">
-                    {t('walletDetails.common.accountTabTitle')}
+                    {t('walletDetails.common.keyTabTitle')}
                     <span className="text-text-tertiary">{accountsCount}</span>
                   </span>
                 </Tabs.Trigger>
@@ -268,14 +277,14 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
       <KeyConstructor
         isOpen={isConstructorModalOpen}
         title={wallet.name}
-        existingKeys={Object.values(accountsMap).flat(2)}
+        existingKeys={walletAccounts}
         onConfirm={handleConstructorKeys}
         onClose={toggleConstructorModal}
       />
       <ImportKeysModal
         isOpen={isImportModalOpen}
         rootAccountId={wallet.rootAccountId}
-        existingKeys={Object.values(accountsMap).flat(2)}
+        existingKeys={walletAccounts}
         onConfirm={handleImportedKeys}
         onClose={toggleImportModal}
       />
