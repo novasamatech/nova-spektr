@@ -289,7 +289,7 @@ createSubscription({
 
 // balance preservation strategy
 
-const toggleExistentialDeposit = createEvent();
+const toggleExistentialDeposit = createEvent<boolean | void>();
 const $isExistentialDepositEnabled = createStore(false)
   .on(toggleExistentialDeposit, (state, update) => {
     if (nonNullable(update)) {
@@ -299,6 +299,13 @@ const $isExistentialDepositEnabled = createStore(false)
     }
   })
   .reset(formInitiated);
+
+sample({
+  clock: $isXcm,
+  filter: (isXcm) => isXcm,
+  fn: () => false,
+  target: toggleExistentialDeposit,
+});
 
 const $balancePreservationStrategy = $isExistentialDepositEnabled.map<BalancePreservation>((v) =>
   v ? 'allowDeath' : 'keepAlive',
@@ -491,15 +498,19 @@ sample({
   target: $showAccountDeathAlert,
 });
 
-const $showEDSwitch = combine($isEdSwitchVisible, $availableBalance, (isEdSwitchVisible, balance) => {
-  if (!isEdSwitchVisible) return false;
-  if (nullable(balance)) return false;
+const $showEDSwitch = combine(
+  { isEdSwitchVisible: $isEdSwitchVisible, availableBalance: $availableBalance, isXcm: $isXcm },
+  ({ isEdSwitchVisible, availableBalance, isXcm }) => {
+    if (isXcm) return false;
+    if (!isEdSwitchVisible) return false;
+    if (nullable(availableBalance)) return false;
 
-  const keepAliveAvailable = balanceService.withdrawableAmount(balance, 'keepAlive');
-  const allowDeathAvailable = balanceService.withdrawableAmount(balance, 'allowDeath');
+    const keepAliveAvailable = balanceService.withdrawableAmount(availableBalance, 'keepAlive');
+    const allowDeathAvailable = balanceService.withdrawableAmount(availableBalance, 'allowDeath');
 
-  return !allowDeathAvailable.eq(keepAliveAvailable);
-});
+    return !allowDeathAvailable.eq(keepAliveAvailable);
+  },
+);
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
 const $isMultisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
