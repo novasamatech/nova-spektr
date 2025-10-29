@@ -15,7 +15,7 @@ export type OperationType =
 
 export type TaskDescription<T extends NonNullable<unknown> = any> = {
   id: OperationType;
-  group: 'tasks' | 'active' | 'voted' | 'completed';
+  group: 'personal' | 'general' | 'completed';
   weight: number;
   body: ComponentType<T & { transaction: Transaction | null }>;
   meta: T & { transaction: Transaction | null; tags: string[] };
