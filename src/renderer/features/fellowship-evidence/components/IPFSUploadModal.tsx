@@ -139,7 +139,7 @@ export const IPFSUploadModal = ({ isOpen, onToggle, wish }: Props) => {
             </div>
 
             <div className="mt-2 flex-shrink-0">
-              <span className="text-footnote font-medium text-text-tertiary">{t('common.or')}</span>
+              <span className="text-footnote font-medium text-text-tertiary">{t('fellowship.salary.evidence.or')}</span>
             </div>
 
             <div className="mt-2 min-h-0 flex-1">
@@ -174,7 +174,9 @@ export const IPFSUploadModal = ({ isOpen, onToggle, wish }: Props) => {
             />
           </div>
           <Button size="md" variant="fill" pallet="primary" disabled={isValidating} onClick={handleButtonSubmit}>
-            {isValidating ? t('fellowship.salary.evidence.validating') : `⌘↵ ${t('common.continue')}`}
+            {isValidating
+              ? t('fellowship.salary.evidence.validating')
+              : `⌘↵ ${t('fellowship.salary.evidence.continue')}`}
           </Button>
         </div>
       </Modal.Footer>
