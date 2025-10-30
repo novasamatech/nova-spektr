@@ -245,12 +245,28 @@ const $destinationAccountId = combine($destination, $destinationChain, (destinat
   return validateAddress(destination, chain) ? toAccountId(destination) : null;
 });
 
+const $destinationAsset = combine(
+  {
+    chain: $destinationChain,
+    sourceAsset: $asset,
+    isXcm: $isXcm,
+    transferDirection: xcmTransferModel.$transferDirection,
+  },
+  ({ chain, sourceAsset, isXcm, transferDirection }) => {
+    if (isXcm) {
+      return chain?.assets.find((a) => a.assetId === transferDirection?.destination.assetId) ?? null;
+    } else {
+      return sourceAsset;
+    }
+  },
+);
+
 const $destinationBalance = combine(
   {
     balances: balanceModel.$balanceMap,
     accountId: $destinationAccountId,
     chain: $destinationChain,
-    asset: $asset,
+    asset: $destinationAsset,
   },
   ({ balances, accountId, chain, asset }) => {
     if (nullable(accountId) || nullable(chain) || nullable(asset)) {
@@ -770,6 +786,7 @@ export const formModel = {
 
   $destinationAccounts,
   $destinationChains,
+  $destinationAsset,
   $destinationBalanceEd,
   $hasDestinationBalanceError,
 
