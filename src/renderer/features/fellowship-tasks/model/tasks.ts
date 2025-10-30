@@ -106,38 +106,38 @@ const $memberSalaryTasks = combine(
     if (nullable(member) || !memberService.isCoreMember(member)) return [];
     if (nullable(period) || nullable(claimStatus)) return [];
 
-    if (salaryService.canRequestSalary(claimStatus, period)) {
+    if (salaryService.canRequestSalary(claimStatus, period) && nullable(operations['salary_request'])) {
       return [
         {
           id: 'salary_request',
           weight: 0,
           group: 'personal',
           body: RequestSalary,
-          meta: { transaction: operations['salary_request']?.coreTx ?? null, tags: [] },
+          meta: { tags: [] },
         },
       ];
     }
 
-    if (salaryService.canRequestSalaryPayout(claimStatus, period)) {
+    if (salaryService.canRequestSalaryPayout(claimStatus, period) && nullable(operations['salary_payout'])) {
       return [
         {
           id: 'salary_payout',
           weight: 0,
           group: 'personal',
           body: RequestPayout,
-          meta: { transaction: operations['salary_payout']?.coreTx ?? null, tags: [] },
+          meta: { tags: [] },
         },
       ];
     }
 
-    if (!salaryService.isInducted(claimStatus)) {
+    if (!salaryService.isInducted(claimStatus) && nullable(operations['salary_induct'])) {
       return [
         {
           id: 'salary_induct',
           weight: 0,
           group: 'personal',
           body: RequestSalaryInduct,
-          meta: { transaction: operations['salary_induct']?.coreTx ?? null, tags: [] },
+          meta: { tags: [] },
         },
       ];
     }
