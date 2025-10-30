@@ -4,7 +4,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, formatAsset, transferableAmount } from '@/shared/lib/utils';
+import { formatAmount, formatAsset, fromPrecision, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
@@ -142,7 +142,6 @@ const Amount = () => {
   }
 
   const showReuseLockBtn = availableBalance?.lock.gtn(0) && !isUnchanged.value;
-  const formattedLock = availableBalance && formatAsset(availableBalance.lock, network.asset);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -156,10 +155,14 @@ const Amount = () => {
         asset={network.asset}
         onChange={amount.onChange}
       />
-      {showReuseLockBtn && formattedLock && (
+      {showReuseLockBtn && availableBalance && (
         <div className="flex justify-end">
-          <Button size="sm" pallet="secondary" onClick={() => amount.onChange(formattedLock)}>
-            {t('governance.vote.reuseLock')}: {formattedLock}
+          <Button
+            size="sm"
+            pallet="secondary"
+            onClick={() => amount.onChange(fromPrecision(availableBalance.lock, network.asset.precision))}
+          >
+            {t('governance.vote.reuseLock')}: {formatAsset(availableBalance.lock, network.asset)}
           </Button>
         </div>
       )}
