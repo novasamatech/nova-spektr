@@ -245,12 +245,28 @@ const $destinationAccountId = combine($destination, $destinationChain, (destinat
   return validateAddress(destination, chain) ? toAccountId(destination) : null;
 });
 
+const $destinationAsset = combine(
+  {
+    chain: $destinationChain,
+    sourceAsset: $asset,
+    isXcm: $isXcm,
+    transferDirection: xcmTransferModel.$transferDirection,
+  },
+  ({ chain, sourceAsset, isXcm, transferDirection }) => {
+    if (isXcm) {
+      return chain?.assets.find((a) => a.assetId === transferDirection?.destination.assetId) ?? null;
+    } else {
+      return sourceAsset;
+    }
+  },
+);
+
 const $destinationBalance = combine(
   {
     balances: balanceModel.$balanceMap,
     accountId: $destinationAccountId,
     chain: $destinationChain,
-    asset: $asset,
+    asset: $destinationAsset,
   },
   ({ balances, accountId, chain, asset }) => {
     if (nullable(accountId) || nullable(chain) || nullable(asset)) {
@@ -289,7 +305,7 @@ createSubscription({
 
 // balance preservation strategy
 
-const toggleExistentialDeposit = createEvent();
+const toggleExistentialDeposit = createEvent<boolean | null>();
 const $isExistentialDepositEnabled = createStore(false)
   .on(toggleExistentialDeposit, (state, update) => {
     if (nonNullable(update)) {
@@ -299,6 +315,13 @@ const $isExistentialDepositEnabled = createStore(false)
     }
   })
   .reset(formInitiated);
+
+sample({
+  clock: $isXcm,
+  filter: (isXcm) => isXcm,
+  fn: () => false,
+  target: toggleExistentialDeposit,
+});
 
 const $balancePreservationStrategy = $isExistentialDepositEnabled.map<BalancePreservation>((v) =>
   v ? 'allowDeath' : 'keepAlive',
@@ -491,15 +514,19 @@ sample({
   target: $showAccountDeathAlert,
 });
 
-const $showEDSwitch = combine($isEdSwitchVisible, $availableBalance, (isEdSwitchVisible, balance) => {
-  if (!isEdSwitchVisible) return false;
-  if (nullable(balance)) return false;
+const $showEDSwitch = combine(
+  { isEdSwitchVisible: $isEdSwitchVisible, availableBalance: $availableBalance, isXcm: $isXcm },
+  ({ isEdSwitchVisible, availableBalance, isXcm }) => {
+    if (isXcm) return false;
+    if (!isEdSwitchVisible) return false;
+    if (nullable(availableBalance)) return false;
 
-  const keepAliveAvailable = balanceService.withdrawableAmount(balance, 'keepAlive');
-  const allowDeathAvailable = balanceService.withdrawableAmount(balance, 'allowDeath');
+    const keepAliveAvailable = balanceService.withdrawableAmount(availableBalance, 'keepAlive');
+    const allowDeathAvailable = balanceService.withdrawableAmount(availableBalance, 'allowDeath');
 
-  return !allowDeathAvailable.eq(keepAliveAvailable);
-});
+    return !allowDeathAvailable.eq(keepAliveAvailable);
+  },
+);
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
 const $isMultisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
@@ -759,6 +786,7 @@ export const formModel = {
 
   $destinationAccounts,
   $destinationChains,
+  $destinationAsset,
   $destinationBalanceEd,
   $hasDestinationBalanceError,
 
