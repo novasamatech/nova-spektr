@@ -1,7 +1,6 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 import { groupBy } from 'lodash';
 import { reset } from 'patronum';
-import { parse } from 'yaml';
 
 import {
   type Chain,
@@ -47,7 +46,6 @@ const fileUploaded = createEvent<File>();
 const resetValues = createEvent<ExistingDerivations>();
 
 const parseFileContentFx = createEffect<File, ParsedImportFile, DerivationImportError>(async (file: File) => {
-  let structure: unknown;
   const fileContent = await file.text();
   if (!fileContent) {
     throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
@@ -60,17 +58,10 @@ const parseFileContentFx = createEffect<File, ParsedImportFile, DerivationImport
     return importKeysUtils.updateTextStructure(textStructure);
   }
 
-  try {
-    // using default core scheme converts 0x strings into numeric values
-    structure = parse(fileContent, importKeysUtils.renameDerivationPathKeyReviver, { schema: 'failsafe' });
-  } catch {
-    throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
-  }
-  if (importKeysUtils.isFileStructureValid(structure)) {
-    return structure;
-  }
+  const yamlStructure = importKeysUtils.parseYamlFile(fileContent);
+  if (!yamlStructure) throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
 
-  throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
+  return yamlStructure;
 });
 
 type ValidateDerivationsParams = {
