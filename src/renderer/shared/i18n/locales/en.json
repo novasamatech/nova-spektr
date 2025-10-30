@@ -2222,7 +2222,7 @@
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",
     "descriptionLengthError": "transfer.descriptionLengthError",
-    "destinationBalanceAlertDescription": "Sending <b>less than {ed} to an inactive account</b> does not work. <b>The transaction will fail and the tokens will be lost.</b>",
+    "destinationBalanceAlertDescription": "Sending <b>less than {ed} to an inactive account</b> may result in the <b>loss of tokens.</b>",
     "destinationBalanceAlertTitle": "Recipient account is inactive",
     "destinationChainLabel": "Recipient network",
     "destinationChainPlaceholder": "Select recipient network",
