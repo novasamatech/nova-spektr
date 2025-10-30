@@ -279,9 +279,9 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
   });
 
   return {
-    mergedDerivations: newDerivationsAccounts,
-    added: addedKeys,
-    duplicated: duplicatedKeys,
+    addedDerivations: newDerivationsAccounts,
+    addedCount: addedKeys,
+    duplicatedCount: duplicatedKeys,
   };
 }
 

@@ -145,16 +145,16 @@ const mergePathsFx = createEffect<MergePathsParams, MergeResult>(({ imported, ex
     (acc, [chain, derivations]) => {
       const existingChainDerivations = existingByChain[chain];
 
-      const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
+      const { addedDerivations, addedCount, duplicatedCount } = importKeysUtils.mergeChainDerivations(
         existingChainDerivations || [],
         derivations,
       );
 
-      acc.derivations.push(...mergedDerivations);
-      acc.report.addedKeys += added;
-      acc.report.duplicatedKeys += duplicated;
+      acc.derivations.push(...addedDerivations);
+      acc.report.addedKeys += addedCount;
+      acc.report.duplicatedKeys += duplicatedCount;
 
-      if (added) {
+      if (addedCount) {
         acc.report.updatedNetworks++;
       }
 

@@ -43,16 +43,10 @@ const invalidDerivations = {
 };
 
 const ignoredDerivations = {
-  wrongShardedType: {
-    derivationPath: '//path',
-    type: KeyType.HOT,
+  emptyDerivation: {
+    derivationPath: '',
     chainId: chainId,
     sharded: '10',
-  },
-  wrongKeyType: {
-    derivationPath: '//path',
-    type: 'wrong_type',
-    chainId: chainId,
   },
   wrongChainId: {
     derivationPath: '//path',
@@ -158,18 +152,13 @@ const validationTestData: ValidationTestData[] = [
 
 const shouldIgnoreDerivationTestData = [
   {
-    testName: 'Sharded derivation should not be allowed for hot and public key',
-    derivation: ignoredDerivations.wrongShardedType,
+    testName: 'Should ignore empty derivations',
+    derivation: ignoredDerivations.emptyDerivation,
     shouldIgnore: true,
   },
   {
-    testName: 'Key type should match KeyType enum values',
-    derivation: ignoredDerivations.wrongKeyType,
-    shouldIgnore: true,
-  },
-  {
-    testName: 'Chain id should be in list of supported chains',
-    derivation: ignoredDerivations.wrongKeyType,
+    testName: 'Should ignore derivation with wrong chainId',
+    derivation: ignoredDerivations.wrongChainId,
     shouldIgnore: true,
   },
   {
