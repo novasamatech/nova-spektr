@@ -1,6 +1,7 @@
 import { type TFunction } from 'i18next';
 import { t } from 'i18next';
 import { groupBy, unionBy } from 'lodash';
+import { parse } from 'yaml';
 
 import {
   AccountType,
@@ -34,7 +35,8 @@ import {
 const IMPORT_FILE_VERSION = '1';
 
 export const importKeysUtils = {
-  isFileStructureValid,
+  isYamlStructureValid,
+  parseYamlFile,
   parseTextFile,
   updateTextStructure,
   getDerivationsFromFile,
@@ -45,7 +47,7 @@ export const importKeysUtils = {
   getErrorsText,
 };
 
-function isFileStructureValid(result: unknown): result is ParsedImportFile {
+function isYamlStructureValid(result: unknown): result is ParsedImportFile {
   const isVersionValid =
     result && typeof result === 'object' && 'version' in result && result.version === IMPORT_FILE_VERSION;
   if (!isVersionValid) return false;
@@ -66,6 +68,21 @@ function isFileStructureValid(result: unknown): result is ParsedImportFile {
       return isChainValid && hasChainKeys;
     });
   });
+}
+
+function parseYamlFile(fileContent: string) {
+  let structure: unknown;
+  try {
+    // using default core scheme converts 0x strings into numeric values
+    structure = parse(fileContent, renameDerivationPathKeyReviver, { schema: 'failsafe' });
+  } catch {
+    return null;
+  }
+  if (isYamlStructureValid(structure)) {
+    return structure;
+  }
+
+  return null;
 }
 
 function processString(str: string) {
