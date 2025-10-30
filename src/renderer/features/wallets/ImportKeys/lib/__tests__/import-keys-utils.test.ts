@@ -39,7 +39,7 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
           chainId: importKeysMocks.chainId,
         },
       ];
-      const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
+      const { addedDerivations, addedCount, duplicatedCount } = importKeysUtils.mergeChainDerivations(
         importKeysMocks.existingChainDerivations,
         importedDerivations,
       );
@@ -49,11 +49,11 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
         ...importedDerivations.map((d) => d.derivationPath),
       ];
 
-      const everyKeyInPlace = mergedDerivations.every((d) => allPaths.includes(d.derivationPath));
+      const everyKeyInPlace = addedDerivations.every((d) => allPaths.includes(d.derivationPath));
 
       expect(everyKeyInPlace).toEqual(true);
-      expect(added).toEqual(importedDerivations.length);
-      expect(duplicated).toEqual(0);
+      expect(addedCount).toEqual(importedDerivations.length);
+      expect(duplicatedCount).toEqual(0);
     });
 
     test('should not duplicate keys', () => {
@@ -69,16 +69,14 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
           chainId: importKeysMocks.chainId,
         },
       ];
-      const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
+      const { addedDerivations, addedCount, duplicatedCount } = importKeysUtils.mergeChainDerivations(
         importKeysMocks.existingChainDerivations,
         importedDerivations,
       );
 
-      const polkadotPublicKeys = mergedDerivations.filter((x) => x.derivationPath === '//polkadot');
-
-      expect(polkadotPublicKeys.length).toEqual(1);
-      expect(added).toEqual(1);
-      expect(duplicated).toEqual(1);
+      expect(addedDerivations.length).toEqual(1);
+      expect(addedCount).toEqual(1);
+      expect(duplicatedCount).toEqual(1);
     });
 
     test('should merge sharded keys', () => {
@@ -95,17 +93,17 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
           chainId: importKeysMocks.chainId,
         },
       ];
-      const { mergedDerivations, added, duplicated } = importKeysUtils.mergeChainDerivations(
+      const { addedDerivations, addedCount, duplicatedCount } = importKeysUtils.mergeChainDerivations(
         importKeysMocks.existingChainDerivations,
         importedDerivations,
       );
 
-      const shardedDerivations = mergedDerivations.filter((d) => d.accountType === AccountType.SHARD);
-      const newStakingShard = mergedDerivations.find((d) => d.derivationPath === '//polkadot//hot//19');
+      const addedShardedDerivations = addedDerivations.filter((d) => d.accountType === AccountType.SHARD);
+      const newStakingShard = addedDerivations.find((d) => d.derivationPath === '//polkadot//hot//19');
 
-      expect(shardedDerivations.length).toEqual(20);
-      expect(added).toEqual(11);
-      expect(duplicated).toEqual(10);
+      expect(addedShardedDerivations.length).toEqual(10);
+      expect(addedCount).toEqual(11);
+      expect(duplicatedCount).toEqual(10);
       expect((newStakingShard as DraftAccount<VaultShardAccount>)?.groupId).toEqual(
         importKeysMocks.existingShardsGroupId,
       );
