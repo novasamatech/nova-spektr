@@ -387,13 +387,13 @@ async function submitExtrinsic(
         .catch(error => {
           resolve({
             executed: false,
-            error: (error as Error).message || 'Error',
+            error: (error as Error).message || 'Transaction submission failed',
           });
         });
     } catch (error) {
       resolve({
         executed: false,
-        error: (error as Error).message || 'Error',
+        error: (error as Error).message || 'Failed to prepare transaction',
       });
     }
   });

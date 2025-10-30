@@ -47,7 +47,7 @@ export function setupAutoUpdater() {
 
   autoUpdater.on('error', (err) => {
     console.error('[app-updater] Error on update', err);
-    dialog.showErrorBox('Error', 'Error updating the application');
+    dialog.showErrorBox('Application Update Failed', 'Failed to download or install the application update');
   });
 
   autoUpdater.on('update-downloaded', (info) => {
