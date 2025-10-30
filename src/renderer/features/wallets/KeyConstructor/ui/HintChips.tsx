@@ -13,13 +13,12 @@ type Props = {
   chain: Chain;
 };
 
-const SHARD_COUNT = 10;
 const HARD_DERIVATION = '//';
 const SOFT_DERIVATION = '/';
 const DERIVATION_SEPARATORS = [HARD_DERIVATION, SOFT_DERIVATION];
-const TYPE_HINTS = ['main', 'hot', 'public', 'sharded'];
-
-const generateShardHints = () => Array.from({ length: SHARD_COUNT }, (_, index) => String(index));
+const TYPES = ['main', 'hot', 'public', 'sharded'];
+const SHARDS_COUNT = ['2', '3', '5', '10', '15', '20', '25', '50'];
+const SHARDS_RANGES = SHARDS_COUNT.map((count) => `0...${count}`);
 
 const getDerivationPathHints = (derivationPath: string, chain: Chain): string[] => {
   const isEthereumBased = networkUtils.isEthereumBased(chain.options);
@@ -35,11 +34,15 @@ const getDerivationPathHints = (derivationPath: string, chain: Chain): string[] 
   }
 
   if (derivationPath.endsWith('sharded//') || derivationPath.endsWith('sharded/')) {
-    return generateShardHints();
+    return SHARDS_RANGES;
+  }
+
+  if (derivationPath.endsWith('...')) {
+    return SHARDS_COUNT;
   }
 
   if (derivationPath.endsWith('//') || derivationPath.endsWith('/')) {
-    return TYPE_HINTS;
+    return TYPES;
   }
 
   return DERIVATION_SEPARATORS;
