@@ -367,6 +367,7 @@ export const xcmTransferModel = {
   $xcmFee,
   $deliveryFee,
   $transferDirections,
+  $transferDirection,
   $xcmParaId,
   $xcmChainId,
   $xcmChain,
