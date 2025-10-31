@@ -546,7 +546,7 @@ const FeeSection = memo(() => {
         />
       )}
 
-      {isXcm && deliveryFee && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
+      {isXcm && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
     </div>
   );
 });

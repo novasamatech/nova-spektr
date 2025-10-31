@@ -49,6 +49,8 @@ type DeliveryFeeParams = {
   extrinsic?: SubmittableExtrinsic<'promise'> | null;
   destinationChain: Chain | null;
 };
+
+// here
 const getDeliveryFeeFx = createEffect(
   async ({ api, config, parachainId, extrinsic, destinationChain }: DeliveryFeeParams) => {
     if (!api || !config || !parachainId || !extrinsic || !destinationChain) {
@@ -249,7 +251,6 @@ const $xcmData = combine(
   {
     api: $api,
     xcmFee: $xcmFee,
-    deliveryFee: $deliveryFee,
     xcmAsset: $txAsset,
     xcmChainId: $xcmChainId,
     xcmWeight: $xcmWeight,
@@ -257,14 +258,14 @@ const $xcmData = combine(
     xcmBeneficiary: $txBeneficiary,
     transferDirection: $transferDirection,
   },
-  ({ api, xcmChainId, transferDirection, deliveryFee, xcmFee, ...rest }) => {
+  ({ api, xcmChainId, transferDirection, xcmFee, ...rest }) => {
     if (!api || !transferDirection || !xcmChainId) return undefined;
 
     const transactionType = xcmTransferUtils.getXcmTransferType(api, transferDirection.type);
 
     return {
       transactionType,
-      args: { destinationChain: xcmChainId, deliveryFee: deliveryFee.toString(), xcmFee: xcmFee.toString(), ...rest },
+      args: { destinationChain: xcmChainId, xcmFee: xcmFee.toString(), ...rest },
     };
   },
   { skipVoid: false },
@@ -336,15 +337,25 @@ sample({
   // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
   // TODO refactor this shit
   filter: (state, update) => {
+    console.log('getDeliveryFeeFx.doneData filter', {
+      state: state?.toString(),
+      update: update?.toString(),
+    });
     return !!update && !state.eq(update);
   },
-  fn: (_, fee) => fee!,
+  fn: (_, fee) => {
+    console.log('getDeliveryFeeFx.doneData', (fee ?? BN_ZERO).toString());
+    return fee!;
+  },
   target: $deliveryFee,
 });
 
 sample({
   clock: [xcmChainSelected, getDeliveryFeeFx.fail],
-  fn: () => BN_ZERO,
+  fn: () => {
+    console.log('getDeliveryFeeFx.fail', BN_ZERO.toString());
+    return BN_ZERO;
+  },
   target: $deliveryFee,
 });
 
@@ -379,7 +390,7 @@ export const xcmTransferModel = {
     xcmConfigLoaded,
     xcmChainSelected,
     xcmFeeChanged,
-    deliveryFeeRequested,
+    deliveryFeeRequested: deliveryFeeRequested,
     isXcmFeeLoadingChanged,
     amountChanged,
     destinationChanged,
