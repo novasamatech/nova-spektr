@@ -183,3 +183,7 @@ Your feedback is welcome. Use GitHub issues for submitting the feedback. All fee
 
 Nova Spektr - Polkadot, Kusama enterprise application is available under the Apache 2.0 license. See the LICENSE file
 for more info. © Novasama Technologies GmbH 2025
+
+
+WE'VE REACHED 5000 !!! PULL REQUESTS
+MY SINCERE CONGRATULATIONS TO YOU ALL
