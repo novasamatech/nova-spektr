@@ -27,7 +27,7 @@ const $config = createStore<XcmConfig | null>(null);
 const $networkStore = restore(xcmStarted, null);
 const $xcmChainId = restore(xcmChainSelected, null);
 const $xcmFee = createStore(BN_ZERO);
-const $deliveryFee = createStore<BN>(BN_ZERO);
+const $deliveryFee = createStore<BN | null>(null);
 const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, true);
 const $xcmParaId = createStore<number | null>(null);
 
@@ -52,6 +52,7 @@ type DeliveryFeeParams = {
 };
 const getDeliveryFeeFx = createEffect(
   async ({ api, config, parachainId, extrinsic, destinationChain }: DeliveryFeeParams) => {
+    console.log('[DELIVERY FEE]', { params: { api, config, parachainId, extrinsic, destinationChain } });
     if (!api || !config || !parachainId || !extrinsic || !destinationChain) {
       return null;
     }
@@ -343,11 +344,12 @@ sample({
   // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
   // TODO refactor this shit
   filter: (state, update) => {
+    console.log('[DELIVERY FEE]', { update: update?.toString() });
     console.log('getDeliveryFeeFx.doneData', {
       state: state?.toString(),
       update: update?.toString(),
     });
-    return !!update && !state.eq(update);
+    return !!update && !state?.eq(update);
   },
   fn: (_, fee) => fee!,
   target: $deliveryFee,
@@ -396,7 +398,7 @@ export const xcmTransferModel = {
     xcmConfigLoaded,
     xcmChainSelected,
     xcmFeeChanged,
-    deliveryFeeRequested,
+    deliveryFeeRequested: deliveryFeeRequested,
     isXcmFeeLoadingChanged,
     amountChanged,
     destinationChanged,

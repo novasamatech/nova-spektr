@@ -59,8 +59,8 @@ type FormSubmitEvent = FormParams & {
   route: AnyAccount[];
   destinationChain: Chain;
   fee: BN;
-  xcmFee: BN;
-  deliveryFee: BN;
+  xcmFee: BN | null;
+  deliveryFee: BN | null;
   multisigDeposit: BN;
   rawAmount: string;
   balancePreservation: BalancePreservation;
@@ -132,9 +132,11 @@ const form: Form<FormParams> = createForm<FormParams>({
       validator: () => ({
         source: $asset,
         fn: (amount, _, asset: Asset | null) => {
+          console.log('amountValidator');
           if (nullable(asset)) return;
 
           const bn = toPrecision(amount, asset.precision);
+          console.log({ bn: bn.toString() });
           if (bn.isZero()) {
             return { message: 'transfer.requiredAmountError' };
           }
@@ -334,24 +336,36 @@ const $coreTx = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
-    form: form.$values,
+    formValues: form.$values,
+    isFormValid: form.$isValid,
     xcmData: xcmTransferModel.$xcmData,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
     inputMode: $inputMode,
     balancePreservation: $balancePreservationStrategy,
   },
-  ({ network, isXcm, form, xcmData, isConnected, initiator, inputMode, balancePreservation }) => {
-    if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
+  ({ isFormValid, network, isXcm, formValues, xcmData, isConnected, initiator, inputMode, balancePreservation }) => {
+    console.log({ isFormValid });
+
+    if (
+      !isFormValid ||
+      !network ||
+      !initiator ||
+      !isConnected ||
+      (isXcm && !xcmData) ||
+      !validateAddress(formValues.destination)
+    ) {
       return null;
     }
+
+    console.log({ amount: formValues.amount });
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
       asset: network.asset,
       accountId: initiator.accountId,
-      amount: form.amount,
-      destination: form.destination,
+      amount: formValues.amount,
+      destination: formValues.destination,
       xcmData,
       balancePreservation,
       inputMode,
@@ -419,7 +433,10 @@ const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   feeTransaction: $feeCoreTx,
 });
 
-const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
+const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => {
+  console.log('[DELIVERY FEE]', { calculationTx: { coreTx, feeTx } });
+  return coreTx ?? feeTx ?? null;
+});
 
 const $calculationExtrinsic = combine(
   {
@@ -756,7 +773,7 @@ const formSubmitFinished = sample({
       route,
       fee,
       xcmFee,
-      deliveryFee: deliveryFee,
+      deliveryFee,
       balancePreservation,
     } satisfies FormSubmitEvent;
   },
