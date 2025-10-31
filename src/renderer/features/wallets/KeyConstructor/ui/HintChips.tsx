@@ -22,7 +22,8 @@ const SHARDS_RANGES = SHARDS_COUNT.map((count) => `0...${count}`);
 
 const getDerivationPathHints = (derivationPath: string, chain: Chain): string[] => {
   const isEthereumBased = networkUtils.isEthereumBased(chain.options);
-  const chainName = chain.name.trim().replaceAll(' ', '_').toLowerCase();
+  const chainName = chain.parentId ? chain.name : chain.specName;
+  const displayChainName = chainName.trim().replaceAll(' ', '_').toLowerCase();
 
   if (derivationPath === '' || /[a-z0-9]$/i.test(derivationPath)) {
     if (isEthereumBased) return [HARD_DERIVATION];
@@ -30,7 +31,7 @@ const getDerivationPathHints = (derivationPath: string, chain: Chain): string[] 
   }
 
   if (derivationPath === '//' || derivationPath === '/') {
-    return [chainName];
+    return [displayChainName];
   }
 
   if (derivationPath.endsWith('sharded//') || derivationPath.endsWith('sharded/')) {
