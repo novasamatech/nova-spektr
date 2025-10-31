@@ -107,7 +107,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
     }
   };
 
-  const handleImportedKeys = (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
+  const handleImportedKeys = (keys: DerivationKeyDraft[]) => {
     toggleImportModal();
 
     const existingKeySet = new Set(walletAccounts.map(a => a.chainId + a.derivationPath));

@@ -16,6 +16,7 @@ import { PATH_ERRORS } from '../lib/constants';
 import { DerivationImportError, type ErrorDetails } from '../lib/derivation-import-error';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import {
+  type DerivationKeyDraft,
   DerivationValidationError,
   type DerivationWithPath,
   type ParsedImportFile,
@@ -38,7 +39,7 @@ type ErrorsWithDetails = { error: ValidationError; details?: ErrorDetails };
 
 const $validationError = createStore<ErrorsWithDetails | null>(null);
 const $report = createStore<Report | null>(null);
-const $keysToAdd = createStore<(DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[]>([]);
+const $keysToAdd = createStore<DerivationKeyDraft[]>([]);
 
 const $existingDerivations = createStore<ExistingDerivations | null>(null);
 
@@ -119,7 +120,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
 );
 
 type MergeResult = {
-  derivations: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
+  derivations: DerivationKeyDraft[];
   report: Report;
 };
 type MergePathsParams = {

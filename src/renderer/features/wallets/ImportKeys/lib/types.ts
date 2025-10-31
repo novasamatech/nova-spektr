@@ -33,6 +33,9 @@ export type TypedImportedDerivation = {
   sharded?: string;
 };
 
+export type DerivationKeyDraft = TypedImportedDerivation &
+  Required<Pick<TypedImportedDerivation, 'derivationPath' | 'chainId'>>;
+
 export type ParsedData = {
   version: string;
   publicAddress: HexString;

@@ -2,7 +2,13 @@ import { attach, createApi, createEffect, createEvent, createStore, sample } fro
 import { produce } from 'immer';
 import { nanoid } from 'nanoid';
 
-import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import {
+  type Chain,
+  type ChainId,
+  type DraftAccount,
+  type VaultChainAccount,
+  type VaultShardAccount,
+} from '@/shared/core';
 import { type DerivationError, validateDerivation } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
@@ -21,7 +27,7 @@ const callbacksApi = createApi($callbacks, {
   reset: () => null,
 });
 
-const init = createEvent<(VaultChainAccount | VaultShardAccount)[]>();
+const init = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
 const addKey = createEvent();
 const removeKey = createEvent<string>();
 const updateKey = createEvent<[string, Partial<DerivationKeyDraft>]>();
@@ -57,8 +63,10 @@ const getKeyValidationErrors = (
   return validateDerivation(derivationPath, { otherPaths: relatedPaths, isEthereum: isEthereumBased });
 };
 
-function mergeShardedDerivations(accounts: (VaultChainAccount | VaultShardAccount)[]): DerivationKeyDraft[] {
-  const accountGroups = accountUtils.getAccountsAndShardGroups(accounts);
+function mergeShardedDerivations(
+  accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[],
+): DerivationKeyDraft[] {
+  const accountGroups = accountUtils.getAccountsAndShardGroups(accounts as (VaultChainAccount | VaultShardAccount)[]);
   return accountGroups.map((a) => {
     if (Array.isArray(a)) {
       return { chainId: a[0].chainId, derivationPath: accountUtils.getDerivationPath(a) };

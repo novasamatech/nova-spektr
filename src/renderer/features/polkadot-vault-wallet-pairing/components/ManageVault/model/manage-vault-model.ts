@@ -36,8 +36,7 @@ type VaultCreateParams = {
 };
 
 const formInitiated = createEvent<SeedInfo>();
-const derivationsConstructed = createEvent<DerivationKeyDraft[]>();
-const derivationsImported = createEvent<(DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]>();
+const derivationsImported = createEvent<DerivationKeyDraft[]>();
 const vaultCreated = createEvent<VaultCreateParams>();
 
 const createWalletFx = attach({ effect: walletModel.createWallet });
@@ -132,14 +131,12 @@ sample({
 });
 
 sample({
-  clock: derivationsConstructed,
+  clock: derivationsImported,
   source: networkModel.$chains,
   filter: (_, draftKeys) => draftKeys.length > 0,
   fn: (chains, draftKeys) => polkadotVaultService.populateDraftAccounts(draftKeys, chains),
   target: $keys,
 });
-
-sample({ clock: derivationsImported, target: $keys });
 
 sample({
   clock: vaultCreated,
@@ -162,7 +159,6 @@ export const manageVaultModel = {
   events: {
     callbacksChanged: callbacksApi.callbacksChanged,
     formInitiated,
-    derivationsConstructed,
     derivationsImported,
     vaultCreated,
   },
