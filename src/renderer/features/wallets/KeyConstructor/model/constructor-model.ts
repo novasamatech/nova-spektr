@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid';
 import { type Chain, type ChainId, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { type DerivationError, validateDerivation } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
 
 export const DEFAULT_CHAIN = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
@@ -56,6 +57,43 @@ const getKeyValidationErrors = (
   return validateDerivation(derivationPath, { otherPaths: relatedPaths, isEthereum: isEthereumBased });
 };
 
+function mergeShardedDerivations(accounts: (VaultChainAccount | VaultShardAccount)[]): DerivationKeyDraft[] {
+  const accountGroups = accountUtils.getAccountsAndShardGroups(accounts);
+  return accountGroups.map((a) => {
+    if (Array.isArray(a)) {
+      return { chainId: a[0].chainId, derivationPath: accountUtils.getDerivationPath(a) };
+    }
+    return { chainId: a.chainId, derivationPath: a.derivationPath };
+  });
+}
+
+const SHARD_RANGE_PATTERN = /(\d+)\.\.\.(\d+)$/;
+
+export function expandShardedDerivations(derivations: DerivationKeyDraft[]) {
+  return derivations.flatMap((derivation) => {
+    const match = derivation.derivationPath.match(SHARD_RANGE_PATTERN);
+
+    if (!match) {
+      return derivation;
+    }
+
+    const start = parseInt(match[1], 10);
+    const end = parseInt(match[2], 10);
+
+    if (start >= end) {
+      return derivation;
+    }
+
+    const expandedKeys: DerivationKeyDraft[] = [];
+    for (let i = start; i <= end; i++) {
+      const shardPath = derivation.derivationPath.replace(SHARD_RANGE_PATTERN, i.toString());
+      expandedKeys.push({ ...derivation, derivationPath: shardPath });
+    }
+
+    return expandedKeys;
+  });
+}
+
 const submitFx = createEffect<
   { keys: Record<string, DerivationKeyDraft>; chains: Record<ChainId, Chain> },
   Record<string, DerivationError[]>,
@@ -81,14 +119,15 @@ const submitFx = createEffect<
 
 sample({
   clock: init,
-  fn: (existingKeys) =>
+  fn: (existingAccounts) =>
     produce<Record<string, DerivationKeyDraft>>({}, (draft) => {
-      for (const existingKey of existingKeys) {
+      const derivationKeys = mergeShardedDerivations(existingAccounts);
+      for (const key of derivationKeys) {
         const id = nanoid();
 
         draft[id] = {
-          chainId: existingKey.chainId,
-          derivationPath: existingKey.derivationPath,
+          chainId: key.chainId,
+          derivationPath: key.derivationPath,
         };
       }
     }),
@@ -158,7 +197,10 @@ sample({
   clock: submitFx.doneData,
   target: attach({
     source: { callbacks: $callbacks, keys: $keys },
-    effect: ({ callbacks, keys }) => callbacks?.onConfirm(Object.values(keys)),
+    effect: ({ callbacks, keys }) => {
+      const expandedKeys = expandShardedDerivations(Object.values(keys));
+      callbacks?.onConfirm(expandedKeys);
+    },
   }),
 });
 
