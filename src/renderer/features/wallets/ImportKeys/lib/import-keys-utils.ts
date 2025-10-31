@@ -14,6 +14,7 @@ import {
 } from '@/shared/core';
 import { derivationHasPassword, entries, toAccountId, validateDerivation } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { networkUtils } from '@/entities/network';
 
 import { type ErrorDetails } from './derivation-import-error';
 import {
@@ -213,7 +214,10 @@ function shouldIgnoreDerivation(derivation: ImportedDerivation, chains: Record<C
   return !isChainParamValid;
 }
 
-function getDerivationError(derivation: DerivationWithPath): DerivationValidationError[] | undefined {
+function getDerivationError(
+  derivation: DerivationWithPath,
+  chains: Record<ChainId, Chain>,
+): DerivationValidationError[] | undefined {
   const errors: DerivationValidationError[] = [];
 
   const sharded = derivation.sharded && parseInt(derivation.sharded);
@@ -221,7 +225,9 @@ function getDerivationError(derivation: DerivationWithPath): DerivationValidatio
   const isShardedParamValid = !sharded || (!isNaN(sharded) && sharded <= 50 && sharded > 1);
   if (!isShardedParamValid) errors.push(DerivationValidationError.WRONG_SHARDS_NUMBER);
 
-  const derivationPathValidationErrors = validateDerivation(derivation.derivationPath);
+  const derivationChain = derivation.chainId ? chains[derivation.chainId as ChainId] : null;
+  const isEthereum = derivationChain ? networkUtils.isEthereumBased(derivationChain.options) : false;
+  const derivationPathValidationErrors = validateDerivation(derivation.derivationPath, { isEthereum });
   if (derivationPathValidationErrors.length > 0) errors.push(DerivationValidationError.INVALID_PATH);
 
   const hasPasswordPath = derivationHasPassword(derivation.derivationPath);
