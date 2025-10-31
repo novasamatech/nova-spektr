@@ -69,36 +69,3 @@ export function validateDerivation(path: string, options?: ValidateDerivationOpt
 export function derivationHasPassword(path: string): boolean {
   return /\/\/\//g.test(path);
 }
-
-const SHARDED_PATH_REGEX = /^(.*\/)(\d+)$/;
-
-/**
- * Groups keys by their sharded derivation base path.
- *
- * @param keys Array of objects containing a `derivationPath` string
- *
- * @returns {Record<string, T[]>} A map of base derivation paths to keys
- */
-export function groupShardedDerivations<T extends { derivationPath: string }>(keys: T[]): Record<string, T[]> {
-  const basePaths = new Map<string, T[]>();
-
-  for (const key of keys) {
-    const match = key.derivationPath.match(SHARDED_PATH_REGEX);
-    if (match) {
-      const [, basePath] = match;
-      if (!basePaths.has(basePath)) {
-        basePaths.set(basePath, []);
-      }
-      basePaths.get(basePath)!.push(key);
-    }
-  }
-
-  const groups: Record<string, T[]> = {};
-  for (const [basePath, keys] of basePaths) {
-    if (keys.length > 1) {
-      groups[basePath] = keys;
-    }
-  }
-
-  return groups;
-}

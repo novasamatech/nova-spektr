@@ -1,3 +1,5 @@
+import { groupBy, pickBy } from 'lodash';
+
 import {
   AccountType,
   type Chain,
@@ -9,9 +11,22 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { groupShardedDerivations, nonNullable } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
+
+const SHARDED_PATH_REGEX = /^(.*\/)(\d+)$/;
+
+function groupShardedDerivations<T extends { derivationPath: string }>(keys: T[]) {
+  const grouped = groupBy(keys, key => {
+    const match = key.derivationPath.match(SHARDED_PATH_REGEX);
+    return match ? match[1] : null;
+  });
+
+  delete grouped.null;
+
+  return pickBy(grouped, items => items.length > 1);
+}
 
 function populateDraftAccounts(
   draftAccounts: Pick<VaultChainAccount, 'chainId' | 'derivationPath'>[],
