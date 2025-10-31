@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
+import { hexToU8a } from '@polkadot/util';
 
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
 import { collectivePallet } from '@/shared/pallet/collective';
@@ -35,14 +36,14 @@ export const getExtrinsic: Record<
     if (api.tx.currencies) {
       const type = api.tx.currencies.transfer.meta.args[1].type;
       // @ts-expect-error Incorrect polkadot-js/api types
-      const location = api.createType(type, asset);
+      const location = api.createType(type, hexToU8a(asset));
 
       return api.tx.currencies.transfer(dest, location, value);
     }
 
     const type = api.tx.tokens.transfer.meta.args[1].type;
     // @ts-expect-error Incorrect polkadot-js/api types
-    const location = api.createType(type, asset);
+    const location = api.createType(type, hexToU8a(asset));
 
     return api.tx.tokens.transfer(dest, location, value);
   },
