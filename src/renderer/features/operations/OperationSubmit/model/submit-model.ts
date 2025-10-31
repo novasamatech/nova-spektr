@@ -3,7 +3,7 @@ import { createEffect, createEvent, createStore, sample, scopeBind } from 'effec
 import { once, reset } from 'patronum';
 
 import { type Chain, type HexString, type Transaction } from '@/shared/core';
-import { assert, createAsyncTaskPool, nonNullable, removeFromCollection } from '@/shared/lib/utils';
+import { assert, createAsyncTaskPool, delay, nonNullable, removeFromCollection } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type Extrinsic, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -80,28 +80,45 @@ const submitExtrinsicFx = createEffect((payloads: SubmitInput) => {
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
+  /*
+   To anyone who reads this - I am so sorry for this code.
+   God forgot us and let us create PJS which infact can mix up transactions order and cause nonce issues.
+   This 1 second offset for each transaction is a workaround that actually works.
+   I hope you will never need to touch this code.
+
+   If you will debug this, please update lost time
+   Current lost time: 6 hours
+  */
   const asyncTaskPool = createAsyncTaskPool({
     poolSize: 1,
     retryCount: 0,
     retryDelay: 0,
   });
 
-  return Promise.all(
-    Array.from(payloads.entries()).map(([index, { api, extrinsic, signatory, signature, payload }]) => {
-      return asyncTaskPool.call(
-        () => {
-          return transactionService.submitExtrinsic(extrinsic, signature, payload, signatory, api).then((result) => {
+  const actualRequests: Promise<void>[] = [];
+
+  for (const [index, { api, extrinsic, signatory, signature, payload }] of payloads.entries()) {
+    asyncTaskPool.call(
+      () => {
+        const request = transactionService
+          .submitExtrinsic(extrinsic, signature, payload, signatory, api)
+          .then((result) => {
             if (result.executed) {
               boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
             } else {
               boundExtrinsicFailed({ id: index, signatory, params: result.error });
             }
           });
-        },
-        { pool: signatory + api.genesisHash.toHex() },
-      );
-    }),
-  );
+
+        actualRequests.push(request);
+
+        return Promise.race([request, delay(1000)]);
+      },
+      { pool: signatory + api.genesisHash.toHex() },
+    );
+  }
+
+  return Promise.all(actualRequests);
 });
 
 // deprecated flow with Transaction struct. Split impl located in sign-model.
