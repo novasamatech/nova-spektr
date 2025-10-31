@@ -4,7 +4,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, formatAsset, transferableAmount } from '@/shared/lib/utils';
+import { formatAmount, formatAsset, fromPrecision, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { SignatorySelect } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
@@ -142,7 +142,6 @@ const Amount = () => {
   }
 
   const showReuseLockBtn = account?.lock.gtn(0) ?? false;
-  const formattedLock = account && formatAsset(account.lock, network.asset);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -155,10 +154,14 @@ const Amount = () => {
         asset={network.asset}
         onChange={amount.onChange}
       />
-      {showReuseLockBtn && formattedLock && (
+      {showReuseLockBtn && account && (
         <div className="flex justify-end">
-          <Button size="sm" pallet="secondary" onClick={() => amount.onChange(formattedLock)}>
-            {t('governance.vote.reuseLock')}: {formattedLock}
+          <Button
+            size="sm"
+            pallet="secondary"
+            onClick={() => amount.onChange(fromPrecision(account.lock, network.asset.precision))}
+          >
+            {t('governance.vote.reuseLock')}: {formatAsset(account.lock, network.asset)}
           </Button>
         </div>
       )}

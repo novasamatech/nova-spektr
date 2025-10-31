@@ -3,7 +3,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { transferableAmount } from '@/shared/lib/utils';
+import { formatAsset, fromPrecision, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
 import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -100,10 +100,13 @@ const Amount = () => {
 
   const network = useUnit(formModel.$networkStore);
   const bondBalanceRange = useUnit(formModel.$bondBalanceRange);
+  const reusableLock = useUnit(formModel.$reusableLock);
 
   if (!network) {
     return null;
   }
+
+  const showReuseLockBtn = !!reusableLock?.gtn(0);
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -119,6 +122,18 @@ const Amount = () => {
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}
       </InputHint>
+
+      {reusableLock && showReuseLockBtn && (
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            pallet="secondary"
+            onClick={() => amount.onChange(fromPrecision(reusableLock, network.asset.precision))}
+          >
+            {t('governance.vote.reuseLock')}: {formatAsset(reusableLock, network.asset)}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
