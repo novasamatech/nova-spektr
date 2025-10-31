@@ -1,3 +1,4 @@
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { and, not, spread } from 'patronum';
 
@@ -9,6 +10,7 @@ import {
   nonNullable,
   nullable,
   reservableAmountBN,
+  stakedAmountBN,
   transferableAmount,
 } from '@/shared/lib/utils';
 import {
@@ -84,17 +86,39 @@ const $initiatorBalance = combine(
 
     const { chain, asset } = network;
 
-    const balance = balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
-
-    return balance ? reservableAmountBN(balance) : null;
+    return balanceUtils.getBalance(balances, initiator.accountId, chain.chainId, asset.assetId);
   },
 );
 
-const $bondBalanceRange = combine($initiatorBalance, (initiatorBalance) => {
-  if (!initiatorBalance || initiatorBalance.isZero()) return ZERO_BALANCE;
-
-  return [ZERO_BALANCE, initiatorBalance];
+const $reservableAmount = $initiatorBalance.map((initiatorBalance) => {
+  return initiatorBalance ? reservableAmountBN(initiatorBalance) : null;
 });
+
+const $stakedAmount = $initiatorBalance.map((initiatorBalance) => {
+  return initiatorBalance ? stakedAmountBN(initiatorBalance) : null;
+});
+
+const $bondBalanceRange = combine($reservableAmount, (reservableAmount) => {
+  if (!reservableAmount || reservableAmount.isZero()) return ZERO_BALANCE;
+
+  return [ZERO_BALANCE, reservableAmount];
+});
+
+const $reusableLock = combine(
+  { reservableAmount: $reservableAmount, stakedAmount: $stakedAmount, balance: $initiatorBalance },
+  ({ reservableAmount, stakedAmount, balance }) => {
+    if (nullable(stakedAmount) || nullable(reservableAmount) || nullable(balance)) {
+      return null;
+    }
+
+    const reusableLock = balance.frozen.sub(stakedAmount);
+
+    if (reusableLock.isZero() || reusableLock.isNeg()) {
+      return BN_ZERO;
+    }
+    return BN.min(reusableLock, reservableAmount);
+  },
+);
 
 const $api = combine(
   {
@@ -268,6 +292,7 @@ export const formModel = {
   $bondBalanceRange,
   $proxyBalance,
   $proxiedAccount,
+  $reusableLock,
 
   $fee,
   $multisigDeposit,
