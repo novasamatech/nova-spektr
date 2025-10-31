@@ -1,7 +1,24 @@
-export * from '.';
-export * from './common/constants';
+/**
+ * Integration testing utilities for Nova Spektr
+ *
+ * This module provides a comprehensive set of tools for writing integration
+ * tests with storage, state management, and feature testing.
+ *
+ * @module tests/integrations/utils
+ *
+ * @example
+ *   import { FeatureTestBuilder } from '@tests/integrations/utils';
+ *
+ *   const env = await new FeatureTestBuilder()
+ *     .withWallet(mockWallet)
+ *     .withAccount(mockAccount)
+ *     .build();
+ *
+ *   await env.startFeature(myFeature);
+ *   expect(env.getState(myFeature.status)).toBe('running');
+ *   await env.cleanup();
+ */
 
-export { getTestAccounts, type TestAccounts } from './getTestAccounts';
-export { prepareTestData } from './prepareChainsData';
-export { createWsConnection } from './createWsConnection';
-export { MockDataBuilder } from './mockDataBuilder';
+export { TestStorageBuilder } from './TestStorageBuilder';
+export { FeatureTestEnvironment } from './FeatureTestEnvironment';
+export { FeatureTestBuilder, type FeatureTestBuilderOptions } from './FeatureTestBuilder';
