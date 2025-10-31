@@ -16,6 +16,7 @@ import { xcmTransferUtils } from '../../shared/services/xcm-transfer-utils';
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
 const xcmConfigLoaded = createEvent();
 const xcmChainSelected = createEvent<ChainId>();
+const xcmChainChanged = createEvent<ChainId>();
 const xcmFeeChanged = createEvent<BN>();
 const deliveryFeeRequested = createEvent<Extrinsic>();
 const isXcmFeeLoadingChanged = createEvent<boolean>();
@@ -291,6 +292,14 @@ sample({
 
 sample({
   clock: xcmChainSelected,
+  source: $xcmChainId,
+  filter: (prev, next) => prev !== next,
+  fn: (_, next) => next,
+  target: xcmChainChanged,
+});
+
+sample({
+  clock: xcmChainSelected,
   source: networkModel.$apis,
   filter: (apis, chainId) => Boolean(apis[chainId]),
   fn: (apis, chainId) => apis[chainId],
@@ -334,6 +343,10 @@ sample({
   // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
   // TODO refactor this shit
   filter: (state, update) => {
+    console.log('getDeliveryFeeFx.doneData', {
+      state: state?.toString(),
+      update: update?.toString(),
+    });
     return !!update && !state.eq(update);
   },
   fn: (_, fee) => fee!,
@@ -341,8 +354,13 @@ sample({
 });
 
 sample({
-  clock: [xcmChainSelected, getDeliveryFeeFx.fail],
-  fn: () => BN_ZERO,
+  clock: [xcmChainChanged, getDeliveryFeeFx.fail],
+  fn: () => {
+    console.log('xcmChainChanged, getDeliveryFeeFx.fail', {
+      update: '0',
+    });
+    return BN_ZERO;
+  },
   target: $deliveryFee,
 });
 
@@ -352,6 +370,7 @@ sample({
   // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
   // TODO refactor this shit
   filter: (state, update) => {
+    console.log('xcmFeeChanged', { state, update });
     return !!update && !state.eq(update);
   },
   fn: (_, fee) => fee,
