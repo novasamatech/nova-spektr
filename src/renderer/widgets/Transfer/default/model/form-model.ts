@@ -733,6 +733,7 @@ const formSubmitFinished = sample({
       nullable(tx) ||
       nullable(fee) ||
       nullable(initiator) ||
+      nullable(deliveryFee) ||
       nullable(form.signatory) ||
       !validateAddress(form.destination)
     ) {

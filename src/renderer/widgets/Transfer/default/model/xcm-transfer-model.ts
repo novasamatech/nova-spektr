@@ -26,7 +26,7 @@ const $config = createStore<XcmConfig | null>(null);
 const $networkStore = restore(xcmStarted, null);
 const $xcmChainId = restore(xcmChainSelected, null);
 const $xcmFee = createStore(BN_ZERO);
-const $deliveryFee = createStore<BN>(BN_ZERO);
+const $deliveryFee = createStore<BN | null>(null);
 const $isXcmFeeLoading = restore(isXcmFeeLoadingChanged, true);
 const $xcmParaId = createStore<number | null>(null);
 
@@ -333,29 +333,12 @@ sample({
 
 sample({
   clock: getDeliveryFeeFx.doneData,
-  source: $deliveryFee,
-  // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
-  // TODO refactor this shit
-  filter: (state, update) => {
-    console.log('getDeliveryFeeFx.doneData filter', {
-      state: state?.toString(),
-      update: update?.toString(),
-    });
-    return !!update && !state.eq(update);
-  },
-  fn: (_, fee) => {
-    console.log('getDeliveryFeeFx.doneData', (fee ?? BN_ZERO).toString());
-    return fee!;
-  },
   target: $deliveryFee,
 });
 
 sample({
   clock: [xcmChainSelected, getDeliveryFeeFx.fail],
-  fn: () => {
-    console.log('getDeliveryFeeFx.fail', BN_ZERO.toString());
-    return BN_ZERO;
-  },
+  fn: () => null,
   target: $deliveryFee,
 });
 
