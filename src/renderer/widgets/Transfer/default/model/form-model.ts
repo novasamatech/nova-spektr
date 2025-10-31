@@ -339,8 +339,19 @@ const $coreTx = combine(
     initiator: form.fields.initiator.$value,
     isExistentialDepositEnabled: $isExistentialDepositEnabled,
     isMaxModeEnabled: $isMaxModeEnabled,
+    isNative: $isNative,
   },
-  ({ network, isXcm, form, xcmData, isConnected, initiator, isExistentialDepositEnabled, isMaxModeEnabled }) => {
+  ({
+    network,
+    isXcm,
+    form,
+    xcmData,
+    isConnected,
+    initiator,
+    isExistentialDepositEnabled,
+    isMaxModeEnabled,
+    isNative,
+  }) => {
     if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
       return null;
     }
@@ -352,7 +363,7 @@ const $coreTx = combine(
       amount: form.amount,
       destination: form.destination,
       xcmData,
-      transferAll: isMaxModeEnabled && isExistentialDepositEnabled,
+      transferAll: isNative && isMaxModeEnabled && isExistentialDepositEnabled,
       allowDeath: !isMaxModeEnabled && isExistentialDepositEnabled,
     });
   },
