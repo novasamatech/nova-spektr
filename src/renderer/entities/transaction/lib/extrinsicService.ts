@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
-import { hexToU8a } from '@polkadot/util';
+import { hexToU8a, isHex } from '@polkadot/util';
 
 import { type MultisigTxWrapper, type ProxyTxWrapper, type Transaction, TransactionType } from '@/shared/core';
 import { collectivePallet } from '@/shared/pallet/collective';
@@ -9,6 +9,14 @@ import { multisigOperationService } from '@/domains/network';
 
 import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
 import { hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+
+/**
+ * Converts asset value to appropriate format for createType. If the value is
+ * hex string, converts to Uint8Array, otherwise returns as is
+ */
+const prepareAssetForType = (asset: any) => {
+  return isHex(asset) ? hexToU8a(asset) : asset;
+};
 
 export const getExtrinsic: Record<
   TransactionType,
@@ -28,7 +36,7 @@ export const getExtrinsic: Record<
   [TransactionType.ASSET_TRANSFER]: ({ dest, value, asset, palletName = 'assets' }, api) => {
     const type = api.tx[palletName].transfer.meta.args[0].type;
     // @ts-expect-error Incorrect polkadot-js/api types
-    const location = api.createType(type, asset);
+    const location = api.createType(type, prepareAssetForType(asset));
 
     return api.tx[palletName].transfer(location, dest, value);
   },
@@ -36,14 +44,14 @@ export const getExtrinsic: Record<
     if (api.tx.currencies) {
       const type = api.tx.currencies.transfer.meta.args[1].type;
       // @ts-expect-error Incorrect polkadot-js/api types
-      const location = api.createType(type, hexToU8a(asset));
+      const location = api.createType(type, prepareAssetForType(asset));
 
       return api.tx.currencies.transfer(dest, location, value);
     }
 
     const type = api.tx.tokens.transfer.meta.args[1].type;
     // @ts-expect-error Incorrect polkadot-js/api types
-    const location = api.createType(type, hexToU8a(asset));
+    const location = api.createType(type, prepareAssetForType(asset));
 
     return api.tx.tokens.transfer(dest, location, value);
   },
