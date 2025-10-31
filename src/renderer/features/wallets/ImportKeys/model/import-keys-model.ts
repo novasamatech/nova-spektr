@@ -90,7 +90,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
 
     const errorsDetails = filteredDerivations.reduce<ErrorDetails>(
       (acc, derivation) => {
-        const errors = importKeysUtils.getDerivationError(derivation);
+        const errors = importKeysUtils.getDerivationError(derivation, chains);
         if (!errors) return acc;
 
         for (const err of errors) {
