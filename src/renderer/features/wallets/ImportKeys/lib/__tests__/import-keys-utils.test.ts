@@ -1,6 +1,6 @@
 import { webcrypto } from 'node:crypto';
 
-import { type DraftAccount, KeyType, type VaultShardAccount } from '@/shared/core';
+import { KeyType } from '@/shared/core';
 import { polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { importKeysUtils } from '../import-keys-utils';
 import { importKeysMocks } from '../mocks/import-keys-utils.mock';
@@ -93,18 +93,19 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
           chainId: importKeysMocks.chainId,
         },
       ];
+      const expectedNewShardedDerivationPaths = [...Array(10).keys()]
+        .map((i) => `//polkadot//hot//${i + 10}`)
+        .concat('//polkadot//some_path');
+
       const { addedDerivations, addedCount, duplicatedCount } = importKeysUtils.mergeChainDerivations(
         importKeysMocks.existingChainDerivations,
         importedDerivations,
       );
-
-      const newStakingShard = addedDerivations.find((d) => d.derivationPath === '//polkadot//hot//19');
+      const addedShardedDerivationPaths = addedDerivations.map((d) => d.derivationPath);
 
       expect(addedCount).toEqual(11);
       expect(duplicatedCount).toEqual(10);
-      expect((newStakingShard as DraftAccount<VaultShardAccount>)?.groupId).toEqual(
-        importKeysMocks.existingShardsGroupId,
-      );
+      expect(addedShardedDerivationPaths).toEqual(expectedNewShardedDerivationPaths);
     });
   });
 });
