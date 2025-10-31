@@ -6,6 +6,7 @@ import { type ClaimAction } from '@/shared/api/governance';
 import {
   type Address,
   type Asset,
+  AssetType,
   type Chain,
   type ChainId,
   type Conviction,
@@ -87,7 +88,7 @@ function buildTransfer({
   if (xcmData) {
     transactionType = xcmData.transactionType;
   }
-  if (transferAll) {
+  if (transferAll && asset.type === AssetType.NATIVE) {
     transactionType = TransactionType.TRANSFER_ALL;
   }
   if (allowDeath) {
