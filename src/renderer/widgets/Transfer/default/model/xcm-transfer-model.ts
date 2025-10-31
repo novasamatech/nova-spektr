@@ -248,8 +248,6 @@ const $txAsset = combine(
 const $xcmData = combine(
   {
     api: $api,
-    xcmFee: $xcmFee,
-    deliveryFee: $deliveryFee,
     xcmAsset: $txAsset,
     xcmChainId: $xcmChainId,
     xcmWeight: $xcmWeight,
@@ -257,14 +255,14 @@ const $xcmData = combine(
     xcmBeneficiary: $txBeneficiary,
     transferDirection: $transferDirection,
   },
-  ({ api, xcmChainId, transferDirection, deliveryFee, xcmFee, ...rest }) => {
+  ({ api, xcmChainId, transferDirection, ...rest }) => {
     if (!api || !transferDirection || !xcmChainId) return undefined;
 
     const transactionType = xcmTransferUtils.getXcmTransferType(api, transferDirection.type);
 
     return {
       transactionType,
-      args: { destinationChain: xcmChainId, deliveryFee: deliveryFee.toString(), xcmFee: xcmFee.toString(), ...rest },
+      args: { destinationChain: xcmChainId, ...rest },
     };
   },
   { skipVoid: false },
