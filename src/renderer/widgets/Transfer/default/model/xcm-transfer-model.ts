@@ -346,10 +346,6 @@ sample({
   // TODO refactor this shit
   filter: (state, update) => {
     console.log('[DELIVERY FEE]', { update: update?.toString() });
-    console.log('getDeliveryFeeFx.doneData', {
-      state: state?.toString(),
-      update: update?.toString(),
-    });
     return !!update && !state?.eq(update);
   },
   fn: (_, fee) => fee!,
@@ -358,12 +354,7 @@ sample({
 
 sample({
   clock: [xcmChainChanged, getDeliveryFeeFx.fail],
-  fn: () => {
-    console.log('xcmChainChanged, getDeliveryFeeFx.fail', {
-      update: '0',
-    });
-    return BN_ZERO;
-  },
+  fn: () => null,
   target: $deliveryFee,
 });
 

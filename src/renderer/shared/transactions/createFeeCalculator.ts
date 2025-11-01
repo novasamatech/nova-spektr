@@ -1,5 +1,5 @@
 import { type SubmittableExtrinsic } from '@polkadot/api/types/submittable';
-import { BN } from '@polkadot/util';
+import { type BN } from '@polkadot/util';
 import { type Store, type UnitValue, createEffect, createStore, sample } from 'effector';
 
 import { takeLast } from '@/shared/effector';
@@ -20,13 +20,10 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
 
   const fetchFeeFx = takeLast({
     fn: async ({ extrinsic }: FeeCalculationRequest): Promise<BN | null> => {
-      return await transactionService
-        .getExtrinsicFee(extrinsic)
-        .then((x) => new BN(x))
-        .catch((err) => {
-          console.error(err);
-          return null;
-        });
+      return await transactionService.getExtrinsicFee(extrinsic).catch((err) => {
+        console.error(err);
+        return null;
+      });
     },
     key: () => 'feeCalculation',
   });

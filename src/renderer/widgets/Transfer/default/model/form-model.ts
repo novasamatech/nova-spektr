@@ -144,7 +144,14 @@ const form: Form<FormParams> = createForm<FormParams>({
       }),
     },
   },
-  validateOn: ['submit'],
+  validateOn: ['change'],
+});
+const $isFormSubmitted = createStore<boolean>(false);
+
+sample({
+  clock: form.submit,
+  fn: () => true,
+  target: $isFormSubmitted,
 });
 
 const $destination = form.fields.destination.$value;
@@ -345,7 +352,7 @@ const $coreTx = combine(
     balancePreservation: $balancePreservationStrategy,
   },
   ({ isFormValid, network, isXcm, formValues, xcmData, isConnected, initiator, inputMode, balancePreservation }) => {
-    console.log({ isFormValid });
+    console.log({ isFormValid, formValues });
 
     if (
       !isFormValid ||
@@ -422,6 +429,10 @@ const $feeCoreTx = combine(
     });
   },
 );
+
+combine({ transaction: $coreTx, feeTransaction: $feeCoreTx }).subscribe(({ transaction, feeTransaction }) => {
+  console.log('createFeeCalculator', { transaction, feeTransaction });
+});
 
 const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   api: $api,
@@ -598,7 +609,6 @@ const $isMyselfXcmEnabled = combine(
 );
 
 const $canSubmit = and(
-  form.$isValid,
   $valid,
   not($hasDestinationBalanceError),
   or(not($isXcm), not(xcmTransferModel.$isXcmFeeLoading), not(xcmTransferModel.$isDeliveryFeeLoading)),
@@ -828,6 +838,7 @@ export const formModel = {
   $canSubmit,
   $asset,
 
+  $isFormSubmitted,
   $errors,
 
   $xcmConfig: xcmTransferModel.$config,

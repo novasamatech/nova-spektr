@@ -193,8 +193,12 @@ async function getExtrinsicFee(extrinsic: Extrinsic) {
 
 async function getTransactionFee(transaction: AnyTransaction, signatory: AccountId, api: ApiPromise) {
   const extrinsic = createExtrinsic(transaction, api);
-  const { partialFee } = await extrinsic.paymentInfo(signatory);
-  return partialFee.toBn();
+  try {
+    const { partialFee } = await extrinsic.paymentInfo(signatory);
+    return partialFee.toBn();
+  } catch {
+    return null;
+  }
 }
 
 async function getExtrinsicWeight(extrinsic: Extrinsic) {
