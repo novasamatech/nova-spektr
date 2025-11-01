@@ -378,7 +378,7 @@ export const xcmTransferModel = {
     xcmConfigLoaded,
     xcmChainSelected,
     xcmFeeChanged,
-    deliveryFeeRequested: deliveryFeeRequested,
+    deliveryFeeRequested,
     isXcmFeeLoadingChanged,
     amountChanged,
     destinationChanged,
