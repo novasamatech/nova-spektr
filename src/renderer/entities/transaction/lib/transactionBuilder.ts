@@ -78,7 +78,7 @@ type TransferParams = {
 };
 
 function isTransferAllSupported(asset: Asset) {
-  return asset.type === AssetType.NATIVE || asset.type === AssetType.ORML;
+  return asset.type === AssetType.NATIVE;
 }
 
 function getTransactionType(asset: Asset, inputMode: InputMode, balancePreservation: BalancePreservation) {
@@ -87,8 +87,7 @@ function getTransactionType(asset: Asset, inputMode: InputMode, balancePreservat
     return TransactionType.TRANSFER_ALLOW_DEATH;
   }
 
-  const transferAll = inputMode === 'max' && balancePreservation === 'allowDeath';
-  if (isTransferAllSupported(asset) && transferAll) {
+  if (inputMode === 'max' && isTransferAllSupported(asset)) {
     return TransactionType.TRANSFER_ALL;
   }
 
@@ -109,17 +108,24 @@ function buildTransfer({
   const palletName =
     asset.typeExtras && 'palletName' in asset.typeExtras ? camelCase(asset.typeExtras.palletName) : 'assets';
 
+  const args: Record<string, any> = {
+    palletName,
+    dest: destination,
+    value: formatAmount(amount, asset.precision),
+    ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
+    ...xcmData?.args,
+  };
+
+  // Add keepAlive parameter for TRANSFER_ALL
+  if (transactionType === TransactionType.TRANSFER_ALL) {
+    args.keepAlive = balancePreservation === 'keepAlive';
+  }
+
   return {
     chainId: chain.chainId,
     accountId: accountId,
     type: transactionType,
-    args: {
-      palletName,
-      dest: destination,
-      value: formatAmount(amount, asset.precision),
-      ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
-      ...xcmData?.args,
-    },
+    args,
   };
 }
 
