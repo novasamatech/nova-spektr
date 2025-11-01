@@ -82,7 +82,8 @@ function isTransferAllSupported(asset: Asset) {
 }
 
 function getTransactionType(asset: Asset, inputMode: InputMode, balancePreservation: BalancePreservation) {
-  const allowDeath = inputMode === 'regular' && balancePreservation === 'allowDeath';
+  // TRANSFER_ALLOW_DEATH is only for NATIVE asset type
+  const allowDeath = inputMode === 'regular' && balancePreservation === 'allowDeath' && asset.type === AssetType.NATIVE;
   if (allowDeath) {
     return TransactionType.TRANSFER_ALLOW_DEATH;
   }
