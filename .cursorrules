@@ -1,0 +1,560 @@
+# Nova Spektr - Cursor AI Rules
+
+## Project Overview
+Nova Spektr is a Polkadot & Kusama Enterprise Desktop application built with Electron, React 19, TypeScript, Effector state management, and Feature-Sliced Design architecture.
+
+## Architecture Patterns
+
+### Feature-Sliced Design (FSD)
+The project follows Feature-Sliced Design methodology with strict layer hierarchy:
+
+**Layer Order (from low to high level):**
+1. **shared/** - Reusable utilities, UI components, helpers, and integrations
+   - Contains: UI kit, hooks, utils, DI system, Effector helpers, API integrations
+   - Can import: Nothing from other layers
+   
+2. **domains/** - Core business logic without UI
+   - Contains: Stores, services, resources for business entities
+   - Can import: shared, other domains
+   - **MUST NOT import**: React, effector-react (logic only, no views)
+   - Each domain exports through index.ts with clear public API
+   
+3. **aggregates/** - Shared state and contextual data models
+   - Contains: Cross-cutting concerns, user-specific state (e.g., selected wallet/network)
+   - Can import: shared, domains, entities (deprecated), aggregates
+   
+4. **sdk/** - Simple integration layer for features and domains
+   - Can import: shared, features, domains
+   
+5. **entities/** - **DEPRECATED** (being migrated to domains/aggregates)
+   - Legacy logic and UI for specific entities
+   
+6. **features/** - User flows and feature implementations
+   - Contains: Complete user scenarios with UI and logic
+   - Can import: shared, entities, features (limited), aggregates, domains, sdk
+   - Each feature exports a feature identifier created with `createFeature`
+   
+7. **widgets/** - **DEPRECATED** (being migrated to features)
+   - Legacy modal windows for transactions
+   
+8. **pages/** - Composition of features into pages
+   - Can import: shared, entities, features, widgets, aggregates, domains
+   
+9. **app/** - Application entry point and bootstrap code
+   - Can import: Most layers for initialization
+
+**CRITICAL RULES:**
+- NEVER import from higher layers to lower layers
+- NEVER use relative imports from project root (use `@/` aliases)
+- Respect boundaries enforced by eslint-plugin-boundaries
+- Each layer's index.ts MUST only export necessary abstractions
+
+### Domain Structure
+
+Each domain follows this structure:
+```
+domain-name/
+  _lib/              # Non-business logic (helpers, types)
+    helpers.ts
+    types.ts
+  entity/
+    store.ts         # Effector store with logic
+    store.spec.ts    # Unit tests
+    resource.ts      # Optional: transport + mappings
+    service.ts       # Stateless business logic
+    service.spec.ts
+    types.ts         # Public interfaces
+  index.ts           # Public API export
+```
+
+**Domain Store Rules:**
+- Export single object WITHOUT "Store" or "Model" suffix (e.g., `accounts`, not `accountsStore`)
+- All Effector stores MUST be readonly when exported
+- Effects should be named with meaningful CRUD actions (create*, update*, delete*, fetch*, etc.)
+- Store MUST be isolated (no other store dependencies)
+- Store MUST be testable
+
+**Domain Service Rules:**
+- Export single object named as `{singularEntityName}Service` (e.g., `accountService`)
+- MUST be stateless
+- Provide meaningful business actions (no internal logic or external data mapping)
+
+### Feature Structure
+
+Each feature follows this structure:
+```
+feature-name/
+  components/        # UI components
+  services/          # Feature-specific services
+  model/
+    feature.tsx      # Feature definition with createFeature
+    ...              # Other model files
+  index.tsx          # Export feature and public API
+```
+
+**Feature Rules:**
+- MUST export feature identifier created with `createFeature`
+- MUST be written as standalone module
+- Integration happens through DI in feature identifier (`feature.inject(...)`)
+- CAN export components and events
+- MUST NOT export stores or direct data access (use domains/aggregates)
+- Each feature contains one or few related user flows
+
+### Aggregate Structure
+
+```
+aggregate-name/
+  model.ts           # State and logic
+  service.ts         # Optional: stateless helpers
+  index.ts           # Public API
+```
+
+Aggregates contain contextual, user-specific state (e.g., selected wallet, active network).
+
+## Effector State Management
+
+### Naming Conventions (CRITICAL)
+
+**Stores:**
+- MUST start with `$` prefix: `$accounts`, `$wallets`, `$selectedNetwork`
+- Use descriptive names without "Store" suffix
+- Example: `const $users = createStore<User[]>([]);`
+
+**Effects:**
+- MUST end with `Fx` suffix: `fetchDataFx`, `createAccountFx`, `updateUserFx`
+- Use meaningful action names (CRUD verbs)
+- Example: `const fetchUsersFx = createEffect(...);`
+
+**Events:**
+- Use descriptive action names: `userClicked`, `formSubmitted`, `dataUpdated`
+- No specific prefix/suffix required
+- Example: `const formSubmitted = createEvent<FormData>();`
+
+**Derived Stores:**
+- When using `combine`, assign to variable with `$` prefix
+- Example: `const $fullName = combine($firstName, $lastName, ...);`
+
+### Effector Best Practices
+
+1. **Store Creation:**
+   ```typescript
+   import { createStore, createEffect, sample } from 'effector';
+   import { readonly } from 'patronum';
+   
+   const $data = createStore<Data[]>([]);
+   const fetchDataFx = createEffect(async () => { ... });
+   
+   // Export as readonly
+   export const dataModel = {
+     $list: readonly($data),
+     fetch: fetchDataFx,
+   };
+   ```
+
+2. **NEVER use:**
+   - `.watch()` - Use `sample` instead
+   - Direct `.getState()` - Only in specific cases with eslint-disable comment
+   - More than 3 arguments in `combine` - Split into multiple combines
+
+3. **Use `sample` for connections:**
+   ```typescript
+   sample({
+     clock: buttonClicked,
+     source: $formData,
+     target: submitFormFx,
+   });
+   ```
+
+4. **Use patronum utilities:**
+   - `readonly()` - Make stores read-only for export
+   - `once()` - Execute once
+   - `interval()` - Periodic execution
+   - `not`, `or`, `and` - Boolean logic
+
+## Dependency Injection System
+
+### DI Identifiers
+
+The project uses custom DI system with specific naming conventions:
+
+**createSlot** → variable MUST end with `Slot`
+```typescript
+const navigationSlot = createSlot<Props>({ name: 'navigation' });
+```
+
+**createPipeline** → variable MUST end with `Pipeline`
+```typescript
+const dataPipeline = createPipeline<string[], Meta>();
+```
+
+**createAsyncPipeline** → variable MUST end with `AsyncPipeline`
+```typescript
+const processingAsyncPipeline = createAsyncPipeline<Data>();
+```
+
+**createAnyOf** → variable MUST end with `AnyOf`
+```typescript
+const validatorAnyOf = createAnyOf<Validator>();
+```
+
+**createCombine** → variable MUST end with `Combine`
+```typescript
+const transformCombine = createCombine<Input, Output>();
+```
+
+**createTransformer** → variable MUST end with `Transformer`
+```typescript
+const dataTransformer = createTransformer<Input, Output>();
+```
+
+### Feature Integration Pattern
+
+```typescript
+import { createFeature } from '@/shared/feature';
+import { combine } from 'effector';
+
+const $input = combine({
+  network: networkAggregate.$network,
+  wallet: walletModel.$selected,
+}, ({ network, wallet }) => {
+  if (!network || !wallet) return null;
+  return { network, wallet };
+});
+
+export const myFeature = createFeature({
+  name: 'feature/my-feature',
+  enable: $features.map(({ myFeature }) => myFeature),
+  input: $input,
+  filter: input => {
+    // Optional: validation logic
+    return input.api.isConnected ? null : {
+      status: 'failed',
+      type: 'warning',
+      error: new Error('Network disabled'),
+    };
+  },
+});
+
+// Inject into DI identifiers
+myFeature.inject(someSlot, (props) => <Component {...props} />);
+myFeature.inject(somePipeline, (data, meta) => transformData(data));
+```
+
+## React & Component Patterns
+
+### Component Definition
+```typescript
+// ALWAYS use arrow functions for components
+export const MyComponent = ({ prop1, prop2 }: Props) => {
+  return <div>Content</div>;
+};
+
+// NEVER use function declarations
+// ❌ function MyComponent() { ... }
+```
+
+### Props Sorting
+```typescript
+// Props MUST be sorted with callbacks last
+<Component
+  id="123"
+  name="test"
+  disabled={false}
+  onClick={handleClick}
+  onSubmit={handleSubmit}
+/>
+```
+
+### Effector React Integration
+```typescript
+import { useUnit } from 'effector-react';
+
+// ❌ NEVER do this: useUnit(store).property
+// ✅ Use useStoreMap instead
+const value = useStoreMap($store, state => state.property);
+
+// Or destructure first
+const state = useUnit($store);
+const { property } = state;
+```
+
+### No Fragments
+```typescript
+// Avoid useless fragments
+// ❌ return <>{children}</>;
+// ✅ return children;
+```
+
+## TypeScript Conventions
+
+### Type Imports
+```typescript
+// ALWAYS use inline type imports
+import { type User, type Account, fetchData } from './api';
+
+// NEVER separate type imports
+// ❌ import type { User } from './api';
+```
+
+### Type Definitions
+```typescript
+// Use type for simple types and interfaces for objects
+type UserId = string;
+type Status = 'idle' | 'loading' | 'success' | 'error';
+
+interface User {
+  id: UserId;
+  name: string;
+  status: Status;
+}
+```
+
+### Array Types
+```typescript
+// ALWAYS use array syntax (not generics)
+type Users = User[];  // ✅
+type Users = Array<User>;  // ❌
+
+const items: string[] = [];  // ✅
+const items: Array<string> = [];  // ❌
+```
+
+### Type Assertions
+```typescript
+// AVOID type assertions when possible
+// In production code, prefer type guards and validation
+
+// In tests, assertions are acceptable:
+const user = mockUser as User;
+```
+
+## Styling & UI
+
+### Tailwind CSS
+```typescript
+import { cnTw } from '@/shared/lib/utils';
+
+// Use cnTw for conditional classes
+const className = cnTw(
+  'base-class',
+  isActive && 'active-class',
+  'another-class'
+);
+
+// ❌ NEVER use single string with cnTw
+cnTw('single-class')  // Use plain string instead
+```
+
+### UI Components Location
+- **shared/ui-kit/** - Pure UI components (NO Effector/state)
+- **shared/ui/** - UI components with optional logic
+- **shared/ui-entities/** - Entity-specific UI components (can use domains)
+
+### Styling Rules
+- Use Tailwind utility classes
+- Custom theme values in `tw-config-consts/`
+- Follow mobile-first responsive design
+- Use semantic color names from theme
+
+## Code Style & Formatting
+
+### Prettier Configuration
+- **Print Width:** 120 characters (160 for bootstrap files)
+- **Quotes:** Single quotes
+- **Semicolons:** Required
+- **Trailing Commas:** All
+- **Arrow Parens:** Always (except in domains/features/effector files where it's "avoid")
+- **Tab Width:** 2 spaces
+- **Line Endings:** LF
+
+### Import Order
+Imports MUST be sorted alphabetically with newlines between groups:
+```typescript
+// 1. Node built-ins
+import { join } from 'path';
+
+// 2. External dependencies
+import { createStore } from 'effector';
+import React from 'react';
+
+// 3. Internal with @ aliases (sorted by layer)
+import { accounts } from '@/domains/network';
+import { walletModel } from '@/entities/wallet';
+import { createFeature } from '@/shared/feature';
+
+// 4. Relative imports
+import { helper } from './helpers';
+import { type Props } from './types';
+```
+
+### Loops & Iteration
+```typescript
+// ✅ ALWAYS use for..of
+for (const item of items) {
+  process(item);
+}
+
+// ❌ NEVER use forEach
+items.forEach(item => process(item));
+
+// ❌ NEVER use for..in
+for (const key in obj) { ... }
+```
+
+### Unused Variables
+```typescript
+// Prefix with underscore to mark as intentionally unused
+const handleClick = (_event: Event, data: Data) => {
+  console.log(data);
+};
+```
+
+## Internationalization (i18n)
+
+### Translation Keys
+```typescript
+import { useI18n } from '@/shared/i18n';
+
+const { t } = useI18n();
+
+// Use translation for all user-facing text
+<button>{t('button.submit')}</button>
+
+// Ignore for specific cases with comment
+{/* eslint-disable-next-line i18next/no-literal-string */}
+<span>{dynamicData.symbol}</span>
+```
+
+### Ignored Text
+Non-translatable text (data values, error logs, technical strings) should be marked with eslint ignore comment.
+
+## Testing
+
+### Unit Tests (Vitest)
+```typescript
+import { allSettled, fork } from 'effector';
+import { describe, expect, it } from 'vitest';
+
+describe('feature name', () => {
+  it('should do something', async () => {
+    const scope = fork();
+    
+    await allSettled(someEvent, { scope, params: data });
+    
+    expect(scope.getState($store)).toBe(expected);
+  });
+});
+```
+
+### E2E Tests (Playwright)
+- Located in `tests/system/`
+- Use page object pattern
+- Tag important tests with `@regress`
+
+## File Organization
+
+### Naming Conventions
+- **Files:** kebab-case: `user-profile.tsx`, `create-account.ts`
+- **Components:** PascalCase matching filename: `UserProfile.tsx`
+- **Utilities:** camelCase: `formatDate.ts`
+- **Types:** PascalCase: `type UserAccount = ...`
+- **Constants:** UPPER_SNAKE_CASE: `const MAX_RETRIES = 3;`
+
+### Index Files
+```typescript
+// Export public API only
+export { accounts } from './account/store';
+export { accountService } from './account/service';
+export type { AnyAccount, ChainAccount } from './account/types';
+```
+
+## API & Data
+
+### Polkadot API
+```typescript
+import { type ApiPromise } from '@polkadot/api';
+
+// Use Polkadot API for chain interactions
+// Use polkadot-api for new implementations (PAPI)
+```
+
+### Storage (Dexie)
+```typescript
+import { storageService } from '@/shared/api/storage';
+
+// All database operations through storageService
+const users = await storageService.users.readAll();
+await storageService.users.createAll(newUsers);
+```
+
+### GraphQL
+```typescript
+// Apollo Client for GraphQL queries
+import { useQuery } from '@apollo/client';
+```
+
+## Common Patterns
+
+### Null/Undefined Checks
+```typescript
+import { nullable, nonNullable } from '@/shared/lib/utils';
+
+// Use utility functions
+if (nullable(value)) return;
+if (nonNullable(value)) process(value);
+```
+
+### Error Handling
+- Development: Errors are NOT handled (to catch bugs)
+- Staging/Production: Errors are handled gracefully
+- Use ErrorBoundary for React components
+
+### Performance
+- Use React.memo for expensive components
+- Use useStoreMap for derived values from stores
+- Avoid unnecessary re-renders
+
+## Security & Best Practices
+
+1. **No console.log in production** - Use proper logging
+2. **Validate user input** - Always validate and sanitize
+3. **Type safety** - Leverage TypeScript strictly
+4. **Immutability** - Use Immer for complex state updates
+5. **No any types** - Use unknown or proper types (warn only)
+
+## Git & Development
+
+### Commits
+- Follow conventional commits format
+- Use commitlint for validation
+
+### Branches
+- Main branches: `main`, `dev`, `release/*`
+- Feature branches: `feature/*`
+- Bug fixes: `fix/*`
+
+### Code Review
+- Follow existing patterns
+- Keep scope small
+- Write tests for new features
+
+## DO NOT
+
+1. ❌ Import React in JSX files (React 19 uses automatic runtime)
+2. ❌ Use class components (only functional components)
+3. ❌ Use `.watch()` in Effector (use `sample`)
+4. ❌ Use `forEach` or `for..in` (use `for..of`)
+5. ❌ Export stores without `readonly()`
+6. ❌ Import from higher FSD layers to lower ones
+7. ❌ Use relative imports from root (use `@/` aliases)
+8. ❌ Ignore linter/prettier errors
+9. ❌ Use type assertions in production code without validation
+10. ❌ Import React/Effector-React in domains
+
+## Additional Resources
+
+- Project documentation: `docs/` folder
+- Storybook: Run `pnpm storybook` for UI component examples
+- API documentation: Auto-generated with TypeDoc
+- Contributing guide: `CONTRIBUTING.md`
+
