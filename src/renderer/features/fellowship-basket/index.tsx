@@ -11,6 +11,7 @@ import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
 import { basketSDK } from '@/sdk/basket';
 import {
+  FellowshipEvidenceVoting,
   FellowshipSalaryInductConfirmation,
   FellowshipSalaryPayoutConfirmation,
   FellowshipSalaryRequestConfirmation,
@@ -32,6 +33,7 @@ const getModalTitle = (transaction: Transaction) => {
     [TransactionType.COLLECTIVE_SALARY_PAYOUT]: t('fellowship.salary.salaryPayout'),
     [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: t('fellowship.salary.promotionTitle'),
     [TransactionType.COLLECTIVE_SALARY_INDUCT]: t('fellowship.salary.salaryInduct'),
+    [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: t('fellowship.voting.title'),
   };
 
   return transaction.type in title ? title[transaction.type] : null;
@@ -45,6 +47,7 @@ const getRecordTitle = (transaction: Transaction) => {
     [TransactionType.COLLECTIVE_SALARY_PAYOUT]: t('fellowship.basket.salaryPayout'),
     [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: t('fellowship.basket.submitEvidence'),
     [TransactionType.COLLECTIVE_SALARY_INDUCT]: t('fellowship.basket.salaryInduct'),
+    [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: t('fellowship.basket.vote'),
   };
 
   return transaction.type in title ? title[transaction.type] : null;
@@ -58,6 +61,7 @@ const getIcon = (transaction: Transaction): IconNames | undefined => {
     [TransactionType.COLLECTIVE_SALARY_REQUEST]: 'unknownMst',
     [TransactionType.COLLECTIVE_SALARY_PAYOUT]: 'unknownMst',
     [TransactionType.COLLECTIVE_SUBMIT_EVIDENCE]: 'unknownMst',
+    [TransactionType.COLLECTIVE_EVIDENCE_VOTE]: 'voteMst',
   };
 
   return icon[transaction.type];
@@ -131,6 +135,10 @@ basketSDK(fellowshipBasketFeature, {
       return <FellowshipSubmitEvidenceConfirmation id={transaction.id} hideSignButton />;
     }
 
+    if (votingService.isEvidenceVotingTransaction(tx)) {
+      return <FellowshipEvidenceVoting id={transaction.id} hideSignButton />;
+    }
+
     return null;
   },
   validation(result, { transaction }) {
@@ -140,7 +148,8 @@ basketSDK(fellowshipBasketFeature, {
       salaryService.isSalaryRequestTransaction(transaction.coreTx) ||
       salaryService.isSalaryPayoutTransaction(transaction.coreTx) ||
       transaction.coreTx.type === TransactionType.COLLECTIVE_SET_ACTIVE ||
-      transaction.coreTx.type === TransactionType.COLLECTIVE_SUBMIT_EVIDENCE
+      transaction.coreTx.type === TransactionType.COLLECTIVE_SUBMIT_EVIDENCE ||
+      votingService.isEvidenceVotingTransaction(transaction.coreTx)
     ) {
       return result;
     }

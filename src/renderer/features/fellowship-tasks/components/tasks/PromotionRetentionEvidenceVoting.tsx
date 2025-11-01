@@ -20,6 +20,7 @@ export const evidenceVotingTaskActionSlot = createSlot<{
   evidence: Evidence;
   transaction: Transaction | null;
   endBlock: number | null;
+  onClose?: () => void;
 }>();
 
 type Props = {
@@ -77,7 +78,7 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
 
   return (
     <Box direction="row" gap={2}>
-      <EvidenceDetailsModal evidence={evidence} title={title}>
+      <EvidenceDetailsModal evidence={evidence} transaction={transaction} title={title}>
         <button className="block w-full appearance-none p-4">
           <Box direction="row" gap={2}>
             <div className="shrink-0">

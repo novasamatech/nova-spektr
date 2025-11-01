@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { reshape } from 'patronum';
+import { reshape, spread } from 'patronum';
 
 import { nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
@@ -179,22 +179,33 @@ const saveToBasket = createEvent();
 
 sample({
   clock: saveToBasket,
-  source: $wrappedTx,
-  fn: transactions => {
-    if (nullable(transactions)) {
-      return [];
+  source: { existing: basketOperations.$list, account: $votingAccount, coreTx: $coreTx },
+  fn: ({ existing, account, coreTx }) => {
+    if (nullable(account) || nullable(coreTx)) {
+      return { add: [], remove: [] };
     }
 
-    const tx: BasketTransactionDraft = {
-      initiatorAccountId: transactions.coreTx.accountId,
-      coreTx: transactions.coreTx,
+    const existingTransactions = existing.filter(o => {
+      if (o.initiatorAccountId !== account.accountId) return false;
+      if (!votingService.isEvidenceVotingTransaction(o.coreTx)) return false;
+      return coreTx.args.poll === o.coreTx.args.poll;
+    });
+
+    const isSameTransaction = existingTransactions.some(t => coreTx.args.aye === t.coreTx.args.aye);
+
+    const newTransaction: BasketTransactionDraft = {
+      initiatorAccountId: account.accountId,
+      coreTx,
       route: [],
       createdAt: Date.now(),
     };
 
-    return [tx];
+    return {
+      add: isSameTransaction ? [] : [newTransaction],
+      remove: existingTransactions,
+    };
   },
-  target: basketOperations.addTransactions,
+  target: spread({ add: basketOperations.addTransactions, remove: basketOperations.removeTransactions }),
 });
 
 // Steps

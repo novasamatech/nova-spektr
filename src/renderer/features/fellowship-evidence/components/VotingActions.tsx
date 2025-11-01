@@ -1,9 +1,11 @@
-import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { useGate, useUnit } from 'effector-react';
+import { memo, useCallback } from 'react';
 
+import { type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { ButtonCard } from '@/shared/ui';
+import { VotingButtonWithTooltip } from '@/shared/ui-entities';
 import { PeriodEndTimer } from '@/shared/ui-entities/PeriodEndTimer/PeriodEndTimer';
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
@@ -18,46 +20,62 @@ type Props = {
   endBlock: number | null;
   variant: 'large' | 'small';
   disabled: boolean;
+  transaction?: Transaction | null;
+  onClose?: () => void;
 };
 
-export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Props) => {
+export const VotingActions = memo(({ evidence, endBlock, transaction, variant, disabled, onClose }: Props) => {
+  useGate(evidenceVoting.flow, { evidence, aye: false });
+
   const { t } = useI18n();
   const input = useUnit(fellowshipEvidenceFeature.input);
   const account = useUnit(evidenceVoting.$votingAccount);
 
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
-  const handleAyeClick = () => {
-    if (disabled) return;
+  const handleVote = useCallback(
+    (vote: 'aye' | 'nay') => {
+      if (disabled) return;
 
-    if (canAddToBasket) {
-      evidenceVoting.flow.open({ evidence, aye: true });
-      evidenceVoting.saveToBasket();
-      evidenceVoting.flow.close({ evidence: null, aye: false });
-    }
-  };
+      if (canAddToBasket) {
+        evidenceVoting.flow.open({ evidence, aye: vote === 'aye' });
+        evidenceVoting.saveToBasket();
+        evidenceVoting.flow.close({ evidence: null, aye: false });
+        onClose?.();
+      }
+    },
+    [disabled, canAddToBasket, evidence],
+  );
 
-  const handleNayClick = () => {
-    if (disabled) return;
-
-    if (canAddToBasket) {
-      evidenceVoting.flow.open({ evidence, aye: false });
-      evidenceVoting.saveToBasket();
-      evidenceVoting.flow.close({ evidence: null, aye: false });
-    }
-  };
+  const handleAyeClick = () => handleVote('aye');
+  const handleNayClick = () => handleVote('nay');
 
   if (variant === 'large') {
     if (canAddToBasket) {
       return (
         <Box fillContainer gap={4}>
           <Box direction="row" gap={4} width="100%">
-            <ButtonCard pallet="negative" icon="negative" fullWidth disabled={disabled} onClick={handleNayClick}>
+            <VotingButtonWithTooltip
+              variant="negative"
+              icon="negative"
+              disabled={disabled}
+              checked={nonNullable(transaction) && !transaction.args.aye}
+              fullWidth
+              onClick={handleNayClick}
+            >
               {t('fellowship.voting.notGood')}
-            </ButtonCard>
-            <ButtonCard pallet="positive" icon="positive" fullWidth disabled={disabled} onClick={handleAyeClick}>
+            </VotingButtonWithTooltip>
+
+            <VotingButtonWithTooltip
+              variant="positive"
+              icon="positive"
+              disabled={disabled}
+              checked={nonNullable(transaction) && transaction.args.aye}
+              fullWidth
+              onClick={handleAyeClick}
+            >
               {t('fellowship.voting.good')}
-            </ButtonCard>
+            </VotingButtonWithTooltip>
           </Box>
         </Box>
       );
@@ -83,8 +101,22 @@ export const VotingActions = memo(({ evidence, endBlock, variant, disabled }: Pr
 
   const buttonNodes = canAddToBasket ? (
     <Box direction="row" gap={1}>
-      <FilledIconButton variant="negative" icon="negative" disabled={disabled} onClick={handleNayClick} />
-      <FilledIconButton variant="positive" icon="positive" disabled={disabled} onClick={handleAyeClick} />
+      <FilledIconButton
+        variant="negative"
+        icon="negative"
+        checked={nonNullable(transaction) && !transaction.args.aye}
+        marked={nonNullable(transaction) && !transaction.args.aye}
+        disabled={disabled}
+        onClick={handleNayClick}
+      />
+      <FilledIconButton
+        variant="positive"
+        icon="positive"
+        checked={nonNullable(transaction) && transaction.args.aye}
+        marked={nonNullable(transaction) && transaction.args.aye}
+        disabled={disabled}
+        onClick={handleAyeClick}
+      />
     </Box>
   ) : (
     <Box direction="row" gap={1}>
