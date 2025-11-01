@@ -1,14 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { useResource } from '@/shared/resource2';
-import { member, memberService } from '@/domains/collectives';
+import { type CollectivePalletsType, memberService } from '@/domains/collectives';
 
-export const useCoreMembers = (api: ApiPromise) => {
-  const { data, pending } = useResource(member.resource, {
-    params: { palletType: 'fellowship', api },
-    defaultValue: [],
-    map: (cache, params) => cache['fellowship']?.[params.api.genesisHash.toHex()],
-  });
+import { useMembers } from './useMembers';
+
+export const useCoreMembers = (pallet: CollectivePalletsType, api?: ApiPromise) => {
+  const { data, pending } = useMembers(pallet, api);
 
   const coreMembers = data.filter(memberService.isCoreMember);
 

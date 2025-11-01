@@ -1,6 +1,14 @@
 import { type Event, type EventCallable, type Store } from 'effector';
 import { type z } from 'zod';
 
+export type KeyFn<Params> = (params: Params) => string | string[];
+
+export type NormalizedKeyFn<Params> = (params: Params) => ResourceRequestKey;
+
+export type MapCacheFn<Params, Response, Cache> = (cache: Cache, result: Response, params: Params) => Cache;
+
+export type DefaultCache<Response> = Record<ResourceRequestKey, Response>;
+
 export type ResourceRequestKey = string & z.$brand<'subscriptionKey'>;
 
 export interface Resource<Params, Response, Cache> {
@@ -8,7 +16,7 @@ export interface Resource<Params, Response, Cache> {
   start: EventCallable<Params>;
   stop: EventCallable<ResourceRequestKey>;
 
-  createKey(params: Params): ResourceRequestKey;
+  createKey: NormalizedKeyFn<Params>;
 
   $cache: Store<Cache>;
 }

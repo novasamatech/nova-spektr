@@ -28,16 +28,6 @@ const $pendingMember = and(or(member.pending, identity.request.pending), $member
 const memberUpdate = attachToFeatureInput(fellowshipTasksFeature, $member);
 
 sample({
-  clock: fellowshipTasksFeature.running,
-  target: member.subscribe,
-});
-
-sample({
-  clock: fellowshipTasksFeature.stopped,
-  target: member.unsubscribe,
-});
-
-sample({
   clock: memberUpdate,
   fn: ({ input: { chainId }, data: member }) => ({
     chainId,

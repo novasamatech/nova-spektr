@@ -7,8 +7,8 @@ import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { useCoreMembers } from '../hooks/useCoreMembers';
+import { useMembersIdentities } from '../hooks/useMembersIdentities';
 import { fellowshipMembersFeature } from '../model/feature';
-import { identityModel } from '../model/identity';
 
 import { Member } from './Member';
 import { MembersListEmptyState } from './MembersListEmptyState';
@@ -18,9 +18,9 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
 
-  const identities = useUnit(identityModel.$identity);
   const input = useUnit(fellowshipMembersFeature.input);
-  const { data: members } = useCoreMembers(input?.api);
+  const { data: members } = useCoreMembers('fellowship', input?.api);
+  const { data: identities } = useMembersIdentities(members, input?.chainId);
 
   const { list } = useDeferredList({ list: members });
 

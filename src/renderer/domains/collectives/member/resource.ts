@@ -5,33 +5,23 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
-import { createSubscriptionResource } from '@/shared/resource2';
+import { createSubscriptionResource } from '@/shared/query';
 import { mergeNested } from '../_lib/helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type CoreMember, type Member } from './types';
 
-type RequestParams = {
+type Params = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
 };
 
 export const $cache = createStore<CollectivesStruct<Member[]>>({});
 
-export const membersSubscription = createSubscriptionResource<RequestParams, Member[], CollectivesStruct<Member[]>>({
-  cache: $cache,
-  key({ api, palletType }) {
-    return `${api.genesisHash.toHex()}:${palletType}`;
-  },
-  map(store, members) {
-    return mergeNested(
-      store,
-      members,
-      m => m.accountId,
-      (a, b) => b.rank - a.rank,
-    );
-  },
-  fn({ api, palletType }, callback) {
+export const membersSubscription = createSubscriptionResource<Params>({
+  key: ({ api, palletType }) => [palletType, api.genesisHash.toHex()],
+})
+  .subscribe<Member[]>(({ api, palletType }, callback) => {
     const fn = async () => {
       const collectiveMembers = await collectivePallet.storage.members(palletType, api);
       const coreMembers = await collectiveCorePallet.storage.member(palletType, api);
@@ -77,7 +67,11 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
         fn,
       ),
       polkadotjsHelpers.subscribeSystemEvents(
-        { api, section: `${palletType}Core`, methods: ['Imported', 'Swapped', 'Promoted', 'Demoted', 'ActiveChanged'] },
+        {
+          api,
+          section: `${palletType}Core`,
+          methods: ['Imported', 'Swapped', 'Promoted', 'Demoted', 'ActiveChanged'],
+        },
         fn,
       ),
     ]);
@@ -89,5 +83,16 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
         }
       });
     };
-  },
-});
+  })
+  .cache({
+    store: $cache,
+    map(store, members) {
+      return mergeNested(
+        store,
+        members,
+        m => m.accountId,
+        (a, b) => b.rank - a.rank,
+      );
+    },
+  })
+  .build();

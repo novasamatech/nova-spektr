@@ -65,11 +65,6 @@ sample({
 });
 
 sample({
-  clock: fellowshipProfileFeature.stopped,
-  target: member.unsubscribe,
-});
-
-sample({
   clock: attachToFeatureInput(fellowshipProfileFeature, $member),
   fn: ({ input: { chainId }, data: member }) => ({
     chainId,

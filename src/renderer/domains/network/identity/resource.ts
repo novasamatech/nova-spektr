@@ -1,19 +1,21 @@
-import { type Cache } from '@apollo/client';
 import { type ApiPromise } from '@polkadot/api';
-import { createStore } from 'effector';
+import { attach, createStore } from 'effector';
 import { produce } from 'immer';
 import { zipWith } from 'lodash';
 
 import { type ChainId } from '@/shared/core';
-import { createAsyncTaskPool, entries, groupBy, nullable } from '@/shared/lib/utils';
+import { assert, createAsyncTaskPool, entries, groupBy, nullable } from '@/shared/lib/utils';
 import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createSingularResource } from '@/shared/resource2';
+import { createQueryResource } from '@/shared/query';
+import { networkModel } from '@/entities/network';
+import { accountService } from '../account/service';
 
+import { POLKADOT_PEOPLE_CHAIN_ID } from './constants';
 import { type AccountIdentity } from './types';
 
-type Response = Record<AccountId, AccountIdentity>;
-type Cache = Record<ChainId, Response>;
+type IdentityMap = Record<AccountId, AccountIdentity>;
+type IdentityCache = Record<ChainId, IdentityMap>;
 
 const fetchPool = createAsyncTaskPool({
   poolSize: 1,
@@ -21,78 +23,113 @@ const fetchPool = createAsyncTaskPool({
   retryDelay: 1000,
 });
 
-export const $cache = createStore<Record<ChainId, Record<AccountId, AccountIdentity>>>({});
+const $cache = createStore<IdentityCache>({});
 
-export type FetchParams = {
+type RequestParams = {
+  accounts: AccountId[];
+  chainId?: ChainId;
+};
+
+type InnerParams = {
   accounts: AccountId[];
   chainId: ChainId;
   api: ApiPromise;
 };
 
-export const identitySigngularResource = createSingularResource<FetchParams, Response, Cache>({
-  cache: $cache,
-  requestCacheTimeout: Number.POSITIVE_INFINITY,
-  key: ({ chainId, accounts }) => [chainId, ...accounts],
-  async request({ params: { api, chainId, accounts } }) {
-    if (accounts.length === 0) return {};
+const request = async ({ api, chainId, accounts }: InnerParams) => {
+  if (accounts.length === 0) return {};
 
-    return fetchPool.call(async () => {
-      const subIdentities = await identityPallet.storage.superOf(api, accounts);
-      const parentAccounts = subIdentities.map(({ account, identity }) => (nullable(identity) ? account : identity[0]));
-      const parentIdentities = await identityPallet.storage.identityOf(api, parentAccounts);
+  return fetchPool.call(async () => {
+    const subIdentities = await identityPallet.storage.superOf(api, accounts);
+    const parentAccounts = subIdentities.map(({ account, identity }) => (nullable(identity) ? account : identity[0]));
+    const parentIdentities = await identityPallet.storage.identityOf(api, parentAccounts);
 
-      const identities = zipWith(subIdentities, parentIdentities, (sub, parent) => ({ sub, parent }));
+    const identities = zipWith(subIdentities, parentIdentities, (sub, parent) => ({ sub, parent }));
 
-      const result: Record<AccountId, AccountIdentity> = {};
+    const result: Record<AccountId, AccountIdentity> = {};
 
-      for (const { sub, parent } of identities) {
-        if (nullable(parent?.identity)) continue;
-        const parentIdentity = Array.isArray(parent.identity) ? parent.identity[0] : parent.identity;
+    for (const { sub, parent } of identities) {
+      if (nullable(parent?.identity)) continue;
+      const parentIdentity = Array.isArray(parent.identity) ? parent.identity[0] : parent.identity;
 
-        result[sub.account] = {
+      result[sub.account] = {
+        chainId,
+        accountId: sub.account,
+        subName: sub.identity?.[1],
+        name: parentIdentity.info.display,
+        email: parentIdentity.info.email,
+        image: parentIdentity.info.image,
+        github: parentIdentity.info.github,
+        matrix: parentIdentity.info.matrix,
+      };
+
+      if (sub.account !== parent.account) {
+        result[parent.account] = {
           chainId,
-          accountId: sub.account,
+          accountId: parent.account,
           subName: sub.identity?.[1],
           name: parentIdentity.info.display,
           email: parentIdentity.info.email,
           image: parentIdentity.info.image,
-          github: parentIdentity.info.github,
           matrix: parentIdentity.info.matrix,
         };
-
-        if (sub.account !== parent.account) {
-          result[parent.account] = {
-            chainId,
-            accountId: parent.account,
-            subName: sub.identity?.[1],
-            name: parentIdentity.info.display,
-            email: parentIdentity.info.email,
-            image: parentIdentity.info.image,
-            matrix: parentIdentity.info.matrix,
-          };
-        }
       }
+    }
 
-      return result;
-    });
-  },
-  map(cache, identities) {
-    return produce(cache, draft => {
-      const groups = groupBy(entries(identities), ([, i]) => i.chainId);
+    return result;
+  });
+};
 
-      for (const [chainId, identities] of entries(groups)) {
-        if (nullable(identities)) continue;
+export const identityResource = createQueryResource<RequestParams>({
+  key: ({ chainId, accounts }) => [chainId ?? 'any', ...accounts],
+})
+  .request(
+    attach({
+      source: {
+        chains: networkModel.$chains,
+        apis: networkModel.$apis,
+      },
+      effect({ chains, apis }, { accounts, chainId = POLKADOT_PEOPLE_CHAIN_ID }: RequestParams) {
+        let identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
+        let identityChain = chains[identityChainId];
+        let api = apis[identityChainId];
 
-        let chainIdentities = draft[chainId];
-        if (nullable(chainIdentities)) {
-          chainIdentities = {};
-          draft[chainId] = chainIdentities;
+        if (nullable(api) || !identityPallet.supportedOn(api)) {
+          identityChainId = POLKADOT_PEOPLE_CHAIN_ID;
+          api = apis[identityChainId];
+          identityChain = chains[identityChainId];
         }
 
-        for (const [accountId, identity] of identities) {
-          chainIdentities[accountId] = identity;
+        assert(identityChain, `Chain ${identityChainId} not found`);
+        assert(api, `Api for chain ${identityChainId} not found`);
+
+        const supportedAccounts = accounts.filter(id => accountService.isAccountSchemeMatchChain(id, identityChain));
+
+        return request({ accounts: supportedAccounts, chainId, api });
+      },
+    }),
+  )
+  .cache({
+    staleAfter: Number.POSITIVE_INFINITY,
+    store: $cache,
+    map(cache, identities) {
+      return produce(cache, draft => {
+        const groups = groupBy(entries(identities), ([, i]) => i.chainId);
+
+        for (const [chainId, identities] of entries(groups)) {
+          if (nullable(identities)) continue;
+
+          let chainIdentities = draft[chainId];
+          if (nullable(chainIdentities)) {
+            chainIdentities = {};
+            draft[chainId] = chainIdentities;
+          }
+
+          for (const [accountId, identity] of identities) {
+            chainIdentities[accountId] = identity;
+          }
         }
-      }
-    });
-  },
-});
+      });
+    },
+  })
+  .build();

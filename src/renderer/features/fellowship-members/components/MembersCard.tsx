@@ -15,7 +15,7 @@ export const MembersCard = memo(() => {
 
   const featureState = useUnit(fellowshipMembersFeature.state);
   const input = useUnit(fellowshipMembersFeature.input);
-  const { data: members, pending } = useCoreMembers(input?.api);
+  const { data: members, pending } = useCoreMembers('fellowship', input?.api);
 
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
