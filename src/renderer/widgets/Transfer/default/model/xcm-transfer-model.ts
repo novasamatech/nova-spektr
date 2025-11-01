@@ -53,7 +53,6 @@ type DeliveryFeeParams = {
 
 const getDeliveryFeeFx = createEffect(
   async ({ api, config, parachainId, extrinsic, destinationChain }: DeliveryFeeParams) => {
-    console.log('[DELIVERY FEE] params', { params: { api, config, parachainId, extrinsic, destinationChain } });
     if (!api || !config || !parachainId || !extrinsic || !destinationChain) {
       return null;
     }
@@ -345,7 +344,6 @@ sample({
   // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
   // TODO refactor this shit
   filter: (state, update) => {
-    console.log('[DELIVERY FEE]', { update: update?.toString() });
     return !!update && !state?.eq(update);
   },
   fn: (_, fee) => fee!,

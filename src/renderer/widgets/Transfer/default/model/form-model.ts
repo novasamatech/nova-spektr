@@ -132,11 +132,9 @@ const form: Form<FormParams> = createForm<FormParams>({
       validator: () => ({
         source: $asset,
         fn: (amount, _, asset: Asset | null) => {
-          console.log('amountValidator');
           if (nullable(asset)) return;
 
           const bn = toPrecision(amount, asset.precision);
-          console.log({ bn: bn.toString() });
           if (bn.isZero()) {
             return { message: 'transfer.requiredAmountError' };
           }
@@ -352,8 +350,6 @@ const $coreTx = combine(
     balancePreservation: $balancePreservationStrategy,
   },
   ({ isFormValid, network, isXcm, formValues, xcmData, isConnected, initiator, inputMode, balancePreservation }) => {
-    console.log({ isFormValid, formValues });
-
     if (
       !isFormValid ||
       !network ||
@@ -364,8 +360,6 @@ const $coreTx = combine(
     ) {
       return null;
     }
-
-    console.log({ amount: formValues.amount });
 
     return transactionBuilder.buildTransfer({
       chain: network.chain,
@@ -430,10 +424,6 @@ const $feeCoreTx = combine(
   },
 );
 
-combine({ transaction: $coreTx, feeTransaction: $feeCoreTx }).subscribe(({ transaction, feeTransaction }) => {
-  console.log('createFeeCalculator', { transaction, feeTransaction });
-});
-
 const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
@@ -444,10 +434,7 @@ const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   feeTransaction: $feeCoreTx,
 });
 
-const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => {
-  console.log('[DELIVERY FEE]', { calculationTx: { coreTx, feeTx } });
-  return coreTx ?? feeTx ?? null;
-});
+const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
 
 const $calculationExtrinsic = combine(
   {

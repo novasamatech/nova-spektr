@@ -386,9 +386,6 @@ async function getDeliveryFeeFromConfig({
   const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
-
-  console.log({ deliveryFeeConfig });
-
   if (!deliveryFeeConfig) return null;
 
   const query = originApi.query[camelCase(deliveryFeeConfig.factorPallet)];
