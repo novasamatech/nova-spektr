@@ -38,30 +38,39 @@ const $keys = createStore<Record<string, DerivationKeyDraft>>({});
 const $hasChanged = createStore(false).reset(init);
 const $errors = createStore<Record<string, DerivationError[]>>({}).reset(init);
 
-const getKeyValidationErrors = (
+function getOtherDerivationPaths(
+  keyId: string,
+  relayChainId: ChainId,
+  isEthereumBased: boolean,
+  keys: Record<string, DerivationKeyDraft>,
+  chains: Record<ChainId, Chain>,
+) {
+  return Object.entries(keys)
+    .filter(([otherKeyId]) => otherKeyId !== keyId)
+    .filter(([, otherKey]) => {
+      const otherChain = chains[otherKey.chainId];
+      return isEthereumBased
+        ? networkUtils.isEthereumBased(otherChain.options)
+        : (otherChain.parentId ?? otherChain.chainId) === relayChainId;
+    })
+    .map(([, otherKey]) => otherKey.derivationPath);
+}
+
+function getKeyValidationErrors(
   keyId: string,
   keys: Record<string, DerivationKeyDraft>,
   chains: Record<ChainId, Chain>,
-): DerivationError[] => {
+) {
   const { derivationPath, chainId } = keys[keyId];
   const chain = chains[chainId];
-  const isEthereumBased = networkUtils.isEthereumBased(chain.options);
   const relayChainId = chain.parentId ?? chain.chainId;
+  const isEthereumBased = networkUtils.isEthereumBased(chain.options);
 
-  const relatedPaths: string[] = [];
-  for (const [otherKeyId, otherKey] of Object.entries(keys)) {
-    if (otherKeyId === keyId) continue;
-    const otherChain = chains[otherKey.chainId];
-    const shouldInclude = isEthereumBased
-      ? networkUtils.isEthereumBased(otherChain.options)
-      : (otherChain.parentId ?? otherChain.chainId) === relayChainId;
-    if (shouldInclude) {
-      relatedPaths.push(otherKey.derivationPath);
-    }
-  }
+  const otherPaths = getOtherDerivationPaths(keyId, relayChainId, isEthereumBased, keys, chains);
+  const { errors } = validateDerivation(derivationPath, { otherPaths, isEthereumBased });
 
-  return validateDerivation(derivationPath, { otherPaths: relatedPaths, isEthereum: isEthereumBased });
-};
+  return errors;
+}
 
 function mergeShardedDerivations(
   accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[],
@@ -113,9 +122,7 @@ const submitFx = createEffect<
   for (const keyId of Object.keys(keys)) {
     const validationErrors = getKeyValidationErrors(keyId, keys, chains);
     errors[keyId] = validationErrors;
-    if (validationErrors.length > 0) {
-      hasErrors = true;
-    }
+    hasErrors = hasErrors || validationErrors.length > 0;
   }
 
   if (hasErrors) {
