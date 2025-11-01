@@ -340,13 +340,6 @@ sample({
 
 sample({
   clock: getDeliveryFeeFx.doneData,
-  source: $deliveryFee,
-  // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
-  // TODO refactor this shit
-  filter: (state, update) => {
-    return !!update && !state?.eq(update);
-  },
-  fn: (_, fee) => fee!,
   target: $deliveryFee,
 });
 
