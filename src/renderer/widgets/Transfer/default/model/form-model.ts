@@ -59,7 +59,7 @@ type FormSubmitEvent = FormParams & {
   route: AnyAccount[];
   destinationChain: Chain;
   fee: BN;
-  xcmFee: BN | null;
+  xcmFee: BN;
   deliveryFee: BN | null;
   multisigDeposit: BN;
   rawAmount: string;
