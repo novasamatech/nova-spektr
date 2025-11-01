@@ -77,19 +77,20 @@ type TransferParams = {
   };
 };
 
-function isTransferAllSupported(asset: Asset) {
+function isNativeAsset(asset: Asset) {
   return asset.type === AssetType.NATIVE;
 }
 
 function getTransactionType(asset: Asset, inputMode: InputMode, balancePreservation: BalancePreservation) {
-  // TRANSFER_ALLOW_DEATH is only for NATIVE asset type
-  const allowDeath = inputMode === 'regular' && balancePreservation === 'allowDeath' && asset.type === AssetType.NATIVE;
-  if (allowDeath) {
-    return TransactionType.TRANSFER_ALLOW_DEATH;
-  }
+  if (isNativeAsset(asset)) {
+    const allowDeath = inputMode === 'regular' && balancePreservation === 'allowDeath';
+    if (allowDeath) {
+      return TransactionType.TRANSFER_ALLOW_DEATH;
+    }
 
-  if (inputMode === 'max' && isTransferAllSupported(asset)) {
-    return TransactionType.TRANSFER_ALL;
+    if (inputMode === 'max' && isNativeAsset(asset)) {
+      return TransactionType.TRANSFER_ALL;
+    }
   }
 
   return TransferType[asset.type] ?? TransactionType.TRANSFER;
