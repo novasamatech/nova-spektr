@@ -29,8 +29,7 @@ describe('validateDerivation - validate substrate derivation paths', () => {
   ];
 
   test.each(cases)('should validate "%s" derivation path as "%s"', (firstArg, expectedResult) => {
-    const result = validateDerivation(firstArg);
-    const isValid = result.length === 0;
+    const { isValid } = validateDerivation(firstArg);
     expect(isValid).toEqual(expectedResult);
   });
 });
@@ -46,8 +45,7 @@ describe('validateDerivation - validate ethereum derivation paths', () => {
   ];
 
   test.each(cases)('should validate "%s" ethereum derivation path as "%s"', (firstArg, expectedResult) => {
-    const result = validateDerivation(firstArg, { isEthereum: true });
-    const isValid = result.length === 0;
+    const { isValid } = validateDerivation(firstArg, { isEthereumBased: true });
     expect(isValid).toEqual(expectedResult);
   });
 });
@@ -61,8 +59,7 @@ describe('validateDerivation - validates uniqueness against other paths', () => 
   const otherPaths = ['//polkadot//duplicate', '//polkadot//duplicate2', '//polkadot//duplicate3'];
 
   test.each(cases)('should validate "%s" derivation path as "%s"', (firstArg, expectedResult) => {
-    const result = validateDerivation(firstArg, { otherPaths });
-    const isValid = result.length === 0;
+    const { isValid } = validateDerivation(firstArg, { otherPaths });
     expect(isValid).toEqual(expectedResult);
   });
 });
