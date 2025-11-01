@@ -105,36 +105,6 @@ describe('entities/transaction/lib/transactionBuilder', () => {
           expect(transaction.type).toBe(TransactionType.TRANSFER_ALL);
           expect(transaction.args.keepAlive).toBe(false);
         });
-
-        it('should not include keepAlive for TRANSFER transaction', () => {
-          const transaction = transactionBuilder.buildTransfer({
-            chain,
-            asset,
-            accountId: TEST_ACCOUNT_ID,
-            destination: TEST_DESTINATION,
-            amount: '1000000000000',
-            inputMode: 'regular',
-            balancePreservation: 'keepAlive',
-          });
-
-          expect(transaction.type).toBe(TransactionType.TRANSFER);
-          expect(transaction.args.keepAlive).toBeUndefined();
-        });
-
-        it('should not include keepAlive for TRANSFER_ALLOW_DEATH transaction', () => {
-          const transaction = transactionBuilder.buildTransfer({
-            chain,
-            asset,
-            accountId: TEST_ACCOUNT_ID,
-            destination: TEST_DESTINATION,
-            amount: '1000000000000',
-            inputMode: 'regular',
-            balancePreservation: 'allowDeath',
-          });
-
-          expect(transaction.type).toBe(TransactionType.TRANSFER_ALLOW_DEATH);
-          expect(transaction.args.keepAlive).toBeUndefined();
-        });
       });
 
       describe('transaction fields', () => {
@@ -221,23 +191,6 @@ describe('entities/transaction/lib/transactionBuilder', () => {
         });
       });
 
-      describe('keepAlive parameter', () => {
-        it('should not include keepAlive for ORML_TRANSFER transaction', () => {
-          const transaction = transactionBuilder.buildTransfer({
-            chain,
-            asset,
-            accountId: TEST_ACCOUNT_ID,
-            destination: TEST_DESTINATION,
-            amount: '1000000',
-            inputMode: 'max',
-            balancePreservation: 'keepAlive',
-          });
-
-          expect(transaction.type).toBe(TransactionType.ORML_TRANSFER);
-          expect(transaction.args.keepAlive).toBeUndefined();
-        });
-      });
-
       describe('transaction fields', () => {
         it('should include asset in args', () => {
           const transaction = transactionBuilder.buildTransfer({
@@ -315,23 +268,6 @@ describe('entities/transaction/lib/transactionBuilder', () => {
 
           expect(transaction.type).toBe(TransactionType.ASSET_TRANSFER);
           expect(transaction.type).not.toBe(TransactionType.TRANSFER_ALL);
-        });
-      });
-
-      describe('keepAlive parameter', () => {
-        it('should not include keepAlive for ASSET_TRANSFER transaction', () => {
-          const transaction = transactionBuilder.buildTransfer({
-            chain,
-            asset,
-            accountId: TEST_ACCOUNT_ID,
-            destination: TEST_DESTINATION,
-            amount: '1000000000000',
-            inputMode: 'max',
-            balancePreservation: 'keepAlive',
-          });
-
-          expect(transaction.type).toBe(TransactionType.ASSET_TRANSFER);
-          expect(transaction.args.keepAlive).toBeUndefined();
         });
       });
 

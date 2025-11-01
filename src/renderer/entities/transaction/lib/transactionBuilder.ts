@@ -110,24 +110,18 @@ function buildTransfer({
   const palletName =
     asset.typeExtras && 'palletName' in asset.typeExtras ? camelCase(asset.typeExtras.palletName) : 'assets';
 
-  const args: Record<string, any> = {
-    palletName,
-    dest: destination,
-    value: formatAmount(amount, asset.precision),
-    ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
-    ...xcmData?.args,
-  };
-
-  // Add keepAlive parameter for TRANSFER_ALL
-  if (transactionType === TransactionType.TRANSFER_ALL) {
-    args.keepAlive = balancePreservation === 'keepAlive';
-  }
-
   return {
     chainId: chain.chainId,
     accountId: accountId,
     type: transactionType,
-    args,
+    args: {
+      palletName,
+      dest: destination,
+      value: formatAmount(amount, asset.precision),
+      keepAlive: balancePreservation === 'keepAlive',
+      ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
+      ...xcmData?.args,
+    },
   };
 }
 
