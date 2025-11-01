@@ -88,7 +88,7 @@ function getTransactionType(asset: Asset, inputMode: InputMode, balancePreservat
       return TransactionType.TRANSFER_ALLOW_DEATH;
     }
 
-    if (inputMode === 'max' && isNativeAsset(asset)) {
+    if (inputMode === 'max') {
       return TransactionType.TRANSFER_ALL;
     }
   }
