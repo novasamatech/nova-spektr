@@ -23,7 +23,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   const { t } = useI18n();
 
   const validationError = useUnit(importKeysModel.$validationError);
-  const mergedKeys = useUnit(importKeysModel.$mergedKeys);
+  const keysToAdd = useUnit(importKeysModel.$keysToAdd);
   const successReport = useUnit(importKeysModel.$successReport);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
         </div>
       </Modal.Content>
       <Modal.Footer align="end">
-        <Button disabled={nonNullable(validationError?.error) || !successReport} onClick={() => onConfirm(mergedKeys)}>
+        <Button disabled={nonNullable(validationError?.error) || !successReport} onClick={() => onConfirm(keysToAdd)}>
           {t('dynamicDerivations.importKeys.continueButton')}
         </Button>
       </Modal.Footer>
