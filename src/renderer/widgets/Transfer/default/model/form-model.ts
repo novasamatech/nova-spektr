@@ -144,7 +144,7 @@ const form: Form<FormParams> = createForm<FormParams>({
   },
   validateOn: ['change'],
 });
-const $isFormSubmitted = createStore<boolean>(false);
+const $isFormSubmitted = createStore<boolean>(false).reset(formInitiated);
 
 sample({
   clock: form.submit,
