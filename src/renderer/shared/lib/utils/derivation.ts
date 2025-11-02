@@ -114,7 +114,6 @@ export enum DerivationError {
   HAS_SPACES = 'HAS_SPACES',
   MUST_START_WITH_SLASH = 'MUST_START_WITH_SLASH',
   ENDS_WITH_SLASH = 'ENDS_WITH_SLASH',
-  INVALID_STRUCTURE = 'INVALID_STRUCTURE',
   ETHEREUM_SINGLE_SLASH = 'ETHEREUM_SINGLE_SLASH',
   DUPLICATE = 'DUPLICATE',
   INVALID_SHARD_RANGE = 'INVALID_SHARD_RANGE',
@@ -177,24 +176,11 @@ export function validateDerivation(path: string, options?: ValidationOptions): V
       const isSeparator = token.type === TokenType.SOFT || token.type === TokenType.HARD;
 
       if (expectingSeparator !== isSeparator) {
-        errors.push(DerivationError.INVALID_STRUCTURE);
+        errors.push(DerivationError.EMPTY_SEGMENT);
         break;
       }
 
       expectingSeparator = !expectingSeparator;
-    }
-
-    // Check for empty segments
-    for (let i = 0; i < parsed.tokens.length - 1; i++) {
-      const current = parsed.tokens[i];
-      const next = parsed.tokens[i + 1];
-
-      const currentIsSeparator = current.type === TokenType.SOFT || current.type === TokenType.HARD;
-      const nextIsSeparator = next.type === TokenType.SOFT || next.type === TokenType.HARD;
-      if (currentIsSeparator && nextIsSeparator) {
-        errors.push(DerivationError.EMPTY_SEGMENT);
-        break;
-      }
     }
   }
 

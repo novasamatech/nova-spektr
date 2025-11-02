@@ -416,7 +416,6 @@
       "derivationEmpty": "The derivation path cannot be empty.",
       "derivationEmptySegment": "Derivation segment cannot be empty.",
       "derivationInvalidShardRange": "Derivation shard range should contain at least 2 shards.",
-      "derivationInvalidStructure": "The derivation structure is invalid.",
       "derivationEthereumSingleSlash": "Ethereum chains don't support soft derivations",
       "derivationHasSpaces": "The derivation path name can't contain spaces.",
       "derivationMustStartWithSlash": "The derivation path must start with / or //.",
