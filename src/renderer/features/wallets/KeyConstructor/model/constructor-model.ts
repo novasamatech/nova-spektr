@@ -9,13 +9,15 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { type DerivationError, validateDerivation } from '@/shared/lib/utils';
+import { type DerivationError, TokenType, parseDerivation, validateDerivation } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 
 export const DEFAULT_CHAIN = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3';
 
-export type DerivationKeyDraft = Pick<VaultChainAccount, 'chainId' | 'derivationPath'>;
+export type DerivationKeyDraft = Pick<VaultShardAccount, 'chainId' | 'derivationPath'> & {
+  groupId?: VaultShardAccount['groupId'];
+};
 
 export type Callbacks = {
   onConfirm: (keys: DerivationKeyDraft[]) => void;
@@ -72,42 +74,37 @@ function getKeyValidationErrors(
   return errors;
 }
 
-function mergeShardedDerivations(
+function mergeShardedAccounts(
   accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[],
 ): DerivationKeyDraft[] {
   const accountGroups = accountUtils.getAccountsAndShardGroups(accounts as (VaultChainAccount | VaultShardAccount)[]);
   return accountGroups.map((a) => {
     if (Array.isArray(a)) {
-      return { chainId: a[0].chainId, derivationPath: accountUtils.getDerivationPath(a) };
+      return { chainId: a[0].chainId, derivationPath: accountUtils.getDerivationPath(a), groupId: a[0].groupId };
     }
     return { chainId: a.chainId, derivationPath: a.derivationPath };
   });
 }
 
-const SHARD_RANGE_PATTERN = /(\d+)\.\.\.(\d+)$/;
-
 export function expandShardedDerivations(derivations: DerivationKeyDraft[]) {
   return derivations.flatMap((derivation) => {
-    const match = derivation.derivationPath.match(SHARD_RANGE_PATTERN);
+    const parsed = parseDerivation(derivation.derivationPath);
 
-    if (!match) {
-      return derivation;
+    if (parsed.shardCount !== undefined && parsed.shardCount >= 2) {
+      const groupId = derivation.groupId ?? crypto.randomUUID();
+      const expandedKeys: DerivationKeyDraft[] = [];
+
+      for (let i = 0; i <= parsed.shardCount; i += 1) {
+        const shardPath = parsed.tokens
+          .map((t) => (t.type === TokenType.SHARD_RANGE ? i.toString() : t.value))
+          .join('');
+        expandedKeys.push({ ...derivation, derivationPath: shardPath, groupId });
+      }
+
+      return expandedKeys;
     }
 
-    const start = parseInt(match[1], 10);
-    const end = parseInt(match[2], 10);
-
-    if (start >= end) {
-      return derivation;
-    }
-
-    const expandedKeys: DerivationKeyDraft[] = [];
-    for (let i = start; i <= end; i++) {
-      const shardPath = derivation.derivationPath.replace(SHARD_RANGE_PATTERN, i.toString());
-      expandedKeys.push({ ...derivation, derivationPath: shardPath });
-    }
-
-    return expandedKeys;
+    return derivation;
   });
 }
 
@@ -136,7 +133,7 @@ sample({
   clock: init,
   fn: (existingAccounts) =>
     produce<Record<string, DerivationKeyDraft>>({}, (draft) => {
-      const derivationKeys = mergeShardedDerivations(existingAccounts);
+      const derivationKeys = mergeShardedAccounts(existingAccounts);
       for (const key of derivationKeys) {
         const id = nanoid();
 

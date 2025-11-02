@@ -89,16 +89,22 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
   const handleConstructorKeys = (keys: DerivationKeyDraft[]) => {
     toggleConstructorModal();
 
-    const draftKeySet = new Set(keys.map(k => k.chainId + k.derivationPath));
-    const existingKeySet = new Set(walletAccounts.map(a => a.chainId + a.derivationPath));
+    const draftKeySet = new Set(keys.map(k => k.chainId + k.derivationPath + ('groupId' in k ? k.groupId : '')));
+    const existingKeySet = new Set(
+      walletAccounts.map(a => a.chainId + a.derivationPath + ('groupId' in a ? a.groupId : '')),
+    );
 
-    const keysToRemove = walletAccounts.filter(a => !draftKeySet.has(a.chainId + a.derivationPath));
+    const keysToRemove = walletAccounts.filter(
+      a => !draftKeySet.has(a.chainId + a.derivationPath + ('groupId' in a ? a.groupId : '')),
+    );
 
     if (keysToRemove.length > 0) {
       vaultDetailsModel.events.keysRemoved(keysToRemove);
     }
 
-    const keysToAdd = keys.filter(k => !existingKeySet.has(k.chainId + k.derivationPath));
+    const keysToAdd = keys.filter(
+      k => !existingKeySet.has(k.chainId + k.derivationPath + ('groupId' in k ? k.groupId : '')),
+    );
 
     if (keysToAdd.length > 0) {
       vaultDetailsModel.events.keysAdded(keysToAdd);

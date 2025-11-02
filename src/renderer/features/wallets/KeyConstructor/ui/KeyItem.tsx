@@ -22,6 +22,9 @@ const DerivationErrorText: Record<DerivationError, string> = {
   [DerivationError.ENDS_WITH_SLASH]: t('dynamicDerivations.keysConstructor.derivationCannotEndWithSlash'),
   [DerivationError.DUPLICATE]: t('dynamicDerivations.keysConstructor.derivationDuplicate'),
   [DerivationError.ETHEREUM_SINGLE_SLASH]: t('dynamicDerivations.keysConstructor.derivationEthereumSingleSlash'),
+  [DerivationError.EMPTY_SEGMENT]: t('dynamicDerivations.keysConstructor.derivationEmptySegment'),
+  [DerivationError.INVALID_STRUCTURE]: t('dynamicDerivations.keysConstructor.derivationInvalidStructure'),
+  [DerivationError.INVALID_SHARD_RANGE]: t('dynamicDerivations.keysConstructor.derivationInvalidShardRange'),
 };
 
 type Props = {

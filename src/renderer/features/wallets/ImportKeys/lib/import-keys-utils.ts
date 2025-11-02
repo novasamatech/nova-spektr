@@ -226,9 +226,9 @@ function getDerivationError(
   if (!isShardedParamValid) errors.push(DerivationValidationError.WRONG_SHARDS_NUMBER);
 
   const derivationChain = derivation.chainId ? chains[derivation.chainId as ChainId] : null;
-  const isEthereum = derivationChain ? networkUtils.isEthereumBased(derivationChain.options) : false;
-  const derivationPathValidationErrors = validateDerivation(derivation.derivationPath, { isEthereum });
-  if (derivationPathValidationErrors.length > 0) errors.push(DerivationValidationError.INVALID_PATH);
+  const isEthereumBased = derivationChain ? networkUtils.isEthereumBased(derivationChain.options) : false;
+  const { isValid } = validateDerivation(derivation.derivationPath, { isEthereumBased });
+  if (!isValid) errors.push(DerivationValidationError.INVALID_PATH);
 
   const hasPasswordPath = derivationHasPassword(derivation.derivationPath);
   if (hasPasswordPath) errors.push(DerivationValidationError.PASSWORD_PATH);
@@ -252,10 +252,12 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
       return acc;
     }
 
+    const groupId = crypto.randomUUID();
     for (let i = 0; i < Number(d.sharded); i++) {
       acc.push({
         derivationPath: d.derivationPath + '//' + i,
         chainId: d.chainId,
+        groupId,
       });
     }
 
