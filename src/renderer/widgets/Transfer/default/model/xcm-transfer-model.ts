@@ -340,6 +340,11 @@ sample({
 
 sample({
   clock: getDeliveryFeeFx.doneData,
+  source: $deliveryFee,
+  // there is ugly cyclic dependency between xcm related data and extrinsic, this is fix for infinite cyclic update.
+  // TODO refactor this shit
+  filter: (state, update) => !!update && !state?.eq(update),
+  fn: (_, fee) => fee!,
   target: $deliveryFee,
 });
 
@@ -378,7 +383,7 @@ export const xcmTransferModel = {
     xcmConfigLoaded,
     xcmChainSelected,
     xcmFeeChanged,
-    deliveryFeeRequested,
+    deliveryFeeRequested: deliveryFeeRequested,
     isXcmFeeLoadingChanged,
     amountChanged,
     destinationChanged,
