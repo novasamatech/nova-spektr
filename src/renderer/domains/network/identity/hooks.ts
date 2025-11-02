@@ -1,10 +1,11 @@
 import { type ChainId } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useResource } from '@/shared/query';
-import { identity } from '@/domains/network';
+
+import { identityResource } from './resource';
 
 export const useIdentities = (accounts: AccountId[], chainId?: ChainId) => {
-  return useResource(identity.resource, {
+  return useResource(identityResource, {
     params: { chainId, accounts },
     defaultValue: {},
     map: (cache, { chainId }) => chainId && cache[chainId],

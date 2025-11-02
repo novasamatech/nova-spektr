@@ -26,6 +26,7 @@ export type { ReferendumMeta } from './referendumMeta/types';
 
 export { member } from './member/store';
 export { memberService } from './member/service';
+export { useMembers, useCoreMembers } from './member/hooks';
 export type { Member, CoreMember } from './member/types';
 
 export { evidence } from './evidence/store';

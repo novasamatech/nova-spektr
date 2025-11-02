@@ -6,9 +6,9 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
-import { useCoreMembers } from '../hooks/useCoreMembers';
-import { useMembersIdentities } from '../hooks/useMembersIdentities';
-import { fellowshipMembersFeature } from '../model/feature';
+import { useCoreMembers } from '@/domains/collectives';
+import { useIdentities } from '@/domains/network';
+import { fellowshipMembersFeature } from '../feature';
 
 import { Member } from './Member';
 import { MembersListEmptyState } from './MembersListEmptyState';
@@ -20,7 +20,10 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
 
   const input = useUnit(fellowshipMembersFeature.input);
   const { data: members } = useCoreMembers('fellowship', input?.api);
-  const { data: identities } = useMembersIdentities(members, input?.chainId);
+  const { data: identities } = useIdentities(
+    members.map(member => member.accountId),
+    input?.chainId,
+  );
 
   const { list } = useDeferredList({ list: members });
 
@@ -71,7 +74,14 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
               <ScrollArea>
                 <Box gap={2} padding={[0, 5, 4]}>
                   {nonNullable(chain) &&
-                    filteredMembers.map(item => <Member key={item.accountId} member={item} chain={chain} />)}
+                    filteredMembers.map(item => (
+                      <Member
+                        key={item.accountId}
+                        member={item}
+                        identity={identities[item.accountId] ?? null}
+                        chain={chain}
+                      />
+                    ))}
                 </Box>
               </ScrollArea>
             </>

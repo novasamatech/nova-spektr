@@ -4,9 +4,9 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { Icon } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
+import { useCoreMembers } from '@/domains/collectives';
 import { ERROR } from '../constants';
-import { useCoreMembers } from '../hooks/useCoreMembers';
-import { fellowshipMembersFeature } from '../model/feature';
+import { fellowshipMembersFeature } from '../feature';
 
 import { MembersModal } from './MembersModal';
 
