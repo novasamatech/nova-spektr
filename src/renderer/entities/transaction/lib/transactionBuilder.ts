@@ -75,19 +75,20 @@ type TransferParams = {
   };
 };
 
-function isTransferAllSupported(asset: Asset) {
-  return asset.type === AssetType.NATIVE || asset.type === AssetType.ORML;
+function isNativeAsset(asset: Asset) {
+  return asset.type === AssetType.NATIVE;
 }
 
 function getTransactionType(asset: Asset, inputMode: InputMode, balancePreservation: BalancePreservation) {
-  const allowDeath = inputMode === 'regular' && balancePreservation === 'allowDeath';
-  if (allowDeath) {
-    return TransactionType.TRANSFER_ALLOW_DEATH;
-  }
+  if (isNativeAsset(asset)) {
+    const allowDeath = inputMode === 'regular' && balancePreservation === 'allowDeath';
+    if (allowDeath) {
+      return TransactionType.TRANSFER_ALLOW_DEATH;
+    }
 
-  const transferAll = inputMode === 'max' && balancePreservation === 'allowDeath';
-  if (isTransferAllSupported(asset) && transferAll) {
-    return TransactionType.TRANSFER_ALL;
+    if (inputMode === 'max') {
+      return TransactionType.TRANSFER_ALL;
+    }
   }
 
   return TransferType[asset.type] ?? TransactionType.TRANSFER;
@@ -115,6 +116,7 @@ function buildTransfer({
       palletName,
       dest: destination,
       value: formatAmount(amount, asset.precision),
+      keepAlive: balancePreservation === 'keepAlive',
       ...(Boolean(asset.type) && { asset: getAssetId(asset) }),
       ...xcmData?.args,
     },
