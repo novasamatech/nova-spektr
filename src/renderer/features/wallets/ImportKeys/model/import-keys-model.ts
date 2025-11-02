@@ -52,17 +52,17 @@ const parseFileContentFx = createEffect<File, ParsedImportFile, DerivationImport
     throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
   }
 
-  if (file.type === 'text/plain') {
-    const textStructure = importKeysUtils.parseTextFile(fileContent);
-    if (!textStructure) throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
-
+  const textStructure = importKeysUtils.parseTextFile(fileContent);
+  if (textStructure) {
     return importKeysUtils.updateTextStructure(textStructure);
   }
 
   const yamlStructure = importKeysUtils.parseYamlFile(fileContent);
-  if (!yamlStructure) throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
+  if (yamlStructure) {
+    return yamlStructure;
+  }
 
-  return yamlStructure;
+  throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
 });
 
 type ValidateDerivationsParams = {
