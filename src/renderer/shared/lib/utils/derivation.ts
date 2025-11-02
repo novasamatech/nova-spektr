@@ -176,10 +176,7 @@ export function validateDerivation(path: string, options?: ValidationOptions): V
     for (const token of parsed.tokens) {
       const isSeparator = token.type === TokenType.SOFT || token.type === TokenType.HARD;
 
-      if (expectingSeparator && !isSeparator) {
-        errors.push(DerivationError.INVALID_STRUCTURE);
-        break;
-      } else if (!expectingSeparator && isSeparator) {
+      if (expectingSeparator !== isSeparator) {
         errors.push(DerivationError.INVALID_STRUCTURE);
         break;
       }
