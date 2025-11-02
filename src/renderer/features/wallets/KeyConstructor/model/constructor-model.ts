@@ -86,7 +86,7 @@ function mergeShardedAccounts(
   });
 }
 
-export function expandShardedDerivations(derivations: DerivationKeyDraft[]) {
+function expandShardedDerivations(derivations: DerivationKeyDraft[]) {
   return derivations.flatMap((derivation) => {
     const parsed = parseDerivation(derivation.derivationPath);
 
