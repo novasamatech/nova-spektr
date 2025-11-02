@@ -253,7 +253,7 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
     }
 
     const groupId = crypto.randomUUID();
-    for (let i = 0; i < Number(d.sharded); i++) {
+    for (let i = 0; i <= Number(d.sharded); i++) {
       acc.push({
         derivationPath: d.derivationPath + '//' + i,
         chainId: d.chainId,
