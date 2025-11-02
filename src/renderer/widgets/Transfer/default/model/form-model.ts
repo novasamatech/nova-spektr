@@ -471,7 +471,10 @@ const {
     route: $route,
     transaction: $calculationTx,
     xcmFee: xcmTransferModel.$xcmFee,
-    deliveryFee: xcmTransferModel.$deliveryFee,
+    deliveryFee: xcmTransferModel.$deliveryFee.map((fee) => {
+      // a fallback for validation that requires all fields to be non null
+      return fee ?? BN_ZERO;
+    }),
     balancePreservation: $balancePreservationStrategy,
   },
 });
