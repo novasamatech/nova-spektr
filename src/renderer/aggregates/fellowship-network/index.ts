@@ -5,4 +5,5 @@ export {
   useFellowshipChain,
   useFellowshipAsset,
   useFellowshipBlock,
+  useFellowshipChainConnected,
 } from './hooks';

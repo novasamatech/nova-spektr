@@ -1,15 +1,121 @@
 import { useUnit } from 'effector-react';
+import { useMemo } from 'react';
 
-import { fellowshipMember } from './model';
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { type BlockHeight } from '@/shared/polkadotjs-schemas';
+import {
+  evidenceService,
+  memberService,
+  salaryService,
+  useEvidencePeriod,
+  useMembers,
+  useSalary,
+} from '@/domains/collectives';
+import { accountService } from '@/domains/network';
+import { walletModel } from '@/entities/wallet';
+import { useFellowshipApi, useFellowshipBlock, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { walletSelect } from '@/aggregates/wallet-select';
+
+const useChainAccounts = () => {
+  const chain = useFellowshipChain();
+  const availableAccounts = useUnit(walletModel.$availableAccounts);
+
+  const accounts = useMemo(() => {
+    return nonNullable(chain) ? accountService.filterAccountsOnChain(availableAccounts, chain) : [];
+  }, [chain, availableAccounts]);
+
+  return accounts;
+};
 
 export const useFellowshipMember = () => {
-  return useUnit(fellowshipMember.$currentMember);
+  const api = useFellowshipApi();
+  const accounts = useChainAccounts();
+  const walletId = useUnit(walletSelect.$selectedWalletId);
+  const { data: members, pending } = useMembers({ palletType: 'fellowship', api });
+
+  const member = useMemo(() => {
+    return memberService.findMatchingMember(accounts, members, walletId);
+  }, [accounts, members, walletId]);
+
+  return { data: member, pending };
 };
 
 export const useFellowshipAccount = () => {
-  return useUnit(fellowshipMember.$currentMemberAccount);
+  const walletId = useUnit(walletSelect.$selectedWalletId);
+  const accounts = useChainAccounts();
+  const { data: member, pending: pendingMember } = useFellowshipMember();
+
+  const account = useMemo(() => {
+    return member ? memberService.findMatchingAccount(accounts, member, walletId) : null;
+  }, [accounts, member, walletId]);
+
+  return { data: account, pending: pendingMember };
 };
 
 export const useFellowshipWallet = () => {
-  return useUnit(fellowshipMember.$currentMemberWallet);
+  const { data: account, pending } = useFellowshipAccount();
+  const wallets = useUnit(walletModel.$wallets);
+
+  const wallet = useMemo(() => {
+    return account ? wallets.find(w => w.id === account.walletId) : null;
+  }, [account, wallets]);
+
+  return { data: wallet, pending };
+};
+
+export const useFellowshipMemberSalary = () => {
+  const api = useFellowshipApi();
+  const { data: salaries, pending: pendingSalaries } = useSalary('fellowship', api);
+  const { data: member, pending: pendingMember } = useFellowshipMember();
+
+  const salary = useMemo(() => {
+    if (nullable(member) || nullable(salaries)) {
+      return null;
+    }
+
+    return salaryService.getMemberSalary(member, salaries);
+  }, [member, salaries]);
+
+  return {
+    data: salary,
+    pending: pendingSalaries || pendingMember,
+  };
+};
+
+export const useFellowshipMemberLeftToDemotion = () => {
+  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
+
+  const { data: member, pending: memberPending } = useFellowshipMember();
+  const { data: periods, pending: periodsPending } = useEvidencePeriod({ palletType: 'fellowship', api, chain });
+  const { data: block, pending: blockPending } = useFellowshipBlock();
+
+  let data: BlockHeight | null = null;
+  if (nonNullable(block) && nonNullable(periods) && nonNullable(member)) {
+    data = evidenceService.getBlocksUntilDemotion(member, periods, block);
+  }
+
+  return {
+    data,
+    pending: memberPending || blockPending || periodsPending,
+  };
+};
+
+export const useFellowshipMemberLeftToPromotion = () => {
+  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
+
+  const { data: member, pending: memberPending } = useFellowshipMember();
+  const { data: periods, pending: periodsPending } = useEvidencePeriod({ palletType: 'fellowship', api, chain });
+  const { data: block, pending: blockPending } = useFellowshipBlock();
+
+  let data: BlockHeight | null = null;
+  if (nonNullable(block) && nonNullable(periods) && nonNullable(member) && memberService.isCoreMember(member)) {
+    data = evidenceService.getBlockUntilNextPromotion(member, periods, block);
+  }
+
+  return {
+    data,
+    pending: memberPending || blockPending || periodsPending,
+  };
 };

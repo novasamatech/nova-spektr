@@ -3,7 +3,6 @@ import { BN_ZERO } from '@polkadot/util';
 import { createStore } from 'effector';
 import { zipWith } from 'lodash';
 
-import { type ChainId } from '@/shared/core';
 import { nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { salaryPallet } from '@/shared/pallet/salary';
@@ -53,11 +52,10 @@ export const salaryCycleResource = createQueryResource<SalaryCycleRequestParams>
 export type SalariesRequestParams = {
   api: ApiPromise;
   palletType: CollectivePalletsType;
-  chainId: ChainId;
 };
 
 export const salariesResource = createQueryResource<SalariesRequestParams>({
-  key: ({ palletType, chainId }) => [palletType, chainId],
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
 })
   .request<Salaries>(async ({ api, palletType }) => {
     const response = await collectiveCorePallet.storage.params(palletType, api);
@@ -70,8 +68,8 @@ export const salariesResource = createQueryResource<SalariesRequestParams>({
   .cache<CollectivesStruct<Salaries>>({
     staleAfter: Number.POSITIVE_INFINITY,
     store: createStore({}),
-    map(state, salaries, { palletType, chainId }) {
-      return setNestedValue(state, palletType, chainId, salaries);
+    map(state, salaries, { palletType, api }) {
+      return setNestedValue(state, palletType, api.genesisHash.toHex(), salaries);
     },
   })
   .build();

@@ -5,8 +5,8 @@ import { nonNullable } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
+import { useFellowshipMemberLeftToDemotion } from '@/aggregates/fellowship-member';
 import { useCurrentSalaryPeriod } from '../hooks/useCurrentSalaryPeriod';
-import { useLeftToDemotion } from '../hooks/useLeftToDemotion';
 import { useMemberEvidence } from '../hooks/useMemberEvidence';
 import { useMemberSalaryClaimStatus } from '../hooks/useMemberSalaryClaimStatus';
 
@@ -15,9 +15,9 @@ import { EvidenceSalaryModal } from './EvidenceSalaryModal';
 
 export const EntrypointCard = memo(() => {
   const { t } = useI18n();
+  const { data: leftToDemotion } = useFellowshipMemberLeftToDemotion();
   const { data: evidence } = useMemberEvidence();
   const { data: currentPeriod } = useCurrentSalaryPeriod();
-  const { data: leftToDemotion } = useLeftToDemotion();
   const { data: claimStatus } = useMemberSalaryClaimStatus();
 
   const hasRetentionEvidence = evidence?.wish === 'Retention';

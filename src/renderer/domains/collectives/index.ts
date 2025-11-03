@@ -59,7 +59,7 @@ export type { RfcDetails } from './rfc/types';
 
 export { salary } from './salary/store';
 export { salaryService } from './salary/service';
-export { useSalaryCycleResource, useSalaryClaimStatusResource } from './salary/hooks';
+export { useSalary, useSalaryCycleResource, useSalaryClaimStatusResource } from './salary/hooks';
 
 export { track } from './tracks/store';
 export { trackService } from './tracks/service';

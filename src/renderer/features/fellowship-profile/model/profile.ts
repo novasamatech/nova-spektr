@@ -1,12 +1,11 @@
 import { type ApiPromise } from '@polkadot/api';
 import { attach, combine, createStore, sample } from 'effector';
-import { and, or } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable, shallowEqual } from '@/shared/lib/utils';
 import { type PalletType } from '@/shared/pallet/collective/types';
-import { member, memberService, referendumMetaService, track } from '@/domains/collectives';
+import { memberService, referendumMetaService, track } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
 import { fellowshipProfileFeature } from './feature';
@@ -61,7 +60,7 @@ sample({
   source: $fellowshipParams,
   filter: (prev, next) => !shallowEqual(prev, next),
   fn: (_, next) => next,
-  target: [$fellowshipParams, member.subscribe, track.request],
+  target: [$fellowshipParams, track.request],
 });
 
 sample({
@@ -100,8 +99,6 @@ const $activityInfo = combine(
   },
 );
 
-const $pendingMember = and(or(member.pending, requestIdentityFx.pending), $member.map(nullable));
-
 export const profile = {
   $member,
   $activityInfo,
@@ -109,5 +106,5 @@ export const profile = {
   $track,
   $identity,
   $isAccountExist,
-  $pending: or($pendingMember, fellowshipProfileFeature.isStarting),
+  $pending: fellowshipProfileFeature.isStarting,
 };

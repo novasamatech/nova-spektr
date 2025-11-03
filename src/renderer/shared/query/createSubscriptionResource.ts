@@ -141,7 +141,7 @@ export const createSubscriptionResource = <Params>({ key }: { key: KeyFn<Params>
             cache: params.cache,
             key,
             fn: params.fn,
-          });
+          }) as SubscriptionResource<Params, Response, CacheOrDefault<Cache, Response>>;
         } else {
           const cacheStore = createDefaultCacheStore<Response>();
           const cacheMapper = createDefaultCacheMapper<Params, Response>(wrapKeyFactory(key));
@@ -153,7 +153,7 @@ export const createSubscriptionResource = <Params>({ key }: { key: KeyFn<Params>
             },
             key,
             fn: params.fn,
-          });
+          }) as SubscriptionResource<Params, Response, CacheOrDefault<Cache, Response>>;
         }
       },
     };

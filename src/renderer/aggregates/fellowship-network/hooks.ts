@@ -24,3 +24,7 @@ export const useFellowshipBlock = () => {
   const api = useFellowshipApi();
   return useBlock(api);
 };
+
+export const useFellowshipChainConnected = () => {
+  return useUnit(fellowshipNetwork.$isConnected);
+};

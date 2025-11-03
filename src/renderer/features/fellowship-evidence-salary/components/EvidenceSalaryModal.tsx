@@ -11,8 +11,9 @@ export const salarySlot = createSlot();
 
 export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
-  const currentMember = useFellowshipMember();
   const [tab, setTab] = useState('evidence');
+
+  const { data: currentMember } = useFellowshipMember();
 
   const disabled = nullable(currentMember);
 

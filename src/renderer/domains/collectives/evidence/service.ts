@@ -36,10 +36,10 @@ function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
   return period;
 }
 
-function getBlockUntilNextPropotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+function getBlockUntilNextPromotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
   const promotionPeriod = getPromotionPeriod(member, periods);
   const gone = currentBlock - member.lastPromotion;
-  return Math.max(0, promotionPeriod - gone);
+  return Math.max(0, promotionPeriod - gone) as BlockHeight;
 }
 
 function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
@@ -62,10 +62,10 @@ function getEndDemotionBlock(member: Member, periods: EvidencePeriods) {
 function getBlocksUntilDemotion(member: Member, periods: EvidencePeriods, currentBlock: BlockHeight) {
   if (memberService.isCoreMember(member)) {
     const endDemotionBlock = getEndDemotionBlock(member, periods);
-    return Math.max(0, endDemotionBlock - currentBlock);
+    return Math.max(0, endDemotionBlock - currentBlock) as BlockHeight;
   }
 
-  return Number.POSITIVE_INFINITY;
+  return Number.POSITIVE_INFINITY as BlockHeight;
 }
 
 type EvidenceTransactionParams = {
@@ -101,7 +101,7 @@ export const evidenceService = {
   getCidByEvidence,
   getEvidenceFromCid,
   getPromotionPeriod,
-  getBlockUntilNextPropotion,
+  getBlockUntilNextPromotion,
   getDemotionPeriod,
   getBlocksUntilDemotion,
   getEndDemotionBlock,

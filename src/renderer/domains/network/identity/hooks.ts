@@ -12,3 +12,12 @@ export const useIdentities = (accounts: AccountId[], chainId?: ChainId) => {
     filter: (value, { accounts }) => accounts.every(a => a in value),
   });
 };
+
+export const useIdentity = (account?: AccountId, chainId?: ChainId) => {
+  const { data, pending } = useIdentities(account ? [account] : [], chainId);
+
+  return {
+    data: account ? (data[account] ?? null) : null,
+    pending,
+  };
+};

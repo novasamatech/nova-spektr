@@ -1,10 +1,9 @@
-import { combine, sample } from 'effector';
+import { combine } from 'effector';
 
 import { nullable } from '@/shared/lib/utils';
-import { evidence, evidenceService, memberService } from '@/domains/collectives';
+import { evidenceService, memberService } from '@/domains/collectives';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
-import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 import { memberProfile } from './memberProfile';
 
@@ -17,7 +16,7 @@ const $leftToPromotion = combine(
   ({ periods, currentBlock, member }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member) || nullable(currentBlock))
       return null;
-    return evidenceService.getBlockUntilNextPropotion(member, periods, currentBlock);
+    return evidenceService.getBlockUntilNextPromotion(member, periods, currentBlock);
   },
 );
 
@@ -34,21 +33,6 @@ const $leftToDemotion = combine(
     return evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
   },
 );
-
-// requesting data
-
-const periodRequested = fellowshipTasksFeature.running.filterMap(({ api, palletType, chain }) => {
-  return {
-    api,
-    palletType,
-    chain,
-  };
-});
-
-sample({
-  clock: periodRequested,
-  target: evidence.requestPeriods,
-});
 
 export const periods = {
   $endDemotionPeriod,
