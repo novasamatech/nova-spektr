@@ -880,6 +880,7 @@
     },
     "notifications": {
       "addressCopied": "Address copied!",
+      "operationLinkCopied": "Operation link copied!",
       "copiedToClipboard": "Copied to clipboard!"
     },
     "timeout": {
