@@ -1,4 +1,3 @@
-import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { uniqBy } from 'lodash';
 import { and, not, spread } from 'patronum';
@@ -12,7 +11,7 @@ import {
   nonNullable,
   nullable,
   reservableAmountBN,
-  stakedAmountBN,
+  reusableLockBN,
   toAddress,
   transferableAmount,
   validateAddress,
@@ -124,10 +123,6 @@ const $initiatorBalance = combine(
 
 const $reservableAmount = $initiatorBalance.map((initiatorBalance) => {
   return initiatorBalance ? reservableAmountBN(initiatorBalance) : null;
-});
-
-const $stakedAmount = $initiatorBalance.map((initiatorBalance) => {
-  return initiatorBalance ? stakedAmountBN(initiatorBalance) : null;
 });
 
 const $signatories = createSignatoriesStore({
@@ -284,21 +279,13 @@ const $bondBalanceRange = $reservableAmount.map((reservableAmount) => {
   return minBondBalance.isZero() ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance.toString()];
 });
 
-const $reusableLock = combine(
-  { reservableAmount: $reservableAmount, stakedAmount: $stakedAmount, balance: $initiatorBalance },
-  ({ reservableAmount, stakedAmount, balance }) => {
-    if (nullable(stakedAmount) || nullable(reservableAmount) || nullable(balance)) {
-      return null;
-    }
+const $reusableLock = $initiatorBalance.map((balance) => {
+  if (nullable(balance)) {
+    return null;
+  }
 
-    const reusableLock = balance.frozen.sub(stakedAmount);
-
-    if (reusableLock.isZero() || reusableLock.isNeg()) {
-      return BN_ZERO;
-    }
-    return BN.min(reusableLock, reservableAmount);
-  },
-);
+  return reusableLockBN(balance);
+});
 
 sample({
   clock: form.fields.initiator.change,

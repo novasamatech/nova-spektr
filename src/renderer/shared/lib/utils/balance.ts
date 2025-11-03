@@ -268,6 +268,14 @@ export const stakedAmount = (balance: Balance): string => {
   return stakedAmountBN(balance).toString();
 };
 
+export const reusableLockBN = (balance: Balance): BN => {
+  const staked = stakedAmountBN(balance);
+  const maxConstraint = BN.max(balance.frozen, balance.reserved);
+  const reusable = maxConstraint.sub(staked);
+
+  return BN.max(BN_ZERO, reusable);
+};
+
 export const unlockingAmount = (unlocking: Unlocking[] = []): string => {
   if (unlocking.length === 0) return ZERO_BALANCE;
 

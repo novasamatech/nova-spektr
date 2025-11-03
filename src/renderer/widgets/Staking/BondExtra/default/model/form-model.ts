@@ -1,4 +1,3 @@
-import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, sample } from 'effector';
 import { and, not, spread } from 'patronum';
 
@@ -10,7 +9,7 @@ import {
   nonNullable,
   nullable,
   reservableAmountBN,
-  stakedAmountBN,
+  reusableLockBN,
   transferableAmount,
 } from '@/shared/lib/utils';
 import {
@@ -94,31 +93,19 @@ const $reservableAmount = $initiatorBalance.map((initiatorBalance) => {
   return initiatorBalance ? reservableAmountBN(initiatorBalance) : null;
 });
 
-const $stakedAmount = $initiatorBalance.map((initiatorBalance) => {
-  return initiatorBalance ? stakedAmountBN(initiatorBalance) : null;
-});
-
 const $bondBalanceRange = combine($reservableAmount, (reservableAmount) => {
   if (!reservableAmount || reservableAmount.isZero()) return ZERO_BALANCE;
 
   return [ZERO_BALANCE, reservableAmount];
 });
 
-const $reusableLock = combine(
-  { reservableAmount: $reservableAmount, stakedAmount: $stakedAmount, balance: $initiatorBalance },
-  ({ reservableAmount, stakedAmount, balance }) => {
-    if (nullable(stakedAmount) || nullable(reservableAmount) || nullable(balance)) {
-      return null;
-    }
+const $reusableLock = $initiatorBalance.map((balance) => {
+  if (nullable(balance)) {
+    return null;
+  }
 
-    const reusableLock = balance.frozen.sub(stakedAmount);
-
-    if (reusableLock.isZero() || reusableLock.isNeg()) {
-      return BN_ZERO;
-    }
-    return BN.min(reusableLock, reservableAmount);
-  },
-);
+  return reusableLockBN(balance);
+});
 
 const $api = combine(
   {
