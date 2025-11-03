@@ -1,13 +1,7 @@
-import { webcrypto } from 'node:crypto';
-
 import { KeyType } from '@/shared/core';
 import { polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { importKeysUtils } from '../import-keys-utils';
 import { importKeysMocks } from '../mocks/import-keys-utils.mock';
-
-Object.defineProperty(global.self, 'crypto', {
-  value: webcrypto,
-});
 
 describe('entities/dynamicDerivations/import-keys-utils', () => {
   describe('entities/dynamicDerivations/import-keys-utils/validateDerivation', () => {
