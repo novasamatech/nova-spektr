@@ -6,7 +6,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Evidence, useEvidencesContent } from '@/domains/collectives';
-import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { Card } from '../Card';
 import { NoEvidence } from '../ReferendumDescription';
 
@@ -16,9 +16,8 @@ type Props = {
 
 const useEvidenceContent = ({ accountId }: { accountId: AccountId }) => {
   const api = useFellowshipApi();
-  const chain = useFellowshipChain();
 
-  return useEvidencesContent({ palletType: 'fellowship', api, chainId: chain?.chainId, accountId });
+  return useEvidencesContent({ palletType: 'fellowship', api, accountId });
 };
 
 export const Content = memo(({ evidence }: Props) => {

@@ -1,15 +1,16 @@
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type Evidence, type Referendum, referendumService, trackService, useMembers } from '@/domains/collectives';
+import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
 import { identityService, useIdentity } from '@/domains/network';
-import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useMember } from '../hooks/useMember';
 import { useProposer } from '../hooks/useProposer';
-import { useReferendumMetadata } from '../hooks/useReferendumMeta';
+import { useMetadata } from '../hooks/useReferendumMeta';
 
 import { Card } from './Card';
 import { VotingRecord } from './VotingRecord';
@@ -23,18 +24,13 @@ export const MemberProfile = memo(({ referendum, evidence }: Props) => {
   const { t } = useI18n();
 
   const chain = useFellowshipChain();
-  const api = useFellowshipApi();
 
   const proposer = useProposer(referendum);
   const memberId = proposer || evidence?.accountId || null;
 
-  const { data: referendumMeta } = useReferendumMetadata(referendum);
-  const { data: members } = useMembers({ palletType: 'fellowship', api });
+  const { data: referendumMeta } = useMetadata(referendum);
+  const { data: member } = useMember(proposer);
   const { data: identity } = useIdentity(memberId);
-
-  const member = useMemo(() => {
-    return members.find(m => m.accountId === proposer);
-  }, [members, memberId]);
 
   const canHaveEvidence =
     evidence ||

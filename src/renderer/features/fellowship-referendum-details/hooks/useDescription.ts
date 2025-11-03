@@ -1,10 +1,10 @@
 import { nonNullable } from '@/shared/lib/utils';
 import { type Referendum, referendumService } from '@/domains/collectives';
 
-import { useReferendumMetadata } from './useReferendumMeta';
+import { useMetadata } from './useReferendumMeta';
 
 export const useDescription = (referendum: Referendum | null) => {
-  const { data: metadata } = useReferendumMetadata(referendum);
+  const { data: metadata } = useMetadata(referendum);
 
   let description;
 

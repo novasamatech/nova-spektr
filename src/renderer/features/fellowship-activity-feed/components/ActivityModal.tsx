@@ -25,11 +25,8 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
   const chain = useFellowshipChain();
-  const { data: feed } = useFeed({ palletType: 'fellowship', chain });
-  const { data: identities } = useIdentities(
-    feed.map(record => record.accountId),
-    chain?.chainId,
-  );
+  const { data: feed, pending } = useFeed({ palletType: 'fellowship', chain });
+  const { data: identities } = useIdentities(feed.map(record => record.accountId));
 
   const [query, setQuery] = useState('');
   const [orderKey, setOrderKey] = useState<OrderKey>('duration-asc');
@@ -83,8 +80,8 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
     <Modal size="md" height="lg">
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.activityFeed.activityModal.title')}</Modal.Title>
-      <Modal.HeaderContent>
-        <div className="flex gap-x-2 bg-main-app-background px-5 py-4">
+      <Modal.HeaderContent background="secondary">
+        <div className="flex gap-x-2 px-5 py-4">
           <div className="inline grow">
             <SearchInput
               placeholder={t('fellowship.activityFeed.activityModal.search-placeholder')}
@@ -111,22 +108,20 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
           </div>
         </div>
       </Modal.HeaderContent>
-      <Modal.Content>
-        <div className="bg-main-app-background">
-          {isNothingFound && (
-            <EmptyList
-              title={t('fellowship.activityFeed.activityModal.nothing-found.title')}
-              message={t('fellowship.activityFeed.activityModal.nothing-found.description', {
-                query: truncate(query, 6, 6),
-              })}
-            >
-              <Button pallet="primary" variant="text" onClick={clearSearch}>
-                {t('fellowship.activityFeed.activityModal.nothing-found.clear')}
-              </Button>
-            </EmptyList>
-          )}
-          <ActivityListView limit={Number.POSITIVE_INFINITY} feed={sortedList} withFullAccountInfo />
-        </div>
+      <Modal.Content background="secondary">
+        {isNothingFound && (
+          <EmptyList
+            title={t('fellowship.activityFeed.activityModal.nothing-found.title')}
+            message={t('fellowship.activityFeed.activityModal.nothing-found.description', {
+              query: truncate(query, 6, 6),
+            })}
+          >
+            <Button pallet="primary" variant="text" onClick={clearSearch}>
+              {t('fellowship.activityFeed.activityModal.nothing-found.clear')}
+            </Button>
+          </EmptyList>
+        )}
+        <ActivityListView feed={sortedList} pending={pending} withFullAccountInfo />
       </Modal.Content>
     </Modal>
   );

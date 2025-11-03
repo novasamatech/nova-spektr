@@ -14,7 +14,7 @@ export const ActivityList = memo(() => {
 
   const chain = useFellowshipChain();
 
-  const { data: feed } = useFeed({ palletType: 'fellowship', chain });
+  const { data: feed, pending } = useFeed({ palletType: 'fellowship', chain });
   const { data: identities } = useIdentities(
     feed.map(record => record.accountId),
     chain?.chainId,
@@ -38,7 +38,7 @@ export const ActivityList = memo(() => {
 
   return (
     <div className="flex flex-col gap-3 py-4 pb-3">
-      <ActivityListView limit={20} feed={records} />
+      <ActivityListView limit={20} feed={records} pending={pending} />
     </div>
   );
 });

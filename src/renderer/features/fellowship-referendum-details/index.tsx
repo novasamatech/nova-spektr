@@ -6,7 +6,7 @@ import {
   referendumAdditionalHighPriorityInfoSlot,
   referendumAdditionalInfoSlot,
 } from './components/ReferendumDetailsModal';
-import { fellowshipReferendumsDetailsFeature } from './model/feature';
+import { fellowshipReferendumsDetailsFeature } from './feature';
 
 export {
   fellowshipReferendumsDetailsFeature,
