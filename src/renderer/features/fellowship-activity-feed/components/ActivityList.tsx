@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { useClock } from '@/shared/lib/hooks/useClock';
 import { useFeed } from '@/domains/collectives';
 import { identityService, useIdentities } from '@/domains/network';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
@@ -18,7 +19,8 @@ export const ActivityList = memo(() => {
     feed.map(record => record.accountId),
     chain?.chainId,
   );
-  const now = Date.now();
+
+  const now = useClock(1000);
 
   const records = useMemo(
     () =>
