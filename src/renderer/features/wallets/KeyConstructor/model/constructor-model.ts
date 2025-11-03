@@ -140,6 +140,7 @@ sample({
         draft[id] = {
           chainId: key.chainId,
           derivationPath: key.derivationPath,
+          groupId: key.groupId,
         };
       }
     }),
