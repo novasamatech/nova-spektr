@@ -1,10 +1,9 @@
-import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { identityService } from '@/domains/network';
-import { identityModel } from '../model/identity';
-import { activityFeed } from '../model/list';
+import { useFeed } from '@/domains/collectives';
+import { identityService, useIdentities } from '@/domains/network';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { ActivityListView } from './ActivityListView';
 import { getDescription } from './utils';
@@ -12,8 +11,13 @@ import { getDescription } from './utils';
 export const ActivityList = memo(() => {
   const { t } = useI18n();
 
-  const feed = useUnit(activityFeed.$activityFeed);
-  const identities = useUnit(identityModel.$list);
+  const chain = useFellowshipChain();
+
+  const { data: feed } = useFeed({ palletType: 'fellowship', chain });
+  const { data: identities } = useIdentities(
+    feed.map(record => record.accountId),
+    chain?.chainId,
+  );
   const now = Date.now();
 
   const records = useMemo(

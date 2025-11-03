@@ -1,10 +1,9 @@
-import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useMemo } from 'react';
 
 import { useDeferredList } from '@/shared/lib/hooks';
 import { nullable } from '@/shared/lib/utils';
 import { type FeedRecord } from '@/domains/collectives';
-import { fellowshipActivityFeedFeature } from '../model/feature';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { ActivityPlaceholder } from './ActivityPlaceholder';
 import { EventRecord } from './EventRecord';
@@ -18,11 +17,11 @@ type Props = {
 export const ActivityListView = ({ limit, feed, withFullAccountInfo }: PropsWithChildren<Props>) => {
   const feedWithMaxLength = useMemo(() => feed.slice(0, limit), [feed, limit]);
 
-  const input = useUnit(fellowshipActivityFeedFeature.input);
+  const chain = useFellowshipChain();
 
   const { list, isLoading } = useDeferredList({ list: feedWithMaxLength, isLoading: feedWithMaxLength.length === 0 });
 
-  if (nullable(input)) return null;
+  if (nullable(chain)) return null;
 
   return (
     <div className="flex h-full flex-col gap-y-5 pt-2 pb-4">
@@ -35,7 +34,7 @@ export const ActivityListView = ({ limit, feed, withFullAccountInfo }: PropsWith
           description={event.description}
           duration={event.duration}
           name={event.name}
-          chain={input.chain}
+          chain={chain}
           withFullAccountInfo={withFullAccountInfo}
         />
       ))}

@@ -1,4 +1,3 @@
-import { useUnit } from 'effector-react';
 import { orderBy } from 'lodash';
 import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'react';
 
@@ -6,10 +5,9 @@ import { useI18n } from '@/shared/i18n';
 import { nullable, performSearch, truncate } from '@/shared/lib/utils';
 import { Button, EmptyList } from '@/shared/ui';
 import { Modal, SearchInput, Select } from '@/shared/ui-kit';
-import { identityService } from '@/domains/network';
-import { fellowshipActivityFeedFeature } from '../model/feature';
-import { identityModel } from '../model/identity';
-import { activityFeed } from '../model/list';
+import { useFeed } from '@/domains/collectives';
+import { identityService, useIdentities } from '@/domains/network';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { ActivityListView } from './ActivityListView';
 import { getDescription } from './utils';
@@ -26,9 +24,12 @@ const orderVariants: Record<OrderKey, { field: string; direction: 'asc' | 'desc'
 export const ActivityModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
-  const input = useUnit(fellowshipActivityFeedFeature.input);
-  const feed = useUnit(activityFeed.$activityFeed);
-  const identities = useUnit(identityModel.$list);
+  const chain = useFellowshipChain();
+  const { data: feed } = useFeed({ palletType: 'fellowship', chain });
+  const { data: identities } = useIdentities(
+    feed.map(record => record.accountId),
+    chain?.chainId,
+  );
 
   const [query, setQuery] = useState('');
   const [orderKey, setOrderKey] = useState<OrderKey>('duration-asc');
@@ -76,7 +77,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
     return orderVariant ? orderBy(filteredList, orderVariant.field, orderVariant.direction) : filteredList;
   }, [filteredList, orderKey]);
 
-  if (nullable(input)) return children;
+  if (nullable(chain)) return children;
 
   return (
     <Modal size="md" height="lg">
