@@ -4,36 +4,20 @@ import { createStore, sample } from 'effector';
 import { type ChainId } from '@/shared/core';
 import { attachToFeatureInput } from '@/shared/feature';
 import { shallowEqual } from '@/shared/lib/utils';
-import {
-  type CollectivePalletsType,
-  referendum,
-  referendumMeta,
-  referendumService,
-  track,
-} from '@/domains/collectives';
+import { type CollectivePalletsType, referendum, referendumService, track } from '@/domains/collectives';
 import { type GovernanceApiSource, governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
-const $metadata = fellowship.$store.map(store => store?.referendumMeta ?? {});
+const $metadata = fellowship.$store.map(store => store?.referendumMeta ?? []);
 const $ongoing = $referendums.map(referendumService.getOngoingReferendums);
 const $completed = $referendums.map(referendumService.getCompletedReferendums);
 
 sample({
   clock: fellowshipTasksFeature.running,
   target: [track.request],
-});
-
-sample({
-  clock: fellowshipTasksFeature.running,
-  target: referendum.subscribe,
-});
-
-sample({
-  clock: fellowshipTasksFeature.stopped,
-  target: referendum.unsubscribe,
 });
 
 const $metadataRequestParams = createStore<{
@@ -57,7 +41,7 @@ sample({
   source: $metadataRequestParams,
   filter: (prev, next) => !shallowEqual(prev, next),
   fn: (_, next) => next,
-  target: [$metadataRequestParams, referendumMeta.request],
+  target: [$metadataRequestParams],
 });
 
 export const referendums = {
@@ -65,6 +49,5 @@ export const referendums = {
   $completed,
   $metadata,
 
-  $pendingReferendumMeta: referendumMeta.request.pending,
   $pending: referendum.request.pending,
 };

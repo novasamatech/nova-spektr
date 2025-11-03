@@ -4,8 +4,8 @@ import { useFellowshipApi } from '@/aggregates/fellowship-network';
 
 export const useMemberSalaryClaimStatus = () => {
   const api = useFellowshipApi();
-  const member = useFellowshipMember();
-  const { data: claimStatuses, pending } = useSalaryClaimStatusResource({
+  const { data: member, pending: pendingMember } = useFellowshipMember();
+  const { data: claimStatuses, pending: pendingStatus } = useSalaryClaimStatusResource({
     palletType: 'fellowship',
     api,
     accounts: member ? [member.accountId] : null,
@@ -13,6 +13,6 @@ export const useMemberSalaryClaimStatus = () => {
 
   return {
     data: member ? (claimStatuses[member.accountId] ?? null) : null,
-    pending,
+    pending: pendingStatus || pendingMember,
   };
 };

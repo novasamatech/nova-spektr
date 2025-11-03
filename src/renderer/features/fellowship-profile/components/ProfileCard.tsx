@@ -8,7 +8,8 @@ import { CollectiveRank, Hash, Identicon } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
-import { ERROR } from '../constants';
+import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
+import { useFellowshipChainConnected } from '@/aggregates/fellowship-network';
 import { evidenceInfo } from '../model/evidence';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
@@ -16,14 +17,13 @@ import { profile } from '../model/profile';
 import { ProfileModal } from './ProfileModal';
 
 export const ProfileCard = memo(() => {
-  const pending = useUnit(profile.$pending);
-  const currentMember = useUnit(profile.$member);
-  const isAccountExist = useUnit(profile.$isAccountExist);
-  const featureState = useUnit(fellowshipProfileFeature.state);
+  const { data: currentMember, pending } = useFellowshipMember();
+  const { data: account } = useFellowshipAccount();
+  const connected = useFellowshipChainConnected();
 
-  const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.NETWORK_DISABLED;
+  const isAccountExist = nonNullable(account);
 
-  const shouldRenderLoading = pending || isNetworkDisabled;
+  const shouldRenderLoading = pending || !connected;
   const shouldRenderEmptyAccount = !isAccountExist && !pending;
   const shouldRenderEmptyMember = isAccountExist && nullable(currentMember);
   const shouldRenderMember = nonNullable(currentMember);

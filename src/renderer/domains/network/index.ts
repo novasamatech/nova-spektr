@@ -27,7 +27,7 @@ export type { BalanceUpdateResult, BalancePreservation } from './balance/types';
 
 export { identity } from './identity/store';
 export { identityService } from './identity/service';
-export { useIdentities } from './identity/hooks';
+export { useIdentities, useIdentity } from './identity/hooks';
 export type { AccountIdentity, IdentityMap } from './identity/types';
 
 export { block } from './block/store';

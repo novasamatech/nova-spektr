@@ -6,8 +6,8 @@ import { useFellowshipApi, useFellowshipBlock, useFellowshipChain } from '@/aggr
 export const useLeftToDemotion = () => {
   const api = useFellowshipApi();
   const chain = useFellowshipChain();
-  const member = useFellowshipMember();
 
+  const { data: member, pending: memberPending } = useFellowshipMember();
   const { data: periods, pending: periodsPending } = useEvidencePeriod({ palletType: 'fellowship', api, chain });
   const { data: block, pending: blockPending } = useFellowshipBlock();
 
@@ -16,6 +16,6 @@ export const useLeftToDemotion = () => {
       nonNullable(block) && nonNullable(periods) && nonNullable(member)
         ? evidenceService.getBlocksUntilDemotion(member, periods, block)
         : null,
-    pending: blockPending || periodsPending,
+    pending: memberPending || blockPending || periodsPending,
   };
 };

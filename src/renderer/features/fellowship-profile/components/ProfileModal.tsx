@@ -1,17 +1,16 @@
-import { useUnit } from 'effector-react';
+import { BN_ZERO } from '@polkadot/util';
 import { type PropsWithChildren } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nullable, toAddress } from '@/shared/lib/utils';
+import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText, HeaderTitleText, Separator, Switch } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Member, memberService, salaryService } from '@/domains/collectives';
-import { accountService } from '@/domains/network';
-import { fellowshipProfileFeature } from '../model/feature';
-import { profile } from '../model/profile';
-import { memberSalary } from '../model/salary';
+import { accountService, useIdentity } from '@/domains/network';
+import { useFellowshipAccount, useFellowshipMember, useFellowshipMemberSalary } from '@/aggregates/fellowship-member';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { ActivityFeed } from './ActivityFeed';
 import { SetActiveModal } from './SetActiveModal';
@@ -21,13 +20,13 @@ export const profileInfoSlot = createSlot<{ member: Member }>();
 export const ProfileModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
-  const featureInput = useUnit(fellowshipProfileFeature.input);
-  const member = useUnit(profile.$member);
-  const account = useUnit(profile.$account);
-  const identity = useUnit(profile.$identity);
-  const salary = useUnit(memberSalary.$memberSalary);
+  const chain = useFellowshipChain();
+  const { data: member } = useFellowshipMember();
+  const { data: account } = useFellowshipAccount();
+  const { data: salary } = useFellowshipMemberSalary();
+  const { data: identity } = useIdentity(member?.accountId, chain?.chainId);
 
-  const disabled = nullable(member) || nullable(featureInput) || nullable(account);
+  const disabled = nullable(member) || nullable(account) || nullable(chain);
 
   if (disabled) {
     // eslint-disable-next-line react/jsx-no-useless-fragment
@@ -51,7 +50,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
                 <Account
                   accountId={member.accountId}
                   title={identity?.name}
-                  chain={featureInput.chain}
+                  chain={chain}
                   variant="short"
                   hideIcon
                   hideAddress
@@ -65,28 +64,30 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
               {active ? (
                 <FootnoteText className="text-text-positive">{t('fellowship.profile.active')}</FootnoteText>
               ) : null}
-              <SetActiveModal isActive={!active} disabled={setActiveDisabled} salary={salary}>
-                <div>
-                  <div className="pointer-events-none">
-                    <Switch
-                      switchClassName={cnTw(active && 'bg-qr-valid-background')}
-                      checked={active}
-                      disabled={setActiveDisabled}
-                    />
+              {nonNullable(salary) && (
+                <SetActiveModal isActive={!active} disabled={setActiveDisabled} salary={salary}>
+                  <div>
+                    <div className="pointer-events-none">
+                      <Switch
+                        switchClassName={cnTw(active && 'bg-qr-valid-background')}
+                        checked={active}
+                        disabled={setActiveDisabled}
+                      />
+                    </div>
                   </div>
-                </div>
-              </SetActiveModal>
+                </SetActiveModal>
+              )}
             </Box>
           </Box>
           <div className="flex items-center justify-between whitespace-nowrap">
             <DetailRow label={t('fellowship.profile.activeSalary')}>
-              {salaryService.formatSalaryAmount(salary.active)}
+              {salaryService.formatSalaryAmount(salary?.active ?? BN_ZERO)}
             </DetailRow>
             <div className="w-full grow" />
             <div className="h-4.5 w-px border-r border-divider" />
             <div className="w-full grow" />
             <DetailRow label={t('fellowship.profile.passiveSalary')}>
-              {salaryService.formatSalaryAmount(salary.passive)}
+              {salaryService.formatSalaryAmount(salary?.passive ?? BN_ZERO)}
             </DetailRow>
           </div>
           <Slot id={profileInfoSlot} props={{ member }} />

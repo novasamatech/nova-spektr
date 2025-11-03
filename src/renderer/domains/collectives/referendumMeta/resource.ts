@@ -6,6 +6,7 @@ import { subsquareApiService } from '@/shared/api/subsquare';
 import { type ChainId } from '@/shared/core';
 import { getBlockFromTime } from '@/shared/lib/utils';
 import { createQueryResource } from '@/shared/query';
+import { POLKADOT_COLLECTIVES_CHAIN } from '../_lib/constants';
 import { mergeNested } from '../_lib/helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
@@ -29,7 +30,7 @@ export const referendumMetaResource = createQueryResource<ReferendumMetaRequestP
   .request<ReferendumMetaWithContext[]>(async ({ chainId, api, provider, palletType }) => {
     let response: ReferendumMeta[] = [];
     // external providers work only with polkadot collectives chain
-    if (chainId !== '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2') {
+    if (chainId !== POLKADOT_COLLECTIVES_CHAIN) {
       return [];
     }
 

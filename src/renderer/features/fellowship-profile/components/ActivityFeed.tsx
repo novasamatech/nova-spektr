@@ -1,11 +1,12 @@
-import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
-import { Box, ScrollArea } from '@/shared/ui-kit';
+import { Box, ScrollArea, Skeleton } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
-import { activity } from '../model/activity';
+import { useDeferredList } from '../../../shared/lib/hooks';
+import { useClock } from '../hooks/useClock';
+import { useMemberFeed } from '../hooks/useMemberFeed';
 
 const getMessage = (t: TFunction, record: FeedRecord) => {
   if (record.type === 'activeChanged') {
@@ -45,14 +46,18 @@ const getMessage = (t: TFunction, record: FeedRecord) => {
 
 export const ActivityFeed = () => {
   const { t } = useI18n();
-  const list = useUnit(activity.$list);
-  const now = Date.now();
+  const now = useClock(60_000);
+  const { data, pending } = useMemberFeed();
+
+  const { list, isLoading } = useDeferredList({ list: data, isLoading: pending });
 
   return (
     <Box>
       <Box direction="row" padding={[5.5, 5]} gap={2}>
         <span className="text-caption text-text-secondary uppercase">{t('fellowship.profile.activity')}</span>
-        <span className="text-caption text-text-tertiary uppercase">{list.length}</span>
+        <Skeleton active={!isLoading}>
+          <span className="text-caption text-text-tertiary uppercase">{list.length}</span>
+        </Skeleton>
       </Box>
       <ScrollArea>
         <Box padding={[0, 3, 5]} gap={6}>

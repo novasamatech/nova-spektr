@@ -5,7 +5,15 @@ import { nonNullableMap } from '@/shared/lib/utils';
 import { useResource } from '@/shared/query';
 import { type CollectivePalletsType } from '../_lib/types';
 
-import { type ClaimantRequestParams, claimantStatusResource, salaryCycleResource } from './resource';
+import { type ClaimantRequestParams, claimantStatusResource, salariesResource, salaryCycleResource } from './resource';
+
+export const useSalary = (palletType: CollectivePalletsType, api: ApiPromise | null) => {
+  return useResource(salariesResource, {
+    params: api ? { palletType, api } : null,
+    defaultValue: null,
+    map: (cache, { palletType, api }) => cache[palletType]?.[api.genesisHash.toHex()],
+  });
+};
 
 export const useSalaryCycleResource = (palletType: CollectivePalletsType, api: ApiPromise | null) => {
   return useResource(salaryCycleResource, {
