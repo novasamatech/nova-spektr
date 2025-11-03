@@ -8,9 +8,12 @@ import { CollectiveRank, Hash, Identicon } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
-import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
-import { useFellowshipChainConnected } from '@/aggregates/fellowship-network';
-import { evidenceInfo } from '../model/evidence';
+import {
+  useFellowshipAccount,
+  useFellowshipMember,
+  useFellowshipMemberLeftToPromotion,
+} from '@/aggregates/fellowship-member';
+import { useFellowshipApi, useFellowshipChainConnected } from '@/aggregates/fellowship-network';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
@@ -213,20 +216,18 @@ const NextRankTimeout = () => {
   const { t } = useI18n();
   const [timeLeft, setTimeLeft] = useState(0);
 
-  const input = useUnit(fellowshipProfileFeature.input);
-  const leftToPromotion = useUnit(evidenceInfo.$leftToPromotion);
+  const api = useFellowshipApi();
+  const { data: leftToPromotion } = useFellowshipMemberLeftToPromotion();
 
   useEffect(() => {
-    if (input?.api && nonNullable(leftToPromotion)) {
+    if (nonNullable(api) && nonNullable(leftToPromotion)) {
       if (leftToPromotion > 0) {
-        getRelativeTimeFromApi(leftToPromotion, input.api).then(setTimeLeft);
+        getRelativeTimeFromApi(leftToPromotion, api).then(setTimeLeft);
       } else {
         setTimeLeft(0);
       }
     }
-  }, [input?.api, leftToPromotion]);
-
-  if (!input) return null;
+  }, [api, leftToPromotion]);
 
   return timeLeft === 0 ? (
     <span>{t('fellowship.profile.ready')}</span>

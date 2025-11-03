@@ -165,7 +165,7 @@ export const createQueryResource = <Params>({ key }: { key: KeyFn<Params> }) => 
             key,
             retry: params.retry,
             fn: params.fn,
-          });
+          }) as QueryResource<Params, Response, CacheOrDefault<Cache, Response>>;
         } else {
           const cacheStore = createDefaultCacheStore<Response>();
           const cacheMapper = createDefaultCacheMapper<Params, Response>(wrapKeyFactory(key));
@@ -177,7 +177,7 @@ export const createQueryResource = <Params>({ key }: { key: KeyFn<Params> }) => 
             },
             key,
             fn: params.fn,
-          });
+          }) as QueryResource<Params, Response, CacheOrDefault<Cache, Response>>;
         }
       },
     };

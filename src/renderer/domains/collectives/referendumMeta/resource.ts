@@ -4,10 +4,10 @@ import { createStore } from 'effector';
 import { polkassemblyApiService } from '@/shared/api/polkassembly';
 import { subsquareApiService } from '@/shared/api/subsquare';
 import { type ChainId } from '@/shared/core';
-import { getBlockFromTime } from '@/shared/lib/utils';
+import { dictionary, getBlockFromTime, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { createQueryResource } from '@/shared/query';
 import { POLKADOT_COLLECTIVES_CHAIN } from '../_lib/constants';
-import { mergeNested } from '../_lib/helpers';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type ReferendumMeta, type ReferendumMetaProvider } from './types';
@@ -89,10 +89,18 @@ export const referendumMetaResource = createQueryResource<ReferendumMetaRequestP
       chainId,
     }));
   })
-  .cache<CollectivesStruct<ReferendumMetaWithContext[]>>({
+  .cache<CollectivesStruct<Record<ReferendumId, ReferendumMetaWithContext>>>({
     store: createStore({}),
-    map: (state, data) => {
-      return mergeNested(state, data, r => r.referendumId);
+    map(state, referendums, params) {
+      const { palletType, chainId } = params;
+
+      const previousState = pickNestedValue(state, palletType, chainId) ?? {};
+      const resultMap = dictionary(referendums, 'referendumId');
+
+      return setNestedValue(state, palletType, chainId, {
+        ...previousState,
+        ...resultMap,
+      });
     },
   })
   .build();

@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { useClock } from '@/shared/lib/hooks/useClock';
+import { useClock } from '@/shared/lib/hooks';
 import { useFeed } from '@/domains/collectives';
 import { identityService, useIdentities } from '@/domains/network';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';

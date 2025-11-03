@@ -1,11 +1,10 @@
 import { type TFunction } from 'i18next';
 
 import { useI18n } from '@/shared/i18n';
+import { useClock, useDeferredList } from '@/shared/lib/hooks';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
 import { Box, ScrollArea, Skeleton } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
-import { useDeferredList } from '../../../shared/lib/hooks';
-import { useClock } from '../hooks/useClock';
 import { useMemberFeed } from '../hooks/useMemberFeed';
 
 const getMessage = (t: TFunction, record: FeedRecord) => {

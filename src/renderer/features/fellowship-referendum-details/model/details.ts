@@ -4,21 +4,14 @@ import { and, or } from 'patronum';
 import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { dictionary, nonNullable, nullable } from '@/shared/lib/utils';
-import {
-  type Referendum,
-  evidence,
-  referendum,
-  referendumMeta,
-  referendumService,
-  rfc,
-} from '@/domains/collectives';
+import { type Referendum, evidence, referendum, referendumService, rfc } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
 import { fellowshipReferendumsDetailsFeature } from './feature';
 import { fellowship } from './fellowship';
 
-const requestEvidenceFx = attach({ effect: evidence.evidenceContentResource.start });
-const requestRfcFx = attach({ effect: rfc.rfcSummaryResource.start });
+const requestEvidenceFx = attach({ effect: evidence.evidenceContentResource.fetch });
+const requestRfcFx = attach({ effect: rfc.rfcSummaryResource.fetch });
 
 const flow = createFlow<{ referendum: Referendum | null }>({ referendum: null });
 
@@ -72,7 +65,7 @@ const $description = combine({ referendum: $referendum, metadata: $referendumMet
 });
 
 const $pendingReferendum = and($referendum.map(nullable), referendum.request.pending);
-const $pendingReferendumMeta = and($referendumMeta.map(nullable), referendumMeta.request.pending);
+const $pendingReferendumMeta = and($referendumMeta.map(nullable));
 
 const proposeEvidenceRequested = attachToFeatureInput(fellowshipReferendumsDetailsFeature, $proposer).filterMap(
   ({ input, data }) => {
@@ -142,5 +135,5 @@ export const details = {
   $pendingProposer: identity.request.pending,
   $pendingMeta: or($pendingReferendumMeta, fellowshipReferendumsDetailsFeature.isStarting),
   $pending: or($pendingReferendum, fellowshipReferendumsDetailsFeature.isStarting),
-  $fulfilled: and(referendum.fulfilled, fellowshipReferendumsDetailsFeature.isRunning),
+  $fulfilled: and(fellowshipReferendumsDetailsFeature.isRunning),
 };

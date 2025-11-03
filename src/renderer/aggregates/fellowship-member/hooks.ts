@@ -2,10 +2,18 @@ import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { memberService, salaryService, useMembers, useSalary } from '@/domains/collectives';
+import { type BlockHeight } from '@/shared/polkadotjs-schemas';
+import {
+  evidenceService,
+  memberService,
+  salaryService,
+  useEvidencePeriod,
+  useMembers,
+  useSalary,
+} from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
-import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipBlock, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 const useChainAccounts = () => {
@@ -71,5 +79,43 @@ export const useFellowshipMemberSalary = () => {
   return {
     data: salary,
     pending: pendingSalaries || pendingMember,
+  };
+};
+
+export const useFellowshipMemberLeftToDemotion = () => {
+  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
+
+  const { data: member, pending: memberPending } = useFellowshipMember();
+  const { data: periods, pending: periodsPending } = useEvidencePeriod({ palletType: 'fellowship', api, chain });
+  const { data: block, pending: blockPending } = useFellowshipBlock();
+
+  let data: BlockHeight | null = null;
+  if (nonNullable(block) && nonNullable(periods) && nonNullable(member)) {
+    data = evidenceService.getBlocksUntilDemotion(member, periods, block);
+  }
+
+  return {
+    data,
+    pending: memberPending || blockPending || periodsPending,
+  };
+};
+
+export const useFellowshipMemberLeftToPromotion = () => {
+  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
+
+  const { data: member, pending: memberPending } = useFellowshipMember();
+  const { data: periods, pending: periodsPending } = useEvidencePeriod({ palletType: 'fellowship', api, chain });
+  const { data: block, pending: blockPending } = useFellowshipBlock();
+
+  let data: BlockHeight | null = null;
+  if (nonNullable(block) && nonNullable(periods) && nonNullable(member) && memberService.isCoreMember(member)) {
+    data = evidenceService.getBlockUntilNextPromotion(member, periods, block);
+  }
+
+  return {
+    data,
+    pending: memberPending || blockPending || periodsPending,
   };
 };

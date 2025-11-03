@@ -11,7 +11,7 @@ import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 
 const $referendums = fellowship.$store.map(store => store?.referendums ?? []);
-const $metadata = fellowship.$store.map(store => store?.referendumMeta ?? []);
+const $metadata = fellowship.$store.map(store => store?.referendumMeta ?? {});
 const $ongoing = $referendums.map(referendumService.getOngoingReferendums);
 const $completed = $referendums.map(referendumService.getCompletedReferendums);
 
