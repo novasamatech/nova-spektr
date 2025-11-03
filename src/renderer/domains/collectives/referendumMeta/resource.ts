@@ -21,13 +21,13 @@ export type ReferendumMetaRequestParams = {
   provider: ReferendumMetaProvider;
   api: ApiPromise;
   palletType: CollectivePalletsType;
-  chainId: ChainId;
 };
 
 export const referendumMetaResource = createQueryResource<ReferendumMetaRequestParams>({
-  key: ({ palletType, chainId }) => [palletType, chainId],
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
 })
-  .request<ReferendumMetaWithContext[]>(async ({ chainId, api, provider, palletType }) => {
+  .request<ReferendumMetaWithContext[]>(async ({ api, provider, palletType }) => {
+    const chainId = api.genesisHash.toHex();
     let response: ReferendumMeta[] = [];
     // external providers work only with polkadot collectives chain
     if (chainId !== POLKADOT_COLLECTIVES_CHAIN) {
@@ -91,8 +91,8 @@ export const referendumMetaResource = createQueryResource<ReferendumMetaRequestP
   })
   .cache<CollectivesStruct<Record<ReferendumId, ReferendumMetaWithContext>>>({
     store: createStore({}),
-    map(state, referendums, params) {
-      const { palletType, chainId } = params;
+    map(state, referendums, { palletType, api }) {
+      const chainId = api.genesisHash.toHex();
 
       const previousState = pickNestedValue(state, palletType, chainId) ?? {};
       const resultMap = dictionary(referendums, 'referendumId');

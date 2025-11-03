@@ -13,7 +13,7 @@ export const useIdentities = (accounts: AccountId[], chainId?: ChainId) => {
   });
 };
 
-export const useIdentity = (account?: AccountId, chainId?: ChainId) => {
+export const useIdentity = (account?: AccountId | null, chainId?: ChainId) => {
   const { data, pending } = useIdentities(account ? [account] : [], chainId);
 
   return {

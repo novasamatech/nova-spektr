@@ -1,18 +1,15 @@
-import { attach, combine, sample } from 'effector';
+import { attach, combine } from 'effector';
 
-import { populated, series } from '@/shared/effector';
-import { attachToFeatureInput } from '@/shared/feature';
+import { populated } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { evidence, referendumService, trackService } from '@/domains/collectives';
 
-import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
 import { memberProfile } from './memberProfile';
 import { referendums } from './referendums';
 
 // evidences
 
-const $members = fellowship.$store.map(s => s?.members ?? []);
 const $evidences = fellowship.$store.map(s => s?.evidence ?? []);
 const $evidencesSummary = fellowship.$store.map(s => s?.evidenceSummary ?? []);
 
@@ -27,8 +24,7 @@ const $memberEvidenceSummary = combine($memberEvidence, $evidencesSummary, (evid
 const $hasRetentionEvidence = $memberEvidence.map(x => x?.wish === 'Retention');
 const $hasPromotionEvidence = $memberEvidence.map(x => x?.wish === 'Promotion');
 
-const requestEvidenceFx = attach({ effect: evidence.request });
-const requestEvidenceSummaryFx = attach({ effect: evidence.requestSummary });
+const requestEvidenceSummaryFx = attach({ effect: evidence.evidenceSummaryResource.fetch });
 
 const $summaryPopulated = populated(requestEvidenceSummaryFx);
 
@@ -51,34 +47,6 @@ const $evidencesWithoutReferendums = combine(
   },
 );
 
-// requesting data
-
-sample({
-  clock: attachToFeatureInput(fellowshipTasksFeature, $members),
-  fn({ input, data: members }) {
-    return {
-      api: input.api,
-      palletType: input.palletType,
-      chainId: input.chainId,
-      accounts: members.map(m => m.accountId),
-    };
-  },
-  target: requestEvidenceFx,
-});
-
-sample({
-  clock: attachToFeatureInput(fellowshipTasksFeature, requestEvidenceFx.doneData),
-  fn({ input, data: evidences }) {
-    return evidences.filter(nonNullable).map(e => ({
-      palletType: input.palletType,
-      chainId: input.chainId,
-      accountId: e.accountId,
-      evidence: e.hash,
-    }));
-  },
-  target: series(requestEvidenceSummaryFx, { parallel: true, skipErrors: true }),
-});
-
 export const evidenceModel = {
   $evidences,
   $evidencesSummary,
@@ -87,7 +55,6 @@ export const evidenceModel = {
   $memberEvidenceSummary,
   $hasRetentionEvidence,
   $hasPromotionEvidence,
-  requestEvidence: requestEvidenceFx,
   requestEvidenceSummary: requestEvidenceSummaryFx,
   $summaryPopulated,
 };

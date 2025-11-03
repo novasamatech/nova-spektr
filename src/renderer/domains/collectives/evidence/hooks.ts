@@ -19,8 +19,8 @@ export const useEvidences = (params: NullableMap<EvidenceRequestParams>) => {
   return useResource(evidenceResource, {
     params: nonNullableMap(params) ? params : null,
     defaultValue: [],
-    map(cache, { palletType, chainId, accounts }) {
-      const list = cache[palletType]?.[chainId];
+    map(cache, { palletType, api, accounts }) {
+      const list = cache[palletType]?.[api.genesisHash.toHex()];
       if (list) {
         return list.filter(e => accounts.includes(e.accountId));
       }

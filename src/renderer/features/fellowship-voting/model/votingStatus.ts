@@ -40,27 +40,6 @@ sample({
 });
 
 sample({
-  clock: fellowshipVotingFeature.running,
-  fn: ({ palletType, api, chain, account }) => ({
-    palletType,
-    api,
-    chainId: chain.chainId,
-    accounts: account ? [account.accountId] : [],
-  }),
-  target: voting.votingSubscriptionResource.start,
-});
-
-sample({
-  clock: fellowshipVotingFeature.stopped,
-  source: fellowshipVotingFeature.input,
-  fn: (input) => {
-    if (!input) return [];
-    return [input.palletType, input.chainId, input.account ? [input.account.accountId].join(',') : ''];
-  },
-  target: voting.votingSubscriptionResource.stop,
-});
-
-sample({
   clock: attachToFeatureInput(fellowshipVotingFeature, voting.votingSubscriptionResource.push),
   fn({ input }) {
     return {

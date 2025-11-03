@@ -11,7 +11,6 @@ export const useMemberEvidence = () => {
   const { data: evidences, pending: pendingEvidences } = useEvidences({
     palletType: 'fellowship',
     api,
-    chainId: api?.genesisHash.toHex(),
     accounts: member ? [member.accountId] : null,
   });
 

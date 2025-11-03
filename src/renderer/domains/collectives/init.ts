@@ -20,7 +20,7 @@ export const $collectiveStore = combine(
     tracks: track.$list,
     maxRank: track.$maxRank,
     voting: voting.votingSubscriptionResource.$cache,
-    salaryStatus: salary.salariesResource.$cache,
+    salaryStatus: salary.salaryCycleResource.$cache,
     claimantStatus: salary.claimantStatusResource.$cache,
     evidence: evidence.evidenceResource.$cache,
     evidenceContent: evidence.evidenceContentResource.$cache,

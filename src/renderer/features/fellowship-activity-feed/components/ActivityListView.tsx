@@ -19,7 +19,7 @@ export const ActivityListView = ({ limit, feed, withFullAccountInfo }: PropsWith
 
   const chain = useFellowshipChain();
 
-  const { list, isLoading } = useDeferredList({ list: feedWithMaxLength, isLoading: feedWithMaxLength.length === 0 });
+  const { list, isLoading } = useDeferredList({ list: feedWithMaxLength });
 
   if (nullable(chain)) return null;
 

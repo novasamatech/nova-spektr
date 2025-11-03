@@ -3,5 +3,5 @@ import { claimantStatusResource, salariesResource, salaryCycleResource } from '.
 export const salary = {
   salariesResource,
   claimantStatusResource,
-  statusResource: salaryCycleResource,
+  salaryCycleResource,
 };

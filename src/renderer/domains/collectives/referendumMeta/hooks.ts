@@ -8,9 +8,8 @@ export const useReferendumMeta = (params: NullableMap<ReferendumMetaRequestParam
   return useResource(referendumMetaResource, {
     params: nonNullableMap(params) ? params : null,
     defaultValue: [],
-    map(cache, { palletType, chainId }) {
-      return cache[palletType]?.[chainId];
+    map(cache, { palletType, api }) {
+      return cache[palletType]?.[api.genesisHash.toHex()];
     },
   });
 };
-

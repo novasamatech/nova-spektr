@@ -10,7 +10,7 @@ import { referendums } from './referendums';
 
 const $rfcSummary = fellowship.$store.map(s => s?.rfcSummary ?? null);
 
-const requestRfcFx = attach({ effect: rfc.rfcSummaryResource.start });
+const requestRfcFx = attach({ effect: rfc.rfcSummaryResource.fetch });
 
 const $rfcReferendums = combine({ referendums: referendums.$ongoing }, ({ referendums }) => {
   return referendums.filter(referendum => {

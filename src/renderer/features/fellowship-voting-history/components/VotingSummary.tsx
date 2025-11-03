@@ -1,3 +1,4 @@
+import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -5,6 +6,7 @@ import { FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { type Referendum, referendumService, trackService, useReferendumMeta } from '@/domains/collectives';
 import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { useVotes } from '../hooks/useVotes';
 
 export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
@@ -13,11 +15,11 @@ export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
   const { votes, pending } = useVotes(referendum.id);
 
   const api = useFellowshipApi();
+  const provider = useUnit(governanceMetaProvider.$metaProvider);
   const { data: referendumMetas } = useReferendumMeta({
-    provider: 'subsquare',
+    provider: provider?.type,
     api,
     palletType: 'fellowship',
-    chainId: referendum.chainId,
   });
 
   const referendumMeta = referendumMetas[referendum.id];

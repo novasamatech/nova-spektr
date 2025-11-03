@@ -62,7 +62,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
             <Box width="350px" shrink={0} gap={4}>
               <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
 
-              <MemberProfile referendum={referendum} />
+              <MemberProfile referendum={referendum} evidence={evidence} />
 
               <Slot id={referendumAdditionalInfoSlot} props={{ referendum }} />
 

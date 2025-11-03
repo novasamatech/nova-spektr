@@ -46,7 +46,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
       <div className="flex-1">
-        <AdditionalContext />
+        <AdditionalContext referendum={referendum} />
       </div>
     </div>
   );

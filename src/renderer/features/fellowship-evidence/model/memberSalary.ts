@@ -10,7 +10,7 @@ import { fellowshipEvidenceFeature } from './feature';
 import { fellowship } from './fellowship';
 import { profile } from './profile';
 
-const $statuses = salaryModel.$status.map(s => s['fellowship'] ?? {});
+const $statuses = salaryModel.salaryCycleResource.$cache.map(s => s['fellowship'] ?? {});
 const $claimantStatuses = fellowship.$store.map(store => store?.claimantStatus ?? {});
 
 const $status = combine(fellowshipEvidenceFeature.input, $statuses, (featureInput, statuses) => {
@@ -19,7 +19,7 @@ const $status = combine(fellowshipEvidenceFeature.input, $statuses, (featureInpu
   return statuses[featureInput.chainId] ?? null;
 });
 
-const $salaries = salaryModel.$salaries.map(s => s['fellowship'] ?? {});
+const $salaries = salaryModel.salariesResource.$cache.map(s => s['fellowship'] ?? {});
 
 const $chainSalaries = combine(fellowshipEvidenceFeature.input, $salaries, (featureInput, salaries) => {
   if (nullable(featureInput)) return null;
@@ -48,11 +48,6 @@ const $currentPeriod = combine($status, fellowshipNetwork.$currentBlock, (status
   return salaryService.getCurrentPeriod(status, currentBlock);
 });
 
-sample({
-  clock: fellowshipEvidenceFeature.running,
-  target: [salaryModel.requestStatus, salaryModel.requestSalaries],
-});
-
 const memberUpdated = attachToFeatureInput(fellowshipEvidenceFeature, profile.$member).filterMap(({ data, input }) => {
   if (!data) return;
 
@@ -66,7 +61,7 @@ const memberUpdated = attachToFeatureInput(fellowshipEvidenceFeature, profile.$m
 
 sample({
   clock: memberUpdated,
-  target: salaryModel.requestClaimantStatus,
+  target: salaryModel.claimantStatusResource.fetch,
 });
 
 export const memberSalary = {

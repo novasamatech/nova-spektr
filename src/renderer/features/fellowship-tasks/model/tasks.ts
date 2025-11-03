@@ -1,13 +1,10 @@
-import { combine } from 'effector';
-import { or } from 'patronum';
+import { combine, createStore } from 'effector';
 
 import { groupBy, nonNullable, nullable } from '@/shared/lib/utils';
 import {
   type CompletedReferendum,
   type OngoingReferendum,
-  evidence,
   evidenceService,
-  member,
   memberService,
   referendumService,
   salaryService,
@@ -149,7 +146,7 @@ const $memberSalaryTasks = combine(
 const $memberEvidenceTasks = combine(
   {
     member: $member,
-    evidencePopulated: evidence.$populated,
+    evidencePopulated: createStore(true),
     leftToPromotion: periods.$leftToPromotion,
     leftToDemotion: periods.$leftToDemotion,
     hasPromotionEvidence: evidenceModel.$hasPromotionEvidence,
@@ -209,7 +206,7 @@ const $evidenceTasks = combine(
     periods: $evidencePeriods,
     member: $member,
     members: $members,
-    evidencePopulated: evidence.$populated,
+    evidencePopulated: createStore(true),
     currentBlock: fellowshipNetwork.$currentBlock,
     referendumsWithEvidence: $referendumsWithEvidence,
   },
@@ -399,5 +396,5 @@ export const tasks = {
   $chainName,
   $basketOperations: $filteredBasketOperations,
   $list,
-  pending: or(basketOperations.pending, member.pending, evidenceModel.requestEvidence.pending),
+  pending: basketOperations.pending,
 };

@@ -25,14 +25,14 @@ import {
 export type EvidenceRequestParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
-  chainId: ChainId;
   accounts: AccountId[];
 };
 
 export const evidenceResource = createSubscriptionResource<EvidenceRequestParams>({
-  key: ({ palletType, chainId }) => [palletType, chainId],
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
 })
-  .subscribe<Evidence[]>(({ palletType, api, chainId, accounts }, callback) => {
+  .subscribe<Evidence[]>(({ palletType, api, accounts }, callback) => {
+    const chainId = api.genesisHash.toHex();
     return collectiveCorePallet.storage.memberEvidenceWatch(palletType, api, accounts, evidences => {
       const mapped = evidences
         .map(({ account, evidence }) => {

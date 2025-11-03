@@ -22,7 +22,7 @@ export const ProposerName = () => {
   const identity = useUnit(details.$proposerIdentity);
   const isProposerLoading = useUnit(details.$pendingProposer);
   const referendum = useUnit(details.$referendum);
-  const tracks = useTracks({ palletType: 'fellowship', api });
+  const { data: tracks } = useTracks({ palletType: 'fellowship', api });
 
   if (nullable(proposer) || nullable(input)) {
     return null;

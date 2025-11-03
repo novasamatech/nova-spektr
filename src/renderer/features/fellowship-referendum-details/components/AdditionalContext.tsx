@@ -1,4 +1,3 @@
-import { useStoreMap, useUnit } from 'effector-react';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@/shared/ui';
@@ -6,34 +5,32 @@ import { FootnoteText, SmallTitleText, TitleText } from '@/shared/ui/Typography'
 import { Account } from '@/shared/ui-entities';
 import { Markdown, Skeleton } from '@/shared/ui-kit';
 import { Box } from '@/shared/ui-kit/Box/Box';
-import { identityService } from '@/domains/network';
-import { details } from '../model/details';
-import { fellowshipReferendumsDetailsFeature } from '../model/feature';
+import { type Referendum } from '@/domains/collectives';
+import { identityService, useIdentity } from '@/domains/network';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useDescription } from '../hooks/useDescription';
+import { useEvidence } from '../hooks/useEvidence';
+import { useProposer } from '../hooks/useProposer';
 
 import { Card } from './Card';
 
-export const AdditionalContext = () => {
+type Props = {
+  referendum: Referendum | null;
+};
+
+export const AdditionalContext = ({ referendum }: Props) => {
   const { t } = useTranslation();
-  const evidence = useUnit(details.$evidence);
-  const description = useUnit(details.$description);
-  const pendingMeta = useUnit(details.$pendingMeta);
 
-  const chain = useStoreMap({
-    store: fellowshipReferendumsDetailsFeature.input,
-    keys: [],
-    fn: store => store?.chain ?? null,
-  });
+  const chain = useFellowshipChain();
+  const proposer = useProposer(referendum);
 
-  const proposer = useUnit(details.$proposer);
+  const { data: evidence, pending: pendingEvidence } = useEvidence(proposer);
+  const { data: identity } = useIdentity(proposer);
+  const { data: description } = useDescription(referendum);
+
   const memberId = proposer || evidence?.accountId;
 
-  const identity = useStoreMap({
-    store: details.$identities,
-    keys: [memberId],
-    fn: (list, [accountId]) => (accountId && list[accountId]) ?? null,
-  });
-
-  if (pendingMeta)
+  if (pendingEvidence)
     return (
       <Card>
         <Box padding={6}>

@@ -134,7 +134,7 @@ const salaryInducted = sample({
 
 sample({
   clock: salaryInducted,
-  target: salary.requestClaimantStatus,
+  target: salary.claimantStatusResource.fetch,
 });
 
 // Basket

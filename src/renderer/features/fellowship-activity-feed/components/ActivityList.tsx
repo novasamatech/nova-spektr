@@ -20,7 +20,7 @@ export const ActivityList = memo(() => {
     chain?.chainId,
   );
 
-  const now = useClock(1000);
+  const now = useClock(60_000);
 
   const records = useMemo(
     () =>

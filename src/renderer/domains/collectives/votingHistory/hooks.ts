@@ -9,8 +9,10 @@ export const useVotes = (params: NullableMap<RequestVotesParams>) => {
     params: nonNullableMap(params) ? params : null,
     defaultValue: [],
     map(cache, { palletType, chain, accounts, referendums }) {
-      const allVotes = cache[palletType]?.[chain.chainId] ?? [];
-      return allVotes.filter(v => accounts.includes(v.accountId) && referendums.includes(v.referendumId));
+      const allVotes = cache[palletType]?.[chain.chainId];
+      if (allVotes) {
+        return allVotes.filter(v => accounts.includes(v.accountId) && referendums.includes(v.referendumId));
+      }
     },
   });
 };
@@ -20,7 +22,7 @@ export const useAllVotes = (params: NullableMap<RequestAllVotesParams>) => {
     params: nonNullableMap(params) ? params : null,
     defaultValue: [],
     map(cache, { palletType, chain }) {
-      return cache[palletType]?.[chain.chainId] ?? [];
+      return cache[palletType]?.[chain.chainId];
     },
   });
 };
