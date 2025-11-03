@@ -13,17 +13,14 @@ export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
   const { votes, pending } = useVotes(referendum.id);
 
   const api = useFellowshipApi();
-  const { data: referendumMetaList } = useReferendumMeta({
+  const { data: referendumMetas } = useReferendumMeta({
     provider: 'subsquare',
     api,
     palletType: 'fellowship',
     chainId: referendum.chainId,
   });
 
-  const referendumMeta = useMemo(
-    () => referendumMetaList.find(meta => meta.referendumId === referendum.id),
-    [referendumMetaList, referendum.id],
-  );
+  const referendumMeta = referendumMetas[referendum.id];
 
   // Get track information - for ongoing referendums use track property, for completed use metadata
   const trackId = useMemo(() => {
