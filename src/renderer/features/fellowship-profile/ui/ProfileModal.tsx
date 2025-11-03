@@ -16,6 +16,7 @@ import { memberSalary } from '../model/salary';
 
 import { ActiveIndicator } from './ActiveIndicator';
 import { ActivityFeed } from './ActivityFeed';
+import { Alerts } from './Alerts';
 import { SetActiveModal } from './SetActiveModal';
 import { VotingRecord } from './VotingRecord';
 
@@ -57,6 +58,8 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
       </Modal.Title>
       <Modal.Content>
         <div className="flex flex-col gap-1 bg-background-suffix-hover p-4">
+          <Alerts />
+
           <div className="rounded-lg bg-white py-3 pr-4 pl-2">
             <div>
               <Box gap={6}>

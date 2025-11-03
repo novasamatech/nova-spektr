@@ -83,5 +83,6 @@ sample({
 
 export const evidenceInfo = {
   $leftToPromotion,
+  $memberEvidence,
   $hasPromotionEvidence,
 };

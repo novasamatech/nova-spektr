@@ -235,6 +235,19 @@ export const getProposalTrack = (tracks: Track[], proposerMember: Member, wish: 
   return 0;
 };
 
+function getRankFromTrack(track: Track): number {
+  if (isRetentionTrack(track.id)) {
+    return track.id - 10;
+  }
+  if (isFastPromotionTrack(track.id)) {
+    return track.id - 31 + 1;
+  }
+  if (isPromotionTrack(track.id)) {
+    return track.id - 21 + 1;
+  }
+  return 0;
+}
+
 export const trackService = {
   isRetentionTrack,
   isPromotionTrack,
@@ -251,4 +264,5 @@ export const trackService = {
   getReferendumTrackFromRank,
   originNameFromTrack,
   getProposalTrack,
+  getRankFromTrack,
 };
