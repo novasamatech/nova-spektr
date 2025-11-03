@@ -1,6 +1,6 @@
 import { type PropsWithChildren, memo, useMemo } from 'react';
 
-import { useDeferredList } from '@/shared/lib/hooks';
+import { useClock, useDeferredList } from '@/shared/lib/hooks';
 import { nullable } from '@/shared/lib/utils';
 import { AsyncItem } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
@@ -10,7 +10,7 @@ import { ActivityPlaceholder } from './ActivityPlaceholder';
 import { EventRecord } from './EventRecord';
 
 type Props = {
-  feed: (FeedRecord & { description?: string; duration: number; name?: string })[];
+  feed: (FeedRecord & { description?: string; name?: string })[];
   limit?: number;
   withFullAccountInfo?: boolean;
   pending: boolean;
@@ -23,6 +23,7 @@ export const ActivityListView = memo(
       [feed, limit],
     );
 
+    const now = useClock(60_000);
     const chain = useFellowshipChain();
 
     const { list, isLoading } = useDeferredList({ list: feedWithMaxLength, isLoading: pending });
@@ -38,7 +39,7 @@ export const ActivityListView = memo(
             <EventRecord
               event={event}
               description={event.description}
-              duration={event.duration}
+              duration={(now - event.at.getTime()) / 1000}
               name={event.name}
               chain={chain}
               withFullAccountInfo={withFullAccountInfo}

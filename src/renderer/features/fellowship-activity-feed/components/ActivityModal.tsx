@@ -33,10 +33,6 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
   const deferredQuery = useDeferredValue(query);
 
-  const clearSearch = () => setQuery('');
-
-  const now = Date.now();
-
   const records = useMemo(
     () =>
       feed.map(record => {
@@ -45,7 +41,6 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
           ...record,
           name: identity ? identityService.getFullName(identity) : undefined,
           description: getDescription(record, t),
-          duration: (now - record.at.getTime()) / 1000,
         };
       }),
     [identities, feed, t],
@@ -116,7 +111,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
               query: truncate(query, 6, 6),
             })}
           >
-            <Button pallet="primary" variant="text" onClick={clearSearch}>
+            <Button pallet="primary" variant="text" onClick={() => setQuery('')}>
               {t('fellowship.activityFeed.activityModal.nothing-found.clear')}
             </Button>
           </EmptyList>

@@ -1,7 +1,6 @@
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { useClock } from '@/shared/lib/hooks';
 import { useFeed } from '@/domains/collectives';
 import { identityService, useIdentities } from '@/domains/network';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
@@ -20,8 +19,6 @@ export const ActivityList = memo(() => {
     chain?.chainId,
   );
 
-  const now = useClock(60_000);
-
   const records = useMemo(
     () =>
       feed.map(record => {
@@ -30,7 +27,6 @@ export const ActivityList = memo(() => {
           ...record,
           name: identity ? identityService.getFullName(identity) : undefined,
           description: getDescription(record, t),
-          duration: (now - record.at.getTime()) / 1000,
         };
       }),
     [identities, feed, t],
