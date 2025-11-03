@@ -77,9 +77,10 @@ export function parseDerivation(path: string): ParsedDerivation {
     }
 
     if (segment) {
+      const isLastSegment = i === len;
       const shardMatch = segment.match(/^0\.\.\.(\d+)$/);
 
-      if (shardMatch) {
+      if (isLastSegment && shardMatch) {
         shardCount = parseInt(shardMatch[1], 10) + 1;
 
         tokens.push({
