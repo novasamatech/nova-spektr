@@ -11,17 +11,13 @@ import {
   type OngoingReferendum,
   referendumService,
   trackService,
-  useMaxRank,
   useTracks,
 } from '@/domains/collectives';
-import { accountService } from '@/domains/network';
-import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { Card } from '@/features/fellowship-referendum-details';
-import { tasksService } from '@/features/fellowship-tasks';
-import { useIsVotingDisabled } from '../hooks/useIsVotingDisabled';
+import { useCanVoteForReferendum } from '../hooks/useCanVoteForReferendum';
+import { useMemberVoteInfo } from '../hooks/useMemberVoteInfo';
 import { useProposer } from '../hooks/useProposer';
-import { useReferendumVote } from '../hooks/useReferendumVote';
 import { votingStatus } from '../model/votingStatus';
 
 import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
@@ -39,22 +35,15 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
 
   const chain = useFellowshipChain();
   const api = useFellowshipApi();
+
   const { data: tracks } = useTracks({ palletType: 'fellowship', api });
-
-  const { data: account } = useFellowshipAccount();
-
-  const canVote = account ? accountService.hasPermissionToMakeActions(account) : false;
-
-  const voting = useUnit(votingStatus.$referendumVoting);
-  const { data: currentMember } = useFellowshipMember();
-
   const { data: proposerMember } = useProposer(referendum, evidence);
 
-  const { data: maxRank } = useMaxRank({ palletType: 'fellowship', api });
+  const { memberVoteWeight, userVotesImpact, hasRequiredRank } = useMemberVoteInfo(referendum);
 
-  const { data: referendumVote } = useReferendumVote(referendum?.id);
+  const voting = useUnit(votingStatus.$referendumVoting);
 
-  const isDisabled = useIsVotingDisabled(referendum);
+  const canVote = useCanVoteForReferendum(referendum);
 
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
 
@@ -80,28 +69,12 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
     return t('fellowship.tasks.titles.votingTitle.rfcOrWhitelist');
   }, [referendum, chain, tracks]);
 
-  if (nullable(chain) || nullable(currentMember) || nullable(maxRank) || nullable(referendum)) {
+  if (nullable(referendum) || nullable(userVotesImpact)) {
     return null;
   }
 
-  const hasRequiredRank = trackService.rankSatisfiesVotingThreshold(currentMember.rank, maxRank, referendum.track);
-  const totalReferendumVotes = referendum.tally.ayes + referendum.tally.nays;
-
   const alreadyVotedNay = nonNullable(voting) && voting.decision === 'Nay';
   const alreadyVotedAye = nonNullable(voting) && voting.decision === 'Aye';
-
-  const memberVoteWeight = trackService.getVoteWeight({
-    pallet: 'fellowship',
-    rank: currentMember.rank,
-    maxRank,
-    track: referendum.track,
-  });
-
-  const userVotesImpact =
-    tasksService.getReferendumUserImportanceScore(
-      totalReferendumVotes,
-      referendumVote?.decision ? memberVoteWeight * 2 : memberVoteWeight,
-    ) * 100;
 
   return (
     <Card>
@@ -119,7 +92,7 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
             <VotingButtonWithTooltip
               variant="negative"
               icon="negative"
-              disabled={isDisabled}
+              disabled={!canVote}
               votes={memberVoteWeight}
               voteImpact={userVotesImpact}
               isVoted={alreadyVotedNay}
@@ -133,7 +106,7 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
             <VotingButtonWithTooltip
               variant="positive"
               icon="positive"
-              disabled={isDisabled}
+              disabled={!canVote}
               votes={memberVoteWeight}
               voteImpact={userVotesImpact}
               isVoted={alreadyVotedAye}

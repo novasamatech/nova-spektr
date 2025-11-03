@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum } from '@/domains/collectives';
@@ -23,10 +23,6 @@ export const VotingButtonsCompleted = memo(({ referendum }: Props) => {
   const { t } = useI18n();
 
   const { data: referendumVote } = useReferendumVote(referendum?.id);
-
-  if (nullable(referendum)) {
-    return null;
-  }
 
   const alreadyVotedNay = nonNullable(referendumVote) && referendumVote.decision === 'Nay';
   const alreadyVotedAye = nonNullable(referendumVote) && referendumVote.decision === 'Aye';

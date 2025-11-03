@@ -4,7 +4,7 @@ import { accountService } from '@/domains/network';
 import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
 import { useFellowshipApi } from '@/aggregates/fellowship-network';
 
-export const useIsVotingDisabled = (referendum: Referendum | null) => {
+export const useCanVoteForReferendum = (referendum: Referendum | null) => {
   const api = useFellowshipApi();
   const { data: account } = useFellowshipAccount();
   const { data: maxRank } = useMaxRank({ palletType: 'fellowship', api });
@@ -19,5 +19,5 @@ export const useIsVotingDisabled = (referendum: Referendum | null) => {
     referendumService.isOngoing(referendum) &&
     trackService.rankSatisfiesVotingThreshold(currentMember.rank, maxRank, referendum.track);
 
-  return !canVote || !hasRequiredRank;
+  return canVote && hasRequiredRank;
 };
