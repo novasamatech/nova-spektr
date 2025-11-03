@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
 
 export const useClock = (tick: number) => {
   const [state, setState] = useState<number>(Date.now());
@@ -13,5 +13,5 @@ export const useClock = (tick: number) => {
     };
   }, [tick]);
 
-  return state;
+  return useDeferredValue(state, state);
 };

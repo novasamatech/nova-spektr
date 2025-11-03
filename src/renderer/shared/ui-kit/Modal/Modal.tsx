@@ -110,19 +110,43 @@ const Title = ({ action, close, children }: TitleProps) => {
   );
 };
 
-const HeaderContent = ({ children }: PropsWithChildren) => {
+type HeaderContentProps = PropsWithChildren<{
+  background?: 'primary' | 'secondary';
+}>;
+
+const HeaderContent = ({ children, background = 'primary' }: HeaderContentProps) => {
   return (
-    <header aria-level={2} className="shrink-0">
+    <header
+      aria-level={2}
+      className={cnTw('shrink-0', {
+        'bg-main-app-background': background === 'secondary',
+      })}
+    >
       {children}
     </header>
   );
 };
 
-const Content = ({ disableScroll, children }: PropsWithChildren<{ disableScroll?: boolean }>) => {
+type ContentProps = PropsWithChildren<{
+  disableScroll?: boolean;
+  background?: 'primary' | 'secondary';
+}>;
+
+const Content = ({ disableScroll, background = 'primary', children }: ContentProps) => {
   return disableScroll ? (
-    <div className="relative flex h-full min-h-0 grow flex-col overflow-hidden">{children}</div>
+    <div
+      className={cnTw('relative flex h-full min-h-0 grow flex-col overflow-hidden', {
+        'bg-main-app-background': background === 'secondary',
+      })}
+    >
+      {children}
+    </div>
   ) : (
-    <ScrollArea>{children}</ScrollArea>
+    <div
+      className={cnTw('h-full min-h-0 grow overflow-hidden', { 'bg-main-app-background': background === 'secondary' })}
+    >
+      <ScrollArea>{children}</ScrollArea>
+    </div>
   );
 };
 

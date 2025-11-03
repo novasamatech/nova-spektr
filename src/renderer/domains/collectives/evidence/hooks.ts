@@ -32,8 +32,8 @@ export const useEvidencesContent = (params: NullableMap<EvidenceContentRequestPa
   return useResource(evidenceContentResource, {
     params: nonNullableMap(params) ? params : null,
     defaultValue: null,
-    map(cache, { palletType, chainId, accountId }) {
-      const list = cache[palletType]?.[chainId];
+    map(cache, { palletType, api, accountId }) {
+      const list = cache[palletType]?.[api.genesisHash.toHex()];
       if (list) {
         return list.find(e => e.accountId === accountId);
       }

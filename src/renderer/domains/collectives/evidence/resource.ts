@@ -62,15 +62,15 @@ export const evidenceResource = createSubscriptionResource<EvidenceRequestParams
 export type EvidenceContentRequestParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
-  chainId: ChainId;
   accountId: AccountId;
   blockHash?: string;
 };
 
 export const evidenceContentResource = createQueryResource<EvidenceContentRequestParams>({
-  key: ({ palletType, chainId }) => [palletType, chainId],
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
 })
-  .request<EvidenceContent | null>(async ({ palletType, api, chainId, accountId, blockHash }) => {
+  .request<EvidenceContent | null>(async ({ palletType, api, accountId, blockHash }) => {
+    const chainId = api.genesisHash.toHex();
     const apiInstance = blockHash ? await api.at(blockHash) : api;
     const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, apiInstance as ApiPromise, [
       accountId,

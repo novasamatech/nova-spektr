@@ -18,10 +18,7 @@ type Props = {
 };
 
 export const VotingHistoryList = ({ items, query, chain, loading }: Props) => {
-  const { data: identities } = useIdentities(
-    items.map(i => i.accountId),
-    chain?.chainId,
-  );
+  const { data: identities } = useIdentities(items.map(i => i.accountId));
 
   const filteredItems = useMemo(() => {
     return performSearch({

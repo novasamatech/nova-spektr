@@ -1,13 +1,12 @@
-import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Referendum, trackService } from '@/domains/collectives';
-import { details } from '../model/details';
+import { useEvidenceContent } from '../hooks/useEvidenceContent';
+import { useMetadata } from '../hooks/useReferendumMeta';
 
 import { AdditionalContext } from './AdditionalContext';
 import { Card } from './Card';
@@ -17,11 +16,8 @@ type Props = {
 };
 
 export const ReferendumDescription = memo(({ referendum }: Props) => {
-  useFlow(details.flow, { referendum });
-
-  const referendumMeta = useUnit(details.$referendumMeta);
-  const pendingEvidence = useUnit(details.$pendingEvidence);
-  const evidence = useUnit(details.$evidence);
+  const { data: referendumMeta } = useMetadata(referendum);
+  const { data: evidence, pending: pendingEvidence } = useEvidenceContent(referendum);
 
   const canHaveEvidence =
     nonNullable(referendum) &&

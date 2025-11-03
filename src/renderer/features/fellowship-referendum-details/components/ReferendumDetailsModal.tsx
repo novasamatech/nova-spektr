@@ -1,13 +1,12 @@
-import { useUnit } from 'effector-react';
 import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Box, Modal } from '@/shared/ui-kit';
-import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
-import { details } from '../model/details';
-import { tracksModel } from '../model/tracks';
+import { type Evidence, type Referendum, referendumService, trackService, useTracks } from '@/domains/collectives';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useEvidenceContent } from '../hooks/useEvidenceContent';
 import { detailsService } from '../service';
 
 import { AdditionalInfo } from './AdditionalInfo';
@@ -27,10 +26,9 @@ type Props = PropsWithChildren<{
 export const ReferendumDetailsModal = memo(({ referendum, children, title }: Props) => {
   const { t } = useI18n();
 
-  const tracks = useUnit(tracksModel.$list);
-  const evidence = useUnit(details.$evidence);
-
-  const referendumId = referendum?.id;
+  const api = useFellowshipApi();
+  const { data: tracks } = useTracks({ palletType: 'fellowship', api });
+  const { data: evidence } = useEvidenceContent(referendum);
 
   const modalTitle = useMemo(() => {
     if (title) {
@@ -46,8 +44,8 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
       }
     }
 
-    return t('governance.referendums.referendumTitle', { index: referendumId });
-  }, [title, referendum, tracks, referendumId]);
+    return t('governance.referendums.referendumTitle', { index: referendum.id });
+  }, [title, referendum, tracks, referendum.id]);
 
   return (
     <Modal size="xl" height="fit">
@@ -60,7 +58,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
               <ReferendumDescription referendum={referendum} />
             </Box>
             <Box width="350px" shrink={0} gap={4}>
-              <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
+              <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId: referendum.id }} />
 
               <MemberProfile referendum={referendum} evidence={evidence} />
 
@@ -68,7 +66,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
 
               <Slot id={referendumActionsSlot} props={{ referendum, evidence }} />
 
-              <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
+              <AdditionalInfo referendumId={referendum.id} evidenceHash={evidence?.hash} />
             </Box>
           </Box>
         </div>

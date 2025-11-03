@@ -1,7 +1,6 @@
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { useClock } from '@/shared/lib/hooks';
 import { useFeed } from '@/domains/collectives';
 import { identityService, useIdentities } from '@/domains/network';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
@@ -14,13 +13,11 @@ export const ActivityList = memo(() => {
 
   const chain = useFellowshipChain();
 
-  const { data: feed } = useFeed({ palletType: 'fellowship', chain });
+  const { data: feed, pending } = useFeed({ palletType: 'fellowship', chain });
   const { data: identities } = useIdentities(
     feed.map(record => record.accountId),
     chain?.chainId,
   );
-
-  const now = useClock(60_000);
 
   const records = useMemo(
     () =>
@@ -30,7 +27,6 @@ export const ActivityList = memo(() => {
           ...record,
           name: identity ? identityService.getFullName(identity) : undefined,
           description: getDescription(record, t),
-          duration: (now - record.at.getTime()) / 1000,
         };
       }),
     [identities, feed, t],
@@ -38,7 +34,7 @@ export const ActivityList = memo(() => {
 
   return (
     <div className="flex flex-col gap-3 py-4 pb-3">
-      <ActivityListView limit={20} feed={records} />
+      <ActivityListView limit={20} feed={records} pending={pending} />
     </div>
   );
 });

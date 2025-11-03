@@ -12,7 +12,7 @@ type Props = {
 };
 
 export const Vote = ({ item, chain }: Props) => {
-  const { data: identities } = useIdentities([item.accountId], chain?.chainId);
+  const { data: identities } = useIdentities([item.accountId]);
 
   const identity = identities[item.accountId];
 
