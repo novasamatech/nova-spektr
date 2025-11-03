@@ -3,21 +3,10 @@ import { sample } from 'effector';
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
-import { ERROR } from '../constants';
 
 export const fellowshipVotingHistoryFeature = createFeature({
   name: 'fellowship/voting history',
   enable: $features.map(({ fellowship }) => fellowship),
-  input: fellowshipNetwork.$network,
-  filter: input => {
-    if (input.api.isConnected) return null;
-
-    return {
-      status: 'failed',
-      type: 'warning',
-      error: new Error(ERROR.networkDisabled),
-    };
-  },
 });
 
 sample({

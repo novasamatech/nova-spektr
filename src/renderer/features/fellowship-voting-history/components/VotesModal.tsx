@@ -1,27 +1,26 @@
-import { useUnit } from 'effector-react';
 import { orderBy } from 'lodash';
 import { type PropsWithChildren, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type TabItem } from '@/shared/ui/types';
 import { Box, Carousel, Modal, SearchInput } from '@/shared/ui-kit';
-import { fellowshipVotingHistoryFeature } from '../model/feature';
-import { votesModel } from '../model/votes';
+import { useVotes } from '../hooks/useVotes';
 
 import { VotingHistoryList } from './VotingHistoryList';
 
-export const VotesModal = ({ children }: PropsWithChildren) => {
+type Props = PropsWithChildren<{
+  referendumId: ReferendumId;
+}>;
+
+export const VotesModal = ({ children, referendumId }: Props) => {
   const { t } = useI18n();
   const [query, setQuery] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState(0);
 
-  const votes = useUnit(votesModel.$votesList);
-  const input = useUnit(fellowshipVotingHistoryFeature.input);
-  const isLoading = useUnit(votesModel.$pending);
-
-  const chain = input?.chain ?? null;
+  const { votes, pending, chain } = useVotes(referendumId);
 
   const ayes = orderBy(
     votes.filter(vote => vote.decision === 'Aye'),
@@ -81,10 +80,10 @@ export const VotesModal = ({ children }: PropsWithChildren) => {
       <Modal.Content>
         <Carousel item={selectedTab.toString()}>
           <Carousel.Item id="0" index={0}>
-            <VotingHistoryList query={query} chain={chain} items={ayes} loading={isLoading} />
+            <VotingHistoryList query={query} chain={chain} items={ayes} loading={pending} />
           </Carousel.Item>
           <Carousel.Item id="1" index={1}>
-            <VotingHistoryList query={query} chain={chain} items={nays} loading={isLoading} />
+            <VotingHistoryList query={query} chain={chain} items={nays} loading={pending} />
           </Carousel.Item>
         </Carousel>
       </Modal.Content>

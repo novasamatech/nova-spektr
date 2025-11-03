@@ -1,23 +1,29 @@
-import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { type Referendum, referendumService, trackService } from '@/domains/collectives';
-import { fellowshipModel } from '../model/fellowship';
-import { votesModel } from '../model/votes';
+import { type Referendum, referendumService, trackService, useReferendumMeta } from '@/domains/collectives';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useVotes } from '../hooks/useVotes';
 
 export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
   const { t } = useI18n();
 
-  const votes = useUnit(votesModel.$votesList);
-  const pending = useUnit(votesModel.$pending);
-  const referendumMeta = useStoreMap({
-    store: fellowshipModel.$referendumMeta,
-    keys: [referendum.id],
-    fn: (meta, [id]) => meta[id],
+  const { votes, pending } = useVotes(referendum.id);
+
+  const api = useFellowshipApi();
+  const { data: referendumMetaList } = useReferendumMeta({
+    provider: 'subsquare',
+    api,
+    palletType: 'fellowship',
+    chainId: referendum.chainId,
   });
+
+  const referendumMeta = useMemo(
+    () => referendumMetaList.find(meta => meta.referendumId === referendum.id),
+    [referendumMetaList, referendum.id],
+  );
 
   // Get track information - for ongoing referendums use track property, for completed use metadata
   const trackId = useMemo(() => {
