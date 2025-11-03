@@ -6,7 +6,7 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyResource } from './types';
 
 type ResourceParams<Params, Cache, Value> = {
-  params: Params | null;
+  params: Params | undefined | null;
   defaultValue: Value;
   map(cache: Cache, params: Params): Value | undefined;
   filter?(value: NoInfer<Value>, params: NoInfer<Params>): boolean;

@@ -7,7 +7,7 @@ export function wrapKeyFactory<Params>(key: KeyFn<Params>): (params: Params) => 
     const result = key(params);
 
     if (Array.isArray(result)) {
-      return result.toSorted().join(' ') as ResourceRequestKey;
+      return result.flat().toSorted().join(' ') as ResourceRequestKey;
     }
 
     return result as ResourceRequestKey;

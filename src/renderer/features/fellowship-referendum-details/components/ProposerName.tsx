@@ -5,22 +5,24 @@ import { nullable, toAddress } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
-import { referendumService, trackService } from '@/domains/collectives';
+import { referendumService, trackService, useTracks } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { details } from '../model/details';
 import { fellowshipReferendumsDetailsFeature } from '../model/feature';
-import { tracksModel } from '../model/tracks';
 import { detailsService } from '../service';
 
 export const ProposerName = () => {
   const { t } = useI18n();
+
+  const api = useFellowshipApi();
 
   const input = useUnit(fellowshipReferendumsDetailsFeature.input);
   const proposer = useUnit(details.$proposer);
   const identity = useUnit(details.$proposerIdentity);
   const isProposerLoading = useUnit(details.$pendingProposer);
   const referendum = useUnit(details.$referendum);
-  const tracks = useUnit(tracksModel.$list);
+  const tracks = useTracks({ palletType: 'fellowship', api });
 
   if (nullable(proposer) || nullable(input)) {
     return null;

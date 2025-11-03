@@ -1,61 +1,7 @@
-import { createStore } from 'effector';
-
-import { nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { deriveFromResources } from '@/shared/resource';
-import { type CollectivesStruct } from '../_lib/types';
-
-import { claimantStatusResource, salariesResource, statusResource } from './resource';
-import { type ClaimStatus, type Salaries, type SalaryCycle } from './types';
-
-const $status = createStore<CollectivesStruct<SalaryCycle | null>>({});
-
-deriveFromResources({
-  store: $status,
-  resources: [statusResource],
-  map(state, status, params) {
-    const { palletType, chainId } = params;
-
-    if (nullable(status)) return state;
-
-    return setNestedValue(state, palletType, chainId, status);
-  },
-});
-
-const $salaries = createStore<CollectivesStruct<Salaries>>({});
-
-deriveFromResources({
-  store: $salaries,
-  resources: [salariesResource],
-  map(state, salaries, params) {
-    const { palletType, chainId } = params;
-
-    return setNestedValue(state, palletType, chainId, salaries);
-  },
-});
-
-const $claimantStatus = createStore<CollectivesStruct<Record<AccountId, ClaimStatus>>>({});
-
-deriveFromResources({
-  store: $claimantStatus,
-  resources: [claimantStatusResource],
-  map(state, claimantStatus, params) {
-    const { palletType, chainId } = params;
-
-    const previousState = pickNestedValue(state, palletType, chainId) ?? {};
-
-    return setNestedValue(state, palletType, chainId, {
-      ...previousState,
-      ...claimantStatus,
-    });
-  },
-});
+import { claimantStatusResource, salariesResource, salaryCycleResource } from './resource';
 
 export const salary = {
-  $status,
-  $salaries,
-  $claimantStatus,
-  requestStatus: statusResource.request,
-  requestSalaries: salariesResource.request,
-  requestClaimantStatus: claimantStatusResource.request,
+  salariesResource,
+  claimantStatusResource,
+  statusResource: salaryCycleResource,
 };

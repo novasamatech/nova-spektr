@@ -1,48 +1,56 @@
 import { type ApiPromise } from '@polkadot/api';
+import { createStore } from 'effector';
 import { z } from 'zod';
 
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { merge, nonNullable, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createRemoteResource } from '@/shared/resource';
-import { type CollectivePalletsType } from '../_lib/types';
+import { createQueryResource, createSubscriptionResource } from '@/shared/query';
+import { mergeNested } from '../_lib/helpers';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { evidenceService } from './service';
 import { type Evidence, type EvidenceContent, type EvidencePeriods, type EvidenceSummary } from './types';
 
-type EvidenceRequestParams = {
+export type EvidenceRequestParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
   chainId: ChainId;
   accounts: AccountId[];
 };
 
-export const evidenceResource = createRemoteResource<EvidenceRequestParams, Evidence[]>({
-  pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
-  cache: {
-    key: ({ palletType, chainId, accounts }) => `${palletType}:${chainId}:${accounts.join(',')}`,
-    ttl: 30 * 1000,
-  },
-  async fn({ palletType, api, chainId, accounts }) {
-    const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, api, accounts);
-    return evidences
-      .map(({ account, evidence }) => {
-        if (nullable(evidence)) return null;
+export const evidenceResource = createSubscriptionResource<EvidenceRequestParams>({
+  key: ({ palletType, chainId }) => [palletType, chainId],
+})
+  .subscribe<Evidence[]>(({ palletType, api, chainId, accounts }, callback) => {
+    return collectiveCorePallet.storage.memberEvidenceWatch(palletType, api, accounts, evidences => {
+      const mapped = evidences
+        .map(({ account, evidence }) => {
+          if (nullable(evidence)) return null;
 
-        return {
-          pallet: palletType,
-          chainId,
-          wish: evidence.wish,
-          accountId: account,
-          hash: evidence.value,
-        };
-      })
-      .filter(nonNullable);
-  },
-});
+          return {
+            pallet: palletType,
+            chainId,
+            wish: evidence.wish,
+            accountId: account,
+            hash: evidence.value,
+          };
+        })
+        .filter(nonNullable);
 
-type EvidenceContentRequestParams = {
+      callback(mapped);
+    });
+  })
+  .cache<CollectivesStruct<Evidence[]>>({
+    store: createStore({}),
+    map(state, evidences) {
+      return mergeNested(state, evidences, e => e.accountId);
+    },
+  })
+  .build();
+
+export type EvidenceContentRequestParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
   chainId: ChainId;
@@ -50,13 +58,10 @@ type EvidenceContentRequestParams = {
   blockHash?: string;
 };
 
-export const evidenceContentResource = createRemoteResource<EvidenceContentRequestParams, EvidenceContent | null>({
-  pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
-  cache: {
-    key: ({ palletType, chainId, accountId }) => `${palletType}:${chainId}:${accountId}`,
-    ttl: 30 * 1000,
-  },
-  async fn({ palletType, api, chainId, accountId, blockHash }) {
+export const evidenceContentResource = createQueryResource<EvidenceContentRequestParams>({
+  key: ({ palletType, chainId }) => [palletType, chainId],
+})
+  .request<EvidenceContent | null>(async ({ palletType, api, chainId, accountId, blockHash }) => {
     const apiInstance = blockHash ? await api.at(blockHash) : api;
     const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, apiInstance as ApiPromise, [
       accountId,
@@ -83,22 +88,33 @@ export const evidenceContentResource = createRemoteResource<EvidenceContentReque
     }
 
     return null;
-  },
-});
+  })
+  .cache<CollectivesStruct<EvidenceContent[]>>({
+    store: createStore({}),
+    staleAfter: 30 * 1000,
+    map(state, evidence) {
+      if (evidence === null) return state;
+      const prev = pickNestedValue(state, evidence.pallet, evidence.chainId) ?? [];
+      const merged = merge({
+        a: prev,
+        b: [evidence],
+        mergeBy: e => [e.pallet, e.chainId, e.accountId],
+      });
+      return setNestedValue(state, evidence.pallet, evidence.chainId, merged);
+    },
+  })
+  .build();
 
-type PeriodsRequestParams = {
+export type PeriodsRequestParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
   chain: Chain;
 };
 
-export const evidencePeriodResource = createRemoteResource<PeriodsRequestParams, EvidencePeriods>({
-  pool: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
-  cache: {
-    key: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
-    ttl: 60 * 1000,
-  },
-  async fn({ palletType, api, chain }) {
+export const evidencePeriodResource = createQueryResource<PeriodsRequestParams>({
+  key: ({ palletType, chain }) => [palletType, chain.chainId],
+})
+  .request<EvidencePeriods>(async ({ palletType, api, chain }) => {
     const params = await collectiveCorePallet.storage.params(palletType, api);
 
     return {
@@ -108,8 +124,15 @@ export const evidencePeriodResource = createRemoteResource<PeriodsRequestParams,
       demotionPeriod: params.demotionPeriod,
       offboardTimeout: params.offboardTimeout,
     };
-  },
-});
+  })
+  .cache<CollectivesStruct<EvidencePeriods>>({
+    store: createStore({}),
+    staleAfter: 60 * 1000,
+    map(state, period) {
+      return setNestedValue(state, period.pallet, period.chainId, period);
+    },
+  })
+  .build();
 
 const summaryResponseSchema = z.object({
   summary: z.string(),
@@ -117,7 +140,7 @@ const summaryResponseSchema = z.object({
   numberOfMergedPullRequests: z.number().nullable(),
 });
 
-type EvidenceSummaryRequestParams = {
+export type EvidenceSummaryRequestParams = {
   palletType: CollectivePalletsType;
   chainId: ChainId;
   evidence: HexString;
@@ -132,18 +155,16 @@ type EvidenceSummaryRequestParams = {
   evidencePeriodStart?: string | null;
 };
 
-export const evidenceSummaryResource = createRemoteResource<EvidenceSummaryRequestParams, EvidenceSummary>({
-  pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
-  cache: { ttl: 60 * 1000 },
-  async fn({ palletType, accountId, evidence, chainId, githubHandle, evidencePeriodStart }) {
+export const evidenceSummaryResource = createQueryResource<EvidenceSummaryRequestParams>({
+  key: ({ palletType, chainId }) => [palletType, chainId],
+})
+  .request<EvidenceSummary>(async ({ palletType, accountId, evidence, chainId, githubHandle, evidencePeriodStart }) => {
     const evidenceId = evidenceService.getCidByEvidence(evidence);
     const url = new URL('/api/v1/evidence-summaries/single', 'https://opengov-backend-dev.novasama-tech.org');
 
     const request = fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       mode: 'cors',
       body: JSON.stringify({
         chainId: chainId.replace(/^0x/, 'x'),
@@ -169,5 +190,19 @@ export const evidenceSummaryResource = createRemoteResource<EvidenceSummaryReque
           }
         : null,
     };
-  },
-});
+  })
+  .cache<CollectivesStruct<EvidenceSummary[]>>({
+    store: createStore({}),
+    staleAfter: 60 * 1000,
+    map(state, summary) {
+      const prev = pickNestedValue(state, summary.pallet, summary.chainId) ?? [];
+      const merged = merge({
+        a: prev,
+        b: [summary],
+        mergeBy: e => e.accountId,
+      });
+
+      return setNestedValue(state, summary.pallet, summary.chainId, merged);
+    },
+  })
+  .build();

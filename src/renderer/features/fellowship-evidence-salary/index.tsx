@@ -3,7 +3,7 @@ import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
 import { EntrypointCard } from './components/EntrypointCard';
 import { evidenceSlot, salarySlot } from './components/EvidenceSalaryModal';
-import { fellowshipEvidenceSalaryFeature } from './model/feature';
+import { fellowshipEvidenceSalaryFeature } from './feature';
 
 export { evidenceSlot, salarySlot, fellowshipEvidenceSalaryFeature };
 

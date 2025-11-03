@@ -1,4 +1,3 @@
-import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -6,35 +5,34 @@ import { nonNullable } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
-import { evidenceInfo } from '../model/evidence';
-import { memberSalary } from '../model/memberSalary';
+import { useCurrentSalaryPeriod } from '../hooks/useCurrentSalaryPeriod';
+import { useLeftToDemotion } from '../hooks/useLeftToDemotion';
+import { useMemberEvidence } from '../hooks/useMemberEvidence';
+import { useMemberSalaryClaimStatus } from '../hooks/useMemberSalaryClaimStatus';
 
 import { DotIndicator } from './DotIndicator';
 import { EvidenceSalaryModal } from './EvidenceSalaryModal';
 
 export const EntrypointCard = memo(() => {
   const { t } = useI18n();
-  const leftToDemotion = useUnit(evidenceInfo.$leftToDemotion);
-  const hasRetentionEvidence = useUnit(evidenceInfo.$hasRetentionEvidence);
-  const currentPeriod = useUnit(memberSalary.$currentPeriod);
-  const claimStatus = useUnit(memberSalary.$memberClaimStatus);
+  const { data: evidence } = useMemberEvidence();
+  const { data: currentPeriod } = useCurrentSalaryPeriod();
+  const { data: leftToDemotion } = useLeftToDemotion();
+  const { data: claimStatus } = useMemberSalaryClaimStatus();
 
-  const canRequestSalary =
-    nonNullable(claimStatus) &&
-    nonNullable(currentPeriod) &&
-    salaryService.canRequestSalary(claimStatus, currentPeriod);
-  const canRequestSalaryPayout =
-    nonNullable(claimStatus) &&
-    nonNullable(currentPeriod) &&
-    salaryService.canRequestSalaryPayout(claimStatus, currentPeriod);
-  const isSalaryRequested =
-    nonNullable(claimStatus) &&
-    nonNullable(currentPeriod) &&
-    salaryService.isClaimantRequestedSalary(claimStatus, currentPeriod);
-  const isPayoutRequested =
-    nonNullable(claimStatus) &&
-    nonNullable(currentPeriod) &&
-    salaryService.isClaimantRequestedSalaryPayout(claimStatus, currentPeriod);
+  const hasRetentionEvidence = evidence?.wish === 'Retention';
+
+  let canRequestSalary = false;
+  let canRequestSalaryPayout = false;
+  let isSalaryRequested = false;
+  let isPayoutRequested = false;
+
+  if (nonNullable(claimStatus) && nonNullable(currentPeriod)) {
+    canRequestSalary = salaryService.canRequestSalary(claimStatus, currentPeriod);
+    canRequestSalaryPayout = salaryService.canRequestSalaryPayout(claimStatus, currentPeriod);
+    isSalaryRequested = salaryService.isClaimantRequestedSalary(claimStatus, currentPeriod);
+    isPayoutRequested = salaryService.isClaimantRequestedSalaryPayout(claimStatus, currentPeriod);
+  }
 
   const needEvidenceAttention = leftToDemotion && leftToDemotion > 0 && !hasRetentionEvidence;
   const needSalaryAttention =

@@ -11,14 +11,12 @@ import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/type
 
 import { type CoreMember, type Member } from './types';
 
-type Params = {
+export type MembersSubscribeParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
 };
 
-export const $cache = createStore<CollectivesStruct<Member[]>>({});
-
-export const membersSubscription = createSubscriptionResource<Params>({
+export const membersSubscription = createSubscriptionResource<MembersSubscribeParams>({
   key: ({ api, palletType }) => [palletType, api.genesisHash.toHex()],
 })
   .subscribe<Member[]>(({ api, palletType }, callback) => {
@@ -27,17 +25,17 @@ export const membersSubscription = createSubscriptionResource<Params>({
       const coreMembers = await collectiveCorePallet.storage.member(palletType, api);
       const result: (Member | CoreMember)[] = [];
 
-      for (const collectiveMember of collectiveMembers) {
-        if (nullable(collectiveMember.member)) continue;
+      for (const { member, account } of collectiveMembers) {
+        if (nullable(member)) continue;
 
-        const coreMember = coreMembers.find(member => member.account === collectiveMember.account);
+        const coreMember = coreMembers.find(member => member.account === account);
 
         if (nonNullable(coreMember?.status)) {
           result.push({
             pallet: palletType,
             chainId: api.genesisHash.toHex(),
-            accountId: collectiveMember.account,
-            rank: collectiveMember.member.rank,
+            accountId: account,
+            rank: member.rank,
             isActive: coreMember.status.isActive,
             lastPromotion: coreMember.status.lastPromotion,
             lastProof: coreMember.status.lastProof,
@@ -46,8 +44,8 @@ export const membersSubscription = createSubscriptionResource<Params>({
           result.push({
             pallet: palletType,
             chainId: api.genesisHash.toHex(),
-            accountId: collectiveMember.account,
-            rank: collectiveMember.member.rank,
+            accountId: account,
+            rank: member.rank,
           });
         }
       }
@@ -84,8 +82,8 @@ export const membersSubscription = createSubscriptionResource<Params>({
       });
     };
   })
-  .cache({
-    store: $cache,
+  .cache<CollectivesStruct<Member[]>>({
+    store: createStore({}),
     map(store, members) {
       return mergeNested(
         store,

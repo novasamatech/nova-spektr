@@ -1,21 +1,20 @@
-import { type ApiPromise } from '@polkadot/api';
-
+import { type NullableMap } from '@/shared/core';
+import { nonNullableMap } from '@/shared/lib/utils';
 import { useResource } from '@/shared/query';
-import { type CollectivePalletsType } from '../_lib/types';
 
-import { membersSubscription } from './resource';
+import { type MembersSubscribeParams, membersSubscription } from './resource';
 import { memberService } from './service';
 
-export const useMembers = (palletType: CollectivePalletsType, api?: ApiPromise) => {
+export const useMembers = (params: NullableMap<MembersSubscribeParams>) => {
   return useResource(membersSubscription, {
-    params: api ? { palletType, api } : null,
+    params: nonNullableMap(params) ? params : null,
     defaultValue: [],
     map: (cache, { palletType, api }) => cache[palletType]?.[api.genesisHash.toHex()],
   });
 };
 
-export const useCoreMembers = (pallet: CollectivePalletsType, api?: ApiPromise) => {
-  const { data, pending } = useMembers(pallet, api);
+export const useCoreMembers = (params: NullableMap<MembersSubscribeParams>) => {
+  const { data, pending } = useMembers(params);
 
   return { data: data.filter(memberService.isCoreMember), pending };
 };

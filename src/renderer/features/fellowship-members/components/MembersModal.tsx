@@ -19,7 +19,7 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
   const deferredQuery = useDeferredValue(query);
 
   const input = useUnit(fellowshipMembersFeature.input);
-  const { data: members } = useCoreMembers('fellowship', input?.api);
+  const { data: members } = useCoreMembers({ palletType: 'fellowship', api: input?.api });
   const { data: identities } = useIdentities(
     members.map(member => member.accountId),
     input?.chainId,

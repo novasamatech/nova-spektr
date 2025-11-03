@@ -30,7 +30,8 @@ export { identityService } from './identity/service';
 export { useIdentities } from './identity/hooks';
 export type { AccountIdentity, IdentityMap } from './identity/types';
 
-export { block } from './block';
+export { block } from './block/store';
+export { useBlock } from './block/hooks';
 
 export { multisigOperation } from './multisig-operation/store';
 export { multisigOperationService } from './multisig-operation/service';

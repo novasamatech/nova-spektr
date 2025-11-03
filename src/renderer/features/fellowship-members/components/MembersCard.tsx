@@ -5,6 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { Icon } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { useCoreMembers } from '@/domains/collectives';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { ERROR } from '../constants';
 import { fellowshipMembersFeature } from '../feature';
 
@@ -14,8 +15,8 @@ export const MembersCard = memo(() => {
   const { t } = useI18n();
 
   const featureState = useUnit(fellowshipMembersFeature.state);
-  const input = useUnit(fellowshipMembersFeature.input);
-  const { data: members, pending } = useCoreMembers('fellowship', input?.api);
+  const api = useFellowshipApi();
+  const { data: members, pending } = useCoreMembers({ palletType: 'fellowship', api });
 
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 

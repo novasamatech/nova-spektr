@@ -5,6 +5,7 @@ export type { CollectivePalletsType } from './_lib/types';
 
 export { referendum } from './referendum/store';
 export { referendumService } from './referendum/service';
+export { useReferendums } from './referendum/hooks';
 export type {
   ApprovedReferendum,
   OngoingReferendum,
@@ -31,6 +32,7 @@ export type { Member, CoreMember } from './member/types';
 
 export { evidence } from './evidence/store';
 export { evidenceService } from './evidence/service';
+export { useEvidences, useEvidencesContent, useEvidencePeriod, useEvidenceSummary } from './evidence/hooks';
 export type {
   Evidence,
   EvidenceContent,
@@ -47,9 +49,11 @@ export { rfcDetails } from './rfc/store';
 
 export { salary } from './salary/store';
 export { salaryService } from './salary/service';
+export { useSalaryCycleResource, useSalaryClaimStatusResource } from './salary/hooks';
 
 export { track } from './tracks/store';
 export { trackService } from './tracks/service';
+export { useTracks, useMaxRank } from './tracks/hooks';
 export type {
   LinearDecreasingCurve,
   ReciprocalCurve,

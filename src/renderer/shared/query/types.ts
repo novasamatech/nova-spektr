@@ -1,7 +1,9 @@
 import { type Event, type EventCallable, type Store } from 'effector';
 import { type z } from 'zod';
 
-export type KeyFn<Params> = (params: Params) => string | string[];
+type KeyValues = string | number | undefined | null;
+
+export type KeyFn<Params> = (params: Params) => KeyValues | (KeyValues | KeyValues[])[];
 
 export type NormalizedKeyFn<Params> = (params: Params) => ResourceRequestKey;
 
