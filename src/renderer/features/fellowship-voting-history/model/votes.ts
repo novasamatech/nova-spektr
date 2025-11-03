@@ -40,12 +40,12 @@ sample({
       referendums: [referendumId],
     };
   },
-  target: voting.request,
+  target: voting.votesResource.start,
 });
 
 const $hasPendingRequest = and(
   $votesList.map(v => v.length === 0),
-  voting.request.pending,
+  voting.votesResource.$pending,
 );
 
 export const votesModel = {

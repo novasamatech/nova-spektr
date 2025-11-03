@@ -16,7 +16,7 @@ export type MembersSubscribeParams = {
   api: ApiPromise;
 };
 
-export const membersSubscription = createSubscriptionResource<MembersSubscribeParams>({
+export const membersSubscriptionResource = createSubscriptionResource<MembersSubscribeParams>({
   key: ({ api, palletType }) => [palletType, api.genesisHash.toHex()],
 })
   .subscribe<Member[]>(({ api, palletType }, callback) => {

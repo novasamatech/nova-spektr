@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client';
 import { type ApiPromise } from '@polkadot/api';
+import { createStore } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
@@ -9,8 +10,9 @@ import { collectivePallet } from '@/shared/pallet/collective';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createRemoteResource, createSubscriptionResource } from '@/shared/resource';
-import { type CollectivePalletsType } from '../_lib/types';
+import { createQueryResource, createSubscriptionResource } from '@/shared/query';
+import { mergeNested } from '../_lib/helpers';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type Vote } from './types';
 
@@ -88,7 +90,7 @@ const requestFromSubQuery = async (
   return result.votes.nodes.map(vote => mapSubqueryVote(pallet, chainId, vote));
 };
 
-type RequestVotesParams = {
+export type RequestVotesParams = {
   palletType: CollectivePalletsType;
   chain: Chain;
   api: ApiPromise;
@@ -96,15 +98,12 @@ type RequestVotesParams = {
   accounts: AccountId[];
 };
 
-export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>({
-  pool: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
-  cache: {
-    key: ({ palletType, chain, referendums, accounts }) => {
-      return `${palletType}:${chain.chainId}:${accounts.join(',')}:${referendums.join(',')}`;
-    },
-    ttl: 60 * 1000,
+export const votesResource = createQueryResource<RequestVotesParams>({
+  key: ({ palletType, chain, referendums, accounts }) => {
+    return [palletType, chain.chainId, accounts.join(','), referendums.join(',')];
   },
-  async fn({ palletType, api, chain, referendums, accounts }) {
+})
+  .request<Vote[]>(async ({ palletType, api, chain, referendums, accounts }) => {
     if (referendums.length === 0) return [];
 
     if (api) {
@@ -125,37 +124,49 @@ export const requestResource = createRemoteResource<RequestVotesParams, Vote[]>(
     if (!sourceUrl) return [];
 
     return requestFromSubQuery(sourceUrl, palletType, chain.chainId, referendums);
-  },
-});
+  })
+  .cache<CollectivesStruct<Vote[]>>({
+    store: createStore({}),
+    staleAfter: 60 * 1000,
+    map(state, votes) {
+      return mergeNested(state, votes, v => `${v.accountId}:${v.referendumId}`);
+    },
+  })
+  .build();
 
-type RequestAllVotesParams = {
+export type RequestAllVotesParams = {
   palletType: CollectivePalletsType;
   chain: Chain;
   api: ApiPromise;
 };
 
-export const requestAllResource = createRemoteResource<RequestAllVotesParams, Vote[]>({
-  pool: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
-  cache: {
-    key: ({ palletType, chain }) => `${palletType}:${chain.chainId}`,
-    ttl: 60 * 1000,
-  },
-  async fn({ palletType, api, chain }) {
+export const allVotesResource = createQueryResource<RequestAllVotesParams>({
+  key: ({ palletType, chain }) => [palletType, chain.chainId],
+})
+  .request<Vote[]>(async ({ palletType, api, chain }) => {
     const votes = await collectivePallet.storage.voting(palletType, api);
     return votes.map(vote => mapChainVote(palletType, chain.chainId, vote)).filter(nonNullable);
-  },
-});
+  })
+  .cache<CollectivesStruct<Vote[]>>({
+    store: createStore({}),
+    staleAfter: 60 * 1000,
+    map(state, votes) {
+      return mergeNested(state, votes, v => `${v.accountId}:${v.referendumId}`);
+    },
+  })
+  .build();
 
-type VotingSubscribeParams = {
+export type VotingSubscribeParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
   chainId: ChainId;
   accounts: AccountId[];
 };
 
-export const subscribeResource = createSubscriptionResource<VotingSubscribeParams, Vote[]>({
-  pool: ({ palletType, chainId, accounts }) => `${palletType}:${chainId}:${accounts.join(',')}`,
-  async fn({ palletType, api, chainId, accounts }, callback) {
+export const votingSubscriptionResource = createSubscriptionResource<VotingSubscribeParams>({
+  key: ({ palletType, chainId, accounts }) => [palletType, chainId, accounts.join(',')],
+})
+  .subscribe<Vote[]>(({ palletType, api, chainId, accounts }, callback) => {
     const number = z.string().transform(v => parseInt(v));
     const eventSchema = z.object({
       who: z.string(),
@@ -181,13 +192,16 @@ export const subscribeResource = createSubscriptionResource<VotingSubscribeParam
           votes: 'Aye' in data.vote ? data.vote.Aye : data.vote.Nay,
         };
 
-        callback({
-          value: [vote],
-          done: true,
-        });
+        callback([vote]);
       },
     );
 
     return unsubscribe;
-  },
-});
+  })
+  .cache<CollectivesStruct<Vote[]>>({
+    store: createStore({}),
+    map(state, votes) {
+      return mergeNested(state, votes, v => `${v.accountId}:${v.referendumId}`);
+    },
+  })
+  .build();

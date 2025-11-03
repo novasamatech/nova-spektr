@@ -7,10 +7,12 @@ import {
   type EvidenceRequestParams,
   type EvidenceSummaryRequestParams,
   type PeriodsRequestParams,
+  type RequestRefendumsParams,
   evidenceContentResource,
   evidencePeriodResource,
   evidenceResource,
   evidenceSummaryResource,
+  evidenceToReferendumRelationsResource,
 } from './resource';
 
 export const useEvidences = (params: NullableMap<EvidenceRequestParams>) => {
@@ -57,5 +59,13 @@ export const useEvidenceSummary = (params: NullableMap<EvidenceSummaryRequestPar
         return list.find(e => e.accountId === accountId);
       }
     },
+  });
+};
+
+export const useEvidenceToReferendumRelations = (params: NullableMap<RequestRefendumsParams>) => {
+  return useResource(evidenceToReferendumRelationsResource, {
+    params: nonNullableMap(params) ? params : null,
+    defaultValue: [],
+    map: (cache, { palletType, chain }) => cache[palletType]?.[chain.chainId],
   });
 };

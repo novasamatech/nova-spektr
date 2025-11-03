@@ -2,11 +2,11 @@ import { type NullableMap } from '@/shared/core';
 import { nonNullableMap } from '@/shared/lib/utils';
 import { useResource } from '@/shared/query';
 
-import { type MembersSubscribeParams, membersSubscription } from './resource';
+import { type MembersSubscribeParams, membersSubscriptionResource } from './resource';
 import { memberService } from './service';
 
 export const useMembers = (params: NullableMap<MembersSubscribeParams>) => {
-  return useResource(membersSubscription, {
+  return useResource(membersSubscriptionResource, {
     params: nonNullableMap(params) ? params : null,
     defaultValue: [],
     map: (cache, { palletType, api }) => cache[palletType]?.[api.genesisHash.toHex()],

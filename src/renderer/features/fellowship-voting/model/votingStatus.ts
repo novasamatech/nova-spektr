@@ -36,7 +36,7 @@ sample({
       chain: input.chain,
     };
   },
-  target: voting.requestAll,
+  target: voting.allVotesResource.start,
 });
 
 sample({
@@ -47,22 +47,27 @@ sample({
     chainId: chain.chainId,
     accounts: account ? [account.accountId] : [],
   }),
-  target: voting.subscribeAccountsVoting,
+  target: voting.votingSubscriptionResource.start,
 });
 
 sample({
   clock: fellowshipVotingFeature.stopped,
-  target: voting.unsubscribeAccountsVoting,
+  source: fellowshipVotingFeature.input,
+  fn: (input) => {
+    if (!input) return [];
+    return [input.palletType, input.chainId, input.account ? [input.account.accountId].join(',') : ''];
+  },
+  target: voting.votingSubscriptionResource.stop,
 });
 
 sample({
-  clock: attachToFeatureInput(fellowshipVotingFeature, voting.receive),
-  fn({ input, data: { result } }) {
+  clock: attachToFeatureInput(fellowshipVotingFeature, voting.votingSubscriptionResource.push),
+  fn({ input }) {
     return {
       api: input.api,
       palletType: input.palletType,
       chainId: input.chainId,
-      referendums: result.map(v => v.referendumId),
+      referendums: [],
     };
   },
   target: referendum.request,

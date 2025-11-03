@@ -1,27 +1,32 @@
 import { type ApiPromise } from '@polkadot/api';
+import { createStore } from 'effector';
 
 import { polkassemblyApiService } from '@/shared/api/polkassembly';
 import { subsquareApiService } from '@/shared/api/subsquare';
 import { type ChainId } from '@/shared/core';
 import { getBlockFromTime } from '@/shared/lib/utils';
-import { createRemoteResource } from '@/shared/resource';
-import { type CollectivePalletsType } from '../_lib/types';
+import { createQueryResource } from '@/shared/query';
+import { mergeNested } from '../_lib/helpers';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type ReferendumMeta, type ReferendumMetaProvider } from './types';
 
-type RequestParams = {
+type ReferendumMetaWithContext = ReferendumMeta & {
+  pallet: CollectivePalletsType;
+  chainId: ChainId;
+};
+
+export type ReferendumMetaRequestParams = {
   provider: ReferendumMetaProvider;
   api: ApiPromise;
   palletType: CollectivePalletsType;
   chainId: ChainId;
 };
 
-export const referendumMetaResource = createRemoteResource<RequestParams, ReferendumMeta[]>({
-  cache: {
-    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
-    ttl: Number.POSITIVE_INFINITY,
-  },
-  async fn({ chainId, api, provider }) {
+export const referendumMetaResource = createQueryResource<ReferendumMetaRequestParams>({
+  key: ({ palletType, chainId }) => [palletType, chainId],
+})
+  .request<ReferendumMetaWithContext[]>(async ({ chainId, api, provider, palletType }) => {
     let response: ReferendumMeta[] = [];
     // external providers work only with polkadot collectives chain
     if (chainId !== '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2') {
@@ -76,6 +81,17 @@ export const referendumMetaResource = createRemoteResource<RequestParams, Refere
         response = response.concat(mappedResponses);
       }
     }
-    return response;
-  },
-});
+
+    return response.map(r => ({
+      ...r,
+      pallet: palletType,
+      chainId,
+    }));
+  })
+  .cache<CollectivesStruct<ReferendumMetaWithContext[]>>({
+    store: createStore({}),
+    map: (state, data) => {
+      return mergeNested(state, data, r => r.referendumId);
+    },
+  })
+  .build();

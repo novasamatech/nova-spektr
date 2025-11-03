@@ -2,7 +2,7 @@ import { attach, combine, sample } from 'effector';
 
 import { series } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
-import { type RfcProposal, referendumService, rfcDetails } from '@/domains/collectives';
+import { type RfcProposal, referendumService, rfc } from '@/domains/collectives';
 
 import { fellowshipTasksFeature } from './feature';
 import { fellowship } from './fellowship';
@@ -10,7 +10,7 @@ import { referendums } from './referendums';
 
 const $rfcSummary = fellowship.$store.map(s => s?.rfcSummary ?? null);
 
-const requestRfcFx = attach({ effect: rfcDetails.request });
+const requestRfcFx = attach({ effect: rfc.rfcSummaryResource.start });
 
 const $rfcReferendums = combine({ referendums: referendums.$ongoing }, ({ referendums }) => {
   return referendums.filter(referendum => {
@@ -32,7 +32,7 @@ sample({
 
 export const rfcModel = {
   $rfcSummary,
-  $isPending: rfcDetails.request.pending,
+  $isPending: rfc.rfcSummaryResource.$pending,
 
   requestRfcSummary: requestRfcFx,
 };

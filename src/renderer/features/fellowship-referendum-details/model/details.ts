@@ -10,15 +10,15 @@ import {
   referendum,
   referendumMeta,
   referendumService,
-  rfcDetails,
+  rfc,
 } from '@/domains/collectives';
 import { identity } from '@/domains/network';
 
 import { fellowshipReferendumsDetailsFeature } from './feature';
 import { fellowship } from './fellowship';
 
-const requestEvidenceFx = attach({ effect: evidence.requestContent });
-const requestRfcFx = attach({ effect: rfcDetails.request });
+const requestEvidenceFx = attach({ effect: evidence.evidenceContentResource.start });
+const requestRfcFx = attach({ effect: rfc.rfcSummaryResource.start });
 
 const flow = createFlow<{ referendum: Referendum | null }>({ referendum: null });
 

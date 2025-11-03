@@ -23,6 +23,7 @@ export type {
 
 export { referendumMeta } from './referendumMeta/store';
 export { referendumMetaService } from './referendumMeta/service';
+export { useReferendumMeta } from './referendumMeta/hooks';
 export type { ReferendumMeta } from './referendumMeta/types';
 
 export { member } from './member/store';
@@ -32,7 +33,13 @@ export type { Member, CoreMember } from './member/types';
 
 export { evidence } from './evidence/store';
 export { evidenceService } from './evidence/service';
-export { useEvidences, useEvidencesContent, useEvidencePeriod, useEvidenceSummary } from './evidence/hooks';
+export {
+  useEvidences,
+  useEvidencesContent,
+  useEvidencePeriod,
+  useEvidenceSummary,
+  useEvidenceToReferendumRelations,
+} from './evidence/hooks';
 export type {
   Evidence,
   EvidenceContent,
@@ -43,9 +50,12 @@ export type {
 } from './evidence/types';
 
 export { feed } from './feed/store';
+export { useFeed } from './feed/hooks';
 export type { FeedRecord } from './feed/types';
 
-export { rfcDetails } from './rfc/store';
+export { rfc } from './rfc/store';
+export { useRfcSummary } from './rfc/hooks';
+export type { RfcDetails } from './rfc/types';
 
 export { salary } from './salary/store';
 export { salaryService } from './salary/service';
@@ -67,4 +77,5 @@ export { votingService } from './voting/service';
 export type { VotingTransaction } from './voting/types';
 
 export { voting } from './votingHistory/store';
+export { useVotes, useAllVotes } from './votingHistory/hooks';
 export type { Vote } from './votingHistory/types';
