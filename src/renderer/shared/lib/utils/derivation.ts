@@ -80,7 +80,7 @@ export function parseDerivation(path: string): ParsedDerivation {
       const shardMatch = segment.match(/^0\.\.\.(\d+)$/);
 
       if (shardMatch) {
-        const count = parseInt(shardMatch[1], 10);
+        shardCount = parseInt(shardMatch[1], 10) + 1;
 
         tokens.push({
           type: TokenType.SHARD_RANGE,
@@ -88,8 +88,6 @@ export function parseDerivation(path: string): ParsedDerivation {
           start,
           end: i,
         });
-
-        shardCount = count;
       } else {
         tokens.push({
           type: TokenType.SEGMENT,
@@ -106,6 +104,10 @@ export function parseDerivation(path: string): ParsedDerivation {
     raw: path,
     shardCount,
   };
+}
+
+export function derivationTokensToString(tokens: Token[]): string {
+  return tokens.map((t) => t.value).join('');
 }
 
 export enum DerivationError {

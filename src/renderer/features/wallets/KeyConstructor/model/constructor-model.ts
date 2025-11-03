@@ -94,7 +94,7 @@ function expandShardedDerivations(derivations: DerivationKeyDraft[]) {
       const groupId = derivation.groupId ?? crypto.randomUUID();
       const expandedKeys: DerivationKeyDraft[] = [];
 
-      for (let i = 0; i <= parsed.shardCount; i += 1) {
+      for (let i = 0; i < parsed.shardCount; i += 1) {
         const shardPath = parsed.tokens
           .map((t) => (t.type === TokenType.SHARD_RANGE ? i.toString() : t.value))
           .join('');
