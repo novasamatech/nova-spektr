@@ -1,15 +1,24 @@
+import { gql } from '@apollo/client';
 import { type ApiPromise } from '@polkadot/api';
+import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
-import { type Chain, type ChainId, type HexString } from '@/shared/core';
+import { type Chain, type ChainId, ExternalType, type HexString } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createRemoteResource } from '@/shared/resource';
 import { type CollectivePalletsType } from '../_lib/types';
 
 import { evidenceService } from './service';
-import { type Evidence, type EvidenceContent, type EvidencePeriods, type EvidenceSummary } from './types';
+import {
+  type Evidence,
+  type EvidenceContent,
+  type EvidencePeriods,
+  type EvidenceSummary,
+  type EvidenceToReferendumRelation,
+} from './types';
 
 type EvidenceRequestParams = {
   palletType: CollectivePalletsType;
@@ -169,5 +178,85 @@ export const evidenceSummaryResource = createRemoteResource<EvidenceSummaryReque
           }
         : null,
     };
+  },
+});
+
+/**
+ * Use this query to map referendums with evidences. If possible use chain
+ * state.
+ */
+const GET_REFERENDUMS_QUERY = gql`
+  query Referendums {
+    referendums {
+      nodes {
+        index
+        evidence {
+          nodes {
+            hash
+          }
+        }
+      }
+    }
+  }
+`;
+
+const referendumsGqlSchema = z.object({
+  referendums: z.object({
+    nodes: z.array(
+      z.object({
+        index: z.custom<ReferendumId>(),
+        evidence: z.object({
+          nodes: z.array(
+            z.object({
+              hash: z.custom<HexString>(),
+            }),
+          ),
+        }),
+      }),
+    ),
+  }),
+});
+
+export type EvidenceToReferendumRelations = z.infer<typeof referendumsGqlSchema>['referendums']['nodes'];
+
+const requestReferendumsFromSubQuery = async (url: string) => {
+  const client = new GraphQLClient(url);
+  const result = await client.request(GET_REFERENDUMS_QUERY);
+
+  try {
+    const parsed = referendumsGqlSchema.parse(result);
+    return parsed.referendums.nodes;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+type EvidenceToReferendumRelationsParams = {
+  chain: Chain;
+  palletType: CollectivePalletsType;
+};
+
+export const evidenceToReferendumRelationsResource = createRemoteResource<
+  EvidenceToReferendumRelationsParams,
+  EvidenceToReferendumRelation[]
+>({
+  pool: ({ chain, palletType }) => `${palletType}:${chain.chainId}`,
+  cache: {
+    key: ({ chain, palletType }) => `${palletType}:${chain.chainId}`,
+    ttl: 60 * 1000,
+  },
+  async fn({ chain, palletType }) {
+    const externalApi = chain.externalApi?.[ExternalType.COLLECTIVES]?.at(0);
+    const sourceUrl = externalApi?.url;
+    if (!sourceUrl) return [];
+    const result = await requestReferendumsFromSubQuery(sourceUrl);
+
+    return result.map(item => ({
+      pallet: palletType,
+      chainId: chain.chainId,
+      index: item.index,
+      evidence: item.evidence.nodes.map(e => ({ hash: e.hash })),
+    }));
   },
 });

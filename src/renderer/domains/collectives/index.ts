@@ -37,6 +37,7 @@ export type {
   EvidenceSummary,
   EvidenceTransaction,
   CurrentMemberPeriod,
+  EvidenceToReferendumRelation,
 } from './evidence/types';
 
 export { feed } from './feed/store';

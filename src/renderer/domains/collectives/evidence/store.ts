@@ -7,8 +7,20 @@ import { deriveFromResources } from '@/shared/resource';
 import { mergeNested } from '../_lib/helpers';
 import { type CollectivesStruct } from '../_lib/types';
 
-import { evidenceContentResource, evidencePeriodResource, evidenceResource, evidenceSummaryResource } from './resource';
-import { type Evidence, type EvidenceContent, type EvidencePeriods, type EvidenceSummary } from './types';
+import {
+  evidenceContentResource,
+  evidencePeriodResource,
+  evidenceResource,
+  evidenceSummaryResource,
+  evidenceToReferendumRelationsResource,
+} from './resource';
+import {
+  type Evidence,
+  type EvidenceContent,
+  type EvidencePeriods,
+  type EvidenceSummary,
+  type EvidenceToReferendumRelation,
+} from './types';
 
 const $list = createStore<CollectivesStruct<Evidence[]>>({});
 
@@ -68,16 +80,31 @@ deriveFromResources({
 
 const summaryFulfilled = or(not(populated(evidenceResource.request)), evidenceSummaryResource.request.pending);
 
+const $evidenceToReferendumRelations = createStore<CollectivesStruct<EvidenceToReferendumRelation[]>>({});
+
+deriveFromResources({
+  store: $evidenceToReferendumRelations,
+  resources: [evidenceToReferendumRelationsResource],
+  map(state, relations) {
+    return mergeNested(state, relations, r => r.index);
+  },
+});
+
+const $evidenceToReferendumRelationsPopulated = populated(evidenceToReferendumRelationsResource.request);
+
 export const evidence = {
   $list: readonly($list),
   $content: readonly($content),
   $populated: readonly($populated),
   $periods: readonly($periods),
   $summary: readonly($summary),
+  $evidenceToReferendumRelations: readonly($evidenceToReferendumRelations),
+  $evidenceToReferendumRelationsPopulated: readonly($evidenceToReferendumRelationsPopulated),
   request: evidenceResource.request,
   requestContent: evidenceContentResource.request,
   requestPeriods: evidencePeriodResource.request,
   requestSummary: evidenceSummaryResource.request,
+  requestEvidenceToReferendumRelations: evidenceToReferendumRelationsResource.request,
   summaryFulfilled,
   pendingSummary: evidenceSummaryResource.request,
 };
