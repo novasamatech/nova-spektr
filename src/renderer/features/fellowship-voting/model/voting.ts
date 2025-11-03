@@ -6,6 +6,7 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { votingService } from '@/domains/collectives';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
+import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -30,7 +31,7 @@ const $coreTx = combine(
     input: fellowshipVotingFeature.input,
     account: votingStatus.$votingAccount,
     referendum: votingStatus.$referendum,
-    member: votingStatus.$currentMember,
+    member: fellowshipMember.$currentMember,
     vote: $vote,
   },
   ({ input, referendum, account, member, vote }) => {

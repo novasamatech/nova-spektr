@@ -1,12 +1,15 @@
-import { useUnit } from 'effector-react';
 import { memo, useState } from 'react';
 
 import { type Transaction } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Box } from '@/shared/ui-kit';
-import { type OngoingReferendum, trackService } from '@/domains/collectives';
+import { type OngoingReferendum, trackService, useMaxRank } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
+import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { tasksService } from '@/features/fellowship-tasks';
+import { useIsVotingDisabled } from '../hooks/useIsVotingDisabled';
+import { useReferendumVote } from '../hooks/useReferendumVote';
 import { voting } from '../model/voting';
 import { votingStatus } from '../model/votingStatus';
 
@@ -20,22 +23,18 @@ type Props = {
 
 export const VotingActions = memo(({ referendum, transaction }: Props) => {
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
+  const api = useFellowshipApi();
 
-  const account = useUnit(votingStatus.$votingAccount);
-  const maxRank = useUnit(votingStatus.$maxRank);
-  const currentMember = useUnit(votingStatus.$currentMember);
-  const canVote = useUnit(votingStatus.$canVote);
-  const accountsVotes = useUnit(votingStatus.$accountsVotes);
+  const { data: account } = useFellowshipAccount();
+  const { data: maxRank } = useMaxRank({ palletType: 'fellowship', api });
+  const { data: currentMember } = useFellowshipMember();
 
-  const referendumVote = accountsVotes.find(voting => voting.referendumId === referendum?.id);
+  const { data: referendumVote } = useReferendumVote(referendum?.id);
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
-  if (!currentMember) return null;
+  const isDisabled = useIsVotingDisabled(referendum);
 
-  const hasRequiredRank =
-    nonNullable(referendum) && trackService.rankSatisfiesVotingThreshold(currentMember.rank, maxRank, referendum.track);
-
-  const disabled = !canVote || !hasRequiredRank;
+  if (nullable(currentMember) || nullable(maxRank)) return null;
 
   const memberVoteWeight = trackService.getVoteWeight({
     pallet: 'fellowship',
@@ -97,7 +96,7 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
         <VotingButtonWithTooltip
           variant="negative"
           icon="negative"
-          disabled={disabled}
+          disabled={isDisabled}
           isVoted={referendumVote?.decision === 'Nay'}
           checked={nonNullable(transaction) && !transaction.args.aye}
           votes={memberVoteWeight}
@@ -107,7 +106,7 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
         <VotingButtonWithTooltip
           variant="positive"
           icon="positive"
-          disabled={disabled}
+          disabled={isDisabled}
           isVoted={referendumVote?.decision === 'Aye'}
           checked={nonNullable(transaction) && transaction.args.aye}
           votes={memberVoteWeight}
@@ -116,7 +115,12 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
         />
       </Box>
       {decision ? (
-        <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+        <VotingModal
+          isOpen={nonNullable(decision)}
+          vote={decision}
+          referendum={referendum}
+          onClose={() => setDecision(null)}
+        />
       ) : null}
     </Box>
   );

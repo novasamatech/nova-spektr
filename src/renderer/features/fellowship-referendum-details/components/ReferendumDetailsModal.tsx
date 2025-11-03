@@ -17,7 +17,7 @@ import { ReferendumDescription } from './ReferendumDescription';
 export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
 export const referendumAdditionalInfoSlot = createSlot<{ referendum: Referendum }>();
 
-export const referendumActionsSlot = createSlot<{ referendum?: Referendum | null; evidence?: Evidence | null }>();
+export const referendumActionsSlot = createSlot<{ referendum: Referendum | null; evidence: Evidence | null }>();
 
 type Props = PropsWithChildren<{
   referendum: Referendum;

@@ -1,5 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
-import { memo, useState } from 'react';
+import { memo } from 'react';
 
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
@@ -8,11 +7,10 @@ import { SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum } from '@/domains/collectives';
 import { Card } from '@/features/fellowship-referendum-details';
-import { fellowshipVotingFeature } from '../model/feature';
+import { useReferendumVote } from '../hooks/useReferendumVote';
 import { votingStatus } from '../model/votingStatus';
 
 import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
-import { VotingModal } from './VotingModal';
 
 type Props = {
   referendum?: Referendum | null;
@@ -24,19 +22,14 @@ export const VotingButtonsCompleted = memo(({ referendum }: Props) => {
 
   const { t } = useI18n();
 
-  const chain = useStoreMap(fellowshipVotingFeature.input, input => input?.chain ?? null);
+  const { data: referendumVote } = useReferendumVote(referendum?.id);
 
-  const voting = useUnit(votingStatus.$referendumVoting);
-  const currentMember = useUnit(votingStatus.$currentMember);
-
-  const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
-
-  if (nullable(chain) || nullable(referendum) || nullable(currentMember)) {
+  if (nullable(referendum)) {
     return null;
   }
 
-  const alreadyVotedNay = nonNullable(voting) && voting.decision === 'Nay';
-  const alreadyVotedAye = nonNullable(voting) && voting.decision === 'Aye';
+  const alreadyVotedNay = nonNullable(referendumVote) && referendumVote.decision === 'Nay';
+  const alreadyVotedAye = nonNullable(referendumVote) && referendumVote.decision === 'Aye';
 
   return (
     <Card>
@@ -48,7 +41,6 @@ export const VotingButtonsCompleted = memo(({ referendum }: Props) => {
           </span>
         </SmallTitleText>
 
-        <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
         <Box gap={4}>
           <Box direction="row" gap={4}>
             <VotingButtonWithTooltip
@@ -58,7 +50,6 @@ export const VotingButtonsCompleted = memo(({ referendum }: Props) => {
               isVoted={alreadyVotedNay}
               checked={alreadyVotedNay}
               fullWidth
-              onClick={() => !alreadyVotedNay && setDecision('nay')}
             >
               {t('fellowship.voting.notGood')}
             </VotingButtonWithTooltip>
@@ -70,7 +61,6 @@ export const VotingButtonsCompleted = memo(({ referendum }: Props) => {
               isVoted={alreadyVotedAye}
               checked={alreadyVotedAye}
               fullWidth
-              onClick={() => !alreadyVotedAye && setDecision('aye')}
             >
               {t('fellowship.voting.good')}
             </VotingButtonWithTooltip>
