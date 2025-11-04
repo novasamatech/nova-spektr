@@ -95,7 +95,7 @@ const Title = ({ action, close, children, gap = 'medium' }: TitleProps) => {
   return (
     <Dialog.Title asChild hidden={!headerExist} className={!headerExist ? 'hidden' : ''}>
       <header className="flex w-full items-center justify-between py-3 ps-5 pe-3 contain-inline-size">
-        <h1 className="truncate py-1 font-manrope text-header-title font-bold text-text-primary">{children}</h1>
+        <h1 className="w-full truncate py-1 font-manrope text-header-title font-bold text-text-primary">{children}</h1>
 
         <div
           className={cnTw('z-20 flex h-7.5 items-center', {
@@ -141,19 +141,13 @@ type ContentProps = PropsWithChildren<{
 }>;
 
 const Content = ({ disableScroll, background = 'primary', children }: ContentProps) => {
-  return disableScroll ? (
+  return (
     <div
       className={cnTw('relative flex h-full min-h-0 grow flex-col overflow-hidden', {
         'bg-main-app-background': background === 'secondary',
       })}
     >
-      {children}
-    </div>
-  ) : (
-    <div
-      className={cnTw('h-full min-h-0 grow overflow-hidden', { 'bg-main-app-background': background === 'secondary' })}
-    >
-      <ScrollArea>{children}</ScrollArea>
+      {disableScroll ? children : <ScrollArea>{children}</ScrollArea>}
     </div>
   );
 };

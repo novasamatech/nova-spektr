@@ -72,14 +72,14 @@ function build<Params, Response, Cache>({
     console.error('failed to fetch', error);
   });
 
-  const requestFx = createQueuedEffect<Params, Response>(
+  const requestFx = createQueuedEffect<Params, { cached: boolean; response: Response }>(
     async (params) => {
       const boundedFn = scopeBind(fn, { safe: true });
 
       const key = createKey(params);
       const cached = await requestsCache.get(key);
       if (nonNullable(cached)) {
-        return cached;
+        return { cached: true, response: cached };
       }
 
       if (abortControllers.has(key)) {
@@ -93,14 +93,25 @@ function build<Params, Response, Cache>({
 
       if (response instanceof Promise) {
         requestsCache.setRequest(key, response, cache?.staleAfter ?? 0);
+        return response
+          .then((response) => ({ cached: false, response }))
+          .finally(() => {
+            abortControllers.delete(key);
+          });
       } else {
         requestsCache.set(key, response, cache?.staleAfter ?? 0);
+        abortControllers.delete(key);
+        return { cached: false, response };
       }
-
-      return response;
     },
     { pool: createKey, retryCount: retry?.count, retryDelay: retry?.delay },
   );
+
+  const fetchFx = createEffect<Params, Response>((params) => {
+    const bounded = scopeBind(requestFx, { safe: true });
+
+    return bounded(params).then(({ response }) => response);
+  });
 
   const abortFx = createEffect((key: ResourceRequestKey) => {
     const abortController = abortControllers.get(key);
@@ -117,6 +128,8 @@ function build<Params, Response, Cache>({
 
   sample({
     clock: requestFx.done,
+    filter: ({ result }) => !result.cached,
+    fn: ({ params, result }) => ({ params, result: result.response }),
     target: push,
   });
 
@@ -137,7 +150,7 @@ function build<Params, Response, Cache>({
     start,
     stop,
 
-    fetch: requestFx,
+    fetch: fetchFx,
     $pending: readonly($pending),
   };
 }

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { nonNullable } from '@/shared/lib/utils';
 import { memberService } from '@/domains/collectives';
 import {
@@ -21,35 +23,39 @@ export const useMemberEvidenceTasks = () => {
 
   const hasPromotionEvidence = evidence?.wish === 'Promotion';
   const hasRetentionEvidence = evidence?.wish === 'Retention';
-  const tasks: TaskDescription[] = [];
 
-  if (nonNullable(member) && memberService.isCoreMember(member)) {
-    if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence === false) {
-      tasks.push({
-        id: 'evidence',
-        weight: 1,
-        group: 'personal',
-        body: RequestRetention,
-        meta: { transaction: operations['evidence']?.coreTx ?? null, tags: [] },
-      });
-    }
+  const tasks = useMemo(() => {
+    const tasks: TaskDescription[] = [];
 
-    if (
-      memberService.canPromote(member) &&
-      nonNullable(leftToPromotion) &&
-      leftToPromotion <= 0 &&
-      hasPromotionEvidence === false &&
-      hasRetentionEvidence === false
-    ) {
-      tasks.push({
-        id: 'evidence',
-        weight: 1,
-        group: 'personal',
-        body: RequestPromotion,
-        meta: { transaction: operations['evidence']?.coreTx ?? null, tags: [] },
-      });
+    if (nonNullable(member) && memberService.isCoreMember(member)) {
+      if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence === false) {
+        tasks.push({
+          id: 'evidence',
+          weight: 1,
+          group: 'personal',
+          body: RequestRetention,
+          meta: { transaction: operations['evidence']?.coreTx ?? null, tags: [] },
+        });
+      }
+
+      if (
+        memberService.canPromote(member) &&
+        nonNullable(leftToPromotion) &&
+        leftToPromotion <= 0 &&
+        hasPromotionEvidence === false &&
+        hasRetentionEvidence === false
+      ) {
+        tasks.push({
+          id: 'evidence',
+          weight: 1,
+          group: 'personal',
+          body: RequestPromotion,
+          meta: { transaction: operations['evidence']?.coreTx ?? null, tags: [] },
+        });
+      }
     }
-  }
+    return tasks;
+  }, [operations, member, leftToDemotion, leftToPromotion, hasPromotionEvidence, hasRetentionEvidence]);
 
   return {
     data: tasks,

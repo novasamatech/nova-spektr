@@ -5,6 +5,8 @@ import { nonNullable, nullable } from '@/shared/lib/utils';
 
 import { type AnyResource } from './types';
 
+const empty = Symbol('empty');
+
 type ResourceParams<Params, Cache, Value> = {
   params: Params | undefined | null;
   defaultValue: Value;
@@ -13,22 +15,24 @@ type ResourceParams<Params, Cache, Value> = {
 };
 
 export const useResource = <const Params, Cache, const Value>(
-  resource: AnyResource<Params, any, Cache>,
+  resource: AnyResource<Params, unknown, Cache>,
   { params, map, filter, defaultValue }: ResourceParams<Params, Cache, Value>,
 ) => {
+  const [resolved, setResolved] = useState(false);
   const key = useMemo(() => (params ? resource.createKey(params) : null), [params, resource]);
 
-  const data = useStoreMap({
+  const cachedValue = useStoreMap({
     store: resource.$cache,
-    keys: [key, defaultValue],
-    fn: (cache) => (nonNullable(params) ? (map(cache, params) ?? defaultValue) : defaultValue),
+    keys: [key],
+    fn: (cache) => (nonNullable(params) ? (map(cache, params) ?? empty) : empty),
   });
 
-  const [pending, setPending] = useState(false);
+  const normalizedValue = cachedValue === empty ? defaultValue : cachedValue;
+  const pending = !resolved;
 
   useEffect(() => {
     if (nonNullable(params) && nonNullable(key)) {
-      if (nullable(filter) || filter(data, params)) {
+      if (nullable(filter) || filter(normalizedValue, params)) {
         resource.start(params);
         return () => {
           resource.stop(key);
@@ -38,11 +42,13 @@ export const useResource = <const Params, Cache, const Value>(
   }, [key]);
 
   useEffect(() => {
-    setPending(data === defaultValue);
+    setResolved((v) => v || cachedValue !== empty);
 
     // eslint-disable-next-line effector/no-watch
-    return resource.push.watch(() => setPending(false));
+    return resource.push.watch(() => {
+      setResolved(true);
+    });
   }, [key]);
 
-  return { data, pending };
+  return { data: normalizedValue, pending };
 };

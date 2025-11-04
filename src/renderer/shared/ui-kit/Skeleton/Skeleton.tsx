@@ -44,16 +44,22 @@ export const Skeleton = ({ width, height, testId, circle, fullWidth, minWidth, a
 
   if (active) {
     return (
-      <span
-        data-testid={testId}
-        className={cnTw('spektr-shimmer block h-fit rounded-2lg *:invisible', {
-          'w-full': fullWidth,
-          'w-fit': !fullWidth,
+      <>
+        {Children.map(children, child => {
+          return (
+            <span
+              data-testid={testId}
+              className={cnTw('spektr-shimmer block h-fit rounded-2lg *:invisible', {
+                'w-full': fullWidth,
+                'w-fit': !fullWidth,
+              })}
+              style={{ minWidth: formattedMinWidth }}
+            >
+              {isString(child) ? <span>{child}</span> : child}
+            </span>
+          );
         })}
-        style={{ minWidth: formattedMinWidth }}
-      >
-        {Children.map(children, child => (isString(child) ? <span>{child}</span> : child))}
-      </span>
+      </>
     );
   }
 

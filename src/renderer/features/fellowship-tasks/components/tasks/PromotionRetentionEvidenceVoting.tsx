@@ -1,4 +1,3 @@
-import { useStoreMap, useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
@@ -7,10 +6,9 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
-import { type Evidence, type Referendum } from '@/domains/collectives';
-import { evidenceModel } from '../../model/evidence';
-import { identityModel } from '../../model/identity';
-import { members } from '../../model/members';
+import { type Evidence, useEvidenceSummary, useMember } from '@/domains/collectives';
+import { useIdentity } from '@/domains/network';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { MemberActivity } from '../MemberActivity';
 import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
@@ -24,36 +22,32 @@ export const evidenceVotingTaskActionSlot = createSlot<{
 
 type Props = {
   evidence: Evidence;
-  referendum: Referendum | null;
   endBlock: number | null;
   transaction: Transaction | null;
   tags: string[];
 };
 
-export const PromotionRetentionEvidenceVoting = memo(({ referendum, evidence, tags, endBlock, transaction }: Props) => {
+export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock, transaction }: Props) => {
   const { t } = useI18n();
 
-  const evidenceSummaryPending = useUnit(evidenceModel.requestEvidenceSummary.pending);
-  const evidenceSummaries = useUnit(evidenceModel.$evidencesSummary);
-  const evidenceSummary = evidenceSummaries.find(e => e.accountId === evidence.accountId);
+  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
+
+  const { data: member } = useMember({ palletType: 'fellowship', api, accountId: evidence.accountId });
+  const { data: evidenceSummary, pending: pendingSummary } = useEvidenceSummary({
+    palletType: 'fellowship',
+    chainId: chain?.chainId,
+    accountId: evidence?.accountId,
+    evidence: evidence?.hash,
+  });
+
+  const { data: identity } = useIdentity(member?.accountId);
 
   const isPromotion = evidence.wish === 'Promotion';
   const isRetention = evidence.wish === 'Retention';
 
-  const member = useStoreMap({
-    store: members.$list,
-    keys: [evidence.accountId],
-    fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
-  });
-
-  const memberIdentity = useStoreMap({
-    store: identityModel.$identities,
-    keys: [evidence.accountId],
-    fn: (list, [accountId]) => list[accountId] ?? null,
-  });
-
   const rank = useMemo(() => {
-    if (nullable(member?.rank)) return null;
+    if (nullable(member)) return null;
 
     if (isPromotion) {
       return member.rank + 1;
@@ -65,13 +59,13 @@ export const PromotionRetentionEvidenceVoting = memo(({ referendum, evidence, ta
   let title = '';
   if (isPromotion) {
     title = t('fellowship.evidenceModal.titlePromotion', {
-      name: memberIdentity?.name || toShortAddress(toAddress(evidence.accountId), 6),
+      name: identity?.name || toShortAddress(toAddress(evidence.accountId), 6),
       rank: nonNullable(rank) ? toRomanNumeral(rank + 1) : 0,
     });
   }
   if (isRetention) {
     title = t('fellowship.evidenceModal.titleRetention', {
-      name: memberIdentity?.name || toShortAddress(toAddress(evidence.accountId), 6),
+      name: identity?.name || toShortAddress(toAddress(evidence.accountId), 6),
       rank: nonNullable(rank) ? toRomanNumeral(rank) : 0,
     });
   }
@@ -95,12 +89,12 @@ export const PromotionRetentionEvidenceVoting = memo(({ referendum, evidence, ta
                       <SmallTitleText className="truncate">{title}</SmallTitleText>
                       <TaskLabels tags={tags} />
                     </Box>
-                    {!evidenceSummary?.summary && evidenceSummaryPending && evidenceSummaryPending && (
+                    {!evidenceSummary?.summary && pendingSummary && pendingSummary && (
                       <Skeleton height="2.5lh" width="85%" />
                     )}
                     <FootnoteText as="div">
                       {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
-                      {!evidenceSummary?.summary && !evidenceSummaryPending
+                      {!evidenceSummary?.summary && !pendingSummary
                         ? t('fellowship.tasks.task.promotionVoting.noEvidence')
                         : null}
                     </FootnoteText>

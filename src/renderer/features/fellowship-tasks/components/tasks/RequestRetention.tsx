@@ -10,7 +10,7 @@ import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { RetentionEndTimer } from '../RetentionEndTimer';
 import { BadgeIcon } from '../TaskBadge';
 
-export const requestRetentionATaskActionSlot = createSlot();
+export const requestRetentionTaskActionSlot = createSlot();
 
 export const RequestRetention = () => {
   const { t, formatDate } = useI18n();
@@ -44,7 +44,7 @@ export const RequestRetention = () => {
       </Box>
       <Box verticalAlign="center" gap={8} horizontalAlign="end" shrink={0} height="100%">
         <RetentionEndTimer endBlock={endDemotionBlock} shortDateFormat />
-        <Slot id={requestRetentionATaskActionSlot} />
+        <Slot id={requestRetentionTaskActionSlot} />
       </Box>
     </Box>
   );

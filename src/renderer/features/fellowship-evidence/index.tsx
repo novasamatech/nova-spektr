@@ -9,7 +9,7 @@ import { evidenceSubmitSlot } from '@/features/fellowship-retention';
 import {
   evidenceVotingTaskActionSlot,
   requestPromotionTaskActionSlot,
-  requestRetentionATaskActionSlot,
+  requestRetentionTaskActionSlot,
 } from '@/features/fellowship-tasks';
 
 import { EvidencePostFlowModal } from './components/EvidencePostFlowModal';
@@ -52,7 +52,7 @@ fellowshipEvidenceFeature.inject(evidenceActionsSlot, ({ evidence }) => {
   return <VotingActionsCard evidence={evidence} endBlock={null} variant="large" disabled={!canVote} />;
 });
 
-fellowshipEvidenceFeature.inject(requestRetentionATaskActionSlot, () => {
+fellowshipEvidenceFeature.inject(requestRetentionTaskActionSlot, () => {
   const { t } = useI18n();
   const canVote = useUnit(profile.$canVote);
 

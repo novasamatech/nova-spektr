@@ -89,7 +89,12 @@ export const referendumMetaResource = createQueryResource<ReferendumMetaRequestP
       chainId,
     }));
   })
+  .retry({
+    count: 3,
+    delay: 5000,
+  })
   .cache<CollectivesStruct<Record<ReferendumId, ReferendumMetaWithContext>>>({
+    staleAfter: 120_000,
     store: createStore({}),
     map(state, referendums, { palletType, api }) {
       const chainId = api.genesisHash.toHex();

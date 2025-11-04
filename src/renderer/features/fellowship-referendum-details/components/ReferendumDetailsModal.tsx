@@ -63,27 +63,23 @@ export const ReferendumDetailsModal = memo(
       <Modal size="xl" height="fit" isOpen={isOpen} onToggle={handleToggle}>
         {children && <Modal.Trigger>{children}</Modal.Trigger>}
         <Modal.Title close>{modalTitle}</Modal.Title>
-        <Modal.Content>
-          <div className="flex h-full bg-main-app-background">
-            <Box direction="row" width="100%" height="100%" gap={4} padding={[4, 6]} fillContainer>
-              <Box width="100%" height="100%" gap={4}>
-                <ReferendumDescription referendum={referendum} />
-              </Box>
-              <Box width="350px" shrink={0} gap={4}>
-                <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
-
-                <MemberProfile referendum={referendum} evidence={null} />
-
-                {referendum && <Slot id={referendumAdditionalInfoSlot} props={{ referendum: referendum }} />}
-
-                {!isCurrentUser && (
-                  <Slot id={referendumActionsSlot} props={{ referendum, evidence: evidenceContent }} />
-                )}
-
-                <AdditionalInfo referendumId={referendumId} evidenceHash={evidenceContent?.hash} />
-              </Box>
+        <Modal.Content background="secondary">
+          <Box direction="row" width="100%" height="100%" gap={4} padding={[4, 6]} fillContainer>
+            <Box width="100%" height="100%" gap={4}>
+              <ReferendumDescription referendum={referendum} />
             </Box>
-          </div>
+            <Box width="350px" shrink={0} gap={4}>
+              <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
+
+              <MemberProfile referendum={referendum} evidence={null} />
+
+              {referendum && <Slot id={referendumAdditionalInfoSlot} props={{ referendum: referendum }} />}
+
+              {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence: evidenceContent }} />}
+
+              <AdditionalInfo referendumId={referendumId} evidenceHash={evidenceContent?.hash} />
+            </Box>
+          </Box>
         </Modal.Content>
       </Modal>
     );

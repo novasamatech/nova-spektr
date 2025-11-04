@@ -81,7 +81,8 @@ const request = async ({ api, chainId, accounts }: InnerParams) => {
 };
 
 export const identityResource = createQueryResource<RequestParams>({
-  key: ({ chainId, accounts }) => [chainId ?? 'any', ...accounts],
+  // we ignore accounts here to keep identities requests in chain for one specific chain
+  key: ({ chainId }) => [chainId ?? 'any'],
 })
   .request(
     attach({

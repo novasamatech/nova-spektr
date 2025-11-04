@@ -1,4 +1,3 @@
-import { useStoreMap, useUnit } from 'effector-react';
 import { useMemo } from 'react';
 import { generatePath } from 'react-router-dom';
 
@@ -9,10 +8,10 @@ import { Paths } from '@/shared/routes';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService } from '@/domains/collectives';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
-import { fellowshipTasksFeature } from '../../model/feature';
-import { referendums } from '../../model/referendums';
-import { rfcModel } from '../../model/rfc';
+import { useMetadata } from '../../hooks/useMetadata';
+import { useRfcProposalSummary } from '../../hooks/useRfcProposalSummary';
 import { tasksService } from '../../service';
 import { ReferendumTaskMarkdown } from '../ReferendumTaskMarkdown';
 import { TaskBadge } from '../TaskBadge';
@@ -48,26 +47,11 @@ type Props = {
 export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props) => {
   const { t } = useI18n();
 
-  const meta = useStoreMap({
-    store: referendums.$metadata,
-    keys: [referendum.id],
-    fn: (meta, [id]) => meta[id] ?? null,
-  });
-
-  const rfc = useStoreMap({
-    store: rfcModel.$rfcSummary,
-    keys: [referendum.proposal],
-    fn: (summary, [proposal]) =>
-      summary && proposal && referendumService.isRfcProposal(proposal) ? summary[proposal.pullRequest] : null,
-  });
-
-  const isRFCPending = useUnit(rfcModel.$isPending);
-  // TODO fix
-  const isMetaPending = false;
+  const { data: meta, pending: pendingMetadata } = useMetadata(referendum);
+  const { data: rfc, pending: pendingSummary } = useRfcProposalSummary(referendum);
 
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
-
-  const isPending = referendum && (isRFCProposal ? isRFCPending : isMetaPending);
+  const isPending = referendum && (isRFCProposal ? pendingSummary : pendingMetadata);
 
   const content = useMemo(() => {
     if (isPending) return;
@@ -91,12 +75,12 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
       : t('governance.referendums.referendumTitle', { index: referendum.id });
   }, [referendum.proposal]);
 
-  const input = useUnit(fellowshipTasksFeature.input);
+  const chain = useFellowshipChain();
 
   const handleClick = () => {
-    if (input?.chainId) {
+    if (chain) {
       const path = generatePath(Paths.FELLOWSHIP_REFERENDUM, {
-        chainId: input.chainId,
+        chainId: chain.chainId,
         referendumId: referendum.id.toString(),
       });
       navigationModel.events.navigateTo(path);

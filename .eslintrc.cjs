@@ -314,7 +314,7 @@ module.exports = {
             rules: [
               {
                 from: ['domains'],
-                disallow: ['react', 'effector-react'],
+                disallow: ['effector-react'],
                 message: 'Domain should contain only logic, not views.',
               },
               {

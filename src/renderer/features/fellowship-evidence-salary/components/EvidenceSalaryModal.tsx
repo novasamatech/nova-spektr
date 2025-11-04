@@ -13,9 +13,9 @@ export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const [tab, setTab] = useState('evidence');
 
-  const { data: currentMember } = useFellowshipMember();
+  const { data: member } = useFellowshipMember();
 
-  const disabled = nullable(currentMember);
+  const disabled = nullable(member);
 
   if (disabled) {
     // eslint-disable-next-line react/jsx-no-useless-fragment

@@ -1,5 +1,6 @@
 import { type ReactNode, memo } from 'react';
 
+import { useDeferredList } from '@/shared/lib/hooks';
 import { Accordion, AsyncItem, Box } from '@/shared/ui-kit';
 import { type TaskDescription } from '../types';
 
@@ -10,7 +11,9 @@ type Props = {
 };
 
 export const TasksGroup = memo(({ group, title, async = false }: Props) => {
-  if (group.length === 0) return null;
+  const { list } = useDeferredList({ list: group, forceFirstRender: !async });
+
+  if (list.length === 0) return null;
 
   return (
     <Accordion initialOpen>
@@ -22,7 +25,7 @@ export const TasksGroup = memo(({ group, title, async = false }: Props) => {
       </Accordion.Trigger>
       <Accordion.Content>
         <div className="divide-y divide-filter-border bg-card-background">
-          {group.map(({ id, body: Component, meta }) => (
+          {list.map(({ id, body: Component, meta }) => (
             <AsyncItem key={id} strategy={async ? 'async' : 'sync'}>
               <Component {...meta} />
             </AsyncItem>

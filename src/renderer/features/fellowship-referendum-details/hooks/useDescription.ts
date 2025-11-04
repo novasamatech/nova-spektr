@@ -4,7 +4,7 @@ import { type Referendum, referendumService } from '@/domains/collectives';
 import { useMetadata } from './useReferendumMeta';
 
 export const useDescription = (referendum: Referendum | null) => {
-  const { data: metadata } = useMetadata(referendum);
+  const { data: metadata, pending } = useMetadata(referendum);
 
   let description;
 
