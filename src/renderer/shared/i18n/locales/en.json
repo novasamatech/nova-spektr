@@ -467,6 +467,7 @@
   "fellowship": {
     "activityFeed": {
       "activityModal": {
+        "loadMore": "Load more",
         "no-results": {
           "filters": "No members match the current filters.",
           "general": "No members found.",

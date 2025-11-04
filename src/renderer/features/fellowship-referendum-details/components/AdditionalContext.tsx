@@ -9,7 +9,6 @@ import { type Referendum } from '@/domains/collectives';
 import { identityService, useIdentity } from '@/domains/network';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
 import { useDescription } from '../hooks/useDescription';
-import { useEvidence } from '../hooks/useEvidence';
 import { useProposer } from '../hooks/useProposer';
 
 import { Card } from './Card';
@@ -22,15 +21,11 @@ export const AdditionalContext = ({ referendum }: Props) => {
   const { t } = useTranslation();
 
   const chain = useFellowshipChain();
-  const proposer = useProposer(referendum);
+  const { data: proposer } = useProposer(referendum);
+  const { data: description, pending } = useDescription(referendum);
+  const { data: identity } = useIdentity(proposer?.accountId);
 
-  const { data: evidence, pending: pendingEvidence } = useEvidence(proposer);
-  const { data: identity } = useIdentity(proposer);
-  const { data: description } = useDescription(referendum);
-
-  const memberId = proposer || evidence?.accountId;
-
-  if (pendingEvidence)
+  if (pending) {
     return (
       <Card>
         <Box padding={6}>
@@ -38,6 +33,7 @@ export const AdditionalContext = ({ referendum }: Props) => {
         </Box>
       </Card>
     );
+  }
 
   if (!description?.trim())
     return (
@@ -53,11 +49,11 @@ export const AdditionalContext = ({ referendum }: Props) => {
     <Card>
       <Box padding={6} gap={4}>
         <TitleText>{t('fellowship.evidenceModal.additionalContext')}</TitleText>
-        {memberId && chain ? (
+        {proposer && chain ? (
           <Box direction="row" verticalAlign="center" gap={1}>
             <FootnoteText className="text-text-tertiary">{t('fellowship.evidenceModal.by')}</FootnoteText>
             <Account
-              accountId={memberId}
+              accountId={proposer.accountId}
               chain={chain}
               title={identity ? identityService.getFullName(identity) : undefined}
               hideExplorers

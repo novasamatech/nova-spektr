@@ -25,11 +25,15 @@ export const TasksGroup = memo(({ group, title, async = false }: Props) => {
       </Accordion.Trigger>
       <Accordion.Content>
         <div className="divide-y divide-filter-border bg-card-background">
-          {list.map(({ id, body: Component, meta }) => (
-            <AsyncItem key={id} strategy={async ? 'async' : 'sync'}>
-              <Component {...meta} />
-            </AsyncItem>
-          ))}
+          {list.map(({ id, body: Component, meta }) =>
+            async ? (
+              <AsyncItem key={id}>
+                <Component {...meta} />
+              </AsyncItem>
+            ) : (
+              <Component key={id} {...meta} />
+            ),
+          )}
         </div>
       </Accordion.Content>
     </Accordion>

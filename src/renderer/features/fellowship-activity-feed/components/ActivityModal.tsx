@@ -4,7 +4,7 @@ import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'rea
 import { useI18n } from '@/shared/i18n';
 import { nullable, performSearch, truncate } from '@/shared/lib/utils';
 import { Button, EmptyList } from '@/shared/ui';
-import { Modal, SearchInput, Select } from '@/shared/ui-kit';
+import { Box, Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { useFeed } from '@/domains/collectives';
 import { identityService, useIdentities } from '@/domains/network';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
@@ -21,6 +21,8 @@ const orderVariants: Record<OrderKey, { field: string; direction: 'asc' | 'desc'
   'name-desc': { field: 'name', direction: 'desc' },
 };
 
+const LIMIT_STEP = 100;
+
 export const ActivityModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
@@ -29,6 +31,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const { data: identities } = useIdentities(feed.map(record => record.accountId));
 
   const [query, setQuery] = useState('');
+  const [limit, setLimit] = useState(LIMIT_STEP);
   const [orderKey, setOrderKey] = useState<OrderKey>('duration-asc');
 
   const deferredQuery = useDeferredValue(query);
@@ -68,6 +71,8 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
     const orderVariant = orderVariants[orderKey];
     return orderVariant ? orderBy(filteredList, orderVariant.field, orderVariant.direction) : filteredList;
   }, [filteredList, orderKey]);
+
+  const shouldRenderMoreButton = limit < sortedList.length;
 
   if (nullable(chain)) return children;
 
@@ -116,7 +121,14 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
             </Button>
           </EmptyList>
         )}
-        <ActivityListView feed={sortedList} pending={pending} withFullAccountInfo />
+        <ActivityListView feed={sortedList} limit={limit} pending={pending} withFullAccountInfo />
+        {shouldRenderMoreButton && (
+          <Box padding={[0, 0, 5, 0]} horizontalAlign="center">
+            <Button variant="text" size="sm" onClick={() => setLimit(l => l + LIMIT_STEP)}>
+              {t('fellowship.activityFeed.activityModal.loadMore')}
+            </Button>
+          </Box>
+        )}
       </Modal.Content>
     </Modal>
   );

@@ -18,10 +18,7 @@ type Props = {
 
 export const ActivityListView = memo(
   ({ limit = Number.POSITIVE_INFINITY, feed, pending, withFullAccountInfo }: PropsWithChildren<Props>) => {
-    const feedWithMaxLength = useMemo(
-      () => (limit === Number.POSITIVE_INFINITY ? feed : feed.slice(0, limit)),
-      [feed, limit],
-    );
+    const feedWithMaxLength = useMemo(() => (limit >= feed.length ? feed : feed.slice(0, limit)), [feed, limit]);
 
     const now = useClock(60_000);
     const chain = useFellowshipChain();
@@ -32,10 +29,10 @@ export const ActivityListView = memo(
 
     return (
       <div className="flex h-full flex-col gap-y-5 pt-2 pb-4">
-        {isLoading && placeholder}
+        {isLoading && placeholders}
 
         {list.map(event => (
-          <AsyncItem key={`${event.block}-${event.accountId}-${event.type}`} fallback={<ActivityPlaceholder />}>
+          <AsyncItem key={`${event.block}-${event.accountId}-${event.type}`} fallback={placeholder}>
             <EventRecord
               event={event}
               description={event.description}
@@ -51,7 +48,9 @@ export const ActivityListView = memo(
   },
 );
 
-const placeholder = (
+const placeholder = <ActivityPlaceholder />;
+
+const placeholders = (
   <>
     {Array.from({ length: 5 }).map((_, i) => (
       <ActivityPlaceholder key={i} />

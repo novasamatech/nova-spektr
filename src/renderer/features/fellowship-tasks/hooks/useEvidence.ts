@@ -19,7 +19,5 @@ export const useEvidence = (account: AccountId | null) => {
     return evidences.find(x => x.accountId === account) ?? null;
   }, [evidences, account]);
 
-  console.log('useEvidence', { evidences, account, evidence, pending });
-
   return { data: evidence, pending };
 };
