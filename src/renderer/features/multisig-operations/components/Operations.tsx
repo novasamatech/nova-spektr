@@ -1,7 +1,9 @@
 import { useUnit } from 'effector-react';
 import { groupBy } from 'lodash';
+import { useEffect, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { useScrollTo } from '@/shared/lib/hooks';
 import { sortByDateDesc } from '@/shared/lib/utils';
 import { nullable } from '@/shared/lib/utils/functions';
 import { FootnoteText } from '@/shared/ui';
@@ -9,6 +11,7 @@ import { Box, ScrollArea } from '@/shared/ui-kit';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { operationsContextModel } from '../model/context';
 
+import { deepLinkModel } from '../model/deep-link';
 import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { OperationsFilter } from './OperationsFilter';
@@ -19,20 +22,34 @@ export const Operations = () => {
   const multisigAccount = useUnit(operationsContextModel.$multisigAccount);
   const operations = useUnit(selectedWalletMultisigOperations.$list);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
+  const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
 
-  const groupedTxs = groupBy(filteredTxs, tx => {
-    let date: number | undefined = tx.timestamp;
+  const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
 
-    if (nullable(date)) {
-      date = tx.events.at(0)?.timestamp;
+  const groupedTxs = useMemo(
+    () =>
+      groupBy(filteredTxs, tx => {
+        let date: number | undefined = tx.timestamp;
+
+        if (nullable(date)) {
+          date = tx.events.at(0)?.timestamp;
+        }
+
+        if (nullable(date)) {
+          date = Date.now();
+        }
+
+        return formatDate(new Date(date), 'PP');
+      }),
+    [filteredTxs, formatDate],
+  );
+
+  // Scroll to focused operation
+  useEffect(() => {
+    if (focusedOperationId && focusedRef.current) {
+      scrollToFocused();
     }
-
-    if (nullable(date)) {
-      date = Date.now();
-    }
-
-    return formatDate(new Date(date), 'PP');
-  });
+  }, [focusedOperationId, focusedRef.current, scrollToFocused]);
 
   if (!multisigAccount) {
     return <EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />;
@@ -61,8 +78,12 @@ export const Operations = () => {
                     {txs
                       .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
                       .map(tx => (
-                        <li key={tx.id}>
-                          <Operation operation={tx} multisigAccount={multisigAccount} />
+                        <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
+                          <Operation
+                            operation={tx}
+                            multisigAccount={multisigAccount}
+                            isDefaultOpen={tx.id === focusedOperationId}
+                          />
                         </li>
                       ))}
                   </ul>

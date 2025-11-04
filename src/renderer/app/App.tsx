@@ -1,8 +1,9 @@
 import { useGate, useUnit } from 'effector-react';
 import { useEffect } from 'react';
-import { matchPath, useLocation, useNavigate, useRoutes } from 'react-router-dom';
+import { matchPath, useLocation, useNavigate, useRoutes, useSearchParams } from 'react-router-dom';
 
 import { logger } from '@/shared/config/utils';
+import { deepLinkService } from '@/shared/lib/deep-link';
 import { ConfirmDialogProvider } from '@/shared/providers';
 import { Paths } from '@/shared/routes';
 import { walletModel } from '@/entities/wallet';
@@ -19,6 +20,7 @@ export const App = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const appRoutes = useRoutes(ROUTES_CONFIG);
+  const [searchParams] = useSearchParams();
 
   useGate(navigationModel.gates.flow, { navigate });
 
@@ -36,6 +38,12 @@ export const App = () => {
       navigate(Paths.ONBOARDING, { replace: true });
     }
   }, [isLoadingWallets, wallets.length]);
+
+  useEffect(() => {
+    if (searchParams.toString()) {
+      deepLinkService.handleDeepLink({ pathname, searchParams });
+    }
+  }, [pathname, searchParams]);
 
   return (
     <ConfirmDialogProvider>

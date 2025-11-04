@@ -4,11 +4,14 @@ import { readonly } from 'patronum';
 
 import { type ID } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService, accounts } from '@/domains/network';
 import { walletModel } from '@/entities/wallet';
 
 const selectWallet = createEvent<ID | null>();
 const $selectedWalletId = createStore<ID | null>(null);
+
+const selectWalletByAccount = createEvent<AccountId>();
 
 persist({
   key: 'selected_wallet',
@@ -36,6 +39,13 @@ sample({
   target: $selectedWalletId,
 });
 
+sample({
+  clock: selectWalletByAccount,
+  source: accounts.$list,
+  fn: (allAccounts, accountId) => allAccounts.find(a => a.accountId === accountId)?.walletId ?? null,
+  target: selectWallet,
+});
+
 // setting default selection if something went wrong
 sample({
   clock: walletModel.$wallets,
@@ -50,6 +60,7 @@ export const walletSelect = {
   $selectedWalletId: readonly($selectedWalletId),
   $selectedAccounts,
   select: selectWallet,
+  selectByAccount: selectWalletByAccount,
 
   __test: {
     $selectedWalletId,

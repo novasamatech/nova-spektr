@@ -1,4 +1,4 @@
-import { type ReactNode, memo } from 'react';
+import { type ReactNode, memo, useMemo } from 'react';
 
 import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
@@ -18,6 +18,7 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
+import { generateMultisigOperationDeepLink } from '../deep-link/multisig-operation-deep-link';
 
 import { OperationFullInfo } from './OperationFullInfo';
 import { OperationIcon } from './OperationIcon';
@@ -25,6 +26,7 @@ import { OperationIcon } from './OperationIcon';
 type Props = {
   operation: MultisigOperation;
   multisigAccount: MultisigAccount | FlexibleMultisigAccount;
+  isDefaultOpen?: boolean;
 };
 
 export const operationTitleTransformer = createTransformer<
@@ -32,12 +34,14 @@ export const operationTitleTransformer = createTransformer<
   ReactNode
 >();
 
-export const Operation = memo(({ operation, multisigAccount }: Props) => {
+export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false }: Props) => {
   const { t } = useI18n();
 
   const showCoreTransaction = accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
   const asset = useTransactionAsset(coreTx, operation.chainId);
+
+  const deepLink = useMemo(() => generateMultisigOperationDeepLink(operation), [operation]);
 
   const externalTitleNode = useTransformer(operationTitleTransformer, {
     operation,
@@ -71,7 +75,10 @@ export const Operation = memo(({ operation, multisigAccount }: Props) => {
   }
 
   return (
-    <Accordion className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow">
+    <Accordion
+      isDefaultOpen={isDefaultOpen}
+      className="rounded bg-block-background-default transition-shadow hover:shadow-card-shadow focus-visible:shadow-card-shadow"
+    >
       <Accordion.Button buttonClass="px-2" iconWrapper="px-1.5">
         <div className="flex h-[52px] w-full items-center gap-4 overflow-hidden">
           <div className="flex w-full items-center gap-4 overflow-hidden">
@@ -82,7 +89,7 @@ export const Operation = memo(({ operation, multisigAccount }: Props) => {
 
           <OperationTitleStatus operation={operation} account={multisigAccount} />
 
-          <Copy value="PLACEHOLDER_TEXT" notification={t('general.notifications.operationLinkCopied')}>
+          <Copy value={deepLink} notification={t('general.notifications.operationLinkCopied')}>
             <IconButton className="shrink-0 self-center text-icon-default" name="share" />
           </Copy>
         </div>
