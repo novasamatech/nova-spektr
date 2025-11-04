@@ -33,6 +33,11 @@ const Contacts = lazy(() => import('./AddressBook').then(({ Contacts }) => ({ de
 const CreateContact = lazy(() => import('./AddressBook').then(({ CreateContact }) => ({ default: CreateContact })));
 const EditContact = lazy(() => import('./AddressBook').then(({ EditContact }) => ({ default: EditContact })));
 const Fellowship = lazy(() => import('./Fellowship/ui/Fellowship').then(({ Fellowship }) => ({ default: Fellowship })));
+const FellowshipReferendumDetails = lazy(() =>
+  import('./Fellowship/ui/FellowshipReferendumDetails').then(({ FellowshipReferendumDetails }) => ({
+    default: FellowshipReferendumDetails,
+  })),
+);
 const Dapp = lazy(() => import('./Dapp').then(({ DappPage }) => ({ default: DappPage })));
 
 // React routes v6 hint:
@@ -107,6 +112,16 @@ export const ROUTES_CONFIG: RouteObject[] = [
           {
             path: Paths.FELLOWSHIP_LIST,
             element: <Outlet />,
+            children: [
+              {
+                path: Paths.FELLOWSHIP_REFERENDUM,
+                element: (
+                  <Suspense fallback={null}>
+                    <FellowshipReferendumDetails />
+                  </Suspense>
+                ),
+              },
+            ],
           },
         ],
       },

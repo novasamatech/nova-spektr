@@ -51,7 +51,7 @@ export type {
 
 export { feed } from './feed/store';
 export { useFeed } from './feed/hooks';
-export type { FeedRecord } from './feed/types';
+export type { FeedRecord, FeedEventReferendum } from './feed/types';
 
 export { rfc } from './rfc/store';
 export { useRfcSummary } from './rfc/hooks';
@@ -77,5 +77,6 @@ export { votingService } from './voting/service';
 export type { VotingTransaction } from './voting/types';
 
 export { voting } from './votingHistory/store';
+export { votingHistoryService } from './votingHistory/service';
 export { useVotes, useAllVotes } from './votingHistory/hooks';
-export type { Vote } from './votingHistory/types';
+export type { Vote, VotingRating } from './votingHistory/types';

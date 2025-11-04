@@ -38,7 +38,7 @@ export const Tasks = () => {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-filter-border">
+    <div className="flex h-full flex-col items-stretch justify-stretch overflow-hidden rounded-xl border border-filter-border">
       <Title count={tasksCount} />
       {hasAccount && activeTasks.length ? (
         <ScrollArea>

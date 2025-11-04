@@ -4,7 +4,6 @@ import { type PropsWithChildren, useState } from 'react';
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, Icon, LargeTitleText } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
 import { memberService, salaryService } from '@/domains/collectives';
@@ -13,6 +12,7 @@ import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
+import { $beneficiary } from '../model/beneficiary';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { memberSalary } from '../model/memberSalary';
 import { salaryPayout } from '../model/salaryPayout';
@@ -22,12 +22,12 @@ import { SalaryPayoutConfirmation } from './SalaryPayoutConfirmation';
 type Step = 'confirm' | 'sign' | 'submit' | 'basket';
 
 type Props = PropsWithChildren<{
-  beneficiary: AccountId | null;
   disabled?: boolean;
 }>;
 
-export const SalaryPayoutModal = ({ beneficiary, disabled, children }: Props) => {
-  useFlow(salaryPayout.flow, { beneficiary });
+export const SalaryPayoutModal = ({ disabled, children }: Props) => {
+  const beneficiary = useUnit($beneficiary);
+  useFlow(salaryPayout.flow, null);
 
   const { t } = useI18n();
   const [open, setOpen] = useState(false);

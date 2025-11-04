@@ -30,7 +30,7 @@ export const RetentionEndTimer = ({ endBlock, shortDateFormat }: Props) => {
         setSecondsToEnd(date / 1000);
       });
     }
-  }, [endBlock, input]);
+  }, [endBlock, input?.api]);
 
   if (!secondsToEnd || !input) return null;
   const variant = getTimerColor(secondsToEnd);

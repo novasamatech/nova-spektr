@@ -8,7 +8,6 @@ import { nonNullable, nullable, toAddress, toRomanNumeral, toShortAddress } from
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Evidence, type Referendum } from '@/domains/collectives';
-import { EvidenceDetailsModal } from '@/features/fellowship-referendum-details';
 import { evidenceModel } from '../../model/evidence';
 import { identityModel } from '../../model/identity';
 import { members } from '../../model/members';
@@ -16,6 +15,7 @@ import { MemberActivity } from '../MemberActivity';
 import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
 
+export const evidenceDetailsModalSlot = createSlot<{ evidence: Evidence; title: string; children: React.ReactNode }>();
 export const evidenceVotingTaskActionSlot = createSlot<{
   evidence: Evidence;
   transaction: Transaction | null;
@@ -78,33 +78,40 @@ export const PromotionRetentionEvidenceVoting = memo(({ referendum, evidence, ta
 
   return (
     <Box direction="row" gap={2}>
-      <EvidenceDetailsModal referendum={referendum} evidence={evidence} title={title}>
-        <button className="block w-full appearance-none p-4">
-          <Box direction="row" gap={2}>
-            <div className="shrink-0">
-              <TaskBadge rank={rank} isPromotion={isPromotion} isRetention={isRetention} />
-            </div>
-            <Box gap={3} verticalAlign="space-between">
-              <Box fillContainer gap={3} grow={1}>
-                <Box direction="row" gap={3}>
-                  <SmallTitleText className="truncate">{title}</SmallTitleText>
-                  <TaskLabels tags={tags} />
+      <Slot
+        id={evidenceDetailsModalSlot}
+        props={{
+          evidence,
+          title,
+          children: (
+            <button className="block w-full appearance-none p-4">
+              <Box direction="row" gap={2}>
+                <div className="shrink-0">
+                  <TaskBadge rank={rank} isPromotion={isPromotion} isRetention={isRetention} />
+                </div>
+                <Box gap={3} verticalAlign="space-between">
+                  <Box fillContainer gap={3} grow={1}>
+                    <Box direction="row" gap={3}>
+                      <SmallTitleText className="truncate">{title}</SmallTitleText>
+                      <TaskLabels tags={tags} />
+                    </Box>
+                    {!evidenceSummary?.summary && evidenceSummaryPending && evidenceSummaryPending && (
+                      <Skeleton height="2.5lh" width="85%" />
+                    )}
+                    <FootnoteText as="div">
+                      {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
+                      {!evidenceSummary?.summary && !evidenceSummaryPending
+                        ? t('fellowship.tasks.task.promotionVoting.noEvidence')
+                        : null}
+                    </FootnoteText>
+                  </Box>
+                  <MemberActivity accountId={evidence.accountId} />
                 </Box>
-                {!evidenceSummary?.summary && evidenceSummaryPending && evidenceSummaryPending && (
-                  <Skeleton height="2.5lh" width="85%" />
-                )}
-                <FootnoteText as="div">
-                  {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
-                  {!evidenceSummary?.summary && !evidenceSummaryPending
-                    ? t('fellowship.tasks.task.promotionVoting.noEvidence')
-                    : null}
-                </FootnoteText>
               </Box>
-              <MemberActivity accountId={evidence.accountId} />
-            </Box>
-          </Box>
-        </button>
-      </EvidenceDetailsModal>
+            </button>
+          ),
+        }}
+      />
 
       <Box alignSelf="flex-end" gap={3} padding={4} horizontalAlign="end" shrink={0}>
         <Slot id={evidenceVotingTaskActionSlot} props={{ evidence, transaction, endBlock }} />

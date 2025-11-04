@@ -1,23 +1,21 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, memo, useEffect, useState } from 'react';
+import { type PropsWithChildren, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, getRelativeTimeFromApi, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { BodyText, Button, Duration, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
+import { cnTw, nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { BodyText, Button, Icon } from '@/shared/ui';
 import { CollectiveRank, Hash, Identicon } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
 import { identityService, useIdentity } from '@/domains/network';
-import {
-  useFellowshipAccount,
-  useFellowshipMember,
-  useFellowshipMemberLeftToPromotion,
-} from '@/aggregates/fellowship-member';
-import { useFellowshipApi, useFellowshipChain, useFellowshipChainConnected } from '@/aggregates/fellowship-network';
+import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
+import { useFellowshipChain, useFellowshipChainConnected } from '@/aggregates/fellowship-network';
 import { fellowshipProfileFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
+import { ActiveIndicator } from './ActiveIndicator';
 import { ProfileModal } from './ProfileModal';
+import { VotingRecordWidget } from './VotingRecord';
 
 export const ProfileCard = memo(() => {
   const { data: currentMember, pending } = useFellowshipMember();
@@ -159,79 +157,15 @@ const Member = () => {
                 )}
               </BodyText>
 
-              {memberService.isCoreMember(member) && member.isActive ? (
-                <Box direction="row" verticalAlign="center" gap={1} shrink={0}>
-                  <span className="h-[9px] w-[9px] rounded-full bg-icon-positive" />
-                  <FootnoteText>{t('fellowship.members.active')}</FootnoteText>
-                </Box>
-              ) : null}
+              {memberService.isCoreMember(member) && <ActiveIndicator isActive={member.isActive} />}
             </Box>
 
             <CollectiveRank rank={member.rank ?? 0} showName />
           </Box>
         </Box>
 
-        <div className="grid grid-cols-3 gap-x-4 gap-y-2">
-          <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
-          <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
-          <FootnoteText className="text-text-secondary">{t('fellowship.members.toNextRank')}</FootnoteText>
-          <SmallTitleText>
-            <Activity />
-          </SmallTitleText>
-          <SmallTitleText>
-            <Agreement />
-          </SmallTitleText>
-          <SmallTitleText>
-            <NextRankTimeout />
-          </SmallTitleText>
-        </div>
+        <VotingRecordWidget />
       </Box>
     </Card>
-  );
-};
-
-const Activity = () => {
-  const { t } = useI18n();
-  const activityInfo = useUnit(profile.$activityInfo);
-
-  if (nullable(activityInfo)) {
-    return <Skeleton height="1lh" />;
-  }
-
-  return <span>{nonNullable(activityInfo.activity) ? `${activityInfo.activity}%` : t('fellowship.n/a')}</span>;
-};
-
-const Agreement = () => {
-  const { t } = useI18n();
-  const activityInfo = useUnit(profile.$activityInfo);
-
-  if (nullable(activityInfo)) {
-    return <Skeleton height="1lh" />;
-  }
-
-  return <span>{nonNullable(activityInfo.agreement) ? `${activityInfo.agreement}%` : t('fellowship.n/a')}</span>;
-};
-
-const NextRankTimeout = () => {
-  const { t } = useI18n();
-  const [timeLeft, setTimeLeft] = useState(0);
-
-  const api = useFellowshipApi();
-  const { data: leftToPromotion } = useFellowshipMemberLeftToPromotion();
-
-  useEffect(() => {
-    if (nonNullable(api) && nonNullable(leftToPromotion)) {
-      if (leftToPromotion > 0) {
-        getRelativeTimeFromApi(leftToPromotion, api).then(setTimeLeft);
-      } else {
-        setTimeLeft(0);
-      }
-    }
-  }, [api, leftToPromotion]);
-
-  return timeLeft === 0 ? (
-    <span>{t('fellowship.profile.ready')}</span>
-  ) : (
-    <Duration seconds={timeLeft / 1000} shortFormat />
   );
 };

@@ -2,7 +2,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { SmallTitleText } from '@/shared/ui';
+import { Separator, SmallTitleText } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
@@ -60,7 +60,7 @@ export const MemberProfile = memo(({ referendum, evidence }: Props) => {
             <CollectiveRank rank={member.rank} showName />
           </Box>
         </Box>
-        <hr className="filter-border my-4" />
+        <Separator className="my-4" />
         <VotingRecord referendum={referendum} evidence={evidence} />
       </Box>
     </Card>

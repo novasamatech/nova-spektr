@@ -4,9 +4,7 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Box, Modal } from '@/shared/ui-kit';
-import { type Evidence, type Referendum, referendumService, trackService, useTracks } from '@/domains/collectives';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
-import { useEvidenceContent } from '../hooks/useEvidenceContent';
+import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
 import { detailsService } from '../service';
 
 import { AdditionalInfo } from './AdditionalInfo';
@@ -19,58 +17,79 @@ export const referendumAdditionalInfoSlot = createSlot<{ referendum: Referendum 
 export const referendumActionsSlot = createSlot<{ referendum: Referendum | null; evidence: Evidence | null }>();
 
 type Props = PropsWithChildren<{
-  referendum: Referendum;
+  referendumId: ReferendumId;
   title?: string;
+  isCurrentUser?: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
 }>;
 
-export const ReferendumDetailsModal = memo(({ referendum, children, title }: Props) => {
-  const { t } = useI18n();
+export const ReferendumDetailsModal = memo(
+  ({ referendumId, children, title, isCurrentUser, isOpen, onClose }: Props) => {
+    useGate(fellowshipReferendumsDetailsFeature.gate);
 
-  const api = useFellowshipApi();
-  const { data: tracks } = useTracks({ palletType: 'fellowship', api });
-  const { data: evidence } = useEvidenceContent(referendum);
+    const { t } = useI18n();
 
-  const modalTitle = useMemo(() => {
-    if (title) {
-      return title;
-    }
+    const api = useFellowshipApi();
+    const { data: tracks } = useTracks({ palletType: 'fellowship', api });
+    const { data: evidenceContent } = useEvidenceContent(referendum);
 
-    if (referendum && referendumService.isOngoing(referendum)) {
-      if (trackService.isPromotionTrack(referendum.track) || trackService.isRetentionTrack(referendum.track)) {
-        const rankTitle = detailsService.getRankTitle(referendum.track, tracks);
-        if (rankTitle) {
-          return rankTitle;
+    const referendum = useStoreMap({
+      store: fellowship.$store,
+      keys: [referendumId],
+      fn: (store, [id]) => store?.referendums?.find(r => r.id === id) ?? null,
+    });
+
+    const modalTitle = useMemo(() => {
+      if (title) {
+        return title;
+      }
+
+      if (referendum && referendumService.isOngoing(referendum)) {
+        if (trackService.isPromotionTrack(referendum.track) || trackService.isRetentionTrack(referendum.track)) {
+          const rankTitle = detailsService.getRankTitle(referendum.track, tracks);
+          if (rankTitle) {
+            return rankTitle;
+          }
         }
       }
-    }
 
-    return t('governance.referendums.referendumTitle', { index: referendum.id });
-  }, [title, referendum, tracks, referendum.id]);
+      return t('governance.referendums.referendumTitle', { index: referendumId });
+    }, [title, referendum, tracks, referendumId]);
 
-  return (
-    <Modal size="xl" height="fit">
-      <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>{modalTitle}</Modal.Title>
-      <Modal.Content>
-        <div className="flex h-full bg-main-app-background">
-          <Box direction="row" width="100%" height="100%" gap={4} padding={[4, 6]} fillContainer>
-            <Box width="100%" height="100%" gap={4}>
-              <ReferendumDescription referendum={referendum} />
+    const handleToggle = (open: boolean) => {
+      if (!open) {
+        onClose?.();
+      }
+    };
+
+    return (
+      <Modal size="xl" height="fit" isOpen={isOpen} onToggle={handleToggle}>
+        {children && <Modal.Trigger>{children}</Modal.Trigger>}
+        <Modal.Title close>{modalTitle}</Modal.Title>
+        <Modal.Content>
+          <div className="flex h-full bg-main-app-background">
+            <Box direction="row" width="100%" height="100%" gap={4} padding={[4, 6]} fillContainer>
+              <Box width="100%" height="100%" gap={4}>
+                <ReferendumDescription referendum={referendum} />
+              </Box>
+              <Box width="350px" shrink={0} gap={4}>
+                <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
+
+                <MemberProfile referendum={referendum} evidence={evidence} />
+
+                {referendum && <Slot id={referendumAdditionalInfoSlot} props={{ referendum: referendum }} />}
+
+                {!isCurrentUser && (
+                  <Slot id={referendumActionsSlot} props={{ referendum, evidence: evidenceContent }} />
+                )}
+
+                <AdditionalInfo referendumId={referendumId} evidenceHash={evidenceContent?.hash} />
+              </Box>
             </Box>
-            <Box width="350px" shrink={0} gap={4}>
-              <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId: referendum.id }} />
-
-              <MemberProfile referendum={referendum} evidence={evidence} />
-
-              <Slot id={referendumAdditionalInfoSlot} props={{ referendum }} />
-
-              <Slot id={referendumActionsSlot} props={{ referendum, evidence }} />
-
-              <AdditionalInfo referendumId={referendum.id} evidenceHash={evidence?.hash} />
-            </Box>
-          </Box>
-        </div>
-      </Modal.Content>
-    </Modal>
-  );
-});
+          </div>
+        </Modal.Content>
+      </Modal>
+    );
+  },
+);

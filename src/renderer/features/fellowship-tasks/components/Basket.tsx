@@ -25,7 +25,7 @@ export const Basket = memo(() => {
   };
 
   return (
-    <div className="shrink-0 border-t border-filter-border bg-card-background">
+    <div className="mt-auto shrink-0 border-t border-filter-border bg-card-background">
       <Box direction="row" verticalAlign="center" horizontalAlign="space-between" gap={2} padding={[3, 4]} shrink={0}>
         <Box direction="row" gap={1.5}>
           <FootnoteText className="text-text-secondary">

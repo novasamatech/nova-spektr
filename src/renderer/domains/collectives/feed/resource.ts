@@ -4,7 +4,7 @@ import { createStore } from 'effector';
 import { GraphQLClient } from 'graphql-request';
 import { z } from 'zod';
 
-import { type Chain, ExternalType } from '@/shared/core';
+import { type Chain, ExternalType, type HexString } from '@/shared/core';
 import { merge, nonNullable, nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { type AccountId, type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createSubscriptionResource } from '@/shared/query';
@@ -30,12 +30,20 @@ const feedGqlSchema = z.object({
   requested: z
     .object({
       wish: z.enum(['Retention', 'Promotion']),
+      hash: z.string().transform(x => x as HexString),
     })
     .nullable(),
   paid: z
     .object({
       beneficiary: z.string().transform(pjsSchema.helpers.toAccountId),
       amount: z.string().transform(x => new BN(x)),
+    })
+    .nullable(),
+  referendum: z
+    .object({
+      id: z.int(),
+      trackId: z.int(),
+      status: z.enum(['created', 'success', 'failed']),
     })
     .nullable(),
 });
@@ -56,6 +64,7 @@ const accountActivitiesQuery = gql`
         id
         activeChanged
         blockNumber
+        referendum
       }
     }
   }
@@ -77,6 +86,7 @@ const accountAllActivities = gql`
         id
         activeChanged
         blockNumber
+        referendum
       }
     }
   }
@@ -163,6 +173,7 @@ function mapSubqueryFeedRecord(node: unknown): FeedRecord | null {
       at: new Date(response.at),
       block: response.blockNumber,
       wish: response.requested.wish,
+      hash: response.requested.hash,
     };
   }
 
@@ -174,6 +185,18 @@ function mapSubqueryFeedRecord(node: unknown): FeedRecord | null {
       block: response.blockNumber,
       beneficiary: response.paid.beneficiary,
       amount: response.paid.amount,
+    };
+  }
+
+  if (response.referendum) {
+    return {
+      type: 'referendum',
+      accountId: response.accountId,
+      at: new Date(response.at),
+      block: response.blockNumber,
+      referendumId: response.referendum.id,
+      referendumStatus: response.referendum.status,
+      referendumTrackId: response.referendum.trackId,
     };
   }
 

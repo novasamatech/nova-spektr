@@ -7,6 +7,6 @@ import { fellowshipActivityFeedFeature } from './feature';
 export { fellowshipActivityFeedFeature, activityFeedRecordDescriptionSlot };
 
 fellowshipActivityFeedFeature.inject(fellowshipSidebarSlot, {
-  order: 3,
+  order: 2,
   render: () => <LastActivity />,
 });

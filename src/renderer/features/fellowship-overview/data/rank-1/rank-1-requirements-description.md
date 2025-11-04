@@ -1,0 +1,4 @@
+- Express interest in joining the fellowship
+- Demonstrate basic understanding of Polkadot
+- Participate in community discussions
+- Show willingness to learn and contribute

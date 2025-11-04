@@ -3,18 +3,16 @@ import { reshape } from 'patronum';
 
 import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
 import { salaryService } from '@/domains/collectives';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
+import { $beneficiary } from './beneficiary';
 import { fellowshipSalaryFeature } from './feature';
 
-const flow = createFlow<{ beneficiary: AccountId | null }>({ beneficiary: null });
-
-const $beneficiary = flow.state.map(state => state.beneficiary);
+const flow = createFlow(null);
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipSalaryFeature.input,
