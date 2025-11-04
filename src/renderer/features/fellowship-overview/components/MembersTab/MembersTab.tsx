@@ -78,24 +78,6 @@ export const MembersTab = memo((_props: MembersTabProps) => {
 
   const isEmpty = filteredMembers.length === 0 && (deferredQuery || rankFilter !== 'all' || statusFilter !== 'all');
 
-  /**
-   * Let salaryText = '-'; let salaryAmount = 0;
-   *
-   * ```
-   * if (salaries[input.chainId]) {
-   *   const memberSalary = salaryService.getMemberSalary(
-   *     member,
-   *     salaries[input.chainId],
-   *   );
-   *   const rawSalary = member.isActive
-   *     ? memberSalary.active
-   *     : memberSalary.passive;
-   *   salaryText = salaryService.formatSalaryAmount(rawSalary);
-   *   salaryAmount = rawSalary.toNumber();
-   * }
-   * ```
-   */
-
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between px-5 pb-3">
