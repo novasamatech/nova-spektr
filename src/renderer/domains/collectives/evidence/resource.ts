@@ -98,9 +98,13 @@ export const evidenceContentResource = createQueryResource<EvidenceContentReques
 
     return null;
   })
+  .retry({
+    count: 3,
+    delay: 1000,
+  })
   .cache<CollectivesStruct<EvidenceContent[]>>({
     store: createStore({}),
-    staleAfter: 30 * 1000,
+    staleAfter: 60_000,
     map(state, evidence) {
       if (evidence === null) return state;
       const prev = pickNestedValue(state, evidence.pallet, evidence.chainId) ?? [];
