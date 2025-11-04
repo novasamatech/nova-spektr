@@ -101,7 +101,7 @@ const ActionsSection = () => {
         </Box>
       )}
 
-      <Button form="transfer-form" type="submit" disabled={!canSubmit}>
+      <Button form="call-data-form" type="submit" disabled={!canSubmit}>
         {t('transfer.continueButton')}
       </Button>
     </Modal.Footer>
