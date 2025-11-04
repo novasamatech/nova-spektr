@@ -8,6 +8,7 @@ import {
   evidenceService,
   trackService,
 } from '@/domains/collectives';
+import { nonNullable } from '../../shared/lib/utils';
 
 // referendum sorting
 
@@ -172,7 +173,7 @@ function getEvidenceImportance(
 
   if (evidence.wish === 'Retention') {
     const blocksLeft = evidenceService.getBlocksUntilDemotion(member, periods, currentBlock);
-    const urgencyScore = getUrgencyScore(blocksLeft);
+    const urgencyScore = nonNullable(blocksLeft) ? getUrgencyScore(blocksLeft) : 0;
     const isUrgent = urgencyScore > 0.3;
     const tags: string[] = [];
 

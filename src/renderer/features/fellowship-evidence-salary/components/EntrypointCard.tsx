@@ -6,7 +6,7 @@ import { Icon } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { salaryService } from '@/domains/collectives';
 import { useFellowshipMemberLeftToDemotion } from '@/aggregates/fellowship-member';
-import { useCurrentSalaryPeriod } from '../hooks/useCurrentSalaryPeriod';
+import { useCurrentSalaryPeriod } from '@/aggregates/fellowship-network';
 import { useMemberEvidence } from '../hooks/useMemberEvidence';
 import { useMemberSalaryClaimStatus } from '../hooks/useMemberSalaryClaimStatus';
 

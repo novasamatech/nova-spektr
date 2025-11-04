@@ -9,7 +9,7 @@ import { Button } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { referendumService } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
-import { VotingConfirmation, fellowship, fellowshipVotingFeature, votingStatus } from '@/features/fellowship-voting';
+import { VotingConfirmation, fellowshipVotingFeature } from '@/features/fellowship-voting';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {

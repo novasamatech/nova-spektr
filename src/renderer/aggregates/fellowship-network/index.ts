@@ -6,4 +6,5 @@ export {
   useFellowshipAsset,
   useFellowshipBlock,
   useFellowshipChainConnected,
+  useCurrentSalaryPeriod,
 } from './hooks';

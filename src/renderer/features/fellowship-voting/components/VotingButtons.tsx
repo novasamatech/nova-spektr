@@ -1,7 +1,5 @@
-import { useUnit } from 'effector-react';
 import { memo, useMemo, useState } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
@@ -18,7 +16,7 @@ import { Card } from '@/features/fellowship-referendum-details';
 import { useCanVoteForReferendum } from '../hooks/useCanVoteForReferendum';
 import { useMemberVoteInfo } from '../hooks/useMemberVoteInfo';
 import { useProposer } from '../hooks/useProposer';
-import { votingStatus } from '../model/votingStatus';
+import { useReferendumVote } from '../hooks/useReferendumVote';
 
 import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
 import { VotingModal } from './VotingModal';
@@ -29,8 +27,6 @@ type Props = {
 };
 
 export const VotingButtons = memo(({ referendum, evidence }: Props) => {
-  useFlow(votingStatus.flow, { referendumId: referendum?.id ?? null });
-
   const { t } = useI18n();
 
   const chain = useFellowshipChain();
@@ -38,10 +34,9 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
 
   const { data: tracks } = useTracks({ palletType: 'fellowship', api });
   const { data: proposerMember } = useProposer(referendum, evidence);
+  const { data: vote } = useReferendumVote(referendum);
 
   const { memberVoteWeight, userVotesImpact, hasRequiredRank } = useMemberVoteInfo(referendum);
-
-  const voting = useUnit(votingStatus.$referendumVoting);
 
   const canVote = useCanVoteForReferendum(referendum);
 
@@ -73,8 +68,8 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
     return null;
   }
 
-  const alreadyVotedNay = nonNullable(voting) && voting.decision === 'Nay';
-  const alreadyVotedAye = nonNullable(voting) && voting.decision === 'Aye';
+  const alreadyVotedNay = nonNullable(vote) && vote.decision === 'Nay';
+  const alreadyVotedAye = nonNullable(vote) && vote.decision === 'Aye';
 
   return (
     <Card>

@@ -58,11 +58,8 @@ export type EvidenceTransaction = Transaction<{
 }>;
 
 export type ReferendumWithEvidence = {
-  index: ReferendumId;
-  evidence: {
-    hash: HexString;
-  }[];
-  completed: boolean;
+  referendumId: ReferendumId;
+  evidence: { hash: HexString }[];
   pallet: CollectivePalletsType;
   chainId: ChainId;
 };

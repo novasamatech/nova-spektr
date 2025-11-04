@@ -10,7 +10,6 @@ import { useCanVoteForReferendum } from '../hooks/useCanVoteForReferendum';
 import { useMemberVoteInfo } from '../hooks/useMemberVoteInfo';
 import { useReferendumVote } from '../hooks/useReferendumVote';
 import { voting } from '../model/voting';
-import { votingStatus } from '../model/votingStatus';
 
 import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
 import { VotingModal } from './VotingModal';
@@ -24,7 +23,7 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
 
   const { data: account } = useFellowshipAccount();
-  const { data: referendumVote } = useReferendumVote(referendum?.id);
+  const { data: referendumVote } = useReferendumVote(referendum);
 
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
@@ -37,17 +36,14 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
     if (referendumVote?.decision === 'Aye') return;
 
     if (decision === 'aye') {
-      votingStatus.flow.close({ referendumId: null });
       setDecision(null);
       return;
     }
 
-    votingStatus.flow.open({ referendumId: referendum?.id });
-
     if (canAddToBasket) {
-      voting.flow.open({ vote: 'aye' });
+      voting.flow.open({ referendum, vote: 'aye' });
       voting.saveToBasket();
-      voting.flow.close({ vote: null });
+      voting.flow.close({ referendum: null, vote: null });
     } else {
       setDecision('aye');
     }
@@ -57,17 +53,14 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
     if (referendumVote?.decision === 'Nay') return;
 
     if (decision === 'nay') {
-      votingStatus.flow.close({ referendumId: null });
       setDecision(null);
       return;
     }
 
-    votingStatus.flow.open({ referendumId: referendum?.id });
-
     if (canAddToBasket) {
-      voting.flow.open({ vote: 'nay' });
+      voting.flow.open({ referendum, vote: 'nay' });
       voting.saveToBasket();
-      voting.flow.close({ vote: null });
+      voting.flow.close({ referendum: null, vote: null });
     } else {
       setDecision('nay');
     }

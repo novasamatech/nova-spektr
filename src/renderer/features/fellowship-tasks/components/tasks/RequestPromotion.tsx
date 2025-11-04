@@ -1,12 +1,10 @@
-import { useUnit } from 'effector-react';
-
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { toRomanNumeral } from '@/shared/lib/utils';
 import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { CollectiveRank } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { tracks } from '../../model/tracks';
+import { useFellowshipMemberCurrentTrack, useFellowshipMemberNextTrack } from '@/aggregates/fellowship-member';
 import { BadgeIcon } from '../TaskBadge';
 
 export const requestPromotionTaskActionSlot = createSlot();
@@ -14,8 +12,8 @@ export const requestPromotionTaskActionSlot = createSlot();
 export const RequestPromotion = () => {
   const { t } = useI18n();
 
-  const currentTrack = useUnit(tracks.$currentTrack);
-  const nextTrack = useUnit(tracks.$nextTrack);
+  const { data: currentTrack } = useFellowshipMemberCurrentTrack();
+  const { data: nextTrack } = useFellowshipMemberNextTrack();
 
   return (
     <Box direction="row" padding={4} gap={2} verticalAlign="flex-end">

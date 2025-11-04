@@ -10,13 +10,12 @@ import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
-import { walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
 import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipAsset, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { useTracks } from '../hooks/useTracks';
 import { voting } from '../model/voting';
-import { votingStatus } from '../model/votingStatus';
 
 import { VotingConfirmation } from './VotingConfirmation';
 
@@ -30,15 +29,15 @@ type Props = {
 };
 
 export const VotingModal = memo(({ isOpen, onClose, vote, referendum }: Props) => {
-  useGate(voting.flow, { vote });
+  useGate(voting.flow, { referendum, vote });
 
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');
 
+  const wallets = useUnit(walletModel.$wallets);
   const chain = useFellowshipChain();
   const api = useFellowshipApi();
   const asset = useFellowshipAsset();
-  const wallets = useUnit(votingStatus.$wallets);
 
   const { data: maxRank } = useMaxRank({ palletType: 'fellowship', api });
   const { data: member } = useFellowshipMember();

@@ -7,12 +7,12 @@ import { Skeleton } from '@/shared/ui-kit';
 import { type Referendum, referendumService, trackService, useReferendumMeta } from '@/domains/collectives';
 import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
-import { useVotes } from '../hooks/useVotes';
+import { useReferendumVotes } from '../hooks/useReferendumVotes';
 
 export const VotingSummary = ({ referendum }: { referendum: Referendum }) => {
   const { t } = useI18n();
 
-  const { votes, pending } = useVotes(referendum.id);
+  const { votes, pending } = useReferendumVotes(referendum.id);
 
   const api = useFellowshipApi();
   const provider = useUnit(governanceMetaProvider.$metaProvider);

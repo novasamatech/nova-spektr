@@ -6,4 +6,10 @@ export {
   useFellowshipMemberSalary,
   useFellowshipMemberLeftToDemotion,
   useFellowshipMemberLeftToPromotion,
+  useFellowshipMemberEvidence,
+  useFellowshipMemberSalaryClaimStatus,
+  useFellowshipMemberVotes,
+  useFellowshipMemberCurrentTrack,
+  useFellowshipMemberNextTrack,
+  useFellowshipMemberEndDemotionBlock,
 } from './hooks';

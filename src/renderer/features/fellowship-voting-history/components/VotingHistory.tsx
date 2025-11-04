@@ -2,7 +2,7 @@ import { useI18n } from '@/shared/i18n';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Button } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { useVotes } from '../hooks/useVotes';
+import { useReferendumVotes } from '../hooks/useReferendumVotes';
 
 import { VotesModal } from './VotesModal';
 
@@ -13,7 +13,7 @@ type Props = {
 export const VotingHistory = ({ referendumId }: Props) => {
   const { t } = useI18n();
 
-  const { pending } = useVotes(referendumId);
+  const { pending } = useReferendumVotes(referendumId);
 
   if (pending) return <Skeleton width="10ch" height="1lh"></Skeleton>;
 

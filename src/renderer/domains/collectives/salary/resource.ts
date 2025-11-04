@@ -7,7 +7,7 @@ import { nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { salaryPallet } from '@/shared/pallet/salary';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createQueryResource } from '@/shared/query';
+import { createQueryResource, createSubscriptionResource } from '@/shared/query';
 import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type ClaimStatus, type Salaries, type SalaryCycle } from './types';
@@ -80,12 +80,11 @@ export type ClaimantRequestParams = {
   accounts: AccountId[];
 };
 
-export const claimantStatusResource = createQueryResource<ClaimantRequestParams>({
+export const claimantStatusResource = createSubscriptionResource<ClaimantRequestParams>({
   key: ({ palletType, api, accounts }) => [palletType, api.genesisHash.toHex(), accounts],
 })
-  .request<Record<AccountId, ClaimStatus>>(
-    async ({ api, palletType, accounts }): Promise<Record<AccountId, ClaimStatus>> => {
-      const claimants = await salaryPallet.storage.claimant(palletType, api, accounts);
+  .subscribe<Record<AccountId, ClaimStatus>>(({ api, palletType, accounts }, callback) => {
+    return salaryPallet.storage.claimantWatch(palletType, api, accounts, claimants => {
       const mapped = zipWith(claimants, accounts, (claim, account) => ({ account, claim }));
 
       const res: Record<AccountId, ClaimStatus> = {};
@@ -125,9 +124,9 @@ export const claimantStatusResource = createQueryResource<ClaimantRequestParams>
         }
       }
 
-      return res;
-    },
-  )
+      callback(res);
+    });
+  })
   .cache<CollectivesStruct<Record<AccountId, ClaimStatus>>>({
     store: createStore({}),
     map(state, claimantStatus, { palletType, api }) {

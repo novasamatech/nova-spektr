@@ -230,7 +230,6 @@ const GET_REFERENDUMS_QUERY = gql`
             hash
           }
         }
-        completed
       }
     }
   }
@@ -248,7 +247,6 @@ const referendumsGqlSchema = z.object({
             }),
           ),
         }),
-        completed: z.boolean(),
       }),
     ),
   }),
@@ -286,13 +284,12 @@ export const evidenceToReferendumRelationsResource = createQueryResource<Request
     return result.map(item => ({
       pallet: palletType,
       chainId: chain.chainId,
-      index: item.index,
-      completed: item.completed,
+      referendumId: item.index,
       evidence: item.evidence.nodes.map(e => ({ hash: e.hash })),
     }));
   })
   .cache<CollectivesStruct<ReferendumWithEvidence[]>>({
     store: createStore({}),
-    map: (state, data) => mergeNested(state, data, r => r.index),
+    map: (state, data) => mergeNested(state, data, r => r.referendumId),
   })
   .build();

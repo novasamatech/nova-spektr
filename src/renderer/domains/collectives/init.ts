@@ -15,7 +15,7 @@ export const $collectiveStore = combine(
   {
     members: member.membersSubscriptionResource.$cache,
     referendums: referendum.$list,
-    referendumsWithEvidence: evidence.evidenceToReferendumRelationsResource.$cache,
+    evidenceToReferendumRelations: evidence.evidenceToReferendumRelationsResource.$cache,
     referendumMeta: referendumMeta.referendumMetaResource.$cache,
     tracks: track.$list,
     maxRank: track.$maxRank,

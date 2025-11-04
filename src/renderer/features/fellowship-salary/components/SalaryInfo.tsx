@@ -68,7 +68,7 @@ export const SalaryInfo = memo(() => {
       {canInteractWithSalary && (
         <Box>
           {currentPeriod?.type === 'registration' && (
-            <div className="flex items-center gap-4 border-t pt-6">
+            <div className="flex items-center gap-4 border-t border-divider pt-6">
               <div className="flex grow flex-col gap-1">
                 <FootnoteText className="text-text-secondary">
                   {t('fellowship.salary.salaryInfo.requestSalaryCall', {
@@ -99,7 +99,7 @@ export const SalaryInfo = memo(() => {
           )}
 
           {currentPeriod?.type === 'payout' && (
-            <div className="flex items-center gap-4 border-t pt-6">
+            <div className="flex items-center gap-4 border-t border-divider pt-6">
               <div className="flex grow flex-col gap-1">
                 <FootnoteText className="text-text-secondary">
                   {t('fellowship.salary.salaryInfo.payoutSalaryCall', {
@@ -131,7 +131,7 @@ export const SalaryInfo = memo(() => {
         </Box>
       )}
       {canInductSalary && (
-        <div className="flex items-center gap-4 border-t pt-6">
+        <div className="flex items-center gap-4 border-t border-divider pt-6">
           <div className="flex grow flex-col gap-1">
             <FootnoteText className="text-text-secondary">
               {t('fellowship.salary.salaryInfo.inductSalary')}

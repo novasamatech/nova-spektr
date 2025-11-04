@@ -1,6 +1,5 @@
 import { memo } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui';
@@ -8,21 +7,18 @@ import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum } from '@/domains/collectives';
 import { Card } from '@/features/fellowship-referendum-details';
 import { useReferendumVote } from '../hooks/useReferendumVote';
-import { votingStatus } from '../model/votingStatus';
 
 import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
 
 type Props = {
-  referendum?: Referendum | null;
-  evidence?: Evidence | null;
+  referendum: Referendum | null;
+  evidence: Evidence | null;
 };
 
 export const VotingButtonsCompleted = memo(({ referendum }: Props) => {
-  useFlow(votingStatus.flow, { referendumId: referendum?.id ?? null });
-
   const { t } = useI18n();
 
-  const { data: referendumVote } = useReferendumVote(referendum?.id);
+  const { data: referendumVote } = useReferendumVote(referendum);
 
   const alreadyVotedNay = nonNullable(referendumVote) && referendumVote.decision === 'Nay';
   const alreadyVotedAye = nonNullable(referendumVote) && referendumVote.decision === 'Aye';

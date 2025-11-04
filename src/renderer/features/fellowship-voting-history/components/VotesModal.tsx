@@ -7,7 +7,7 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, Icon, Tabs } from '@/shared/ui';
 import { type TabItem } from '@/shared/ui/types';
 import { Box, Carousel, Modal, SearchInput } from '@/shared/ui-kit';
-import { useVotes } from '../hooks/useVotes';
+import { useReferendumVotes } from '../hooks/useReferendumVotes';
 
 import { VotingHistoryList } from './VotingHistoryList';
 
@@ -20,7 +20,7 @@ export const VotesModal = ({ children, referendumId }: Props) => {
   const [query, setQuery] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState(0);
 
-  const { votes, pending, chain } = useVotes(referendumId);
+  const { votes, pending, chain } = useReferendumVotes(referendumId);
 
   const ayes = orderBy(
     votes.filter(vote => vote.decision === 'Aye'),

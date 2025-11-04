@@ -1,15 +1,15 @@
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { useMembers, useVotes as useVotesDomain } from '@/domains/collectives';
+import { useMembers, useVotes } from '@/domains/collectives';
 import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 
-export const useVotes = (referendumId: ReferendumId) => {
+export const useReferendumVotes = (referendumId: ReferendumId) => {
   const api = useFellowshipApi();
   const chain = useFellowshipChain();
   const { data: members } = useMembers({ palletType: 'fellowship', api });
 
   const accounts = members.map(member => member.accountId);
 
-  const { data: votes, pending } = useVotesDomain({
+  const { data: votes, pending } = useVotes({
     palletType: 'fellowship',
     chain,
     api,

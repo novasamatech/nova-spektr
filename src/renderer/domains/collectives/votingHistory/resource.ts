@@ -90,6 +90,8 @@ const requestFromSubQuery = async (
   return result.votes.nodes.map(vote => mapSubqueryVote(pallet, chainId, vote));
 };
 
+const $sharedVotesCache = createStore<CollectivesStruct<Vote[]>>({});
+
 export type RequestVotesParams = {
   palletType: CollectivePalletsType;
   chain: Chain;
@@ -126,7 +128,7 @@ export const votesResource = createQueryResource<RequestVotesParams>({
     return requestFromSubQuery(sourceUrl, palletType, chain.chainId, referendums);
   })
   .cache<CollectivesStruct<Vote[]>>({
-    store: createStore({}),
+    store: $sharedVotesCache,
     staleAfter: 60 * 1000,
     map(state, votes) {
       return mergeNested(state, votes, v => `${v.accountId}:${v.referendumId}`);
@@ -148,7 +150,7 @@ export const allVotesResource = createQueryResource<RequestAllVotesParams>({
     return votes.map(vote => mapChainVote(palletType, chain.chainId, vote)).filter(nonNullable);
   })
   .cache<CollectivesStruct<Vote[]>>({
-    store: createStore({}),
+    store: $sharedVotesCache,
     staleAfter: 60 * 1000,
     map(state, votes) {
       return mergeNested(state, votes, v => `${v.accountId}:${v.referendumId}`);

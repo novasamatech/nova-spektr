@@ -4,34 +4,37 @@ import { reshape, spread } from 'patronum';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
-import { votingService } from '@/domains/collectives';
+import { type OngoingReferendum, votingService } from '@/domains/collectives';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
-import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { fellowshipVotingFeature } from './feature';
-import { votingStatus } from './votingStatus';
 
-const flow = createGate<{ vote: 'aye' | 'nay' | null }>({ defaultState: { vote: null } });
+const flow = createGate<{ referendum: OngoingReferendum | null; vote: 'aye' | 'nay' | null }>({
+  defaultState: { referendum: null, vote: null },
+});
 
+const $referendum = flow.state.map(({ referendum }) => referendum);
 const $vote = flow.state.map(({ vote }) => vote);
 
-const { $api, $chain, $wallets } = reshape({
+const { $api, $chain, $account, $member, $wallets } = reshape({
   source: fellowshipVotingFeature.input,
   shape: {
     $api: x => x?.api ?? null,
     $wallets: x => x?.wallets ?? [],
     $chain: x => x?.chain ?? null,
+    $account: x => x?.account ?? null,
+    $member: x => x?.member ?? null,
   },
 });
 
 const $coreTx = combine(
   {
     input: fellowshipVotingFeature.input,
-    account: votingStatus.$votingAccount,
-    referendum: votingStatus.$referendum,
-    member: fellowshipMember.$currentMember,
+    account: $account,
+    referendum: $referendum,
+    member: $member,
     vote: $vote,
   },
   ({ input, referendum, account, member, vote }) => {
@@ -50,7 +53,7 @@ const $coreTx = combine(
   },
 );
 
-const $votingWallet = combine($wallets, votingStatus.$votingAccount, (wallets, account) => {
+const $votingWallet = combine($wallets, $account, (wallets, account) => {
   if (nullable(account)) return null;
 
   return wallets.find(w => w.id === account.walletId) ?? null;
@@ -63,7 +66,7 @@ const { $fee, $wrappedTx } = createTxStore({
   $wallets,
   $chain,
   $coreTx,
-  $account: votingStatus.$votingAccount,
+  $account,
 });
 
 // Signing
@@ -75,7 +78,7 @@ sample({
   clock: sign,
   source: {
     transactions: $wrappedTx,
-    account: votingStatus.$votingAccount,
+    account: $account,
     chain: $chain,
   },
   fn: ({ transactions, account, chain }) => {
@@ -104,7 +107,7 @@ sample({
   source: {
     open: flow.status,
     transactions: $wrappedTx,
-    account: votingStatus.$votingAccount,
+    account: $account,
     chain: $chain,
   },
   filter: ({ open, transactions, account, chain }) => {
@@ -133,7 +136,7 @@ sample({
   clock: saveToBasket,
   source: {
     existing: basketOperations.$list,
-    account: votingStatus.$votingAccount,
+    account: $account,
     coreTx: $coreTx,
   },
   fn: ({ existing, account, coreTx }) => {
@@ -175,7 +178,7 @@ sample({
   clock: removeFromBasket,
   source: {
     existing: basketOperations.$list,
-    account: votingStatus.$votingAccount,
+    account: $account,
     coreTx: $coreTx,
   },
   fn: ({ existing, account, coreTx }) => {

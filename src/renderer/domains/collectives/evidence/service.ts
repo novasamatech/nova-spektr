@@ -3,6 +3,7 @@ import { CID } from 'multiformats/cid';
 import { create as createDigest } from 'multiformats/hashes/digest';
 
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
@@ -53,19 +54,23 @@ function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
 function getEndDemotionBlock(member: Member, periods: EvidencePeriods) {
   if (memberService.isCoreMember(member)) {
     const demotionPeriod = getDemotionPeriod(member, periods);
-    return demotionPeriod + member.lastProof;
+    if (nonNullable(demotionPeriod)) {
+      return (demotionPeriod + member.lastProof) as BlockHeight;
+    }
   }
 
-  return Number.POSITIVE_INFINITY;
+  return null;
 }
 
 function getBlocksUntilDemotion(member: Member, periods: EvidencePeriods, currentBlock: BlockHeight) {
   if (memberService.isCoreMember(member)) {
     const endDemotionBlock = getEndDemotionBlock(member, periods);
-    return Math.max(0, endDemotionBlock - currentBlock) as BlockHeight;
+    if (nonNullable(endDemotionBlock)) {
+      return Math.max(0, endDemotionBlock - currentBlock) as BlockHeight;
+    }
   }
 
-  return Number.POSITIVE_INFINITY as BlockHeight;
+  return null;
 }
 
 type EvidenceTransactionParams = {

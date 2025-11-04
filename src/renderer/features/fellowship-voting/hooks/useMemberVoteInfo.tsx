@@ -10,7 +10,7 @@ export const useMemberVoteInfo = (referendum: OngoingReferendum | null) => {
   const api = useFellowshipApi();
   const { data: currentMember } = useFellowshipMember();
   const { data: maxRank } = useMaxRank({ palletType: 'fellowship', api });
-  const { data: referendumVote } = useReferendumVote(referendum?.id);
+  const { data: referendumVote } = useReferendumVote(referendum);
 
   if (nullable(currentMember) || nullable(maxRank) || nullable(referendum) || nullable(referendumVote))
     return {
@@ -21,8 +21,8 @@ export const useMemberVoteInfo = (referendum: OngoingReferendum | null) => {
 
   const memberVoteWeight = trackService.getVoteWeight({
     pallet: 'fellowship',
-    rank: currentMember!.rank,
-    maxRank: maxRank!,
+    rank: currentMember.rank,
+    maxRank: maxRank,
     track: referendum.track,
   });
 

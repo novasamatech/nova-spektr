@@ -1,5 +1,3 @@
-import { useUnit } from 'effector-react';
-
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { referendumService } from '@/domains/collectives';
 import { referendumActionsSlot } from '@/features/fellowship-referendum-details';
@@ -10,9 +8,9 @@ import { VotingActions } from './components/VotingActions';
 import { VotingButtons } from './components/VotingButtons';
 import { VotingButtonsCompleted } from './components/VotingButtonsCompleted';
 import { VotingConfirmation } from './components/VotingConfirmation';
+import { useReferendumVote } from './hooks/useReferendumVote';
 import { fellowshipVotingFeature } from './model/feature';
 import { voting } from './model/voting';
-import { votingStatus } from './model/votingStatus';
 
 export { fellowshipVotingFeature, VotingConfirmation, voting };
 
@@ -26,13 +24,13 @@ fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, tr
 });
 
 fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum }) => {
-  const voting = useUnit(votingStatus.$referendumVoting);
+  const { data: vote } = useReferendumVote(referendum);
 
   if (nullable(referendum)) {
     return null;
   }
 
-  if (referendumService.isCompleted(referendum) && nonNullable(voting)) {
+  if (referendumService.isCompleted(referendum) && nonNullable(vote)) {
     return <VotingButtonsCompleted referendum={referendum} evidence={evidence} />;
   }
 
