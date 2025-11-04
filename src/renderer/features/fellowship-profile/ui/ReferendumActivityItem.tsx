@@ -1,4 +1,3 @@
-import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { memo } from 'react';
 import { generatePath } from 'react-router-dom';
@@ -7,8 +6,8 @@ import { useI18n } from '@/shared/i18n';
 import { Paths } from '@/shared/routes';
 import { FootnoteText } from '@/shared/ui';
 import { type FeedEventReferendum, trackService } from '@/domains/collectives';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
-import { fellowshipProfileFeature } from '../model/feature';
 
 const getTitle = (record: FeedEventReferendum, t: TFunction): string => {
   if (record.referendumStatus === 'created') {
@@ -30,14 +29,14 @@ type Props = {
 
 export const ReferendumActivityItem = memo(({ record }: Props) => {
   const { t } = useI18n();
-  const input = useUnit(fellowshipProfileFeature.input);
+  const chain = useFellowshipChain();
 
   const title = getTitle(record, t);
 
   const handleClick = () => {
-    if (input?.chainId) {
+    if (chain?.chainId) {
       const path = generatePath(Paths.FELLOWSHIP_REFERENDUM, {
-        chainId: input.chainId,
+        chainId: chain.chainId,
         referendumId: record.referendumId.toString(),
       });
       navigationModel.events.navigateTo(path);

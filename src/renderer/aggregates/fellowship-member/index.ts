@@ -13,4 +13,6 @@ export {
   useFellowshipMemberNextTrack,
   useFellowshipMemberEndDemotionBlock,
   useFellowshipMemberEndPromotionBlock,
+  useMemberPromotionReferendum,
+  useMemberRetentionReferendum,
 } from './hooks';

@@ -1,4 +1,5 @@
 import { type BN } from '@polkadot/util';
+import { memo } from 'react';
 
 import { type Asset, type Chain, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -16,7 +17,7 @@ type Props = {
   fee: BN;
 };
 
-export const SetActiveConfirmation = ({ fee, account, wallets, chain, asset, isActive }: Props) => {
+export const SetActiveConfirmation = memo(({ fee, account, wallets, chain, asset, isActive }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -28,4 +29,4 @@ export const SetActiveConfirmation = ({ fee, account, wallets, chain, asset, isA
       <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
     </TransactionDetails>
   );
-};
+});

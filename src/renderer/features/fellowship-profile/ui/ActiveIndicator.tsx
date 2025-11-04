@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText } from '@/shared/ui';
 import { Indicator } from '@/shared/ui-kit';
@@ -6,7 +8,7 @@ type Props = {
   isActive: boolean;
 };
 
-export const ActiveIndicator = ({ isActive }: Props) => {
+export const ActiveIndicator = memo(({ isActive }: Props) => {
   const { t } = useI18n();
 
   return (
@@ -15,4 +17,4 @@ export const ActiveIndicator = ({ isActive }: Props) => {
       <FootnoteText>{t(isActive ? 'fellowship.profile.active' : 'fellowship.profile.inactive')}</FootnoteText>
     </div>
   );
-};
+});

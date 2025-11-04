@@ -1,13 +1,13 @@
-import { useUnit } from 'effector-react';
-import { type ReactNode } from 'react';
+import { type ReactNode, memo } from 'react';
 import { generatePath } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
+import { cnTw, nonNullable, nullable, toRomanNumeral } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { FootnoteText, HeadlineText, Icon, IconButton } from '@/shared/ui';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
+import { useAlert } from '../hooks/useAlert';
 import { alertsModel } from '../model/alerts';
 
 const ICONS = {
@@ -16,10 +16,10 @@ const ICONS = {
 } as const;
 
 export const Alerts = () => {
-  const alert = useUnit(alertsModel.$alert);
+  const alert = useAlert();
   const chain = useFellowshipChain();
 
-  if (!alert || !chain) return null;
+  if (nullable(alert) || nullable(chain)) return null;
 
   const handleClose = () => alertsModel.markAsSeen(alert.id);
 
@@ -62,7 +62,7 @@ type BaseAlertProps = {
   onClose: () => void;
 };
 
-const BaseAlert = ({ variant, title, description, action, onClose }: BaseAlertProps) => {
+const BaseAlert = memo(({ variant, title, description, action, onClose }: BaseAlertProps) => {
   return (
     <div className="mb-3 flex flex-col gap-y-2">
       <div
@@ -91,7 +91,7 @@ const BaseAlert = ({ variant, title, description, action, onClose }: BaseAlertPr
       </div>
     </div>
   );
-};
+});
 
 type ReferendumAlertType = 'proven' | 'promoted' | 'promotionFailed' | 'retentionFailed';
 
@@ -126,7 +126,7 @@ const REFERENDUM_CONFIG = {
   },
 } as const;
 
-const ReferendumAlert = ({ type, rank, referendumId, chainId, onClose }: ReferendumAlertProps) => {
+const ReferendumAlert = memo(({ type, rank, referendumId, chainId, onClose }: ReferendumAlertProps) => {
   const { t } = useI18n();
 
   const config = REFERENDUM_CONFIG[type];
@@ -157,14 +157,14 @@ const ReferendumAlert = ({ type, rank, referendumId, chainId, onClose }: Referen
       onClose={onClose}
     />
   );
-};
+});
 
 type BumpedAlertProps = {
   rank: number;
   onClose: () => void;
 };
 
-const BumpedAlert = ({ rank, onClose }: BumpedAlertProps) => {
+const BumpedAlert = memo(({ rank, onClose }: BumpedAlertProps) => {
   const { t } = useI18n();
 
   return (
@@ -175,7 +175,7 @@ const BumpedAlert = ({ rank, onClose }: BumpedAlertProps) => {
       onClose={onClose}
     />
   );
-};
+});
 
 type EvidenceConflictType =
   | 'retentionRequestWhenPromotionReferendumExists'
@@ -199,7 +199,7 @@ const EVIDENCE_CONFLICT_CONFIG = {
   },
 } as const;
 
-const EvidenceConflictAlert = ({ type, onClose }: EvidenceConflictAlertProps) => {
+const EvidenceConflictAlert = memo(({ type, onClose }: EvidenceConflictAlertProps) => {
   const { t } = useI18n();
 
   const config = EVIDENCE_CONFLICT_CONFIG[type];
@@ -217,4 +217,4 @@ const EvidenceConflictAlert = ({ type, onClose }: EvidenceConflictAlertProps) =>
       onClose={onClose}
     />
   );
-};
+});

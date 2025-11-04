@@ -7,10 +7,13 @@ import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import {
   evidenceService,
   memberService,
+  referendumService,
   salaryService,
+  trackService,
   useEvidencePeriod,
   useEvidences,
   useMembers,
+  useReferendums,
   useSalaries,
   useSalaryClaimStatusResource,
   useTracks,
@@ -232,4 +235,38 @@ export const useFellowshipMemberNextTrack = () => {
   }, [tracks, member]);
 
   return { data: track, pending: pendingTracks || pendingMember };
+};
+
+export const useMemberPromotionReferendum = () => {
+  const api = useFellowshipApi();
+  const { data: member, pending: pendingMember } = useFellowshipMember();
+  const { data: memberEvidence, pending: pendingMemberEvidence } = useFellowshipMemberEvidence();
+  const { data: referendums, pending: pendingReferendums } = useReferendums({ palletType: 'fellowship', api });
+
+  if (nullable(referendums) || nullable(member) || nullable(memberEvidence) || memberEvidence.wish !== 'Promotion')
+    return { data: null, pending: pendingMember || pendingMemberEvidence || pendingReferendums };
+
+  const referendum = referendums.filter(referendumService.isOngoing).find(r => {
+    const proposer = referendumService.getProposer(r) || memberEvidence?.accountId;
+    return trackService.isPromotionTrack(r.track) && proposer === member.accountId;
+  });
+
+  return { data: referendum, pending: pendingMember || pendingMemberEvidence || pendingReferendums };
+};
+
+export const useMemberRetentionReferendum = () => {
+  const api = useFellowshipApi();
+  const { data: member, pending: pendingMember } = useFellowshipMember();
+  const { data: memberEvidence, pending: pendingMemberEvidence } = useFellowshipMemberEvidence();
+  const { data: referendums, pending: pendingReferendums } = useReferendums({ palletType: 'fellowship', api });
+
+  if (nullable(referendums) || nullable(member) || nullable(memberEvidence) || memberEvidence.wish !== 'Retention')
+    return { data: null, pending: pendingMember || pendingMemberEvidence || pendingReferendums };
+
+  const referendum = referendums.filter(referendumService.isOngoing).find(r => {
+    const proposer = referendumService.getProposer(r) || memberEvidence?.accountId;
+    return trackService.isRetentionTrack(r.track) && proposer === member.accountId;
+  });
+
+  return { data: referendum, pending: pendingMember || pendingMemberEvidence || pendingReferendums };
 };

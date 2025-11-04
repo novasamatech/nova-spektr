@@ -1,9 +1,10 @@
 import { format } from 'date-fns';
 import { type TFunction } from 'i18next';
-import { type PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
+import { type PropsWithChildren, memo, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { useI18n } from '@/shared/i18n';
+import { useClock } from '@/shared/lib/hooks';
 import { useDeferredList } from '@/shared/lib/hooks/useDeferredList';
 import { entries, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { Duration, FootnoteText, HelpText, Icon, Separator, SmallTitleText } from '@/shared/ui';
@@ -93,13 +94,13 @@ const getLink = (t: TFunction, record: FeedRecord): { text: string; url: string 
   return null;
 };
 
-export const ActivityFeed = ({ children }: PropsWithChildren) => {
+export const ActivityFeed = memo(({ children }: PropsWithChildren) => {
   const { t } = useI18n();
   const { data: list, pending } = useMemberFeed();
   const [filter, setFilter] = useState<FilterType | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const now = useRef(Date.now());
+  const now = useClock(60_000);
 
   useEffect(() => {
     if (isOpen) {
@@ -174,7 +175,7 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
           ) : (
             <Box padding={[0, 2, 5]} gap={3}>
               {deferredList.map(x => {
-                const age = now.current - x.at.getTime();
+                const age = now - x.at.getTime();
                 const isOlderThanMonth = age > ONE_MONTH_MS;
                 const link = getLink(t, x);
                 const isShowIconLink =
@@ -215,4 +216,4 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
       </Modal.Content>
     </Modal>
   );
-};
+});
