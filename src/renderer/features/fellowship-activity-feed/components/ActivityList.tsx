@@ -1,10 +1,9 @@
-import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { identityService } from '@/domains/network';
-import { identityModel } from '../model/identity';
-import { activityFeed } from '../model/list';
+import { useFeed } from '@/domains/collectives';
+import { identityService, useIdentities } from '@/domains/network';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { ActivityListView } from './ActivityListView';
 import { getDescription } from './utils';
@@ -12,9 +11,13 @@ import { getDescription } from './utils';
 export const ActivityList = memo(() => {
   const { t } = useI18n();
 
-  const feed = useUnit(activityFeed.$activityFeed);
-  const identities = useUnit(identityModel.$list);
-  const now = Date.now();
+  const chain = useFellowshipChain();
+
+  const { data: feed, pending } = useFeed({ palletType: 'fellowship', chain });
+  const { data: identities } = useIdentities(
+    feed.map(record => record.accountId),
+    chain?.chainId,
+  );
 
   const records = useMemo(
     () =>
@@ -24,7 +27,6 @@ export const ActivityList = memo(() => {
           ...record,
           name: identity ? identityService.getFullName(identity) : undefined,
           description: getDescription(record, t),
-          duration: (now - record.at.getTime()) / 1000,
         };
       }),
     [identities, feed, t],
@@ -32,7 +34,7 @@ export const ActivityList = memo(() => {
 
   return (
     <div className="flex flex-col gap-3 py-4 pb-3">
-      <ActivityListView limit={20} feed={records} />
+      <ActivityListView limit={20} feed={records} pending={pending} />
     </div>
   );
 });

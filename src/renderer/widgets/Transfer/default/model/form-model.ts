@@ -84,6 +84,7 @@ const setMaxMode = createEvent<boolean>();
 const $isMaxModeEnabled = createStore(false)
   .on(setMaxMode, (_, update) => update)
   .reset(formInitiated);
+const $inputMode = $isMaxModeEnabled.map((isMaxModeEnabled) => (isMaxModeEnabled ? 'max' : 'regular'));
 
 const $isEdSwitchVisible = createStore(false)
   .on(setMaxMode.filter({ fn: (value) => value }), () => true)
@@ -337,10 +338,10 @@ const $coreTx = combine(
     xcmData: xcmTransferModel.$xcmData,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
-    isExistentialDepositEnabled: $isExistentialDepositEnabled,
-    isMaxModeEnabled: $isMaxModeEnabled,
+    inputMode: $inputMode,
+    balancePreservation: $balancePreservationStrategy,
   },
-  ({ network, isXcm, form, xcmData, isConnected, initiator, isExistentialDepositEnabled, isMaxModeEnabled }) => {
+  ({ network, isXcm, form, xcmData, isConnected, initiator, inputMode, balancePreservation }) => {
     if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
       return null;
     }
@@ -352,8 +353,8 @@ const $coreTx = combine(
       amount: form.amount,
       destination: form.destination,
       xcmData,
-      transferAll: isMaxModeEnabled && isExistentialDepositEnabled,
-      allowDeath: !isMaxModeEnabled && isExistentialDepositEnabled,
+      balancePreservation,
+      inputMode,
     });
   },
 );
@@ -381,8 +382,10 @@ const $feeCoreTx = combine(
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
     mockDestination: $mockDestination,
+    inputMode: $inputMode,
+    balancePreservation: $balancePreservationStrategy,
   },
-  ({ network, isXcm, xcmData, isConnected, initiator, mockDestination }) => {
+  ({ network, isXcm, xcmData, isConnected, initiator, mockDestination, inputMode, balancePreservation }) => {
     if (
       nullable(network) ||
       nullable(initiator) ||
@@ -400,6 +403,8 @@ const $feeCoreTx = combine(
       amount: '1',
       destination: mockDestination,
       xcmData,
+      inputMode,
+      balancePreservation,
     });
   },
 );

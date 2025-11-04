@@ -1,23 +1,21 @@
-import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Box, Modal, Tabs } from '@/shared/ui-kit';
-import { fellowshipEvidenceSalaryFeature } from '../model/feature';
-import { profile } from '../model/profile';
+import { useFellowshipMember } from '@/aggregates/fellowship-member';
 
 export const evidenceSlot = createSlot();
 export const salarySlot = createSlot();
 
 export const EvidenceSalaryModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
-  const featureInput = useUnit(fellowshipEvidenceSalaryFeature.input);
-  const currentMember = useUnit(profile.$member);
   const [tab, setTab] = useState('evidence');
 
-  const disabled = nullable(currentMember) || nullable(featureInput);
+  const { data: currentMember } = useFellowshipMember();
+
+  const disabled = nullable(currentMember);
 
   if (disabled) {
     // eslint-disable-next-line react/jsx-no-useless-fragment

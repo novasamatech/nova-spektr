@@ -5,16 +5,17 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
-import { referendumService } from '@/domains/collectives';
+import { type OngoingReferendum, useMaxRank } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
-import { walletUtils } from '@/entities/wallet';
+import { walletModel, walletUtils } from '@/entities/wallet';
+import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
+import { useFellowshipApi, useFellowshipAsset, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { fellowshipVotingFeature } from '../model/feature';
+import { useTracks } from '../hooks/useTracks';
 import { voting } from '../model/voting';
-import { votingStatus } from '../model/votingStatus';
 
 import { VotingConfirmation } from './VotingConfirmation';
 
@@ -24,38 +25,41 @@ type Props = {
   isOpen: boolean;
   vote: 'aye' | 'nay' | null;
   onClose: () => void;
+  referendum: OngoingReferendum;
 };
 
-export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
-  useGate(voting.flow, { vote });
+export const VotingModal = memo(({ isOpen, onClose, vote, referendum }: Props) => {
+  useGate(voting.flow, { referendum, vote });
 
   const { t } = useI18n();
   const [step, setStep] = useState<Step>('confirm');
 
-  const input = useUnit(fellowshipVotingFeature.input);
-  const referendum = useUnit(votingStatus.$referendum);
-  const maxRank = useUnit(votingStatus.$maxRank);
-  const account = useUnit(votingStatus.$votingAccount);
-  const member = useUnit(votingStatus.$currentMember);
-  const memberTrack = useUnit(votingStatus.$memberTrack);
-  const currentProposerTrack = useUnit(votingStatus.$currentProposerTrack);
-  const nextProposerTrack = useUnit(votingStatus.$nextProposerTrack);
+  const wallets = useUnit(walletModel.$wallets);
+  const chain = useFellowshipChain();
+  const api = useFellowshipApi();
+  const asset = useFellowshipAsset();
+
+  const { data: maxRank } = useMaxRank({ palletType: 'fellowship', api });
+  const { data: member } = useFellowshipMember();
+  const { data: account } = useFellowshipAccount();
+
+  const { memberTrack, currentProposerTrack, nextProposerTrack } = useTracks(referendum);
   const fee = useUnit(voting.$fee);
 
   if (
-    nullable(input) ||
+    nullable(chain) ||
+    nullable(asset) ||
     nullable(member) ||
     nullable(account) ||
     nullable(vote) ||
     nullable(memberTrack) ||
-    nullable(referendum) ||
     nullable(fee) ||
-    referendumService.isCompleted(referendum)
+    nullable(maxRank)
   ) {
     return null;
   }
 
-  const wallet = walletUtils.getWalletFilteredAccounts(input.wallets, {
+  const wallet = walletUtils.getWalletFilteredAccounts(wallets, {
     walletFn: w => w.id === account.walletId,
     accountFn: a => a.accountId === account.accountId,
   });
@@ -108,16 +112,16 @@ export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
   return (
     <Modal isOpen={isOpen} size="md" onToggle={handleToggle}>
       <Modal.Title close>
-        <OperationTitle title={t('fellowship.voting.title')} chainId={input.chainId} />
+        <OperationTitle title={t('fellowship.voting.title')} chainId={chain.chainId} />
       </Modal.Title>
       <Modal.Content>
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
               <VotingConfirmation
-                asset={input.asset}
-                chain={input.chain}
-                wallets={input.wallets}
+                asset={asset}
+                chain={chain}
+                wallets={wallets}
                 account={account}
                 vote={vote}
                 rank={member.rank}

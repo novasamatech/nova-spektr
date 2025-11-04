@@ -1,18 +1,16 @@
-import { useUnit } from 'effector-react';
 import { type PropsWithChildren } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { nullable, toAddress } from '@/shared/lib/utils';
+import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { FootnoteText, HeaderTitleText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
-import { accountService } from '@/domains/network';
-import { fellowshipProfileFeature } from '../model/feature';
-import { profile } from '../model/profile';
-import { memberSalary } from '../model/salary';
+import { accountService, useIdentity } from '@/domains/network';
+import { useFellowshipAccount, useFellowshipMember, useFellowshipMemberSalary } from '@/aggregates/fellowship-member';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { ActiveIndicator } from './ActiveIndicator';
 import { ActivityFeed } from './ActivityFeed';
@@ -25,13 +23,13 @@ export const profileInfoSlot = createSlot<{ member: Member }>();
 export const ProfileModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
-  const featureInput = useUnit(fellowshipProfileFeature.input);
-  const member = useUnit(profile.$member);
-  const account = useUnit(profile.$account);
-  const identity = useUnit(profile.$identity);
-  const salary = useUnit(memberSalary.$memberSalary);
+  const chain = useFellowshipChain();
+  const { data: member } = useFellowshipMember();
+  const { data: account } = useFellowshipAccount();
+  const { data: identity } = useIdentity(member?.accountId);
+  const { data: salary } = useFellowshipMemberSalary();
 
-  const disabled = nullable(member) || nullable(featureInput) || nullable(account);
+  const disabled = nullable(member) || nullable(account) || nullable(chain);
 
   if (disabled) {
     // eslint-disable-next-line react/jsx-no-useless-fragment
@@ -39,8 +37,8 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
   }
 
   const active = memberService.isCoreMember(member) && member.isActive;
-  const setActiveDisabled =
-    !accountService.hasPermissionToMakeActions(account) || !memberService.canChangeActiveState(member);
+  const canChangeActiveState =
+    accountService.hasPermissionToMakeActions(account) && memberService.canChangeActiveState(member);
 
   return (
     <Modal size="md" height="fit">
@@ -70,7 +68,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
                       <Account
                         accountId={member.accountId}
                         title={identity?.name}
-                        chain={featureInput.chain}
+                        chain={chain}
                         variant="short"
                         hideIcon
                         hideAddress
@@ -83,13 +81,15 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
                   <Box verticalAlign="center" horizontalAlign="flex-end" gap={2}>
                     <ActiveIndicator isActive={active} />
 
-                    <SetActiveModal isActive={!active} disabled={setActiveDisabled} salary={salary}>
-                      <div>
-                        <FootnoteText className="cursor-pointer text-primary-button-background-default">
-                          {t('fellowship.profile.switchStatus')}
-                        </FootnoteText>
-                      </div>
-                    </SetActiveModal>
+                    {nonNullable(salary) && (
+                      <SetActiveModal isActive={!active} disabled={!canChangeActiveState} salary={salary}>
+                        <div>
+                          <FootnoteText className="cursor-pointer text-primary-button-background-default">
+                            {t('fellowship.profile.switchStatus')}
+                          </FootnoteText>
+                        </div>
+                      </SetActiveModal>
+                    )}
                   </Box>
                 </Box>
               </Box>

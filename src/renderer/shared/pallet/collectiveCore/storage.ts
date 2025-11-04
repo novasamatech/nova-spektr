@@ -5,8 +5,15 @@ import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
-import { collectiveCoreMemberEvidence, collectiveCoreMemberStatus, collectiveCoreParams } from './schema';
+import {
+  type CollectiveCoreMemberEvidence,
+  collectiveCoreMemberEvidence,
+  collectiveCoreMemberStatus,
+  collectiveCoreParams,
+} from './schema';
 import { type PalletType } from './types';
+
+type Callback<T> = (value: T) => unknown;
 
 const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
   const palletName = getPalletName(type);
@@ -55,5 +62,26 @@ export const storage = {
       .call(() => getQuery(type, api, 'memberEvidence').multi(accounts))
       .then(schema.parse)
       .then(evidences => zipWith(accounts, evidences, (account, evidence) => ({ account, evidence })));
+  },
+
+  /**
+   * Some evidence together with the desired outcome for which it was presented.
+   */
+  memberEvidenceWatch(
+    type: PalletType,
+    api: ApiPromise,
+    accounts: AccountId[],
+    callback: Callback<{ account: AccountId; evidence: CollectiveCoreMemberEvidence | null }[]>,
+  ) {
+    const schema = pjsSchema.vec(pjsSchema.optional(collectiveCoreMemberEvidence));
+
+    const query = getQuery(type, api, 'memberEvidence');
+
+    return query.multi(accounts, data => {
+      const evidences = schema.parse(data);
+      const result = zipWith(accounts, evidences, (account, evidence) => ({ account, evidence }));
+
+      callback(result);
+    });
   },
 };

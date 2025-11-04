@@ -1,0 +1,42 @@
+import { useStoreMap, useUnit } from 'effector-react';
+
+import { salaryService, useSalaryCycleResource } from '@/domains/collectives';
+import { useBlock } from '@/domains/network';
+
+import { fellowshipNetwork } from './model';
+
+export const useFellowshipNetwork = () => {
+  return useUnit(fellowshipNetwork.$network);
+};
+
+export const useFellowshipApi = () => {
+  return useStoreMap(fellowshipNetwork.$network, n => n?.api ?? null);
+};
+
+export const useFellowshipChain = () => {
+  return useStoreMap(fellowshipNetwork.$network, n => n?.chain ?? null);
+};
+
+export const useFellowshipAsset = () => {
+  return useStoreMap(fellowshipNetwork.$network, n => n?.asset ?? null);
+};
+
+export const useFellowshipBlock = () => {
+  const api = useFellowshipApi();
+  return useBlock(api);
+};
+
+export const useFellowshipChainConnected = () => {
+  return useUnit(fellowshipNetwork.$isConnected);
+};
+
+export const useCurrentSalaryPeriod = () => {
+  const api = useFellowshipApi();
+  const { data: block, pending: blockPending } = useFellowshipBlock();
+  const { data: cycle, pending: cyclePending } = useSalaryCycleResource({ palletType: 'fellowship', api });
+
+  return {
+    data: cycle && block ? salaryService.getCurrentPeriod(cycle, block) : null,
+    pending: blockPending || cyclePending,
+  };
+};

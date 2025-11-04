@@ -2,7 +2,7 @@ import { combine } from 'effector';
 import { and, or } from 'patronum';
 
 import { nullable } from '@/shared/lib/utils';
-import { type CoreMember, type Member, evidenceService, member, memberService } from '@/domains/collectives';
+import { type CoreMember, type Member, evidenceService, memberService } from '@/domains/collectives';
 import { fellowshipMember } from '@/aggregates/fellowship-member';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
@@ -71,7 +71,7 @@ const $currentRank = $member.map(member => {
   return member.rank;
 });
 
-const $pendingMember = and(or(member.pending, fellowshipNetwork.$isConnecting), $member.map(nullable));
+const $pendingMember = and(fellowshipNetwork.$isConnecting, $member.map(nullable));
 
 const $isLoading = or(
   $pendingMember,

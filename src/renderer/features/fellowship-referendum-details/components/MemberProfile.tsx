@@ -1,4 +1,3 @@
-import { useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -7,43 +6,31 @@ import { Separator, SmallTitleText } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
-import { identityService } from '@/domains/network';
-import { details } from '../model/details';
-import { fellowshipReferendumsDetailsFeature } from '../model/feature';
+import { identityService, useIdentity } from '@/domains/network';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useMember } from '../hooks/useMember';
+import { useProposer } from '../hooks/useProposer';
+import { useMetadata } from '../hooks/useReferendumMeta';
 
 import { Card } from './Card';
 import { VotingRecord } from './VotingRecord';
 
 type Props = {
-  referendum?: Referendum;
-  evidence?: Evidence;
+  referendum: Referendum | null;
+  evidence: Evidence | null;
 };
 
 export const MemberProfile = memo(({ referendum, evidence }: Props) => {
   const { t } = useI18n();
 
-  const chain = useStoreMap({
-    store: fellowshipReferendumsDetailsFeature.input,
-    keys: [],
-    fn: store => store?.chain ?? null,
-  });
+  const chain = useFellowshipChain();
 
-  const proposer = useUnit(details.$proposer);
-  const memberId = proposer || evidence?.accountId;
+  const proposer = useProposer(referendum);
+  const memberId = proposer || evidence?.accountId || null;
 
-  const member = useStoreMap({
-    store: details.$members,
-    keys: [memberId],
-    fn: (members, [accountId]) => (accountId && members[accountId]) ?? null,
-  });
-
-  const identity = useStoreMap({
-    store: details.$identities,
-    keys: [memberId],
-    fn: (list, [accountId]) => (accountId && list[accountId]) ?? null,
-  });
-
-  const referendumMeta = useUnit(details.$referendumMeta);
+  const { data: referendumMeta } = useMetadata(referendum);
+  const { data: member } = useMember(proposer);
+  const { data: identity } = useIdentity(memberId);
 
   const canHaveEvidence =
     evidence ||
@@ -74,7 +61,7 @@ export const MemberProfile = memo(({ referendum, evidence }: Props) => {
           </Box>
         </Box>
         <Separator className="my-4" />
-        <VotingRecord evidence={evidence} />
+        <VotingRecord referendum={referendum} evidence={evidence} />
       </Box>
     </Card>
   );

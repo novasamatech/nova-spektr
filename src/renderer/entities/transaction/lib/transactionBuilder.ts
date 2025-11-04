@@ -6,6 +6,7 @@ import { type ClaimAction } from '@/shared/api/governance';
 import {
   type Address,
   type Asset,
+  AssetType,
   type Chain,
   type ChainId,
   type Conviction,
@@ -18,7 +19,7 @@ import {
 } from '@/shared/core';
 import { formatAmount, getAssetId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { type MultisigOperation } from '@/domains/network';
+import { type BalancePreservation, type MultisigOperation } from '@/domains/network';
 import { type TransactionVote, type VoteTransaction } from '@/entities/governance';
 
 import { TransferType } from './common/constants';
@@ -52,14 +53,16 @@ export const transactionBuilder = {
   buildBatchAll,
 };
 
+type InputMode = 'regular' | 'max';
+
 type TransferParams = {
   chain: Chain;
   asset: Asset;
   accountId: AccountId;
   destination: string;
   amount: string;
-  transferAll?: boolean;
-  allowDeath?: boolean;
+  inputMode: InputMode;
+  balancePreservation: BalancePreservation;
   xcmData?: {
     args: {
       xcmFee: string;
@@ -73,6 +76,25 @@ type TransferParams = {
     transactionType: TransactionType;
   };
 };
+
+function isTransferAllSupported(asset: Asset) {
+  return asset.type === AssetType.NATIVE || asset.type === AssetType.ORML;
+}
+
+function getTransactionType(asset: Asset, inputMode: InputMode, balancePreservation: BalancePreservation) {
+  const allowDeath = inputMode === 'regular' && balancePreservation === 'allowDeath';
+  if (allowDeath) {
+    return TransactionType.TRANSFER_ALLOW_DEATH;
+  }
+
+  const transferAll = inputMode === 'max' && balancePreservation === 'allowDeath';
+  if (isTransferAllSupported(asset) && transferAll) {
+    return TransactionType.TRANSFER_ALL;
+  }
+
+  return TransferType[asset.type] ?? TransactionType.TRANSFER;
+}
+
 function buildTransfer({
   chain,
   accountId,
@@ -80,20 +102,10 @@ function buildTransfer({
   asset,
   amount,
   xcmData,
-  transferAll,
-  allowDeath,
+  balancePreservation,
+  inputMode,
 }: TransferParams): Transaction {
-  let transactionType = asset.type ? TransferType[asset.type] : TransactionType.TRANSFER;
-  if (xcmData) {
-    transactionType = xcmData.transactionType;
-  }
-  if (transferAll) {
-    transactionType = TransactionType.TRANSFER_ALL;
-  }
-  if (allowDeath) {
-    transactionType = TransactionType.TRANSFER_ALLOW_DEATH;
-  }
-
+  const transactionType = xcmData?.transactionType ?? getTransactionType(asset, inputMode, balancePreservation);
   const palletName =
     asset.typeExtras && 'palletName' in asset.typeExtras ? camelCase(asset.typeExtras.palletName) : 'assets';
 

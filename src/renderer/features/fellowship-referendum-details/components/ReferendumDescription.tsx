@@ -1,13 +1,12 @@
-import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Referendum, trackService } from '@/domains/collectives';
-import { details } from '../model/details';
+import { useEvidenceContent } from '../hooks/useEvidenceContent';
+import { useMetadata } from '../hooks/useReferendumMeta';
 
 import { AdditionalContext } from './AdditionalContext';
 import { Card } from './Card';
@@ -17,20 +16,17 @@ type Props = {
 };
 
 export const ReferendumDescription = memo(({ referendum }: Props) => {
-  useFlow(details.flow, { referendum });
-
-  const referendumMeta = useUnit(details.$referendumMeta);
-  const pendingEvidence = useUnit(details.$pendingEvidence);
-  const evidenceContent = useUnit(details.$evidenceContent);
+  const { data: referendumMeta } = useMetadata(referendum);
+  const { data: evidenceContent, pending: pendingEvidenceContent } = useEvidenceContent(referendum);
 
   const canHaveEvidence =
     nonNullable(referendum) &&
     nonNullable(referendumMeta) &&
     (trackService.isPromotionTrack(referendumMeta.track) || trackService.isRetentionTrack(referendumMeta.track));
 
-  const shouldRenderEvidence = nonNullable(evidenceContent) && !pendingEvidence;
-  const shouldRenderEvidencePending = canHaveEvidence && nullable(evidenceContent) && pendingEvidence;
-  const shouldRenderEvidenceAlert = canHaveEvidence && nullable(evidenceContent) && !pendingEvidence;
+  const shouldRenderEvidence = nonNullable(evidenceContent) && !pendingEvidenceContent;
+  const shouldRenderEvidencePending = canHaveEvidence && nullable(evidenceContent) && pendingEvidenceContent;
+  const shouldRenderEvidenceAlert = canHaveEvidence && nullable(evidenceContent) && !pendingEvidenceContent;
 
   return (
     <div className="flex h-full flex-col">
@@ -46,7 +42,7 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
       <div className="flex-1">
-        <AdditionalContext />
+        <AdditionalContext referendum={referendum} />
       </div>
     </div>
   );

@@ -1,75 +1,59 @@
-import { useStoreMap, useUnit } from 'effector-react';
 import { memo, useMemo, useState } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { type Evidence, type Referendum, referendumService, track, trackService } from '@/domains/collectives';
+import {
+  type Evidence,
+  type OngoingReferendum,
+  referendumService,
+  trackService,
+  useTracks,
+} from '@/domains/collectives';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { Card } from '@/features/fellowship-referendum-details';
-import { tasksService } from '@/features/fellowship-tasks';
-import { fellowshipVotingFeature } from '../model/feature';
-import { members } from '../model/members';
-import { votingStatus } from '../model/votingStatus';
+import { useCanVoteForReferendum } from '../hooks/useCanVoteForReferendum';
+import { useMemberVoteInfo } from '../hooks/useMemberVoteInfo';
+import { useProposer } from '../hooks/useProposer';
+import { useReferendumVote } from '../hooks/useReferendumVote';
 
 import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
 import { VotingModal } from './VotingModal';
 
 type Props = {
-  referendum?: Referendum | null;
-  evidence?: Evidence | null;
+  referendum: OngoingReferendum | null;
+  evidence: Evidence | null;
 };
 
 export const VotingButtons = memo(({ referendum, evidence }: Props) => {
-  useFlow(votingStatus.flow, { referendumId: referendum?.id ?? null });
-
   const { t } = useI18n();
 
-  const input = useUnit(fellowshipVotingFeature.input);
-  const tracks = useUnit(track.$list);
+  const chain = useFellowshipChain();
+  const api = useFellowshipApi();
 
-  const chain = useStoreMap(fellowshipVotingFeature.input, input => input?.chain ?? null);
+  const { data: tracks } = useTracks({ palletType: 'fellowship', api });
+  const { data: proposerMember } = useProposer(referendum, evidence);
+  const { data: vote } = useReferendumVote(referendum);
 
-  const canVote = useUnit(votingStatus.$canVote);
-  const hasRequiredRank = useUnit(votingStatus.$hasRequiredRank);
-  const voting = useUnit(votingStatus.$referendumVoting);
-  const currentMember = useUnit(votingStatus.$currentMember);
-  const accountsVotes = useUnit(votingStatus.$accountsVotes);
-  const maxRank = useUnit(votingStatus.$maxRank);
+  const { memberVoteWeight, userVotesImpact, hasRequiredRank } = useMemberVoteInfo(referendum);
+
+  const canVote = useCanVoteForReferendum(referendum);
 
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
 
-  const proposerMember = useStoreMap({
-    store: members.$list,
-    keys: [referendum, evidence],
-    fn: (members, [referendum, evidence]) => {
-      if (nonNullable(referendum) && referendumService.isOngoing(referendum)) {
-        const proposer = referendumService.getProposer(referendum);
-        return members.find(m => m.accountId === proposer) ?? null;
-      }
-
-      if (nonNullable(evidence)) {
-        return members.find(m => m.accountId === evidence?.accountId) ?? null;
-      }
-
-      return null;
-    },
-  });
-
   const title = useMemo(() => {
-    if (!referendum || !referendumService.isOngoing(referendum)) return '';
+    if (nullable(chain) || nullable(referendum) || !referendumService.isOngoing(referendum)) return '';
 
-    const relatedTracks = input ? tracks.fellowship?.[input.chainId] : null;
     const isPromotion = evidence?.wish === 'Promotion' || trackService.isPromotionTrack(referendum.track);
 
-    if (!relatedTracks || !proposerMember) return '';
+    if (!proposerMember) return '';
 
     const trackName = isPromotion ? 'Promotion' : 'Retention';
 
     if (referendum.proposal && referendumService.isEvidenceProposal(referendum.proposal)) {
       return t('fellowship.tasks.titles.votingTitle.rank', {
-        rank: trackService.getProposalTrack(relatedTracks, proposerMember, trackName),
+        rank: trackService.getProposalTrack(tracks, proposerMember, trackName),
       });
     }
 
@@ -78,45 +62,32 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
     }
 
     return t('fellowship.tasks.titles.votingTitle.rfcOrWhitelist');
-  }, [referendum, input, tracks]);
+  }, [referendum, chain, tracks]);
 
-  if (nullable(chain) || nullable(referendum) || referendumService.isCompleted(referendum) || nullable(currentMember)) {
+  if (nullable(referendum) || nullable(userVotesImpact)) {
     return null;
   }
 
-  const referendumVote = accountsVotes.find(voting => voting.referendumId === referendum?.id);
-  const totalReferendumVotes = referendum.tally.ayes + referendum.tally.nays;
-
-  const buttonDiabled = !canVote || !hasRequiredRank;
-
-  const alreadyVotedNay = nonNullable(voting) && voting.decision === 'Nay';
-  const alreadyVotedAye = nonNullable(voting) && voting.decision === 'Aye';
-
-  const memberVoteWeight = trackService.getVoteWeight({
-    pallet: 'fellowship',
-    rank: currentMember.rank,
-    maxRank,
-    track: referendum.track,
-  });
-
-  const userVotesImpact =
-    tasksService.getReferendumUserImportanceScore(
-      totalReferendumVotes,
-      referendumVote?.decision ? memberVoteWeight * 2 : memberVoteWeight,
-    ) * 100;
+  const alreadyVotedNay = nonNullable(vote) && vote.decision === 'Nay';
+  const alreadyVotedAye = nonNullable(vote) && vote.decision === 'Aye';
 
   return (
     <Card>
       <Box padding={6} gap={6}>
         <SmallTitleText>{title}</SmallTitleText>
-        <VotingModal isOpen={nonNullable(decision)} vote={decision} onClose={() => setDecision(null)} />
+        <VotingModal
+          referendum={referendum}
+          isOpen={nonNullable(decision)}
+          vote={decision}
+          onClose={() => setDecision(null)}
+        />
 
         <Box gap={4}>
           <Box direction="row" gap={4}>
             <VotingButtonWithTooltip
               variant="negative"
               icon="negative"
-              disabled={buttonDiabled}
+              disabled={!canVote}
               votes={memberVoteWeight}
               voteImpact={userVotesImpact}
               isVoted={alreadyVotedNay}
@@ -130,7 +101,7 @@ export const VotingButtons = memo(({ referendum, evidence }: Props) => {
             <VotingButtonWithTooltip
               variant="positive"
               icon="positive"
-              disabled={buttonDiabled}
+              disabled={!canVote}
               votes={memberVoteWeight}
               voteImpact={userVotesImpact}
               isVoted={alreadyVotedAye}

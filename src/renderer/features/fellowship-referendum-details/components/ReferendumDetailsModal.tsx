@@ -1,15 +1,13 @@
-import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Box, Modal } from '@/shared/ui-kit';
-import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
-import { details } from '../model/details';
-import { fellowshipReferendumsDetailsFeature } from '../model/feature';
-import { fellowship } from '../model/fellowship';
-import { tracksModel } from '../model/tracks';
+import { type Evidence, type Referendum, referendumService, trackService, useTracks } from '@/domains/collectives';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useEvidenceContent } from '../hooks/useEvidenceContent';
+import { useReferendum } from '../hooks/useReferendum';
 import { detailsService } from '../service';
 
 import { AdditionalInfo } from './AdditionalInfo';
@@ -19,7 +17,7 @@ import { ReferendumDescription } from './ReferendumDescription';
 export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
 export const referendumAdditionalInfoSlot = createSlot<{ referendum: Referendum }>();
 
-export const referendumActionsSlot = createSlot<{ referendum?: Referendum | null; evidence?: Evidence | null }>();
+export const referendumActionsSlot = createSlot<{ referendum: Referendum | null; evidence: Evidence | null }>();
 
 type Props = PropsWithChildren<{
   referendumId: ReferendumId;
@@ -31,18 +29,12 @@ type Props = PropsWithChildren<{
 
 export const ReferendumDetailsModal = memo(
   ({ referendumId, children, title, isCurrentUser, isOpen, onClose }: Props) => {
-    useGate(fellowshipReferendumsDetailsFeature.gate);
-
     const { t } = useI18n();
 
-    const tracks = useUnit(tracksModel.$list);
-    const evidenceContent = useUnit(details.$evidenceContent);
-
-    const referendum = useStoreMap({
-      store: fellowship.$store,
-      keys: [referendumId],
-      fn: (store, [id]) => store?.referendums?.find(r => r.id === id) ?? null,
-    });
+    const api = useFellowshipApi();
+    const { data: referendum } = useReferendum(referendumId);
+    const { data: tracks } = useTracks({ palletType: 'fellowship', api });
+    const { data: evidenceContent } = useEvidenceContent(referendum);
 
     const modalTitle = useMemo(() => {
       if (title) {
@@ -80,7 +72,7 @@ export const ReferendumDetailsModal = memo(
               <Box width="350px" shrink={0} gap={4}>
                 <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
 
-                <MemberProfile referendum={referendum ?? undefined} />
+                <MemberProfile referendum={referendum} evidence={null} />
 
                 {referendum && <Slot id={referendumAdditionalInfoSlot} props={{ referendum: referendum }} />}
 

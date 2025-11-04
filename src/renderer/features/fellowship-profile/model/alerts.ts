@@ -11,8 +11,6 @@ import {
   trackService,
 } from '@/domains/collectives';
 
-import { activity } from './activity';
-import { evidenceInfo } from './evidence';
 import { fellowship } from './fellowship';
 import { profile } from './profile';
 

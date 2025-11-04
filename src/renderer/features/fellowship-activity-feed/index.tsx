@@ -2,7 +2,7 @@ import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
 import { activityFeedRecordDescriptionSlot } from './components/EventRecord';
 import { LastActivity } from './components/LastActivity';
-import { fellowshipActivityFeedFeature } from './model/feature';
+import { fellowshipActivityFeedFeature } from './feature';
 
 export { fellowshipActivityFeedFeature, activityFeedRecordDescriptionSlot };
 

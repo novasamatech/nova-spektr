@@ -62,7 +62,8 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
   });
 
   const isRFCPending = useUnit(rfcModel.$isPending);
-  const isMetaPending = useUnit(referendums.$pendingReferendumMeta);
+  // TODO fix
+  const isMetaPending = false;
 
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
 

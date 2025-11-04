@@ -1,10 +1,10 @@
-import { useStoreMap } from 'effector-react';
+import { useMemo } from 'react';
 
 import { type Chain } from '@/shared/core';
 import { AccountExplorers, RankedAccount } from '@/shared/ui-entities';
-import { type CoreMember, type Vote as VoteType } from '@/domains/collectives';
-import { identityModel } from '../model/identity';
-import { membersModel } from '../model/members';
+import { type CoreMember, type Vote as VoteType, useMembers } from '@/domains/collectives';
+import { useIdentities } from '@/domains/network';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 
 type Props = {
   item: VoteType;
@@ -12,17 +12,14 @@ type Props = {
 };
 
 export const Vote = ({ item, chain }: Props) => {
-  const identity = useStoreMap({
-    store: identityModel.$identity,
-    keys: [item.accountId],
-    fn: (identity, [accountId]) => identity[accountId] ?? null,
-  });
+  const { data: identities } = useIdentities([item.accountId]);
 
-  const member = useStoreMap({
-    store: membersModel.$members,
-    keys: [item.accountId],
-    fn: (members, [accountId]) => members[accountId] ?? null,
-  });
+  const identity = identities[item.accountId];
+
+  const api = useFellowshipApi();
+  const { data: members } = useMembers({ palletType: 'fellowship', api });
+
+  const member = useMemo(() => members.find(m => m.accountId === item.accountId) ?? null, [members, item.accountId]);
 
   return (
     <div className="flex items-center justify-between rounded-md pe-2 text-text-secondary hover:bg-action-background-hover hover:text-text-primary">

@@ -4,7 +4,7 @@ import { reshape } from 'patronum';
 import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
-import { evidence, evidenceService } from '@/domains/collectives';
+import { evidenceService } from '@/domains/collectives';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
@@ -120,34 +120,7 @@ sample({
   target: submitModel.events.formInitiated,
 });
 
-const evidenceReqiested = sample({
-  clock: submitModel.output.formSubmitted,
-  source: {
-    api: $api,
-    account: $account,
-    chain: $chain,
-  },
-  filter: ({ api, account, chain }) => {
-    return nonNullable(api) && nonNullable(account) && nonNullable(chain?.chainId);
-  },
-  fn({ api, account, chain }) {
-    if (nullable(api) || nullable(account) || nullable(chain)) return null;
-    return { api, account, chain };
-  },
-});
-
-sample({
-  clock: evidenceReqiested.filter({ fn: nonNullable }),
-  fn({ api, account, chain }) {
-    return {
-      palletType: 'fellowship' as const,
-      api,
-      chainId: chain.chainId,
-      accounts: [account.accountId],
-    };
-  },
-  target: evidence.request,
-});
+// Steps
 
 const setStep = createEvent<'closed' | 'form' | 'submit'>();
 const $step = restore(setStep, 'closed');

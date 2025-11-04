@@ -12,3 +12,4 @@ export { useDebouncedCallback } from './useDebouncedCallback';
 export { useDeferredList } from './useDeferredList';
 export { useExternalState } from './useExternalState';
 export { useKeyCombo } from './useKeyCombo';
+export { useClock } from './useClock';

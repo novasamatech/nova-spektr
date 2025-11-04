@@ -1,10 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
+import { createStore } from 'effector';
+import { produce } from 'immer';
 
-import { type ChainId } from '@/shared/core';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { type ReferendaCurve, referendaPallet } from '@/shared/pallet/referenda';
-import { createRemoteResource } from '@/shared/resource';
-import { type CollectivePalletsType } from '../_lib/types';
+import { createQueryResource } from '@/shared/query';
+import { mergeNested } from '../_lib/helpers';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type Track, type VotingCurve } from './types';
 
@@ -35,21 +37,19 @@ const mapCurve = (value: ReferendaCurve): VotingCurve => {
   }
 };
 
-type RequestTracksParams = {
+export type RequestTracksParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
-  chainId: ChainId;
 };
 
-export const tracksResource = createRemoteResource<RequestTracksParams, Track[]>({
-  cache: {
-    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
-    ttl: Number.POSITIVE_INFINITY,
-  },
-  fn({ api, palletType, chainId }) {
+export const tracksResource = createQueryResource<RequestTracksParams>({
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
+})
+  .request<Track[]>(async ({ api, palletType }) => {
+    const chainId = api.genesisHash.toHex();
     const tracks = referendaPallet.consts.tracks(palletType, api);
 
-    return tracks.map<Track>(({ id, info }) => {
+    return tracks.map(({ id, info }) => {
       const minApproval = mapCurve(info.minApproval);
       const minSupport = mapCurve(info.minSupport);
 
@@ -67,27 +67,37 @@ export const tracksResource = createRemoteResource<RequestTracksParams, Track[]>
         minSupport,
       };
     });
-  },
-});
+  })
+  .cache<CollectivesStruct<Track[]>>({
+    staleAfter: Number.POSITIVE_INFINITY,
+    store: createStore({}),
+    map(state, tracks) {
+      return mergeNested(state, tracks, t => t.id);
+    },
+  })
+  .build();
 
-type RequestMaxRankParams = {
+export type RequestMaxRankParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
-  chainId: ChainId;
 };
 
-type MaxRankResponse = {
-  maxRank: number;
-};
-
-export const maxRankResource = createRemoteResource<RequestMaxRankParams, MaxRankResponse>({
-  cache: {
-    key: ({ chainId, palletType }) => `${palletType}:${chainId}`,
-    ttl: Number.POSITIVE_INFINITY,
-  },
-  fn({ api, palletType }) {
-    return {
-      maxRank: collectiveCorePallet.consts.maxRank(palletType, api),
-    };
-  },
-});
+export const maxRankResource = createQueryResource<RequestMaxRankParams>({
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
+})
+  .request(({ palletType, api }) => collectiveCorePallet.consts.maxRank(palletType, api))
+  .cache<CollectivesStruct<number>>({
+    staleAfter: Number.POSITIVE_INFINITY,
+    store: createStore({}),
+    map(state, maxRank, { palletType, api }) {
+      return produce(state, draft => {
+        let pallet = draft[palletType];
+        if (!pallet) {
+          pallet = {};
+          draft[palletType] = pallet;
+        }
+        pallet[api.genesisHash.toHex()] = maxRank;
+      });
+    },
+  })
+  .build();

@@ -6,9 +6,9 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
-import { fellowshipMembersFeature } from '../model/feature';
-import { identityModel } from '../model/identity';
-import { membersModel } from '../model/members';
+import { useCoreMembers } from '@/domains/collectives';
+import { useIdentities } from '@/domains/network';
+import { fellowshipMembersFeature } from '../feature';
 
 import { Member } from './Member';
 import { MembersListEmptyState } from './MembersListEmptyState';
@@ -18,9 +18,13 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
   const [query, setQuery] = useState('');
   const deferredQuery = useDeferredValue(query);
 
-  const members = useUnit(membersModel.$list);
-  const identities = useUnit(identityModel.$identity);
   const input = useUnit(fellowshipMembersFeature.input);
+  const { data: members } = useCoreMembers({ palletType: 'fellowship', api: input?.api });
+  const { data: identities } = useIdentities(
+    members.map(member => member.accountId),
+    input?.chainId,
+  );
+
   const { list } = useDeferredList({ list: members });
 
   const chain = input?.chain ?? null;
@@ -70,7 +74,14 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
               <ScrollArea>
                 <Box gap={2} padding={[0, 5, 4]}>
                   {nonNullable(chain) &&
-                    filteredMembers.map(item => <Member key={item.accountId} item={item} chain={chain} />)}
+                    filteredMembers.map(item => (
+                      <Member
+                        key={item.accountId}
+                        member={item}
+                        identity={identities[item.accountId] ?? null}
+                        chain={chain}
+                      />
+                    ))}
                 </Box>
               </ScrollArea>
             </>

@@ -6,9 +6,9 @@ import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { FootnoteText, HeadlineText, Icon, IconButton } from '@/shared/ui';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
 import { alertsModel } from '../model/alerts';
-import { fellowshipProfileFeature } from '../model/feature';
 
 const ICONS = {
   success: 'checkmarkOutline',
@@ -17,9 +17,9 @@ const ICONS = {
 
 export const Alerts = () => {
   const alert = useUnit(alertsModel.$alert);
-  const input = useUnit(fellowshipProfileFeature.input);
+  const chain = useFellowshipChain();
 
-  if (!alert || !input?.chainId) return null;
+  if (!alert || !chain) return null;
 
   const handleClose = () => alertsModel.markAsSeen(alert.id);
 
@@ -34,7 +34,7 @@ export const Alerts = () => {
         type={alert.type}
         rank={alert.rank}
         referendumId={alert.referendumId}
-        chainId={input.chainId}
+        chainId={chain.chainId}
         onClose={handleClose}
       />
     );

@@ -1,11 +1,11 @@
-import { useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Select } from '@/shared/ui-kit';
-import { membersModel } from '../../model/members';
+import { useCoreMembers } from '@/domains/collectives';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { getRankDataByRank } from '../../utils/rankHelpers';
 
 type MembersFiltersProps = {
@@ -19,10 +19,11 @@ type MembersFiltersProps = {
 export const MembersFilters = memo(
   ({ rankFilter, statusFilter, onRankFilterChange, onStatusFilterChange, onClearFilters }: MembersFiltersProps) => {
     const { t } = useI18n();
-    const membersWithSalary = useUnit(membersModel.$membersWithSalary);
+    const api = useFellowshipApi();
+    const { data: members } = useCoreMembers({ palletType: 'fellowship', api });
 
     const rankOptions = useMemo(() => {
-      const ranks = Array.from(new Set(membersWithSalary.map(m => m.rank))).sort((a, b) => a - b);
+      const ranks = Array.from(new Set(members.map(m => m.rank))).sort((a, b) => a - b);
       return [
         { value: 'all', label: t('fellowship.overview.members.filters.allRanks') },
         ...ranks.map(rank => {
@@ -39,7 +40,7 @@ export const MembersFilters = memo(
           };
         }),
       ];
-    }, [membersWithSalary, t]);
+    }, [members, t]);
 
     const hasActiveFilters = rankFilter !== 'all' || statusFilter !== 'all';
 

@@ -1,3 +1,3 @@
-import { fellowshipMembersFeature } from './model/feature';
+import { fellowshipMembersFeature } from './feature';
 
 export { fellowshipMembersFeature };

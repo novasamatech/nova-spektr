@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
-import { type Evidence } from '@/domains/collectives';
+import { type Evidence, type Referendum } from '@/domains/collectives';
 import { evidenceModel } from '../../model/evidence';
 import { identityModel } from '../../model/identity';
 import { members } from '../../model/members';
@@ -24,12 +24,13 @@ export const evidenceVotingTaskActionSlot = createSlot<{
 
 type Props = {
   evidence: Evidence;
+  referendum: Referendum | null;
   endBlock: number | null;
   transaction: Transaction | null;
   tags: string[];
 };
 
-export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock, transaction }: Props) => {
+export const PromotionRetentionEvidenceVoting = memo(({ referendum, evidence, tags, endBlock, transaction }: Props) => {
   const { t } = useI18n();
 
   const evidenceSummaryPending = useUnit(evidenceModel.requestEvidenceSummary.pending);

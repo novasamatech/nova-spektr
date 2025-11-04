@@ -1,4 +1,3 @@
-import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
 import { type Chain } from '@/shared/core';
@@ -6,7 +5,7 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
 import { Box, ScrollArea } from '@/shared/ui-kit';
 import { type Vote as VoteType } from '@/domains/collectives';
-import { identityModel } from '../model/identity';
+import { useIdentities } from '@/domains/network';
 
 import { Vote } from './Vote';
 import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';
@@ -19,14 +18,14 @@ type Props = {
 };
 
 export const VotingHistoryList = ({ items, query, chain, loading }: Props) => {
-  const identity = useUnit(identityModel.$identity);
+  const { data: identities } = useIdentities(items.map(i => i.accountId));
 
   const filteredItems = useMemo(() => {
     return performSearch({
       records: items,
       getMeta: item => ({
         address: toAddress(item.accountId, { prefix: chain?.addressPrefix }),
-        name: identity[item.accountId]?.name ?? null,
+        name: identities[item.accountId]?.name ?? null,
       }),
       query,
       weights: { address: 0.5, name: 1 },

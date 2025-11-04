@@ -1,42 +1,48 @@
 import { type ApiPromise } from '@polkadot/api';
+import { attach, createStore } from 'effector';
+import { produce } from 'immer';
 import { zipWith } from 'lodash';
 
 import { type ChainId } from '@/shared/core';
-import { nullable, withTimeout } from '@/shared/lib/utils';
+import { assert, createAsyncTaskPool, entries, groupBy, nullable } from '@/shared/lib/utils';
 import { identityPallet } from '@/shared/pallet/identity';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createRemoteResource } from '@/shared/resource';
+import { createQueryResource } from '@/shared/query';
+import { networkModel } from '@/entities/network';
+import { accountService } from '../account/service';
 
+import { POLKADOT_PEOPLE_CHAIN_ID } from './constants';
 import { type AccountIdentity } from './types';
 
-const LOADING_TIMEOUT = 15_000;
+type IdentityMap = Record<AccountId, AccountIdentity>;
+type IdentityCache = Record<ChainId, IdentityMap>;
 
-export type FetchParams = {
+const fetchPool = createAsyncTaskPool({
+  poolSize: 1,
+  retryCount: 15,
+  retryDelay: 1000,
+});
+
+const $cache = createStore<IdentityCache>({});
+
+type RequestParams = {
+  accounts: AccountId[];
+  chainId?: ChainId;
+};
+
+type InnerParams = {
   accounts: AccountId[];
   chainId: ChainId;
   api: ApiPromise;
 };
 
-export const fetchIdentity = createRemoteResource<FetchParams, Record<AccountId, AccountIdentity>>({
-  pool: ({ chainId }) => chainId,
-  cache: {
-    key: ({ chainId, accounts }) => `${chainId}:${accounts.join(',')}`,
-    ttl: Number.POSITIVE_INFINITY,
-  },
-  async fn({ api, chainId, accounts }) {
-    if (accounts.length === 0) return {};
+const request = async ({ api, chainId, accounts }: InnerParams) => {
+  if (accounts.length === 0) return {};
 
-    const subIdentities = await withTimeout(identityPallet.storage.superOf(api, accounts), LOADING_TIMEOUT, null);
-    if (nullable(subIdentities)) return {};
-
+  return fetchPool.call(async () => {
+    const subIdentities = await identityPallet.storage.superOf(api, accounts);
     const parentAccounts = subIdentities.map(({ account, identity }) => (nullable(identity) ? account : identity[0]));
-    const parentIdentities = await withTimeout(
-      identityPallet.storage.identityOf(api, parentAccounts),
-      LOADING_TIMEOUT,
-      null,
-    );
-
-    if (nullable(parentIdentities)) return {};
+    const parentIdentities = await identityPallet.storage.identityOf(api, parentAccounts);
 
     const identities = zipWith(subIdentities, parentIdentities, (sub, parent) => ({ sub, parent }));
 
@@ -71,5 +77,59 @@ export const fetchIdentity = createRemoteResource<FetchParams, Record<AccountId,
     }
 
     return result;
-  },
-});
+  });
+};
+
+export const identityResource = createQueryResource<RequestParams>({
+  key: ({ chainId, accounts }) => [chainId ?? 'any', ...accounts],
+})
+  .request(
+    attach({
+      source: {
+        chains: networkModel.$chains,
+        apis: networkModel.$apis,
+      },
+      effect({ chains, apis }, { accounts, chainId = POLKADOT_PEOPLE_CHAIN_ID }: RequestParams) {
+        let identityChainId = chains[chainId]?.additional?.identityChain ?? chainId;
+        let identityChain = chains[identityChainId];
+        let api = apis[identityChainId];
+
+        if (nullable(api) || !identityPallet.supportedOn(api)) {
+          identityChainId = POLKADOT_PEOPLE_CHAIN_ID;
+          api = apis[identityChainId];
+          identityChain = chains[identityChainId];
+        }
+
+        assert(identityChain, `Chain ${identityChainId} not found`);
+        assert(api, `Api for chain ${identityChainId} not found`);
+
+        const supportedAccounts = accounts.filter(id => accountService.isAccountSchemeMatchChain(id, identityChain));
+
+        return request({ accounts: supportedAccounts, chainId, api });
+      },
+    }),
+  )
+  .cache({
+    staleAfter: Number.POSITIVE_INFINITY,
+    store: $cache,
+    map(cache, identities) {
+      return produce(cache, draft => {
+        const groups = groupBy(entries(identities), ([, i]) => i.chainId);
+
+        for (const [chainId, identities] of entries(groups)) {
+          if (nullable(identities)) continue;
+
+          let chainIdentities = draft[chainId];
+          if (nullable(chainIdentities)) {
+            chainIdentities = {};
+            draft[chainId] = chainIdentities;
+          }
+
+          for (const [accountId, identity] of identities) {
+            chainIdentities[accountId] = identity;
+          }
+        }
+      });
+    },
+  })
+  .build();

@@ -1,35 +1,32 @@
-import { useStoreMap, useUnit } from 'effector-react';
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { BodyText } from '@/shared/ui';
 import { Account, CollectiveRank } from '@/shared/ui-entities';
 import { type Column, Indicator, ScrollArea, Table } from '@/shared/ui-kit';
-import { type CoreMember } from '@/domains/collectives';
-import { fellowshipMember } from '@/aggregates/fellowship-member';
-import { fellowshipOverviewFeature } from '../../model/feature';
+import { type CoreMember, salaryService, useSalaries } from '@/domains/collectives';
+import { identityService, useIdentities } from '@/domains/network';
+import { useFellowshipMember } from '@/aggregates/fellowship-member';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 
 export type MemberRow = CoreMember & {
   name?: string;
-  address: string;
-  salary?: string;
+  salary: string;
   salaryAmount: number;
 };
 
 type MembersTableProps = {
-  data: MemberRow[];
+  members: CoreMember[];
 };
 
-export const MembersTable = memo(({ data }: MembersTableProps) => {
+export const MembersTable = memo(({ members }: MembersTableProps) => {
   const { t } = useI18n();
 
-  const chain = useStoreMap({
-    store: fellowshipOverviewFeature.input,
-    keys: [],
-    fn: input => input?.chain ?? null,
-  });
-
-  const currentMember = useUnit(fellowshipMember.$currentMember);
+  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
+  const { data: currentMember } = useFellowshipMember();
+  const { data: salaries } = useSalaries({ palletType: 'fellowship', api });
+  const { data: identities } = useIdentities(members.map(m => m.accountId));
 
   const columns: Column<MemberRow>[] = useMemo(
     () => [
@@ -98,6 +95,37 @@ export const MembersTable = memo(({ data }: MembersTableProps) => {
     ],
     [t, chain, currentMember],
   );
+
+  const data = useMemo(() => {
+    return members
+      .map<MemberRow>(member => {
+        let salaryText = '-';
+        let salaryAmount = 0;
+
+        if (salaries) {
+          const memberSalary = salaryService.getMemberSalary(member, salaries);
+          const rawSalary = member.isActive ? memberSalary.active : memberSalary.passive;
+          salaryText = salaryService.formatSalaryAmount(rawSalary);
+          salaryAmount = rawSalary.toNumber();
+        }
+
+        return {
+          ...member,
+          name: identities[member.accountId] ? identityService.getFullName(identities[member.accountId]) : undefined,
+          salary: salaryText,
+          salaryAmount,
+        };
+      })
+      .sort((a, b) => {
+        // Sort to put current user at the top
+        const aIsCurrentUser = currentMember?.accountId === a.accountId;
+        const bIsCurrentUser = currentMember?.accountId === b.accountId;
+
+        if (aIsCurrentUser && !bIsCurrentUser) return -1;
+        if (!aIsCurrentUser && bIsCurrentUser) return 1;
+        return 0;
+      });
+  }, [members, currentMember, salaries, identities]);
 
   return (
     <div className="min-h-0 flex-1 overflow-hidden">

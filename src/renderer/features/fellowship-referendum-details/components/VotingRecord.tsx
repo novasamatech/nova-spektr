@@ -1,54 +1,32 @@
-import { useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { CaptionText, HelpText, SmallTitleText } from '@/shared/ui';
-import { Box, Skeleton } from '@/shared/ui-kit';
-import { Speedometer } from '@/shared/ui-kit/Speedometer/Speedomenter';
-import { type Evidence, memberService, referendumMetaService } from '@/domains/collectives';
-import { details } from '../model/details';
-import { fellowship } from '../model/fellowship';
+import { Box, Skeleton, Speedometer } from '@/shared/ui-kit';
+import { type Evidence, type Referendum } from '@/domains/collectives';
+import { useActivity } from '../hooks/useActivity';
+import { useProposer } from '../hooks/useProposer';
 
 type Props = {
-  evidence?: Evidence;
+  referendum: Referendum | null;
+  evidence: Evidence | null;
 };
 
-export const VotingRecord = memo(({ evidence }: Props) => {
+export const VotingRecord = memo(({ referendum, evidence }: Props) => {
   const { t } = useI18n();
 
-  const proposer = useUnit(details.$proposer);
-  const member = useStoreMap({
-    store: details.$members,
-    keys: [proposer || evidence?.accountId],
-    fn: (members, [accountId]) => (accountId && members[accountId]) ?? null,
-  });
+  const proposer = useProposer(referendum);
+  const memberId = proposer || evidence?.accountId || null;
 
-  const { meta, votes, maxRank } = useStoreMap({
-    store: fellowship.$store,
-    keys: [],
-    fn: store => ({
-      meta: store?.referendumMeta ? Object.values(store.referendumMeta) : null,
-      votes: store?.voting ?? null,
-      maxRank: store?.maxRank ?? 0,
-    }),
-  });
-
-  if (nullable(member) || !memberService.isCoreMember(member)) return null;
-
-  const referendums = meta ? referendumMetaService.getReferendumsSinceLastProof(meta, member) : null;
-
-  const activity = referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
-
-  const { activity: activityThreshold, agreement: agreementThreshold } =
-    memberService.getActivityAndAgreementThresholds(member.rank);
+  const { data: activity } = useActivity(memberId);
 
   if (nullable(activity) || nullable(activity.activity) || nullable(activity.agreement)) {
     return <Skeleton height={5} />;
   }
 
-  const actualActivityThreshold = activityThreshold ?? 100;
-  const actualAgreementThreshold = agreementThreshold ?? 100;
+  const actualActivityThreshold = activity?.activityThreshold ?? 100;
+  const actualAgreementThreshold = activity?.agreementThreshold ?? 100;
 
   const isActivityFit = activity.activity >= actualActivityThreshold;
   const isAgreementFit = activity.agreement >= actualAgreementThreshold;
