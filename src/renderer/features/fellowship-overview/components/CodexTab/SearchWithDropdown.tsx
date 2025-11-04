@@ -1,10 +1,10 @@
-import { useUnit } from 'effector-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Icon, IconButton } from '@/shared/ui';
 import { Input, ScrollArea } from '@/shared/ui-kit';
-import { codex } from '../../model/codex';
+import { useCodex } from '@/domains/collectives';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { type SearchResult, useCodexSearch } from './hooks';
 
@@ -57,8 +57,11 @@ export const SearchWithDropdown = ({
   onNavigateMatch,
 }: SearchWithDropdownProps) => {
   const { t } = useI18n();
-  const codexContent = useUnit(codex.$codexContent);
-  const { generateMatches, generateSearchResults } = useCodexSearch(codexContent);
+
+  const chain = useFellowshipChain();
+  const { data: codexContent } = useCodex({ palletType: 'fellowship', chainId: chain?.chainId });
+
+  const { generateMatches, generateSearchResults } = useCodexSearch(codexContent ?? '');
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);

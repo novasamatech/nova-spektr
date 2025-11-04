@@ -39,7 +39,7 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
 
   const chain = useFellowshipChain();
 
-  const { data: evidenceSummary, pending } = useSummary({ referendum });
+  const { data: evidenceSummary, pending } = useReferendumSummary({ referendum });
 
   const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
   const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
@@ -141,7 +141,7 @@ const useRank = ({ referendum }: { referendum: OngoingReferendum }) => {
   }, [currentTrack, tracks, isPromotionTrack, isRetentionTrack, proposerMember]);
 };
 
-const useSummary = ({ referendum }: { referendum: OngoingReferendum }) => {
+const useReferendumSummary = ({ referendum }: { referendum: OngoingReferendum }) => {
   const proposerAccountId = referendumService.getProposer(referendum);
 
   const chain = useFellowshipChain();

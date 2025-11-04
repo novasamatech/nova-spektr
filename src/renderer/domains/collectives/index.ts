@@ -80,3 +80,5 @@ export { voting } from './votingHistory/store';
 export { votingHistoryService } from './votingHistory/service';
 export { useVotes, useAllVotes } from './votingHistory/hooks';
 export type { Vote, VotingRating } from './votingHistory/types';
+
+export { useCodex } from './codex/hooks';

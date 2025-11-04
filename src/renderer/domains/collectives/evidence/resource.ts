@@ -29,7 +29,7 @@ export type EvidenceRequestParams = {
 };
 
 export const evidenceResource = createSubscriptionResource<EvidenceRequestParams>({
-  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
+  key: ({ palletType, api, accounts }) => [palletType, api.genesisHash.toHex(), accounts],
 })
   .subscribe<Evidence[]>(({ palletType, api, accounts }, callback) => {
     const chainId = api.genesisHash.toHex();
@@ -67,7 +67,7 @@ export type EvidenceContentRequestParams = {
 };
 
 export const evidenceContentResource = createQueryResource<EvidenceContentRequestParams>({
-  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
+  key: ({ palletType, api, accountId, blockHash }) => [palletType, api.genesisHash.toHex(), accountId, blockHash],
 })
   .request<EvidenceContent | null>(async ({ palletType, api, accountId, blockHash }) => {
     const chainId = api.genesisHash.toHex();
@@ -165,7 +165,7 @@ export type EvidenceSummaryRequestParams = {
 };
 
 export const evidenceSummaryResource = createQueryResource<EvidenceSummaryRequestParams>({
-  key: ({ palletType, chainId }) => [palletType, chainId],
+  key: ({ palletType, evidence, chainId, accountId }) => [palletType, evidence, chainId, accountId],
 })
   .request<EvidenceSummary>(async ({ palletType, accountId, evidence, chainId, githubHandle, evidencePeriodStart }) => {
     const evidenceId = evidenceService.getCidByEvidence(evidence);

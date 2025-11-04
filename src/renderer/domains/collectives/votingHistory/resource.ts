@@ -102,7 +102,7 @@ export type RequestVotesParams = {
 
 export const votesResource = createQueryResource<RequestVotesParams>({
   key: ({ palletType, chain, referendums, accounts }) => {
-    return [palletType, chain.chainId, accounts.join(','), referendums.join(',')];
+    return [palletType, chain.chainId, accounts, referendums];
   },
 })
   .request<Vote[]>(async ({ palletType, api, chain, referendums, accounts }) => {
@@ -153,7 +153,7 @@ export const allVotesResource = createQueryResource<RequestAllVotesParams>({
     store: $sharedVotesCache,
     staleAfter: 60 * 1000,
     map(state, votes) {
-      return mergeNested(state, votes, v => `${v.accountId}:${v.referendumId}`);
+      return mergeNested(state, votes, v => [v.accountId, v.referendumId]);
     },
   })
   .build();

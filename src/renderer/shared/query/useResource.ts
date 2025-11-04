@@ -43,7 +43,9 @@ export const useResource = <const Params, Cache, const Value>(
 
   useEffect(() => {
     setResolved((v) => v || cachedValue !== empty);
+  }, [cachedValue]);
 
+  useEffect(() => {
     // eslint-disable-next-line effector/no-watch
     return resource.push.watch(() => {
       setResolved(true);

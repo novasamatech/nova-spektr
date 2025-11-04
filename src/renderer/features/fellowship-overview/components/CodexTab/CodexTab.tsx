@@ -6,12 +6,13 @@ NOTE: Codex is a WORK IN PROGRESS feature and its not yet ready for production.
 
 */
 
-import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
+import { Loader } from '@/shared/ui';
 import { BodyText } from '@/shared/ui/Typography';
 import { ScrollArea } from '@/shared/ui-kit';
-import { codex } from '../../model/codex';
+import { useCodex } from '@/domains/collectives';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { SearchWithDropdown } from './SearchWithDropdown';
@@ -37,13 +38,10 @@ export const CodexTab = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [currentMatchIndex, setCurrentMatchIndex] = useState(-1);
 
-  const codexContent = useUnit(codex.$codexContent);
+  const chain = useFellowshipChain();
+  const { data: codexContent, pending } = useCodex({ palletType: 'fellowship', chainId: chain?.chainId });
 
-  useEffect(() => {
-    codex.requestCodex({});
-  }, []);
-
-  const { generateMatches, filterSectionsByQuery, getRawContent } = useCodexSearch(codexContent);
+  const { generateMatches, filterSectionsByQuery, getRawContent } = useCodexSearch(codexContent ?? '');
   const { scrollToSection, scrollToMatch } = useScroll();
   const { getFirstTableOfContentsItem, getTableOfContents } = useTableOfContents(getRawContent());
 
@@ -192,6 +190,8 @@ export const CodexTab = () => {
                       </button>
                     </BodyText>
                   </div>
+                ) : pending ? (
+                  <Loader color="primary" size={24} />
                 ) : (
                   <div className="text-text-primary">
                     <MarkdownRenderer
