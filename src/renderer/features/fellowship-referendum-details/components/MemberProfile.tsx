@@ -6,8 +6,8 @@ import { Separator, SmallTitleText } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
-import { identityService, useIdentity } from '@/domains/network';
-import { useFellowshipChain } from '@/aggregates/fellowship-network';
+import { identityService } from '@/domains/network';
+import { useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
 import { useProposer } from '../hooks/useProposer';
 import { useMetadata } from '../hooks/useReferendumMeta';
 
@@ -28,7 +28,7 @@ export const MemberProfile = memo(({ referendum, evidence }: Props) => {
   const memberId = member?.accountId || evidence?.accountId || null;
 
   const { data: referendumMeta } = useMetadata(referendum);
-  const { data: identity } = useIdentity(memberId);
+  const { data: identity } = useFellowshipIdentity(memberId);
 
   const canHaveEvidence =
     evidence ||

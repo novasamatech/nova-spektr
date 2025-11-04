@@ -5,7 +5,7 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
 import { Box, ScrollArea } from '@/shared/ui-kit';
 import { type Vote as VoteType } from '@/domains/collectives';
-import { useIdentities } from '@/domains/network';
+import { useFellowshipIdentities } from '@/aggregates/fellowship-network';
 
 import { Vote } from './Vote';
 import { VotingHistoryListEmptyState } from './VotingHistoryListEmptyState';
@@ -18,7 +18,7 @@ type Props = {
 };
 
 export const VotingHistoryList = ({ items, query, chain, loading }: Props) => {
-  const { data: identities } = useIdentities(items.map(i => i.accountId));
+  const { data: identities } = useFellowshipIdentities(items.map(i => i.accountId));
 
   const filteredItems = useMemo(() => {
     return performSearch({

@@ -6,8 +6,8 @@ import { Account } from '@/shared/ui-entities';
 import { Markdown, Skeleton } from '@/shared/ui-kit';
 import { Box } from '@/shared/ui-kit/Box/Box';
 import { type Referendum } from '@/domains/collectives';
-import { identityService, useIdentity } from '@/domains/network';
-import { useFellowshipChain } from '@/aggregates/fellowship-network';
+import { identityService } from '@/domains/network';
+import { useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
 import { useDescription } from '../hooks/useDescription';
 import { useProposer } from '../hooks/useProposer';
 
@@ -23,7 +23,7 @@ export const AdditionalContext = ({ referendum }: Props) => {
   const chain = useFellowshipChain();
   const { data: proposer } = useProposer(referendum);
   const { data: description, pending } = useDescription(referendum);
-  const { data: identity } = useIdentity(proposer?.accountId);
+  const { data: identity } = useFellowshipIdentity(proposer?.accountId);
 
   if (pending) {
     return (

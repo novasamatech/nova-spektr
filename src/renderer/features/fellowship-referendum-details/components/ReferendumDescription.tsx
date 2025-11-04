@@ -4,7 +4,7 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
-import { type Referendum, trackService } from '@/domains/collectives';
+import { type Evidence, type Referendum, trackService } from '@/domains/collectives';
 import { useEvidenceContent } from '../hooks/useEvidenceContent';
 import { useMetadata } from '../hooks/useReferendumMeta';
 
@@ -13,11 +13,12 @@ import { Card } from './Card';
 
 type Props = {
   referendum: Referendum | null;
+  evidence: Evidence | null;
 };
 
-export const ReferendumDescription = memo(({ referendum }: Props) => {
+export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
   const { data: referendumMeta } = useMetadata(referendum);
-  const { data: evidenceContent, pending: pendingEvidenceContent } = useEvidenceContent(referendum);
+  const { data: evidenceContent, pending: pendingEvidenceContent } = useEvidenceContent(referendum, evidence);
 
   const canHaveEvidence =
     nonNullable(referendum) &&
@@ -30,7 +31,13 @@ export const ReferendumDescription = memo(({ referendum }: Props) => {
 
   return (
     <div className="flex h-full flex-col gap-4">
-      {shouldRenderEvidencePending ? <Skeleton height="16lh" width="100%" /> : null}
+      {shouldRenderEvidencePending ? (
+        <Card>
+          <Box padding={6}>
+            <Skeleton height="16lh" width="100%" />
+          </Box>
+        </Card>
+      ) : null}
       {shouldRenderEvidence ? (
         <Card>
           <Box padding={6}>

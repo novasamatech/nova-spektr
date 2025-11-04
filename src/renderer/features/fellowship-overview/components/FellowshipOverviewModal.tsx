@@ -31,7 +31,7 @@ export const FellowshipOverviewModal = () => {
     <Modal isOpen={isOpen} size="xl" height="full" onToggle={closeModal}>
       <Modal.Title close>{t('fellowship.overview.modalTitle')}</Modal.Title>
 
-      <div className="flex h-full flex-col bg-block-background">
+      <Modal.Content disableScroll background="secondary">
         <Tabs value={activeTab} onChange={handleTabChange}>
           <div className="relative shrink-0 px-5 pt-5">
             <div className={`absolute top-5 left-5 z-10 ${features.codex ? 'w-[240px]' : 'w-[160px]'}`}>
@@ -55,7 +55,7 @@ export const FellowshipOverviewModal = () => {
             </Tabs.Content>
           )}
         </Tabs>
-      </div>
+      </Modal.Content>
     </Modal>
   );
 };

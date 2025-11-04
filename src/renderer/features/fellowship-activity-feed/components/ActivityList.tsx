@@ -2,8 +2,8 @@ import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useFeed } from '@/domains/collectives';
-import { identityService, useIdentities } from '@/domains/network';
-import { useFellowshipChain } from '@/aggregates/fellowship-network';
+import { identityService } from '@/domains/network';
+import { useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
 
 import { ActivityListView } from './ActivityListView';
 import { getDescription } from './utils';
@@ -14,10 +14,7 @@ export const ActivityList = memo(() => {
   const chain = useFellowshipChain();
 
   const { data: feed, pending } = useFeed({ palletType: 'fellowship', chain });
-  const { data: identities } = useIdentities(
-    feed.map(record => record.accountId),
-    chain?.chainId,
-  );
+  const { data: identities } = useFellowshipIdentities(feed.map(record => record.accountId));
 
   const records = useMemo(
     () =>

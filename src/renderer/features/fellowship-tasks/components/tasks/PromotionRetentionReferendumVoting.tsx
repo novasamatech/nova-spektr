@@ -16,8 +16,7 @@ import {
   useMember,
   useTracks,
 } from '@/domains/collectives';
-import { useIdentity } from '@/domains/network';
-import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
 import { useEvidence } from '../../hooks/useEvidence';
 import { MemberActivity } from '../MemberActivity';
@@ -98,7 +97,7 @@ const useTitle = ({ referendum }: { referendum: OngoingReferendum }) => {
   const chain = useFellowshipChain();
 
   const { data: tracks } = useTracks({ palletType: 'fellowship', api });
-  const { data: identity } = useIdentity(proposerAccountId);
+  const { data: identity } = useFellowshipIdentity(proposerAccountId);
 
   const currentTrack = tracks?.find(t => t.id === referendum.track);
 

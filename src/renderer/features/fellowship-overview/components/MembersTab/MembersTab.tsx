@@ -7,8 +7,8 @@ import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
 import { SearchInput } from '@/shared/ui-kit';
 import { useCoreMembers } from '@/domains/collectives';
-import { identityService, useIdentities } from '@/domains/network';
-import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { identityService } from '@/domains/network';
+import { useFellowshipApi, useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
 
 import { MembersEmptyState } from './MembersEmptyState';
 import { MembersFilters } from './MembersFilters';
@@ -27,7 +27,7 @@ export const MembersTab = memo((_props: MembersTabProps) => {
   const api = useFellowshipApi();
 
   const { data: members } = useCoreMembers({ palletType: 'fellowship', api });
-  const { data: identities } = useIdentities(members.map(m => m.accountId));
+  const { data: identities } = useFellowshipIdentities(members.map(m => m.accountId));
 
   const features = useUnit($features);
 

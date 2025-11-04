@@ -6,7 +6,8 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, referendumService, trackService, useTracks } from '@/domains/collectives';
 import { useFellowshipApi } from '@/aggregates/fellowship-network';
-import { useEvidenceContent } from '../hooks/useEvidenceContent';
+import { useEvidence } from '../hooks/useEvidence';
+import { useProposer } from '../hooks/useProposer';
 import { useReferendum } from '../hooks/useReferendum';
 import { detailsService } from '../service';
 
@@ -33,8 +34,9 @@ export const ReferendumDetailsModal = memo(
 
     const api = useFellowshipApi();
     const { data: referendum } = useReferendum(referendumId);
+    const { data: proposer } = useProposer(referendum);
+    const { data: evidence } = useEvidence(proposer?.accountId ?? null);
     const { data: tracks } = useTracks({ palletType: 'fellowship', api });
-    const { data: evidenceContent } = useEvidenceContent(referendum);
 
     const modalTitle = useMemo(() => {
       if (title) {
@@ -66,18 +68,18 @@ export const ReferendumDetailsModal = memo(
         <Modal.Content background="secondary">
           <Box direction="row" width="100%" height="100%" gap={4} padding={[4, 6]} fillContainer>
             <Box width="100%" height="100%" gap={4}>
-              <ReferendumDescription referendum={referendum} />
+              <ReferendumDescription referendum={referendum} evidence={evidence} />
             </Box>
             <Box width="350px" shrink={0} gap={4}>
               <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
 
-              <MemberProfile referendum={referendum} evidence={null} />
+              <MemberProfile referendum={referendum} evidence={evidence} />
 
               {referendum && <Slot id={referendumAdditionalInfoSlot} props={{ referendum: referendum }} />}
 
-              {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence: evidenceContent }} />}
+              {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence: evidence }} />}
 
-              <AdditionalInfo referendumId={referendumId} evidenceHash={evidenceContent?.hash} />
+              <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
             </Box>
           </Box>
         </Modal.Content>

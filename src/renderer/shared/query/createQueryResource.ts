@@ -69,7 +69,7 @@ function build<Params, Response, Cache>({
   const $pending = createStore<Record<ResourceRequestKey, boolean>>({});
 
   const logFailFx = createEffect((error: Error) => {
-    console.error('failed to fetch', error);
+    console.error('Failed to fetch', error);
   });
 
   const requestFx = createQueuedEffect<Params, { cached: boolean; response: Response }>(
@@ -89,19 +89,13 @@ function build<Params, Response, Cache>({
       const abortController = new AbortController();
       abortControllers.set(key, abortController);
 
-      const response = boundedFn(params, abortController.signal);
+      try {
+        const response = boundedFn(params, abortController.signal);
+        const value = await requestsCache.setAny(key, response, cache?.staleAfter ?? 0);
 
-      if (response instanceof Promise) {
-        requestsCache.setRequest(key, response, cache?.staleAfter ?? 0);
-        return response
-          .then((response) => ({ cached: false, response }))
-          .finally(() => {
-            abortControllers.delete(key);
-          });
-      } else {
-        requestsCache.set(key, response, cache?.staleAfter ?? 0);
+        return { cached: false, response: value.value };
+      } finally {
         abortControllers.delete(key);
-        return { cached: false, response };
       }
     },
     { pool: createKey, retryCount: retry?.count, retryDelay: retry?.delay },

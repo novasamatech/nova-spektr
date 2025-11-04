@@ -36,9 +36,7 @@ export const useMemberEvidenceTasks = () => {
           body: RequestRetention,
           meta: { transaction: operations['evidence']?.coreTx ?? null, tags: [] },
         });
-      }
-
-      if (
+      } else if (
         memberService.canPromote(member) &&
         nonNullable(leftToPromotion) &&
         leftToPromotion <= 0 &&

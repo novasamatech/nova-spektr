@@ -8,9 +8,9 @@ import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
-import { accountService, useIdentity } from '@/domains/network';
+import { accountService } from '@/domains/network';
 import { useFellowshipAccount, useFellowshipMember, useFellowshipMemberSalary } from '@/aggregates/fellowship-member';
-import { useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
 
 import { ActiveIndicator } from './ActiveIndicator';
 import { ActivityFeed } from './ActivityFeed';
@@ -26,7 +26,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
   const chain = useFellowshipChain();
   const { data: member } = useFellowshipMember();
   const { data: account } = useFellowshipAccount();
-  const { data: identity } = useIdentity(member?.accountId);
+  const { data: identity } = useFellowshipIdentity(member?.accountId);
   const { data: salary } = useFellowshipMemberSalary();
 
   const disabled = nullable(member) || nullable(account) || nullable(chain);

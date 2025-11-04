@@ -7,7 +7,7 @@ import { nonNullable, performSearch, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Box, Modal, ScrollArea, SearchInput } from '@/shared/ui-kit';
 import { useCoreMembers } from '@/domains/collectives';
-import { useIdentities } from '@/domains/network';
+import { useFellowshipIdentities } from '@/aggregates/fellowship-network';
 import { fellowshipMembersFeature } from '../feature';
 
 import { Member } from './Member';
@@ -20,10 +20,7 @@ export const MembersModal = ({ children }: PropsWithChildren) => {
 
   const input = useUnit(fellowshipMembersFeature.input);
   const { data: members } = useCoreMembers({ palletType: 'fellowship', api: input?.api });
-  const { data: identities } = useIdentities(
-    members.map(member => member.accountId),
-    input?.chainId,
-  );
+  const { data: identities } = useFellowshipIdentities(members.map(member => member.accountId));
 
   const { list } = useDeferredList({ list: members });
 

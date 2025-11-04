@@ -1,7 +1,8 @@
 import { useStoreMap, useUnit } from 'effector-react';
 
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { salaryService, useSalaryCycleResource } from '@/domains/collectives';
-import { useBlock } from '@/domains/network';
+import { useBlock, useIdentities, useIdentity } from '@/domains/network';
 
 import { fellowshipNetwork } from './model';
 
@@ -39,4 +40,14 @@ export const useCurrentSalaryPeriod = () => {
     data: cycle && block ? salaryService.getCurrentPeriod(cycle, block) : null,
     pending: blockPending || cyclePending,
   };
+};
+
+export const useFellowshipIdentities = (accounts: AccountId[]) => {
+  const chain = useFellowshipChain();
+  return useIdentities(accounts, chain?.chainId);
+};
+
+export const useFellowshipIdentity = (account?: AccountId | null) => {
+  const chain = useFellowshipChain();
+  return useIdentity(account, chain?.chainId);
 };

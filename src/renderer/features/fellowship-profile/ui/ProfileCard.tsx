@@ -7,9 +7,13 @@ import { BodyText, Button, Icon } from '@/shared/ui';
 import { CollectiveRank, Hash, Identicon } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
-import { identityService, useIdentity } from '@/domains/network';
+import { identityService } from '@/domains/network';
 import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
-import { useFellowshipChain, useFellowshipChainConnected } from '@/aggregates/fellowship-network';
+import {
+  useFellowshipChain,
+  useFellowshipChainConnected,
+  useFellowshipIdentity,
+} from '@/aggregates/fellowship-network';
 import { fellowshipProfileFeature } from '../model/feature';
 
 import { ActiveIndicator } from './ActiveIndicator';
@@ -128,7 +132,7 @@ const Member = () => {
 
   const chain = useFellowshipChain();
   const { data: member } = useFellowshipMember();
-  const { data: identity } = useIdentity(member?.accountId);
+  const { data: identity } = useFellowshipIdentity(member?.accountId);
 
   if (nullable(member)) return null;
 

@@ -9,7 +9,7 @@ export const useIdentities = (accounts: AccountId[], chainId?: ChainId) => {
     params: { chainId, accounts },
     defaultValue: {},
     map: (cache, { chainId }) => chainId && cache[chainId],
-    filter: (value, { accounts }) => accounts.every(a => a in value),
+    filter: (value, { accounts }) => !accounts.every(a => a in value),
   });
 };
 

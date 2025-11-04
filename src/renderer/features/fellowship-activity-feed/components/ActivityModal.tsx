@@ -6,8 +6,8 @@ import { nullable, performSearch, truncate } from '@/shared/lib/utils';
 import { Button, EmptyList } from '@/shared/ui';
 import { Box, Modal, SearchInput, Select } from '@/shared/ui-kit';
 import { useFeed } from '@/domains/collectives';
-import { identityService, useIdentities } from '@/domains/network';
-import { useFellowshipChain } from '@/aggregates/fellowship-network';
+import { identityService } from '@/domains/network';
+import { useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
 
 import { ActivityListView } from './ActivityListView';
 import { getDescription } from './utils';
@@ -28,7 +28,7 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
   const chain = useFellowshipChain();
   const { data: feed, pending } = useFeed({ palletType: 'fellowship', chain });
-  const { data: identities } = useIdentities(feed.map(record => record.accountId));
+  const { data: identities } = useFellowshipIdentities(feed.map(record => record.accountId));
 
   const [query, setQuery] = useState('');
   const [limit, setLimit] = useState(LIMIT_STEP);

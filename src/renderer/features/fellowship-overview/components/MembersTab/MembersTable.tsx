@@ -5,9 +5,9 @@ import { BodyText } from '@/shared/ui';
 import { Account, CollectiveRank } from '@/shared/ui-entities';
 import { type Column, Indicator, ScrollArea, Table } from '@/shared/ui-kit';
 import { type CoreMember, salaryService, useSalaries } from '@/domains/collectives';
-import { identityService, useIdentities } from '@/domains/network';
+import { identityService } from '@/domains/network';
 import { useFellowshipMember } from '@/aggregates/fellowship-member';
-import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
 
 export type MemberRow = CoreMember & {
   name?: string;
@@ -26,7 +26,7 @@ export const MembersTable = memo(({ members }: MembersTableProps) => {
   const chain = useFellowshipChain();
   const { data: currentMember } = useFellowshipMember();
   const { data: salaries } = useSalaries({ palletType: 'fellowship', api });
-  const { data: identities } = useIdentities(members.map(m => m.accountId));
+  const { data: identities } = useFellowshipIdentities(members.map(m => m.accountId));
 
   const columns: Column<MemberRow>[] = useMemo(
     () => [
@@ -130,8 +130,8 @@ export const MembersTable = memo(({ members }: MembersTableProps) => {
   return (
     <div className="min-h-0 flex-1 overflow-hidden">
       <ScrollArea>
-        <div className="mb-17 px-5">
-          <Table columns={columns} data={data} className="w-full" />
+        <div className="px-5 pb-5">
+          <Table columns={columns} data={data} className="w-full rounded-lg" />
         </div>
       </ScrollArea>
     </div>

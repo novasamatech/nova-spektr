@@ -119,7 +119,11 @@ export const storage = {
     return substrateRpcPool
       .call(() => getQuery(api, 'superOf').multi(accounts))
       .then(schema.parse)
-      .then(response => zipWith(accounts, response, (account, identity) => ({ account, identity })));
+      .then(response => zipWith(accounts, response, (account, identity) => ({ account, identity })))
+      .catch(error => {
+        console.log('identity request errror', error);
+        return [];
+      });
   },
 
   /**

@@ -7,8 +7,7 @@ import { nonNullable, nullable, toAddress, toRomanNumeral, toShortAddress } from
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Evidence, useEvidenceSummary, useMember } from '@/domains/collectives';
-import { useIdentity } from '@/domains/network';
-import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
 import { MemberActivity } from '../MemberActivity';
 import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
@@ -41,7 +40,7 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
     evidence: evidence?.hash,
   });
 
-  const { data: identity } = useIdentity(member?.accountId);
+  const { data: identity } = useFellowshipIdentity(member?.accountId);
 
   const isPromotion = evidence.wish === 'Promotion';
   const isRetention = evidence.wish === 'Retention';

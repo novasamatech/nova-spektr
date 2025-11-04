@@ -12,11 +12,6 @@ import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/type
 
 import { type ReferendumMeta, type ReferendumMetaProvider } from './types';
 
-type ReferendumMetaWithContext = ReferendumMeta & {
-  pallet: CollectivePalletsType;
-  chainId: ChainId;
-};
-
 export type ReferendumMetaRequestParams = {
   provider: ReferendumMetaProvider;
   api: ApiPromise;
@@ -26,8 +21,8 @@ export type ReferendumMetaRequestParams = {
 export const referendumMetaResource = createQueryResource<ReferendumMetaRequestParams>({
   key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
 })
-  .request<ReferendumMetaWithContext[]>(async ({ api, provider, palletType }) => {
-    const chainId = api.genesisHash.toHex();
+  .request<ReferendumMeta[]>(async ({ api, provider, palletType }) => {
+    const chainId = api.genesisHash.toHex() as ChainId;
     let response: ReferendumMeta[] = [];
     // external providers work only with polkadot collectives chain
     if (chainId !== POLKADOT_COLLECTIVES_CHAIN) {
@@ -44,6 +39,8 @@ export const referendumMetaResource = createQueryResource<ReferendumMetaRequestP
       for await (const page of pages) {
         response = response.concat(
           page.map(x => ({
+            pallet: palletType,
+            chainId,
             referendumId: x.referendumIndex,
             title: x.title,
             description: x.content,
@@ -64,11 +61,13 @@ export const referendumMetaResource = createQueryResource<ReferendumMetaRequestP
 
       for await (const page of pages) {
         const mappedResponses = await Promise.all(
-          page.map(async x => {
+          page.map<Promise<ReferendumMeta>>(async x => {
             const timestamp = new Date(x.created_at).getTime();
             const blockHeight = await getBlockFromTime(timestamp, api);
 
             return {
+              pallet: palletType,
+              chainId,
               referendumId: x.id,
               title: x.title,
               description: x.content ?? '',
@@ -83,17 +82,13 @@ export const referendumMetaResource = createQueryResource<ReferendumMetaRequestP
       }
     }
 
-    return response.map(r => ({
-      ...r,
-      pallet: palletType,
-      chainId,
-    }));
+    return response;
   })
   .retry({
     count: 3,
     delay: 5000,
   })
-  .cache<CollectivesStruct<Record<ReferendumId, ReferendumMetaWithContext>>>({
+  .cache<CollectivesStruct<Record<ReferendumId, ReferendumMeta>>>({
     staleAfter: 120_000,
     store: createStore({}),
     map(state, referendums, { palletType, api }) {

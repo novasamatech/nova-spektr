@@ -53,6 +53,14 @@ export const createCache = <K extends PropertyKey, T>({ now: getTs }: { now(): n
       return chainedRequest;
     },
 
+    async setAny(key: K, value: T | Promise<T>, ttl: number) {
+      if (value instanceof Promise) {
+        return cache.setRequest(key, value, ttl);
+      } else {
+        return cache.set(key, value, ttl);
+      }
+    },
+
     delete(key: K) {
       records.delete(key);
       requests.delete(key);

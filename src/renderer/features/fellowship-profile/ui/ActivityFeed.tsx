@@ -129,7 +129,7 @@ export const ActivityFeed = memo(({ children }: PropsWithChildren) => {
     });
   }, [list, filter]);
 
-  const { list: deferredList } = useDeferredList({ list: filteredList, isLoading: pending });
+  const { list: deferredList, isLoading } = useDeferredList({ list: filteredList, isLoading: pending });
 
   const handleClearFilter = () => {
     setFilter(null);
@@ -139,28 +139,30 @@ export const ActivityFeed = memo(({ children }: PropsWithChildren) => {
     <Modal size="md" height="lg" isOpen={isOpen} onToggle={setIsOpen}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.profile.history')}</Modal.Title>
-      <Modal.Content>
-        <Box padding={[0, 3, 0]} gap={0} height="100%">
-          <div className="flex w-full items-center gap-2 px-2 pb-4">
-            <div className="grow">
-              <Select placeholder={t('fellowship.profile.activityFeed.filterAll')} value={filter} onChange={setFilter}>
-                {entries(FILTER_TYPES_TITLES).map(([key, title]) => (
-                  <Select.Item key={key} value={key}>
-                    {t(title)}
-                  </Select.Item>
-                ))}
-              </Select>
-            </div>
-            {nonNullable(filter) && (
-              <button
-                className="shrink-0 cursor-pointer text-footnote font-semibold text-primary-button-background-default"
-                onClick={handleClearFilter}
-              >
-                {t('fellowship.profile.activityFeed.clear')}
-              </button>
-            )}
+      <Modal.HeaderContent>
+        <div className="flex w-full items-center gap-2 px-5 pb-4">
+          <div className="grow">
+            <Select placeholder={t('fellowship.profile.activityFeed.filterAll')} value={filter} onChange={setFilter}>
+              {entries(FILTER_TYPES_TITLES).map(([key, title]) => (
+                <Select.Item key={key} value={key}>
+                  {t(title)}
+                </Select.Item>
+              ))}
+            </Select>
           </div>
-          {deferredList.length === 0 ? (
+          {nonNullable(filter) && (
+            <button
+              className="shrink-0 cursor-pointer text-footnote font-semibold text-primary-button-background-default"
+              onClick={handleClearFilter}
+            >
+              {t('fellowship.profile.activityFeed.clear')}
+            </button>
+          )}
+        </div>
+      </Modal.HeaderContent>
+      <Modal.Content>
+        <Box padding={[0, 3]} height="100%">
+          {deferredList.length === 0 && !isLoading ? (
             <div className="flex grow flex-col items-center justify-center gap-3">
               <Icon name="document" size={64} />
               <Box gap={2} horizontalAlign="center">
