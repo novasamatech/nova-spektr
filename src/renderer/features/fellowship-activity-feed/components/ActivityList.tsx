@@ -32,6 +32,8 @@ export const ActivityList = memo(() => {
     [identities, feed, t],
   );
 
+  console.log({ pending });
+
   return (
     <div className="flex flex-col gap-3 py-4 pb-3">
       <ActivityListView limit={20} feed={records} pending={pending} />

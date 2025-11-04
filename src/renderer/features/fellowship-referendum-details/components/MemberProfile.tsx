@@ -5,9 +5,9 @@ import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { Separator, SmallTitleText } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type Evidence, type Referendum, referendumService, trackService, useMember } from '@/domains/collectives';
+import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
 import { identityService, useIdentity } from '@/domains/network';
-import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 import { useProposer } from '../hooks/useProposer';
 import { useMetadata } from '../hooks/useReferendumMeta';
 
@@ -22,14 +22,12 @@ type Props = {
 export const MemberProfile = memo(({ referendum, evidence }: Props) => {
   const { t } = useI18n();
 
-  const api = useFellowshipApi();
   const chain = useFellowshipChain();
 
-  const proposer = useProposer(referendum);
-  const memberId = proposer || evidence?.accountId || null;
+  const { data: member } = useProposer(referendum, evidence);
+  const memberId = member?.accountId || evidence?.accountId || null;
 
   const { data: referendumMeta } = useMetadata(referendum);
-  const { data: member } = useMember({ palletType: 'fellowship', api, accountId: proposer });
   const { data: identity } = useIdentity(memberId);
 
   const canHaveEvidence =

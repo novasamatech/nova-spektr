@@ -219,9 +219,14 @@ export async function fetchAccountActivities(
 
 export async function fetchAllActivities(url: string, pallet: CollectivePalletsType): Promise<FeedRecord[]> {
   const client = new GraphQLClient(url);
-  const result = await client.request<any, { pallet: CollectivePalletsType }>(accountAllActivities, { pallet });
+  try {
+    const result = await client.request<any, { pallet: CollectivePalletsType }>(accountAllActivities, { pallet });
 
-  return result.feedEvents.nodes.map(mapSubqueryFeedRecord).filter(nonNullable);
+    return result.feedEvents.nodes.map(mapSubqueryFeedRecord).filter(nonNullable);
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 }
 
 export async function fetchActivitiesSince(

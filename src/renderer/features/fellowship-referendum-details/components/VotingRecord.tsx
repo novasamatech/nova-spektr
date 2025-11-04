@@ -16,8 +16,8 @@ type Props = {
 export const VotingRecord = memo(({ referendum, evidence }: Props) => {
   const { t } = useI18n();
 
-  const proposer = useProposer(referendum);
-  const memberId = proposer || evidence?.accountId || null;
+  const { data: member } = useProposer(referendum, evidence);
+  const memberId = member?.accountId || evidence?.accountId || null;
 
   const { data: activity } = useActivity(memberId);
 
