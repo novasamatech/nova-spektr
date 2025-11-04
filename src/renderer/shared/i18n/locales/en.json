@@ -1577,6 +1577,9 @@
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
+    "accountNotFoundTitle": "No account to sign operation",
+    "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
+    "accountNotFoundButton": "Close",
     "viewJSON": {
       "button": "View JSON",
       "label": "Operation details"

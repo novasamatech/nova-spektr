@@ -3,7 +3,7 @@ import { type z } from 'zod';
 
 import { nonNullable } from '@/shared/lib/utils';
 
-export interface DeepLinkHandler<T = unknown> {
+export interface DeepLinkHandler<T = any> {
   route: string;
   validate: (data: any) => T;
   triggered: Event<T>;
@@ -39,14 +39,15 @@ sample({
   target: deepLinkReceived,
 });
 
-export function createDeepLinkHandler<T>({
+export function createDeepLinkHandler<T extends z.ZodType>({
   route,
   schema,
 }: {
   route: string;
-  schema: z.ZodType<T>;
+  schema: T;
 }): DeepLinkHandler<z.infer<T>> {
-  const triggered = createEvent<z.infer<T>>();
+  type ParsedType = z.infer<T>;
+  const triggered = createEvent<ParsedType>();
 
   // Subscribe to deep link events and trigger when route matches
   const routeMatched = sample({
@@ -65,14 +66,14 @@ export function createDeepLinkHandler<T>({
         return false;
       }
     },
-    fn: (urlState) => schema.parse(urlState.params),
+    fn: (urlState) => schema.parse(urlState.params) as ParsedType,
     target: triggered,
   });
 
   return {
     route,
     validate: (data: unknown) => {
-      const parsed = schema.parse(data);
+      const parsed = schema.parse(data) as ParsedType;
       console.log({ parsed });
       return parsed;
     },
@@ -82,6 +83,6 @@ export function createDeepLinkHandler<T>({
 
 export const deepLinkService = {
   handleDeepLink: setDeepLink,
-  // No-op for backward compatibility - handlers now self-register when created
-  registerHandler: () => {},
+  // used for module import
+  registerHandler: (handler: DeepLinkHandler) => {},
 };

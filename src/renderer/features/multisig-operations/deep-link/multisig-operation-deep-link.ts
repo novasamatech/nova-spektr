@@ -1,10 +1,11 @@
-import { sample } from 'effector';
+import { createEvent, createStore, sample } from 'effector';
 import { z } from 'zod';
 
 import { type ChainId } from '@/shared/core';
 import { createDeepLinkHandler } from '@/shared/lib/deep-link';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
+import { accounts } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { deepLinkModel } from '../model/deep-link';
 
@@ -18,22 +19,60 @@ export const multisigOperationSchema = z.object({
 
 export type MultisigOperationDeepLinkData = z.infer<typeof multisigOperationSchema>;
 
-export const multisigOperationDeepLinkHandler = createDeepLinkHandler<MultisigOperationDeepLinkData>({
+export const multisigOperationDeepLinkHandler = createDeepLinkHandler({
   route: Paths.OPERATIONS,
   schema: multisigOperationSchema,
 });
 
-sample({
+const accountNotFoundModalOpened = createEvent();
+const accountNotFoundModalClosed = createEvent();
+const $isAccountNotFoundModalOpen = createStore(false)
+  .on(accountNotFoundModalOpened, () => true)
+  .on(accountNotFoundModalClosed, () => false);
+
+// Check if account exists before selecting wallet
+const accountChecked = sample({
   clock: multisigOperationDeepLinkHandler.triggered,
-  fn: (data: MultisigOperationDeepLinkData) => data.accountId,
-  target: walletSelect.selectByAccount,
+  source: accounts.$list,
+  fn: (accountsList, data) => {
+    console.log({ accountsList, data });
+    const account = accountsList.find(acc => acc.accountId === data.accountId);
+    return {
+      data,
+      account: account ?? null,
+    };
+  },
+});
+
+// If account exists, select wallet and set operation
+sample({
+  clock: accountChecked,
+  filter: ({ account }) => account !== null,
+  fn: ({ account }) => account!.walletId,
+  target: walletSelect.select,
 });
 
 sample({
-  clock: multisigOperationDeepLinkHandler.triggered,
-  fn: (data: MultisigOperationDeepLinkData) => getOperationIdFromDeepLink(data),
+  clock: accountChecked,
+  filter: ({ account }) => account !== null,
+  fn: ({ data }) => getOperationIdFromDeepLink(data),
   target: deepLinkModel.setFocusedOperationId,
 });
+
+// If account doesn't exist, show modal
+sample({
+  clock: accountChecked,
+  filter: ({ account }) => {
+    console.log({ accountChecked: account });
+    return account === null;
+  },
+  target: accountNotFoundModalOpened,
+});
+
+export const accountNotFoundModal = {
+  $isOpen: $isAccountNotFoundModalOpen,
+  close: accountNotFoundModalClosed,
+};
 
 export function generateMultisigOperationDeepLink(data: MultisigOperationDeepLinkData): string {
   const params = new URLSearchParams({

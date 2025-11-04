@@ -10,11 +10,12 @@ import { FootnoteText } from '@/shared/ui';
 import { Box, ScrollArea } from '@/shared/ui-kit';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 import { operationsContextModel } from '../model/context';
-
 import { deepLinkModel } from '../model/deep-link';
+
 import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { OperationsFilter } from './OperationsFilter';
+import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
 
 export const Operations = () => {
   const { formatDate } = useI18n();
@@ -25,6 +26,8 @@ export const Operations = () => {
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
 
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
+
+  console.log('AccountNotFoundModal');
 
   const groupedTxs = useMemo(
     () =>
@@ -51,47 +54,51 @@ export const Operations = () => {
     }
   }, [focusedOperationId, focusedRef.current, scrollToFocused]);
 
-  if (!multisigAccount) {
-    return <EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />;
-  }
-
   return (
-    <ScrollArea>
-      <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
-        {operations.length > 0 && <OperationsFilter operations={operations} />}
+    <>
+      {!multisigAccount && <EmptyOperations multisigAccount={null} isEmptyFromFilters={false} />}
 
-        {filteredTxs.length === 0 && (
-          <EmptyOperations
-            multisigAccount={multisigAccount}
-            isEmptyFromFilters={operations.length !== filteredTxs.length}
-          />
-        )}
+      {multisigAccount && (
+        <ScrollArea>
+          <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
+            {operations.length > 0 && <OperationsFilter operations={operations} />}
 
-        {filteredTxs.length > 0 && (
-          <div className="mt-4 flex h-full w-full flex-col items-center overflow-y-auto pl-6">
-            {Object.entries(groupedTxs)
-              .sort(sortByDateDesc)
-              .map(([date, txs]) => (
-                <section className="mt-6 w-fit" key={date}>
-                  <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
-                  <ul className="flex w-[736px] flex-col gap-y-1.5">
-                    {txs
-                      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-                      .map(tx => (
-                        <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
-                          <Operation
-                            operation={tx}
-                            multisigAccount={multisigAccount}
-                            isDefaultOpen={tx.id === focusedOperationId}
-                          />
-                        </li>
-                      ))}
-                  </ul>
-                </section>
-              ))}
-          </div>
-        )}
-      </Box>
-    </ScrollArea>
+            {filteredTxs.length === 0 && (
+              <EmptyOperations
+                multisigAccount={multisigAccount}
+                isEmptyFromFilters={operations.length !== filteredTxs.length}
+              />
+            )}
+
+            {filteredTxs.length > 0 && (
+              <div className="mt-4 flex h-full w-full flex-col items-center overflow-y-auto pl-6">
+                {Object.entries(groupedTxs)
+                  .sort(sortByDateDesc)
+                  .map(([date, txs]) => (
+                    <section className="mt-6 w-fit" key={date}>
+                      <FootnoteText className="mb-3 ml-2 text-text-tertiary">{date}</FootnoteText>
+                      <ul className="flex w-[736px] flex-col gap-y-1.5">
+                        {txs
+                          .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+                          .map(tx => (
+                            <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
+                              <Operation
+                                operation={tx}
+                                multisigAccount={multisigAccount}
+                                isDefaultOpen={tx.id === focusedOperationId}
+                              />
+                            </li>
+                          ))}
+                      </ul>
+                    </section>
+                  ))}
+              </div>
+            )}
+          </Box>
+        </ScrollArea>
+      )}
+
+      <AccountNotFoundModal />
+    </>
   );
 };
