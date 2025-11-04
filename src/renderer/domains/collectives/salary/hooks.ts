@@ -1,23 +1,27 @@
-import { type ApiPromise } from '@polkadot/api';
-
 import { type NullableMap } from '@/shared/core';
 import { nonNullableMap } from '@/shared/lib/utils';
 import { useResource } from '@/shared/query';
-import { type CollectivePalletsType } from '../_lib/types';
 
-import { type ClaimantRequestParams, claimantStatusResource, salariesResource, salaryCycleResource } from './resource';
+import {
+  type ClaimantRequestParams,
+  type SalariesRequestParams,
+  type SalaryCycleRequestParams,
+  claimantStatusResource,
+  salariesResource,
+  salaryCycleResource,
+} from './resource';
 
-export const useSalary = (palletType: CollectivePalletsType, api: ApiPromise | null) => {
+export const useSalaries = (params: NullableMap<SalariesRequestParams>) => {
   return useResource(salariesResource, {
-    params: api ? { palletType, api } : null,
+    params: nonNullableMap(params) ? params : null,
     defaultValue: null,
     map: (cache, { palletType, api }) => cache[palletType]?.[api.genesisHash.toHex()],
   });
 };
 
-export const useSalaryCycleResource = (palletType: CollectivePalletsType, api: ApiPromise | null) => {
+export const useSalaryCycleResource = (params: NullableMap<SalaryCycleRequestParams>) => {
   return useResource(salaryCycleResource, {
-    params: api ? { palletType, api } : null,
+    params: nonNullableMap(params) ? params : null,
     defaultValue: null,
     map: (cache, { palletType, api }) => cache[palletType]?.[api.genesisHash.toHex()],
   });

@@ -1,5 +1,4 @@
 import { format } from 'date-fns';
-import { useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { type PropsWithChildren, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -10,7 +9,7 @@ import { entries, nonNullable, toRomanNumeral } from '@/shared/lib/utils';
 import { Duration, FootnoteText, HelpText, Icon, Separator, SmallTitleText } from '@/shared/ui';
 import { Box, Modal, Select } from '@/shared/ui-kit';
 import { type FeedRecord, evidenceService } from '@/domains/collectives';
-import { activity } from '../model/activity';
+import { useMemberFeed } from '../hooks/useMemberFeed';
 import { alertsModel } from '../model/alerts';
 
 import { ReferendumActivityItem } from './ReferendumActivityItem';
@@ -96,7 +95,7 @@ const getLink = (t: TFunction, record: FeedRecord): { text: string; url: string 
 
 export const ActivityFeed = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
-  const list = useUnit(activity.$list);
+  const { data: list, pending } = useMemberFeed();
   const [filter, setFilter] = useState<FilterType | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -129,7 +128,7 @@ export const ActivityFeed = ({ children }: PropsWithChildren) => {
     });
   }, [list, filter]);
 
-  const { list: deferredList } = useDeferredList({ list: filteredList });
+  const { list: deferredList } = useDeferredList({ list: filteredList, isLoading: pending });
 
   const handleClearFilter = () => {
     setFilter(null);

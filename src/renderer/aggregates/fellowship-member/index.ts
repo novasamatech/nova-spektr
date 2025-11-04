@@ -12,4 +12,5 @@ export {
   useFellowshipMemberCurrentTrack,
   useFellowshipMemberNextTrack,
   useFellowshipMemberEndDemotionBlock,
+  useFellowshipMemberEndPromotionBlock,
 } from './hooks';

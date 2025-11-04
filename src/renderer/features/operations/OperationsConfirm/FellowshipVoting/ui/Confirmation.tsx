@@ -1,15 +1,13 @@
-import { useGate, useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { type ReactNode } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
-import { referendaPallet } from '@/shared/pallet/referenda';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { referendumService } from '@/domains/collectives';
+import { referendumService, useCoreMembers, useMaxRank, useReferendums, useTracks } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
-import { VotingConfirmation, fellowshipVotingFeature } from '@/features/fellowship-voting';
+import { VotingConfirmation } from '@/features/fellowship-voting';
 import { confirmModel } from '../model/confirm-model';
 
 type Props = {
@@ -28,33 +26,34 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
     fn: (value, [id]) => (id ? value[id] : null) ?? null,
   });
 
-  // What a mess, we should find a solution for rendering multiple confirms
-  const votingReferendum = useStoreMap({
-    store: fellowship.$store,
-    keys: [confirm?.meta],
-    fn: (store, [meta]) => {
-      if (!meta) return null;
-      const list = store?.referendums ?? [];
+  const palletType = confirm?.meta.pallet ?? null;
+  const poll = confirm?.meta.poll ?? null;
+  const initiator = confirm?.meta.initiator ?? null;
+  const api = confirm?.meta.api ?? null;
 
-      return list.find((r) => r.id === parseInt(meta.poll)) ?? null;
-    },
-  });
+  const { data: referendums } = useReferendums({ palletType, api });
+  const { data: members } = useCoreMembers({ palletType, api });
+  const { data: maxRank } = useMaxRank({ palletType, api });
+  const { data: tracks } = useTracks({ palletType, api });
 
-  useGate(fellowshipVotingFeature.gate);
-  useFlow(votingStatus.flow, {
-    referendumId: confirm ? referendaPallet.helpers.toReferendumId(parseInt(confirm.meta.poll)) : null,
-  });
+  const referendum = nonNullable(poll) ? referendums.find((r) => r.id === parseInt(poll)) : null;
+  const member = members.find((m) => m.accountId === initiator?.accountId);
+  const memberTrack = tracks.find((t) => t.id === member?.rank);
 
-  const maxRank = useUnit(votingStatus.$maxRank);
-  const memberTrack = useUnit(votingStatus.$memberTrack);
-  const currentTrack = useUnit(votingStatus.$currentProposerTrack);
-  const nextTrack = useUnit(votingStatus.$nextProposerTrack);
+  const proposerId = nonNullable(referendum) ? referendumService.getProposer(referendum) : null;
+  const proposer = nonNullable(proposerId) ? members.find((m) => m.accountId === proposerId) : null;
+
+  const currentTrack = nonNullable(proposer) ? tracks.find((t) => t.id === proposer.rank) : null;
+  const nextTrack = nonNullable(proposer) ? tracks.find((t) => t.id === proposer.rank + 1) : null;
 
   if (
     nullable(confirm) ||
+    nullable(maxRank) ||
     nullable(memberTrack) ||
-    nullable(votingReferendum) ||
-    referendumService.isCompleted(votingReferendum)
+    nullable(currentTrack) ||
+    nullable(nextTrack) ||
+    nullable(referendum) ||
+    referendumService.isCompleted(referendum)
   ) {
     return null;
   }
@@ -67,7 +66,7 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
         chain={confirm.meta.chain}
         vote={confirm.meta.aye ? 'aye' : 'nay'}
         wallets={confirm.meta.wallets}
-        referendum={votingReferendum}
+        referendum={referendum}
         memberTrack={memberTrack}
         currentProposerTrack={currentTrack}
         nextProposerTrack={nextTrack}

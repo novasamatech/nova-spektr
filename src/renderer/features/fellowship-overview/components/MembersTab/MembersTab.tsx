@@ -1,4 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { memo, useCallback, useDeferredValue, useMemo, useState } from 'react';
 
 import { $features } from '@/shared/config/features';
@@ -6,8 +6,9 @@ import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
 import { SearchInput } from '@/shared/ui-kit';
-import { fellowshipOverviewFeature } from '../../model/feature';
-import { membersModel } from '../../model/members';
+import { useCoreMembers } from '@/domains/collectives';
+import { identityService, useIdentities } from '@/domains/network';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { MembersEmptyState } from './MembersEmptyState';
 import { MembersFilters } from './MembersFilters';
@@ -22,24 +23,27 @@ export const MembersTab = memo((_props: MembersTabProps) => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const deferredQuery = useDeferredValue(searchQuery);
 
-  const chain = useStoreMap({
-    store: fellowshipOverviewFeature.input,
-    keys: [],
-    fn: input => input?.chain ?? null,
-  });
+  const chain = useFellowshipChain();
+  const api = useFellowshipApi();
 
-  const membersWithSalary = useUnit(membersModel.$membersWithSalary);
+  const { data: members } = useCoreMembers({ palletType: 'fellowship', api });
+  const { data: identities } = useIdentities(members.map(m => m.accountId));
+
   const features = useUnit($features);
-  const { list } = useDeferredList({ list: membersWithSalary });
+
+  const { list } = useDeferredList({ list: members });
 
   const filteredMembers = useMemo(() => {
     let filtered = performSearch({
       query: deferredQuery,
       records: list,
-      getMeta: member => ({
-        address: toAddress(member.accountId, { prefix: chain?.addressPrefix }),
-        name: member.name ?? '',
-      }),
+      getMeta: member => {
+        const identity = identities[member.accountId];
+        return {
+          address: toAddress(member.accountId, { prefix: chain?.addressPrefix }),
+          name: identity ? identityService.getFullName(identity) : '',
+        };
+      },
       weights: {
         name: 1,
         address: 0.5,
@@ -59,10 +63,7 @@ export const MembersTab = memo((_props: MembersTabProps) => {
       });
     }
 
-    return filtered.map(member => ({
-      ...member,
-      address: toAddress(member.accountId, { prefix: chain?.addressPrefix }),
-    }));
+    return filtered;
   }, [list, chain, deferredQuery, rankFilter, statusFilter]);
 
   const handleClearFilters = useCallback(() => {
@@ -76,6 +77,24 @@ export const MembersTab = memo((_props: MembersTabProps) => {
   }, [handleClearFilters]);
 
   const isEmpty = filteredMembers.length === 0 && (deferredQuery || rankFilter !== 'all' || statusFilter !== 'all');
+
+  /**
+   * Let salaryText = '-'; let salaryAmount = 0;
+   *
+   * ```
+   * if (salaries[input.chainId]) {
+   *   const memberSalary = salaryService.getMemberSalary(
+   *     member,
+   *     salaries[input.chainId],
+   *   );
+   *   const rawSalary = member.isActive
+   *     ? memberSalary.active
+   *     : memberSalary.passive;
+   *   salaryText = salaryService.formatSalaryAmount(rawSalary);
+   *   salaryAmount = rawSalary.toNumber();
+   * }
+   * ```
+   */
 
   return (
     <div className="flex h-full flex-col">
@@ -105,7 +124,7 @@ export const MembersTab = memo((_props: MembersTabProps) => {
           onClearSearch={handleClearSearch}
         />
       ) : (
-        <MembersTable data={filteredMembers} />
+        <MembersTable members={filteredMembers} />
       )}
     </div>
   );

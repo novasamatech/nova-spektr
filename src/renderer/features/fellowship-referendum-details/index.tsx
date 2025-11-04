@@ -27,7 +27,7 @@ export {
 
 fellowshipReferendumsDetailsFeature.inject(evidenceDetailsModalSlot, ({ evidence, title, children }) => {
   return (
-    <EvidenceDetailsModal evidence={evidence} title={title}>
+    <EvidenceDetailsModal referendum={null} evidence={evidence} title={title}>
       {children}
     </EvidenceDetailsModal>
   );

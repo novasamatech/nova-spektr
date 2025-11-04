@@ -11,7 +11,7 @@ import {
   useEvidencePeriod,
   useEvidences,
   useMembers,
-  useSalary,
+  useSalaries,
   useSalaryClaimStatusResource,
   useTracks,
   useVotes,
@@ -70,7 +70,7 @@ export const useFellowshipWallet = () => {
 
 export const useFellowshipMemberSalary = () => {
   const api = useFellowshipApi();
-  const { data: salaries, pending: pendingSalaries } = useSalary('fellowship', api);
+  const { data: salaries, pending: pendingSalaries } = useSalaries({ palletType: 'fellowship', api });
   const { data: member, pending: pendingMember } = useFellowshipMember();
 
   const salary = useMemo(() => {
@@ -122,6 +122,24 @@ export const useFellowshipMemberLeftToPromotion = () => {
   return {
     data,
     pending: memberPending || blockPending || periodsPending,
+  };
+};
+
+export const useFellowshipMemberEndPromotionBlock = () => {
+  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
+
+  const { data: member, pending: memberPending } = useFellowshipMember();
+  const { data: periods, pending: periodsPending } = useEvidencePeriod({ palletType: 'fellowship', api, chain });
+
+  let data: BlockHeight | null = null;
+  if (nonNullable(periods) && nonNullable(member) && memberService.isCoreMember(member)) {
+    data = evidenceService.getEndPromotionBlock(member, periods);
+  }
+
+  return {
+    data,
+    pending: memberPending || periodsPending,
   };
 };
 

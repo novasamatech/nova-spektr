@@ -21,15 +21,12 @@ export const VotingRecord = memo(({ referendum, evidence }: Props) => {
 
   const { data: activity } = useActivity(memberId);
 
-  const { activity: activityThreshold, agreement: agreementThreshold } =
-    memberService.getActivityAndAgreementThresholds(member.rank);
-
   if (nullable(activity) || nullable(activity.activity) || nullable(activity.agreement)) {
     return <Skeleton height={5} />;
   }
 
-  const actualActivityThreshold = activityThreshold ?? 100;
-  const actualAgreementThreshold = agreementThreshold ?? 100;
+  const actualActivityThreshold = activity?.activityThreshold ?? 100;
+  const actualAgreementThreshold = activity?.agreementThreshold ?? 100;
 
   const isActivityFit = activity.activity >= actualActivityThreshold;
   const isAgreementFit = activity.agreement >= actualAgreementThreshold;

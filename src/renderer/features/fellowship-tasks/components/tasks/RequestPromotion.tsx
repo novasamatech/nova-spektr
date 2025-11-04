@@ -1,9 +1,13 @@
+import { useEffect, useState } from 'react';
+
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { getCreatedDateFromApi, toRomanNumeral } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { useFellowshipMemberNextTrack } from '@/aggregates/fellowship-member';
+import { useFellowshipMemberEndPromotionBlock, useFellowshipMemberNextTrack } from '@/aggregates/fellowship-member';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { PromotionEndTimer } from '../PromotionEndTimer';
 import { BadgeIcon } from '../TaskBadge';
 
 export const requestPromotionTaskActionSlot = createSlot();
@@ -14,8 +18,7 @@ export const RequestPromotion = () => {
 
   const api = useFellowshipApi();
   const { data: nextTrack } = useFellowshipMemberNextTrack();
-
-  const endPromotionPeriod = useUnit(periods.$endPromotionPeriod);
+  const { data: endPromotionPeriod } = useFellowshipMemberEndPromotionBlock();
 
   useEffect(() => {
     if (api && endPromotionPeriod) {

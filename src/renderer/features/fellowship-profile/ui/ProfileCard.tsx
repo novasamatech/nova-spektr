@@ -11,7 +11,6 @@ import { identityService, useIdentity } from '@/domains/network';
 import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
 import { useFellowshipChain, useFellowshipChainConnected } from '@/aggregates/fellowship-network';
 import { fellowshipProfileFeature } from '../model/feature';
-import { profile } from '../model/profile';
 
 import { ActiveIndicator } from './ActiveIndicator';
 import { ProfileModal } from './ProfileModal';
@@ -99,8 +98,9 @@ const NoAccount = () => {
 const NoProfile = () => {
   const { t } = useI18n();
 
-  const member = useUnit(profile.$member);
-  const isAccountExist = useUnit(profile.$isAccountExist);
+  const { data: member } = useFellowshipMember();
+  const { data: account } = useFellowshipAccount();
+  const isAccountExist = nonNullable(account);
 
   if (!isAccountExist || nonNullable(member)) return null;
 

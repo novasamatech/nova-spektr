@@ -5,7 +5,13 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
-import { type Referendum, referendumService, trackService, useReferendumMeta } from '@/domains/collectives';
+import {
+  type Referendum,
+  referendumService,
+  trackService,
+  useReferendumMeta,
+  votingHistoryService,
+} from '@/domains/collectives';
 import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
 import { useReferendumVotes } from '../hooks/useReferendumVotes';

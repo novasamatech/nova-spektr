@@ -1,7 +1,6 @@
 import { BN_ZERO } from '@polkadot/util';
-import { combine, sample } from 'effector';
+import { combine } from 'effector';
 
-import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { salary as salaryModel, salaryService } from '@/domains/collectives';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
@@ -53,22 +52,6 @@ const $memberClaimStatus = combine($member, $chainClaimantStatuses, (member, sta
 const $currentPeriod = combine($status, fellowshipNetwork.$currentBlock, (status, currentBlock) => {
   if (nullable(status) || nullable(currentBlock)) return null;
   return salaryService.getCurrentPeriod(status, currentBlock);
-});
-
-const memberUpdated = attachToFeatureInput(fellowshipTasksFeature, $member).filterMap(({ data, input }) => {
-  if (!data) return;
-
-  return {
-    api: input.api,
-    chainId: input.chainId,
-    palletType: input.palletType,
-    accounts: [data.accountId],
-  };
-});
-
-sample({
-  clock: memberUpdated,
-  target: salaryModel.claimantStatusResource.fetch,
 });
 
 export const memberSalary = {

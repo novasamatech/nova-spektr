@@ -4,7 +4,10 @@ import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Box, Modal } from '@/shared/ui-kit';
-import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
+import { type Evidence, type Referendum, referendumService, trackService, useTracks } from '@/domains/collectives';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useEvidenceContent } from '../hooks/useEvidenceContent';
+import { useReferendum } from '../hooks/useReferendum';
 import { detailsService } from '../service';
 
 import { AdditionalInfo } from './AdditionalInfo';
@@ -26,19 +29,12 @@ type Props = PropsWithChildren<{
 
 export const ReferendumDetailsModal = memo(
   ({ referendumId, children, title, isCurrentUser, isOpen, onClose }: Props) => {
-    useGate(fellowshipReferendumsDetailsFeature.gate);
-
     const { t } = useI18n();
 
     const api = useFellowshipApi();
+    const { data: referendum } = useReferendum(referendumId);
     const { data: tracks } = useTracks({ palletType: 'fellowship', api });
     const { data: evidenceContent } = useEvidenceContent(referendum);
-
-    const referendum = useStoreMap({
-      store: fellowship.$store,
-      keys: [referendumId],
-      fn: (store, [id]) => store?.referendums?.find(r => r.id === id) ?? null,
-    });
 
     const modalTitle = useMemo(() => {
       if (title) {
@@ -76,7 +72,7 @@ export const ReferendumDetailsModal = memo(
               <Box width="350px" shrink={0} gap={4}>
                 <Slot id={referendumAdditionalHighPriorityInfoSlot} props={{ referendumId }} />
 
-                <MemberProfile referendum={referendum} evidence={evidence} />
+                <MemberProfile referendum={referendum} evidence={null} />
 
                 {referendum && <Slot id={referendumAdditionalInfoSlot} props={{ referendum: referendum }} />}
 

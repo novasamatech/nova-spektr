@@ -33,7 +33,7 @@ export const useFellowshipChainConnected = () => {
 export const useCurrentSalaryPeriod = () => {
   const api = useFellowshipApi();
   const { data: block, pending: blockPending } = useFellowshipBlock();
-  const { data: cycle, pending: cyclePending } = useSalaryCycleResource('fellowship', api);
+  const { data: cycle, pending: cyclePending } = useSalaryCycleResource({ palletType: 'fellowship', api });
 
   return {
     data: cycle && block ? salaryService.getCurrentPeriod(cycle, block) : null,
