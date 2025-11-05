@@ -56,6 +56,9 @@ const paramsProcessed = createEvent<{
   matchedHandlers: MatchedHandler[];
 }>();
 
+// Event to update browser URL with remaining params
+const urlShouldUpdate = createEvent<Record<string, unknown>>();
+
 // Store for registered handlers chain
 const $handlers = createStore<HandlerEntry[]>([])
   .on(handlerRegistered, (handlers, handler) => {
@@ -158,6 +161,13 @@ sample({
   target: handlersCleared,
 });
 
+// Update URL with remaining params after processing
+sample({
+  clock: paramsProcessed,
+  fn: ({ remainingParams }) => remainingParams,
+  target: urlShouldUpdate,
+});
+
 export interface DeepLinkHandlerConfig<T extends z.ZodType> {
   schema: T;
 }
@@ -180,29 +190,6 @@ export function createDeepLinkHandler<T extends z.ZodType>({
 }
 
 /**
- * Gets the keys from a Zod schema
- */
-function getSchemaKeys(schema: z.ZodType): string[] {
-  // For ZodObject
-  if ('shape' in schema && schema.shape) {
-    return Object.keys(schema.shape);
-  }
-
-  // For ZodEffects (transformed schemas)
-  if ('_def' in schema && schema._def) {
-    const def = schema._def as any;
-    if (def.schema) {
-      return getSchemaKeys(def.schema);
-    }
-    if (def.shape) {
-      return typeof def.shape === 'function' ? Object.keys(def.shape()) : Object.keys(def.shape);
-    }
-  }
-
-  return [];
-}
-
-/**
  * Attempts to extract params matching the schema from the given params object.
  * Returns the extracted data and remaining params.
  */
@@ -211,23 +198,16 @@ export function extractParams<T extends z.ZodType>(
   params: Record<string, any>,
   schema: T,
 ): HandlerResult<z.infer<T>> {
-  const schemaKeys = getSchemaKeys(schema);
-
-  // Extract only the params that match schema keys
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const paramsToValidate: Record<string, any> = {};
-  for (const key of schemaKeys) {
-    if (key in params) {
-      paramsToValidate[key] = params[key];
-    }
-  }
-
   try {
-    const parsed = schema.parse(paramsToValidate);
+    // Parse the params - let Zod extract what it needs
+    const parsed = schema.parse(params);
 
-    // Remove extracted params from the original params
+    // Use the parsed object keys to determine what was consumed
+    const parsedKeys = Object.keys(parsed as object);
+
+    // Remove consumed params from the original params
     const remainingParams = { ...params };
-    for (const key of schemaKeys) {
+    for (const key of parsedKeys) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete remainingParams[key];
     }
@@ -238,6 +218,7 @@ export function extractParams<T extends z.ZodType>(
       remainingParams,
     };
   } catch {
+    // If parsing fails, return all params as remaining
     return {
       matched: false,
       remainingParams: params,
@@ -266,6 +247,12 @@ export function processDeepLinkChain<T extends z.ZodType>(
   return remainingParams;
 }
 
+// Store for URL update subscriptions
+const $remainingParams = createStore<Record<string, unknown> | null>(null).on(
+  urlShouldUpdate,
+  (_, params) => params,
+);
+
 export const deepLinkService = {
   handleDeepLink: setDeepLink,
   registerHandler: <T>(handler: DeepLinkHandler<T>) => {
@@ -275,4 +262,6 @@ export const deepLinkService = {
       triggered: handler.triggered as Event<unknown>,
     });
   },
+  $remainingParams,
+  urlShouldUpdate,
 };

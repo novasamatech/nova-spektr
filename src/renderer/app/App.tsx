@@ -20,7 +20,7 @@ export const App = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const appRoutes = useRoutes(ROUTES_CONFIG);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useGate(navigationModel.gates.flow, { navigate });
 
@@ -44,6 +44,21 @@ export const App = () => {
       deepLinkService.handleDeepLink({ searchParams });
     }
   }, [searchParams]);
+
+  // Update URL with remaining params after deep link processing
+  useEffect(() => {
+    const unsubscribe = deepLinkService.urlShouldUpdate.watch((remainingParams) => {
+      const newParams = new URLSearchParams();
+      Object.entries(remainingParams).forEach(([key, value]) => {
+        if (value != null) {
+          newParams.set(key, String(value));
+        }
+      });
+      setSearchParams(newParams, { replace: true });
+    });
+
+    return unsubscribe;
+  }, [setSearchParams]);
 
   return (
     <ConfirmDialogProvider>
