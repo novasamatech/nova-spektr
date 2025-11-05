@@ -1,3 +1,4 @@
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { uniqBy } from 'lodash';
 import { and, not, spread } from 'patronum';
@@ -6,6 +7,7 @@ import { type Asset, type Chain, RewardsDestination } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
 import {
   ZERO_BALANCE,
+  fromPrecision,
   getRelaychainAsset,
   isStringsMatchQuery,
   nonNullable,
@@ -40,6 +42,11 @@ const formChanged = createEvent<FormParams>();
 const formCleared = createEvent();
 const destinationQueryChanged = createEvent<string>();
 const destinationTypeChanged = createEvent<RewardsDestination>();
+
+const setReuseLockMode = createEvent<boolean>();
+const $isReuseLockModeEnabled = createStore(false)
+  .on(setReuseLockMode, (_, update) => update)
+  .reset(formInitiated);
 
 const $networkStore = createStore<{ chain: Chain; asset: Asset } | null>(null);
 
@@ -178,7 +185,7 @@ const $coreTx = combine(
     networkStore: $networkStore,
   },
   ({ chain, signatory, amount, destination, destinationType, validators, networkStore }) => {
-    if (nullable(chain) || nullable(signatory) || nullable(networkStore)) {
+    if (nullable(chain) || nullable(signatory) || nullable(networkStore) || !amount) {
       return null;
     }
 
@@ -199,6 +206,38 @@ const $coreTx = combine(
   },
 );
 
+const $feeTx = combine(
+  {
+    chain: $chain,
+    signatory: form.fields.signatory.$value,
+    amount: $reservableAmount,
+    destination: form.fields.destination.$value,
+    destinationType: $destinationType,
+    validators: $validators,
+    networkStore: $networkStore,
+  },
+  ({ chain, signatory, amount, destination, destinationType, validators, networkStore }) => {
+    if (nullable(chain) || nullable(signatory) || nullable(networkStore) || nullable(amount)) {
+      return null;
+    }
+
+    if (destinationType !== RewardsDestination.RESTAKE) {
+      if (nullable(destination) || !validateAddress(destination)) {
+        return null;
+      }
+    }
+
+    return transactionBuilder.buildBondNominate({
+      chain: chain,
+      asset: networkStore.asset,
+      accountId: signatory.accountId,
+      amount: fromPrecision(amount, networkStore.asset.precision),
+      destination: destinationType === RewardsDestination.RESTAKE ? 'Staked' : { destination: toAddress(destination!) },
+      nominators: validators.map(({ accountId }) => accountId),
+    });
+  },
+);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   api: $api,
   initiator: form.fields.initiator.$value,
@@ -206,6 +245,14 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   chain: $chain,
   transaction: $coreTx,
+  feeTransaction: $feeTx,
+});
+
+const $available = combine({ reservableAmount: $reservableAmount, fee: $fee }).map(({ reservableAmount, fee }) => {
+  if (nullable(reservableAmount) || nullable(fee)) return null;
+
+  const available = reservableAmount.sub(fee);
+  return BN.max(BN_ZERO, available);
 });
 
 // Transaction validation
@@ -272,24 +319,38 @@ sample({
   }),
 });
 
-const $bondBalanceRange = $reservableAmount.map((reservableAmount) => {
+const $bondBalanceRange = $available.map((reservableAmount) => {
   if (nullable(reservableAmount)) return ZERO_BALANCE;
 
   const minBondBalance = reservableAmount;
   return minBondBalance.isZero() ? ZERO_BALANCE : [ZERO_BALANCE, minBondBalance.toString()];
 });
 
-const $reusableLock = $initiatorBalance.map((balance) => {
-  if (nullable(balance)) {
+const $reusableLock = combine({ balance: $initiatorBalance, available: $available }).map(({ balance, available }) => {
+  if (nullable(balance) || nullable(available)) {
     return null;
   }
 
-  return reusableLockBN(balance);
+  const reusableLock = reusableLockBN(balance);
+  return BN.min(available, reusableLock);
 });
 
 sample({
   clock: form.fields.initiator.change,
   target: form.fields.amount.reset,
+});
+
+sample({
+  clock: [$reusableLock, setReuseLockMode.filter({ fn: (enabled) => enabled })],
+  source: {
+    isReuseLockModeEnabled: $isReuseLockModeEnabled,
+    reusableLock: $reusableLock,
+    network: $networkStore,
+  },
+  filter: ({ isReuseLockModeEnabled, reusableLock, network }) =>
+    isReuseLockModeEnabled && nonNullable(reusableLock) && nonNullable(network),
+  fn: ({ reusableLock, network }) => fromPrecision(reusableLock!, network!.asset.precision),
+  target: form.fields.amount.change,
 });
 
 sample({
@@ -343,7 +404,7 @@ export const formModel = {
 
   $bondBalanceRange,
   $proxyBalance,
-  $reusableLock,
+  $reusableLock: $reusableLock,
 
   $multisigDeposit,
   $fee,
@@ -364,4 +425,5 @@ export const formModel = {
   multisigDepositChanged,
   formSubmitted,
   formChanged,
+  setReuseLockMode,
 };

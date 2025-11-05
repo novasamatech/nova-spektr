@@ -3,7 +3,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatAsset, fromPrecision, transferableAmount } from '@/shared/lib/utils';
+import { formatAsset, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
 import { SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
@@ -101,6 +101,7 @@ const Amount = () => {
   const network = useUnit(formModel.$networkStore);
   const bondBalanceRange = useUnit(formModel.$bondBalanceRange);
   const reusableLock = useUnit(formModel.$reusableLock);
+  const setReuseLockMode = useUnit(formModel.setReuseLockMode);
 
   if (!network) {
     return null;
@@ -118,6 +119,7 @@ const Amount = () => {
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
         onChange={amount.onChange}
+        onKeyDown={() => setReuseLockMode(false)}
       />
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}
@@ -125,11 +127,7 @@ const Amount = () => {
 
       {reusableLock && showReuseLockBtn && (
         <div className="flex justify-end">
-          <Button
-            size="sm"
-            pallet="secondary"
-            onClick={() => amount.onChange(fromPrecision(reusableLock, network.asset.precision))}
-          >
+          <Button size="sm" pallet="secondary" onClick={() => setReuseLockMode(true)}>
             {t('governance.vote.reuseLock')}: {formatAsset(reusableLock, network.asset)}
           </Button>
         </div>
