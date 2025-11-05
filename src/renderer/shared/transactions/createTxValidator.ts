@@ -172,7 +172,6 @@ const basicRules: ValidatorRule<unknown>[] = [
     assert(signatory, 'Signatory not found');
 
     const fee = await transactionService.getTransactionFee(transaction, signatory.accountId, api);
-    assert(fee, 'Fee not found');
 
     const balanceForFee = getBalance(signatory.accountId, chainId, asset.assetId);
     assert(balanceForFee, 'Balance for fee not found');
