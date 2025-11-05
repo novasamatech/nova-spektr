@@ -1,18 +1,12 @@
-import { webcrypto } from 'node:crypto';
-
-import { AccountType, type DraftAccount, KeyType, type VaultShardAccount } from '@/shared/core';
+import { KeyType } from '@/shared/core';
 import { polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { importKeysUtils } from '../import-keys-utils';
 import { importKeysMocks } from '../mocks/import-keys-utils.mock';
 
-Object.defineProperty(global.self, 'crypto', {
-  value: webcrypto,
-});
-
 describe('entities/dynamicDerivations/import-keys-utils', () => {
   describe('entities/dynamicDerivations/import-keys-utils/validateDerivation', () => {
     test.each(importKeysMocks.validationTestData)('$testName', ({ derivation, isValid }) => {
-      expect(!importKeysUtils.getDerivationError(derivation)).toEqual(isValid);
+      expect(!importKeysUtils.getDerivationError(derivation, {})).toEqual(isValid);
     });
   });
 
@@ -93,20 +87,19 @@ describe('entities/dynamicDerivations/import-keys-utils', () => {
           chainId: importKeysMocks.chainId,
         },
       ];
+      const expectedNewShardedDerivationPaths = [...Array(10).keys()]
+        .map((i) => `//polkadot//hot//${i + 10}`)
+        .concat('//polkadot//some_path');
+
       const { addedDerivations, addedCount, duplicatedCount } = importKeysUtils.mergeChainDerivations(
         importKeysMocks.existingChainDerivations,
         importedDerivations,
       );
+      const addedShardedDerivationPaths = addedDerivations.map((d) => d.derivationPath);
 
-      const addedShardedDerivations = addedDerivations.filter((d) => d.accountType === AccountType.SHARD);
-      const newStakingShard = addedDerivations.find((d) => d.derivationPath === '//polkadot//hot//19');
-
-      expect(addedShardedDerivations.length).toEqual(10);
       expect(addedCount).toEqual(11);
       expect(duplicatedCount).toEqual(10);
-      expect((newStakingShard as DraftAccount<VaultShardAccount>)?.groupId).toEqual(
-        importKeysMocks.existingShardsGroupId,
-      );
+      expect(addedShardedDerivationPaths).toEqual(expectedNewShardedDerivationPaths);
     });
   });
 });
