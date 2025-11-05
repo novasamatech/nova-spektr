@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { nullable } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { evidenceService, memberService, useEvidencePeriod, useFeed } from '@/domains/collectives';
 import { useBlockTime } from '@/domains/network';
 import { useFellowshipMember } from '@/aggregates/fellowship-member';
@@ -21,8 +22,8 @@ export const usePromotionPeriod = () => {
     const from = member.lastPromotion !== 0 ? member.lastPromotion : importedBlock;
 
     return {
-      from,
-      to: evidenceService.getPromotionPeriod(member, periods) + from,
+      from: pjsSchema.helpers.toBlockHeight(from),
+      to: pjsSchema.helpers.toBlockHeight(evidenceService.getPromotionPeriod(member, periods) + from),
     };
   }, [periods, member, feed]);
 
