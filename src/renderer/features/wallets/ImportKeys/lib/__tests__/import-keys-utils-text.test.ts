@@ -55,7 +55,7 @@ describe('entities/dynamicDerivations/import-keys-utils/parseTextFile', () => {
       derivationPaths: [
         {
           derivationPath: '/soft_path',
-          sharded: '10',
+          sharded: '11',
           chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
         },
       ],
@@ -71,7 +71,7 @@ describe('entities/dynamicDerivations/import-keys-utils/parseTextFile', () => {
       derivationPaths: [
         {
           derivationPath: '//hard_path',
-          sharded: '10',
+          sharded: '11',
           chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
         },
       ],
@@ -87,7 +87,7 @@ describe('entities/dynamicDerivations/import-keys-utils/parseTextFile', () => {
       derivationPaths: [
         {
           derivationPath: '//hard/soft//hard',
-          sharded: '10',
+          sharded: '11',
           chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
         },
       ],
@@ -103,7 +103,7 @@ describe('entities/dynamicDerivations/import-keys-utils/parseTextFile', () => {
       derivationPaths: [
         {
           derivationPath: `//polkadot//~!@#$%^&*(*)_+QWE'1234567890-=`,
-          sharded: '10',
+          sharded: '11',
           chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
         },
       ],

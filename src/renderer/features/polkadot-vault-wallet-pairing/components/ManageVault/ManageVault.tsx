@@ -10,7 +10,6 @@ import {
   AccountType,
   type ChainId,
   CryptoType,
-  type DraftAccount,
   SigningType,
   type VaultChainAccount,
   type VaultShardAccount,
@@ -138,13 +137,13 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     });
   };
 
-  const handleImportKeys = (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
+  const handleImportKeys = (keys: DerivationKeyDraft[]) => {
     manageVaultModel.events.derivationsImported(keys);
     toggleIsImportModalOpen();
   };
 
   const handleConstructorKeys = (keys: DerivationKeyDraft[]) => {
-    manageVaultModel.events.derivationsConstructed(keys);
+    manageVaultModel.events.derivationsImported(keys);
     toggleConstructorModal();
   };
 
@@ -300,7 +299,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       <KeyConstructor
         isOpen={isConstructorModalOpen}
         title={name?.value}
-        existingKeys={keys as (VaultChainAccount | VaultShardAccount)[]}
+        existingKeys={keys}
         onClose={toggleConstructorModal}
         onConfirm={handleConstructorKeys}
       />
