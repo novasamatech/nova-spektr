@@ -16,7 +16,6 @@ import { xcmTransferUtils } from '../../shared/services/xcm-transfer-utils';
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
 const xcmConfigLoaded = createEvent();
 const xcmChainSelected = createEvent<ChainId>();
-const xcmChainChanged = createEvent<ChainId>();
 const xcmFeeChanged = createEvent<BN>();
 const deliveryFeeRequested = createEvent<Extrinsic>();
 const isXcmFeeLoadingChanged = createEvent<boolean>();
@@ -293,14 +292,6 @@ sample({
 
 sample({
   clock: xcmChainSelected,
-  source: $xcmChainId,
-  filter: (prev, next) => prev !== next,
-  fn: (_, next) => next,
-  target: xcmChainChanged,
-});
-
-sample({
-  clock: xcmChainSelected,
   source: networkModel.$apis,
   filter: (apis, chainId) => Boolean(apis[chainId]),
   fn: (apis, chainId) => apis[chainId],
@@ -344,7 +335,7 @@ sample({
 });
 
 sample({
-  clock: [xcmChainChanged, getDeliveryFeeFx.fail],
+  clock: [$xcmChainId, getDeliveryFeeFx.fail],
   fn: () => null,
   target: $deliveryFee,
 });

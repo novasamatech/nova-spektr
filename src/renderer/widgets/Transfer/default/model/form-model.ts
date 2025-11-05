@@ -350,14 +350,7 @@ const $coreTx = combine(
     balancePreservation: $balancePreservationStrategy,
   },
   ({ isFormValid, network, isXcm, formValues, xcmData, isConnected, initiator, inputMode, balancePreservation }) => {
-    if (
-      !isFormValid ||
-      !network ||
-      !initiator ||
-      !isConnected ||
-      (isXcm && !xcmData) ||
-      !validateAddress(formValues.destination)
-    ) {
+    if (!isFormValid || !network || !initiator || !isConnected || !validateAddress(formValues.destination)) {
       return null;
     }
 
@@ -367,7 +360,7 @@ const $coreTx = combine(
       accountId: initiator.accountId,
       amount: formValues.amount,
       destination: formValues.destination,
-      xcmData,
+      xcmData: isXcm ? xcmData : undefined,
       balancePreservation,
       inputMode,
     });
@@ -417,7 +410,7 @@ const $feeCoreTx = combine(
       accountId: initiator.accountId,
       amount: '1',
       destination: mockDestination,
-      xcmData,
+      xcmData: isXcm ? xcmData : undefined,
       inputMode,
       balancePreservation,
     });
