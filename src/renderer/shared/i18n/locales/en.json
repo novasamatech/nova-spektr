@@ -880,8 +880,8 @@
     },
     "notifications": {
       "addressCopied": "Address copied!",
-      "operationLinkCopied": "Operation link copied!",
-      "copiedToClipboard": "Copied to clipboard!"
+      "copiedToClipboard": "Copied to clipboard!",
+      "operationLinkCopied": "Operation link copied!"
     },
     "timeout": {
       "expired": "Expired"
@@ -1476,6 +1476,9 @@
     }
   },
   "operation": {
+    "accountNotFoundButton": "Close",
+    "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
+    "accountNotFoundTitle": "No account to sign operation",
     "addCallDataButton": "Add call data",
     "addToBasket": "Add to basket",
     "addedToBasket": "Added to basket",
@@ -1577,9 +1580,6 @@
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
-    "accountNotFoundTitle": "No account to sign operation",
-    "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
-    "accountNotFoundButton": "Close",
     "viewJSON": {
       "button": "View JSON",
       "label": "Operation details"
