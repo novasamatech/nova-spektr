@@ -62,7 +62,7 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
         setDecision(vote);
       }
     },
-    [referendumVote?.decision, decision, canAddToBasket, referendum?.id],
+    [referendumVote?.decision, decision, canAddToBasket, referendum?.id, transaction],
   );
 
   const aye = () => handleVote('aye');
