@@ -1,4 +1,4 @@
-import { type PropsWithChildren, memo, useMemo } from 'react';
+import { type PropsWithChildren, memo, useMemo, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -18,7 +18,11 @@ import { ReferendumDescription } from './ReferendumDescription';
 export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
 export const referendumAdditionalInfoSlot = createSlot<{ referendum: Referendum }>();
 
-export const referendumActionsSlot = createSlot<{ referendum: Referendum | null; evidence: Evidence | null }>();
+export const referendumActionsSlot = createSlot<{
+  referendum: Referendum | null;
+  evidence: Evidence | null;
+  onClose?: () => void;
+}>();
 
 type Props = PropsWithChildren<{
   referendumId: ReferendumId;
@@ -32,11 +36,22 @@ export const ReferendumDetailsModal = memo(
   ({ referendumId, children, title, isCurrentUser, isOpen, onClose }: Props) => {
     const { t } = useI18n();
 
+    const [open, setOpen] = useState<boolean>(isOpen || false);
+
     const api = useFellowshipApi();
     const { data: referendum } = useReferendum(referendumId);
     const { data: proposer } = useProposer(referendum);
     const { data: evidence } = useEvidence(proposer?.accountId ?? null);
     const { data: tracks } = useTracks({ palletType: 'fellowship', api });
+
+    const handleToggle = (open: boolean) => {
+      setOpen(open);
+    };
+
+    const handleClose = () => {
+      onClose?.();
+      setOpen(false);
+    };
 
     const modalTitle = useMemo(() => {
       if (title) {
@@ -55,14 +70,8 @@ export const ReferendumDetailsModal = memo(
       return t('governance.referendums.referendumTitle', { index: referendumId });
     }, [title, referendum, tracks, referendumId]);
 
-    const handleToggle = (open: boolean) => {
-      if (!open) {
-        onClose?.();
-      }
-    };
-
     return (
-      <Modal size="xl" height="fit" isOpen={isOpen} onToggle={handleToggle}>
+      <Modal size="xl" height="fit" isOpen={open} onToggle={handleToggle}>
         {children && <Modal.Trigger>{children}</Modal.Trigger>}
         <Modal.Title close>{modalTitle}</Modal.Title>
         <Modal.Content background="secondary">
@@ -77,7 +86,9 @@ export const ReferendumDetailsModal = memo(
 
               {referendum && <Slot id={referendumAdditionalInfoSlot} props={{ referendum: referendum }} />}
 
-              {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence: evidence }} />}
+              {!isCurrentUser && (
+                <Slot id={referendumActionsSlot} props={{ referendum, evidence, onClose: handleClose }} />
+              )}
 
               <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
             </Box>

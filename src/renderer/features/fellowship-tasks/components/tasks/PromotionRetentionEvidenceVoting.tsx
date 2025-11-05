@@ -12,11 +12,17 @@ import { MemberActivity } from '../MemberActivity';
 import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
 
-export const evidenceDetailsModalSlot = createSlot<{ evidence: Evidence; title: string; children: React.ReactNode }>();
+export const evidenceDetailsModalSlot = createSlot<{
+  evidence: Evidence;
+  title: string;
+  children: React.ReactNode;
+  transaction: Transaction | null;
+}>();
 export const evidenceVotingTaskActionSlot = createSlot<{
   evidence: Evidence;
   transaction: Transaction | null;
   endBlock: number | null;
+  onClose?: () => void;
 }>();
 
 type Props = {
@@ -76,6 +82,7 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
         props={{
           evidence,
           title,
+          transaction,
           children: (
             <button className="block w-full appearance-none p-4">
               <Box direction="row" gap={2}>
@@ -88,9 +95,7 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
                       <SmallTitleText className="truncate">{title}</SmallTitleText>
                       <TaskLabels tags={tags} />
                     </Box>
-                    {!evidenceSummary?.summary && pendingSummary && pendingSummary && (
-                      <Skeleton height="2.5lh" width="85%" />
-                    )}
+                    {!evidenceSummary?.summary && pendingSummary && <Skeleton height="2.5lh" width="85%" />}
                     <FootnoteText as="div">
                       {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
                       {!evidenceSummary?.summary && !pendingSummary

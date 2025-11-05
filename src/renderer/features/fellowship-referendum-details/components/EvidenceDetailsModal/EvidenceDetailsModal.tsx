@@ -1,5 +1,6 @@
-import { type PropsWithChildren, memo } from 'react';
+import { type PropsWithChildren, memo, useState } from 'react';
 
+import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Evidence, type Referendum } from '@/domains/collectives';
@@ -12,13 +13,28 @@ type Props = PropsWithChildren<{
   referendum: Referendum | null;
   evidence: Evidence;
   title: string;
+  transaction?: Transaction | null;
 }>;
 
-export const evidenceActionsSlot = createSlot<{ evidence: Evidence }>();
+export const evidenceActionsSlot = createSlot<{
+  evidence: Evidence;
+  transaction?: Transaction | null;
+  onClose?: () => void;
+}>();
 
-export const EvidenceDetailsModal = memo(({ referendum, evidence, children, title }: Props) => {
+export const EvidenceDetailsModal = memo(({ referendum, evidence, children, title, transaction }: Props) => {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  const handleToggle = (open: boolean) => {
+    setIsOpen(open);
+  };
+
+  const onClose = () => {
+    handleToggle(false);
+  };
+
   return (
-    <Modal size="xl" height="full">
+    <Modal size="xl" height="full" isOpen={isOpen} onToggle={handleToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{title}</Modal.Title>
       <Modal.Content>
@@ -29,7 +45,7 @@ export const EvidenceDetailsModal = memo(({ referendum, evidence, children, titl
           <Box gap={4} shrink={0}>
             <MemberProfile referendum={referendum} evidence={evidence} />
 
-            <Slot id={evidenceActionsSlot} props={{ evidence }} />
+            <Slot id={evidenceActionsSlot} props={{ evidence, transaction, onClose }} />
 
             <AdditionalInfo evidenceHash={evidence.hash} />
           </Box>

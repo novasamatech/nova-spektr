@@ -27,8 +27,8 @@ export const getExtrinsic: Record<
       ? api.tx.balances.transferKeepAlive(dest, value)
       : api.tx.balances.transfer(dest, value);
   },
-  [TransactionType.TRANSFER_ALL]: ({ dest }, api) => {
-    return api.tx.balances.transferAll(dest, false);
+  [TransactionType.TRANSFER_ALL]: ({ dest, keepAlive = false }, api) => {
+    return api.tx.balances.transferAll(dest, keepAlive);
   },
   [TransactionType.TRANSFER_ALLOW_DEATH]: ({ dest, value }, api) => {
     return api.tx.balances.transferAllowDeath(dest, value);

@@ -1,17 +1,19 @@
-import { memo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { VotingButtonWithTooltip } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type OngoingReferendum } from '@/domains/collectives';
+import { type OngoingReferendum, useMaxRank } from '@/domains/collectives';
+import { trackService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
-import { useFellowshipAccount } from '@/aggregates/fellowship-member';
+import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { useCanVoteForReferendum } from '../hooks/useCanVoteForReferendum';
 import { useMemberVoteInfo } from '../hooks/useMemberVoteInfo';
 import { useReferendumVote } from '../hooks/useReferendumVote';
 import { voting } from '../model/voting';
 
-import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
 import { VotingModal } from './VotingModal';
 
 type Props = {
@@ -22,49 +24,59 @@ type Props = {
 export const VotingActions = memo(({ referendum, transaction }: Props) => {
   const [decision, setDecision] = useState<'aye' | 'nay' | null>(null);
 
+  const api = useFellowshipApi();
   const { data: account } = useFellowshipAccount();
   const { data: referendumVote } = useReferendumVote(referendum);
+  const { data: currentMember } = useFellowshipMember();
+  const { data: maxRank } = useMaxRank({ palletType: 'fellowship', api });
 
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
   const canVote = useCanVoteForReferendum(referendum);
   const { memberVoteWeight, userVotesImpact } = useMemberVoteInfo(referendum);
 
-  if (nullable(userVotesImpact)) return null;
+  const handleVote = useCallback(
+    (vote: 'aye' | 'nay') => {
+      const alreadyChainVoted =
+        (vote === 'aye' && referendumVote?.decision === 'Aye') ||
+        (vote === 'nay' && referendumVote?.decision === 'Nay');
 
-  const aye = () => {
-    if (referendumVote?.decision === 'Aye') return;
+      if (canAddToBasket && nonNullable(transaction) && alreadyChainVoted) {
+        voting.flow.open({ vote, referendum });
+        voting.removeFromBasket();
+        voting.flow.close({ vote: null, referendum: null });
+        return;
+      }
 
-    if (decision === 'aye') {
-      setDecision(null);
-      return;
-    }
+      if (alreadyChainVoted) return;
 
-    if (canAddToBasket) {
-      voting.flow.open({ referendum, vote: 'aye' });
-      voting.saveToBasket();
-      voting.flow.close({ referendum: null, vote: null });
-    } else {
-      setDecision('aye');
-    }
-  };
+      if (decision === vote) {
+        setDecision(null);
+        return;
+      }
 
-  const nay = () => {
-    if (referendumVote?.decision === 'Nay') return;
+      if (canAddToBasket) {
+        voting.flow.open({ vote, referendum });
+        voting.saveToBasket();
+        voting.flow.close({ vote: null, referendum: null });
+      } else {
+        setDecision(vote);
+      }
+    },
+    [referendumVote?.decision, decision, canAddToBasket, referendum?.id, transaction],
+  );
 
-    if (decision === 'nay') {
-      setDecision(null);
-      return;
-    }
+  if (!currentMember || nullable(userVotesImpact)) return null;
 
-    if (canAddToBasket) {
-      voting.flow.open({ referendum, vote: 'nay' });
-      voting.saveToBasket();
-      voting.flow.close({ referendum: null, vote: null });
-    } else {
-      setDecision('nay');
-    }
-  };
+  const aye = () => handleVote('aye');
+  const nay = () => handleVote('nay');
+
+  const hasRequiredRank =
+    nonNullable(referendum) &&
+    nonNullable(maxRank) &&
+    trackService.rankSatisfiesVotingThreshold(currentMember.rank, maxRank, referendum.track);
+
+  const isCanVote = canVote && hasRequiredRank;
 
   return (
     <Box gap={1}>
@@ -72,8 +84,8 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
         <VotingButtonWithTooltip
           variant="negative"
           icon="negative"
-          disabled={!canVote}
-          isVoted={referendumVote?.decision === 'Nay'}
+          disabled={!isCanVote}
+          isVoted={nullable(transaction) ? referendumVote?.decision === 'Nay' : false}
           checked={nonNullable(transaction) && !transaction.args.aye}
           votes={memberVoteWeight}
           voteImpact={userVotesImpact}
@@ -82,8 +94,8 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
         <VotingButtonWithTooltip
           variant="positive"
           icon="positive"
-          disabled={!canVote}
-          isVoted={referendumVote?.decision === 'Aye'}
+          disabled={!isCanVote}
+          isVoted={nullable(transaction) ? referendumVote?.decision === 'Aye' : false}
           checked={nonNullable(transaction) && transaction.args.aye}
           votes={memberVoteWeight}
           voteImpact={userVotesImpact}

@@ -25,9 +25,9 @@ export {
   EvidenceDetailsModal,
 };
 
-fellowshipReferendumsDetailsFeature.inject(evidenceDetailsModalSlot, ({ evidence, title, children }) => {
+fellowshipReferendumsDetailsFeature.inject(evidenceDetailsModalSlot, ({ evidence, title, children, transaction }) => {
   return (
-    <EvidenceDetailsModal referendum={null} evidence={evidence} title={title}>
+    <EvidenceDetailsModal referendum={null} evidence={evidence} title={title} transaction={transaction}>
       {children}
     </EvidenceDetailsModal>
   );

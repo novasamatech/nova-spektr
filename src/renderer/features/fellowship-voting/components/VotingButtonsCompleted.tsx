@@ -3,12 +3,11 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui';
+import { VotingButtonWithTooltip } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum } from '@/domains/collectives';
 import { Card } from '@/features/fellowship-referendum-details';
 import { useReferendumVote } from '../hooks/useReferendumVote';
-
-import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
 
 type Props = {
   referendum: Referendum | null;

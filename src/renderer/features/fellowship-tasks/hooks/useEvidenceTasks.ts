@@ -10,6 +10,7 @@ import {
   useEvidenceToReferendumRelations,
   useEvidences,
   useMembers,
+  votingService,
 } from '@/domains/collectives';
 import { useFellowshipMember } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipBlock, useFellowshipChain } from '@/aggregates/fellowship-network';
@@ -17,6 +18,7 @@ import { PromotionRetentionEvidenceVoting } from '../components/tasks/PromotionR
 import { tasksService } from '../service';
 import { type TaskDescription } from '../types';
 
+import { useMemberBasketOperations } from './useMemberBasketOperations';
 import { useOngoingReferendums } from './useOngoingReferendums';
 
 const useEvidencesWithoutReferendums = () => {
@@ -56,6 +58,7 @@ export const useEvidenceTasks = () => {
   const { data: evidences, pending: pendingEvidences } = useEvidencesWithoutReferendums();
   const { data: periods, pending: pendingPeriod } = useEvidencePeriod({ palletType: 'fellowship', api, chain });
   const { data: members, pending: pendingMembers } = useMembers({ palletType: 'fellowship', api });
+  const { data: basketOperation } = useMemberBasketOperations();
 
   const { data: evidenceToReferendumRelations, pending: pendingRelations } = useEvidenceToReferendumRelations({
     palletType: 'fellowship',
@@ -86,12 +89,18 @@ export const useEvidenceTasks = () => {
         const endBlock = evidence.wish === 'Retention' ? evidenceService.getEndDemotionBlock(proposer, periods) : null;
         const { tags, sortingScore } = tasksService.getEvidenceImportance(evidence, proposer, periods, block);
 
+        const evidenceTransaction =
+          Object.values(basketOperation).find(o => {
+            if (!o) return false;
+            return votingService.isEvidenceVotingTransaction(o.coreTx) && o.initiatorAccountId === member.accountId;
+          })?.coreTx ?? null;
+
         tasks.push({
           id: `evidence_request_${proposer.accountId}`,
           weight: sortingScore,
           group: 'general',
           body: PromotionRetentionEvidenceVoting,
-          meta: { evidence, transaction: null, endBlock, tags },
+          meta: { evidence, transaction: evidenceTransaction, endBlock, tags },
           hasVoted: false,
         });
       }

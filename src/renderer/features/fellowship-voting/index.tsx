@@ -23,7 +23,7 @@ fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, tr
   );
 });
 
-fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum }) => {
+fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum, onClose }) => {
   const { data: vote } = useReferendumVote(referendum);
 
   if (nullable(referendum)) {
@@ -35,7 +35,7 @@ fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum })
   }
 
   if (referendumService.isOngoing(referendum)) {
-    return <VotingButtons referendum={referendum} evidence={evidence} />;
+    return <VotingButtons referendum={referendum} evidence={evidence} onClose={onClose} />;
   }
 
   return null;

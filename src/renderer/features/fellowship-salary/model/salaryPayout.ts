@@ -1,5 +1,5 @@
 import { combine, createEvent, sample } from 'effector';
-import { reshape } from 'patronum';
+import { reshape, spread } from 'patronum';
 
 import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
@@ -119,23 +119,65 @@ const saveToBasket = createEvent();
 
 sample({
   clock: saveToBasket,
-  source: $wrappedTx,
-  fn: transactions => {
-    if (nullable(transactions)) {
-      return [];
+  source: {
+    existing: basketOperations.$list,
+    account: $account,
+    coreTx: $coreTx,
+  },
+  fn: ({ existing, account, coreTx }) => {
+    if (nullable(account) || nullable(coreTx)) {
+      return {
+        add: [],
+        remove: [],
+      };
     }
 
-    const tx: BasketTransactionDraft = {
-      initiatorAccountId: transactions.coreTx.accountId,
-      coreTx: transactions.coreTx,
+    const existingTransactions = existing.filter(o => {
+      if (o.initiatorAccountId !== account.accountId) return false;
+
+      const sameType = o.coreTx.type === coreTx.type;
+      const sameArgs = JSON.stringify(o.coreTx.args) === JSON.stringify(coreTx.args);
+      return sameType && sameArgs;
+    });
+
+    const isSameTransaction = existingTransactions.length > 0;
+
+    const newTransaction: BasketTransactionDraft = {
+      initiatorAccountId: account.accountId,
+      coreTx,
       route: [],
       createdAt: Date.now(),
     };
 
-    return [tx];
+    return {
+      add: isSameTransaction ? [] : [newTransaction],
+      remove: isSameTransaction ? existingTransactions : [],
+    };
   },
-  target: basketOperations.addTransactions,
+  target: spread({
+    add: basketOperations.addTransactions,
+    remove: basketOperations.removeTransactions,
+  }),
 });
+
+const $inBasket = combine(
+  {
+    existing: basketOperations.$list,
+    account: $account,
+    coreTx: $coreTx,
+  },
+  ({ existing, account, coreTx }) => {
+    if (nullable(account) || nullable(coreTx)) return false;
+
+    const existingTransactions = existing.filter(o => {
+      if (o.initiatorAccountId !== account.accountId) return false;
+
+      return o.coreTx.type === coreTx.type && JSON.stringify(o.coreTx.args) === JSON.stringify(coreTx.args);
+    });
+
+    return existingTransactions.length > 0;
+  },
+);
 
 export const salaryPayout = {
   flow,
@@ -144,6 +186,7 @@ export const salaryPayout = {
   $wallet,
   $account,
   $wrappedTx,
+  $inBasket,
   sign,
   saveToBasket,
 };
