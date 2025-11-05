@@ -1,3 +1,4 @@
+import { nonNullable } from '@/shared/lib/utils';
 import { type TrackId } from '@/shared/pallet/referenda';
 import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import {
@@ -8,7 +9,6 @@ import {
   evidenceService,
   trackService,
 } from '@/domains/collectives';
-import { nonNullable } from '../../shared/lib/utils';
 
 // referendum sorting
 

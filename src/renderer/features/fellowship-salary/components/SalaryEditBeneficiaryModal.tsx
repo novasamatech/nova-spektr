@@ -12,7 +12,7 @@ import { Box, Combobox, Field, Modal } from '@/shared/ui-kit';
 import { accountService } from '@/domains/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelectFeature } from '@/features/wallet-select';
-import { $beneficiary, beneficiaryChanged } from '../model/beneficiary';
+import { beneficiary } from '../model/beneficiary';
 import { fellowshipSalaryFeature } from '../model/feature';
 
 const { services, constants } = walletSelectFeature;
@@ -36,7 +36,7 @@ type ComboboxGroup = {
 export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
   const { t } = useI18n();
   const chain = useStoreMap(fellowshipSalaryFeature.input, input => input?.chain ?? null);
-  const currentBeneficiary = useUnit($beneficiary);
+  const currentBeneficiary = useUnit(beneficiary.$beneficiary);
   const accountsList = useUnit(walletModel.$availableAccounts);
   const wallets = useUnit(walletModel.$wallets);
 
@@ -57,7 +57,7 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
   };
 
   const handleSave = () => {
-    beneficiaryChanged(selectedBeneficiary);
+    beneficiary.change(selectedBeneficiary);
     setOpen(false);
   };
 

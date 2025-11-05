@@ -11,7 +11,7 @@ import { salaryService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
-import { $beneficiary } from '../model/beneficiary';
+import { beneficiary } from '../model/beneficiary';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { memberSalary } from '../model/memberSalary';
 import { profile } from '../model/profile';
@@ -31,7 +31,7 @@ export const SalaryInfo = memo(() => {
   const currentPeriod = useUnit(memberSalary.$currentPeriod);
   const claimStatus = useUnit(memberSalary.$memberClaimStatus);
   const salary = useUnit(memberSalary.$memberSalary);
-  const beneficiary = useUnit($beneficiary);
+  const beneficiaryValue = useUnit(beneficiary.$beneficiary);
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
 
@@ -169,8 +169,8 @@ export const SalaryInfo = memo(() => {
                 showIcon={true}
                 variant="truncate"
                 iconSize={16}
-                title={getBeneficiaryName(beneficiary || currentMember.accountId)}
-                address={toAddress(beneficiary || currentMember.accountId, { prefix: input.chain.addressPrefix })}
+                title={getBeneficiaryName(beneficiaryValue || currentMember.accountId)}
+                address={toAddress(beneficiaryValue || currentMember.accountId, { prefix: input.chain.addressPrefix })}
               />
             </SmallTitleText>
           )}
