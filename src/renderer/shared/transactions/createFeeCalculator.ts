@@ -20,10 +20,7 @@ export const createFeeCalculator = ({ active = createStore(true), extrinsic }: P
 
   const fetchFeeFx = takeLast({
     fn: async ({ extrinsic }: FeeCalculationRequest): Promise<BN | null> => {
-      return await transactionService.getExtrinsicFee(extrinsic).catch((err) => {
-        console.error(err);
-        return null;
-      });
+      return await transactionService.getExtrinsicFee(extrinsic);
     },
     key: () => 'feeCalculation',
   });
