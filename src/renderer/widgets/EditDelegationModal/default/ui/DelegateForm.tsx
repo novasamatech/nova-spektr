@@ -4,7 +4,7 @@ import { type FormEvent, useMemo } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { formatAmount, transferableAmount } from '@/shared/lib/utils';
+import { formatAmount, formatAsset, fromPrecision, transferableAmount } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, InputHint, SmallTitleText } from '@/shared/ui';
 import { AssetBalance, SignatorySelect } from '@/shared/ui-entities';
 import { Modal, Tooltip } from '@/shared/ui-kit';
@@ -135,10 +135,13 @@ const Amount = () => {
 
   const network = useUnit(formModel.$networkStore);
   const delegateBalanceRange = useUnit(formModel.$delegateBalanceRange);
+  const availableBalance = useUnit(formModel.$availableBalance);
 
   if (!network) {
     return null;
   }
+
+  const showReuseLockBtn = availableBalance?.lock.gtn(0) && !isUnchanged.value;
 
   return (
     <div className="flex flex-col gap-y-2">
@@ -152,6 +155,17 @@ const Amount = () => {
         asset={network.asset}
         onChange={amount.onChange}
       />
+      {showReuseLockBtn && availableBalance && (
+        <div className="flex justify-end">
+          <Button
+            size="sm"
+            pallet="secondary"
+            onClick={() => amount.onChange(fromPrecision(availableBalance.lock, network.asset.precision))}
+          >
+            {t('governance.vote.reuseLock')}: {formatAsset(availableBalance.lock, network.asset)}
+          </Button>
+        </div>
+      )}
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}
       </InputHint>

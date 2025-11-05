@@ -97,7 +97,7 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
 const DestinationBalanceAlert = memo(() => {
   const { t } = useI18n();
 
-  const asset = useUnit(formModel.$asset);
+  const destinationAsset = useUnit(formModel.$destinationAsset);
   const destinationBalanceEd = useUnit(formModel.$destinationBalanceEd);
   const hasDestinationBalanceError = useUnit(formModel.$hasDestinationBalanceError);
 
@@ -107,7 +107,9 @@ const DestinationBalanceAlert = memo(() => {
         <Trans
           t={t}
           i18nKey="transfer.destinationBalanceAlertDescription"
-          values={{ ed: asset && destinationBalanceEd ? formatAsset(destinationBalanceEd, asset) : '0' }}
+          values={{
+            ed: destinationAsset && destinationBalanceEd ? formatAsset(destinationBalanceEd, destinationAsset) : '0',
+          }}
           components={{ b: <b /> }}
         />
       </span>
@@ -474,7 +476,7 @@ const Amount = memo(() => {
           <Switch
             checked={isExistentialDepositEnabled}
             variant="accent"
-            onChange={() => formModel.events.toggleExistentialDeposit()}
+            onChange={(checked) => formModel.events.toggleExistentialDeposit(checked)}
           >
             <div className="flex items-center gap-1">
               <Tooltip>

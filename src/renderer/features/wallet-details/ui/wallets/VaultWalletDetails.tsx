@@ -8,7 +8,6 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { KeyType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { useModalClose, useToggle } from '@/shared/lib/hooks';
@@ -110,12 +109,16 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
 
   const handleImportedKeys = (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {
     toggleImportModal();
-    const newKeys = keys.filter(key => {
-      return key.keyType === KeyType.MAIN || !(key as VaultChainAccount | VaultShardAccount).accountId;
-    });
 
-    vaultDetailsModel.events.keysAdded(newKeys);
-    toggleScanModal();
+    const existingKeySet = new Set(walletAccounts.map(a => a.chainId + a.derivationPath));
+
+    const keysToAdd = keys.filter(k => !existingKeySet.has(k.chainId + k.derivationPath));
+
+    if (keysToAdd.length > 0) {
+      vaultDetailsModel.events.keysAdded(keysToAdd);
+
+      toggleScanModal();
+    }
   };
 
   const handleVaultKeys = (accounts: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => {

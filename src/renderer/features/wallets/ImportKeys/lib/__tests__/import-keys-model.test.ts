@@ -67,7 +67,6 @@ describe('features/ImportKeys/lib/import-keys-model', () => {
       error: ValidationError.DERIVATIONS_ERROR,
       details: {
         [DerivationValidationError.PASSWORD_PATH]: ['//polkadot///password'],
-        [DerivationValidationError.MISSING_NAME]: [],
         [DerivationValidationError.INVALID_PATH]: ['invalid_path1', 'invalid_path2'],
         [DerivationValidationError.WRONG_SHARDS_NUMBER]: [],
       },
