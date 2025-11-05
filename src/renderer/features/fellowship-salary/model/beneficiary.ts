@@ -1,6 +1,7 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
 
 import { localStorageService } from '@/shared/api/local-storage';
+import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { fellowshipSalaryFeature } from './feature';
@@ -34,7 +35,7 @@ sample({
 sample({
   clock: $beneficiary,
   source: $beneficiaryKey,
-  filter: beneficiary => beneficiary !== null,
+  filter: beneficiary => nonNullable(beneficiary),
   fn: (key, beneficiary) => ({ key, beneficiary }),
   target: saveBeneficiaryFx,
 });
