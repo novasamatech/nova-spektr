@@ -13,6 +13,7 @@ import {
 } from '@/features/fellowship-tasks';
 
 import { EvidencePostFlowModal } from './components/EvidencePostFlowModal';
+import { EvidenceVotingConfirmation } from './components/EvidenceVotingConfirmation';
 import { PromotionInfo } from './components/PromotionInfo';
 import { RetentionInfo } from './components/RetentionInfo';
 import { SubmitEvidenceConfirmation } from './components/SubmitEvidenceConfirmation';
@@ -21,7 +22,7 @@ import { VotingActionsCard } from './components/VotingActionsCard';
 import { fellowshipEvidenceFeature } from './model/feature';
 import { profile } from './model/profile';
 
-export { fellowshipEvidenceFeature, RetentionInfo, SubmitEvidenceConfirmation };
+export { fellowshipEvidenceFeature, RetentionInfo, SubmitEvidenceConfirmation, EvidenceVotingConfirmation };
 
 fellowshipEvidenceFeature.inject(evidenceSlot, () => {
   return <RetentionInfo />;
@@ -44,16 +45,32 @@ fellowshipEvidenceFeature.inject(profileInfoSlot, () => {
   return <PromotionInfo />;
 });
 
-fellowshipEvidenceFeature.inject(evidenceVotingTaskActionSlot, ({ evidence, endBlock }) => {
+fellowshipEvidenceFeature.inject(evidenceVotingTaskActionSlot, ({ evidence, endBlock, transaction }) => {
   const canVote = useUnit(profile.$canVote);
-
-  return <VotingActions evidence={evidence} endBlock={endBlock} variant="small" disabled={!canVote} />;
+  return (
+    <VotingActions
+      evidence={evidence}
+      endBlock={endBlock}
+      transaction={transaction}
+      variant="small"
+      disabled={!canVote}
+    />
+  );
 });
 
-fellowshipEvidenceFeature.inject(evidenceActionsSlot, ({ evidence }) => {
+fellowshipEvidenceFeature.inject(evidenceActionsSlot, ({ evidence, transaction, onClose }) => {
   const canVote = useUnit(profile.$canVote);
 
-  return <VotingActionsCard evidence={evidence} endBlock={null} variant="large" disabled={!canVote} />;
+  return (
+    <VotingActionsCard
+      evidence={evidence}
+      endBlock={null}
+      variant="large"
+      disabled={!canVote}
+      transaction={transaction}
+      onClose={onClose}
+    />
+  );
 });
 
 fellowshipEvidenceFeature.inject(requestRetentionATaskActionSlot, () => {

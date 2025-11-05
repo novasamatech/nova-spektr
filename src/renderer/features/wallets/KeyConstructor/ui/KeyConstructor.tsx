@@ -1,7 +1,7 @@
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
-import { type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
+import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useKeyCombo } from '@/shared/lib/hooks';
 import { Button } from '@/shared/ui';
@@ -17,7 +17,7 @@ const ADD_NEW_KEY_SHORTCUT = ['shift', 'enter'];
 type Props = {
   title: string;
   isOpen: boolean;
-  existingKeys: (VaultChainAccount | VaultShardAccount)[];
+  existingKeys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[];
   onClose: () => void;
   onConfirm: (keys: DerivationKeyDraft[]) => void;
 };

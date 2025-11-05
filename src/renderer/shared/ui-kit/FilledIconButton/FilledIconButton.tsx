@@ -28,10 +28,8 @@ export const FilledIconButton = memo(
             'pointer-events-auto': !checked,
           },
           {
-            'bg-alert-background-negative text-text-negative active:bg-secondary-negative-button-background-active':
-              variant === 'negative' && !disabled,
-            'bg-alert-background-positive text-text-positive active:bg-secondary-positive-button-background-active':
-              variant === 'positive' && !disabled,
+            'bg-alert-background-negative text-text-negative': variant === 'negative' && !disabled,
+            'bg-alert-background-positive text-text-positive': variant === 'positive' && !disabled,
           },
           {
             'bg-label-background-red': variant === 'negative' && marked && !disabled,
