@@ -20,7 +20,6 @@ export const multisigOperationSchema = z.object({
 export type MultisigOperationDeepLinkData = z.infer<typeof multisigOperationSchema>;
 
 export const multisigOperationDeepLinkHandler = createDeepLinkHandler({
-  route: Paths.OPERATIONS,
   schema: multisigOperationSchema,
 });
 
@@ -35,7 +34,10 @@ const accountChecked = sample({
   clock: multisigOperationDeepLinkHandler.triggered,
   source: accounts.$list,
   fn: (accountsList, data) => {
-    const account = accountsList.find(acc => acc.accountId === data.accountId);
+    console.log('[Multisig Deep Link] Handler triggered with data:', data);
+    console.log('[Multisig Deep Link] Accounts available:', accountsList.length);
+    const account = accountsList.find((acc) => acc.accountId === data.accountId);
+    console.log('[Multisig Deep Link] Account found:', !!account);
     return {
       data,
       account: account ?? null,

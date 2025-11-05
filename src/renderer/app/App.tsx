@@ -41,9 +41,9 @@ export const App = () => {
 
   useEffect(() => {
     if (searchParams.toString()) {
-      deepLinkService.handleDeepLink({ pathname, searchParams });
+      deepLinkService.handleDeepLink({ searchParams });
     }
-  }, [pathname, searchParams]);
+  }, [searchParams]);
 
   return (
     <ConfirmDialogProvider>
