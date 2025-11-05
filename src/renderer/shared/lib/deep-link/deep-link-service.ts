@@ -83,6 +83,7 @@ export function createDeepLinkHandler<T extends z.ZodType>({
 
 export const deepLinkService = {
   handleDeepLink: setDeepLink,
-  // used for module import
+  // ToDo: rm, but now it's used for module import
+  // eslint-disable-next-line unused-imports/no-unused-vars
   registerHandler: (handler: DeepLinkHandler) => {},
 };
