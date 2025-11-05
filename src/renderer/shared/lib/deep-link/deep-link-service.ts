@@ -1,4 +1,4 @@
-import { type Event, createEvent, createStore, sample } from 'effector';
+import { type Event, createEffect, createEvent, createStore, sample } from 'effector';
 import { type z } from 'zod';
 
 import { nonNullable } from '@/shared/lib/utils';
@@ -12,33 +12,39 @@ export interface DeepLinkHandler<T = unknown> {
 
 export interface DeepLink {
   searchParams: URLSearchParams;
+  callback?: (takenKeys: string[]) => void;
 }
 
 export interface UrlState {
-  params: Record<string, any>;
+  params: Record<string, unknown>;
 }
 
-export interface HandlerResult<T = any> {
+export interface HandlerResult<T = unknown> {
   matched: boolean;
   data?: T;
-  remainingParams: Record<string, any>;
+  remainingParams: Record<string, unknown>;
 }
 
 const setDeepLink = createEvent<DeepLink>();
+
+// Store for URL update callback
+const $urlUpdateCallback = createStore<((takenKeys: string[]) => void) | null>(null);
+
 const $deepLink = createStore<UrlState | null>(null).on(setDeepLink, (_, { searchParams }) => {
   const params: Record<string, string> = {};
   // eslint-disable-next-line no-restricted-syntax
   searchParams.forEach((value, key) => {
     params[key] = value;
   });
-
   return { params };
 });
+
+$urlUpdateCallback.on(setDeepLink, (_, { callback }) => callback || null);
 
 interface HandlerEntry {
   id: string;
   schema: z.ZodType;
-  triggered: Event<unknown>;
+  trigger: (data: unknown) => void;
 }
 
 interface MatchedHandler {
@@ -54,35 +60,26 @@ const pendingDeepLinkProcessed = createEvent<UrlState>();
 const paramsProcessed = createEvent<{
   remainingParams: Record<string, unknown>;
   matchedHandlers: MatchedHandler[];
+  takenKeys: string[];
 }>();
 
-// Event to update browser URL with remaining params
-const urlShouldUpdate = createEvent<Record<string, unknown>>();
+const callUrlUpdateCallbackFx = createEffect(
+  (params: { takenKeys: string[]; callback: ((takenKeys: string[]) => void) | null }) => {
+    if (params.callback) {
+      params.callback(params.takenKeys);
+    }
+  },
+);
 
 // Store for registered handlers chain
 const $handlers = createStore<HandlerEntry[]>([])
-  .on(handlerRegistered, (handlers, handler) => {
-    console.log('[Deep Link] Handler registered:', handler.id);
-    return [...handlers, handler];
-  })
-  .on(handlersCleared, (handlers, idsToRemove) => {
-    console.log('[Deep Link] Clearing handlers:', idsToRemove);
-    return handlers.filter((h) => !idsToRemove.includes(h.id));
-  });
+  .on(handlerRegistered, (handlers, handler) => [...handlers, handler])
+  .on(handlersCleared, (handlers, idsToRemove) => handlers.filter((h) => !idsToRemove.includes(h.id)));
 
-// Store pending deep link if handlers aren't ready yet
 const $pendingDeepLink = createStore<UrlState | null>(null)
-  .on(setDeepLink, (_, deepLink) => {
-    if (!deepLink) return null;
-    const params: Record<string, string> = {};
-    deepLink.searchParams.forEach((value, key) => {
-      params[key] = value;
-    });
-    return { params };
-  })
+  .on($deepLink, (_, deepLink) => deepLink)
   .reset(pendingDeepLinkProcessed);
 
-// Process deep link immediately if handlers are available
 sample({
   clock: setDeepLink,
   source: { deepLink: $deepLink, handlers: $handlers },
@@ -91,47 +88,50 @@ sample({
   target: deepLinkReceived,
 });
 
-// When a handler is registered, check if there's a pending deep link to process
-sample({
+const pendingDeepLinkFound = sample({
   clock: handlerRegistered,
   source: $pendingDeepLink,
   filter: (pending): pending is UrlState => pending !== null,
-}).watch((pendingDeepLink) => {
-  console.log('[Deep Link] Processing pending deep link after handler registration');
-  deepLinkReceived(pendingDeepLink);
-  pendingDeepLinkProcessed(pendingDeepLink);
 });
 
-// Process deep link through chain of handlers (pure function - no event calls)
+sample({
+  clock: pendingDeepLinkFound,
+  target: [deepLinkReceived, pendingDeepLinkProcessed],
+});
+
 sample({
   clock: deepLinkReceived,
   source: $handlers,
   fn: (handlers, urlState) => {
-    console.log('[Deep Link] Processing URL params:', urlState.params);
-    console.log('[Deep Link] Handlers available:', handlers.length);
+    const originalKeys = Object.keys(urlState.params);
     let remainingParams = { ...urlState.params };
     const matchedHandlers: MatchedHandler[] = [];
 
-    // Process through each registered handler
     for (const handler of handlers) {
       const result = extractParams(remainingParams, handler.schema);
-      console.log(`[Deep Link] Handler ${handler.id} matched:`, result.matched);
       if (result.matched && result.data) {
         matchedHandlers.push({ id: handler.id, data: result.data });
         remainingParams = result.remainingParams;
       }
     }
 
-    console.log('[Deep Link] Matched handlers:', matchedHandlers.length);
-    return { remainingParams, matchedHandlers };
+    const remainingKeys = Object.keys(remainingParams);
+    const takenKeys = originalKeys.filter((key) => !remainingKeys.includes(key));
+
+    return { remainingParams, matchedHandlers, takenKeys };
   },
   target: paramsProcessed,
 });
 
-// Event to signal handlers have been triggered
-const handlersTriggered = createEvent<string[]>();
+const triggerHandlersFx = createEffect<{ handler: HandlerEntry; data: unknown }[], string[]>((items) => {
+  const triggeredIds: string[] = [];
+  for (const item of items) {
+    item.handler.trigger(item.data);
+    triggeredIds.push(item.handler.id);
+  }
+  return triggeredIds;
+});
 
-// Trigger each matched handler
 sample({
   clock: paramsProcessed,
   source: $handlers,
@@ -142,30 +142,19 @@ sample({
         return handler ? { handler, data } : null;
       })
       .filter((item): item is { handler: HandlerEntry; data: unknown } => item !== null),
-}).watch((items) => {
-  // Triggering events is allowed in .watch()
-  console.log('[Deep Link] Triggering', items.length, 'handlers');
-  const triggeredIds: string[] = [];
-  for (const { handler, data } of items) {
-    console.log('[Deep Link] Triggering handler:', handler.id, 'with data:', data);
-    (handler.triggered as unknown as (data: unknown) => void)(data);
-    triggeredIds.push(handler.id);
-  }
-  // Clear handlers after triggering them
-  handlersTriggered(triggeredIds);
+  target: triggerHandlersFx,
 });
 
-// Clear handlers after they've been triggered
 sample({
-  clock: handlersTriggered,
+  clock: triggerHandlersFx.doneData,
   target: handlersCleared,
 });
 
-// Update URL with remaining params after processing
 sample({
   clock: paramsProcessed,
-  fn: ({ remainingParams }) => remainingParams,
-  target: urlShouldUpdate,
+  source: $urlUpdateCallback,
+  fn: (callback, { takenKeys }) => ({ takenKeys, callback }),
+  target: callUrlUpdateCallbackFx,
 });
 
 export interface DeepLinkHandlerConfig<T extends z.ZodType> {
@@ -184,41 +173,30 @@ export function createDeepLinkHandler<T extends z.ZodType>({
   return {
     id,
     schema,
-    validate: (data: unknown) => schema.parse(data) as ParsedType,
+    validate: (data: unknown) => schema.parse(data),
     triggered,
   };
 }
 
-/**
- * Attempts to extract params matching the schema from the given params object.
- * Returns the extracted data and remaining params.
- */
 export function extractParams<T extends z.ZodType>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  params: Record<string, any>,
+  params: Record<string, unknown>,
   schema: T,
 ): HandlerResult<z.infer<T>> {
   try {
-    // Parse the params - let Zod extract what it needs
     const parsed = schema.parse(params);
-
-    // Use the parsed object keys to determine what was consumed
-    const parsedKeys = Object.keys(parsed as object);
-
-    // Remove consumed params from the original params
+    const parsedKeys = Object.keys(parsed as Record<string, unknown>);
     const remainingParams = { ...params };
+
     for (const key of parsedKeys) {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete remainingParams[key];
     }
 
     return {
       matched: true,
-      data: parsed as z.infer<T>,
+      data: parsed,
       remainingParams,
     };
   } catch {
-    // If parsing fails, return all params as remaining
     return {
       matched: false,
       remainingParams: params,
@@ -226,42 +204,36 @@ export function extractParams<T extends z.ZodType>(
   }
 }
 
-/**
- * Processes URL params through a chain of handlers. Each handler extracts its
- * params and passes remaining params to the next handler.
- */
 export function processDeepLinkChain<T extends z.ZodType>(
-  params: Record<string, any>,
-  handlers: Array<{ schema: T; onMatch: (data: z.infer<T>) => void }>,
-): Record<string, any> {
+  params: Record<string, unknown>,
+  handlers: { schema: T; onMatch: (data: z.infer<T>) => void }[],
+): Record<string, unknown> {
   let remainingParams = { ...params };
 
-  handlers.forEach(({ schema, onMatch }) => {
+  for (const { schema, onMatch } of handlers) {
     const result = extractParams(remainingParams, schema);
     if (result.matched && result.data) {
       onMatch(result.data);
       remainingParams = result.remainingParams;
     }
-  });
+  }
 
   return remainingParams;
 }
 
-// Store for URL update subscriptions
-const $remainingParams = createStore<Record<string, unknown> | null>(null).on(
-  urlShouldUpdate,
-  (_, params) => params,
-);
+type EventTrigger = (payload: unknown) => void;
 
 export const deepLinkService = {
   handleDeepLink: setDeepLink,
   registerHandler: <T>(handler: DeepLinkHandler<T>) => {
+    const { triggered } = handler;
     handlerRegistered({
       id: handler.id,
       schema: handler.schema,
-      triggered: handler.triggered as Event<unknown>,
+      trigger: ((data: unknown) => {
+        // ToDo: resolve types
+        (triggered as EventTrigger)(data);
+      }) satisfies (data: unknown) => void,
     });
   },
-  $remainingParams,
-  urlShouldUpdate,
 };

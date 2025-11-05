@@ -34,10 +34,7 @@ const accountChecked = sample({
   clock: multisigOperationDeepLinkHandler.triggered,
   source: accounts.$list,
   fn: (accountsList, data) => {
-    console.log('[Multisig Deep Link] Handler triggered with data:', data);
-    console.log('[Multisig Deep Link] Accounts available:', accountsList.length);
-    const account = accountsList.find((acc) => acc.accountId === data.accountId);
-    console.log('[Multisig Deep Link] Account found:', !!account);
+    const account = accountsList.find(acc => acc.accountId === data.accountId);
     return {
       data,
       account: account ?? null,

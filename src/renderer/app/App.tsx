@@ -41,24 +41,18 @@ export const App = () => {
 
   useEffect(() => {
     if (searchParams.toString()) {
-      deepLinkService.handleDeepLink({ searchParams });
-    }
-  }, [searchParams]);
-
-  // Update URL with remaining params after deep link processing
-  useEffect(() => {
-    const unsubscribe = deepLinkService.urlShouldUpdate.watch((remainingParams) => {
-      const newParams = new URLSearchParams();
-      Object.entries(remainingParams).forEach(([key, value]) => {
-        if (value != null) {
-          newParams.set(key, String(value));
-        }
+      deepLinkService.handleDeepLink({
+        searchParams,
+        callback: (takenKeys) => {
+          const currentParams = Object.fromEntries(searchParams.entries());
+          const remainingParams = Object.fromEntries(
+            Object.entries(currentParams).filter(([key]) => !takenKeys.includes(key)),
+          );
+          setSearchParams(remainingParams, { replace: true });
+        },
       });
-      setSearchParams(newParams, { replace: true });
-    });
-
-    return unsubscribe;
-  }, [setSearchParams]);
+    }
+  }, [searchParams, setSearchParams]);
 
   return (
     <ConfirmDialogProvider>
