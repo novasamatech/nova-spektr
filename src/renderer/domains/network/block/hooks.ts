@@ -1,8 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type BlockHeight } from '@/shared/core';
+import { type NullableMap } from '@/shared/core';
 import { useAsync } from '@/shared/lib/hooks';
 import { getCreatedDateFromApi } from '@/shared/lib/utils';
+import { type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { useResource } from '@/shared/query';
 
 import { blockResource } from './resource';
@@ -15,7 +16,7 @@ export const useBlock = (api: ApiPromise | null) => {
   });
 };
 
-export const useBlockTime = ({ api, blockHeight }: { api: ApiPromise | null; blockHeight: BlockHeight | null }) => {
+export const useBlockTime = ({ api, blockHeight }: NullableMap<{ api: ApiPromise; blockHeight: BlockHeight }>) => {
   return useAsync({
     asyncFn: () => {
       if (!api || !blockHeight) return Promise.resolve(null);
