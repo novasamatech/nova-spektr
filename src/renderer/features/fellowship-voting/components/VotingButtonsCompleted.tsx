@@ -5,13 +5,13 @@ import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui';
+import { VotingButtonWithTooltip } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum } from '@/domains/collectives';
 import { Card } from '@/features/fellowship-referendum-details';
 import { fellowshipVotingFeature } from '../model/feature';
 import { votingStatus } from '../model/votingStatus';
 
-import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
 import { VotingModal } from './VotingModal';
 
 type Props = {

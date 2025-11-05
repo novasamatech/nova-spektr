@@ -25,12 +25,12 @@ fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, tr
   );
 });
 
-fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum }) => {
+fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum, onClose }) => {
   const voting = useUnit(votingStatus.$referendumVoting);
 
   if (nonNullable(referendum) && referendumService.isCompleted(referendum) && nonNullable(voting)) {
     return <VotingButtonsCompleted referendum={referendum} evidence={evidence} />;
   }
 
-  return <VotingButtons referendum={referendum} evidence={evidence} />;
+  return <VotingButtons referendum={referendum} evidence={evidence} onClose={onClose} />;
 });
