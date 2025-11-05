@@ -9,38 +9,37 @@ import {
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { groupShardedDerivations, nonNullable } from '@/shared/lib/utils';
+import { nonNullable } from '@/shared/lib/utils';
 import { networkUtils } from '@/entities/network';
-import { type DerivationKeyDraft } from '@/features/wallets';
 
-function populateDraftAccounts(draftKeys: DerivationKeyDraft[], chains: Record<ChainId, Chain>) {
-  const shardedKeyGroups = groupShardedDerivations(draftKeys);
+function createDraftAccount(
+  draft: Pick<VaultShardAccount, 'chainId' | 'derivationPath'> & {
+    groupId?: VaultShardAccount['groupId'];
+  },
+  chains: Record<ChainId, Chain>,
+): DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount> {
+  const isEthereumBased = networkUtils.isEthereumBased(chains[draft.chainId].options);
+  const isSharded = nonNullable(draft.groupId);
 
-  const derivationToGroupId = new Map<string, string>();
-  for (const [_, keys] of Object.entries(shardedKeyGroups)) {
-    const groupId = crypto.randomUUID();
-    for (const key of keys) {
-      derivationToGroupId.set(key.derivationPath, groupId);
-    }
-  }
+  return {
+    type: 'chain',
+    name: draft.derivationPath,
+    keyType: KeyType.CUSTOM,
+    chainId: draft.chainId,
+    accountType: isSharded ? AccountType.SHARD : AccountType.CHAIN,
+    cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
+    signingType: SigningType.POLKADOT_VAULT,
+    derivationPath: draft.derivationPath,
+    ...(isSharded && { groupId: draft.groupId }),
+  } as DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>;
+}
 
-  return draftKeys.map(key => {
-    const isEthereumBased = networkUtils.isEthereumBased(chains[key.chainId].options);
-    const groupId = derivationToGroupId.get(key.derivationPath);
-    const isSharded = nonNullable(groupId);
-
-    const account = {
-      type: 'chain',
-      name: key.derivationPath,
-      keyType: KeyType.CUSTOM,
-      chainId: key.chainId,
-      accountType: isSharded ? AccountType.SHARD : AccountType.CHAIN,
-      cryptoType: isEthereumBased ? CryptoType.ETHEREUM : CryptoType.SR25519,
-      signingType: SigningType.POLKADOT_VAULT,
-      derivationPath: key.derivationPath,
-      ...(isSharded && { groupId }),
-    };
-    return account as DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>;
+function populateDraftAccounts(
+  draftAccounts: Pick<VaultChainAccount, 'chainId' | 'derivationPath'>[],
+  chains: Record<ChainId, Chain>,
+) {
+  return draftAccounts.map(draft => {
+    return createDraftAccount(draft, chains);
   });
 }
 

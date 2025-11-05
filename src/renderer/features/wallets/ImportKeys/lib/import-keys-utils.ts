@@ -4,23 +4,28 @@ import { groupBy, unionBy } from 'lodash';
 import { parse } from 'yaml';
 
 import {
-  AccountType,
   type Address,
   type Chain,
   type ChainId,
-  CryptoType,
   type DraftAccount,
   type HexString,
-  KeyType,
-  SigningType,
   type VaultChainAccount,
   type VaultShardAccount,
 } from '@/shared/core';
-import { entries, toAccountId } from '@/shared/lib/utils';
+import {
+  derivationHasPassword,
+  derivationTokensToString,
+  entries,
+  parseDerivation,
+  toAccountId,
+  validateDerivation,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { networkUtils } from '@/entities/network';
 
 import { type ErrorDetails } from './derivation-import-error';
 import {
+  type DerivationKeyDraft,
   DerivationValidationError,
   type DerivationWithPath,
   type ImportFileChain,
@@ -85,22 +90,6 @@ function parseYamlFile(fileContent: string) {
   return null;
 }
 
-function processString(str: string) {
-  const parts = str.split('//');
-  const lastPart = parts[parts.length - 1];
-  const shardPattern = /^0\.\.\.(\d+)$/;
-
-  const match = lastPart.match(shardPattern);
-  if (match) {
-    const shard = match[1];
-    const processedString = parts.slice(0, -1).join('//');
-
-    return { path: processedString, shard };
-  } else {
-    return { path: str };
-  }
-}
-
 function parseTextFile(fileContent: string): ParsedData | null {
   const lines = fileContent
     .split('\n')
@@ -135,11 +124,12 @@ function parseTextFile(fileContent: string): ParsedData | null {
     const derivationPathMatch = line.match(/^(\/{1,2}[^\s:]*)/);
 
     if (derivationPathMatch) {
-      const { path, shard } = processString(derivationPathMatch[1]);
+      const { tokens, raw, shardCount } = parseDerivation(derivationPathMatch[1]);
+      const path = shardCount ? derivationTokensToString(tokens.toSpliced(-2)) : raw;
 
       const derivationPathParams = {
         derivationPath: path,
-        sharded: shard,
+        sharded: shardCount?.toString(),
         chainId: currentChainId,
       };
       derivationPaths.push(derivationPathParams);
@@ -216,7 +206,10 @@ function shouldIgnoreDerivation(derivation: ImportedDerivation, chains: Record<C
   return !isChainParamValid;
 }
 
-function getDerivationError(derivation: DerivationWithPath): DerivationValidationError[] | undefined {
+function getDerivationError(
+  derivation: DerivationWithPath,
+  chains: Record<ChainId, Chain>,
+): DerivationValidationError[] | undefined {
   const errors: DerivationValidationError[] = [];
 
   const sharded = derivation.sharded && parseInt(derivation.sharded);
@@ -224,10 +217,12 @@ function getDerivationError(derivation: DerivationWithPath): DerivationValidatio
   const isShardedParamValid = !sharded || (!isNaN(sharded) && sharded <= 50 && sharded > 1);
   if (!isShardedParamValid) errors.push(DerivationValidationError.WRONG_SHARDS_NUMBER);
 
-  const isPathStartAndEndValid = /^(\/\/|\/)[^/].*[^/]$/.test(derivation.derivationPath);
-  if (!isPathStartAndEndValid) errors.push(DerivationValidationError.INVALID_PATH);
+  const derivationChain = derivation.chainId ? chains[derivation.chainId as ChainId] : null;
+  const isEthereumBased = derivationChain ? networkUtils.isEthereumBased(derivationChain.options) : false;
+  const { isValid } = validateDerivation(derivation.derivationPath, { isEthereumBased });
+  if (!isValid) errors.push(DerivationValidationError.INVALID_PATH);
 
-  const hasPasswordPath = derivation.derivationPath.includes('///');
+  const hasPasswordPath = derivationHasPassword(derivation.derivationPath);
   if (hasPasswordPath) errors.push(DerivationValidationError.PASSWORD_PATH);
 
   if (errors.length) return errors;
@@ -239,47 +234,29 @@ function mergeChainDerivations(existingDerivations: DraftAccounts, importedDeriv
   let addedKeys = 0;
   let duplicatedKeys = 0;
 
-  const existingDerivationsByPath = groupBy(existingDerivations, 'derivationPath');
-  const shards = existingDerivations.filter((d) => d.accountType === AccountType.SHARD);
-  const shardsByPath = groupBy(shards, (d) => d.derivationPath.slice(0, d.derivationPath.lastIndexOf('//')));
-
-  const importedDerivationsAccounts = importedDerivations.reduce<DraftAccounts>((acc, d) => {
+  const importedDerivationsAccounts = importedDerivations.reduce<DerivationKeyDraft[]>((acc, d) => {
     if (!d.sharded) {
       acc.push({
-        name: d.derivationPath,
         derivationPath: d.derivationPath,
         chainId: d.chainId,
-        cryptoType: CryptoType.SR25519,
-        signingType: SigningType.POLKADOT_VAULT,
-        accountType: AccountType.CHAIN,
-        keyType: KeyType.CUSTOM,
-        type: 'chain',
       });
 
       return acc;
     }
 
-    const groupId = shardsByPath[d.derivationPath]?.length
-      ? shardsByPath[d.derivationPath][0].groupId
-      : crypto.randomUUID();
-
+    const groupId = crypto.randomUUID();
     for (let i = 0; i < Number(d.sharded); i++) {
       acc.push({
-        name: d.derivationPath + '//' + i,
         derivationPath: d.derivationPath + '//' + i,
         chainId: d.chainId,
-        cryptoType: CryptoType.SR25519,
-        signingType: SigningType.POLKADOT_VAULT,
-        accountType: AccountType.SHARD,
-        keyType: KeyType.CUSTOM,
         groupId,
-        type: 'chain',
       });
     }
 
     return acc;
   }, []);
 
+  const existingDerivationsByPath = groupBy(existingDerivations, 'derivationPath');
   const uniqueDerivations = unionBy(importedDerivationsAccounts, 'derivationPath');
   duplicatedKeys += importedDerivationsAccounts.length - uniqueDerivations.length;
 

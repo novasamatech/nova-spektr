@@ -1,4 +1,4 @@
-import { type ChainId, type HexString } from '@/shared/core';
+import { type ChainId, type HexString, type VaultShardAccount } from '@/shared/core';
 
 export type ImportFileKey = { key: Omit<ImportedDerivation, 'chainId'> };
 export type ImportFileChain = { [key: HexString]: ImportFileKey[] };
@@ -31,6 +31,10 @@ export type TypedImportedDerivation = {
   derivationPath: string;
   chainId: ChainId;
   sharded?: string;
+};
+
+export type DerivationKeyDraft = Pick<VaultShardAccount, 'chainId' | 'derivationPath'> & {
+  groupId?: VaultShardAccount['groupId'];
 };
 
 export type ParsedData = {

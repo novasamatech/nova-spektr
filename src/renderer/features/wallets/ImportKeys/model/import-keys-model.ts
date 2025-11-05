@@ -16,6 +16,7 @@ import { PATH_ERRORS } from '../lib/constants';
 import { DerivationImportError, type ErrorDetails } from '../lib/derivation-import-error';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import {
+  type DerivationKeyDraft,
   DerivationValidationError,
   type DerivationWithPath,
   type ParsedImportFile,
@@ -38,7 +39,7 @@ type ErrorsWithDetails = { error: ValidationError; details?: ErrorDetails };
 
 const $validationError = createStore<ErrorsWithDetails | null>(null);
 const $report = createStore<Report | null>(null);
-const $keysToAdd = createStore<(DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[]>([]);
+const $keysToAdd = createStore<DerivationKeyDraft[]>([]);
 
 const $existingDerivations = createStore<ExistingDerivations | null>(null);
 
@@ -51,17 +52,17 @@ const parseFileContentFx = createEffect<File, ParsedImportFile, DerivationImport
     throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
   }
 
-  if (file.type === 'text/plain') {
-    const textStructure = importKeysUtils.parseTextFile(fileContent);
-    if (!textStructure) throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
-
+  const textStructure = importKeysUtils.parseTextFile(fileContent);
+  if (textStructure) {
     return importKeysUtils.updateTextStructure(textStructure);
   }
 
   const yamlStructure = importKeysUtils.parseYamlFile(fileContent);
-  if (!yamlStructure) throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
+  if (yamlStructure) {
+    return yamlStructure;
+  }
 
-  return yamlStructure;
+  throw new DerivationImportError(ValidationError.INVALID_FILE_STRUCTURE);
 });
 
 type ValidateDerivationsParams = {
@@ -89,7 +90,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
 
     const errorsDetails = filteredDerivations.reduce<ErrorDetails>(
       (acc, derivation) => {
-        const errors = importKeysUtils.getDerivationError(derivation);
+        const errors = importKeysUtils.getDerivationError(derivation, chains);
         if (!errors) return acc;
 
         for (const err of errors) {
@@ -119,7 +120,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
 );
 
 type MergeResult = {
-  derivations: (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
+  derivations: DerivationKeyDraft[];
   report: Report;
 };
 type MergePathsParams = {
