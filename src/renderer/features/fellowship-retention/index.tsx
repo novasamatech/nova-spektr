@@ -1,6 +1,6 @@
 import { profileInfoSlot } from '@/features/fellowship-profile';
 
-import { fellowshipRetentionFeature } from './models/feature';
+import { fellowshipRetentionFeature } from './feature';
 import { RetentionWidget } from './ui/RetentionWidget';
 
 export { fellowshipRetentionFeature };

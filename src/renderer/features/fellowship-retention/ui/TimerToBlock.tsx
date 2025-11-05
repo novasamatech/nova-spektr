@@ -1,10 +1,9 @@
-import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { getTimeToBlock } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
 import { Timeout } from '@/shared/ui-kit';
-import { fellowshipRetentionFeature } from '../models/feature';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 
 type Props = {
   endBlock: number | null;
@@ -17,18 +16,18 @@ type Props = {
 
 export const TimerToBlock = memo(
   ({ endBlock, shortDateFormat, icon = 'clock', variant = 'idle', passedText, hideIconText }: Props) => {
-    const input = useUnit(fellowshipRetentionFeature.input);
+    const api = useFellowshipApi();
     const [endTime, setEndTime] = useState<number>();
 
     useEffect(() => {
-      if (endBlock && input) {
-        getTimeToBlock(endBlock, input.api).then(date => {
+      if (endBlock && api) {
+        getTimeToBlock(endBlock, api).then(date => {
           setEndTime(date / 1000);
         });
       }
-    }, [endBlock, input?.api]);
+    }, [endBlock, api]);
 
-    if (!endTime || !input) return null;
+    if (!endTime || !api) return null;
 
     return (
       <Timeout

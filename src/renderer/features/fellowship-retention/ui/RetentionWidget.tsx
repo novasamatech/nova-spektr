@@ -1,10 +1,9 @@
 import { differenceInMilliseconds, formatDate, subDays } from 'date-fns';
-import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, TitleText } from '@/shared/ui';
 import { Box, Skeleton, type TimelineStep } from '@/shared/ui-kit';
 import {
@@ -14,13 +13,16 @@ import {
   memberService,
   votingHistoryService,
 } from '@/domains/collectives';
+import { useFellowshipMemberEvidence, useMemberRetentionReferendum } from '@/aggregates/fellowship-member';
+import { useRetentionEvidenceSubmissionDate } from '../hooks/useRetentionEvidenceSubmissionDate';
+import { useRetentionPeriod, useRetentionPeriodDates } from '../hooks/useRetentionPeriod';
+import { useVotes } from '../hooks/useVotes';
 import {
   DANGER_THRESHOLD_DAYS,
   RetentionWidgetState,
   WARNING_THRESHOLD_DAYS,
-  fellowshipRetention,
-} from '../models/retention';
-import { votesModel } from '../models/votes';
+  useWidgetState,
+} from '../hooks/useWidgetState';
 
 import { RetentionTimeline } from './RetentionTimeline';
 import { TimerToBlock } from './TimerToBlock';
@@ -44,15 +46,13 @@ type Props = {
 const SkeletonLoader = () => <Skeleton width="100%" height="132px" />;
 
 export const RetentionWidget = memo(({ member }: Props) => {
-  useGate(fellowshipRetention.flow, member);
-
   const { t } = useI18n();
-  const state = useUnit(fellowshipRetention.$widgetState);
+  const { data: state, pending } = useWidgetState();
   const { fromDateFormatted, toDateFormatted, retentionPeriod, timelineSteps, timelineValue } = useRetentionData();
 
   if (!memberService.shouldProve(member)) return null;
 
-  if (!retentionPeriod) return <SkeletonLoader />;
+  if (!retentionPeriod || pending) return <SkeletonLoader />;
 
   if (state === RetentionWidgetState.WAITING) {
     return (
@@ -178,8 +178,10 @@ const ReportSubmitted = memo(() => {
   const { t } = useI18n();
 
   const { retentionPeriodDates, timelineValue } = useRetentionData();
-  const retentionEvidenceSubmissionDate = useUnit(fellowshipRetention.$retentionEvidenceSubmissionDate);
-  const retentionEvidence = useUnit(fellowshipRetention.$retentionEvidence);
+  const { data: retentionEvidenceSubmissionDate } = useRetentionEvidenceSubmissionDate();
+  const { data: evidence } = useFellowshipMemberEvidence();
+
+  const retentionEvidence = nonNullable(evidence) && evidence.wish === 'Retention' ? evidence : null;
 
   const submissionDate = useMemo(
     () => (retentionEvidenceSubmissionDate ? formatDate(retentionEvidenceSubmissionDate, 'dd.MM.yy') : '—'),
@@ -199,7 +201,13 @@ const ReportSubmitted = memo(() => {
   );
 
   const submissionPosition = useMemo(() => {
-    if (!retentionEvidenceSubmissionDate || !retentionPeriodDates) return 50;
+    if (
+      nullable(retentionEvidenceSubmissionDate) ||
+      nullable(retentionPeriodDates) ||
+      nullable(retentionPeriodDates.from) ||
+      nullable(retentionPeriodDates.to)
+    )
+      return 50;
 
     const submissionDate = new Date(retentionEvidenceSubmissionDate);
     const totalDuration = differenceInMilliseconds(retentionPeriodDates.to, retentionPeriodDates.from);
@@ -252,9 +260,8 @@ const ReportSubmitted = memo(() => {
 const ReferendumCreated = memo(() => {
   const { t } = useI18n();
 
-  const referendum = useUnit(fellowshipRetention.$retentionReferendum);
-  const votes = useUnit(votesModel.$votesList);
-  const pending = useUnit(votesModel.$pending);
+  const { data: referendum } = useMemberRetentionReferendum();
+  const { data: votes, pending } = useVotes();
 
   const votingRating = useMemo(() => {
     return votingHistoryService.getApprovalRating(votes);
@@ -304,14 +311,21 @@ const ReferendumCreated = memo(() => {
 
 const useRetentionData = () => {
   const { t } = useI18n();
-  const retentionPeriodDates = useUnit(fellowshipRetention.$retentionPeriodDates);
-  const retentionPeriod = useUnit(fellowshipRetention.$retentionPeriod);
+  const { data: retentionPeriodDates } = useRetentionPeriodDates();
+  const { data: retentionPeriod } = useRetentionPeriod();
 
-  const fromDateFormatted = retentionPeriodDates ? formatDate(retentionPeriodDates.from, 'dd.MM.yy') : null;
-  const toDateFormatted = retentionPeriodDates ? formatDate(retentionPeriodDates.to, 'dd.MM.yy') : null;
+  const fromDateFormatted =
+    nonNullable(retentionPeriodDates) && nonNullable(retentionPeriodDates.from)
+      ? formatDate(retentionPeriodDates.from, 'dd.MM.yy')
+      : null;
+  const toDateFormatted =
+    nonNullable(retentionPeriodDates) && nonNullable(retentionPeriodDates.to)
+      ? formatDate(retentionPeriodDates.to, 'dd.MM.yy')
+      : null;
 
   const timelineSteps: TimelineStep[] = useMemo(() => {
-    if (!retentionPeriodDates) return [];
+    if (nullable(retentionPeriodDates) || nullable(retentionPeriodDates.from) || nullable(retentionPeriodDates.to))
+      return [];
 
     const periodEndDate = retentionPeriodDates.to;
 
@@ -351,7 +365,8 @@ const useRetentionData = () => {
 
   // Calculate timeline position directly from elapsed time
   const timelineValue = useMemo(() => {
-    if (!retentionPeriodDates) return 0;
+    if (nullable(retentionPeriodDates) || nullable(retentionPeriodDates.from) || nullable(retentionPeriodDates.to))
+      return 0;
 
     const now = new Date();
     const totalDuration = differenceInMilliseconds(retentionPeriodDates.to, retentionPeriodDates.from);
