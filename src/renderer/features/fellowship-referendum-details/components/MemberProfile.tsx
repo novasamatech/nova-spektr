@@ -73,7 +73,7 @@ export const MemberProfile = memo(({ referendum, evidence }: Props) => {
             <CollectiveRank rank={member.rank} showName />
           </Box>
         </Box>
-        <hr className="filter-border my-4" />
+        <hr className="my-4 border-filter-border" />
         <VotingRecord evidence={evidence} />
       </Box>
     </Card>
