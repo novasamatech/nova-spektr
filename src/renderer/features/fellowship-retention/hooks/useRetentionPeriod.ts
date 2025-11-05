@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { nullable } from '@/shared/lib/utils';
+import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { evidenceService, memberService, useEvidencePeriod } from '@/domains/collectives';
 import { useBlockTime } from '@/domains/network';
 import { useFellowshipMember } from '@/aggregates/fellowship-member';
@@ -21,7 +22,7 @@ export const useRetentionPeriod = () => {
 
     return {
       from,
-      to: from + retentionPeriodLength,
+      to: pjsSchema.helpers.toBlockHeight(from + retentionPeriodLength),
     };
   }, [periods, member]);
 
