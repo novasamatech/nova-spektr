@@ -51,9 +51,14 @@ function getOtherDerivationPaths(
     .filter(([otherKeyId]) => otherKeyId !== keyId)
     .filter(([, otherKey]) => {
       const otherChain = chains[otherKey.chainId];
-      return isEthereumBased
-        ? networkUtils.isEthereumBased(otherChain.options)
-        : (otherChain.parentId ?? otherChain.chainId) === relayChainId;
+
+      if (isEthereumBased) {
+        const isOtherKeyEthereumBased = networkUtils.isEthereumBased(otherChain.options);
+        return isOtherKeyEthereumBased;
+      }
+
+      const isOtherKeyOnTheSameRelayChain = (otherChain.parentId ?? otherChain.chainId) === relayChainId;
+      return isOtherKeyOnTheSameRelayChain;
     })
     .map(([, otherKey]) => otherKey.derivationPath);
 }
