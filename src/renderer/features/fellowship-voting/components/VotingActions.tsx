@@ -1,8 +1,9 @@
 import { useUnit } from 'effector-react';
-import { memo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 
 import { type Transaction } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
+import { VotingButtonWithTooltip } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type OngoingReferendum, trackService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
@@ -10,7 +11,6 @@ import { tasksService } from '@/features/fellowship-tasks';
 import { voting } from '../model/voting';
 import { votingStatus } from '../model/votingStatus';
 
-import { VotingButtonWithTooltip } from './VotingButtonWithTooltip';
 import { VotingModal } from './VotingModal';
 
 type Props = {
@@ -30,6 +30,44 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
   const referendumVote = accountsVotes.find(voting => voting.referendumId === referendum?.id);
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
+  const handleVote = useCallback(
+    (vote: 'aye' | 'nay') => {
+      const alreadyChainVoted =
+        (vote === 'aye' && referendumVote?.decision === 'Aye') ||
+        (vote === 'nay' && referendumVote?.decision === 'Nay');
+
+      if (canAddToBasket && nonNullable(transaction) && alreadyChainVoted) {
+        voting.flow.open({ vote });
+        voting.removeFromBasket();
+        voting.flow.close({ vote: null });
+        votingStatus.flow.close({ referendumId: null });
+        return;
+      }
+
+      if (alreadyChainVoted) return;
+
+      if (decision === vote) {
+        votingStatus.flow.close({ referendumId: null });
+        setDecision(null);
+        return;
+      }
+
+      votingStatus.flow.open({ referendumId: referendum?.id });
+
+      if (canAddToBasket) {
+        voting.flow.open({ vote });
+        voting.saveToBasket();
+        voting.flow.close({ vote: null });
+      } else {
+        setDecision(vote);
+      }
+    },
+    [referendumVote?.decision, decision, canAddToBasket, referendum?.id, transaction],
+  );
+
+  const aye = () => handleVote('aye');
+  const nay = () => handleVote('nay');
+
   if (!currentMember) return null;
 
   const hasRequiredRank =
@@ -43,46 +81,6 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
     maxRank,
     track: referendum.track,
   });
-
-  const aye = () => {
-    if (referendumVote?.decision === 'Aye') return;
-
-    if (decision === 'aye') {
-      votingStatus.flow.close({ referendumId: null });
-      setDecision(null);
-      return;
-    }
-
-    votingStatus.flow.open({ referendumId: referendum?.id });
-
-    if (canAddToBasket) {
-      voting.flow.open({ vote: 'aye' });
-      voting.saveToBasket();
-      voting.flow.close({ vote: null });
-    } else {
-      setDecision('aye');
-    }
-  };
-
-  const nay = () => {
-    if (referendumVote?.decision === 'Nay') return;
-
-    if (decision === 'nay') {
-      votingStatus.flow.close({ referendumId: null });
-      setDecision(null);
-      return;
-    }
-
-    votingStatus.flow.open({ referendumId: referendum?.id });
-
-    if (canAddToBasket) {
-      voting.flow.open({ vote: 'nay' });
-      voting.saveToBasket();
-      voting.flow.close({ vote: null });
-    } else {
-      setDecision('nay');
-    }
-  };
 
   const totalReferendumVotes = referendum.tally.ayes + referendum.tally.nays;
   const userVotesImpact =
@@ -98,7 +96,7 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
           variant="negative"
           icon="negative"
           disabled={disabled}
-          isVoted={referendumVote?.decision === 'Nay'}
+          isVoted={nullable(transaction) ? referendumVote?.decision === 'Nay' : false}
           checked={nonNullable(transaction) && !transaction.args.aye}
           votes={memberVoteWeight}
           voteImpact={userVotesImpact}
@@ -108,7 +106,7 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
           variant="positive"
           icon="positive"
           disabled={disabled}
-          isVoted={referendumVote?.decision === 'Aye'}
+          isVoted={nullable(transaction) ? referendumVote?.decision === 'Aye' : false}
           checked={nonNullable(transaction) && transaction.args.aye}
           votes={memberVoteWeight}
           voteImpact={userVotesImpact}

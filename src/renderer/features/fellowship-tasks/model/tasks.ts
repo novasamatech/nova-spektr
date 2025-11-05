@@ -81,6 +81,10 @@ const $basketOperationsMap = $memberBasketOperations.map(operations => {
       map['evidence'] = operation;
     }
 
+    if (votingService.isEvidenceVotingTransaction(operation.coreTx)) {
+      map[`referendum_${operation.coreTx.args.poll}`] = operation;
+    }
+
     if (votingService.isVotingTransaction(operation.coreTx)) {
       map[`referendum_${operation.coreTx.args.poll}`] = operation;
     }
@@ -212,8 +216,9 @@ const $evidenceTasks = combine(
     evidencePopulated: evidence.$populated,
     currentBlock: fellowshipNetwork.$currentBlock,
     referendumsWithEvidence: $referendumsWithEvidence,
+    operations: $basketOperationsMap,
   },
-  ({ evidences, periods, member, members, evidencePopulated, currentBlock, referendumsWithEvidence }) => {
+  ({ evidences, periods, member, members, evidencePopulated, currentBlock, referendumsWithEvidence, operations }) => {
     if (!evidencePopulated || nullable(member) || nullable(periods) || nullable(currentBlock)) {
       return [];
     }
@@ -243,12 +248,18 @@ const $evidenceTasks = combine(
         const endBlock = evidence.wish === 'Retention' ? evidenceService.getEndDemotionBlock(proposer, periods) : null;
         const { tags, sortingScore } = tasksService.getEvidenceImportance(evidence, proposer, periods, currentBlock);
 
+        const evidenceTransaction =
+          Object.values(operations).find(o => {
+            if (!o) return false;
+            return votingService.isEvidenceVotingTransaction(o.coreTx) && o.initiatorAccountId === member.accountId;
+          })?.coreTx ?? null;
+
         tasks.push({
           id: `evidence_request_${proposer.accountId}`,
           weight: sortingScore,
           group: 'general',
           body: PromotionRetentionEvidenceVoting,
-          meta: { evidence, transaction: null, endBlock, tags },
+          meta: { evidence, transaction: evidenceTransaction, endBlock, tags },
           hasVoted: false,
         });
       }

@@ -194,10 +194,33 @@ sample({
   target: basketOperations.removeTransactions,
 });
 
+export const $inBasket = combine(
+  {
+    basket: basketOperations.$list,
+    referendum: votingStatus.$referendum,
+    account: votingStatus.$votingAccount,
+  },
+  ({ basket, referendum, account }) => {
+    if (!referendum || !account) return { aye: false, nay: false };
+
+    const existing = basket.filter(o => {
+      if (o.initiatorAccountId !== account.accountId) return false;
+      if (!votingService.isVotingTransaction(o.coreTx)) return false;
+      return o.coreTx.args.poll === referendum.id;
+    });
+
+    return {
+      aye: existing.some(t => t.coreTx.args.aye === true),
+      nay: existing.some(t => t.coreTx.args.aye === false),
+    };
+  },
+);
+
 export const voting = {
   flow,
   $fee,
   $wrappedTx,
+  $inBasket,
   sign,
   saveToBasket,
   removeFromBasket,
