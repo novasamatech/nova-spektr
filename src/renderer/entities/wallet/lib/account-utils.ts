@@ -228,7 +228,7 @@ type DerivationPathLike = {
 function getDerivationPath(data: DerivationPathLike | DerivationPathLike[]): string {
   if (!Array.isArray(data)) return data.derivationPath;
 
-  return data[0].derivationPath.replace(/\d+$/, `0..${data.length - 1}`);
+  return data[0].derivationPath.replace(/\d+$/, `0...${data.length - 1}`);
 }
 
 // Proxied accounts
