@@ -1,5 +1,6 @@
 import { type PropsWithChildren, type ReactNode, memo } from 'react';
 
+import { TEST_IDS } from '@/shared/constants';
 import { type Chain, type Wallet } from '@/shared/core';
 import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -44,6 +45,7 @@ export const WalletManagement = memo(
       >
         <button
           className="flex w-full min-w-0 shrink cursor-pointer items-center gap-x-2 rounded px-2 py-1.5"
+          data-testid={TEST_IDS.WALLET_MANAGEMENT.WALLET_ITEM}
           onClick={onClick}
         >
           {active ? (

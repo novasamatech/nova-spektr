@@ -37,3 +37,7 @@ export type Without<T, U extends PropertyKey> = { [P in Exclude<keyof T, U>]?: n
 export type XOR<T, U = object> = T | U extends object ? (Without<T, keyof U> & U) | (Without<U, keyof T> & T) : T | U;
 
 export type ArrayElement<T extends unknown[]> = T extends (infer E)[] ? E : never;
+
+export type NullableMap<T extends Record<PropertyKey, unknown>> = {
+  [K in keyof T]: T[K] | undefined | null;
+};

@@ -1,4 +1,3 @@
-import { useStoreMap, useUnit } from 'effector-react';
 import { type TFunction } from 'i18next';
 import { memo, useMemo } from 'react';
 import { generatePath } from 'react-router-dom';
@@ -8,9 +7,9 @@ import { Paths } from '@/shared/routes';
 import { FootnoteText, Icon, type IconNames, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type CompletedReferendum } from '@/domains/collectives';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
-import { fellowshipTasksFeature } from '../../model/feature';
-import { referendums } from '../../model/referendums';
+import { useMetadata } from '../../hooks/useMetadata';
 import { tasksService } from '../../service';
 import { ReferendumTaskMarkdown } from '../ReferendumTaskMarkdown';
 
@@ -36,11 +35,8 @@ type Props = {
 export const CompletedReferendumVoting = memo(({ referendum }: Props) => {
   const { t } = useI18n();
 
-  const meta = useStoreMap({
-    store: referendums.$metadata,
-    keys: [referendum.id],
-    fn: (meta, [id]) => meta[id] ?? null,
-  });
+  const chain = useFellowshipChain();
+  const { data: meta } = useMetadata(referendum);
 
   const type = referendum.type;
   const label = getStatusLabel(type, t);
@@ -55,12 +51,10 @@ export const CompletedReferendumVoting = memo(({ referendum }: Props) => {
     [meta],
   );
 
-  const input = useUnit(fellowshipTasksFeature.input);
-
   const handleClick = () => {
-    if (input?.chainId) {
+    if (chain) {
       const path = generatePath(Paths.FELLOWSHIP_REFERENDUM, {
-        chainId: input.chainId,
+        chainId: chain.chainId,
         referendumId: referendum.id.toString(),
       });
       navigationModel.events.navigateTo(path);

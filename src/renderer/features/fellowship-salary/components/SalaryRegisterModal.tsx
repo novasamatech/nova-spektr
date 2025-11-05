@@ -93,7 +93,7 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
       </Modal.Title>
       <Modal.Content>
         <Box horizontalAlign="center" padding={6}>
-          <Icon name="requestSalary" size={60} />
+          <Icon name="request" size={60} />
         </Box>
 
         {salary && (
@@ -105,13 +105,15 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              <SalaryRegisterConfirmation
-                asset={input.asset}
-                chain={input.chain}
-                wallets={input.wallets}
-                account={account}
-                fee={fee}
-              />
+              {nonNullable(fee) && (
+                <SalaryRegisterConfirmation
+                  asset={input.asset}
+                  chain={input.chain}
+                  wallets={input.wallets}
+                  account={account}
+                  fee={fee}
+                />
+              )}
             </Box>
             <Modal.Footer>
               {wallet && basketUtils.isBasketAvailable(wallet) && (

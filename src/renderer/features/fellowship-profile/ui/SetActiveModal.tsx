@@ -12,6 +12,8 @@ import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
+import { walletModel } from '@/entities/wallet';
+import { useFellowshipAsset, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { setActive } from '../model/setActive';
 
@@ -45,7 +47,10 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
   const isOpen = useUnit(setActive.flow.status);
   const account = useUnit(setActive.$account);
   const wallet = useUnit(setActive.$wallet);
-  const input = useUnit(setActive.$input);
+  const wallets = useUnit(walletModel.$wallets);
+
+  const chain = useFellowshipChain();
+  const asset = useFellowshipAsset();
   const fee = useUnit(setActive.$fee);
 
   const handleToggle = (open: boolean) => {
@@ -91,7 +96,7 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
     );
   }
 
-  if (nullable(account) || nullable(input)) {
+  if (nullable(account) || nullable(chain) || nullable(asset) || nullable(wallet)) {
     return (
       <OperationResult
         isOpen={isOpen}
@@ -107,7 +112,7 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
     <Modal size="md" isOpen={isOpen} onToggle={handleToggle}>
       <Modal.Trigger disabled={disabled}>{children}</Modal.Trigger>
       <Modal.Title close>
-        <OperationTitle title={t('fellowship.profile.setActive.title')} chainId={input.chain.chainId} />
+        <OperationTitle title={t('fellowship.profile.setActive.title')} chainId={chain.chainId} />
       </Modal.Title>
       <Modal.Content>
         <Carousel item={step}>
@@ -117,19 +122,16 @@ export const SetActiveModal = ({ isActive, disabled, children, salary }: Props) 
                 <Icon name="switch" size={60} />
               </Box>
 
-              <TransactionDetails
-                wallets={input.wallets}
-                chain={input.chain}
-                initiators={[account]}
-                signatory={account}
-              >
+              <TransactionDetails wallets={wallets} chain={chain} initiators={[account]} signatory={account}>
                 <DetailRow label={t('fellowship.voting.confirmation.status')}>
                   {isActive ? t('fellowship.profile.setActive.inactive') : t('fellowship.profile.setActive.active')}
                   &nbsp;{'→'}&nbsp;
                   {isActive ? t('fellowship.profile.setActive.active') : t('fellowship.profile.setActive.inactive')}
                 </DetailRow>
                 <DetailRow label={t('fellowship.voting.confirmation.salary')}>{salaryChange}</DetailRow>
-                <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, input.asset)}</DetailRow>
+                {fee && (
+                  <DetailRow label={t('fellowship.voting.confirmation.fee')}>{formatAsset(fee, asset)}</DetailRow>
+                )}
               </TransactionDetails>
 
               {alertOpen && (

@@ -1,10 +1,9 @@
 import { isNumber, isString } from 'lodash';
-import { Children, type PropsWithChildren } from 'react';
+import { Children, type PropsWithChildren, memo } from 'react';
 
 import { type XOR } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { gridSpaceConverter } from '../_helpers/gridSpaceConverter';
-
 import './Skeleton.css';
 
 type Props = XOR<
@@ -16,11 +15,12 @@ type Props = XOR<
   {
     width?: number | string;
     height?: number | string;
+    testId?: string;
     circle?: boolean;
   }
 >;
 
-export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, children }: Props) => {
+export const Skeleton = memo(({ width, height, testId, circle, fullWidth, minWidth, active, children }: Props) => {
   const formattedMinWidth = isNumber(minWidth) ? `${gridSpaceConverter(minWidth)}px` : minWidth;
   const formattedWidth = isNumber(width) ? `${gridSpaceConverter(width)}px` : width;
   const formattedHeight = isNumber(height) ? `${gridSpaceConverter(height)}px` : height;
@@ -28,8 +28,9 @@ export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, c
   if (!children) {
     return (
       <span
+        data-testid={testId}
         className={cnTw(
-          'spektr-shimmer block h-full max-h-full w-full max-w-full',
+          'spektr-skeleton block h-full max-h-full w-full max-w-full',
           circle ? 'rounded-full' : 'rounded-2lg',
         )}
         style={{
@@ -43,18 +44,25 @@ export const Skeleton = ({ width, height, circle, fullWidth, minWidth, active, c
 
   if (active) {
     return (
-      <span
-        className={cnTw('spektr-shimmer block h-fit rounded-2lg *:invisible', {
-          'w-full': fullWidth,
-          'w-fit': !fullWidth,
+      <>
+        {Children.map(children, child => {
+          return (
+            <span
+              data-testid={testId}
+              className={cnTw('spektr-skeleton block h-fit rounded-2lg *:invisible', {
+                'w-full': fullWidth,
+                'w-fit': !fullWidth,
+              })}
+              style={{ minWidth: formattedMinWidth }}
+            >
+              {isString(child) ? <span>{child}</span> : child}
+            </span>
+          );
         })}
-        style={{ minWidth: formattedMinWidth }}
-      >
-        {Children.map(children, child => (isString(child) ? <span>{child}</span> : child))}
-      </span>
+      </>
     );
   }
 
   // eslint-disable-next-line react/jsx-no-useless-fragment
   return <>{children}</>;
-};
+});

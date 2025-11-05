@@ -5,7 +5,6 @@ import { type Chain } from '@/shared/core';
 import { createSlot } from '@/shared/di';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
 import { Account } from '@/shared/ui-entities';
-import { AsyncItem, Box } from '@/shared/ui-kit';
 import { type FeedRecord } from '@/domains/collectives';
 
 export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; record: FeedRecord }>();
@@ -23,26 +22,24 @@ type Props = ActivityFeedRecord;
 
 export const EventRecord = memo(({ event, chain, duration, name, description, withFullAccountInfo }: Props) => {
   return (
-    <AsyncItem fallback={<Box width="100%" height="48px"></Box>}>
-      <div className="flex flex-col gap-1 px-5">
-        <div className="flex items-center gap-2">
-          <div className="min-w-0 grow text-button-small">
-            <Account
-              accountId={event.accountId}
-              chain={chain}
-              title={name}
-              variant="short"
-              hideAddress
-              hideExplorers={!withFullAccountInfo}
-              hideIcon={!withFullAccountInfo}
-            />
-          </div>
-          <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-            <Duration seconds={duration} shortFormat />
-          </HelpText>
+    <div className="flex flex-col gap-1 px-5">
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 grow text-button-small">
+          <Account
+            accountId={event.accountId}
+            chain={chain}
+            title={name}
+            variant="short"
+            hideAddress
+            hideExplorers={!withFullAccountInfo}
+            hideIcon={!withFullAccountInfo}
+          />
         </div>
-        <FootnoteText className="text-text-secondary">{description}</FootnoteText>
+        <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
+          <Duration seconds={duration} shortFormat />
+        </HelpText>
       </div>
-    </AsyncItem>
+      <FootnoteText className="text-text-secondary">{description}</FootnoteText>
+    </div>
   );
 });

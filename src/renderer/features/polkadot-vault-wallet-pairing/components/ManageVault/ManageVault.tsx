@@ -17,7 +17,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { useAltOrCtrlKeyPressed, useToggle } from '@/shared/lib/hooks';
+import { useKeyCombo, useToggle } from '@/shared/lib/hooks';
 import { IS_MAC, toAddress } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import {
@@ -37,7 +37,7 @@ import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { type SeedInfo } from '@/entities/transaction';
 import { DerivedAccount, RootAccountLg, accountUtils } from '@/entities/wallet';
-import { DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
+import { type DerivationKeyDraft, DerivationsAddressModal, ImportKeysModal, KeyConstructor } from '@/features/wallets';
 
 import { VaultInfoPopover } from './VaultInfoPopover';
 import { manageVaultModel } from './model/manage-vault-model';
@@ -51,10 +51,12 @@ type Props = {
   onComplete: () => void;
 };
 
+const SHOW_DETAILS_SHORTCUT = IS_MAC ? ['alt'] : ['ctrl'];
+
 export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) => {
   const { t } = useI18n();
   const { showStatus } = useStatusContext();
-  const isAltPressed = useAltOrCtrlKeyPressed();
+  const isDetailsShortcutPressed = useKeyCombo(SHOW_DETAILS_SHORTCUT);
 
   const keys = useUnit(manageVaultModel.$keys);
   const keysGroups = useUnit(manageVaultModel.$keysGroups);
@@ -64,7 +66,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   const [isAddressModalOpen, toggleIsAddressModalOpen] = useToggle();
   const [isImportModalOpen, toggleIsImportModalOpen] = useToggle();
   const [isConstructorModalOpen, toggleConstructorModal] = useToggle();
-  const [chainElements, setChainElements] = useState<[string, (VaultChainAccount | VaultShardAccount[])[]][]>([]);
+  const [chainElements, setChainElements] = useState<[ChainId, (VaultChainAccount | VaultShardAccount[])[]][]>([]);
 
   const {
     submit,
@@ -74,7 +76,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
   const publicKey = pjsSchema.helpers.toAccountId(u8aToHex(seedInfo.multiSigner.public));
   const publicKeyAddress = toAddress(publicKey, { prefix: 1 });
-  const walletName = isAltPressed || !name?.value ? publicKeyAddress : name?.value;
+  const walletName = isDetailsShortcutPressed || !name?.value ? publicKeyAddress : name?.value;
 
   useEffect(() => {
     manageVaultModel.events.formInitiated(seedInfo);
@@ -85,8 +87,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
   }, [onComplete]);
 
   useEffect(() => {
-    const chainsMap = Object.fromEntries(
-      Object.keys(chains).map(chainId => [chainId, [] as (VaultChainAccount | VaultShardAccount[])[]]),
+    const chainsMap: Record<ChainId, (VaultChainAccount | VaultShardAccount[])[]> = Object.fromEntries(
+      Object.keys(chains).map(chainId => [chainId, []]),
     );
 
     for (const account of keysGroups) {
@@ -94,7 +96,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       chainsMap[chainId].push(account);
     }
 
-    setChainElements(Object.entries(chainsMap));
+    setChainElements(Object.entries(chainsMap) as [ChainId, (VaultChainAccount | VaultShardAccount[])[]][]);
   }, [keysGroups]);
 
   const submitForm = (event: FormEvent) => {
@@ -141,12 +143,8 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
     toggleIsImportModalOpen();
   };
 
-  const handleConstructorKeys = (
-    keysToAdd: (VaultChainAccount | VaultShardAccount[])[],
-    keysToRemove: (VaultChainAccount | VaultShardAccount[])[],
-  ) => {
-    manageVaultModel.events.keysRemoved(keysToRemove.flat());
-    manageVaultModel.events.keysAdded(keysToAdd.flat());
+  const handleConstructorKeys = (keys: DerivationKeyDraft[]) => {
+    manageVaultModel.events.derivationsConstructed(keys);
     toggleConstructorModal();
   };
 
@@ -256,10 +254,10 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
 
                 return (
                   <Box key={chainId} padding={[2, 0, 0]}>
-                    <Accordion open={isAltPressed}>
+                    <Accordion open={isDetailsShortcutPressed}>
                       <Accordion.Trigger>
                         <div className="flex gap-x-2 normal-case">
-                          <ChainTitle fontClass="text-text-primary" chainId={chainId as ChainId} />
+                          <ChainTitle fontClass="text-text-primary" chainId={chainId} />
                           <FootnoteText className="text-text-tertiary">{chainAccounts.length}</FootnoteText>
                         </div>
                       </Accordion.Trigger>
@@ -271,7 +269,11 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                             <Popover key={derivationPath} align="end">
                               <Popover.Trigger>
                                 <div className="w-full pt-2">
-                                  <DerivedAccount key={derivationPath} account={account} showSuffix={isAltPressed} />
+                                  <DerivedAccount
+                                    key={derivationPath}
+                                    account={account}
+                                    showSuffix={isDetailsShortcutPressed}
+                                  />
                                 </div>
                               </Popover.Trigger>
                               <Popover.Content>
@@ -298,7 +300,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       <KeyConstructor
         isOpen={isConstructorModalOpen}
         title={name?.value}
-        existingKeys={keys}
+        existingKeys={keys as (VaultChainAccount | VaultShardAccount)[]}
         onClose={toggleConstructorModal}
         onConfirm={handleConstructorKeys}
       />
@@ -314,7 +316,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
       <DerivationsAddressModal
         isOpen={isAddressModalOpen}
         rootAccountId={publicKey}
-        keys={keys as (VaultShardAccount | VaultChainAccount)[]}
+        keys={keys}
         onClose={toggleIsAddressModalOpen}
         onComplete={handleCreateVault}
       />

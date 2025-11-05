@@ -63,33 +63,35 @@ const WalletTypeFromExtension = (extension: ExtensionType) => {
 const $accounts = combine($rawAccounts, $extensionType, (accounts, extensionType) => {
   if (nullable(extensionType)) return [];
 
-  return accounts.map<AccountDraft>(({ address, type, name, genesisHash }) => {
-    const isChainAccount = !!genesisHash;
+  return accounts.map<AnyAccountDraft<ExtensionChainAccount> | AnyAccountDraft<ExtensionUniversalAccount>>(
+    ({ address, type, name, genesisHash }) => {
+      const isChainAccount = !!genesisHash;
 
-    const baseAccount = {
-      walletId: 0,
-      accountType: 'extension' as const,
-      extension: extensionType,
-      accountId: toAccountId(address),
-      cryptoType: type ? (cryptoTypeMap[type] ?? CryptoType.SR25519) : CryptoType.SR25519,
-      name: name ?? toShortAddress(address),
-      type: isChainAccount ? 'chain' : 'universal',
-      signingType: SigningType.EXTENSION,
-    };
+      const baseAccount = {
+        walletId: 0,
+        accountType: 'extension' as const,
+        extension: extensionType,
+        accountId: toAccountId(address),
+        cryptoType: type ? (cryptoTypeMap[type] ?? CryptoType.SR25519) : CryptoType.SR25519,
+        name: name ?? toShortAddress(address),
+        type: isChainAccount ? 'chain' : 'universal',
+        signingType: SigningType.EXTENSION,
+      };
 
-    if (isChainAccount) {
+      if (isChainAccount) {
+        return {
+          ...baseAccount,
+          type: 'chain',
+          chainId: genesisHash,
+        };
+      }
+
       return {
         ...baseAccount,
-        type: 'chain',
-        chainId: genesisHash,
-      } satisfies AnyAccountDraft<ExtensionChainAccount>;
-    }
-
-    return {
-      ...baseAccount,
-      type: 'universal',
-    } satisfies AnyAccountDraft<ExtensionUniversalAccount>;
-  });
+        type: 'universal',
+      };
+    },
+  );
 });
 
 const requestAccessToAccountsFx = createEffect(async (wallet: ConnectWallet) => {

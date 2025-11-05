@@ -14,6 +14,7 @@ export const TEST_IDS = {
   },
   ASSETS: {
     SETTINGS_WIDGET: 'assets-settings-widget',
+    PAGE_VIEW: 'page-view',
     SEND_ARROW_ICON: 'Icon:sendArrow',
     RECEIVE_ARROW_ICON: 'Icon:receiveArrow',
     SHELF_RIGHT_ARROW_ICON: 'Icon:shelfRight',
@@ -28,15 +29,26 @@ export const TEST_IDS = {
     INFO_BUTTON: 'common-info-button',
     APPLY_BUTTON: 'common-apply-button',
   },
+  WALLET_MANAGEMENT: {
+    WALLET_SEARCH: 'wallet-search-input',
+    WALLET_ITEM: 'wallet_item',
+    DROPDOWN_ITEM_VIEW_DETAILS: 'view_wallet_details',
+    DROPDOWN_ITEM_DELEGATE: 'delegate-proxy',
+    DROPDOWN_ACTIONS: 'wallet-actions',
+  },
   OPERATIONS: {
     CONFIRM_NETWORK_FEE: 'operations-confirm-network-fee',
     ESTIMATE_FEE: 'operations-estimate-fee',
     AMOUNT_INPUT: 'operations-amount-input',
+    AVAILABLE_BALANCE: 'available-balance',
+    AVAILABLE_BALANCE_LOADER: 'available-balance-loader',
     RECIPIENT_INPUT: 'operations-recipient-input',
     QR_CODE_CONTAINER: 'operations-qr-code-container',
     SIGNATORY_SELECTOR: 'operations-signatory-selector',
     SIGNATORY_SELECTOR_OPTION: 'Address',
     XCM_SELECTOR: 'operations-xcm-selector',
+    MYSELF_BUTTON: 'myself-button',
+    FEE_LOADER: 'fee-loader',
   },
   GOVERNANCE: {
     FILTER_BUTTON: 'governance-filter-button',
@@ -65,6 +77,15 @@ export const TEST_IDS = {
   TRANSFER: {
     MODAL: 'transfer-modal',
   },
+  PROXY_FORM: {
+    ADDRESS_INPUT: 'proxy-address-input',
+  },
   ADD_BUTTON: 'button-add',
   CLOSE_BUTTON: 'Icon:close',
+  VALIDATIONS: {
+    PERMISSION: 'permission-error',
+    MISSING_ACCOUNT: 'missing-account-error',
+    BALANCE: 'balance-error',
+    FATAL: 'fatal-error',
+  },
 } as const;

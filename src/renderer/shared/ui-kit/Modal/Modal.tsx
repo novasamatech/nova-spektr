@@ -14,6 +14,7 @@ type Props = {
   size: 'sm' | 'md' | 'mdlg' | 'lg' | 'xl' | 'xxl' | 'full' | 'fit';
   height?: 'full' | 'lg' | 'fit';
   testId?: string;
+  preventOutsideClick?: boolean;
   onToggle?: (open: boolean) => void;
 };
 
@@ -24,6 +25,7 @@ const Root = ({
   children,
   onToggle,
   testId = 'Modal',
+  preventOutsideClick = false,
 }: PropsWithChildren<Props>) => {
   const { portalContainer } = useTheme();
 
@@ -70,6 +72,7 @@ const Root = ({
                 'h-modal': height === 'lg',
               },
             )}
+            onInteractOutside={preventOutsideClick ? e => e.preventDefault() : undefined}
           >
             {hasTitle ? null : <Dialog.Title hidden />}
             {modalNodes}
@@ -92,7 +95,7 @@ const Title = ({ action, close, children, gap = 'medium' }: TitleProps) => {
   return (
     <Dialog.Title asChild hidden={!headerExist} className={!headerExist ? 'hidden' : ''}>
       <header className="flex w-full items-center justify-between py-3 ps-5 pe-3 contain-inline-size">
-        <h1 className="truncate py-1 font-manrope text-header-title font-bold text-text-primary">{children}</h1>
+        <h1 className="w-full truncate py-1 font-manrope text-header-title font-bold text-text-primary">{children}</h1>
 
         <div
           className={cnTw('z-20 flex h-7.5 items-center', {
@@ -115,19 +118,37 @@ const Title = ({ action, close, children, gap = 'medium' }: TitleProps) => {
   );
 };
 
-const HeaderContent = ({ children }: PropsWithChildren) => {
+type HeaderContentProps = PropsWithChildren<{
+  background?: 'primary' | 'secondary';
+}>;
+
+const HeaderContent = ({ children, background = 'primary' }: HeaderContentProps) => {
   return (
-    <header aria-level={2} className="shrink-0">
+    <header
+      aria-level={2}
+      className={cnTw('shrink-0', {
+        'bg-main-app-background': background === 'secondary',
+      })}
+    >
       {children}
     </header>
   );
 };
 
-const Content = ({ disableScroll, children }: PropsWithChildren<{ disableScroll?: boolean }>) => {
-  return disableScroll ? (
-    <div className="relative flex h-full min-h-0 grow flex-col overflow-hidden">{children}</div>
-  ) : (
-    <ScrollArea>{children}</ScrollArea>
+type ContentProps = PropsWithChildren<{
+  disableScroll?: boolean;
+  background?: 'primary' | 'secondary';
+}>;
+
+const Content = ({ disableScroll, background = 'primary', children }: ContentProps) => {
+  return (
+    <div
+      className={cnTw('relative flex h-full min-h-0 grow flex-col overflow-hidden', {
+        'bg-main-app-background': background === 'secondary',
+      })}
+    >
+      {disableScroll ? children : <ScrollArea>{children}</ScrollArea>}
+    </div>
   );
 };
 

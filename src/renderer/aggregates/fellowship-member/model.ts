@@ -6,7 +6,7 @@ import { walletModel } from '@/entities/wallet';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { walletSelect } from '@/aggregates/wallet-select';
 
-const $fellowshipMembers = member.$list.map(members => members['fellowship'] ?? {});
+const $fellowshipMembers = member.membersSubscriptionResource.$cache.map(members => members['fellowship'] ?? {});
 const $chainMembers = combine(fellowshipNetwork.$network, $fellowshipMembers, (network, members) =>
   network ? (members[network.chainId] ?? []) : [],
 );

@@ -1,4 +1,3 @@
-import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
@@ -6,9 +5,8 @@ import { useI18n } from '@/shared/i18n';
 import { getCreatedDateFromApi, toRomanNumeral } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
-import { fellowshipTasksFeature } from '../../model/feature';
-import { periods } from '../../model/periods';
-import { tracks } from '../../model/tracks';
+import { useFellowshipMemberEndPromotionBlock, useFellowshipMemberNextTrack } from '@/aggregates/fellowship-member';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { PromotionEndTimer } from '../PromotionEndTimer';
 import { BadgeIcon } from '../TaskBadge';
 
@@ -18,15 +16,15 @@ export const RequestPromotion = () => {
   const { t, formatDate } = useI18n();
   const [periodEnd, setPeriodEnd] = useState(0);
 
-  const input = useUnit(fellowshipTasksFeature.input);
-  const nextTrack = useUnit(tracks.$nextTrack);
-  const endPromotionPeriod = useUnit(periods.$endPromotionPeriod);
+  const api = useFellowshipApi();
+  const { data: nextTrack } = useFellowshipMemberNextTrack();
+  const { data: endPromotionPeriod } = useFellowshipMemberEndPromotionBlock();
 
   useEffect(() => {
-    if (input?.api && endPromotionPeriod) {
-      getCreatedDateFromApi(endPromotionPeriod, input.api).then(setPeriodEnd);
+    if (api && endPromotionPeriod) {
+      getCreatedDateFromApi(endPromotionPeriod, api).then(setPeriodEnd);
     }
-  }, [input?.api, endPromotionPeriod]);
+  }, [api, endPromotionPeriod]);
 
   return (
     <Box direction="row" padding={4} gap={2} verticalAlign="flex-end">

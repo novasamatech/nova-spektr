@@ -11,7 +11,7 @@ projects:
       - src/renderer/entities/proxy/**
 
   SubQuery Multi Chain Account Management:
-    schema: https://subquery-account-manager-stg.novasama-tech.org
+    schema: https://subquery-accounts-stg.novasama-tech.org
     include:
       - src/renderer/domains/network/multisig-operation/**
       - src/renderer/domains/network/account-sync/**
@@ -22,6 +22,6 @@ projects:
       - src/renderer/entities/staking/**
 
   SubQuery Collectives:
-    schema: https://subquery-collectives-polkadot-stg.novasama-tech.org
+    schema: https://subquery-collectives-polkadot-prod.novasama-tech.org
     include:
       - src/renderer/domains/collectives/**

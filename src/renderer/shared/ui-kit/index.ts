@@ -31,6 +31,7 @@ export { Select } from './Select/Select';
 export { Slider } from './Slider/Slider';
 export { Label, type LabelVariant } from './Label/Label';
 export { Modal } from './Modal/Modal';
+export { StepIndicator, type Step } from './StepIndicator/StepIndicator';
 export { Field } from './Field/Field';
 export { Input } from './Input/Input';
 export { Json } from './Json/Json';

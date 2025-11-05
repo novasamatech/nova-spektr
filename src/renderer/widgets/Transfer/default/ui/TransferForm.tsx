@@ -1,7 +1,8 @@
 import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { uniqBy } from 'lodash';
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, memo, useEffect, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import { TEST_IDS } from '@/shared/constants';
 import { type ChainId, type Wallet } from '@/shared/core';
@@ -9,7 +10,8 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
   entries,
-  formatBalance,
+  formatAsset,
+  fromPrecision,
   getNativeAsset,
   includesMultiple,
   nonNullable,
@@ -19,7 +21,7 @@ import {
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
-import { Button, CaptionText, InputHint } from '@/shared/ui';
+import { Alert, Button, CaptionText, FootnoteText, Icon, InputHint, Switch } from '@/shared/ui';
 import {
   AccountSelect,
   Address,
@@ -28,13 +30,13 @@ import {
   TransactionValidationError,
   WalletIcon,
 } from '@/shared/ui-entities';
-import { Box, Combobox, Field, Select } from '@/shared/ui-kit';
+import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
 import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
-import { AccountSelectModal, DeliveryFeeAlert, accountUtils, walletModel } from '@/entities/wallet';
+import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';
@@ -55,7 +57,7 @@ type ComboboxGroup = {
   items: ComboboxItem[];
 };
 
-export const TransferForm = ({ onGoBack }: Props) => {
+export const TransferForm = memo(({ onGoBack }: Props) => {
   const { submit } = useForm(formModel.form);
   const errors = useUnit(formModel.$errors);
   const canSubmit = useUnit(formModel.$canSubmit);
@@ -71,6 +73,7 @@ export const TransferForm = ({ onGoBack }: Props) => {
   return (
     <div className="flex flex-col gap-4 px-5 py-4">
       <TransactionValidationError errors={errors} wallets={wallets} />
+      <DestinationBalanceAlert />
       <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
         <XcmChainSelector />
         <InitiatorSelector />
@@ -81,15 +84,40 @@ export const TransferForm = ({ onGoBack }: Props) => {
       <div className="flex flex-col gap-y-6">
         <FeeSection />
       </div>
-      <AlertForDeliveryFee />
+
+      <AlertForAccountDeath />
+
       <ActionsSection onGoBack={onGoBack} />
 
       <MyselfAccountModal />
     </div>
   );
-};
+});
 
-const InitiatorSelector = () => {
+const DestinationBalanceAlert = memo(() => {
+  const { t } = useI18n();
+
+  const destinationAsset = useUnit(formModel.$destinationAsset);
+  const destinationBalanceEd = useUnit(formModel.$destinationBalanceEd);
+  const hasDestinationBalanceError = useUnit(formModel.$hasDestinationBalanceError);
+
+  return (
+    <Alert title={t('transfer.destinationBalanceAlertTitle')} variant="error" active={hasDestinationBalanceError}>
+      <span>
+        <Trans
+          t={t}
+          i18nKey="transfer.destinationBalanceAlertDescription"
+          values={{
+            ed: destinationAsset && destinationBalanceEd ? formatAsset(destinationBalanceEd, destinationAsset) : '0',
+          }}
+          components={{ b: <b /> }}
+        />
+      </span>
+    </Alert>
+  );
+});
+
+const InitiatorSelector = memo(() => {
   const { t } = useI18n();
 
   const {
@@ -128,9 +156,9 @@ const InitiatorSelector = () => {
       </InputHint>
     </Field>
   );
-};
+});
 
-const SignatorySelector = () => {
+const SignatorySelector = memo(() => {
   const { t } = useI18n();
 
   const {
@@ -176,9 +204,9 @@ const SignatorySelector = () => {
       onChange={signatory.onChange}
     />
   );
-};
+});
 
-const XcmChainSelector = () => {
+const XcmChainSelector = memo(() => {
   const { t } = useI18n();
 
   const {
@@ -209,13 +237,13 @@ const XcmChainSelector = () => {
         onChange={selectChain}
       >
         <Select.Group title={t('transfer.onChainPlaceholder')}>
-          <Select.Item value={nativeChain.chainId}>
+          <Select.Item value={nativeChain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
             <ChainTitle chainId={nativeChain.chainId} fontClass="text-text-primary" />
           </Select.Item>
         </Select.Group>
         <Select.Group title={t('transfer.crossChainPlaceholder')}>
           {xcmChains.map((chain) => (
-            <Select.Item key={chain.chainId} value={chain.chainId}>
+            <Select.Item key={chain.chainId} value={chain.chainId} itemTestId={TEST_IDS.MULTISIG.NETWORK_OPTION}>
               <ChainTitle chainId={chain.chainId} fontClass="text-text-primary" />
             </Select.Item>
           ))}
@@ -223,11 +251,11 @@ const XcmChainSelector = () => {
       </Select>
     </Field>
   );
-};
+});
 
 const { services, constants } = walletSelectFeature;
 
-const Destination = () => {
+const Destination = memo(() => {
   const { t } = useI18n();
 
   const {
@@ -350,13 +378,12 @@ const Destination = () => {
   const options = [...walletsOptions, ...contactOptions];
 
   const prefixElement = (
-    <div className="flex h-auto items-center">
-      <Identicon
-        size={20}
-        address={toAddress(destination.value, { prefix: chain?.addressPrefix })}
-        background={false}
-      />
-    </div>
+    <Identicon
+      invalid={destination.hasError}
+      size={20}
+      address={toAddress(destination.value, { prefix: chain?.addressPrefix })}
+      background={false}
+    />
   );
 
   const handleChange = () => {
@@ -389,28 +416,32 @@ const Destination = () => {
         </Combobox>
 
         {isMyselfXcmEnabled && (
-          <Button pallet="secondary" onClick={handleChange}>
+          <Button pallet="secondary" testId={TEST_IDS.OPERATIONS.MYSELF_BUTTON} onClick={handleChange}>
             {t('transfer.myselfButton')}
           </Button>
         )}
       </Box>
 
       <InputHint active={destination.hasError} variant="error">
-        {t(destination.errorMessage)}
+        {t(destination.errorMessage, destination.errorValues)}
       </InputHint>
     </Field>
   );
-};
+});
 
-const Amount = () => {
+const Amount = memo(() => {
   const { t } = useI18n();
 
   const {
     fields: { amount },
   } = useForm(formModel.form);
 
-  const accountBalance = useUnit(formModel.$initiatorBalance);
+  const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
+  const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
+
+  const showMaxButton = accountAvailableBalance?.gtn(0) ?? false;
+  const showEDSwitch = useUnit(formModel.$showEDSwitch);
 
   if (!network) {
     return null;
@@ -421,27 +452,58 @@ const Amount = () => {
       <AmountInput
         invalid={amount.hasError}
         value={amount.value}
-        balance={accountBalance.transferable.toString() ?? null}
+        balance={accountAvailableBalance?.toString() ?? null}
         balancePlaceholder={t('general.input.availableLabel')}
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
+        suffixElement={
+          showMaxButton && (
+            <Button pallet="secondary" variant="fill" size="sm" onClick={() => formModel.events.toggleMaxMode(true)}>
+              {t('transfer.max.buttonTitle')}
+            </Button>
+          )
+        }
         testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
-        onChange={amount.onChange}
+        onChange={(value: string) => amount.onChange(value)}
+        onKeyDown={() => formModel.events.toggleMaxMode(false)}
       />
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}
       </InputHint>
+
+      {showEDSwitch && (
+        <div className="flex justify-end">
+          <Switch
+            checked={isExistentialDepositEnabled}
+            variant="accent"
+            onChange={(checked) => formModel.events.toggleExistentialDeposit(checked)}
+          >
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div tabIndex={0}>
+                    <Icon name="info" className="hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('transfer.max.ed.tooltip')}</Tooltip.Content>
+              </Tooltip>
+              <FootnoteText>{t('transfer.max.ed.title')}</FootnoteText>
+            </div>
+          </Switch>
+        </div>
+      )}
     </div>
   );
-};
+});
 
-const FeeSection = () => {
+const FeeSection = memo(() => {
   const { t } = useI18n();
 
   const initiator = useUnit(formModel.form.fields.initiator.$value);
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
   const coreTx = useUnit(formModel.$coreTx);
+  const feeTx = useUnit(formModel.$feeTx);
   const isXcm = useUnit(formModel.$isXcm);
   const xcmConfig = useUnit(formModel.$xcmConfig);
   const xcmApi = useUnit(formModel.$xcmApi);
@@ -469,7 +531,7 @@ const FeeSection = () => {
       <FeeWithLabel
         label={t('operation.networkFee')}
         asset={getNativeAsset(network.chain.assets)!}
-        fee={fee.toString()}
+        fee={fee}
         isLoading={pendingFee}
       />
 
@@ -478,51 +540,18 @@ const FeeSection = () => {
           api={xcmApi}
           config={xcmConfig}
           asset={network.asset}
-          transaction={coreTx}
+          transaction={coreTx || feeTx}
           onFeeChange={formModel.xcmFeeChanged}
           onFeeLoading={formModel.isXcmFeeLoadingChanged}
         />
       )}
 
-      {isXcm && !deliveryFee.isZero() && (
-        <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />
-      )}
+      {isXcm && deliveryFee && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
     </div>
   );
-};
+});
 
-const AlertForDeliveryFee = () => {
-  const {
-    fields: { amount },
-  } = useForm(formModel.form);
-  const initiator = useUnit(formModel.form.fields.initiator.$value);
-
-  const deliveryFee = useUnit(formModel.$deliveryFee);
-  const initiatorBalance = useUnit(formModel.$initiatorBalance);
-  const network = useUnit(formModel.$networkStore);
-  const asset = getNativeAsset(network?.chain.assets ?? []);
-
-  const hasDeliveryError = amount.errorMessage === 'transfer.notEnoughBalanceForDeliveryFeeError';
-
-  if (!initiator || !asset || !network || !deliveryFee || !hasDeliveryError || !initiatorBalance) {
-    return null;
-  }
-
-  const formattedFee = formatBalance(deliveryFee, asset.precision).value;
-  const formattedBalance = formatBalance(initiatorBalance.native, asset.precision).value;
-
-  return (
-    <DeliveryFeeAlert
-      address={toAddress(initiator.accountId, { prefix: network.chain.addressPrefix })}
-      fee={formattedFee}
-      balance={formattedBalance}
-      symbol={asset.symbol}
-      onClose={amount.reset}
-    />
-  );
-};
-
-const MyselfAccountModal = () => {
+const MyselfAccountModal = memo(() => {
   const {
     fields: { destinationChain },
   } = useForm(formModel.form);
@@ -545,9 +574,35 @@ const MyselfAccountModal = () => {
       onSelect={({ accountId }) => formModel.xcmDestinationSelected(accountId)}
     />
   );
-};
+});
 
-const ActionsSection = ({ onGoBack }: Props) => {
+const AlertForAccountDeath = memo(() => {
+  const { t } = useI18n();
+  const showAccountDeathAlert = useUnit(formModel.$showAccountDeathAlert);
+  const initiatorAccountBalance = useUnit(formModel.$initiatorAccountBalance);
+  const asset = useUnit(formModel.$asset);
+
+  if (nullable(initiatorAccountBalance) || nullable(asset)) {
+    return null;
+  }
+
+  return (
+    showAccountDeathAlert && (
+      <Alert title={t('transfer.accountDeathWarning.title')} variant="warn" active>
+        <FootnoteText className="max-w-full text-text-primary">
+          <Trans
+            t={t}
+            i18nKey="transfer.accountDeathWarning.description"
+            components={{ b: <b className="font-semibold" /> }}
+            values={{ ed: fromPrecision(initiatorAccountBalance.ed, asset.precision), asset: asset.symbol }}
+          />
+        </FootnoteText>
+      </Alert>
+    )
+  );
+});
+
+const ActionsSection = memo(({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
@@ -562,4 +617,4 @@ const ActionsSection = ({ onGoBack }: Props) => {
       </Button>
     </div>
   );
-};
+});

@@ -44,6 +44,7 @@ export type HashData = {
 
 export type ExtrinsicResultParams = {
   timepoint: Timepoint;
+  signature: HexString;
   extrinsicHash: HexString;
   isFinalApprove: boolean;
   multisigError: string;

@@ -5,8 +5,8 @@ import { nonNullable } from '@/shared/lib/utils';
 import { evidenceForm } from '../model/evidenceForm';
 import { evidencePost } from '../model/evidencePost';
 
-import { EvidenceFormModal } from './EvidenceFormModal';
 import { EvidencePostModal } from './EvidencePostModal';
+import { SubmitEvidenceFromScratch } from './SubmitEvidenceFromScratch';
 
 type Props = PropsWithChildren<{
   wish: 'Promotion' | 'Retention';
@@ -28,12 +28,12 @@ export const EvidencePostFlowModal = ({ wish, children }: Props) => {
 
   return (
     <>
-      <EvidenceFormModal wish={wish} isOpen={step !== 'closed'} onToggle={toggleForm}>
+      <SubmitEvidenceFromScratch wish={wish} isOpen={step === 'form'} onToggle={toggleForm}>
         {children}
-      </EvidenceFormModal>
-      {nonNullable(evidence) ? (
+      </SubmitEvidenceFromScratch>
+      {nonNullable(evidence) && (
         <EvidencePostModal wish={wish} evidence={evidence} isOpen={step === 'submit'} onToggle={toggleConfirm} />
-      ) : null}
+      )}
     </>
   );
 };

@@ -3,7 +3,7 @@ import { createEffect, createEvent, createStore, sample, scopeBind } from 'effec
 import { once, reset } from 'patronum';
 
 import { type Chain, type HexString, type Transaction } from '@/shared/core';
-import { assert, nonNullable, removeFromCollection } from '@/shared/lib/utils';
+import { assert, createAsyncTaskPool, nonNullable, removeFromCollection } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type Extrinsic, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -23,7 +23,19 @@ export type SubmitInputDeprecated = {
 
 type SubmitInput = SignatureResult[];
 
-type Result = { id: number; result: ExtrinsicResult; params: ExtrinsicResultParams | string };
+export type SuccessResult = {
+  id: number;
+  result: ExtrinsicResult.SUCCESS;
+  params: ExtrinsicResultParams;
+};
+
+export type ErrorResult = {
+  id: number;
+  result: ExtrinsicResult.ERROR;
+  params: string;
+};
+
+type Result = SuccessResult | ErrorResult;
 
 /**
  * Flow entry point
@@ -68,15 +80,28 @@ const submitExtrinsicFx = createEffect((payloads: SubmitInput) => {
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
-  for (const [index, { api, extrinsic, signatory, signature, payload }] of payloads.entries()) {
-    transactionService.submitExtrinsic(extrinsic, signature, payload, signatory, api).then((result) => {
-      if (result.executed) {
-        boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
-      } else {
-        boundExtrinsicFailed({ id: index, signatory, params: result.error });
-      }
-    });
-  }
+  const asyncTaskPool = createAsyncTaskPool({
+    poolSize: 1,
+    retryCount: 0,
+    retryDelay: 0,
+  });
+
+  return Promise.all(
+    Array.from(payloads.entries()).map(([index, { api, extrinsic, signatory, signature, payload }]) => {
+      return asyncTaskPool.call(
+        () => {
+          return transactionService.submitExtrinsic(extrinsic, signature, payload, signatory, api).then((result) => {
+            if (result.executed) {
+              boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
+            } else {
+              boundExtrinsicFailed({ id: index, signatory, params: result.error });
+            }
+          });
+        },
+        { pool: signatory + api.genesisHash.toHex() },
+      );
+    }),
+  );
 });
 
 // deprecated flow with Transaction struct. Split impl located in sign-model.
@@ -170,13 +195,13 @@ sample({
   clock: extrinsicSucceeded,
   source: $results,
   fn: (results, extrinsicResult) => {
-    return [
-      ...results,
-      {
-        result: ExtrinsicResult.SUCCESS,
-        ...extrinsicResult,
-      },
-    ];
+    const succeedResult: SuccessResult = {
+      result: ExtrinsicResult.SUCCESS,
+      params: extrinsicResult.params,
+      id: extrinsicResult.id,
+    };
+
+    return [...results, succeedResult];
   },
   target: $results,
 });
@@ -185,13 +210,13 @@ sample({
   clock: extrinsicFailed,
   source: $results,
   fn: (results, extrinsicResult) => {
-    return [
-      ...results,
-      {
-        result: ExtrinsicResult.ERROR,
-        ...extrinsicResult,
-      },
-    ];
+    const failedResults: ErrorResult = {
+      result: ExtrinsicResult.ERROR,
+      params: extrinsicResult.params,
+      id: extrinsicResult.id,
+    };
+
+    return [...results, failedResults];
   },
   target: $results,
 });
@@ -239,8 +264,10 @@ export const submitModel = {
   $submitStore,
   $submitStep,
   $failedTxs: $results.map((result) => result.filter((r) => r.result === ExtrinsicResult.ERROR)),
+  $succeedTxs: $results.map((result) => result.filter((r) => r.result === ExtrinsicResult.SUCCESS)),
 
   init,
+  done: formSubmitted,
   submitToNetwork,
 
   events: {
@@ -250,6 +277,9 @@ export const submitModel = {
     formInitiated,
   },
   output: {
+    /**
+     * @deprecated Use submitModel.done instead
+     */
     formSubmitted,
     extrinsicSucceeded,
     extrinsicFailed,

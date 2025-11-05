@@ -344,6 +344,7 @@ const confirmEvent = sample({
     nonNullable(initiator) &&
     nonNullable(removeProxyStore) &&
     nonNullable(signatory) &&
+    nonNullable(fee) &&
     nonNullable(coreTx)
   ) {
     return [
@@ -515,7 +516,9 @@ sample({
 
 sample({
   clock: submitModel.output.formSubmitted,
-  filter: (results) => submitUtils.isSuccessResult(results[0].result),
+  source: $removeProxyStore,
+  filter: (removeProxyStore, results) =>
+    nonNullable(removeProxyStore) && submitUtils.isSuccessResult(results[0].result),
   target: flowFinished,
 });
 

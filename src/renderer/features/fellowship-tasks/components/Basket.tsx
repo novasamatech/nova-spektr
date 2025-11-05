@@ -1,21 +1,24 @@
-import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, FootnoteText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { basketUtils } from '@/entities/basket';
+import { useFellowshipAccount } from '@/aggregates/fellowship-member';
 import { SignTransactionsModal, signOperations } from '@/features/basket-operations';
-import { fellowshipTasksFeature } from '../model/feature';
-import { tasks } from '../model/tasks';
+import { useMemberBasketOperations } from '../hooks/useMemberBasketOperations';
 
 export const Basket = memo(() => {
   const { t } = useI18n();
-  const input = useUnit(fellowshipTasksFeature.input);
-  const transactions = useUnit(tasks.$basketOperations);
+  const { data: account } = useFellowshipAccount();
+  const { data: operations } = useMemberBasketOperations();
 
-  if (nullable(input?.account) || !basketUtils.isBasketAvailableForAccount(input.account)) return null;
+  if (nullable(account) || !basketUtils.isBasketAvailableForAccount(account)) return null;
+
+  const transactions = useMemo(() => {
+    return Object.values(operations).filter(nonNullable);
+  }, []);
 
   const openSigning = () => {
     signOperations.startFlow({ transactions });

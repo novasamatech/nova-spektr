@@ -1,8 +1,7 @@
-import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { Box } from '@/shared/ui-kit';
-import { promotion } from '../../model/promotion';
+import { useFellowshipMember } from '@/aggregates/fellowship-member';
 
 import { RankCard } from './RankCard';
 import { RequirementsCard } from './RequirementsCard';
@@ -12,8 +11,8 @@ interface RankDetailsProps {
 }
 
 export const RankDetails = memo(({ selectedRankId }: RankDetailsProps) => {
-  const currentRank = useUnit(promotion.$currentRank);
-  const isCurrentRank = currentRank === selectedRankId;
+  const { data: member } = useFellowshipMember();
+  const isCurrentRank = member?.rank === selectedRankId;
 
   return (
     <Box direction="row" gap={4} horizontalAlign="flex-start">

@@ -1,10 +1,9 @@
-import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { TitleText } from '@/shared/ui';
 import { Box, ProgressWithDividers, Surface } from '@/shared/ui-kit';
-import { promotion } from '../../model/promotion';
+import { useFellowshipMember } from '@/aggregates/fellowship-member';
 import { createRankSegmentsRankTab } from '../../utils/rankHelpers';
 
 const rankSegments = createRankSegmentsRankTab();
@@ -15,9 +14,9 @@ interface RankProgressProps {
 
 export const RankProgress = memo(({ onRankClick }: RankProgressProps) => {
   const { t } = useI18n();
-  const currentRank = useUnit(promotion.$currentRank);
+  const { data: member } = useFellowshipMember();
 
-  const currentRankId = currentRank?.toString() ?? null;
+  const currentRankId = member?.rank?.toString() ?? null;
 
   const handleSegmentClick = (segmentId: string) => {
     const rankId = parseInt(segmentId, 10);

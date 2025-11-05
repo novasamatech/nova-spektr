@@ -43,7 +43,7 @@ import ReferendumIcon from '@/shared/assets/images/functionals/referendum.svg?js
 import RefreshIcon from '@/shared/assets/images/functionals/refresh.svg?jsx';
 import RenameUnderlineIcon from '@/shared/assets/images/functionals/rename-underlined.svg?jsx';
 import RenameIcon from '@/shared/assets/images/functionals/rename.svg?jsx';
-import RequestSalaryIcon from '@/shared/assets/images/functionals/request salary.svg?jsx';
+import RequestSalaryIcon from '@/shared/assets/images/functionals/request-salary.svg?jsx';
 import RetainIcon from '@/shared/assets/images/functionals/retain.svg?jsx';
 import RFCVotingIcon from '@/shared/assets/images/functionals/rfc-voting.svg?jsx';
 import SalaryIcon from '@/shared/assets/images/functionals/salary.svg?jsx';
@@ -115,7 +115,7 @@ const FunctionalImages = {
   evidence: { svg: EvidenceIcon },
   salary: { svg: SalaryIcon },
   withdraw: { svg: WithdrawIcon },
-  requestSalary: { svg: RequestSalaryIcon },
+  request: { svg: RequestSalaryIcon },
   promoteVoting: { svg: PromoteVotingIcon },
   positive: { svg: PositiveIcon },
   negative: { svg: NegativeIcon },

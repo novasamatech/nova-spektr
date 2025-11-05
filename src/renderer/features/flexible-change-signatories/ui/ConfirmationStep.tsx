@@ -25,8 +25,8 @@ export const ConfirmationStep = () => {
   const initiatorWallet = useUnit(changeSignatoriesModel.$initiatorWallet);
 
   const threshold = useUnit(formModel.$threshold);
-  const multisigDeposit = useUnit(formModel.$multisigDeposit);
-  const proxyDeposit = useUnit(formModel.$proxyDeposit);
+  const multisigDeposit = useUnit(changeSignatoriesModel.$multisigDeposit);
+  const proxyDeposit = useUnit(changeSignatoriesModel.$proxyDeposit);
 
   const signatories = useUnit(signatoryModel.$signatories);
 
@@ -86,11 +86,11 @@ export const ConfirmationStep = () => {
             <Separator className="border-filter-border" />
             <div className="mb-4 flex flex-1 flex-col gap-y-4">
               <ProxyDepositLabel>
-                <Fee fee={proxyDeposit ?? ''} asset={asset} />
+                <Fee fee={proxyDeposit} asset={asset} />
               </ProxyDepositLabel>
               <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />
 
-              <FeeWithLabel fee={fee.toString()} asset={asset} />
+              <FeeWithLabel fee={fee} asset={asset} />
             </div>
           </div>
         </section>

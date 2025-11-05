@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
-import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
+import { BN, BN_TEN } from '@polkadot/util';
 import { camelCase, get } from 'lodash';
 
 import { type Chain, type ChainId, type HexString } from '@/shared/core';
@@ -382,12 +382,12 @@ async function getDeliveryFeeFromConfig({
   originApi: ApiPromise;
   destinationChainId: number;
   extrinsic: SubmittableExtrinsic<'promise'>;
-}): Promise<BN> {
+}): Promise<BN | null> {
   const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
 
-  if (!deliveryFeeConfig) return BN_ZERO;
+  if (!deliveryFeeConfig) return null;
 
   const query = originApi.query[camelCase(deliveryFeeConfig.factorPallet)];
   const directionFactor = {

@@ -6,8 +6,8 @@ import { getRelativeTimeFromApi, nullable } from '@/shared/lib/utils';
 import { Button, Duration } from '@/shared/ui';
 import { ProgressWithSegments, Skeleton } from '@/shared/ui-kit';
 import { type CoreMember, memberService } from '@/domains/collectives';
-import { fellowshipMember } from '@/aggregates/fellowship-member';
-import { fellowshipNetwork } from '@/aggregates/fellowship-network';
+import { useFellowshipMember, useFellowshipMemberLeftToPromotion } from '@/aggregates/fellowship-member';
+import { useFellowshipApi, useFellowshipBlock } from '@/aggregates/fellowship-network';
 import { READY_FOR_PROMOTION } from '../model/constants';
 import { modal } from '../model/modal';
 import { promotion } from '../model/promotion';
@@ -34,36 +34,33 @@ const FellowshipHeader = ({ isLoading }: { isLoading: boolean }) => {
 };
 
 const useTimeToNextRank = () => {
-  const promotionProgress = useUnit(promotion.$promotionProgress);
-  const leftToPromotion = useUnit(promotion.$leftToPromotion);
-  const currentBlock = useUnit(promotion.$currentBlock);
-  const network = useUnit(fellowshipNetwork.$network);
   const [timeToNextRank, setTimeToNextRank] = useState<TimeToNextRank>(null);
 
+  const api = useFellowshipApi();
+  const { data: currentBlock } = useFellowshipBlock();
+  const { data: leftToPromotion } = useFellowshipMemberLeftToPromotion();
+
+  const promotionProgress = useUnit(promotion.$promotionProgress);
+
   useEffect(() => {
-    const calculateTime = async () => {
-      if (promotionProgress && promotionProgress.progressPercentage >= 100) {
-        setTimeToNextRank(READY_FOR_PROMOTION);
-        return;
-      }
+    if (promotionProgress && promotionProgress.progressPercentage >= 100) {
+      setTimeToNextRank(READY_FOR_PROMOTION);
+      return;
+    }
 
-      if (leftToPromotion && currentBlock && network?.api) {
-        const timeInMs = await getRelativeTimeFromApi(leftToPromotion, network.api);
-        setTimeToNextRank(timeInMs);
-        return;
-      }
+    if (leftToPromotion && currentBlock && api) {
+      getRelativeTimeFromApi(leftToPromotion, api).then(setTimeToNextRank);
+      return;
+    }
 
-      setTimeToNextRank(null);
-    };
-
-    calculateTime();
-  }, [leftToPromotion, currentBlock, network?.api, promotionProgress]);
+    setTimeToNextRank(null);
+  }, [leftToPromotion, currentBlock, api, promotionProgress]);
 
   return timeToNextRank;
 };
 
 const useProgressSegments = () => {
-  const member = useUnit(fellowshipMember.$currentMember);
+  const { data: member } = useFellowshipMember();
   const promotionProgress = useUnit(promotion.$promotionProgress);
 
   return useMemo(() => {
@@ -142,15 +139,14 @@ const FellowshipProgress = () => {
 
 const FellowshipContentSkeleton = () => (
   <div className="flex h-[62px] flex-col gap-1 px-4 pt-3 pb-3">
-    <Skeleton height="24px" />
+    <Skeleton height="100%" />
   </div>
 );
 
 export const FellowshipOverview = () => {
-  const isLoading = useUnit(promotion.$isLoading);
-  const member = useUnit(fellowshipMember.$currentMember);
+  const { data: member, pending: pendingMember } = useFellowshipMember();
 
-  const shouldHideCompletely = nullable(member) && !isLoading;
+  const shouldHideCompletely = nullable(member) && !pendingMember;
 
   if (shouldHideCompletely) {
     return null;
@@ -158,8 +154,8 @@ export const FellowshipOverview = () => {
 
   return (
     <div className="flex w-full flex-col rounded-xl border border-filter-border bg-card-background">
-      <FellowshipHeader isLoading={isLoading} />
-      <div className="rounded-b-xl">{isLoading ? <FellowshipContentSkeleton /> : <FellowshipProgress />}</div>
+      <FellowshipHeader isLoading={pendingMember} />
+      <div className="rounded-b-xl">{pendingMember ? <FellowshipContentSkeleton /> : <FellowshipProgress />}</div>
     </div>
   );
 };

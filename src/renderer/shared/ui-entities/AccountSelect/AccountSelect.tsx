@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import { type Asset, type BalanceMap, type Chain } from '@/shared/core';
+import { type Asset, type BalanceMap, type Chain, type XOR } from '@/shared/core';
 import { nonNullable, toAddress, transferableAmountBN, withdrawableAmountBN } from '@/shared/lib/utils';
 import { Select } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
@@ -14,12 +14,13 @@ type Props = {
   placeholder: string;
   options: AnyAccount[];
   chain: Chain;
+  testId?: string;
+  invalid?: boolean;
+} & XOR<{
   asset: Asset;
   balances: BalanceMap;
   balanceType: 'withdrawable' | 'transferable';
-  testId?: string;
-  invalid?: boolean;
-};
+}>;
 
 export const AccountSelect = memo(
   ({ value, onChange, chain, balances, balanceType, asset, options, placeholder, invalid, testId }: Props) => {
@@ -41,7 +42,9 @@ export const AccountSelect = memo(
       >
         {options.map(account => {
           const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-          const balance = balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId);
+          const balance = balances
+            ? balanceUtils.getBalance(balances, account.accountId, chain.chainId, asset.assetId)
+            : null;
           const assetBalance =
             balanceType === 'transferable' ? transferableAmountBN(balance) : withdrawableAmountBN(balance);
           return (

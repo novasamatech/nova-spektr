@@ -1,12 +1,12 @@
-import { useGate, useStoreMap, useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
-import { type Evidence } from '@/domains/collectives';
-import { evidenceModel } from '../../model/evidence';
+import { type Evidence, useEvidencesContent } from '@/domains/collectives';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { Card } from '../Card';
 import { NoEvidence } from '../ReferendumDescription';
 
@@ -14,20 +14,15 @@ type Props = {
   evidence: Evidence;
 };
 
+const useEvidenceContent = ({ accountId }: { accountId: AccountId }) => {
+  const api = useFellowshipApi();
+
+  return useEvidencesContent({ palletType: 'fellowship', api, accountId });
+};
+
 export const Content = memo(({ evidence }: Props) => {
-  useGate(evidenceModel.evidenceContentFlow, { evidence });
-
   const { t } = useI18n();
-
-  const content = useStoreMap({
-    store: evidenceModel.$evidencesContent,
-    keys: [evidence],
-    fn(content, [evidence]) {
-      return content.find(c => c.accountId === evidence.accountId && c.chainId === evidence.chainId);
-    },
-  });
-
-  const pending = useUnit(evidenceModel.requestEvidenceContent.pending);
+  const { data: content, pending } = useEvidenceContent({ accountId: evidence.accountId });
 
   if (pending && !content) {
     return (

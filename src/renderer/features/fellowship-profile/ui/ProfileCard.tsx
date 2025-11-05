@@ -8,23 +8,26 @@ import { CollectiveRank, Hash, Identicon } from '@/shared/ui-entities';
 import { Box, Skeleton, Tooltip } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
-import { ERROR } from '../constants';
+import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
+import {
+  useFellowshipChain,
+  useFellowshipChainConnected,
+  useFellowshipIdentity,
+} from '@/aggregates/fellowship-network';
 import { fellowshipProfileFeature } from '../model/feature';
-import { profile } from '../model/profile';
 
 import { ActiveIndicator } from './ActiveIndicator';
 import { ProfileModal } from './ProfileModal';
 import { VotingRecordWidget } from './VotingRecord';
 
 export const ProfileCard = memo(() => {
-  const pending = useUnit(profile.$pending);
-  const currentMember = useUnit(profile.$member);
-  const isAccountExist = useUnit(profile.$isAccountExist);
-  const featureState = useUnit(fellowshipProfileFeature.state);
+  const { data: currentMember, pending } = useFellowshipMember();
+  const { data: account } = useFellowshipAccount();
+  const connected = useFellowshipChainConnected();
 
-  const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.NETWORK_DISABLED;
+  const isAccountExist = nonNullable(account);
 
-  const shouldRenderLoading = pending || isNetworkDisabled;
+  const shouldRenderLoading = pending || !connected;
   const shouldRenderEmptyAccount = !isAccountExist && !pending;
   const shouldRenderEmptyMember = isAccountExist && nullable(currentMember);
   const shouldRenderMember = nonNullable(currentMember);
@@ -99,8 +102,9 @@ const NoAccount = () => {
 const NoProfile = () => {
   const { t } = useI18n();
 
-  const member = useUnit(profile.$member);
-  const isAccountExist = useUnit(profile.$isAccountExist);
+  const { data: member } = useFellowshipMember();
+  const { data: account } = useFellowshipAccount();
+  const isAccountExist = nonNullable(account);
 
   if (!isAccountExist || nonNullable(member)) return null;
 
@@ -126,9 +130,9 @@ const NoProfile = () => {
 const Member = () => {
   const { t } = useI18n();
 
-  const member = useUnit(profile.$member);
-  const identity = useUnit(profile.$identity);
-  const input = useUnit(fellowshipProfileFeature.input);
+  const chain = useFellowshipChain();
+  const { data: member } = useFellowshipMember();
+  const { data: identity } = useFellowshipIdentity(member?.accountId);
 
   if (nullable(member)) return null;
 
@@ -153,7 +157,7 @@ const Member = () => {
                 {identity ? (
                   identityService.getFullName(identity)
                 ) : (
-                  <Hash value={toAddress(member.accountId, { prefix: input?.chain.addressPrefix })} variant="short" />
+                  <Hash value={toAddress(member.accountId, { prefix: chain?.addressPrefix })} variant="short" />
                 )}
               </BodyText>
 

@@ -2,7 +2,6 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { type CallHash, type ChainId, type ID, type Timepoint } from './general';
 import { type ProxyType, type ProxyVariant } from './proxy';
-import { type WalletType } from './wallet';
 
 export const enum NotificationType {
   MULTISIG_CREATED = 'MultisigCreatedNotification',
@@ -53,10 +52,7 @@ export type ProxyAction = BaseNotification & {
   proxyType: ProxyType;
   proxyVariant: ProxyVariant;
   proxyAccountId: AccountId;
-  proxyWalletName: string;
-  proxyWalletType: WalletType;
   proxiedAccountId: AccountId;
-  proxiedWalletName: string;
 };
 
 export type Notification =

@@ -246,7 +246,11 @@ const { $: $multisigFee, $pending: $pendingMultisigFee } = createFeeCalculator({
   extrinsic: $fakeFinalExtrinsic,
 });
 
-const $fee = combine($proxyFee, $multisigFee, (proxyFee, multisigFee) => multisigFee.add(proxyFee));
+const $fee = combine(
+  $proxyFee,
+  $multisigFee,
+  (proxyFee, multisigFee) => multisigFee && proxyFee && multisigFee.add(proxyFee),
+);
 
 // validation
 

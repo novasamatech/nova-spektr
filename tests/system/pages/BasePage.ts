@@ -22,10 +22,7 @@ export abstract class BasePage<T extends BasePageElements = BasePageElements> {
 
   public async gotoMain(): Promise<this> {
     await step(`Navigate to the page: ${this.pageElements.url}`, async () => {
-      await this.page.goto(this.pageElements.url);
-      await this.page.waitForLoadState('load');
-      await this.page.waitForLoadState('domcontentloaded');
-      await this.page.waitForLoadState('networkidle');
+      await this.page.goto(this.pageElements.url, { waitUntil: 'domcontentloaded' });
     });
 
     return this;

@@ -180,6 +180,7 @@ const dataSubmitted = sample({
       nonNullable(revokeDelegationData) &&
       nonNullable(initiator) &&
       nonNullable(signatory) &&
+      nonNullable(fee) &&
       nonNullable(delegate)
     ) {
       const asset = getRelaychainAsset(chain.assets)!;

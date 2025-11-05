@@ -5,7 +5,7 @@ import { RetentionWidget } from './ui/RetentionWidget';
 
 export { fellowshipRetentionFeature };
 
-export { referendumWidgetActionSlot } from './ui/RetentionWidget';
+export { referendumWidgetActionSlot, evidenceSubmitSlot } from './ui/RetentionWidget';
 
 fellowshipRetentionFeature.inject(profileInfoSlot, {
   order: 0,

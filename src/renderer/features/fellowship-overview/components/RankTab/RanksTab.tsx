@@ -1,13 +1,14 @@
-import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { Box, ScrollArea } from '@/shared/ui-kit';
-import { promotion } from '../../model/promotion';
+import { useFellowshipMember } from '@/aggregates/fellowship-member';
 
 import { RankDetails, RankProgress } from './index';
 
 export const RanksTab = () => {
-  const currentRank = useUnit(promotion.$currentRank);
+  const { data: member } = useFellowshipMember();
+  const currentRank = member?.rank ?? null;
+
   const [selectedRankId, setSelectedRankId] = useState<number>(1);
   useEffect(() => {
     if (currentRank !== null) {

@@ -1,6 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { Compact } from '@polkadot/types';
 import { u8aToHex } from '@polkadot/util';
+import { createStore } from 'effector';
 
 import { type ChainId, type HexString } from '@/shared/core';
 import { createPagesHandler } from '@/shared/effector';
@@ -14,8 +15,9 @@ import {
 } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
-import { createRemoteResource, createSubscriptionResource } from '@/shared/resource';
-import { type CollectivePalletsType } from '../_lib/types';
+import { createQueryResource, createSubscriptionResource } from '@/shared/query';
+import { mergeNested } from '../_lib/helpers';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type Proposal, type Referendum } from './types';
 
@@ -232,30 +234,40 @@ async function mapReferendums(
   return referendums;
 }
 
-type ReferendumSubscriptionParams = {
+const $sharedReferendumsCache = createStore<CollectivesStruct<Referendum[]>>({});
+
+export type ReferendumSubscriptionParams = {
   api: ApiPromise;
   palletType: CollectivePalletsType;
-  chainId: ChainId;
 };
 
-export const subscriptionResource = createSubscriptionResource<ReferendumSubscriptionParams, Referendum[]>({
-  pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
-  async fn({ api, chainId, palletType }, callback) {
-    let abortController = new AbortController();
+export const subscriptionResource = createSubscriptionResource<ReferendumSubscriptionParams>({
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
+})
+  .subscribe<Referendum[]>(async ({ api, palletType }, callback) => {
+    const chainId = api.genesisHash.toHex();
 
-    await api.isReady;
+    let abortController = new AbortController();
 
     const fetchPages = createPagesHandler({
       fn: () => referendaPallet.storage.referendumInfoForPaged(palletType, api, 400),
       map: record => mapReferendums(record, api, palletType, chainId),
     });
 
-    fetchPages(abortController, callback);
+    fetchPages(abortController, ({ value }) => {
+      if (value) {
+        callback(value);
+      }
+    });
 
     const fn = () => {
       abortController.abort();
       abortController = new AbortController();
-      fetchPages(abortController, callback);
+      fetchPages(abortController, ({ value }) => {
+        if (value) {
+          callback(value);
+        }
+      });
     };
 
     /**
@@ -267,19 +279,29 @@ export const subscriptionResource = createSubscriptionResource<ReferendumSubscri
       abortController.abort();
       fn();
     });
-  },
-});
+  })
+  .cache({
+    store: $sharedReferendumsCache,
+    map: (state, referendums) => mergeNested(state, referendums, r => r.id),
+  })
+  .build();
 
-type ReferendumRequestParams = {
+export type ReferendumRequestParams = {
   api: ApiPromise;
   palletType: CollectivePalletsType;
-  chainId: ChainId;
   referendums: ReferendumId[];
 };
 
-export const fetchResource = createRemoteResource<ReferendumRequestParams, Referendum[]>({
-  async fn({ api, chainId, palletType, referendums }) {
+export const fetchResource = createQueryResource<ReferendumRequestParams>({
+  key: ({ palletType, api, referendums }) => [palletType, api.genesisHash.toHex(), referendums],
+})
+  .request<Referendum[]>(async ({ api, palletType, referendums }) => {
+    const chainId = api.genesisHash.toHex();
     const response = await referendaPallet.storage.referendumInfoFor(palletType, api, referendums);
     return mapReferendums(response, api, palletType, chainId);
-  },
-});
+  })
+  .cache({
+    store: $sharedReferendumsCache,
+    map: (state, referendums) => mergeNested(state, referendums, r => r.id),
+  })
+  .build();

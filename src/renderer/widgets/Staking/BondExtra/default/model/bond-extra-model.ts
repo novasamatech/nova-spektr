@@ -111,6 +111,7 @@ const formSubmitted = sample({
     nonNullable(tx) &&
     nonNullable(route) &&
     nonNullable(coreTx) &&
+    nonNullable(fee) &&
     nonNullable(formParams.signatory)
   ) {
     return [

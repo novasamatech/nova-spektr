@@ -104,4 +104,6 @@ export const enum KeyType {
   PUBLIC = 'pub',
   HOT = 'hot',
   CUSTOM = 'custom',
+  STAKING = 'staking',
+  GOVERNANCE = 'governance',
 }

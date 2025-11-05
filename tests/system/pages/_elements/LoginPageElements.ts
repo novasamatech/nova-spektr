@@ -9,7 +9,7 @@ export class LoginPageElements implements BasePageElements {
   watchOnlyButton = TEST_IDS.ONBOARDING.WATCH_ONLY_BUTTON;
   polkadotVaultButton = TEST_IDS.ONBOARDING.VAULT_BUTTON;
   continueButton = TEST_IDS.COMMON.CONTINUE_BUTTON;
-  accessDeniedText = 'text=Access denied!';
+  cameraDisabledText = 'text=Spektr cannot use camera.';
   firstInfoButton = TEST_IDS.COMMON.INFO_BUTTON;
   subscanLabel = 'View on Subscan';
   onboardingLabel = 'Add your wallet';

@@ -103,13 +103,15 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
         <Carousel item={step}>
           <Carousel.Item id="confirm" index={0}>
             <Box padding={[4, 5]}>
-              <SalaryRegisterConfirmation
-                asset={input.asset}
-                chain={input.chain}
-                wallets={input.wallets}
-                account={account}
-                fee={fee}
-              />
+              {nonNullable(fee) && (
+                <SalaryRegisterConfirmation
+                  asset={input.asset}
+                  chain={input.chain}
+                  wallets={input.wallets}
+                  account={account}
+                  fee={fee}
+                />
+              )}
             </Box>
             <Modal.Footer>
               {wallet && basketUtils.isBasketAvailable(wallet) && (

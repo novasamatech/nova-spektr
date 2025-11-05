@@ -1,4 +1,3 @@
-import { useStoreMap, useUnit } from 'effector-react';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@/shared/ui';
@@ -6,34 +5,27 @@ import { FootnoteText, SmallTitleText, TitleText } from '@/shared/ui/Typography'
 import { Account } from '@/shared/ui-entities';
 import { Markdown, Skeleton } from '@/shared/ui-kit';
 import { Box } from '@/shared/ui-kit/Box/Box';
+import { type Referendum } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
-import { details } from '../model/details';
-import { fellowshipReferendumsDetailsFeature } from '../model/feature';
+import { useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
+import { useDescription } from '../hooks/useDescription';
+import { useProposer } from '../hooks/useProposer';
 
 import { Card } from './Card';
 
-export const AdditionalContext = () => {
+type Props = {
+  referendum: Referendum | null;
+};
+
+export const AdditionalContext = ({ referendum }: Props) => {
   const { t } = useTranslation();
-  const evidenceContent = useUnit(details.$evidenceContent);
-  const description = useUnit(details.$description);
-  const pendingMeta = useUnit(details.$pendingMeta);
 
-  const chain = useStoreMap({
-    store: fellowshipReferendumsDetailsFeature.input,
-    keys: [],
-    fn: store => store?.chain ?? null,
-  });
+  const chain = useFellowshipChain();
+  const { data: proposer } = useProposer(referendum);
+  const { data: description, pending } = useDescription(referendum);
+  const { data: identity } = useFellowshipIdentity(proposer?.accountId);
 
-  const proposer = useUnit(details.$proposer);
-  const memberId = proposer || evidenceContent?.accountId;
-
-  const identity = useStoreMap({
-    store: details.$identities,
-    keys: [memberId],
-    fn: (list, [accountId]) => (accountId && list[accountId]) ?? null,
-  });
-
-  if (pendingMeta)
+  if (pending) {
     return (
       <Card>
         <Box padding={6}>
@@ -41,6 +33,7 @@ export const AdditionalContext = () => {
         </Box>
       </Card>
     );
+  }
 
   if (!description?.trim())
     return (
@@ -56,11 +49,11 @@ export const AdditionalContext = () => {
     <Card>
       <Box padding={6} gap={4}>
         <TitleText>{t('fellowship.evidenceModal.additionalContext')}</TitleText>
-        {memberId && chain ? (
+        {proposer && chain ? (
           <Box direction="row" verticalAlign="center" gap={1}>
             <FootnoteText className="text-text-tertiary">{t('fellowship.evidenceModal.by')}</FootnoteText>
             <Account
-              accountId={memberId}
+              accountId={proposer.accountId}
               chain={chain}
               title={identity ? identityService.getFullName(identity) : undefined}
               hideExplorers

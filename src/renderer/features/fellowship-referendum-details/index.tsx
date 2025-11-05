@@ -2,6 +2,7 @@ import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { referendumWidgetActionSlot as promotionReferendumWidgetActionSlot } from '@/features/fellowship-promotion';
 import { referendumWidgetActionSlot as retentionReferendumWidgetActionSlot } from '@/features/fellowship-retention';
+import { evidenceDetailsModalSlot } from '@/features/fellowship-tasks';
 
 import { Card } from './components/Card';
 import { EvidenceDetailsModal, evidenceActionsSlot } from './components/EvidenceDetailsModal/EvidenceDetailsModal';
@@ -11,7 +12,7 @@ import {
   referendumAdditionalHighPriorityInfoSlot,
   referendumAdditionalInfoSlot,
 } from './components/ReferendumDetailsModal';
-import { fellowshipReferendumsDetailsFeature } from './model/feature';
+import { fellowshipReferendumsDetailsFeature } from './feature';
 
 export {
   fellowshipReferendumsDetailsFeature,
@@ -23,6 +24,14 @@ export {
   ReferendumDetailsModal,
   EvidenceDetailsModal,
 };
+
+fellowshipReferendumsDetailsFeature.inject(evidenceDetailsModalSlot, ({ evidence, title, children }) => {
+  return (
+    <EvidenceDetailsModal referendum={null} evidence={evidence} title={title}>
+      {children}
+    </EvidenceDetailsModal>
+  );
+});
 
 fellowshipReferendumsDetailsFeature.inject(promotionReferendumWidgetActionSlot, ({ referendum }) => {
   const { t } = useI18n();

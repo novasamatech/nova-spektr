@@ -40,7 +40,7 @@ export const mergeNested = <
 >(
   store: Store,
   records: Item[],
-  mergeBy: (a: Item) => string | number | string[],
+  mergeBy: (a: Item) => PropertyKey | PropertyKey[],
   sort?: (a: Item, b: Item) => number,
 ): Store => {
   const palletGroups = groupBy(records, m => m.pallet);

@@ -136,6 +136,8 @@ export const bootstrap = () => {
 
     import('@/features/fellowship-promotion').then(({ fellowshipPromotionFeature }) => fellowshipPromotionFeature),
     import('@/features/fellowship-retention').then(({ fellowshipRetentionFeature }) => fellowshipRetentionFeature),
+    import('@/features/assethub-migration-modal').then(({ assethubMigrationModalFeature }) => assethubMigrationModalFeature),
+    import('@/features/dapp-browser').then(({ dappBrowserFeature }) => dappBrowserFeature),
   ]);
 
   populate();

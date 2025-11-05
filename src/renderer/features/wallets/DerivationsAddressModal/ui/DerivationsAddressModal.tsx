@@ -60,7 +60,7 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
   return (
     <Modal
       isOpen={isOpen}
-      size="md"
+      size={step === Step.GENERATE_QR ? 'md' : 'fit'}
       onToggle={(open) => {
         if (!open) {
           onClose();
@@ -87,7 +87,7 @@ export const DerivationsAddressModal = ({ isOpen, rootAccountId, keys, onClose, 
         )}
 
         {step === Step.READ_QR && (
-          <DdKeyQrReader size={[440, 524]} onResult={handleScanResult} onGoBack={() => setStep(Step.GENERATE_QR)} />
+          <DdKeyQrReader size={[432, 288]} onResult={handleScanResult} onGoBack={() => setStep(Step.GENERATE_QR)} />
         )}
       </Modal.Content>
     </Modal>

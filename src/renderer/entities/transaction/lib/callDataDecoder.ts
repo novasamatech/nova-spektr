@@ -32,6 +32,10 @@ const getDataFromCallData = (
   let decoded: SubmittableExtrinsic<'promise'> | null = null;
   try {
     decoded = api.tx(callData);
+    if (decoded.toHex() !== callData) {
+      throw new Error('Cannot decode data as extrinsic, length mismatch');
+    }
+
     extrinsicCall = api.createType('Call', decoded.method);
   } catch {
     extrinsicCall = api.createType('Call', callData);
@@ -209,6 +213,13 @@ const getCallDataParser: Record<
   },
   [TransactionType.TRANSFER_ALL]: (decoded, chainId, chains): Record<string, any> => {
     return { assetId: getNativeAssetId(chains, chainId), dest: decoded.args[0].toString() };
+  },
+  [TransactionType.TRANSFER_ALLOW_DEATH]: (decoded, chainId, chains): Record<string, any> => {
+    return {
+      assetId: getNativeAssetId(chains, chainId),
+      dest: decoded.args[0].toString(),
+      value: decoded.args[1].toString(),
+    };
   },
   [TransactionType.ASSET_TRANSFER]: (decoded): Record<string, any> => {
     return {

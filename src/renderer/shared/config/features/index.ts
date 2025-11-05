@@ -35,6 +35,9 @@ export const $defaultFeatures = createStore({
   multisigRemark: false,
   callData: true,
   hiddenWallets: true,
+
+  // experimental feature
+  dappBrowser: false,
 });
 
 export const $features = combine($defaultFeatures, $mutatedFeatures, (base, extend) => ({ ...base, ...extend }));

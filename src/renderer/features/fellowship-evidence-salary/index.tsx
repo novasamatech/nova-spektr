@@ -1,7 +1,7 @@
 import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activity-feed';
 
 import { evidenceSlot, salarySlot } from './components/EvidenceSalaryModal';
-import { fellowshipEvidenceSalaryFeature } from './model/feature';
+import { fellowshipEvidenceSalaryFeature } from './feature';
 
 export { evidenceSlot, salarySlot, fellowshipEvidenceSalaryFeature };
 

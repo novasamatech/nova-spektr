@@ -1,9 +1,8 @@
-import { useUnit } from 'effector-react';
 import { useEffect, useState } from 'react';
 
 import { getTimeToBlock } from '@/shared/lib/utils';
 import { Timeout } from '@/shared/ui-kit';
-import { fellowshipTasksFeature } from '../model/feature';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 
 const ONE_DAY = 24 * 60 * 60;
 
@@ -21,18 +20,21 @@ type Props = {
 };
 
 export const RetentionEndTimer = ({ endBlock, shortDateFormat }: Props) => {
-  const input = useUnit(fellowshipTasksFeature.input);
+  const api = useFellowshipApi();
   const [secondsToEnd, setSecondsToEnd] = useState<number>();
 
   useEffect(() => {
-    if (endBlock && input) {
-      getTimeToBlock(endBlock, input.api).then(date => {
+    if (endBlock && api) {
+      getTimeToBlock(endBlock, api).then(date => {
         setSecondsToEnd(date / 1000);
       });
     }
-  }, [endBlock, input?.api]);
+  }, [endBlock, api]);
 
-  if (!secondsToEnd || !input) return null;
+  if (!secondsToEnd) {
+    return <span />;
+  }
+
   const variant = getTimerColor(secondsToEnd);
 
   return <Timeout secondsToEnd={secondsToEnd} variant={variant} shortDateFormat={shortDateFormat} />;

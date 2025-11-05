@@ -81,6 +81,40 @@
     "reserved": "Reserved",
     "transferable": "Transferable"
   },
+  "assethubMigration": {
+    "automaticMigration": "Migration happens automatically, no action needed.",
+    "bullets": {
+      "feePayment": "Ability to pay fees in any token.",
+      "title": "What makes Asset Hub awesome?"
+    },
+    "gotIt": "Got it",
+    "kusama": {
+      "bullets": {
+        "lowerFees": "10x lower transaction fees (from 0.0005 KSM to 0.00005 KSM).",
+        "minimalBalance": "100x reduction in minimal balance (from 0.00033 KSM to <nowrap>0.0000033 KSM</nowrap>).",
+        "moreTokens": "More tokens supported: USDT, USDC, ETH, DOT, and other ecosystem tokens.",
+        "unifiedAccess": "Unified access to KSM, assets, staking, and governance."
+      },
+      "description": "Starting October 7, 2025 your KSM balance, Staking and Governance are now on Kusama Asset Hub"
+    },
+    "learnAboutPolkadot": "Learn about Polkadot",
+    "learnMore": "Learn more",
+    "polkadot": {
+      "bullets": {
+        "lowerFees": "10x lower transaction fees (from 0.016 DOT to 0.0016 DOT).",
+        "minimalBalance": "100x reduction in minimal balance (from 1 DOT to 0.01 DOT).",
+        "moreTokens": "More tokens supported: USDT, USDC, ETH, KSM, and other ecosystem tokens.",
+        "unifiedAccess": "Unified access to DOT, assets, staking, and governance."
+      },
+      "description": "Starting November 4, 2025 your DOT balance, Staking and Governance are now on Polkadot Asset Hub"
+    },
+    "title": {
+      "kusamaAssetHub": "Kusama Asset Hub",
+      "kusamaMigration": "KSM Migration to",
+      "polkadotAssetHub": "Polkadot Asset Hub",
+      "polkadotMigration": "DOT Migration to"
+    }
+  },
   "balances": {
     "accountsModalTitle": "Your accounts",
     "allAccounts": "All accounts",
@@ -186,6 +220,10 @@
     "placeholder": "Paste the call data here",
     "title": "Submit call data"
   },
+  "common": {
+    "continue": "Continue",
+    "or": "or"
+  },
   "createMultisigAccount": {
     "accountsTab": "Accounts",
     "addContact": "Add new",
@@ -224,6 +262,9 @@
       "createPureProxy": "Create Pure Proxy",
       "creatingFlexibleProxy": "Creating flexible multisig",
       "description": "A multisig wallet used to create a flexible multisig (proxied) is not displayed in the multisig wallet group to prevent duplication. Use the flexible multisig for all signing operations",
+      "editOperationExistsAction": "Open operations",
+      "editOperationExistsDescription": "You can't create more than one edit operation. Please reject the existing one first.",
+      "editOperationExistsTitle": "Edit flexible multisig operation already exists",
       "existentialDeposit": "Existential deposit:",
       "flexible": "Flexible multisig",
       "leaveButton": "Leave",
@@ -374,48 +415,32 @@
       }
     },
     "keysConstructor": {
+      "addNewKeyButton": "Add new key",
+      "addNewKeyShortcut": "Shift+Enter",
       "backButton": "Back",
-      "derivationLabel": "Derivation path",
-      "derivationPlaceholder": "Derivation path",
-      "displayNameError": "Please enter key display name",
-      "duplicateDerivationError": "Duplicated derivation path",
-      "emptyListDescription": "Use form at the top to add derivation paths",
-      "emptyListTitle": "No data available",
-      "keyNameLabel": "Key display name",
-      "keyNamePlaceholder": "Choose name",
-      "keyTypeCustom": "Custom key",
-      "keyTypeGovernance": "Governance account",
-      "keyTypeHot": "Hot account",
-      "keyTypeLabel": "Type of key",
-      "keyTypeMain": "Main account",
-      "keyTypePlaceholder": "Select",
-      "keyTypePublic": "Public account",
-      "keyTypeRequiredError": "Please select key type",
-      "keyTypeStaking": "Staking account",
-      "listKeysLabel": "Keys",
-      "listNetworkLabel": "Network",
-      "maxShardsError": "Max 50",
-      "minShardsError": "Min 2",
+      "derivationCannotEndWithSlash": "The derivation path cannot end with a slash.",
+      "derivationDuplicate": "This path is already in use. Choose another one or use the existing account.",
+      "derivationEmpty": "The derivation path cannot be empty.",
+      "derivationEthereumSingleSlash": "Ethereum chains don't support soft derivations",
+      "derivationHasSpaces": "The derivation path name can't contain spaces.",
+      "derivationMustStartWithSlash": "The derivation path must start with / or //.",
+      "derivationPasswordNotSupported": "Derivation paths with ///password are not supported.",
+      "derivationPathLabel": "Derivation path",
+      "derivationPlaceholder": "//hard/soft",
+      "derivationTrimSpaces": "Remove spaces at the beginning or end of the path.",
+      "hardDerivationTooltip": "Hard",
+      "indexLabel": "№",
       "networkLabel": "Network",
-      "networkPlaceholder": "Select network",
-      "newKeyButton": "Add new key",
-      "notNumberError": "Not a number",
-      "numberRequiredError": "Enter number",
-      "passwordDerivationError": "Password derivation path is not allowed",
-      "requiredDerivationError": "Please enter derivation path",
       "saveButton": "Save",
       "shardInfoLink": "Multishard operations wiki",
       "shardInfoOne": "Sharding creates a set of different keys (shards) that are independent from each other but associated with each other in the Nova Spektr application for some operations.",
       "shardInfoTwo": "A sharded account consists of multiple keys (shards) numbered from 0 to the total number of shards minus 1. Each shard is created with a hard derivation path (//0, //1, //2, ..., //N-1).",
-      "shardedLabel": "Sharded",
-      "shardsLabel": "Shards to add",
-      "shardsPlaceholder": "2 - 50",
-      "title": "Add keys for { title }",
+      "softDerivationTooltip": "Soft",
+      "title": "Add more keys for { title }",
       "warnModalCancelButton": "Cancel",
       "warnModalDescription": "Applied changes will not be saved. Are you sure?",
       "warnModalLeaveButton": "Leave form",
-      "warnModalTitle": "Leave form without changes?",
-      "wrongDerivationError": "Wrong derivation path format"
+      "warnModalTitle": "Leave form without changes?"
     }
   },
   "emptyState": {
@@ -442,6 +467,7 @@
   "fellowship": {
     "activityFeed": {
       "activityModal": {
+        "loadMore": "Load more",
         "no-results": {
           "filters": "No members match the current filters.",
           "general": "No members found.",
@@ -602,6 +628,43 @@
         "viewExtrinsic": "View on Subscan",
         "viewReferendum": "View referendum"
       },
+      "alerts": {
+        "bumped": {
+          "description": "Negative fellows' opinion resulted in rank downgrade.",
+          "title": "You have been bumped to rank {rank}"
+        },
+        "promoted": {
+          "description": "Positive fellows' opinion allowed promotion to Rank {rank}.",
+          "title": "Promotion referendum passed successfully"
+        },
+        "promotionFailed": {
+          "description": "Fellowship members found the evidence insufficient for promotion on Rank {rank}.",
+          "title": "Promotion referendum failed"
+        },
+        "promotionRequestWhenRetentionReferendumExists": {
+          "description": "The retention referendum now references the promotion report which may lead to unpredictable outcomes. To fix this, it is recommended to resubmit retention report.",
+          "title": "Promotion report submitted with an open retention referendum"
+        },
+        "proven": {
+          "description": "Positive fellows' opinion allowed retention of current rank.",
+          "title": "Retention referendum passed successfully"
+        },
+        "resubmitPromotionEvidence": "Resubmit promotion evidence",
+        "resubmitRetentionEvidence": "Resubmit retention evidence",
+        "retentionFailed": {
+          "description": "Fellowship members found the report insufficient for retention on Rank {rank}.",
+          "title": "Retention referendum failed"
+        },
+        "retentionRequestWhenPromotionReferendumExists": {
+          "description": "The promotion referendum now references the retention report which may lead to unpredictable outcomes. To fix this, it is recommended to resubmit promotion evidence.",
+          "title": "Retention report submitted with an open promotion referendum"
+        },
+        "severalReferendums": {
+          "description": "You can find referemdums results by clicking View history.",
+          "title": "Several referendums have ended during your absence"
+        },
+        "viewReferendum": "View referendum"
+      },
       "fellow": "Fellow",
       "history": "History",
       "inactive": "Inactive",
@@ -759,7 +822,49 @@
       "beneficiary": "Beneficiary",
       "cardTitle": "Evidence & Salary",
       "editBeneficiary": "Edit beneficiary",
-      "evidence": "Evidence",
+      "evidence": {
+        "continue": "Continue",
+        "fetchingContent": "Fetching content from IPFS...",
+        "fromScratch": {
+          "step1": "Write report",
+          "step2": "Review and submit"
+        },
+        "ipfsUpload": {
+          "description": "You can either input an IPFS hash/URL or upload a markdown file directly.",
+          "dragDropFile": "Select *.md file on your computer",
+          "fileHint": "Supports .md and .txt files",
+          "fileLabel": "Select File",
+          "hashLabel": "Report hash",
+          "hashPlaceholder": "Enter hash/URL",
+          "hashPlaceholderOptional": "Enter IPFS hash or URL (optional)",
+          "inputHash": "Input Hash/URL",
+          "selectedFile": "Selected: {name}",
+          "step1": "Upload report",
+          "step2": "Review and submit",
+          "submit": "Process",
+          "title": "Upload Evidence from IPFS",
+          "uploadFile": "Upload File",
+          "validationError": "Please enter a URL/hash or import a file"
+        },
+        "or": "or",
+        "preview": {
+          "back": "Back",
+          "confirm": "Confirm & Submit",
+          "description": "Review your evidence before submitting.",
+          "edit": "Edit",
+          "step2": "Review and submit",
+          "title": "Preview Evidence"
+        },
+        "submitOptions": {
+          "fromScratch": "From scratch",
+          "uploadFromIPFS": "Upload from IPFS"
+        },
+        "submitPromotionReport": "Submit promotion report",
+        "submitRetentionReport": "Submit retention report",
+        "uploadSuccess": "Upload successful",
+        "uploadingToIPFS": "Uploading to IPFS...",
+        "validating": "Validating..."
+      },
       "evidenceForm": {
         "areas": {
           "label": "Areas of expertise and interest",
@@ -774,8 +879,10 @@
         "evidence": {
           "label": "Evidence text",
           "placeholder": "Enter more about the work you did, add links, and tell about your future work plans",
-          "required": "Evidence are required"
+          "required": "Evidence URL/hash or file is required"
         },
+        "fetchError": "Failed to fetch content from IPFS",
+        "required": "Please provide either a hash/URL or select a file",
         "uploadError": "Upload error"
       },
       "modalTitle": "Evidence & Salary",
@@ -807,7 +914,7 @@
       "retentionLeft": "Retention evidence within:",
       "retentionSubmit": "Submit evidence",
       "salary": "Salary",
-      "salaryInduct": "Induct salary on",
+      "salaryInduct": "Activate salary on",
       "salaryInfo": {
         "beneficiary": "Beneficiary",
         "editBeneficiary": "Edit Beneficiary",
@@ -815,6 +922,7 @@
         "inductSalaryAction": "Activate",
         "inductSalaryCall": "Your salary: {salary}, activate it.",
         "inductSalarySuccess": "Payments activated",
+        "insufficientRank": "To start receiving salary you need to achieve Rank I",
         "payoutSalary": "Withdraw",
         "payoutSalaryCall": "{salary} to the next payout",
         "payoutSalarySuccess": "Withdrawal completed",
@@ -824,10 +932,10 @@
         "selectBeneficiary": "Select beneficiary",
         "timeToNextCircle": "until next circle",
         "timeToNextPayout": "to the next payout",
-        "timeToRequest": "to request",
-        "timeToWithdraw": "to withdraw"
+        "timeToRequest": "left to request",
+        "timeToWithdraw": "left to withdraw"
       },
-      "salaryPayout": "Request payout on",
+      "salaryPayout": "Withdraw salary on",
       "salaryRequest": "Request salary on",
       "submitEvidenceConfirm": {
         "evidence": "Evidence",
@@ -1377,6 +1485,7 @@
         "votingPower": "Voting power"
       },
       "noVoteForReferendum": "There're no existing votes for this referendum",
+      "reuseLock": "Reuse lock",
       "timeoutReferendumError": "This referendum has already passed"
     },
     "voteHistory": {
@@ -1433,7 +1542,7 @@
   },
   "log": {
     "cancelledMessage": "rejected this operation",
-    "error": "Error",
+    "error": "Operation Failed",
     "errorCancelledMessage": "tried to reject this operation",
     "errorSignedMessage": "tried to sign this operation",
     "initiatedMessage": "created this operation",
@@ -1512,20 +1621,36 @@
     },
     "paritySigner": {
       "accessDeniedDescription": "Please make sure you grant access to camera",
-      "accessDeniedLabel": "Access denied!",
+      "accessDeniedDescriptionDesktopLinux": "Allow camera access in the system settings (Settings → Privacy → Camera).",
+      "accessDeniedDescriptionDesktopMac": "Please grant camera access in System Preferences > Security & Privacy > Camera, then restart the app",
+      "accessDeniedDescriptionDesktopWindows": "Please grant camera access in Windows Settings > Privacy > Camera, then restart the app",
+      "accessDeniedDescriptionWeb": "Allow camera access in the browser settings (Privacy → Camera).",
+      "accessDeniedLabel": "Spektr cannot use camera.",
       "accountNamePlaceholder": "Enter a name for this account",
+      "allowCameraPrefix": "Allow camera access in ",
+      "allowCameraSuffix": " (Settings → Privacy → Camera).",
+      "cameraAccessDeniedDescription": "onboarding.paritySigner.cameraAccessDeniedDescription",
+      "cameraAccessDeniedLabel": "onboarding.paritySigner.cameraAccessDeniedLabel",
       "checkAddress": "Check address",
       "continueButton": "Continue",
-      "decodeErrorDescription": "Error occurred while decoding QR code",
-      "decodeErrorLabel": "Recognition error!",
+      "decodeErrorDescription": "Make sure the QR code is easy to scan. Try scanning in a place with good light.",
+      "decodeErrorLabel": "The app cannot read the QR code data.",
       "generateAddressesModalTitle": "Generate accounts addresses",
-      "multishardQRCodeDescription": "Multishard wallets no longer supported",
-      "multishardQRCodeLabel": "Multishard QR not supported!",
+      "invalidQrDescription": "Make sure the QR code is correct.",
+      "invalidQrLabel": "The QR code may be broken or not supported.",
+      "multishardQRCodeDescription": "Please choose one key set and continue.",
+      "multishardQRCodeLabel": "You cannot import many key sets.",
+      "noVideoInputDescription": "Connect the camera or use a new device.",
+      "noVideoInputLabel": "We cannot find the camera.",
+      "notSameQrErrorDescription": "Keep the QR code and your device still while scanning. Do not move the code or thе camera.",
+      "notSameQrErrorLabel": "The app found different data in the QR code while scanning.",
       "notWorkingDescription": "Please make sure you camera is turned on",
       "notWorkingLabel": "Camera is not working!",
       "scanAgainButton": "Scan again",
       "selectCameraLabel": "Select camera",
       "startCameraLabel": "Starting camera",
+      "systemSettings": "the system settings",
+      "systemSettingsAria": "Open system settings",
       "tryAgainButton": "Try again",
       "typeNameButton": "Type a name to finish...",
       "walletNameLabel": "Wallet name",
@@ -1667,7 +1792,7 @@
     "errorWatchOnly": "Can't sign with watch only account.",
     "explorerLink": "View in explorer",
     "feeErrorMessage": "Insufficient funds to pay the network fee",
-    "feeErrorTitle": "Error",
+    "feeErrorTitle": "Insufficient Funds",
     "goBackButton": "Back",
     "inProgress": "Submitting approval...",
     "logButton": "Log",
@@ -1802,9 +1927,10 @@
       "unstakeOn": "Unstake { asset } on",
       "vote": "Vote { asset } on"
     },
-    "noOperationsDescription": "Your operation history will appear here",
+    "noOperationsDescription": "You haven't made any operations yet. <br /> If you updated your Flexible Multisig, previous operations are available on the old multisig.",
     "noOperationsFilters": "Nothing was found for the filters. Try changing filters or canceling filtering.",
-    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. Transaction history for other types of wallets will be available later. Stay tuned.",
+    "noOperationsTitle": "Operation list is empty",
+    "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. <br /> Transaction history for other types of wallets will be available later. Stay tuned.",
     "operationCreated": "Operation created",
     "title": "Operations",
     "titles": {
@@ -1914,7 +2040,7 @@
       "title1": "What is a Pure Proxy?",
       "title2": "Why should I create a Pure Proxy?"
     },
-    "submitError": "Error",
+    "submitError": "Operation Failed",
     "submitErrorButton": "Close",
     "submitInProgress": "Submitting operation...",
     "submitSuccess": "Operation Success",
@@ -1945,7 +2071,7 @@
   },
   "qrReader": {
     "parsingLabel": "Parsing data",
-    "parsingProgress": "{decoded} of {total}",
+    "parsingProgress": "{decodedFrames} of {totalFrames}",
     "parsingSubLabel": "Please hold still...",
     "videoError": "Your browser doesn't support video"
   },
@@ -2348,12 +2474,20 @@
   },
   "transfer": {
     "FIX": "Please enter amount",
+    "accountDeathWarning": {
+      "description": "After this transfer, your balance will <b>fall below the Existential Deposit ({ed} {asset}).</b> If any tokens remain, <b>they will be burned, and your account will be removed from on-chain storage.</b>. <br /> We recommend <b>using the MAX button for a safe Transfer</b>",
+      "title": "Balance below network minimum"
+    },
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",
-    "descriptionLengthError": "Description cannot exceed { maxLength } symbols",
+    "descriptionLengthError": "transfer.descriptionLengthError",
+    "destinationBalanceAlertDescription": "Sending <b>less than {ed} to an inactive account</b> may result in the <b>loss of tokens.</b>",
+    "destinationBalanceAlertTitle": "Recipient account is inactive",
     "destinationChainLabel": "Recipient network",
     "destinationChainPlaceholder": "Select recipient network",
+    "destinationCryptoError": "Unsupported address format for {network}",
+    "destinationFormatError": "Address has incorrect format",
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "expired": "Transaction expired",
@@ -2362,6 +2496,13 @@
     "incorrectRecipientError": "Please enter correct recipient address",
     "invalidAddress": "Invalid address",
     "invalidSignature": "Error occurred while decoding QR code. Scan again.",
+    "max": {
+      "buttonTitle": "MAX",
+      "ed": {
+        "title": "Include Existential Deposit",
+        "tooltip": "Existential Deposit is the minimum balance to keep your account on-chain storage"
+      }
+    },
     "multiple": {
       "executing": "Submitting operations",
       "transactions": "Transactions"
@@ -2385,8 +2526,7 @@
     "recipientLabel": "Recipient",
     "recipientPlaceholder": "Address",
     "requiredAmountError": "Please enter amount",
-    "requiredDescriptionError": "Description is required",
-    "requiredRecipientError": "Please enter recipient address",
+    "requiredDestinationError": "transfer.requiredDestinationError",
     "senderAccount": "Sender account",
     "senderLabel": "Sender",
     "signatoryLabel": "Signatory",
@@ -2418,6 +2558,7 @@
   "walletDetails": {
     "common": {
       "accountTabTitle": "Accounts",
+      "accountsColumn": "Accounts",
       "addProxyAction": "Delegate",
       "addProxyButton": "Delegate",
       "addPureProxiedAction": "Create pure proxy",
@@ -2426,17 +2567,20 @@
       "confirmRemoveProxyDescription": "The account will lose access to your wallet. Are you sure?",
       "confirmRemoveProxySubmit": "Delete",
       "confirmRemoveProxyTitle": "Revoke delegated authority?",
+      "consensusColumn": "Consensus",
       "doNotShowAgain": "Do not show this again",
       "emptyProxyDescription": "Add new proxies to work with them",
       "emptyProxyTitle": "Wallet doesn't have delegated authorities",
       "forgetButton": "Remove",
       "hideButton": "Hide",
       "hideWallet": "Hide wallet",
+      "keyTabTitle": "Keys",
       "linkedWalletsWillBeRemovedDescription": "This wallet is a signatory in multisigs or as a proxy for other wallets. These related accounts will be automatically hidden. They’ll reappear if you pair this wallet again.",
       "linkedWalletsWillBeRemovedTitle": "Linked wallets will be removed",
       "nameExistsError": "This wallet name already exists",
       "nameRequiredError": "Name is required",
       "openInfoAction": "Open info",
+      "otherNetworkColumn": "Other network",
       "proxiedAddressTitle": "Delegated from",
       "proxiesTabTitle": "Delegated to",
       "proxiesTabTitleShort": "Delegated",
@@ -2487,6 +2631,7 @@
     },
     "vault": {
       "editKeys": "Edit keys",
+      "evmGroup": "EVM Compatible",
       "export": "Export keyset",
       "import": "Import keyset",
       "networksTab": "Networks",
