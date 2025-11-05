@@ -1,6 +1,6 @@
 import { profileInfoSlot } from '@/features/fellowship-profile';
 
-import { fellowshipPromotionFeature } from './models/feature';
+import { fellowshipPromotionFeature } from './feature';
 import { PromotionWidget } from './ui/PromotionWidget';
 
 export { fellowshipPromotionFeature };

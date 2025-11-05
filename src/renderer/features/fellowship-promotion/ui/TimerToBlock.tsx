@@ -1,9 +1,8 @@
-import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
 import { getTimeToBlock } from '@/shared/lib/utils';
 import { Timeout } from '@/shared/ui-kit';
-import { fellowshipPromotionFeature } from '../models/feature';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 
 export interface DateThresholds {
   urgent: number;
@@ -16,18 +15,18 @@ type Props = {
 };
 
 export const TimerToBlock = memo(({ endBlock, shortDateFormat }: Props) => {
-  const input = useUnit(fellowshipPromotionFeature.input);
+  const api = useFellowshipApi();
   const [endTime, setEndTime] = useState<number>();
 
   useEffect(() => {
-    if (endBlock && input) {
-      getTimeToBlock(endBlock, input.api).then(date => {
+    if (endBlock && api) {
+      getTimeToBlock(endBlock, api).then(date => {
         setEndTime(date / 1000);
       });
     }
-  }, [endBlock, input?.api]);
+  }, [endBlock, api]);
 
-  if (!endTime || !input) return null;
+  if (!endTime || !api) return null;
 
   return (
     <Timeout secondsToEnd={endTime} variant="idle" shortDateFormat={shortDateFormat} textColor="text-text-primary" />

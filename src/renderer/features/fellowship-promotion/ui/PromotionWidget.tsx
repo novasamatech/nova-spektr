@@ -1,15 +1,19 @@
 import { formatDate } from 'date-fns';
-import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, nullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, CaptionText, FootnoteText, Icon, TitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type Member, type Referendum, memberService, votingHistoryService } from '@/domains/collectives';
-import { WidgetState, fellowshipPromotion } from '../models/promotion';
-import { votesModel } from '../models/votes';
+import { useBlock } from '@/domains/network';
+import { useFellowshipMember, useMemberPromotionReferendum } from '@/aggregates/fellowship-member';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { usePromotionEvidenceSubmissionDate } from '../hooks/usePromotionEvidence';
+import { usePromotionPeriod, usePromotionPeriodDates } from '../hooks/usePromotionPeriod';
+import { useVotes } from '../hooks/useVotes';
+import { PromotionWidgetState, useWidgetState } from '../hooks/useWidgetState';
 
 import { TimelineWithRanks } from './TimelineWithRanks';
 import { TimerToBlock } from './TimerToBlock';
@@ -21,10 +25,8 @@ type Props = {
 };
 
 export const PromotionWidget = memo(({ member }: Props) => {
-  useGate(fellowshipPromotion.flow, member);
-
   const { t } = useI18n();
-  const state = useUnit(fellowshipPromotion.$widgetState);
+  const { data: state } = useWidgetState();
   const { fromDateFormatted, toDateFormatted, promotionPeriod, timelineValue } = usePromotionData();
 
   const timelineSteps = useMemo(
@@ -50,7 +52,7 @@ export const PromotionWidget = memo(({ member }: Props) => {
 
   if (!memberService.canPromote(member)) return null;
 
-  if (state === WidgetState.WAITING_OPPORTUNITY) {
+  if (state === PromotionWidgetState.WAITING_OPPORTUNITY) {
     return (
       <WidgetContainer
         title={t('fellowship.promotion.waiting.title')}
@@ -71,7 +73,7 @@ export const PromotionWidget = memo(({ member }: Props) => {
     );
   }
 
-  if (state === WidgetState.EVIDENCE_CAN_BE_SUBMITTED) {
+  if (state === PromotionWidgetState.EVIDENCE_CAN_BE_SUBMITTED) {
     return (
       <WidgetContainer
         title={t('fellowship.promotion.canSubmit.title')}
@@ -91,11 +93,11 @@ export const PromotionWidget = memo(({ member }: Props) => {
     );
   }
 
-  if (state === WidgetState.EVIDENCE_SUBMITTED) {
+  if (state === PromotionWidgetState.EVIDENCE_SUBMITTED) {
     return <EvidenceSubmitted />;
   }
 
-  if (state === WidgetState.REFERENDUM_CREATED) {
+  if (state === PromotionWidgetState.REFERENDUM_CREATED) {
     return <ReferendumCreated />;
   }
 
@@ -105,10 +107,8 @@ export const PromotionWidget = memo(({ member }: Props) => {
 export const EvidenceSubmitted = memo(() => {
   const { t } = useI18n();
 
-  const member = useUnit(fellowshipPromotion.$member);
-
-  const { fromDateFormatted, toDateFormatted, promotionPeriodDates, timelineValue } = usePromotionData();
-  const promotionEvidenceSubmissionDate = useUnit(fellowshipPromotion.$promotionEvidenceSubmissionDate);
+  const { data: promotionEvidenceSubmissionDate } = usePromotionEvidenceSubmissionDate();
+  const { fromDateFormatted, toDateFormatted, promotionPeriodDates, timelineValue, member } = usePromotionData();
 
   const submissionDateFormatted = promotionEvidenceSubmissionDate
     ? formatDate(promotionEvidenceSubmissionDate, 'dd.MM.yy')
@@ -130,11 +130,17 @@ export const EvidenceSubmitted = memo(() => {
   );
 
   const evidenceSubmissionPosition = useMemo(() => {
-    if (!promotionEvidenceSubmissionDate) return 50;
+    if (
+      nullable(promotionEvidenceSubmissionDate) ||
+      nullable(promotionPeriodDates) ||
+      nullable(promotionPeriodDates.from) ||
+      nullable(promotionPeriodDates.to)
+    )
+      return 50;
 
     const submissionTime = new Date(promotionEvidenceSubmissionDate).getTime();
-    const fromTime = promotionPeriodDates.from.getTime();
-    const toTime = promotionPeriodDates.to.getTime();
+    const fromTime = promotionPeriodDates.from;
+    const toTime = promotionPeriodDates.to;
     const position = ((submissionTime - fromTime) / (toTime - fromTime)) * 100;
 
     return Math.max(10, Math.min(90, position));
@@ -175,9 +181,8 @@ export const EvidenceSubmitted = memo(() => {
 const ReferendumCreated = memo(() => {
   const { t } = useI18n();
 
-  const referendum = useUnit(fellowshipPromotion.$promotionReferendum);
-  const votes = useUnit(votesModel.$votesList);
-  const pending = useUnit(votesModel.$pending);
+  const { data: referendum } = useMemberPromotionReferendum();
+  const { data: votes, pending } = useVotes();
 
   const votingRating = useMemo(() => {
     return votingHistoryService.getApprovalRating(votes);
@@ -225,12 +230,21 @@ const ReferendumCreated = memo(() => {
 });
 
 const usePromotionData = () => {
-  const promotionPeriodDates = useUnit(fellowshipPromotion.$promotionPeriodDates);
-  const promotionPeriod = useUnit(fellowshipPromotion.$promotionPeriod);
-  const currentBlock = useUnit(fellowshipPromotion.$currentBlock);
+  const api = useFellowshipApi();
 
-  const fromDateFormatted = formatDate(promotionPeriodDates.from, 'dd.MM.yy');
-  const toDateFormatted = formatDate(promotionPeriodDates.to, 'dd.MM.yy');
+  const { data: promotionPeriodDates } = usePromotionPeriodDates();
+  const { data: promotionPeriod } = usePromotionPeriod();
+  const { data: currentBlock } = useBlock(api);
+  const { data: member } = useFellowshipMember();
+
+  const fromDateFormatted =
+    nonNullable(promotionPeriodDates) && nonNullable(promotionPeriodDates.from)
+      ? formatDate(promotionPeriodDates.from, 'dd.MM.yy')
+      : null;
+  const toDateFormatted =
+    nonNullable(promotionPeriodDates) && nonNullable(promotionPeriodDates.to)
+      ? formatDate(promotionPeriodDates.to, 'dd.MM.yy')
+      : null;
 
   const timelineValue = useMemo(
     () =>
@@ -247,6 +261,7 @@ const usePromotionData = () => {
     toDateFormatted,
     promotionPeriodDates,
     timelineValue,
+    member,
   };
 };
 
