@@ -23,6 +23,7 @@ export const MarkdownPreviewModal = ({
   evidenceContent,
   onBack,
   flowType = 'ipfsUpload',
+  children,
 }: Props) => {
   const { t } = useI18n();
   const { toast } = useNotification();
@@ -94,6 +95,8 @@ export const MarkdownPreviewModal = ({
 
   return (
     <Modal size="lg" height="full" isOpen={isOpen} onToggle={onToggle}>
+      <Modal.Trigger>{children}</Modal.Trigger>
+
       <Modal.Title close>{title}</Modal.Title>
 
       <Modal.Content>

@@ -5,7 +5,7 @@ import { PromotionWidget } from './ui/PromotionWidget';
 
 export { fellowshipPromotionFeature };
 
-export { referendumWidgetActionSlot } from './ui/PromotionWidget';
+export { referendumWidgetActionSlot, evidenceSubmitSlot } from './ui/PromotionWidget';
 
 fellowshipPromotionFeature.inject(profileInfoSlot, {
   order: 1,

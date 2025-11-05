@@ -37,7 +37,7 @@ const DANGER_ZONE_LENGTH = 4.5;
 const TOTAL_LENGTH = SAFE_ZONE_LENGTH + WARNING_ZONE_LENGTH + DANGER_ZONE_LENGTH;
 
 export const referendumWidgetActionSlot = createSlot<{ referendum: Referendum }>();
-export const evidenceSubmitSlot = createSlot<{ wish: 'Promotion' | 'Retention'; mode?: 'submit' | 'edit' }>();
+export const evidenceSubmitSlot = createSlot<{ mode?: 'submit' | 'edit' }>();
 
 type Props = {
   member: Member;
@@ -67,7 +67,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
             <div className="ml-auto">
-              <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const }} />
+              <Slot id={evidenceSubmitSlot} props={{ mode: 'submit' }} />
             </div>
           </>
         }
@@ -90,7 +90,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="hourglass" variant="warning" />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
             <div className="ml-auto">
-              <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const }} />
+              <Slot id={evidenceSubmitSlot} props={{ mode: 'submit' }} />
             </div>
           </>
         }
@@ -111,7 +111,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
             <div className="ml-auto">
-              <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const }} />
+              <Slot id={evidenceSubmitSlot} props={{ mode: 'submit' }} />
             </div>
           </>
         }
@@ -132,7 +132,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.untilEnd')}</FootnoteText>
             <div className="ml-auto">
-              <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const }} />
+              <Slot id={evidenceSubmitSlot} props={{ mode: 'submit' }} />
             </div>
           </>
         }
@@ -153,7 +153,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
             <TimerToBlock endBlock={retentionPeriod.to} shortDateFormat icon="fire" variant="urgent" hideIconText />
             <FootnoteText className="text-text-primary">{t('fellowship.retention.timer.riskBumped')}</FootnoteText>
             <div className="ml-auto">
-              <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const }} />
+              <Slot id={evidenceSubmitSlot} props={{ mode: 'submit' }} />
             </div>
           </>
         }
@@ -242,7 +242,7 @@ const ReportSubmitted = memo(() => {
             >
               {t('fellowship.retention.button.view')}
             </Button>
-            <Slot id={evidenceSubmitSlot} props={{ wish: 'Retention' as const, mode: 'edit' as const }} />
+            <Slot id={evidenceSubmitSlot} props={{ mode: 'edit' as const }} />
           </div>
         </>
       }
