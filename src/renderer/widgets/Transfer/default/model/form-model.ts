@@ -144,13 +144,6 @@ const form: Form<FormParams> = createForm<FormParams>({
   },
   validateOn: ['change'],
 });
-const $isFormSubmitted = createStore<boolean>(false).reset(formInitiated);
-
-sample({
-  clock: form.submit,
-  fn: () => true,
-  target: $isFormSubmitted,
-});
 
 const $destination = form.fields.destination.$value;
 const $destinationChain = form.fields.destinationChain.$value;
@@ -821,7 +814,6 @@ export const formModel = {
   $canSubmit,
   $asset,
 
-  $isFormSubmitted,
   $errors,
 
   $xcmConfig: xcmTransferModel.$config,
