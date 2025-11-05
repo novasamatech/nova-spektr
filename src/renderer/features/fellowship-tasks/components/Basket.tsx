@@ -16,7 +16,7 @@ export const Basket = memo(() => {
 
   const transactions = useMemo(() => {
     return Object.values(operations).filter(nonNullable);
-  }, []);
+  }, [operations]);
 
   if (nullable(account) || !basketUtils.isBasketAvailableForAccount(account)) return null;
 
