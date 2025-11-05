@@ -136,15 +136,15 @@ describe('entities/wallet/lib/account-utils#getDerivationPath', () => {
   const cases_2: [{ derivationPath: string }[], string][] = [
     [
       [{ derivationPath: '//westend//custom//0' }, { derivationPath: '//westend//custom//1' }],
-      '//westend//custom//0..1',
+      '//westend//custom//0...1',
     ],
     [
       [{ derivationPath: '//westend//custom/hey22-1/0' }, { derivationPath: '//westend//custom/hey22-1/1' }],
-      '//westend//custom/hey22-1/0..1',
+      '//westend//custom/hey22-1/0...1',
     ],
     [
       [{ derivationPath: '//westend//custom/hey-hey//0' }, { derivationPath: '//westend//custom/hey-hey//1' }],
-      '//westend//custom/hey-hey//0..1',
+      '//westend//custom/hey-hey//0...1',
     ],
   ];
 
