@@ -14,11 +14,11 @@ export const Basket = memo(() => {
   const { data: account } = useFellowshipAccount();
   const { data: operations } = useMemberBasketOperations();
 
-  if (nullable(account) || !basketUtils.isBasketAvailableForAccount(account)) return null;
-
   const transactions = useMemo(() => {
     return Object.values(operations).filter(nonNullable);
   }, []);
+
+  if (nullable(account) || !basketUtils.isBasketAvailableForAccount(account)) return null;
 
   const openSigning = () => {
     signOperations.startFlow({ transactions });
