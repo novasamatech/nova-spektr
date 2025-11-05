@@ -29,7 +29,9 @@ export const useWidgetState = () => {
 
   const network = useFellowshipNetwork();
   const { data: hasRetentionReferendum, pending: referendumPending } = useMemberRetentionReferendum();
-  const { data: hasRetentionEvidence, pending: evidencePending } = useFellowshipMemberEvidence();
+  const { data: evidence, pending: evidencePending } = useFellowshipMemberEvidence();
+
+  const hasRetentionEvidence = evidence?.wish === 'Retention';
 
   const { data: retentionPeriod, pending: retentionPeriodPending } = useRetentionPeriod();
 

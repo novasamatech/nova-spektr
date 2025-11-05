@@ -91,24 +91,30 @@ fellowshipEvidenceFeature.inject(requestRetentionTaskActionSlot, () => {
   );
 });
 
-fellowshipEvidenceFeature.inject(retentionEvidenceSubmitSlot, ({ mode }) => {
+fellowshipEvidenceFeature.inject(retentionEvidenceSubmitSlot, ({ mode, evidenceContent }) => {
   const { t } = useI18n();
   const canVote = useUnit(profile.$canVote);
+  const [isOpen, setIsOpen] = useState(false);
   const isEdit = mode === 'edit';
 
-  if (isEdit) {
+  if (isEdit && nonNullable(evidenceContent)) {
     return (
-      <EvidencePostFlowModal wish="Retention">
-        <Button size="sm" pallet="secondary" variant="fill" disabled={!canVote}>
-          {t('fellowship.retention.button.edit')}
-        </Button>
-      </EvidencePostFlowModal>
+      <>
+        <MarkdownPreviewModal isOpen={isOpen} evidenceContent={evidenceContent} wish="Retention" onToggle={setIsOpen}>
+          <Button size="sm">{t('fellowship.retention.button.view')}</Button>
+        </MarkdownPreviewModal>
+        <EvidencePostFlowModal wish="Retention">
+          <Button className="shrink-0" size="sm" pallet="secondary" variant="fill" disabled={!canVote}>
+            {t('fellowship.retention.button.edit')}
+          </Button>
+        </EvidencePostFlowModal>
+      </>
     );
   }
 
   return (
     <SubmitEvidencePopover wish="Retention">
-      <Button size="sm" pallet="primary" variant="fill" disabled={!canVote}>
+      <Button className="shrink-0" size="sm" pallet="primary" variant="fill" disabled={!canVote}>
         {t('fellowship.retention.button.submitReport')}
       </Button>
     </SubmitEvidencePopover>

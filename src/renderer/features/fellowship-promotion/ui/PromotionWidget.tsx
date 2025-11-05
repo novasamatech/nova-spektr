@@ -175,12 +175,6 @@ export const EvidenceSubmitted = memo(() => {
           <Icon name="clock" size={16} className="mr-1 text-chip-icon" />
           <FootnoteText>{t('fellowship.promotion.submitted.ensureAwareness')}</FootnoteText>
           <div className="ml-auto flex gap-2">
-            {/* <Button size="sm" onClick={() => {}}>
-              {t('fellowship.promotion.submitted.viewButton')}
-            </Button>
-            <Button size="sm" pallet="secondary" variant="fill" onClick={() => {}}>
-              {t('fellowship.promotion.submitted.editButton')}
-            </Button> */}
             <Slot
               id={evidenceSubmitSlot}
               props={{ mode: 'edit' as const, evidenceContent: evidenceContent?.content }}

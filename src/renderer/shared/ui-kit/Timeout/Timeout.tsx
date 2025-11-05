@@ -74,7 +74,7 @@ export const Timeout = memo(
     const displayText = text ?? t('general.timeout.expired');
 
     return (
-      <div className={cnTw('mr-0.5 flex items-center gap-x-1', timerColor)}>
+      <div className={cnTw('mr-0.5 flex shrink-0 items-center gap-x-1', timerColor)}>
         <Icon name={timerIcon} size={16} className="text-inherit" />
         <FootnoteText className={`${textColor}`}>
           {countdown > 0 ? (
