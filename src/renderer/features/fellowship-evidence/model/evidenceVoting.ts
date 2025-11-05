@@ -1,12 +1,13 @@
 import { type ApiPromise } from '@polkadot/api';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
-import { reshape } from 'patronum';
+import { reshape, spread } from 'patronum';
 
 import { nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import { type ReferendumId, referendaPallet } from '@/shared/pallet/referenda';
 import { createTxStore } from '@/shared/transactions';
 import { type Evidence, trackService, votingService } from '@/domains/collectives';
+import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
@@ -172,6 +173,41 @@ sample({
   target: submitModel.events.formInitiated,
 });
 
+// Basket
+
+const saveToBasket = createEvent();
+
+sample({
+  clock: saveToBasket,
+  source: { existing: basketOperations.$list, account: $votingAccount, coreTx: $coreTx },
+  fn: ({ existing, account, coreTx }) => {
+    if (nullable(account) || nullable(coreTx)) {
+      return { add: [], remove: [] };
+    }
+
+    const existingTransactions = existing.filter(o => {
+      if (o.initiatorAccountId !== account.accountId) return false;
+      if (!votingService.isEvidenceVotingTransaction(o.coreTx)) return false;
+      return coreTx.args.poll === o.coreTx.args.poll;
+    });
+
+    const isSameTransaction = existingTransactions.some(t => coreTx.args.aye === t.coreTx.args.aye);
+
+    const newTransaction: BasketTransactionDraft = {
+      initiatorAccountId: account.accountId,
+      coreTx,
+      route: [],
+      createdAt: Date.now(),
+    };
+
+    return {
+      add: isSameTransaction ? [] : [newTransaction],
+      remove: existingTransactions,
+    };
+  },
+  target: spread({ add: basketOperations.addTransactions, remove: basketOperations.removeTransactions }),
+});
+
 // Steps
 
 const setStep = createEvent<'closed' | 'form' | 'submit'>();
@@ -194,4 +230,5 @@ export const evidenceVoting = {
   setStep,
 
   sign,
+  saveToBasket,
 };

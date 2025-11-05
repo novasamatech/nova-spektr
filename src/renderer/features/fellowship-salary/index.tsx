@@ -40,6 +40,7 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
   const canVote = useUnit(profile.$canVote);
   const canSaveToBasket = account && basketUtils.isBasketAvailableForAccount(account);
   const currentPeriodExists = currentPeriod && currentPeriod.type !== 'unknown';
+  const inBasket = useUnit(salaryRequest.$inBasket);
 
   if (!input) return null;
 
@@ -47,7 +48,12 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
     return (
       <>
         {currentPeriodExists && <PeriodEndTimer api={input.api} endBlock={currentPeriod.until} shortDateFormat />}
-        <ButtonCard size="sm" disabled={!canVote} onClick={() => salaryRequest.saveToBasket()}>
+        <ButtonCard
+          pallet={inBasket ? 'positive' : 'secondary'}
+          size="sm"
+          disabled={!canVote}
+          onClick={() => salaryRequest.saveToBasket()}
+        >
           {t('fellowship.tasks.task.requestSalary.request')}
         </ButtonCard>
       </>
@@ -67,14 +73,22 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
 });
 
 fellowshipSalaryFeature.inject(requestSalaryInductTaskActionSlot, () => {
+  useFlow(salaryInduct.flow, null);
   const { t } = useI18n();
   const account = useUnit(salaryInduct.$account);
   const canVote = useUnit(profile.$canVote);
+  const inBasket = useUnit(salaryInduct.$inBasket);
+
   const canSaveToBasket = account && basketUtils.isBasketAvailableForAccount(account);
 
   if (canSaveToBasket) {
     return (
-      <ButtonCard size="sm" disabled={!canVote} onClick={() => salaryInduct.saveToBasket()}>
+      <ButtonCard
+        pallet={inBasket ? 'positive' : 'secondary'}
+        size="sm"
+        disabled={!canVote}
+        onClick={() => salaryInduct.saveToBasket()}
+      >
         {t('fellowship.tasks.task.requestSalaryInduct.request')}
       </ButtonCard>
     );
@@ -90,14 +104,22 @@ fellowshipSalaryFeature.inject(requestSalaryInductTaskActionSlot, () => {
 });
 
 fellowshipSalaryFeature.inject(payoutSalaryTaskActionSlot, () => {
+  useFlow(salaryInduct.flow, null);
   const { t } = useI18n();
   const account = useUnit(salaryPayout.$account);
   const canVote = useUnit(profile.$canVote);
+  const inBasket = useUnit(salaryPayout.$inBasket);
+
   const canSaveToBasket = account && basketUtils.isBasketAvailableForAccount(account);
 
   if (canSaveToBasket) {
     return (
-      <ButtonCard size="sm" disabled={!canVote} onClick={() => salaryPayout.saveToBasket()}>
+      <ButtonCard
+        pallet={inBasket ? 'positive' : 'secondary'}
+        size="sm"
+        disabled={!canVote}
+        onClick={() => salaryPayout.saveToBasket()}
+      >
         {t('fellowship.tasks.task.requestPayout.request')}
       </ButtonCard>
     );

@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren, memo, useMemo } from 'react';
+import { type PropsWithChildren, memo, useMemo, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
@@ -17,7 +17,11 @@ import { ReferendumDescription } from './ReferendumDescription';
 export const referendumAdditionalHighPriorityInfoSlot = createSlot<{ referendumId: ReferendumId }>();
 export const referendumAdditionalInfoSlot = createSlot<{ referendum: Referendum }>();
 
-export const referendumActionsSlot = createSlot<{ referendum?: Referendum | null; evidence?: Evidence | null }>();
+export const referendumActionsSlot = createSlot<{
+  referendum?: Referendum | null;
+  evidence?: Evidence | null;
+  onClose?: () => void;
+}>();
 
 type Props = PropsWithChildren<{
   referendum: Referendum;
@@ -27,10 +31,20 @@ type Props = PropsWithChildren<{
 export const ReferendumDetailsModal = memo(({ referendum, children, title }: Props) => {
   const { t } = useI18n();
 
+  const [isOpen, setIsOpen] = useState(false);
+
   const tracks = useUnit(tracksModel.$list);
   const evidence = useUnit(details.$evidence);
 
   const referendumId = referendum?.id;
+
+  const handleToggle = (open: boolean) => {
+    setIsOpen(open);
+  };
+
+  const onClose = () => {
+    handleToggle(false);
+  };
 
   const modalTitle = useMemo(() => {
     if (title) {
@@ -50,7 +64,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
   }, [title, referendum, tracks, referendumId]);
 
   return (
-    <Modal size="xl" height="fit">
+    <Modal size="xl" height="fit" isOpen={isOpen} onToggle={handleToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{modalTitle}</Modal.Title>
       <Modal.Content>
@@ -66,7 +80,7 @@ export const ReferendumDetailsModal = memo(({ referendum, children, title }: Pro
 
               <Slot id={referendumAdditionalInfoSlot} props={{ referendum }} />
 
-              <Slot id={referendumActionsSlot} props={{ referendum, evidence }} />
+              <Slot id={referendumActionsSlot} props={{ referendum, evidence, onClose }} />
 
               <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
             </Box>
