@@ -9,13 +9,14 @@ import { Alert, Button, InfoLink, InputHint } from '@/shared/ui';
 import { InputFile, Modal } from '@/shared/ui-kit';
 import { TEMPLATE_GITHUB_LINK } from '../lib/constants';
 import { importKeysUtils } from '../lib/import-keys-utils';
+import { type DerivationKeyDraft } from '../lib/types';
 import { importKeysModel } from '../model/import-keys-model';
 
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
   existingKeys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[];
-  onConfirm: (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => void;
+  onConfirm: (keys: DerivationKeyDraft[]) => void;
   onClose: () => void;
 };
 
