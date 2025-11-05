@@ -26,6 +26,7 @@ export * from './FellowshipSalaryInduct';
 export * from './FellowshipSalaryRequest';
 export * from './FellowshipSalaryPayout';
 export * from './FellowshipSubmitEvidence';
+export * from './FellowshipEvidenceVoting';
 
 export { type ConfirmInfo } from './lib/createTransactionConfirmStore';
 
