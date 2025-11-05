@@ -10,7 +10,6 @@ export const AccountNotFoundModal = () => {
   const { t } = useTranslation();
 
   const isOpen = useUnit(accountNotFoundModal.$isOpen);
-  console.log({ isOpen });
   const handleClose = () => accountNotFoundModal.close();
 
   return (

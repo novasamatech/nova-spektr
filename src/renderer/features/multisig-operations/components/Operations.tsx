@@ -27,8 +27,6 @@ export const Operations = () => {
 
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
 
-  console.log('AccountNotFoundModal');
-
   const groupedTxs = useMemo(
     () =>
       groupBy(filteredTxs, tx => {

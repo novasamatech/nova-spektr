@@ -35,7 +35,6 @@ const accountChecked = sample({
   clock: multisigOperationDeepLinkHandler.triggered,
   source: accounts.$list,
   fn: (accountsList, data) => {
-    console.log({ accountsList, data });
     const account = accountsList.find(acc => acc.accountId === data.accountId);
     return {
       data,
@@ -62,10 +61,7 @@ sample({
 // If account doesn't exist, show modal
 sample({
   clock: accountChecked,
-  filter: ({ account }) => {
-    console.log({ accountChecked: account });
-    return account === null;
-  },
+  filter: ({ account }) => account === null,
   target: accountNotFoundModalOpened,
 });
 
