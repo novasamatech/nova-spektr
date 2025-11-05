@@ -37,7 +37,7 @@ export const ExportKeysModal = ({ wallet, onClose, children }: Props) => {
   };
 
   const downloadKeysFile = () => {
-    exportKeysUtils.exportVaultWallet(wallet, wallet.rootAccountId, accounts, chains);
+    exportKeysUtils.exportVaultWallet(wallet, wallet.rootAccountId, accounts);
     setDownloadModalOpen(true);
   };
 
