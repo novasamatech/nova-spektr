@@ -15,8 +15,10 @@ export enum PromotionWidgetState {
 
 export const useWidgetState = () => {
   const { data: leftToPromotion, pending: leftPending } = useLeftToPromotion();
-  const { data: hasPromotionEvidence, pending: evidencePending } = usePromotionEvidence();
+  const { data: evidence, pending: evidencePending } = usePromotionEvidence();
   const { data: referendum, pending: referendumPending } = useMemberPromotionReferendum();
+
+  const hasPromotionEvidence = evidence?.wish === 'Promotion';
 
   const state = useMemo(() => {
     if (nullable(leftToPromotion) || leftToPromotion > 0) {

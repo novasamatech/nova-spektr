@@ -4,13 +4,19 @@ import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
-import { Button, CaptionText, FootnoteText, Icon, TitleText } from '@/shared/ui';
+import { CaptionText, FootnoteText, Icon, TitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { type Member, type Referendum, memberService, votingHistoryService } from '@/domains/collectives';
+import {
+  type Member,
+  type Referendum,
+  memberService,
+  useEvidencesContent,
+  votingHistoryService,
+} from '@/domains/collectives';
 import { useBlock } from '@/domains/network';
 import { useFellowshipMember, useMemberPromotionReferendum } from '@/aggregates/fellowship-member';
 import { useFellowshipApi } from '@/aggregates/fellowship-network';
-import { usePromotionEvidenceSubmissionDate } from '../hooks/usePromotionEvidence';
+import { usePromotionEvidence, usePromotionEvidenceSubmissionDate } from '../hooks/usePromotionEvidence';
 import { usePromotionPeriod, usePromotionPeriodDates } from '../hooks/usePromotionPeriod';
 import { useVotes } from '../hooks/useVotes';
 import { PromotionWidgetState, useWidgetState } from '../hooks/useWidgetState';
@@ -19,6 +25,10 @@ import { TimelineWithRanks } from './TimelineWithRanks';
 import { TimerToBlock } from './TimerToBlock';
 
 export const referendumWidgetActionSlot = createSlot<{ referendum: Referendum }>();
+export const evidenceSubmitSlot = createSlot<{
+  mode?: 'submit' | 'edit';
+  evidenceContent?: string;
+}>();
 
 type Props = {
   member: Member;
@@ -82,9 +92,9 @@ export const PromotionWidget = memo(({ member }: Props) => {
           <>
             <Icon name="clock" size={16} className="mr-1 text-chip-icon" />
             <FootnoteText>{t('fellowship.promotion.canSubmit.submitAnytime')}</FootnoteText>
-            <Button size="sm" className="ml-auto" onClick={() => {}}>
-              {t('fellowship.promotion.canSubmit.submitButton')}
-            </Button>
+            <div className="ml-auto">
+              <Slot id={evidenceSubmitSlot} props={{ mode: 'submit' }} />
+            </div>
           </>
         }
       >
@@ -107,8 +117,16 @@ export const PromotionWidget = memo(({ member }: Props) => {
 export const EvidenceSubmitted = memo(() => {
   const { t } = useI18n();
 
+  const api = useFellowshipApi();
   const { data: promotionEvidenceSubmissionDate } = usePromotionEvidenceSubmissionDate();
+  const { data: promotionEvidence } = usePromotionEvidence();
   const { fromDateFormatted, toDateFormatted, promotionPeriodDates, timelineValue, member } = usePromotionData();
+
+  const { data: evidenceContent } = useEvidencesContent({
+    palletType: 'fellowship',
+    api,
+    accountId: promotionEvidence?.accountId,
+  });
 
   const submissionDateFormatted = promotionEvidenceSubmissionDate
     ? formatDate(promotionEvidenceSubmissionDate, 'dd.MM.yy')
@@ -157,12 +175,10 @@ export const EvidenceSubmitted = memo(() => {
           <Icon name="clock" size={16} className="mr-1 text-chip-icon" />
           <FootnoteText>{t('fellowship.promotion.submitted.ensureAwareness')}</FootnoteText>
           <div className="ml-auto flex gap-2">
-            <Button size="sm" onClick={() => {}}>
-              {t('fellowship.promotion.submitted.viewButton')}
-            </Button>
-            <Button size="sm" pallet="secondary" variant="fill" onClick={() => {}}>
-              {t('fellowship.promotion.submitted.editButton')}
-            </Button>
+            <Slot
+              id={evidenceSubmitSlot}
+              props={{ mode: 'edit' as const, evidenceContent: evidenceContent?.content }}
+            />
           </div>
         </>
       }

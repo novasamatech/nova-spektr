@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type PropsWithChildren } from 'react';
+import { type PropsWithChildren, useCallback } from 'react';
 
 import { nonNullable } from '@/shared/lib/utils';
 import { evidenceForm } from '../model/evidenceForm';
@@ -16,15 +16,21 @@ export const EvidencePostFlowModal = ({ wish, children }: Props) => {
   const step = useUnit(evidencePost.$step);
   const evidence = useUnit(evidenceForm.$evidence);
 
-  const toggleForm = (open: boolean) => {
-    evidencePost.setStep(open ? 'form' : 'closed');
-  };
+  const toggleForm = useCallback(
+    (open: boolean) => {
+      evidencePost.setStep(open ? 'form' : 'closed');
+    },
+    [evidencePost],
+  );
 
-  const toggleConfirm = (open: boolean, done: boolean) => {
-    if (!open && step === 'submit') {
-      evidencePost.setStep(done ? 'closed' : 'form');
-    }
-  };
+  const toggleConfirm = useCallback(
+    (open: boolean, done: boolean) => {
+      if (!open && step === 'submit') {
+        evidencePost.setStep(done ? 'closed' : 'form');
+      }
+    },
+    [step, evidencePost],
+  );
 
   return (
     <>
