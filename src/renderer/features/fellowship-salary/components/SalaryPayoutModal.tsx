@@ -1,7 +1,6 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -27,7 +26,7 @@ type Props = PropsWithChildren<{
 }>;
 
 export const SalaryPayoutModal = ({ beneficiary, disabled, children }: Props) => {
-  useFlow(salaryPayout.flow, { beneficiary });
+  useGate(salaryPayout.gate, { beneficiary });
 
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
