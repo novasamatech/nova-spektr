@@ -80,15 +80,17 @@ const submitExtrinsicFx = createEffect((payloads: SubmitInput) => {
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
-  for (const [index, { api, extrinsic, signatory, signature, payload }] of payloads.entries()) {
-    transactionService.submitExtrinsic(extrinsic, signature, payload, signatory, api).then((result) => {
-      if (result.executed) {
-        boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
-      } else {
-        boundExtrinsicFailed({ id: index, signatory, params: result.error });
-      }
-    });
-  }
+  return Promise.all(
+    Array.from(payloads.entries()).map(([index, { api, extrinsic, signatory, signature, payload }]) => {
+      return transactionService.submitExtrinsic(extrinsic, signature, payload, signatory, api).then((result) => {
+        if (result.executed) {
+          boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
+        } else {
+          boundExtrinsicFailed({ id: index, signatory, params: result.error });
+        }
+      });
+    }),
+  );
 });
 
 // deprecated flow with Transaction struct. Split impl located in sign-model.
