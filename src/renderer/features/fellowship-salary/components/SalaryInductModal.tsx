@@ -42,9 +42,9 @@ export const SalaryInductModal = ({ disabled, children }: Props) => {
     if (disabled) return;
 
     if (open) {
-      salaryInduct.flow.open(null);
+      salaryInduct.gate.open(null);
     } else {
-      salaryInduct.flow.close(null);
+      salaryInduct.gate.close(null);
     }
 
     setOpen(open);

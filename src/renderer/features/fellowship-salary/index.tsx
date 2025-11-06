@@ -1,6 +1,5 @@
 import { useUnit } from 'effector-react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { ButtonCard } from '@/shared/ui';
 import { PeriodEndTimer } from '@/shared/ui-entities/PeriodEndTimer/PeriodEndTimer';
@@ -31,8 +30,6 @@ fellowshipSalaryFeature.inject(profileInfoSlot, () => {
 });
 
 fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
-  useFlow(salaryRequest.flow, null);
-
   const { t } = useI18n();
   const account = useUnit(salaryRequest.$account);
   const input = useUnit(fellowshipSalaryFeature.input);
@@ -73,7 +70,6 @@ fellowshipSalaryFeature.inject(requestSalaryTaskActionSlot, () => {
 });
 
 fellowshipSalaryFeature.inject(requestSalaryInductTaskActionSlot, () => {
-  useFlow(salaryInduct.flow, null);
   const { t } = useI18n();
   const account = useUnit(salaryInduct.$account);
   const canVote = useUnit(profile.$canVote);
@@ -104,7 +100,6 @@ fellowshipSalaryFeature.inject(requestSalaryInductTaskActionSlot, () => {
 });
 
 fellowshipSalaryFeature.inject(payoutSalaryTaskActionSlot, () => {
-  useFlow(salaryInduct.flow, null);
   const { t } = useI18n();
   const account = useUnit(salaryPayout.$account);
   const canVote = useUnit(profile.$canVote);

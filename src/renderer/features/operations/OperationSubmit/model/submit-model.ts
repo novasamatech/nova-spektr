@@ -3,7 +3,7 @@ import { createEffect, createEvent, createStore, sample, scopeBind } from 'effec
 import { once, reset } from 'patronum';
 
 import { type Chain, type HexString, type Transaction } from '@/shared/core';
-import { assert, createAsyncTaskPool, nonNullable, removeFromCollection } from '@/shared/lib/utils';
+import { assert, nonNullable, removeFromCollection } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount, type Extrinsic, transactionService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -80,26 +80,15 @@ const submitExtrinsicFx = createEffect((payloads: SubmitInput) => {
   const boundExtrinsicSucceeded = scopeBind(extrinsicSucceeded, { safe: true });
   const boundExtrinsicFailed = scopeBind(extrinsicFailed, { safe: true });
 
-  const asyncTaskPool = createAsyncTaskPool({
-    poolSize: 1,
-    retryCount: 0,
-    retryDelay: 0,
-  });
-
   return Promise.all(
     Array.from(payloads.entries()).map(([index, { api, extrinsic, signatory, signature, payload }]) => {
-      return asyncTaskPool.call(
-        () => {
-          return transactionService.submitExtrinsic(extrinsic, signature, payload, signatory, api).then((result) => {
-            if (result.executed) {
-              boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
-            } else {
-              boundExtrinsicFailed({ id: index, signatory, params: result.error });
-            }
-          });
-        },
-        { pool: signatory + api.genesisHash.toHex() },
-      );
+      return transactionService.submitExtrinsic(extrinsic, signature, payload, signatory, api).then((result) => {
+        if (result.executed) {
+          boundExtrinsicSucceeded({ id: index, signatory, params: result.params });
+        } else {
+          boundExtrinsicFailed({ id: index, signatory, params: result.error });
+        }
+      });
     }),
   );
 });

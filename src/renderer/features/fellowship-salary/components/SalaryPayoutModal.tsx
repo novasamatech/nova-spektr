@@ -1,7 +1,6 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, Icon, LargeTitleText } from '@/shared/ui';
@@ -26,8 +25,9 @@ type Props = PropsWithChildren<{
 }>;
 
 export const SalaryPayoutModal = ({ disabled, children }: Props) => {
+  useGate(salaryPayout.gate, null);
+
   const beneficiary = useUnit($beneficiary);
-  useFlow(salaryPayout.flow, null);
 
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
