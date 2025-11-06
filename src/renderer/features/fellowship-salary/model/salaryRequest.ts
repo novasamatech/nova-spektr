@@ -1,7 +1,7 @@
 import { combine, createEvent, sample } from 'effector';
+import { createGate } from 'effector-react';
 import { reshape, spread } from 'patronum';
 
-import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { salaryService } from '@/domains/collectives';
@@ -11,7 +11,7 @@ import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { fellowshipSalaryFeature } from './feature';
 
-const flow = createFlow(null);
+const gate = createGate({ defaultState: null });
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipSalaryFeature.input,
@@ -43,7 +43,7 @@ const $coreTx = combine(
 );
 
 const { $fee, $wrappedTx } = createTxStore({
-  $active: flow.status,
+  $active: gate.status,
   $api,
   $activeWallet: $wallet,
   $wallets,
@@ -81,14 +81,16 @@ sample({
 
 sample({
   clock: signPayloadCreated.filter({ fn: nonNullable }),
-  fn: payload => ({ signingPayloads: [payload] }),
+  source: gate.status,
+  filter: open => open,
+  fn: (_, payload) => ({ signingPayloads: [payload] }),
   target: signModel.events.formInitiated,
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
+  clock: signModel.signed,
   source: {
-    open: flow.status,
+    open: gate.status,
     transactions: $wrappedTx,
     account: $account,
     chain: $chain,
@@ -96,18 +98,8 @@ sample({
   filter: ({ open, transactions, account, chain }) => {
     return open && nonNullable(chain) && nonNullable(transactions) && nonNullable(account);
   },
-  fn({ transactions, account, chain }, signParams) {
-    return {
-      signatures: signParams.signatures,
-      txPayloads: signParams.txPayloads,
-
-      chain: chain!,
-      account: account!,
-      wrappedTxs: [transactions!.wrappedTx],
-      coreTxs: [transactions!.coreTx],
-    };
-  },
-  target: submitModel.events.formInitiated,
+  fn: (_, signParams) => signParams,
+  target: submitModel.init,
 });
 
 // Basket
@@ -177,7 +169,7 @@ const $inBasket = combine(
 );
 
 export const salaryRequest = {
-  flow,
+  gate,
   $fee,
   $wallet,
   $account,
