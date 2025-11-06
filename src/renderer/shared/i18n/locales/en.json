@@ -381,9 +381,9 @@
       "continueButton": "Continue",
       "downloadTemplateButton": "Download the template",
       "error": {
+        "invalidEthereumPath": "Ethereum chains don't support soft derivations",
         "invalidFile": "Incorrect file format",
         "invalidPasswordPath": "Invalid password path",
-        "invalidEthereumPath": "Ethereum chains don't support soft derivations",
         "invalidPasswordPath_one": "Password derivation path {invalidValues} is not allowed, please check the file.",
         "invalidPasswordPath_other": "Password derivation paths {invalidValues} are not allowed, please check the file.",
         "invalidPath": "Invalid path",
