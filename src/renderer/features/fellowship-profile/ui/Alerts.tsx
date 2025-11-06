@@ -1,14 +1,18 @@
-import { type ReactNode, memo } from 'react';
-import { generatePath } from 'react-router-dom';
+import React, { type ReactNode, memo } from 'react';
 
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable, toRomanNumeral } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, HeadlineText, Icon, IconButton } from '@/shared/ui';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
-import { navigationModel } from '@/features/navigation';
 import { useAlert } from '../hooks/useAlert';
 import { alertsModel } from '../model/alerts';
+
+export const alertsReferendumSlot = createSlot<{
+  referendumId: ReferendumId;
+  children: React.ReactNode;
+}>();
 
 const ICONS = {
   success: 'checkmarkOutline',
@@ -30,13 +34,7 @@ export const Alerts = () => {
     alert.type === 'retentionFailed'
   ) {
     return (
-      <ReferendumAlert
-        type={alert.type}
-        rank={alert.rank}
-        referendumId={alert.referendumId}
-        chainId={chain.chainId}
-        onClose={handleClose}
-      />
+      <ReferendumAlert type={alert.type} rank={alert.rank} referendumId={alert.referendumId} onClose={handleClose} />
     );
   }
 
@@ -99,7 +97,6 @@ type ReferendumAlertProps = {
   type: ReferendumAlertType;
   rank: number | null;
   referendumId: number;
-  chainId: string;
   onClose: () => void;
 };
 
@@ -126,20 +123,12 @@ const REFERENDUM_CONFIG = {
   },
 } as const;
 
-const ReferendumAlert = memo(({ type, rank, referendumId, chainId, onClose }: ReferendumAlertProps) => {
+const ReferendumAlert = memo(({ type, rank, referendumId, onClose }: ReferendumAlertProps) => {
   const { t } = useI18n();
 
   const config = REFERENDUM_CONFIG[type];
   const title = nonNullable(rank) ? t(config.title, { rank: toRomanNumeral(rank) }) : t(config.title);
   const description = nonNullable(rank) ? t(config.description, { rank: toRomanNumeral(rank) }) : t(config.description);
-
-  const handleActionClick = () => {
-    const path = generatePath(Paths.FELLOWSHIP_REFERENDUM, {
-      chainId,
-      referendumId: referendumId.toString(),
-    });
-    navigationModel.events.navigateTo(path);
-  };
 
   return (
     <BaseAlert
@@ -147,12 +136,17 @@ const ReferendumAlert = memo(({ type, rank, referendumId, chainId, onClose }: Re
       title={title}
       description={description}
       action={
-        <button
-          className="cursor-pointer self-start font-semibold text-primary-button-background-default"
-          onClick={handleActionClick}
-        >
-          {t('fellowship.profile.alerts.viewReferendum')}
-        </button>
+        <Slot
+          id={alertsReferendumSlot}
+          props={{
+            referendumId: referendumId as ReferendumId,
+            children: (
+              <button className="cursor-pointer self-start font-semibold text-primary-button-background-default">
+                {t('fellowship.profile.alerts.viewReferendum')}
+              </button>
+            ),
+          }}
+        />
       }
       onClose={onClose}
     />

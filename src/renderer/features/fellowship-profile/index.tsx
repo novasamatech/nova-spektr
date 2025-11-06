@@ -3,6 +3,7 @@ import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
 import { fellowshipProfileFeature } from './model/feature';
 import { setActive } from './model/setActive';
+import { alertsReferendumSlot } from './ui/Alerts';
 import { ProfileCard } from './ui/ProfileCard';
 import { profileInfoSlot } from './ui/ProfileModal';
 import { referendumActivityItemActionSlot } from './ui/ReferendumActivityItem';
@@ -14,6 +15,7 @@ export {
   setActive,
   profileInfoSlot,
   referendumActivityItemActionSlot,
+  alertsReferendumSlot,
 };
 
 fellowshipProfileFeature.inject(fellowshipSidebarSlot, {

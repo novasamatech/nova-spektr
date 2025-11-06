@@ -1,9 +1,14 @@
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
-import { referendumActivityItemActionSlot } from '@/features/fellowship-profile';
+import { alertsReferendumSlot, referendumActivityItemActionSlot } from '@/features/fellowship-profile';
 import { referendumWidgetActionSlot as promotionReferendumWidgetActionSlot } from '@/features/fellowship-promotion';
 import { referendumWidgetActionSlot as retentionReferendumWidgetActionSlot } from '@/features/fellowship-retention';
-import { evidenceDetailsModalSlot } from '@/features/fellowship-tasks';
+import {
+  completedReferendumVotingSlot,
+  evidenceDetailsModalSlot,
+  ongoingReferendumVotingSlot,
+  promotionRetentionReferendumVotingSlot,
+} from '@/features/fellowship-tasks';
 
 import { Card } from './components/Card';
 import { EvidenceDetailsModal, evidenceActionsSlot } from './components/EvidenceDetailsModal/EvidenceDetailsModal';
@@ -68,4 +73,20 @@ fellowshipReferendumsDetailsFeature.inject(referendumActivityItemActionSlot, ({ 
       </span>
     </ReferendumDetailsModal>
   );
+});
+
+fellowshipReferendumsDetailsFeature.inject(promotionRetentionReferendumVotingSlot, ({ referendumId, children }) => {
+  return <ReferendumDetailsModal referendumId={referendumId}>{children}</ReferendumDetailsModal>;
+});
+
+fellowshipReferendumsDetailsFeature.inject(completedReferendumVotingSlot, ({ referendumId, children }) => {
+  return <ReferendumDetailsModal referendumId={referendumId}>{children}</ReferendumDetailsModal>;
+});
+
+fellowshipReferendumsDetailsFeature.inject(ongoingReferendumVotingSlot, ({ referendumId, children }) => {
+  return <ReferendumDetailsModal referendumId={referendumId}>{children}</ReferendumDetailsModal>;
+});
+
+fellowshipReferendumsDetailsFeature.inject(alertsReferendumSlot, ({ referendumId, children }) => {
+  return <ReferendumDetailsModal referendumId={referendumId}>{children}</ReferendumDetailsModal>;
 });
