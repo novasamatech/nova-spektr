@@ -5,9 +5,16 @@ import { fellowshipProfileFeature } from './model/feature';
 import { setActive } from './model/setActive';
 import { ProfileCard } from './ui/ProfileCard';
 import { profileInfoSlot } from './ui/ProfileModal';
+import { referendumActivityItemActionSlot } from './ui/ReferendumActivityItem';
 import { SetActiveConfirmation } from './ui/SetActiveConfirmation';
 
-export { fellowshipProfileFeature, SetActiveConfirmation, setActive, profileInfoSlot };
+export {
+  fellowshipProfileFeature,
+  SetActiveConfirmation,
+  setActive,
+  profileInfoSlot,
+  referendumActivityItemActionSlot,
+};
 
 fellowshipProfileFeature.inject(fellowshipSidebarSlot, {
   order: 0,
