@@ -1,7 +1,7 @@
 import { combine, createEvent, sample } from 'effector';
+import { createGate } from 'effector-react';
 import { reshape, spread } from 'patronum';
 
-import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { salaryService } from '@/domains/collectives';
@@ -11,7 +11,7 @@ import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { fellowshipSalaryFeature } from './feature';
 
-const flow = createFlow(null);
+const gate = createGate({ defaultState: null });
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipSalaryFeature.input,
@@ -43,7 +43,7 @@ const $coreTx = combine(
 );
 
 const { $fee, $wrappedTx } = createTxStore({
-  $active: flow.status,
+  $active: gate.status,
   $api,
   $activeWallet: $wallet,
   $wallets,
@@ -88,7 +88,7 @@ sample({
 const transactionSigned = sample({
   clock: signModel.output.formSubmitted,
   source: {
-    open: flow.status,
+    open: gate.status,
     transactions: $wrappedTx,
     account: $account,
     chain: $chain,
@@ -104,7 +104,9 @@ const transactionSigned = sample({
 
 sample({
   clock: transactionSigned,
-  fn({ transactions, account, chain, signParams }) {
+  source: gate.status,
+  filter: open => open,
+  fn(_, { transactions, account, chain, signParams }) {
     return {
       signatures: signParams.signatures,
       txPayloads: signParams.txPayloads,
@@ -185,7 +187,7 @@ const $inBasket = combine(
 );
 
 export const salaryInduct = {
-  flow,
+  gate,
   $fee,
   $wallet,
   $account,
