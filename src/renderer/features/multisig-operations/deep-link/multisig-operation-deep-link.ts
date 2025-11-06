@@ -5,7 +5,8 @@ import { type ChainId } from '@/shared/core';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { createDeepLinkHandler } from '@/domains/app';
-import { accounts } from '@/domains/network';
+import { accounts, multisigOperation } from '@/domains/network';
+import { networkModel } from '@/entities/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { deepLinkModel } from '../model/deep-link';
 
@@ -62,6 +63,24 @@ sample({
   clock: accountChecked,
   filter: ({ account }) => account === null,
   target: accountNotFoundModalOpened,
+});
+
+// Trigger operations fetch when landing via deep link if operation not found
+sample({
+  clock: accountChecked,
+  source: { apis: networkModel.$apis, chains: networkModel.$chains, operations: multisigOperation.$list },
+  filter: ({ operations }, { account, data }) => {
+    if (account === null) return false;
+    const operationId = getOperationIdFromDeepLink(data);
+    const operationExists = operations.some(op => op.id === operationId);
+    return !operationExists;
+  },
+  fn: ({ apis, chains }, { data }) => ({
+    apis,
+    chains,
+    accountId: data.accountId,
+  }),
+  target: multisigOperation.requestOperations,
 });
 
 export const accountNotFoundModal = {
