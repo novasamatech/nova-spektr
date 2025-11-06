@@ -13,6 +13,7 @@ import {
   type VaultShardAccount,
 } from '@/shared/core';
 import {
+  DerivationError,
   derivationHasPassword,
   derivationTokensToString,
   entries,
@@ -219,12 +220,16 @@ function getDerivationError(
 
   const derivationChain = derivation.chainId ? chains[derivation.chainId as ChainId] : null;
   const isEthereumBased = derivationChain ? networkUtils.isEthereumBased(derivationChain.options) : false;
-  const { isValid } = validateDerivation(derivation.derivationPath, { isEthereumBased });
-  if (!isValid) errors.push(DerivationValidationError.INVALID_PATH);
+  const { isValid } = validateDerivation(derivation.derivationPath);
+  const hasEthereumSoftError = validateDerivation(derivation.derivationPath, { isEthereumBased }).errors.includes(
+    DerivationError.ETHEREUM_SINGLE_SLASH,
+  );
+  if (hasEthereumSoftError) errors.push(DerivationValidationError.ETHEREUM_SINGLE_SLASH);
 
   const hasPasswordPath = derivationHasPassword(derivation.derivationPath);
   if (hasPasswordPath) errors.push(DerivationValidationError.PASSWORD_PATH);
 
+  if (!isValid && !hasPasswordPath) errors.push(DerivationValidationError.INVALID_PATH);
   if (errors.length) return errors;
 }
 
@@ -292,28 +297,31 @@ function renameDerivationPathKeyReviver(key: unknown, value: unknown) {
 
 const DERIVATION_ERROR_LABEL = {
   [DerivationValidationError.INVALID_PATH]: t('dynamicDerivations.importKeys.error.invalidPath'),
+  [DerivationValidationError.ETHEREUM_SINGLE_SLASH]: t('dynamicDerivations.importKeys.error.invalidEthereumPath'),
   [DerivationValidationError.PASSWORD_PATH]: t('dynamicDerivations.importKeys.error.invalidPasswordPath'),
   [DerivationValidationError.WRONG_SHARDS_NUMBER]: t('dynamicDerivations.importKeys.error.wrongShardsNumber'),
 };
 
-function getErrorsText(t: TFunction, error: ValidationError, details?: ErrorDetails): string {
+function getErrorsText(t: TFunction, error: ValidationError, details?: ErrorDetails): string[] {
   if (error === ValidationError.INVALID_FILE_STRUCTURE) {
-    return t('dynamicDerivations.importKeys.error.invalidFile');
+    return [t('dynamicDerivations.importKeys.error.invalidFile')];
   }
   if (error === ValidationError.INVALID_ROOT) {
-    return t('dynamicDerivations.importKeys.error.invalidRoot');
+    return [t('dynamicDerivations.importKeys.error.invalidRoot')];
   }
 
-  if (error !== ValidationError.DERIVATIONS_ERROR || !details) return '';
+  if (error !== ValidationError.DERIVATIONS_ERROR || !details) return [];
 
-  return Object.keys(details).reduce<string>((acc, error) => {
-    const invalidValues = details[error as DerivationValidationError];
+  return Object.keys(details).reduce<string[]>((acc, errorKey) => {
+    const invalidValues = details[errorKey as DerivationValidationError];
     if (!invalidValues.length) return acc;
-    const errorText = t(DERIVATION_ERROR_LABEL[error as DerivationValidationError], {
+    const errorText = t(DERIVATION_ERROR_LABEL[errorKey as DerivationValidationError], {
       count: invalidValues.length,
       invalidValues: invalidValues.join(', '),
     });
 
-    return `${acc}${errorText} `;
-  }, '');
+    acc.push(errorText);
+
+    return acc;
+  }, []);
 }
