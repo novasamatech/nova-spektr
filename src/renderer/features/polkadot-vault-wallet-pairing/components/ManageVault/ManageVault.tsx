@@ -194,7 +194,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
         </form>
       </div>
 
-      <div className="relative flex h-full w-[472px] flex-col overflow-hidden rounded-r-lg border-l pt-4">
+      <div className="relative flex h-full w-[472px] flex-col overflow-hidden rounded-r-lg border-l border-filter-border pt-4">
         <IconButton name="close" size={20} className="absolute top-3 right-3 m-1" onClick={onClose} />
 
         <div className="mt-[52px] mb-6 flex items-center justify-between px-5">
@@ -278,7 +278,7 @@ export const ManageVault = ({ seedInfo, onBack, onClose, onComplete }: Props) =>
                               <Popover.Content>
                                 <Box padding={[4, 3]} width="230px">
                                   <FootnoteText className="pb-[2px] text-text-tertiary">
-                                    {t('general.explorers.publicKeyTitle')}
+                                    {t('general.explorers.derivationTitle')}
                                   </FootnoteText>
                                   <HelpText className="break-all text-text-secondary">{derivationPath}</HelpText>
                                 </Box>
