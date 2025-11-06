@@ -184,10 +184,8 @@ export function extractParams<T extends z.ZodType>(
 ): HandlerResult<z.infer<T>> {
   try {
     const parsed = schema.parse(params);
-    const parsedKeys = Object.keys(parsed as Record<string, unknown>);
     const remainingParams = { ...params };
-
-    for (const key of parsedKeys) {
+    for (const key of Object.keys(parsed as Record<string, unknown>)) {
       delete remainingParams[key];
     }
 
@@ -221,19 +219,14 @@ export function processDeepLinkChain<T extends z.ZodType>(
   return remainingParams;
 }
 
-type EventTrigger = (payload: unknown) => void;
-
 export const deepLinkService = {
   handleDeepLink: setDeepLink,
   registerHandler: <T>(handler: DeepLinkHandler<T>) => {
-    const { triggered } = handler;
+    const triggerEvent = handler.triggered as unknown as (payload: unknown) => void;
     handlerRegistered({
       id: handler.id,
       schema: handler.schema,
-      trigger: ((data: unknown) => {
-        // ToDo: resolve types
-        (triggered as EventTrigger)(data);
-      }) satisfies (data: unknown) => void,
+      trigger: triggerEvent,
     });
   },
 };
