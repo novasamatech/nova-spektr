@@ -2,9 +2,9 @@ import { createEvent, createStore, sample } from 'effector';
 import { z } from 'zod';
 
 import { type ChainId } from '@/shared/core';
-import { createDeepLinkHandler } from '@/shared/lib/deep-link';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
+import { createDeepLinkHandler } from '@/domains/app';
 import { accounts } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { deepLinkModel } from '../model/deep-link';

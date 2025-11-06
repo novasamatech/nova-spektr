@@ -5,8 +5,8 @@ import { debounce } from 'patronum';
 
 import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
-import { deepLinkService } from '@/shared/lib/deep-link';
 import { nullable } from '@/shared/lib/utils';
+import { deepLinkService } from '@/domains/app';
 import { accountService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';

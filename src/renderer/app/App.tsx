@@ -3,9 +3,9 @@ import { useEffect } from 'react';
 import { matchPath, useLocation, useNavigate, useRoutes, useSearchParams } from 'react-router-dom';
 
 import { logger } from '@/shared/config/utils';
-import { deepLinkService } from '@/shared/lib/deep-link';
 import { ConfirmDialogProvider } from '@/shared/providers';
 import { Paths } from '@/shared/routes';
+import { deepLinkService } from '@/domains/app';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { ROUTES_CONFIG } from '@/pages/index';

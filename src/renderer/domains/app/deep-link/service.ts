@@ -27,7 +27,6 @@ export interface HandlerResult<T = unknown> {
 
 const setDeepLink = createEvent<DeepLink>();
 
-// Store for URL update callback
 const $urlUpdateCallback = createStore<((takenKeys: string[]) => void) | null>(null);
 
 const $deepLink = createStore<UrlState | null>(null).on(setDeepLink, (_, { searchParams }) => {
@@ -74,7 +73,7 @@ const callUrlUpdateCallbackFx = createEffect(
 // Store for registered handlers chain
 const $handlers = createStore<HandlerEntry[]>([])
   .on(handlerRegistered, (handlers, handler) => [...handlers, handler])
-  .on(handlersCleared, (handlers, idsToRemove) => handlers.filter((h) => !idsToRemove.includes(h.id)));
+  .on(handlersCleared, (handlers, idsToRemove) => handlers.filter(h => !idsToRemove.includes(h.id)));
 
 const $pendingDeepLink = createStore<UrlState | null>(null)
   .on($deepLink, (_, deepLink) => deepLink)
@@ -116,14 +115,14 @@ sample({
     }
 
     const remainingKeys = Object.keys(remainingParams);
-    const takenKeys = originalKeys.filter((key) => !remainingKeys.includes(key));
+    const takenKeys = originalKeys.filter(key => !remainingKeys.includes(key));
 
     return { remainingParams, matchedHandlers, takenKeys };
   },
   target: paramsProcessed,
 });
 
-const triggerHandlersFx = createEffect<{ handler: HandlerEntry; data: unknown }[], string[]>((items) => {
+const triggerHandlersFx = createEffect<{ handler: HandlerEntry; data: unknown }[], string[]>(items => {
   const triggeredIds: string[] = [];
   for (const item of items) {
     item.handler.trigger(item.data);
@@ -138,7 +137,7 @@ sample({
   fn: (handlers, { matchedHandlers }) =>
     matchedHandlers
       .map(({ id, data }) => {
-        const handler = handlers.find((h) => h.id === id);
+        const handler = handlers.find(h => h.id === id);
         return handler ? { handler, data } : null;
       })
       .filter((item): item is { handler: HandlerEntry; data: unknown } => item !== null),
