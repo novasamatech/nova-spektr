@@ -89,7 +89,7 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
+  clock: signModel.signed,
   source: {
     open: gate.status,
     transactions: $wrappedTx,
@@ -99,18 +99,8 @@ sample({
   filter: ({ open, transactions, account, chain }) => {
     return open && nonNullable(chain) && nonNullable(transactions) && nonNullable(account);
   },
-  fn({ transactions, account, chain }, signParams) {
-    return {
-      signatures: signParams.signatures,
-      txPayloads: signParams.txPayloads,
-
-      chain: chain!,
-      account: account!,
-      wrappedTxs: [transactions!.wrappedTx],
-      coreTxs: [transactions!.coreTx],
-    };
-  },
-  target: submitModel.events.formInitiated,
+  fn: (_, signParams) => signParams,
+  target: submitModel.init,
 });
 
 // Basket

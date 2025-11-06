@@ -85,39 +85,19 @@ sample({
   target: signModel.events.formInitiated,
 });
 
-const transactionSigned = sample({
-  clock: signModel.output.formSubmitted,
+sample({
+  clock: signModel.signed,
   source: {
     open: gate.status,
     transactions: $wrappedTx,
     account: $account,
     chain: $chain,
   },
-  fn({ open, account, chain, transactions }, signParams) {
-    return { open, account, chain, transactions, signParams };
+  filter: ({ open, transactions, account, chain }) => {
+    return open && nonNullable(chain) && nonNullable(transactions) && nonNullable(account);
   },
-}).filterMap(({ open, account, chain, transactions, signParams }) => {
-  if (open && nonNullable(chain) && nonNullable(transactions) && nonNullable(account)) {
-    return { account, chain, transactions, signParams };
-  }
-});
-
-sample({
-  clock: transactionSigned,
-  source: gate.status,
-  filter: open => open,
-  fn(_, { transactions, account, chain, signParams }) {
-    return {
-      signatures: signParams.signatures,
-      txPayloads: signParams.txPayloads,
-
-      chain: chain,
-      account: account,
-      wrappedTxs: [transactions!.wrappedTx],
-      coreTxs: [transactions!.coreTx],
-    };
-  },
-  target: submitModel.events.formInitiated,
+  fn: (_, signParams) => signParams,
+  target: submitModel.init,
 });
 
 // Basket
