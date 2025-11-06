@@ -70,7 +70,6 @@ const callUrlUpdateCallbackFx = createEffect(
   },
 );
 
-// Store for registered handlers chain
 const $handlers = createStore<HandlerEntry[]>([])
   .on(handlerRegistered, (handlers, handler) => [...handlers, handler])
   .on(handlersCleared, (handlers, idsToRemove) => handlers.filter(h => !idsToRemove.includes(h.id)));
