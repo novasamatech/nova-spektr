@@ -18,7 +18,7 @@ import {
   useTransactionAsset,
 } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
-import { generateMultisigOperationDeepLink } from '../deep-link/multisig-operation-deep-link';
+import { deepLinkModel } from '../model/deep-link';
 
 import { OperationFullInfo } from './OperationFullInfo';
 import { OperationIcon } from './OperationIcon';
@@ -41,7 +41,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   const coreTx = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
   const asset = useTransactionAsset(coreTx, operation.chainId);
 
-  const deepLink = useMemo(() => generateMultisigOperationDeepLink(operation), [operation]);
+  const deepLink = useMemo(() => deepLinkModel.generateMultisigOperationDeepLink(operation), [operation]);
 
   const externalTitleNode = useTransformer(operationTitleTransformer, {
     operation,

@@ -12,7 +12,8 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
-import { multisigOperationDeepLinkHandler } from '../deep-link/multisig-operation-deep-link';
+
+import { deepLinkModel } from './deep-link';
 
 const $trigger = createStore<string>('');
 const $debouncedApis = createStore<Record<ChainId, ApiPromise>>({});
@@ -80,4 +81,4 @@ export const multisigOperationsFeature = createFeature({
   input: $input,
 });
 
-deepLinkService.registerHandler(multisigOperationDeepLinkHandler);
+deepLinkService.registerHandler(deepLinkModel.multisigOperationDeepLinkHandler);
