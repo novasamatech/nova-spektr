@@ -59,7 +59,7 @@ export const CompletedReferendumVoting = memo(({ referendum }: Props) => {
       props={{
         referendumId: referendum.id,
         children: (
-          <div className="flex w-full appearance-none flex-col gap-3 p-4">
+          <div className="flex w-full cursor-pointer appearance-none flex-col gap-3 p-4">
             <Box direction="row" fillContainer gap={3}>
               <Box grow={1} direction="row" gap={3}>
                 <SmallTitleText>

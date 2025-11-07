@@ -14,9 +14,8 @@ export type Evidence = {
 export type EvidenceContent = {
   pallet: CollectivePalletsType;
   chainId: ChainId;
-  wish: 'Promotion' | 'Retention';
-  accountId: AccountId;
   hash: HexString;
+
   cid: string;
   content: string;
 };
@@ -59,6 +58,7 @@ export type EvidenceTransaction = Transaction<{
 
 export type ReferendumWithEvidence = {
   referendumId: ReferendumId;
+  proposer: AccountId;
   evidence: { hash: HexString }[];
   pallet: CollectivePalletsType;
   chainId: ChainId;

@@ -10,8 +10,6 @@ import { type TaskDescription } from '../types';
 import { useMemberBasketOperations } from './useMemberBasketOperations';
 import { useOngoingReferendums } from './useOngoingReferendums';
 
-const ALREADY_VOTED_SORTING_PENALTY = 10_000;
-
 export const useOngoingReferendumTasks = () => {
   const api = useFellowshipApi();
 
@@ -62,18 +60,13 @@ export const useOngoingReferendumTasks = () => {
         track: referendum.track,
       });
 
-      const importance = tasksService.getReferendumImportance({
+      return tasksService.getReferendumImportance({
         referendum,
         maximumAvailableVotingWeight,
         memberVotingWeight,
         currentBlock,
+        hasUserVoted: hasUserVoted(referendum),
       });
-
-      const sortingScore = hasUserVoted(referendum)
-        ? importance.sortingScore - ALREADY_VOTED_SORTING_PENALTY
-        : importance.sortingScore;
-
-      return { ...importance, sortingScore };
     };
 
     const evidenceTasks = groups.evidence

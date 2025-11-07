@@ -31,7 +31,6 @@ export const EventRecord = memo(({ event, chain, duration, name, description, wi
             title={name}
             variant="short"
             hideAddress
-            hideExplorers={!withFullAccountInfo}
             hideIcon={!withFullAccountInfo}
           />
         </div>

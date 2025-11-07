@@ -1,15 +1,13 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
+import { nullable, toAddress } from '@/shared/lib/utils';
 import { Separator, SmallTitleText } from '@/shared/ui';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
+import { type Evidence, type Referendum, useEvidenceToReferendumRelations, useMembers } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
-import { useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
-import { useProposer } from '../hooks/useProposer';
-import { useMetadata } from '../hooks/useReferendumMeta';
+import { useFellowshipApi, useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
 
 import { Card } from './Card';
 import { VotingRecord } from './VotingRecord';
@@ -22,22 +20,22 @@ type Props = {
 export const MemberProfile = memo(({ referendum, evidence }: Props) => {
   const { t } = useI18n();
 
+  const api = useFellowshipApi();
   const chain = useFellowshipChain();
 
-  const { data: member } = useProposer(referendum, evidence);
-  const memberId = member?.accountId || evidence?.accountId || null;
+  const { data: members } = useMembers({ palletType: 'fellowship', api });
+  const { data: evidenceToReferendumRelations } = useEvidenceToReferendumRelations({ palletType: 'fellowship', chain });
 
-  const { data: referendumMeta } = useMetadata(referendum);
-  const { data: identity } = useFellowshipIdentity(memberId);
+  const member = useMemo(() => {
+    const evidenceToReferendumRelation = evidenceToReferendumRelations.find(x => x.referendumId === referendum?.id);
 
-  const canHaveEvidence =
-    evidence ||
-    (nonNullable(referendum) &&
-      nonNullable(referendumMeta) &&
-      referendumService.isOngoing(referendum) &&
-      (trackService.isPromotionTrack(referendumMeta.track) || trackService.isRetentionTrack(referendumMeta.track)));
+    const potentialMemberId = evidence?.accountId || evidenceToReferendumRelation?.proposer;
+    return members.find(m => m.accountId === potentialMemberId) ?? null;
+  }, [evidence, evidenceToReferendumRelations, members, referendum]);
 
-  if (!canHaveEvidence || nullable(member) || nullable(chain)) return null;
+  const { data: identity } = useFellowshipIdentity(member?.accountId);
+
+  if (nullable(member) || nullable(chain)) return null;
 
   return (
     <Card>

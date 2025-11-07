@@ -42,11 +42,11 @@ fellowshipEvidenceFeature.inject(requestPromotionTaskActionSlot, () => {
   const canVote = useUnit(profile.$canVote);
 
   return (
-    <EvidencePostFlowModal wish="Promotion">
+    <SubmitEvidencePopover wish="Promotion">
       <ButtonCard size="sm" disabled={!canVote}>
         {t('fellowship.tasks.task.promotion.request')}
       </ButtonCard>
-    </EvidencePostFlowModal>
+    </SubmitEvidencePopover>
   );
 });
 
@@ -83,11 +83,11 @@ fellowshipEvidenceFeature.inject(requestRetentionTaskActionSlot, () => {
   const canVote = useUnit(profile.$canVote);
 
   return (
-    <EvidencePostFlowModal wish="Retention">
+    <SubmitEvidencePopover wish="Retention">
       <ButtonCard size="sm" disabled={!canVote}>
         {t('fellowship.tasks.task.retention.request')}
       </ButtonCard>
-    </EvidencePostFlowModal>
+    </SubmitEvidencePopover>
   );
 });
 

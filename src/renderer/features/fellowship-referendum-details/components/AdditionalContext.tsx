@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 
+import { toAddress } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { FootnoteText, SmallTitleText, TitleText } from '@/shared/ui/Typography';
-import { Account } from '@/shared/ui-entities';
+import { Address } from '@/shared/ui-entities';
 import { Markdown, Skeleton } from '@/shared/ui-kit';
 import { Box } from '@/shared/ui-kit/Box/Box';
 import { type Referendum } from '@/domains/collectives';
@@ -52,11 +53,9 @@ export const AdditionalContext = ({ referendum }: Props) => {
         {proposer && chain ? (
           <Box direction="row" verticalAlign="center" gap={1}>
             <FootnoteText className="text-text-tertiary">{t('fellowship.evidenceModal.by')}</FootnoteText>
-            <Account
-              accountId={proposer.accountId}
-              chain={chain}
+            <Address
+              address={toAddress(proposer.accountId)}
               title={identity ? identityService.getFullName(identity) : undefined}
-              hideExplorers
               hideAddress
             />
           </Box>

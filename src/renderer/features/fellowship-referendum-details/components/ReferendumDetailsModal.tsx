@@ -7,6 +7,7 @@ import { Box, Modal } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, referendumService, trackService, useTracks } from '@/domains/collectives';
 import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { useEvidence } from '../hooks/useEvidence';
+import { useEvidenceHash } from '../hooks/useEvidenceHash';
 import { useProposer } from '../hooks/useProposer';
 import { useReferendum } from '../hooks/useReferendum';
 import { detailsService } from '../service';
@@ -35,19 +36,12 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  const handleToggle = (open: boolean) => {
-    setIsOpen(open);
-  };
-
-  const onClose = () => {
-    handleToggle(false);
-  };
-
   const api = useFellowshipApi();
   const { data: referendum } = useReferendum(referendumId);
   const { data: proposer } = useProposer(referendum);
   const { data: evidence } = useEvidence(proposer?.accountId ?? null);
   const { data: tracks } = useTracks({ palletType: 'fellowship', api });
+  const { data: evidenceHash } = useEvidenceHash({ referendum, evidence });
 
   const modalTitle = useMemo(() => {
     if (title) {
@@ -65,6 +59,14 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
 
     return t('governance.referendums.referendumTitle', { index: referendumId });
   }, [title, referendum, tracks, referendumId]);
+
+  const handleToggle = (open: boolean) => {
+    setIsOpen(open);
+  };
+
+  const onClose = () => {
+    handleToggle(false);
+  };
 
   return (
     <Modal size="xl" height="fit" isOpen={isOpen} onToggle={handleToggle}>
@@ -84,7 +86,7 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
 
             {!isCurrentUser && <Slot id={referendumActionsSlot} props={{ referendum, evidence, onClose }} />}
 
-            <AdditionalInfo referendumId={referendumId} evidenceHash={evidence?.hash} />
+            <AdditionalInfo referendumId={referendumId} evidenceHash={evidenceHash} />
           </Box>
         </Box>
       </Modal.Content>
