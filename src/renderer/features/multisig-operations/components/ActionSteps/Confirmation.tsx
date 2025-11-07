@@ -39,7 +39,7 @@ type Props = {
   valid: boolean;
   isFeeLoading: boolean;
   isDepositLoading: boolean;
-  isDepositRequired: boolean;
+  isDepositRequired?: boolean;
   onSign: () => void;
   onGoBack?: () => void;
   errors?: (
@@ -61,7 +61,7 @@ export const Confirmation = ({
   onSign,
   onGoBack,
   errors,
-  isDepositRequired,
+  isDepositRequired = false,
 }: Props) => {
   const { t } = useI18n();
 
