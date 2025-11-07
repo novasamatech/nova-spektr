@@ -1,5 +1,6 @@
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { referendumService } from '@/domains/collectives';
+import { useFellowshipMember } from '@/aggregates/fellowship-member';
 import { referendumActionsSlot } from '@/features/fellowship-referendum-details';
 import { referendumVotingTaskActionSlot } from '@/features/fellowship-tasks';
 
@@ -25,6 +26,12 @@ fellowshipVotingFeature.inject(referendumVotingTaskActionSlot, ({ referendum, tr
 
 fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum, onClose }) => {
   const { data: vote } = useReferendumVote(referendum);
+  const { data: fellowshipMember } = useFellowshipMember();
+
+  const proposerAccountId = nonNullable(referendum) && referendumService.getProposer(referendum);
+
+  const isCurrentUser =
+    nonNullable(fellowshipMember) && nonNullable(proposerAccountId) && fellowshipMember.accountId === proposerAccountId;
 
   if (nullable(referendum)) {
     return null;
@@ -34,7 +41,7 @@ fellowshipVotingFeature.inject(referendumActionsSlot, ({ evidence, referendum, o
     return <VotingButtonsCompleted referendum={referendum} evidence={evidence} />;
   }
 
-  if (referendumService.isOngoing(referendum)) {
+  if (referendumService.isOngoing(referendum) && !isCurrentUser) {
     return <VotingButtons referendum={referendum} evidence={evidence} onClose={onClose} />;
   }
 

@@ -1,4 +1,4 @@
-import { useGate, useUnit } from 'effector-react';
+import { useGate } from 'effector-react';
 import { memo, useCallback } from 'react';
 
 import { type Transaction } from '@/shared/core';
@@ -10,6 +10,7 @@ import { PeriodEndTimer } from '@/shared/ui-entities/PeriodEndTimer/PeriodEndTim
 import { Box, FilledIconButton } from '@/shared/ui-kit';
 import { type Evidence } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
+import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
 import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { evidenceVoting } from '../model/evidenceVoting';
 
@@ -29,8 +30,14 @@ export const VotingActions = memo(({ evidence, endBlock, transaction, variant, d
 
   const { t } = useI18n();
 
+  const { data: fellowshipMember } = useFellowshipMember();
+
+  const isCurrentUser =
+    nonNullable(fellowshipMember) && nonNullable(evidence) && fellowshipMember.accountId === evidence.accountId;
+
   const api = useFellowshipApi();
-  const account = useUnit(evidenceVoting.$votingAccount);
+
+  const { data: account } = useFellowshipAccount();
 
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
@@ -50,6 +57,8 @@ export const VotingActions = memo(({ evidence, endBlock, transaction, variant, d
 
   const handleAyeClick = () => handleVote('aye');
   const handleNayClick = () => handleVote('nay');
+
+  if (isCurrentUser) return null;
 
   if (variant === 'large') {
     if (canAddToBasket) {

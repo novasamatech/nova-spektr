@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+import React, { memo, useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -84,7 +84,7 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
           title,
           transaction,
           children: (
-            <button className="block w-full appearance-none p-4">
+            <div className="block w-full appearance-none p-4">
               <Box direction="row" gap={2}>
                 <div className="shrink-0">
                   <TaskBadge rank={rank} isPromotion={isPromotion} isRetention={isRetention} />
@@ -106,7 +106,7 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
                   <MemberActivity accountId={evidence.accountId} />
                 </Box>
               </Box>
-            </button>
+            </div>
           ),
         }}
       />

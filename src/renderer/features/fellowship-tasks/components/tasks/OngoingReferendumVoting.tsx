@@ -1,15 +1,12 @@
-import { useMemo } from 'react';
-import { generatePath } from 'react-router-dom';
+import React, { useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { Paths } from '@/shared/routes';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService } from '@/domains/collectives';
-import { useFellowshipChain } from '@/aggregates/fellowship-network';
-import { navigationModel } from '@/features/navigation';
 import { useMetadata } from '../../hooks/useMetadata';
 import { useRfcProposalSummary } from '../../hooks/useRfcProposalSummary';
 import { tasksService } from '../../service';
@@ -31,6 +28,11 @@ export const LooseDateThresholds: DateThresholds = {
   urgent: 2,
   warning: 8,
 };
+
+export const ongoingReferendumVotingSlot = createSlot<{
+  referendumId: ReferendumId;
+  children: React.ReactNode;
+}>();
 
 export const referendumVotingTaskActionSlot = createSlot<{
   referendum: OngoingReferendum;
@@ -75,35 +77,31 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
       : t('governance.referendums.referendumTitle', { index: referendum.id });
   }, [referendum.proposal]);
 
-  const chain = useFellowshipChain();
-
-  const handleClick = () => {
-    if (chain) {
-      const path = generatePath(Paths.FELLOWSHIP_REFERENDUM, {
-        chainId: chain.chainId,
-        referendumId: referendum.id.toString(),
-      });
-      navigationModel.events.navigateTo(path);
-    }
-  };
-
   return (
     <Box direction="row" gap={2}>
-      <button className="flex w-full min-w-0 cursor-pointer appearance-none gap-2 p-4" onClick={handleClick}>
-        <Box alignSelf="flex-start" shrink={0}>
-          <TaskBadge proposal={referendum.proposal} />
-        </Box>
-        <Box fillContainer gap={3} grow={1}>
-          <Box direction="row" gap={3} grow={1}>
-            <SmallTitleText className="truncate">{title}</SmallTitleText>
-            <TaskLabels tags={tags} />
-          </Box>
-          <Box width="90%">
-            {isPending && <Skeleton height="2.5lh" width="95%" />}
-            <FootnoteText as="div">{content}</FootnoteText>
-          </Box>
-        </Box>
-      </button>
+      <Slot
+        id={ongoingReferendumVotingSlot}
+        props={{
+          referendumId: referendum.id,
+          children: (
+            <div className="flex w-full min-w-0 cursor-pointer appearance-none gap-2 p-4">
+              <Box alignSelf="flex-start" shrink={0}>
+                <TaskBadge proposal={referendum.proposal} />
+              </Box>
+              <Box fillContainer gap={3} grow={1}>
+                <Box direction="row" gap={3} grow={1}>
+                  <SmallTitleText className="truncate">{title}</SmallTitleText>
+                  <TaskLabels tags={tags} />
+                </Box>
+                <Box width="90%">
+                  {isPending && <Skeleton height="2.5lh" width="95%" />}
+                  <FootnoteText as="div">{content}</FootnoteText>
+                </Box>
+              </Box>
+            </div>
+          ),
+        }}
+      />
       <Box height="auto" horizontalAlign="end" gap={3} padding={4} shrink={0}>
         <Slot
           id={referendumVotingTaskActionSlot}

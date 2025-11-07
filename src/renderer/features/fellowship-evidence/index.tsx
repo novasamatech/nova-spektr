@@ -114,7 +114,7 @@ fellowshipEvidenceFeature.inject(retentionEvidenceSubmitSlot, ({ mode, evidenceC
 
   return (
     <SubmitEvidencePopover wish="Retention">
-      <Button className="shrink-0" size="sm" pallet="primary" variant="fill" disabled={!canVote}>
+      <Button className="shrink-0 gap-x-1" size="sm" pallet="primary" variant="fill" disabled={!canVote}>
         {t('fellowship.retention.button.submitReport')}
       </Button>
     </SubmitEvidencePopover>

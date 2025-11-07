@@ -12,7 +12,7 @@ export const useMemberVoteInfo = (referendum: OngoingReferendum | null) => {
   const { data: maxRank } = useMaxRank({ palletType: 'fellowship', api });
   const { data: referendumVote } = useReferendumVote(referendum);
 
-  if (nullable(currentMember) || nullable(maxRank) || nullable(referendum) || nullable(referendumVote))
+  if (nullable(currentMember) || nullable(maxRank) || nullable(referendum))
     return {
       memberVoteWeight: null,
       hasRequiredRank: null,

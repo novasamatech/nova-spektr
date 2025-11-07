@@ -1,8 +1,14 @@
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
+import { alertsReferendumSlot, referendumActivityItemActionSlot } from '@/features/fellowship-profile';
 import { referendumWidgetActionSlot as promotionReferendumWidgetActionSlot } from '@/features/fellowship-promotion';
 import { referendumWidgetActionSlot as retentionReferendumWidgetActionSlot } from '@/features/fellowship-retention';
-import { evidenceDetailsModalSlot } from '@/features/fellowship-tasks';
+import {
+  completedReferendumVotingSlot,
+  evidenceDetailsModalSlot,
+  ongoingReferendumVotingSlot,
+  promotionRetentionReferendumVotingSlot,
+} from '@/features/fellowship-tasks';
 
 import { Card } from './components/Card';
 import { EvidenceDetailsModal, evidenceActionsSlot } from './components/EvidenceDetailsModal/EvidenceDetailsModal';
@@ -55,4 +61,32 @@ fellowshipReferendumsDetailsFeature.inject(retentionReferendumWidgetActionSlot, 
       </Button>
     </ReferendumDetailsModal>
   );
+});
+
+fellowshipReferendumsDetailsFeature.inject(referendumActivityItemActionSlot, ({ referendumId }) => {
+  const { t } = useI18n();
+
+  return (
+    <ReferendumDetailsModal referendumId={referendumId}>
+      <span className="cursor-pointer font-semibold text-primary-button-background-default">
+        {t('fellowship.profile.activityFeed.viewReferendum')}
+      </span>
+    </ReferendumDetailsModal>
+  );
+});
+
+fellowshipReferendumsDetailsFeature.inject(promotionRetentionReferendumVotingSlot, ({ referendumId, children }) => {
+  return <ReferendumDetailsModal referendumId={referendumId}>{children}</ReferendumDetailsModal>;
+});
+
+fellowshipReferendumsDetailsFeature.inject(completedReferendumVotingSlot, ({ referendumId, children }) => {
+  return <ReferendumDetailsModal referendumId={referendumId}>{children}</ReferendumDetailsModal>;
+});
+
+fellowshipReferendumsDetailsFeature.inject(ongoingReferendumVotingSlot, ({ referendumId, children }) => {
+  return <ReferendumDetailsModal referendumId={referendumId}>{children}</ReferendumDetailsModal>;
+});
+
+fellowshipReferendumsDetailsFeature.inject(alertsReferendumSlot, ({ referendumId, children }) => {
+  return <ReferendumDetailsModal referendumId={referendumId}>{children}</ReferendumDetailsModal>;
 });

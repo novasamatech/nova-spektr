@@ -1,13 +1,13 @@
 import { type TFunction } from 'i18next';
 import { memo } from 'react';
-import { generatePath } from 'react-router-dom';
 
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { Paths } from '@/shared/routes';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText } from '@/shared/ui';
 import { type FeedEventReferendum, trackService } from '@/domains/collectives';
-import { useFellowshipChain } from '@/aggregates/fellowship-network';
-import { navigationModel } from '@/features/navigation';
+
+export const referendumActivityItemActionSlot = createSlot<{ referendumId: ReferendumId }>();
 
 const getTitle = (record: FeedEventReferendum, t: TFunction): string => {
   if (record.referendumStatus === 'created') {
@@ -29,26 +29,15 @@ type Props = {
 
 export const ReferendumActivityItem = memo(({ record }: Props) => {
   const { t } = useI18n();
-  const chain = useFellowshipChain();
 
   const title = getTitle(record, t);
-
-  const handleClick = () => {
-    if (chain?.chainId) {
-      const path = generatePath(Paths.FELLOWSHIP_REFERENDUM, {
-        chainId: chain.chainId,
-        referendumId: record.referendumId.toString(),
-      });
-      navigationModel.events.navigateTo(path);
-    }
-  };
 
   return (
     <div className="flex flex-col gap-1">
       <FootnoteText className="grow font-bold">{title}</FootnoteText>
-      <span className="cursor-pointer font-semibold text-primary-button-background-default" onClick={handleClick}>
-        {t('fellowship.profile.activityFeed.viewReferendum')}
-      </span>
+      {record.referendumId && (
+        <Slot id={referendumActivityItemActionSlot} props={{ referendumId: record.referendumId as ReferendumId }} />
+      )}
     </div>
   );
 });

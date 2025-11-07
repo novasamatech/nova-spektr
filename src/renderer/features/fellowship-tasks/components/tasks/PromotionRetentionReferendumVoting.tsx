@@ -1,11 +1,10 @@
-import { memo, useMemo } from 'react';
-import { generatePath } from 'react-router-dom';
+import React, { memo, useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
-import { Slot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
-import { Paths } from '@/shared/routes';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import {
@@ -17,7 +16,6 @@ import {
   useTracks,
 } from '@/domains/collectives';
 import { useFellowshipApi, useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
-import { navigationModel } from '@/features/navigation';
 import { useEvidence } from '../../hooks/useEvidence';
 import { MemberActivity } from '../MemberActivity';
 import { TaskBadge } from '../TaskBadge';
@@ -31,12 +29,15 @@ type Props = {
   tags: string[];
 };
 
+export const promotionRetentionReferendumVotingSlot = createSlot<{
+  referendumId: ReferendumId;
+  children: React.ReactNode;
+}>();
+
 export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, transaction }: Props) => {
   const { t } = useI18n();
 
   const proposerAccountId = referendumService.getProposer(referendum);
-
-  const chain = useFellowshipChain();
 
   const { data: evidenceSummary, pending } = useReferendumSummary({ referendum });
 
@@ -48,39 +49,40 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
   const title = useTitle({ referendum });
   const rank = useRank({ referendum });
 
-  const handleClick = () => {
-    if (chain) {
-      const path = generatePath(Paths.FELLOWSHIP_REFERENDUM, {
-        chainId: chain.chainId,
-        referendumId: referendum.id.toString(),
-      });
-      navigationModel.events.navigateTo(path);
-    }
-  };
-
   return (
     <Box direction="row" gap={2}>
-      <button className="block w-full appearance-none p-4" onClick={handleClick}>
-        <Box direction="row" gap={2} verticalAlign="start">
-          <div className="shrink-0">
-            {rank ? <TaskBadge rank={rank} isPromotion={isPromotionTrack} isRetention={isRetentionTrack} /> : null}
-          </div>
-          <Box fillContainer verticalAlign="space-between" gap={3} grow={1}>
-            <Box gap={3}>
-              <Box direction="row" gap={3}>
-                <SmallTitleText className="truncate">{title}</SmallTitleText>
-                <TaskLabels tags={tags} />
+      <Slot
+        id={promotionRetentionReferendumVotingSlot}
+        props={{
+          referendumId: referendum.id,
+          children: (
+            <div className="block w-full appearance-none p-4">
+              <Box direction="row" gap={2} verticalAlign="start">
+                <div className="shrink-0">
+                  {rank ? (
+                    <TaskBadge rank={rank} isPromotion={isPromotionTrack} isRetention={isRetentionTrack} />
+                  ) : null}
+                </div>
+                <Box fillContainer verticalAlign="space-between" gap={3} grow={1}>
+                  <Box gap={3}>
+                    <Box direction="row" gap={3}>
+                      <SmallTitleText className="truncate">{title}</SmallTitleText>
+                      <TaskLabels tags={tags} />
+                    </Box>
+                    {!evidenceSummary && pending && <Skeleton height="3lh" width="85%" />}
+                    <FootnoteText as="div">
+                      {evidenceSummary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
+                      {!evidenceSummary && !pending ? t('fellowship.tasks.task.promotionVoting.noEvidence') : null}
+                    </FootnoteText>
+                  </Box>
+                  {proposerAccountId ? <MemberActivity accountId={proposerAccountId} /> : null}
+                </Box>
               </Box>
-              {!evidenceSummary && pending && <Skeleton height="3lh" width="85%" />}
-              <FootnoteText as="div">
-                {evidenceSummary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
-                {!evidenceSummary && !pending ? t('fellowship.tasks.task.promotionVoting.noEvidence') : null}
-              </FootnoteText>
-            </Box>
-            {proposerAccountId ? <MemberActivity accountId={proposerAccountId} /> : null}
-          </Box>
-        </Box>
-      </button>
+            </div>
+          ),
+        }}
+      />
+
       <Box verticalAlign="space-between" horizontalAlign="end" gap={3} padding={4} shrink={0} height="auto">
         <Slot id={referendumVotingTaskActionSlot} props={{ referendum, transaction, dateThresholds }} />
       </Box>
@@ -134,9 +136,7 @@ const useRank = ({ referendum }: { referendum: OngoingReferendum }) => {
 
   return useMemo(() => {
     if (!currentTrack || !tracks || !proposerMember) return null;
-    const rank = trackService.getProposalTrack(tracks, proposerMember, isPromotionTrack ? 'Promotion' : 'Retention');
-
-    return rank;
+    return trackService.getProposalTrack(tracks, proposerMember, isPromotionTrack ? 'Promotion' : 'Retention');
   }, [currentTrack, tracks, isPromotionTrack, isRetentionTrack, proposerMember]);
 };
 

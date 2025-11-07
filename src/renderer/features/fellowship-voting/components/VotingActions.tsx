@@ -4,7 +4,7 @@ import { type Transaction } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { VotingButtonWithTooltip } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { type OngoingReferendum, useMaxRank } from '@/domains/collectives';
+import { type OngoingReferendum, referendumService, useMaxRank } from '@/domains/collectives';
 import { trackService } from '@/domains/collectives';
 import { basketUtils } from '@/entities/basket';
 import { useFellowshipAccount, useFellowshipMember } from '@/aggregates/fellowship-member';
@@ -27,8 +27,12 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
   const api = useFellowshipApi();
   const { data: account } = useFellowshipAccount();
   const { data: referendumVote } = useReferendumVote(referendum);
-  const { data: currentMember } = useFellowshipMember();
+  const { data: fellowshipMember } = useFellowshipMember();
   const { data: maxRank } = useMaxRank({ palletType: 'fellowship', api });
+
+  const proposerAccountId = referendumService.getProposer(referendum);
+
+  const isCurrentUser = nonNullable(fellowshipMember) && fellowshipMember.accountId === proposerAccountId;
 
   const canAddToBasket = nonNullable(account) && basketUtils.isBasketAvailableForAccount(account);
 
@@ -66,7 +70,7 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
     [referendumVote?.decision, decision, canAddToBasket, referendum?.id, transaction],
   );
 
-  if (!currentMember || nullable(userVotesImpact)) return null;
+  if (isCurrentUser || nullable(userVotesImpact)) return null;
 
   const aye = () => handleVote('aye');
   const nay = () => handleVote('nay');
@@ -74,7 +78,8 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
   const hasRequiredRank =
     nonNullable(referendum) &&
     nonNullable(maxRank) &&
-    trackService.rankSatisfiesVotingThreshold(currentMember.rank, maxRank, referendum.track);
+    nonNullable(fellowshipMember) &&
+    trackService.rankSatisfiesVotingThreshold(fellowshipMember.rank, maxRank, referendum.track);
 
   const isCanVote = canVote && hasRequiredRank;
 
