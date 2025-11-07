@@ -221,6 +221,12 @@ const getCallDataParser: Record<
       value: decoded.args[1].toString(),
     };
   },
+  [TransactionType.VESTED_TRANSFER]: (decoded): Record<string, any> => {
+    return {
+      target: decoded.args[0].toString(),
+      schedule: decoded.args[1].toHuman(),
+    };
+  },
   [TransactionType.ASSET_TRANSFER]: (decoded): Record<string, any> => {
     return {
       assetId: decoded.args[0].toString(),
