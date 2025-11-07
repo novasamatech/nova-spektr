@@ -1,4 +1,14 @@
-import { type EventCallable, type Store, attach, combine, createEvent, restore, sample, scopeBind } from 'effector';
+import {
+  type EventCallable,
+  type Store,
+  attach,
+  combine,
+  createEvent,
+  createStore,
+  restore,
+  sample,
+  scopeBind,
+} from 'effector';
 import { readonly, spread } from 'patronum';
 
 import { entries } from '@/shared/lib/utils';
@@ -49,6 +59,7 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
     if (!field) continue;
 
     const change = createEvent<any>();
+    const markAsTouched = createEvent<void>();
     const reset = createEvent<any>();
     const resetError = createEvent<any>();
     const $value = restore(change, field.defaultValue).reset(reset);
@@ -56,14 +67,21 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
     const setErrors = createEvent<ValidationError[]>();
     const $errors = restore(setErrors, EMPTY_ARRAY).reset(reset, resetError, change);
 
+    const $touched = createStore(false)
+      .on(markAsTouched, () => true)
+      .reset(reset);
+
     fields[key] = {
       $value: readonly($value),
       change,
+      markAsTouched,
       reset,
       resetError,
 
       $errors: readonly($errors),
       setErrors,
+
+      $touched: readonly($touched),
     };
 
     values[key] = $value;
@@ -177,6 +195,7 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
   );
 
   const resetSpread = Object.values(fields).map((field) => field.reset);
+  const markAsTouchedSpread = Object.values(fields).map((field) => field.markAsTouched);
 
   sample({
     clock: validateFx.doneData,
@@ -195,6 +214,11 @@ export const createForm = <Fields>(config: Config<Fields>): Form<Fields> => {
   sample({
     clock: reset,
     target: resetSpread,
+  });
+
+  sample({
+    clock: submitFx,
+    target: markAsTouchedSpread,
   });
 
   sample({

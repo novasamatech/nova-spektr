@@ -3,8 +3,10 @@ import { type Effect, type EventCallable, type Store } from 'effector';
 export type FormField<Value> = {
   $value: Store<Value>;
   $errors: Store<ValidationError[]>;
+  $touched: Store<boolean>;
   setErrors: EventCallable<ValidationError[]>;
   change: EventCallable<Value>;
+  markAsTouched: EventCallable<void>;
   reset: EventCallable<void>;
   resetError: EventCallable<void>;
 };
