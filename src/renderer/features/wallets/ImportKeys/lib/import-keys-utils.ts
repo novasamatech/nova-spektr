@@ -14,7 +14,6 @@ import {
 } from '@/shared/core';
 import {
   DerivationError,
-  derivationHasPassword,
   derivationTokensToString,
   entries,
   parseDerivation,
@@ -211,26 +210,29 @@ function getDerivationError(
   derivation: DerivationWithPath,
   chains: Record<ChainId, Chain>,
 ): DerivationValidationError[] | undefined {
-  const errors: DerivationValidationError[] = [];
+  const errs: DerivationValidationError[] = [];
 
   const sharded = derivation.sharded && parseInt(derivation.sharded);
 
   const isShardedParamValid = !sharded || (!isNaN(sharded) && sharded <= 50 && sharded > 1);
-  if (!isShardedParamValid) errors.push(DerivationValidationError.WRONG_SHARDS_NUMBER);
+  if (!isShardedParamValid) errs.push(DerivationValidationError.WRONG_SHARDS_NUMBER);
 
   const derivationChain = derivation.chainId ? chains[derivation.chainId as ChainId] : null;
   const isEthereumBased = derivationChain ? networkUtils.isEthereumBased(derivationChain.options) : false;
-  const { isValid } = validateDerivation(derivation.derivationPath);
-  const hasEthereumSoftError = validateDerivation(derivation.derivationPath, { isEthereumBased }).errors.includes(
-    DerivationError.ETHEREUM_SINGLE_SLASH,
-  );
-  if (hasEthereumSoftError) errors.push(DerivationValidationError.ETHEREUM_SINGLE_SLASH);
 
-  const hasPasswordPath = derivationHasPassword(derivation.derivationPath);
-  if (hasPasswordPath) errors.push(DerivationValidationError.PASSWORD_PATH);
+  const { isValid, errors } = validateDerivation(derivation.derivationPath, { isEthereumBased });
 
-  if (!isValid && !hasPasswordPath) errors.push(DerivationValidationError.INVALID_PATH);
-  if (errors.length) return errors;
+  const hasEthereumSoftError = errors.includes(DerivationError.ETHEREUM_SINGLE_SLASH);
+  const hasPasswordPathError = errors.includes(DerivationError.PASSWORD_NOT_SUPPORTED);
+  const hasInvalidPathError = !isValid && !hasEthereumSoftError && !hasPasswordPathError;
+
+  if (hasInvalidPathError) errs.push(DerivationValidationError.INVALID_PATH);
+
+  if (hasEthereumSoftError) errs.push(DerivationValidationError.ETHEREUM_SINGLE_SLASH);
+
+  if (hasPasswordPathError) errs.push(DerivationValidationError.PASSWORD_PATH);
+
+  if (errs.length) return errs;
 }
 
 type DraftAccounts = (DraftAccount<VaultShardAccount> | DraftAccount<VaultChainAccount>)[];
