@@ -49,6 +49,7 @@ export const transactionBuilder = {
   buildAddProxy,
   buildKillPureProxy,
   buildRemoveProxy,
+  buildVestedTransfer,
 
   buildBatchAll,
 };
@@ -783,4 +784,35 @@ function buildRemoveProxy({ chain, accountId, delegate, proxyType, delay }: Remo
       delay,
     },
   };
+}
+
+type VestingSchedule = {
+  target: AccountId;
+  locked: BN;
+  startingBlock: BN;
+  perBlock: BN;
+};
+
+type VestedTransferParams = {
+  chain: Chain;
+  accountId: AccountId;
+  vestingSchedule: VestingSchedule[];
+};
+
+function buildVestedTransfer({ chain, accountId, vestingSchedule }: VestedTransferParams): Transaction {
+  const vestingTxs = vestingSchedule.map((v) => ({
+    chainId: chain.chainId,
+    accountId,
+    type: TransactionType.VESTED_TRANSFER,
+    args: {
+      target: v.target,
+      locked: v.locked.toString(),
+      startingBlock: v.startingBlock.toString(),
+      perBlock: v.perBlock.toString(),
+    },
+  }));
+
+  if (vestingTxs.length === 1) return vestingTxs[0];
+
+  return buildBatchAll({ chain, accountId, transactions: vestingTxs });
 }

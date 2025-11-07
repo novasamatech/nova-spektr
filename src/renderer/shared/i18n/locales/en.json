@@ -177,6 +177,65 @@
       "title": "Some of the selected operations are unavailable"
     }
   },
+  "vestedTransfer": {
+    "confirmation": {
+      "labels": {
+        "parsedFile": "Parsed file",
+        "totalAmount": "Total amount"
+      },
+      "buttons": {
+        "openPreview": "Open preview"
+      }
+    },
+    "form": {
+      "fields": {
+        "network": {
+          "label": "Recipient network",
+          "placeholder": "Select network..."
+        },
+        "signatory": {
+          "label": "Sign with",
+          "placeholder": "Select signatory..."
+        },
+        "initiator": {
+          "label": "Submit from",
+          "placeholder": "Select account..."
+        },
+        "csvFile": {
+          "label": "Data table file",
+          "placeholder": "Select file from your computer",
+          "exampleButton": "Example"
+        },
+        "amount": {
+          "label": "Total amount"
+        }
+      }
+    },
+    "errors": {
+      "form": {
+        "chainRequired": "Chain is required",
+        "signatoryRequired": "Signatory is required",
+        "csvRequired": "CSV file is required",
+        "insufficientBalance": "Insufficient balance to pay network fee"
+      },
+      "csv": {
+        "parseFailedTitle": "Parsing failed",
+        "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
+        "missingChainDescription": "Cannot parse a file without selecting a network.",
+        "invalidDataTitle": "Found {errorCount} errors in CSV file",
+        "invalidDataRow": "Row {row}",
+
+        "rowErrors": {
+          "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
+          "LOCKED_NOT_POSITIVE_INT": "Amount must be a positive integer",
+          "START_BLOCK_NOT_POSITIVE_INT": "Start block must be a positive integer",
+          "PER_BLOCK_NOT_POSITIVE_INT": "Per block must be a positive integer",
+          "START_BLOCK_IN_PAST": "Start block cannot be in the past",
+          "UNKNOWN_ERROR": "Unknown error"
+        }
+      }
+    }
+  },
   "callData": {
     "callData": "Call data",
     "confirmation": {
@@ -1306,6 +1365,7 @@
     "stakingLabel": "Staking",
     "transfersLabel": "Transfer",
     "unknownWalletLabel": "Unknown wallet",
+    "vestedTransfersLabel": "Vested transfer",
     "walletsLabel": "Wallets"
   },
   "notifications": {
@@ -1658,6 +1718,8 @@
       "startStakingOn": "Start Staking { asset } on",
       "transferFrom": "Transfer { asset } from",
       "transferOn": "Transfer { asset } on",
+      "vestedTransfer": "Vested transfer",
+      "vestedTransferOn": "Vested transfer on",
       "undelegateOn": "Revoke delegation on",
       "unknownOn": "Unknown Operation on",
       "unlockOn": "Unlock on",
