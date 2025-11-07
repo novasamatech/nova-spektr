@@ -1,7 +1,6 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, useState } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, Icon, LargeTitleText } from '@/shared/ui';
@@ -25,7 +24,7 @@ type Props = PropsWithChildren<{
 }>;
 
 export const SalaryRegisterModal = ({ disabled, children }: Props) => {
-  useFlow(salaryRequest.flow, null);
+  useGate(salaryRequest.gate);
 
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
