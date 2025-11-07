@@ -1,6 +1,6 @@
 import { allSettled, fork } from 'effector';
 
-import { kusamaChain, kusamaChainId, polkadotChain, polkadotChainId } from '@/shared/mocks';
+import { kusamaChain, kusamaChainId, mythosChain, mythosChainId, polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 import { importKeysModel } from '../../model/import-keys-model';
@@ -51,6 +51,7 @@ describe('features/ImportKeys/lib/import-keys-model', () => {
     const mockChains = {
       [polkadotChainId]: polkadotChain,
       [kusamaChainId]: kusamaChain,
+      [mythosChainId]: mythosChain,
     };
     const scope = fork({
       values: [[networkModel.$chains, mockChains]],
@@ -67,7 +68,8 @@ describe('features/ImportKeys/lib/import-keys-model', () => {
       error: ValidationError.DERIVATIONS_ERROR,
       details: {
         [DerivationValidationError.PASSWORD_PATH]: ['//polkadot///password'],
-        [DerivationValidationError.INVALID_PATH]: ['//polkadot///password', 'invalid_path1', 'invalid_path2'],
+        [DerivationValidationError.INVALID_PATH]: ['invalid_path1', 'invalid_path2'],
+        [DerivationValidationError.ETHEREUM_SINGLE_SLASH]: ['//mythos/soft'],
         [DerivationValidationError.WRONG_SHARDS_NUMBER]: [],
       },
     };

@@ -17,6 +17,7 @@ export const enum DerivationValidationError {
   INVALID_PATH = 'INVALID_PATH',
   WRONG_SHARDS_NUMBER = 'WRONG_SHARDS_NUMBER',
   PASSWORD_PATH = 'PASSWORD_PATH',
+  ETHEREUM_SINGLE_SLASH = 'ETHEREUM_SINGLE_SLASH',
 }
 
 export type ImportedDerivation = {
