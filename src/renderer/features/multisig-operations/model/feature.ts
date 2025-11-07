@@ -6,11 +6,14 @@ import { debounce } from 'patronum';
 import { type ChainId } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
+import { deepLinkService } from '@/domains/app';
 import { accountService } from '@/domains/network';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
+
+import { deepLinkModel } from './deep-link';
 
 const $trigger = createStore<string>('');
 const $debouncedApis = createStore<Record<ChainId, ApiPromise>>({});
@@ -77,3 +80,5 @@ export const multisigOperationsFeature = createFeature({
   name: 'multisig/operations',
   input: $input,
 });
+
+deepLinkService.registerHandler(deepLinkModel.multisigOperationDeepLinkHandler);

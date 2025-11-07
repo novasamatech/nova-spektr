@@ -883,7 +883,8 @@
     },
     "notifications": {
       "addressCopied": "Address copied!",
-      "copiedToClipboard": "Copied to clipboard!"
+      "copiedToClipboard": "Copied to clipboard!",
+      "operationLinkCopied": "Operation link copied!"
     },
     "timeout": {
       "expired": "Expired"
@@ -1478,6 +1479,9 @@
     }
   },
   "operation": {
+    "accountNotFoundButton": "Close",
+    "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
+    "accountNotFoundTitle": "No account to sign operation",
     "addCallDataButton": "Add call data",
     "addToBasket": "Add to basket",
     "addedToBasket": "Added to basket",
