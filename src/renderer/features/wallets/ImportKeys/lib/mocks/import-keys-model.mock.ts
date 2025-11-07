@@ -31,6 +31,10 @@ const invalidPaths = `0x00: #vault public address
     - key:
         derivation_path: "invalid_path2"
         type: "main"
+  0xf6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9:
+    - key:
+        derivation_path: "//mythos/soft"
+        type: "main"
 version: 1`;
 
 export const importKeysModelMock = {
