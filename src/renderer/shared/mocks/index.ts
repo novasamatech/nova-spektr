@@ -33,6 +33,7 @@ export const kusamaChainId: ChainId = '0xb0a8d493285c2df73290dfb7e61f870f17b4180
 export const polkadotAssetHubChainId: ChainId = '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f';
 export const kusamaAssetHubChainId: ChainId = '0x48239ef607d7928874027a43a67689209727dfb3d3dc5e5b03a39bdc2eda771a';
 export const polkadotBifrostChainId: ChainId = '0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b';
+export const mythosChainId: ChainId = '0xf6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9';
 
 export const dotAsset: Asset = {
   assetId: 0 as AssetId,
@@ -106,6 +107,52 @@ export const kusamaChain: Chain = {
     {
       name: 'Sub.ID',
       account: 'https://sub.id/{address}',
+    },
+  ],
+};
+
+export const mythosAsset: Asset = {
+  name: 'MYTH',
+  assetId: 0 as AssetId,
+  symbol: 'MYTH',
+  precision: 18,
+  type: AssetType.NATIVE,
+  priceId: 'mythos',
+  icon: {
+    monochrome:
+      'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/monochrome/MYTH.svg',
+    colored: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v2/assets/colored/MYTH.svg',
+  },
+};
+
+export const mythosChain: Chain = {
+  name: 'Mythos',
+  specName: 'polkadot',
+  addressPrefix: 29972,
+  chainId: mythosChainId,
+  icon: 'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/icons/v1/chains/Mythos.svg',
+  options: [ChainOptions.MULTISIG, ChainOptions.ETHEREUM_BASED, ChainOptions.REGULAR_PROXY, ChainOptions.PURE_PROXY],
+  nodes: [
+    {
+      url: 'wss://polkadot-mythos-rpc.polkadot.io',
+      name: 'Parity node',
+    },
+    {
+      url: 'wss://mythos.ibp.network',
+      name: 'IBP1 node',
+    },
+    {
+      url: 'wss://mythos.dotters.network',
+      name: 'IBP2 node',
+    },
+  ],
+  assets: [mythosAsset],
+  explorers: [
+    {
+      name: 'Subscan',
+      extrinsic: 'https://mythos.subscan.io/extrinsic/{hash}',
+      account: 'https://mythos.subscan.io/account/{address}',
+      multisig: 'https://mythos.subscan.io/multisig_extrinsic/{index}?call_hash={callHash}',
     },
   ],
 };
