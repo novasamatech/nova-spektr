@@ -1,1 +1,1 @@
-export * from './deep-link';
+export { deepLinkService } from './deep-link/service';

@@ -41,7 +41,7 @@ export const App = () => {
 
   useEffect(() => {
     if (searchParams.toString()) {
-      deepLinkService.handleDeepLink({
+      deepLinkService.setDeepLink({
         searchParams,
         callback: (takenKeys) => {
           const currentParams = Object.fromEntries(searchParams.entries());

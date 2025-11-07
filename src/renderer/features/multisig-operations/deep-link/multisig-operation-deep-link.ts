@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { type ChainId } from '@/shared/core';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
-import { createDeepLinkHandler } from '@/domains/app';
+import { deepLinkService } from '@/domains/app';
 import { accounts, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -20,7 +20,7 @@ export const multisigOperationSchema = z.object({
 
 export type MultisigOperationDeepLinkData = z.infer<typeof multisigOperationSchema>;
 
-export const multisigOperationDeepLinkHandler = createDeepLinkHandler({
+export const multisigOperationDeepLinkHandler = deepLinkService.createDeepLinkHandler({
   schema: multisigOperationSchema,
 });
 

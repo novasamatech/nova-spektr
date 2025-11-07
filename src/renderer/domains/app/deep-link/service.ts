@@ -161,9 +161,7 @@ export interface DeepLinkHandlerConfig<T extends z.ZodType> {
 
 let handlerIdCounter = 0;
 
-export function createDeepLinkHandler<T extends z.ZodType>({
-  schema,
-}: DeepLinkHandlerConfig<T>): DeepLinkHandler<z.infer<T>> {
+function createDeepLinkHandler<T extends z.ZodType>({ schema }: DeepLinkHandlerConfig<T>): DeepLinkHandler<z.infer<T>> {
   type ParsedType = z.infer<T>;
   const triggered = createEvent<ParsedType>();
   const id = `handler_${handlerIdCounter++}`;
@@ -176,10 +174,7 @@ export function createDeepLinkHandler<T extends z.ZodType>({
   };
 }
 
-export function extractParams<T extends z.ZodType>(
-  params: Record<string, unknown>,
-  schema: T,
-): HandlerResult<z.infer<T>> {
+function extractParams<T extends z.ZodType>(params: Record<string, unknown>, schema: T): HandlerResult<z.infer<T>> {
   try {
     const parsed = schema.parse(params);
     const remainingParams = { ...params };
@@ -200,25 +195,10 @@ export function extractParams<T extends z.ZodType>(
   }
 }
 
-export function processDeepLinkChain<T extends z.ZodType>(
-  params: Record<string, unknown>,
-  handlers: { schema: T; onMatch: (data: z.infer<T>) => void }[],
-): Record<string, unknown> {
-  let remainingParams = { ...params };
-
-  for (const { schema, onMatch } of handlers) {
-    const result = extractParams(remainingParams, schema);
-    if (result.matched && result.data) {
-      onMatch(result.data);
-      remainingParams = result.remainingParams;
-    }
-  }
-
-  return remainingParams;
-}
-
 export const deepLinkService = {
-  handleDeepLink: setDeepLink,
+  setDeepLink,
+  createDeepLinkHandler,
+
   registerHandler: <T>(handler: DeepLinkHandler<T>) => {
     const triggerEvent = handler.triggered as unknown as (payload: unknown) => void;
     handlerRegistered({
