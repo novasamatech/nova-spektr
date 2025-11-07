@@ -60,7 +60,7 @@ type FormSubmitEvent = FormParams & {
   destinationChain: Chain;
   fee: BN;
   xcmFee: BN;
-  deliveryFee: BN;
+  deliveryFee: BN | null;
   multisigDeposit: BN;
   rawAmount: string;
   balancePreservation: BalancePreservation;
@@ -142,7 +142,7 @@ const form: Form<FormParams> = createForm<FormParams>({
       }),
     },
   },
-  validateOn: ['submit'],
+  validateOn: ['change'],
 });
 
 const $destination = form.fields.destination.$value;
@@ -334,15 +334,16 @@ const $coreTx = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
-    form: form.$values,
+    formValues: form.$values,
+    isFormValid: form.$isValid,
     xcmData: xcmTransferModel.$xcmData,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
     inputMode: $inputMode,
     balancePreservation: $balancePreservationStrategy,
   },
-  ({ network, isXcm, form, xcmData, isConnected, initiator, inputMode, balancePreservation }) => {
-    if (!network || !initiator || !isConnected || (isXcm && !xcmData) || !validateAddress(form.destination)) {
+  ({ isFormValid, network, isXcm, formValues, xcmData, isConnected, initiator, inputMode, balancePreservation }) => {
+    if (!isFormValid || !network || !initiator || !isConnected || !validateAddress(formValues.destination)) {
       return null;
     }
 
@@ -350,9 +351,9 @@ const $coreTx = combine(
       chain: network.chain,
       asset: network.asset,
       accountId: initiator.accountId,
-      amount: form.amount,
-      destination: form.destination,
-      xcmData,
+      amount: formValues.amount,
+      destination: formValues.destination,
+      xcmData: isXcm ? xcmData : undefined,
       balancePreservation,
       inputMode,
     });
@@ -402,7 +403,7 @@ const $feeCoreTx = combine(
       accountId: initiator.accountId,
       amount: '1',
       destination: mockDestination,
-      xcmData,
+      xcmData: isXcm ? xcmData : undefined,
       inputMode,
       balancePreservation,
     });
@@ -456,7 +457,10 @@ const {
     route: $route,
     transaction: $calculationTx,
     xcmFee: xcmTransferModel.$xcmFee,
-    deliveryFee: xcmTransferModel.$deliveryFee,
+    deliveryFee: xcmTransferModel.$deliveryFee.map((fee) => {
+      // a fallback for validation that requires all fields to be non null
+      return fee ?? BN_ZERO;
+    }),
     balancePreservation: $balancePreservationStrategy,
   },
 });
@@ -581,7 +585,6 @@ const $isMyselfXcmEnabled = combine(
 );
 
 const $canSubmit = and(
-  form.$isValid,
   $valid,
   not($hasDestinationBalanceError),
   or(not($isXcm), not(xcmTransferModel.$isXcmFeeLoading), not(xcmTransferModel.$isDeliveryFeeLoading)),
@@ -756,7 +759,7 @@ const formSubmitFinished = sample({
       route,
       fee,
       xcmFee,
-      deliveryFee: deliveryFee,
+      deliveryFee,
       balancePreservation,
     } satisfies FormSubmitEvent;
   },
