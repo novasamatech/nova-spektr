@@ -106,6 +106,7 @@ const validateDerivationsFx = createEffect<ValidateDerivationsParams, TypedImpor
       },
       {
         [DerivationValidationError.INVALID_PATH]: [],
+        [DerivationValidationError.ETHEREUM_SINGLE_SLASH]: [],
         [DerivationValidationError.PASSWORD_PATH]: [],
         [DerivationValidationError.WRONG_SHARDS_NUMBER]: [],
       },
