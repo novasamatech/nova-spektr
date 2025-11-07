@@ -20,7 +20,7 @@ export type TransferConfirmStore = TxConfirmInfo & {
 
   fee: BN;
   xcmFee: BN;
-  deliveryFee: BN;
+  deliveryFee: BN | null;
   multisigDeposit: BN;
   balancePreservation: BalancePreservation;
 };
