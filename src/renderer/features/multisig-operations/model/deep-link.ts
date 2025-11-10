@@ -1,7 +1,8 @@
-import { createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, createStore, sample } from 'effector';
 import { z } from 'zod';
 
 import { type ChainId } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { deepLinkService } from '@/domains/app';
@@ -10,7 +11,45 @@ import { networkModel } from '@/entities/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 const setFocusedOperationId = createEvent<string | null>();
-const $focusedOperationId = createStore<string | null>(null).on(setFocusedOperationId, (_, v) => v);
+const operationsPageClosed = createEvent();
+
+const $operationId = createStore<string | null>(null).on(setFocusedOperationId, (_, v) => v);
+
+const $focusedOperation = combine({
+  operationId: $operationId,
+  list: multisigOperation.$list,
+}).map(({ operationId, list }) => list.find(item => item.id === operationId));
+
+const $focusedOperationId = createStore<string | null>(null).reset(operationsPageClosed);
+
+const alreadySignedModalOpened = createEvent();
+const closeAlreadySignedModal = createEvent();
+const viewAlreadySignedOperation = createEvent();
+const $isAlreadySignedModalOpen = createStore(false)
+  .on(alreadySignedModalOpened, () => true)
+  .on(closeAlreadySignedModal, () => false)
+  .on(viewAlreadySignedOperation, () => false);
+
+sample({
+  clock: $operationId,
+  source: $focusedOperation,
+  filter: operation => nonNullable(operation) && operation.status === 'executed',
+  target: alreadySignedModalOpened,
+});
+
+sample({
+  clock: $operationId,
+  source: { operation: $focusedOperation, id: $operationId },
+  filter: ({ operation }) => !nonNullable(operation) || operation.status !== 'executed',
+  fn: ({ id }) => id,
+  target: $focusedOperationId,
+});
+
+sample({
+  clock: viewAlreadySignedOperation,
+  source: $operationId,
+  target: $focusedOperationId,
+});
 
 export const multisigOperationSchema = z.object({
   chainId: z.string().transform(x => x as ChainId),
@@ -55,7 +94,7 @@ sample({
 
 sample({
   clock: accountChecked,
-  filter: ({ account }) => account !== null,
+  filter: ({ account }) => nonNullable(account),
   fn: ({ data }) => getOperationIdFromDeepLink(data),
   target: setFocusedOperationId,
 });
@@ -104,9 +143,14 @@ export function getOperationIdFromDeepLink(data: MultisigOperationDeepLinkData):
 export const deepLinkModel = {
   $focusedOperationId,
   setFocusedOperationId,
+  operationsPageClosed,
 
   $isAccountNotFoundModalOpen,
   closeNotFoundModal: closeNotFoundModal,
+
+  $isAlreadySignedModalOpen,
+  closeAlreadySignedModal,
+  viewAlreadySignedOperation,
 
   generateMultisigOperationDeepLink,
   multisigOperationDeepLinkHandler,

@@ -1486,6 +1486,9 @@
     "addToBasket": "Add to basket",
     "addedToBasket": "Added to basket",
     "advanced": "Advanced",
+    "alreadySignedCloseButton": "Close",
+    "alreadySignedTitle": "Operation already signed",
+    "alreadySignedViewButton": "View",
     "approveButton": "Approve",
     "cancelTitle": "Reject",
     "closeButton": "Close",
@@ -1676,6 +1679,7 @@
     "noOperationsTitle": "Operation list is empty",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. <br /> Transaction history for other types of wallets will be available later. Stay tuned.",
     "operationCreated": "Operation created",
+    "shareOperationTooltip": "Share transaction link with signatories",
     "title": "Operations",
     "titles": {
       "addProxy": "Add delegated authority (proxy)",

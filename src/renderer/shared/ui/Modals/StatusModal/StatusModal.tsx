@@ -36,7 +36,7 @@ export const StatusModal = ({
         'bg-white p-4 shadow-card-shadow transition-all',
         className,
       )}
-      contentClass="p-0 flex flex-col items-center"
+      contentClass="p-0 flex flex-col items-center w-full"
       testId={testId}
       onClose={onClose}
     >

@@ -17,6 +17,7 @@ import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { OperationsFilter } from './OperationsFilter';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
+import { AlreadySignedModal } from './modals/AlreadySignedModal';
 
 export const Operations = () => {
   const { formatDate } = useI18n();
@@ -46,6 +47,10 @@ export const Operations = () => {
       }),
     [filteredTxs, formatDate],
   );
+
+  useEffect(() => {
+    return () => deepLinkModel.operationsPageClosed();
+  }, []);
 
   // Scroll to focused operation
   useEffect(() => {
@@ -89,6 +94,7 @@ export const Operations = () => {
                           .map(tx => (
                             <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
                               <Operation
+                                key={`${tx.id}-${tx.id === focusedOperationId}`}
                                 operation={tx}
                                 multisigAccount={multisigAccount}
                                 isDefaultOpen={tx.id === focusedOperationId}
@@ -105,6 +111,7 @@ export const Operations = () => {
       )}
 
       <AccountNotFoundModal />
+      <AlreadySignedModal />
     </>
   );
 };
