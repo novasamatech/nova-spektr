@@ -61,7 +61,22 @@ type GetPureProxyResult = {
   extrinsicIndex: number;
 };
 const getPureProxyFx = createEffect(
-  ({ api, accountId, timepoint }: GetPureProxyParams): Promise<GetPureProxyResult> => {
+  async ({ api, accountId, timepoint }: GetPureProxyParams): Promise<GetPureProxyResult> => {
+    let blockNumber = timepoint.height;
+
+    const apiAtBlockHash = await api.rpc.chain.getBlockHash(timepoint.height);
+
+    const apiAt = await api.at(apiAtBlockHash);
+
+    const validationData = await apiAt.query?.['parachainSystem']?.['validationData']?.();
+
+    if (validationData) {
+      const validationDataJson = validationData.toJSON() as { relayParentNumber: number };
+      if (Number.isInteger(validationDataJson.relayParentNumber)) {
+        blockNumber = validationDataJson.relayParentNumber;
+      }
+    }
+
     return new Promise(resolve => {
       const pureCreatedParams = {
         section: 'proxy',
@@ -74,7 +89,7 @@ const getPureProxyFx = createEffect(
 
         resolve({
           accountId: pjsSchema.helpers.toAccountId(event.data[0].toHex()),
-          blockNumber: timepoint.height,
+          blockNumber,
           extrinsicIndex: timepoint.index,
         });
       });
@@ -185,43 +200,23 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
-  source: {
-    tx: formModel.$tx,
-    coreTx: formModel.$coreTx,
-    chain: formModel.form.fields.chain.$value,
-    initiator: formModel.form.fields.initiator.$value,
-    signatory: formModel.form.fields.signatory.$value,
+  clock: signModel.signed,
+  source: $step,
+  filter: step => step !== Step.NONE,
+  fn: (_, signParams) => {
+    return {
+      event: signParams,
+      step: Step.SUBMIT,
+    };
   },
-  filter: proxyData => {
-    return (
-      nonNullable(proxyData.tx) &&
-      nonNullable(proxyData.coreTx) &&
-      nonNullable(proxyData.chain) &&
-      nonNullable(proxyData.initiator) &&
-      nonNullable(proxyData.signatory) &&
-      nonNullable(proxyData.chain)
-    );
-  },
-  fn: (proxyData, signParams) => ({
-    event: {
-      ...signParams,
-      chain: proxyData.chain!,
-      account: proxyData.initiator!,
-      signatory: proxyData.signatory,
-      wrappedTxs: [proxyData.tx!],
-      coreTxs: [proxyData.coreTx!],
-    },
-    step: Step.SUBMIT,
-  }),
   target: spread({
-    event: submitModel.events.formInitiated,
+    event: submitModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: {
     step: $step,
     apis: networkModel.$apis,
@@ -285,13 +280,13 @@ sample({
         extrinsicIndex,
         deposit: proxyDeposit,
       },
-    ] as PartialProxiedAccount[];
+    ] satisfies PartialProxiedAccount[];
   },
   target: proxiesModel.createProxiedWalletsFx,
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: formModel.$isMultisig,
   filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
