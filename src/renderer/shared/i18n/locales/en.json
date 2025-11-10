@@ -182,9 +182,6 @@
       "labels": {
         "parsedFile": "Parsed file",
         "totalAmount": "Total amount"
-      },
-      "buttons": {
-        "openPreview": "Open preview"
       }
     },
     "form": {
@@ -208,6 +205,25 @@
         },
         "amount": {
           "label": "Total amount"
+        }
+      }
+    },
+    "parsedFile": {
+      "title": "Parsed file",
+      "buttons": {
+        "openPreview": "Open preview"
+      },
+      "table": {
+        "headers": {
+          "recipient": "Recipient",
+          "startBlock": "Start block",
+          "perBlock": "Per block",
+          "locked": "Locked"
+        },
+        "hints": {
+          "startBlock": "Block number when vesting starts",
+          "perBlock": "Tokens released per block during vesting, in planks. Defines unlock speed.",
+          "startBlockTime": "Starts on {date} at {time}"
         }
       }
     },
