@@ -10,7 +10,7 @@ import { Alert, BodyText, Button, DetailRow, FootnoteText, InfoLink } from '@/sh
 import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, InputFile, Modal } from '@/shared/ui-kit';
 import { AssetFiatBalance } from '@/entities/price';
-import { FeeWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { VestingScheduleFileErrors } from '../lib/types';
 import { formModel } from '../model/form';
@@ -156,7 +156,15 @@ const FeeSection = () => {
   const chain = useUnit(formModel.form.fields.chain.$value);
   const asset = chain ? getNativeAsset(chain.assets) : null;
 
+  const multisigDeposit = useUnit(formModel.$multisigDeposit);
+  const hasMultisigAccount = useUnit(formModel.$hasMultisigAccount);
+
   if (!asset) return null;
 
-  return <FeeWithLabel asset={asset} fee={fee} isLoading={pendingFee} />;
+  return (
+    <>
+      {hasMultisigAccount && <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />}
+      <FeeWithLabel asset={asset} fee={fee} isLoading={pendingFee} />
+    </>
+  );
 };
