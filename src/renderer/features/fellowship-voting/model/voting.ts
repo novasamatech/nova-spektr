@@ -3,6 +3,7 @@ import { createGate } from 'effector-react';
 import { reshape, spread } from 'patronum';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { createTxStore } from '@/shared/transactions';
 import { votingService } from '@/domains/collectives';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
@@ -125,23 +126,38 @@ sample({
 
 // Basket
 
-const saveToBasket = createEvent();
-const removeFromBasket = createEvent();
+type SaveToBasketParams = {
+  referendumId: ReferendumId;
+  vote: 'aye' | 'nay';
+};
+
+const saveToBasket = createEvent<SaveToBasketParams>();
+const removeFromBasket = createEvent<ReferendumId>();
 
 sample({
   clock: saveToBasket,
   source: {
     existing: basketOperations.$list,
     account: votingStatus.$votingAccount,
-    coreTx: $coreTx,
+    member: votingStatus.$currentMember,
+    input: fellowshipVotingFeature.input,
   },
-  fn: ({ existing, account, coreTx }) => {
-    if (nullable(account) || nullable(coreTx)) {
+  fn: ({ existing, account, member, input }, params) => {
+    if (nullable(account) || nullable(member) || nullable(input) || nullable(input.chain)) {
       return {
         add: [],
         remove: [],
       };
     }
+
+    const coreTx = votingService.createVoteTransaction({
+      pallet: 'fellowship',
+      rank: member.rank,
+      account,
+      chain: input.chain,
+      aye: params.vote === 'aye',
+      referendumId: params.referendumId,
+    });
 
     const existingTransactions = existing.filter(o => {
       if (o.initiatorAccountId !== account.accountId) return false;
@@ -175,21 +191,18 @@ sample({
   source: {
     existing: basketOperations.$list,
     account: votingStatus.$votingAccount,
-    coreTx: $coreTx,
   },
-  fn: ({ existing, account, coreTx }) => {
-    if (nullable(account) || nullable(coreTx)) {
+  fn: ({ existing, account }, referendumId) => {
+    if (nullable(account)) {
       return [];
     }
 
-    const existingTransactions = existing.filter(o => {
+    return existing.filter(o => {
       if (o.initiatorAccountId !== account.accountId) return false;
       if (!votingService.isVotingTransaction(o.coreTx)) return false;
 
-      return coreTx.args.poll === o.coreTx.args.poll;
+      return o.coreTx.args.poll === referendumId;
     });
-
-    return existingTransactions;
   },
   target: basketOperations.removeTransactions,
 });
