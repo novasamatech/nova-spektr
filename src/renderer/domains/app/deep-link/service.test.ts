@@ -1,4 +1,3 @@
-import { waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
@@ -61,9 +60,7 @@ describe('deepLinkService', () => {
 
       deepLinkService.setDeepLink({ searchParams: new URLSearchParams({ test1Param: 'value1' }), callback });
 
-      await waitFor(() => {
-        expect(callback).toHaveBeenCalledWith(['test1Param']);
-      });
+      expect(callback).toHaveBeenCalledWith(['test1Param']);
     });
 
     it('should ignore extra params not in schema', async () => {
@@ -78,9 +75,7 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await waitFor(() => {
-        expect(callback).toHaveBeenCalledWith(['test3Param']);
-      });
+      expect(callback).toHaveBeenCalledWith(['test3Param']);
     });
 
     it('should handle multiple handlers', async () => {
@@ -98,9 +93,7 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await waitFor(() => {
-        expect(callback).toHaveBeenCalledWith(['paramA', 'paramB']);
-      });
+      expect(callback).toHaveBeenCalledWith(['paramA', 'paramB']);
     });
 
     it('should call callback with empty array when no params match', async () => {
@@ -115,9 +108,7 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await waitFor(() => {
-        expect(callback).toHaveBeenCalledWith([]);
-      });
+      expect(callback).toHaveBeenCalledWith([]);
     });
 
     it('should handle overlapping schemas by consuming params', async () => {
@@ -135,10 +126,7 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await waitFor(() => {
-        // First handler consumes 'sharedParam', second handler can't match
-        expect(callback).toHaveBeenCalledWith(['sharedParam']);
-      });
+      expect(callback).toHaveBeenCalledWith(['sharedParam']);
     });
 
     it('should handle multiple handlers with distinct params', async () => {
@@ -156,9 +144,7 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await waitFor(() => {
-        expect(callback).toHaveBeenCalledWith(['param1', 'param2']);
-      });
+      expect(callback).toHaveBeenCalledWith(['param1', 'param2']);
     });
   });
 
@@ -247,9 +233,7 @@ describe('deepLinkService', () => {
 
       deepLinkService.setDeepLink({ searchParams: new URLSearchParams(), callback });
 
-      await waitFor(() => {
-        expect(callback).toHaveBeenCalledWith([]);
-      });
+      expect(callback).toHaveBeenCalledWith([]);
     });
 
     it('should handle no handlers registered', async () => {
@@ -260,9 +244,7 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await waitFor(() => {
-        expect(callback).toHaveBeenCalledWith([]);
-      });
+      expect(callback).toHaveBeenCalledWith([]);
     });
   });
 });
