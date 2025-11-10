@@ -1,3 +1,4 @@
+import { waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
@@ -60,9 +61,9 @@ describe('deepLinkService', () => {
 
       deepLinkService.setDeepLink({ searchParams: new URLSearchParams({ test1Param: 'value1' }), callback });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(callback).toHaveBeenCalledWith(['test1Param']);
+      await waitFor(() => {
+        expect(callback).toHaveBeenCalledWith(['test1Param']);
+      });
     });
 
     it('should ignore extra params not in schema', async () => {
@@ -77,9 +78,9 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(callback).toHaveBeenCalledWith(['test3Param']);
+      await waitFor(() => {
+        expect(callback).toHaveBeenCalledWith(['test3Param']);
+      });
     });
 
     it('should handle multiple handlers', async () => {
@@ -97,9 +98,9 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(callback).toHaveBeenCalledWith(['paramA', 'paramB']);
+      await waitFor(() => {
+        expect(callback).toHaveBeenCalledWith(['paramA', 'paramB']);
+      });
     });
 
     it('should call callback with empty array when no params match', async () => {
@@ -114,9 +115,9 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(callback).toHaveBeenCalledWith([]);
+      await waitFor(() => {
+        expect(callback).toHaveBeenCalledWith([]);
+      });
     });
 
     it('should handle overlapping schemas by consuming params', async () => {
@@ -134,10 +135,10 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      // First handler consumes 'sharedParam', second handler can't match
-      expect(callback).toHaveBeenCalledWith(['sharedParam']);
+      await waitFor(() => {
+        // First handler consumes 'sharedParam', second handler can't match
+        expect(callback).toHaveBeenCalledWith(['sharedParam']);
+      });
     });
 
     it('should handle multiple handlers with distinct params', async () => {
@@ -155,9 +156,9 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(callback).toHaveBeenCalledWith(['param1', 'param2']);
+      await waitFor(() => {
+        expect(callback).toHaveBeenCalledWith(['param1', 'param2']);
+      });
     });
   });
 
@@ -246,9 +247,9 @@ describe('deepLinkService', () => {
 
       deepLinkService.setDeepLink({ searchParams: new URLSearchParams(), callback });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(callback).toHaveBeenCalledWith([]);
+      await waitFor(() => {
+        expect(callback).toHaveBeenCalledWith([]);
+      });
     });
 
     it('should handle no handlers registered', async () => {
@@ -259,9 +260,9 @@ describe('deepLinkService', () => {
         callback,
       });
 
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(callback).toHaveBeenCalledWith([]);
+      await waitFor(() => {
+        expect(callback).toHaveBeenCalledWith([]);
+      });
     });
   });
 });
