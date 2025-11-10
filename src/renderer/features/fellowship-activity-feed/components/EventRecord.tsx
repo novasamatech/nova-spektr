@@ -3,8 +3,9 @@ import { memo } from 'react';
 
 import { type Chain } from '@/shared/core';
 import { createSlot } from '@/shared/di';
+import { toAddress } from '@/shared/lib/utils';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
+import { Account, Address } from '@/shared/ui-entities';
 import { type FeedRecord } from '@/domains/collectives';
 
 export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; record: FeedRecord }>();
@@ -25,15 +26,17 @@ export const EventRecord = memo(({ event, chain, duration, name, description, wi
     <div className="flex flex-col gap-1 px-5">
       <div className="flex items-center gap-2">
         <div className="min-w-0 grow text-button-small">
-          <Account
-            accountId={event.accountId}
-            chain={chain}
-            title={name}
-            variant="short"
-            hideAddress
-            hideExplorers={!withFullAccountInfo}
-            hideIcon={!withFullAccountInfo}
-          />
+          {withFullAccountInfo ? (
+            <Account accountId={event.accountId} chain={chain} title={name} variant="short" hideAddress />
+          ) : (
+            <Address
+              address={toAddress(event.accountId, { prefix: chain.addressPrefix })}
+              title={name}
+              variant="short"
+              showIcon={false}
+              hideAddress
+            />
+          )}
         </div>
         <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
           <Duration seconds={duration} shortFormat />

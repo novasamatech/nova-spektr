@@ -61,42 +61,28 @@ export const evidenceResource = createSubscriptionResource<EvidenceRequestParams
 
 export type EvidenceContentRequestParams = {
   palletType: CollectivePalletsType;
-  api: ApiPromise;
-  accountId: AccountId;
-  blockHash?: string;
+  chainId: ChainId;
+  evidenceHash: HexString;
 };
 
 export const evidenceContentResource = createQueryResource<EvidenceContentRequestParams>({
-  key: ({ palletType, api, accountId, blockHash }) => [palletType, api.genesisHash.toHex(), accountId, blockHash],
+  key: ({ palletType, chainId, evidenceHash }) => [palletType, chainId, evidenceHash],
 })
-  .request<EvidenceContent | null>(async ({ palletType, api, accountId, blockHash }) => {
-    const chainId = api.genesisHash.toHex();
-    const apiInstance = blockHash ? await api.at(blockHash) : api;
-    const evidences = await collectiveCorePallet.storage.memberEvidence(palletType, apiInstance as ApiPromise, [
-      accountId,
-    ]);
-    const evidence = evidences.at(0);
+  .request<EvidenceContent | null>(async ({ palletType, chainId, evidenceHash }) => {
+    const response = await fetch(evidenceService.getEvidenceIpfsUrl(evidenceHash));
 
-    if (evidence?.evidence) {
-      const response = await fetch(evidenceService.getEvidenceIpfsUrl(evidence.evidence.value));
-
-      if (response.status < 200 || response.status >= 300) {
-        return null;
-      }
-      const content = await response.text();
-
-      return {
-        pallet: palletType,
-        chainId,
-        wish: evidence.evidence.wish,
-        accountId,
-        cid: evidenceService.getCidByEvidence(evidence.evidence.value),
-        hash: evidence.evidence.value,
-        content,
-      };
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`Failed to fetch evidence content: ${response.status} ${response.statusText}`);
     }
+    const content = await response.text();
 
-    return null;
+    return {
+      pallet: palletType,
+      chainId,
+      cid: evidenceService.getCidByEvidence(evidenceHash),
+      hash: evidenceHash,
+      content,
+    };
   })
   .retry({
     count: 3,
@@ -104,14 +90,14 @@ export const evidenceContentResource = createQueryResource<EvidenceContentReques
   })
   .cache<CollectivesStruct<EvidenceContent[]>>({
     store: createStore({}),
-    staleAfter: 60_000,
+    staleAfter: Number.POSITIVE_INFINITY,
     map(state, evidence) {
       if (evidence === null) return state;
       const prev = pickNestedValue(state, evidence.pallet, evidence.chainId) ?? [];
       const merged = merge({
         a: prev,
         b: [evidence],
-        mergeBy: e => [e.pallet, e.chainId, e.accountId],
+        mergeBy: e => [e.pallet, e.chainId, e.hash],
       });
       return setNestedValue(state, evidence.pallet, evidence.chainId, merged);
     },
@@ -229,6 +215,7 @@ const GET_REFERENDUMS_QUERY = gql`
     referendums {
       nodes {
         index
+        accountId
         evidence {
           nodes {
             hash
@@ -244,6 +231,7 @@ const referendumsGqlSchema = z.object({
     nodes: z.array(
       z.object({
         index: z.custom<ReferendumId>(),
+        accountId: z.custom<AccountId>(),
         evidence: z.object({
           nodes: z.array(
             z.object({
@@ -289,11 +277,13 @@ export const evidenceToReferendumRelationsResource = createQueryResource<Request
       pallet: palletType,
       chainId: chain.chainId,
       referendumId: item.index,
+      proposer: item.accountId,
       evidence: item.evidence.nodes.map(e => ({ hash: e.hash })),
     }));
   })
   .cache<CollectivesStruct<ReferendumWithEvidence[]>>({
     store: createStore({}),
+    staleAfter: 60_000,
     map: (state, data) => mergeNested(state, data, r => r.referendumId),
   })
   .build();

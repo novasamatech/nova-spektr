@@ -56,7 +56,7 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
         props={{
           referendumId: referendum.id,
           children: (
-            <div className="block w-full appearance-none p-4">
+            <div className="block w-full cursor-pointer appearance-none p-4">
               <Box direction="row" gap={2} verticalAlign="start">
                 <div className="shrink-0">
                   {rank ? (

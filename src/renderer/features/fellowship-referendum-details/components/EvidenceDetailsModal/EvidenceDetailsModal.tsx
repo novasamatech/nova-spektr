@@ -6,6 +6,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Evidence, type Referendum } from '@/domains/collectives';
 import { useFellowshipMember } from '@/aggregates/fellowship-member';
+import { useEvidenceHash } from '../../hooks/useEvidenceHash';
 import { useProposer } from '../../hooks/useProposer';
 import { AdditionalInfo } from '../AdditionalInfo';
 import { MemberProfile } from '../MemberProfile';
@@ -29,7 +30,7 @@ export const EvidenceDetailsModal = memo(({ referendum, evidence, children, titl
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const { data: fellowshipMember } = useFellowshipMember();
-
+  const { data: evidenceHash } = useEvidenceHash({ referendum, evidence });
   const { data: proposerMember } = useProposer(referendum, evidence);
 
   const isCurrentUser =
@@ -57,7 +58,7 @@ export const EvidenceDetailsModal = memo(({ referendum, evidence, children, titl
           <Box gap={4} shrink={0}>
             <MemberProfile referendum={referendum} evidence={evidence} />
             {!isCurrentUser && <Slot id={evidenceActionsSlot} props={{ evidence, transaction, onClose }} />}
-            <AdditionalInfo evidenceHash={evidence.hash} />
+            <AdditionalInfo evidenceHash={evidenceHash} />
           </Box>
         </div>
       </Modal.Content>

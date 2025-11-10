@@ -15,7 +15,7 @@ import {
 } from '@/domains/collectives';
 import { useBlock } from '@/domains/network';
 import { useFellowshipMember, useMemberPromotionReferendum } from '@/aggregates/fellowship-member';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 import { usePromotionEvidence, usePromotionEvidenceSubmissionDate } from '../hooks/usePromotionEvidence';
 import { usePromotionPeriod, usePromotionPeriodDates } from '../hooks/usePromotionPeriod';
 import { useVotes } from '../hooks/useVotes';
@@ -117,15 +117,15 @@ export const PromotionWidget = memo(({ member }: Props) => {
 export const EvidenceSubmitted = memo(() => {
   const { t } = useI18n();
 
-  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: promotionEvidenceSubmissionDate } = usePromotionEvidenceSubmissionDate();
   const { data: promotionEvidence } = usePromotionEvidence();
   const { fromDateFormatted, toDateFormatted, promotionPeriodDates, timelineValue, member } = usePromotionData();
 
   const { data: evidenceContent } = useEvidencesContent({
     palletType: 'fellowship',
-    api,
-    accountId: promotionEvidence?.accountId,
+    chainId: chain?.chainId,
+    evidenceHash: promotionEvidence?.hash,
   });
 
   const submissionDateFormatted = promotionEvidenceSubmissionDate

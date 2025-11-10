@@ -1,5 +1,6 @@
 import { type ChainId, type HexString } from '@/shared/core';
 import { type ReferendumId } from '@/shared/pallet/referenda';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType } from '../_lib/types';
 
 export type ReferendumMetaProvider = 'subsquare' | 'polkassembly';
@@ -14,4 +15,5 @@ export type ReferendumMeta = {
   created: number;
   status: string;
   blockHash?: HexString;
+  proposer: AccountId;
 };

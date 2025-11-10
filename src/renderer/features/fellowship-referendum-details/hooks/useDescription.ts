@@ -1,7 +1,7 @@
 import { nonNullable } from '@/shared/lib/utils';
 import { type Referendum, referendumService } from '@/domains/collectives';
 
-import { useMetadata } from './useReferendumMeta';
+import { useMetadata } from './useMetadata';
 
 export const useDescription = (referendum: Referendum | null) => {
   const { data: metadata, pending } = useMetadata(referendum);

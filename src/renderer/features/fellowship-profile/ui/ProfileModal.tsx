@@ -3,7 +3,7 @@ import { type PropsWithChildren } from 'react';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { FootnoteText, HeaderTitleText } from '@/shared/ui';
+import { Button, HeaderTitleText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
 import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
@@ -83,11 +83,15 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
 
                     {nonNullable(salary) && (
                       <SetActiveModal isActive={!active} disabled={!canChangeActiveState} salary={salary}>
-                        <div>
-                          <FootnoteText className="cursor-pointer text-primary-button-background-default">
-                            {t('fellowship.profile.switchStatus')}
-                          </FootnoteText>
-                        </div>
+                        <Button
+                          variant="text"
+                          pallet="primary"
+                          disabled={!canChangeActiveState}
+                          size="sm"
+                          className="p-0"
+                        >
+                          {t('fellowship.profile.switchStatus')}
+                        </Button>
                       </SetActiveModal>
                     )}
                   </Box>

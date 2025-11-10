@@ -84,7 +84,7 @@ export const PromotionRetentionEvidenceVoting = memo(({ evidence, tags, endBlock
           title,
           transaction,
           children: (
-            <div className="block w-full appearance-none p-4">
+            <div className="block w-full cursor-pointer appearance-none p-4">
               <Box direction="row" gap={2}>
                 <div className="shrink-0">
                   <TaskBadge rank={rank} isPromotion={isPromotion} isRetention={isRetention} />

@@ -2,11 +2,10 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
-import { type Evidence, useEvidencesContent } from '@/domains/collectives';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { type Evidence } from '@/domains/collectives';
+import { useEvidenceContent } from '../../hooks/useEvidenceContent';
 import { Card } from '../Card';
 import { NoEvidence } from '../ReferendumDescription';
 
@@ -14,15 +13,9 @@ type Props = {
   evidence: Evidence;
 };
 
-const useEvidenceContent = ({ accountId }: { accountId: AccountId }) => {
-  const api = useFellowshipApi();
-
-  return useEvidencesContent({ palletType: 'fellowship', api, accountId });
-};
-
 export const Content = memo(({ evidence }: Props) => {
   const { t } = useI18n();
-  const { data: content, pending } = useEvidenceContent({ accountId: evidence.accountId });
+  const { data: content, pending } = useEvidenceContent({ evidence });
 
   if (pending && !content) {
     return (

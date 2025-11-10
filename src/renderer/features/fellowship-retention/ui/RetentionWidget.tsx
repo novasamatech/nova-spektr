@@ -14,7 +14,7 @@ import {
   votingHistoryService,
 } from '@/domains/collectives';
 import { useFellowshipMemberEvidence, useMemberRetentionReferendum } from '@/aggregates/fellowship-member';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 import { useRetentionEvidenceSubmissionDate } from '../hooks/useRetentionEvidenceSubmissionDate';
 import { useRetentionPeriod, useRetentionPeriodDates } from '../hooks/useRetentionPeriod';
 import { useVotes } from '../hooks/useVotes';
@@ -182,7 +182,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
 const ReportSubmitted = memo(() => {
   const { t } = useI18n();
 
-  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { retentionPeriodDates, timelineValue } = useRetentionData();
   const { data: retentionEvidenceSubmissionDate } = useRetentionEvidenceSubmissionDate();
   const { data: evidence } = useFellowshipMemberEvidence();
@@ -191,8 +191,8 @@ const ReportSubmitted = memo(() => {
 
   const { data: evidenceContent } = useEvidencesContent({
     palletType: 'fellowship',
-    api,
-    accountId: retentionEvidence?.accountId,
+    chainId: chain?.chainId,
+    evidenceHash: retentionEvidence?.hash,
   });
 
   const submissionDate = useMemo(

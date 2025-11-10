@@ -6,7 +6,7 @@ import { FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, trackService } from '@/domains/collectives';
 import { useEvidenceContent } from '../hooks/useEvidenceContent';
-import { useMetadata } from '../hooks/useReferendumMeta';
+import { useMetadata } from '../hooks/useMetadata';
 
 import { AdditionalContext } from './AdditionalContext';
 import { Card } from './Card';
@@ -18,7 +18,7 @@ type Props = {
 
 export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
   const { data: referendumMeta } = useMetadata(referendum);
-  const { data: evidenceContent, pending: pendingEvidenceContent } = useEvidenceContent(referendum, evidence);
+  const { data: evidenceContent, pending: pendingEvidenceContent } = useEvidenceContent({ referendum, evidence });
 
   const canHaveEvidence =
     nonNullable(referendum) &&

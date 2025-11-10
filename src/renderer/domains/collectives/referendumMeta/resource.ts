@@ -4,7 +4,7 @@ import { createStore } from 'effector';
 import { polkassemblyApiService } from '@/shared/api/polkassembly';
 import { subsquareApiService } from '@/shared/api/subsquare';
 import { type ChainId } from '@/shared/core';
-import { dictionary, getBlockFromTime, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
+import { dictionary, getBlockFromTime, pickNestedValue, setNestedValue, toAccountId } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { createQueryResource } from '@/shared/query';
 import { POLKADOT_COLLECTIVES_CHAIN } from '../_lib/constants';
@@ -48,6 +48,7 @@ export const referendumMetaResource = createQueryResource<ReferendumMetaRequestP
             status: x.state.name,
             created: x.indexer.blockHeight,
             blockHash: x.indexer.blockHash,
+            proposer: toAccountId(x.proposer),
           })),
         );
       }
@@ -74,6 +75,7 @@ export const referendumMetaResource = createQueryResource<ReferendumMetaRequestP
               track: x.trackNumber,
               status: x.status,
               created: blockHeight,
+              proposer: toAccountId(x.proposer),
             };
           }),
         );

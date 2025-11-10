@@ -1,17 +1,24 @@
 import { type Evidence, type Referendum, useEvidencesContent } from '@/domains/collectives';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
-import { useProposer } from './useProposer';
+import { useEvidenceHash } from './useEvidenceHash';
 
-export const useEvidenceContent = (referendum: Referendum | null, evidence?: Evidence | null) => {
-  const api = useFellowshipApi();
+export const useEvidenceContent = ({
+  referendum,
+  evidence,
+}: {
+  referendum?: Referendum | null;
+  evidence?: Evidence | null;
+}) => {
+  const chain = useFellowshipChain();
 
-  const { data: proposer, pending: pendingProposer } = useProposer(referendum, evidence);
+  const { data: evidenceHash, pending: pendingEvidenceHash } = useEvidenceHash({ referendum, evidence });
+
   const { data: content, pending: pendingContent } = useEvidencesContent({
     palletType: 'fellowship',
-    api,
-    accountId: proposer?.accountId,
+    chainId: chain?.chainId,
+    evidenceHash: evidence?.hash || evidenceHash,
   });
 
-  return { data: content, pending: pendingProposer || pendingContent };
+  return { data: content, pending: pendingEvidenceHash || pendingContent };
 };

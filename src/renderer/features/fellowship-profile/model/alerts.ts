@@ -38,16 +38,14 @@ sample({
 /**
  * On first load, we should mark all alerts as seen because they are not new to
  * the user.
- *
- * TODO: change to true after testing
  */
-const $shouldMarkAlertsAsSeen = createStore(false);
+const $shouldMarkAlertsAsSeen = createStore(true);
 
-// persist({
-//   key: 'fellowship-profile-firstTimeAlertsMarkedSeen',
-//   store: $shouldMarkAlertsAsSeen,
-//   sync: true,
-// });
+persist({
+  key: 'fellowship-profile-firstTimeAlertsMarkedSeen',
+  store: $shouldMarkAlertsAsSeen,
+  sync: true,
+});
 
 sample({
   clock: $alerts,
