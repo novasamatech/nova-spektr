@@ -17,6 +17,7 @@ import { EmptyOperations } from './EmptyOperations';
 import { Operation } from './Operation';
 import { OperationsFilter } from './OperationsFilter';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
+import { AlreadySignedModal } from './modals/AlreadySignedModal';
 
 export const Operations = () => {
   const { formatDate } = useI18n();
@@ -105,6 +106,7 @@ export const Operations = () => {
       )}
 
       <AccountNotFoundModal />
+      <AlreadySignedModal />
     </>
   );
 };

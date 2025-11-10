@@ -1482,6 +1482,9 @@
     "accountNotFoundButton": "Close",
     "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
     "accountNotFoundTitle": "No account to sign operation",
+    "alreadySignedTitle": "Operation already signed",
+    "alreadySignedCloseButton": "Close",
+    "alreadySignedViewButton": "View",
     "addCallDataButton": "Add call data",
     "addToBasket": "Add to basket",
     "addedToBasket": "Added to basket",
@@ -1706,7 +1709,8 @@
       "unstake": "Unstake",
       "vote": "Vote"
     },
-    "viewOperation": "View operation"
+    "viewOperation": "View operation",
+    "shareOperationTooltip": "Share transaction link with signatories"
   },
   "portfolilo": {
     "selectNetworkLabel": "Select network"
