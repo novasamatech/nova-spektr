@@ -8,9 +8,11 @@ import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
-import { FeeWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm';
+
+import { ParsedFile } from './ParsedFile';
 
 type Props = {
   onGoBack?: () => void;
@@ -25,7 +27,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
   if (!confirm) return null;
 
-  const { initiator, signatory, chain, fee, amount } = confirm.meta;
+  const { initiator, signatory, chain, fee, amount, hasMultisigAccount, multisigDeposit } = confirm.meta;
 
   const asset = getNativeAsset(chain.assets);
 
@@ -48,17 +50,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
       <Box padding={[4, 5]}>
         <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
           <DetailRow label={t('vestedTransfer.confirmation.labels.parsedFile')}>
-            <Modal size="lg" height="fit">
-              <Modal.Trigger>
-                <Button className="p-0" size="sm" variant="text">
-                  {t('vestedTransfer.confirmation.buttons.openPreview')}
-                </Button>
-              </Modal.Trigger>
-              <Modal.Title close></Modal.Title>
-              <Modal.Content>
-                <Box padding={5}></Box>
-              </Modal.Content>
-            </Modal>
+            <ParsedFile />
           </DetailRow>
 
           <Separator className="border-filter-border" />
@@ -69,6 +61,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
               <AssetFiatBalance asset={asset} amount={amount} />
             </div>
           </DetailRow>
+          {hasMultisigAccount && <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />}
           <FeeWithLabel asset={asset} fee={fee} />
         </TransactionDetails>
       </Box>

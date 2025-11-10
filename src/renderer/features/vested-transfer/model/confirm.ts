@@ -1,3 +1,5 @@
+import { type BN } from '@polkadot/util';
+
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
@@ -6,6 +8,8 @@ import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-m
 export type VestedTransferConfirm = TxConfirmInfo & {
   fee: string;
   amount: string;
+  hasMultisigAccount: boolean;
+  multisigDeposit: BN;
 };
 
 const confirmStore = createTransactionConfirmStore<VestedTransferConfirm>({

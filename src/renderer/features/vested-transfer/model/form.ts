@@ -15,6 +15,7 @@ import {
 } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
+  createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
@@ -23,7 +24,7 @@ import { type AnyAccount, accountService, accounts, balanceService, block } from
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
-import { walletModel } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
@@ -131,7 +132,9 @@ sample({
   target: $csvErrors,
 });
 
-const $amount = form.fields.vestingSchedule.$value.map((vestingSchedule) =>
+const $vestingSchedule = form.fields.vestingSchedule.$value;
+
+const $amount = $vestingSchedule.map((vestingSchedule) =>
   vestingSchedule.reduce((amount, vestingRecord) => amount.add(vestingRecord.locked), new BN(0)),
 );
 
@@ -145,9 +148,9 @@ const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis)
 
 const $coreTx = combine(
   {
-    chain: form.fields.chain.$value,
+    chain: $chain,
     signatory: form.fields.signatory.$value,
-    vestingSchedule: form.fields.vestingSchedule.$value,
+    vestingSchedule: $vestingSchedule,
   },
   ({ chain, signatory, vestingSchedule }) => {
     if (!chain || !signatory || vestingSchedule.length === 0) return null;
@@ -168,6 +171,20 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
+});
+
+const $multisigThreshold = $route.map((route) => {
+  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+  if (!multisigAccount) return null;
+
+  return multisigAccount.threshold;
+});
+
+const $hasMultisigAccount = $multisigThreshold.map((threshold) => nonNullable(threshold));
+
+const { $multisigDeposit } = createMultisigDeposit({
+  $threshold: $multisigThreshold,
+  $api: $api,
 });
 
 const $signatoryBalance = combine(
@@ -392,6 +409,8 @@ const showConfirmation = sample({
     api: $api,
     route: $route,
     amount: $amount,
+    hasMultisigAccount: $hasMultisigAccount,
+    multisigDeposit: $multisigDeposit,
   },
   fn: (source, form) => {
     if (!nonNullableMap(source) || !nonNullableMap(form)) return null;
@@ -405,6 +424,8 @@ const showConfirmation = sample({
       route: source.route,
       fee: source.fee.toString(),
       amount: source.amount.toString(),
+      hasMultisigAccount: source.hasMultisigAccount,
+      multisigDeposit: source.multisigDeposit,
     } satisfies VestedTransferConfirm;
   },
 });
@@ -468,9 +489,13 @@ export const formModel = {
   $api,
   $fee,
   $pendingFee,
+  $multisigDeposit,
+  $hasMultisigAccount,
   $txErrors,
+  $chain,
   $asset,
   $amount,
+  $vestingSchedule,
   $csvErrors,
   $allChains: $allChains,
   $availableChains: $availableChains,
