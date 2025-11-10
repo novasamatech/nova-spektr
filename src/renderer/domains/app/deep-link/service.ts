@@ -174,7 +174,10 @@ function createDeepLinkHandler<T extends z.ZodType>({ schema }: DeepLinkHandlerC
   };
 }
 
-function extractParams<T extends z.ZodType>(params: Record<string, unknown>, schema: T): HandlerResult<z.infer<T>> {
+export function extractParams<T extends z.ZodType>(
+  params: Record<string, unknown>,
+  schema: T,
+): HandlerResult<z.infer<T>> {
   try {
     const parsed = schema.parse(params);
     const remainingParams = { ...params };

@@ -7,7 +7,7 @@ import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { Accordion } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
-import { Box, Copy } from '@/shared/ui-kit';
+import { Box, Copy, Tooltip } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
@@ -89,9 +89,14 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
 
           <OperationTitleStatus operation={operation} account={multisigAccount} />
 
-          <Copy value={deepLink} notification={t('general.notifications.operationLinkCopied')}>
-            <IconButton className="shrink-0 self-center text-icon-default" name="share" />
-          </Copy>
+          <Tooltip>
+            <Tooltip.Trigger>
+              <Copy value={deepLink} notification={t('general.notifications.operationLinkCopied')}>
+                <IconButton className="shrink-0 self-center text-icon-default" name="share" />
+              </Copy>
+            </Tooltip.Trigger>
+            <Tooltip.Content>{t('operations.shareOperationTooltip')}</Tooltip.Content>
+          </Tooltip>
         </div>
       </Accordion.Button>
       <Accordion.Content className="border-t border-divider">
