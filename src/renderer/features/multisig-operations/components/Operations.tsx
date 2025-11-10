@@ -48,6 +48,10 @@ export const Operations = () => {
     [filteredTxs, formatDate],
   );
 
+  useEffect(() => {
+    return () => deepLinkModel.operationsPageClosed();
+  }, []);
+
   // Scroll to focused operation
   useEffect(() => {
     if (focusedOperationId && focusedRef.current) {

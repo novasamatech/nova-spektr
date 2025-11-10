@@ -20,14 +20,12 @@ export const AlreadySignedModal = () => {
       content={<Animation variant="success" />}
       onClose={handleClose}
     >
-      <div className="flex w-full gap-4">
-        <Button pallet="secondary" size="sm" className="flex-1" onClick={handleClose}>
-          {t('operation.alreadySignedCloseButton')}
-        </Button>
-        <Button variant="fill" size="sm" className="flex-1" onClick={handleView}>
-          {t('operation.alreadySignedViewButton')}
-        </Button>
-      </div>
+      <Button pallet="secondary" size="sm" className="flex-1" onClick={handleClose}>
+        {t('operation.alreadySignedCloseButton')}
+      </Button>
+      <Button variant="fill" size="sm" className="flex-1" onClick={handleView}>
+        {t('operation.alreadySignedViewButton')}
+      </Button>
     </StatusModal>
   );
 };

@@ -11,6 +11,7 @@ import { networkModel } from '@/entities/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 
 const setFocusedOperationId = createEvent<string | null>();
+const operationsPageClosed = createEvent();
 
 const $operationId = createStore<string | null>(null).on(setFocusedOperationId, (_, v) => v);
 
@@ -19,7 +20,7 @@ const $focusedOperation = combine({
   list: multisigOperation.$list,
 }).map(({ operationId, list }) => list.find(item => item.id === operationId));
 
-const $focusedOperationId = createStore<string | null>(null);
+const $focusedOperationId = createStore<string | null>(null).reset(operationsPageClosed);
 
 const alreadySignedModalOpened = createEvent();
 const closeAlreadySignedModal = createEvent();
@@ -142,6 +143,7 @@ export function getOperationIdFromDeepLink(data: MultisigOperationDeepLinkData):
 export const deepLinkModel = {
   $focusedOperationId,
   setFocusedOperationId,
+  operationsPageClosed,
 
   $isAccountNotFoundModalOpen,
   closeNotFoundModal: closeNotFoundModal,
