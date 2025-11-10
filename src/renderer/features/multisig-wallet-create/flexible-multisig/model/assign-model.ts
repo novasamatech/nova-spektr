@@ -359,10 +359,11 @@ sample({
     signatories: signatoryModel.$signatories,
     chain: formModel.$chain,
     multisigAccountId: formModel.$multisigAccountId,
+    multisigAlreadyExists: formModel.$multisigAlreadyExists,
     successResult: $successResult,
   },
-  filter: ({ chain, multisigAccountId, successResult }) => {
-    return nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(successResult);
+  filter: ({ chain, multisigAccountId, successResult, multisigAlreadyExists }) => {
+    return nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(successResult) && !multisigAlreadyExists;
   },
   fn: ({ signatories, chain, name, threshold, multisigAccountId, successResult }) => {
     const timepoint = successResult!.params.timepoint;
