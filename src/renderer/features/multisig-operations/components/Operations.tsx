@@ -90,6 +90,7 @@ export const Operations = () => {
                           .map(tx => (
                             <li key={tx.id} ref={tx.id === focusedOperationId ? focusedRef : undefined}>
                               <Operation
+                                key={`${tx.id}-${tx.id === focusedOperationId}`}
                                 operation={tx}
                                 multisigAccount={multisigAccount}
                                 isDefaultOpen={tx.id === focusedOperationId}
