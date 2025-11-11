@@ -4,12 +4,14 @@ import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/tran
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
+import { type VestingSchedule } from '../lib/types';
 
 export type VestedTransferConfirm = TxConfirmInfo & {
   fee: string;
   amount: string;
   hasMultisigAccount: boolean;
   multisigDeposit: BN;
+  vestingSchedule: VestingSchedule[];
 };
 
 const confirmStore = createTransactionConfirmStore<VestedTransferConfirm>({

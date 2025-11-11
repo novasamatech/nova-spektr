@@ -27,7 +27,8 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
   if (!confirm) return null;
 
-  const { initiator, signatory, chain, fee, amount, hasMultisigAccount, multisigDeposit } = confirm.meta;
+  const { initiator, signatory, chain, fee, amount, hasMultisigAccount, multisigDeposit, vestingSchedule } =
+    confirm.meta;
 
   const asset = getNativeAsset(chain.assets);
 
@@ -50,7 +51,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
       <Box padding={[4, 5]}>
         <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
           <DetailRow label={t('vestedTransfer.confirmation.labels.parsedFile')}>
-            <ParsedFile />
+            <ParsedFile chain={chain} asset={asset} vestingSchedule={vestingSchedule} />
           </DetailRow>
 
           <Separator className="border-filter-border" />

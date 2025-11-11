@@ -1,6 +1,6 @@
-import { useUnit } from 'effector-react';
 import { useMemo } from 'react';
 
+import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button } from '@/shared/ui';
@@ -8,16 +8,15 @@ import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { type VestingSchedule } from '../lib/types';
-import { formModel } from '../model/form';
 
-export const ParsedFile = () => {
+type Props = {
+  chain: Chain;
+  asset: Asset;
+  vestingSchedule: VestingSchedule[];
+};
+
+export const ParsedFile = ({ chain, asset, vestingSchedule }: Props) => {
   const { t } = useI18n();
-
-  const vestingSchedule = useUnit(formModel.$vestingSchedule);
-  const chain = useUnit(formModel.$chain);
-  const asset = useUnit(formModel.$asset);
-
-  if (!chain || !asset) return null;
 
   const columns: Column<VestingSchedule>[] = useMemo(
     () => [
