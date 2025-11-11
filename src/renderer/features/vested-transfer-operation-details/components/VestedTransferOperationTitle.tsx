@@ -1,5 +1,7 @@
+import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
+import { TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
@@ -23,7 +25,14 @@ export const VestedTransferOperationTitle = ({ operation, title }: Props) => {
 
   const chain = chains[operation.chainId];
   const asset = chain ? getNativeAsset(chain.assets) : null;
-  const amount = transaction && getTransactionAmount(transaction);
+
+  let amount: string | BN | null = null;
+  if (transaction?.type === TransactionType.BATCH_ALL) {
+    const batchAmounts: string[] = transaction.args?.transactions?.map(getTransactionAmount);
+    amount = batchAmounts.reduce((amount, currentAmount) => amount.add(new BN(currentAmount)), new BN(0));
+  } else {
+    amount = transaction && getTransactionAmount(transaction);
+  }
 
   return (
     <>
