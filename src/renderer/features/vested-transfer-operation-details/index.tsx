@@ -4,7 +4,7 @@ import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { type IconNames } from '@/shared/ui';
-import { TransactionTitle, findCoreTransaction } from '@/entities/transaction';
+import { TransactionTitle, findCoreBatchAll, findCoreTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
 import { VestedTransferOperationTitle } from './components/VestedTransferOperationTitle';
@@ -31,16 +31,32 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
 
 multisigOperationsSDK(vestedTransferOperationDetailFeature, {
   icon({ operation, showCoreTransaction }) {
+    if (!operation.transaction) {
+      return null;
+    }
+
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-    const icon = transaction?.type && getOperationIcon(transaction.type);
+    const transactionFromBatchAll = findCoreBatchAll(operation.transaction);
+
+    const icon =
+      (transaction?.type && getOperationIcon(transaction.type)) ||
+      (transactionFromBatchAll?.type && getOperationIcon(transactionFromBatchAll.type));
 
     if (icon) {
       return icon;
     }
   },
   title({ operation, showCoreTransaction }) {
+    if (!operation.transaction) {
+      return null;
+    }
+
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-    const title = transaction?.type && getOperationTitle(transaction.type);
+    const transactionFromBatchAll = findCoreBatchAll(operation.transaction);
+
+    const title =
+      (transaction?.type && getOperationTitle(transaction.type)) ||
+      (transactionFromBatchAll?.type && getOperationTitle(transactionFromBatchAll.type));
     if (title) {
       return <VestedTransferOperationTitle operation={operation} title={title} />;
     }
