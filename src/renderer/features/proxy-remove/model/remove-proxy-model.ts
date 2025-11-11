@@ -140,15 +140,6 @@ const $coreTx = combine(
   ({ signatory, proxiedAccount, data, isPureProxiedNeedToBeKilled, chain }) => {
     if (!signatory || !data || !proxiedAccount || !chain) return null;
     if (isPureProxiedNeedToBeKilled) {
-      console.log({
-        chain,
-        accountId: signatory.accountId,
-        spawner: data.spawner,
-        proxyType: data.proxyType,
-        index: 0,
-        height: proxiedAccount.blockNumber,
-        extIndex: proxiedAccount.extrinsicIndex,
-      });
       return transactionBuilder.buildKillPureProxy({
         chain,
         accountId: signatory.accountId,
