@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type ComponentProps, useEffect } from 'react';
+import { type ComponentProps, useEffect, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
@@ -21,13 +21,25 @@ type Props = {
   onClose: () => void;
 };
 
-export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onSuccess, onFail, onClose }: Props) => {
+export const OperationSubmit = ({ autoCloseTimeout, isOpen, onSuccess, onFail, onClose }: Props) => {
   const { t } = useI18n();
 
   const submitStore = useUnit(submitModel.$submitStore);
   const failedTxs = useUnit(submitModel.$failedTxs);
   const succeedTxs = useUnit(submitModel.$succeedTxs);
   const { step, message } = useUnit(submitModel.$submitStep);
+
+  const resolvedAutoCloseTimeout = useMemo(() => {
+    if (submitUtils.isLoadingStep(step)) {
+      return 0;
+    }
+
+    if (submitUtils.isSuccessStep(step)) {
+      return autoCloseTimeout ?? 2000;
+    }
+
+    return autoCloseTimeout ?? 0;
+  }, [autoCloseTimeout, step]);
 
   useEffect(() => {
     if (submitStore) {
@@ -57,7 +69,7 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onSuccess, on
     }
 
     if (submitUtils.isSuccessStep(step)) {
-      return { title: t('transfer.successMessage'), variant: 'success', autoCloseTimeout: 2000 };
+      return { title: t('transfer.successMessage'), variant: 'success' };
     }
 
     if (submitUtils.isWarningStep(step) && submitStore) {
@@ -75,10 +87,14 @@ export const OperationSubmit = ({ autoCloseTimeout = 2000, isOpen, onSuccess, on
     <OperationResult
       isOpen={isOpen}
       {...getResultProps(step, message)}
-      autoCloseTimeout={!submitUtils.isLoadingStep(step) ? autoCloseTimeout : 0}
+      autoCloseTimeout={resolvedAutoCloseTimeout}
       onClose={handleModalClose}
     >
-      {submitUtils.isErrorStep(step) && <Button onClick={onClose}>{t('operation.submitErrorButton')}</Button>}
+      {submitUtils.isErrorStep(step) && (
+        <Button size="sm" onClick={onClose}>
+          {t('operation.submitErrorButton')}
+        </Button>
+      )}
     </OperationResult>
   );
 };

@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { type ComponentProps, useEffect } from 'react';
+import { type ComponentProps, useEffect, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Animation, Button, FootnoteText, SmallTitleText } from '@/shared/ui';
@@ -21,12 +21,24 @@ type Props = {
   onSubmit: () => void;
 };
 
-export const OperationSubmitWithAction = ({ autoCloseTimeout = 2000, isOpen, onClose, onSubmit }: Props) => {
+export const OperationSubmitWithAction = ({ autoCloseTimeout, isOpen, onClose, onSubmit }: Props) => {
   const { t } = useI18n();
 
   const submitStore = useUnit(submitModel.$submitStore);
   const failedTxs = useUnit(submitModel.$failedTxs);
   const { step, message } = useUnit(submitModel.$submitStep);
+
+  const resolvedAutoCloseTimeout = useMemo(() => {
+    if (submitUtils.isLoadingStep(step)) {
+      return 0;
+    }
+
+    if (submitUtils.isSuccessStep(step)) {
+      return autoCloseTimeout ?? 2000;
+    }
+
+    return autoCloseTimeout ?? 0;
+  }, [autoCloseTimeout, step]);
 
   useEffect(() => {
     if (submitStore) {
@@ -66,7 +78,7 @@ export const OperationSubmitWithAction = ({ autoCloseTimeout = 2000, isOpen, onC
     <OperationResult
       isOpen={isOpen}
       {...getResultProps(step, message)}
-      autoCloseTimeout={!submitUtils.isLoadingStep(step) ? autoCloseTimeout : 0}
+      autoCloseTimeout={resolvedAutoCloseTimeout}
       onClose={handleModalClose}
     >
       {submitUtils.isErrorStep(step) && <Button onClick={onClose}>{t('operation.submitErrorButton')}</Button>}
