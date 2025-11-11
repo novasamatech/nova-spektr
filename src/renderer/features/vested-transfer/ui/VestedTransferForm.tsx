@@ -229,7 +229,7 @@ const FeeSection = () => {
   const multisigDeposit = useUnit(formModel.$multisigDeposit);
   const hasMultisigAccount = useUnit(formModel.$hasMultisigAccount);
 
-  if (!asset) return null;
+  if (!asset || !fee) return null;
 
   return (
     <>
