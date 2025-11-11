@@ -48,6 +48,8 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
         return;
       }
 
+      votingStatus.flow.open({ referendumId: referendum?.id });
+
       if (canAddToBasket) {
         voting.saveToBasket({
           referendumId: referendum.id,
