@@ -82,6 +82,14 @@ const $unsignedAccounts = combine(
   },
 );
 
+const $isDepositRequired = $operation.map(operation => {
+  if (nullable(operation)) return true;
+
+  const approvalsCount = operation.events.filter(event => event.status === 'approve').length;
+
+  return approvalsCount === 0;
+});
+
 const $signatories = createSignatoriesStore({
   chain: $chain,
   initiator: $initiator,
@@ -224,9 +232,15 @@ const $canSubmit = combine(
     isFeeLoading: $isFeeLoading,
     isDepositLoading: $isDepositLoading,
     signatory: $signatory,
+    isDepositRequired: $isDepositRequired,
   },
-  ({ valid, isFeeLoading, isDepositLoading, signatory }) =>
-    valid && !isFeeLoading && !isDepositLoading && nonNullable(signatory),
+  ({ valid, isFeeLoading, isDepositLoading, signatory, isDepositRequired }) => {
+    if (!nonNullable(signatory)) return false;
+
+    const depositPending = isDepositRequired && isDepositLoading;
+
+    return valid && !isFeeLoading && !depositPending;
+  },
 );
 
 export const approveModel = {
@@ -237,6 +251,7 @@ export const approveModel = {
   $isDepositLoading,
   $errors,
   $multisigDeposit,
+  $isDepositRequired,
   $signatory,
   $signingPayloads,
   $initiator,
