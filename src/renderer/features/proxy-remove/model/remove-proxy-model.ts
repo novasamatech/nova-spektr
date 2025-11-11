@@ -409,34 +409,21 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
-  source: {
-    removeProxyStore: $removeProxyStore,
-    wrappedTx: $tx,
-    coreTx: $coreTx,
-    account: $proxiedAccount,
-  },
-  filter: (proxyData) => {
-    return nonNullable(proxyData.removeProxyStore) && nonNullable(proxyData.wrappedTx) && nonNullable(proxyData.coreTx);
-  },
-  fn: ({ account, removeProxyStore, wrappedTx, coreTx }, signParams) => ({
-    event: {
-      ...signParams,
-      chain: removeProxyStore!.chain,
-      account: account!,
-      wrappedTxs: [wrappedTx!],
-      coreTxs: [coreTx!],
-    },
+  clock: signModel.signed,
+  source: $step,
+  filter: (step) => step !== Step.NONE,
+  fn: (_, signatureResult) => ({
+    event: signatureResult,
     step: Step.SUBMIT,
   }),
   target: spread({
-    event: submitModel.events.formInitiated,
+    event: submitModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: {
     step: $step,
     chain: $chain,
@@ -444,8 +431,14 @@ sample({
     proxy: $proxyAccount,
     chainProxies: $chainProxies,
   },
-  filter: ({ step, chain, proxied, proxy }) => {
-    return removeProxyUtils.isSubmitStep(step) && nonNullable(chain) && nonNullable(proxied) && nonNullable(proxy);
+  filter: ({ step, chain, proxied, proxy, chainProxies }) => {
+    return (
+      removeProxyUtils.isSubmitStep(step) &&
+      nonNullable(chain) &&
+      nonNullable(proxied) &&
+      nonNullable(proxy) &&
+      nonNullable(chainProxies)
+    );
   },
   fn: ({ chainProxies, proxied, proxy, chain }) => {
     const proxyToRemove = chainProxies[chain!.chainId].find(
@@ -461,7 +454,7 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: {
     step: $step,
     wallet: $wallet,
@@ -507,7 +500,7 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: $isMultisig,
   filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
@@ -515,7 +508,7 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: $removeProxyStore,
   filter: (removeProxyStore, results) =>
     nonNullable(removeProxyStore) && submitUtils.isSuccessResult(results[0].result),
