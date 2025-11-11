@@ -75,7 +75,8 @@ export interface ProxiedAccount extends ChainAccount {
   connections: ProxiedConnection[];
   proxyVariant: ProxyVariant;
   deposit: string;
-  blockNumber: number;
+  blockNumber: number; // timeline chain blockNumber;
+  pendingBlockNumber?: number; // Block number from the chain it was created on that is being used to check against indexer block number;
   extrinsicIndex: number;
 }
 

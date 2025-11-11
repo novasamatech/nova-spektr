@@ -38,7 +38,7 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
 
   const [isConfirmOpen, setConfirmOpen] = useState<boolean>(false);
 
-  const proxyAddress = useUnit(assignModel.$proxiedAddress);
+  const pureCreated = useUnit(assignModel.$pureCreated);
   const flexibleMultisigCreated = useUnit(assignModel.$flexibleMultisigCreated);
 
   const activeStep = useUnit(flexibleMultisigModel.$step);
@@ -48,7 +48,7 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
 
   const modalTitle = isStep(activeStep, Step.NAME_NETWORK) ? (
     t('createMultisigAccount.flexibleMultisig.title')
-  ) : isStep(activeStep, Step.SIGN) && nonNullable(proxyAddress) ? (
+  ) : isStep(activeStep, Step.SIGN) && nonNullable(pureCreated) ? (
     <OperationTitle title={t('createMultisigAccount.flexibleMultisig.titleAssignControl')} chainId={chainId.value} />
   ) : (
     <OperationTitle title={t('createMultisigAccount.flexibleMultisig.titleOn')} chainId={chainId.value} />
@@ -62,7 +62,7 @@ export const FlexibleMultisigWallet = ({ isOpen, onToggle, onGoBack, children }:
     return setConfirmOpen(true);
   };
 
-  const isConfirmCreation = isStep(activeStep, Step.CONFIRM) && nonNullable(proxyAddress);
+  const isConfirmCreation = isStep(activeStep, Step.CONFIRM) && nonNullable(pureCreated);
 
   const confirmModalText = isConfirmCreation
     ? 'createMultisigAccount.flexibleMultisig.closeCreationDescription'

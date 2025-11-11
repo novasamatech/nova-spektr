@@ -129,12 +129,12 @@ export const syncProxiedAccounts = ({
         return false;
       }
 
-      if (!account.blockNumber) {
-        return true;
-      } else {
-        const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-        return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
+      if (nullable(account.pendingBlockNumber)) {
+        return false;
       }
+
+      const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
+      return !lastIndexedBlock || lastIndexedBlock >= account.pendingBlockNumber;
     }),
   );
 

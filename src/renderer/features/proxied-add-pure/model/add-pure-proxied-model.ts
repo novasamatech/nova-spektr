@@ -1,5 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type UnsubscribePromise } from '@polkadot/api/types';
+import { type Codec } from '@polkadot/types/types';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { delay, spread } from 'patronum';
 
@@ -23,6 +24,7 @@ import {
   type AddPureProxiedConfirm,
   addPureProxiedConfirmModel as confirmModel,
 } from '@/features/operations/OperationsConfirm/AddPureProxied';
+import { proxiedWalletService } from '@/features/proxied-wallet';
 import { proxiesModel } from '@/features/proxies';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { Step } from '../lib/types';
@@ -52,48 +54,65 @@ const $initiatorWallet = combine(
 
 type GetPureProxyParams = {
   api: ApiPromise;
-  accountId: AccountId;
+  spawner: AccountId;
   timepoint: Timepoint;
 };
+
+type PureCreatedEvent = {
+  pure: AccountId;
+  proxyType: Codec;
+  extrinsicIndex: number;
+  disambiguationIndex: number;
+};
+
 type GetPureProxyResult = {
-  accountId: AccountId;
+  pure: AccountId;
   blockNumber: number;
+  pendingBlockNumber: number;
   extrinsicIndex: number;
 };
+
 const getPureProxyFx = createEffect(
-  async ({ api, accountId, timepoint }: GetPureProxyParams): Promise<GetPureProxyResult> => {
-    let blockNumber = timepoint.height;
-
-    const apiAtBlockHash = await api.rpc.chain.getBlockHash(timepoint.height);
-
-    const apiAt = await api.at(apiAtBlockHash);
-
-    const validationData = await apiAt.query?.['parachainSystem']?.['validationData']?.();
-
-    if (validationData) {
-      const validationDataJson = validationData.toJSON() as { relayParentNumber: number };
-      if (Number.isInteger(validationDataJson.relayParentNumber)) {
-        blockNumber = validationDataJson.relayParentNumber;
-      }
-    }
-
-    return new Promise(resolve => {
+  async ({ api, spawner, timepoint }: GetPureProxyParams): Promise<GetPureProxyResult> => {
+    const pureCreated = await new Promise<PureCreatedEvent>(resolve => {
       const pureCreatedParams = {
         section: 'proxy',
         method: 'PureCreated',
-        data: [undefined, toAddress(accountId, { prefix: systemPallet.consts.ss58Prefix(api) })],
+        data: [undefined, toAddress(spawner, { prefix: systemPallet.consts.ss58Prefix(api) })],
       };
 
       const unsubscribe: UnsubscribePromise = subscriptionService.subscribeEvents(api, pureCreatedParams, event => {
         unsubscribe?.then(fn => fn());
 
         resolve({
-          accountId: pjsSchema.helpers.toAccountId(event.data[0].toHex()),
-          blockNumber,
+          pure: pjsSchema.helpers.toAccountId(event.data[0].toHex()),
+          proxyType: event.data[2],
+          disambiguationIndex: parseInt(event.data[3].toHuman() as string),
           extrinsicIndex: timepoint.index,
         });
       });
     });
+
+    const apiAtBlockHash = await api.rpc.chain.getBlockHash(timepoint.height);
+
+    const apiAt = await api.at(apiAtBlockHash);
+
+    const blockNumber = await proxiedWalletService.findPureBlockNumber({
+      api: apiAt,
+      blockNumber: timepoint.height,
+      pure: pureCreated.pure,
+      spawner,
+      type: pureCreated.proxyType,
+      disambiguationIndex: pureCreated.disambiguationIndex,
+      extrinsicIndex: timepoint.index,
+    });
+
+    return {
+      pure: pureCreated.pure,
+      blockNumber,
+      pendingBlockNumber: timepoint.height,
+      extrinsicIndex: pureCreated.extrinsicIndex,
+    };
   },
 );
 
@@ -230,7 +249,7 @@ sample({
     nonNullable(chain.chainId),
   fn: ({ apis, initiator, chain }, submitData) => ({
     api: apis[chain!.chainId],
-    accountId: initiator!.accountId,
+    spawner: initiator!.accountId,
     timepoint: (submitData[0].params as ExtrinsicResultParams).timepoint,
   }),
   target: getPureProxyFx,
@@ -243,7 +262,7 @@ sample({
     chain: formModel.form.fields.chain.$value,
   },
   filter: ({ initiator, chain }) => nonNullable(initiator) && nonNullable(chain),
-  fn: ({ initiator, chain }, { accountId }) => [
+  fn: ({ initiator, chain }, { pure: accountId }) => [
     {
       accountId: initiator!.accountId,
       proxiedAccountId: accountId,
@@ -263,7 +282,7 @@ sample({
     proxyDeposit: formModel.$proxyDeposit,
   },
   filter: ({ initiator, chain }) => nonNullable(initiator) && nonNullable(chain),
-  fn: ({ chain, initiator, proxyDeposit }, { accountId, blockNumber, extrinsicIndex }) => {
+  fn: ({ chain, initiator, proxyDeposit }, { pure: accountId, blockNumber, extrinsicIndex, pendingBlockNumber }) => {
     return [
       {
         accountId,
@@ -277,6 +296,7 @@ sample({
         ],
         proxyVariant: ProxyVariant.PURE,
         blockNumber,
+        pendingBlockNumber,
         extrinsicIndex,
         deposit: proxyDeposit,
       },

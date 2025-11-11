@@ -17,8 +17,10 @@ import { walletGroupSlot, walletIconSlot } from '@/features/wallet-select';
 import { WalletGroup } from './components/WalletGroup';
 import { walletActionsSlot } from './components/WalletRow';
 import { walletsModel } from './model/wallets';
-import { proxiedService } from './service';
+import { proxiedService, proxiedWalletService } from './service';
 import { type ProxyTransaction } from './types';
+
+export { proxiedWalletService };
 
 export { walletActionsSlot, type ProxyTransaction };
 
