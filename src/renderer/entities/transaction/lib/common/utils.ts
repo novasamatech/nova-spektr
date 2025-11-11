@@ -153,6 +153,7 @@ export const isWrappedInBatchAll = (type: TransactionType) => {
     TransactionType.DELEGATE,
     TransactionType.UNDELEGATE,
     TransactionType.REMOVE_VOTE,
+    TransactionType.VESTED_TRANSFER,
   ]);
 
   return batchAllOperations.has(type);
@@ -243,6 +244,10 @@ export const getTransactionAmount = (tx: Transaction | DecodedTransaction): stri
     } else {
       return vote.SplitAbstain.abstain.replaceAll(',', '');
     }
+  }
+
+  if (txType === TransactionType.VESTED_TRANSFER) {
+    return tx.args.schedule.locked;
   }
 
   return null;

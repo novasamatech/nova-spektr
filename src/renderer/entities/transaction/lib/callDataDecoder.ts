@@ -17,6 +17,7 @@ import {
   PROXY_SECTION,
   STAKING_SECTION,
   TRANSFER_SECTIONS,
+  VESTING_SECTION,
   XCM_SECTIONS,
 } from './common/constants';
 
@@ -222,9 +223,14 @@ const getCallDataParser: Record<
     };
   },
   [TransactionType.VESTED_TRANSFER]: (decoded): Record<string, any> => {
+    const schedule = decoded.args[1] as any;
     return {
       target: decoded.args[0].toString(),
-      schedule: decoded.args[1].toHuman(),
+      schedule: {
+        locked: schedule.locked.toString(),
+        perBlock: schedule.perBlock.toString(),
+        startingBlock: schedule.startingBlock.toString(),
+      },
     };
   },
   [TransactionType.ASSET_TRANSFER]: (decoded): Record<string, any> => {
@@ -521,8 +527,18 @@ export const getTransactionType = (method: string, section: string): Transaction
   const multisigType = getMultisigTxType(method, section);
   const governanceType = getGovernanceTxType(method, section);
   const collectiveType = getCollectiveTxType(method, section);
+  const vestingType = getVestingTxType(method, section);
 
-  return transferType || stakingType || xcmType || proxyType || multisigType || governanceType || collectiveType;
+  return (
+    transferType ||
+    stakingType ||
+    xcmType ||
+    proxyType ||
+    multisigType ||
+    governanceType ||
+    collectiveType ||
+    vestingType
+  );
 };
 
 const getTransferTxType = (method: string, section: string): TransactionType | undefined => {
@@ -617,5 +633,13 @@ const getCollectiveTxType = (method: string, section: string): TransactionType |
   return {
     vote: TransactionType.COLLECTIVE_VOTE,
     set_active: TransactionType.COLLECTIVE_SET_ACTIVE,
+  }[method];
+};
+
+const getVestingTxType = (method: string, section: string): TransactionType | undefined => {
+  if (VESTING_SECTION !== section) return;
+
+  return {
+    vestedTransfer: TransactionType.VESTED_TRANSFER,
   }[method];
 };

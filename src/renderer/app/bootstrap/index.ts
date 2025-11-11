@@ -132,6 +132,8 @@ export const bootstrap = () => {
     import('@/features/proxy-operation-details').then(({ proxyOperationDetailFeature }) => proxyOperationDetailFeature),
     import('@/features/proxy-basket').then(({ proxyBasketFeature }) => proxyBasketFeature),
 
+    import('@/features/vested-transfer-operation-details').then(({ vestedTransferOperationDetailFeature }) => vestedTransferOperationDetailFeature),
+
     import('@/features/import-db').then(({ importDBFeature }) => importDBFeature),
     import('@/features/hidden-wallets').then(({ hiddenWalletsFeature }) => hiddenWalletsFeature),
     import('@/features/assethub-migration-modal').then(({ assethubMigrationModalFeature }) => assethubMigrationModalFeature),
