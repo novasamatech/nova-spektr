@@ -130,11 +130,11 @@ export const syncProxiedAccounts = ({
       }
 
       if (nullable(account.pendingBlockNumber)) {
-        return false;
+        true;
       }
 
       const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-      return !lastIndexedBlock || lastIndexedBlock >= account.pendingBlockNumber;
+      return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
     }),
   );
 
