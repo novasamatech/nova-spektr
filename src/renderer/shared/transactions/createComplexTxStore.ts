@@ -1,8 +1,9 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Store, combine, createEffect, createStore, sample } from 'effector';
+import { type Store, combine, createStore, sample } from 'effector';
 
 import { type Chain, type Transaction } from '@/shared/core';
-import { assert, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { takeLast } from '@/shared/effector';
+import { assert, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AnyAccount, transactionService } from '@/domains/network';
 import { getExtrinsic } from '@/entities/transaction';
 
@@ -36,12 +37,14 @@ export const createComplexTxStore = <T extends Transaction>({
   const $feeTx = createStore<Transaction | null>(null);
 
   type WrapParams = {
-    api: ApiPromise;
-    transaction: T;
+    api: ApiPromise | null;
+    transaction: T | null;
     route: AnyAccount[];
   };
 
   const wrapLegacyTransactionHandler = async ({ transaction, route, api }: WrapParams) => {
+    if (nullable(transaction) || nullable(api)) return null;
+
     const tx = await transactionService.wrapLegacyTransaction(transaction, route, api);
     const signatory = route.at(-1);
 
@@ -54,13 +57,13 @@ export const createComplexTxStore = <T extends Transaction>({
     return tx;
   };
 
-  const wrapTransactionFx = createEffect(wrapLegacyTransactionHandler);
-  const wrapFeeTransactionFx = createEffect(wrapLegacyTransactionHandler);
+  const wrapTransactionFx = takeLast({ fn: wrapLegacyTransactionHandler, key: () => 'wrapTransactionFx' });
+  const wrapFeeTransactionFx = takeLast({ fn: wrapLegacyTransactionHandler, key: () => 'wrapFeeTransactionFx' });
 
   const wrapTransaction = sample({
     clock: [transaction, api, $route],
     source: { transaction, api, route: $route },
-  }).filter({ fn: nonNullableMap });
+  });
 
   sample({
     clock: wrapTransaction,

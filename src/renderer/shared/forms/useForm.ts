@@ -8,12 +8,14 @@ import { type Form, type ValidationError } from './types';
 type HookField<Value> = {
   value: Value;
   onChange(v: Value): void;
+  markAsTouched(): void;
   reset(): void;
   resetError(): void;
   hasError: boolean;
   errorMessage: string;
   errorValues?: Record<string, unknown>;
   errors: ValidationError[];
+  touched: boolean;
 };
 
 type Hook<Fields> = {
@@ -32,12 +34,15 @@ export const useForm = <Fields>(form: Form<Fields>): Hook<Fields> => {
   for (const [key, field] of fieldEntries) {
     const value = useUnit(field.$value);
     const errors = useUnit(field.$errors);
+    const touched = useUnit(field.$touched);
     fields[key] = {
       value,
       errors,
+      touched,
       reset: field.reset,
       resetError: field.resetError,
       onChange: field.change,
+      markAsTouched: field.markAsTouched,
       hasError: errors.length > 0,
       errorMessage: errors.at(0)?.message ?? '',
       errorValues: errors.at(0)?.values,
