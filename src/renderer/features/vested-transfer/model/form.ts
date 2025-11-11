@@ -5,14 +5,7 @@ import { readonly } from 'patronum';
 
 import { type Chain } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
-import {
-  assert,
-  getNativeAsset,
-  nonNullable,
-  nonNullableMap,
-  nullable,
-  withdrawableAmountBN,
-} from '@/shared/lib/utils';
+import { assert, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
   createMultisigDeposit,
@@ -61,16 +54,18 @@ const form: Form<FormData> = createForm<FormData>({
       validator: () => ({
         source: combine({
           fee: $fee,
-          balance: $signatoryBalance,
+          isMultisig: $hasMultisigAccount,
+          multisigDeposit: $multisigDeposit,
+          signatoryBalance: $signatoryBalance,
         }),
-        fn: (signatory, _, { balance, fee }) => {
+        fn: (signatory, _, { fee, isMultisig, multisigDeposit, signatoryBalance }) => {
           if (!signatory) {
             return { message: 'vestedTransfer.errors.form.signatoryRequired' };
           }
 
-          const withdrawable = withdrawableAmountBN(balance);
-          if (withdrawable.lt(fee)) {
-            return { message: 'vestedTransfer.errors.form.insufficientBalance' };
+          const required = multisigDeposit.add(new BN(fee));
+          if (isMultisig && required.gt(new BN(signatoryBalance))) {
+            return { message: 'vestedTransfer.errors.form.notEnoughMultisigTokens' };
           }
         },
       }),

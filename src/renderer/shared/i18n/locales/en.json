@@ -2316,7 +2316,7 @@
       "form": {
         "chainRequired": "Chain is required",
         "csvRequired": "CSV file is required",
-        "insufficientBalance": "Insufficient balance to pay network fee",
+        "notEnoughMultisigTokens": "Not enough tokens to pay multisig deposit and network fee",
         "signatoryRequired": "Signatory is required"
       }
     },
