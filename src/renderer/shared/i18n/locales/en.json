@@ -177,81 +177,6 @@
       "title": "Some of the selected operations are unavailable"
     }
   },
-  "vestedTransfer": {
-    "confirmation": {
-      "labels": {
-        "parsedFile": "Parsed file",
-        "totalAmount": "Total amount"
-      }
-    },
-    "form": {
-      "fields": {
-        "network": {
-          "label": "Recipient network",
-          "placeholder": "Select network..."
-        },
-        "signatory": {
-          "label": "Sign with",
-          "placeholder": "Select signatory..."
-        },
-        "initiator": {
-          "label": "Submit from",
-          "placeholder": "Select account..."
-        },
-        "csvFile": {
-          "label": "Data table file",
-          "placeholder": "Select file from your computer",
-          "exampleButton": "Example"
-        },
-        "amount": {
-          "label": "Total amount"
-        }
-      }
-    },
-    "parsedFile": {
-      "title": "Parsed file",
-      "buttons": {
-        "openPreview": "Open preview"
-      },
-      "table": {
-        "headers": {
-          "recipient": "Recipient",
-          "startBlock": "Start block",
-          "perBlock": "Per block",
-          "locked": "Locked"
-        },
-        "hints": {
-          "startBlock": "Block number when vesting starts",
-          "perBlock": "Tokens released per block during vesting, in planks. Defines unlock speed.",
-          "startBlockTime": "Starts on {date} at {time}"
-        }
-      }
-    },
-    "errors": {
-      "form": {
-        "chainRequired": "Chain is required",
-        "signatoryRequired": "Signatory is required",
-        "csvRequired": "CSV file is required",
-        "insufficientBalance": "Insufficient balance to pay network fee"
-      },
-      "csv": {
-        "parseFailedTitle": "Parsing failed",
-        "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
-        "missingChainDescription": "Cannot parse a file without selecting a network.",
-        "invalidDataTitle": "Found {errorCount} errors in CSV file",
-        "invalidDataRow": "Row {row}",
-
-        "rowErrors": {
-          "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
-          "LOCKED_NOT_POSITIVE_INT": "Amount must be a positive integer",
-          "START_BLOCK_NOT_POSITIVE_INT": "Start block must be a positive integer",
-          "PER_BLOCK_NOT_POSITIVE_INT": "Per block must be a positive integer",
-          "START_BLOCK_IN_PAST": "Start block cannot be in the past",
-          "UNKNOWN_ERROR": "Unknown error"
-        }
-      }
-    }
-  },
   "callData": {
     "callData": "Call data",
     "confirmation": {
@@ -1586,6 +1511,7 @@
       "destinationChain": "To network",
       "fromNetwork": "From network",
       "multisigWallet": "Wallet",
+      "parsedFile": "Parsed file",
       "payee": "Rewards destination",
       "recipient": "Recipient",
       "referendum": "Referendum",
@@ -1599,8 +1525,7 @@
       "toNetwork": "To network",
       "validators": "Validators",
       "votes": "Number of votes",
-      "wallet": "Wallet",
-      "parsedFile": "Parsed file"
+      "wallet": "Wallet"
     },
     "detailsTitle": "Details",
     "errorWatchOnly": "Can't sign with watch only account.",
@@ -1735,12 +1660,12 @@
       "startStakingOn": "Start Staking { asset } on",
       "transferFrom": "Transfer { asset } from",
       "transferOn": "Transfer { asset } on",
-      "vestedTransfer": "Vested transfer",
-      "vestedTransferOn": "Vested transfer on",
       "undelegateOn": "Revoke delegation on",
       "unknownOn": "Unknown Operation on",
       "unlockOn": "Unlock on",
       "unstakeOn": "Unstake { asset } on",
+      "vestedTransfer": "Vested transfer",
+      "vestedTransferOn": "Vested transfer on",
       "vote": "Vote { asset } on"
     },
     "noOperationsDescription": "You haven't made any operations yet. <br /> If you updated your Flexible Multisig, previous operations are available on the old multisig.",
@@ -1776,8 +1701,8 @@
       "unknown": "Unknown Operation",
       "unlock": "Unlock",
       "unstake": "Unstake",
-      "vote": "Vote",
-      "vestedTransfer": "Vested transfer"
+      "vestedTransfer": "Vested transfer",
+      "vote": "Vote"
     },
     "viewOperation": "View operation"
   },
@@ -2364,6 +2289,80 @@
     "sender": "Sender",
     "title": "Send",
     "wallet": "Wallet"
+  },
+  "vestedTransfer": {
+    "confirmation": {
+      "labels": {
+        "parsedFile": "Parsed file",
+        "totalAmount": "Total amount"
+      }
+    },
+    "errors": {
+      "csv": {
+        "invalidDataRow": "Row {row}",
+        "invalidDataTitle": "Found {errorCount} errors in CSV file",
+        "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
+        "missingChainDescription": "Cannot parse a file without selecting a network.",
+        "parseFailedTitle": "Parsing failed",
+        "rowErrors": {
+          "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
+          "LOCKED_NOT_POSITIVE_INT": "Amount must be a positive integer",
+          "PER_BLOCK_NOT_POSITIVE_INT": "Per block must be a positive integer",
+          "START_BLOCK_IN_PAST": "Start block cannot be in the past",
+          "START_BLOCK_NOT_POSITIVE_INT": "Start block must be a positive integer",
+          "UNKNOWN_ERROR": "Unknown error"
+        }
+      },
+      "form": {
+        "chainRequired": "Chain is required",
+        "csvRequired": "CSV file is required",
+        "insufficientBalance": "Insufficient balance to pay network fee",
+        "signatoryRequired": "Signatory is required"
+      }
+    },
+    "form": {
+      "fields": {
+        "amount": {
+          "label": "Total amount"
+        },
+        "csvFile": {
+          "exampleButton": "Example",
+          "label": "Data table file",
+          "placeholder": "Select file from your computer"
+        },
+        "initiator": {
+          "label": "Submit from",
+          "placeholder": "Select account..."
+        },
+        "network": {
+          "label": "Recipient network",
+          "placeholder": "Select network..."
+        },
+        "signatory": {
+          "label": "Sign with",
+          "placeholder": "Select signatory..."
+        }
+      }
+    },
+    "parsedFile": {
+      "buttons": {
+        "openPreview": "Open preview"
+      },
+      "table": {
+        "headers": {
+          "locked": "Locked",
+          "perBlock": "Per block",
+          "recipient": "Recipient",
+          "startBlock": "Start block"
+        },
+        "hints": {
+          "perBlock": "Tokens released per block during vesting, in planks. Defines unlock speed.",
+          "startBlock": "Block number when vesting starts",
+          "startBlockTime": "Starts on {date} at {time}"
+        }
+      },
+      "title": "Parsed file"
+    }
   },
   "voteChart": {
     "aye": "Aye",
