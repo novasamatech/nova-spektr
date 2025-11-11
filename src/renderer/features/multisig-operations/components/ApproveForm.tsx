@@ -35,6 +35,7 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
   const fee = useUnit(approveModel.$fee);
   const isFeeLoading = useUnit(approveModel.$isFeeLoading);
   const isDepositLoading = useUnit(approveModel.$isDepositLoading);
+  const isDepositRequired = useUnit(approveModel.$isDepositRequired);
   const multisigDeposit = useUnit(approveModel.$multisigDeposit);
   const wallets = useUnit(walletModel.$wallets);
   const errors = useUnit(approveModel.$errors);
@@ -93,7 +94,9 @@ export const ApproveForm = ({ unsignedAccounts, chain, nativeAsset, onSubmit, as
 
       {asset && (
         <>
-          <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
+          {isDepositRequired && (
+            <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
+          )}
           {signatory && <FeeWithLabel fee={fee} asset={asset} isLoading={isFeeLoading} />}
         </>
       )}
