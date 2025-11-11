@@ -37,17 +37,13 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
         (vote === 'nay' && referendumVote?.decision === 'Nay');
 
       if (canAddToBasket && nonNullable(transaction) && alreadyChainVoted) {
-        voting.flow.open({ vote });
-        voting.removeFromBasket();
-        voting.flow.close({ vote: null });
-        votingStatus.flow.close({ referendumId: null });
+        voting.removeFromBasket(referendum.id);
         return;
       }
 
       if (alreadyChainVoted) return;
 
       if (decision === vote) {
-        votingStatus.flow.close({ referendumId: null });
         setDecision(null);
         return;
       }
@@ -55,9 +51,10 @@ export const VotingActions = memo(({ referendum, transaction }: Props) => {
       votingStatus.flow.open({ referendumId: referendum?.id });
 
       if (canAddToBasket) {
-        voting.flow.open({ vote });
-        voting.saveToBasket();
-        voting.flow.close({ vote: null });
+        voting.saveToBasket({
+          referendumId: referendum.id,
+          vote,
+        });
       } else {
         setDecision(vote);
       }
