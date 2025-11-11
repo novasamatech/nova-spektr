@@ -28,7 +28,7 @@ export const OperationSubmitWithAction = ({ autoCloseTimeout, isOpen, onClose, o
   const failedTxs = useUnit(submitModel.$failedTxs);
   const { step, message } = useUnit(submitModel.$submitStep);
 
-  const resolvedAutoCloseTimeout = useMemo(() => {
+  const computedAutoCloseTimeout = useMemo(() => {
     if (submitUtils.isLoadingStep(step)) {
       return 0;
     }
@@ -78,7 +78,7 @@ export const OperationSubmitWithAction = ({ autoCloseTimeout, isOpen, onClose, o
     <OperationResult
       isOpen={isOpen}
       {...getResultProps(step, message)}
-      autoCloseTimeout={resolvedAutoCloseTimeout}
+      autoCloseTimeout={computedAutoCloseTimeout}
       onClose={handleModalClose}
     >
       {submitUtils.isErrorStep(step) && <Button onClick={onClose}>{t('operation.submitErrorButton')}</Button>}
