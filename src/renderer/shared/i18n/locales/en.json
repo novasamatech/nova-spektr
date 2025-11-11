@@ -2330,17 +2330,9 @@
           "label": "Data table file",
           "placeholder": "Select file from your computer"
         },
-        "initiator": {
-          "label": "Submit from",
-          "placeholder": "Select account..."
-        },
         "network": {
           "label": "Recipient network",
           "placeholder": "Select network..."
-        },
-        "signatory": {
-          "label": "Sign with",
-          "placeholder": "Select signatory..."
         }
       }
     },

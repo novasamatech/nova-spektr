@@ -1,23 +1,21 @@
 import { useUnit } from 'effector-react';
 import { capitalize } from 'lodash';
-import { type FormEvent } from 'react';
+import { type FormEvent, memo, useMemo } from 'react';
 import { Trans } from 'react-i18next';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset } from '@/shared/lib/utils';
-import { Alert, BodyText, Button, DetailRow, FootnoteText, InfoLink } from '@/shared/ui';
-import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
-import { Box, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
+import { getNativeAsset, transferableAmount } from '@/shared/lib/utils';
+import { Alert, BodyText, Button, DetailRow, FootnoteText, InfoLink, InputHint } from '@/shared/ui';
+import { AssetBalance, ChainSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
+import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
+import { accounts } from '@/domains/network';
+import { balanceModel, balanceUtils } from '@/entities/balance';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { VestingScheduleFileErrors } from '../lib/types';
 import { formModel } from '../model/form';
-
-import { InitiatorSelect } from './InitiatorSelect';
-import { NetworkSelect } from './NetworkSelect';
-import { SignatorySelect } from './SignatorySelect';
 
 const CSV_TEMPLATE_LINK =
   'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/templates/vested-transfer-template.csv';
@@ -44,8 +42,7 @@ export const VestedTransferForm = () => {
           <Box padding={[4, 5]} gap={4}>
             <TransactionValidationError errors={txErrors} wallets={wallets} />
             <NetworkSelect />
-            <InitiatorSelect />
-            {showSignatories && <SignatorySelect />}
+            {showSignatories && <Signatories />}
             <UploadCSV />
             <CSVErrors />
             <TotalAmountSection />
@@ -59,6 +56,74 @@ export const VestedTransferForm = () => {
         </Button>
       </Modal.Footer>
     </>
+  );
+};
+
+export const NetworkSelect = memo(() => {
+  const { t } = useI18n();
+
+  const allChains = useUnit(formModel.$allChains);
+  const {
+    fields: { chain },
+  } = useForm(formModel.form);
+
+  return (
+    <Field text={t('vestedTransfer.form.fields.network.label')}>
+      <ChainSelect
+        placeholder={t('vestedTransfer.form.fields.network.placeholder')}
+        value={chain.value}
+        options={allChains}
+        onChange={chain.onChange}
+      />
+      <InputHint variant="error" active={chain.hasError}>
+        {t(chain.errorMessage)}
+      </InputHint>
+    </Field>
+  );
+});
+
+const Signatories = () => {
+  const { t } = useI18n();
+
+  const {
+    fields: { signatory, initiator },
+  } = useForm(formModel.form);
+
+  const signatories = useUnit(formModel.$signatories);
+  const chain = useUnit(formModel.$chain);
+  const asset = useUnit(formModel.$asset);
+
+  const balances = useUnit(balanceModel.$balanceMap);
+  const allAccounts = useUnit(accounts.$list);
+  const allWallets = useUnit(walletModel.$wallets);
+
+  const signatoriesWithBalance = useMemo(() => {
+    if (!chain || !asset) {
+      return [];
+    }
+
+    return signatories.map((signatory) => {
+      const balance = balanceUtils.getBalance(balances, signatory.accountId, chain.chainId, asset.assetId);
+      return { account: signatory, balance: transferableAmount(balance) };
+    });
+  }, [signatories, balances, chain, asset]);
+
+  if (!chain || !asset) {
+    return null;
+  }
+
+  return (
+    <SignatorySelect
+      signatory={signatory.value}
+      signatories={signatoriesWithBalance}
+      allAccounts={allAccounts}
+      initiator={initiator.value}
+      allWallets={allWallets}
+      hasError={signatory.hasError}
+      errorText={t(signatory.errorMessage)}
+      network={{ chain, asset }}
+      onChange={signatory.onChange}
+    />
   );
 };
 
