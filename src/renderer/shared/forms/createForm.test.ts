@@ -98,4 +98,55 @@ describe('createForm', () => {
     await allSettled(form.fields.name.change, { scope, params: 'Alice' });
     expect(scope.getState(form.fields.name.$errors)).toEqual([]);
   });
+
+  it('should track touched state on blur', async () => {
+    type Form = {
+      name: string;
+    };
+
+    const scope = fork();
+    const form = createForm<Form>({
+      fields: {
+        name: { defaultValue: 'Alice' },
+      },
+    });
+
+    expect(scope.getState(form.fields.name.$touched)).toEqual(false);
+
+    // Change should not mark as touched
+    await allSettled(form.fields.name.change, { scope, params: 'Bob' });
+    expect(scope.getState(form.fields.name.$touched)).toEqual(false);
+
+    // Blur should mark as touched
+    await allSettled(form.fields.name.markAsTouched, { scope });
+    expect(scope.getState(form.fields.name.$touched)).toEqual(true);
+
+    // Reset should clear touched state
+    await allSettled(form.fields.name.reset, { scope });
+    expect(scope.getState(form.fields.name.$touched)).toEqual(false);
+  });
+
+  it('should mark all fields as touched on submit', async () => {
+    type Form = {
+      name: string;
+      email: string;
+    };
+
+    const scope = fork();
+    const form = createForm<Form>({
+      fields: {
+        name: { defaultValue: '' },
+        email: { defaultValue: '' },
+      },
+    });
+
+    expect(scope.getState(form.fields.name.$touched)).toEqual(false);
+    expect(scope.getState(form.fields.email.$touched)).toEqual(false);
+
+    // Submit should mark all fields as touched
+    await allSettled(form.submit, { scope });
+
+    expect(scope.getState(form.fields.name.$touched)).toEqual(true);
+    expect(scope.getState(form.fields.email.$touched)).toEqual(true);
+  });
 });

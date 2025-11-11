@@ -38,7 +38,7 @@ const Context = createContext<ContextProps & ExpandedContextProps>({});
 
 type InputProps = Pick<
   ComponentProps<typeof Input>,
-  'disabled' | 'invalid' | 'placeholder' | 'height' | 'prefixElement' | 'onChange'
+  'disabled' | 'invalid' | 'placeholder' | 'height' | 'prefixElement' | 'onChange' | 'onBlur'
 >;
 
 type ControlledPopoverProps = {
@@ -81,7 +81,7 @@ const Root = ({ testId = 'Combobox', value, onChange, onInput, children, ...inpu
   );
 };
 
-const Trigger = ({ placeholder, ...inputProps }: InputProps) => {
+const Trigger = ({ placeholder, onBlur, ...inputProps }: InputProps) => {
   const { onOpenChange, comboboxRef, anchorRef } = useContext(Context);
 
   return (
@@ -93,7 +93,10 @@ const Trigger = ({ placeholder, ...inputProps }: InputProps) => {
           placeholder={placeholder}
           render={({ onChange, ...props }) => <Input {...props} {...inputProps} onChangeEvent={onChange} />}
           onFocus={() => onOpenChange?.(true)}
-          onBlur={() => onOpenChange?.(false)}
+          onBlur={event => {
+            onOpenChange?.(false);
+            onBlur?.(event);
+          }}
         />
       </div>
     </RadixPopover.Anchor>
