@@ -8,7 +8,7 @@ import { useI18n } from '@/shared/i18n';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { Alert, BodyText, Button, DetailRow, FootnoteText, InfoLink } from '@/shared/ui';
 import { AssetBalance, TransactionValidationError } from '@/shared/ui-entities';
-import { Box, InputFile, Modal } from '@/shared/ui-kit';
+import { Box, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
@@ -19,7 +19,8 @@ import { InitiatorSelect } from './InitiatorSelect';
 import { NetworkSelect } from './NetworkSelect';
 import { SignatorySelect } from './SignatorySelect';
 
-const CSV_TEMPLATE_LINK = '';
+const CSV_TEMPLATE_LINK =
+  'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/templates/vested-transfer-template.csv';
 
 export const VestedTransferForm = () => {
   const { t } = useI18n();
@@ -37,23 +38,27 @@ export const VestedTransferForm = () => {
   const txErrors = useUnit(formModel.$txErrors);
 
   return (
-    <form id="vested-transfer-form" onSubmit={submitForm}>
-      <Box padding={[4, 5]} gap={4}>
-        <TransactionValidationError errors={txErrors} wallets={wallets} />
-        <NetworkSelect />
-        <InitiatorSelect />
-        {showSignatories && <SignatorySelect />}
-        <UploadCSV />
-        <CSVErrors />
-        <TotalAmountSection />
-        <FeeSection />
-      </Box>
+    <>
+      <ScrollArea>
+        <form id="vested-transfer-form" onSubmit={submitForm}>
+          <Box padding={[4, 5]} gap={4}>
+            <TransactionValidationError errors={txErrors} wallets={wallets} />
+            <NetworkSelect />
+            <InitiatorSelect />
+            {showSignatories && <SignatorySelect />}
+            <UploadCSV />
+            <CSVErrors />
+            <TotalAmountSection />
+            <FeeSection />
+          </Box>
+        </form>
+      </ScrollArea>
       <Modal.Footer>
         <Button form="vested-transfer-form" type="submit" disabled={!canSubmit}>
           {t('transfer.continueButton')}
         </Button>
       </Modal.Footer>
-    </form>
+    </>
   );
 };
 
