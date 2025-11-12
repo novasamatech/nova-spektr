@@ -1,7 +1,3 @@
-import { type BN } from '@polkadot/util';
-
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-
 export const enum Step {
   NONE,
   INIT,
@@ -15,13 +11,6 @@ export type VestingScheduleRaw = {
   locked: string;
   startingBlock: string;
   perBlock: string;
-};
-
-export type VestingSchedule = {
-  target: AccountId;
-  locked: BN;
-  startingBlock: BN;
-  perBlock: BN;
 };
 
 export enum VestingScheduleFileErrors {

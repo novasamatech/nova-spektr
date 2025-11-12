@@ -19,6 +19,7 @@ import { type AnyAccount, accountService, accounts, balanceService, block } from
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
+import { type VestingSchedule } from '@/entities/vesting';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
@@ -26,7 +27,7 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { proxiesUtils } from '@/features/proxies';
-import { Step, type VestingSchedule, VestingScheduleError, VestingScheduleFileErrors } from '../lib/types';
+import { Step, VestingScheduleError, VestingScheduleFileErrors } from '../lib/types';
 import { vestedTransferUtils } from '../lib/utils';
 
 import { type VestedTransferConfirm, confirmModel } from './confirm';
@@ -158,20 +159,6 @@ const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
   signatory: form.fields.signatory.$value,
 });
 
-const $multisigThreshold = $route.map((route) => {
-  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
-  if (!multisigAccount) return null;
-
-  return multisigAccount.threshold;
-});
-
-const $hasMultisigAccount = $multisigThreshold.map((threshold) => nonNullable(threshold));
-
-const { $multisigDeposit } = createMultisigDeposit({
-  $threshold: $multisigThreshold,
-  $api: $api,
-});
-
 // validations
 
 const validator = createTxValidator<{
@@ -209,6 +196,20 @@ const { $errors: $txErrors, $valid: $isTxValid } = createTxValidationStore({
     route: $route,
     transaction: $tx,
   },
+});
+
+const $multisigThreshold = $route.map((route) => {
+  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
+  if (!multisigAccount) return null;
+
+  return multisigAccount.threshold;
+});
+
+const $hasMultisigAccount = $multisigThreshold.map((threshold) => nonNullable(threshold));
+
+const { $multisigDeposit } = createMultisigDeposit({
+  $threshold: $multisigThreshold,
+  $api: $api,
 });
 
 const $allChains = networkModel.$chains.map((chains) => Object.values(chains));

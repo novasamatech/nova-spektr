@@ -2,9 +2,9 @@ import { type BN } from '@polkadot/util';
 
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
+import { type VestingSchedule } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
-import { type VestingSchedule } from '../lib/types';
 
 export type VestedTransferConfirm = TxConfirmInfo & {
   fee: string;

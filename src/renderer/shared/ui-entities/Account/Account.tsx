@@ -13,7 +13,7 @@ type Props = {
   iconSize?: number;
   hideIcon?: boolean;
   hideAddress?: boolean;
-  variant?: 'truncate' | 'short';
+  variant?: 'truncate' | 'short' | 'full';
   addressTestId?: string;
   explorersTestId?: string;
   /**
