@@ -1,7 +1,7 @@
 import { navigationActionsSlot } from '@/features/app-shell';
 
+import { VestedTransferNavigation } from './components/VestedTransferNavigation';
 import { vestedTransferFeature } from './model/feature';
-import { VestedTransferNavigation } from './ui/VestedTransferNavigation';
 
 export { vestedTransferFeature };
 
