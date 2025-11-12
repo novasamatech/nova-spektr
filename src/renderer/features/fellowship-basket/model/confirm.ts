@@ -111,8 +111,7 @@ sample({
 sample({
   clock: prepareVoteFx.doneData,
   filter: nonNullable,
-  fn: data => [data],
-  target: fellowshipVotingConfirmModel.init,
+  target: fellowshipVotingConfirmModel.replaceWithConfirm,
 });
 
 // salary induct
@@ -174,8 +173,7 @@ sample({
 sample({
   clock: prepareSalaryInductFx.doneData,
   filter: nonNullable,
-  fn: data => [data],
-  target: fellowshipSalaryInductConfirmModel.init,
+  target: fellowshipSalaryInductConfirmModel.replaceWithConfirm,
 });
 
 // salary request
@@ -237,8 +235,7 @@ sample({
 sample({
   clock: prepareSalaryRequestFx.doneData,
   filter: nonNullable,
-  fn: data => [data],
-  target: fellowshipSalaryRequestConfirmModel.init,
+  target: fellowshipSalaryRequestConfirmModel.replaceWithConfirm,
 });
 
 // salary payout
@@ -301,8 +298,7 @@ sample({
 sample({
   clock: prepareSalaryPayoutFx.doneData,
   filter: nonNullable,
-  fn: data => [data],
-  target: fellowshipSalaryPayoutConfirmModel.init,
+  target: fellowshipSalaryPayoutConfirmModel.replaceWithConfirm,
 });
 
 // evidence
@@ -365,8 +361,8 @@ sample({
 
 sample({
   clock: prepareEvidencePayoutFx.doneData,
-  fn: data => [data],
-  target: fellowshipSubmitEvidenceConfirmModel.init,
+  filter: nonNullable,
+  target: fellowshipSubmitEvidenceConfirmModel.replaceWithConfirm,
 });
 
 // evidence vote
@@ -481,8 +477,7 @@ sample({
 sample({
   clock: prepareEvidenceVoteFx.doneData,
   filter: nonNullable,
-  fn: (data): CollectiveEvidenceVoteConfirm[] => [data as CollectiveEvidenceVoteConfirm],
-  target: fellowshipEvidenceVotingConfirmModel.init,
+  target: fellowshipEvidenceVotingConfirmModel.replaceWithConfirm,
 });
 
 // setting up env
