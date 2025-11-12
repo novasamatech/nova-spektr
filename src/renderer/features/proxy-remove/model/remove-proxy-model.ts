@@ -72,6 +72,8 @@ const $api = $removeProxyStore.map((store) => store?.api ?? null);
 const $isPureProxied = $proxiedAccount.map((proxied) => {
   if (!proxied) return false;
 
+  console.log('isPureProxied', { proxied });
+
   return accountUtils.isPureProxiedAccount(proxied);
 });
 
@@ -81,6 +83,7 @@ const $isPureProxiedNeedToBeKilled = combine(
     activeProxies: $activeProxiesForAccount,
   },
   ({ isPureProxied, activeProxies }) => {
+    console.log({ isPureProxied, activeProxies });
     return isPureProxied && activeProxies.length === 1;
   },
 );
@@ -270,14 +273,14 @@ sample({
   fn: ({ chains, apis }, { proxy, proxied }) => {
     const chain = chains[proxy.chainId];
 
-    if (!chain) return null;
+    if (!chain || !proxied.spawner) return null;
 
     return {
       api: apis[chain.chainId],
       chain,
       proxyAccount: proxy,
       proxiedAccount: proxied,
-      spawner: proxy.accountId,
+      spawner: proxied.spawner,
       proxyType: proxy.proxyType,
     } satisfies RemoveProxyStore;
   },

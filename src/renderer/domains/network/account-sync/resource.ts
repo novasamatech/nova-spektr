@@ -37,6 +37,7 @@ const PROXY_ACCOUNT_QUERY = gql`
         type
         extrinsicIndex
         blockNumber
+        spawner
       }
     }
   }
@@ -50,6 +51,7 @@ const proxySchema = z.object({
   type: z.string(),
   extrinsicIndex: z.number(),
   blockNumber: z.number().transform(pjsSchema.helpers.toBlockHeight),
+  spawner: accountIdSchema,
 });
 
 export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
@@ -121,6 +123,7 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
             proxyVariant: proxyFromIndexer.isPureProxy ? ProxyVariant.PURE : ProxyVariant.REGULAR,
             blockNumber: proxyFromIndexer.blockNumber,
             extrinsicIndex: proxyFromIndexer.extrinsicIndex,
+            spawner: proxyFromIndexer.spawner,
           });
         }
       }

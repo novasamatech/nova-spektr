@@ -286,13 +286,14 @@ sample({
     pureCreated: $pureCreated,
     proxyDeposit: flexibleMultisigModel.$proxyDeposit,
     successResult: $successResult,
+    initiator: flexibleMultisigModel.$initiator,
   },
   filter: ({ chain, multisigAccountId, pureCreated, successResult }) => {
     return (
       nonNullable(chain) && nonNullable(multisigAccountId) && nonNullable(pureCreated) && nonNullable(successResult)
     );
   },
-  fn: ({ chain, name, multisigAccountId, pureCreated, proxyDeposit, successResult }) => {
+  fn: ({ chain, name, multisigAccountId, pureCreated, proxyDeposit, successResult, initiator }) => {
     const timepoint = successResult!.params.timepoint;
     const isEthereumChain = networkUtils.isEthereumBased(chain!.options);
 
@@ -316,6 +317,7 @@ sample({
       entropyBlockNumber: pureCreated!.entropyBlockNumber,
       pendingBlockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
+      spawner: initiator!.accountId,
     };
 
     const wallet: Omit<NoID<ProxiedWallet>, 'accounts'> = {

@@ -74,6 +74,7 @@ const createProxiedAccount = (
   deposit: '100',
   entropyBlockNumber: 0,
   extrinsicIndex: 0,
+  spawner: createAccountId('spawner'),
 });
 
 const createApi = () => {

@@ -222,6 +222,7 @@ export const syncProxiedAccounts = ({
               connections,
               entropyBlockNumber: firstAccount.blockNumber,
               extrinsicIndex: firstAccount.extrinsicIndex,
+              spawner: firstAccount.spawner,
             },
           ],
         });
