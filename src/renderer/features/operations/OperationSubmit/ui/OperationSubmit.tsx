@@ -80,7 +80,7 @@ export const OperationSubmit = ({ autoCloseTimeout, isOpen, onSuccess, onFail, o
       };
     }
 
-    return { title: t('operation.feeErrorTitle'), variant: 'error', description: message };
+    return { title: t('operation.submitError'), variant: 'error', description: message };
   };
 
   return (

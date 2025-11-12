@@ -67,7 +67,7 @@ export const OperationSubmitWithAction = ({ autoCloseTimeout, isOpen, onClose, o
       };
     }
 
-    return { title: t('operation.feeErrorTitle'), variant: 'error', description: message };
+    return { title: t('operation.submitError'), variant: 'error', description: message };
   };
 
   const isSuccessful = submitUtils.isSuccessStep(step);
