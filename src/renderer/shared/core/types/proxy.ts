@@ -41,4 +41,5 @@ export type PartialProxiedAccount = Pick<
   | 'pendingBlockNumber'
   | 'extrinsicIndex'
   | 'deposit'
+  | 'spawner'
 >;

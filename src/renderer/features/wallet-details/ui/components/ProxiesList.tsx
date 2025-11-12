@@ -46,8 +46,6 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
         accountService.isAccountAvailableOnChain(account, chain),
     );
 
-    console.log('handleDeleteProxy', { proxiedAccount, proxyAccount });
-
     if (proxiedAccount) {
       removeProxyModel.flowStarted({
         proxied: proxiedAccount as ProxiedAccount,

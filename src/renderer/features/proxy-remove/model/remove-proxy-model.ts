@@ -6,7 +6,15 @@ import { and, not, spread } from 'patronum';
 
 import { type ChainId, type ProxiedAccount, type ProxyAccount, type Wallet } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
-import { getNativeAsset, keys, nonNullable, nullable, toAccountId, withdrawableAmountBN } from '@/shared/lib/utils';
+import {
+  assert,
+  getNativeAsset,
+  keys,
+  nonNullable,
+  nullable,
+  toAccountId,
+  withdrawableAmountBN,
+} from '@/shared/lib/utils';
 import { proxyPallet } from '@/shared/pallet/proxy';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type PathType, Paths } from '@/shared/routes';
@@ -143,10 +151,12 @@ const $coreTx = combine(
   ({ signatory, proxiedAccount, data, isPureProxiedNeedToBeKilled, chain }) => {
     if (!signatory || !data || !proxiedAccount || !chain) return null;
     if (isPureProxiedNeedToBeKilled) {
+      assert(proxiedAccount.spawner, 'spawner is required');
+
       return transactionBuilder.buildKillPureProxy({
         chain,
         accountId: signatory.accountId,
-        spawner: data.spawner,
+        spawner: proxiedAccount.spawner,
         proxyType: data.proxyType,
         index: 0,
         height: proxiedAccount.entropyBlockNumber,
@@ -242,6 +252,7 @@ sample({
   fn: ({ result, params }) => {
     const proxies = result.find((el) => el.account === params.accountId)?.value.proxies;
 
+    console.log('getAccountProxiesFx.done', { proxies });
     if (!proxies) return [];
 
     return proxies.map((el) => el.delegate);
@@ -273,14 +284,14 @@ sample({
   fn: ({ chains, apis }, { proxy, proxied }) => {
     const chain = chains[proxy.chainId];
 
-    if (!chain || !proxied.spawner) return null;
+    if (!chain) return null;
 
     return {
       api: apis[chain.chainId],
       chain,
       proxyAccount: proxy,
       proxiedAccount: proxied,
-      spawner: proxied.spawner,
+      spawner: proxied.spawner!,
       proxyType: proxy.proxyType,
     } satisfies RemoveProxyStore;
   },
@@ -304,7 +315,9 @@ sample({
   source: {
     api: $removeProxyStore.map((store) => store?.api ?? null),
   },
-  filter: ({ api }, { proxied }) => nonNullable(proxied) && nonNullable(api),
+  filter: ({ api }, { proxied }) => {
+    return nonNullable(proxied) && nonNullable(api);
+  },
   fn: ({ api }, { proxied }) => {
     return {
       api: api!,
