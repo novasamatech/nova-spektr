@@ -1,15 +1,9 @@
-import { type ApiPromise } from '@polkadot/api';
-import { type UnsubscribePromise } from '@polkadot/api/types';
-import { type Codec } from '@polkadot/types/types';
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { attach, combine, createEvent, createStore, restore, sample } from 'effector';
 import { delay, spread } from 'patronum';
 
-import { type PartialProxiedAccount, ProxyVariant, type Timepoint } from '@/shared/core';
-import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { systemPallet } from '@/shared/pallet/system';
-import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type PartialProxiedAccount, ProxyVariant } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { subscriptionService } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
@@ -24,7 +18,7 @@ import {
   type AddPureProxiedConfirm,
   addPureProxiedConfirmModel as confirmModel,
 } from '@/features/operations/OperationsConfirm/AddPureProxied';
-import { proxiedWalletService } from '@/features/proxied-wallet';
+import { walletsModel } from '@/features/proxied-wallet';
 import { proxiesModel } from '@/features/proxies';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { Step } from '../lib/types';
@@ -52,69 +46,7 @@ const $initiatorWallet = combine(
   },
 );
 
-type GetPureProxyParams = {
-  api: ApiPromise;
-  spawner: AccountId;
-  timepoint: Timepoint;
-};
-
-type PureCreatedEvent = {
-  pure: AccountId;
-  proxyType: Codec;
-  extrinsicIndex: number;
-  disambiguationIndex: number;
-};
-
-type GetPureProxyResult = {
-  pure: AccountId;
-  blockNumber: number;
-  pendingBlockNumber: number;
-  extrinsicIndex: number;
-};
-
-const getPureProxyFx = createEffect(
-  async ({ api, spawner, timepoint }: GetPureProxyParams): Promise<GetPureProxyResult> => {
-    const pureCreated = await new Promise<PureCreatedEvent>(resolve => {
-      const pureCreatedParams = {
-        section: 'proxy',
-        method: 'PureCreated',
-        data: [undefined, toAddress(spawner, { prefix: systemPallet.consts.ss58Prefix(api) })],
-      };
-
-      const unsubscribe: UnsubscribePromise = subscriptionService.subscribeEvents(api, pureCreatedParams, event => {
-        unsubscribe?.then(fn => fn());
-
-        resolve({
-          pure: pjsSchema.helpers.toAccountId(event.data[0].toHex()),
-          proxyType: event.data[2],
-          disambiguationIndex: parseInt(event.data[3].toHuman() as string),
-          extrinsicIndex: timepoint.index,
-        });
-      });
-    });
-
-    const apiAtBlockHash = await api.rpc.chain.getBlockHash(timepoint.height);
-
-    const apiAt = await api.at(apiAtBlockHash);
-
-    const blockNumber = await proxiedWalletService.findPureBlockNumber({
-      api: apiAt,
-      blockNumber: timepoint.height,
-      pure: pureCreated.pure,
-      spawner,
-      type: pureCreated.proxyType,
-      disambiguationIndex: pureCreated.disambiguationIndex,
-      extrinsicIndex: timepoint.index,
-    });
-
-    return {
-      pure: pureCreated.pure,
-      blockNumber,
-      pendingBlockNumber: timepoint.height,
-      extrinsicIndex: pureCreated.extrinsicIndex,
-    };
-  },
-);
+const subscribePureEventFx = attach({ effect: walletsModel.subscribePureEventFx });
 
 sample({
   clock: formModel.flowStarted,
@@ -249,20 +181,20 @@ sample({
     nonNullable(chain.chainId),
   fn: ({ apis, initiator, chain }, submitData) => ({
     api: apis[chain!.chainId],
-    spawner: initiator!.accountId,
+    initiator: initiator!,
     timepoint: (submitData[0].params as ExtrinsicResultParams).timepoint,
   }),
-  target: getPureProxyFx,
+  target: subscribePureEventFx,
 });
 
 sample({
-  clock: getPureProxyFx.doneData,
+  clock: subscribePureEventFx.doneData,
   source: {
     initiator: formModel.form.fields.initiator.$value,
     chain: formModel.form.fields.chain.$value,
   },
   filter: ({ initiator, chain }) => nonNullable(initiator) && nonNullable(chain),
-  fn: ({ initiator, chain }, { pure: accountId }) => [
+  fn: ({ initiator, chain }, { accountId }) => [
     {
       accountId: initiator!.accountId,
       proxiedAccountId: accountId,
@@ -275,14 +207,14 @@ sample({
 });
 
 sample({
-  clock: getPureProxyFx.doneData,
+  clock: subscribePureEventFx.doneData,
   source: {
     initiator: formModel.form.fields.initiator.$value,
     chain: formModel.form.fields.chain.$value,
     proxyDeposit: formModel.$proxyDeposit,
   },
   filter: ({ initiator, chain }) => nonNullable(initiator) && nonNullable(chain),
-  fn: ({ chain, initiator, proxyDeposit }, { pure: accountId, blockNumber, extrinsicIndex, pendingBlockNumber }) => {
+  fn: ({ chain, initiator, proxyDeposit }, { accountId, blockNumber, extrinsicIndex, pendingBlockNumber }) => {
     return [
       {
         accountId,
@@ -347,7 +279,7 @@ sample({
 });
 
 sample({
-  clock: delay(getPureProxyFx.doneData, 2000),
+  clock: delay(subscribePureEventFx.doneData, 2000),
   target: flowFinished,
 });
 

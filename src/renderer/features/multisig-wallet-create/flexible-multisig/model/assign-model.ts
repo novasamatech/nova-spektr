@@ -1,9 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
-import { type Codec } from '@polkadot/types/types';
-import { attach, combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { attach, combine, createEvent, createStore, sample } from 'effector';
 import { sortBy } from 'lodash';
 import { spread } from 'patronum';
-import { z } from 'zod';
 
 import {
   AccountType,
@@ -15,15 +13,13 @@ import {
   type ProxiedWallet,
   ProxyVariant,
   SigningType,
-  type Timepoint,
   WalletType,
 } from '@/shared/core';
 import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core/types/account';
 import { Step, assert, nonNullable, nullable, toAccountId, toAddress, toShortAddress } from '@/shared/lib/utils';
-import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
-import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createComplexTxStore } from '@/shared/transactions';
-import { type AnyAccount, accounts } from '@/domains/network';
+import { accounts } from '@/domains/network';
 import { networkUtils } from '@/entities/network';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
 import { transactionBuilder } from '@/entities/transaction';
@@ -31,7 +27,7 @@ import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { signModel } from '@/features/operations/OperationSign';
 import { type ExtrinsicResult, submitModel, submitUtils } from '@/features/operations/OperationSubmit';
-import { proxiedWalletService } from '@/features/proxied-wallet';
+import { walletsModel } from '@/features/proxied-wallet';
 
 import { flexibleMultisigFeature } from './feature';
 import { flexibleMultisigModel } from './flexible-multisig-create';
@@ -52,88 +48,24 @@ type PureCreated = {
 
 const $pureCreated = createStore<PureCreated | null>(null).reset(flexibleMultisigModel.flow.close);
 
-type SubscribePureEvent = {
-  api: ApiPromise;
-  timepoint: Timepoint;
-  signatory: AnyAccount;
-  spawner: AccountId;
-};
-
-type PureCreatedEvent = {
-  pure: AccountId;
-  proxyType: Codec;
-  disambiguationIndex: number;
-  extrinsicIndex: number;
-};
-
-const subscribePureEventFx = createEffect(async ({ api, signatory, timepoint, spawner }: SubscribePureEvent) => {
-  const pureCreated = await new Promise<PureCreatedEvent>(resolve => {
-    const eventSchema = z.object({
-      proxyType: z.string(),
-      who: z.string(),
-      pure: z.string(),
-    });
-
-    const unsubscribe = polkadotjsHelpers.subscribeSystemEvents(
-      { api, section: `proxy`, methods: ['PureCreated'] },
-      event => {
-        const data = eventSchema.parse(event.data.toHuman());
-        const accountId = toAccountId(data.who);
-
-        if (!data || signatory.accountId !== accountId) return;
-
-        unsubscribe.then(fn => fn());
-
-        resolve({
-          pure: pjsSchema.helpers.toAccountId(event.data[0].toHex()),
-          proxyType: event.data[2],
-          disambiguationIndex: parseInt(event.data[3].toHuman() as string),
-          extrinsicIndex: timepoint.index,
-        });
-      },
-    );
-  });
-
-  const apiAtBlockHash = await api.rpc.chain.getBlockHash(timepoint.height);
-
-  const apiAt = await api.at(apiAtBlockHash);
-
-  const blockNumber = await proxiedWalletService.findPureBlockNumber({
-    api: apiAt,
-    blockNumber: timepoint.height,
-    pure: pureCreated.pure,
-    spawner,
-    type: pureCreated.proxyType,
-    disambiguationIndex: pureCreated.disambiguationIndex,
-    extrinsicIndex: timepoint.index,
-  });
-
-  return {
-    accountId: pureCreated.pure,
-    blockNumber,
-    pendingBlockNumber: timepoint.height,
-    extrinsicIndex: pureCreated.extrinsicIndex,
-  };
-});
+const subscribePureEventFx = attach({ effect: walletsModel.subscribePureEventFx });
 
 sample({
   clock: submitModel.done,
   source: {
     api: $api,
     initiator: flexibleMultisigModel.$initiator,
-    signatory: flexibleMultisigModel.$signatory,
-    proxiedAddress: $pureCreated,
+    pureCreated: $pureCreated,
   },
-  filter: ({ api, signatory, proxiedAddress, initiator }, results) => {
+  filter: ({ api, pureCreated, initiator }, results) => {
     return (
       nonNullable(api) &&
-      nullable(proxiedAddress) &&
-      nonNullable(signatory) &&
+      nullable(pureCreated) &&
       nonNullable(initiator) &&
       results.some(({ result }) => submitUtils.isSuccessResult(result))
     );
   },
-  fn: ({ api, signatory, initiator }, results) => {
+  fn: ({ api, initiator }, results) => {
     const successResult = results.find(({ result }) => submitUtils.isSuccessResult(result));
     assert(successResult, 'Successful result for flexible multisig creation was not found');
 
@@ -142,8 +74,7 @@ sample({
 
     return {
       api: api!,
-      spawner: initiator!.accountId,
-      signatory: signatory!,
+      initiator: initiator!,
       timepoint,
     };
   },
