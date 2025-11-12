@@ -6,9 +6,9 @@ import { useI18n } from '@/shared/i18n';
 import { Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { OperationSign, OperationSubmit } from '@/features/operations';
-import { Step } from '../lib/types';
-import { vestedTransferUtils } from '../lib/utils';
 import { formModel } from '../model/form';
+import { Step } from '../types';
+import { vestedTransferUtils } from '../utils';
 
 import { Confirmation } from './Confirmation';
 import { VestedTransferForm } from './VestedTransferForm';

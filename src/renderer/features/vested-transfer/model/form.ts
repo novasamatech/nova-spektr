@@ -27,8 +27,8 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { proxiesUtils } from '@/features/proxies';
-import { Step, VestingScheduleError, VestingScheduleFileErrors } from '../lib/types';
-import { vestedTransferUtils } from '../lib/utils';
+import { Step, VestingScheduleError, VestingScheduleFileErrors } from '../types';
+import { vestedTransferUtils } from '../utils';
 
 import { type VestedTransferConfirm, confirmModel } from './confirm';
 import { vestedTransferFeature } from './feature';

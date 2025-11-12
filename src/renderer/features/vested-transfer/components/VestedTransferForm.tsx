@@ -15,8 +15,8 @@ import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { VestingSchedulePreviewModal } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
-import { VestingScheduleFileErrors } from '../lib/types';
 import { formModel } from '../model/form';
+import { VestingScheduleFileErrors } from '../types';
 
 const CSV_TEMPLATE_LINK =
   'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/templates/vested-transfer-template.csv';
