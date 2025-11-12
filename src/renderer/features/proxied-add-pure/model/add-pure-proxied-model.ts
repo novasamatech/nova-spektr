@@ -214,7 +214,7 @@ sample({
     proxyDeposit: formModel.$proxyDeposit,
   },
   filter: ({ initiator, chain }) => nonNullable(initiator) && nonNullable(chain),
-  fn: ({ chain, initiator, proxyDeposit }, { accountId, blockNumber, extrinsicIndex, pendingBlockNumber }) => {
+  fn: ({ chain, initiator, proxyDeposit }, { accountId, entropyBlockNumber, extrinsicIndex, pendingBlockNumber }) => {
     return [
       {
         accountId,
@@ -227,7 +227,7 @@ sample({
           },
         ],
         proxyVariant: ProxyVariant.PURE,
-        blockNumber,
+        entropyBlockNumber,
         pendingBlockNumber,
         extrinsicIndex,
         deposit: proxyDeposit,

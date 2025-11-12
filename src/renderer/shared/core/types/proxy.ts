@@ -37,7 +37,7 @@ export type PartialProxiedAccount = Pick<
   | 'connections'
   | 'accountId'
   | 'proxyVariant'
-  | 'blockNumber'
+  | 'entropyBlockNumber'
   | 'pendingBlockNumber'
   | 'extrinsicIndex'
   | 'deposit'

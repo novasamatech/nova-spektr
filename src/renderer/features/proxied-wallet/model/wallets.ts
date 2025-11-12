@@ -49,7 +49,7 @@ const subscribePureEventFx = createEffect(async ({ api, timepoint, initiator }: 
 
   const apiAt = await api.at(apiAtBlockHash);
 
-  const blockNumber = await proxiedWalletService.findPureBlockNumber({
+  const entropyBlockNumber = await proxiedWalletService.findPureBlockNumber({
     api: apiAt,
     blockNumber: timepoint.height,
     pure: pureCreated.pure,
@@ -61,7 +61,7 @@ const subscribePureEventFx = createEffect(async ({ api, timepoint, initiator }: 
 
   return {
     accountId: pureCreated.pure,
-    blockNumber,
+    entropyBlockNumber,
     pendingBlockNumber: timepoint.height,
     extrinsicIndex: pureCreated.extrinsicIndex,
   };

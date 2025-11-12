@@ -54,7 +54,8 @@ export interface FlexibleMultisigAccount extends ChainAccount {
 
   // proxied account part
   deposit: string;
-  blockNumber: number;
+  entropyBlockNumber: number;
+  pendingBlockNumber?: number;
   extrinsicIndex: number;
 }
 
@@ -75,7 +76,7 @@ export interface ProxiedAccount extends ChainAccount {
   connections: ProxiedConnection[];
   proxyVariant: ProxyVariant;
   deposit: string;
-  blockNumber: number; // timeline chain blockNumber;
+  entropyBlockNumber: number; // timeline chain entropyBlockNumber;
   pendingBlockNumber?: number; // Block number from the chain it was created on that is being used to check against indexer block number;
   extrinsicIndex: number;
 }

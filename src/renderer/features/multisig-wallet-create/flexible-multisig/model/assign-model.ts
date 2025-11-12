@@ -41,7 +41,7 @@ const $api = combine(flexibleMultisigFeature.state, (state): ApiPromise | null =
 
 type PureCreated = {
   accountId: AccountId;
-  blockNumber: number;
+  entropyBlockNumber: number;
   extrinsicIndex: number;
   pendingBlockNumber: number;
 };
@@ -249,7 +249,8 @@ sample({
       threshold: threshold,
 
       deposit: proxyDeposit.toString(),
-      blockNumber: timepoint.height,
+      entropyBlockNumber: pureCreated!.entropyBlockNumber,
+      pendingBlockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
 
       cryptoType: isEthereumChain ? CryptoType.ETHEREUM : CryptoType.SR25519,
@@ -312,7 +313,7 @@ sample({
       ],
       proxyVariant: ProxyVariant.PURE,
       deposit: proxyDeposit.toString(),
-      blockNumber: pureCreated!.blockNumber,
+      entropyBlockNumber: pureCreated!.entropyBlockNumber,
       pendingBlockNumber: timepoint.height,
       extrinsicIndex: timepoint.index,
     };

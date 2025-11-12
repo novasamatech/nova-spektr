@@ -68,7 +68,7 @@ export const accounts = {
     cryptoType: 0,
     name: 'Any for pure 5DfD1f...WQYVRb',
     proxyVariant: ProxyVariant.PURE,
-    blockNumber: 23960326,
+    entropyBlockNumber: 23960326,
     extrinsicIndex: 2,
     deposit: '100',
     connections: [

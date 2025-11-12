@@ -134,7 +134,7 @@ export const syncProxiedAccounts = ({
       }
 
       const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-      return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
+      return !lastIndexedBlock || lastIndexedBlock >= account.entropyBlockNumber;
     }),
   );
 
@@ -220,7 +220,7 @@ export const syncProxiedAccounts = ({
               signingType: SigningType.WATCH_ONLY,
               deposit: firstAccount.deposit.toString(),
               connections,
-              blockNumber: firstAccount.blockNumber,
+              entropyBlockNumber: firstAccount.blockNumber,
               extrinsicIndex: firstAccount.extrinsicIndex,
             },
           ],
@@ -452,11 +452,11 @@ export const syncFlexibleMultisigs = ({
         return false;
       }
 
-      if (!account.blockNumber) {
+      if (!account.entropyBlockNumber) {
         return true;
       } else {
         const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-        return !lastIndexedBlock || lastIndexedBlock >= account.blockNumber;
+        return !lastIndexedBlock || lastIndexedBlock >= account.entropyBlockNumber;
       }
     }),
   );
@@ -492,7 +492,7 @@ export const syncFlexibleMultisigs = ({
           signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
 
           deposit: matchedSyncedProxy.deposit.toString(),
-          blockNumber: matchedSyncedProxy.blockNumber,
+          entropyBlockNumber: matchedSyncedProxy.blockNumber,
           extrinsicIndex: matchedSyncedProxy.extrinsicIndex,
 
           cryptoType: isEthereumAccountId(matchedSyncedProxy.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,

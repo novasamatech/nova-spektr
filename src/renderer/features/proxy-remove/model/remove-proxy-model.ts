@@ -146,7 +146,7 @@ const $coreTx = combine(
         spawner: data.spawner,
         proxyType: data.proxyType,
         index: 0,
-        height: proxiedAccount.blockNumber,
+        height: proxiedAccount.entropyBlockNumber,
         extIndex: proxiedAccount.extrinsicIndex,
       });
     }
