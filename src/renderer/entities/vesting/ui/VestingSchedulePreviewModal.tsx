@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Button } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
@@ -13,18 +12,22 @@ type Props = {
   chain: Chain;
   asset: Asset;
   vestingSchedule: VestingSchedule[];
+
+  trigger: React.ReactNode;
 };
 
-export const ParsedFile = ({ chain, asset, vestingSchedule }: Props) => {
+export const VestingSchedulePreviewModal = ({ chain, asset, vestingSchedule, trigger }: Props) => {
   const { t } = useI18n();
+
+  const rowCount = vestingSchedule.length;
 
   const columns: Column<VestingSchedule>[] = useMemo(
     () => [
       {
         key: 'target',
         title: t('vestedTransfer.parsedFile.table.headers.recipient'),
-        width: '232px',
-        render: (target) => <Account accountId={target as AccountId} chain={chain} />,
+        width: '450px',
+        render: (target) => <Account accountId={target as AccountId} chain={chain} variant="full" />,
       },
       {
         key: 'startingBlock',
@@ -56,12 +59,13 @@ export const ParsedFile = ({ chain, asset, vestingSchedule }: Props) => {
 
   return (
     <Modal size="lg" height="fit">
-      <Modal.Trigger>
-        <Button className="p-0" size="sm" variant="text">
-          {t('vestedTransfer.parsedFile.buttons.openPreview')}
-        </Button>
-      </Modal.Trigger>
-      <Modal.Title close>{t('vestedTransfer.parsedFile.title')}</Modal.Title>
+      <Modal.Trigger>{trigger}</Modal.Trigger>
+      <Modal.Title close>
+        <div className="flex gap-x-2">
+          {t('vestedTransfer.parsedFile.title')}&nbsp;
+          <span className="text-text-secondary">{rowCount}</span>
+        </div>
+      </Modal.Title>
       <Modal.Content>
         <div className="px-2 pb-3">
           <ScrollArea>

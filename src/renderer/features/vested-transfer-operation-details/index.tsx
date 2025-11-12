@@ -3,10 +3,12 @@ import { t } from 'i18next';
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
 import { TransactionTitle, findCoreBatchAll, findCoreTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
+import { VestedTransferOperationDetails } from './components/VestedTransferOperationDetails';
 import { VestedTransferOperationTitle } from './components/VestedTransferOperationTitle';
 
 export const vestedTransferOperationDetailFeature = createFeature({
@@ -31,12 +33,13 @@ const getOperationIcon = (transactionType: TransactionType): IconNames | undefin
 
 multisigOperationsSDK(vestedTransferOperationDetailFeature, {
   icon({ operation, showCoreTransaction }) {
-    if (!operation.transaction) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+
+    if (nullable(transaction)) {
       return null;
     }
 
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-    const transactionFromBatchAll = findCoreBatchAll(operation.transaction);
+    const transactionFromBatchAll = findCoreBatchAll(transaction);
 
     const icon =
       (transaction?.type && getOperationIcon(transaction.type)) ||
@@ -47,12 +50,13 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
     }
   },
   title({ operation, showCoreTransaction }) {
-    if (!operation.transaction) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+
+    if (nullable(transaction)) {
       return null;
     }
 
-    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-    const transactionFromBatchAll = findCoreBatchAll(operation.transaction);
+    const transactionFromBatchAll = findCoreBatchAll(transaction);
 
     const title =
       (transaction?.type && getOperationTitle(transaction.type)) ||
@@ -62,14 +66,38 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
     }
   },
   logTitle({ operation, showCoreTransaction }) {
-    const { t } = useI18n();
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-    const title = transaction?.type && getOperationTitle(transaction.type);
+
+    if (nullable(transaction)) {
+      return null;
+    }
+
+    const { t } = useI18n();
+    const transactionFromBatchAll = findCoreBatchAll(transaction);
+
+    const title =
+      (transaction?.type && getOperationTitle(transaction.type)) ||
+      (transactionFromBatchAll?.type && getOperationTitle(transactionFromBatchAll.type));
+
     if (title) {
       return <TransactionTitle className="overflow-hidden" title={t(title || '')} />;
     }
   },
-  details() {
+  details({ operation, showCoreTransaction }) {
+    const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+
+    if (nullable(transaction)) {
+      return null;
+    }
+
+    const transactionFromBatchAll = findCoreBatchAll(transaction);
+
+    if (
+      transaction?.type === TransactionType.VESTED_TRANSFER ||
+      transactionFromBatchAll?.type === TransactionType.VESTED_TRANSFER
+    ) {
+      return <VestedTransferOperationDetails operation={operation} />;
+    }
     return null;
   },
 });
