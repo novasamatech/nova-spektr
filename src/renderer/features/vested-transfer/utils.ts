@@ -46,7 +46,7 @@ function isSubmitStep(step: Step): boolean {
   return step === Step.SUBMIT;
 }
 
-function createVestingScheduleSchema(options: { chain: Chain; minStartingBlock: BN }) {
+function createVestingScheduleSchema(options: { chain: Chain; minStartingBlock: BN; minVestedTransfer: BN }) {
   const positiveBn = (errorMessage: string) =>
     z
       .string()
@@ -69,7 +69,10 @@ function createVestingScheduleSchema(options: { chain: Chain; minStartingBlock: 
       .refine((value) => validateAddress(value, options.chain), VestingScheduleRowErrors.INVALID_SS58_ADDRESS)
       .transform(toAccountId),
 
-    locked: positiveBn(VestingScheduleRowErrors.LOCKED_NOT_POSITIVE_INT),
+    locked: positiveBn(VestingScheduleRowErrors.LOCKED_NOT_POSITIVE_INT).refine(
+      (bn) => bn.gt(options.minVestedTransfer),
+      VestingScheduleRowErrors.LOCKED_TOO_LOW,
+    ),
 
     startingBlock: positiveBn(VestingScheduleRowErrors.START_BLOCK_NOT_POSITIVE_INT).refine(
       (bn) => bn.gt(options.minStartingBlock),

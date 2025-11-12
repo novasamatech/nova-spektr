@@ -70,64 +70,15 @@ const form: Form<FormData> = createForm<FormData>({
   },
 });
 
-const $csvErrors = createStore<VestingScheduleError | null>(null).reset(flow.open);
-
-const fileUploaded = createEvent<File>();
-
-const parseFileContentFx = attach({
-  source: {
-    currentBlock: block.$currentBlock,
-    chain: form.fields.chain.$value,
-  },
-  async effect({ currentBlock, chain }, file) {
-    if (!chain) {
-      throw new VestingScheduleError(VestingScheduleFileErrors.CHAIN_NOT_SELECTED);
-    }
-
-    const minStartingBlock = new BN(currentBlock[chain.chainId]);
-
-    try {
-      const parsedRecords = await vestedTransferUtils.parseCSV(file);
-      const schema = vestedTransferUtils.createVestingScheduleSchema({ chain, minStartingBlock });
-      const validatedData = vestedTransferUtils.validateCSV(parsedRecords, schema);
-
-      return validatedData;
-    } catch (error) {
-      if (error instanceof VestingScheduleError) {
-        throw error;
-      } else {
-        throw new VestingScheduleError(VestingScheduleFileErrors.INVALID_CSV_STRUCTURE);
-      }
-    }
-  },
-});
-
-sample({
-  clock: fileUploaded,
-  target: parseFileContentFx,
-});
-
-sample({
-  clock: parseFileContentFx.doneData,
-  target: form.fields.vestingSchedule.change,
-});
-
-sample({
-  clock: parseFileContentFx.failData,
-  fn: (errors) => errors as unknown as VestingScheduleError,
-  target: $csvErrors,
-});
-
 const $vestingSchedule = form.fields.vestingSchedule.$value;
-
 const $amount = $vestingSchedule.map((vestingSchedule) =>
   vestingSchedule.reduce((amount, vestingRecord) => amount.add(vestingRecord.locked), new BN(0)),
 );
+const $csvErrors = createStore<VestingScheduleError | null>(null).reset(flow.open);
+const fileUploaded = createEvent<File>();
 
 const $chain = form.fields.chain.$value;
-
 const $asset = form.fields.chain.$value.map((c) => (c ? getNativeAsset(c.assets) : null));
-
 const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis) =>
   chain ? (apis[chain.chainId] ?? null) : null,
 );
@@ -248,6 +199,54 @@ const $showSignatories = combine(
 sample({
   clock: $signatories,
   target: balanceSubModel.fetchAccounts,
+});
+
+const parseFileContentFx = attach({
+  source: {
+    currentBlock: block.$currentBlock,
+    chain: form.fields.chain.$value,
+    api: $api,
+  },
+  async effect({ currentBlock, chain, api }, file) {
+    if (!chain || !api) {
+      throw new VestingScheduleError(VestingScheduleFileErrors.CHAIN_NOT_SELECTED);
+    }
+
+    const minStartingBlock = new BN(currentBlock[chain.chainId]);
+    const minVestedTransfer = api.consts.vesting.minVestedTransfer.toBn();
+    // TODO
+    //const maxVestingSchedules = api.consts.vesting.maxVestingSchedules.toBn();
+
+    try {
+      const parsedRecords = await vestedTransferUtils.parseCSV(file);
+      const schema = vestedTransferUtils.createVestingScheduleSchema({ chain, minStartingBlock, minVestedTransfer });
+      const validatedData = vestedTransferUtils.validateCSV(parsedRecords, schema);
+
+      return validatedData;
+    } catch (error) {
+      if (error instanceof VestingScheduleError) {
+        throw error;
+      } else {
+        throw new VestingScheduleError(VestingScheduleFileErrors.INVALID_CSV_STRUCTURE);
+      }
+    }
+  },
+});
+
+sample({
+  clock: fileUploaded,
+  target: parseFileContentFx,
+});
+
+sample({
+  clock: parseFileContentFx.doneData,
+  target: form.fields.vestingSchedule.change,
+});
+
+sample({
+  clock: parseFileContentFx.failData,
+  fn: (errors) => errors as unknown as VestingScheduleError,
+  target: $csvErrors,
 });
 
 // steps management

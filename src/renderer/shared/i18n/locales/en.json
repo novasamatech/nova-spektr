@@ -2307,6 +2307,7 @@
         "rowErrors": {
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "LOCKED_NOT_POSITIVE_INT": "Amount must be a positive integer",
+          "LOCKED_TOO_LOW": "Amount is too low",
           "PER_BLOCK_NOT_POSITIVE_INT": "Per block must be a positive integer",
           "START_BLOCK_IN_PAST": "Start block cannot be in the past",
           "START_BLOCK_NOT_POSITIVE_INT": "Start block must be a positive integer",
