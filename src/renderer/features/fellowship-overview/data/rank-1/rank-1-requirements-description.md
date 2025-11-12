@@ -1,4 +1,8 @@
-- Express interest in joining the fellowship
-- Demonstrate basic understanding of Polkadot
-- Participate in community discussions
-- Show willingness to learn and contribute
+- Three clear examples of a modest but substantial contribution to protocol development.
+- Actively been involved in the design of a component.
+- Substantially assisted in the analysis, or authoring of formalisation or implementation of a protocol component.
+- Should be able to list all key goals, principles and tenets of Polkadot’s overall philosophy.
+- Identifying and correcting a non-trivial issue in protocol code or formalisation.
+- Being available and playing a crucial operational role for a network fix.
+- Proposing a reasonable and non-trivial protocol innovation.
+- Doing a valuable, innovative and insightful refactoring or simplification.

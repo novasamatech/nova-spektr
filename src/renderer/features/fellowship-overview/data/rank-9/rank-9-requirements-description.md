@@ -1,6 +1,2 @@
-- Nearly two decades or more of exceptional service
-- Recognized as one of the founding figures of the ecosystem
-- Profound and lasting impact on the protocol and community
-- Wisdom and guidance that shapes the fellowship itself
-- Serve as wise elder and mentor to all ranks
-- Demonstrate unparalleled dedication and contribution
+- Either played a primary role in both the ideation and subsequent formalisation of a major protocol component; or played a primary role in the code-design and implementation of a major protocol component. The formalisa- tion should be included in a well-respected peer-reviewed publication or the design implemented and deployed into the protocol. The implementation should be subject to expert code-review and included in a functional implementation of the protocol.
+- Further presence of advocating or defending Polkadot outside of the ecosystem. A good benchmark would be one pre-advertised presentation on Polkadot to an industry-wide, academic or other such well-aligned audience outside of the ecosystem. It may also be fulfilled within other media of a similar weight (e.g. a professional journal, major news publication or academic article).

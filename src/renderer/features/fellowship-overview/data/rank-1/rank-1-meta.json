@@ -1,12 +1,7 @@
 {
-  "id": "I",
-  "rank": 1,
-  "name": "Humble",
-  "time": "n/a",
-  "description": "Initial rank in the Fellowship system",
-  "analogue": "Undergraduate Student",
-  "material": "Talc (1 Moh)",
-  "activity": "10%",
-  "agreement": "50%",
-  "timeRequired": "Initial"
+  "analogue": "Foundation course",
+  "material": "Graphite (1-3 Moh)",
+  "activity": "90%",
+  "agreement": "n/a",
+  "timeRequired": "n/a"
 }

@@ -1,12 +1,7 @@
 {
-  "id": "II",
-  "rank": 2,
-  "name": "Proficient",
-  "time": "~1 y",
-  "description": "Second rank in the Fellowship system",
-  "analogue": "Graduate Student",
-  "material": "Gypsum (2 Moh)",
-  "activity": "20%",
-  "agreement": "55%",
+  "analogue": "Bachelor’s degree",
+  "material": "Stibnite (2 Moh)",
+  "activity": "80%",
+  "agreement": "n/a",
   "timeRequired": "~1 year"
 }
