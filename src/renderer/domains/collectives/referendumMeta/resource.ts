@@ -21,7 +21,7 @@ export const referendumMetaResource = createRemoteResource<RequestParams, Refere
     key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
     ttl: Number.POSITIVE_INFINITY,
   },
-  async fn({ chainId, api, provider }) {
+  async fn({ chainId, api, provider }: RequestParams) {
     let response: ReferendumMeta[] = [];
     // external providers work only with polkadot collectives chain
     if (chainId !== '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2') {

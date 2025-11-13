@@ -4,7 +4,7 @@ import { createFlow } from '@/shared/effector';
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
-import { referendum, referendumService, track, trackService, voting } from '@/domains/collectives';
+import { member, referendum, referendumService, track, trackService, voting } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 
 import { fellowshipVotingFeature } from './feature';
@@ -91,7 +91,12 @@ sample({
 
 sample({
   clock: fellowshipVotingFeature.running,
-  target: track.request,
+  target: [track.request, member.subscribe],
+});
+
+sample({
+  clock: fellowshipVotingFeature.stopped,
+  target: member.unsubscribe,
 });
 
 // member
