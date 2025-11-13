@@ -4,7 +4,6 @@ import { spread } from 'patronum';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { walletModel, walletUtils } from '@/entities/wallet';
 import { type BasketTransaction, basketOperations } from '@/aggregates/basket-operations';
 import { signModel } from '@/features/operations/OperationSign';
 import { ExtrinsicResult, submitModel } from '@/features/operations/OperationSubmit';
@@ -78,41 +77,23 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
-  source: {
-    transactions: $transactions,
-    chains: networkModel.$chains,
-    wallets: walletModel.$wallets,
-  },
-  filter: ({ transactions }) => nonNullable(transactions) && transactions.length > 0,
-  fn: ({ transactions, chains, wallets }, signParams) => {
-    const account = walletUtils.getAccountsBy(wallets, account => {
-      return (
-        account.accountId === transactions[0].initiatorAccountId &&
-        account.accountId === transactions[0].coreTx.accountId
-      );
-    });
-
+  clock: signModel.signed,
+  source: $step,
+  filter: step => step !== Step.NONE,
+  fn: (_, signParams) => {
     return {
-      event: {
-        ...signParams,
-        chain: chains[transactions[0].coreTx.chainId],
-        account: account[0],
-        description: '',
-        coreTxs: transactions.map(tx => tx.coreTx!),
-        wrappedTxs: transactions.map(tx => tx.coreTx!),
-      },
+      event: signParams,
       step: Step.SUBMIT,
     };
   },
   target: spread({
-    event: submitModel.events.formInitiated,
+    event: submitModel.init,
     step: changeStep,
   }),
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: $transactions,
   fn: (transactions, results) => {
     return transactions.filter((tx, index) =>
@@ -123,7 +104,7 @@ sample({
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: $transactions,
   fn: (transactions, results) => {
     return transactions.reduce<BasketTransaction[]>((acc, tx, index) => {

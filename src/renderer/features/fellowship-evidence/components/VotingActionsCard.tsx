@@ -1,6 +1,7 @@
 import { useStoreMap } from 'effector-react';
 import { memo } from 'react';
 
+import { type Transaction } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { SmallTitleText } from '@/shared/ui';
@@ -16,9 +17,11 @@ type Props = {
   endBlock: number | null;
   variant: 'large' | 'small';
   disabled: boolean;
+  transaction?: Transaction | null;
+  onClose?: () => void;
 };
 
-export const VotingActionsCard = memo(({ evidence, endBlock, variant, disabled }: Props) => {
+export const VotingActionsCard = memo(({ evidence, endBlock, variant, disabled, transaction, onClose }: Props) => {
   const { t } = useI18n();
 
   const isPromotion = evidence.wish === 'Promotion';
@@ -44,7 +47,14 @@ export const VotingActionsCard = memo(({ evidence, endBlock, variant, disabled }
     <Card>
       <Box fillContainer gap={6} padding={6}>
         <SmallTitleText>{title}</SmallTitleText>
-        <VotingActions evidence={evidence} endBlock={endBlock} variant={variant} disabled={disabled} />
+        <VotingActions
+          transaction={transaction}
+          evidence={evidence}
+          endBlock={endBlock}
+          variant={variant}
+          disabled={disabled}
+          onClose={onClose}
+        />
       </Box>
     </Card>
   );
