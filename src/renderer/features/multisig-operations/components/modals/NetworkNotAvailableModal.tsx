@@ -16,7 +16,6 @@ export const NetworkNotAvailableModal = () => {
     <StatusModal
       isOpen={isOpen}
       title={t('operation.networkNotAvailableTitle')}
-      description={t('operation.networkNotAvailableDescription')}
       content={<Animation variant="error" />}
       onClose={handleClose}
     >

@@ -1483,7 +1483,6 @@
     "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
     "accountNotFoundTitle": "No account to sign operation",
     "networkNotAvailableButton": "Close",
-    "networkNotAvailableDescription": "Network not available",
     "networkNotAvailableTitle": "Network not available",
     "addCallDataButton": "Add call data",
     "addToBasket": "Add to basket",
