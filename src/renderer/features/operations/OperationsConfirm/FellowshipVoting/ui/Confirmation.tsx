@@ -5,7 +5,7 @@ import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { referendaPallet } from '@/shared/pallet/referenda';
-import { Button } from '@/shared/ui';
+import { Button, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { referendumService } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
@@ -50,12 +50,15 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
   const currentTrack = useUnit(votingStatus.$currentProposerTrack);
   const nextTrack = useUnit(votingStatus.$nextProposerTrack);
 
-  if (
-    nullable(confirm) ||
-    nullable(memberTrack) ||
-    nullable(votingReferendum) ||
-    referendumService.isCompleted(votingReferendum)
-  ) {
+  if (nullable(confirm) || nullable(memberTrack) || nullable(votingReferendum)) {
+    return (
+      <Box width="440px" height="430px" verticalAlign="center" horizontalAlign="center">
+        <Loader size={24} color="primary" />
+      </Box>
+    );
+  }
+
+  if (referendumService.isCompleted(votingReferendum)) {
     return null;
   }
 
