@@ -49,6 +49,7 @@ import RFCVotingIcon from '@/shared/assets/images/functionals/rfc-voting.svg?jsx
 import SalaryIcon from '@/shared/assets/images/functionals/salary.svg?jsx';
 import SearchIcon from '@/shared/assets/images/functionals/search.svg?jsx';
 import SettingsLiteIcon from '@/shared/assets/images/functionals/settings-lite.svg?jsx';
+import ShareIcon from '@/shared/assets/images/functionals/share.svg?jsx';
 import SwitchIcon from '@/shared/assets/images/functionals/switch.svg?jsx';
 import ThumbDownIcon from '@/shared/assets/images/functionals/thumb-down.svg?jsx';
 import ThumbUpIcon from '@/shared/assets/images/functionals/thumb-up.svg?jsx';
@@ -91,6 +92,7 @@ const FunctionalImages = {
   uploadFile: { svg: UploadFileIcon },
   import: { svg: ImportIcon },
   export: { svg: ExportIcon },
+  share: { svg: ShareIcon },
   editKeys: { svg: EditKeysIcon },
   more: { svg: MoreIcon },
   rename: { svg: RenameIcon },

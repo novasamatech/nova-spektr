@@ -27,6 +27,7 @@ import {
   migrateRevoteToVote,
   migrateWallets,
   removeDeprecatedProxiedAccounts,
+  renameBlockNumberToEntropyBlockNumber,
 } from '../migration';
 
 class DexieStorage extends Dexie {
@@ -142,6 +143,8 @@ class DexieStorage extends Dexie {
         balances2: 'id',
       })
       .upgrade((t) => t.table('balances').clear());
+
+    this.version(40).upgrade(renameBlockNumberToEntropyBlockNumber);
 
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');

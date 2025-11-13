@@ -385,6 +385,7 @@
       "continueButton": "Continue",
       "downloadTemplateButton": "Download the template",
       "error": {
+        "invalidEthereumPath": "Ethereum chains don't support soft derivations",
         "invalidFile": "Incorrect file format",
         "invalidPasswordPath": "Invalid password path",
         "invalidPasswordPath_one": "Password derivation path {invalidValues} is not allowed, please check the file.",
@@ -1142,7 +1143,8 @@
     },
     "notifications": {
       "addressCopied": "Address copied!",
-      "copiedToClipboard": "Copied to clipboard!"
+      "copiedToClipboard": "Copied to clipboard!",
+      "operationLinkCopied": "Operation link copied!"
     },
     "timeout": {
       "expired": "Expired"
@@ -1737,10 +1739,16 @@
     }
   },
   "operation": {
+    "accountNotFoundButton": "Close",
+    "accountNotFoundDescription": "Your account is not listed as a signatory in this multisig.\nPlease add account to sign operation.",
+    "accountNotFoundTitle": "No account to sign operation",
     "addCallDataButton": "Add call data",
     "addToBasket": "Add to basket",
     "addedToBasket": "Added to basket",
     "advanced": "Advanced",
+    "alreadySignedCloseButton": "Close",
+    "alreadySignedTitle": "Operation already signed",
+    "alreadySignedViewButton": "View",
     "approveButton": "Approve",
     "cancelTitle": "Reject",
     "closeButton": "Close",
@@ -1801,9 +1809,14 @@
     "networkFeeTotal": "Total network fee",
     "networkFee_one": "Network fee",
     "networkFee_other": "Network fees",
+    "networkNotAvailableButton": "Close",
+    "networkNotAvailableTitle": "Network not available",
     "noSignatoryErrorDescription": "The wallet<wallet />does not have an account on the {network} network. You cannot sign this opperation. Please add an account on {network} network.",
     "noSignatoryErrorTitle": "No account for {network}",
     "openOperationsButton": "Open operations",
+    "operationNotFoundButton": "Close",
+    "operationNotFoundDescription": "The operation you're trying to access could not be found.\nPlease check the parameters and try again.",
+    "operationNotFoundTitle": "Operation not found",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
@@ -1835,6 +1848,7 @@
       "executed": "Executed",
       "signing": "On signing"
     },
+    "submitError": "Operation Failed",
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
@@ -1931,6 +1945,7 @@
     "noOperationsTitle": "Operation list is empty",
     "noOperationsWalletNotMulti": "You can only view operations for your Multisig wallets. <br /> Transaction history for other types of wallets will be available later. Stay tuned.",
     "operationCreated": "Operation created",
+    "shareOperationTooltip": "Share transaction link with signatories",
     "title": "Operations",
     "titles": {
       "addProxy": "Add delegated authority (proxy)",

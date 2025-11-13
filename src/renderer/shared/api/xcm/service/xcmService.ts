@@ -380,22 +380,23 @@ async function getDeliveryFeeFromConfig({
   originChain: string;
   destinationChain: Chain;
   originApi: ApiPromise;
-  destinationChainId: number;
+  destinationChainId: number | null;
   extrinsic: SubmittableExtrinsic<'promise'>;
 }): Promise<BN | null> {
   const direction = destinationChain.parentId ? 'toParachain' : 'toParent';
 
   const deliveryFeeConfig = config.networkDeliveryFee[originChain]?.[direction];
-
   if (!deliveryFeeConfig) return null;
 
   const query = originApi.query[camelCase(deliveryFeeConfig.factorPallet)];
   const directionFactor = {
     toParent: () => query.upwardDeliveryFeeFactor(),
-    toParachain: () => query.deliveryFeeFactor(destinationChainId),
+    toParachain: () => destinationChainId && query.deliveryFeeFactor(destinationChainId),
   };
 
-  const deliveryFactor = (await directionFactor[direction]()).toString();
+  const deliveryFactor = (await directionFactor[direction]())?.toString();
+  if (!deliveryFactor) return null;
+
   const weight = new BN(extrinsic.encodedLength).add(SET_TOPIC_SIZE);
   const feeSize = new BN(deliveryFeeConfig.sizeBase).add(weight.mul(new BN(deliveryFeeConfig.sizeFactor)));
 
