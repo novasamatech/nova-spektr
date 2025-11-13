@@ -379,7 +379,7 @@ const Destination = memo(() => {
 
   const prefixElement = (
     <Identicon
-      invalid={destination.hasError}
+      invalid={destination.touched && destination.hasError}
       size={20}
       address={toAddress(destination.value, { prefix: chain?.addressPrefix })}
       background={false}
@@ -397,11 +397,12 @@ const Destination = memo(() => {
         <Combobox
           data-testid={TEST_IDS.OPERATIONS.RECIPIENT_INPUT}
           placeholder={t('transfer.recipientPlaceholder')}
-          invalid={destination.hasError}
+          invalid={destination.touched && destination.hasError}
           value={destination.value.trim()}
           prefixElement={prefixElement}
           height="md"
           onChange={destination.onChange}
+          onBlur={destination.markAsTouched}
           onInput={setQuery}
         >
           {options.map((group) => (
@@ -422,7 +423,7 @@ const Destination = memo(() => {
         )}
       </Box>
 
-      <InputHint active={destination.hasError} variant="error">
+      <InputHint active={destination.touched && destination.hasError} variant="error">
         {t(destination.errorMessage, destination.errorValues)}
       </InputHint>
     </Field>
@@ -450,7 +451,7 @@ const Amount = memo(() => {
   return (
     <div className="flex flex-col gap-y-2">
       <AmountInput
-        invalid={amount.hasError}
+        invalid={amount.touched && amount.hasError}
         value={amount.value}
         balance={accountAvailableBalance?.toString() ?? null}
         balancePlaceholder={t('general.input.availableLabel')}
@@ -465,12 +466,12 @@ const Amount = memo(() => {
         }
         testId={TEST_IDS.OPERATIONS.AMOUNT_INPUT}
         onChange={(value: string) => amount.onChange(value)}
+        onBlur={amount.markAsTouched}
         onKeyDown={() => formModel.events.toggleMaxMode(false)}
       />
-      <InputHint active={amount.hasError} variant="error">
+      <InputHint active={amount.touched && amount.hasError} variant="error">
         {t(amount.errorMessage)}
       </InputHint>
-
       {showEDSwitch && (
         <div className="flex justify-end">
           <Switch
@@ -546,7 +547,7 @@ const FeeSection = memo(() => {
         />
       )}
 
-      {isXcm && deliveryFee && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
+      {isXcm && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
     </div>
   );
 });

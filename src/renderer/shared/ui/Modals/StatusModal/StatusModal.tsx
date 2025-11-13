@@ -36,7 +36,7 @@ export const StatusModal = ({
         'bg-white p-4 shadow-card-shadow transition-all',
         className,
       )}
-      contentClass="p-0 flex flex-col items-center"
+      contentClass="p-0 flex flex-col items-center w-full"
       testId={testId}
       onClose={onClose}
     >
@@ -53,7 +53,7 @@ export const StatusModal = ({
         </FootnoteText>
       )}
 
-      {children && <div className="mt-3 flex gap-x-3">{children}</div>}
+      {children && <div className="mt-3 flex w-full justify-center gap-x-3">{children}</div>}
     </BaseModal>
   );
 };

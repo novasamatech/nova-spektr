@@ -1,7 +1,7 @@
 import { combine, createEvent, sample } from 'effector';
-import { reshape } from 'patronum';
+import { createGate } from 'effector-react';
+import { reshape, spread } from 'patronum';
 
-import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { salary, salaryService } from '@/domains/collectives';
@@ -11,7 +11,7 @@ import { submitModel } from '@/features/operations/OperationSubmit';
 
 import { fellowshipSalaryFeature } from './feature';
 
-const flow = createFlow(null);
+const gate = createGate({ defaultState: null });
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipSalaryFeature.input,
@@ -43,7 +43,7 @@ const $coreTx = combine(
 );
 
 const { $fee, $wrappedTx } = createTxStore({
-  $active: flow.status,
+  $active: gate.status,
   $api,
   $activeWallet: $wallet,
   $wallets,
@@ -85,37 +85,19 @@ sample({
   target: signModel.events.formInitiated,
 });
 
-const transactionSigned = sample({
-  clock: signModel.output.formSubmitted,
+sample({
+  clock: signModel.signed,
   source: {
-    open: flow.status,
+    open: gate.status,
     transactions: $wrappedTx,
     account: $account,
     chain: $chain,
   },
-  fn({ open, account, chain, transactions }, signParams) {
-    return { open, account, chain, transactions, signParams };
+  filter: ({ open, transactions, account, chain }) => {
+    return open && nonNullable(chain) && nonNullable(transactions) && nonNullable(account);
   },
-}).filterMap(({ open, account, chain, transactions, signParams }) => {
-  if (open && nonNullable(chain) && nonNullable(transactions) && nonNullable(account)) {
-    return { account, chain, transactions, signParams };
-  }
-});
-
-sample({
-  clock: transactionSigned,
-  fn({ transactions, account, chain, signParams }) {
-    return {
-      signatures: signParams.signatures,
-      txPayloads: signParams.txPayloads,
-
-      chain: chain,
-      account: account,
-      wrappedTxs: [transactions!.wrappedTx],
-      coreTxs: [transactions!.coreTx],
-    };
-  },
-  target: submitModel.events.formInitiated,
+  fn: (_, signParams) => signParams,
+  target: submitModel.init,
 });
 
 const salaryInducted = sample({
@@ -143,30 +125,73 @@ const saveToBasket = createEvent();
 
 sample({
   clock: saveToBasket,
-  source: $wrappedTx,
-  fn: transactions => {
-    if (nullable(transactions)) {
-      return [];
+  source: {
+    existing: basketOperations.$list,
+    account: $account,
+    coreTx: $coreTx,
+  },
+  fn: ({ existing, account, coreTx }) => {
+    if (nullable(account) || nullable(coreTx)) {
+      return {
+        add: [],
+        remove: [],
+      };
     }
 
-    const tx: BasketTransactionDraft = {
-      initiatorAccountId: transactions.coreTx.accountId,
-      coreTx: transactions.coreTx,
+    const existingTransactions = existing.filter(o => {
+      if (o.initiatorAccountId !== account.accountId) return false;
+
+      const sameType = o.coreTx.type === coreTx.type;
+      const sameArgs = JSON.stringify(o.coreTx.args) === JSON.stringify(coreTx.args);
+      return sameType && sameArgs;
+    });
+
+    const isSameTransaction = existingTransactions.length > 0;
+
+    const newTransaction: BasketTransactionDraft = {
+      initiatorAccountId: account.accountId,
+      coreTx,
       route: [],
       createdAt: Date.now(),
     };
 
-    return [tx];
+    return {
+      add: isSameTransaction ? [] : [newTransaction],
+      remove: isSameTransaction ? existingTransactions : [],
+    };
   },
-  target: basketOperations.addTransactions,
+  target: spread({
+    add: basketOperations.addTransactions,
+    remove: basketOperations.removeTransactions,
+  }),
 });
 
+const $inBasket = combine(
+  {
+    existing: basketOperations.$list,
+    account: $account,
+    coreTx: $coreTx,
+  },
+  ({ existing, account, coreTx }) => {
+    if (nullable(account) || nullable(coreTx)) return false;
+
+    const existingTransactions = existing.filter(o => {
+      if (o.initiatorAccountId !== account.accountId) return false;
+
+      return o.coreTx.type === coreTx.type && JSON.stringify(o.coreTx.args) === JSON.stringify(coreTx.args);
+    });
+
+    return existingTransactions.length > 0;
+  },
+);
+
 export const salaryInduct = {
-  flow,
+  gate,
   $fee,
   $wallet,
   $account,
   $wrappedTx,
+  $inBasket,
   sign,
   saveToBasket,
 };

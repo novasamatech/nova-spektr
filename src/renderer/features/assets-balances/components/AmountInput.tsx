@@ -36,6 +36,7 @@ type Props = {
   suffixElement?: ReactNode;
   testId?: string;
   onKeyDown?: () => void;
+  onBlur?: () => void;
   onChange?: (value: string) => void;
 };
 
@@ -52,6 +53,7 @@ export const AmountInput = ({
   testId,
   onChange,
   onKeyDown,
+  onBlur,
   suffixElement,
 }: Props) => {
   const { t } = useI18n();
@@ -193,6 +195,7 @@ export const AmountInput = ({
       testId={testId}
       onChange={handleChange}
       onKeyDown={onKeyDown}
+      onBlur={onBlur}
     />
   );
 };
@@ -212,6 +215,7 @@ type InputProps = {
   captionElement?: ReactNode;
   testId?: string;
   onKeyDown?: () => void;
+  onBlur?: () => void;
   onChange: (value: string) => void;
 };
 export const Input = ({
@@ -227,6 +231,7 @@ export const Input = ({
   testId,
   onKeyDown,
   onChange,
+  onBlur,
 }: InputProps) => {
   const id = useId();
 
@@ -279,6 +284,7 @@ export const Input = ({
           disabled={disabled}
           data-testid={testId}
           onKeyDown={onKeyDown}
+          onBlur={onBlur}
           onChange={(event) => onChange?.(event.target.value)}
         />
         {suffixElement && <div className="absolute top-3.5 right-3">{suffixElement}</div>}

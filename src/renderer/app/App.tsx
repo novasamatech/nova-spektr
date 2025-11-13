@@ -1,10 +1,11 @@
 import { useGate, useUnit } from 'effector-react';
 import { useEffect } from 'react';
-import { matchPath, useLocation, useNavigate, useRoutes } from 'react-router-dom';
+import { matchPath, useLocation, useNavigate, useRoutes, useSearchParams } from 'react-router-dom';
 
 import { logger } from '@/shared/config/utils';
 import { ConfirmDialogProvider } from '@/shared/providers';
 import { Paths } from '@/shared/routes';
+import { deepLinkService } from '@/domains/app';
 import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { ROUTES_CONFIG } from '@/pages/index';
@@ -19,6 +20,7 @@ export const App = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const appRoutes = useRoutes(ROUTES_CONFIG);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useGate(navigationModel.gates.flow, { navigate });
 
@@ -36,6 +38,21 @@ export const App = () => {
       navigate(Paths.ONBOARDING, { replace: true });
     }
   }, [isLoadingWallets, wallets.length]);
+
+  useEffect(() => {
+    if (searchParams.toString()) {
+      deepLinkService.setDeepLink({
+        searchParams,
+        callback: (takenKeys) => {
+          const currentParams = Object.fromEntries(searchParams.entries());
+          const remainingParams = Object.fromEntries(
+            Object.entries(currentParams).filter(([key]) => !takenKeys.includes(key)),
+          );
+          setSearchParams(remainingParams, { replace: true });
+        },
+      });
+    }
+  }, [searchParams, setSearchParams]);
 
   return (
     <ConfirmDialogProvider>

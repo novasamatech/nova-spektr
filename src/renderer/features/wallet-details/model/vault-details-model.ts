@@ -44,7 +44,9 @@ sample({
   clock: keysAdded,
   source: networkModel.$chains,
   filter: (_, draftKeys) => draftKeys.length > 0,
-  fn: (chains, draftKeys) => polkadotVaultService.populateDraftAccounts(draftKeys, chains),
+  fn: (chains, draftKeys) => {
+    return polkadotVaultService.populateDraftAccounts(draftKeys, chains);
+  },
   target: $keysToAdd,
 });
 

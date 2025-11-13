@@ -9,13 +9,14 @@ import { Alert, Button, InfoLink, InputHint } from '@/shared/ui';
 import { InputFile, Modal } from '@/shared/ui-kit';
 import { TEMPLATE_GITHUB_LINK } from '../lib/constants';
 import { importKeysUtils } from '../lib/import-keys-utils';
+import { type DerivationKeyDraft } from '../lib/types';
 import { importKeysModel } from '../model/import-keys-model';
 
 type Props = {
   isOpen: boolean;
   rootAccountId: AccountId;
   existingKeys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[];
-  onConfirm: (keys: (DraftAccount<VaultChainAccount> | DraftAccount<VaultShardAccount>)[]) => void;
+  onConfirm: (keys: DerivationKeyDraft[]) => void;
   onClose: () => void;
 };
 
@@ -25,6 +26,9 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
   const validationError = useUnit(importKeysModel.$validationError);
   const keysToAdd = useUnit(importKeysModel.$keysToAdd);
   const successReport = useUnit(importKeysModel.$successReport);
+  const errorMessages = validationError
+    ? importKeysUtils.getErrorsText(t, validationError.error, validationError.details)
+    : [];
 
   useEffect(() => {
     if (!isOpen) return;
@@ -73,8 +77,12 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
               />
             </div>
 
-            <InputHint active={nonNullable(validationError)} variant="error">
-              {validationError && importKeysUtils.getErrorsText(t, validationError.error, validationError.details)}
+            <InputHint as="div" active={errorMessages.length > 0} variant="error">
+              {errorMessages.map((message, index) => (
+                <span className="block" key={`${message}-${index}`}>
+                  {message}
+                </span>
+              ))}
             </InputHint>
           </div>
 

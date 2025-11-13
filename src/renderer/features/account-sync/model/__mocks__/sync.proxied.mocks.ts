@@ -36,7 +36,7 @@ export const proxiedAccount1 = {
   cryptoType: 0,
   signingType: 'signing_wo',
   deposit: '1002050000000',
-  blockNumber: 6147577,
+  entropyBlockNumber: 6147577,
   extrinsicIndex: 2,
   connections: [
     {
@@ -59,7 +59,7 @@ export const proxiedAccount2 = {
   cryptoType: 0,
   signingType: 'signing_wo',
   deposit: '1002050000000',
-  blockNumber: 6146859,
+  entropyBlockNumber: 6146859,
   extrinsicIndex: 2,
   connections: [
     {
@@ -82,7 +82,7 @@ export const proxiedAccount3 = {
   cryptoType: 0,
   signingType: 'signing_wo',
   deposit: '1002050000000',
-  blockNumber: 6146810,
+  entropyBlockNumber: 6146810,
   extrinsicIndex: 2,
   connections: [
     {
@@ -173,28 +173,14 @@ export const multisigWallet1 = {
 };
 
 // Indexed blocks map
-export const indexedBlocks = new Map([
-  ['0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42', 6152557],
-]);
+export const indexedBlocks = new Map([['0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42', 6152557]]);
 
-export const allAccounts = [
-  userAccount,
-  multisigAccount1,
-  proxiedAccount1,
-  proxiedAccount2,
-  proxiedAccount3,
-];
+export const allAccounts = [userAccount, multisigAccount1, proxiedAccount1, proxiedAccount2, proxiedAccount3];
 
-export const allWallets = [
-  oneGuyWallet,
-  proxiedWallet1,
-  proxiedWallet2,
-  proxiedWallet3,
-  multisigWallet1,
-];
+export const allWallets = [oneGuyWallet, proxiedWallet1, proxiedWallet2, proxiedWallet3, multisigWallet1];
 
-export const allChains = { 
-  '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42': { addressPrefix: 0 } 
+export const allChains = {
+  '0x3dbb473ae9b2b77ecf077c03546f0f8670c020e453dddb457da155e6cc7cba42': { addressPrefix: 0 },
 };
 
 export const syncResult = {

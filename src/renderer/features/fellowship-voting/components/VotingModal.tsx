@@ -3,10 +3,8 @@ import { memo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui';
 import { Box, Carousel, Modal } from '@/shared/ui-kit';
 import { referendumService } from '@/domains/collectives';
-import { basketUtils } from '@/entities/basket';
 import { OperationTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { OperationResult } from '@/entities/transaction';
@@ -72,11 +70,6 @@ export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
     setStep('sign');
   };
 
-  const handleBasketSave = () => {
-    voting.saveToBasket();
-    setStep('basket');
-  };
-
   if (step === 'submit') {
     return <OperationSubmit isOpen={isOpen} onClose={() => handleToggle(false)} />;
   }
@@ -129,14 +122,7 @@ export const VotingModal = memo(({ isOpen, onClose, vote }: Props) => {
                 fee={fee}
               />
             </Box>
-            <Modal.Footer>
-              {wallet && basketUtils.isBasketAvailable(wallet) && (
-                <Button pallet="secondary" onClick={handleBasketSave}>
-                  {t('operation.addToBasket')}
-                </Button>
-              )}
-              {nonNullable(wallet) && <SignButton type={wallet.type} onClick={handleSign} />}
-            </Modal.Footer>
+            <Modal.Footer>{nonNullable(wallet) && <SignButton type={wallet.type} onClick={handleSign} />}</Modal.Footer>
           </Carousel.Item>
           <Carousel.Item id="sign" index={1}>
             <OperationSign onSuccess={() => setStep('submit')} onGoBack={() => setStep('confirm')} />

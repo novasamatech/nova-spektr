@@ -7,6 +7,7 @@ import { FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
 import { type Proxy, walletProxiesModel } from '../../model/wallet-proxies-model';
 
@@ -37,9 +38,12 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   const handleDeleteProxy = (proxyAccount: Proxy) => {
     const chain = chains[proxyAccount.chainId];
     if (!chain) return;
+
     const proxiedAccount = allAccounts.find(
       account =>
-        account.accountId === proxyAccount.proxiedAccountId && accountService.isAccountAvailableOnChain(account, chain),
+        account.accountId === proxyAccount.proxiedAccountId &&
+        accountUtils.isProxiedAccount(account) &&
+        accountService.isAccountAvailableOnChain(account, chain),
     );
 
     if (proxiedAccount) {

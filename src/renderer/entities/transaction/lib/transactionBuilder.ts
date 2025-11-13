@@ -66,8 +66,6 @@ type TransferParams = {
   balancePreservation: BalancePreservation;
   xcmData?: {
     args: {
-      xcmFee: string;
-      deliveryFee: string;
       xcmAsset?: NonNullable<unknown>;
       xcmWeight: string;
       xcmDest?: NonNullable<unknown>;

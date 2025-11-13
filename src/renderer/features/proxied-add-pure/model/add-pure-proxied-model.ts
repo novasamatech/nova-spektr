@@ -1,14 +1,9 @@
-import { type ApiPromise } from '@polkadot/api';
-import { type UnsubscribePromise } from '@polkadot/api/types';
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { attach, combine, createEvent, createStore, restore, sample } from 'effector';
 import { delay, spread } from 'patronum';
 
-import { type PartialProxiedAccount, ProxyVariant, type Timepoint } from '@/shared/core';
-import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
-import { systemPallet } from '@/shared/pallet/system';
-import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type PartialProxiedAccount, ProxyVariant } from '@/shared/core';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { type PathType, Paths } from '@/shared/routes';
-import { subscriptionService } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { proxyModel } from '@/entities/proxy';
 import { type ExtrinsicResultParams } from '@/entities/transaction';
@@ -23,6 +18,7 @@ import {
   type AddPureProxiedConfirm,
   addPureProxiedConfirmModel as confirmModel,
 } from '@/features/operations/OperationsConfirm/AddPureProxied';
+import { walletsModel } from '@/features/proxied-wallet';
 import { proxiesModel } from '@/features/proxies';
 import { addPureProxiedUtils } from '../lib/add-pure-proxied-utils';
 import { Step } from '../lib/types';
@@ -50,37 +46,7 @@ const $initiatorWallet = combine(
   },
 );
 
-type GetPureProxyParams = {
-  api: ApiPromise;
-  accountId: AccountId;
-  timepoint: Timepoint;
-};
-type GetPureProxyResult = {
-  accountId: AccountId;
-  blockNumber: number;
-  extrinsicIndex: number;
-};
-const getPureProxyFx = createEffect(
-  ({ api, accountId, timepoint }: GetPureProxyParams): Promise<GetPureProxyResult> => {
-    return new Promise(resolve => {
-      const pureCreatedParams = {
-        section: 'proxy',
-        method: 'PureCreated',
-        data: [undefined, toAddress(accountId, { prefix: systemPallet.consts.ss58Prefix(api) })],
-      };
-
-      const unsubscribe: UnsubscribePromise = subscriptionService.subscribeEvents(api, pureCreatedParams, event => {
-        unsubscribe?.then(fn => fn());
-
-        resolve({
-          accountId: pjsSchema.helpers.toAccountId(event.data[0].toHex()),
-          blockNumber: timepoint.height,
-          extrinsicIndex: timepoint.index,
-        });
-      });
-    });
-  },
-);
+const subscribePureEventFx = attach({ effect: walletsModel.subscribePureEventFx });
 
 sample({
   clock: formModel.flowStarted,
@@ -185,43 +151,23 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
-  source: {
-    tx: formModel.$tx,
-    coreTx: formModel.$coreTx,
-    chain: formModel.form.fields.chain.$value,
-    initiator: formModel.form.fields.initiator.$value,
-    signatory: formModel.form.fields.signatory.$value,
+  clock: signModel.signed,
+  source: $step,
+  filter: step => step !== Step.NONE,
+  fn: (_, signParams) => {
+    return {
+      event: signParams,
+      step: Step.SUBMIT,
+    };
   },
-  filter: proxyData => {
-    return (
-      nonNullable(proxyData.tx) &&
-      nonNullable(proxyData.coreTx) &&
-      nonNullable(proxyData.chain) &&
-      nonNullable(proxyData.initiator) &&
-      nonNullable(proxyData.signatory) &&
-      nonNullable(proxyData.chain)
-    );
-  },
-  fn: (proxyData, signParams) => ({
-    event: {
-      ...signParams,
-      chain: proxyData.chain!,
-      account: proxyData.initiator!,
-      signatory: proxyData.signatory,
-      wrappedTxs: [proxyData.tx!],
-      coreTxs: [proxyData.coreTx!],
-    },
-    step: Step.SUBMIT,
-  }),
   target: spread({
-    event: submitModel.events.formInitiated,
+    event: submitModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: {
     step: $step,
     apis: networkModel.$apis,
@@ -233,16 +179,20 @@ sample({
     nonNullable(initiator) &&
     nonNullable(chain) &&
     nonNullable(chain.chainId),
-  fn: ({ apis, initiator, chain }, submitData) => ({
-    api: apis[chain!.chainId],
-    accountId: initiator!.accountId,
-    timepoint: (submitData[0].params as ExtrinsicResultParams).timepoint,
-  }),
-  target: getPureProxyFx,
+  fn: ({ apis, initiator, chain }, submitData) => {
+    const timepoint = (submitData[0].params as ExtrinsicResultParams).timepoint;
+
+    return {
+      api: apis[chain!.chainId],
+      initiator: initiator!,
+      timepoint,
+    };
+  },
+  target: subscribePureEventFx,
 });
 
 sample({
-  clock: getPureProxyFx.doneData,
+  clock: subscribePureEventFx.doneData,
   source: {
     initiator: formModel.form.fields.initiator.$value,
     chain: formModel.form.fields.chain.$value,
@@ -261,14 +211,14 @@ sample({
 });
 
 sample({
-  clock: getPureProxyFx.doneData,
+  clock: subscribePureEventFx.doneData,
   source: {
     initiator: formModel.form.fields.initiator.$value,
     chain: formModel.form.fields.chain.$value,
     proxyDeposit: formModel.$proxyDeposit,
   },
   filter: ({ initiator, chain }) => nonNullable(initiator) && nonNullable(chain),
-  fn: ({ chain, initiator, proxyDeposit }, { accountId, blockNumber, extrinsicIndex }) => {
+  fn: ({ chain, initiator, proxyDeposit }, { accountId, entropyBlockNumber, extrinsicIndex, pendingBlockNumber }) => {
     return [
       {
         accountId,
@@ -281,17 +231,19 @@ sample({
           },
         ],
         proxyVariant: ProxyVariant.PURE,
-        blockNumber,
+        entropyBlockNumber,
+        pendingBlockNumber,
         extrinsicIndex,
         deposit: proxyDeposit,
+        spawner: initiator!.accountId,
       },
-    ] as PartialProxiedAccount[];
+    ] satisfies PartialProxiedAccount[];
   },
   target: proxiesModel.createProxiedWalletsFx,
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: formModel.$isMultisig,
   filter: (isMultisig, results) => isMultisig && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
@@ -332,7 +284,7 @@ sample({
 });
 
 sample({
-  clock: delay(getPureProxyFx.doneData, 2000),
+  clock: delay(subscribePureEventFx.doneData, 2000),
   target: flowFinished,
 });
 
