@@ -1,10 +1,11 @@
 import { BN } from '@polkadot/util';
-import { attach, combine, createEvent, createStore, restore, sample } from 'effector';
+import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { readonly } from 'patronum';
 
 import { chainsService } from '@/shared/api/network';
 import { type Chain } from '@/shared/core';
+import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { assert, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
 import {
@@ -19,7 +20,7 @@ import { type AnyAccount, accountService, accounts, balanceService, block } from
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
-import { type VestingSchedule } from '@/entities/vesting';
+import { type ExistingVestingScheduleMap, type VestingSchedule, vestingService } from '@/entities/vesting';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
@@ -79,9 +80,31 @@ const fileUploaded = createEvent<File>();
 
 const $chain = form.fields.chain.$value;
 const $asset = form.fields.chain.$value.map((c) => (c ? getNativeAsset(c.assets) : null));
-const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis) =>
-  chain ? (apis[chain.chainId] ?? null) : null,
-);
+const $api = combine($chain, networkModel.$apis, (chain, apis) => (chain ? (apis[chain.chainId] ?? null) : null));
+
+const { $: $minStartingBlock } = createStoreFromEffect({
+  defaultValue: null,
+  params: { currentBlock: block.$currentBlock, chain: $chain },
+  fn: ({ currentBlock, chain }) => new BN(vestingService.getMinStartingBlock(currentBlock, chain)),
+});
+
+const { $: $minVestedTransfer } = createStoreFromEffect({
+  defaultValue: null,
+  params: { api: $api },
+  fn: ({ api }) => vestingService.getMinVestedTransfer(api),
+});
+
+const { $: $maxVestingSchedules } = createStoreFromEffect({
+  defaultValue: null,
+  params: { api: $api },
+  fn: ({ api }) => vestingService.getMaxVestingSchedules(api),
+});
+
+const { $: $existingVestingSchedules } = createStoreFromEffect({
+  defaultValue: null,
+  params: { api: $api },
+  fn: ({ api }) => vestingService.getExistingVestingSchedules(api),
+});
 
 const $coreTx = combine(
   {
@@ -116,7 +139,6 @@ const validator = createTxValidator<{
   amount: BN;
   chain: Chain;
 }>({
-  DEBUG: true,
   additionalBalanceRules: [
     ({ route, amount, chain, asset, getBalance }) => {
       const initiator = accountService.findInitiator(route);
@@ -201,25 +223,26 @@ sample({
   target: balanceSubModel.fetchAccounts,
 });
 
-const parseFileContentFx = attach({
-  source: {
-    currentBlock: block.$currentBlock,
-    chain: form.fields.chain.$value,
-    api: $api,
-  },
-  async effect({ currentBlock, chain, api }, file) {
-    if (!chain || !api) {
-      throw new VestingScheduleError(VestingScheduleFileErrors.CHAIN_NOT_SELECTED);
-    }
+type ParseFileContentParams = {
+  file: File;
+  chain: Chain;
+  minStartingBlock: BN;
+  minVestedTransfer: BN;
+  maxVestingSchedules: BN;
+  existingVestingSchedules: ExistingVestingScheduleMap;
+};
 
-    const minStartingBlock = new BN(currentBlock[chain.chainId]);
-    const minVestedTransfer = api.consts.vesting.minVestedTransfer.toBn();
-    // TODO
-    //const maxVestingSchedules = api.consts.vesting.maxVestingSchedules.toBn();
-
+const rootParseFileContentFx = createEffect<ParseFileContentParams, VestingSchedule[], VestingScheduleError>(
+  async ({ file, chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules }) => {
     try {
       const parsedRecords = await vestedTransferUtils.parseCSV(file);
-      const schema = vestedTransferUtils.createVestingScheduleSchema({ chain, minStartingBlock, minVestedTransfer });
+      const schema = vestedTransferUtils.createVestingScheduleSchema({
+        chain,
+        minStartingBlock,
+        minVestedTransfer,
+        maxVestingSchedules,
+        existingVestingSchedules,
+      });
       const validatedData = vestedTransferUtils.validateCSV(parsedRecords, schema);
 
       return validatedData;
@@ -231,6 +254,37 @@ const parseFileContentFx = attach({
       }
     }
   },
+);
+
+const parseFileContentFx = attach({
+  source: {
+    chain: $chain,
+    minStartingBlock: $minStartingBlock,
+    minVestedTransfer: $minVestedTransfer,
+    maxVestingSchedules: $maxVestingSchedules,
+    existingVestingSchedules: $existingVestingSchedules,
+  },
+  mapParams: (
+    file: File,
+    { chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
+  ) => {
+    assert(file);
+    assert(chain);
+    assert(minStartingBlock);
+    assert(minVestedTransfer);
+    assert(maxVestingSchedules);
+    assert(existingVestingSchedules);
+
+    return {
+      file,
+      chain,
+      minStartingBlock,
+      minVestedTransfer,
+      maxVestingSchedules,
+      existingVestingSchedules,
+    };
+  },
+  effect: rootParseFileContentFx,
 });
 
 sample({
@@ -245,7 +299,7 @@ sample({
 
 sample({
   clock: parseFileContentFx.failData,
-  fn: (errors) => errors as unknown as VestingScheduleError,
+  fn: (errors) => errors,
   target: $csvErrors,
 });
 

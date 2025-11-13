@@ -1,2 +1,3 @@
 export { VestingSchedulePreviewModal } from './ui/VestingSchedulePreviewModal';
-export type { VestingSchedule } from './lib/types';
+export type { VestingSchedule, ExistingVestingScheduleMap } from './lib/types';
+export { vestingService } from './lib/vestingService';

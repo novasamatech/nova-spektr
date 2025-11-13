@@ -8,3 +8,7 @@ export type VestingSchedule = {
   startingBlock: BN;
   perBlock: BN;
 };
+
+export type ExistingVestingSchedule = Omit<VestingSchedule, 'target'>;
+
+export type ExistingVestingScheduleMap = Record<AccountId, ExistingVestingSchedule[]>;

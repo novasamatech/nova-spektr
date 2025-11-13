@@ -1,3 +1,8 @@
+import { type BN } from '@polkadot/util';
+
+import { type Chain } from '@/shared/core';
+import { type ExistingVestingScheduleMap } from '@/entities/vesting';
+
 export const enum Step {
   NONE,
   INIT,
@@ -16,11 +21,11 @@ export type VestingScheduleRaw = {
 export enum VestingScheduleFileErrors {
   INVALID_CSV_STRUCTURE = 'INVALID_CSV_STRUCTURE',
   INVALID_CSV_DATA = 'INVALID_CSV_DATA',
-  CHAIN_NOT_SELECTED = 'CHAIN_NOT_SELECTED',
 }
 
 export enum VestingScheduleRowErrors {
   INVALID_SS58_ADDRESS = 'INVALID_SS58_ADDRESS',
+  MAX_VESTING_SCHEDULES_REACHED = 'MAX_VESTING_SCHEDULES_REACHED',
   LOCKED_NOT_POSITIVE_INT = 'LOCKED_NOT_POSITIVE_INT',
   LOCKED_TOO_LOW = 'LOCKED_TOO_LOW',
   START_BLOCK_NOT_POSITIVE_INT = 'START_BLOCK_NOT_POSITIVE_INT',
@@ -40,3 +45,11 @@ export class VestingScheduleError extends Error {
     this.name = 'VestingScheduleError';
   }
 }
+
+export type VestingScheduleSchemaOptions = {
+  chain: Chain;
+  minStartingBlock: BN;
+  minVestedTransfer: BN;
+  maxVestingSchedules: BN;
+  existingVestingSchedules: ExistingVestingScheduleMap;
+};

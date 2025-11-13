@@ -225,16 +225,6 @@ const CSVErrors = () => {
     );
   }
 
-  if (csvErrors.code === VestingScheduleFileErrors.CHAIN_NOT_SELECTED) {
-    return (
-      <Alert active title={t('vestedTransfer.errors.csv.parseFailedTitle')} variant="error">
-        <BodyText className="max-w-full tracking-tight">
-          <Trans t={t} i18nKey="vestedTransfer.errors.csv.missingChainDescription" />
-        </BodyText>
-      </Alert>
-    );
-  }
-
   return null;
 };
 
