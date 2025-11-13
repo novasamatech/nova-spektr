@@ -22,7 +22,6 @@ describe('multisig operations deep link', () => {
 
     expect(scope.getState(deepLinkModel.$isNetworkNotAvailableModalOpen)).toBe(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
       params: deepLinkData,
@@ -62,7 +61,6 @@ describe('multisig operations deep link', () => {
 
     expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
       params: deepLinkData,
@@ -114,7 +112,6 @@ describe('multisig operations deep link', () => {
 
     expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
       params: deepLinkData,
@@ -189,7 +186,6 @@ describe('multisig operations deep link', () => {
     expect(scope.getState(deepLinkModel.$isNetworkNotAvailableModalOpen)).toBe(false);
     expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
       params: deepLinkData,
