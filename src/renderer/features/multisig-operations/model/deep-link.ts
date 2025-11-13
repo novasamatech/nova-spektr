@@ -13,7 +13,9 @@ import { walletSelect } from '@/aggregates/wallet-select';
 const setFocusedOperationId = createEvent<string | null>();
 const operationsPageClosed = createEvent();
 
-const $operationId = createStore<string | null>(null).on(setFocusedOperationId, (_, v) => v);
+const $operationId = createStore<string | null>(null)
+  .on(setFocusedOperationId, (_, v) => v)
+  .reset(operationsPageClosed);
 
 const $focusedOperation = combine({
   operationId: $operationId,
@@ -28,7 +30,8 @@ const viewAlreadySignedOperation = createEvent();
 const $isAlreadySignedModalOpen = createStore(false)
   .on(alreadySignedModalOpened, () => true)
   .on(closeAlreadySignedModal, () => false)
-  .on(viewAlreadySignedOperation, () => false);
+  .on(viewAlreadySignedOperation, () => false)
+  .reset(operationsPageClosed);
 
 sample({
   clock: $operationId,
@@ -69,19 +72,22 @@ const accountNotFoundModalOpened = createEvent();
 const closeNotFoundModal = createEvent();
 const $isAccountNotFoundModalOpen = createStore(false)
   .on(accountNotFoundModalOpened, () => true)
-  .on(closeNotFoundModal, () => false);
+  .on(closeNotFoundModal, () => false)
+  .reset(operationsPageClosed);
 
 const networkNotAvailableModalOpened = createEvent();
 const closeNetworkNotAvailableModal = createEvent();
 const $isNetworkNotAvailableModalOpen = createStore(false)
   .on(networkNotAvailableModalOpened, () => true)
-  .on(closeNetworkNotAvailableModal, () => false);
+  .on(closeNetworkNotAvailableModal, () => false)
+  .reset(operationsPageClosed);
 
 const operationNotFoundModalOpened = createEvent();
 const closeOperationNotFoundModal = createEvent();
 const $isOperationNotFoundModalOpen = createStore(false)
   .on(operationNotFoundModalOpened, () => true)
-  .on(closeOperationNotFoundModal, () => false);
+  .on(closeOperationNotFoundModal, () => false)
+  .reset(operationsPageClosed);
 
 const networkChecked = sample({
   clock: multisigOperationDeepLinkHandler.triggered,
@@ -159,7 +165,9 @@ sample({
   target: multisigOperation.requestOperations,
 });
 
-const $pendingOperationId = createStore<string | null>(null).on(operationFetchRequested, (_, req) => req.operationId);
+const $pendingOperationId = createStore<string | null>(null)
+  .on(operationFetchRequested, (_, req) => req.operationId)
+  .reset(operationsPageClosed);
 
 sample({
   clock: multisigOperation.requestOperations.finally,
