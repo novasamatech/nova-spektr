@@ -1,4 +1,4 @@
-export const INDEXER_URL = 'https://subquery-accounts-stg.novasama-tech.org';
+export const INDEXER_URL = 'https://subquery-accounts-prod.novasama-tech.org';
 export const MULTISIG_EXTRINSIC_CALL_INDEX = 3;
 export const WRAP_EXTRINSIC_CALL_INDEX = 2;
 export const DEFAULT_BLOCK_HASH = '0x0000000000000000000000000000000000000000000000000000000000000000';

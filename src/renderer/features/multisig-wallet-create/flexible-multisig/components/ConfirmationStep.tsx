@@ -23,7 +23,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
   const isSubmitOpen = activeStep === Step.SUBMIT;
 
   const chain = useUnit(formModel.$chain);
-  const proxyAddress = useUnit(assignModel.$proxiedAddress);
+  const pureCreated = useUnit(assignModel.$pureCreated);
   const pendingProxyCreate = useUnit(assignModel.$pendingProxyCreate);
   const flexibleMultisigCreated = useUnit(assignModel.$flexibleMultisigCreated);
 
@@ -39,7 +39,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
             <FootnoteText className="mt-2 mb-4 text-text-tertiary">
               {t('createMultisigAccount.flexibleMultisig.pureProxyConfirm')}
             </FootnoteText>
-            {nullable(proxyAddress) &&
+            {nullable(pureCreated) &&
               (pendingProxyCreate ? (
                 <Box direction="row" verticalAlign="center" gap={2}>
                   <Loader color="primary" size={16} />
@@ -50,7 +50,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
                   <Button
                     prefixElement={<Icon className="text-icon-button" name="vault" size={14} />}
                     testId={TEST_IDS.MULTISIG.CREATE_PURE_BUTTON}
-                    disabled={pendingProxyCreate || nonNullable(proxyAddress)}
+                    disabled={pendingProxyCreate || nonNullable(pureCreated)}
                     onClick={() => confirmModel.startSigningProxy()}
                   >
                     {t('createMultisigAccount.flexibleMultisig.createPureProxy')}
@@ -58,7 +58,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
                 </div>
               ))}
 
-            {nonNullable(proxyAddress) && (
+            {nonNullable(pureCreated) && (
               <Box direction="row" fillContainer verticalAlign="center" gap={1}>
                 <Icon className="shrink-0 text-icon-positive" name="checked" size={16} />
                 <FootnoteText className="shrink-0">
@@ -68,12 +68,12 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
                   variant="short"
                   canCopy={true}
                   showIcon
-                  address={toAddress(proxyAddress, { prefix: chain?.addressPrefix })}
+                  address={toAddress(pureCreated.accountId, { prefix: chain?.addressPrefix })}
                 />
               </Box>
             )}
             <Separator className="my-4" />
-            <SmallTitleText className={nonNullable(proxyAddress) ? 'text-text-primary' : 'text-text-secondary'}>
+            <SmallTitleText className={nonNullable(pureCreated) ? 'text-text-primary' : 'text-text-secondary'}>
               2. {t('createMultisigAccount.flexibleMultisig.assignControl')}
             </SmallTitleText>
             <FootnoteText className="mt-2 text-text-tertiary">
@@ -91,7 +91,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
                 <Button
                   prefixElement={<Icon className="text-icon-button" name="vault" size={14} />}
                   testId={TEST_IDS.MULTISIG.ASSIGN_CONTROL_BUTTON}
-                  disabled={nullable(proxyAddress)}
+                  disabled={nullable(pureCreated)}
                   onClick={() => assignModel.startSigningFlexible()}
                 >
                   {t('createMultisigAccount.flexibleMultisig.assignControl')}
@@ -116,7 +116,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
 
       <Modal.Footer>
         <Box fitContainer direction="row" horizontalAlign="space-between" verticalAlign="center">
-          {nonNullable(proxyAddress) &&
+          {nonNullable(pureCreated) &&
             (flexibleMultisigCreated ? (
               <>
                 <Button variant="text" onClick={() => onToggle(false)}>
@@ -132,7 +132,7 @@ export const ConfirmationStep = ({ onToggle, onClose }: Props) => {
               </Button>
             ))}
 
-          {nullable(proxyAddress) && (
+          {nullable(pureCreated) && (
             <Button variant="text" onClick={() => flexibleMultisigModel.stepChanged(Step.SIGNATORIES_THRESHOLD)}>
               {t('createMultisigAccount.backButton')}
             </Button>
