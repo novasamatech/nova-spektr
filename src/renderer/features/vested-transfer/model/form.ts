@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 import { readonly } from 'patronum';
@@ -11,10 +11,10 @@ import { assert, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@
 import {
   createComplexTxStore,
   createInitiatorsStore,
-  createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
+  getActionRequiredAmount,
 } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts, balanceService, block } from '@/domains/network';
 import { balanceModel } from '@/entities/balance';
@@ -158,7 +158,11 @@ const validator = createTxValidator<{
     },
   ],
 });
-const { $errors: $txErrors, $valid: $isTxValid } = createTxValidationStore({
+const {
+  $errors: $txErrors,
+  $valid: $isTxValid,
+  $balanceValidationResults,
+} = createTxValidationStore({
   validator,
   params: {
     api: $api,
@@ -171,18 +175,11 @@ const { $errors: $txErrors, $valid: $isTxValid } = createTxValidationStore({
   },
 });
 
-const $multisigThreshold = $route.map((route) => {
-  const multisigAccount = route.find(accountUtils.isAnyMultisigAccount);
-  if (!multisigAccount) return null;
+const $hasMultisigAccount = $route.map((route) => route.some((account) => accountUtils.isAnyMultisigAccount(account)));
 
-  return multisigAccount.threshold;
-});
-
-const $hasMultisigAccount = $multisigThreshold.map((threshold) => nonNullable(threshold));
-
-const { $multisigDeposit } = createMultisigDeposit({
-  $threshold: $multisigThreshold,
-  $api: $api,
+const $multisigDeposit = combine({ results: $balanceValidationResults }, ({ results }) => {
+  const actions = getActionRequiredAmount(results, 'multisig deposit');
+  return actions.reduce((deposit, action) => deposit.add(action.required), BN_ZERO);
 });
 
 const $allChains = networkModel.$chains.map((chains) => Object.values(chains));

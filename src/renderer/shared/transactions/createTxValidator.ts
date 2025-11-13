@@ -201,9 +201,11 @@ function convertTransaction(transaction: Transaction | AnyTransaction, api: ApiP
 export function getActionRequiredAmount(
   results: TransactionValidationBalanceError[],
   action: string,
-  accountId: AccountId,
+  accountId?: AccountId,
 ) {
-  const foundActions = results.filter((r) => r.account.accountId === accountId && r.action === action);
+  const foundActions = results.filter(
+    (r) => r.action === action && (accountId === undefined || r.account.accountId === accountId),
+  );
 
   return foundActions.map((r) => ({
     required: r.balance.required,
