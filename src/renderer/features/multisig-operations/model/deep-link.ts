@@ -77,7 +77,12 @@ const $isNetworkNotAvailableModalOpen = createStore(false)
   .on(networkNotAvailableModalOpened, () => true)
   .on(closeNetworkNotAvailableModal, () => false);
 
-// Check if network exists first
+const operationNotFoundModalOpened = createEvent();
+const closeOperationNotFoundModal = createEvent();
+const $isOperationNotFoundModalOpen = createStore(false)
+  .on(operationNotFoundModalOpened, () => true)
+  .on(closeOperationNotFoundModal, () => false);
+
 const networkChecked = sample({
   clock: multisigOperationDeepLinkHandler.triggered,
   source: networkModel.$chains,
@@ -90,7 +95,6 @@ const networkChecked = sample({
   },
 });
 
-// If network doesn't exist, show modal
 sample({
   clock: networkChecked,
   filter: ({ network }) => nullable(network),
@@ -111,7 +115,6 @@ const accountChecked = sample({
   },
 });
 
-// If account exists, select wallet and set operation
 sample({
   clock: accountChecked,
   filter: ({ account }) => account !== null,
@@ -126,7 +129,6 @@ sample({
   target: setFocusedOperationId,
 });
 
-// If account doesn't exist, show modal
 sample({
   clock: accountChecked,
   filter: ({ account }) => account === null,
@@ -134,7 +136,7 @@ sample({
 });
 
 // Trigger operations fetch when landing via deep link if operation not found
-sample({
+const operationFetchRequested = sample({
   clock: accountChecked,
   source: { apis: networkModel.$apis, chains: networkModel.$chains, operations: multisigOperation.$list },
   filter: ({ operations }, { account, data }) => {
@@ -147,8 +149,27 @@ sample({
     apis,
     chains,
     accountId: data.accountId,
+    operationId: getOperationIdFromDeepLink(data),
   }),
+});
+
+sample({
+  clock: operationFetchRequested,
+  fn: ({ apis, chains, accountId }) => ({ apis, chains, accountId }),
   target: multisigOperation.requestOperations,
+});
+
+const $pendingOperationId = createStore<string | null>(null).on(operationFetchRequested, (_, req) => req.operationId);
+
+sample({
+  clock: multisigOperation.requestOperations.finally,
+  source: { pendingOperationId: $pendingOperationId, operations: multisigOperation.$list },
+  filter: ({ pendingOperationId, operations }) => {
+    if (!nonNullable(pendingOperationId)) return false;
+    const operationExists = operations.some(op => op.id === pendingOperationId);
+    return !operationExists;
+  },
+  target: operationNotFoundModalOpened,
 });
 
 function generateMultisigOperationDeepLink(data: MultisigOperationDeepLinkData): string {
@@ -177,6 +198,9 @@ export const deepLinkModel = {
 
   $isNetworkNotAvailableModalOpen,
   closeNetworkNotAvailableModal,
+
+  $isOperationNotFoundModalOpen,
+  closeOperationNotFoundModal,
 
   $isAlreadySignedModalOpen,
   closeAlreadySignedModal,
