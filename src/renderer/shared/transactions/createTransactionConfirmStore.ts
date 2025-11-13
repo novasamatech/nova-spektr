@@ -87,7 +87,19 @@ export const createTransactionConfirmStore = <Input extends TxConfirmInfo>({
 
   sample({
     clock: replaceWithConfirm,
-    fn: (input) => [input],
+    source: $store,
+    fn: (store, input) => {
+      if (nonNullable(input.id)) {
+        const existingIndex = store.findIndex((item) => item.id === input.id);
+        if (existingIndex >= 0) {
+          const newStore = [...store];
+          newStore[existingIndex] = input;
+          return newStore;
+        }
+        return store.concat(input);
+      }
+      return [input];
+    },
     target: $store,
   });
 

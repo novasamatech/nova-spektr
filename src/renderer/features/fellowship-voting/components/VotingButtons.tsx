@@ -118,22 +118,20 @@ export const VotingButtons = memo(({ referendum, evidence, onClose }: Props) => 
     const alreadyThatVote = (vote === 'aye' && alreadyVotedAye) || (vote === 'nay' && alreadyVotedNay);
 
     if (canAddToBasket && isTransactionInBasket && alreadyThatVote) {
-      voting.flow.open({ vote });
-      voting.removeFromBasket();
-      voting.flow.close({ vote: null });
-      votingStatus.flow.close({ referendumId: null });
+      if (nonNullable(referendum)) {
+        voting.removeFromBasket(referendum.id);
+      }
       onClose?.();
       return;
     }
 
     if (alreadyThatVote) return;
 
-    votingStatus.flow.open({ referendumId: referendum?.id });
-
-    if (canAddToBasket) {
-      voting.flow.open({ vote });
-      voting.saveToBasket();
-      voting.flow.close({ vote: null });
+    if (canAddToBasket && nonNullable(referendum)) {
+      voting.saveToBasket({
+        referendumId: referendum.id,
+        vote,
+      });
       onClose?.();
     } else {
       setDecision(vote);
