@@ -1,12 +1,7 @@
 {
-  "id": "VIII",
-  "rank": 8,
-  "name": "Master Constant",
-  "time": ">11 y",
-  "description": "Eighth rank in the Fellowship system",
-  "analogue": "Distinguished Professor",
-  "material": "Topaz (8 Moh)",
-  "activity": "50%",
-  "agreement": "80%",
+  "analogue": "Professor in a historical seat",
+  "material": "Carborundum (9 Moh)",
+  "activity": "n/a",
+  "agreement": "n/a",
   "timeRequired": ">11 years"
 }

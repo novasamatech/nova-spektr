@@ -1,12 +1,7 @@
 {
-  "id": "IX",
-  "rank": 9,
-  "name": "Grand Master",
-  "time": ">19 y",
-  "description": "Ninth rank in the Fellowship system",
-  "analogue": "Emeritus Professor",
-  "material": "Corundum (9 Moh)",
-  "activity": "55%",
-  "agreement": "85%",
+  "analogue": "Nobel/Field’s Laureate",
+  "material": "Carbonado (10 Moh)",
+  "activity": "n/a",
+  "agreement": "n/a",
   "timeRequired": ">19 years"
 }

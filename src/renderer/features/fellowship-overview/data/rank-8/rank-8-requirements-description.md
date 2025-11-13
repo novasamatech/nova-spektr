@@ -1,6 +1,2 @@
-- Over a decade of consistent, exceptional contributions
-- Recognized as a pioneer in the field
-- Mentored multiple members to senior ranks
-- Legacy contributions that have fundamentally shaped the protocol
-- Serve as advisor and statesman for the fellowship
-- Demonstrate unwavering commitment to protocol advancement
+- Either played a primary role in both the ideation and subsequent formalisation of a major protocol component; or played a primary role in the code-design and implementation of a major protocol component. The formalisa- tion should be included in a well-respected peer-reviewed publication or the design implemented and deployed into the protocol. The implementation should be subject to expert code-review and included in a functional implementation of the protocol.
+- Further presence of advocating or defending Polkadot outside of the ecosystem. A good benchmark would be one pre-advertised presentation on Polkadot to an industry-wide, academic or other such well-aligned audience outside of the ecosystem. It may also be fulfilled within other media of a similar weight (e.g. a professional journal, major news publication or academic article).

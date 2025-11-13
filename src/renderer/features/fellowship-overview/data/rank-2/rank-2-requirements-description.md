@@ -1,5 +1,4 @@
-- Consistent participation in fellowship activities
-- Demonstrate growing technical knowledge
-- Contribute to at least one minor project or initiative
-- Show ability to work collaboratively
-- Demonstrate understanding of protocol fundamentals
+- Primary individual responsible for the formalisation, implementation or analytical improvement of a major component of the protocol.
+- Formalisation, and analysis leading to any improvement, should be in a peer-reviewed publication.
+- Implementation should be subject to expert code-review and included in a functional implementation of the protocol.
+- At least one published long-form semi-technical article concerning Polkadot.

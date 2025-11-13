@@ -35,11 +35,6 @@ export interface RankData {
   description: string;
   requirementsDescription: string;
   meta: {
-    id: string;
-    rank: number;
-    name: string;
-    time: string;
-    description: string;
     analogue: string;
     material: string;
     activity: string;
