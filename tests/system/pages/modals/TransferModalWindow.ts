@@ -56,7 +56,7 @@ export class TransferModalWindow extends BaseModal<TransferModalElements> {
     await step('Wait until all fees are loaded', async () => {
       const loaders = await feeLoaders.all();
       for (const loader of loaders) {
-        await loader.waitFor({ state: 'hidden' });
+        await loader.waitFor({ state: 'hidden', timeout: 10000 });
       }
     });
 
