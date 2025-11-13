@@ -10,19 +10,36 @@ import { accounts, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 
+export const multisigOperationSchema = z.object({
+  chainId: z.string().transform(x => x as ChainId),
+  callHash: z.string(),
+  accountId: z.string().transform(pjsSchema.helpers.toAccountId),
+  blockCreated: z.string().transform(Number),
+  indexCreated: z.string().transform(Number),
+});
+
+export type MultisigOperationDeepLinkData = z.infer<typeof multisigOperationSchema>;
+
+const multisigOperationDeepLinkHandler = deepLinkService.createDeepLinkHandler({
+  schema: multisigOperationSchema,
+});
+
 const setFocusedOperationId = createEvent<string | null>();
 const operationsPageClosed = createEvent();
 
 const $operationId = createStore<string | null>(null)
   .on(setFocusedOperationId, (_, v) => v)
-  .reset(operationsPageClosed);
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 const $focusedOperation = combine({
   operationId: $operationId,
   list: multisigOperation.$list,
 }).map(({ operationId, list }) => list.find(item => item.id === operationId));
 
-const $focusedOperationId = createStore<string | null>(null).reset(operationsPageClosed);
+const $focusedOperationId = createStore<string | null>(null).reset(
+  operationsPageClosed,
+  multisigOperationDeepLinkHandler.triggered,
+);
 
 const alreadySignedModalOpened = createEvent();
 const closeAlreadySignedModal = createEvent();
@@ -31,7 +48,28 @@ const $isAlreadySignedModalOpen = createStore(false)
   .on(alreadySignedModalOpened, () => true)
   .on(closeAlreadySignedModal, () => false)
   .on(viewAlreadySignedOperation, () => false)
-  .reset(operationsPageClosed);
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
+
+const accountNotFoundModalOpened = createEvent();
+const closeNotFoundModal = createEvent();
+const $isAccountNotFoundModalOpen = createStore(false)
+  .on(accountNotFoundModalOpened, () => true)
+  .on(closeNotFoundModal, () => false)
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
+
+const networkNotAvailableModalOpened = createEvent();
+const closeNetworkNotAvailableModal = createEvent();
+const $isNetworkNotAvailableModalOpen = createStore(false)
+  .on(networkNotAvailableModalOpened, () => true)
+  .on(closeNetworkNotAvailableModal, () => false)
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
+
+const operationNotFoundModalOpened = createEvent();
+const closeOperationNotFoundModal = createEvent();
+const $isOperationNotFoundModalOpen = createStore(false)
+  .on(operationNotFoundModalOpened, () => true)
+  .on(closeOperationNotFoundModal, () => false)
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 sample({
   clock: $operationId,
@@ -53,41 +91,6 @@ sample({
   source: $operationId,
   target: $focusedOperationId,
 });
-
-export const multisigOperationSchema = z.object({
-  chainId: z.string().transform(x => x as ChainId),
-  callHash: z.string(),
-  accountId: z.string().transform(pjsSchema.helpers.toAccountId),
-  blockCreated: z.string().transform(Number),
-  indexCreated: z.string().transform(Number),
-});
-
-export type MultisigOperationDeepLinkData = z.infer<typeof multisigOperationSchema>;
-
-const multisigOperationDeepLinkHandler = deepLinkService.createDeepLinkHandler({
-  schema: multisigOperationSchema,
-});
-
-const accountNotFoundModalOpened = createEvent();
-const closeNotFoundModal = createEvent();
-const $isAccountNotFoundModalOpen = createStore(false)
-  .on(accountNotFoundModalOpened, () => true)
-  .on(closeNotFoundModal, () => false)
-  .reset(operationsPageClosed);
-
-const networkNotAvailableModalOpened = createEvent();
-const closeNetworkNotAvailableModal = createEvent();
-const $isNetworkNotAvailableModalOpen = createStore(false)
-  .on(networkNotAvailableModalOpened, () => true)
-  .on(closeNetworkNotAvailableModal, () => false)
-  .reset(operationsPageClosed);
-
-const operationNotFoundModalOpened = createEvent();
-const closeOperationNotFoundModal = createEvent();
-const $isOperationNotFoundModalOpen = createStore(false)
-  .on(operationNotFoundModalOpened, () => true)
-  .on(closeOperationNotFoundModal, () => false)
-  .reset(operationsPageClosed);
 
 const networkChecked = sample({
   clock: multisigOperationDeepLinkHandler.triggered,
