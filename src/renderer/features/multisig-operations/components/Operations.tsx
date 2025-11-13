@@ -18,6 +18,7 @@ import { Operation } from './Operation';
 import { OperationsFilter } from './OperationsFilter';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
 import { AlreadySignedModal } from './modals/AlreadySignedModal';
+import { NetworkNotAvailableModal } from './modals/NetworkNotAvailableModal';
 
 export const Operations = () => {
   const { formatDate } = useI18n();
@@ -111,6 +112,7 @@ export const Operations = () => {
       )}
 
       <AccountNotFoundModal />
+      <NetworkNotAvailableModal />
       <AlreadySignedModal />
     </>
   );

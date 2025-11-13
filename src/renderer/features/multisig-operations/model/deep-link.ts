@@ -2,7 +2,7 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { z } from 'zod';
 
 import { type ChainId } from '@/shared/core';
-import { nonNullable } from '@/shared/lib/utils';
+import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { deepLinkService } from '@/domains/app';
@@ -71,11 +71,38 @@ const $isAccountNotFoundModalOpen = createStore(false)
   .on(accountNotFoundModalOpened, () => true)
   .on(closeNotFoundModal, () => false);
 
-// Check if account exists before selecting wallet
-const accountChecked = sample({
+const networkNotAvailableModalOpened = createEvent();
+const closeNetworkNotAvailableModal = createEvent();
+const $isNetworkNotAvailableModalOpen = createStore(false)
+  .on(networkNotAvailableModalOpened, () => true)
+  .on(closeNetworkNotAvailableModal, () => false);
+
+// Check if network exists first
+const networkChecked = sample({
   clock: multisigOperationDeepLinkHandler.triggered,
+  source: networkModel.$chains,
+  fn: (chains, data) => {
+    const network = chains[data.chainId];
+    return {
+      data,
+      network,
+    };
+  },
+});
+
+// If network doesn't exist, show modal
+sample({
+  clock: networkChecked,
+  filter: ({ network }) => nullable(network),
+  target: networkNotAvailableModalOpened,
+});
+
+// Check if account exists before selecting wallet (only if network exists)
+const accountChecked = sample({
+  clock: networkChecked,
   source: accounts.$list,
-  fn: (accountsList, data) => {
+  filter: (_, { network }) => nonNullable(network),
+  fn: (accountsList, { data }) => {
     const account = accountsList.find(acc => acc.accountId === data.accountId);
     return {
       data,
@@ -147,6 +174,9 @@ export const deepLinkModel = {
 
   $isAccountNotFoundModalOpen,
   closeNotFoundModal: closeNotFoundModal,
+
+  $isNetworkNotAvailableModalOpen,
+  closeNetworkNotAvailableModal,
 
   $isAlreadySignedModalOpen,
   closeAlreadySignedModal,
