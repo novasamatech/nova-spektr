@@ -1588,6 +1588,7 @@
       "executed": "Executed",
       "signing": "On signing"
     },
+    "submitError": "Operation Failed",
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",
