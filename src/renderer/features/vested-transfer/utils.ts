@@ -2,7 +2,6 @@ import { BN } from '@polkadot/util';
 import { parse } from 'csv-parse/sync';
 import { z } from 'zod';
 
-import { type Chain } from '@/shared/core';
 import { toAccountId, validateAddress } from '@/shared/lib/utils';
 
 import {
@@ -12,6 +11,7 @@ import {
   VestingScheduleFileErrors,
   type VestingScheduleRaw,
   VestingScheduleRowErrors,
+  type VestingScheduleSchemaOptions,
 } from './types';
 
 export const vestedTransferUtils = {
@@ -46,7 +46,8 @@ function isSubmitStep(step: Step): boolean {
   return step === Step.SUBMIT;
 }
 
-function createVestingScheduleSchema(options: { chain: Chain; minStartingBlock: BN; minVestedTransfer: BN }) {
+function createVestingScheduleSchema(options: VestingScheduleSchemaOptions) {
+  const { chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules } = options;
   const positiveBn = (errorMessage: string) =>
     z
       .string()
@@ -66,16 +67,20 @@ function createVestingScheduleSchema(options: { chain: Chain; minStartingBlock: 
   return z.object({
     target: z
       .string()
-      .refine((value) => validateAddress(value, options.chain), VestingScheduleRowErrors.INVALID_SS58_ADDRESS)
-      .transform(toAccountId),
+      .refine((value) => validateAddress(value, chain), VestingScheduleRowErrors.INVALID_SS58_ADDRESS)
+      .transform(toAccountId)
+      .refine(
+        (accountId) => new BN(existingVestingSchedules[accountId].length).lt(maxVestingSchedules),
+        VestingScheduleRowErrors.MAX_VESTING_SCHEDULES_REACHED,
+      ),
 
     locked: positiveBn(VestingScheduleRowErrors.LOCKED_NOT_POSITIVE_INT).refine(
-      (bn) => bn.gt(options.minVestedTransfer),
+      (bn) => bn.gt(minVestedTransfer),
       VestingScheduleRowErrors.LOCKED_TOO_LOW,
     ),
 
     startingBlock: positiveBn(VestingScheduleRowErrors.START_BLOCK_NOT_POSITIVE_INT).refine(
-      (bn) => bn.gt(options.minStartingBlock),
+      (bn) => bn.gt(minStartingBlock),
       VestingScheduleRowErrors.START_BLOCK_IN_PAST,
     ),
 
