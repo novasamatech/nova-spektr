@@ -18,7 +18,7 @@ export const usePromotionPeriod = () => {
   const promotionPeriod = useMemo(() => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
 
-    const importedBlock = feed?.find(f => f.accountId === member.accountId && f.type === 'imported')?.block ?? 0;
+    const importedBlock = feed?.find(f => f.accountId === member.accountId && f.type === 'imported')?.block ?? 1;
     const from = member.lastPromotion !== 0 ? member.lastPromotion : importedBlock;
 
     return {
