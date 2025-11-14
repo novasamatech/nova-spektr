@@ -1,5 +1,6 @@
 import { combine } from 'effector';
 
+import { type DecodedTransaction } from '@/shared/core';
 import { nullable, toAccountId } from '@/shared/lib/utils';
 import { multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -24,9 +25,16 @@ const $list = combine(
       const proxiedAccountId = account.accountId;
 
       return accountOperations.filter(tx => {
-        return (
-          tx.method === 'proxy' && tx.section === 'proxy' && proxiedAccountId === toAccountId(tx.transaction?.args.real)
-        );
+        const isProxyTx =
+          tx.method === 'proxy' &&
+          tx.section === 'proxy' &&
+          proxiedAccountId === toAccountId(tx.transaction?.args.real);
+        const isBatchAllTx =
+          tx.method === 'batchAll' &&
+          tx.section === 'utility' &&
+          tx.transaction?.args.transactions.some((t: DecodedTransaction) => proxiedAccountId && t.args.real);
+
+        return isProxyTx || isBatchAllTx;
       });
     }
 
