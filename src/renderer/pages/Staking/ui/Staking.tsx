@@ -7,7 +7,7 @@ import { localStorageService } from '@/shared/api/local-storage';
 import { type ChainId, type Stake, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getRelaychainAsset, keys, toAccountId } from '@/shared/lib/utils';
+import { getRelaychainAsset, keys, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
 import { type AnyAccount, accountService, identity } from '@/domains/network';
@@ -274,7 +274,7 @@ export const Staking = () => {
       account,
       stash: staking[account.accountId]?.stash,
       isSelected: selectedNominators.includes(account.accountId),
-      totalStake: isStakingLoading ? undefined : staking[account.accountId]?.total || '0',
+      totalStake: isStakingLoading ? undefined : staking[account.accountId]?.total,
       totalReward: isRewardsLoading ? undefined : rewards[account.accountId],
       unlocking: staking[account.accountId]?.unlocking,
     });
@@ -317,8 +317,9 @@ export const Staking = () => {
   );
 
   const isMultipleAccountsSelected = selectedNominators.length > 1;
-  const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
-  console.log({ totalStakes, staking });
+  const totalStakes = Object.values(staking)
+    .map((stake) => stake?.total)
+    .filter((total): total is string => nonNullable(total));
 
   const navigateToStake = (operation: StakeOperations, as?: AccountId[]) => {
     if (!activeChain || !activeWallet) return;

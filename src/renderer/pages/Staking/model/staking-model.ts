@@ -25,9 +25,35 @@ const $stakingData = createStore<StakingMap>({})
   .reset(reset);
 
 const $isStakingLoading = combine(
-  stakingResource.pending,
-  stakingResource.subscribed,
-  (pending, subscribed) => pending && !subscribed,
+  {
+    pending: stakingResource.pending,
+    subscribed: stakingResource.subscribed,
+    stakingData: $stakingData,
+    params: $stakingParams,
+  },
+  ({ pending, subscribed, stakingData, params }) => {
+    // If no accounts, not loading (empty state)
+    if (params.accounts.length === 0) {
+      return false;
+    }
+
+    // Loading if no API available but we have accounts
+    if (!params.api || !params.chainId) {
+      return true;
+    }
+
+    // Loading if subscription is pending
+    if (pending && !subscribed) {
+      return true;
+    }
+
+    // Loading if subscribed but no data received yet
+    if (subscribed && Object.keys(stakingData).length === 0) {
+      return true;
+    }
+
+    return false;
+  },
 );
 
 sample({
