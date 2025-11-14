@@ -4,8 +4,9 @@ import { t } from 'i18next';
 import { type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type IconNames } from '@/shared/ui';
-import { salaryService, votingService } from '@/domains/collectives';
+import { referendum as referendumDomain, referendumService, salaryService, votingService } from '@/domains/collectives';
 import { ChainTitle, OperationTitle } from '@/entities/chain';
 import { TransactionTitle } from '@/entities/transaction';
 import { basketOperationsService } from '@/aggregates/basket-operations';
@@ -107,7 +108,7 @@ basketSDK(fellowshipBasketFeature, {
     return null;
   },
   transactionConfirmDetails({ transaction }) {
-    useGate(confirm.flow, transaction);
+    useGate(confirm.gate, transaction);
 
     const tx = basketOperationsService.getCoreTx(transaction);
 
@@ -141,7 +142,28 @@ basketSDK(fellowshipBasketFeature, {
 
     return null;
   },
-  validation(result, { transaction }) {
+  async validation(result, { transaction, api }) {
+    if (votingService.isVotingTransaction(transaction.coreTx)) {
+      const referendums = await referendumDomain.request({
+        api,
+        palletType: 'fellowship',
+        chainId: transaction.coreTx.chainId,
+        referendums: [transaction.coreTx.args.poll as ReferendumId],
+      });
+
+      const referendum = referendums.find(r => r.id === parseInt(transaction.coreTx.args.poll)) ?? null;
+
+      if (nullable(referendum) || referendumService.isCompleted(referendum)) {
+        return [
+          ...result,
+          {
+            name: 'referendumCompleted',
+            errorText: t('fellowship.errors.noLongerValid'),
+          },
+        ];
+      }
+    }
+
     if (
       votingService.isVotingTransaction(transaction.coreTx) ||
       salaryService.isSalaryInductTransaction(transaction.coreTx) ||
