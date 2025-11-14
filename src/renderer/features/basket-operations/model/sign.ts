@@ -36,7 +36,10 @@ sample({
 
 sample({
   clock: startFlow,
-  fn: ({ transactions }) => transactions.map(transaction => ({ transaction })),
+  source: networkModel.$apis,
+  fn: (apis, { transactions }) => {
+    return transactions.map(transaction => ({ transaction, api: apis[transaction.coreTx.chainId] ?? null }));
+  },
   target: validation.validateTransactions,
 });
 
