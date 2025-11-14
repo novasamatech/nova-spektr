@@ -93,9 +93,21 @@ const $basketOperationsMap = $memberBasketOperations.map(operations => {
   return map;
 });
 
-const $filteredBasketOperations = $basketOperationsMap.map(map => {
-  return Object.values(map).filter(nonNullable);
-});
+const $filteredBasketOperations = combine(
+  { basketOperationsMap: $basketOperationsMap, ongoingReferendums: referendums.$ongoing },
+  ({ basketOperationsMap, ongoingReferendums }) => {
+    const operations = Object.values(basketOperationsMap).filter(nonNullable);
+    return operations.filter(op => {
+      if (votingService.isVotingTransaction(op.coreTx)) {
+        const referendum = ongoingReferendums.find(r => r.id === op.coreTx.args.poll);
+
+        return nonNullable(referendum);
+      }
+
+      return true;
+    });
+  },
+);
 
 // personal
 

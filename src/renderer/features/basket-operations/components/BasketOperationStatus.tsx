@@ -7,10 +7,11 @@ import { type ChainError } from '@/aggregates/basket-operations';
 type Props = {
   validating?: boolean;
   errorText?: string;
+  label?: string;
   error?: ChainError;
 };
 
-export const BasketOperationStatus = ({ validating, errorText, error }: Props) => {
+export const BasketOperationStatus = ({ validating, errorText, label: labelProp, error }: Props) => {
   const { t, formatDate } = useI18n();
 
   let errorMessage;
@@ -19,7 +20,7 @@ export const BasketOperationStatus = ({ validating, errorText, error }: Props) =
 
   if (errorText) {
     errorMessage = t(errorText);
-    label = t('basket.validationError');
+    label = labelProp ? t(labelProp) : t('basket.validationError');
     variant = 'error';
   }
   if (error) {
