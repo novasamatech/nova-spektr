@@ -15,11 +15,9 @@ import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/e
 import {
   DEFAULT_STAKING_CHAIN,
   STAKING_NETWORK,
-  type StakingMap,
   type ValidatorMap,
   ValidatorsModal,
   eraService,
-  useStakingData,
   useStakingRewards,
   validatorsService,
 } from '@/entities/staking';
@@ -44,6 +42,7 @@ import {
   withdrawShardsModel,
 } from '@/widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
+import { stakingModel } from '../model/staking-model';
 
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
@@ -97,12 +96,12 @@ export const Staking = () => {
 
   const { changeClient } = useGraphql();
 
-  const { subscribeStaking } = useStakingData();
   const [isShowNominators, toggleNominators] = useToggle();
 
+  const staking = useUnit(stakingModel.$stakingData);
+  const isStakingLoading = useUnit(stakingModel.$isStakingLoading);
+
   const [chainEra, setChainEra] = useState<Record<ChainId, number | undefined>>({});
-  const [staking, setStaking] = useState<StakingMap>({});
-  const [isStakingLoading, setIsStakingLoading] = useState(true);
 
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [nominators, setNominators] = useState<Validator[]>([]);
@@ -149,7 +148,7 @@ export const Staking = () => {
     return uniqBy(filteredAccounts, 'accountId');
   }, [selectedAccounts, activeChain, activeWallet]);
 
-  const accountIds = accounts.map((a) => a.accountId);
+  const accountIds = useMemo(() => accounts.map((a) => a.accountId), [accounts]);
 
   const { rewards, isRewardsLoading } = useStakingRewards(accountIds, activeChain);
 
@@ -170,25 +169,25 @@ export const Staking = () => {
     if (!chainId || !api?.isConnected) return;
 
     let unsubEra: () => void | undefined;
-    let unsubStaking: () => void | undefined;
-
-    setIsStakingLoading(true);
 
     (async () => {
       unsubEra = await eraService.subscribeActiveEra(api, (era) => {
         setChainEra({ [chainId]: era });
       });
-      unsubStaking = await subscribeStaking(chainId, api, accountIds, (staking) => {
-        setStaking(staking);
-        setIsStakingLoading(false);
-      });
     })();
 
     return () => {
       unsubEra?.();
-      unsubStaking?.();
     };
-  }, [chainId, api, activeWallet]);
+  }, [chainId, api]);
+
+  useEffect(() => {
+    stakingModel.stakingParamsChanged({ chainId, api, accounts: accountIds });
+
+    return () => {
+      stakingModel.reset();
+    };
+  }, [chainId, api, accountIds]);
 
   useEffect(() => {
     if (!activeWallet) return;
@@ -247,7 +246,6 @@ export const Staking = () => {
   const changeNetwork = (chainId: ChainId) => {
     changeClient(chainId);
     setChainId(chainId);
-    setStaking({});
     setSelectedNominators([]);
     setValidators({});
     localStorageService.saveToStorage(STAKING_NETWORK, chainId);
@@ -320,6 +318,7 @@ export const Staking = () => {
 
   const isMultipleAccountsSelected = selectedNominators.length > 1;
   const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
+  console.log({ totalStakes, staking });
 
   const navigateToStake = (operation: StakeOperations, as?: AccountId[]) => {
     if (!activeChain || !activeWallet) return;

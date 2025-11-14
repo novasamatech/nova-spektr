@@ -11,8 +11,8 @@ import {
   nonNullable,
   nullable,
   reservableAmountBN,
-  reusableLockBN,
   transferableAmount,
+  votedAmountBN,
 } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
@@ -23,6 +23,7 @@ import {
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { type StakingMap, stakingResource } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -78,6 +79,10 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
+
+// Staking data from resource
+const $stakingData = createStore<StakingMap>({}).on(stakingResource.push, (_, { result }) => result ?? {});
+
 // Computed
 
 const $initiatorBalance = combine(
@@ -166,13 +171,22 @@ const $bondBalanceRange = combine($available, (available) => {
   return [ZERO_BALANCE, available];
 });
 
-const $reusableLock = combine({ balance: $initiatorBalance, available: $available }).map(({ balance, available }) => {
-  if (nullable(balance) || nullable(available)) {
+const $reusableLock = combine({
+  balance: $initiatorBalance,
+  available: $available,
+  staking: $stakingData,
+  initiator: form.fields.initiator.$value,
+}).map(({ balance, available, staking, initiator }) => {
+  if (nullable(balance) || nullable(available) || nullable(initiator)) {
     return null;
   }
 
-  const reusableLock = reusableLockBN(balance);
-  return BN.min(available, reusableLock);
+  const voted = votedAmountBN(balance);
+  const stakingData = staking[initiator.accountId];
+  const staked = stakingData ? new BN(stakingData.active) : BN_ZERO;
+  const reusableLock = BN.max(BN_ZERO, voted.sub(staked));
+
+  return reusableLock;
 });
 
 // Transaction validation
@@ -264,6 +278,24 @@ sample({
   }),
 });
 
+// Subscribe to staking data
+sample({
+  clock: formInitiated,
+  source: {
+    networkStore: $networkStore,
+    api: $api,
+  },
+  filter: ({ networkStore, api }, { initiator }) => {
+    return Boolean(networkStore) && Boolean(api) && nonNullable(initiator);
+  },
+  fn: ({ networkStore, api }, { initiator }) => ({
+    chainId: networkStore!.chain.chainId,
+    api: api!,
+    accounts: [initiator!.accountId],
+  }),
+  target: stakingResource.subscribe,
+});
+
 sample({
   clock: formInitiated,
   source: $signatories,
@@ -313,8 +345,13 @@ sample({
 });
 
 sample({
+  clock: formSubmitted,
+  target: stakingResource.unsubscribe,
+});
+
+sample({
   clock: formCleared,
-  target: [form.reset],
+  target: [form.reset, stakingResource.unsubscribe],
 });
 
 export const formModel = {

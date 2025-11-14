@@ -6,7 +6,7 @@ import { type Chain, type ChainId, type Connection, type Transaction, Transactio
 import { redeemableAmount, toAccountId } from '@/shared/lib/utils';
 import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { type StakingMap, eraService, useStakingData, validatorsService } from '@/entities/staking';
+import { type StakingMap, eraService, stakingUtils, validatorsService } from '@/entities/staking';
 import { walletModel } from '@/entities/wallet';
 import { type BasketTransaction, basketOperationsService } from '@/aggregates/basket-operations';
 import {
@@ -194,7 +194,7 @@ const prepareWithdrawDataFx = createEffect(async ({ transaction, accounts, chain
   const era = await eraService.getActiveEra(apis[chainId]);
 
   const staking = await new Promise<StakingMap>((resolve) => {
-    useStakingData().subscribeStaking(chainId, apis[chainId], [transaction.coreTx.accountId], resolve);
+    stakingUtils.subscribeStaking(chainId, apis[chainId], [transaction.coreTx.accountId], resolve);
   });
 
   const amount = redeemableAmount(staking?.[transaction.coreTx.accountId]?.unlocking, era || 0);

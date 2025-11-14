@@ -13,15 +13,16 @@ import {
   nonNullable,
   nullable,
   reservableAmountBN,
-  reusableLockBN,
   toAddress,
   transferableAmount,
   validateAddress,
+  votedAmountBN,
 } from '@/shared/lib/utils';
 import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { stakingUtils } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -331,7 +332,8 @@ const $reusableLock = combine({ balance: $initiatorBalance, available: $availabl
     return null;
   }
 
-  const reusableLock = reusableLockBN(balance);
+  const voted = votedAmountBN(balance);
+  const reusableLock = stakingUtils.reusableLockBN(balance, voted);
   return BN.min(available, reusableLock);
 });
 
