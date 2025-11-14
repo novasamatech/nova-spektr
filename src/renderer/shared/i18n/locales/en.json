@@ -514,10 +514,9 @@
         "title": "You are not connected to this network"
       },
       "noLongerValid": {
-        "label": "No longer valid",
-        "errorText": "Referendum has ended"
+        "errorText": "Referendum has ended",
+        "label": "No longer valid"
       }
-     
     },
     "evidenceModal": {
       "additionalContext": "Additional context provided",
