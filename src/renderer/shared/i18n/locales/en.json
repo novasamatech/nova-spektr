@@ -523,6 +523,10 @@
         "action": "Open network settings",
         "description": "Referendum information such as the description and voting statistics cannot be accessed and may be outdated.\nPlease check the connection in your network settings.",
         "title": "You are not connected to this network"
+      },
+      "noLongerValid": {
+        "errorText": "Referendum has ended",
+        "label": "No longer valid"
       }
     },
     "evidenceModal": {
