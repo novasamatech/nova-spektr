@@ -66,6 +66,7 @@ export const BasketItem = ({ transaction, selected, onSelect, onClick }: Props) 
         <BasketOperationStatus
           validating={pendingValidation}
           errorText={validationResult.map(x => t(x.errorText)).join('\n')}
+          label={validationResult.at(0)?.label}
           error={transaction.error}
         />
       </div>
