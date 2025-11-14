@@ -3,7 +3,7 @@ import { type ReactNode } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui';
+import { Button, Loader } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { referendumService, useCoreMembers, useMaxRank, useReferendums, useTracks } from '@/domains/collectives';
 import { SignButton } from '@/entities/operations';
@@ -52,9 +52,16 @@ export const Confirmation = ({ id, secondaryActionButton, hideSignButton, onGoBa
     nullable(memberTrack) ||
     nullable(currentTrack) ||
     nullable(nextTrack) ||
-    nullable(referendum) ||
-    referendumService.isCompleted(referendum)
+    nullable(referendum)
   ) {
+    return (
+      <Box width="440px" height="430px" verticalAlign="center" horizontalAlign="center">
+        <Loader size={24} color="primary" />
+      </Box>
+    );
+  }
+
+  if (referendumService.isCompleted(referendum)) {
     return null;
   }
 
