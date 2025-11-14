@@ -59,7 +59,6 @@ const $currentBlock = combine(block.$currentBlock, $network, (currentBlock, netw
 export const fellowshipNetwork = {
   $network,
   $selectedChainId,
-  $api: $fellowshipChainApi,
 
   $isActive,
   $isConnected,

@@ -37,7 +37,6 @@ export const referendum = {
   $referendumsWithEvidencePopulated: readonly($referendumsWithEvidencePopulated),
   request: fetchResource.request,
   subscribe: subscriptionResource.subscribe,
-  pending: subscriptionResource.pending,
   unsubscribe: subscriptionResource.unsubscribe,
   fulfilled: subscriptionResource.fulfilled,
   requestReferendumsWithEvidence: referendumsWithEvidenceResource.request,

@@ -158,7 +158,8 @@ basketSDK(fellowshipBasketFeature, {
           ...result,
           {
             name: 'referendumCompleted',
-            errorText: t('fellowship.errors.noLongerValid'),
+            errorText: t('fellowship.errors.noLongerValid.errorText'),
+            label: t('fellowship.errors.noLongerValid.label'),
           },
         ];
       }
