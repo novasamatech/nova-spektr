@@ -11,7 +11,6 @@ import {
   nonNullable,
   nullable,
   reservableAmountBN,
-  reusableLockBN,
   transferableAmount,
 } from '@/shared/lib/utils';
 import {
@@ -23,6 +22,7 @@ import {
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { stakingResource, stakingUtils } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -78,7 +78,6 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
   accounts: accounts.$list,
 });
-// Computed
 
 const $initiatorBalance = combine(
   {
@@ -166,12 +165,17 @@ const $bondBalanceRange = combine($available, (available) => {
   return [ZERO_BALANCE, available];
 });
 
-const $reusableLock = combine({ balance: $initiatorBalance, available: $available }).map(({ balance, available }) => {
-  if (nullable(balance) || nullable(available)) {
+const $reusableLock = combine({
+  balance: $initiatorBalance,
+  available: $available,
+  initiator: form.fields.initiator.$value,
+}).map(({ balance, available, initiator }) => {
+  if (nullable(balance) || nullable(available) || nullable(initiator)) {
     return null;
   }
 
-  const reusableLock = reusableLockBN(balance);
+  const reusableLock = stakingUtils.reusableLockBN(balance);
+
   return BN.min(available, reusableLock);
 });
 
@@ -266,6 +270,23 @@ sample({
 
 sample({
   clock: formInitiated,
+  source: {
+    networkStore: $networkStore,
+    api: $api,
+  },
+  filter: ({ networkStore, api }, { initiator }) => {
+    return Boolean(networkStore) && Boolean(api) && nonNullable(initiator);
+  },
+  fn: ({ networkStore, api }, { initiator }) => ({
+    chainId: networkStore!.chain.chainId,
+    api: api!,
+    accounts: [initiator!.accountId],
+  }),
+  target: stakingResource.subscribe,
+});
+
+sample({
+  clock: formInitiated,
   source: $signatories,
   filter: (signatories) => signatories.length === 1,
   fn: (signatories) => signatories.at(0) ?? null,
@@ -313,8 +334,13 @@ sample({
 });
 
 sample({
+  clock: formSubmitted,
+  target: stakingResource.unsubscribe,
+});
+
+sample({
   clock: formCleared,
-  target: [form.reset],
+  target: [form.reset, stakingResource.unsubscribe],
 });
 
 export const formModel = {

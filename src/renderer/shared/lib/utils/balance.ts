@@ -256,24 +256,12 @@ export const reservableAmountBN = (balance: Balance, transferableMode?: Transfer
   }
 };
 
-export const stakedAmountBN = (balance: Balance) => {
+export const votedAmountBN = (balance: Balance) => {
   const bnLocks = balance.locked
-    .filter((lock) => lock.type === LockTypes.STAKING)
+    .filter((lock) => lock.type === LockTypes.CONVICTION_VOTE)
     .reduce((acc, lock) => acc.add(lock.amount), BN_ZERO);
 
   return bnLocks;
-};
-
-export const stakedAmount = (balance: Balance): string => {
-  return stakedAmountBN(balance).toString();
-};
-
-export const reusableLockBN = (balance: Balance): BN => {
-  const staked = stakedAmountBN(balance);
-  const maxConstraint = BN.max(balance.frozen, balance.reserved);
-  const reusable = maxConstraint.sub(staked);
-
-  return BN.max(BN_ZERO, reusable);
 };
 
 export const unlockingAmount = (unlocking: Unlocking[] = []): string => {
