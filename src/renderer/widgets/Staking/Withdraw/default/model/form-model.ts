@@ -19,7 +19,7 @@ import { createComplexTxStore, createSignatoriesStore, createTxValidationStore }
 import { type AnyAccount, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { type StakingMap, eraService, useStakingData } from '@/entities/staking';
+import { type StakingMap, eraService, stakingUtils } from '@/entities/staking';
 import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { withdrawValidator } from '@/features/operations/OperationsValidation';
@@ -117,7 +117,7 @@ type StakingParams = {
 const subscribeStakingFx = createEffect(({ chainId, api, accounts }: StakingParams): Promise<() => void> => {
   const boundStakingSet = scopeBind(stakingSet, { safe: true });
 
-  return useStakingData().subscribeStaking(chainId, api, accounts, boundStakingSet);
+  return stakingUtils.subscribeStaking(chainId, api, accounts, boundStakingSet);
 });
 
 const subscribeEraFx = createEffect((api: ApiPromise): Promise<() => void> => {

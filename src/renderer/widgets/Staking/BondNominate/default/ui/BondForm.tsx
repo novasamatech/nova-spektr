@@ -4,14 +4,7 @@ import { type FormEvent, useMemo, useState } from 'react';
 import { RewardsDestination } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import {
-  formatAsset,
-  fromPrecision,
-  getNativeAsset,
-  toAddress,
-  toShortAddress,
-  transferableAmount,
-} from '@/shared/lib/utils';
+import { formatAsset, getNativeAsset, toAddress, toShortAddress, transferableAmount } from '@/shared/lib/utils';
 import { Button, Combobox, DetailRow, FootnoteText, Icon, InputHint, RadioGroup } from '@/shared/ui';
 import { type RadioOption } from '@/shared/ui/types';
 import { AssetBalance, Identicon, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
@@ -112,6 +105,7 @@ const Amount = () => {
   const network = useUnit(formModel.$networkStore);
   const bondBalanceRange = useUnit(formModel.$bondBalanceRange);
   const reusableLock = useUnit(formModel.$reusableLock);
+  const setReuseLockMode = useUnit(formModel.setReuseLockMode);
 
   if (!network) {
     return null;
@@ -129,6 +123,7 @@ const Amount = () => {
         placeholder={t('general.input.amountLabel')}
         asset={network.asset}
         onChange={amount.onChange}
+        onKeyDown={() => setReuseLockMode(false)}
       />
       <InputHint active={amount.hasError} variant="error">
         {t(amount.errorMessage)}
@@ -136,11 +131,7 @@ const Amount = () => {
 
       {reusableLock && showReuseLockBtn && (
         <div className="flex justify-end">
-          <Button
-            size="sm"
-            pallet="secondary"
-            onClick={() => amount.onChange(fromPrecision(reusableLock, network.asset.precision))}
-          >
+          <Button size="sm" pallet="secondary" onClick={() => setReuseLockMode(true)}>
             {t('governance.vote.reuseLock')}: {formatAsset(reusableLock, network.asset)}
           </Button>
         </div>
