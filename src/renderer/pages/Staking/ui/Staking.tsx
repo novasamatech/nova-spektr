@@ -274,7 +274,7 @@ export const Staking = () => {
       account,
       stash: staking[account.accountId]?.stash,
       isSelected: selectedNominators.includes(account.accountId),
-      totalStake: isStakingLoading ? undefined : staking[account.accountId]?.total,
+      totalStake: isStakingLoading ? undefined : (staking[account.accountId]?.total ?? '0'),
       totalReward: isRewardsLoading ? undefined : rewards[account.accountId],
       unlocking: staking[account.accountId]?.unlocking,
     });
@@ -405,7 +405,6 @@ export const Staking = () => {
                   isStakingLoading={isStakingLoading}
                   onNavigate={navigateToStake}
                 />
-
                 <NominatorsList
                   api={api}
                   timelineApi={timelineApi}
