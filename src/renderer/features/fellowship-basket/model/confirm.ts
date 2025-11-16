@@ -47,7 +47,8 @@ type DataParams = {
   balances: BalanceMap;
 };
 
-const flow = createGate<BasketTransaction>();
+const gate = createGate<BasketTransaction>();
+const $fellowshipStore = $collectiveStore.map(store => store['fellowship'] || null);
 
 // vote
 
@@ -82,7 +83,7 @@ const prepareVoteFx = createEffect(async ({ transaction, wallets, accounts, chai
 });
 
 sample({
-  clock: flow.open,
+  clock: gate.open,
   source: {
     accounts: walletModel.$availableAccounts,
     wallets: walletModel.$wallets,
@@ -144,7 +145,7 @@ const prepareSalaryInductFx = createEffect(async ({ transaction, wallets, accoun
 });
 
 sample({
-  clock: flow.open,
+  clock: gate.open,
   source: {
     accounts: walletModel.$availableAccounts,
     wallets: walletModel.$wallets,
@@ -206,7 +207,7 @@ const prepareSalaryRequestFx = createEffect(async ({ transaction, wallets, accou
 });
 
 sample({
-  clock: flow.open,
+  clock: gate.open,
   source: {
     accounts: walletModel.$availableAccounts,
     wallets: walletModel.$wallets,
@@ -269,7 +270,7 @@ const prepareSalaryPayoutFx = createEffect(async ({ transaction, wallets, accoun
 });
 
 sample({
-  clock: flow.open,
+  clock: gate.open,
   source: {
     accounts: walletModel.$availableAccounts,
     wallets: walletModel.$wallets,
@@ -333,7 +334,7 @@ const prepareEvidencePayoutFx = createEffect(async ({ transaction, wallets, acco
 });
 
 sample({
-  clock: flow.open,
+  clock: gate.open,
   source: {
     accounts: walletModel.$availableAccounts,
     wallets: walletModel.$wallets,
@@ -446,7 +447,7 @@ const prepareEvidenceVoteFx = createEffect<
 );
 
 sample({
-  clock: flow.open,
+  clock: gate.open,
   source: {
     accounts: walletModel.$availableAccounts,
     wallets: walletModel.$wallets,
@@ -483,7 +484,7 @@ sample({
 // setting up env
 
 sample({
-  clock: flow.open,
+  clock: gate.open,
   fn(transaction) {
     return { chainId: transaction.coreTx.chainId };
   },
@@ -491,5 +492,6 @@ sample({
 });
 
 export const confirm = {
-  flow,
+  gate,
+  $fellowshipStore,
 };

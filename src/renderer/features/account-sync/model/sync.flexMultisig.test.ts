@@ -32,7 +32,7 @@ describe('syncFlexibleMultisigs', () => {
             {
               accountId: flexMultisigAccount1.accountId,
               accountType: flexMultisigAccount1.accountType,
-              blockNumber: flexMultisigAccount1.blockNumber,
+              entropyBlockNumber: flexMultisigAccount1.entropyBlockNumber,
               chainId: flexMultisigAccount1.chainId,
               cryptoType: flexMultisigAccount1.cryptoType,
               deposit: '12345',
@@ -52,7 +52,7 @@ describe('syncFlexibleMultisigs', () => {
             {
               accountId: flexMultisigAccount2.accountId,
               accountType: flexMultisigAccount2.accountType,
-              blockNumber: flexMultisigAccount2.blockNumber,
+              entropyBlockNumber: flexMultisigAccount2.entropyBlockNumber,
               chainId: flexMultisigAccount2.chainId,
               cryptoType: flexMultisigAccount2.cryptoType,
               deposit: '12345',
@@ -72,7 +72,7 @@ describe('syncFlexibleMultisigs', () => {
             {
               accountId: flexMultisigAccount3.accountId,
               accountType: flexMultisigAccount3.accountType,
-              blockNumber: flexMultisigAccount3.blockNumber,
+              entropyBlockNumber: flexMultisigAccount3.entropyBlockNumber,
               chainId: flexMultisigAccount3.chainId,
               cryptoType: flexMultisigAccount3.cryptoType,
               deposit: '12345',

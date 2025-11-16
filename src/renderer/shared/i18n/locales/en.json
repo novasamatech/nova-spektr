@@ -512,6 +512,10 @@
         "action": "Open network settings",
         "description": "Referendum information such as the description and voting statistics cannot be accessed and may be outdated.\nPlease check the connection in your network settings.",
         "title": "You are not connected to this network"
+      },
+      "noLongerValid": {
+        "errorText": "Referendum has ended",
+        "label": "No longer valid"
       }
     },
     "evidenceModal": {
@@ -1549,9 +1553,14 @@
     "networkFeeTotal": "Total network fee",
     "networkFee_one": "Network fee",
     "networkFee_other": "Network fees",
+    "networkNotAvailableButton": "Close",
+    "networkNotAvailableTitle": "Network not available",
     "noSignatoryErrorDescription": "The wallet<wallet />does not have an account on the {network} network. You cannot sign this opperation. Please add an account on {network} network.",
     "noSignatoryErrorTitle": "No account for {network}",
     "openOperationsButton": "Open operations",
+    "operationNotFoundButton": "Close",
+    "operationNotFoundDescription": "The operation you're trying to access could not be found.\nPlease check the parameters and try again.",
+    "operationNotFoundTitle": "Operation not found",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
@@ -1583,6 +1592,7 @@
       "executed": "Executed",
       "signing": "On signing"
     },
+    "submitError": "Operation Failed",
     "submitErrorButton": "Close",
     "successMessage": "Operation Approved",
     "successRejectMessage": "Operation Rejected",

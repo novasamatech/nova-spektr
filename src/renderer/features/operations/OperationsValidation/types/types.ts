@@ -26,6 +26,7 @@ export type ValidationResult =
   | {
       name: string;
       errorText: string;
+      label?: string;
     }
   | undefined;
 

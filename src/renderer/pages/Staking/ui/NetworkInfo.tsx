@@ -13,7 +13,10 @@ import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
 
 const getTotal = (values: string[]): BN => {
-  return values.reduce((acc, value) => acc.add(new BN(value || 0)), BN_ZERO);
+  return values.reduce((acc, value) => {
+    if (nullable(value)) return acc;
+    return acc.add(new BN(value));
+  }, BN_ZERO);
 };
 
 type Props = {
