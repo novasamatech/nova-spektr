@@ -2,7 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { BN, BN_ZERO } from '@polkadot/util';
 
 import { type Balance, type ChainId } from '@/shared/core';
-import { toAccountId } from '@/shared/lib/utils';
+import { toAccountId, votedAmountBN } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { type StakingMap } from './types';
@@ -10,7 +10,7 @@ import { type StakingMap } from './types';
 export const stakingUtils = {
   isKusamaChainId,
   subscribeStaking: subscribeStaking,
-  reusableLockBN,
+  reusableLockBN: reusableLockBN,
 };
 
 function isKusamaChainId(chainId: ChainId): boolean {
@@ -86,15 +86,8 @@ async function subscribeStaking(
   return listenToLedger(chainId, api, controllers, accounts, callback);
 }
 
-/**
- * Calculates the reusable lock amount from governance voting that can be reused for staking.
- * This is the amount locked in governance voting that exceeds what's already staked.
- *
- * @param balance - The account balance containing reserved amount
- * @param voted - The amount locked in governance voting (conviction voting)
- * @returns The amount that can be reused for staking without needing additional funds
- */
-function reusableLockBN(balance: Balance, voted: BN): BN {
+function reusableLockBN(balance: Balance): BN {
+  const voted = votedAmountBN(balance);
   const reusable = voted.sub(balance.reserved);
 
   return BN.max(BN_ZERO, reusable);

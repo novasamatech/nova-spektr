@@ -16,7 +16,6 @@ import {
   toAddress,
   transferableAmount,
   validateAddress,
-  votedAmountBN,
 } from '@/shared/lib/utils';
 import { createComplexTxStore, createSignatoriesStore, createTxValidationStore } from '@/shared/transactions';
 import { type AnyAccount, accountService, accounts } from '@/domains/network';
@@ -332,8 +331,7 @@ const $reusableLock = combine({ balance: $initiatorBalance, available: $availabl
     return null;
   }
 
-  const voted = votedAmountBN(balance);
-  const reusableLock = stakingUtils.reusableLockBN(balance, voted);
+  const reusableLock = stakingUtils.reusableLockBN(balance);
   return BN.min(available, reusableLock);
 });
 
