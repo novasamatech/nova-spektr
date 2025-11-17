@@ -12,11 +12,13 @@ import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { VestingSchedulePreview, VestingSchedulePreviewWithErrors } from '@/entities/vesting';
+import { VestingSchedulePreview } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 import { FileErrors } from '../types';
 import { vestedTransferUtils } from '../utils';
+
+import { VestingSchedulePreviewWithErrors } from './VestingSchedulePreviewWithErrors';
 
 const CSV_TEMPLATE_LINK =
   'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/templates/vested-transfer-template.csv';
@@ -132,7 +134,7 @@ const UploadCSV = () => {
   const { t } = useI18n();
 
   const fileErrors = useUnit(formModel.$fileErrors);
-  const hasErrors = nonNullable(fileErrors);
+  const hasErrors = nonNullable(fileErrors) && nonNullable(fileErrors.details);
 
   const chain = useUnit(formModel.$chain);
   const asset = useUnit(formModel.$asset);
@@ -173,9 +175,10 @@ const UploadCSV = () => {
               }
             />
           )}
-          {showPreviewWithErrors && (
+          {showPreviewWithErrors && fileErrors.details && (
             <VestingSchedulePreviewWithErrors
               vestingSchedule={parsedFile}
+              errors={fileErrors.details}
               trigger={
                 <Button
                   className="p-0"
