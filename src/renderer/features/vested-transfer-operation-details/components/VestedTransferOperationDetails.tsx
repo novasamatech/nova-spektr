@@ -7,7 +7,7 @@ import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button, DetailRow } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { type VestingSchedule, VestingSchedulePreviewModal } from '@/entities/vesting';
+import { type VestingSchedule, VestingSchedulePreview } from '@/entities/vesting';
 
 type Props = {
   operation: MultisigOperation;
@@ -31,7 +31,7 @@ export const VestedTransferOperationDetails = ({ operation }: Props) => {
 
   return (
     <DetailRow label={t('operation.details.parsedFile')} className="text-text-secondary">
-      <VestingSchedulePreviewModal
+      <VestingSchedulePreview
         chain={chain}
         asset={asset}
         vestingSchedule={vestingSchedule}
