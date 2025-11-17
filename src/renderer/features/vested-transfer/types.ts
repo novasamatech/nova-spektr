@@ -18,12 +18,12 @@ export type VestingScheduleRaw = {
   perBlock: string;
 };
 
-export enum VestingScheduleFileErrors {
+export enum FileErrors {
   INVALID_CSV_STRUCTURE = 'INVALID_CSV_STRUCTURE',
   INVALID_CSV_DATA = 'INVALID_CSV_DATA',
 }
 
-export enum VestingScheduleRowErrors {
+export enum RowErrors {
   INVALID_SS58_ADDRESS = 'INVALID_SS58_ADDRESS',
   MAX_VESTING_SCHEDULES_REACHED = 'MAX_VESTING_SCHEDULES_REACHED',
   LOCKED_NOT_POSITIVE_INT = 'LOCKED_NOT_POSITIVE_INT',
@@ -34,12 +34,14 @@ export enum VestingScheduleRowErrors {
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }
 
-export type VestingScheduleErrorRecord = Record<VestingScheduleRowErrors, number[]>;
+type RowIndex = number;
+
+export type ErrorRecord = Record<RowIndex, RowErrors[]>;
 
 export class VestingScheduleError extends Error {
   constructor(
-    public code: VestingScheduleFileErrors,
-    public details?: VestingScheduleErrorRecord,
+    public code: FileErrors,
+    public details?: ErrorRecord,
   ) {
     super(code);
     this.name = 'VestingScheduleError';

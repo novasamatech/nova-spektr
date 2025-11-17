@@ -1,20 +1,22 @@
 import { useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
+import { Button, FootnoteText } from '@/shared/ui';
 import { Modal, ScrollArea } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { type VestingScheduleRaw } from '../lib/types';
 
 type Props = {
   vestingSchedule: VestingScheduleRaw[];
-
   trigger: React.ReactNode;
+  onDownloadClick: () => void;
 };
 
-export const VestingSchedulePreviewWithErrors = ({ vestingSchedule, trigger }: Props) => {
+export const VestingSchedulePreviewWithErrors = ({ vestingSchedule, trigger, onDownloadClick }: Props) => {
   const { t } = useI18n();
 
   const rowCount = vestingSchedule.length;
+  const errorCount = '';
 
   const columns: Column<VestingScheduleRaw>[] = useMemo(
     () => [
@@ -74,6 +76,14 @@ export const VestingSchedulePreviewWithErrors = ({ vestingSchedule, trigger }: P
           </ScrollArea>
         </div>
       </Modal.Content>
+      <Modal.Footer>
+        <div className="flex w-full flex-row items-center justify-between">
+          <FootnoteText className="text-text-negative">
+            {t('vestedTransfer.parsedFile.table.errors.downloadDescription', { errors: errorCount })}
+          </FootnoteText>
+          <Button onClick={onDownloadClick}>{t('vestedTransfer.parsedFile.table.buttons.download')}</Button>
+        </div>
+      </Modal.Footer>
     </Modal>
   );
 };
