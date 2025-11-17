@@ -278,7 +278,7 @@ const $destinationBalance = combine(
   },
 );
 
-const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed);
+const $destinationBalanceEd = $destinationBalance.map((b) => b?.ed ?? null);
 
 const $hasDestinationBalanceError = combine(
   { amount: $amount, accountId: $destinationAccountId, balance: $destinationBalance },

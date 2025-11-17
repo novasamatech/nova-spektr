@@ -1,18 +1,22 @@
-import { useStoreMap, useUnit } from 'effector-react';
-import { memo, useMemo } from 'react';
+import React, { memo, useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
-import { Slot } from '@/shared/di';
+import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Markdown, Skeleton } from '@/shared/ui-kit';
-import { type OngoingReferendum, referendumService, track, trackService } from '@/domains/collectives';
-import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
-import { evidenceModel } from '../../model/evidence';
-import { fellowshipTasksFeature } from '../../model/feature';
-import { identityModel } from '../../model/identity';
-import { members } from '../../model/members';
+import {
+  type OngoingReferendum,
+  referendumService,
+  trackService,
+  useEvidenceSummary,
+  useMember,
+  useTracks,
+} from '@/domains/collectives';
+import { useFellowshipApi, useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
+import { useEvidence } from '../../hooks/useEvidence';
 import { MemberActivity } from '../MemberActivity';
 import { TaskBadge } from '../TaskBadge';
 import { TaskLabels } from '../TaskLabels';
@@ -25,16 +29,17 @@ type Props = {
   tags: string[];
 };
 
+export const promotionRetentionReferendumVotingSlot = createSlot<{
+  referendumId: ReferendumId;
+  children: React.ReactNode;
+}>();
+
 export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, transaction }: Props) => {
   const { t } = useI18n();
 
-  const evidenceSummaryPending = useUnit(evidenceModel.requestEvidenceSummary.pending);
-  const evidenceSummaryPopulated = useUnit(evidenceModel.$summaryPopulated);
-  const evidenceSummaries = useUnit(evidenceModel.$evidencesSummary);
-
-  const pending = evidenceSummaryPending || !evidenceSummaryPopulated;
   const proposerAccountId = referendumService.getProposer(referendum);
-  const evidenceSummary = evidenceSummaries.find(e => e.accountId === proposerAccountId);
+
+  const { data: evidenceSummary, pending } = useReferendumSummary({ referendum });
 
   const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
   const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
@@ -46,29 +51,38 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
 
   return (
     <Box direction="row" gap={2}>
-      <ReferendumDetailsModal referendum={referendum} title={title}>
-        <button className="block w-full appearance-none p-4">
-          <Box direction="row" gap={2} verticalAlign="start">
-            <div className="shrink-0">
-              {rank ? <TaskBadge rank={rank} isPromotion={isPromotionTrack} isRetention={isRetentionTrack} /> : null}
-            </div>
-            <Box fillContainer verticalAlign="space-between" gap={3} grow={1}>
-              <Box gap={3}>
-                <Box direction="row" gap={3}>
-                  <SmallTitleText className="truncate">{title}</SmallTitleText>
-                  <TaskLabels tags={tags} />
+      <Slot
+        id={promotionRetentionReferendumVotingSlot}
+        props={{
+          referendumId: referendum.id,
+          children: (
+            <div className="block w-full cursor-pointer appearance-none p-4">
+              <Box direction="row" gap={2} verticalAlign="start">
+                <div className="shrink-0">
+                  {rank ? (
+                    <TaskBadge rank={rank} isPromotion={isPromotionTrack} isRetention={isRetentionTrack} />
+                  ) : null}
+                </div>
+                <Box fillContainer verticalAlign="space-between" gap={3} grow={1}>
+                  <Box gap={3}>
+                    <Box direction="row" gap={3}>
+                      <SmallTitleText className="truncate">{title}</SmallTitleText>
+                      <TaskLabels tags={tags} />
+                    </Box>
+                    {!evidenceSummary && pending && <Skeleton height="3lh" width="85%" />}
+                    <FootnoteText as="div">
+                      {evidenceSummary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
+                      {!evidenceSummary && !pending ? t('fellowship.tasks.task.promotionVoting.noEvidence') : null}
+                    </FootnoteText>
+                  </Box>
+                  {proposerAccountId ? <MemberActivity accountId={proposerAccountId} /> : null}
                 </Box>
-                {!evidenceSummary?.summary && pending && <Skeleton height="3lh" width="85%" />}
-                <FootnoteText as="div">
-                  {evidenceSummary?.summary ? <Markdown>{evidenceSummary?.summary}</Markdown> : null}
-                  {!evidenceSummary?.summary && !pending ? t('fellowship.tasks.task.promotionVoting.noEvidence') : null}
-                </FootnoteText>
               </Box>
-              {proposerAccountId ? <MemberActivity accountId={proposerAccountId} /> : null}
-            </Box>
-          </Box>
-        </button>
-      </ReferendumDetailsModal>
+            </div>
+          ),
+        }}
+      />
+
       <Box verticalAlign="space-between" horizontalAlign="end" gap={3} padding={4} shrink={0} height="auto">
         <Slot id={referendumVotingTaskActionSlot} props={{ referendum, transaction, dateThresholds }} />
       </Box>
@@ -79,78 +93,65 @@ export const PromotionRetentionReferendumVoting = memo(({ referendum, tags, tran
 const useTitle = ({ referendum }: { referendum: OngoingReferendum }) => {
   const { t } = useI18n();
 
-  const input = useUnit(fellowshipTasksFeature.input);
-  const tracks = useUnit(track.$list);
-
   const proposerAccountId = referendumService.getProposer(referendum);
 
-  const chain = input?.chain ?? null;
-  const relatedTracks = chain ? tracks.fellowship?.[chain.chainId] : null;
+  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
 
-  const currentTrack = relatedTracks?.find(t => t.id === referendum.track);
+  const { data: tracks } = useTracks({ palletType: 'fellowship', api });
+  const { data: identity } = useFellowshipIdentity(proposerAccountId);
+
+  const currentTrack = tracks?.find(t => t.id === referendum.track);
 
   const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
   const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
 
-  const proposerIdentity = useStoreMap({
-    store: identityModel.$identities,
-    keys: [referendum],
-    fn: (identities, [referendum]) => {
-      const proposer = referendumService.getProposer(referendum);
-      return proposer ? identities[proposer] : null;
-    },
-  });
-
-  const proposerMember = useStoreMap({
-    store: members.$list,
-    keys: [proposerAccountId],
-    fn: (members, [accountId]) => members.find(m => m.accountId === accountId) ?? null,
-  });
+  const { data: proposerMember } = useMember({ palletType: 'fellowship', api, accountId: proposerAccountId });
 
   return useMemo(() => {
-    if (!currentTrack || !relatedTracks || !proposerMember) return '';
+    if (!currentTrack || !proposerMember) return '';
 
     const string = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';
     const trackName = isPromotionTrack ? 'Promotion' : 'Retention';
 
-    const rank = trackService.getProposalTrack(relatedTracks, proposerMember, trackName);
+    const rank = trackService.getProposalTrack(tracks, proposerMember, trackName);
 
     return t(string, {
-      name:
-        proposerIdentity?.name ??
-        toShortAddress(toAddress(proposerMember.accountId, { prefix: chain?.addressPrefix }), 5),
+      name: identity?.name ?? toShortAddress(toAddress(proposerMember.accountId, { prefix: chain?.addressPrefix }), 5),
       rank: toRomanNumeral(rank),
     });
-  }, [proposerIdentity, isPromotionTrack, isRetentionTrack, t, currentTrack, relatedTracks, proposerMember, chain]);
+  }, [identity, isPromotionTrack, isRetentionTrack, t, currentTrack, tracks, proposerMember, chain]);
 };
 
 const useRank = ({ referendum }: { referendum: OngoingReferendum }) => {
-  const input = useUnit(fellowshipTasksFeature.input);
-  const tracks = useUnit(track.$list);
   const proposerAccountId = referendumService.getProposer(referendum);
 
-  const chain = input?.chain ?? null;
-  const relatedTracks = chain ? tracks.fellowship?.[chain.chainId] : null;
+  const api = useFellowshipApi();
+  const { data: tracks } = useTracks({ palletType: 'fellowship', api });
+  const { data: proposerMember } = useMember({ palletType: 'fellowship', api, accountId: proposerAccountId });
 
-  const currentTrack = relatedTracks?.find(t => t.id === referendum.track);
-
+  const currentTrack = tracks?.find(t => t.id === referendum.track);
   const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
   const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
 
-  const proposerMember = useStoreMap({
-    store: members.$list,
-    keys: [proposerAccountId],
-    fn: (members, [accountId]) => members.find(m => m.accountId === accountId) ?? null,
+  return useMemo(() => {
+    if (!currentTrack || !tracks || !proposerMember) return null;
+    return trackService.getProposalTrack(tracks, proposerMember, isPromotionTrack ? 'Promotion' : 'Retention');
+  }, [currentTrack, tracks, isPromotionTrack, isRetentionTrack, proposerMember]);
+};
+
+const useReferendumSummary = ({ referendum }: { referendum: OngoingReferendum }) => {
+  const proposerAccountId = referendumService.getProposer(referendum);
+
+  const chain = useFellowshipChain();
+
+  const { data: evidence, pending: pendingEvidence } = useEvidence(proposerAccountId);
+  const { data: evidenceSummary, pending: pendingSummary } = useEvidenceSummary({
+    palletType: 'fellowship',
+    chainId: chain?.chainId,
+    accountId: proposerAccountId,
+    evidence: evidence?.hash,
   });
 
-  return useMemo(() => {
-    if (!currentTrack || !relatedTracks || !proposerMember) return null;
-    const rank = trackService.getProposalTrack(
-      relatedTracks,
-      proposerMember,
-      isPromotionTrack ? 'Promotion' : 'Retention',
-    );
-
-    return rank;
-  }, [currentTrack, relatedTracks, isPromotionTrack, isRetentionTrack, proposerMember]);
+  return { data: evidenceSummary, pending: pendingEvidence || pendingSummary };
 };

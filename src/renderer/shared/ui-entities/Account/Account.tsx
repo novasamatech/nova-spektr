@@ -16,12 +16,6 @@ type Props = {
   variant?: 'truncate' | 'short';
   addressTestId?: string;
   explorersTestId?: string;
-  /**
-   * TODO remove this prop, Account without explorers is basically Address
-   *
-   * @deprecated
-   */
-  hideExplorers?: boolean;
 };
 
 export const Account = memo(
@@ -35,7 +29,6 @@ export const Account = memo(
     chain,
     addressTestId,
     explorersTestId,
-    hideExplorers,
   }: Props) => {
     return (
       <div className="flex w-max max-w-full min-w-0 items-center gap-2">
@@ -48,7 +41,7 @@ export const Account = memo(
           address={toAddress(accountId, { prefix: chain.addressPrefix })}
           testId={addressTestId}
         />
-        {!hideExplorers && <AccountExplorers accountId={accountId} chain={chain} testId={explorersTestId} />}
+        <AccountExplorers accountId={accountId} chain={chain} testId={explorersTestId} />
       </div>
     );
   },

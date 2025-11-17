@@ -9,6 +9,8 @@ import { entries, getCurrentBlockNumber } from '@/shared/lib/utils';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
+import { blockResource } from './resource';
+
 export const $apis = networkModel.$apis;
 
 // Store mapping chain IDs to their current block heights
@@ -68,6 +70,7 @@ sample({
 });
 
 export const block = {
+  blockResource,
   $currentBlock,
   startBlockListening,
   stopBlockListening,

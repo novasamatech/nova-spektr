@@ -2,10 +2,9 @@ import { combine, createEvent, createStore, sample } from 'effector';
 import { persist } from 'effector-storage/local';
 
 import { nullable } from '@/shared/lib/utils';
-import { evidence, evidenceService, memberService } from '@/domains/collectives';
+import { evidenceService, memberService } from '@/domains/collectives';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 
-import { fellowshipEvidenceFeature } from './feature';
 import { fellowship } from './fellowship';
 import { profile } from './profile';
 
@@ -29,7 +28,7 @@ const $leftToPromotion = combine(
   ({ periods, currentBlock, member }) => {
     if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member) || nullable(currentBlock))
       return null;
-    return evidenceService.getBlockUntilNextPropotion(member, periods, currentBlock);
+    return evidenceService.getBlockUntilNextPromotion(member, periods, currentBlock);
   },
 );
 
@@ -62,38 +61,6 @@ const $track = combine(profile.$member, $tracks, (member, tracks) => {
   if (nullable(member)) return null;
 
   return tracks.find(t => t.id === member.rank) ?? null;
-});
-
-// requesting data
-
-const evendenceRequested = fellowshipEvidenceFeature.running.filterMap(({ api, palletType, chainId, member }) => {
-  if (!member) return;
-  return {
-    api,
-    palletType,
-    chainId,
-    accounts: [member.accountId],
-  };
-});
-
-sample({
-  clock: evendenceRequested,
-  target: evidence.request,
-});
-
-const evendencePeriodsRequested = fellowshipEvidenceFeature.running.filterMap(({ api, palletType, chain, member }) => {
-  if (!member) return;
-  return {
-    api,
-    palletType,
-    chain,
-    accountId: member.accountId,
-  };
-});
-
-sample({
-  clock: evendencePeriodsRequested,
-  target: evidence.requestPeriods,
 });
 
 // attention message
