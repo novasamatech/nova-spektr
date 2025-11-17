@@ -1,11 +1,12 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SignerOptions } from '@polkadot/api/submittable/types';
-import { type Store, attach, createEffect } from 'effector';
+import { type Store, attach, createEffect, createStore } from 'effector';
 
-import { type Asset, type Balance, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
-import { getAssetById, stakedAmount, transferableAmount } from '@/shared/lib/utils';
+import { type Asset, type BalanceMap, type Chain, type ID, type Transaction } from '@/shared/core';
+import { ZERO_BALANCE, getAssetById, transferableAmount } from '@/shared/lib/utils';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
+import { type StakingMap, stakingResource } from '@/entities/staking';
 import { transactionService } from '@/entities/transaction';
 import { UnstakeRules } from '../lib/unstake-rules';
 import { validationUtils } from '../lib/validation-utils';
@@ -18,15 +19,22 @@ type ValidateParams = {
   asset: Asset;
   transaction: Transaction;
   balances: BalanceMap;
+  stakingData: StakingMap;
   signerOptions?: Partial<SignerOptions>;
 };
 
+// Staking data store
+const $stakingData = createStore<StakingMap>({}).on(stakingResource.push, (_, { result }) => result ?? {});
+
 const rootValidateFx = createEffect(
-  async ({ id, api, chain, asset, transaction, balances, signerOptions }: ValidateParams) => {
+  async ({ id, api, chain, asset, transaction, balances, stakingData, signerOptions }: ValidateParams) => {
     const accountId = transaction.accountId;
     const fee = await transactionService.getTransactionFee(transaction, api, signerOptions);
 
     const shardBalance = balanceUtils.getBalance(balances, accountId, chain.chainId, asset.assetId);
+
+    // Get staked amount from staking data
+    const stakedAmountValue = stakingData[accountId]?.active || ZERO_BALANCE;
 
     const rules = [
       {
@@ -48,7 +56,7 @@ const rootValidateFx = createEffect(
         ...UnstakeRules.amount.notEnoughBalance({} as Store<UnstakeAmountBalanceRange>, { withFormatAmount: false }),
         source: {
           network: { chain, asset },
-          unstakeBalanceRange: [stakedAmount(shardBalance as Balance)],
+          unstakeBalanceRange: [stakedAmountValue],
         } as UnstakeAmountBalanceRange,
       },
     ];
@@ -62,8 +70,9 @@ const validateFx = attach({
     chains: networkModel.$chains,
     apis: networkModel.$apis,
     balances: balanceModel.$balanceMap,
+    stakingData: $stakingData,
   },
-  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis }) {
+  mapParams({ id, transaction, feeMap }: ValidationStartedParams, { chains, balances, apis, stakingData }) {
     const chain = chains[transaction.chainId];
     const api = apis[transaction.chainId];
     const asset = getAssetById(transaction.args.asset, chain.assets) || chain.assets[0];
@@ -75,6 +84,7 @@ const validateFx = attach({
       chain,
       asset,
       balances,
+      stakingData,
       feeMap,
     };
   },

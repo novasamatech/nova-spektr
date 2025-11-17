@@ -53,7 +53,6 @@ interface MatchedHandler {
 
 const deepLinkReceived = createEvent<UrlState>();
 const handlerRegistered = createEvent<HandlerEntry>();
-const handlersCleared = createEvent<string[]>();
 const pendingDeepLinkProcessed = createEvent<UrlState>();
 
 const paramsProcessed = createEvent<{
@@ -70,9 +69,7 @@ const callUrlUpdateCallbackFx = createEffect(
   },
 );
 
-const $handlers = createStore<HandlerEntry[]>([])
-  .on(handlerRegistered, (handlers, handler) => [...handlers, handler])
-  .on(handlersCleared, (handlers, idsToRemove) => handlers.filter(h => !idsToRemove.includes(h.id)));
+const $handlers = createStore<HandlerEntry[]>([]).on(handlerRegistered, (handlers, handler) => [...handlers, handler]);
 
 const $pendingDeepLink = createStore<UrlState | null>(null)
   .on($deepLink, (_, deepLink) => deepLink)
@@ -141,11 +138,6 @@ sample({
       })
       .filter((item): item is { handler: HandlerEntry; data: unknown } => item !== null),
   target: triggerHandlersFx,
-});
-
-sample({
-  clock: triggerHandlersFx.doneData,
-  target: handlersCleared,
 });
 
 sample({

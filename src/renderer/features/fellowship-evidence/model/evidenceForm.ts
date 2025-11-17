@@ -1,4 +1,4 @@
-import { createEffect, createEvent, createStore, sample } from 'effector';
+import { createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
 import { t } from 'i18next';
 
@@ -10,10 +10,12 @@ import { evidenceService } from '@/domains/collectives';
 // flow
 
 const skipUploading = createEvent();
+const setFlowType = createEvent<'fromScratch' | 'ipfsUpload' | null>();
 
 const flow = createFlow<{ wish: 'Promotion' | 'Retention' | null }>({ wish: null });
 const $wish = flow.state.map(x => x.wish);
 const $evidence = createStore<HexString | null>(null);
+const $flowType = restore(setFlowType, null);
 
 // requests
 
@@ -43,7 +45,7 @@ const postEvidenceFx = createEffect(async ({ wish, document }: PostParams) => {
     throw new Error(json.message);
   }
 
-  return json.cid as string;
+  return String(json.cid);
 });
 
 // form
@@ -136,6 +138,12 @@ sample({
 });
 
 sample({
+  clock: $evidence.updates,
+  filter: nonNullable,
+  target: skipUploading,
+});
+
+sample({
   clock: postEvidenceFx.failData,
   fn: error => error.message,
   target: $uploadError,
@@ -147,7 +155,9 @@ sample({
   target: $evidence,
 });
 
-const evidenceUploaded = sample({ clock: [postEvidenceFx.done, skipUploading] }).map(() => undefined);
+const evidenceUploaded = sample({
+  clock: [postEvidenceFx.done, skipUploading],
+}).map(() => undefined);
 
 // reset
 
@@ -164,7 +174,9 @@ export const evidenceForm = {
   $evidence,
   $formattedMarkdown,
   $uploadError,
+  $flowType,
   post: postEvidenceFx,
   reset: form.reset,
+  setFlowType,
   evidenceUploaded,
 };

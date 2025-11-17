@@ -8,12 +8,6 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 // =====================================================
 
 export interface IStakingDataService {
-  subscribeStaking: (
-    chainId: ChainId,
-    api: ApiPromise,
-    accounts: AccountId[],
-    callback: (staking: StakingMap) => void,
-  ) => Promise<() => void>;
   fetchLedger: (chainId: ChainId, api: ApiPromise, accounts: AccountId[]) => Promise<StakingMap>;
   getMinNominatorBond: (api: ApiPromise) => Promise<string>;
   getUnbondingPeriod: (api: ApiPromise, timelineApi: ApiPromise) => string;

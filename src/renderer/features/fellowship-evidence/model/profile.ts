@@ -3,7 +3,7 @@ import { and, or } from 'patronum';
 
 import { attachToFeatureInput } from '@/shared/feature';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { member, track } from '@/domains/collectives';
+import { track } from '@/domains/collectives';
 import { accountService, identity } from '@/domains/network';
 
 import { fellowshipEvidenceFeature } from './feature';
@@ -25,7 +25,7 @@ const $identity = combine($member, $identities, (member, identities) => {
 
 const $canVote = $account.map(a => nonNullable(a) && accountService.hasPermissionToMakeActions(a));
 
-const $pendingMember = and(or(member.pending, identity.request.pending), $member.map(nullable));
+const $pendingMember = and(identity.request.pending, $member.map(nullable));
 
 const memberUpdate = attachToFeatureInput(fellowshipEvidenceFeature, $member);
 

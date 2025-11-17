@@ -1,5 +1,6 @@
 import { type BN } from '@polkadot/util';
 
+import { type HexString } from '@/shared/core';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 
 type GenericFeed = {
@@ -36,6 +37,7 @@ type FeedEventProven = GenericFeed & {
 type FeedEventRequested = GenericFeed & {
   type: 'requested';
   wish: 'Retention' | 'Promotion';
+  hash: HexString;
 };
 
 // Pre-ranked account has been inducted at their current rank.
@@ -51,6 +53,14 @@ type FeedSalaryPaid = GenericFeed & {
   amount: BN;
 };
 
+// A fellowship referendum has been created, success or failed.
+export type FeedEventReferendum = GenericFeed & {
+  type: 'referendum';
+  referendumId: number;
+  referendumStatus: 'created' | 'success' | 'failed';
+  referendumTrackId: number;
+};
+
 export type FeedRecord =
   | FeedEventActiveChanged
   | FeedEventPromoted
@@ -58,4 +68,5 @@ export type FeedRecord =
   | FeedEventProven
   | FeedEventRequested
   | FeedEventImported
-  | FeedSalaryPaid;
+  | FeedSalaryPaid
+  | FeedEventReferendum;

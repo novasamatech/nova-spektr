@@ -1,11 +1,12 @@
 import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
-import { nonNullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
 import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { useFellowshipMember } from '@/aggregates/fellowship-member';
 import { list } from '../model/list';
 import { signOperations } from '../model/sign';
 import { validation } from '../model/validation';
@@ -19,14 +20,26 @@ import { SignTransactionsModal } from './SignTransactionsModal';
 export const BasketList = () => {
   const { t } = useI18n();
 
+  useFellowshipMember();
+
   const allOperations = useUnit(list.$all);
   const operations = useUnit(list.$filtered);
   const selected = useUnit(basketOperations.$selected);
   const transactionsToSign = useUnit(signOperations.$transactions);
   const pendingValidations = useUnit(validation.$pending);
   const refreshPending = useUnit(validation.validateAll.pending);
+  const validationResults = useUnit(validation.$validatingResults);
+  const apisFromChainsListConnected = useUnit(validation.$apisFromChainsListConnected);
+
+  const validOperations = operations.filter(op => {
+    const hasError = validationResults[op.id]?.some(result => result.errorText);
+    const isPending = pendingValidations[op.id] ?? true;
+    return !hasError && !isPending;
+  });
 
   const isSignAvailable = selected.length > 0 && selected.every(operation => !pendingValidations[operation.id]);
+
+  const isValidationPending = !apisFromChainsListConnected || refreshPending;
 
   const openSignModal = (transaction: BasketTransaction) => {
     signOperations.startFlow({ transactions: [transaction] });
@@ -46,12 +59,13 @@ export const BasketList = () => {
             <div className="flex w-[736px] items-center justify-between">
               <div className="ml-3">
                 <Checkbox
-                  checked={operations.length > 0 && operations.length === selected.length}
-                  semiChecked={selected.length > 0 && operations.length !== selected.length}
+                  checked={validOperations.length > 0 && validOperations.length === selected.length}
+                  semiChecked={selected.length > 0 && validOperations.length !== selected.length}
+                  disabled={validOperations.length === 0}
                   onChange={value => {
                     value
-                      ? basketOperations.select(operations.map(x => x.id))
-                      : basketOperations.deselect(operations.map(x => x.id));
+                      ? basketOperations.select(validOperations.map(x => x.id))
+                      : basketOperations.deselect(validOperations.map(x => x.id));
                   }}
                 >
                   <FootnoteText className="text-text-secondary">
@@ -63,8 +77,14 @@ export const BasketList = () => {
                 <Button
                   size="sm"
                   variant="text"
-                  isLoading={refreshPending}
-                  prefixElement={<Icon size={16} name="refresh" className="text-inherit" />}
+                  isLoading={isValidationPending}
+                  prefixElement={
+                    <Icon
+                      size={16}
+                      name="refresh"
+                      className={cnTw('text-inherit', isValidationPending ? 'animate-spin' : '')}
+                    />
+                  }
                   onClick={() => validation.validateAll()}
                 >
                   {t('basket.refreshButton')}

@@ -1,14 +1,13 @@
-import { useStoreMap } from 'effector-react';
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, Icon } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
-import { memberService, referendumMetaService } from '@/domains/collectives';
-import { fellowship } from '../model/fellowship';
-import { members } from '../model/members';
+import { memberService, useMember } from '@/domains/collectives';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { useActivity } from '../hooks/useActivity';
 
 type Props = {
   accountId: AccountId;
@@ -19,51 +18,17 @@ const DEFAULT_VALUE = '100/100%';
 export const MemberActivity = memo(({ accountId }: Props) => {
   const { t } = useI18n();
 
-  const member = useStoreMap({
-    store: members.$list,
-    keys: [accountId],
-    fn: (list, [accountId]) => list.find(m => m.accountId === accountId) ?? null,
-  });
-
-  const { meta, isMetaLoaded, votes, maxRank } = useStoreMap({
-    store: fellowship.$store,
-    keys: [],
-    fn: store => {
-      return {
-        meta: Object.values(store?.referendumMeta ?? {}),
-        isMetaLoaded: nonNullable(store?.referendumMeta),
-        votes: store?.voting ?? [],
-        maxRank: store?.maxRank ?? 0,
-      };
-    },
-  });
+  const api = useFellowshipApi();
+  const { data: member } = useMember({ palletType: 'fellowship', api, accountId });
+  const { data, pending } = useActivity(accountId);
 
   const notMemberOrNotCoreMember = nullable(member) || !memberService.isCoreMember(member);
-
-  const referendums = useMemo(() => {
-    if (notMemberOrNotCoreMember) return [];
-
-    return referendumMetaService.getReferendumsSinceLastProof(meta, member);
-  }, [meta, member, notMemberOrNotCoreMember]);
-  const activity = useMemo(() => {
-    if (notMemberOrNotCoreMember) {
-      return { activity: null, agreement: null };
-    }
-
-    return referendumMetaService.getActivityInfo(referendums, member, maxRank, votes);
-  }, [referendums, member, maxRank, votes, notMemberOrNotCoreMember]);
-
   if (notMemberOrNotCoreMember) return null;
 
-  const { activity: activityThreshold, agreement: agreementThreshold } =
-    memberService.getActivityAndAgreementThresholds(member.rank);
+  const isActivityLoaded = !pending && nonNullable(data);
 
-  const isActivityLoaded = isMetaLoaded && nonNullable(activity);
-
-  const isActivityFit =
-    nullable(activityThreshold) || (nonNullable(activity?.activity) && activity?.activity >= activityThreshold);
-  const isAgreementFit =
-    nullable(agreementThreshold) || (nonNullable(activity?.agreement) && activity?.agreement >= agreementThreshold);
+  const isActivityFit = data?.isActivityFit ?? false;
+  const isAgreementFit = data?.isAgreementFit ?? false;
 
   return (
     <Box direction="row" gap={4}>
@@ -80,9 +45,9 @@ export const MemberActivity = memo(({ accountId }: Props) => {
           <FootnoteText className="text-text-secondary">{t('fellowship.members.activity')}</FootnoteText>
           <FootnoteText>
             {isActivityLoaded ? (
-              nonNullable(activity.activity) ? (
-                nonNullable(activityThreshold) ? (
-                  `${Math.min(activity.activity, activityThreshold)}/${activityThreshold}%`
+              nonNullable(data.activity) ? (
+                nonNullable(data.activityThreshold) ? (
+                  `${Math.min(data.activity, data.activityThreshold)}/${data.activityThreshold}%`
                 ) : (
                   DEFAULT_VALUE
                 )
@@ -108,9 +73,9 @@ export const MemberActivity = memo(({ accountId }: Props) => {
           <FootnoteText className="text-text-secondary">{t('fellowship.members.agreement')}</FootnoteText>
           <FootnoteText>
             {isActivityLoaded ? (
-              nonNullable(activity.agreement) ? (
-                nonNullable(agreementThreshold) ? (
-                  `${Math.min(activity.agreement, agreementThreshold)}/${agreementThreshold}%`
+              nonNullable(data.agreement) ? (
+                nonNullable(data.agreementThreshold) ? (
+                  `${Math.min(data.agreement, data.agreementThreshold)}/${data.agreementThreshold}%`
                 ) : (
                   DEFAULT_VALUE
                 )

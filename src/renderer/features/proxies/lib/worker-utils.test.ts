@@ -72,7 +72,7 @@ describe('features/proxies/lib/worker-utils', () => {
       proxyVariant: ProxyVariant.REGULAR,
       chainType: ChainType.SUBSTRATE,
       cryptoType: CryptoType.SR25519,
-      blockNumber: 0,
+      entropyBlockNumber: 0,
       extrinsicIndex: 0,
     } as PartialProxiedAccount;
 
@@ -93,7 +93,7 @@ describe('features/proxies/lib/worker-utils', () => {
       proxyVariant: ProxyVariant.REGULAR,
       chainType: ChainType.SUBSTRATE,
       cryptoType: CryptoType.SR25519,
-      blockNumber: 0,
+      entropyBlockNumber: 0,
       extrinsicIndex: 0,
     } as PartialProxiedAccount;
 
@@ -120,7 +120,7 @@ describe('features/proxies/lib/worker-utils', () => {
       proxyVariant: ProxyVariant.REGULAR,
       chainType: ChainType.SUBSTRATE,
       cryptoType: CryptoType.SR25519,
-      blockNumber: 0,
+      entropyBlockNumber: 0,
       extrinsicIndex: 0,
     } as PartialProxiedAccount;
 
@@ -141,7 +141,7 @@ describe('features/proxies/lib/worker-utils', () => {
       chainId: '0x06',
       chainType: ChainType.SUBSTRATE,
       cryptoType: CryptoType.SR25519,
-      blockNumber: 0,
+      entropyBlockNumber: 0,
       extrinsicIndex: 0,
     } as PartialProxiedAccount;
 

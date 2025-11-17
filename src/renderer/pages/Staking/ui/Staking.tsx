@@ -6,7 +6,7 @@ import { localStorageService } from '@/shared/api/local-storage';
 import { type ChainId, type Stake, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { getRelaychainAsset, keys, toAccountId } from '@/shared/lib/utils';
+import { getRelaychainAsset, keys, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, EmptyList, Header } from '@/shared/ui';
 import { type AnyAccount, accountService, identity } from '@/domains/network';
@@ -14,11 +14,9 @@ import { InactiveNetwork, networkModel, networkUtils, useNetworkData } from '@/e
 import {
   DEFAULT_STAKING_CHAIN,
   STAKING_NETWORK,
-  type StakingMap,
   type ValidatorMap,
   ValidatorsModal,
   eraService,
-  useStakingData,
   useStakingRewards,
   validatorsService,
 } from '@/entities/staking';
@@ -43,6 +41,7 @@ import {
   withdrawShardsModel,
 } from '@/widgets/Staking';
 import { type NominatorInfo, Operations as StakeOperations } from '../lib/types';
+import { stakingModel } from '../model/staking-model';
 
 import { AboutStaking } from './AboutStaking';
 import { Actions } from './Actions';
@@ -94,12 +93,12 @@ export const Staking = () => {
   const activeWallet = useUnit(walletSelect.$selectedWallet);
   const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
 
-  const { subscribeStaking } = useStakingData();
   const [isShowNominators, toggleNominators] = useToggle();
 
+  const staking = useUnit(stakingModel.$stakingData);
+  const isStakingLoading = useUnit(stakingModel.$isStakingLoading);
+
   const [chainEra, setChainEra] = useState<Record<ChainId, number | undefined>>({});
-  const [staking, setStaking] = useState<StakingMap>({});
-  const [isStakingLoading, setIsStakingLoading] = useState(true);
 
   const [validators, setValidators] = useState<ValidatorMap>({});
   const [nominators, setNominators] = useState<Validator[]>([]);
@@ -146,7 +145,7 @@ export const Staking = () => {
     return uniqBy(filteredAccounts, 'accountId');
   }, [selectedAccounts, activeChain, activeWallet]);
 
-  const accountIds = accounts.map((a) => a.accountId);
+  const accountIds = useMemo(() => accounts.map((a) => a.accountId), [accounts]);
 
   const { rewards, isRewardsLoading } = useStakingRewards(accountIds, activeChain);
 
@@ -167,25 +166,25 @@ export const Staking = () => {
     if (!chainId || !api?.isConnected) return;
 
     let unsubEra: () => void | undefined;
-    let unsubStaking: () => void | undefined;
-
-    setIsStakingLoading(true);
 
     (async () => {
       unsubEra = await eraService.subscribeActiveEra(api, (era) => {
         setChainEra({ [chainId]: era });
       });
-      unsubStaking = await subscribeStaking(chainId, api, accountIds, (staking) => {
-        setStaking(staking);
-        setIsStakingLoading(false);
-      });
     })();
 
     return () => {
       unsubEra?.();
-      unsubStaking?.();
     };
-  }, [chainId, api, activeWallet]);
+  }, [chainId, api]);
+
+  useEffect(() => {
+    stakingModel.stakingParamsChanged({ chainId, api, accounts: accountIds });
+
+    return () => {
+      stakingModel.reset();
+    };
+  }, [chainId, api, accountIds]);
 
   useEffect(() => {
     if (!activeWallet) return;
@@ -245,7 +244,6 @@ export const Staking = () => {
     if (nextChainId === chainId) return;
 
     setChainId(nextChainId);
-    setStaking({});
     setSelectedNominators([]);
     setValidators({});
     localStorageService.saveToStorage(STAKING_NETWORK, nextChainId);
@@ -274,7 +272,7 @@ export const Staking = () => {
       account,
       stash: staking[account.accountId]?.stash,
       isSelected: selectedNominators.includes(account.accountId),
-      totalStake: isStakingLoading ? undefined : staking[account.accountId]?.total || '0',
+      totalStake: isStakingLoading ? undefined : (staking[account.accountId]?.total ?? '0'),
       totalReward: isRewardsLoading ? undefined : rewards[account.accountId],
       unlocking: staking[account.accountId]?.unlocking,
     });
@@ -317,7 +315,9 @@ export const Staking = () => {
   );
 
   const isMultipleAccountsSelected = selectedNominators.length > 1;
-  const totalStakes = Object.values(staking).map((stake) => stake?.total || '0');
+  const totalStakes = Object.values(staking)
+    .map((stake) => stake?.total)
+    .filter((total): total is string => nonNullable(total));
 
   const navigateToStake = (operation: StakeOperations, as?: AccountId[]) => {
     if (!activeChain || !activeWallet) return;
@@ -403,7 +403,6 @@ export const Staking = () => {
                   isStakingLoading={isStakingLoading}
                   onNavigate={navigateToStake}
                 />
-
                 <NominatorsList
                   api={api}
                   timelineApi={timelineApi}

@@ -27,6 +27,7 @@ import {
   migrateRevoteToVote,
   migrateWallets,
   removeDeprecatedProxiedAccounts,
+  renameBlockNumberToEntropyBlockNumber,
 } from '../migration';
 
 class DexieStorage extends Dexie {
@@ -143,6 +144,8 @@ class DexieStorage extends Dexie {
       })
       .upgrade((t) => t.table('balances').clear());
 
+    this.version(40).upgrade(renameBlockNumberToEntropyBlockNumber);
+
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');
     this.wallets = this.table('wallets');
@@ -162,7 +165,7 @@ const dexie = new DexieStorage();
 export const exportDb = async () => {
   const blob = await exportDB(dexie, {
     prettyJson: true,
-    skipTables: ['metadata', 'balances', 'proxies', 'basketTransactions'],
+    skipTables: ['metadata', 'balances', 'proxies'],
   });
 
   return { blob, fileName: 'spektr-database.json' };

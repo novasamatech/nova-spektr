@@ -1,25 +1,26 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN_ZERO } from '@polkadot/util';
+import { createStore } from 'effector';
 import { zipWith } from 'lodash';
 
-import { type ChainId } from '@/shared/core';
-import { nullable } from '@/shared/lib/utils';
+import { nullable, pickNestedValue, setNestedValue } from '@/shared/lib/utils';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { salaryPallet } from '@/shared/pallet/salary';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { createRemoteResource } from '@/shared/resource';
-import { type CollectivePalletsType } from '../_lib/types';
+import { createQueryResource, createSubscriptionResource } from '@/shared/query';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type ClaimStatus, type Salaries, type SalaryCycle } from './types';
 
-type StatusRequestParams = {
+export type SalaryCycleRequestParams = {
   api: ApiPromise;
   palletType: CollectivePalletsType;
-  chainId: ChainId;
 };
 
-export const statusResource = createRemoteResource<StatusRequestParams, SalaryCycle | null>({
-  async fn({ api, palletType }): Promise<SalaryCycle | null> {
+export const salaryCycleResource = createQueryResource<SalaryCycleRequestParams>({
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
+})
+  .request<SalaryCycle | null>(async ({ api, palletType }) => {
     const status = await salaryPallet.storage.status(palletType, api);
     if (nullable(status)) return null;
 
@@ -35,79 +36,106 @@ export const statusResource = createRemoteResource<StatusRequestParams, SalaryCy
       totalRegistrations: status.totalRegistrations,
       totalUnregisteredPaid: status.totalUnregisteredPaid,
     };
-  },
-});
+  })
+  .cache<CollectivesStruct<SalaryCycle | null>>({
+    store: createStore({}),
+    map(state, status, params) {
+      const { palletType, api } = params;
 
-type SalariesRequestParams = {
+      if (nullable(status)) return state;
+
+      return setNestedValue(state, palletType, api.genesisHash.toHex(), status);
+    },
+  })
+  .build();
+
+export type SalariesRequestParams = {
   api: ApiPromise;
   palletType: CollectivePalletsType;
-  chainId: ChainId;
 };
 
-export const salariesResource = createRemoteResource<SalariesRequestParams, Salaries>({
-  cache: {
-    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
-    ttl: Number.POSITIVE_INFINITY,
-  },
-  async fn({ api, palletType }): Promise<Salaries> {
-    const params = await collectiveCorePallet.storage.params(palletType, api);
+export const salariesResource = createQueryResource<SalariesRequestParams>({
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
+})
+  .request<Salaries>(async ({ api, palletType }) => {
+    const response = await collectiveCorePallet.storage.params(palletType, api);
 
     return {
-      active: params.activeSalary,
-      passive: params.passiveSalary,
+      active: response.activeSalary,
+      passive: response.passiveSalary,
     };
-  },
-});
+  })
+  .cache<CollectivesStruct<Salaries>>({
+    staleAfter: Number.POSITIVE_INFINITY,
+    store: createStore({}),
+    map(state, salaries, { palletType, api }) {
+      return setNestedValue(state, palletType, api.genesisHash.toHex(), salaries);
+    },
+  })
+  .build();
 
-type ClaimantRequestParams = {
+export type ClaimantRequestParams = {
   api: ApiPromise;
   palletType: CollectivePalletsType;
-  chainId: ChainId;
   accounts: AccountId[];
 };
 
-export const claimantStatusResource = createRemoteResource<ClaimantRequestParams, Record<AccountId, ClaimStatus>>({
-  async fn({ api, palletType, accounts }): Promise<Record<AccountId, ClaimStatus>> {
-    const claimants = await salaryPallet.storage.claimant(palletType, api, accounts);
-    const mapped = zipWith(claimants, accounts, (claim, account) => ({ account, claim }));
+export const claimantStatusResource = createSubscriptionResource<ClaimantRequestParams>({
+  key: ({ palletType, api, accounts }) => [palletType, api.genesisHash.toHex(), accounts],
+})
+  .subscribe<Record<AccountId, ClaimStatus>>(({ api, palletType, accounts }, callback) => {
+    return salaryPallet.storage.claimantWatch(palletType, api, accounts, claimants => {
+      const mapped = zipWith(claimants, accounts, (claim, account) => ({ account, claim }));
 
-    const res: Record<AccountId, ClaimStatus> = {};
+      const res: Record<AccountId, ClaimStatus> = {};
 
-    for (const { account, claim } of mapped) {
-      if (nullable(claim)) {
-        res[account] = {
-          type: 'none',
-          lastActive: 1,
-        };
-        continue;
+      for (const { account, claim } of mapped) {
+        if (nullable(claim)) {
+          res[account] = {
+            type: 'none',
+            lastActive: 1,
+          };
+          continue;
+        }
+
+        if (claim.status.type === 'Nothing') {
+          res[account] = {
+            type: 'nothing',
+            lastActive: claim.lastActive,
+          };
+          continue;
+        }
+
+        if (claim.status.type === 'Registered') {
+          res[account] = {
+            type: 'registered',
+            amount: claim.status.data,
+            lastActive: claim.lastActive,
+          };
+        }
+
+        if (claim.status.type === 'Attempted') {
+          res[account] = {
+            type: 'payout',
+            registered: claim.status.data.registered ?? BN_ZERO,
+            amount: claim.status.data.amount,
+            lastActive: claim.lastActive,
+          };
+        }
       }
 
-      if (claim.status.type === 'Nothing') {
-        res[account] = {
-          type: 'nothing',
-          lastActive: claim.lastActive,
-        };
-        continue;
-      }
-
-      if (claim.status.type === 'Registered') {
-        res[account] = {
-          type: 'registered',
-          amount: claim.status.data,
-          lastActive: claim.lastActive,
-        };
-      }
-
-      if (claim.status.type === 'Attempted') {
-        res[account] = {
-          type: 'payout',
-          registered: claim.status.data.registered ?? BN_ZERO,
-          amount: claim.status.data.amount,
-          lastActive: claim.lastActive,
-        };
-      }
-    }
-
-    return res;
-  },
-});
+      callback(res);
+    });
+  })
+  .cache<CollectivesStruct<Record<AccountId, ClaimStatus>>>({
+    store: createStore({}),
+    map(state, claimantStatus, { palletType, api }) {
+      const chainId = api.genesisHash.toHex();
+      const previousState = pickNestedValue(state, palletType, chainId) ?? {};
+      return setNestedValue(state, palletType, chainId, {
+        ...previousState,
+        ...claimantStatus,
+      });
+    },
+  })
+  .build();

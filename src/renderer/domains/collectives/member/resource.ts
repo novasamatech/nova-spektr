@@ -1,38 +1,41 @@
 import { type ApiPromise } from '@polkadot/api';
+import { createStore } from 'effector';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
-import { createSubscriptionResource } from '@/shared/resource';
-import { type CollectivePalletsType } from '../_lib/types';
+import { createSubscriptionResource } from '@/shared/query';
+import { mergeNested } from '../_lib/helpers';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type CoreMember, type Member } from './types';
 
-type RequestParams = {
+export type MembersSubscribeParams = {
   palletType: CollectivePalletsType;
   api: ApiPromise;
 };
 
-export const membersSubscription = createSubscriptionResource<RequestParams, Member[]>({
-  pool: ({ api, palletType }) => `${api.genesisHash.toHex()}:${palletType}`,
-  fn({ api, palletType }, callback) {
+export const membersSubscriptionResource = createSubscriptionResource<MembersSubscribeParams>({
+  key: ({ api, palletType }) => [palletType, api.genesisHash.toHex()],
+})
+  .subscribe<Member[]>(({ api, palletType }, callback) => {
     const fn = async () => {
       const collectiveMembers = await collectivePallet.storage.members(palletType, api);
       const coreMembers = await collectiveCorePallet.storage.member(palletType, api);
       const result: (Member | CoreMember)[] = [];
 
-      for (const collectiveMember of collectiveMembers) {
-        if (nullable(collectiveMember.member)) continue;
+      for (const { member, account } of collectiveMembers) {
+        if (nullable(member)) continue;
 
-        const coreMember = coreMembers.find(member => member.account === collectiveMember.account);
+        const coreMember = coreMembers.find(member => member.account === account);
 
         if (nonNullable(coreMember?.status)) {
           result.push({
             pallet: palletType,
             chainId: api.genesisHash.toHex(),
-            accountId: collectiveMember.account,
-            rank: collectiveMember.member.rank,
+            accountId: account,
+            rank: member.rank,
             isActive: coreMember.status.isActive,
             lastPromotion: coreMember.status.lastPromotion,
             lastProof: coreMember.status.lastProof,
@@ -41,16 +44,13 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
           result.push({
             pallet: palletType,
             chainId: api.genesisHash.toHex(),
-            accountId: collectiveMember.account,
-            rank: collectiveMember.member.rank,
+            accountId: account,
+            rank: member.rank,
           });
         }
       }
 
-      callback({
-        done: true,
-        value: result,
-      });
+      callback(result);
     };
 
     fn();
@@ -65,7 +65,11 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
         fn,
       ),
       polkadotjsHelpers.subscribeSystemEvents(
-        { api, section: `${palletType}Core`, methods: ['Imported', 'Swapped', 'Promoted', 'Demoted', 'ActiveChanged'] },
+        {
+          api,
+          section: `${palletType}Core`,
+          methods: ['Imported', 'Swapped', 'Promoted', 'Demoted', 'ActiveChanged'],
+        },
         fn,
       ),
     ]);
@@ -77,5 +81,16 @@ export const membersSubscription = createSubscriptionResource<RequestParams, Mem
         }
       });
     };
-  },
-});
+  })
+  .cache<CollectivesStruct<Member[]>>({
+    store: createStore({}),
+    map(store, members) {
+      return mergeNested(
+        store,
+        members,
+        m => m.accountId,
+        (a, b) => b.rank - a.rank,
+      );
+    },
+  })
+  .build();

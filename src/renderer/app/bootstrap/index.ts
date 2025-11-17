@@ -113,6 +113,7 @@ export const bootstrap = () => {
     import('@/features/fellowship-tasks').then(({ fellowshipTasksFeature }) => fellowshipTasksFeature),
     import('@/features/fellowship-voting').then(({ fellowshipVotingFeature }) => fellowshipVotingFeature),
     import('@/features/fellowship-voting-history').then(({ fellowshipVotingHistoryFeature }) => fellowshipVotingHistoryFeature),
+    import('@/features/fellowship-overview').then(({ fellowshipOverviewFeature }) => fellowshipOverviewFeature),
 
     import('@/features/basket-operations').then(({ basketOperationsFeature }) => basketOperationsFeature),
 
@@ -132,6 +133,9 @@ export const bootstrap = () => {
 
     import('@/features/import-db').then(({ importDBFeature }) => importDBFeature),
     import('@/features/hidden-wallets').then(({ hiddenWalletsFeature }) => hiddenWalletsFeature),
+
+    import('@/features/fellowship-promotion').then(({ fellowshipPromotionFeature }) => fellowshipPromotionFeature),
+    import('@/features/fellowship-retention').then(({ fellowshipRetentionFeature }) => fellowshipRetentionFeature),
     import('@/features/assethub-migration-modal').then(({ assethubMigrationModalFeature }) => assethubMigrationModalFeature),
     import('@/features/dapp-browser').then(({ dappBrowserFeature }) => dappBrowserFeature),
   ]);
