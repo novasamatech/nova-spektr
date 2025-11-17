@@ -2,15 +2,15 @@ import { BN } from '@polkadot/util';
 import { parse } from 'csv-parse/sync';
 import { z } from 'zod';
 
-import { toAccountId, validateAddress } from '@/shared/lib/utils';
+import { downloadFiles, toAccountId, validateAddress } from '@/shared/lib/utils';
 
 import {
+  type ErrorRecord,
+  FileErrors,
+  RowErrors,
   Step,
   VestingScheduleError,
-  type VestingScheduleErrorRecord,
-  VestingScheduleFileErrors,
   type VestingScheduleRaw,
-  VestingScheduleRowErrors,
   type VestingScheduleSchemaOptions,
 } from './types';
 
@@ -24,6 +24,7 @@ export const vestedTransferUtils = {
   parseCSV,
   createVestingScheduleSchema,
   validateCSV,
+  downloadCSVWithErrors,
 };
 
 function isNoneStep(step: Step): boolean {
@@ -67,31 +68,29 @@ function createVestingScheduleSchema(options: VestingScheduleSchemaOptions) {
   return z.object({
     target: z
       .string()
-      .refine((value) => validateAddress(value, chain), VestingScheduleRowErrors.INVALID_SS58_ADDRESS)
+      .refine((value) => validateAddress(value, chain), RowErrors.INVALID_SS58_ADDRESS)
       .transform(toAccountId)
-      .refine(
-        (accountId) => new BN(existingVestingSchedules[accountId].length).lt(maxVestingSchedules),
-        VestingScheduleRowErrors.MAX_VESTING_SCHEDULES_REACHED,
-      ),
+      .refine((accountId) => {
+        const existingSchedulesCount = existingVestingSchedules[accountId]?.length ?? 0;
+        return new BN(existingSchedulesCount).lt(maxVestingSchedules);
+      }, RowErrors.MAX_VESTING_SCHEDULES_REACHED),
 
-    locked: positiveBn(VestingScheduleRowErrors.LOCKED_NOT_POSITIVE_INT).refine(
+    locked: positiveBn(RowErrors.LOCKED_NOT_POSITIVE_INT).refine(
       (bn) => bn.gt(minVestedTransfer),
-      VestingScheduleRowErrors.LOCKED_TOO_LOW,
+      RowErrors.LOCKED_TOO_LOW,
     ),
 
-    startingBlock: positiveBn(VestingScheduleRowErrors.START_BLOCK_NOT_POSITIVE_INT).refine(
+    startingBlock: positiveBn(RowErrors.START_BLOCK_NOT_POSITIVE_INT).refine(
       (bn) => bn.gt(minStartingBlock),
-      VestingScheduleRowErrors.START_BLOCK_IN_PAST,
+      RowErrors.START_BLOCK_IN_PAST,
     ),
 
-    perBlock: positiveBn(VestingScheduleRowErrors.PER_BLOCK_NOT_POSITIVE_INT),
+    perBlock: positiveBn(RowErrors.PER_BLOCK_NOT_POSITIVE_INT),
   });
 }
 
-function isVestingScheduleRowError(value: unknown): value is VestingScheduleRowErrors {
-  return (
-    typeof value === 'string' && Object.values(VestingScheduleRowErrors).includes(value as VestingScheduleRowErrors)
-  );
+function isVestingScheduleRowError(value: unknown): value is RowErrors {
+  return typeof value === 'string' && Object.values(RowErrors).includes(value as RowErrors);
 }
 
 async function parseCSV(file: File) {
@@ -100,6 +99,7 @@ async function parseCSV(file: File) {
   try {
     return parse<VestingScheduleRaw>(fileContent, {
       columns: ['target', 'locked', 'startingBlock', 'perBlock'],
+      relax_column_count_more: true,
       skip_empty_lines: true,
       comment: '#',
       trim: true,
@@ -107,46 +107,63 @@ async function parseCSV(file: File) {
       to: 1001,
     });
   } catch {
-    throw new VestingScheduleError(VestingScheduleFileErrors.INVALID_CSV_STRUCTURE);
+    throw new VestingScheduleError(FileErrors.INVALID_CSV_STRUCTURE);
   }
 }
 
 function validateCSV<T>(records: VestingScheduleRaw[], schema: z.ZodSchema<T>) {
   const validated: T[] = [];
-  const errorSets: Partial<Record<VestingScheduleRowErrors, Set<number>>> = {};
+  const errorMap: ErrorRecord = {};
 
-  const addError = (key: VestingScheduleRowErrors, row: number) => {
-    if (!errorSets[key]) {
-      errorSets[key] = new Set();
+  const addError = (rowIndex: number, error: RowErrors) => {
+    if (!errorMap[rowIndex]) {
+      errorMap[rowIndex] = [];
     }
-    errorSets[key].add(row);
+    errorMap[rowIndex].push(error);
   };
 
   for (let i = 0; i < records.length; i++) {
     const record = records[i];
-    const rowNumber = i + 1; // 1-based
+    const rowIndex = i + 1;
 
     try {
       validated.push(schema.parse(record));
     } catch (error) {
       if (error instanceof z.ZodError) {
         for (const issue of error.issues) {
-          const key = isVestingScheduleRowError(issue.message) ? issue.message : VestingScheduleRowErrors.UNKNOWN_ERROR;
-          addError(key, rowNumber);
+          const rowError = isVestingScheduleRowError(issue.message) ? issue.message : RowErrors.UNKNOWN_ERROR;
+          addError(rowIndex, rowError);
         }
       } else {
-        addError(VestingScheduleRowErrors.UNKNOWN_ERROR, rowNumber);
+        addError(rowIndex, RowErrors.UNKNOWN_ERROR);
       }
     }
   }
 
-  const errorDetails = Object.fromEntries(
-    Object.entries(errorSets).map(([key, value]) => [key, Array.from(value).sort((a, b) => a - b)]),
-  ) as VestingScheduleErrorRecord;
-
-  if (Object.keys(errorDetails).length > 0) {
-    throw new VestingScheduleError(VestingScheduleFileErrors.INVALID_CSV_DATA, errorDetails);
+  if (Object.keys(errorMap).length > 0) {
+    throw new VestingScheduleError(FileErrors.INVALID_CSV_DATA, errorMap);
   }
 
   return validated;
+}
+
+function downloadCSVWithErrors(vestingSchedule: VestingScheduleRaw[], errors: ErrorRecord) {
+  const columns = ['target', 'locked', 'startingBlock', 'perBlock', 'errors'];
+  const header = columns.join(',');
+
+  const dataRows = vestingSchedule.map((row, index) => {
+    const rowIndex = index + 1;
+    const errorMessages = errors[rowIndex] ?? [];
+
+    return [row.target, row.locked, row.startingBlock, row.perBlock, errorMessages.join(' | ')].join(',');
+  });
+
+  const csvContent = [header, ...dataRows].join('\n');
+
+  downloadFiles([
+    {
+      blob: new Blob([csvContent], { type: 'text/csv' }),
+      fileName: 'vested-transfer-with-errors.csv',
+    },
+  ]);
 }

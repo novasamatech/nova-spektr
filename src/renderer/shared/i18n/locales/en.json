@@ -2320,6 +2320,7 @@
         "invalidDataTitle": "Found {errorCount} errors",
         "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
         "parseFailedTitle": "Parsing failed",
+        "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
         "rowErrors": {
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "LOCKED_NOT_POSITIVE_INT": "Amount must be a positive integer",
@@ -2329,8 +2330,7 @@
           "START_BLOCK_IN_PAST": "Start block cannot be in the past",
           "START_BLOCK_NOT_POSITIVE_INT": "Start block must be a positive integer",
           "UNKNOWN_ERROR": "Unknown error"
-        },
-        "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again."
+        }
       },
       "form": {
         "chainRequired": "Chain is required",
@@ -2358,9 +2358,15 @@
     "parsedFile": {
       "buttons": {
         "openPreview": "Preview",
-        "parsedFile":"Parsed file"
+        "parsedFile": "Parsed file"
       },
       "table": {
+        "buttons": {
+          "download": "Download"
+        },
+        "errors": {
+          "downloadDescription": "Found {errors} errors. You can download parsed file to review them."
+        },
         "headers": {
           "locked": "Locked",
           "perBlock": "Per block",

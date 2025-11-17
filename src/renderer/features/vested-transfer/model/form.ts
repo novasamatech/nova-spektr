@@ -28,7 +28,7 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { proxiesUtils } from '@/features/proxies';
-import { Step, VestingScheduleError, VestingScheduleFileErrors, type VestingScheduleRaw } from '../types';
+import { Step, type VestingScheduleError, type VestingScheduleRaw } from '../types';
 import { vestedTransferUtils } from '../utils';
 
 import { type VestedTransferConfirm, confirmModel } from './confirm';
@@ -75,7 +75,7 @@ const $vestingSchedule = form.fields.vestingSchedule.$value;
 const $amount = $vestingSchedule.map((vestingSchedule) =>
   vestingSchedule.reduce((amount, vestingRecord) => amount.add(vestingRecord.locked), new BN(0)),
 );
-const $csvErrors = createStore<VestingScheduleError | null>(null).reset(flow.open);
+const $fileErrors = createStore<VestingScheduleError | null>(null).reset(flow.open);
 const fileUploaded = createEvent<File>();
 
 const $chain = form.fields.chain.$value;
@@ -220,23 +220,14 @@ sample({
   target: balanceSubModel.fetchAccounts,
 });
 
-const $parsedCSV = createStore<VestingScheduleRaw[] | null>(null).reset(flow.open);
+const $parsedFile = createStore<VestingScheduleRaw[] | null>(null).reset(flow.open);
 
-const parseFileFx = createEffect<File, VestingScheduleRaw[], VestingScheduleError>(async (file) => {
-  try {
-    const parsedRecords = await vestedTransferUtils.parseCSV(file);
-    return parsedRecords;
-  } catch (error) {
-    if (error instanceof VestingScheduleError) {
-      throw error;
-    } else {
-      throw new VestingScheduleError(VestingScheduleFileErrors.INVALID_CSV_STRUCTURE);
-    }
-  }
+const parseFileFx = createEffect<File, VestingScheduleRaw[], VestingScheduleError>((file) => {
+  return vestedTransferUtils.parseCSV(file);
 });
 
 type ValidateFileParams = {
-  parsedCSV: VestingScheduleRaw[];
+  parsedFile: VestingScheduleRaw[];
   chain: Chain;
   minStartingBlock: BN;
   minVestedTransfer: BN;
@@ -245,7 +236,7 @@ type ValidateFileParams = {
 };
 
 const rootValidateFileFx = createEffect<ValidateFileParams, VestingSchedule[], VestingScheduleError>(
-  ({ parsedCSV, chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules }) => {
+  ({ parsedFile, chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules }) => {
     const schema = vestedTransferUtils.createVestingScheduleSchema({
       chain,
       minStartingBlock,
@@ -254,7 +245,7 @@ const rootValidateFileFx = createEffect<ValidateFileParams, VestingSchedule[], V
       existingVestingSchedules,
     });
 
-    const validatedData = vestedTransferUtils.validateCSV(parsedCSV, schema);
+    const validatedData = vestedTransferUtils.validateCSV(parsedFile, schema);
 
     return validatedData;
   },
@@ -269,10 +260,10 @@ const validateFileFx = attach({
     existingVestingSchedules: $existingVestingSchedules,
   },
   mapParams: (
-    parsedCSV: VestingScheduleRaw[],
+    parsedFile: VestingScheduleRaw[],
     { chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
   ) => {
-    assert(parsedCSV);
+    assert(parsedFile);
     assert(chain);
     assert(minStartingBlock);
     assert(minVestedTransfer);
@@ -280,7 +271,7 @@ const validateFileFx = attach({
     assert(existingVestingSchedules);
 
     return {
-      parsedCSV,
+      parsedFile,
       chain,
       minStartingBlock,
       minVestedTransfer,
@@ -298,12 +289,12 @@ sample({
 
 sample({
   clock: parseFileFx.doneData,
-  target: [$parsedCSV, validateFileFx],
+  target: [$parsedFile, validateFileFx],
 });
 
 sample({
   clock: parseFileFx.failData,
-  target: $csvErrors,
+  target: $fileErrors,
 });
 
 sample({
@@ -313,7 +304,7 @@ sample({
 
 sample({
   clock: validateFileFx.failData,
-  target: $csvErrors,
+  target: $fileErrors,
 });
 
 // steps management
@@ -488,8 +479,8 @@ export const formModel = {
   $asset,
   $amount,
   $vestingSchedule,
-  $parsedCSV,
-  $csvErrors,
+  $parsedFile,
+  $fileErrors,
   $allChains: $allChains,
   $availableChains: $availableChains,
   $signatories: $signatories,
