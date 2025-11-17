@@ -17,3 +17,4 @@ export * from './search';
 export * from './step';
 export * from './createQueuedRequest';
 export * from './createAsyncTaskPool';
+export * from './download-multiple-files';
