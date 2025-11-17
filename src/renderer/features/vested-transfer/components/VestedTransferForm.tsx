@@ -13,7 +13,7 @@ import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { VestingSchedulePreviewModal } from '@/entities/vesting';
+import { VestingSchedulePreview, VestingSchedulePreviewWithErrors } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 import { VestingScheduleFileErrors } from '../types';
@@ -132,12 +132,15 @@ const UploadCSV = () => {
   const { t } = useI18n();
 
   const csvErrors = useUnit(formModel.$csvErrors);
-  const showErrors = nonNullable(csvErrors);
+  const hasErrors = nonNullable(csvErrors);
 
   const chain = useUnit(formModel.$chain);
   const asset = useUnit(formModel.$asset);
+  const parsedCSV = useUnit(formModel.$parsedCSV);
   const vestingSchedule = useUnit(formModel.$vestingSchedule);
-  const showVestingSchedule = chain && asset && vestingSchedule?.length > 0;
+
+  const showPreview = !hasErrors && chain && asset && vestingSchedule && vestingSchedule.length > 0;
+  const showPreviewWithErrors = hasErrors && parsedCSV && parsedCSV.length > 0;
 
   return (
     <label className="flex w-full flex-col gap-y-2">
@@ -147,8 +150,8 @@ const UploadCSV = () => {
           <InfoLink url={CSV_TEMPLATE_LINK} className="ml-2" iconName="import" iconPosition="right">
             {t('vestedTransfer.form.fields.csvFile.exampleButton')}
           </InfoLink>
-          {showVestingSchedule ? (
-            <VestingSchedulePreviewModal
+          {showPreview && (
+            <VestingSchedulePreview
               chain={chain}
               asset={asset}
               vestingSchedule={vestingSchedule}
@@ -163,23 +166,28 @@ const UploadCSV = () => {
                 </Button>
               }
             />
-          ) : (
-            <Button
-              className="p-0"
-              size="sm"
-              variant="text"
-              suffixElement={<Icon size={16} name="eye" className="text-icon-primary" />}
-              disabled
-            >
-              {t('vestedTransfer.parsedFile.buttons.openPreview')}
-            </Button>
+          )}
+          {showPreviewWithErrors && (
+            <VestingSchedulePreviewWithErrors
+              vestingSchedule={parsedCSV}
+              trigger={
+                <Button
+                  className="p-0"
+                  size="sm"
+                  variant="text"
+                  suffixElement={<Icon size={16} name="eye" className="text-icon-primary" />}
+                >
+                  {t('vestedTransfer.parsedFile.buttons.openPreview')}
+                </Button>
+              }
+            />
           )}
         </div>
       </div>
       <InputFile
         accept=".csv"
         placeholder={t('vestedTransfer.form.fields.csvFile.placeholder')}
-        invalid={showErrors}
+        invalid={hasErrors}
         onChange={(file) => formModel.fileUploaded(file)}
       />
     </label>
@@ -221,6 +229,17 @@ const CSVErrors = () => {
             <div>{t(`vestedTransfer.errors.csv.rowErrors.${error}`)}</div>
           </Alert.Item>
         ))}
+        <div className="flex flex-col">
+          {t('vestedTransfer.errors.csv.parsedFileDownloadDescription')}
+          <Button
+            className="self-start p-0"
+            size="sm"
+            variant="text"
+            suffixElement={<Icon size={16} name="import" className="text-icon-primary" />}
+          >
+            {t('vestedTransfer.parsedFile.buttons.parsedFile')}
+          </Button>
+        </div>
       </Alert>
     );
   }

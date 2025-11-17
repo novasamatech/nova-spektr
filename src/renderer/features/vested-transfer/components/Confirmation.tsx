@@ -9,7 +9,7 @@ import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { VestingSchedulePreviewModal } from '@/entities/vesting';
+import { VestingSchedulePreview } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm';
 
@@ -50,7 +50,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
       <Box padding={[4, 5]}>
         <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
           <DetailRow label={t('vestedTransfer.confirmation.labels.parsedFile')}>
-            <VestingSchedulePreviewModal
+            <VestingSchedulePreview
               chain={chain}
               asset={asset}
               vestingSchedule={vestingSchedule}

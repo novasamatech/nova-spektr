@@ -1,64 +1,65 @@
 import { useMemo } from 'react';
 
-import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
-import { type VestingSchedule } from '../lib/types';
+import { type VestingScheduleRaw } from '../lib/types';
 
 type Props = {
-  chain: Chain;
-  asset: Asset;
-  vestingSchedule: VestingSchedule[];
+  vestingSchedule: VestingScheduleRaw[];
 
   trigger: React.ReactNode;
 };
 
-export const VestingSchedulePreviewModal = ({ chain, asset, vestingSchedule, trigger }: Props) => {
+export const VestingSchedulePreviewWithErrors = ({ vestingSchedule, trigger }: Props) => {
   const { t } = useI18n();
 
   const rowCount = vestingSchedule.length;
 
-  const columns: Column<VestingSchedule>[] = useMemo(
+  const columns: Column<VestingScheduleRaw>[] = useMemo(
     () => [
       {
         key: 'target',
         title: t('vestedTransfer.parsedFile.table.headers.recipient'),
-        width: '450px',
-        render: (target) => <Account accountId={target as AccountId} chain={chain} variant="full" />,
+        width: '270px',
+        render: (target) => <span className="shrink-0 text-body text-text-primary">{target}</span>,
       },
       {
         key: 'startingBlock',
         title: t('vestedTransfer.parsedFile.table.headers.startBlock'),
-        width: '120px',
+        width: '80px',
         render: (startingBlock) => (
-          <span className="shrink-0 text-body text-text-primary">{startingBlock.toString()}</span>
+          <div className="flex justify-end">
+            <span className="shrink-0 text-body text-text-primary">{startingBlock}</span>
+          </div>
         ),
       },
       {
         key: 'perBlock',
         title: t('vestedTransfer.parsedFile.table.headers.perBlock'),
         width: '120px',
-        render: (perBlock) => <span className="shrink-0 text-body text-text-primary">{perBlock.toString()}</span>,
+        render: (perBlock) => (
+          <div className="flex justify-end">
+            <span className="shrink-0 text-body text-text-primary">{perBlock}</span>
+          </div>
+        ),
       },
       {
         key: 'locked',
         title: t('vestedTransfer.parsedFile.table.headers.locked'),
-        width: '72px',
+        width: '120px',
         render: (locked) => (
           <div className="flex justify-end">
-            <AssetBalance value={locked} asset={asset} showSymbol />
+            <span className="shrink-0 text-body text-text-primary">{locked}</span>
           </div>
         ),
       },
     ],
-    [t, chain],
+    [t],
   );
 
   return (
-    <Modal size="lg" height="fit">
+    <Modal size="xl" height="fit">
       <Modal.Trigger>{trigger}</Modal.Trigger>
       <Modal.Title close>
         <div className="flex gap-x-2">
