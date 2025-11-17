@@ -4,19 +4,20 @@ import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText } from '@/shared/ui';
 import { Modal, ScrollArea } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
-import { type VestingScheduleRaw } from '../lib/types';
+import { type ErrorRecord, type VestingScheduleRaw } from '../types';
 
 type Props = {
   vestingSchedule: VestingScheduleRaw[];
+  errors: ErrorRecord;
   trigger: React.ReactNode;
   onDownloadClick: () => void;
 };
 
-export const VestingSchedulePreviewWithErrors = ({ vestingSchedule, trigger, onDownloadClick }: Props) => {
+export const VestingSchedulePreviewWithErrors = ({ vestingSchedule, errors, trigger, onDownloadClick }: Props) => {
   const { t } = useI18n();
 
   const rowCount = vestingSchedule.length;
-  const errorCount = '';
+  const errorCount = Object.values(errors).reduce((count, error) => count + error.length, 0);
 
   const columns: Column<VestingScheduleRaw>[] = useMemo(
     () => [
