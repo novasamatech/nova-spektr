@@ -28,18 +28,18 @@ const { $api, $chain, $wallet, $wallets, $account } = reshape({
 
 const $coreTx = combine(
   {
-    input: fellowshipProfileFeature.input,
+    chain: $chain,
     account: $account,
     isActive: $isActive,
   },
-  ({ input, account, isActive }) => {
-    if (nullable(input) || nullable(account)) {
+  ({ chain, account, isActive }) => {
+    if (nullable(chain) || nullable(account)) {
       return null;
     }
 
     return memberService.createSetActiveTransaction({
       pallet: 'fellowship',
-      chain: input.chain,
+      chain,
       account,
       isActive,
     });
@@ -141,7 +141,6 @@ sample({
 export const setActive = {
   flow,
   $fee,
-  $input: fellowshipProfileFeature.input,
   $wallet,
   $account,
   $wrappedTx,

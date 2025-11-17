@@ -5,6 +5,7 @@ export type { CollectivePalletsType } from './_lib/types';
 
 export { referendum } from './referendum/store';
 export { referendumService } from './referendum/service';
+export { useReferendums } from './referendum/hooks';
 export type {
   ApprovedReferendum,
   OngoingReferendum,
@@ -22,14 +23,23 @@ export type {
 
 export { referendumMeta } from './referendumMeta/store';
 export { referendumMetaService } from './referendumMeta/service';
+export { useReferendumMeta } from './referendumMeta/hooks';
 export type { ReferendumMeta } from './referendumMeta/types';
 
 export { member } from './member/store';
 export { memberService } from './member/service';
+export { useMembers, useCoreMembers, useMember } from './member/hooks';
 export type { Member, CoreMember } from './member/types';
 
 export { evidence } from './evidence/store';
 export { evidenceService } from './evidence/service';
+export {
+  useEvidences,
+  useEvidencesContent,
+  useEvidencePeriod,
+  useEvidenceSummary,
+  useEvidenceToReferendumRelations,
+} from './evidence/hooks';
 export type {
   Evidence,
   EvidenceContent,
@@ -40,15 +50,20 @@ export type {
 } from './evidence/types';
 
 export { feed } from './feed/store';
-export type { FeedRecord } from './feed/types';
+export { useFeed } from './feed/hooks';
+export type { FeedRecord, FeedEventReferendum } from './feed/types';
 
-export { rfcDetails } from './rfc/store';
+export { rfc } from './rfc/store';
+export { useRfcSummary } from './rfc/hooks';
+export type { RfcDetails } from './rfc/types';
 
 export { salary } from './salary/store';
 export { salaryService } from './salary/service';
+export { useSalaries, useSalaryCycleResource, useSalaryClaimStatusResource } from './salary/hooks';
 
 export { track } from './tracks/store';
 export { trackService } from './tracks/service';
+export { useTracks, useMaxRank } from './tracks/hooks';
 export type {
   LinearDecreasingCurve,
   ReciprocalCurve,
@@ -62,4 +77,8 @@ export { votingService } from './voting/service';
 export type { VotingTransaction } from './voting/types';
 
 export { voting } from './votingHistory/store';
-export type { Vote } from './votingHistory/types';
+export { votingHistoryService } from './votingHistory/service';
+export { useVotes, useAllVotes } from './votingHistory/hooks';
+export type { Vote, VotingRating } from './votingHistory/types';
+
+export { useCodex } from './codex/hooks';
