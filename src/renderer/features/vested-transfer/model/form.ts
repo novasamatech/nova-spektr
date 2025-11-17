@@ -28,7 +28,7 @@ import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 import { proxiesUtils } from '@/features/proxies';
-import { Step, VestingScheduleError, VestingScheduleFileErrors } from '../types';
+import { Step, VestingScheduleError, VestingScheduleFileErrors, type VestingScheduleRaw } from '../types';
 import { vestedTransferUtils } from '../utils';
 
 import { type VestedTransferConfirm, confirmModel } from './confirm';
@@ -220,8 +220,23 @@ sample({
   target: balanceSubModel.fetchAccounts,
 });
 
-type ParseFileContentParams = {
-  file: File;
+const $parsedCSV = createStore<VestingScheduleRaw[] | null>(null).reset(flow.open);
+
+const parseFileFx = createEffect<File, VestingScheduleRaw[], VestingScheduleError>(async (file) => {
+  try {
+    const parsedRecords = await vestedTransferUtils.parseCSV(file);
+    return parsedRecords;
+  } catch (error) {
+    if (error instanceof VestingScheduleError) {
+      throw error;
+    } else {
+      throw new VestingScheduleError(VestingScheduleFileErrors.INVALID_CSV_STRUCTURE);
+    }
+  }
+});
+
+type ValidateFileParams = {
+  parsedCSV: VestingScheduleRaw[];
   chain: Chain;
   minStartingBlock: BN;
   minVestedTransfer: BN;
@@ -229,31 +244,23 @@ type ParseFileContentParams = {
   existingVestingSchedules: ExistingVestingScheduleMap;
 };
 
-const rootParseFileContentFx = createEffect<ParseFileContentParams, VestingSchedule[], VestingScheduleError>(
-  async ({ file, chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules }) => {
-    try {
-      const parsedRecords = await vestedTransferUtils.parseCSV(file);
-      const schema = vestedTransferUtils.createVestingScheduleSchema({
-        chain,
-        minStartingBlock,
-        minVestedTransfer,
-        maxVestingSchedules,
-        existingVestingSchedules,
-      });
-      const validatedData = vestedTransferUtils.validateCSV(parsedRecords, schema);
+const rootValidateFileFx = createEffect<ValidateFileParams, VestingSchedule[], VestingScheduleError>(
+  ({ parsedCSV, chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules }) => {
+    const schema = vestedTransferUtils.createVestingScheduleSchema({
+      chain,
+      minStartingBlock,
+      minVestedTransfer,
+      maxVestingSchedules,
+      existingVestingSchedules,
+    });
 
-      return validatedData;
-    } catch (error) {
-      if (error instanceof VestingScheduleError) {
-        throw error;
-      } else {
-        throw new VestingScheduleError(VestingScheduleFileErrors.INVALID_CSV_STRUCTURE);
-      }
-    }
+    const validatedData = vestedTransferUtils.validateCSV(parsedCSV, schema);
+
+    return validatedData;
   },
 );
 
-const parseFileContentFx = attach({
+const validateFileFx = attach({
   source: {
     chain: $chain,
     minStartingBlock: $minStartingBlock,
@@ -262,10 +269,10 @@ const parseFileContentFx = attach({
     existingVestingSchedules: $existingVestingSchedules,
   },
   mapParams: (
-    file: File,
+    parsedCSV: VestingScheduleRaw[],
     { chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules },
   ) => {
-    assert(file);
+    assert(parsedCSV);
     assert(chain);
     assert(minStartingBlock);
     assert(minVestedTransfer);
@@ -273,7 +280,7 @@ const parseFileContentFx = attach({
     assert(existingVestingSchedules);
 
     return {
-      file,
+      parsedCSV,
       chain,
       minStartingBlock,
       minVestedTransfer,
@@ -281,22 +288,31 @@ const parseFileContentFx = attach({
       existingVestingSchedules,
     };
   },
-  effect: rootParseFileContentFx,
+  effect: rootValidateFileFx,
 });
 
 sample({
   clock: fileUploaded,
-  target: parseFileContentFx,
+  target: parseFileFx,
 });
 
 sample({
-  clock: parseFileContentFx.doneData,
+  clock: parseFileFx.doneData,
+  target: [$parsedCSV, validateFileFx],
+});
+
+sample({
+  clock: parseFileFx.failData,
+  target: $csvErrors,
+});
+
+sample({
+  clock: validateFileFx.doneData,
   target: form.fields.vestingSchedule.change,
 });
 
 sample({
-  clock: parseFileContentFx.failData,
-  fn: (errors) => errors,
+  clock: validateFileFx.failData,
   target: $csvErrors,
 });
 
@@ -472,6 +488,7 @@ export const formModel = {
   $asset,
   $amount,
   $vestingSchedule,
+  $parsedCSV,
   $csvErrors,
   $allChains: $allChains,
   $availableChains: $availableChains,
