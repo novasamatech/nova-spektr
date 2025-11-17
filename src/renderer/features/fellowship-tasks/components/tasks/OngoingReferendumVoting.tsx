@@ -1,15 +1,14 @@
-import { useStoreMap, useUnit } from 'effector-react';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 
 import { type Transaction } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService } from '@/domains/collectives';
-import { ReferendumDetailsModal } from '@/features/fellowship-referendum-details';
-import { referendums } from '../../model/referendums';
-import { rfcModel } from '../../model/rfc';
+import { useMetadata } from '../../hooks/useMetadata';
+import { useRfcProposalSummary } from '../../hooks/useRfcProposalSummary';
 import { tasksService } from '../../service';
 import { ReferendumTaskMarkdown } from '../ReferendumTaskMarkdown';
 import { TaskBadge } from '../TaskBadge';
@@ -30,6 +29,11 @@ export const LooseDateThresholds: DateThresholds = {
   warning: 8,
 };
 
+export const ongoingReferendumVotingSlot = createSlot<{
+  referendumId: ReferendumId;
+  children: React.ReactNode;
+}>();
+
 export const referendumVotingTaskActionSlot = createSlot<{
   referendum: OngoingReferendum;
   transaction: Transaction | null;
@@ -45,25 +49,11 @@ type Props = {
 export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props) => {
   const { t } = useI18n();
 
-  const meta = useStoreMap({
-    store: referendums.$metadata,
-    keys: [referendum.id],
-    fn: (meta, [id]) => meta[id] ?? null,
-  });
-
-  const rfc = useStoreMap({
-    store: rfcModel.$rfcSummary,
-    keys: [referendum.proposal],
-    fn: (summary, [proposal]) =>
-      summary && proposal && referendumService.isRfcProposal(proposal) ? summary[proposal.pullRequest] : null,
-  });
-
-  const isRFCPending = useUnit(rfcModel.$isPending);
-  const isMetaPending = useUnit(referendums.$pendingReferendumMeta);
+  const { data: meta, pending: pendingMetadata } = useMetadata(referendum);
+  const { data: rfc, pending: pendingSummary } = useRfcProposalSummary(referendum);
 
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
-
-  const isPending = referendum && (isRFCProposal ? isRFCPending : isMetaPending);
+  const isPending = referendum && (isRFCProposal ? pendingSummary : pendingMetadata);
 
   const content = useMemo(() => {
     if (isPending) return;
@@ -89,23 +79,29 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
 
   return (
     <Box direction="row" gap={2}>
-      <ReferendumDetailsModal referendum={referendum} title={title}>
-        <button className="flex w-full min-w-0 cursor-pointer appearance-none gap-2 p-4">
-          <Box alignSelf="flex-start" shrink={0}>
-            <TaskBadge proposal={referendum.proposal} />
-          </Box>
-          <Box fillContainer gap={3} grow={1}>
-            <Box direction="row" gap={3} grow={1}>
-              <SmallTitleText className="truncate">{title}</SmallTitleText>
-              <TaskLabels tags={tags} />
-            </Box>
-            <Box width="90%">
-              {isPending && <Skeleton height="2.5lh" width="95%" />}
-              <FootnoteText as="div">{content}</FootnoteText>
-            </Box>
-          </Box>
-        </button>
-      </ReferendumDetailsModal>
+      <Slot
+        id={ongoingReferendumVotingSlot}
+        props={{
+          referendumId: referendum.id,
+          children: (
+            <div className="flex w-full min-w-0 cursor-pointer appearance-none gap-2 p-4">
+              <Box alignSelf="flex-start" shrink={0}>
+                <TaskBadge proposal={referendum.proposal} />
+              </Box>
+              <Box fillContainer gap={3} grow={1}>
+                <Box direction="row" gap={3} grow={1}>
+                  <SmallTitleText className="truncate">{title}</SmallTitleText>
+                  <TaskLabels tags={tags} />
+                </Box>
+                <Box width="90%">
+                  {isPending && <Skeleton height="2.5lh" width="95%" />}
+                  <FootnoteText as="div">{content}</FootnoteText>
+                </Box>
+              </Box>
+            </div>
+          ),
+        }}
+      />
       <Box height="auto" horizontalAlign="end" gap={3} padding={4} shrink={0}>
         <Slot
           id={referendumVotingTaskActionSlot}

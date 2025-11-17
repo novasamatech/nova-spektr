@@ -3,18 +3,16 @@ import { createGate } from 'effector-react';
 import { reshape, spread } from 'patronum';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { createTxStore } from '@/shared/transactions';
 import { salaryService } from '@/domains/collectives';
 import { type BasketTransactionDraft, basketOperations } from '@/aggregates/basket-operations';
 import { type SigningPayload, signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
 
+import { $beneficiary } from './beneficiary';
 import { fellowshipSalaryFeature } from './feature';
 
-const gate = createGate<{ beneficiary: AccountId | null }>({ defaultState: { beneficiary: null } });
-
-const $beneficiary = gate.state.map(state => state.beneficiary);
+const gate = createGate({ defaultState: null });
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipSalaryFeature.input,

@@ -23,6 +23,7 @@ import ExportIcon from '@/shared/assets/images/functionals/export.svg?jsx';
 import EyeSlashedIcon from '@/shared/assets/images/functionals/eye-slashed.svg?jsx';
 import EyeIcon from '@/shared/assets/images/functionals/eye.svg?jsx';
 import ForgetIcon from '@/shared/assets/images/functionals/forget.svg?jsx';
+import HistoryIcon from '@/shared/assets/images/functionals/history.svg?jsx';
 import ImportIcon from '@/shared/assets/images/functionals/import.svg?jsx';
 import LinkIcon from '@/shared/assets/images/functionals/link.svg?jsx';
 import LockIcon from '@/shared/assets/images/functionals/lock.svg?jsx';
@@ -42,7 +43,7 @@ import ReferendumIcon from '@/shared/assets/images/functionals/referendum.svg?js
 import RefreshIcon from '@/shared/assets/images/functionals/refresh.svg?jsx';
 import RenameUnderlineIcon from '@/shared/assets/images/functionals/rename-underlined.svg?jsx';
 import RenameIcon from '@/shared/assets/images/functionals/rename.svg?jsx';
-import RequestSalaryIcon from '@/shared/assets/images/functionals/request salary.svg?jsx';
+import RequestSalaryIcon from '@/shared/assets/images/functionals/request-salary.svg?jsx';
 import RetainIcon from '@/shared/assets/images/functionals/retain.svg?jsx';
 import RFCVotingIcon from '@/shared/assets/images/functionals/rfc-voting.svg?jsx';
 import SalaryIcon from '@/shared/assets/images/functionals/salary.svg?jsx';
@@ -116,7 +117,7 @@ const FunctionalImages = {
   evidence: { svg: EvidenceIcon },
   salary: { svg: SalaryIcon },
   withdraw: { svg: WithdrawIcon },
-  requestSalary: { svg: RequestSalaryIcon },
+  request: { svg: RequestSalaryIcon },
   promoteVoting: { svg: PromoteVotingIcon },
   positive: { svg: PositiveIcon },
   negative: { svg: NegativeIcon },
@@ -124,6 +125,7 @@ const FunctionalImages = {
   createPureProxy: { svg: CreatePureProxyIcon },
   delegate: { svg: DelegateIcon },
   changeSignatories: { svg: ChangeSignatoriesIcon },
+  history: { svg: HistoryIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;

@@ -1,6 +1,6 @@
 import { type BN } from '@polkadot/util';
 
-import { type ChainId, type HexString } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { type ReferendumId, type TrackId } from '@/shared/pallet/referenda';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType } from '../_lib/types';
@@ -123,13 +123,3 @@ export type CompletedReferendum =
   | KilledReferendum;
 
 export type Referendum = OngoingReferendum | CompletedReferendum;
-
-export type ReferendumWithEvidence = {
-  index: ReferendumId;
-  evidence: {
-    hash: HexString;
-  }[];
-  completed: boolean;
-  pallet: CollectivePalletsType;
-  chainId: ChainId;
-};
