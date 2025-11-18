@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useState } from 'react';
+import { useDeferredValue } from 'react';
 
 type Params<T> = {
   list: T[];
@@ -18,20 +18,11 @@ type Params<T> = {
  *   deferred rendering.
  */
 export const useDeferredList = <T>({ list, isLoading, forceFirstRender }: Params<T>) => {
-  const deferred = useDeferredValue(list);
-  const [firstRender, setFirstRender] = useState(true);
-
-  const shouldForceRender = firstRender && !!forceFirstRender;
-  const isDeferred = deferred.length === 0 && list.length !== 0;
-
-  useEffect(() => {
-    if (deferred.length > 0) {
-      setFirstRender(false);
-    }
-  }, [deferred]);
+  const deferred = useDeferredValue(list, forceFirstRender ? list : []);
+  const isStale = deferred.length === 0 && list.length !== 0;
 
   return {
-    isLoading: isLoading || (!shouldForceRender && isDeferred),
-    list: shouldForceRender ? list : deferred,
+    isLoading: isLoading || isStale,
+    list: deferred,
   };
 };

@@ -57,6 +57,11 @@ export type AssetLock = {
 };
 
 export const enum LockTypes {
+  /**
+   * @deprecated Staking amounts should be retrieved from the staking ledger's `active` field
+   * via stakingUtils.subscribeStaking() instead of balance locks. Balance locks are unreliable
+   * for determining actual staked amounts.
+   */
   STAKING = '0x7374616b696e6720',
   CONVICTION_VOTE = '0x7079636f6e766f74',
 }

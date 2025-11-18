@@ -6,17 +6,6 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { type IStakingDataService, type StakingMap } from '../lib/types';
 
 export const useStakingData = (): IStakingDataService => {
-  const subscribeStaking = async (
-    chainId: ChainId,
-    api: ApiPromise,
-    accounts: AccountId[],
-    callback: (staking: StakingMap) => void,
-  ): Promise<() => void> => {
-    const controllers = await getControllers(api, accounts);
-
-    return listenToLedger(chainId, api, controllers, accounts, callback);
-  };
-
   const getControllers = async (api: ApiPromise, accounts: AccountId[]) => {
     try {
       const controllers = await api.query.staking.bonded.multi(accounts);
@@ -29,50 +18,6 @@ export const useStakingData = (): IStakingDataService => {
 
       return [];
     }
-  };
-
-  const listenToLedger = async (
-    chainId: ChainId,
-    api: ApiPromise,
-    controllers: AccountId[],
-    accounts: AccountId[],
-    callback: (data: StakingMap) => void,
-  ): Promise<() => void> => {
-    return api.query.staking.ledger.multi(controllers, (data) => {
-      try {
-        const staking = data.reduce<StakingMap>((acc, ledger, index) => {
-          const account = accounts[index];
-
-          if (ledger.isNone) {
-            acc[account] = undefined;
-          } else {
-            const { active, stash, total, unlocking } = ledger.unwrap();
-
-            const formattedUnlocking = unlocking.toArray().map((unlock) => ({
-              value: unlock.value.toString(),
-              era: unlock.era.toString(),
-            }));
-
-            acc[account] = {
-              accountId: account,
-              chainId,
-              controller: controllers[index] || toAccountId(stash.toHuman()),
-              stash: toAccountId(stash.toHuman()),
-              active: active.toString(),
-              total: total.toString(),
-              unlocking: formattedUnlocking,
-            };
-          }
-
-          return acc;
-        }, {});
-
-        callback(staking);
-      } catch (error) {
-        console.warn(error);
-        callback({});
-      }
-    });
   };
 
   const fetchLedger = async (chainId: ChainId, api: ApiPromise, accounts: AccountId[]): Promise<StakingMap> => {
@@ -172,7 +117,6 @@ export const useStakingData = (): IStakingDataService => {
 
   return {
     fetchLedger,
-    subscribeStaking,
     getMinNominatorBond,
     getUnbondingPeriod,
     getTotalStaked,

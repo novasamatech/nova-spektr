@@ -47,3 +47,26 @@ export const AsWrapper: Story = {
     children: <BodyText>Hello world</BodyText>,
   },
 };
+
+export const AsWrapperForMultiple: Story = {
+  decorators: [
+    (Story, { args }) => {
+      const [active, setActive] = useState(args.active);
+
+      return (
+        <Box gap={4} width="fit-content">
+          <Switch checked={active} onChange={setActive}>
+            Toggle active state
+          </Switch>
+          {/* @ts-expect-error Props */}
+          <Story args={{ ...args, active }} />
+        </Box>
+      );
+    },
+  ],
+  args: {
+    active: true,
+    fullWidth: false,
+    children: [<BodyText key={1}>Hello world 1</BodyText>, <BodyText key={2}>Hello world 2</BodyText>],
+  },
+};

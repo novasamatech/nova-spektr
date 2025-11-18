@@ -139,37 +139,19 @@ function isSalaryInductTransaction(transaction: Transaction): transaction is Sal
   return transaction.type === TransactionType.COLLECTIVE_SALARY_INDUCT;
 }
 
-function isClaimantActiveInCurrentCycle(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
-  return claimStatus.lastActive === period.cycleIndex;
-}
-
-function isClaimantRequestedSalary(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
-  return isClaimantActiveInCurrentCycle(claimStatus, period) && claimStatus && claimStatus.type === 'registered';
-}
-
-function isClaimantRequestedSalaryPayout(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
-  return isClaimantActiveInCurrentCycle(claimStatus, period) && claimStatus && claimStatus.type === 'payout';
-}
-
 function isInducted(claimStatus: ClaimStatus) {
   return claimStatus.type !== 'none';
 }
 
 function canRequestSalary(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
-  return (
-    isClaimantActiveInCurrentCycle(claimStatus, period) &&
-    period.type === 'registration' &&
-    claimStatus.type !== 'registered' &&
-    claimStatus.type !== 'none'
-  );
+  return period.type === 'registration' && claimStatus.type !== 'none' && claimStatus.lastActive < period.cycleIndex;
 }
 
 function canRequestSalaryPayout(claimStatus: ClaimStatus, period: SalaryCyclePeriod) {
   return (
-    isClaimantActiveInCurrentCycle(claimStatus, period) &&
     period.type === 'payout' &&
-    claimStatus.type !== 'payout' &&
-    claimStatus.type !== 'none'
+    ((claimStatus.type === 'registered' && claimStatus.lastActive === period.cycleIndex) ||
+      (claimStatus.type === 'nothing' && claimStatus.lastActive < period.cycleIndex))
   );
 }
 
@@ -180,9 +162,6 @@ export const salaryService = {
   getCurrentPeriod,
   getMemberSalary,
 
-  isClaimantActiveInCurrentCycle,
-  isClaimantRequestedSalary,
-  isClaimantRequestedSalaryPayout,
   isInducted,
 
   canRequestSalary,

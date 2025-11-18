@@ -8,7 +8,7 @@ describe('services/staking/stakingDataService', () => {
       result: { current },
     } = renderHook(() => useStakingData());
 
-    expect(current.subscribeStaking).toBeDefined();
+    expect(current.fetchLedger).toBeDefined();
     expect(current.getMinNominatorBond).toBeDefined();
   });
 });

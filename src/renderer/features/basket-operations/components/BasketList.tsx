@@ -6,6 +6,7 @@ import { Button, FootnoteText, Icon } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
 import { type BasketTransaction } from '@/aggregates/basket-operations';
 import { basketOperations } from '@/aggregates/basket-operations';
+import { useFellowshipMember } from '@/aggregates/fellowship-member';
 import { list } from '../model/list';
 import { signOperations } from '../model/sign';
 import { validation } from '../model/validation';
@@ -18,6 +19,8 @@ import { SignTransactionsModal } from './SignTransactionsModal';
 
 export const BasketList = () => {
   const { t } = useI18n();
+
+  useFellowshipMember();
 
   const allOperations = useUnit(list.$all);
   const operations = useUnit(list.$filtered);

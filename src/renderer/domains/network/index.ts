@@ -27,9 +27,11 @@ export type { BalanceUpdateResult, BalancePreservation } from './balance/types';
 
 export { identity } from './identity/store';
 export { identityService } from './identity/service';
+export { useIdentities, useIdentity } from './identity/hooks';
 export type { AccountIdentity, IdentityMap } from './identity/types';
 
-export { block } from './block';
+export { block } from './block/store';
+export { useBlock, useBlockTime } from './block/hooks';
 
 export { multisigOperation } from './multisig-operation/store';
 export { multisigOperationService } from './multisig-operation/service';

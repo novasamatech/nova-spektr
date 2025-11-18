@@ -38,13 +38,13 @@ sample({
 });
 
 sample({
-  clock: addTransactionsFx,
+  clock: addTransactionsFx.doneData,
   filter: result => result.length > 0,
   target: populateFx,
 });
 
 sample({
-  clock: updateTransactionsFx,
+  clock: updateTransactionsFx.doneData,
   filter: result => result.length > 0,
   target: populateFx,
 });

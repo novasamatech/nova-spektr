@@ -147,7 +147,6 @@ basketSDK(fellowshipBasketFeature, {
       const referendums = await referendumDomain.request({
         api,
         palletType: 'fellowship',
-        chainId: transaction.coreTx.chainId,
         referendums: [transaction.coreTx.args.poll as ReferendumId],
       });
 

@@ -26,13 +26,11 @@ export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll }
   const [showTopFade, setShowTopFade] = useState(false);
   const [showBottomFade, setShowBottomFade] = useState(false);
 
-  const recalculateFade = useCallback((n: HTMLDivElement) => {
-    setShowTopFade(n.scrollTop > 0);
-    setShowBottomFade(n.scrollTop + n.clientHeight < n.scrollHeight);
-  }, []);
-
   const handlerScroll = useCallback<UIEventHandler<HTMLDivElement>>(e => {
-    recalculateFade(e.currentTarget);
+    const target = e.currentTarget;
+
+    setShowTopFade(target.scrollTop > 0);
+    setShowBottomFade(target.scrollTop + target.clientHeight < target.scrollHeight);
 
     if (onScroll) {
       onScroll(e);
@@ -47,7 +45,7 @@ export const ScrollArea = memo(({ orientation = 'vertical', children, onScroll }
   return (
     <RadixScrollArea.Root type="scroll" scrollHideDelay={500} className="flex h-full w-full flex-col overflow-hidden">
       <RadixScrollArea.Viewport
-        className="scrollArea h-full w-full"
+        className="scrollArea h-full w-full contain-strict"
         style={style as CSSProperties}
         onScroll={handlerScroll}
       >

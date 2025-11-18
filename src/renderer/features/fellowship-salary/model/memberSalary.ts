@@ -1,7 +1,6 @@
 import { BN_ZERO } from '@polkadot/util';
-import { combine, sample } from 'effector';
+import { combine } from 'effector';
 
-import { attachToFeatureInput } from '@/shared/feature';
 import { nullable } from '@/shared/lib/utils';
 import { salary as salaryModel, salaryService } from '@/domains/collectives';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
@@ -10,7 +9,7 @@ import { fellowshipSalaryFeature } from './feature';
 import { fellowship } from './fellowship';
 import { profile } from './profile';
 
-const $statuses = salaryModel.$status.map(s => s['fellowship'] ?? {});
+const $statuses = salaryModel.salaryCycleResource.$cache.map(s => s['fellowship'] ?? {});
 const $claimantStatuses = fellowship.$store.map(store => store?.claimantStatus ?? {});
 
 const $status = combine(fellowshipSalaryFeature.input, $statuses, (featureInput, statuses) => {
@@ -19,7 +18,7 @@ const $status = combine(fellowshipSalaryFeature.input, $statuses, (featureInput,
   return statuses[featureInput.chainId] ?? null;
 });
 
-const $salaries = salaryModel.$salaries.map(s => s['fellowship'] ?? {});
+const $salaries = salaryModel.salariesResource.$cache.map(s => s['fellowship'] ?? {});
 
 const $chainSalaries = combine(fellowshipSalaryFeature.input, $salaries, (featureInput, salaries) => {
   if (nullable(featureInput)) return null;
@@ -46,27 +45,6 @@ const $memberClaimStatus = combine(profile.$member, $claimantStatuses, (member, 
 const $currentPeriod = combine($status, fellowshipNetwork.$currentBlock, (status, currentBlock) => {
   if (nullable(status) || nullable(currentBlock)) return null;
   return salaryService.getCurrentPeriod(status, currentBlock);
-});
-
-sample({
-  clock: fellowshipSalaryFeature.running,
-  target: [salaryModel.requestStatus, salaryModel.requestSalaries],
-});
-
-const memberUpdated = attachToFeatureInput(fellowshipSalaryFeature, profile.$member).filterMap(({ data, input }) => {
-  if (!data) return;
-
-  return {
-    api: input.api,
-    chainId: input.chainId,
-    palletType: input.palletType,
-    accounts: [data.accountId],
-  };
-});
-
-sample({
-  clock: memberUpdated,
-  target: salaryModel.requestClaimantStatus,
 });
 
 export const memberSalary = {

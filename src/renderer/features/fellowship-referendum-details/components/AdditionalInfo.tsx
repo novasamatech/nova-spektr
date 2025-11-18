@@ -9,7 +9,7 @@ import { Card } from './Card';
 
 type Props = {
   referendumId?: Referendum['id'];
-  evidenceHash?: HexString;
+  evidenceHash?: HexString | null;
 };
 
 export const AdditionalInfo = ({ referendumId, evidenceHash }: Props) => {
