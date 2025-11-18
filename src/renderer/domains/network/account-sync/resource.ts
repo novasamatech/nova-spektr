@@ -51,7 +51,7 @@ const proxySchema = z.object({
   type: z.string(),
   extrinsicIndex: z.number(),
   blockNumber: z.number().transform(pjsSchema.helpers.toBlockHeight),
-  spawner: accountIdSchema,
+  spawner: accountIdSchema.nullable().transform(val => val ?? undefined),
 });
 
 export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
