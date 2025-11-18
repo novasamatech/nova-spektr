@@ -10,7 +10,7 @@ import { networkUtils } from '@/entities/network';
 import { multisigOperationService } from '../multisig-operation/service';
 
 import { INDEXER_URL } from './constants';
-import { type AccountProvider, type SyncedMultisigAccount, type SyncedProxiedAccount } from './types';
+import { type AccountProvider, type SyncedMultisigAccount, type SyncedProxyAccount } from './types';
 
 // generic helpers
 
@@ -26,7 +26,7 @@ const chainIdSchema = z.string().transform((id, ctx) => {
 
 // proxieds
 
-const PROXIED_ACCOUNT_QUERY = gql`
+const PROXY_ACCOUNT_QUERY = gql`
   query Proxieds($accounts: [String!]) {
     proxieds(filter: { proxyAccountId: { in: $accounts }, delay: { equalTo: 0 } }) {
       nodes {
@@ -43,7 +43,7 @@ const PROXIED_ACCOUNT_QUERY = gql`
   }
 `;
 
-const proxiedSchema = z.object({
+const proxySchema = z.object({
   accountId: accountIdSchema,
   proxyAccountId: accountIdSchema,
   chainId: chainIdSchema,
@@ -54,22 +54,22 @@ const proxiedSchema = z.object({
   spawner: accountIdSchema.nullable().transform(val => val ?? undefined),
 });
 
-export const proxiedAccountsProvider: AccountProvider<SyncedProxiedAccount> = {
+export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
   getSupportedChains: (chains: Chain[]) => {
     return chains.filter(chain => networkUtils.isProxySupported(chain.options));
   },
 
   async fn(accounts, chains) {
     const accountsSet = new Set(accounts);
-    const result: SyncedProxiedAccount[] = [];
+    const result: SyncedProxyAccount[] = [];
 
     const client = new GraphQLClient(INDEXER_URL);
     const response = await client.request<{ proxieds: { nodes: unknown[] } }, { accounts: AccountId[] }>(
-      PROXIED_ACCOUNT_QUERY,
+      PROXY_ACCOUNT_QUERY,
       { accounts },
     );
 
-    const parsed = response.proxieds.nodes.map(x => proxiedSchema.parse(x));
+    const parsed = response.proxieds.nodes.map(x => proxySchema.parse(x));
 
     const indexerChainGroups = groupBy(parsed, g => g.chainId);
 
@@ -113,7 +113,7 @@ export const proxiedAccountsProvider: AccountProvider<SyncedProxiedAccount> = {
           if (nullable(proxyFromIndexer)) continue;
 
           result.push({
-            type: 'proxied',
+            type: 'proxy',
             accountId,
             proxyAccountId,
             chainId,

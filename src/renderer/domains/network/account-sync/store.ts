@@ -9,11 +9,11 @@ import { networkModel, networkUtils } from '@/entities/network';
 import { accounts } from '../account/store';
 import { type AnyAccount } from '../account/types';
 
-import { indexedBlocksProvider, multisigAccountsProvider, proxiedAccountsProvider } from './resource';
+import { indexedBlocksProvider, multisigAccountsProvider, proxyAccountsProvider } from './resource';
 import { accountSyncService } from './service';
 import { type AccountProviderChain } from './types';
 
-const accountsProviders = [proxiedAccountsProvider, multisigAccountsProvider];
+const accountsProviders = [proxyAccountsProvider, multisigAccountsProvider];
 
 export const syncAccountsFx = attach({
   source: {
