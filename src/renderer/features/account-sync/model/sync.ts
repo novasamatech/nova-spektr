@@ -115,7 +115,7 @@ export const syncProxiedAccounts = ({
   syncResult,
   identities,
 }: SyncProxiedParams) => {
-  const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
+  const syncedProxiedAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxiedAccount);
   const proxiedAccounts = allAccounts.filter(accountUtils.isProxiedAccount);
   const syncedChains = new Set(syncResult.chains);
 
@@ -134,11 +134,11 @@ export const syncProxiedAccounts = ({
       }
 
       const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-      return !lastIndexedBlock || lastIndexedBlock >= account.entropyBlockNumber;
+      return !lastIndexedBlock || lastIndexedBlock >= account.pendingBlockNumber;
     }),
   );
 
-  const proxiedGroups = groupBy(syncedProxyAccounts, (a) => a.accountId);
+  const proxiedGroups = groupBy(syncedProxiedAccounts, (a) => a.accountId);
 
   for (const [proxiedAccountId, syncAccounts] of entries(proxiedGroups)) {
     if (nullable(syncAccounts)) continue;
@@ -274,7 +274,7 @@ sample({
     chains: networkModel.$chains,
   },
   fn({ chains, existingProxies }, [syncResult]) {
-    const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
+    const syncedProxiedAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxiedAccount);
     const syncedChains = new Set(syncResult.chains);
     const proxiesToAdd: NoID<ProxyAccount>[] = [];
 
@@ -284,7 +284,7 @@ sample({
         .filter((proxy) => syncedChains.has(proxy.chainId)),
     );
 
-    for (const proxyAccount of syncedProxyAccounts) {
+    for (const proxyAccount of syncedProxiedAccounts) {
       const chain = chains[proxyAccount.chainId];
       if (nullable(chain)) continue;
 
@@ -440,7 +440,7 @@ export const syncFlexibleMultisigs = ({
   identities,
 }: SyncFlexibleMultisigParams) => {
   const syncedMultisigAccounts = syncResult.accounts.filter(accountSyncService.isSyncedMultisigAccount);
-  const syncedProxyAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxyAccount);
+  const syncedProxiedAccounts = syncResult.accounts.filter(accountSyncService.isSyncedProxiedAccount);
   const flexibleMultisigAccounts = allAccounts.filter(accountUtils.isFlexibleMultisigAccount);
   const syncedChains = new Set(syncResult.chains);
 
@@ -453,17 +453,17 @@ export const syncFlexibleMultisigs = ({
         return false;
       }
 
-      if (!account.entropyBlockNumber) {
+      if (!account.pendingBlockNumber) {
         return true;
       } else {
         const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-        return !lastIndexedBlock || lastIndexedBlock >= account.entropyBlockNumber;
+        return !lastIndexedBlock || lastIndexedBlock >= account.pendingBlockNumber;
       }
     }),
   );
 
   for (const syncedMultisig of syncedMultisigAccounts) {
-    const matchingProxies = syncedProxyAccounts.filter((proxy) =>
+    const matchingProxies = syncedProxiedAccounts.filter((proxy) =>
       accountSyncService.isFlexibleMultisigPair(proxy, syncedMultisig),
     );
 

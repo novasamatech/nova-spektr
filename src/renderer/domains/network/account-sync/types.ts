@@ -23,8 +23,8 @@ export type AccountProvider<Account extends SyncedAccount> = {
   fn(accounts: AccountId[], chains: Record<ChainId, AccountProviderChain>): Promise<Account[]>;
 };
 
-export interface SyncedProxyAccount extends SyncedAccount {
-  type: 'proxy';
+export interface SyncedProxiedAccount extends SyncedAccount {
+  type: 'proxied';
   chainId: ChainId;
   proxyAccountId: AccountId;
   delay: number;

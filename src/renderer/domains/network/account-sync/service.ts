@@ -1,5 +1,5 @@
 import { type ChainId, ProxyVariant } from '@/shared/core';
-import { createAsyncTaskPool } from '@/shared/lib/utils';
+import { createAsyncTaskPool, keys } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountService } from '../account/service';
 import { type AnyAccount } from '../account/types';
@@ -10,7 +10,7 @@ import {
   type IndexedBlocksProvider,
   type SyncedAccount,
   type SyncedMultisigAccount,
-  type SyncedProxyAccount,
+  type SyncedProxiedAccount,
 } from './types';
 
 type InferProviderAccount<Provider extends AccountProvider<any>> =
@@ -37,7 +37,7 @@ async function syncAccounts<const Providers extends AccountProvider<any>[]>({
 }: Params<Providers>): Promise<SyncResult<Providers>> {
   const possingAccounts = accounts.filter(accountService.hasPermissionToMakeActions);
   let foundAccounts: InferProviderAccount<Providers[number]>[] = [];
-  const inputChains = Object.keys(chains) as ChainId[];
+  const inputChains = keys(chains);
 
   if (possingAccounts.length === 0) {
     return {
@@ -82,24 +82,24 @@ async function syncAccounts<const Providers extends AccountProvider<any>[]>({
   };
 }
 
-function isSyncedProxyAccount(a: SyncedAccount): a is SyncedProxyAccount {
-  return 'type' in a && a.type === 'proxy';
+function isSyncedProxiedAccount(a: SyncedAccount): a is SyncedProxiedAccount {
+  return 'type' in a && a.type === 'proxied';
 }
 
 function isSyncedMultisigAccount(a: SyncedAccount): a is SyncedMultisigAccount {
   return 'type' in a && a.type === 'multisig';
 }
 
-function isFlexibleMultisigPair(proxy: SyncedProxyAccount, multisig: SyncedMultisigAccount) {
+function isFlexibleMultisigPair(proxy: SyncedProxiedAccount, multisig: SyncedMultisigAccount) {
   return (
     proxy.proxyType === 'Any' && proxy.proxyVariant === ProxyVariant.PURE && proxy.proxyAccountId === multisig.accountId
   );
 }
 
 export const accountSyncService = {
-  isSyncedProxyAccount,
+  isSyncedProxiedAccount,
   isSyncedMultisigAccount,
   isFlexibleMultisigPair,
 
-  syncAccounts: syncAccounts,
+  syncAccounts,
 };
