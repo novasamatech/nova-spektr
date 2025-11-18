@@ -68,8 +68,8 @@ const config: UserConfigFnPromise = async (options) => {
         thresholds: {
           branches: 25,
           functions: 10,
-          lines: 10,
-          statements: 10,
+          lines: 30,
+          statements: 30,
         },
         reporter: 'json-summary',
       },
