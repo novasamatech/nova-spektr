@@ -1,14 +1,16 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { z } from 'zod';
 
-import { type ChainId } from '@/shared/core';
+import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { deepLinkService } from '@/domains/app';
 import { accounts, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { multisigService } from '@/features/multisig-wallet';
 
 export const multisigOperationSchema = z.object({
   chainId: z.string().transform(x => x as ChainId),
@@ -115,10 +117,12 @@ const accountChecked = sample({
   source: { accountsList: accounts.$list, populated: accounts.$populated },
   filter: ({ populated }, { network }) => nonNullable(network) && populated,
   fn: ({ accountsList }, { data }) => {
-    const account = accountsList.find(acc => acc.accountId === data.accountId);
+    const account = accountsList.find(
+      acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId,
+    );
     return {
       data,
-      account: account ?? null,
+      account: (account as MultisigAccount | FlexibleMultisigAccount) ?? null,
     };
   },
 });
@@ -132,8 +136,14 @@ sample({
 
 sample({
   clock: accountChecked,
-  filter: ({ account }) => nonNullable(account),
-  fn: ({ data }) => getOperationIdFromDeepLink(data),
+  filter: ({ account }) => nonNullable(account) && accountUtils.isAnyMultisigAccount(account),
+  fn: ({ data, account }) => {
+    // For operation lookup, use the multisigAccountId (for flex multisig)
+    const multisigAccountId = multisigService.getMultisigAccountId(
+      account as MultisigAccount | FlexibleMultisigAccount,
+    );
+    return getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId });
+  },
   target: setFocusedOperationId,
 });
 
@@ -149,16 +159,20 @@ const operationFetchRequested = sample({
   source: { apis: networkModel.$apis, chains: networkModel.$chains, operations: multisigOperation.$list },
   filter: ({ operations }, { account, data }) => {
     if (account === null) return false;
-    const operationId = getOperationIdFromDeepLink(data);
+    const multisigAccountId = multisigService.getMultisigAccountId(account);
+    const operationId = getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId });
     const operationExists = operations.some(op => op.id === operationId);
     return !operationExists;
   },
-  fn: ({ apis, chains }, { data }) => ({
-    apis,
-    chains,
-    accountId: data.accountId,
-    operationId: getOperationIdFromDeepLink(data),
-  }),
+  fn: ({ apis, chains }, { data, account }) => {
+    const multisigAccountId = multisigService.getMultisigAccountId(account!);
+    return {
+      apis,
+      chains,
+      accountId: multisigAccountId,
+      operationId: getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId }),
+    };
+  },
 });
 
 sample({
@@ -182,13 +196,16 @@ sample({
   target: operationNotFoundModalOpened,
 });
 
-function generateMultisigOperationDeepLink(data: MultisigOperationDeepLinkData): string {
+function generateMultisigOperationDeepLink(
+  operation: MultisigOperationDeepLinkData,
+  account: MultisigAccount | FlexibleMultisigAccount,
+): string {
   const params = new URLSearchParams({
-    chainId: data.chainId,
-    callHash: data.callHash,
-    accountId: data.accountId,
-    blockCreated: data.blockCreated.toString(),
-    indexCreated: data.indexCreated.toString(),
+    chainId: operation.chainId,
+    callHash: operation.callHash,
+    accountId: account.accountId,
+    blockCreated: operation.blockCreated.toString(),
+    indexCreated: operation.indexCreated.toString(),
   });
 
   return `${window.location.origin}/#${Paths.OPERATIONS}?${params.toString()}`;
