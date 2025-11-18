@@ -110,12 +110,11 @@ sample({
   target: networkNotAvailableModalOpened,
 });
 
-// Check if account exists before selecting wallet (only if network exists)
 const accountChecked = sample({
   clock: networkChecked,
-  source: accounts.$list,
-  filter: (_, { network }) => nonNullable(network),
-  fn: (accountsList, { data }) => {
+  source: { accountsList: accounts.$list, populated: accounts.$populated },
+  filter: ({ populated }, { network }) => nonNullable(network) && populated,
+  fn: ({ accountsList }, { data }) => {
     const account = accountsList.find(acc => acc.accountId === data.accountId);
     return {
       data,
