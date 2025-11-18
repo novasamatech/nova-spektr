@@ -76,7 +76,7 @@ function createVestingScheduleSchema(options: VestingScheduleSchemaOptions) {
       }, RowErrors.MAX_VESTING_SCHEDULES_REACHED),
 
     locked: positiveBn(RowErrors.LOCKED_NOT_POSITIVE_INT).refine(
-      (bn) => bn.gt(minVestedTransfer),
+      (bn) => bn.gte(minVestedTransfer),
       RowErrors.LOCKED_TOO_LOW,
     ),
 
