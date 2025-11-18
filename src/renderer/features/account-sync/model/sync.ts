@@ -220,7 +220,7 @@ export const syncProxiedAccounts = ({
               signingType: SigningType.WATCH_ONLY,
               deposit: firstAccount.deposit.toString(),
               connections,
-              entropyBlockNumber: firstAccount.entropyBlockNumber,
+              entropyBlockNumber: firstAccount.blockNumber,
               extrinsicIndex: firstAccount.extrinsicIndex,
               spawner: firstAccount.spawner,
             },
@@ -493,7 +493,7 @@ export const syncFlexibleMultisigs = ({
           signatories: syncedMultisig.signatories.map((accountId) => ({ accountId })),
 
           deposit: matchedSyncedProxy.deposit.toString(),
-          entropyBlockNumber: matchedSyncedProxy.entropyBlockNumber,
+          entropyBlockNumber: matchedSyncedProxy.blockNumber,
           extrinsicIndex: matchedSyncedProxy.extrinsicIndex,
 
           cryptoType: isEthereumAccountId(matchedSyncedProxy.accountId) ? CryptoType.ETHEREUM : CryptoType.SR25519,

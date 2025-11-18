@@ -31,7 +31,7 @@ export interface SyncedProxyAccount extends SyncedAccount {
   proxyType: KitchensinkRuntimeProxyType;
   proxyVariant: ProxyVariant;
   deposit: BN;
-  entropyBlockNumber: BlockHeight;
+  blockNumber: BlockHeight;
   spawner?: AccountId;
   extrinsicIndex: number;
 }

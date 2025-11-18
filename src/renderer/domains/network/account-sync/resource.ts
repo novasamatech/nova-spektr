@@ -121,7 +121,7 @@ export const proxyAccountsProvider: AccountProvider<SyncedProxyAccount> = {
             delay: proxy.delay,
             proxyType: proxy.proxyType,
             proxyVariant: proxyFromIndexer.isPureProxy ? ProxyVariant.PURE : ProxyVariant.REGULAR,
-            entropyBlockNumber: proxyFromIndexer.blockNumber,
+            blockNumber: proxyFromIndexer.blockNumber,
             extrinsicIndex: proxyFromIndexer.extrinsicIndex,
             spawner: proxyFromIndexer.spawner,
           });
