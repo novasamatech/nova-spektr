@@ -1,15 +1,13 @@
-import { useUnit } from 'effector-react';
 import { orderBy } from 'lodash';
 import { type PropsWithChildren, useDeferredValue, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable, performSearch, truncate } from '@/shared/lib/utils';
 import { Button, EmptyList } from '@/shared/ui';
-import { Modal, SearchInput, Select } from '@/shared/ui-kit';
+import { Box, Modal, SearchInput, Select } from '@/shared/ui-kit';
+import { useFeed } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
-import { fellowshipActivityFeedFeature } from '../model/feature';
-import { identityModel } from '../model/identity';
-import { activityFeed } from '../model/list';
+import { useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
 
 import { ActivityListView } from './ActivityListView';
 import { getDescription } from './utils';
@@ -23,21 +21,20 @@ const orderVariants: Record<OrderKey, { field: string; direction: 'asc' | 'desc'
   'name-desc': { field: 'name', direction: 'desc' },
 };
 
+const LIMIT_STEP = 100;
+
 export const ActivityModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
-  const input = useUnit(fellowshipActivityFeedFeature.input);
-  const feed = useUnit(activityFeed.$activityFeed);
-  const identities = useUnit(identityModel.$list);
+  const chain = useFellowshipChain();
+  const { data: feed, pending } = useFeed({ palletType: 'fellowship', chain });
+  const { data: identities } = useFellowshipIdentities(feed.map(record => record.accountId));
 
   const [query, setQuery] = useState('');
+  const [limit, setLimit] = useState(LIMIT_STEP);
   const [orderKey, setOrderKey] = useState<OrderKey>('duration-asc');
 
   const deferredQuery = useDeferredValue(query);
-
-  const clearSearch = () => setQuery('');
-
-  const now = Date.now();
 
   const records = useMemo(
     () =>
@@ -47,7 +44,6 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
           ...record,
           name: identity ? identityService.getFullName(identity) : undefined,
           description: getDescription(record, t),
-          duration: (now - record.at.getTime()) / 1000,
         };
       }),
     [identities, feed, t],
@@ -76,14 +72,16 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
     return orderVariant ? orderBy(filteredList, orderVariant.field, orderVariant.direction) : filteredList;
   }, [filteredList, orderKey]);
 
-  if (nullable(input)) return children;
+  const shouldRenderMoreButton = limit < sortedList.length;
+
+  if (nullable(chain)) return children;
 
   return (
     <Modal size="md" height="lg">
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('fellowship.activityFeed.activityModal.title')}</Modal.Title>
-      <Modal.HeaderContent>
-        <div className="flex gap-x-2 bg-main-app-background px-5 py-4">
+      <Modal.HeaderContent background="secondary">
+        <div className="flex gap-x-2 px-5 py-4">
           <div className="inline grow">
             <SearchInput
               placeholder={t('fellowship.activityFeed.activityModal.search-placeholder')}
@@ -110,22 +108,27 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
           </div>
         </div>
       </Modal.HeaderContent>
-      <Modal.Content>
-        <div className="bg-main-app-background">
-          {isNothingFound && (
-            <EmptyList
-              title={t('fellowship.activityFeed.activityModal.nothing-found.title')}
-              message={t('fellowship.activityFeed.activityModal.nothing-found.description', {
-                query: truncate(query, 6, 6),
-              })}
-            >
-              <Button pallet="primary" variant="text" onClick={clearSearch}>
-                {t('fellowship.activityFeed.activityModal.nothing-found.clear')}
-              </Button>
-            </EmptyList>
-          )}
-          <ActivityListView limit={Number.POSITIVE_INFINITY} feed={sortedList} withFullAccountInfo />
-        </div>
+      <Modal.Content background="secondary">
+        {isNothingFound && (
+          <EmptyList
+            title={t('fellowship.activityFeed.activityModal.nothing-found.title')}
+            message={t('fellowship.activityFeed.activityModal.nothing-found.description', {
+              query: truncate(query, 6, 6),
+            })}
+          >
+            <Button pallet="primary" variant="text" onClick={() => setQuery('')}>
+              {t('fellowship.activityFeed.activityModal.nothing-found.clear')}
+            </Button>
+          </EmptyList>
+        )}
+        <ActivityListView feed={sortedList} limit={limit} pending={pending} withFullAccountInfo />
+        {shouldRenderMoreButton && (
+          <Box padding={[0, 0, 5, 0]} horizontalAlign="center">
+            <Button variant="text" size="sm" onClick={() => setLimit(l => l + LIMIT_STEP)}>
+              {t('fellowship.activityFeed.activityModal.loadMore')}
+            </Button>
+          </Box>
+        )}
       </Modal.Content>
     </Modal>
   );

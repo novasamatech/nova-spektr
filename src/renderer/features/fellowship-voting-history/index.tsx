@@ -5,7 +5,7 @@ import { Card, referendumAdditionalInfoSlot } from '@/features/fellowship-refere
 
 import { VotingHistory } from './components/VotingHistory';
 import { VotingSummary } from './components/VotingSummary';
-import { fellowshipVotingHistoryFeature } from './model/feature';
+import { fellowshipVotingHistoryFeature } from './feature';
 
 export { fellowshipVotingHistoryFeature };
 

@@ -1,0 +1,3 @@
+Carbonado, black diamond and humanity’s hardest mineral, symbolizes seniority’s peak while reminding knowledge’s bounds and discovery’s eternity. It crowns the journey, echoing graphite’s essence in refined form, marking ultimate resilience. This rank embodies boundless pursuit amid limitations, inspiring perpetual exploration. Its impenetrable strength reflects unyielding wisdom, guarding the network’s legacy. The Grand Master stands as eternal sentinel, where mastery meets infinite potential.
+
+Grand Masters fulfill prior qualities, shaping with unparalleled insight. Attainment demands nineteen years of Polkadot as primary focus, plus demonstrated excellence in social, administrative, and intellectual realms, ensuring legacy of profound contribution.

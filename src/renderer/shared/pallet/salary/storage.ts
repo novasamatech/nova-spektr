@@ -4,7 +4,7 @@ import { substrateRpcPool } from '@/shared/api/substrate-helpers';
 import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 
 import { getPalletName } from './helpers';
-import { salaryClaimantStatus, salaryStatusType } from './schema';
+import { type SalaryClaimantStatus, salaryClaimantStatus, salaryStatusType } from './schema';
 import { type PalletType } from './types';
 
 const getQuery = (type: PalletType, api: ApiPromise, name: string) => {
@@ -30,6 +30,20 @@ export const storage = {
     const schema = pjsSchema.vec(pjsSchema.optional(salaryClaimantStatus));
 
     return substrateRpcPool.call(() => getQuery(type, api, 'claimant').multi(accounts)).then(schema.parse);
+  },
+
+  /**
+   * The status of a claimant.
+   */
+  claimantWatch: (
+    type: PalletType,
+    api: ApiPromise,
+    accounts: AccountId[],
+    callback: (v: (SalaryClaimantStatus | null)[]) => void,
+  ) => {
+    const schema = pjsSchema.vec(pjsSchema.optional(salaryClaimantStatus));
+
+    return getQuery(type, api, 'claimant').multi(accounts, data => callback(schema.parse(data)));
   },
 
   /**

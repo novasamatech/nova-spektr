@@ -25,7 +25,7 @@ const emptyMeta = <M extends object>(): M => {
  *   search
  * @param weights - Object with keys to search.
  */
-export const performSearch = <T extends object, M extends object = Record<string, never>>({
+export const performSearch = <const T extends object, const M extends object = Record<string, never>>({
   records,
   getMeta = emptyMeta<M>,
   query,

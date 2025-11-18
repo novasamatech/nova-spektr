@@ -12,7 +12,7 @@ const fonts = Object.keys(fontSizes as Record<string, unknown>);
 const colors = Object.keys(additionalColors as Record<string, unknown>);
 
 const twMerge = extendTailwindMerge({
-  cacheSize: 5_000,
+  cacheSize: 10_000,
   extend: {
     classGroups: {
       w: [{ w: ['90', '92', 'modal', 'modal-sm', 'modal-xl'] }],

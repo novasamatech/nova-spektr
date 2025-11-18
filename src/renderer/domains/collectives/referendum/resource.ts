@@ -1,11 +1,9 @@
-import { gql } from '@apollo/client';
 import { type ApiPromise } from '@polkadot/api';
 import { Compact } from '@polkadot/types';
 import { u8aToHex } from '@polkadot/util';
-import { GraphQLClient } from 'graphql-request';
-import { z } from 'zod';
+import { createStore } from 'effector';
 
-import { type Chain, type ChainId, ExternalType, type HexString } from '@/shared/core';
+import { type ChainId, type HexString } from '@/shared/core';
 import { createPagesHandler } from '@/shared/effector';
 import { nullable } from '@/shared/lib/utils';
 import {
@@ -17,10 +15,11 @@ import {
 } from '@/shared/pallet/referenda';
 import { polkadotjsHelpers } from '@/shared/polkadotjs-helpers';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
-import { createRemoteResource, createSubscriptionResource } from '@/shared/resource';
-import { type CollectivePalletsType } from '../_lib/types';
+import { createQueryResource, createSubscriptionResource } from '@/shared/query';
+import { mergeNested } from '../_lib/helpers';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
-import { type Proposal, type Referendum, type ReferendumWithEvidence } from './types';
+import { type Proposal, type Referendum } from './types';
 
 async function parseProposal(proposal: FrameSupportPreimagesBounded, api: ApiPromise): Promise<Proposal | null> {
   let proposalHex: HexString | null = null;
@@ -235,30 +234,40 @@ async function mapReferendums(
   return referendums;
 }
 
-type ReferendumSubscriptionParams = {
+const $sharedReferendumsCache = createStore<CollectivesStruct<Referendum[]>>({});
+
+export type ReferendumSubscriptionParams = {
   api: ApiPromise;
   palletType: CollectivePalletsType;
-  chainId: ChainId;
 };
 
-export const subscriptionResource = createSubscriptionResource<ReferendumSubscriptionParams, Referendum[]>({
-  pool: ({ palletType, chainId }) => `${palletType}:${chainId}`,
-  async fn({ api, chainId, palletType }, callback) {
-    let abortController = new AbortController();
+export const subscriptionResource = createSubscriptionResource<ReferendumSubscriptionParams>({
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
+})
+  .subscribe<Referendum[]>(async ({ api, palletType }, callback) => {
+    const chainId = api.genesisHash.toHex();
 
-    await api.isReady;
+    let abortController = new AbortController();
 
     const fetchPages = createPagesHandler({
       fn: () => referendaPallet.storage.referendumInfoForPaged(palletType, api, 400),
       map: record => mapReferendums(record, api, palletType, chainId),
     });
 
-    fetchPages(abortController, callback);
+    fetchPages(abortController, ({ value }) => {
+      if (value) {
+        callback(value);
+      }
+    });
 
     const fn = () => {
       abortController.abort();
       abortController = new AbortController();
-      fetchPages(abortController, callback);
+      fetchPages(abortController, ({ value }) => {
+        if (value) {
+          callback(value);
+        }
+      });
     };
 
     /**
@@ -270,99 +279,29 @@ export const subscriptionResource = createSubscriptionResource<ReferendumSubscri
       abortController.abort();
       fn();
     });
-  },
-});
+  })
+  .cache({
+    store: $sharedReferendumsCache,
+    map: (state, referendums) => mergeNested(state, referendums, r => r.id),
+  })
+  .build();
 
-type ReferendumRequestParams = {
+export type ReferendumRequestParams = {
   api: ApiPromise;
   palletType: CollectivePalletsType;
-  chainId: ChainId;
   referendums: ReferendumId[];
 };
 
-export const fetchResource = createRemoteResource<ReferendumRequestParams, Referendum[]>({
-  async fn({ api, chainId, palletType, referendums }) {
+export const fetchResource = createQueryResource<ReferendumRequestParams>({
+  key: ({ palletType, api, referendums }) => [palletType, api.genesisHash.toHex(), referendums],
+})
+  .request<Referendum[]>(async ({ api, palletType, referendums }) => {
+    const chainId = api.genesisHash.toHex();
     const response = await referendaPallet.storage.referendumInfoFor(palletType, api, referendums);
     return mapReferendums(response, api, palletType, chainId);
-  },
-});
-
-/**
- * Use this query to map referendums with evidences. If possible use chain
- * state.
- */
-const GET_REFERENDUMS_QUERY = gql`
-  query Referendums {
-    referendums {
-      nodes {
-        index
-        evidence {
-          nodes {
-            hash
-          }
-        }
-        completed
-      }
-    }
-  }
-`;
-
-const referendumsGqlSchema = z.object({
-  referendums: z.object({
-    nodes: z.array(
-      z.object({
-        index: z.custom<ReferendumId>(),
-        evidence: z.object({
-          nodes: z.array(
-            z.object({
-              hash: z.custom<HexString>(),
-            }),
-          ),
-        }),
-        completed: z.boolean(),
-      }),
-    ),
-  }),
-});
-
-export type ReferendumsWithEvidence = z.infer<typeof referendumsGqlSchema>['referendums'];
-
-const requestReferendumsFromSubQuery = async (url: string) => {
-  const client = new GraphQLClient(url);
-  const result = await client.request(GET_REFERENDUMS_QUERY);
-
-  try {
-    const parsed = referendumsGqlSchema.parse(result);
-    return parsed.referendums.nodes;
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-};
-
-type RequestRefendumsParams = {
-  chain: Chain;
-  palletType: CollectivePalletsType;
-};
-
-export const referendumsWithEvidenceResource = createRemoteResource<RequestRefendumsParams, ReferendumWithEvidence[]>({
-  pool: ({ chain, palletType }) => `${palletType}:${chain.chainId}`,
-  cache: {
-    key: ({ chain, palletType }) => `${palletType}:${chain.chainId}`,
-    ttl: 60 * 1000,
-  },
-  async fn({ chain, palletType }) {
-    const externalApi = chain.externalApi?.[ExternalType.COLLECTIVES]?.at(0);
-    const sourceUrl = externalApi?.url;
-    if (!sourceUrl) return [];
-    const result = await requestReferendumsFromSubQuery(sourceUrl);
-
-    return result.map(item => ({
-      pallet: palletType,
-      chainId: chain.chainId,
-      index: item.index,
-      completed: item.completed,
-      evidence: item.evidence.nodes.map(e => ({ hash: e.hash })),
-    }));
-  },
-});
+  })
+  .cache({
+    store: $sharedReferendumsCache,
+    map: (state, referendums) => mergeNested(state, referendums, r => r.id),
+  })
+  .build();
