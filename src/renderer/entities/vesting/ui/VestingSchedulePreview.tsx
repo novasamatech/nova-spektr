@@ -26,22 +26,28 @@ export const VestingSchedulePreview = ({ chain, asset, vestingSchedule, trigger 
       {
         key: 'target',
         title: t('vestedTransfer.parsedFile.table.headers.recipient'),
-        width: '270px',
+        width: '470px',
         render: (target) => <Account accountId={target as AccountId} chain={chain} variant="full" />,
       },
       {
         key: 'startingBlock',
         title: t('vestedTransfer.parsedFile.table.headers.startBlock'),
-        width: '80px',
+        width: '120px',
         render: (startingBlock) => (
-          <span className="shrink-0 text-body text-text-primary">{startingBlock.toString()}</span>
+          <div className="flex justify-end">
+            <span className="shrink-0 text-body text-text-primary">{startingBlock.toString()}</span>
+          </div>
         ),
       },
       {
         key: 'perBlock',
         title: t('vestedTransfer.parsedFile.table.headers.perBlock'),
         width: '120px',
-        render: (perBlock) => <span className="shrink-0 text-body text-text-primary">{perBlock.toString()}</span>,
+        render: (perBlock) => (
+          <div className="flex justify-end">
+            <AssetBalance value={perBlock} asset={asset} showSymbol />
+          </div>
+        ),
       },
       {
         key: 'locked',
