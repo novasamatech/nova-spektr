@@ -32,7 +32,7 @@ export interface SyncedProxyAccount extends SyncedAccount {
   proxyVariant: ProxyVariant;
   deposit: BN;
   blockNumber: BlockHeight;
-  spawner: AccountId;
+  spawner?: AccountId;
   extrinsicIndex: number;
 }
 
