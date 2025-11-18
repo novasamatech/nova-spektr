@@ -29,6 +29,10 @@ const $list = combine(
           tx.method === 'proxy' &&
           tx.section === 'proxy' &&
           proxiedAccountId === toAccountId(tx.transaction?.args.real);
+
+        // Nova Wallet wraps proxy calls inside utility.batchAll transactions instead of sending direct proxy.proxy calls.
+        // Without this check, operations created by Nova Wallet would
+        // be treated as regular multisig operations instead of flexible multisig operations.
         const isBatchAllTx =
           tx.method === 'batchAll' &&
           tx.section === 'utility' &&
