@@ -17,7 +17,13 @@ export const useMemberSalaryTasks = () => {
 
   const tasks: TaskDescription[] = [];
 
-  if (nonNullable(member) && nonNullable(period) && nonNullable(claimStatus) && memberService.isCoreMember(member)) {
+  if (
+    nonNullable(member) &&
+    member.rank > 0 &&
+    nonNullable(period) &&
+    nonNullable(claimStatus) &&
+    memberService.isCoreMember(member)
+  ) {
     if (salaryService.canRequestSalary(claimStatus, period)) {
       tasks.push({
         id: 'salary_request',
