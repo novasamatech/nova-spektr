@@ -57,6 +57,8 @@ const requestNextReferendumFx = createEffect(({ api }: { api: ApiPromise }) => {
 
 sample({
   clock: fellowshipEvidenceFeature.running,
+  source: $api,
+  filter: nonNullable,
   target: requestNextReferendumFx,
 });
 
@@ -175,15 +177,56 @@ sample({
 
 // Basket
 
-const saveToBasket = createEvent();
+type EvidenceVoteParams = {
+  evidence: Evidence;
+  aye: boolean;
+};
+
+const saveToBasket = createEvent<EvidenceVoteParams>();
 
 sample({
   clock: saveToBasket,
-  source: { existing: basketOperations.$list, account: $votingAccount, coreTx: $coreTx },
-  fn: ({ existing, account, coreTx }) => {
-    if (nullable(account) || nullable(coreTx)) {
+  source: {
+    existing: basketOperations.$list,
+    account: $votingAccount,
+    members: $members,
+    chain: $chain,
+    tracks: $tracks,
+    api: $api,
+    nextReferendum: $nextReferendum,
+  },
+  fn: ({ existing, account, members, chain, tracks, api, nextReferendum }, { evidence, aye }) => {
+    if (nullable(account) || nullable(chain) || nullable(api) || nullable(nextReferendum)) {
       return { add: [], remove: [] };
     }
+
+    const proposer = members.find(m => m.accountId === evidence.accountId);
+
+    if (nullable(proposer)) {
+      return { add: [], remove: [] };
+    }
+
+    const track = trackService.getReferendumTrackFromRank(tracks, proposer.rank, evidence.wish);
+    if (nullable(track)) {
+      return { add: [], remove: [] };
+    }
+
+    const originName = trackService.originNameFromTrack(track);
+    const proposal = votingService.createProposal('fellowship', evidence, proposer, api);
+
+    if (nullable(proposal)) {
+      return { add: [], remove: [] };
+    }
+
+    const coreTx = votingService.createEvidenceVotingTransaction({
+      pallet: 'fellowship',
+      originName,
+      accountId: account.accountId,
+      chain,
+      proposal,
+      aye,
+      poll: nextReferendum,
+    });
 
     const existingTransactions = existing.filter(o => {
       if (o.initiatorAccountId !== account.accountId) return false;

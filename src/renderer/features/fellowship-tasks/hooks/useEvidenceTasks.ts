@@ -89,11 +89,13 @@ export const useEvidenceTasks = () => {
         const endBlock = evidence.wish === 'Retention' ? evidenceService.getEndDemotionBlock(proposer, periods) : null;
         const { tags, sortingScore } = tasksService.getEvidenceImportance(evidence, proposer, periods, block);
 
+        const evidenceProposal = nonNullable(api)
+          ? votingService.createProposal('fellowship', evidence, proposer, api)
+          : null;
         const evidenceTransaction =
-          Object.values(basketOperation).find(o => {
-            if (!o) return false;
-            return votingService.isEvidenceVotingTransaction(o.coreTx) && o.initiatorAccountId === member.accountId;
-          })?.coreTx ?? null;
+          nonNullable(evidenceProposal) && nonNullable(member)
+            ? (basketOperation[`evidence_${evidenceProposal}`]?.coreTx ?? null)
+            : null;
 
         tasks.push({
           id: `evidence_request_${proposer.accountId}`,

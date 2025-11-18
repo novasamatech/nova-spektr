@@ -51,7 +51,8 @@ export const useMemberBasketOperations = () => {
     }
 
     if (votingService.isEvidenceVotingTransaction(operation.coreTx)) {
-      map[`referendum_${operation.coreTx.args.poll}`] = operation;
+      map[`evidence_${operation.coreTx.args.proposal}`] = operation;
+      continue;
     }
 
     if (votingService.isVotingTransaction(operation.coreTx)) {

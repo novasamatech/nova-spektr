@@ -10,6 +10,7 @@ export type OperationType =
   | 'salary_induct'
   | 'evidence'
   | 'evidence_vote'
+  | `evidence_${string}`
   | `evidence_request_${AccountId}`
   | `referendum_${number}`
   | `referendum_completed_${number}`;

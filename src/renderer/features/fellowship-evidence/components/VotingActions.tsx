@@ -1,4 +1,3 @@
-import { useGate } from 'effector-react';
 import { memo, useCallback } from 'react';
 
 import { type Transaction } from '@/shared/core';
@@ -26,8 +25,6 @@ type Props = {
 };
 
 export const VotingActions = memo(({ evidence, endBlock, transaction, variant, disabled, onClose }: Props) => {
-  useGate(evidenceVoting.flow, { evidence, aye: false });
-
   const { t } = useI18n();
 
   const { data: fellowshipMember } = useFellowshipMember();
@@ -46,13 +43,11 @@ export const VotingActions = memo(({ evidence, endBlock, transaction, variant, d
       if (disabled) return;
 
       if (canAddToBasket) {
-        evidenceVoting.flow.open({ evidence, aye: vote === 'aye' });
-        evidenceVoting.saveToBasket();
-        evidenceVoting.flow.close({ evidence: null, aye: false });
+        evidenceVoting.saveToBasket({ evidence, aye: vote === 'aye' });
         onClose?.();
       }
     },
-    [disabled, canAddToBasket, evidence],
+    [disabled, canAddToBasket, evidence, transaction, onClose],
   );
 
   const handleAyeClick = () => handleVote('aye');
