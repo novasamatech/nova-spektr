@@ -1,4 +1,4 @@
-import { createEffect } from 'effector';
+import { type Domain, createEffect } from 'effector';
 
 import { createAsyncTaskPool } from '@/shared/lib/utils';
 
@@ -6,6 +6,7 @@ type Config<P> = Partial<{
   pool(params: P): string | undefined;
   retryCount: number;
   retryDelay: number;
+  domain?: Domain;
 }>;
 
 /**
@@ -37,7 +38,9 @@ export const createQueuedEffect = <Params = void, Result = void, Fail = Error>(
     retryDelay: config?.retryDelay ?? 0,
   });
 
-  return createEffect<Params, Result, Fail>(params => {
+  const create = config?.domain?.createEffect ?? createEffect;
+
+  return create<Params, Result, Fail>(params => {
     return queue.call(() => fn(params), { pool: config?.pool?.(params) });
   });
 };

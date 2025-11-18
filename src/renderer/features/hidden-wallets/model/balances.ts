@@ -19,7 +19,7 @@ sample({
   target: series(balanceSubModel.fetchWallet),
 });
 
-export const $balances = combine(
+const $balances = combine(
   {
     wallets: hiddenWalletsModel.$hiddenWallets,
     chains: networkModel.$chains,

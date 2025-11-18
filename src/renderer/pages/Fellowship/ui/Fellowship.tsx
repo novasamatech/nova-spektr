@@ -5,10 +5,11 @@ import { Outlet, generatePath, useParams } from 'react-router-dom';
 import { type ChainId } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { isDev } from '@/shared/lib/utils';
+import { isDev, nullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { Header } from '@/shared/ui';
 import { Box, Select } from '@/shared/ui-kit';
+import { InactiveNetwork } from '@/entities/network';
 import { fellowshipNetwork } from '@/aggregates/fellowship-network';
 import { navigationModel } from '@/features/navigation';
 import {
@@ -28,6 +29,10 @@ export const Fellowship = () => {
 
   const { chainId } = useParams<'chainId'>();
   const selectedChain = useUnit(fellowshipNetwork.$selectedChainId);
+  const isDisconnected = useUnit(fellowshipNetwork.$isDisconnected);
+  const $network = useUnit(fellowshipNetwork.$network);
+
+  const isShowInactiveNetwork = isDisconnected && nullable($network);
 
   useLayoutEffect(() => {
     if (chainId?.startsWith('0x')) {
@@ -60,18 +65,20 @@ export const Fellowship = () => {
           </Box>
         )}
       </Header>
-
-      <Box horizontalAlign="center" height="100%" width="100%" padding={[4, 0]}>
-        <Box direction="row" gap={2} width="1089px" height="100%">
-          <Box width="276px" height="100%" gap={2.5} shrink={0}>
-            <Slot id={fellowshipSidebarSlot} />
+      <InactiveNetwork active={isShowInactiveNetwork} className="grow" />
+      {!isShowInactiveNetwork && (
+        <Box horizontalAlign="center" height="100%" width="100%" padding={[4, 0]}>
+          <Box direction="row" gap={2} width="1089px" height="100%">
+            <Box width="805px" height="100%" gap={2.5} shrink={0}>
+              <Slot id={fellowshipContentSlot} />
+            </Box>
+            <Box width="324px" height="100%" gap={2.5} shrink={0}>
+              <Slot id={fellowshipSidebarSlot} />
+            </Box>
           </Box>
-          <Box width="805px" height="100%" gap={2.5} shrink={0}>
-            <Slot id={fellowshipContentSlot} />
-          </Box>
+          <Outlet />
         </Box>
-        <Outlet />
-      </Box>
+      )}
     </Box>
   );
 };

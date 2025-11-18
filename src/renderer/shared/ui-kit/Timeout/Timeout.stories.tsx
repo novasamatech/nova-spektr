@@ -91,3 +91,21 @@ export const Expired: Story = {
     expect(span.textContent).toEqual('Expired');
   },
 };
+
+export const IconWithCustomText: Story = {
+  args: { secondsToEnd: 0, text: 'Time is up' },
+  async play({ canvasElement }) {
+    const canvas = within(canvasElement);
+    const span = await canvas.findByTestId<HTMLSpanElement>('ExpiredMsg');
+    expect(span.textContent).toEqual('Time is up');
+  },
+};
+
+export const IconTextHidden: Story = {
+  args: { secondsToEnd: 0, hideIconText: true },
+  async play({ canvasElement }) {
+    const canvas = within(canvasElement);
+    const span = canvas.queryByTestId('ExpiredMsg');
+    expect(span).toBeNull();
+  },
+};

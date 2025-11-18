@@ -4,9 +4,10 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { Icon } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
+import { useCoreMembers } from '@/domains/collectives';
+import { useFellowshipApi } from '@/aggregates/fellowship-network';
 import { ERROR } from '../constants';
-import { fellowshipMembersFeature } from '../model/feature';
-import { membersModel } from '../model/members';
+import { fellowshipMembersFeature } from '../feature';
 
 import { MembersModal } from './MembersModal';
 
@@ -14,7 +15,9 @@ export const MembersCard = memo(() => {
   const { t } = useI18n();
 
   const featureState = useUnit(fellowshipMembersFeature.state);
-  const [members, pending] = useUnit([membersModel.$list, membersModel.$pending]);
+  const api = useFellowshipApi();
+  const { data: members, pending } = useCoreMembers({ palletType: 'fellowship', api });
+
   const isNetworkDisabled = featureState.status === 'failed' && featureState.error.message === ERROR.networkDisabled;
 
   return (

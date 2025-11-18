@@ -3,6 +3,7 @@ import { CID } from 'multiformats/cid';
 import { create as createDigest } from 'multiformats/hashes/digest';
 
 import { type Chain, type HexString, type Transaction, TransactionType } from '@/shared/core';
+import { nonNullable } from '@/shared/lib/utils';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
@@ -36,10 +37,19 @@ function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
   return period;
 }
 
-function getBlockUntilNextPropotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+function getEndPromotionBlock(member: Member, periods: EvidencePeriods) {
+  if (memberService.isCoreMember(member)) {
+    const promotionPeriod = getPromotionPeriod(member, periods);
+    return (promotionPeriod + member.lastPromotion) as BlockHeight;
+  }
+
+  return null;
+}
+
+function getBlockUntilNextPromotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
   const promotionPeriod = getPromotionPeriod(member, periods);
   const gone = currentBlock - member.lastPromotion;
-  return Math.max(0, promotionPeriod - gone);
+  return Math.max(0, promotionPeriod - gone) as BlockHeight;
 }
 
 function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
@@ -53,19 +63,23 @@ function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
 function getEndDemotionBlock(member: Member, periods: EvidencePeriods) {
   if (memberService.isCoreMember(member)) {
     const demotionPeriod = getDemotionPeriod(member, periods);
-    return demotionPeriod + member.lastProof;
+    if (nonNullable(demotionPeriod)) {
+      return (demotionPeriod + member.lastProof) as BlockHeight;
+    }
   }
 
-  return Number.POSITIVE_INFINITY;
+  return null;
 }
 
 function getBlocksUntilDemotion(member: Member, periods: EvidencePeriods, currentBlock: BlockHeight) {
   if (memberService.isCoreMember(member)) {
     const endDemotionBlock = getEndDemotionBlock(member, periods);
-    return Math.max(0, endDemotionBlock - currentBlock);
+    if (nonNullable(endDemotionBlock)) {
+      return Math.max(0, endDemotionBlock - currentBlock) as BlockHeight;
+    }
   }
 
-  return Number.POSITIVE_INFINITY;
+  return null;
 }
 
 type EvidenceTransactionParams = {
@@ -101,7 +115,8 @@ export const evidenceService = {
   getCidByEvidence,
   getEvidenceFromCid,
   getPromotionPeriod,
-  getBlockUntilNextPropotion,
+  getEndPromotionBlock,
+  getBlockUntilNextPromotion,
   getDemotionPeriod,
   getBlocksUntilDemotion,
   getEndDemotionBlock,

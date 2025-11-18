@@ -1,13 +1,22 @@
 import { activityFeedRecordDescriptionSlot } from '@/features/fellowship-activity-feed';
 import { fellowshipSidebarSlot } from '@/pages/Fellowship/ui/Fellowship';
 
-import { ProfileCard } from './components/ProfileCard';
-import { profileInfoSlot } from './components/ProfileModal';
-import { SetActiveConfirmation } from './components/SetActiveConfirmation';
 import { fellowshipProfileFeature } from './model/feature';
 import { setActive } from './model/setActive';
+import { alertsReferendumSlot } from './ui/Alerts';
+import { ProfileCard } from './ui/ProfileCard';
+import { profileInfoSlot } from './ui/ProfileModal';
+import { referendumActivityItemActionSlot } from './ui/ReferendumActivityItem';
+import { SetActiveConfirmation } from './ui/SetActiveConfirmation';
 
-export { fellowshipProfileFeature, SetActiveConfirmation, setActive, profileInfoSlot };
+export {
+  fellowshipProfileFeature,
+  SetActiveConfirmation,
+  setActive,
+  profileInfoSlot,
+  referendumActivityItemActionSlot,
+  alertsReferendumSlot,
+};
 
 fellowshipProfileFeature.inject(fellowshipSidebarSlot, {
   order: 0,

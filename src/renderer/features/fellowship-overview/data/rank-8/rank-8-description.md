@@ -1,0 +1,3 @@
+Carborundum, a man-made crystal from the 1800s used for cutting and polishing, symbolizes human-forged excellence in the Fellowship. Among the hardest minerals, it represents the role in refining others into masters. This rank elevates commitment to network interests, aligning with Polkadot’s tenets, Web3 goals, and enlightened principles. Its abrasive utility evokes shaping futures through mentorship and guidance. The Master Constant persists in polishing the ecosystem, embodying crafted durability.
+
+Constants shape the network’s future, protocol, and ecosystem per foundational visions. Promotion requires eleven years of Polkadot as primary focus, fulfilling prior rank’s social and administrative expectations, ensuring steadfast dedication to collective advancement.
