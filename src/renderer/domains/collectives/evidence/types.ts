@@ -1,4 +1,5 @@
 import { type ChainId, type HexString, type Transaction } from '@/shared/core';
+import { type ReferendumId } from '@/shared/pallet/referenda';
 import { type AccountId, type BlockHeight } from '@/shared/polkadotjs-schemas';
 import { type CollectivePalletsType } from '../_lib/types';
 
@@ -13,9 +14,8 @@ export type Evidence = {
 export type EvidenceContent = {
   pallet: CollectivePalletsType;
   chainId: ChainId;
-  wish: 'Promotion' | 'Retention';
-  accountId: AccountId;
   hash: HexString;
+
   cid: string;
   content: string;
 };
@@ -55,3 +55,11 @@ export type EvidenceTransaction = Transaction<{
   wish: 'Promotion' | 'Retention';
   evidence: HexString;
 }>;
+
+export type ReferendumWithEvidence = {
+  referendumId: ReferendumId;
+  proposer: AccountId;
+  evidence: { hash: HexString }[];
+  pallet: CollectivePalletsType;
+  chainId: ChainId;
+};

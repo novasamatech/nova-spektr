@@ -1,30 +1,31 @@
 import { type ApiPromise } from '@polkadot/api';
+import { createStore } from 'effector';
 
 import { polkassemblyApiService } from '@/shared/api/polkassembly';
 import { subsquareApiService } from '@/shared/api/subsquare';
 import { type ChainId } from '@/shared/core';
-import { getBlockFromTime } from '@/shared/lib/utils';
-import { createRemoteResource } from '@/shared/resource';
-import { type CollectivePalletsType } from '../_lib/types';
+import { dictionary, getBlockFromTime, pickNestedValue, setNestedValue, toAccountId } from '@/shared/lib/utils';
+import { type ReferendumId } from '@/shared/pallet/referenda';
+import { createQueryResource } from '@/shared/query';
+import { POLKADOT_COLLECTIVES_CHAIN } from '../_lib/constants';
+import { type CollectivePalletsType, type CollectivesStruct } from '../_lib/types';
 
 import { type ReferendumMeta, type ReferendumMetaProvider } from './types';
 
-type RequestParams = {
+export type ReferendumMetaRequestParams = {
   provider: ReferendumMetaProvider;
   api: ApiPromise;
   palletType: CollectivePalletsType;
-  chainId: ChainId;
 };
 
-export const referendumMetaResource = createRemoteResource<RequestParams, ReferendumMeta[]>({
-  cache: {
-    key: ({ palletType, chainId }) => `${palletType}:${chainId}`,
-    ttl: Number.POSITIVE_INFINITY,
-  },
-  async fn({ chainId, api, provider }) {
+export const referendumMetaResource = createQueryResource<ReferendumMetaRequestParams>({
+  key: ({ palletType, api }) => [palletType, api.genesisHash.toHex()],
+})
+  .request<ReferendumMeta[]>(async ({ api, provider, palletType }) => {
+    const chainId = api.genesisHash.toHex() as ChainId;
     let response: ReferendumMeta[] = [];
     // external providers work only with polkadot collectives chain
-    if (chainId !== '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2') {
+    if (chainId !== POLKADOT_COLLECTIVES_CHAIN) {
       return [];
     }
 
@@ -38,6 +39,8 @@ export const referendumMetaResource = createRemoteResource<RequestParams, Refere
       for await (const page of pages) {
         response = response.concat(
           page.map(x => ({
+            pallet: palletType,
+            chainId,
             referendumId: x.referendumIndex,
             title: x.title,
             description: x.content,
@@ -45,6 +48,7 @@ export const referendumMetaResource = createRemoteResource<RequestParams, Refere
             status: x.state.name,
             created: x.indexer.blockHeight,
             blockHash: x.indexer.blockHash,
+            proposer: toAccountId(x.proposer),
           })),
         );
       }
@@ -58,17 +62,20 @@ export const referendumMetaResource = createRemoteResource<RequestParams, Refere
 
       for await (const page of pages) {
         const mappedResponses = await Promise.all(
-          page.map(async x => {
+          page.map<Promise<ReferendumMeta>>(async x => {
             const timestamp = new Date(x.created_at).getTime();
             const blockHeight = await getBlockFromTime(timestamp, api);
 
             return {
+              pallet: palletType,
+              chainId,
               referendumId: x.id,
               title: x.title,
               description: x.content ?? '',
               track: x.trackNumber,
               status: x.status,
               created: blockHeight,
+              proposer: toAccountId(x.proposer),
             };
           }),
         );
@@ -76,6 +83,26 @@ export const referendumMetaResource = createRemoteResource<RequestParams, Refere
         response = response.concat(mappedResponses);
       }
     }
+
     return response;
-  },
-});
+  })
+  .retry({
+    count: 3,
+    delay: 5000,
+  })
+  .cache<CollectivesStruct<Record<ReferendumId, ReferendumMeta>>>({
+    staleAfter: 120_000,
+    store: createStore({}),
+    map(state, referendums, { palletType, api }) {
+      const chainId = api.genesisHash.toHex();
+
+      const previousState = pickNestedValue(state, palletType, chainId) ?? {};
+      const resultMap = dictionary(referendums, 'referendumId');
+
+      return setNestedValue(state, palletType, chainId, {
+        ...previousState,
+        ...resultMap,
+      });
+    },
+  })
+  .build();

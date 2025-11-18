@@ -17,9 +17,10 @@ type Task<T = unknown> = {
   retry: number;
   resolve: (value: T) => void;
   reject: (error: unknown) => void;
+  signal?: AbortSignal;
 };
 
-type TaskParams = { pool?: string };
+type TaskParams = { pool?: string; signal?: AbortSignal };
 
 /**
  * Task manager with queues, retries and named pools.
@@ -39,6 +40,7 @@ class AsyncTaskPool {
       retry: 0,
       resolve,
       reject,
+      signal: params?.signal,
     };
 
     this.queue.push(task as Task);
@@ -83,6 +85,11 @@ class AsyncTaskPool {
       if (task.retry >= this.config.retryCount) {
         task.reject(error);
       } else {
+        if (task.signal?.aborted) {
+          task.reject(error);
+          return;
+        }
+
         const retryDelay = isNumber(this.config.retryDelay)
           ? this.config.retryDelay
           : this.config.retryDelay(task.retry);
