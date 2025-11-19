@@ -36,6 +36,8 @@ export const SalaryPayoutModal = ({ disabled, children }: Props) => {
   const account = useUnit(salaryPayout.$account);
   const wallet = useUnit(salaryPayout.$wallet);
   const fee = useUnit(salaryPayout.$fee);
+  const inBasket = useUnit(salaryPayout.$inBasket);
+
   const { active: activeSalary, passive: passiveSalary } = useUnit(memberSalary.$memberSalary);
 
   let salary: string | null = null;
@@ -69,7 +71,7 @@ export const SalaryPayoutModal = ({ disabled, children }: Props) => {
         isOpen={open}
         variant="success"
         autoCloseTimeout={2000}
-        title={t('operation.addedToBasket')}
+        title={inBasket ? t('operation.addedToBasket') : t('operation.removedFromBasket')}
         onClose={() => handleToggle(false)}
       />
     );
@@ -121,7 +123,7 @@ export const SalaryPayoutModal = ({ disabled, children }: Props) => {
             <Modal.Footer>
               {wallet && basketUtils.isBasketAvailable(wallet) && (
                 <Button pallet="secondary" onClick={handleBasketSave}>
-                  {t('operation.addToBasket')}
+                  {inBasket ? t('operation.removeFromBasket') : t('operation.addToBasket')}
                 </Button>
               )}
               {nonNullable(wallet) && <SignButton type={wallet.type} onClick={handleSign} />}
