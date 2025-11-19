@@ -88,7 +88,7 @@ function reusableLockBN(balance: Balance): BN {
   return BN.max(BN_ZERO, reusable);
 }
 
-type RewardSource = {
+export type RewardSource = {
   url: string;
   addressPrefix: number;
 };

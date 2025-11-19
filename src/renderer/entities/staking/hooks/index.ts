@@ -1,0 +1,1 @@
+export { useStakingRewards } from './useStakingRewards';
