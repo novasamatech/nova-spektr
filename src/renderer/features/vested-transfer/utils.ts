@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { parse } from 'csv-parse/sync';
 import { z } from 'zod';
 
@@ -49,21 +49,9 @@ function isSubmitStep(step: Step): boolean {
 
 function createVestingScheduleSchema(options: VestingScheduleSchemaOptions) {
   const { chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules } = options;
-  const positiveBn = (errorMessage: string) =>
-    z
-      .string()
-      .refine(
-        (value) => {
-          try {
-            const bn = new BN(value);
-            return bn.gt(new BN(0));
-          } catch {
-            return false;
-          }
-        },
-        { message: errorMessage },
-      )
-      .transform((value) => new BN(value));
+
+  const MAX_U32 = new BN(2).pow(new BN(32));
+  const MAX_U128 = new BN(2).pow(new BN(128));
 
   return z.object({
     target: z
@@ -75,15 +63,21 @@ function createVestingScheduleSchema(options: VestingScheduleSchemaOptions) {
         return new BN(existingSchedulesCount).lt(maxVestingSchedules);
       }, RowErrors.MAX_VESTING_SCHEDULES_REACHED),
 
-    locked: positiveBn(RowErrors.LOCKED_NOT_POSITIVE_NUMBER).refine(
-      (bn) => bn.gte(minVestedTransfer),
-      RowErrors.LOCKED_TOO_LOW,
-    ),
+    locked: z
+      .string()
+      .transform((value) => new BN(value))
+      .refine((bn) => bn.gte(minVestedTransfer) && bn.lt(MAX_U128), RowErrors.LOCKED_OUT_OF_RANGE),
 
-    startingBlock: positiveBn(RowErrors.START_BLOCK_NOT_POSITIVE_NUMBER)
+    startingBlock: z
+      .string()
+      .transform((value) => new BN(value))
       .refine((bn) => bn.gt(minStartingBlock), RowErrors.START_BLOCK_IN_PAST)
-      .refine((bn) => bn.lt(new BN(2 ** 32)), RowErrors.START_BLOCK_TOO_HIGH),
-    perBlock: positiveBn(RowErrors.PER_BLOCK_NOT_POSITIVE_NUMBER),
+      .refine((bn) => bn.gt(BN_ZERO) && bn.lt(MAX_U32), RowErrors.START_BLOCK_OUT_OF_RANGE),
+
+    perBlock: z
+      .string()
+      .transform((value) => new BN(value))
+      .refine((bn) => bn.gt(BN_ZERO) && bn.lt(MAX_U128), RowErrors.PER_BLOCK_OUT_OF_RANGE),
   });
 }
 
