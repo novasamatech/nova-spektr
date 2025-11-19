@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { getRelativeTimeFromApi, nonNullable, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
@@ -7,10 +7,11 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText, Duration, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
-import { salaryService } from '@/domains/collectives';
+import { memberService, salaryService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
+import { useFellowshipMember, useFellowshipMemberSalary } from '@/aggregates/fellowship-member';
 import { beneficiary } from '../model/beneficiary';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { memberSalary } from '../model/memberSalary';
@@ -26,14 +27,30 @@ export const SalaryInfo = memo(() => {
   const [timeLeft, setTimeLeft] = useState(0);
 
   const input = useUnit(fellowshipSalaryFeature.input);
-  const currentMember = useUnit(profile.$member);
+  const currentMemberOld = useUnit(profile.$member);
   const account = useUnit(profile.$account);
   const currentPeriod = useUnit(memberSalary.$currentPeriod);
   const claimStatus = useUnit(memberSalary.$memberClaimStatus);
-  const salary = useUnit(memberSalary.$memberSalary);
+  const salaryOld = useUnit(memberSalary.$memberSalary);
   const beneficiaryValue = useUnit(beneficiary.$beneficiary);
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
+
+  const { data: salary } = useFellowshipMemberSalary();
+  const { data: currentMember } = useFellowshipMember();
+
+  console.log('salary', salary);
+  console.log('salaryOld', salaryOld);
+  console.log('currentMemberOld', currentMemberOld);
+  console.log('currentMember', currentMember);
+
+  const salaryAmount = useMemo(() => {
+    if (nonNullable(currentMember) && nonNullable(salary) && memberService.isCoreMember(currentMember)) {
+      return salaryService.formatSalaryAmount(currentMember.isActive ? salary.active : salary.passive);
+    }
+  }, [currentMember, salary]);
+
+  console.log('salaryAmount', salaryAmount);
 
   const getBeneficiaryName = (accountId: AccountId): string => {
     const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
@@ -95,7 +112,7 @@ export const SalaryInfo = memo(() => {
                           : t('fellowship.salary.salaryInfo.timeToRequest')}
                       </FootnoteText>
 
-                      <SmallTitleText>{salaryService.formatSalaryAmount(salary.active)}</SmallTitleText>
+                      <SmallTitleText>{salaryAmount}</SmallTitleText>
 
                       {isSalaryRequested && (
                         <FootnoteText className="mt-auto flex items-center gap-1 pt-2 pb-1 text-tab-text-accent">
@@ -122,7 +139,7 @@ export const SalaryInfo = memo(() => {
                           : t('fellowship.salary.salaryInfo.timeToWithdraw')}
                       </FootnoteText>
 
-                      <SmallTitleText>{salaryService.formatSalaryAmount(salary.active)}</SmallTitleText>
+                      <SmallTitleText>{salaryAmount}</SmallTitleText>
 
                       {isPayoutRequested && (
                         <FootnoteText className="mt-auto flex items-center gap-1 pt-2 pb-1 text-tab-text-accent">
@@ -148,7 +165,7 @@ export const SalaryInfo = memo(() => {
                     {t('fellowship.salary.salaryInfo.inductSalary')}
                   </FootnoteText>
 
-                  <SmallTitleText>{salaryService.formatSalaryAmount(salary.active)}</SmallTitleText>
+                  <SmallTitleText>{salaryAmount}</SmallTitleText>
 
                   <SalaryInductModal>
                     <Button className="mt-auto w-fit" size="sm" variant="fill" disabled={disabled}>
