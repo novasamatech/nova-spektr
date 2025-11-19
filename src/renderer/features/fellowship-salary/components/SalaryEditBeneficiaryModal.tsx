@@ -4,7 +4,7 @@ import { type PropsWithChildren, type ReactNode, useMemo, useState } from 'react
 
 import { type Address as AccountAddress, type ID } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { entries, includesMultiple, toAccountId, toAddress } from '@/shared/lib/utils';
+import { entries, includesMultiple, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText } from '@/shared/ui';
 import { Address, Identicon, WalletIcon } from '@/shared/ui-entities';
@@ -57,7 +57,9 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
   };
 
   const handleSave = () => {
-    beneficiary.change(selectedBeneficiary);
+    if (nonNullable(selectedBeneficiary)) {
+      beneficiary.change(selectedBeneficiary);
+    }
     setOpen(false);
   };
 
