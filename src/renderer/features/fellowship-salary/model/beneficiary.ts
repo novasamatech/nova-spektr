@@ -19,7 +19,9 @@ const populateBeneficiaryFx = createEffect((key: string): AccountId | null => {
 });
 
 const saveBeneficiaryFx = createEffect(({ key, beneficiary }: { key: string; beneficiary: AccountId | null }) => {
-  return localStorageService.saveToStorage<AccountId | null>(key, beneficiary);
+  if (nonNullable(key) && nonNullable(beneficiary)) {
+    return localStorageService.saveToStorage<AccountId | null>(key, beneficiary);
+  }
 });
 
 sample({
