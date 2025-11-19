@@ -1,33 +1,75 @@
-import { useQuery } from '@apollo/client';
+import { BN } from '@polkadot/util';
+import { GraphQLClient } from 'graphql-request';
 
-import { type Chain } from '@/shared/core';
-import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { keys, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { GET_TOTAL_REWARDS } from '../graphql/queries/stakingRewards';
 import { type RewardsQuery } from '../graphql/types/stakingRewards';
-import { type IStakingRewardsService, type RewardsMap } from '../lib/types';
+import { type RewardSource } from '../lib/staking-utils';
+import { type RewardsMap } from '../lib/types';
 
-export const useStakingRewards = (accounts: AccountId[], chain: Chain | null): IStakingRewardsService => {
-  const { data, loading } = useQuery<RewardsQuery>(GET_TOTAL_REWARDS, {
-    variables: {
-      addresses: accounts.length === 0 ? [''] : accounts.map((a) => toAddress(a, { prefix: chain?.addressPrefix })),
-    },
-  });
+type FetchStakingRewardsParams = {
+  accounts: AccountId[];
+  rewardSources: RewardSource[];
+  baseMap: RewardsMap;
+};
 
-  const addressMap = accounts.reduce<RewardsMap>((acc, account) => {
-    acc[account] = '0';
+export const fetchStakingRewards = async ({
+  accounts,
+  rewardSources,
+  baseMap,
+}: FetchStakingRewardsParams): Promise<RewardsMap> => {
+  if (accounts.length === 0 || rewardSources.length === 0) {
+    return baseMap;
+  }
+
+  const buildAddresses = (prefix: number) => {
+    return accounts.map((accountId) => toAddress(accountId, { prefix }));
+  };
+
+  const sums = keys(baseMap).reduce<Record<AccountId, BN>>((acc, accountId) => {
+    acc[accountId] = new BN(baseMap[accountId]);
 
     return acc;
   }, {});
 
-  const rewards = data?.accumulatedRewards.nodes.reduce<RewardsMap>((acc, node) => {
-    acc[toAccountId(node.id)] = node.amount;
+  await Promise.allSettled(
+    rewardSources.map(async ({ url, addressPrefix }) => {
+      try {
+        const client = new GraphQLClient(url);
 
-    return acc;
-  }, addressMap);
+        const data = await client.request<RewardsQuery>(GET_TOTAL_REWARDS, {
+          addresses: buildAddresses(addressPrefix),
+        });
 
-  return {
-    rewards: rewards || addressMap,
-    isRewardsLoading: loading,
-  };
+        const nodes = data.accumulatedRewards?.nodes ?? [];
+
+        for (const { id, amount } of nodes) {
+          const accountId = toAccountId(id);
+          if (!sums[accountId]) {
+            sums[accountId] = new BN(0);
+          }
+
+          sums[accountId] = sums[accountId].add(new BN(amount));
+        }
+      } catch (error) {
+        console.error('Staking: rewards request failed for', url, error);
+      }
+    }),
+  );
+
+  const aggregated: RewardsMap = keys(sums).reduce<RewardsMap>(
+    (acc, accountId) => {
+      acc[accountId] = sums[accountId].toString();
+
+      return acc;
+    },
+    { ...baseMap },
+  );
+
+  return aggregated;
+};
+
+export const stakingRewardsApi = {
+  fetch: fetchStakingRewards,
 };
