@@ -28,18 +28,6 @@ export const App = () => {
   const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
 
   useEffect(() => {
-    if (isLoadingWallets) return;
-
-    if (wallets.length > 0 && matchPath(Paths.ONBOARDING, pathname)) {
-      navigate(Paths.ASSETS, { replace: true });
-    }
-
-    if (wallets.length === 0) {
-      navigate(Paths.ONBOARDING, { replace: true });
-    }
-  }, [isLoadingWallets, wallets.length]);
-
-  useEffect(() => {
     if (searchParams.toString()) {
       deepLinkService.setDeepLink({
         searchParams,
@@ -53,6 +41,18 @@ export const App = () => {
       });
     }
   }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (isLoadingWallets) return;
+
+    if (wallets.length > 0 && matchPath(Paths.ONBOARDING, pathname)) {
+      navigate(Paths.ASSETS, { replace: true });
+    }
+
+    if (wallets.length === 0) {
+      navigate(Paths.ONBOARDING, { replace: true });
+    }
+  }, [isLoadingWallets, wallets.length]);
 
   return (
     <ConfirmDialogProvider>

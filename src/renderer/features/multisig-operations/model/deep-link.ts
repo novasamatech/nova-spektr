@@ -1,14 +1,16 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { z } from 'zod';
 
-import { type ChainId } from '@/shared/core';
+import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { deepLinkService } from '@/domains/app';
 import { accounts, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { multisigService } from '@/features/multisig-wallet';
 
 export const multisigOperationSchema = z.object({
   chainId: z.string().transform(x => x as ChainId),
@@ -110,16 +112,19 @@ sample({
   target: networkNotAvailableModalOpened,
 });
 
-// Check if account exists before selecting wallet (only if network exists)
 const accountChecked = sample({
   clock: networkChecked,
-  source: accounts.$list,
-  filter: (_, { network }) => nonNullable(network),
-  fn: (accountsList, { data }) => {
-    const account = accountsList.find(acc => acc.accountId === data.accountId);
+  source: { accountsList: accounts.$list, populated: accounts.$populated },
+  filter: ({ populated }, { network }) => nonNullable(network) && populated,
+  fn: ({ accountsList }, { data }) => {
+    const account = accountsList
+      .filter(accountUtils.isAnyMultisigAccount)
+      .find(acc => acc.accountId === data.accountId);
+    const multisigAccountId = account ? multisigService.getMultisigAccountId(account) : null;
     return {
       data,
       account: account ?? null,
+      multisigAccountId,
     };
   },
 });
@@ -133,8 +138,8 @@ sample({
 
 sample({
   clock: accountChecked,
-  filter: ({ account }) => nonNullable(account),
-  fn: ({ data }) => getOperationIdFromDeepLink(data),
+  filter: ({ multisigAccountId }) => nonNullable(multisigAccountId),
+  fn: ({ data, multisigAccountId }) => getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
   target: setFocusedOperationId,
 });
 
@@ -144,21 +149,20 @@ sample({
   target: accountNotFoundModalOpened,
 });
 
-// Trigger operations fetch when landing via deep link if operation not found
 const operationFetchRequested = sample({
   clock: accountChecked,
   source: { apis: networkModel.$apis, chains: networkModel.$chains, operations: multisigOperation.$list },
-  filter: ({ operations }, { account, data }) => {
-    if (account === null) return false;
-    const operationId = getOperationIdFromDeepLink(data);
+  filter: ({ operations }, { multisigAccountId, data }) => {
+    if (nullable(multisigAccountId)) return false;
+    const operationId = getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId });
     const operationExists = operations.some(op => op.id === operationId);
     return !operationExists;
   },
-  fn: ({ apis, chains }, { data }) => ({
+  fn: ({ apis, chains }, { data, multisigAccountId }) => ({
     apis,
     chains,
-    accountId: data.accountId,
-    operationId: getOperationIdFromDeepLink(data),
+    accountId: multisigAccountId!,
+    operationId: getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
   }),
 });
 
@@ -183,13 +187,16 @@ sample({
   target: operationNotFoundModalOpened,
 });
 
-function generateMultisigOperationDeepLink(data: MultisigOperationDeepLinkData): string {
+function generateMultisigOperationDeepLink(
+  operation: MultisigOperationDeepLinkData,
+  account: MultisigAccount | FlexibleMultisigAccount,
+): string {
   const params = new URLSearchParams({
-    chainId: data.chainId,
-    callHash: data.callHash,
-    accountId: data.accountId,
-    blockCreated: data.blockCreated.toString(),
-    indexCreated: data.indexCreated.toString(),
+    chainId: operation.chainId,
+    callHash: operation.callHash,
+    accountId: account.accountId,
+    blockCreated: operation.blockCreated.toString(),
+    indexCreated: operation.indexCreated.toString(),
   });
 
   return `${window.location.origin}/#${Paths.OPERATIONS}?${params.toString()}`;
