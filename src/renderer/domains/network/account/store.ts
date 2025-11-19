@@ -121,5 +121,6 @@ export const accounts = {
 
   __test: {
     $list: $accounts,
+    $populated,
   },
 };
