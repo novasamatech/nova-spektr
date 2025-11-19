@@ -5,3 +5,5 @@ export { ImportKeysModal } from './ImportKeys/ui/ImportKeysModal';
 export { ExportKeysModal } from './ExportKeys';
 export { shardsModel } from './ShardSelectorModal/model/shards-model';
 export { shardsUtils } from './ShardSelectorModal/lib/shards-utils';
+export { ShellRouteGuard } from './ShellRouteGuard';
+export { OnboardingRouteGuard } from './OnboardingRouteGuard';
