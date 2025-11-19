@@ -11,10 +11,14 @@ import { memberService, salaryService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { walletModel } from '@/entities/wallet';
-import { useFellowshipMember, useFellowshipMemberSalary } from '@/aggregates/fellowship-member';
+import {
+  useFellowshipMember,
+  useFellowshipMemberSalary,
+  useFellowshipMemberSalaryClaimStatus,
+} from '@/aggregates/fellowship-member';
+import { useCurrentSalaryPeriod } from '@/aggregates/fellowship-network';
 import { beneficiary } from '../model/beneficiary';
 import { fellowshipSalaryFeature } from '../model/feature';
-import { memberSalary } from '../model/memberSalary';
 import { profile } from '../model/profile';
 
 import { SalaryEditBeneficiaryModal } from './SalaryEditBeneficiaryModal';
@@ -27,30 +31,21 @@ export const SalaryInfo = memo(() => {
   const [timeLeft, setTimeLeft] = useState(0);
 
   const input = useUnit(fellowshipSalaryFeature.input);
-  const currentMemberOld = useUnit(profile.$member);
   const account = useUnit(profile.$account);
-  const currentPeriod = useUnit(memberSalary.$currentPeriod);
-  const claimStatus = useUnit(memberSalary.$memberClaimStatus);
-  const salaryOld = useUnit(memberSalary.$memberSalary);
   const beneficiaryValue = useUnit(beneficiary.$beneficiary);
   const contacts = useUnit(contactModel.$contacts);
   const wallets = useUnit(walletModel.$wallets);
 
-  const { data: salary } = useFellowshipMemberSalary();
   const { data: currentMember } = useFellowshipMember();
-
-  console.log('salary', salary);
-  console.log('salaryOld', salaryOld);
-  console.log('currentMemberOld', currentMemberOld);
-  console.log('currentMember', currentMember);
+  const { data: claimStatus } = useFellowshipMemberSalaryClaimStatus();
+  const { data: currentPeriod } = useCurrentSalaryPeriod();
+  const { data: salary } = useFellowshipMemberSalary();
 
   const salaryAmount = useMemo(() => {
     if (nonNullable(currentMember) && nonNullable(salary) && memberService.isCoreMember(currentMember)) {
       return salaryService.formatSalaryAmount(currentMember.isActive ? salary.active : salary.passive);
     }
   }, [currentMember, salary]);
-
-  console.log('salaryAmount', salaryAmount);
 
   const getBeneficiaryName = (accountId: AccountId): string => {
     const finderFn = <T extends { accountId: AccountId }>(collection: T[]): T | undefined => {
