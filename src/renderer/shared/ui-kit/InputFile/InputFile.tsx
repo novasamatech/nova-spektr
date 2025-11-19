@@ -21,6 +21,8 @@ export const InputFile = forwardRef<HTMLInputElement, Props>(
       const file = files.item(0);
       if (!file) return;
 
+      event.target.value = '';
+
       const fileName = file.name;
       const fileFormat = fileName.slice(fileName.lastIndexOf('.'), fileName.length);
       const acceptedFormats = props.accept?.split(',');
