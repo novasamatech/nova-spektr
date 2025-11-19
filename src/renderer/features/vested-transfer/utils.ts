@@ -80,11 +80,9 @@ function createVestingScheduleSchema(options: VestingScheduleSchemaOptions) {
       RowErrors.LOCKED_TOO_LOW,
     ),
 
-    startingBlock: positiveBn(RowErrors.START_BLOCK_NOT_POSITIVE_INT).refine(
-      (bn) => bn.gt(minStartingBlock),
-      RowErrors.START_BLOCK_IN_PAST,
-    ),
-
+    startingBlock: positiveBn(RowErrors.START_BLOCK_NOT_POSITIVE_INT)
+      .refine((bn) => bn.gt(minStartingBlock), RowErrors.START_BLOCK_IN_PAST)
+      .refine((bn) => bn.lt(new BN(2 ** 32)), RowErrors.START_BLOCK_TOO_HIGH),
     perBlock: positiveBn(RowErrors.PER_BLOCK_NOT_POSITIVE_INT),
   });
 }
