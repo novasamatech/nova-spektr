@@ -1,6 +1,7 @@
 import { allSettled, fork } from 'effector';
 import { describe, expect, it } from 'vitest';
 
+import { AccountType, CryptoType, SigningType } from '@/shared/core';
 import { accounts, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
@@ -89,10 +90,12 @@ describe('multisig operations deep link', () => {
       accountId: mockAccountId as any,
       walletId: 1,
       name: 'Test Account',
-      type: 'multisig' as const,
+      accountType: AccountType.MULTISIG,
+      type: 'universal' as const,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
       signatories: [],
       threshold: 2,
-      chainId: mockChain.chainId,
     };
 
     // Simulate cold start: accounts not yet populated
@@ -148,10 +151,12 @@ describe('multisig operations deep link', () => {
       accountId: mockAccountId as any,
       walletId: 1,
       name: 'Test Account',
-      type: 'multisig' as const,
+      accountType: AccountType.MULTISIG,
+      type: 'universal' as const,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
       signatories: [],
       threshold: 2,
-      chainId: mockChain.chainId,
     };
 
     const scope = fork({
@@ -200,10 +205,12 @@ describe('multisig operations deep link', () => {
       accountId: mockAccountId as any,
       walletId: 1,
       name: 'Test Account',
-      type: 'multisig' as const,
+      accountType: AccountType.MULTISIG,
+      type: 'universal' as const,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
       signatories: [],
       threshold: 2,
-      chainId: mockChain.chainId,
     };
 
     const deepLinkData: MultisigOperationDeepLinkData = {

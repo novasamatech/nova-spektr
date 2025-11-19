@@ -117,12 +117,14 @@ const accountChecked = sample({
   source: { accountsList: accounts.$list, populated: accounts.$populated },
   filter: ({ populated }, { network }) => nonNullable(network) && populated,
   fn: ({ accountsList }, { data }) => {
-    const account = accountsList.find(
-      acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId,
-    );
+    const account = accountsList
+      .filter(accountUtils.isAnyMultisigAccount)
+      .find(acc => acc.accountId === data.accountId);
+    const multisigAccountId = account ? multisigService.getMultisigAccountId(account) : null;
     return {
       data,
-      account: (account as MultisigAccount | FlexibleMultisigAccount) ?? null,
+      account: account ?? null,
+      multisigAccountId,
     };
   },
 });
@@ -136,14 +138,8 @@ sample({
 
 sample({
   clock: accountChecked,
-  filter: ({ account }) => nonNullable(account) && accountUtils.isAnyMultisigAccount(account),
-  fn: ({ data, account }) => {
-    // For operation lookup, use the multisigAccountId (for flex multisig)
-    const multisigAccountId = multisigService.getMultisigAccountId(
-      account as MultisigAccount | FlexibleMultisigAccount,
-    );
-    return getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId });
-  },
+  filter: ({ multisigAccountId }) => nonNullable(multisigAccountId),
+  fn: ({ data, multisigAccountId }) => getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
   target: setFocusedOperationId,
 });
 
@@ -153,26 +149,21 @@ sample({
   target: accountNotFoundModalOpened,
 });
 
-// Trigger operations fetch when landing via deep link if operation not found
 const operationFetchRequested = sample({
   clock: accountChecked,
   source: { apis: networkModel.$apis, chains: networkModel.$chains, operations: multisigOperation.$list },
-  filter: ({ operations }, { account, data }) => {
-    if (account === null) return false;
-    const multisigAccountId = multisigService.getMultisigAccountId(account);
+  filter: ({ operations }, { multisigAccountId, data }) => {
+    if (nullable(multisigAccountId)) return false;
     const operationId = getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId });
     const operationExists = operations.some(op => op.id === operationId);
     return !operationExists;
   },
-  fn: ({ apis, chains }, { data, account }) => {
-    const multisigAccountId = multisigService.getMultisigAccountId(account!);
-    return {
-      apis,
-      chains,
-      accountId: multisigAccountId,
-      operationId: getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId }),
-    };
-  },
+  fn: ({ apis, chains }, { data, multisigAccountId }) => ({
+    apis,
+    chains,
+    accountId: multisigAccountId!,
+    operationId: getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
+  }),
 });
 
 sample({
