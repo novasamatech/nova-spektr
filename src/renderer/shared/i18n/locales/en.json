@@ -2592,6 +2592,7 @@
           "MAX_VESTING_SCHEDULES_REACHED": "Recipient account has reached the maximum number of vesting schedules",
           "PER_BLOCK_NOT_POSITIVE_INT": "Per block must be a positive integer",
           "START_BLOCK_IN_PAST": "Start block cannot be in the past",
+          "START_BLOCK_TOO_HIGH": "Start block must not exceed 4,294,967,295",
           "START_BLOCK_NOT_POSITIVE_INT": "Start block must be a positive integer",
           "UNKNOWN_ERROR": "Unknown error"
         }
