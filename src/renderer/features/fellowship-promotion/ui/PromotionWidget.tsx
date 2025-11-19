@@ -203,6 +203,7 @@ const ReferendumCreated = memo(() => {
   const votingRating = useMemo(() => {
     return votingHistoryService.getApprovalRating(votes);
   }, [votes]);
+
   const nobodyVoted = nullable(votingRating);
 
   const { levelTextKey, levelClassName } = useMemo(() => {
