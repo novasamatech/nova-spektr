@@ -33,6 +33,7 @@ export enum RowErrors {
   START_BLOCK_IN_PAST = 'START_BLOCK_IN_PAST',
 
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+  INVALID_VALUE = 'INVALID_VALUE',
 }
 
 type RowIndex = number;
