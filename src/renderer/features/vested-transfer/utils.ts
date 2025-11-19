@@ -53,6 +53,19 @@ function createVestingScheduleSchema(options: VestingScheduleSchemaOptions) {
   const MAX_U32 = new BN(2).pow(new BN(32));
   const MAX_U128 = new BN(2).pow(new BN(128));
 
+  const safeBN = () =>
+    z.string().transform((value, ctx) => {
+      try {
+        return new BN(value);
+      } catch {
+        ctx.addIssue({
+          code: 'custom',
+          message: RowErrors.INVALID_VALUE,
+        });
+        return z.NEVER;
+      }
+    });
+
   return z.object({
     target: z
       .string()
@@ -63,21 +76,13 @@ function createVestingScheduleSchema(options: VestingScheduleSchemaOptions) {
         return new BN(existingSchedulesCount).lt(maxVestingSchedules);
       }, RowErrors.MAX_VESTING_SCHEDULES_REACHED),
 
-    locked: z
-      .string()
-      .transform((value) => new BN(value))
-      .refine((bn) => bn.gte(minVestedTransfer) && bn.lt(MAX_U128), RowErrors.LOCKED_OUT_OF_RANGE),
+    locked: safeBN().refine((bn) => bn.gte(minVestedTransfer) && bn.lt(MAX_U128), RowErrors.LOCKED_OUT_OF_RANGE),
 
-    startingBlock: z
-      .string()
-      .transform((value) => new BN(value))
+    startingBlock: safeBN()
       .refine((bn) => bn.gt(minStartingBlock), RowErrors.START_BLOCK_IN_PAST)
       .refine((bn) => bn.gt(BN_ZERO) && bn.lt(MAX_U32), RowErrors.START_BLOCK_OUT_OF_RANGE),
 
-    perBlock: z
-      .string()
-      .transform((value) => new BN(value))
-      .refine((bn) => bn.gt(BN_ZERO) && bn.lt(MAX_U128), RowErrors.PER_BLOCK_OUT_OF_RANGE),
+    perBlock: safeBN().refine((bn) => bn.gt(BN_ZERO) && bn.lt(MAX_U128), RowErrors.PER_BLOCK_OUT_OF_RANGE),
   });
 }
 
