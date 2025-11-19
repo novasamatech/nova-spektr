@@ -382,7 +382,7 @@ const $canSubmit = combine(
     isTxValid: $isTxValid,
     fee: $fee,
   },
-  ({ isFormValid, isTxValid, fee }) => isFormValid && isTxValid && !fee?.isZero(),
+  ({ isFormValid, isTxValid, fee }) => isFormValid && isTxValid && nonNullable(fee),
 );
 
 // submit flow
