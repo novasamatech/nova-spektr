@@ -303,6 +303,12 @@ sample({
 });
 
 sample({
+  clock: validateFileFx.doneData,
+  fn: () => null,
+  target: $fileErrors,
+});
+
+sample({
   clock: validateFileFx.failData,
   target: $fileErrors,
 });
