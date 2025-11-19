@@ -1825,6 +1825,8 @@
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
+    "removeFromBasket": "Remove from basket",
+    "removedFromBasket": "Removed from basket",
     "selectAccount": "Select account",
     "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",

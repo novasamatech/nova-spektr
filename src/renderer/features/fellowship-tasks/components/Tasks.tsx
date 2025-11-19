@@ -25,7 +25,7 @@ export const Tasks = () => {
 
   const tasksCount = useMemo(() => {
     const personalCount = groups.personal?.length ?? 0;
-    const generalCount = groups.general?.filter(task => !task.hasVoted).length ?? 0;
+    const generalCount = groups.active?.filter(task => !task.hasVoted).length ?? 0;
     return personalCount + generalCount;
   }, [groups]);
 
@@ -45,8 +45,8 @@ export const Tasks = () => {
           {groups.personal ? (
             <TasksGroup key="pesonal" title={t('fellowship.tasks.personal')} group={groups.personal} />
           ) : null}
-          {groups.general ? (
-            <TasksGroup key="general" title={t('fellowship.tasks.general')} group={groups.general} />
+          {groups.active ? (
+            <TasksGroup key="active" title={t('fellowship.tasks.active')} group={groups.active} />
           ) : null}
           {groups.completed ? (
             <TasksGroup key="completed" title={t('fellowship.tasks.completed')} group={groups.completed} async />
