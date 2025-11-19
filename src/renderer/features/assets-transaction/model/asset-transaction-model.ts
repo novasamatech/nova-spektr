@@ -26,7 +26,7 @@ const $assetWithChains = combine(
     const filteredChains = selectedAsset.chains.filter((chain) => {
       const hasSymbol = includes(chain.assetSymbol, query);
       const hasChainName = includes(chain.name, query);
-
+      console.log('hasSymbol', hasSymbol);
       return hasSymbol || hasChainName;
     });
 
