@@ -98,7 +98,7 @@ export const useEvidenceTasks = () => {
         tasks.push({
           id: `evidence_request_${proposer.accountId}`,
           weight: sortingScore,
-          group: 'general',
+          group: 'active',
           body: PromotionRetentionEvidenceVoting,
           meta: { evidence, transaction: evidenceTransaction, endBlock, tags },
           hasVoted: false,
