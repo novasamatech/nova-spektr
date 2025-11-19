@@ -13,7 +13,6 @@ import { OperationResult } from '@/entities/transaction';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { memberSalary } from '../model/memberSalary';
-import { salaryInduct } from '../model/salaryInduct';
 import { salaryRequest } from '../model/salaryRequest';
 
 import { SalaryRegisterConfirmation } from './SalaryRegisterConfirmation';
@@ -34,7 +33,7 @@ export const SalaryRegisterModal = ({ disabled, children }: Props) => {
   const account = useUnit(salaryRequest.$account);
   const wallet = useUnit(salaryRequest.$wallet);
   const fee = useUnit(salaryRequest.$fee);
-  const inBasket = useUnit(salaryInduct.$inBasket);
+  const inBasket = useUnit(salaryRequest.$inBasket);
 
   const { active: activeSalary, passive: passiveSalary } = useUnit(memberSalary.$memberSalary);
 

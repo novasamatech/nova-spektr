@@ -14,7 +14,6 @@ import { OperationSign, OperationSubmit } from '@/features/operations';
 import { $beneficiary } from '../model/beneficiary';
 import { fellowshipSalaryFeature } from '../model/feature';
 import { memberSalary } from '../model/memberSalary';
-import { salaryInduct } from '../model/salaryInduct';
 import { salaryPayout } from '../model/salaryPayout';
 
 import { SalaryPayoutConfirmation } from './SalaryPayoutConfirmation';
@@ -37,7 +36,7 @@ export const SalaryPayoutModal = ({ disabled, children }: Props) => {
   const account = useUnit(salaryPayout.$account);
   const wallet = useUnit(salaryPayout.$wallet);
   const fee = useUnit(salaryPayout.$fee);
-  const inBasket = useUnit(salaryInduct.$inBasket);
+  const inBasket = useUnit(salaryPayout.$inBasket);
 
   const { active: activeSalary, passive: passiveSalary } = useUnit(memberSalary.$memberSalary);
 
