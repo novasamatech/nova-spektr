@@ -75,15 +75,15 @@ function createVestingScheduleSchema(options: VestingScheduleSchemaOptions) {
         return new BN(existingSchedulesCount).lt(maxVestingSchedules);
       }, RowErrors.MAX_VESTING_SCHEDULES_REACHED),
 
-    locked: positiveBn(RowErrors.LOCKED_NOT_POSITIVE_INT).refine(
+    locked: positiveBn(RowErrors.LOCKED_NOT_POSITIVE_NUMBER).refine(
       (bn) => bn.gte(minVestedTransfer),
       RowErrors.LOCKED_TOO_LOW,
     ),
 
-    startingBlock: positiveBn(RowErrors.START_BLOCK_NOT_POSITIVE_INT)
+    startingBlock: positiveBn(RowErrors.START_BLOCK_NOT_POSITIVE_NUMBER)
       .refine((bn) => bn.gt(minStartingBlock), RowErrors.START_BLOCK_IN_PAST)
       .refine((bn) => bn.lt(new BN(2 ** 32)), RowErrors.START_BLOCK_TOO_HIGH),
-    perBlock: positiveBn(RowErrors.PER_BLOCK_NOT_POSITIVE_INT),
+    perBlock: positiveBn(RowErrors.PER_BLOCK_NOT_POSITIVE_NUMBER),
   });
 }
 
