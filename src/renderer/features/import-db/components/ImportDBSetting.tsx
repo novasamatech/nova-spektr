@@ -1,7 +1,7 @@
 import { deleteDb, exportDb } from '@/shared/api/storage';
 import { useI18n } from '@/shared/i18n';
+import { downloadFiles } from '@/shared/lib/utils';
 import { BodyText, Button, Icon, Plate } from '@/shared/ui';
-import { downloadFiles } from '@/features/wallets/ExportKeys';
 
 export const ImportDBSetting = () => {
   const { t } = useI18n();

@@ -12,6 +12,7 @@ export const enum TransactionType {
   TRANSFER_ALL = 'transfer_all',
   ORML_TRANSFER = 'ormlTransfer',
   ASSET_TRANSFER = 'assetTransfer',
+  VESTED_TRANSFER = 'vestedTransfer',
 
   MULTISIG_AS_MULTI = 'multisig_as_multi',
   MULTISIG_APPROVE_AS_MULTI = 'multisig_approve_as_multi',
