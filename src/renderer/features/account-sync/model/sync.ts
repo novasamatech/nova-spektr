@@ -130,7 +130,7 @@ export const syncProxiedAccounts = ({
       }
 
       if (nullable(account.pendingBlockNumber)) {
-        true;
+        return true;
       }
 
       const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
@@ -453,11 +453,11 @@ export const syncFlexibleMultisigs = ({
         return false;
       }
 
-      if (!account.entropyBlockNumber) {
+      if (!account.pendingBlockNumber) {
         return true;
       } else {
         const lastIndexedBlock = syncResult.indexedBlocks.get(account.chainId);
-        return !lastIndexedBlock || lastIndexedBlock >= account.entropyBlockNumber;
+        return !lastIndexedBlock || lastIndexedBlock >= account.pendingBlockNumber;
       }
     }),
   );
