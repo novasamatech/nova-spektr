@@ -25,6 +25,7 @@ export const vestedTransferUtils = {
   createVestingScheduleSchema,
   validateCSV,
   downloadCSVWithErrors,
+  downloadCSVTemplate,
 };
 
 function isNoneStep(step: Step): boolean {
@@ -166,4 +167,25 @@ function downloadCSVWithErrors(vestingSchedule: VestingScheduleRaw[], errors: Er
       fileName: 'vested-transfer-with-errors.csv',
     },
   ]);
+}
+
+async function downloadCSVTemplate(url: string) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch CSV template: ${response.status} ${response.statusText}`);
+    }
+    const csvContent = await response.text();
+    const fileName = url.split('/').pop() || 'vested-transfer-template.csv';
+
+    downloadFiles([
+      {
+        blob: new Blob([csvContent], { type: 'text/csv' }),
+        fileName,
+      },
+    ]);
+  } catch (error) {
+    console.error('Failed to download CSV template:', error);
+    throw error;
+  }
 }

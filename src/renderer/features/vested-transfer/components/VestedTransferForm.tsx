@@ -5,7 +5,7 @@ import { Trans } from 'react-i18next';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
-import { Alert, BodyText, Button, DetailRow, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
+import { Alert, BodyText, Button, DetailRow, FootnoteText, Icon, InputHint } from '@/shared/ui';
 import { AssetBalance, ChainSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
@@ -150,14 +150,28 @@ const UploadCSV = () => {
     }
   };
 
+  const handleDownloadTemplate = async () => {
+    try {
+      await vestedTransferUtils.downloadCSVTemplate(CSV_TEMPLATE_LINK);
+    } catch (error) {
+      console.error('Failed to download template:', error);
+    }
+  };
+
   return (
     <label className="flex w-full flex-col gap-y-2">
       <div className="gax-x-2 flex items-center justify-between">
         <FootnoteText className="text-text-tertiary">{t('vestedTransfer.form.fields.csvFile.label')}</FootnoteText>
         <div className="flex items-center gap-x-2">
-          <InfoLink url={CSV_TEMPLATE_LINK} className="ml-2" iconName="import" iconPosition="right">
+          <Button
+            className="p-0"
+            size="sm"
+            variant="text"
+            suffixElement={<Icon size={16} name="import" className="text-icon-primary" />}
+            onClick={handleDownloadTemplate}
+          >
             {t('vestedTransfer.form.fields.csvFile.exampleButton')}
-          </InfoLink>
+          </Button>
           {showPreview && (
             <VestingSchedulePreview
               chain={chain}
