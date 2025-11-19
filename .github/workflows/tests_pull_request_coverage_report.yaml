@@ -6,6 +6,15 @@ on:
       - 'src/**'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: write
+  checks: write
+  contents: write
+
 jobs:
   test-coverage:
     runs-on: ubuntu-latest
