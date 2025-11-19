@@ -2,7 +2,6 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { uniqBy } from 'lodash';
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 
-import { useGraphql } from '@/app/providers';
 import { localStorageService } from '@/shared/api/local-storage';
 import { type ChainId, type Stake, type Validator } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -93,8 +92,6 @@ export const Staking = () => {
   const chains = useUnit(networkModel.$chains);
   const activeWallet = useUnit(walletSelect.$selectedWallet);
   const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
-
-  const { changeClient } = useGraphql();
 
   const [isShowNominators, toggleNominators] = useToggle();
 
@@ -243,12 +240,13 @@ export const Staking = () => {
     });
   }, [api, selectedStash]);
 
-  const changeNetwork = (chainId: ChainId) => {
-    changeClient(chainId);
-    setChainId(chainId);
+  const changeNetwork = (nextChainId: ChainId) => {
+    if (nextChainId === chainId) return;
+
+    setChainId(nextChainId);
     setSelectedNominators([]);
     setValidators({});
-    localStorageService.saveToStorage(STAKING_NETWORK, chainId);
+    localStorageService.saveToStorage(STAKING_NETWORK, nextChainId);
   };
 
   const openSelectedValidators = (stash?: AccountId) => {
