@@ -71,20 +71,20 @@ const form: Form<FormData> = createForm<FormData>({
   },
 });
 
-const $vestingSchedule = form.fields.vestingSchedule.$value;
-const $amount = $vestingSchedule.map((vestingSchedule) =>
+const $amount = form.fields.vestingSchedule.$value.map((vestingSchedule) =>
   vestingSchedule.reduce((amount, vestingRecord) => amount.add(vestingRecord.locked), new BN(0)),
 );
 const $fileErrors = createStore<VestingScheduleError | null>(null).reset(flow.open);
 const fileUploaded = createEvent<File>();
 
-const $chain = form.fields.chain.$value;
 const $asset = form.fields.chain.$value.map((c) => (c ? getNativeAsset(c.assets) : null));
-const $api = combine($chain, networkModel.$apis, (chain, apis) => (chain ? (apis[chain.chainId] ?? null) : null));
+const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis) =>
+  chain ? (apis[chain.chainId] ?? null) : null,
+);
 
 const { $: $minStartingBlock } = createStoreFromEffect({
   defaultValue: null,
-  params: { currentBlock: block.$currentBlock, chain: $chain },
+  params: { currentBlock: block.$currentBlock, chain: form.fields.chain.$value },
   fn: ({ currentBlock, chain }) => new BN(vestingService.getMinStartingBlock(currentBlock, chain)),
 });
 
@@ -108,9 +108,9 @@ const { $: $existingVestingSchedules } = createStoreFromEffect({
 
 const $coreTx = combine(
   {
-    chain: $chain,
+    chain: form.fields.chain.$value,
     signatory: form.fields.signatory.$value,
-    vestingSchedule: $vestingSchedule,
+    vestingSchedule: form.fields.vestingSchedule.$value,
   },
   ({ chain, signatory, vestingSchedule }) => {
     if (!chain || !signatory || vestingSchedule.length === 0) return null;
@@ -167,7 +167,7 @@ const {
   params: {
     api: $api,
     asset: $asset,
-    chain: $chain,
+    chain: form.fields.chain.$value,
     amount: $amount,
     balances: balanceModel.$balanceMap,
     route: $route,
@@ -199,7 +199,7 @@ const $availableChains = combine(
 );
 
 const $initiators = createInitiatorsStore({
-  chain: $chain,
+  chain: form.fields.chain.$value,
   accounts: walletSelect.$selectedAccounts,
 });
 
@@ -253,7 +253,7 @@ const rootValidateFileFx = createEffect<ValidateFileParams, VestingSchedule[], V
 
 const validateFileFx = attach({
   source: {
-    chain: $chain,
+    chain: form.fields.chain.$value,
     minStartingBlock: $minStartingBlock,
     minVestedTransfer: $minVestedTransfer,
     maxVestingSchedules: $maxVestingSchedules,
@@ -368,7 +368,16 @@ sample({
 
 sample({
   clock: form.fields.chain.change,
-  target: form.fields.vestingSchedule.resetError,
+  target: [
+    form.fields.chain.resetError,
+    form.fields.initiator.resetError,
+    form.fields.signatory.resetError,
+    form.fields.vestingSchedule.resetError,
+    form.fields.vestingSchedule.reset,
+    $fileErrors.reinit,
+    $parsedFile.reinit,
+    $fee.reinit,
+  ],
 });
 
 sample({
@@ -472,6 +481,8 @@ sample({
 export const formModel = {
   flow,
   form,
+  $chain: form.fields.chain.$value,
+  $vestingSchedule: form.fields.vestingSchedule.$value,
 
   $canSubmit,
   $step,
@@ -481,10 +492,8 @@ export const formModel = {
   $multisigDeposit,
   $hasMultisigAccount,
   $txErrors,
-  $chain,
   $asset,
   $amount,
-  $vestingSchedule,
   $parsedFile,
   $fileErrors,
   $allChains: $allChains,

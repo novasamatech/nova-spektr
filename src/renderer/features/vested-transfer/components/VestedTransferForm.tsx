@@ -195,6 +195,7 @@ const UploadCSV = () => {
         </div>
       </div>
       <InputFile
+        key={chain?.chainId}
         accept=".csv"
         placeholder={t('vestedTransfer.form.fields.csvFile.placeholder')}
         invalid={hasErrors}
