@@ -201,7 +201,7 @@ export const votingSubscriptionResource = createSubscriptionResource<VotingSubsc
     return unsubscribe;
   })
   .cache<CollectivesStruct<Vote[]>>({
-    store: createStore({}),
+    store: $sharedVotesCache,
     map(state, votes) {
       return mergeNested(state, votes, v => `${v.accountId}:${v.referendumId}`);
     },
