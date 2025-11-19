@@ -2,11 +2,33 @@ import { type NullableMap } from '@/shared/core';
 import { nonNullableMap } from '@/shared/lib/utils';
 import { useResource } from '@/shared/query';
 
-import { type RequestAllVotesParams, type RequestVotesParams, allVotesResource, votesResource } from './resource';
+import {
+  type RequestAllVotesParams,
+  type RequestVotesParams,
+  allVotesResource,
+  votesResource,
+  votingSubscriptionResource,
+} from './resource';
 
 export const useVotes = (params: NullableMap<RequestVotesParams>) => {
+  const normalizedParams = nonNullableMap(params) ? params : null;
+
+  useResource(votingSubscriptionResource, {
+    params:
+      normalizedParams && normalizedParams.accounts.length > 0 && normalizedParams.referendums.length > 0
+        ? {
+            palletType: normalizedParams.palletType,
+            api: normalizedParams.api,
+            chainId: normalizedParams.chain.chainId,
+            accounts: normalizedParams.accounts,
+          }
+        : null,
+    defaultValue: [],
+    map: () => [],
+  });
+
   return useResource(votesResource, {
-    params: nonNullableMap(params) ? params : null,
+    params: normalizedParams,
     defaultValue: [],
     map(cache, { palletType, chain, accounts, referendums }) {
       const allVotes = cache[palletType]?.[chain.chainId];
