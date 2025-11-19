@@ -2587,13 +2587,11 @@
         "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
         "rowErrors": {
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
-          "LOCKED_NOT_POSITIVE_NUMBER": "Amount must be a positive number",
-          "LOCKED_TOO_LOW": "Amount is too low",
           "MAX_VESTING_SCHEDULES_REACHED": "Recipient account has reached the maximum number of vesting schedules",
-          "PER_BLOCK_NOT_POSITIVE_NUMBER": "Per block must be a positive number",
-          "START_BLOCK_IN_PAST": "Start block cannot be in the past",
-          "START_BLOCK_TOO_HIGH": "Start block must not exceed 4,294,967,295",
-          "START_BLOCK_NOT_POSITIVE_NUMBER": "Start block must be a positive number",
+          "LOCKED_OUT_OF_RANGE": "The amount is outside the allowed range",
+          "PER_BLOCK_OUT_OF_RANGE": "The per block value is outside the allowed range",
+          "START_BLOCK_OUT_OF_RANGE": "The starting block is outside the allowed range",
+          "START_BLOCK_IN_PAST": "The starting block is in the past",
           "UNKNOWN_ERROR": "Unknown error"
         }
       },
