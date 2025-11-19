@@ -63,7 +63,9 @@ async function syncAccounts<const Providers extends AccountProvider<any>[]>({
     const resultsIds = searchResults.map(a => a.accountId);
     const nextSearchCandidates = resultsIds.filter(a => !foundAccountIds.has(a));
 
-    resultsIds.forEach(foundAccountIds.add, foundAccountIds);
+    for (const id of resultsIds) {
+      foundAccountIds.add(id);
+    }
     foundAccounts = foundAccounts.concat(searchResults);
 
     if (nextSearchCandidates.length > 0) {
