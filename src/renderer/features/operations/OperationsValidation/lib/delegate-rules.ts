@@ -100,7 +100,7 @@ export const DelegateRules = {
             balance: balance.native,
             fee: new BN(fee),
             xcmFee: BN_ZERO,
-            deliveryFee: BN_ZERO,
+            destinationFee: BN_ZERO,
             isNative: true,
             isProxy: false,
             isMultisig: isMultisig,

@@ -4,7 +4,6 @@ import { type Type } from '@polkadot/types';
 import { type Call } from '@polkadot/types/interfaces';
 import { type HexString } from '@polkadot/util/types';
 
-import { xcmService } from '@/shared/api/xcm';
 import { type CallData, type Chain, type ChainId, type DecodedTransaction, TransactionType } from '@/shared/core';
 import { getNativeAsset } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
@@ -247,58 +246,46 @@ const getCallDataParser: Record<
       value: decoded.args[2].toString(),
     };
   },
-  [TransactionType.XCM_LIMITED_TRANSFER]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXcmPalletExtrinsic({
-      dest: decoded.args[0].toHuman(),
-      beneficiary: decoded.args[1].toHuman(),
-      assets: decoded.args[2].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.XCM_LIMITED_TRANSFER]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+    };
   },
-  [TransactionType.XCM_TELEPORT]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXcmPalletExtrinsic({
-      dest: decoded.args[0].toHuman(),
-      beneficiary: decoded.args[1].toHuman(),
-      assets: decoded.args[2].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.XCM_TELEPORT]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+    };
   },
-  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXcmPalletExtrinsic({
-      dest: decoded.args[0].toHuman(),
-      beneficiary: decoded.args[1].toHuman(),
-      assets: decoded.args[2].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+    };
   },
-  [TransactionType.POLKADOT_XCM_TELEPORT]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXcmPalletExtrinsic({
-      dest: decoded.args[0].toHuman(),
-      beneficiary: decoded.args[1].toHuman(),
-      assets: decoded.args[2].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.POLKADOT_XCM_TELEPORT]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+    };
   },
-  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXcmPalletExtrinsic({
-      dest: decoded.args[0].toHuman(),
-      beneficiary: decoded.args[1].toHuman(),
-      assets: decoded.args[2].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+    };
   },
-  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (decoded, chainId, chains): Record<string, any> => {
-    const parsedData = xcmService.parseXTokensExtrinsic({
-      asset: decoded.args[0].toHuman(),
-      dest: decoded.args[1].toHuman(),
-    });
-
-    return xcmService.decodeXcm(chainId, chains, parsedData);
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: (decoded): Record<string, any> => {
+    return {
+      asset: decoded.args[0].toString(),
+      dest: decoded.args[1].toString(),
+    };
   },
   [TransactionType.BOND]: (decoded): Record<string, any> => {
     const args: Record<string, any> = {};
