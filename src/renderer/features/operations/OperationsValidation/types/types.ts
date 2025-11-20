@@ -104,7 +104,7 @@ export type TransferAmountFeeStore = {
   isProxy: boolean;
   fee: BN;
   xcmFee: BN;
-  deliveryFee: BN;
+  destinationFee: BN;
 };
 
 export type TransferFeeStore = Omit<TransferAmountFeeStore, 'balance' | 'network'> & {

@@ -138,14 +138,14 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           </DetailRow>
         )}
 
-        {isXcm && nonNullable(meta.deliveryFee) && (
+        {isXcm && nonNullable(meta.destinationFee) && (
           <DetailRow
             label={<FootnoteText className="text-text-tertiary">{t('operation.deliveryFee')}</FootnoteText>}
             className="text-text-primary"
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={meta.deliveryFee} asset={nativeAsset} />
-              <AssetFiatBalance asset={nativeAsset} amount={meta.deliveryFee} />
+              <AssetBalance value={meta.destinationFee} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={meta.destinationFee} />
             </div>
           </DetailRow>
         )}

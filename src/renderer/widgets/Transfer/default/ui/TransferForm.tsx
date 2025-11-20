@@ -35,11 +35,12 @@ import { accountService, accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
-import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { formModel } from '../model/form-model';
+import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
 type Props = {
   onGoBack: () => void;
@@ -503,51 +504,52 @@ const FeeSection = memo(() => {
   const initiator = useUnit(formModel.form.fields.initiator.$value);
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const coreTx = useUnit(formModel.$coreTx);
-  const feeTx = useUnit(formModel.$feeTx);
   const isXcm = useUnit(formModel.$isXcm);
-  const xcmConfig = useUnit(formModel.$xcmConfig);
-  const xcmApi = useUnit(formModel.$xcmApi);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
-  const deliveryFee = useUnit(formModel.$deliveryFee);
+  const originFee = useUnit(formModel.$originFee);
+  const destinationFee = useUnit(formModel.$destinationFee);
+  const isDestinationFeeLoading = useUnit(xcmSpellTransferModel.$isDestinationFeeLoading);
+  const shouldShowFees = useUnit(xcmSpellTransferModel.$shouldShowFees);
 
   if (!network) {
     return null;
   }
 
   const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
+  const nativeAsset = getNativeAsset(network.chain.assets)!;
 
   return (
     <div className="flex flex-col gap-y-2">
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={getNativeAsset(network.chain.assets)}
+          asset={nativeAsset}
           threshold={initiator.threshold || 1}
           onDepositChange={(deposit) => formModel.multisigDepositChanged(new BN(deposit))}
         />
       )}
 
-      <FeeWithLabel
-        label={t('operation.networkFee')}
-        asset={getNativeAsset(network.chain.assets)!}
-        fee={fee}
-        isLoading={pendingFee}
-      />
-
-      {isXcm && xcmApi && xcmConfig && (
-        <XcmFeeWithLabel
-          api={xcmApi}
-          config={xcmConfig}
-          asset={network.asset}
-          transaction={coreTx || feeTx}
-          onFeeChange={formModel.xcmFeeChanged}
-          onFeeLoading={formModel.isXcmFeeLoadingChanged}
-        />
+      {isXcm ? (
+        shouldShowFees ? (
+          <>
+            <FeeWithLabel
+              label={t('operation.originNetworkFee')}
+              asset={nativeAsset}
+              fee={originFee}
+              isLoading={isDestinationFeeLoading}
+            />
+            <FeeWithLabel
+              label={t('operation.destinationNetworkFee')}
+              asset={nativeAsset}
+              fee={destinationFee}
+              isLoading={isDestinationFeeLoading}
+            />
+          </>
+        ) : null
+      ) : (
+        <FeeWithLabel label={t('operation.networkFee')} asset={nativeAsset} fee={fee} isLoading={pendingFee} />
       )}
-
-      {isXcm && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
     </div>
   );
 });

@@ -20,7 +20,7 @@ export type TransferConfirmStore = TxConfirmInfo & {
 
   fee: BN;
   xcmFee: BN;
-  deliveryFee: BN | null;
+  destinationFee: BN | null;
   multisigDeposit: BN;
   balancePreservation: BalancePreservation;
 };
@@ -49,8 +49,42 @@ const $amount = $currentConfirm.map((confirm) => new BN(confirm?.amount ?? '0'))
 const $route = $currentConfirm.map((confirm) => confirm?.route ?? []);
 const $transaction = $currentConfirm.map((confirm) => confirm?.tx ?? null);
 const $xcmFee = $currentConfirm.map((confirm) => confirm?.xcmFee ?? new BN(0));
-const $deliveryFee = $currentConfirm.map((confirm) => confirm?.deliveryFee ?? new BN(0));
+const $destinationFeeFromConfirm = $currentConfirm.map((confirm) => confirm?.destinationFee ?? new BN(0));
 const $balancePreservation = $currentConfirm.map((confirm) => confirm?.balancePreservation ?? false);
+
+const $isXcm = combine(
+  {
+    sourceChain: $sourceChain,
+    destinationChain: $destinationChain,
+  },
+  ({ sourceChain, destinationChain }) => {
+    return sourceChain && destinationChain && sourceChain.chainId !== destinationChain.chainId;
+  },
+);
+
+const $originFee = combine(
+  {
+    isXcm: $isXcm,
+    xcmFee: $xcmFee,
+  },
+  ({ isXcm, xcmFee }) => {
+    // For XCM transfers, xcmFee represents the origin fee (network fee)
+    // For regular transfers, use BN_ZERO so XCM validation rules don't apply
+    return isXcm ? xcmFee : new BN(0);
+  },
+);
+
+const $destinationFee = combine(
+  {
+    isXcm: $isXcm,
+    destinationFee: $destinationFeeFromConfirm,
+  },
+  ({ isXcm, destinationFee }) => {
+    // For XCM transfers, destinationFee represents the destination fee
+    // For regular transfers, use BN_ZERO so XCM validation rules don't apply
+    return isXcm ? (destinationFee ?? new BN(0)) : new BN(0);
+  },
+);
 
 const { $errors: $validationErrors, $valid: $canSubmit } = createTxValidationStore({
   validator: transferValidator,
@@ -64,8 +98,8 @@ const { $errors: $validationErrors, $valid: $canSubmit } = createTxValidationSto
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $transaction,
-    xcmFee: $xcmFee,
-    deliveryFee: $deliveryFee,
+    originFee: $originFee,
+    destinationFee: $destinationFee,
     balancePreservation: $balancePreservation,
   },
 });

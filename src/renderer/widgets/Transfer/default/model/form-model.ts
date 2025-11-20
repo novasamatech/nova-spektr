@@ -3,7 +3,8 @@ import { type BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { and, debounce, not, or, spread } from 'patronum';
 
-import { type Address, type Asset, type Chain, type ChainId, type Transaction } from '@/shared/core';
+import { spellXcmService } from '@/shared/api/xcm';
+import { type Address, type Asset, type Chain, type Transaction } from '@/shared/core';
 import { createSubscription } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import {
@@ -33,14 +34,14 @@ import {
 import { type AnyAccount, type BalancePreservation, accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
-import { getExtrinsic, transactionBuilder } from '@/entities/transaction';
+import { transactionBuilder } from '@/entities/transaction';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { transferValidator } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
 
-import { xcmTransferModel } from './xcm-transfer-model';
+import { xcmSpellTransferModel } from './xcm-spell-transfer-model';
 
 type FormParams = {
   initiator: AnyAccount | null;
@@ -60,7 +61,7 @@ type FormSubmitEvent = FormParams & {
   destinationChain: Chain;
   fee: BN;
   xcmFee: BN;
-  deliveryFee: BN | null;
+  destinationFee: BN | null;
   multisigDeposit: BN;
   rawAmount: string;
   balancePreservation: BalancePreservation;
@@ -251,7 +252,7 @@ const $destinationAsset = combine(
     chain: $destinationChain,
     sourceAsset: $asset,
     isXcm: $isXcm,
-    transferDirection: xcmTransferModel.$transferDirection,
+    transferDirection: xcmSpellTransferModel.$transferDirection,
   },
   ({ chain, sourceAsset, isXcm, transferDirection }) => {
     if (isXcm) {
@@ -336,7 +337,7 @@ const $coreTx = combine(
     isXcm: $isXcm,
     formValues: form.$values,
     isFormValid: form.$isValid,
-    xcmData: xcmTransferModel.$xcmData,
+    xcmData: xcmSpellTransferModel.$xcmData,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
     inputMode: $inputMode,
@@ -344,6 +345,10 @@ const $coreTx = combine(
   },
   ({ isFormValid, network, isXcm, formValues, xcmData, isConnected, initiator, inputMode, balancePreservation }) => {
     if (!isFormValid || !network || !initiator || !isConnected || !validateAddress(formValues.destination)) {
+      return null;
+    }
+
+    if (isXcm && !xcmData) {
       return null;
     }
 
@@ -364,7 +369,7 @@ const $mockDestination = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
-    xcmChain: xcmTransferModel.$xcmChain,
+    xcmChain: xcmSpellTransferModel.$xcmChain,
   },
   ({ isXcm, xcmChain, network }) => {
     if (nullable(network)) {
@@ -379,7 +384,7 @@ const $feeCoreTx = combine(
   {
     network: $networkStore,
     isXcm: $isXcm,
-    xcmData: xcmTransferModel.$xcmData,
+    xcmData: xcmSpellTransferModel.$xcmData,
     isConnected: $isChainConnected,
     initiator: form.fields.initiator.$value,
     mockDestination: $mockDestination,
@@ -387,13 +392,7 @@ const $feeCoreTx = combine(
     balancePreservation: $balancePreservationStrategy,
   },
   ({ network, isXcm, xcmData, isConnected, initiator, mockDestination, inputMode, balancePreservation }) => {
-    if (
-      nullable(network) ||
-      nullable(initiator) ||
-      nullable(isConnected) ||
-      nullable(mockDestination) ||
-      (isXcm && nullable(xcmData))
-    ) {
+    if (nullable(network) || nullable(initiator) || nullable(isConnected) || nullable(mockDestination) || isXcm) {
       return null;
     }
 
@@ -420,18 +419,35 @@ const { $fee, $pendingFee, $tx, $feeTx, $route } = createComplexTxStore({
   feeTransaction: $feeCoreTx,
 });
 
-const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
-
-const $calculationExtrinsic = combine(
+const $networkFee = combine(
   {
-    api: $api,
-    tx: $calculationTx,
+    isXcm: $isXcm,
+    originFee: xcmSpellTransferModel.$originFee,
+    regularFee: $fee,
   },
-  ({ api, tx }) => {
-    if (!api || !tx) return null;
-    return getExtrinsic[tx.type](tx.args, api);
+  ({ isXcm, originFee, regularFee }) => {
+    if (isXcm) {
+      return originFee;
+    }
+    return regularFee;
   },
 );
+
+const $networkFeePending = combine(
+  {
+    isXcm: $isXcm,
+    xcmFeeLoading: xcmSpellTransferModel.$isDestinationFeeLoading,
+    regularFeePending: $pendingFee,
+  },
+  ({ isXcm, xcmFeeLoading, regularFeePending }) => {
+    if (isXcm) {
+      return xcmFeeLoading;
+    }
+    return regularFeePending;
+  },
+);
+
+const $calculationTx = combine({ coreTx: $tx, feeTx: $feeTx }, ({ coreTx, feeTx }) => coreTx ?? feeTx ?? null);
 
 // validation
 
@@ -456,11 +472,26 @@ const {
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $calculationTx,
-    xcmFee: xcmTransferModel.$xcmFee,
-    deliveryFee: xcmTransferModel.$deliveryFee.map((fee) => {
-      // a fallback for validation that requires all fields to be non null
-      return fee ?? BN_ZERO;
-    }),
+    originFee: combine(
+      {
+        isXcm: $isXcm,
+        originFee: xcmSpellTransferModel.$originFee,
+      },
+      ({ isXcm, originFee }) => {
+        // For regular transfers, use BN_ZERO so XCM validation rules don't apply
+        return isXcm ? (originFee ?? BN_ZERO) : BN_ZERO;
+      },
+    ),
+    destinationFee: combine(
+      {
+        isXcm: $isXcm,
+        destinationFee: xcmSpellTransferModel.$destinationFee,
+      },
+      ({ isXcm, destinationFee }) => {
+        // For regular transfers, use BN_ZERO so XCM validation rules don't apply
+        return isXcm ? (destinationFee ?? BN_ZERO) : BN_ZERO;
+      },
+    ),
     balancePreservation: $balancePreservationStrategy,
   },
 });
@@ -545,20 +576,29 @@ const $destinationChains = combine(
     network: $networkStore,
     chains: networkModel.$chains,
     statuses: networkModel.$connectionStatuses,
-    transferDirections: xcmTransferModel.$transferDirections,
+    transferDirections: xcmSpellTransferModel.$transferDirections,
   },
   ({ network, chains, statuses, transferDirections }) => {
     if (!network || !transferDirections) return [];
 
-    const xcmChains = transferDirections.reduce<Chain[]>((acc, chain) => {
-      const chainId = `0x${chain.destination.chainId}` as ChainId;
-
-      if (statuses[chainId] && networkUtils.isConnectedStatus(statuses[chainId])) {
-        acc.push(chains[chainId]);
-      }
-
-      return acc;
-    }, []);
+    const xcmChains = transferDirections
+      .map((chainName) => {
+        const chain = Object.values(chains).find((chain) => {
+          const spellName = spellXcmService.getSpellChainName(chain);
+          return spellName === chainName;
+        });
+        // if (!chain) {
+        //   console.info(
+        //     `[form-model] ParaSpell SDK supports chain "${chainName}" but it's not in our chain list. Transfers to this chain will use SDK's default providers.`,
+        //   );
+        // }
+        return chain;
+      })
+      .filter((chain): chain is Chain => {
+        if (!chain) return false;
+        const chainId = chain.chainId;
+        return statuses[chainId] && networkUtils.isConnectedStatus(statuses[chainId]);
+      });
 
     return [network.chain].concat(xcmChains);
   },
@@ -587,14 +627,14 @@ const $isMyselfXcmEnabled = combine(
 const $canSubmit = and(
   $valid,
   not($hasDestinationBalanceError),
-  or(not($isXcm), not(xcmTransferModel.$isXcmFeeLoading), not(xcmTransferModel.$isDeliveryFeeLoading)),
+  or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
 );
 
 // Fields connections
 
 sample({
   clock: formInitiated,
-  target: [form.reset, xcmTransferModel.events.xcmStarted],
+  target: [form.reset, xcmSpellTransferModel.events.xcmStarted, xcmSpellTransferModel.events.xcmStopped],
 });
 
 sample({
@@ -674,7 +714,7 @@ sample({
 sample({
   clock: form.fields.destinationChain.change.filter({ fn: nonNullable }),
   fn: (chain) => chain.chainId,
-  target: xcmTransferModel.events.xcmChainSelected,
+  target: xcmSpellTransferModel.events.xcmChainSelected,
 });
 
 sample({
@@ -689,7 +729,7 @@ sample({
     if (nullable(address)) return null;
     return validateAddress(address) ? toAccountId(address) : null;
   },
-  target: xcmTransferModel.events.destinationChanged,
+  target: xcmSpellTransferModel.events.destinationChanged,
 });
 
 sample({
@@ -697,7 +737,18 @@ sample({
   source: $networkStore,
   filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
   fn: ({ asset }, amount) => formatAmount(amount, asset.precision),
-  target: xcmTransferModel.events.amountChanged,
+  target: xcmSpellTransferModel.events.amountChanged,
+});
+
+sample({
+  clock: form.fields.amount.change,
+  target: xcmSpellTransferModel.events.rawAmountChanged,
+});
+
+sample({
+  clock: form.fields.initiator.change,
+  fn: (initiator) => initiator?.accountId ?? null,
+  target: xcmSpellTransferModel.events.initiatorAccountIdChanged,
 });
 
 // Max Mode: update amount field when max mode is enabled and available balance changes
@@ -726,13 +777,27 @@ const formSubmitFinished = sample({
     coreTx: $coreTx,
     tx: $tx,
     fee: $fee,
-    xcmFee: xcmTransferModel.$xcmFee,
-    deliveryFee: xcmTransferModel.$deliveryFee,
+    isXcm: $isXcm,
+    originFee: xcmSpellTransferModel.$originFee,
+    destinationFee: xcmSpellTransferModel.$destinationFee,
     multisigDeposit: $multisigDeposit,
     balancePreservation: $balancePreservationStrategy,
   },
   fn: (
-    { chain, initiator, network, route, coreTx, tx, multisigDeposit, fee, xcmFee, deliveryFee, balancePreservation },
+    {
+      chain,
+      initiator,
+      network,
+      route,
+      coreTx,
+      tx,
+      multisigDeposit,
+      fee,
+      isXcm,
+      originFee,
+      destinationFee,
+      balancePreservation,
+    },
     form,
   ) => {
     if (
@@ -758,8 +823,8 @@ const formSubmitFinished = sample({
       multisigDeposit,
       route,
       fee,
-      xcmFee,
-      deliveryFee,
+      xcmFee: isXcm ? (originFee ?? BN_ZERO) : BN_ZERO,
+      destinationFee: isXcm ? (destinationFee ?? null) : null,
       balancePreservation,
     } satisfies FormSubmitEvent;
   },
@@ -768,12 +833,6 @@ const formSubmitFinished = sample({
 sample({
   clock: formSubmitFinished.filter({ fn: nonNullable }),
   target: formSubmitted,
-});
-
-sample({
-  clock: $calculationExtrinsic,
-  filter: nonNullable,
-  target: xcmTransferModel.events.deliveryFeeRequested,
 });
 
 export const formModel = {
@@ -798,11 +857,11 @@ export const formModel = {
   $destinationBalanceEd,
   $hasDestinationBalanceError,
 
-  $fee,
-  $pendingFee,
+  $fee: $networkFee,
+  $pendingFee: $networkFeePending,
   $multisigDeposit,
-  $xcmFee: xcmTransferModel.$xcmFee,
-  $deliveryFee: xcmTransferModel.$deliveryFee,
+  $originFee: xcmSpellTransferModel.$originFee,
+  $destinationFee: xcmSpellTransferModel.$destinationFee,
 
   $coreTx,
   $feeTx,
@@ -816,8 +875,7 @@ export const formModel = {
 
   $errors,
 
-  $xcmConfig: xcmTransferModel.$config,
-  $xcmApi: xcmTransferModel.$apiDestination,
+  $xcmApi: xcmSpellTransferModel.$apiDestination,
 
   $isExistentialDepositEnabled,
   $isMaxModeEnabled,
@@ -833,8 +891,6 @@ export const formModel = {
   xcmDestinationCancelled,
 
   multisigDepositChanged,
-  isXcmFeeLoadingChanged: xcmTransferModel.events.isXcmFeeLoadingChanged,
-  xcmFeeChanged: xcmTransferModel.events.xcmFeeChanged,
 
   formSubmitted,
 

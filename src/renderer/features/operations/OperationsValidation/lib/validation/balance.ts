@@ -52,7 +52,7 @@ function insufficientBalanceForXcmFee(
     transferableBalance,
     fee,
     xcmFee,
-    deliveryFee,
+    destinationFee,
     amount,
 
     isXcm,
@@ -66,19 +66,19 @@ function insufficientBalanceForXcmFee(
 
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
   const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);
-  const deliveryFeeBN = new BN(deliveryFee || ZERO_BALANCE);
+  const destinationFeeBN = new BN(destinationFee || ZERO_BALANCE);
   const feeBN = new BN(fee || ZERO_BALANCE);
 
   if (isNative) {
     const totalTransferableSpend = isAuthority
-      ? amountBN.add(deliveryFeeBN).add(xcmFeeBN)
-      : amountBN.add(feeBN).add(deliveryFeeBN).add(xcmFeeBN);
+      ? amountBN.add(destinationFeeBN).add(xcmFeeBN)
+      : amountBN.add(feeBN).add(destinationFeeBN).add(xcmFeeBN);
 
     return isLteThanBalance(totalTransferableSpend, transferableBalance);
   }
 
   const totalTransferableSpend = isXcm ? amountBN.add(xcmFeeBN) : amountBN;
-  const totalNativeSpend = isAuthority ? deliveryFeeBN : deliveryFeeBN.add(feeBN);
+  const totalNativeSpend = isAuthority ? destinationFeeBN : destinationFeeBN.add(feeBN);
 
   return (
     isLteThanBalance(totalTransferableSpend, transferableBalance) && isLteThanBalance(totalNativeSpend, nativeBalance)
@@ -88,17 +88,25 @@ function insufficientBalanceForXcmFee(
 // Delivery fee check is included into insufficientBalanceForXcmFee
 // this validation is only for Multisig and Proxy
 function insufficientBalanceForDeliveryFee(
-  { nativeBalance, transferableAsset, transferableBalance, xcmFee, deliveryFee, amount, isNative }: TransferXcmFeeStore,
+  {
+    nativeBalance,
+    transferableAsset,
+    transferableBalance,
+    xcmFee,
+    destinationFee,
+    amount,
+    isNative,
+  }: TransferXcmFeeStore,
   config: Config = { withFormatAmount: true },
 ) {
-  const deliveryFeeBN = new BN(deliveryFee || ZERO_BALANCE);
+  const destinationFeeBN = new BN(destinationFee || ZERO_BALANCE);
 
   if (!isNative) {
-    return isLteThanBalance(deliveryFeeBN, nativeBalance);
+    return isLteThanBalance(destinationFeeBN, nativeBalance);
   }
 
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
   const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);
 
-  return isLteThanBalance(amountBN.add(deliveryFeeBN).add(xcmFeeBN), transferableBalance);
+  return isLteThanBalance(amountBN.add(destinationFeeBN).add(xcmFeeBN), transferableBalance);
 }

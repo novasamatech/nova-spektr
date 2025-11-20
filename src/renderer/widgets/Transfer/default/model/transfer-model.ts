@@ -117,7 +117,7 @@ const readyToConfirm = sample({
       rawAmount: form.rawAmount,
       fee: form.fee,
       xcmFee: form.xcmFee,
-      deliveryFee: form.deliveryFee,
+      destinationFee: form.destinationFee,
       multisigDeposit: form.multisigDeposit,
       balancePreservation: form.balancePreservation,
     };
