@@ -1,4 +1,5 @@
-import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createStore, restore, sample, scopeBind } from 'effector';
+import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type HexString } from '@/shared/core';
@@ -14,6 +15,11 @@ import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
 
 const $list = createStore<MultisigOperation[]>([]);
+
+const $populated = restore(
+  once($list.updates).map(() => true),
+  false,
+);
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
@@ -156,6 +162,7 @@ sample({
 
 export const multisigOperation = {
   $list,
+  $populated: readonly($populated),
   $callDataUpdated,
 
   populate: populateFx,

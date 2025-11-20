@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { z } from 'zod';
 
-import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { type Chain, type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
@@ -94,17 +94,26 @@ sample({
   target: $focusedOperationId,
 });
 
+const $deepLinkData = createStore<MultisigOperationDeepLinkData | null>(null)
+  .on(multisigOperationDeepLinkHandler.triggered, (_, data) => data)
+  .reset(operationsPageClosed);
+
 const networkChecked = sample({
-  clock: multisigOperationDeepLinkHandler.triggered,
-  source: networkModel.$chains,
-  fn: (chains, data) => {
-    const network = chains[data.chainId];
+  clock: [multisigOperationDeepLinkHandler.triggered, networkModel.$chains],
+  source: { chains: networkModel.$chains, data: $deepLinkData },
+  filter: ({ data }) => nonNullable(data),
+  fn: ({ chains, data }) => {
+    const network = chains[data!.chainId];
     return {
-      data,
+      data: data!,
       network,
     };
   },
 });
+
+const $networkData = createStore<{ data: MultisigOperationDeepLinkData; network: Chain } | null>(null)
+  .on(networkChecked, (_, v) => v)
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 sample({
   clock: networkChecked,
@@ -113,10 +122,17 @@ sample({
 });
 
 const accountChecked = sample({
-  clock: networkChecked,
-  source: { accountsList: accounts.$list, populated: accounts.$populated },
-  filter: ({ populated }, { network }) => nonNullable(network) && populated,
-  fn: ({ accountsList }, { data }) => {
+  clock: [networkChecked, accounts.$populated, multisigOperation.$populated],
+  source: {
+    networkData: $networkData,
+    accountsList: accounts.$list,
+    accountsPopulated: accounts.$populated,
+    operationsPopulated: multisigOperation.$populated,
+  },
+  filter: ({ networkData, accountsPopulated, operationsPopulated }) =>
+    nonNullable(networkData) && nonNullable(networkData.network) && accountsPopulated && operationsPopulated,
+  fn: ({ accountsList, networkData }) => {
+    const { data } = networkData!;
     const account = accountsList
       .filter(accountUtils.isAnyMultisigAccount)
       .find(acc => acc.accountId === data.accountId);
@@ -151,8 +167,14 @@ sample({
 
 const operationFetchRequested = sample({
   clock: accountChecked,
-  source: { apis: networkModel.$apis, chains: networkModel.$chains, operations: multisigOperation.$list },
-  filter: ({ operations }, { multisigAccountId, data }) => {
+  source: {
+    apis: networkModel.$apis,
+    chains: networkModel.$chains,
+    operations: multisigOperation.$list,
+    operationsPopulated: multisigOperation.$populated,
+  },
+  filter: ({ operations, operationsPopulated }, { multisigAccountId, data }) => {
+    if (!operationsPopulated) return false;
     if (nullable(multisigAccountId)) return false;
     const operationId = getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId });
     const operationExists = operations.some(op => op.id === operationId);
