@@ -3,6 +3,7 @@ import { Navigate, Outlet, type RouteObject } from 'react-router-dom';
 
 import { Paths } from '@/shared/routes';
 import { AppShell } from '@/features/app-shell';
+import { OnboardingRouteGuard, ShellRouteGuard } from '@/features/wallets';
 
 import { Assets, ReceiveAsset, SendAsset } from './Assets';
 import { Onboarding } from './Onboarding';
@@ -38,10 +39,21 @@ const Dapp = lazy(() => import('./Dapp').then(({ DappPage }) => ({ default: Dapp
 // React routes v6 hint:
 // https://github.com/remix-run/react-router/blob/main/docs/upgrading/v5.md#use-useroutes-instead-of-react-router-config
 export const ROUTES_CONFIG: RouteObject[] = [
-  { path: Paths.ONBOARDING, element: <Onboarding /> },
+  {
+    path: Paths.ONBOARDING,
+    element: (
+      <OnboardingRouteGuard>
+        <Onboarding />
+      </OnboardingRouteGuard>
+    ),
+  },
   {
     path: Paths.ROOT,
-    element: <AppShell />,
+    element: (
+      <ShellRouteGuard>
+        <AppShell />
+      </ShellRouteGuard>
+    ),
     children: [
       { index: true, element: <Navigate to={Paths.ASSETS} replace /> },
       {

@@ -74,14 +74,14 @@ const $isOperationNotFoundModalOpen = createStore(false)
   .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 sample({
-  clock: $operationId,
+  clock: [$operationId, $focusedOperation],
   source: $focusedOperation,
   filter: operation => nonNullable(operation) && operation.status === 'executed',
   target: alreadySignedModalOpened,
 });
 
 sample({
-  clock: $operationId,
+  clock: [$operationId, $focusedOperation],
   source: { operation: $focusedOperation, id: $operationId },
   filter: ({ operation }) => !nonNullable(operation) || operation.status !== 'executed',
   fn: ({ id }) => id,

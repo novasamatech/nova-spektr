@@ -1,12 +1,10 @@
-import { useGate, useUnit } from 'effector-react';
+import { useGate } from 'effector-react';
 import { useEffect } from 'react';
-import { matchPath, useLocation, useNavigate, useRoutes, useSearchParams } from 'react-router-dom';
+import { useNavigate, useRoutes, useSearchParams } from 'react-router-dom';
 
 import { logger } from '@/shared/config/utils';
 import { ConfirmDialogProvider } from '@/shared/providers';
-import { Paths } from '@/shared/routes';
 import { deepLinkService } from '@/domains/app';
-import { walletModel } from '@/entities/wallet';
 import { navigationModel } from '@/features/navigation';
 import { ROUTES_CONFIG } from '@/pages/index';
 
@@ -18,14 +16,10 @@ bootstrap();
 
 export const App = () => {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const appRoutes = useRoutes(ROUTES_CONFIG);
   const [searchParams, setSearchParams] = useSearchParams();
 
   useGate(navigationModel.gates.flow, { navigate });
-
-  const wallets = useUnit(walletModel.$wallets);
-  const isLoadingWallets = useUnit(walletModel.$isLoadingWallets);
 
   useEffect(() => {
     if (searchParams.toString()) {
@@ -41,18 +35,6 @@ export const App = () => {
       });
     }
   }, [searchParams, setSearchParams]);
-
-  useEffect(() => {
-    if (isLoadingWallets) return;
-
-    if (wallets.length > 0 && matchPath(Paths.ONBOARDING, pathname)) {
-      navigate(Paths.ASSETS, { replace: true });
-    }
-
-    if (wallets.length === 0) {
-      navigate(Paths.ONBOARDING, { replace: true });
-    }
-  }, [isLoadingWallets, wallets.length]);
 
   return (
     <ConfirmDialogProvider>
