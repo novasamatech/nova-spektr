@@ -3,8 +3,7 @@ import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
-import { Button } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
+import { Dropdown, Modal } from '@/shared/ui-kit';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { Step } from '../lib/types';
 import { callDataUtils } from '../lib/utils';
@@ -15,19 +14,22 @@ import { Confirmation } from './Confirmation';
 
 export const CallDataSubmit = memo(() => {
   const { t } = useI18n();
-  const [open, toggleModal] = useToggle(false);
+  const [isOpen, toggleModal] = useToggle(false);
 
   return (
     <>
-      <Button pallet="secondary" size="sm" onClick={toggleModal}>
-        {t('callData.title')}
-      </Button>
-      {open ? <CallDataSubmitModal onToggle={toggleModal} /> : null}
+      <Dropdown.Item onClick={toggleModal}>{t('navigation.callDataLabel')}</Dropdown.Item>
+      <CallDataSubmitModal isOpen={isOpen} onToggle={toggleModal} />
     </>
   );
 });
 
-export const CallDataSubmitModal = ({ onToggle }: { onToggle: VoidFunction }) => {
+type Props = {
+  isOpen: boolean;
+  onToggle: VoidFunction;
+};
+
+export const CallDataSubmitModal = ({ isOpen, onToggle }: Props) => {
   useGate(formModel.flow);
 
   const { t } = useI18n();
@@ -38,7 +40,7 @@ export const CallDataSubmitModal = ({ onToggle }: { onToggle: VoidFunction }) =>
   }
 
   return (
-    <Modal isOpen size="md" height="fit" onToggle={onToggle}>
+    <Modal isOpen={isOpen} size="md" height="fit" onToggle={onToggle}>
       <Modal.Title close>{t('callData.title')}</Modal.Title>
       <Modal.Content disableScroll>
         {callDataUtils.isInitStep(step) && <CallDataForm />}

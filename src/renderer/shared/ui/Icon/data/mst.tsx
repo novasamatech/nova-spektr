@@ -17,6 +17,7 @@ import StartStakingIcon from '@/shared/assets/images/mst/staking.svg?jsx';
 import TransferIcon from '@/shared/assets/images/mst/transfer.svg?jsx';
 import UnknownIcon from '@/shared/assets/images/mst/unknown.svg?jsx';
 import UnstakeIcon from '@/shared/assets/images/mst/unstake-mst.svg?jsx';
+import VestedTransferIcon from '@/shared/assets/images/mst/vested-transfer-mst.svg?jsx';
 
 const MstImages = {
   transferMst: { svg: TransferIcon },
@@ -36,6 +37,7 @@ const MstImages = {
   delegateMst: { svg: DelegateIcon },
   undelegateMst: { svg: UndelegateIcon },
   editDelegationMst: { svg: EditDelegationIcon },
+  vestedTransferMst: { svg: VestedTransferIcon },
 } as const;
 
 export type Mst = keyof typeof MstImages;

@@ -25,7 +25,7 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
 
 const getOperationIcon = (transactionType: TransactionType): IconNames | undefined => {
   const Icons: { [key in TransactionType]?: IconNames } = {
-    [TransactionType.VESTED_TRANSFER]: 'transferMst',
+    [TransactionType.VESTED_TRANSFER]: 'vestedTransferMst',
   };
 
   return Icons[transactionType];

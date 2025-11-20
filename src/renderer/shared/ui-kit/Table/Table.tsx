@@ -1,4 +1,4 @@
-import { type ReactNode, memo, useMemo, useState } from 'react';
+import { type ReactNode, isValidElement, memo, useMemo, useState } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 
@@ -8,7 +8,7 @@ export type SortDirection = 'asc' | 'desc' | null;
 
 export type Column<T> = {
   key: keyof T;
-  title: string;
+  title: ReactNode;
   sortable?: boolean;
   width?: string;
   render?: (value: T[keyof T], item: T) => ReactNode;
@@ -82,7 +82,7 @@ const TableComponent = <T,>({ columns, data, className, onSort }: TableProps<T>)
                 onClick={() => handleSort(column.key)}
               >
                 <div className="table-header-content">
-                  <span>{column.title}</span>
+                  {isValidElement(column.title) ? column.title : <span>{column.title}</span>}
                   {column.sortable && (
                     <div className="table-sort-indicator">
                       {sortKey === column.key && sortDirection === 'asc' && <span className="text-xs">↑</span>}

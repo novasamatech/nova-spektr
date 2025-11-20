@@ -1571,6 +1571,7 @@
     "balancesLabel": "Portfolio",
     "basketLabel": "Basket",
     "callDataLabel": "Submit call data",
+    "customOperationLabel": "Custom operation",
     "fellowship": "Fellowship",
     "governance": "Governance",
     "historyLabel": "History",
@@ -2589,21 +2590,20 @@
     },
     "errors": {
       "csv": {
-        "invalidDataRow": "Row {row}",
-        "invalidDataTitle": "Found {errorCount} errors",
-        "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
-        "parseFailedTitle": "Parsing failed",
-        "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
-        "rowErrors": {
+        "errorTitle": "Found {count} errors",
+        "fieldErrors": {
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "INVALID_VALUE": "Invalid value",
-          "LOCKED_OUT_OF_RANGE": "The amount is outside the allowed range",
-          "MAX_VESTING_SCHEDULES_REACHED": "Recipient account has reached the maximum number of vesting schedules",
-          "PER_BLOCK_OUT_OF_RANGE": "The per block value is outside the allowed range",
-          "START_BLOCK_IN_PAST": "The starting block is in the past",
-          "START_BLOCK_OUT_OF_RANGE": "The starting block is outside the allowed range",
+          "MAX_VESTING_SCHEDULES_REACHED": "Max vesting schedules reached",
+          "MIN_VESTED_TRANSFER": "Min vested transfer",
+          "OUT_OF_RANGE": "Value out of range",
+          "START_BLOCK_IN_PAST": "Block in the past",
           "UNKNOWN_ERROR": "Unknown error"
-        }
+        },
+        "invalidDataRow": "Row {row}",
+        "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
+        "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
+        "warningTitle": "Found {count} warnings"
       },
       "form": {
         "chainRequired": "Chain is required",
@@ -2620,7 +2620,7 @@
         "csvFile": {
           "exampleButton": "Example",
           "label": "Data table file",
-          "placeholder": "Select file from your computer"
+          "placeholder": "Select CSV file on your computer"
         },
         "network": {
           "label": "Recipient network",
@@ -2637,8 +2637,10 @@
         "buttons": {
           "download": "Download"
         },
-        "errors": {
-          "downloadDescription": "Found {errors} errors. You can download parsed file to review them."
+        "footer": {
+          "downloadDescription": "You can download parsed file to review them.",
+          "errorsCount": "Found {count} errors.",
+          "warningsCount": "Found {count} warnings."
         },
         "headers": {
           "locked": "Locked",
@@ -2647,7 +2649,8 @@
           "startBlock": "Start block"
         },
         "hints": {
-          "perBlock": "Tokens released per block during vesting, in planks. Defines unlock speed.",
+          "perBlock": "Tokens released per block during vesting",
+          "planks": "{amount} planks",
           "startBlock": "Block number when vesting starts",
           "startBlockTime": "Starts on {date} at {time}"
         }

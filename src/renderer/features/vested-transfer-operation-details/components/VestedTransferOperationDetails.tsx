@@ -1,4 +1,3 @@
-import { BN } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 
 import { type DecodedTransaction, TransactionType } from '@/shared/core';
@@ -7,7 +6,7 @@ import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button, DetailRow } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { type VestingSchedule, VestingSchedulePreview } from '@/entities/vesting';
+import { VestingSchedulePreview, type VestingScheduleRaw } from '@/entities/vesting';
 
 type Props = {
   operation: MultisigOperation;
@@ -16,31 +15,29 @@ type Props = {
 export const VestedTransferOperationDetails = ({ operation }: Props) => {
   const { t } = useI18n();
   const chains = useUnit(networkModel.$chains);
+  const apis = useUnit(networkModel.$apis);
 
   const { transaction, chainId } = operation;
   const chain = chains[chainId];
 
   if (nullable(transaction) || nullable(chain)) return null;
 
+  const timelineChainId = chain.additional?.timelineChain;
+  const timelineApi = (timelineChainId && apis[timelineChainId]) ?? apis[chain.chainId] ?? null;
   const asset = getNativeAsset(chain.assets);
 
-  const vestingSchedule: VestingSchedule[] =
+  const vestingSchedule: VestingScheduleRaw[] =
     transaction.type === TransactionType.BATCH_ALL
       ? transaction.args.transactions.map(extractVestingSchedule)
       : [extractVestingSchedule(transaction)];
 
   return (
     <DetailRow label={t('operation.details.parsedFile')} className="text-text-secondary">
-      <VestingSchedulePreview
-        chain={chain}
-        asset={asset}
-        vestingSchedule={vestingSchedule}
-        trigger={
-          <Button className="p-0" size="sm" variant="text">
-            {t('vestedTransfer.parsedFile.buttons.openPreview')}
-          </Button>
-        }
-      />
+      <VestingSchedulePreview timelineApi={timelineApi} chain={chain} asset={asset} vestingSchedule={vestingSchedule}>
+        <Button className="p-0" size="sm" variant="text">
+          {t('vestedTransfer.parsedFile.buttons.openPreview')}
+        </Button>
+      </VestingSchedulePreview>
     </DetailRow>
   );
 };
@@ -53,8 +50,8 @@ function extractVestingSchedule(tx: DecodedTransaction) {
 
   return {
     target,
-    locked: new BN(locked),
-    perBlock: new BN(perBlock),
-    startingBlock: new BN(startingBlock),
+    locked,
+    perBlock,
+    startingBlock,
   };
 }

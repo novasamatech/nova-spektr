@@ -13,7 +13,12 @@ import { vestedTransferUtils } from '../utils';
 import { Confirmation } from './Confirmation';
 import { VestedTransferForm } from './VestedTransferForm';
 
-export const VestedTransferModal = ({ onToggle }: { onToggle: VoidFunction }) => {
+type Props = {
+  isOpen: boolean;
+  onToggle: VoidFunction;
+};
+
+export const VestedTransferModal = ({ isOpen, onToggle }: Props) => {
   useGate(formModel.flow);
 
   const { t } = useI18n();
@@ -35,7 +40,7 @@ export const VestedTransferModal = ({ onToggle }: { onToggle: VoidFunction }) =>
   };
 
   return (
-    <Modal isOpen size="md" height="fit" onToggle={onToggle}>
+    <Modal isOpen={isOpen} size="md" height="fit" onToggle={onToggle}>
       <Modal.Title close>{getModalTitle(chain.value)}</Modal.Title>
       <Modal.Content disableScroll>
         {vestedTransferUtils.isInitStep(step) && <VestedTransferForm />}
