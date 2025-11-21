@@ -6,18 +6,18 @@ import { getTimeToBlock } from '@/shared/lib/utils';
 import { ReferendumTimer } from '@/entities/governance';
 
 type Props = {
-  api: ApiPromise;
+  timelineApi: ApiPromise;
   status: ReferendumStatus | null;
   endBlock: number | null;
   shortDateFormat?: boolean;
 };
 
-export const ReferendumEndTimer = ({ status, endBlock, api, shortDateFormat }: Props) => {
+export const ReferendumEndTimer = ({ status, endBlock, timelineApi, shortDateFormat }: Props) => {
   const [endTime, setEndTime] = useState<number>();
 
   useEffect(() => {
     if (endBlock) {
-      getTimeToBlock(endBlock, api).then((date) => {
+      getTimeToBlock(endBlock, timelineApi).then((date) => {
         setEndTime(date / 1000);
       });
     }
