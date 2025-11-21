@@ -99,7 +99,7 @@ const $deepLinkData = createStore<MultisigOperationDeepLinkData | null>(null)
   .reset(operationsPageClosed);
 
 const networkChecked = sample({
-  clock: [multisigOperationDeepLinkHandler.triggered, networkModel.$chains],
+  clock: [multisigOperationDeepLinkHandler.triggered, networkModel.$populated],
   source: { chains: networkModel.$chains, data: $deepLinkData },
   filter: ({ data }) => nonNullable(data),
   fn: ({ chains, data }) => {
