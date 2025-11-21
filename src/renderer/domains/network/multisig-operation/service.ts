@@ -133,13 +133,18 @@ const mergeMultisigOperations = (
   oldOperations: MultisigOperation[],
   operations: MultisigOperation[],
 ): MultisigOperation[] => {
-  const newPendingOperations = operations.filter(operation => operation.status === 'pending');
-
+  /**
+   * Because we work with Events AT BEST, it may happen that our db has extra
+   * operations that are not on the chain anymore nor were executed. We want to
+   * filter them out.
+   *
+   * For example, if we have a fork and operation was executed in the different
+   * block than we first recevied event of.
+   */
   const oldFilteredForPending = oldOperations.filter(
-    operation =>
-      operation.status !== 'pending' ||
-      !newPendingOperations.some(
-        newOperation => newOperation.chainId === operation.chainId && newOperation.accountId === operation.accountId,
+    oldOperation =>
+      !operations.some(
+        operation => operation.chainId === oldOperation.chainId && operation.accountId === oldOperation.accountId,
       ),
   );
 
