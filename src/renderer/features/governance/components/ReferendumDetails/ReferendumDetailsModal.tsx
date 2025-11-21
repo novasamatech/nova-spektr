@@ -32,7 +32,7 @@ import { VotingSummary } from './VotingSummary';
 
 type Props = {
   chain: Chain;
-  api: ApiPromise;
+  timelineApi: ApiPromise;
   asset: Asset;
   referendum: AggregatedReferendum;
   showActions?: boolean;
@@ -44,7 +44,7 @@ type Props = {
 
 export const ReferendumDetailsModal = ({
   chain,
-  api,
+  timelineApi,
   asset,
   referendum,
   showActions,
@@ -127,7 +127,7 @@ export const ReferendumDetailsModal = ({
 
               <DetailsCard title={t('governance.referendum.votingStatus')}>
                 <VotingStatus
-                  api={api}
+                  timelineApi={timelineApi}
                   referendum={referendum}
                   asset={asset}
                   canVote={showActions ?? canVote}

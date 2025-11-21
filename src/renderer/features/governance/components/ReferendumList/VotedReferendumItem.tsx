@@ -17,7 +17,7 @@ import { ListItem } from './ListItem';
 
 type Props = {
   referendum: AggregatedReferendum;
-  network: { api: ApiPromise; chain: Chain; asset: Asset };
+  network: { api: ApiPromise; timelineApi: ApiPromise; chain: Chain; asset: Asset };
   votes: { value: BN; vote: string }[];
   onSelect: (value: AggregatedReferendum) => void;
 };
@@ -45,7 +45,7 @@ export const VotedReferendumItem = memo(({ referendum, network, votes, onSelect 
       <div className="flex w-full items-center gap-x-2">
         <VotingStatusBadge referendum={referendum} />
 
-        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={network.api} />
+        <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} timelineApi={network.timelineApi} />
 
         <div className="ml-auto flex text-text-secondary">
           {referendumId && <FootnoteText className="text-inherit">#{referendumId}</FootnoteText>}
