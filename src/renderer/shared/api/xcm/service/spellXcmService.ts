@@ -1,4 +1,5 @@
 import { Builder, Native, convertSs58, getSupportedDestinations } from '@paraspell/sdk-pjs';
+import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN } from '@polkadot/util';
 
@@ -13,6 +14,8 @@ type XcmTransferParams = {
   amount: string;
   destinationAddress: string;
   senderAddress?: string;
+  fromChainApi?: ApiPromise;
+  toChainApi?: ApiPromise;
 };
 
 type XcmFeeParams = {
@@ -22,6 +25,8 @@ type XcmFeeParams = {
   amount: string;
   destinationAddress: string;
   senderAddress?: string;
+  fromChainApi?: ApiPromise;
+  toChainApi?: ApiPromise;
 };
 
 type XcmFeeResult = {
@@ -71,7 +76,9 @@ function createCurrencyInput(
 function createBuilderConfig(
   fromChain: Chain,
   toChain: Chain,
-): { abstractDecimals: boolean; apiOverrides?: Record<string, string[]> } {
+  fromChainApi?: ApiPromise,
+  toChainApi?: ApiPromise,
+): { abstractDecimals: boolean; apiOverrides?: Record<string, string[] | ApiPromise> } {
   const fromChainName = getSpellChainName(fromChain);
   const toChainName = getSpellChainName(toChain);
 
@@ -79,16 +86,24 @@ function createBuilderConfig(
     return { abstractDecimals: false };
   }
 
-  const apiOverrides: Record<string, string[]> = {};
+  const apiOverrides: Record<string, string[] | ApiPromise> = {};
 
-  const fromChainWsUrls = fromChain.nodes.map((node) => node.url);
-  if (fromChainWsUrls.length > 0) {
-    apiOverrides[fromChainName] = fromChainWsUrls;
+  if (fromChainApi) {
+    apiOverrides[fromChainName] = fromChainApi;
+  } else {
+    const fromChainWsUrls = fromChain.nodes.map((node) => node.url);
+    if (fromChainWsUrls.length > 0) {
+      apiOverrides[fromChainName] = fromChainWsUrls;
+    }
   }
 
-  const toChainWsUrls = toChain.nodes.map((node) => node.url);
-  if (toChainWsUrls.length > 0) {
-    apiOverrides[toChainName] = toChainWsUrls;
+  if (toChainApi) {
+    apiOverrides[toChainName] = toChainApi;
+  } else {
+    const toChainWsUrls = toChain.nodes.map((node) => node.url);
+    if (toChainWsUrls.length > 0) {
+      apiOverrides[toChainName] = toChainWsUrls;
+    }
   }
 
   return {
@@ -98,7 +113,7 @@ function createBuilderConfig(
 }
 
 function buildXcmTransferBuilder(params: XcmTransferParams): BuilderResult | null {
-  const { fromChain, toChain, asset, amount, destinationAddress, senderAddress } = params;
+  const { fromChain, toChain, asset, amount, destinationAddress, senderAddress, fromChainApi, toChainApi } = params;
 
   const fromChainName = getSpellChainName(fromChain);
   const toChainName = getSpellChainName(toChain);
@@ -107,8 +122,10 @@ function buildXcmTransferBuilder(params: XcmTransferParams): BuilderResult | nul
     return null;
   }
 
-  const builderConfig = createBuilderConfig(fromChain, toChain);
+  const builderConfig = createBuilderConfig(fromChain, toChain, fromChainApi, toChainApi);
   const currencyInput = createCurrencyInput(asset, amount);
+
+  // console.log('builderConfig', fromChainApi, toChainApi);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let builder: any = Builder(builderConfig)
