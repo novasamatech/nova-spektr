@@ -68,7 +68,7 @@ export const membersSubscriptionResource = createSubscriptionResource<MembersSub
         {
           api,
           section: `${palletType}Core`,
-          methods: ['Imported', 'Swapped', 'Promoted', 'Demoted', 'ActiveChanged'],
+          methods: ['Imported', 'Swapped', 'Promoted', 'Demoted', 'ActiveChanged', 'Proven'],
         },
         fn,
       ),
