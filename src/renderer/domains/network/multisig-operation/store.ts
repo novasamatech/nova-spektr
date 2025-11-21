@@ -175,4 +175,9 @@ export const multisigOperation = {
   unsubscribe: subscribeResource.unsubscribe,
   subscribeEvents: subscribeEventsResource.subscribe,
   unsubscribeEvents: subscribeEventsResource.unsubscribe,
+
+  __test: {
+    $list,
+    $populated,
+  },
 };
