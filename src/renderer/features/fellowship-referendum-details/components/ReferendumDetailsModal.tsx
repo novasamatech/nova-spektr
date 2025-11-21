@@ -2,15 +2,15 @@ import { type PropsWithChildren, memo, useMemo, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
+import { toAddress, toRomanNumeral, toShortAddress } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { Box, Modal } from '@/shared/ui-kit';
-import { type Evidence, type Referendum, referendumService, trackService, useTracks } from '@/domains/collectives';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { type Evidence, type Referendum, referendumService, trackService } from '@/domains/collectives';
+import { useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
 import { useEvidence } from '../hooks/useEvidence';
 import { useEvidenceHash } from '../hooks/useEvidenceHash';
 import { useProposer } from '../hooks/useProposer';
 import { useReferendum } from '../hooks/useReferendum';
-import { detailsService } from '../service';
 
 import { AdditionalInfo } from './AdditionalInfo';
 import { MemberProfile } from './MemberProfile';
@@ -36,29 +36,40 @@ export const ReferendumDetailsModal = memo(({ referendumId, children, title, isC
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  const api = useFellowshipApi();
+  const chain = useFellowshipChain();
   const { data: referendum } = useReferendum(referendumId);
   const { data: proposer } = useProposer(referendum);
   const { data: evidence } = useEvidence(proposer?.accountId ?? null);
-  const { data: tracks } = useTracks({ palletType: 'fellowship', api });
   const { data: evidenceHash } = useEvidenceHash({ referendum, evidence });
+  const { data: identity } = useFellowshipIdentity(proposer?.accountId ?? null);
 
   const modalTitle = useMemo(() => {
     if (title) {
       return title;
     }
 
-    if (referendum && referendumService.isOngoing(referendum)) {
-      if (trackService.isPromotionTrack(referendum.track) || trackService.isRetentionTrack(referendum.track)) {
-        const rankTitle = detailsService.getRankTitle(referendum.track, tracks);
-        if (rankTitle) {
-          return rankTitle;
+    if (referendum && referendumService.isOngoing(referendum) && proposer) {
+      const isPromotionTrack = trackService.isPromotionTrack(referendum.track);
+      const isRetentionTrack = trackService.isRetentionTrack(referendum.track);
+
+      if (isPromotionTrack || isRetentionTrack) {
+        const rank = isPromotionTrack ? proposer.rank + 1 : proposer.rank;
+
+        if (rank > 0) {
+          const template = isPromotionTrack ? 'fellowship.tasks.titles.promote' : 'fellowship.tasks.titles.retain';
+          const name =
+            identity?.name ?? toShortAddress(toAddress(proposer.accountId, { prefix: chain?.addressPrefix }), 5);
+
+          return t(template, {
+            name,
+            rank: toRomanNumeral(rank),
+          });
         }
       }
     }
 
     return t('governance.referendums.referendumTitle', { index: referendumId });
-  }, [title, referendum, tracks, referendumId]);
+  }, [title, referendum, proposer, identity, chain, t, referendumId]);
 
   const handleToggle = (open: boolean) => {
     setIsOpen(open);

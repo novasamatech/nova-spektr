@@ -1,8 +1,7 @@
 import { type ChainId, type VaultChainAccount, type VaultShardAccount, type Wallet } from '@/shared/core';
+import { downloadFiles } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { accountUtils } from '@/entities/wallet';
-
-import { downloadFiles } from './download-multiple-files';
 
 const IMPORT_FILE_VERSION = 1;
 

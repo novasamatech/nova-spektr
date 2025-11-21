@@ -1,6 +1,7 @@
 import { allSettled, fork } from 'effector';
 import { describe, expect, it } from 'vitest';
 
+import { AccountType, CryptoType, SigningType } from '@/shared/core';
 import { accounts, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
@@ -48,7 +49,8 @@ describe('multisig operations deep link', () => {
         .set(networkModel.$chains, {
           [mockChain.chainId]: mockChain,
         })
-        .set(accounts.__test.$list, []),
+        .set(accounts.__test.$list, [])
+        .set(accounts.__test.$populated, true),
     });
 
     const deepLinkData: MultisigOperationDeepLinkData = {
@@ -67,6 +69,67 @@ describe('multisig operations deep link', () => {
     });
 
     expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(true);
+  });
+
+  it('should wait for accounts to be populated before checking (cold start)', async () => {
+    const mockChain = {
+      chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' as any,
+      name: 'Polkadot',
+      assets: [],
+      nodes: [],
+      addressPrefix: 0,
+      explorers: [],
+      externalApi: {},
+      icon: 'polkadot',
+      options: ['MULTISIG'],
+    };
+
+    const mockAccountId = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+    const mockAccount = {
+      id: 1,
+      accountId: mockAccountId as any,
+      walletId: 1,
+      name: 'Test Account',
+      accountType: AccountType.MULTISIG,
+      type: 'universal' as const,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
+      signatories: [],
+      threshold: 2,
+    };
+
+    // Simulate cold start: accounts not yet populated
+    const scope = fork({
+      values: new Map()
+        .set(networkModel.$chains, {
+          [mockChain.chainId]: mockChain,
+        })
+        .set(accounts.__test.$list, [mockAccount])
+        .set(accounts.__test.$populated, false),
+    });
+
+    const deepLinkData: MultisigOperationDeepLinkData = {
+      chainId: mockChain.chainId,
+      callHash: '0xabc',
+      accountId: mockAccountId as any,
+      blockCreated: 100,
+      indexCreated: 1,
+    };
+
+    // Trigger deep link before accounts are populated
+    await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
+      scope,
+      params: deepLinkData,
+    });
+
+    // Should NOT open account not found modal yet (waiting for accounts to populate)
+    expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
+
+    // Simulate accounts being populated from DB
+    await allSettled(accounts.populate, { scope });
+
+    // Now account should be found and no error modal should open
+    expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
   });
 
   it('should not open account not found modal when account exists', async () => {
@@ -88,10 +151,12 @@ describe('multisig operations deep link', () => {
       accountId: mockAccountId as any,
       walletId: 1,
       name: 'Test Account',
-      type: 'multisig' as const,
+      accountType: AccountType.MULTISIG,
+      type: 'universal' as const,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
       signatories: [],
       threshold: 2,
-      chainId: mockChain.chainId,
     };
 
     const scope = fork({
@@ -99,7 +164,8 @@ describe('multisig operations deep link', () => {
         .set(networkModel.$chains, {
           [mockChain.chainId]: mockChain,
         })
-        .set(accounts.__test.$list, [mockAccount]),
+        .set(accounts.__test.$list, [mockAccount])
+        .set(accounts.__test.$populated, true),
     });
 
     const deepLinkData: MultisigOperationDeepLinkData = {
@@ -139,10 +205,12 @@ describe('multisig operations deep link', () => {
       accountId: mockAccountId as any,
       walletId: 1,
       name: 'Test Account',
-      type: 'multisig' as const,
+      accountType: AccountType.MULTISIG,
+      type: 'universal' as const,
+      cryptoType: CryptoType.SR25519,
+      signingType: SigningType.WATCH_ONLY,
       signatories: [],
       threshold: 2,
-      chainId: mockChain.chainId,
     };
 
     const deepLinkData: MultisigOperationDeepLinkData = {
@@ -178,6 +246,7 @@ describe('multisig operations deep link', () => {
           [mockChain.chainId]: mockChain,
         })
         .set(accounts.__test.$list, [mockAccount])
+        .set(accounts.__test.$populated, true)
         .set(multisigOperation.$list, [mockOperation])
         .set(networkModel.$apis, {}),
     });

@@ -1574,6 +1574,7 @@
     "stakingLabel": "Staking",
     "transfersLabel": "Transfer",
     "unknownWalletLabel": "Unknown wallet",
+    "vestedTransfersLabel": "Vested transfer",
     "walletsLabel": "Wallets"
   },
   "notifications": {
@@ -1784,6 +1785,7 @@
       "destinationChain": "To network",
       "fromNetwork": "From network",
       "multisigWallet": "Wallet",
+      "parsedFile": "Parsed file",
       "payee": "Rewards destination",
       "recipient": "Recipient",
       "referendum": "Referendum",
@@ -1825,6 +1827,8 @@
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
     "rejectInProgress": "Submitting Rejection...",
+    "removeFromBasket": "Remove from basket",
+    "removedFromBasket": "Removed from basket",
     "selectAccount": "Select account",
     "selectAccountLabel": "Account",
     "selectSignatory": "Select signatory",
@@ -1942,6 +1946,8 @@
       "unknownOn": "Unknown Operation on",
       "unlockOn": "Unlock on",
       "unstakeOn": "Unstake { asset } on",
+      "vestedTransfer": "Vested transfer",
+      "vestedTransferOn": "Vested transfer on",
       "vote": "Vote { asset } on"
     },
     "noOperationsDescription": "You haven't made any operations yet. <br /> If you updated your Flexible Multisig, previous operations are available on the old multisig.",
@@ -1978,6 +1984,7 @@
       "unknown": "Unknown Operation",
       "unlock": "Unlock",
       "unstake": "Unstake",
+      "vestedTransfer": "Vested transfer",
       "vote": "Vote"
     },
     "viewOperation": "View operation"
@@ -2565,6 +2572,81 @@
     "sender": "Sender",
     "title": "Send",
     "wallet": "Wallet"
+  },
+  "vestedTransfer": {
+    "confirmation": {
+      "labels": {
+        "parsedFile": "Parsed file",
+        "totalAmount": "Total amount"
+      }
+    },
+    "errors": {
+      "csv": {
+        "invalidDataRow": "Row {row}",
+        "invalidDataTitle": "Found {errorCount} errors",
+        "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
+        "parseFailedTitle": "Parsing failed",
+        "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
+        "rowErrors": {
+          "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
+          "INVALID_VALUE": "Invalid value",
+          "LOCKED_OUT_OF_RANGE": "The amount is outside the allowed range",
+          "MAX_VESTING_SCHEDULES_REACHED": "Recipient account has reached the maximum number of vesting schedules",
+          "PER_BLOCK_OUT_OF_RANGE": "The per block value is outside the allowed range",
+          "START_BLOCK_IN_PAST": "The starting block is in the past",
+          "START_BLOCK_OUT_OF_RANGE": "The starting block is outside the allowed range",
+          "UNKNOWN_ERROR": "Unknown error"
+        }
+      },
+      "form": {
+        "chainRequired": "Chain is required",
+        "csvRequired": "CSV file is required",
+        "notEnoughMultisigTokens": "Not enough tokens to pay multisig deposit and network fee",
+        "signatoryRequired": "Signatory is required"
+      }
+    },
+    "form": {
+      "fields": {
+        "amount": {
+          "label": "Total amount"
+        },
+        "csvFile": {
+          "exampleButton": "Example",
+          "label": "Data table file",
+          "placeholder": "Select file from your computer"
+        },
+        "network": {
+          "label": "Recipient network",
+          "placeholder": "Select network..."
+        }
+      }
+    },
+    "parsedFile": {
+      "buttons": {
+        "openPreview": "Preview",
+        "parsedFile": "Parsed file"
+      },
+      "table": {
+        "buttons": {
+          "download": "Download"
+        },
+        "errors": {
+          "downloadDescription": "Found {errors} errors. You can download parsed file to review them."
+        },
+        "headers": {
+          "locked": "Locked",
+          "perBlock": "Per block",
+          "recipient": "Recipient",
+          "startBlock": "Start block"
+        },
+        "hints": {
+          "perBlock": "Tokens released per block during vesting, in planks. Defines unlock speed.",
+          "startBlock": "Block number when vesting starts",
+          "startBlockTime": "Starts on {date} at {time}"
+        }
+      },
+      "title": "Parsed file"
+    }
   },
   "voteChart": {
     "aye": "Aye",

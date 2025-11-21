@@ -76,7 +76,7 @@ export const useOngoingReferendumTasks = () => {
           return {
             id: `referendum_${referendum.id}`,
             weight: weight.sortingScore,
-            group: 'general',
+            group: 'active',
             body: PromotionRetentionReferendumVoting,
             meta: {
               referendum,
@@ -94,7 +94,7 @@ export const useOngoingReferendumTasks = () => {
           return {
             id: `referendum_${referendum.id}`,
             weight: weight.sortingScore,
-            group: 'general',
+            group: 'active',
             body: OngoingReferendumVoting,
             meta: {
               referendum,

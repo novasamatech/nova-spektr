@@ -22,6 +22,7 @@ import { notificationsNavigationFeature } from '@/features/notifications-navigat
 import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
 import { stakingNavigationFeature } from '@/features/staking-navigation';
+import { vestedTransferFeature } from '@/features/vested-transfer';
 
 const configureDomains = () => {
   const config = createFeature({ name: 'spektr/config' });
@@ -73,6 +74,7 @@ export const bootstrap = () => {
     basketNavigationFeature,
     stakingNavigationFeature,
     governanceNavigationFeature,
+    vestedTransferFeature,
 
     import('@/features/wallet-select').then(({ walletSelectFeature }) => walletSelectFeature.feature),
     import('@/features/wallet-details').then(({ walletDetailsFeature }) => walletDetailsFeature),
@@ -130,6 +132,8 @@ export const bootstrap = () => {
 
     import('@/features/proxy-operation-details').then(({ proxyOperationDetailFeature }) => proxyOperationDetailFeature),
     import('@/features/proxy-basket').then(({ proxyBasketFeature }) => proxyBasketFeature),
+
+    import('@/features/vested-transfer-operation-details').then(({ vestedTransferOperationDetailFeature }) => vestedTransferOperationDetailFeature),
 
     import('@/features/import-db').then(({ importDBFeature }) => importDBFeature),
     import('@/features/hidden-wallets').then(({ hiddenWalletsFeature }) => hiddenWalletsFeature),

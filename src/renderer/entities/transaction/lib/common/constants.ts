@@ -26,6 +26,7 @@ export const STAKING_SECTION = 'staking';
 export const PROXY_SECTION = 'proxy';
 export const MULTISIG_SECTION = 'multisig';
 export const GOVERNANCE_SECTION = 'convictionVoting';
+export const VESTING_SECTION = 'vesting';
 
 export const TransferTypes = [
   TransactionType.TRANSFER,
