@@ -73,6 +73,7 @@ const $apiDestination = combine(
 
 type FeeCalculationParams = {
   api: ApiPromise;
+  apiDestination: ApiPromise | undefined;
   network: { chain: Chain; asset: Asset };
   xcmChain: Chain;
   destination: AccountId;
@@ -82,7 +83,7 @@ type FeeCalculationParams = {
 
 const getXcmFeesFx = takeLast({
   fn: async (params: FeeCalculationParams, abortSignal: AbortSignal) => {
-    const { api, network, xcmChain, destination, rawAmount, initiatorAccountId } = params;
+    const { api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId } = params;
 
     const originChainId = api.genesisHash.toHex();
     if (originChainId === xcmChain.chainId) {
@@ -111,6 +112,8 @@ const getXcmFeesFx = takeLast({
         amount: rawAmount,
         destinationAddress,
         senderAddress,
+        fromChainApi: api,
+        toChainApi: apiDestination,
       },
       abortSignal,
     );
@@ -121,19 +124,21 @@ const getXcmFeesFx = takeLast({
 const $feeCalculationParams = combine(
   {
     api: $api,
+    apiDestination: $apiDestination,
     network: $networkStore,
     xcmChain: $xcmChain,
     destination: $destination,
     rawAmount: $rawAmount,
     initiatorAccountId: $initiatorAccountId,
   },
-  ({ api, network, xcmChain, destination, rawAmount, initiatorAccountId }) => {
+  ({ api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId }) => {
     if (!api || !network || !xcmChain || !destination || !rawAmount) {
       return null;
     }
 
     return {
       api,
+      apiDestination,
       network,
       xcmChain,
       destination,
@@ -261,6 +266,8 @@ const $transferDirection = combine(
 );
 
 type BuildTransferParams = {
+  api: ApiPromise | null;
+  apiDestination: ApiPromise | undefined;
   network: { chain: Chain; asset: Asset };
   xcmChain: Chain;
   destination: AccountId;
@@ -269,7 +276,7 @@ type BuildTransferParams = {
 };
 
 const buildTransferFx = createEffect(
-  async ({ network, xcmChain, destination, amount, initiatorAccountId }: BuildTransferParams) => {
+  async ({ api, apiDestination, network, xcmChain, destination, amount, initiatorAccountId }: BuildTransferParams) => {
     const fromChainName = spellXcmService.getSpellChainName(network.chain);
     const toChainName = spellXcmService.getSpellChainName(xcmChain);
 
@@ -291,6 +298,8 @@ const buildTransferFx = createEffect(
       amount,
       destinationAddress,
       senderAddress,
+      fromChainApi: api ?? undefined,
+      toChainApi: apiDestination,
     });
 
     return result.extrinsic;
@@ -301,6 +310,8 @@ const $spellExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null
 
 const $buildTransferParams = combine(
   {
+    api: $api,
+    apiDestination: $apiDestination,
     network: $networkStore,
     xcmChain: $xcmChain,
     destination: $destination,
@@ -308,12 +319,14 @@ const $buildTransferParams = combine(
     rawAmount: $rawAmount,
     initiatorAccountId: $initiatorAccountId,
   },
-  ({ network, xcmChain, destination, amount, rawAmount, initiatorAccountId }) => {
+  ({ api, apiDestination, network, xcmChain, destination, amount, rawAmount, initiatorAccountId }) => {
     if (!network || !xcmChain || !destination || !amount) {
       return null;
     }
 
     return {
+      api,
+      apiDestination,
       network,
       xcmChain,
       destination,
