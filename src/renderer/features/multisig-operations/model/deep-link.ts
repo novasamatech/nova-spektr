@@ -36,7 +36,7 @@ const $operationId = createStore<string | null>(null)
 const $focusedOperation = combine({
   operationId: $operationId,
   list: multisigOperation.$list,
-}).map(({ operationId, list }) => list.find(item => item.id === operationId));
+}).map(({ operationId, list }) => list.find(item => item.id === operationId) ?? null);
 
 const $focusedOperationId = createStore<string | null>(null).reset(
   operationsPageClosed,
