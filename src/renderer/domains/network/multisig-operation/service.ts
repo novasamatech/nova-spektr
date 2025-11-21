@@ -129,10 +129,23 @@ const mergeEvents = (oldEvents: MultisigEvent[], events: MultisigEvent[]) =>
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
 
-const mergeMultisigOperations = (a: MultisigOperation[], b: MultisigOperation[]): MultisigOperation[] => {
+const mergeMultisigOperations = (
+  oldOperations: MultisigOperation[],
+  operations: MultisigOperation[],
+): MultisigOperation[] => {
+  const newPendingOperations = operations.filter(operation => operation.status === 'pending');
+
+  const oldFilteredForPending = oldOperations.filter(
+    operation =>
+      operation.status !== 'pending' ||
+      !newPendingOperations.some(
+        newOperation => newOperation.chainId === operation.chainId && newOperation.accountId === operation.accountId,
+      ),
+  );
+
   return merge({
-    a,
-    b,
+    a: oldFilteredForPending,
+    b: operations,
     filter: (a, b) => {
       if (isEqual(a, b)) {
         return false;

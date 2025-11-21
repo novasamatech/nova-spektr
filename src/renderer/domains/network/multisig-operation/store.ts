@@ -40,6 +40,14 @@ const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
 });
 
 const syncOperationsFx = createQueuedEffect(async (operations: MultisigOperation[]) => {
+  const dbOperations = await storageService.multisigOperations.readAll();
+  const newIds = new Set(operations.map(op => op.id));
+  const idsToDelete = dbOperations.filter(op => !newIds.has(op.id)).map(op => op.id);
+
+  if (idsToDelete.length > 0) {
+    await storageService.multisigOperations.deleteAll(idsToDelete);
+  }
+
   await storageService.multisigOperations.insertAll(operations.map(serializeOperation));
 });
 
@@ -144,6 +152,7 @@ sample({
 
 sample({
   clock: $list,
+  filter: list => list.length > 0,
   target: syncOperationsFx,
 });
 

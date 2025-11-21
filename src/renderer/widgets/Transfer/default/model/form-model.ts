@@ -538,7 +538,7 @@ const $showEDSwitch = combine(
 );
 
 const $proxyAccount = $route.map((route) => route.find(accountUtils.isProxiedAccount) ?? null);
-const $isMultisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
+const $multisigAccount = $route.map((route) => route.find(accountUtils.isAnyMultisigAccount) ?? null);
 
 const $destinationChains = combine(
   {
@@ -787,7 +787,7 @@ export const formModel = {
   $signatoryBalance,
 
   $proxyAccount,
-  $multisigAccount: $isMultisigAccount,
+  $multisigAccount,
 
   $isMyselfXcmEnabled,
   $isMyselfXcmOpened,
