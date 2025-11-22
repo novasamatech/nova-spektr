@@ -1,5 +1,7 @@
+import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
+import { $features } from '@/shared/config/features';
 import { useI18n } from '@/shared/i18n';
 import { FootnoteText, InfoLink, TitleText } from '@/shared/ui';
 import { Box, Markdown, Surface } from '@/shared/ui-kit';
@@ -13,6 +15,7 @@ interface RequirementsCardProps {
 
 export const RequirementsCard = memo(({ rankId }: RequirementsCardProps) => {
   const { t } = useI18n();
+  const features = useUnit($features);
   const rankData = getRankDataByRank(rankId);
 
   if (!rankData) {
@@ -53,11 +56,15 @@ export const RequirementsCard = memo(({ rankId }: RequirementsCardProps) => {
           {t('fellowship.ranks.activityDescription')}
           <br />
           {t('fellowship.ranks.agreementDescription')}
-          <br />
-          {t('fellowship.ranks.detailsInCodexText')}{' '}
-          <InfoLink url="#" onClick={handleCodexClick}>
-            {t('fellowship.ranks.codex')}
-          </InfoLink>
+          {features.codex && (
+            <>
+              <br />
+              {t('fellowship.ranks.detailsInCodexText')}{' '}
+              <InfoLink url="#" onClick={handleCodexClick}>
+                {t('fellowship.ranks.codex')}
+              </InfoLink>
+            </>
+          )}
         </FootnoteText>
 
         <div className="h-px w-full bg-filter-border" />
