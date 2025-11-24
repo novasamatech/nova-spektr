@@ -66,7 +66,7 @@ export const PromotionWidget = memo(({ member }: Props) => {
     return (
       <WidgetContainer
         title={t('fellowship.promotion.waiting.title')}
-        description={t('fellowship.promotion.waiting.description', { from: fromDateFormatted })}
+        description={t('fellowship.promotion.waiting.description', { date: toDateFormatted })}
         footer={
           promotionPeriod && (
             <>
