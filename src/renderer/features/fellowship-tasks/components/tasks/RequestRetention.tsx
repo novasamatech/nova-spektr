@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { getCreatedDateFromApi, toRomanNumeral } from '@/shared/lib/utils';
+import { getCreatedDateFromApi, nullable, toRomanNumeral } from '@/shared/lib/utils';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { useFellowshipMemberCurrentTrack, useFellowshipMemberEndDemotionBlock } from '@/aggregates/fellowship-member';
 import { useFellowshipApi } from '@/aggregates/fellowship-network';
+import { RetentionWidgetState, useRetentionWidgetState } from '@/aggregates/fellowship-retention';
 import { RetentionEndTimer } from '../RetentionEndTimer';
 import { BadgeIcon } from '../TaskBadge';
 
@@ -17,6 +18,7 @@ export const RequestRetention = () => {
   const [periodEnd, setPeriodEnd] = useState(0);
 
   const api = useFellowshipApi();
+  const { data: retentionState } = useRetentionWidgetState();
   const { data: track } = useFellowshipMemberCurrentTrack();
   const { data: endDemotionBlock } = useFellowshipMemberEndDemotionBlock();
 
@@ -25,6 +27,22 @@ export const RequestRetention = () => {
       getCreatedDateFromApi(endDemotionBlock, api).then(setPeriodEnd);
     }
   }, [api, endDemotionBlock]);
+
+  const shouldRender = useMemo(() => {
+    if (nullable(retentionState)) {
+      return false;
+    }
+
+    return (
+      retentionState === RetentionWidgetState.WARNING_APPROACHING ||
+      retentionState === RetentionWidgetState.WARNING_URGENT ||
+      retentionState === RetentionWidgetState.CRITICAL_LAST_CALL
+    );
+  }, [retentionState]);
+
+  if (!shouldRender || nullable(retentionState)) {
+    return null;
+  }
 
   return (
     <Box direction="row" padding={4} gap={2} verticalAlign="flex-end">
