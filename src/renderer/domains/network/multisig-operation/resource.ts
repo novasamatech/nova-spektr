@@ -45,7 +45,7 @@ const operationsGqlSchema = z.object({
 
 const operationsQuery = gql`
   query List($accountId: String!) {
-    multisigOperations(filter: { accountId: { equalTo: $accountId } }) {
+    multisigOperations(filter: { accountId: { equalTo: $accountId }, status: { notEqualTo: pending } }) {
       nodes {
         status
         accountId
@@ -258,7 +258,7 @@ export const fetchResource = createRemoteResource<RequestParams, MultisigOperati
     const chainOperations = await fetchAllOnchainOperations(apis, accountId, chains);
     const historicOperations = await fetchOperationsHistory(accountId, apis, chainOperations, chains);
 
-    return [...chainOperations, ...historicOperations];
+    return chainOperations.concat(historicOperations);
   },
 });
 
