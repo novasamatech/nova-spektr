@@ -43,8 +43,11 @@ const $timelineChainApi = combine(
     apis: networkModel.$apis,
   },
   ({ chain, apis }) => {
-    const timelineChainId = chain?.additional?.timelineChain;
-    return timelineChainId ? (apis[timelineChainId] ?? null) : null;
+    if (nullable(chain)) {
+      return null;
+    }
+    const timelineChainId = chain.additional?.timelineChain;
+    return (timelineChainId && apis[timelineChainId]) ?? apis[chain.chainId] ?? null;
   },
 );
 
