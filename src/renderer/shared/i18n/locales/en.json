@@ -496,8 +496,13 @@
         "imported": "has been imported with rank {rank}",
         "promoted": "has been promoted to rank {rank}",
         "proven": "proved his rank {rank}",
-        "submittedPromotion": "submitted evidence with a wish to promotion",
-        "submittedRetention": "submitted evidence with a wish to retention"
+        "referendumFallback": "created a referendum <link></link>",
+        "submittedPromotion": "submitted <evidence>evidence</evidence> with a wish to promotion",
+        "submittedRetention": "submitted <evidence>evidence</evidence> with a wish to retention"
+      },
+      "referendum": {
+        "promote": "created a referendum <link></link> to promote {target} to rank {rank}",
+        "retain": "created a referendum <link></link> to retain {target} at rank {rank}"
       },
       "viewList": "View list"
     },
