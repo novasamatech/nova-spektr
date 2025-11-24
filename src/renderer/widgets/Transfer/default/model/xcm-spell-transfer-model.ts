@@ -73,7 +73,7 @@ const $apiDestination = combine(
 
 type FeeCalculationParams = {
   api: ApiPromise;
-  apiDestination: ApiPromise | undefined;
+  apiDestination: ApiPromise;
   network: { chain: Chain; asset: Asset };
   xcmChain: Chain;
   destination: AccountId;
@@ -132,7 +132,7 @@ const $feeCalculationParams = combine(
     initiatorAccountId: $initiatorAccountId,
   },
   ({ api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId }) => {
-    if (!api || !network || !xcmChain || !destination || !rawAmount) {
+    if (!api || !apiDestination || !network || !xcmChain || !destination || !rawAmount) {
       return null;
     }
 
@@ -266,8 +266,8 @@ const $transferDirection = combine(
 );
 
 type BuildTransferParams = {
-  api: ApiPromise | null;
-  apiDestination: ApiPromise | undefined;
+  api: ApiPromise;
+  apiDestination: ApiPromise;
   network: { chain: Chain; asset: Asset };
   xcmChain: Chain;
   destination: AccountId;
@@ -298,7 +298,7 @@ const buildTransferFx = createEffect(
       amount,
       destinationAddress,
       senderAddress,
-      fromChainApi: api ?? undefined,
+      fromChainApi: api,
       toChainApi: apiDestination,
     });
 
@@ -320,7 +320,7 @@ const $buildTransferParams = combine(
     initiatorAccountId: $initiatorAccountId,
   },
   ({ api, apiDestination, network, xcmChain, destination, amount, rawAmount, initiatorAccountId }) => {
-    if (!network || !xcmChain || !destination || !amount) {
+    if (!api || !apiDestination || !network || !xcmChain || !destination || !amount) {
       return null;
     }
 

@@ -37,6 +37,7 @@ export const XcmFee = memo(
   }: Props) => {
     const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
     const chains = useUnit(networkModel.$chains);
+    const apis = useUnit(networkModel.$apis);
 
     const [fee, setFee] = useState(BN_ZERO);
     const [isLoading, setIsLoading] = useState(false);
@@ -79,6 +80,26 @@ export const XcmFee = memo(
         return;
       }
 
+      const fromChainApi = apis[transaction.chainId];
+      const toChainApi = apis[transaction.args.destinationChain as ChainId];
+
+      if (!fromChainApi || !toChainApi) {
+        handleFee(BN_ZERO);
+        return;
+      }
+
+      const builderConfig = spellXcmService.createBuilderConfig(
+        originChain,
+        destinationChain,
+        fromChainApi,
+        toChainApi,
+      );
+
+      if (Object.keys(builderConfig.apiOverrides).length === 0) {
+        handleFee(BN_ZERO);
+        return;
+      }
+
       const amount = transaction.args.value || '0';
       const destination = transaction.args.dest || transaction.accountId.toString();
       const senderAddress = transaction.accountId
@@ -93,6 +114,8 @@ export const XcmFee = memo(
           amount,
           destinationAddress: destination,
           senderAddress,
+          fromChainApi,
+          toChainApi,
         })
         .then((fees) => {
           handleFee(fees?.destinationFee || BN_ZERO);
@@ -100,7 +123,7 @@ export const XcmFee = memo(
         .catch(() => {
           handleFee(BN_ZERO);
         });
-    }, [transaction, chains, api, asset, externalFee, externalIsLoading]);
+    }, [transaction, chains, apis, api, asset, externalFee, externalIsLoading]);
 
     const loading = externalIsLoading !== undefined ? externalIsLoading : isLoading;
     if (loading) {

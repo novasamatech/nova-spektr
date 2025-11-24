@@ -3,7 +3,7 @@ import { type Balance } from '@polkadot/types/interfaces';
 import { BN, BN_TEN, BN_ZERO } from '@polkadot/util';
 import { get } from 'lodash';
 
-import { type Chain } from '@/shared/core';
+import { type Asset, AssetType, type Chain, type ChainId } from '@/shared/core';
 import { TEST_ACCOUNTS, getTypeVersion, isEthereumAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
@@ -32,6 +32,7 @@ export const xcmUtils = {
   estimateFeeFromApi,
 
   toRawString,
+  getAssetReserveChain,
 };
 
 const JunctionType: Record<string, string> = {
@@ -283,4 +284,14 @@ function toRawString(value?: string): string {
   if (!value) return '';
 
   return value.replaceAll(',', '');
+}
+
+function getAssetReserveChain(asset: Asset, fromChain: Chain, _toChain: Chain): ChainId | null {
+  const isNativeAsset = asset.type === AssetType.NATIVE;
+
+  if (isNativeAsset) {
+    return fromChain.chainId;
+  }
+
+  return null;
 }
