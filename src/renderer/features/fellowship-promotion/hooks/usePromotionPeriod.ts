@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { evidenceService, memberService, useEvidencePeriod, useFeed } from '@/domains/collectives';
-import { useBlockTime } from '@/domains/network';
+import { useBlock, useBlockTime } from '@/domains/network';
 import { useFellowshipMember } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 
@@ -14,20 +14,33 @@ export const usePromotionPeriod = () => {
   const { data: member, pending: memberPending } = useFellowshipMember();
   const { data: periods, pending: periodPending } = useEvidencePeriod({ palletType: 'fellowship', api, chain });
   const { data: feed, pending: feedPending } = useFeed({ palletType: 'fellowship', chain });
+  const { data: currentBlock, pending: blockPending } = useBlock(api);
 
   const promotionPeriod = useMemo(() => {
-    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member)) return null;
+    if (nullable(periods) || nullable(member) || !memberService.isCoreMember(member) || nullable(currentBlock))
+      return null;
 
-    const importedBlock = feed?.find(f => f.accountId === member.accountId && f.type === 'imported')?.block ?? 1;
-    const from = member.lastPromotion !== 0 ? member.lastPromotion : importedBlock;
+    const memberWithPromotionStart = evidenceService.getMemberWithPromotionStart(member, feed);
+
+    if (nullable(memberWithPromotionStart)) {
+      return null;
+    }
+
+    const window = evidenceService.getPromotionWindow(memberWithPromotionStart, periods, currentBlock);
+    const from = Number(window.from);
+    const to = Number(window.to);
+
+    if (!Number.isFinite(from) || !Number.isFinite(to) || from <= 0 || to <= 0) {
+      return null;
+    }
 
     return {
       from: pjsSchema.helpers.toBlockHeight(from),
-      to: pjsSchema.helpers.toBlockHeight(evidenceService.getPromotionPeriod(member, periods) + from),
+      to: pjsSchema.helpers.toBlockHeight(to),
     };
-  }, [periods, member, feed]);
+  }, [periods, member, feed, currentBlock]);
 
-  return { data: promotionPeriod, pending: memberPending || periodPending || feedPending };
+  return { data: promotionPeriod, pending: memberPending || periodPending || feedPending || blockPending };
 };
 
 export const usePromotionPeriodDates = () => {

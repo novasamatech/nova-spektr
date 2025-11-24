@@ -21,37 +21,64 @@ type PromotionProgress = {
 } | null;
 
 const $periods = fellowship.$store.map(store => store?.evidencePeriods ?? null);
+const $feed = fellowship.$store.map(store => store?.feed ?? []);
 const $member = fellowshipMember.$currentMember;
 const $currentBlock = fellowshipNetwork.$currentBlock;
 
 const $leftToPromotion = combine(
-  { periods: $periods, currentBlock: $currentBlock, member: $member },
-  ({ periods, currentBlock, member }) => {
+  { periods: $periods, currentBlock: $currentBlock, member: $member, feed: $feed },
+  ({ periods, currentBlock, member, feed }) => {
     if (nullable(periods) || !isCoreMember(member) || nullable(currentBlock)) {
       return null;
     }
 
-    return evidenceService.getBlockUntilNextPromotion(member, periods, currentBlock);
+    const memberWithPromotionStart = evidenceService.getMemberWithPromotionStart(member, feed);
+    if (nullable(memberWithPromotionStart)) {
+      return null;
+    }
+
+    return evidenceService.getBlockUntilNextPromotion(memberWithPromotionStart, periods, currentBlock);
   },
 );
 
-const $promotionPeriod = combine({ member: $member, periods: $periods }, ({ member, periods }) => {
-  if (!isCoreMember(member) || nullable(periods)) {
-    return null;
-  }
+const $promotionWindow = combine(
+  { member: $member, periods: $periods, feed: $feed, currentBlock: $currentBlock },
+  ({ member, periods, feed, currentBlock }) => {
+    if (!isCoreMember(member) || nullable(periods) || nullable(currentBlock)) {
+      return null;
+    }
 
-  return evidenceService.getPromotionPeriod(member, periods);
-});
+    const memberWithPromotionStart = evidenceService.getMemberWithPromotionStart(member, feed);
+    if (nullable(memberWithPromotionStart)) {
+      return null;
+    }
+
+    return evidenceService.getPromotionWindow(memberWithPromotionStart, periods, currentBlock);
+  },
+);
 
 const $promotionProgress = combine(
-  { member: $member, periods: $periods, currentBlock: $currentBlock, leftToPromotion: $leftToPromotion },
-  ({ member, periods, currentBlock, leftToPromotion }): PromotionProgress => {
+  {
+    member: $member,
+    periods: $periods,
+    currentBlock: $currentBlock,
+    leftToPromotion: $leftToPromotion,
+    feed: $feed,
+    promotionWindow: $promotionWindow,
+  },
+  ({ member, periods, currentBlock, leftToPromotion, feed, promotionWindow }): PromotionProgress => {
     if (!isCoreMember(member) || nullable(periods) || nullable(currentBlock) || nullable(leftToPromotion)) {
       return null;
     }
 
-    const promotionPeriod = evidenceService.getPromotionPeriod(member, periods);
-    const blocksPassed = currentBlock - member.lastPromotion;
+    const memberWithPromotionStart = evidenceService.getMemberWithPromotionStart(member, feed);
+    if (nullable(memberWithPromotionStart)) {
+      return null;
+    }
+
+    const promotionPeriod = evidenceService.getPromotionPeriod(memberWithPromotionStart, periods);
+    const windowStart = promotionWindow?.from ?? memberWithPromotionStart.lastPromotion;
+    const blocksPassed = currentBlock - windowStart;
     const progressPercentage = Math.min(100, (blocksPassed / promotionPeriod) * 100);
 
     return {
@@ -83,7 +110,7 @@ const $isLoading = or(
 
 export const promotion = {
   $leftToPromotion,
-  $promotionPeriod,
+  $promotionWindow,
   $promotionProgress,
   $currentRank,
   $currentBlock,

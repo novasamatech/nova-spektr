@@ -722,7 +722,7 @@
       "title": "PROMOTION PERIOD",
       "waiting": {
         "dangerZoneTooltip": "Danger zone - promotion opportunity is imminent",
-        "description": "You will be eligible for promotion starting from {from}",
+        "description": "You will be eligible for promotion starting from {date}",
         "safeZoneTooltip": "Safe zone - plenty of time until promotion",
         "title": "Awaiting promotion opportunity",
         "untilOpportunity": "until promotion opportunity",
