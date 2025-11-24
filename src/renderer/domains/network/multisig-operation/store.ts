@@ -44,7 +44,7 @@ const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
  * important to do so because operations can be deleted from the database
  * without calling removeTransactionsFx (f.e. in case of fork).
  */
-const syncOperationsFx = createQueuedEffect(async (allOperations: MultisigOperation[]) => {
+const syncInMemoryOperationsToDbFx = createQueuedEffect(async (allOperations: MultisigOperation[]) => {
   const dbOperations = await storageService.multisigOperations.readAll();
   const dbOperationIds = dbOperations.map(op => op.id);
 
@@ -154,7 +154,7 @@ sample({
 sample({
   clock: $list,
   filter: list => list.length > 0,
-  target: syncOperationsFx,
+  target: syncInMemoryOperationsToDbFx,
 });
 
 // Handle successful call data updates
