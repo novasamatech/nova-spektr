@@ -80,6 +80,8 @@ export const useEvidenceTasks = () => {
       const proposer = members.find(m => m.accountId === evidence.accountId);
       if (nullable(proposer)) continue;
 
+      if (evidence.wish === 'Retention' && proposer.rank === 0) continue;
+
       if (memberService.canVoteForProposal(member, proposer.rank)) {
         const leftToDemotion =
           evidence.wish === 'Retention' ? evidenceService.getBlocksUntilDemotion(proposer, periods, block) : null;
