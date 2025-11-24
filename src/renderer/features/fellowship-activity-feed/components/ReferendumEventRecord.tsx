@@ -1,8 +1,8 @@
-import { type TFunction } from 'i18next';
 import { type ReactNode, memo } from 'react';
 import { Trans } from 'react-i18next';
 
 import { Slot, createSlot } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
 import { toRomanNumeral } from '@/shared/lib/utils';
 import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText } from '@/shared/ui';
@@ -14,10 +14,10 @@ export const referendumEventRecordActionSlot = createSlot<{ referendumId: Refere
 type Props = {
   record: FeedEventReferendum;
   details: ReferendumDetails;
-  t: TFunction;
 };
 
-export const ReferendumEventRecord = memo(({ details, t }: Props) => {
+export const ReferendumEventRecord = memo(({ details }: Props) => {
+  const { t } = useI18n();
   const { referendumId, targetName, targetRank, isPromotion } = details;
 
   const LinkComponent = () => (

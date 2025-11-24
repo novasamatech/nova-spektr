@@ -32,7 +32,6 @@ type Props = ActivityFeedRecord;
 
 export const EventRecord = memo(
   ({ event, chain, duration, name, description, withFullAccountInfo, actorAccountId, referendumDetails }: Props) => {
-    const { t } = useI18n();
     const isReferendumEvent = event.type === 'referendum' && referendumDetails;
 
     const displayAccountIdRaw = isReferendumEvent && actorAccountId ? actorAccountId : event.accountId;
@@ -58,58 +57,78 @@ export const EventRecord = memo(
             <Duration seconds={duration} shortFormat />
           </HelpText>
         </div>
-        {event.type === 'referendum' ? (
-          referendumDetails ? (
-            <ReferendumEventRecord record={event} details={referendumDetails} t={t} />
-          ) : (
-            <FootnoteText className="break-words text-text-secondary">
-              <Trans
-                t={t}
-                i18nKey="fellowship.activityFeed.record.referendumFallback"
-                values={{ referendumId: event.referendumId }}
-                components={{
-                  link: (
-                    <Slot
-                      id={referendumEventRecordActionSlot}
-                      props={{
-                        referendumId: referendaPallet.helpers.toReferendumId(event.referendumId),
-                        children: (
-                          <span className="cursor-pointer text-primary-button-background-default">
-                            #{event.referendumId}
-                          </span>
-                        ),
-                      }}
-                    />
-                  ),
-                }}
-              />
-            </FootnoteText>
-          )
-        ) : event.type === 'requested' && description ? (
-          <FootnoteText className="text-text-secondary">
-            <Trans
-              t={t}
-              i18nKey={
-                event.wish === 'Promotion'
-                  ? 'fellowship.activityFeed.record.submittedPromotion'
-                  : 'fellowship.activityFeed.record.submittedRetention'
-              }
-              components={{
-                evidence: (
-                  <a
-                    href={evidenceService.getEvidenceIpfsUrl(event.hash).toString()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="cursor-pointer font-semibold text-primary-button-background-default"
-                  />
-                ),
-              }}
-            />
-          </FootnoteText>
-        ) : (
-          description && <FootnoteText className="text-text-secondary">{description}</FootnoteText>
-        )}
+        <EventRecordBody event={event} description={description} referendumDetails={referendumDetails} />
       </div>
     );
   },
 );
+
+type EventRecordBodyProps = {
+  event: FeedRecord;
+  description?: string;
+  referendumDetails?: ReferendumDetails;
+};
+
+const EventRecordBody = ({ event, description, referendumDetails }: EventRecordBodyProps) => {
+  const { t } = useI18n();
+
+  if (event.type === 'referendum') {
+    if (referendumDetails) {
+      return <ReferendumEventRecord record={event} details={referendumDetails} />;
+    }
+
+    return (
+      <FootnoteText className="break-words text-text-secondary">
+        <Trans
+          t={t}
+          i18nKey="fellowship.activityFeed.record.referendumFallback"
+          values={{ referendumId: event.referendumId }}
+          components={{
+            link: (
+              <Slot
+                id={referendumEventRecordActionSlot}
+                props={{
+                  referendumId: referendaPallet.helpers.toReferendumId(event.referendumId),
+                  children: (
+                    <span className="cursor-pointer text-primary-button-background-default">#{event.referendumId}</span>
+                  ),
+                }}
+              />
+            ),
+          }}
+        />
+      </FootnoteText>
+    );
+  }
+
+  if (event.type === 'requested' && description) {
+    return (
+      <FootnoteText className="text-text-secondary">
+        <Trans
+          t={t}
+          i18nKey={
+            event.wish === 'Promotion'
+              ? 'fellowship.activityFeed.record.submittedPromotion'
+              : 'fellowship.activityFeed.record.submittedRetention'
+          }
+          components={{
+            evidence: (
+              <a
+                href={evidenceService.getEvidenceIpfsUrl(event.hash).toString()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cursor-pointer font-semibold text-primary-button-background-default"
+              />
+            ),
+          }}
+        />
+      </FootnoteText>
+    );
+  }
+
+  if (description) {
+    return <FootnoteText className="text-text-secondary">{description}</FootnoteText>;
+  }
+
+  return null;
+};

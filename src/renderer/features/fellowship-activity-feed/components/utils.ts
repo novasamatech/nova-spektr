@@ -47,7 +47,7 @@ export function collectActivityAccountIds(
   referendumsById?: Map<number, Referendum>,
   baseAccountIds: AccountId[] = [],
 ) {
-  const ids = new Set<AccountId>(baseAccountIds);
+  const ids = new Set(baseAccountIds);
 
   for (const record of feed) {
     ids.add(record.accountId);
