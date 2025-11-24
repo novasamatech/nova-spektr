@@ -146,13 +146,16 @@ const mergeMultisigOperations = (
   oldOperations: MultisigOperation[],
   update: MultisigOperation[],
 ): MultisigOperation[] => {
-  const updatedGroups = groupBy(update, o => o.chainId);
+  const updatedPendingOperations = groupBy(
+    update.filter(o => o.status === 'pending'),
+    o => o.chainId,
+  );
 
   const filtered = oldOperations.filter(o => {
     // Indirect evidence of onchain operation
     if (o.status !== 'pending') return true;
 
-    const group = updatedGroups[o.chainId];
+    const group = updatedPendingOperations[o.chainId];
 
     if (group) {
       return group.some(o1 => o1.id === o.id);
