@@ -15,15 +15,16 @@ import {
 } from '@/domains/collectives';
 import { useFellowshipMemberEvidence, useMemberRetentionReferendum } from '@/aggregates/fellowship-member';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
-import { useRetentionEvidenceSubmissionDate } from '../hooks/useRetentionEvidenceSubmissionDate';
-import { useRetentionPeriod, useRetentionPeriodDates } from '../hooks/useRetentionPeriod';
-import { useVotes } from '../hooks/useVotes';
 import {
   DANGER_THRESHOLD_DAYS,
   RetentionWidgetState,
   WARNING_THRESHOLD_DAYS,
-  useWidgetState,
-} from '../hooks/useWidgetState';
+  useRetentionPeriod,
+  useRetentionPeriodDates,
+  useRetentionWidgetState,
+} from '@/aggregates/fellowship-retention';
+import { useRetentionEvidenceSubmissionDate } from '../hooks/useRetentionEvidenceSubmissionDate';
+import { useVotes } from '../hooks/useVotes';
 
 import { RetentionTimeline } from './RetentionTimeline';
 import { TimerToBlock } from './TimerToBlock';
@@ -48,7 +49,7 @@ const SkeletonLoader = () => <Skeleton width="100%" height="132px" />;
 
 export const RetentionWidget = memo(({ member }: Props) => {
   const { t } = useI18n();
-  const { data: state, pending } = useWidgetState();
+  const { data: state, pending } = useRetentionWidgetState();
   const { fromDateFormatted, toDateFormatted, retentionPeriod, timelineSteps, timelineValue } = useRetentionData();
 
   if (!memberService.shouldProve(member)) return null;
