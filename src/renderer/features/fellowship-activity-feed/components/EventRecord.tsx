@@ -1,12 +1,19 @@
 import { type TFunction } from 'i18next';
 import { memo } from 'react';
+import { Trans } from 'react-i18next';
 
 import { type Chain } from '@/shared/core';
-import { createSlot } from '@/shared/di';
-import { toAddress } from '@/shared/lib/utils';
+import { Slot, createSlot } from '@/shared/di';
+import { useI18n } from '@/shared/i18n';
+import { toAccountId, toAddress } from '@/shared/lib/utils';
+import { referendaPallet } from '@/shared/pallet/referenda';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
 import { Account, Address } from '@/shared/ui-entities';
+import { evidenceService } from '@/domains/collectives';
 import { type FeedRecord } from '@/domains/collectives';
+import { type ReferendumDetails } from '../types';
+
+import { ReferendumEventRecord, referendumEventRecordActionSlot } from './ReferendumEventRecord';
 
 export const activityFeedRecordDescriptionSlot = createSlot<{ t: TFunction; record: FeedRecord }>();
 
@@ -16,33 +23,93 @@ export interface ActivityFeedRecord {
   duration: number;
   name?: string;
   description?: string;
+  actorAccountId?: string;
   withFullAccountInfo?: boolean;
+  referendumDetails?: ReferendumDetails;
 }
 
 type Props = ActivityFeedRecord;
 
-export const EventRecord = memo(({ event, chain, duration, name, description, withFullAccountInfo }: Props) => {
-  return (
-    <div className="flex flex-col gap-1 px-5">
-      <div className="flex items-center gap-2">
-        <div className="min-w-0 grow text-button-small">
-          {withFullAccountInfo ? (
-            <Account accountId={event.accountId} chain={chain} title={name} variant="short" hideAddress />
-          ) : (
-            <Address
-              address={toAddress(event.accountId, { prefix: chain.addressPrefix })}
-              title={name}
-              variant="short"
-              showIcon={false}
-              hideAddress
-            />
-          )}
+export const EventRecord = memo(
+  ({ event, chain, duration, name, description, withFullAccountInfo, actorAccountId, referendumDetails }: Props) => {
+    const { t } = useI18n();
+    const isReferendumEvent = event.type === 'referendum' && referendumDetails;
+
+    const displayAccountIdRaw = isReferendumEvent && actorAccountId ? actorAccountId : event.accountId;
+    const displayAccountId = toAccountId(displayAccountIdRaw);
+
+    return (
+      <div className="flex flex-col gap-1 px-5">
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 grow text-button-small">
+            {withFullAccountInfo ? (
+              <Account accountId={displayAccountId} chain={chain} title={name} variant="truncate" hideAddress />
+            ) : (
+              <Address
+                address={toAddress(displayAccountId, { prefix: chain.addressPrefix })}
+                title={name}
+                variant="truncate"
+                showIcon={false}
+                hideAddress
+              />
+            )}
+          </div>
+          <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
+            <Duration seconds={duration} shortFormat />
+          </HelpText>
         </div>
-        <HelpText className="max-w-[40%] shrink-0 text-end text-text-secondary">
-          <Duration seconds={duration} shortFormat />
-        </HelpText>
+        {event.type === 'referendum' ? (
+          referendumDetails ? (
+            <ReferendumEventRecord record={event} details={referendumDetails} t={t} />
+          ) : (
+            <FootnoteText className="break-words text-text-secondary">
+              <Trans
+                t={t}
+                i18nKey="fellowship.activityFeed.record.referendumFallback"
+                values={{ referendumId: event.referendumId }}
+                components={{
+                  link: (
+                    <Slot
+                      id={referendumEventRecordActionSlot}
+                      props={{
+                        referendumId: referendaPallet.helpers.toReferendumId(event.referendumId),
+                        children: (
+                          <span className="cursor-pointer text-primary-button-background-default">
+                            #{event.referendumId}
+                          </span>
+                        ),
+                      }}
+                    />
+                  ),
+                }}
+              />
+            </FootnoteText>
+          )
+        ) : event.type === 'requested' && description ? (
+          <FootnoteText className="text-text-secondary">
+            <Trans
+              t={t}
+              i18nKey={
+                event.wish === 'Promotion'
+                  ? 'fellowship.activityFeed.record.submittedPromotion'
+                  : 'fellowship.activityFeed.record.submittedRetention'
+              }
+              components={{
+                evidence: (
+                  <a
+                    href={evidenceService.getEvidenceIpfsUrl(event.hash).toString()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cursor-pointer font-semibold text-primary-button-background-default"
+                  />
+                ),
+              }}
+            />
+          </FootnoteText>
+        ) : (
+          description && <FootnoteText className="text-text-secondary">{description}</FootnoteText>
+        )}
       </div>
-      <FootnoteText className="text-text-secondary">{description}</FootnoteText>
-    </div>
-  );
-});
+    );
+  },
+);

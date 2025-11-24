@@ -1,5 +1,6 @@
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
+import { referendumEventRecordActionSlot } from '@/features/fellowship-activity-feed';
 import { alertsReferendumSlot, referendumActivityItemActionSlot } from '@/features/fellowship-profile';
 import { referendumWidgetActionSlot as promotionReferendumWidgetActionSlot } from '@/features/fellowship-promotion';
 import { referendumWidgetActionSlot as retentionReferendumWidgetActionSlot } from '@/features/fellowship-retention';
@@ -88,5 +89,9 @@ fellowshipReferendumsDetailsFeature.inject(ongoingReferendumVotingSlot, ({ refer
 });
 
 fellowshipReferendumsDetailsFeature.inject(alertsReferendumSlot, ({ referendumId, children }) => {
+  return <ReferendumDetailsModal referendumId={referendumId}>{children}</ReferendumDetailsModal>;
+});
+
+fellowshipReferendumsDetailsFeature.inject(referendumEventRecordActionSlot, ({ referendumId, children }) => {
   return <ReferendumDetailsModal referendumId={referendumId}>{children}</ReferendumDetailsModal>;
 });
