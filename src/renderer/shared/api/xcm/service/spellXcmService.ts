@@ -1,10 +1,10 @@
-import { Builder, Native, convertSs58, getSupportedDestinations } from '@paraspell/sdk-pjs';
+import { Builder, Native, getSupportedDestinations } from '@paraspell/sdk-pjs';
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN } from '@polkadot/util';
 
 import { type Asset, AssetType, type Chain } from '@/shared/core';
-import { CHAIN_ID_TO_SPELL_NAME_MAP, formatAmount, toAddress } from '@/shared/lib/utils';
+import { CHAIN_ID_TO_SPELL_NAME_MAP, formatAmount, isEthereumAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 type XcmTransferParams = {
@@ -54,14 +54,12 @@ function getSpellChainName(chain: Chain): string | null {
   return CHAIN_ID_TO_SPELL_NAME_MAP[chain.chainId] ?? null;
 }
 
-function convertAddressToChainFormat(accountId: AccountId, targetChain: Chain, targetChainName: string): string {
-  try {
-    const address = toAddress(accountId, { prefix: targetChain.addressPrefix });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return convertSs58(address, targetChainName as any);
-  } catch {
+function convertAddressToChainFormat(accountId: AccountId, targetChain: Chain, _targetChainName: string): string {
+  if (isEthereumAccountId(accountId)) {
     return accountId.toString();
   }
+
+  return toAddress(accountId, { prefix: targetChain.addressPrefix });
 }
 
 function createCurrencyInput(
