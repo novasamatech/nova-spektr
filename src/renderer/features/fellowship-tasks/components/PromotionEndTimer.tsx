@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
-import { getTimeToBlock } from '@/shared/lib/utils';
 import { Timeout } from '@/shared/ui-kit';
-import { useFellowshipApi } from '@/aggregates/fellowship-network';
 
 const ONE_DAY = 24 * 60 * 60;
 
@@ -15,23 +13,18 @@ function getTimerColor(time: number): 'urgent' | 'warning' | 'idle' {
 }
 
 type Props = {
-  endBlock: number | null;
+  endDate: number | null;
   shortDateFormat?: boolean;
 };
 
-export const PromotionEndTimer = ({ endBlock, shortDateFormat }: Props) => {
-  const api = useFellowshipApi();
-  const [secondsToEnd, setSecondsToEnd] = useState<number>();
+export const PromotionEndTimer = ({ endDate, shortDateFormat }: Props) => {
+  const secondsToEnd = useMemo(() => {
+    if (!endDate) return null;
+    const diff = Math.floor((endDate - Date.now()) / 1000);
+    return Math.max(0, diff);
+  }, [endDate]);
 
-  useEffect(() => {
-    if (endBlock && api) {
-      getTimeToBlock(endBlock, api).then(date => {
-        setSecondsToEnd(date / 1000);
-      });
-    }
-  }, [endBlock, api]);
-
-  if (!secondsToEnd) {
+  if (secondsToEnd === null) {
     return <span />;
   }
 
