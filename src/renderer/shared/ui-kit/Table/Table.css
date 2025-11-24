@@ -67,7 +67,7 @@
   text-align: right;
 }
 
-.table-header-cell:not(:first-child) .table-header-content {
+.table-header-cell:last-child .table-header-content {
   justify-content: flex-end;
 }
 
