@@ -132,9 +132,9 @@ fellowshipEvidenceFeature.inject(promotionEvidenceSubmitSlot, ({ mode, evidenceC
         <MarkdownPreviewModal isOpen={isOpen} evidenceContent={evidenceContent} wish="Promotion" onToggle={setIsOpen}>
           <Button size="sm">{t('fellowship.promotion.submitted.viewButton')}</Button>
         </MarkdownPreviewModal>
-        <EvidencePostFlowModal wish="Retention">
+        <EvidencePostFlowModal wish="Promotion">
           <Button size="sm" pallet="secondary" variant="fill" disabled={!canVote}>
-            {t('fellowship.retention.button.edit')}
+            {t('fellowship.promotion.submitted.editButton')}
           </Button>
         </EvidencePostFlowModal>
       </>
