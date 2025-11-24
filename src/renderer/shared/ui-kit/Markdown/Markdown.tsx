@@ -13,7 +13,7 @@ import { Icon } from '@/shared/ui/Icon/Icon';
 import { InfoLink } from '@/shared/ui/InfoLink/InfoLink';
 import { Checkbox } from '../Checkbox/Checkbox';
 
-const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: true };
+const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: false };
 const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw];
 const remarkPlugins: Options['remarkPlugins'] = [remarkGfm];
 
