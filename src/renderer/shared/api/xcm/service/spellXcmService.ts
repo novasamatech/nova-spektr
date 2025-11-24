@@ -14,8 +14,8 @@ type XcmTransferParams = {
   amount: string;
   destinationAddress: string;
   senderAddress?: string;
-  fromChainApi?: ApiPromise;
-  toChainApi?: ApiPromise;
+  fromChainApi: ApiPromise;
+  toChainApi: ApiPromise;
 };
 
 type XcmFeeParams = {
@@ -25,8 +25,8 @@ type XcmFeeParams = {
   amount: string;
   destinationAddress: string;
   senderAddress?: string;
-  fromChainApi?: ApiPromise;
-  toChainApi?: ApiPromise;
+  fromChainApi: ApiPromise;
+  toChainApi: ApiPromise;
 };
 
 type XcmFeeResult = {
@@ -36,7 +36,6 @@ type XcmFeeResult = {
 
 type XcmTransferResult = {
   extrinsic: SubmittableExtrinsic<'promise'>;
-  disconnect: () => Promise<void>;
 };
 
 type BuilderResult = {
@@ -44,6 +43,11 @@ type BuilderResult = {
   builder: any;
   fromChainName: string;
   toChainName: string;
+};
+
+type BuilderConfig = {
+  abstractDecimals: boolean;
+  apiOverrides: Record<string, ApiPromise>;
 };
 
 function getSpellChainName(chain: Chain): string | null {
@@ -76,39 +80,30 @@ function createCurrencyInput(
 function createBuilderConfig(
   fromChain: Chain,
   toChain: Chain,
-  fromChainApi?: ApiPromise,
-  toChainApi?: ApiPromise,
-): { abstractDecimals: boolean; apiOverrides?: Record<string, string[] | ApiPromise> } {
+  fromChainApi: ApiPromise,
+  toChainApi: ApiPromise,
+): BuilderConfig {
   const fromChainName = getSpellChainName(fromChain);
   const toChainName = getSpellChainName(toChain);
 
-  if (!fromChainName || !toChainName) {
-    return { abstractDecimals: false };
+  if (!fromChainName) {
+    throw new Error(
+      `spellXcmService: Unsupported origin chain: ${fromChain.name} (chainId: ${fromChain.chainId}). Please add mapping in CHAIN_ID_TO_SPELL_NAME_MAP.`,
+    );
   }
 
-  const apiOverrides: Record<string, string[] | ApiPromise> = {};
-
-  if (fromChainApi) {
-    apiOverrides[fromChainName] = fromChainApi;
-  } else {
-    const fromChainWsUrls = fromChain.nodes.map((node) => node.url);
-    if (fromChainWsUrls.length > 0) {
-      apiOverrides[fromChainName] = fromChainWsUrls;
-    }
-  }
-
-  if (toChainApi) {
-    apiOverrides[toChainName] = toChainApi;
-  } else {
-    const toChainWsUrls = toChain.nodes.map((node) => node.url);
-    if (toChainWsUrls.length > 0) {
-      apiOverrides[toChainName] = toChainWsUrls;
-    }
+  if (!toChainName) {
+    throw new Error(
+      `spellXcmService: Unsupported destination chain: ${toChain.name} (chainId: ${toChain.chainId}). Please add mapping in CHAIN_ID_TO_SPELL_NAME_MAP.`,
+    );
   }
 
   return {
     abstractDecimals: false,
-    ...(Object.keys(apiOverrides).length > 0 && { apiOverrides }),
+    apiOverrides: {
+      [fromChainName]: fromChainApi,
+      [toChainName]: toChainApi,
+    },
   };
 }
 
@@ -162,28 +157,23 @@ async function getXcmFees(params: XcmFeeParams, abortSignal?: AbortSignal): Prom
 
   try {
     if (abortSignal?.aborted) {
-      await builder.disconnect().catch(() => {});
       return null;
     }
 
     const feeResult = await builder.getXcmFee({ disableFallback: false });
 
     if (abortSignal?.aborted) {
-      await builder.disconnect().catch(() => {});
       return null;
     }
 
     const originFee = new BN(String(feeResult.origin.fee));
     const destinationFee = feeResult.destination?.fee ? new BN(String(feeResult.destination.fee)) : null;
 
-    await builder.disconnect().catch(() => {});
-
     return {
       originFee,
       destinationFee,
     };
   } catch {
-    await builder.disconnect().catch(() => {});
     return null;
   }
 }
@@ -194,38 +184,17 @@ async function buildTransfer(params: XcmTransferParams): Promise<XcmTransferResu
   if (!builderResult) {
     const { fromChain, toChain } = params;
     throw new Error(
-      `Unsupported chain: ${fromChain.name} (chainId: ${fromChain.chainId}) or ${toChain.name} (chainId: ${toChain.chainId}). Please add mapping in CHAIN_ID_TO_SPELL_NAME_MAP.`,
+      `spellXcmService: buildTransfer failed for chains: ${fromChain.name}, ${toChain.name} (chainId: ${fromChain.chainId}) -> ${toChain.chainId}). Please add mapping in CHAIN_ID_TO_SPELL_NAME_MAP.`,
     );
   }
 
-  const { builder, fromChainName, toChainName } = builderResult;
+  const { builder } = builderResult;
 
-  try {
-    const extrinsic = await builder.build();
+  const extrinsic = await builder.build();
 
-    const methodName = extrinsic.method.method.toLowerCase();
-    const section = extrinsic.method.section.toLowerCase();
-
-    if (
-      (section === 'balances' || section === 'tokens') &&
-      (methodName === 'transfer' || methodName === 'transferkeepalive' || methodName === 'transferall')
-    ) {
-      await builder.disconnect().catch(() => {});
-      throw new Error(
-        `XCM transfer not supported for ${fromChainName} -> ${toChainName}. Regular transfer was generated instead. This indicates the ParaSpell SDK does not support this route.`,
-      );
-    }
-
-    return {
-      extrinsic,
-      disconnect: async () => {
-        await builder.disconnect().catch(() => {});
-      },
-    };
-  } catch (error) {
-    await builder.disconnect().catch(() => {});
-    throw error;
-  }
+  return {
+    extrinsic,
+  };
 }
 
 async function getAvailableTransfers(fromChain: Chain, asset: Asset): Promise<string[]> {
@@ -253,4 +222,5 @@ export const spellXcmService = {
   getAvailableTransfers,
   getSpellChainName,
   prepareAddressForChain,
+  createBuilderConfig,
 };
