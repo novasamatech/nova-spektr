@@ -3,14 +3,14 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 import { useClock, useDeferredList } from '@/shared/lib/hooks';
 import { nullable } from '@/shared/lib/utils';
 import { AsyncItem } from '@/shared/ui-kit';
-import { type FeedRecord } from '@/domains/collectives';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { ActivityPlaceholder } from './ActivityPlaceholder';
 import { EventRecord } from './EventRecord';
+import { type ActivityFeedItem } from './utils';
 
 type Props = {
-  feed: (FeedRecord & { description?: string; name?: string })[];
+  feed: ActivityFeedItem[];
   limit?: number;
   withFullAccountInfo?: boolean;
   pending: boolean;
@@ -37,9 +37,11 @@ export const ActivityListView = memo(
               event={event}
               description={event.description}
               duration={(now - event.at.getTime()) / 1000}
-              name={event.name}
+              name={event.actorName || event.name}
+              actorAccountId={event.actorAccountId}
               chain={chain}
               withFullAccountInfo={withFullAccountInfo}
+              referendumDetails={event.referendumDetails}
             />
           </AsyncItem>
         ))}
