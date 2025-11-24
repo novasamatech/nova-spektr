@@ -1,7 +1,7 @@
 import { combine, createEvent, restore, sample } from 'effector';
 
 import { type ChainId, type ConnectionStatus } from '@/shared/core';
-import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { networkModel, networkUtils } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -37,22 +37,39 @@ const $governanceChainApi = combine(
   },
 );
 
+const $timelineChainApi = combine(
+  {
+    chain: $governanceChain,
+    apis: networkModel.$apis,
+  },
+  ({ chain, apis }) => {
+    if (nullable(chain)) {
+      return null;
+    }
+    const timelineChainId = chain.additional?.timelineChain;
+    return (timelineChainId && apis[timelineChainId]) ?? apis[chain.chainId] ?? null;
+  },
+);
+
 const $network = combine(
   {
     chain: $governanceChain,
     api: $governanceChainApi,
+    timelineApi: $timelineChainApi,
   },
-  ({ chain, api }) => {
-    if (!chain || !api) return null;
+  ({ chain, api, timelineApi }) => {
+    if (nullable(chain) || nullable(api) || nullable(timelineApi)) return null;
 
     const asset = chain.assets.at(0);
     if (!asset) return null;
 
-    return { api, chain, asset };
+    return { api, timelineApi, chain, asset };
   },
 );
 
-const $isApiConnected = $network.map((network) => network?.api.isConnected ?? false);
+const $isApiConnected = $network.map(
+  (network) => (network?.api.isConnected && network?.timelineApi?.isConnected) ?? false,
+);
 
 sample({
   clock: resetNetwork,
@@ -106,6 +123,7 @@ export const networkSelectorModel = {
   $governanceChain,
   $governanceChains,
   $governanceChainApi,
+  $timelineChainApi,
   $nativeAsset,
 
   $network,
