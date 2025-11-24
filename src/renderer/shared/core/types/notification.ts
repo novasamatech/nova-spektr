@@ -14,6 +14,8 @@ export const enum NotificationType {
 
   PROXY_CREATED = 'ProxyCreatedNotification',
   PROXY_REMOVED = 'ProxyRemovedNotification',
+
+  MULTISIG_OPERATION = 'MultisigOperationNotification',
 }
 
 type BaseNotification = {
@@ -45,6 +47,8 @@ export type MultisigOperationNotification = MultisigBaseNotification & {
   callHash: CallHash;
   callTimepoint: Timepoint;
   chainId: ChainId;
+  operationId: string;
+  status: 'created' | 'executed' | 'cancelled' | 'error';
 };
 
 export type ProxyAction = BaseNotification & {

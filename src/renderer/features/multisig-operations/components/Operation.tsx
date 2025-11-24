@@ -29,9 +29,15 @@ type Props = {
   isDefaultOpen?: boolean;
 };
 
+export type OperationTitle = {
+  name?: ReactNode;
+  amount?: ReactNode;
+  chain?: ReactNode;
+};
+
 export const operationTitleTransformer = createTransformer<
   { operation: MultisigOperation; showCoreTransaction?: boolean },
-  ReactNode
+  OperationTitle
 >();
 
 export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = false }: Props) => {
@@ -42,39 +48,41 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
   const asset = useTransactionAsset(coreTx, operation.chainId);
 
   const deepLink = useMemo(
-    () => deepLinkModel.generateMultisigOperationDeepLink(operation, multisigAccount),
+    () => deepLinkModel.generateMultisigOperationDeepLink(operation, multisigAccount.accountId),
     [operation, multisigAccount],
   );
 
-  const externalTitleNode = useTransformer(operationTitleTransformer, {
+  const externalTitle = useTransformer(operationTitleTransformer, {
     operation,
     showCoreTransaction,
   });
 
-  let titleNode;
-  if (externalTitleNode) {
-    titleNode = externalTitleNode;
+  let title: OperationTitle;
+  if (externalTitle) {
+    title = externalTitle;
   } else {
     const amount = coreTx ? getTransactionAmount(coreTx) : null;
 
-    const title =
-      coreTx?.section && coreTx?.method
-        ? formatSectionAndMethod(coreTx.section, coreTx.method)
-        : t('operations.titles.unknown');
-    titleNode = (
-      <>
-        <TransactionTitle className="flex-1" title={title} />
-
-        {asset && amount && (
+    title = {
+      name: (
+        <TransactionTitle
+          className="flex-1"
+          title={
+            coreTx?.section && coreTx?.method
+              ? formatSectionAndMethod(coreTx.section, coreTx.method)
+              : t('operations.titles.unknown')
+          }
+        />
+      ),
+      amount:
+        asset && amount ? (
           <Box width="160px" direction="row" gap={2} verticalAlign="center">
             <AssetIcon asset={asset} size={32} />
             <AssetBalance value={amount} asset={asset} />
           </Box>
-        )}
-
-        <ChainTitle chainId={operation.chainId} className="w-[114px]" />
-      </>
-    );
+        ) : undefined,
+      chain: <ChainTitle chainId={operation.chainId} className="w-[114px]" />,
+    };
   }
 
   return (
@@ -87,7 +95,9 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
           <div className="flex w-full items-center gap-4 overflow-hidden">
             <OperationTitleDate operation={operation} />
             <OperationIcon operation={operation} account={multisigAccount} />
-            {titleNode}
+            {title.name}
+            {title.amount}
+            {title.chain}
           </div>
 
           <OperationTitleStatus operation={operation} account={multisigAccount} />

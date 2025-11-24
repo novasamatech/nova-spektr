@@ -1,11 +1,12 @@
 import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type HexString } from '@/shared/core';
+import { type HexString, type MultisigOperationNotification, type NoID, NotificationType } from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
+import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
 
 import { deserializeOperation, serializeOperation } from './helpers';
@@ -14,6 +15,7 @@ import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
 
 const $list = createStore<MultisigOperation[]>([]);
+const $previousList = createStore<MultisigOperation[]>([]);
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
@@ -83,6 +85,52 @@ const removeOperationsForAccountFx = attach({
   },
 });
 
+const createOperationNotification = (
+  operation: MultisigOperation,
+  status: 'created' | 'executed' | 'cancelled' | 'error',
+): NoID<MultisigOperationNotification> => ({
+  type: NotificationType.MULTISIG_OPERATION,
+  read: false,
+  dateCreated: status === 'created' ? operation.timestamp || Date.now() : Date.now(),
+  multisigAccountId: operation.accountId,
+  callHash: operation.callHash,
+  callTimepoint: {
+    height: operation.blockCreated,
+    index: operation.indexCreated,
+  },
+  chainId: operation.chainId,
+  operationId: operation.id,
+  status,
+});
+
+sample({
+  clock: $list,
+  source: $previousList,
+  fn: (previousOperations, currentOperations) => {
+    const previousOpsMap = new Map(previousOperations.map(op => [op.id, op]));
+    const notifications: NoID<MultisigOperationNotification>[] = [];
+
+    for (const currentOp of currentOperations) {
+      const previousOp = previousOpsMap.get(currentOp.id);
+
+      if (!previousOp) {
+        notifications.push(createOperationNotification(currentOp, 'created'));
+      } else if (previousOp.status !== currentOp.status && currentOp.status !== 'pending') {
+        notifications.push(createOperationNotification(currentOp, currentOp.status));
+      }
+    }
+
+    return notifications;
+  },
+  target: notificationModel.events.notificationsAdded,
+});
+
+// update previous list after notifications are sent
+sample({
+  clock: $list,
+  target: $previousList,
+});
+
 deriveFromResources({
   store: $list,
   resources: [fetchResource, subscribeResource],
@@ -110,7 +158,7 @@ deriveFromResources({
 
 sample({
   clock: populateFx.doneData,
-  target: $list,
+  target: [$list, $previousList],
 });
 
 sample({

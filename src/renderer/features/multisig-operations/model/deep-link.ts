@@ -1,9 +1,9 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { z } from 'zod';
 
-import { type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import { type ChainId } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
-import { pjsSchema } from '@/shared/polkadotjs-schemas';
+import { type AccountId, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
 import { deepLinkService } from '@/domains/app';
 import { accounts, multisigOperation } from '@/domains/network';
@@ -189,17 +189,19 @@ sample({
 
 function generateMultisigOperationDeepLink(
   operation: MultisigOperationDeepLinkData,
-  account: MultisigAccount | FlexibleMultisigAccount,
+  accountId: AccountId,
+  options?: { includeOrigin?: boolean },
 ): string {
   const params = new URLSearchParams({
     chainId: operation.chainId,
     callHash: operation.callHash,
-    accountId: account.accountId,
+    accountId,
     blockCreated: operation.blockCreated.toString(),
     indexCreated: operation.indexCreated.toString(),
   });
 
-  return `${window.location.origin}/#${Paths.OPERATIONS}?${params.toString()}`;
+  const path = `${Paths.OPERATIONS}?${params.toString()}`;
+  return options?.includeOrigin === false ? path : `${window.location.origin}/#${path}`;
 }
 
 export function getOperationIdFromDeepLink(data: MultisigOperationDeepLinkData): string {

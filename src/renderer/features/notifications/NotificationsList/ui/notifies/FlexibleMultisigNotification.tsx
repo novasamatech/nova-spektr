@@ -6,7 +6,7 @@ import { Trans } from 'react-i18next';
 import { NotificationType, WalletType } from '@/shared/core';
 import { type FlexibleMultisigOperationNotification } from '@/shared/core/types/notification';
 import { useI18n } from '@/shared/i18n';
-import { BodyText } from '@/shared/ui';
+import { BodyText, Icon } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
@@ -42,15 +42,16 @@ export const FlexibleMultisigNotification = ({ notification }: Props) => {
 
   return (
     <Box gap={2} direction="row">
-      <div className="relative">
-        <WalletIcon type={WalletType.FLEXIBLE_MULTISIG} />
-        <div className="absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white bg-icon-positive" />
+      <div className="pt-0.75">
+        <Icon name="info" size={14} className="text-icon-accent" />
       </div>
 
       <Box gap={4}>
         <Box gap={2}>
           <BodyText>{t(titleKey)}</BodyText>
           <BodyText className="inline-flex flex-wrap items-center gap-y-2">
+            <WalletIcon type={WalletType.FLEXIBLE_MULTISIG} />
+            &nbsp;
             <Trans
               t={t}
               i18nKey={descriptionKey}

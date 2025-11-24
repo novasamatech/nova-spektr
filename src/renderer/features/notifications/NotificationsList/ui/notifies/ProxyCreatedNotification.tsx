@@ -4,8 +4,9 @@ import { Trans } from 'react-i18next';
 import { type ProxyAction, ProxyVariant, WalletType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { BodyText } from '@/shared/ui';
+import { BodyText, Icon } from '@/shared/ui';
 import { Identicon, WalletIcon } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { proxyUtils } from '@/entities/proxy';
@@ -66,47 +67,50 @@ export const ProxyCreatedNotification = ({ notification }: Props) => {
   const proxyWalletType = proxyWallet?.type;
 
   return (
-    <div className="flex gap-x-2">
-      <div className="relative">
-        <WalletIcon type={WalletType.PROXIED} />
-        <div className="absolute top-[13px] -right-px h-2 w-2 rounded-full border border-white bg-icon-positive" />
+    <Box gap={2} direction="row">
+      <div className="pt-0.75">
+        <Icon name="info" size={14} className="text-icon-accent" />
       </div>
 
-      <div className="flex flex-col gap-y-2">
-        <BodyText>{t('notifications.details.proxyCreatedTitle')}</BodyText>
-        <BodyText className="inline-flex flex-wrap items-center gap-y-2">
-          <Trans
-            t={t}
-            i18nKey="notifications.details.proxyWalletAction"
-            values={{ address, name: proxiedWalletName }}
-            components={{
-              identicon: (
-                <div className="mx-1 inline-flex">
-                  <Identicon address={address} size={16} background={false} canCopy={true} />
-                </div>
-              ),
-              address: <p className="inline-flex" />,
-            }}
-          />
-        </BodyText>
-        <BodyText className="inline-flex flex-wrap items-center gap-y-2">
-          <Trans
-            t={t}
-            i18nKey="notifications.details.proxyCreatedDetails"
-            values={{
-              name: proxyWalletName,
-              operations: t(ProxyTypeOperation[notification.proxyType]),
-            }}
-            components={{
-              chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
-              walletIcon: (
-                <span className="mx-1">{proxyWalletType && <WalletIcon size={16} type={proxyWalletType} />}</span>
-              ),
-              wallet: <p className="inline-flex" />,
-            }}
-          />
-        </BodyText>
-      </div>
-    </div>
+      <Box gap={4}>
+        <Box gap={2}>
+          <BodyText>{t('notifications.details.proxyCreatedTitle')}</BodyText>
+          <BodyText className="inline-flex flex-wrap items-center gap-y-2">
+            <WalletIcon type={WalletType.PROXIED} />
+            &nbsp;
+            <Trans
+              t={t}
+              i18nKey="notifications.details.proxyWalletAction"
+              values={{ address, name: proxiedWalletName }}
+              components={{
+                identicon: (
+                  <div className="mx-1 inline-flex">
+                    <Identicon address={address} size={16} background={false} canCopy={true} />
+                  </div>
+                ),
+                address: <p className="inline-flex" />,
+              }}
+            />
+          </BodyText>
+          <BodyText className="inline-flex flex-wrap items-center gap-y-2">
+            <Trans
+              t={t}
+              i18nKey="notifications.details.proxyCreatedDetails"
+              values={{
+                name: proxyWalletName,
+                operations: t(ProxyTypeOperation[notification.proxyType]),
+              }}
+              components={{
+                chain: <ChainTitle chainId={notification.chainId} fontClass="text-text-primary text-body" />,
+                walletIcon: (
+                  <span className="mx-1">{proxyWalletType && <WalletIcon size={16} type={proxyWalletType} />}</span>
+                ),
+                wallet: <p className="inline-flex" />,
+              }}
+            />
+          </BodyText>
+        </Box>
+      </Box>
+    </Box>
   );
 };

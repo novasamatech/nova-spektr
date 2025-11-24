@@ -1,14 +1,19 @@
+import { useUnit } from 'effector-react';
 import { t } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { getAssetById } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { TransactionTitle, findCoreTransaction } from '@/entities/transaction';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
+import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { TransactionTitle, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
 import { GovernanceDelegateDetails } from './components/GovernanceDelegateDetails';
-import { GovernanceOperationTitle } from './components/GovernanceOperationTitle';
 import { GovernanceVoteDetails } from './components/GovernanceVoteDetails';
 
 export const governanceOperationDetailFeature = createFeature({
@@ -50,10 +55,31 @@ multisigOperationsSDK(governanceOperationDetailFeature, {
     }
   },
   title({ operation, showCoreTransaction }) {
+    const { t: translator } = useI18n();
+    const chains = useUnit(networkModel.$chains);
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
+
     if (title) {
-      return <GovernanceOperationTitle operation={operation} title={title} />;
+      const asset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
+      const amount = transaction && getTransactionAmount(transaction);
+
+      return {
+        name: (
+          <TransactionTitle
+            className="flex-1 overflow-hidden"
+            title={translator(title || '', { asset: asset?.symbol })}
+          />
+        ),
+        amount:
+          asset && amount ? (
+            <Box width="160px" direction="row" gap={2} verticalAlign="center">
+              <AssetIcon asset={asset} size={32} />
+              <AssetBalance value={amount} asset={asset} />
+            </Box>
+          ) : undefined,
+        chain: <ChainTitle chainId={operation.chainId} className="w-[114px]" />,
+      };
     }
   },
   logTitle({ operation, showCoreTransaction }) {

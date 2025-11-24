@@ -1,15 +1,20 @@
+import { BN } from '@polkadot/util';
+import { useUnit } from 'effector-react';
 import { t } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { nullable } from '@/shared/lib/utils';
+import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { TransactionTitle, findCoreBatchAll, findCoreTransaction } from '@/entities/transaction';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
+import { ChainTitle } from '@/entities/chain';
+import { networkModel } from '@/entities/network';
+import { TransactionTitle, findCoreBatchAll, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
 import { VestedTransferOperationDetails } from './components/VestedTransferOperationDetails';
-import { VestedTransferOperationTitle } from './components/VestedTransferOperationTitle';
 
 export const vestedTransferOperationDetailFeature = createFeature({
   name: 'vested-transfer/operation-details',
@@ -50,6 +55,8 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
     }
   },
   title({ operation, showCoreTransaction }) {
+    const { t: translator } = useI18n();
+    const chains = useUnit(networkModel.$chains);
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
 
     if (nullable(transaction)) {
@@ -61,8 +68,30 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
     const title =
       (transaction?.type && getOperationTitle(transaction.type)) ||
       (transactionFromBatchAll?.type && getOperationTitle(transactionFromBatchAll.type));
+
     if (title) {
-      return <VestedTransferOperationTitle operation={operation} title={title} />;
+      const chain = chains[operation.chainId];
+      const asset = chain ? getNativeAsset(chain.assets) : null;
+
+      let amount: string | BN | null = null;
+      if (transaction?.type === TransactionType.BATCH_ALL) {
+        const batchAmounts: string[] = transaction.args?.transactions?.map(getTransactionAmount);
+        amount = batchAmounts.reduce((amount, currentAmount) => amount.add(new BN(currentAmount)), new BN(0));
+      } else {
+        amount = transaction && getTransactionAmount(transaction);
+      }
+
+      return {
+        name: <TransactionTitle className="flex-1 overflow-hidden" title={translator(title || '', { asset: asset?.symbol })} />,
+        amount:
+          asset && amount ? (
+            <Box width="160px" direction="row" gap={2} verticalAlign="center">
+              <AssetIcon asset={asset} size={32} />
+              <AssetBalance value={amount} asset={asset} />
+            </Box>
+          ) : undefined,
+        chain: <ChainTitle chainId={operation.chainId} className="w-[114px]" />,
+      };
     }
   },
   logTitle({ operation, showCoreTransaction }) {

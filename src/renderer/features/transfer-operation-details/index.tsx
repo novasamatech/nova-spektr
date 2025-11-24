@@ -1,6 +1,8 @@
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
+import { ChainTitle, XcmChains } from '@/entities/chain';
 import {
   TransactionTitle,
   findCoreTransaction,
@@ -14,8 +16,6 @@ import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
 
 import { TransactionAmount } from './components/TransactionAmount';
 import { TransferOperationDetails } from './components/TransferOperationDetails';
-import { TransferOperationTitle } from './components/TransferOperationTitle';
-import { XcmTransferOperationTitle } from './components/XcmTransferOperationTitle';
 
 export const transferOperationDetailFeature = createFeature({
   name: 'transfer/operations',
@@ -36,12 +36,58 @@ multisigOperationsSDK(transferOperationDetailFeature, {
     }
   },
   title({ operation, showCoreTransaction }) {
+    const { t } = useI18n();
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+
     if (isTransferTransaction(transaction)) {
-      return <TransferOperationTitle transaction={transaction} chainId={operation.chainId} />;
+      const asset = useTransactionAsset(transaction, operation.chainId);
+      const amount = transaction ? getTransactionAmount(transaction) : null;
+
+      return {
+        name: (
+          <TransactionTitle
+            className="flex-1 overflow-hidden"
+            title={t('operations.titles.transfer', { asset: asset?.symbol })}
+          />
+        ),
+        amount:
+          asset && amount ? (
+            <Box width="160px" direction="row" gap={2} verticalAlign="center">
+              <AssetIcon asset={asset} size={32} />
+              <AssetBalance value={amount} asset={asset} />
+            </Box>
+          ) : undefined,
+        chain: <ChainTitle chainId={operation.chainId} className="w-[114px]" />,
+      };
     }
+
     if (isXcmTransaction(transaction)) {
-      return <XcmTransferOperationTitle transaction={transaction} chainId={operation.chainId} />;
+      const coreTx = findCoreTransaction(transaction);
+      const asset = useTransactionAsset(coreTx, operation.chainId);
+      const amount = coreTx ? getTransactionAmount(coreTx) : null;
+
+      return {
+        name: (
+          <TransactionTitle
+            className="flex-1 overflow-hidden"
+            title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
+          />
+        ),
+        amount:
+          asset && amount ? (
+            <Box width="160px" direction="row" gap={2} verticalAlign="center">
+              <AssetIcon asset={asset} size={32} />
+              <AssetBalance value={amount} asset={asset} />
+            </Box>
+          ) : undefined,
+        chain: (
+          <XcmChains
+            chainIdFrom={operation.chainId}
+            chainIdTo={transaction?.args.destinationChain}
+            className="w-[114px]"
+          />
+        ),
+      };
     }
   },
   logTitle({ operation, showCoreTransaction }) {

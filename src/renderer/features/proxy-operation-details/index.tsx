@@ -4,15 +4,18 @@ import { t } from 'i18next';
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
+import { getAssetById, toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
+import { Account, AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { Box } from '@/shared/ui-kit';
+import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import {
   TransactionTitle,
   findCoreTransaction,
+  getTransactionAmount,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isProxyTypeTransaction,
@@ -20,8 +23,6 @@ import {
   isRemovePureProxyTransaction,
 } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
-
-import { ProxyOperationTitle } from './components/ProxyOperationTitle';
 
 export const proxyOperationDetailFeature = createFeature({
   name: 'proxy/operation-details',
@@ -46,10 +47,26 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     }
   },
   title({ operation, showCoreTransaction }) {
+    const { t } = useI18n();
+    const chains = useUnit(networkModel.$chains);
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
+
     if (title) {
-      return <ProxyOperationTitle operation={operation} title={title} />;
+      const asset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
+      const amount = transaction && getTransactionAmount(transaction);
+
+      return {
+        name: <TransactionTitle className="flex-1 overflow-hidden" title={t(title || '')} />,
+        amount:
+          asset && amount ? (
+            <Box width="160px" direction="row" gap={2} verticalAlign="center">
+              <AssetIcon asset={asset} size={32} />
+              <AssetBalance value={amount} asset={asset} />
+            </Box>
+          ) : undefined,
+        chain: <ChainTitle chainId={operation.chainId} className="w-[114px]" />,
+      };
     }
   },
   logTitle({ operation, showCoreTransaction }) {
