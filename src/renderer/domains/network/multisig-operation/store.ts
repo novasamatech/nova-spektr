@@ -39,8 +39,17 @@ const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
   return storageService.multisigOperations.deleteAll(operations.map(t => t.id)).then(result => result ?? []);
 });
 
-const syncOperationsFx = createQueuedEffect(async (operations: MultisigOperation[]) => {
-  await storageService.multisigOperations.insertAll(operations.map(serializeOperation));
+/**
+ * We want to sync operations between database and in-memory store. Its
+ * important to do so because operations can be deleted from the database
+ * without calling removeTransactionsFx (f.e. in case of fork).
+ */
+const syncInMemoryOperationsToDbFx = createQueuedEffect(async (allOperations: MultisigOperation[]) => {
+  const dbOperations = await storageService.multisigOperations.readAll();
+  const dbOperationIds = dbOperations.map(op => op.id);
+
+  await storageService.multisigOperations.deleteAll(dbOperationIds);
+  await storageService.multisigOperations.insertAll(allOperations.map(serializeOperation));
 });
 
 const $callDataUpdated = createStore<MultisigOperation | null>(null);
@@ -144,7 +153,8 @@ sample({
 
 sample({
   clock: $list,
-  target: syncOperationsFx,
+  filter: list => list.length > 0,
+  target: syncInMemoryOperationsToDbFx,
 });
 
 // Handle successful call data updates
