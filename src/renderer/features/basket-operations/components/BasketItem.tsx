@@ -1,14 +1,15 @@
 import { useStoreMap } from 'effector-react';
+import { toast } from 'sonner';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
+import { IconButton } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui-kit';
-import { type BasketTransaction } from '@/aggregates/basket-operations';
+import { type BasketTransaction, basketOperations } from '@/aggregates/basket-operations';
 import { validation } from '../model/validation';
 
 import { BasketOperationStatus } from './BasketOperationStatus';
-import { RemoveOperation } from './RemoveOperation';
 
 export const operationTitleSlot = createSlot<{ transaction: BasketTransaction }>();
 
@@ -38,6 +39,18 @@ export const BasketItem = ({ transaction, selected, onSelect, onClick }: Props) 
   });
 
   const disabled = validationResult.length !== 0 || pendingValidation;
+
+  const handleTxRemoved = () => {
+    toast('Transaction removed from basket', {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          basketOperations.addTransactions([transaction]);
+        },
+      },
+    });
+    basketOperations.removeTransactions([transaction]);
+  };
 
   return (
     <li
@@ -72,7 +85,7 @@ export const BasketItem = ({ transaction, selected, onSelect, onClick }: Props) 
       </div>
 
       <div className="flex items-center justify-center px-1">
-        <RemoveOperation operation={transaction} />
+        <IconButton name="delete" onClick={handleTxRemoved} />
       </div>
     </li>
   );
