@@ -160,6 +160,7 @@
       "proceedButton": "Delete",
       "title": "Delete this operation?"
     },
+    "removedFromBasket": "Transaction removed from basket",
     "searchPlaceholder": "Search",
     "selectAll": "Select all",
     "selectedStatus_one": "{ selected } out of { count } operation selected",
@@ -169,6 +170,7 @@
       "title": "Sign { transactions } operations"
     },
     "title": "Basket",
+    "undo": "Undo",
     "validationError": "Unavailable",
     "validationWarning": {
       "cancelButton": "Cancel",

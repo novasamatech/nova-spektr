@@ -41,9 +41,9 @@ export const BasketItem = ({ transaction, selected, onSelect, onClick }: Props) 
   const disabled = validationResult.length !== 0 || pendingValidation;
 
   const handleTxRemoved = () => {
-    toast('Transaction removed from basket', {
+    toast(t('basket.removedFromBasket'), {
       action: {
-        label: 'Undo',
+        label: t('basket.undo'),
         onClick: () => {
           basketOperations.addTransactions([transaction]);
         },
