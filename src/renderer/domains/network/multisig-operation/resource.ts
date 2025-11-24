@@ -228,8 +228,6 @@ const fetchAllOnchainOperations = async (
   const requests = Object.values(apis).map(api => fetchOnchainOperations(api, accountId, chains));
   const operations = await Promise.allSettled(requests);
 
-  console.log('onchain operations', operations);
-
   return operations.map(result => (result.status === 'fulfilled' ? result.value : [])).flat();
 };
 
