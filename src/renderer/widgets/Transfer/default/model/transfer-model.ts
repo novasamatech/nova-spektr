@@ -70,7 +70,7 @@ sample({
 sample({
   clock: formModel.formSubmitted,
   fn: ({ tx, coreTx, initiator, signatory, amount, destination, destinationChain, fee, xcmFee, multisigDeposit }) => {
-    const store: TransferStore = {
+    const store = {
       initiator,
       signatory,
       amount,
@@ -79,7 +79,7 @@ sample({
       fee,
       xcmFee,
       multisigDeposit,
-    };
+    } satisfies TransferStore;
 
     return {
       tx,
@@ -168,7 +168,7 @@ sample({
 });
 
 sample({
-  clock: signModel.output.formSubmitted,
+  clock: signModel.signed,
   source: {
     step: $step,
     transferStore: $transferStore,
@@ -185,25 +185,18 @@ sample({
       Boolean(transferData.networkStore)
     );
   },
-  fn: (transferData, signParams) => ({
-    event: {
-      ...signParams,
-      chain: transferData.networkStore!.chain,
-      account: transferData.transferStore!.initiator,
-      signatory: transferData.transferStore!.signatory,
-      wrappedTxs: [transferData.wrappedTx!],
-      coreTxs: [transferData.coreTx!],
-    },
+  fn: (_, signParams) => ({
+    event: signParams,
     step: Step.SUBMIT,
   }),
   target: spread({
-    event: submitModel.events.formInitiated,
+    event: submitModel.init,
     step: stepChanged,
   }),
 });
 
 sample({
-  clock: submitModel.output.formSubmitted,
+  clock: submitModel.done,
   source: formModel.$multisigAccount,
   filter: (multisigAccount, results) => nonNullable(multisigAccount) && submitUtils.isSuccessResult(results[0].result),
   fn: () => Paths.OPERATIONS,
