@@ -7,6 +7,7 @@ import {
   type Member,
   type OngoingReferendum,
   evidenceService,
+  referendumService,
   trackService,
 } from '@/domains/collectives';
 
@@ -249,10 +250,35 @@ function cutMarkdown(markdown: string) {
   return result.join(' ') + '...';
 }
 
+type ReferendumAllowanceParams = {
+  referendum: OngoingReferendum;
+  members: Member[];
+};
+
+const isRetentionReferendumAllowed = ({ referendum, members }: ReferendumAllowanceParams) => {
+  const proposerAccountId = referendumService.getProposer(referendum);
+
+  if (!proposerAccountId) {
+    return true;
+  }
+
+  const proposerMember = members.find(member => member.accountId === proposerAccountId);
+  if (!proposerMember) {
+    return true;
+  }
+
+  if (proposerMember.rank === 0 && trackService.isRetentionTrack(referendum.track)) {
+    return false;
+  }
+
+  return true;
+};
+
 export const tasksService = {
   getReferendumUserImportanceScore,
   getMaximumAvailableVotingWeight,
   getReferendumImportance,
   getEvidenceImportance,
   cutMarkdown,
+  isRetentionReferendumAllowed,
 };

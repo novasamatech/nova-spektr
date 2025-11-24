@@ -52,7 +52,7 @@ export const RetentionWidget = memo(({ member }: Props) => {
   const { data: state, pending } = useRetentionWidgetState();
   const { fromDateFormatted, toDateFormatted, retentionPeriod, timelineSteps, timelineValue } = useRetentionData();
 
-  if (!memberService.shouldProve(member)) return null;
+  if (!memberService.shouldProve(member) || member.rank === 0) return null;
 
   if (!retentionPeriod || pending) return <SkeletonLoader />;
 
