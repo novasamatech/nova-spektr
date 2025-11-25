@@ -24,14 +24,10 @@ vi.mock('@/shared/ui-entities', () => ({
   AssetBalance: ({ value }: { value: string }) => <div data-testid="asset-balance">{value}</div>,
 }));
 
-vi.mock('@/entities/price', async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const actual: any = await vi.importActual('@/entities/price');
-  return {
-    ...actual,
-    AssetFiatBalance: () => <div data-testid="fiat-balance" />,
-  };
-});
+vi.mock('@/entities/price', async (importOriginal) => ({
+  ...(await importOriginal()),
+  AssetFiatBalance: () => <div data-testid="fiat-balance" />,
+}));
 
 vi.mock('@/shared/api/xcm', () => ({
   spellXcmService: {
