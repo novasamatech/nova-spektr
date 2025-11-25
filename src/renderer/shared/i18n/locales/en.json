@@ -2561,7 +2561,12 @@
       "title": "Balance below network minimum"
     },
     "dryRunError": {
-      "title": "Transfer path unavailable"
+      "title": "Transfer path unavailable",
+      "description": "Dry run failed: {reason} on {chain} chain"
+    },
+    "dryRunTooExpensive": {
+      "title": "Insufficient fees for transfer",
+      "description": "The transfer amount is insufficient to cover execution fees on {chain} chain. Please increase the transfer amount."
     },
     "amountPlaceholder": "0",
     "continueButton": "Continue",

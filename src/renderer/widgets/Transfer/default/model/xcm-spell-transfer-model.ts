@@ -7,20 +7,31 @@ import { debounce } from 'patronum';
 import { spellXcmService } from '@/shared/api/xcm/service/spellXcmService';
 import { type Asset, type Chain, type ChainId, TransactionType } from '@/shared/core';
 import { takeLast } from '@/shared/effector';
-import { TEST_ACCOUNTS, TEST_EVM_ADDRESS, isEvmChain, toAccountId, toLocalChainId } from '@/shared/lib/utils';
+import {
+  TEST_ACCOUNTS,
+  TEST_EVM_ADDRESS,
+  isEvmChain,
+  toAccountId,
+  toLocalChainId,
+  validateAddress,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
 const xcmStarted = createEvent<{ chain: Chain; asset: Asset }>();
 const xcmStopped = createEvent();
 const xcmChainSelected = createEvent<ChainId>();
-const amountChanged = createEvent<string>();
 const destinationChanged = createEvent<AccountId | null>();
 const rawAmountChanged = createEvent<string>();
 const initiatorAccountIdChanged = createEvent<AccountId | null>();
+const buildTransferDryRunResult = createEvent<{
+  success: boolean;
+  failureReason?: string;
+  failureChain?: string;
+} | null>();
 
-const amountChangedDebounced = debounce({
-  source: amountChanged,
+const rawAmountChangedDebounced = debounce({
+  source: rawAmountChanged,
   timeout: 500,
 });
 
@@ -30,13 +41,13 @@ const destinationChangedDebounced = debounce({
 });
 
 const $networkStore = restore(xcmStarted, null);
-const $xcmChainId = restore(xcmChainSelected, null);
-const $originFee = createStore<BN | null>(null);
-const $destinationFee = createStore<BN | null>(null);
-const $amount = restore(amountChanged, null);
-const $destination = restore(destinationChanged, null);
-const $rawAmount = restore(rawAmountChanged, null);
-const $initiatorAccountId = restore(initiatorAccountIdChanged, null);
+const $xcmChainId = restore(xcmChainSelected, null).reset(xcmStarted, xcmStopped);
+const $originFee = createStore<BN | null>(null).reset(xcmStarted, xcmStopped);
+const $destinationFee = createStore<BN | null>(null).reset(xcmStarted, xcmStopped);
+const $destination = restore(destinationChanged, null).reset(xcmStarted, xcmStopped);
+const $rawAmount = restore(rawAmountChanged, null).reset(xcmStarted, xcmStopped);
+const $initiatorAccountId = restore(initiatorAccountIdChanged, null).reset(xcmStarted, xcmStopped);
+const $buildTransferDryRunResult = restore(buildTransferDryRunResult, null).reset(xcmStarted, xcmStopped);
 
 const $xcmChain = combine(
   {
@@ -85,8 +96,7 @@ const getXcmFeesFx = takeLast({
   fn: async (params: FeeCalculationParams, abortSignal: AbortSignal) => {
     const { api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId } = params;
 
-    const originChainId = api.genesisHash.toHex();
-    if (originChainId === xcmChain.chainId) {
+    if (network.chain.chainId === xcmChain.chainId) {
       return null;
     }
 
@@ -136,6 +146,10 @@ const $feeCalculationParams = combine(
       return null;
     }
 
+    if (network.chain.chainId === xcmChain.chainId) {
+      return null;
+    }
+
     return {
       api,
       apiDestination,
@@ -149,7 +163,7 @@ const $feeCalculationParams = combine(
 );
 
 sample({
-  clock: [amountChangedDebounced, destinationChangedDebounced, xcmChainSelected],
+  clock: [rawAmountChangedDebounced, destinationChangedDebounced, xcmChainSelected],
   source: $feeCalculationParams,
   filter: (params): params is FeeCalculationParams => params !== null,
   target: getXcmFeesFx,
@@ -184,13 +198,13 @@ sample({
 });
 
 sample({
-  clock: [xcmChainSelected, amountChangedDebounced, destinationChangedDebounced],
+  clock: [xcmChainSelected, rawAmountChangedDebounced, destinationChangedDebounced],
   fn: () => null,
   target: $destinationFee,
 });
 
 sample({
-  clock: [xcmChainSelected, amountChangedDebounced, destinationChangedDebounced],
+  clock: [xcmChainSelected, rawAmountChangedDebounced, destinationChangedDebounced],
   fn: () => null,
   target: $originFee,
 });
@@ -223,7 +237,7 @@ const getAvailableTransfersFx = createEffect(
   },
 );
 
-const $transferDirections = createStore<string[]>([]);
+const $transferDirections = createStore<string[]>([]).reset(xcmStarted, xcmStopped);
 
 sample({
   clock: xcmStarted,
@@ -275,12 +289,27 @@ type BuildTransferParams = {
   initiatorAccountId: AccountId | null;
 };
 
-const buildTransferFx = createEffect(
-  async ({ api, apiDestination, network, xcmChain, destination, amount, initiatorAccountId }: BuildTransferParams) => {
+const buildTransferFx = takeLast({
+  fn: async (
+    { api, apiDestination, network, xcmChain, destination, amount, initiatorAccountId }: BuildTransferParams,
+    abortSignal: AbortSignal,
+  ) => {
+    if (network.chain.chainId === xcmChain.chainId) {
+      return null;
+    }
+
+    if (!amount || amount === '0' || amount === '0.' || amount === '0.0') {
+      return null;
+    }
+
     const fromChainName = spellXcmService.getSpellChainName(network.chain);
     const toChainName = spellXcmService.getSpellChainName(xcmChain);
 
     if (!fromChainName || !toChainName) {
+      return null;
+    }
+
+    if (!validateAddress(destination, xcmChain)) {
       return null;
     }
 
@@ -291,6 +320,14 @@ const buildTransferFx = createEffect(
       senderAddress = spellXcmService.prepareAddressForChain(initiatorAccountId, network.chain, fromChainName);
     }
 
+    let isAborted = false;
+    const checkAborted = () => {
+      if (abortSignal.aborted) {
+        isAborted = true;
+      }
+      return isAborted;
+    };
+
     const result = await spellXcmService.buildTransfer({
       fromChain: network.chain,
       toChain: xcmChain,
@@ -300,13 +337,32 @@ const buildTransferFx = createEffect(
       senderAddress,
       fromChainApi: api,
       toChainApi: apiDestination,
+      onDryRunResult: (dryRunResult) => {
+        if (checkAborted()) {
+          return;
+        }
+
+        if (dryRunResult && !dryRunResult.destination?.success) {
+          buildTransferDryRunResult({
+            success: false,
+            failureReason: dryRunResult.destination?.failureReason,
+            failureChain: dryRunResult.failureChain,
+          });
+        }
+      },
     });
+
+    if (checkAborted()) {
+      return null;
+    }
 
     return result.extrinsic;
   },
-);
+  key: ({ network, xcmChain, destination, amount }) =>
+    `${network.chain.chainId}-${xcmChain.chainId}-${destination}-${amount}`,
+});
 
-const $spellExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null);
+const $spellExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null).reset(xcmStarted, xcmStopped);
 
 const $buildTransferParams = combine(
   {
@@ -315,12 +371,24 @@ const $buildTransferParams = combine(
     network: $networkStore,
     xcmChain: $xcmChain,
     destination: $destination,
-    amount: $amount,
     rawAmount: $rawAmount,
     initiatorAccountId: $initiatorAccountId,
   },
-  ({ api, apiDestination, network, xcmChain, destination, amount, rawAmount, initiatorAccountId }) => {
-    if (!api || !apiDestination || !network || !xcmChain || !destination || !amount) {
+  ({ api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId }) => {
+    if (!api || !apiDestination || !network || !xcmChain || !destination || !rawAmount) {
+      return null;
+    }
+
+    if (network.chain.chainId === xcmChain.chainId) {
+      return null;
+    }
+
+    // Validate that the destination address matches the chain type (EVM vs Substrate)
+    if (!validateAddress(String(destination), xcmChain)) {
+      return null;
+    }
+
+    if (rawAmount === '0' || rawAmount === '0.' || rawAmount === '0.0') {
       return null;
     }
 
@@ -330,14 +398,14 @@ const $buildTransferParams = combine(
       network,
       xcmChain,
       destination,
-      amount: rawAmount ?? amount,
+      amount: rawAmount,
       initiatorAccountId,
     };
   },
 );
 
 sample({
-  clock: [xcmChainSelected, destinationChanged, amountChanged, xcmStarted],
+  clock: [xcmChainSelected, destinationChanged, rawAmountChanged, xcmStarted],
   source: $buildTransferParams,
   filter: (params): params is BuildTransferParams => params !== null,
   target: buildTransferFx,
@@ -355,7 +423,7 @@ sample({
 });
 
 sample({
-  clock: [xcmChainSelected, destinationChanged, amountChanged],
+  clock: [xcmChainSelected, destinationChanged, rawAmountChanged],
   fn: () => null,
   target: $spellExtrinsic,
 });
@@ -393,6 +461,10 @@ type DryRunParams = {
 const dryRunFx = takeLast({
   fn: async (params: DryRunParams) => {
     const { api, apiDestination, network, xcmChain } = params;
+
+    if (network.chain.chainId === xcmChain.chainId) {
+      return null;
+    }
 
     const fromChainName = spellXcmService.getSpellChainName(network.chain);
     const toChainName = spellXcmService.getSpellChainName(xcmChain);
@@ -476,9 +548,22 @@ sample({
 });
 
 sample({
-  clock: [xcmChainSelected, xcmStopped],
+  clock: [xcmChainSelected, xcmStarted, xcmStopped],
   fn: () => null,
   target: $dryRunError,
+});
+
+sample({
+  clock: [rawAmountChanged, destinationChanged, xcmChainSelected, xcmStarted, xcmStopped],
+  fn: () => null,
+  target: buildTransferDryRunResult,
+});
+
+sample({
+  clock: $buildTransferParams,
+  filter: (params) => params === null,
+  fn: () => null,
+  target: buildTransferDryRunResult,
 });
 
 export const xcmSpellTransferModel = {
@@ -493,12 +578,12 @@ export const xcmSpellTransferModel = {
   $isDestinationFeeLoading,
   $shouldShowFees,
   $dryRunError,
+  $buildTransferDryRunResult,
 
   events: {
     xcmStarted,
     xcmStopped,
     xcmChainSelected,
-    amountChanged,
     rawAmountChanged,
     destinationChanged,
     initiatorAccountIdChanged,

@@ -4,7 +4,7 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN } from '@polkadot/util';
 
 import { type Asset, AssetType, type Chain } from '@/shared/core';
-import { CHAIN_ID_TO_SPELL_NAME_MAP, formatAmount, isEthereumAccountId, toAddress } from '@/shared/lib/utils';
+import { CHAIN_ID_TO_SPELL_NAME_MAP, isEthereumAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 type XcmTransferParams = {
@@ -16,6 +16,10 @@ type XcmTransferParams = {
   senderAddress?: string;
   fromChainApi: ApiPromise;
   toChainApi: ApiPromise;
+  onDryRunResult?: (result: {
+    destination?: { success: boolean; failureReason?: string };
+    failureChain?: string;
+  }) => void;
 };
 
 type XcmFeeParams = {
@@ -65,12 +69,11 @@ function convertAddressToChainFormat(accountId: AccountId, targetChain: Chain, _
 function createCurrencyInput(
   asset: Asset,
   amount: string,
-): { amount: string; symbol: string | ReturnType<typeof Native> } {
-  const amountBN = new BN(formatAmount(amount, asset.precision));
+): { amount: string | number; symbol: string | ReturnType<typeof Native> } {
   const isNativeAsset = asset.type === AssetType.NATIVE;
 
   return {
-    amount: amountBN.toString(),
+    amount: Number(amount),
     symbol: isNativeAsset ? Native(asset.symbol) : asset.symbol,
   };
 }
@@ -97,7 +100,7 @@ function createBuilderConfig(
   }
 
   return {
-    abstractDecimals: false,
+    abstractDecimals: true,
     apiOverrides: {
       [fromChainName]: fromChainApi,
       [toChainName]: toChainApi,
@@ -117,8 +120,6 @@ function buildXcmTransferBuilder(params: XcmTransferParams): BuilderResult | nul
 
   const builderConfig = createBuilderConfig(fromChain, toChain, fromChainApi, toChainApi);
   const currencyInput = createCurrencyInput(asset, amount);
-
-  // console.log('builderConfig', fromChainApi, toChainApi);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let builder: any = Builder(builderConfig)
@@ -187,6 +188,33 @@ async function buildTransfer(params: XcmTransferParams): Promise<XcmTransferResu
   }
 
   const { builder } = builderResult;
+
+  try {
+    console.log('buildTransfer: performing dry run', {
+      amount: params.amount,
+      assetSymbol: params.asset.symbol,
+      destination: params.destinationAddress,
+    });
+    const dryRunResult = await builder.dryRun();
+    console.log('buildTransfer: dry run result', dryRunResult);
+
+    if (params.onDryRunResult) {
+      params.onDryRunResult(dryRunResult);
+    }
+  } catch (dryRunError) {
+    console.error('buildTransfer: dry run error', {
+      dryRunError: dryRunError instanceof Error ? dryRunError.message : String(dryRunError),
+    });
+
+    if (params.onDryRunResult) {
+      params.onDryRunResult({
+        destination: {
+          success: false,
+          failureReason: dryRunError instanceof Error ? dryRunError.message : String(dryRunError),
+        },
+      });
+    }
+  }
 
   const extrinsic = await builder.build();
 

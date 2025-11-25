@@ -734,14 +734,6 @@ sample({
 
 sample({
   clock: form.fields.amount.change,
-  source: $networkStore,
-  filter: (network: NetworkStore | null): network is NetworkStore => Boolean(network),
-  fn: ({ asset }, amount) => formatAmount(amount, asset.precision),
-  target: xcmSpellTransferModel.events.amountChanged,
-});
-
-sample({
-  clock: form.fields.amount.change,
   target: xcmSpellTransferModel.events.rawAmountChanged,
 });
 

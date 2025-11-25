@@ -602,15 +602,42 @@ const AlertForAccountDeath = memo(() => {
 
 const AlertForDryRunError = memo(() => {
   const { t } = useI18n();
-  const dryRunError = useUnit(xcmSpellTransferModel.$dryRunError);
+  const buildTransferDryRunResult = useUnit(xcmSpellTransferModel.$buildTransferDryRunResult);
+  const xcmChain = useUnit(xcmSpellTransferModel.$xcmChain);
 
-  if (!dryRunError) {
+  if (!buildTransferDryRunResult || buildTransferDryRunResult.success) {
     return null;
   }
 
+  const isTooExpensive = buildTransferDryRunResult.failureReason === 'TooExpensive';
+  const chainName = xcmChain?.name || buildTransferDryRunResult.failureChain;
+
   return (
-    <Alert title={t('transfer.dryRunError.title')} variant="error" active>
-      <FootnoteText className="max-w-full break-all text-text-primary">{dryRunError}</FootnoteText>
+    <Alert
+      title={isTooExpensive ? t('transfer.dryRunTooExpensive.title') : t('transfer.dryRunError.title')}
+      variant="error"
+      active
+    >
+      <FootnoteText className="max-w-full break-all text-text-primary">
+        {isTooExpensive ? (
+          <Trans
+            t={t}
+            i18nKey="transfer.dryRunTooExpensive.description"
+            values={{
+              chain: chainName,
+            }}
+          />
+        ) : (
+          <Trans
+            t={t}
+            i18nKey="transfer.dryRunError.description"
+            values={{
+              reason: buildTransferDryRunResult.failureReason || 'Unknown',
+              chain: chainName,
+            }}
+          />
+        )}
+      </FootnoteText>
     </Alert>
   );
 });
@@ -619,13 +646,15 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const buildTransferDryRunResult = useUnit(xcmSpellTransferModel.$buildTransferDryRunResult);
+  const hasDryRunError = Boolean(buildTransferDryRunResult && !buildTransferDryRunResult.success);
 
   return (
     <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="transfer-form" type="submit" disabled={!canSubmit}>
+      <Button form="transfer-form" type="submit" disabled={!canSubmit || hasDryRunError}>
         {t('transfer.continueButton')}
       </Button>
     </div>
