@@ -1769,7 +1769,6 @@
     "deliveryFeeErrorDescription": "The account<account />doesn't have enough tokens to pay the delivery fee of {fee} {symbol}<br />Transferable balance: {balance} {symbol}. Please top up the balance and of this account and try again.",
     "deliveryFeeErrorTitle": "Not enough tokens to pay the delivery fee",
     "destinationNetworkFee": "Destination Network Fee",
-    "originNetworkFee": "Origin Network Fee",
     "details": {
       "accessType": "Access type",
       "account": "Account",
@@ -1825,6 +1824,7 @@
     "operationNotFoundButton": "Close",
     "operationNotFoundDescription": "The operation you're trying to access could not be found.\nPlease check the parameters and try again.",
     "operationNotFoundTitle": "Operation not found",
+    "originNetworkFee": "Origin Network Fee",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
@@ -2505,14 +2505,6 @@
       "description": "After this transfer, your balance will <b>fall below the Existential Deposit ({ed} {asset}).</b> If any tokens remain, <b>they will be burned, and your account will be removed from on-chain storage.</b>. <br /> We recommend <b>using the MAX button for a safe Transfer</b>",
       "title": "Balance below network minimum"
     },
-    "dryRunError": {
-      "title": "Transfer path unavailable",
-      "description": "Dry run failed: {reason} on {chain} chain"
-    },
-    "dryRunTooExpensive": {
-      "title": "Insufficient fees for transfer",
-      "description": "The transfer amount is insufficient to cover execution fees on {chain} chain. Please increase the transfer amount."
-    },
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",
@@ -2523,6 +2515,14 @@
     "destinationChainPlaceholder": "Select recipient network",
     "destinationCryptoError": "Unsupported address format for {network}",
     "destinationFormatError": "Address has incorrect format",
+    "dryRunError": {
+      "description": "Dry run failed: {reason} on {chain} chain",
+      "title": "Transfer path unavailable"
+    },
+    "dryRunTooExpensive": {
+      "description": "The transfer amount is insufficient to cover execution fees on {chain} chain. Please increase the transfer amount.",
+      "title": "Insufficient fees for transfer"
+    },
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "expired": "Transaction expired",
