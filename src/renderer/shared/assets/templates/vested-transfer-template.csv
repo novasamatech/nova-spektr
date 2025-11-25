@@ -1,0 +1,17 @@
+# Vested Transfer CSV Template
+# 
+# Column descriptions:
+# target             - Recipient address in SS58 format
+# locked             - Total locked amount in planks
+# starting_block     - Vesting start block number
+# per_block          - Amount in planks released per block
+#
+# Token Precision Reference:
+# 1 DOT  = 10000000000 (10^10 in planks)
+# Other tokens may have different precision levels
+#
+# Example for DOT: 10000000000 (1 DOT)
+# starting at block 123456 would release 100000 (0.00001 DOT) per block
+
+target,locked,starting_block,per_block
+5C5BDLw8tzzWB6XQbVPuzeL34d6GmPYPH1NaqsWBaJWzz42J,10000000000,123456,100000
