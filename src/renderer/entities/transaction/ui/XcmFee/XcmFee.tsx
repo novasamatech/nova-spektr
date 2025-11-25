@@ -100,7 +100,7 @@ export const XcmFee = memo(
         return;
       }
 
-      const amount = transaction.args.value || '0';
+      const amount = transaction.args.value;
       const destination = transaction.args.dest || transaction.accountId.toString();
       const senderAddress = transaction.accountId
         ? toAddress(transaction.accountId, { prefix: originChain.addressPrefix })
