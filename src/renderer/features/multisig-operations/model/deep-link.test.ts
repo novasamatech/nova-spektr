@@ -1,31 +1,19 @@
 import { allSettled, fork } from 'effector';
 import { describe, expect, it } from 'vitest';
 
-import { AccountType, CryptoType, SigningType } from '@/shared/core';
+import { AccountType, ConnectionStatus, CryptoType, SigningType } from '@/shared/core';
+import { createAccountId, polkadotChain, polkadotChainId } from '@/shared/mocks';
 import { accounts, multisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 
 import { type MultisigOperationDeepLinkData, deepLinkModel } from './deep-link';
 
 describe('multisig operations deep link', () => {
-  const MOCK_CHAIN_ID = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' as any;
-  const MOCK_ACCOUNT_ID = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
-
-  const mockChain = {
-    chainId: MOCK_CHAIN_ID,
-    name: 'Polkadot',
-    assets: [],
-    nodes: [],
-    addressPrefix: 0,
-    explorers: [],
-    externalApi: {},
-    icon: 'polkadot',
-    options: ['MULTISIG'],
-  };
+  const mockAccountId = createAccountId(1);
 
   const mockAccount = {
     id: 1,
-    accountId: MOCK_ACCOUNT_ID as any,
+    accountId: mockAccountId,
     walletId: 1,
     name: 'Test Account',
     accountType: AccountType.MULTISIG,
@@ -37,7 +25,7 @@ describe('multisig operations deep link', () => {
   };
 
   const createMockOperation = (status: 'pending' | 'executed', callHash = '0xabc123') => {
-    const operationId = `${MOCK_CHAIN_ID}-${callHash}-${MOCK_ACCOUNT_ID}-100-1`;
+    const operationId = `${polkadotChainId}-${callHash}-${mockAccountId}-100-1`;
     return {
       id: operationId,
       status,
@@ -46,9 +34,9 @@ describe('multisig operations deep link', () => {
       section: null,
       callHash: callHash as any,
       callData: null,
-      chainId: MOCK_CHAIN_ID,
-      accountId: MOCK_ACCOUNT_ID as any,
-      depositor: MOCK_ACCOUNT_ID as any,
+      chainId: polkadotChainId,
+      accountId: mockAccountId,
+      depositor: mockAccountId,
       blockCreated: 100 as any,
       indexCreated: 1,
       events: [],
@@ -64,12 +52,10 @@ describe('multisig operations deep link', () => {
     const deepLinkData: MultisigOperationDeepLinkData = {
       chainId: '0x123' as any,
       callHash: '0xabc',
-      accountId: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY' as any,
+      accountId: mockAccountId,
       blockCreated: 100,
       indexCreated: 1,
     };
-
-    expect(scope.getState(deepLinkModel.$isNetworkNotAvailableModalOpen)).toBe(false);
 
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
@@ -82,23 +68,19 @@ describe('multisig operations deep link', () => {
   it('should open account not found modal when account does not exist', async () => {
     const scope = fork({
       values: new Map()
-        .set(networkModel.$chains, {
-          [mockChain.chainId]: mockChain,
-        })
+        .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
         .set(accounts.__test.$list, [])
         .set(accounts.__test.$populated, true)
         .set(multisigOperation.__test.$populated, true),
     });
 
     const deepLinkData: MultisigOperationDeepLinkData = {
-      chainId: mockChain.chainId,
+      chainId: polkadotChainId,
       callHash: '0xabc',
-      accountId: MOCK_ACCOUNT_ID as any,
+      accountId: mockAccountId,
       blockCreated: 100,
       indexCreated: 1,
     };
-
-    expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
 
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
@@ -109,59 +91,48 @@ describe('multisig operations deep link', () => {
   });
 
   it('should wait for accounts to be populated before checking (cold start)', async () => {
-    // Simulate cold start: accounts not yet populated
     const scope = fork({
       values: new Map()
-        .set(networkModel.$chains, {
-          [mockChain.chainId]: mockChain,
-        })
+        .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
         .set(accounts.__test.$list, [mockAccount])
         .set(accounts.__test.$populated, false),
     });
 
     const deepLinkData: MultisigOperationDeepLinkData = {
-      chainId: mockChain.chainId,
+      chainId: polkadotChainId,
       callHash: '0xabc',
-      accountId: MOCK_ACCOUNT_ID as any,
+      accountId: mockAccountId,
       blockCreated: 100,
       indexCreated: 1,
     };
 
-    // Trigger deep link before accounts are populated
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
       params: deepLinkData,
     });
 
-    // Should NOT open account not found modal yet (waiting for accounts to populate)
     expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
 
-    // Simulate accounts being populated from DB
     await allSettled(accounts.populate, { scope });
 
-    // Now account should be found and no error modal should open
     expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
   });
 
   it('should not open account not found modal when account exists', async () => {
     const scope = fork({
       values: new Map()
-        .set(networkModel.$chains, {
-          [mockChain.chainId]: mockChain,
-        })
+        .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
         .set(accounts.__test.$list, [mockAccount])
         .set(accounts.__test.$populated, true),
     });
 
     const deepLinkData: MultisigOperationDeepLinkData = {
-      chainId: mockChain.chainId,
+      chainId: polkadotChainId,
       callHash: '0xabc',
-      accountId: MOCK_ACCOUNT_ID as any,
+      accountId: mockAccountId,
       blockCreated: 100,
       indexCreated: 1,
     };
-
-    expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
 
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
@@ -173,21 +144,19 @@ describe('multisig operations deep link', () => {
 
   it('should set focused operation ID when everything is valid', async () => {
     const deepLinkData: MultisigOperationDeepLinkData = {
-      chainId: mockChain.chainId,
+      chainId: polkadotChainId,
       callHash: '0xabc123',
-      accountId: MOCK_ACCOUNT_ID as any,
+      accountId: mockAccountId,
       blockCreated: 100,
       indexCreated: 1,
     };
 
-    const expectedOperationId = `${mockChain.chainId}-0xabc123-${MOCK_ACCOUNT_ID}-100-1`;
+    const expectedOperationId = `${polkadotChainId}-0xabc123-${mockAccountId}-100-1`;
     const mockOperation = createMockOperation('pending');
 
     const scope = fork({
       values: new Map()
-        .set(networkModel.$chains, {
-          [mockChain.chainId]: mockChain,
-        })
+        .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
         .set(accounts.__test.$list, [mockAccount])
         .set(accounts.__test.$populated, true)
         .set(multisigOperation.__test.$list, [mockOperation])
@@ -195,19 +164,12 @@ describe('multisig operations deep link', () => {
         .set(networkModel.$apis, {}),
     });
 
-    expect(scope.getState(deepLinkModel.$focusedOperationId)).toBeNull();
-    expect(scope.getState(deepLinkModel.$isNetworkNotAvailableModalOpen)).toBe(false);
-    expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
-
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
       params: deepLinkData,
     });
 
-    // Should set the focused operation ID
     expect(scope.getState(deepLinkModel.$focusedOperationId)).toBe(expectedOperationId);
-
-    // Should not open any error modals
     expect(scope.getState(deepLinkModel.$isNetworkNotAvailableModalOpen)).toBe(false);
     expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
     expect(scope.getState(deepLinkModel.$isOperationNotFoundModalOpen)).toBe(false);
@@ -215,9 +177,9 @@ describe('multisig operations deep link', () => {
 
   it('should open already signed modal when operation status is executed', async () => {
     const deepLinkData: MultisigOperationDeepLinkData = {
-      chainId: mockChain.chainId,
+      chainId: polkadotChainId,
       callHash: '0xabc123',
-      accountId: MOCK_ACCOUNT_ID as any,
+      accountId: mockAccountId,
       blockCreated: 100,
       indexCreated: 1,
     };
@@ -226,9 +188,7 @@ describe('multisig operations deep link', () => {
 
     const scope = fork({
       values: new Map()
-        .set(networkModel.$chains, {
-          [mockChain.chainId]: mockChain,
-        })
+        .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
         .set(accounts.__test.$list, [mockAccount])
         .set(accounts.__test.$populated, true)
         .set(multisigOperation.__test.$list, [mockOperation])
@@ -236,24 +196,20 @@ describe('multisig operations deep link', () => {
         .set(networkModel.$apis, {}),
     });
 
-    expect(scope.getState(deepLinkModel.$isAlreadySignedModalOpen)).toBe(false);
-
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
       params: deepLinkData,
     });
 
-    // Should open the already signed modal
     expect(scope.getState(deepLinkModel.$isAlreadySignedModalOpen)).toBe(true);
-    // Should not set focused operation ID (because operation is already executed)
     expect(scope.getState(deepLinkModel.$focusedOperationId)).toBeNull();
   });
 
   it('should not reopen already signed modal after closing and returning to page', async () => {
     const deepLinkData: MultisigOperationDeepLinkData = {
-      chainId: mockChain.chainId,
+      chainId: polkadotChainId,
       callHash: '0xabc123',
-      accountId: MOCK_ACCOUNT_ID as any,
+      accountId: mockAccountId,
       blockCreated: 100,
       indexCreated: 1,
     };
@@ -262,9 +218,7 @@ describe('multisig operations deep link', () => {
 
     const scope = fork({
       values: new Map()
-        .set(networkModel.$chains, {
-          [mockChain.chainId]: mockChain,
-        })
+        .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
         .set(accounts.__test.$list, [mockAccount])
         .set(accounts.__test.$populated, true)
         .set(multisigOperation.__test.$list, [mockOperation])
@@ -272,7 +226,6 @@ describe('multisig operations deep link', () => {
         .set(networkModel.$apis, {}),
     });
 
-    // Trigger deep link - should open modal
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
       params: deepLinkData,
@@ -280,33 +233,117 @@ describe('multisig operations deep link', () => {
 
     expect(scope.getState(deepLinkModel.$isAlreadySignedModalOpen)).toBe(true);
 
-    // User closes the modal
     await allSettled(deepLinkModel.closeAlreadySignedModal, { scope });
-
     expect(scope.getState(deepLinkModel.$isAlreadySignedModalOpen)).toBe(false);
 
-    // User leaves the page - this resets all stores
     await allSettled(deepLinkModel.operationsPageClosed, { scope });
 
-    // User comes back and the deep link is triggered again
     await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
       scope,
       params: deepLinkData,
     });
 
-    // Modal should open again because stores were reset (this is a fresh deep link)
     expect(scope.getState(deepLinkModel.$isAlreadySignedModalOpen)).toBe(true);
 
-    // Close modal and just navigate away without page close
     await allSettled(deepLinkModel.closeAlreadySignedModal, { scope });
     expect(scope.getState(deepLinkModel.$isAlreadySignedModalOpen)).toBe(false);
 
-    // Modal should stay closed even if operation list updates
     await allSettled(multisigOperation.__test.$list, {
       scope,
       params: [mockOperation],
     });
 
     expect(scope.getState(deepLinkModel.$isAlreadySignedModalOpen)).toBe(false);
+  });
+
+  it('should wait for network to connect before processing deep link when operation exists', async () => {
+    const deepLinkData: MultisigOperationDeepLinkData = {
+      chainId: polkadotChainId,
+      callHash: '0xabc123',
+      accountId: mockAccountId,
+      blockCreated: 100,
+      indexCreated: 1,
+    };
+
+    const expectedOperationId = `${polkadotChainId}-0xabc123-${mockAccountId}-100-1`;
+    const mockOperation = createMockOperation('pending');
+
+    const scope = fork({
+      values: new Map()
+        .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+        .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.DISCONNECTED })
+        .set(networkModel.$apis, {})
+        .set(accounts.__test.$list, [mockAccount])
+        .set(accounts.__test.$populated, true)
+        .set(multisigOperation.__test.$list, [mockOperation])
+        .set(multisigOperation.__test.$populated, true),
+    });
+
+    await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
+      scope,
+      params: deepLinkData,
+    });
+
+    expect(scope.getState(deepLinkModel.$focusedOperationId)).toBe(expectedOperationId);
+    expect(scope.getState(deepLinkModel.$isDeepLinkLoading)).toBe(false);
+    expect(scope.getState(deepLinkModel.$isNetworkNotAvailableModalOpen)).toBe(false);
+    expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
+    expect(scope.getState(deepLinkModel.$isOperationNotFoundModalOpen)).toBe(false);
+  });
+
+  it('should wait for network to connect when operation does not exist yet', async () => {
+    const deepLinkData: MultisigOperationDeepLinkData = {
+      chainId: polkadotChainId,
+      callHash: '0xabc123',
+      accountId: mockAccountId,
+      blockCreated: 100,
+      indexCreated: 1,
+    };
+
+    const scope = fork({
+      values: new Map()
+        .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+        .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.DISCONNECTED })
+        .set(networkModel.$apis, {})
+        .set(accounts.__test.$list, [mockAccount])
+        .set(accounts.__test.$populated, true)
+        .set(multisigOperation.__test.$list, [])
+        .set(multisigOperation.__test.$populated, true),
+    });
+
+    await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
+      scope,
+      params: deepLinkData,
+    });
+
+    expect(scope.getState(deepLinkModel.$focusedOperationId)).toBeNull();
+    expect(scope.getState(deepLinkModel.$isDeepLinkLoading)).toBe(true);
+
+    await allSettled(networkModel.$connectionStatuses, {
+      scope,
+      params: { [polkadotChainId]: ConnectionStatus.CONNECTING },
+    });
+
+    await allSettled(networkModel.output.connectionStatusChanged, {
+      scope,
+      params: { chainId: polkadotChainId, status: ConnectionStatus.CONNECTING },
+    });
+
+    expect(scope.getState(deepLinkModel.$focusedOperationId)).toBeNull();
+    expect(scope.getState(deepLinkModel.$isDeepLinkLoading)).toBe(true);
+
+    await allSettled(networkModel.$connectionStatuses, {
+      scope,
+      params: { [polkadotChainId]: ConnectionStatus.CONNECTED },
+    });
+
+    await allSettled(networkModel.output.connectionStatusChanged, {
+      scope,
+      params: { chainId: polkadotChainId, status: ConnectionStatus.CONNECTED },
+    });
+
+    expect(scope.getState(deepLinkModel.$isDeepLinkLoading)).toBe(false);
+    expect(scope.getState(deepLinkModel.$isNetworkNotAvailableModalOpen)).toBe(false);
+    expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
   });
 });
