@@ -1,7 +1,13 @@
 import { combine, createEvent, createStore, sample } from 'effector';
 import { z } from 'zod';
 
-import { type Chain, type ChainId, type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import {
+  type Chain,
+  type ChainId,
+  ConnectionStatus,
+  type FlexibleMultisigAccount,
+  type MultisigAccount,
+} from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { Paths } from '@/shared/routes';
@@ -98,22 +104,77 @@ const $deepLinkData = createStore<MultisigOperationDeepLinkData | null>(null)
   .on(multisigOperationDeepLinkHandler.triggered, (_, data) => data)
   .reset(operationsPageClosed);
 
+const $deepLinkChainReady = combine(
+  {
+    data: $deepLinkData,
+    connectionStatuses: networkModel.$connectionStatuses,
+  },
+  ({ data, connectionStatuses }) => {
+    if (nullable(data)) return true;
+    return connectionStatuses[data.chainId] === ConnectionStatus.CONNECTED;
+  },
+);
+
+const $isDeepLinkLoading = createStore(false)
+  .on(multisigOperationDeepLinkHandler.triggered, () => true)
+  .on(
+    [
+      operationNotFoundModalOpened,
+      accountNotFoundModalOpened,
+      networkNotAvailableModalOpened,
+      alreadySignedModalOpened,
+    ],
+    () => false,
+  )
+  .reset(operationsPageClosed);
+
+sample({
+  clock: setFocusedOperationId,
+  source: $focusedOperation,
+  filter: operation => nonNullable(operation),
+  fn: () => false,
+  target: $isDeepLinkLoading,
+});
+
 const networkChecked = sample({
-  clock: [multisigOperationDeepLinkHandler.triggered, networkModel.$populated],
-  source: { chains: networkModel.$chains, data: $deepLinkData },
-  filter: ({ data }) => nonNullable(data),
+  clock: [
+    multisigOperationDeepLinkHandler.triggered,
+    networkModel.$populated,
+    networkModel.output.connectionStatusChanged,
+  ],
+  source: {
+    chains: networkModel.$chains,
+    connectionStatuses: networkModel.$connectionStatuses,
+    data: $deepLinkData,
+  },
+  filter: ({ data, chains, connectionStatuses }) => {
+    if (nullable(data)) return false;
+
+    const network = chains[data.chainId];
+
+    if (!network) return true;
+
+    return connectionStatuses[data.chainId] === ConnectionStatus.CONNECTED;
+  },
   fn: ({ chains, data }) => {
-    const network = chains[data!.chainId];
     return {
       data: data!,
-      network,
+      network: chains[data!.chainId],
     };
   },
 });
 
-const $networkData = createStore<{ data: MultisigOperationDeepLinkData; network: Chain } | null>(null)
-  .on(networkChecked, (_, v) => v)
-  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
+const $networkData = createStore<{ data: MultisigOperationDeepLinkData; network: Chain } | null>(null).reset(
+  operationsPageClosed,
+  multisigOperationDeepLinkHandler.triggered,
+);
+
+sample({
+  clock: networkChecked,
+  filter: ({ network }) => nonNullable(network),
+  fn: v => v as { data: MultisigOperationDeepLinkData; network: Chain },
+  target: $networkData,
+});
 
 sample({
   clock: networkChecked,
@@ -230,6 +291,8 @@ export function getOperationIdFromDeepLink(data: MultisigOperationDeepLinkData):
 
 export const deepLinkModel = {
   $focusedOperationId,
+  $deepLinkChainReady,
+  $isDeepLinkLoading,
   setFocusedOperationId,
   operationsPageClosed,
 
