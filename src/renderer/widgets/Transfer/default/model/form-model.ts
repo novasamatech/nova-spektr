@@ -587,15 +587,12 @@ const $destinationChains = combine(
           const spellName = spellXcmService.getSpellChainName(chain);
           return spellName === chainName;
         });
-        // if (!chain) {
-        //   console.info(
-        //     `[form-model] ParaSpell SDK supports chain "${chainName}" but it's not in our chain list. Transfers to this chain will use SDK's default providers.`,
-        //   );
-        // }
         return chain;
       })
       .filter((chain): chain is Chain => {
         if (!chain) return false;
+        const spellName = spellXcmService.getSpellChainName(chain);
+        if (!spellName) return false;
         const chainId = chain.chainId;
         return statuses[chainId] && networkUtils.isConnectedStatus(statuses[chainId]);
       });
@@ -624,10 +621,13 @@ const $isMyselfXcmEnabled = combine(
   ({ isXcm, destinationAccounts }) => isXcm && destinationAccounts.length > 0,
 );
 
+const $hasDryRunError = xcmSpellTransferModel.$dryRunError.map((error) => error !== null);
+
 const $canSubmit = and(
   $valid,
   not($hasDestinationBalanceError),
   or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
+  not($hasDryRunError),
 );
 
 // Fields connections
