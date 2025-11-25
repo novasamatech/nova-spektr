@@ -106,7 +106,12 @@ const $deepLinkData = createStore<MultisigOperationDeepLinkData | null>(null)
 
 const operationExistsCheck = sample({
   clock: multisigOperationDeepLinkHandler.triggered,
-  source: { operations: multisigOperation.$list, accounts: accounts.$list },
+  source: { operations: multisigOperation.$list, accounts: accounts.$list, chains: networkModel.$chains },
+  filter: ({ chains, accounts }, data) => {
+    if (!chains[data.chainId]) return false; // Network doesn't exist
+    const account = accounts.filter(accountUtils.isAnyMultisigAccount).find(acc => acc.accountId === data.accountId);
+    return nonNullable(account); // Account must exist
+  },
   fn: ({ operations, accounts }, data) => {
     const operationId = getOperationIdFromDeepLink(data);
     const operation = operations.find(op => op.id === operationId);
@@ -116,7 +121,7 @@ const operationExistsCheck = sample({
       operationId,
       exists: nonNullable(operation),
       isExecuted: operation?.status === 'executed',
-      walletId: account?.walletId ?? null,
+      walletId: account!.walletId,
     };
   },
 });
@@ -140,7 +145,29 @@ const $isDeepLinkLoading = createStore(false)
   .on($focusedOperationId.updates, () => false)
   .reset(operationsPageClosed);
 
-const networkChecked = sample({
+// Separate stream: Check if network exists and show modal if not
+sample({
+  clock: multisigOperationDeepLinkHandler.triggered,
+  source: { chains: networkModel.$chains },
+  filter: ({ chains }, data) => !chains[data.chainId],
+  target: networkNotAvailableModalOpened,
+});
+
+sample({
+  clock: multisigOperationDeepLinkHandler.triggered,
+  source: {
+    chains: networkModel.$chains,
+    accounts: accounts.$list,
+  },
+  filter: ({ chains, accounts }, data) => {
+    if (!chains[data.chainId]) return false; // Network doesn't exist, handled above
+    const account = accounts.filter(accountUtils.isAnyMultisigAccount).find(acc => acc.accountId === data.accountId);
+    return !account;
+  },
+  target: accountNotFoundModalOpened,
+});
+
+const networkReady = sample({
   clock: [
     multisigOperationDeepLinkHandler.triggered,
     networkModel.$populated,
@@ -154,50 +181,41 @@ const networkChecked = sample({
   },
   filter: ({ data, chains, connectionStatuses, operationId }) => {
     if (nullable(data)) return false;
-    if (nonNullable(operationId)) return false; // Skip if already handled
+    if (nonNullable(operationId)) return false; // Already handled
 
     const network = chains[data.chainId];
-
-    if (!network) return true;
+    if (!network) return false; // No network, can't continue
 
     return connectionStatuses[data.chainId] === ConnectionStatus.CONNECTED;
   },
-  fn: ({ chains, data }) => {
-    return {
-      data: data!,
-      network: chains[data!.chainId],
-    };
-  },
+  fn: ({ chains, data }) => ({
+    data: data!,
+    network: chains[data!.chainId],
+  }),
 });
 
-const $networkData = createStore<{ data: MultisigOperationDeepLinkData; network: Chain } | null>(null).reset(
-  operationsPageClosed,
-  multisigOperationDeepLinkHandler.triggered,
-);
-
-sample({
-  clock: networkChecked,
-  filter: ({ network }) => nonNullable(network),
-  fn: v => v as { data: MultisigOperationDeepLinkData; network: Chain },
-  target: $networkData,
-});
-
-sample({
-  clock: networkChecked,
-  filter: ({ network }) => nullable(network),
-  target: networkNotAvailableModalOpened,
-});
+const $networkData = createStore<{ data: MultisigOperationDeepLinkData; network: Chain } | null>(null)
+  .on(networkReady, (_, data) => data)
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 const accountChecked = sample({
-  clock: [networkChecked, accounts.$populated, multisigOperation.$populated],
+  clock: [networkReady, accounts.$populated, multisigOperation.$populated],
   source: {
     networkData: $networkData,
     accountsList: accounts.$list,
     accountsPopulated: accounts.$populated,
     operationsPopulated: multisigOperation.$populated,
   },
-  filter: ({ networkData, accountsPopulated, operationsPopulated }) =>
-    nonNullable(networkData) && nonNullable(networkData.network) && accountsPopulated && operationsPopulated,
+  filter: ({ networkData, accountsList, accountsPopulated, operationsPopulated }) => {
+    if (!nonNullable(networkData) || !nonNullable(networkData.network)) return false;
+    if (!accountsPopulated || !operationsPopulated) return false;
+
+    // Check if account exists, if not - stop here (modal already shown)
+    const account = accountsList
+      .filter(accountUtils.isAnyMultisigAccount)
+      .find(acc => acc.accountId === networkData.data.accountId);
+    return nonNullable(account);
+  },
   fn: ({ accountsList, networkData }) => {
     const { data } = networkData!;
     const account = accountsList
@@ -206,7 +224,7 @@ const accountChecked = sample({
     const multisigAccountId = account ? multisigService.getMultisigAccountId(account) : null;
     return {
       data,
-      account: account ?? null,
+      account: account!,
       multisigAccountId,
     };
   },
@@ -214,8 +232,7 @@ const accountChecked = sample({
 
 sample({
   clock: accountChecked,
-  filter: ({ account }) => account !== null,
-  fn: ({ account }) => account!.walletId,
+  fn: ({ account }) => account.walletId,
   target: walletSelect.select,
 });
 
@@ -225,12 +242,6 @@ sample({
   filter: (operationId, { multisigAccountId }) => nonNullable(multisigAccountId) && nullable(operationId),
   fn: (_, { data, multisigAccountId }) => getOperationIdFromDeepLink({ ...data, accountId: multisigAccountId! }),
   target: setFocusedOperationId,
-});
-
-sample({
-  clock: accountChecked,
-  filter: ({ account }) => account === null,
-  target: accountNotFoundModalOpened,
 });
 
 const operationFetchRequested = sample({
@@ -268,7 +279,10 @@ const $pendingOperationId = createStore<string | null>(null)
 
 sample({
   clock: multisigOperation.requestOperations.finally,
-  source: { pendingOperationId: $pendingOperationId, operations: multisigOperation.$list },
+  source: {
+    pendingOperationId: $pendingOperationId,
+    operations: multisigOperation.$list,
+  },
   filter: ({ pendingOperationId, operations }) => {
     if (!nonNullable(pendingOperationId)) return false;
     const operationExists = operations.some(op => op.id === pendingOperationId);
