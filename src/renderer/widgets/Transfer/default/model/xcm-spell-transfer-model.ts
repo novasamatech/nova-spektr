@@ -7,7 +7,7 @@ import { debounce } from 'patronum';
 import { spellXcmService } from '@/shared/api/xcm/service/spellXcmService';
 import { type Asset, type Chain, type ChainId, TransactionType } from '@/shared/core';
 import { takeLast } from '@/shared/effector';
-import { toLocalChainId } from '@/shared/lib/utils';
+import { TEST_ACCOUNTS, TEST_EVM_ADDRESS, isEvmChain, toAccountId, toLocalChainId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
@@ -383,6 +383,104 @@ const $xcmData = combine(
   { skipVoid: false },
 );
 
+type DryRunParams = {
+  api: ApiPromise;
+  apiDestination: ApiPromise;
+  network: { chain: Chain; asset: Asset };
+  xcmChain: Chain;
+};
+
+const dryRunFx = takeLast({
+  fn: async (params: DryRunParams) => {
+    const { api, apiDestination, network, xcmChain } = params;
+
+    const fromChainName = spellXcmService.getSpellChainName(network.chain);
+    const toChainName = spellXcmService.getSpellChainName(xcmChain);
+
+    if (!fromChainName || !toChainName) {
+      return null;
+    }
+
+    const isDestinationEvm = isEvmChain(xcmChain);
+    const isSourceEvm = isEvmChain(network.chain);
+
+    const testDestination = isDestinationEvm ? toAccountId(TEST_EVM_ADDRESS) : TEST_ACCOUNTS[0];
+    const testSender = isSourceEvm ? toAccountId(TEST_EVM_ADDRESS) : TEST_ACCOUNTS[0];
+    const testAmount = '1';
+    const destinationAddress = spellXcmService.prepareAddressForChain(testDestination, xcmChain, toChainName);
+    const senderAddress = spellXcmService.prepareAddressForChain(testSender, network.chain, fromChainName);
+
+    try {
+      const builderResult = spellXcmService.buildXcmTransferBuilder({
+        fromChain: network.chain,
+        toChain: xcmChain,
+        asset: network.asset,
+        amount: testAmount,
+        destinationAddress,
+        senderAddress,
+        fromChainApi: api,
+        toChainApi: apiDestination,
+      });
+
+      if (!builderResult) {
+        return null;
+      }
+
+      await builderResult.builder.dryRun();
+      return null;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return errorMessage;
+    }
+  },
+  key: () => 'xcmDryRun',
+});
+
+const $dryRunParams = combine(
+  {
+    api: $api,
+    apiDestination: $apiDestination,
+    network: $networkStore,
+    xcmChain: $xcmChain,
+  },
+  ({ api, apiDestination, network, xcmChain }) => {
+    if (!api || !apiDestination || !network || !xcmChain) {
+      return null;
+    }
+
+    if (network.chain.chainId === xcmChain.chainId) {
+      return null;
+    }
+
+    return {
+      api,
+      apiDestination,
+      network,
+      xcmChain,
+    };
+  },
+);
+
+sample({
+  clock: xcmChainSelected,
+  source: $dryRunParams,
+  filter: (params): params is DryRunParams => params !== null,
+  target: dryRunFx,
+});
+
+const $dryRunError = createStore<string | null>(null);
+
+sample({
+  clock: dryRunFx.doneData,
+  target: $dryRunError,
+});
+
+sample({
+  clock: [xcmChainSelected, xcmStopped],
+  fn: () => null,
+  target: $dryRunError,
+});
+
 export const xcmSpellTransferModel = {
   $apiDestination,
   $xcmData,
@@ -394,6 +492,7 @@ export const xcmSpellTransferModel = {
   $xcmChain,
   $isDestinationFeeLoading,
   $shouldShowFees,
+  $dryRunError,
 
   events: {
     xcmStarted,

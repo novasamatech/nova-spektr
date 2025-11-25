@@ -221,4 +221,5 @@ export const spellXcmService = {
   getSpellChainName,
   prepareAddressForChain,
   createBuilderConfig,
+  buildXcmTransferBuilder,
 };

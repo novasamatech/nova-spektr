@@ -2560,6 +2560,9 @@
       "description": "After this transfer, your balance will <b>fall below the Existential Deposit ({ed} {asset}).</b> If any tokens remain, <b>they will be burned, and your account will be removed from on-chain storage.</b>. <br /> We recommend <b>using the MAX button for a safe Transfer</b>",
       "title": "Balance below network minimum"
     },
+    "dryRunError": {
+      "title": "Transfer path unavailable"
+    },
     "amountPlaceholder": "0",
     "continueButton": "Continue",
     "crossChainPlaceholder": "Cross-chain",

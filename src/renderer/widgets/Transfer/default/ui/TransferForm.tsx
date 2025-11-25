@@ -76,6 +76,7 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
     <div className="flex flex-col gap-4 px-5 py-4">
       <TransactionValidationError errors={errors} wallets={wallets} />
       <DestinationBalanceAlert />
+      <AlertForDryRunError />
       <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
         <XcmChainSelector />
         <InitiatorSelector />
@@ -596,6 +597,21 @@ const AlertForAccountDeath = memo(() => {
         </FootnoteText>
       </Alert>
     )
+  );
+});
+
+const AlertForDryRunError = memo(() => {
+  const { t } = useI18n();
+  const dryRunError = useUnit(xcmSpellTransferModel.$dryRunError);
+
+  if (!dryRunError) {
+    return null;
+  }
+
+  return (
+    <Alert title={t('transfer.dryRunError.title')} variant="error" active>
+      <FootnoteText className="max-w-full break-all text-text-primary">{dryRunError}</FootnoteText>
+    </Alert>
   );
 });
 
