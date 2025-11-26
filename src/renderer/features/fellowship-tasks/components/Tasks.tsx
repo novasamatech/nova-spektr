@@ -18,7 +18,7 @@ export const Tasks = () => {
   const api = useFellowshipApi();
 
   const { data: activeTasks, pending } = useTasks();
-  const { data: account } = useFellowshipAccount();
+  const { data: account, pending: pendingAccount } = useFellowshipAccount();
 
   const hasAccount = nonNullable(account);
   const groups = useMemo(() => groupBy(activeTasks, task => task.group), [activeTasks]);
@@ -28,6 +28,14 @@ export const Tasks = () => {
     const generalCount = groups.active?.filter(task => !task.hasVoted).length ?? 0;
     return personalCount + generalCount;
   }, [groups]);
+
+  if (!pendingAccount && !hasAccount) {
+    return (
+      <div className="flex h-full flex-col items-stretch justify-stretch overflow-hidden rounded-xl border border-filter-border">
+        <AccountNotFound />
+      </div>
+    );
+  }
 
   if (nullable(api) || pending) {
     return (
