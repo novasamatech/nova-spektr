@@ -19,6 +19,8 @@ import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { multisigService } from '@/features/multisig-wallet';
 
+import { CONNECTION_TIMEOUT } from './constants';
+
 export const multisigOperationSchema = z.object({
   chainId: z.string().transform(x => x as ChainId),
   callHash: z.string(),
@@ -219,7 +221,7 @@ const connectionWaitingStarted = sample({
 
 const connectionTimeoutTriggered = delay({
   source: connectionWaitingStarted,
-  timeout: 10000,
+  timeout: CONNECTION_TIMEOUT,
 });
 
 sample({
