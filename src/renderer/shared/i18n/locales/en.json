@@ -872,6 +872,18 @@
         },
         "submitPromotionReport": "Submit promotion report",
         "submitRetentionReport": "Submit retention report",
+        "retentionPeriodWarning": {
+          "title": "Are you sure you want to submit retention report?",
+          "description": "Retention period in progress. Submit only if confident that your work meets expectations defined for the current rank. Otherwise, continue contributing according to rank requirements.",
+          "cancel": "Cancel",
+          "submit": "Submit"
+        },
+        "promotionPeriodWarning": {
+          "title": "Are you sure you want to submit promotion report?",
+          "description": "Retention period in progress. Submit only if confident that your work meets expectations defined for the higher rank. Otherwise, continue contributing according to current rank requirements.",
+          "cancel": "Cancel",
+          "submit": "Submit"
+        },
         "uploadSuccess": "Upload successful",
         "uploadingToIPFS": "Uploading to IPFS...",
         "validating": "Validating..."
