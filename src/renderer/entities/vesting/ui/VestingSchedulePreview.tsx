@@ -197,7 +197,7 @@ export const VestingSchedulePreview = ({
       <Modal.Content>
         <div className="px-2 pb-3">
           <ScrollArea>
-            <Table columns={columns} data={tableData} className="w-full rounded-lg" />
+            <Table columns={columns} data={tableData} className="w-full rounded-lg [&_.table-cell]:!align-top" />
           </ScrollArea>
         </div>
       </Modal.Content>
