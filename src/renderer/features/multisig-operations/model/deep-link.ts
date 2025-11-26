@@ -108,9 +108,10 @@ const operationExistsCheck = sample({
   clock: multisigOperationDeepLinkHandler.triggered,
   source: { operations: multisigOperation.$list, accounts: accounts.$list, chains: networkModel.$chains },
   filter: ({ chains, accounts }, data) => {
-    if (!chains[data.chainId]) return false; // Network doesn't exist
+    if (!chains[data.chainId]) return false;
+
     const account = accounts.filter(accountUtils.isAnyMultisigAccount).find(acc => acc.accountId === data.accountId);
-    return nonNullable(account); // Account must exist
+    return nonNullable(account);
   },
   fn: ({ operations, accounts }, data) => {
     const operationId = getOperationIdFromDeepLink(data);
@@ -145,7 +146,6 @@ const $isDeepLinkLoading = createStore(false)
   .on($focusedOperationId.updates, () => false)
   .reset(operationsPageClosed);
 
-// Separate stream: Check if network exists and show modal if not
 sample({
   clock: multisigOperationDeepLinkHandler.triggered,
   source: { chains: networkModel.$chains },
@@ -160,7 +160,8 @@ sample({
     accounts: accounts.$list,
   },
   filter: ({ chains, accounts }, data) => {
-    if (!chains[data.chainId]) return false; // Network doesn't exist, handled above
+    if (!chains[data.chainId]) return false;
+
     const account = accounts.filter(accountUtils.isAnyMultisigAccount).find(acc => acc.accountId === data.accountId);
     return !account;
   },
@@ -181,10 +182,10 @@ const networkReady = sample({
   },
   filter: ({ data, chains, connectionStatuses, operationId }) => {
     if (nullable(data)) return false;
-    if (nonNullable(operationId)) return false; // Already handled
+    if (nonNullable(operationId)) return false;
 
     const network = chains[data.chainId];
-    if (!network) return false; // No network, can't continue
+    if (nullable(network)) return false;
 
     return connectionStatuses[data.chainId] === ConnectionStatus.CONNECTED;
   },
@@ -207,10 +208,9 @@ const accountChecked = sample({
     operationsPopulated: multisigOperation.$populated,
   },
   filter: ({ networkData, accountsList, accountsPopulated, operationsPopulated }) => {
-    if (!nonNullable(networkData) || !nonNullable(networkData.network)) return false;
+    if (nullable(networkData) || nullable(networkData.network)) return false;
     if (!accountsPopulated || !operationsPopulated) return false;
 
-    // Check if account exists, if not - stop here (modal already shown)
     const account = accountsList
       .filter(accountUtils.isAnyMultisigAccount)
       .find(acc => acc.accountId === networkData.data.accountId);
