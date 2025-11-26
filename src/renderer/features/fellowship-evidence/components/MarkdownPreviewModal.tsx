@@ -1,9 +1,11 @@
 import { useUnit } from 'effector-react';
 import { type PropsWithChildren, useEffect, useRef } from 'react';
 
+import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { Button } from '@/shared/ui';
 import { Markdown, Modal, StepIndicator, useNotification } from '@/shared/ui-kit';
+import { evidenceForm } from '../model/evidenceForm';
 import { evidenceIPFS } from '../model/evidenceIPFS';
 import { evidencePost } from '../model/evidencePost';
 
@@ -29,16 +31,24 @@ export const MarkdownPreviewModal = ({
   const { toast } = useNotification();
   const toastIdRef = useRef<string | number | undefined>(undefined);
 
+  const isViewingSubmittedEvidence = !!evidenceContent;
+
+  useFlow(evidenceForm.flow, isViewingSubmittedEvidence ? { wish: null } : { wish });
+
   const ipfsFileContent = useUnit(evidenceIPFS.$fileContent);
   const pendingIPFSData = useUnit(evidenceIPFS.$pendingData);
   const isUploadPending = useUnit(evidenceIPFS.uploadFileToIPFS.pending);
   const uploadError = useUnit(evidenceIPFS.$uploadError);
 
   const isLoading = isUploadPending;
-
   const contentToShow = evidenceContent || pendingIPFSData?.content || ipfsFileContent || '';
+  const isActiveFlow = !isViewingSubmittedEvidence && isOpen;
 
   useEffect(() => {
+    if (!isActiveFlow) {
+      return;
+    }
+
     if (isUploadPending && !toastIdRef.current) {
       toastIdRef.current = toast.loading(t('fellowship.salary.evidence.uploadingToIPFS'));
       return;
@@ -52,25 +62,24 @@ export const MarkdownPreviewModal = ({
         toast.error(uploadError);
       } else {
         toast.success(t('fellowship.salary.evidence.uploadSuccess'));
-        evidencePost.openSubmitModal();
       }
     }
-  }, [isUploadPending, uploadError, toast, t]);
-
-  const isViewingSubmittedEvidence = !!evidenceContent;
+  }, [isUploadPending, uploadError, toast, t, isActiveFlow]);
 
   const handleConfirm = () => {
-    if (pendingIPFSData) {
-      if (pendingIPFSData.type === 'file' && pendingIPFSData.file) {
-        evidenceIPFS.uploadFileToIPFS({ file: pendingIPFSData.file });
-      } else if (pendingIPFSData.type === 'hash') {
-        evidencePost.openSubmitModal();
-      }
+    if (!isActiveFlow || !pendingIPFSData) {
+      return;
+    }
+
+    if (pendingIPFSData.type === 'file' && pendingIPFSData.file) {
+      evidenceIPFS.uploadFileToIPFS({ file: pendingIPFSData.file });
+    } else if (pendingIPFSData.type === 'hash') {
+      evidencePost.openSubmitModal();
     }
   };
 
   useEffect(() => {
-    if (!isOpen || isViewingSubmittedEvidence) {
+    if (!isActiveFlow) {
       return;
     }
 
@@ -86,7 +95,7 @@ export const MarkdownPreviewModal = ({
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, pendingIPFSData, isViewingSubmittedEvidence, handleConfirm]);
+  }, [isActiveFlow, handleConfirm]);
 
   const title =
     wish === 'Promotion'

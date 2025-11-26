@@ -155,6 +155,11 @@ sample({
 
 sample({
   clock: evidenceIPFS.uploadFileToIPFS.done,
+  source: {
+    ipfsStep: evidenceIPFS.$step,
+    flowType: evidenceForm.$flowType,
+  },
+  filter: ({ ipfsStep, flowType }) => ipfsStep === 'preview' && flowType === 'ipfsUpload',
   target: openSubmitModal,
 });
 
