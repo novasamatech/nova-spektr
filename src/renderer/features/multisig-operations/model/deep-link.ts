@@ -134,7 +134,8 @@ const operationExistsCheck = sample({
   clock: processDeepLink,
   source: { operations: multisigOperation.$list, accounts: accounts.$list, chains: networkModel.$chains },
   filter: ({ chains, accounts }, data) => {
-    if (!chains[data.chainId]) return false;
+    const chain = chains[data.chainId];
+    if (nullable(chain)) return false;
 
     const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
     return nonNullable(account);
@@ -175,7 +176,10 @@ const $isDeepLinkLoading = createStore(false)
 sample({
   clock: processDeepLink,
   source: { chains: networkModel.$chains },
-  filter: ({ chains }, data) => !chains[data.chainId],
+  filter: ({ chains }, data) => {
+    const chain = chains[data.chainId];
+    return nullable(chain);
+  },
   target: networkNotAvailableModalOpened,
 });
 
@@ -186,10 +190,11 @@ sample({
     accounts: accounts.$list,
   },
   filter: ({ chains, accounts }, data) => {
-    if (!chains[data.chainId]) return false;
+    const chain = chains[data.chainId];
+    if (nullable(chain)) return false;
 
     const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
-    return !account;
+    return nullable(account);
   },
   target: accountNotFoundModalOpened,
 });
@@ -225,7 +230,8 @@ const connectionWaitingStarted = sample({
   clock: processDeepLink,
   source: { chains: networkModel.$chains, connectionStatuses: networkModel.$connectionStatuses },
   filter: ({ chains, connectionStatuses }, data) => {
-    if (!chains[data.chainId]) return false;
+    const chain = chains[data.chainId];
+    if (nullable(chain)) return false;
     const status = connectionStatuses[data.chainId];
     return status !== ConnectionStatus.CONNECTED && status !== ConnectionStatus.ERROR;
   },
@@ -334,7 +340,7 @@ sample({
     operations: multisigOperation.$list,
   },
   filter: ({ pendingOperationId, operations }) => {
-    if (!nonNullable(pendingOperationId)) return false;
+    if (nullable(pendingOperationId)) return false;
     const operationExists = operations.some(op => op.id === pendingOperationId);
     return !operationExists;
   },
