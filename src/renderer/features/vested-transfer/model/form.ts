@@ -4,7 +4,7 @@ import { createGate } from 'effector-react';
 import { readonly, spread } from 'patronum';
 
 import { chainsService } from '@/shared/api/network';
-import { type Chain } from '@/shared/core';
+import { type Chain, ChainOptions } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { assert, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
@@ -33,7 +33,6 @@ import { walletSelect } from '@/aggregates/wallet-select';
 import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { proxiesUtils } from '@/features/proxies';
 import { Step, type ValidationSchemaOptions } from '../types';
 import { vestedTransferUtils } from '../utils';
 
@@ -189,21 +188,12 @@ const $multisigDeposit = combine({ results: $balanceValidationResults }, ({ resu
   return actions.reduce((deposit, action) => deposit.add(action.required), BN_ZERO);
 });
 
-const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
-
-const $availableChains = combine(
-  {
-    chains: $allChains,
-    selectedAccounts: walletSelect.$selectedAccounts,
-  },
-  ({ chains, selectedAccounts }) => {
-    const proxyChains = chains.filter(proxiesUtils.isPureProxy);
-    const filteredChains = proxyChains.filter((chain) => {
-      return selectedAccounts.some((account) => accountService.isAccountAvailableOnChain(account, chain));
-    });
-    return chainsService.sortChains(filteredChains);
-  },
-);
+const $availableChains = combine({ chains: networkModel.$chains }, ({ chains }) => {
+  const filteredChains = Object.values(chains).filter((chain) => {
+    return chain.options?.includes(ChainOptions.VESTED_TRANSFER);
+  });
+  return chainsService.sortChains(filteredChains);
+});
 
 const $initiators = createInitiatorsStore({
   chain: form.fields.chain.$value,
@@ -519,7 +509,6 @@ export const formModel = {
   $parsedCsv,
   $csvError,
   $csvIssues,
-  $allChains: $allChains,
   $availableChains: $availableChains,
   $signatories: $signatories,
   $showSignatories: $showSignatories,
