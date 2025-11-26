@@ -110,13 +110,13 @@ const operationExistsCheck = sample({
   filter: ({ chains, accounts }, data) => {
     if (!chains[data.chainId]) return false;
 
-    const account = accounts.filter(accountUtils.isAnyMultisigAccount).find(acc => acc.accountId === data.accountId);
+    const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
     return nonNullable(account);
   },
   fn: ({ operations, accounts }, data) => {
     const operationId = getOperationIdFromDeepLink(data);
     const operation = operations.find(op => op.id === operationId);
-    const account = accounts.filter(accountUtils.isAnyMultisigAccount).find(acc => acc.accountId === data.accountId);
+    const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
     return {
       data,
       operationId,
@@ -162,7 +162,7 @@ sample({
   filter: ({ chains, accounts }, data) => {
     if (!chains[data.chainId]) return false;
 
-    const account = accounts.filter(accountUtils.isAnyMultisigAccount).find(acc => acc.accountId === data.accountId);
+    const account = accounts.find(acc => accountUtils.isAnyMultisigAccount(acc) && acc.accountId === data.accountId);
     return !account;
   },
   target: accountNotFoundModalOpened,
@@ -211,9 +211,7 @@ const accountChecked = sample({
     if (nullable(networkData) || nullable(networkData.network)) return false;
     if (!accountsPopulated || !operationsPopulated) return false;
 
-    const account = accountsList
-      .filter(accountUtils.isAnyMultisigAccount)
-      .find(acc => acc.accountId === networkData.data.accountId);
+    const account = accountsList.find(acc => acc.accountId === networkData.data.accountId);
     return nonNullable(account);
   },
   fn: ({ accountsList, networkData }) => {
