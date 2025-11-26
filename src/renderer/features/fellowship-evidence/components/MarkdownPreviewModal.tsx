@@ -3,6 +3,7 @@ import { type PropsWithChildren, useEffect, useRef } from 'react';
 
 import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
+import { nonNullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
 import { Markdown, Modal, StepIndicator, useNotification } from '@/shared/ui-kit';
 import { evidenceForm } from '../model/evidenceForm';
@@ -31,7 +32,7 @@ export const MarkdownPreviewModal = ({
   const { toast } = useNotification();
   const toastIdRef = useRef<string | number | undefined>(undefined);
 
-  const isViewingSubmittedEvidence = !!evidenceContent;
+  const isViewingSubmittedEvidence = nonNullable(evidenceContent);
 
   useFlow(evidenceForm.flow, isViewingSubmittedEvidence ? { wish: null } : { wish });
 
