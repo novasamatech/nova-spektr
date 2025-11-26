@@ -18,6 +18,7 @@ import { Operation } from './Operation';
 import { OperationsFilter } from './OperationsFilter';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
 import { AlreadySignedModal } from './modals/AlreadySignedModal';
+import { ConnectionTimeoutModal } from './modals/ConnectionTimeoutModal';
 import { NetworkNotAvailableModal } from './modals/NetworkNotAvailableModal';
 import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
 
@@ -115,6 +116,7 @@ export const Operations = () => {
 
       <AccountNotFoundModal />
       <NetworkNotAvailableModal />
+      <ConnectionTimeoutModal />
       <OperationNotFoundModal />
       <AlreadySignedModal />
     </>

@@ -1,4 +1,5 @@
 import { combine, createEvent, createStore, sample } from 'effector';
+import { delay } from 'patronum';
 import { z } from 'zod';
 
 import {
@@ -77,6 +78,13 @@ const closeOperationNotFoundModal = createEvent();
 const $isOperationNotFoundModalOpen = createStore(false)
   .on(operationNotFoundModalOpened, () => true)
   .on(closeOperationNotFoundModal, () => false)
+  .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
+
+const connectionTimeoutModalOpened = createEvent();
+const closeConnectionTimeoutModal = createEvent();
+const $isConnectionTimeoutModalOpen = createStore(false)
+  .on(connectionTimeoutModalOpened, () => true)
+  .on(closeConnectionTimeoutModal, () => false)
   .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 sample({
@@ -198,6 +206,36 @@ const networkReady = sample({
 const $networkData = createStore<{ data: MultisigOperationDeepLinkData; network: Chain } | null>(null)
   .on(networkReady, (_, data) => data)
   .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
+
+const connectionWaitingStarted = sample({
+  clock: multisigOperationDeepLinkHandler.triggered,
+  source: { chains: networkModel.$chains, connectionStatuses: networkModel.$connectionStatuses },
+  filter: ({ chains, connectionStatuses }, data) => {
+    if (!chains[data.chainId]) return false;
+    const status = connectionStatuses[data.chainId];
+    return status !== ConnectionStatus.CONNECTED && status !== ConnectionStatus.ERROR;
+  },
+});
+
+const connectionTimeoutTriggered = delay({
+  source: connectionWaitingStarted,
+  timeout: 10000,
+});
+
+sample({
+  clock: connectionTimeoutTriggered,
+  source: $operationId,
+  filter: operationId => nullable(operationId),
+  target: connectionTimeoutModalOpened,
+});
+
+sample({
+  clock: networkModel.output.connectionStatusChanged,
+  source: $deepLinkData,
+  filter: (deepLinkData, { chainId, status }) =>
+    nonNullable(deepLinkData) && deepLinkData.chainId === chainId && status === ConnectionStatus.ERROR,
+  target: connectionTimeoutModalOpened,
+});
 
 const accountChecked = sample({
   clock: [networkReady, accounts.$populated, multisigOperation.$populated],
@@ -322,6 +360,9 @@ export const deepLinkModel = {
 
   $isOperationNotFoundModalOpen,
   closeOperationNotFoundModal,
+
+  $isConnectionTimeoutModalOpen,
+  closeConnectionTimeoutModal,
 
   $isAlreadySignedModalOpen,
   closeAlreadySignedModal,

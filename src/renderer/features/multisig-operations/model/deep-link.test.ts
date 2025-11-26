@@ -345,5 +345,5 @@ describe('multisig operations deep link', () => {
     expect(scope.getState(deepLinkModel.$isDeepLinkLoading)).toBe(false);
     expect(scope.getState(deepLinkModel.$isNetworkNotAvailableModalOpen)).toBe(false);
     expect(scope.getState(deepLinkModel.$isAccountNotFoundModalOpen)).toBe(false);
-  });
+  }, 15000);
 });
