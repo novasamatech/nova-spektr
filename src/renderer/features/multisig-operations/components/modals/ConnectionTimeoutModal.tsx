@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
-import { useTranslation } from 'react-i18next';
 
+import { useI18n } from '@/shared/i18n';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Button } from '@/shared/ui/Buttons/Button/Button';
 import { StatusModal } from '@/shared/ui/Modals/StatusModal/StatusModal';
 import { deepLinkModel } from '../../model/deep-link';
 
 export const ConnectionTimeoutModal = () => {
-  const { t } = useTranslation();
+  const { t } = useI18n();
 
   const isOpen = useUnit(deepLinkModel.$isConnectionTimeoutModalOpen);
   const handleClose = () => deepLinkModel.closeConnectionTimeoutModal();
