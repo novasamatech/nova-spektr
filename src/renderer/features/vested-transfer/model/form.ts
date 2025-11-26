@@ -188,12 +188,21 @@ const $multisigDeposit = combine({ results: $balanceValidationResults }, ({ resu
   return actions.reduce((deposit, action) => deposit.add(action.required), BN_ZERO);
 });
 
-const $availableChains = combine({ chains: networkModel.$chains }, ({ chains }) => {
-  const filteredChains = Object.values(chains).filter((chain) => {
-    return chain.options?.includes(ChainOptions.VESTED_TRANSFER);
-  });
-  return chainsService.sortChains(filteredChains);
-});
+const $availableChains = combine(
+  {
+    chains: networkModel.$chains,
+    selectedAccounts: walletSelect.$selectedAccounts,
+  },
+  ({ chains, selectedAccounts }) => {
+    const filteredChains = Object.values(chains).filter((chain) => {
+      return (
+        selectedAccounts.some((account) => accountService.isAccountAvailableOnChain(account, chain)) &&
+        chain.options?.includes(ChainOptions.VESTED_TRANSFER)
+      );
+    });
+    return chainsService.sortChains(filteredChains);
+  },
+);
 
 const $initiators = createInitiatorsStore({
   chain: form.fields.chain.$value,
