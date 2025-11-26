@@ -12,6 +12,7 @@ import {
   trackService,
   useEvidencePeriod,
   useEvidences,
+  useFeed,
   useMembers,
   useReferendums,
   useSalaries,
@@ -116,15 +117,19 @@ export const useFellowshipMemberLeftToPromotion = () => {
   const { data: member, pending: memberPending } = useFellowshipMember();
   const { data: periods, pending: periodsPending } = useEvidencePeriod({ palletType: 'fellowship', api, chain });
   const { data: block, pending: blockPending } = useFellowshipBlock();
+  const { data: feed, pending: feedPending } = useFeed({ palletType: 'fellowship', chain });
 
   let data: BlockHeight | null = null;
   if (nonNullable(block) && nonNullable(periods) && nonNullable(member) && memberService.isCoreMember(member)) {
-    data = evidenceService.getBlockUntilNextPromotion(member, periods, block);
+    const memberWithPromotionStart = evidenceService.getMemberWithPromotionStart(member, feed);
+    if (nonNullable(memberWithPromotionStart)) {
+      data = evidenceService.getBlockUntilNextPromotion(memberWithPromotionStart, periods, block);
+    }
   }
 
   return {
     data,
-    pending: memberPending || blockPending || periodsPending,
+    pending: memberPending || blockPending || periodsPending || feedPending,
   };
 };
 
@@ -134,15 +139,22 @@ export const useFellowshipMemberEndPromotionBlock = () => {
 
   const { data: member, pending: memberPending } = useFellowshipMember();
   const { data: periods, pending: periodsPending } = useEvidencePeriod({ palletType: 'fellowship', api, chain });
+  const { data: feed, pending: feedPending } = useFeed({ palletType: 'fellowship', chain });
+  const { data: block, pending: blockPending } = useFellowshipBlock();
 
-  let data: BlockHeight | null = null;
-  if (nonNullable(periods) && nonNullable(member) && memberService.isCoreMember(member)) {
-    data = evidenceService.getEndPromotionBlock(member, periods);
+  let data = null;
+  if (nonNullable(periods) && nonNullable(member) && memberService.isCoreMember(member) && nonNullable(block)) {
+    const memberWithPromotionStart = evidenceService.getMemberWithPromotionStart(member, feed);
+
+    if (nonNullable(memberWithPromotionStart)) {
+      const window = evidenceService.getPromotionWindow(memberWithPromotionStart, periods, block);
+      data = window.to;
+    }
   }
 
   return {
     data,
-    pending: memberPending || periodsPending,
+    pending: memberPending || periodsPending || feedPending || blockPending,
   };
 };
 

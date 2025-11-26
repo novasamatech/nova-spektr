@@ -1,15 +1,5 @@
-import { animated, useTransition } from '@react-spring/web';
-import {
-  type PropsWithChildren,
-  createContext,
-  memo,
-  useContext,
-  useDeferredValue,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { animated, useSpring } from '@react-spring/web';
+import { type PropsWithChildren, createContext, memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 
 import { usePrevious } from '@/shared/lib/hooks';
 import { cnTw } from '@/shared/lib/utils';
@@ -36,24 +26,23 @@ type RootProps = PropsWithChildren<{
 }>;
 
 const Root = memo(({ children, fixedHeight = false, item }: PropsWithChildren<RootProps>) => {
-  const deferred = useDeferredValue(item);
-  const prevItem = usePrevious(deferred);
+  const prevItem = usePrevious(item);
   const indecies = useRef<Record<string, number>>({});
 
-  const itemIndex = indecies.current[deferred] ?? 0;
+  const itemIndex = indecies.current[item] ?? 0;
   const prevItemIndex = indecies.current[prevItem] ?? 0;
   const direction = itemIndex - prevItemIndex;
 
   const value = useMemo(() => {
     return {
-      item: deferred,
+      item,
       direction,
       fixedHeight,
       registerItem: (id: string, index: number) => {
         indecies.current[id] = index;
       },
     };
-  }, [direction, deferred, fixedHeight]);
+  }, [direction, item, fixedHeight]);
 
   return (
     <Context.Provider value={value}>
@@ -72,42 +61,33 @@ const Item = memo(({ id, index, children }: ItemProps) => {
 
   useEffect(() => {
     registerItem(id, index);
-  }, [id, index]);
+  }, [id, index, registerItem]);
 
+  const isActive = id === item;
   const offset = 25;
-  const config = useMemo(() => {
-    return {
-      initial: { opacity: 1, transform: 'translateX(0%)' },
-      from: {
-        opacity: 0,
-        transform: `translateX(${direction > 0 ? offset : offset * -1}%)`,
-      },
-      enter: { opacity: 1, transform: 'translateX(0%)' },
-      leave: {
-        top: 0,
-        left: 0,
-        opacity: 0,
-        transform: `translateX(${direction > 0 ? offset * -1 : offset}%)`,
-        position: 'absolute',
-      },
-      config: {
-        duration: 300,
-        easing: defaultEasing,
-      },
-    };
-  }, [offset, direction]);
 
-  const transitions = useTransition(id === item, config);
+  const styles = useSpring({
+    opacity: isActive ? 1 : 0,
+    transform: isActive ? 'translateX(0%)' : `translateX(${direction > 0 ? offset * -1 : offset}%)`,
+    config: {
+      duration: 300,
+      easing: defaultEasing,
+    },
+  });
 
-  return transitions((styles, item) =>
-    item ? (
-      <animated.section
-        className={cnTw('relative min-h-full w-full', fixedHeight && 'h-full overflow-hidden')}
-        style={styles}
-      >
-        {children}
-      </animated.section>
-    ) : null,
+  return (
+    <animated.section
+      className={cnTw('relative min-h-full w-full', fixedHeight && 'h-full overflow-hidden')}
+      style={{
+        ...styles,
+        position: isActive ? 'relative' : 'absolute',
+        top: isActive ? undefined : 0,
+        left: isActive ? undefined : 0,
+        pointerEvents: isActive ? 'auto' : 'none',
+      }}
+    >
+      {children}
+    </animated.section>
   );
 });
 

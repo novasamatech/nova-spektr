@@ -14,7 +14,7 @@ export const requestPromotionTaskActionSlot = createSlot();
 
 export const RequestPromotion = () => {
   const { t, formatDate } = useI18n();
-  const [periodEnd, setPeriodEnd] = useState(0);
+  const [periodEnd, setPeriodEnd] = useState<number>(0);
 
   const api = useFellowshipApi();
   const { data: nextTrack } = useFellowshipMemberNextTrack();
@@ -38,12 +38,12 @@ export const RequestPromotion = () => {
         </FootnoteText>
         <FootnoteText className="text-text-secondary">
           {t('fellowship.tasks.task.promotion.until', {
-            date: periodEnd !== 0 ? formatDate(periodEnd, 'dd.MM.yyyy') : null,
+            date: periodEnd ? formatDate(periodEnd, 'dd.MM.yyyy') : null,
           })}
         </FootnoteText>
       </Box>
       <Box alignSelf="flex-start" gap={8} horizontalAlign="end" shrink={0} height="100%">
-        <PromotionEndTimer endBlock={endPromotionPeriod} shortDateFormat />
+        <PromotionEndTimer endDate={periodEnd} shortDateFormat />
         <Slot id={requestPromotionTaskActionSlot} />
       </Box>
     </Box>
