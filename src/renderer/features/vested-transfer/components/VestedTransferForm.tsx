@@ -1,9 +1,8 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, memo, useMemo } from 'react';
+import { type FormEvent, memo, useEffect, useMemo, useState } from 'react';
 
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
 import { getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
 import { Alert, Button, DetailRow, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
 import { AssetBalance, ChainSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
@@ -204,7 +203,11 @@ const ValidationsAlert = () => {
   const parsedCsv = useUnit(formModel.$parsedCsv);
   const csvError = useUnit(formModel.$csvError);
   const csvIssues = useUnit(formModel.$csvIssues);
-  const [isAlertOpen, toggleAlert] = useToggle(true);
+  const [isAlertOpen, toggleAlert] = useState(true);
+
+  useEffect(() => {
+    toggleAlert(true);
+  }, [csvError, csvIssues]);
 
   if (csvError === VestingCsvError.STRUCTURE) {
     return (
@@ -239,7 +242,7 @@ const ValidationsAlert = () => {
       active={isAlertOpen}
       title={t(titleKey, { count })}
       variant={isError ? 'error' : 'warn'}
-      onClose={toggleAlert}
+      onClose={() => toggleAlert(false)}
     >
       {issues.map((issue) => (
         <Alert.Item key={issue.row}>
