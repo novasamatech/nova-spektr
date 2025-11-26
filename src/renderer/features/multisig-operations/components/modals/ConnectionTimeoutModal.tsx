@@ -11,6 +11,7 @@ export const ConnectionTimeoutModal = () => {
 
   const isOpen = useUnit(deepLinkModel.$isConnectionTimeoutModalOpen);
   const handleClose = () => deepLinkModel.closeConnectionTimeoutModal();
+  const handleRetry = () => deepLinkModel.retryConnectionTimeout();
 
   return (
     <StatusModal
@@ -20,9 +21,14 @@ export const ConnectionTimeoutModal = () => {
       content={<Animation variant="error" />}
       onClose={handleClose}
     >
-      <Button size="sm" className="w-full" onClick={handleClose}>
-        {t('operation.connectionTimeoutButton')}
-      </Button>
+      <div className="flex w-full gap-2">
+        <Button size="sm" variant="text" className="flex-1" onClick={handleClose}>
+          {t('operation.connectionTimeoutButton')}
+        </Button>
+        <Button size="sm" className="flex-1" onClick={handleRetry}>
+          {t('operation.connectionTimeoutRetryButton')}
+        </Button>
+      </div>
     </StatusModal>
   );
 };

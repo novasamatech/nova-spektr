@@ -294,4 +294,44 @@ describe('multisig operations deep link', () => {
 
     expect(scope.getState(deepLinkModel.$isAlreadySignedModalOpen)).toBe(true);
   });
+
+  it('should restart deep link checks when retry is clicked', async () => {
+    const mockOperation = createMockOperation('pending');
+
+    const scope = fork({
+      values: new Map()
+        .set(networkModel.$chains, { [polkadotChainId]: polkadotChain })
+        .set(networkModel.$connectionStatuses, { [polkadotChainId]: ConnectionStatus.CONNECTED })
+        .set(accounts.__test.$list, [mockAccount])
+        .set(multisigOperation.__test.$list, [mockOperation])
+        .set(multisigOperation.__test.$populated, true),
+    });
+
+    const deepLinkData: MultisigOperationDeepLinkData = {
+      chainId: polkadotChainId,
+      callHash: '0xabc123',
+      accountId: mockAccountId,
+      blockCreated: 100,
+      indexCreated: 1,
+    };
+
+    // Store initial deep link data
+    await allSettled(deepLinkModel.multisigOperationDeepLinkHandler.triggered as any, {
+      scope,
+      params: deepLinkData,
+    });
+
+    // Verify operation was focused
+    expect(scope.getState(deepLinkModel.$focusedOperationId)).toBe(mockOperation.id);
+
+    // Clear focused operation to test retry restarts the process
+    await allSettled(deepLinkModel.setFocusedOperationId, { scope, params: null });
+    expect(scope.getState(deepLinkModel.$focusedOperationId)).toBeNull();
+
+    // Retry should re-trigger the deep link handler with the same data
+    await allSettled(deepLinkModel.retryConnectionTimeout, { scope });
+
+    // Should re-focus the operation
+    expect(scope.getState(deepLinkModel.$focusedOperationId)).toBe(mockOperation.id);
+  });
 });

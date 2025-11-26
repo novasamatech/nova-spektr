@@ -1766,6 +1766,7 @@
     "closeButton": "Close",
     "connectionTimeoutButton": "Close",
     "connectionTimeoutDescription": "Can't connect to the network in 10 seconds. You can retry later with the same link.",
+    "connectionTimeoutRetryButton": "Retry",
     "connectionTimeoutTitle": "Connection timeout",
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",

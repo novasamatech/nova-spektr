@@ -84,9 +84,11 @@ const $isOperationNotFoundModalOpen = createStore(false)
 
 const connectionTimeoutModalOpened = createEvent();
 const closeConnectionTimeoutModal = createEvent();
+const retryConnectionTimeout = createEvent();
 const $isConnectionTimeoutModalOpen = createStore(false)
   .on(connectionTimeoutModalOpened, () => true)
   .on(closeConnectionTimeoutModal, () => false)
+  .on(retryConnectionTimeout, () => false)
   .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 sample({
@@ -110,12 +112,26 @@ sample({
   target: $focusedOperationId,
 });
 
+const processDeepLink = createEvent<MultisigOperationDeepLinkData>();
+
 const $deepLinkData = createStore<MultisigOperationDeepLinkData | null>(null)
   .on(multisigOperationDeepLinkHandler.triggered, (_, data) => data)
   .reset(operationsPageClosed);
 
-const operationExistsCheck = sample({
+sample({
   clock: multisigOperationDeepLinkHandler.triggered,
+  target: processDeepLink,
+});
+
+sample({
+  clock: retryConnectionTimeout,
+  source: $deepLinkData,
+  filter: nonNullable,
+  target: processDeepLink,
+});
+
+const operationExistsCheck = sample({
+  clock: processDeepLink,
   source: { operations: multisigOperation.$list, accounts: accounts.$list, chains: networkModel.$chains },
   filter: ({ chains, accounts }, data) => {
     if (!chains[data.chainId]) return false;
@@ -157,14 +173,14 @@ const $isDeepLinkLoading = createStore(false)
   .reset(operationsPageClosed);
 
 sample({
-  clock: multisigOperationDeepLinkHandler.triggered,
+  clock: processDeepLink,
   source: { chains: networkModel.$chains },
   filter: ({ chains }, data) => !chains[data.chainId],
   target: networkNotAvailableModalOpened,
 });
 
 sample({
-  clock: multisigOperationDeepLinkHandler.triggered,
+  clock: processDeepLink,
   source: {
     chains: networkModel.$chains,
     accounts: accounts.$list,
@@ -179,11 +195,7 @@ sample({
 });
 
 const networkReady = sample({
-  clock: [
-    multisigOperationDeepLinkHandler.triggered,
-    networkModel.$populated,
-    networkModel.output.connectionStatusChanged,
-  ],
+  clock: [processDeepLink, networkModel.$populated, networkModel.output.connectionStatusChanged],
   source: {
     chains: networkModel.$chains,
     connectionStatuses: networkModel.$connectionStatuses,
@@ -210,7 +222,7 @@ const $networkData = createStore<{ data: MultisigOperationDeepLinkData; network:
   .reset(operationsPageClosed, multisigOperationDeepLinkHandler.triggered);
 
 const connectionWaitingStarted = sample({
-  clock: multisigOperationDeepLinkHandler.triggered,
+  clock: processDeepLink,
   source: { chains: networkModel.$chains, connectionStatuses: networkModel.$connectionStatuses },
   filter: ({ chains, connectionStatuses }, data) => {
     if (!chains[data.chainId]) return false;
@@ -365,6 +377,7 @@ export const deepLinkModel = {
 
   $isConnectionTimeoutModalOpen,
   closeConnectionTimeoutModal,
+  retryConnectionTimeout,
 
   $isAlreadySignedModalOpen,
   closeAlreadySignedModal,
