@@ -23,6 +23,9 @@ export const IPFSUploadModal = ({ isOpen, onToggle, wish }: Props) => {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
 
+  // Key to force InputFile remount when clearing is needed (resets internal fileName state)
+  const [fileInputKey, setFileInputKey] = useState(0);
+
   const handleFileChange = (file: File | null) => {
     setFile(file);
     if (file) {
@@ -87,6 +90,7 @@ export const IPFSUploadModal = ({ isOpen, onToggle, wish }: Props) => {
       setHash('');
       setShowValidationError(false);
       setFetchError(null);
+      setFileInputKey(prev => prev + 1);
     }
   }, [isOpen]);
 
@@ -123,7 +127,10 @@ export const IPFSUploadModal = ({ isOpen, onToggle, wish }: Props) => {
                   width="full"
                   onChange={value => {
                     setHash(value);
-                    setFile(null);
+                    if (file) {
+                      setFile(null);
+                      setFileInputKey(prev => prev + 1);
+                    }
                     setShowValidationError(false);
                     setFetchError(null);
                   }}
@@ -147,8 +154,8 @@ export const IPFSUploadModal = ({ isOpen, onToggle, wish }: Props) => {
 
             <div className="mt-2 min-h-0 flex-1">
               <InputFile
-                key={hash}
-                accept=".md,.txt"
+                key={fileInputKey}
+                accept=".md"
                 placeholder={t('fellowship.salary.evidence.ipfsUpload.dragDropFile')}
                 invalid={showValidationError}
                 onChange={handleFileChange}
@@ -176,7 +183,13 @@ export const IPFSUploadModal = ({ isOpen, onToggle, wish }: Props) => {
               ]}
             />
           </div>
-          <Button size="md" variant="fill" pallet="primary" disabled={isValidating} onClick={handleButtonSubmit}>
+          <Button
+            size="md"
+            variant="fill"
+            pallet="primary"
+            disabled={isValidating || showValidationError || !!fetchError}
+            onClick={handleButtonSubmit}
+          >
             {isValidating
               ? t('fellowship.salary.evidence.validating')
               : `⌘↵ ${t('fellowship.salary.evidence.continue')}`}
