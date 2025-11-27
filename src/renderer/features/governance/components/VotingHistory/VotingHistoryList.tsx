@@ -6,8 +6,9 @@ import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Accordion, Box, EmptyMessage, ScrollArea, SearchInput } from '@/shared/ui-kit';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type AggregatedVoteHistory } from '../../types/structs';
 
 import { VotingHistoryListPlaceholder } from './VotingHistoryListPlaceholder';
@@ -111,7 +112,7 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
           )}
 
           {shouldRenderList &&
-            deferredItems.map(({ voter, name, decision, totalVotingPower, directVote, delegatedVotes }) => {
+            deferredItems.map(({ voter, decision, totalVotingPower, directVote, delegatedVotes }) => {
               const groupId = `${voter}-${decision}`;
               const hasDelegatedVotes = delegatedVotes.length > 0;
 
@@ -124,10 +125,9 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
                           <div className="grid h-11 w-full grid-cols-[224px_1fr] items-center gap-x-3 text-body text-text-primary normal-case">
                             <div className="flex flex-col">
                               <div className="flex items-center gap-2">
-                                <Account
+                                <NamedAccount
                                   hideAddress
                                   iconSize={20}
-                                  title={name ?? ''}
                                   accountId={voter}
                                   chain={chain}
                                   variant="truncate"
@@ -169,10 +169,9 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
                                 key={delegatedVote.delegator}
                                 className="grid grid-cols-[224px_1fr] items-center gap-x-3 rounded-md bg-action-background-hover px-2 py-1"
                               >
-                                <Account
+                                <NamedAccount
                                   hideAddress
                                   iconSize={20}
-                                  title={delegatedVote.name || undefined}
                                   accountId={delegatedVote.delegator}
                                   chain={chain}
                                   variant="truncate"
@@ -211,14 +210,7 @@ export const VotingHistoryList = memo(({ items, asset, listName, chain, loading 
                     <div className="grid h-11 grid-cols-[224px_1fr] items-center gap-x-3 pr-8 pl-2">
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <Account
-                            hideAddress
-                            iconSize={20}
-                            title={name ?? ''}
-                            accountId={voter}
-                            chain={chain}
-                            variant="truncate"
-                          />
+                          <NamedAccount hideAddress iconSize={20} accountId={voter} chain={chain} variant="truncate" />
                         </div>
                       </div>
 

@@ -1,8 +1,17 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Asset, type AssetId, type Balance, type BalanceMap, type Chain, type ChainId } from '@/shared/core';
+import {
+  type Asset,
+  type AssetId,
+  type Balance,
+  type BalanceMap,
+  type Chain,
+  type ChainId,
+  type Contact,
+  type Wallet,
+} from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
-import { isEthereumAccountId, nullable } from '@/shared/lib/utils';
+import { isEthereumAccountId, isPolkadotChain, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type TransactionValidationBalanceError,
@@ -11,6 +20,9 @@ import {
 } from '@/shared/ui-entities';
 import { balanceUtils } from '@/entities/balance';
 import { networkUtils } from '@/entities/network';
+import { walletUtils } from '@/entities/wallet';
+import { identityService } from '../identity/service';
+import { type IdentityMap } from '../identity/types';
 import { type AnyTransaction } from '../transaction/types';
 
 import {
@@ -100,6 +112,202 @@ function filterAccountsOnChain(accounts: AnyAccount[], chain: Chain) {
 
 function filterAccountsByWallet(accounts: AnyAccount[], walletId: number) {
   return accounts.filter(account => account.walletId === walletId);
+}
+
+type ResolveWalletNameParams = {
+  wallet: Wallet;
+  accounts: AnyAccount[];
+  contacts: Contact[];
+  identities: IdentityMap;
+  chains: Record<string, Chain>;
+};
+
+type ResolveAccountNameParams = {
+  accountId: AccountId;
+  accounts: AnyAccount[];
+  contacts: Contact[];
+  identities: IdentityMap;
+  chains: Record<string, Chain>;
+  chain?: Chain | null;
+  title?: string;
+};
+
+function isDefaultProxiedName(
+  name: string,
+  wallet: Wallet,
+  accounts: AnyAccount[],
+  chains: Record<string, Chain>,
+): boolean {
+  if (!walletUtils.isProxied(wallet)) return false;
+
+  const proxiedAccount = accounts[0];
+  if (!proxiedAccount || !('connections' in proxiedAccount)) return false;
+
+  const chainId = 'chainId' in proxiedAccount ? proxiedAccount.chainId : null;
+  if (!chainId) return false;
+
+  const chain = chains[chainId];
+  const addressPrefix = chain?.addressPrefix;
+  const accountId = proxiedAccount.accountId;
+  const address = toShortAddress(toAddress(accountId, { prefix: addressPrefix }), 6);
+
+  const connections = proxiedAccount.connections;
+  if (!Array.isArray(connections)) return false;
+
+  if (connections.length === 1) {
+    const proxyType = connections[0]?.proxyType;
+    if (proxyType) {
+      const purePattern = `${proxyType} for pure ${address}`;
+      if (name === purePattern) return true;
+
+      const regularPattern = `${proxyType} for ${address}`;
+      if (name === regularPattern) return true;
+    }
+  }
+
+  return name === address;
+}
+
+function isDefaultMultisigName(
+  name: string,
+  wallet: Wallet,
+  accounts: AnyAccount[],
+  chains: Record<string, Chain>,
+): boolean {
+  if (!walletUtils.isRegularMultisig(wallet)) return false;
+
+  const multisigAccount = accounts[0];
+  if (!multisigAccount) return false;
+
+  const accountId = multisigAccount.accountId;
+  const chainId =
+    'chainId' in multisigAccount
+      ? multisigAccount.chainId
+      : 'remarkChainId' in multisigAccount
+        ? multisigAccount.remarkChainId
+        : null;
+
+  if (!chainId) return false;
+
+  const chain = chains[chainId as string];
+  const addressPrefix = chain?.addressPrefix;
+  const shortAddress = toShortAddress(toAddress(accountId, { prefix: addressPrefix }), 5);
+
+  return name === shortAddress;
+}
+
+function isDefaultWalletName(
+  name: string,
+  wallet: Wallet,
+  accounts: AnyAccount[],
+  chains: Record<string, Chain>,
+): boolean {
+  if (walletUtils.isFlexibleMultisig(wallet)) return false;
+
+  if (walletUtils.isProxied(wallet)) {
+    return isDefaultProxiedName(name, wallet, accounts, chains);
+  }
+
+  if (walletUtils.isRegularMultisig(wallet)) {
+    return isDefaultMultisigName(name, wallet, accounts, chains);
+  }
+
+  return false;
+}
+
+function isCustomWalletName(
+  name: string,
+  wallet: Wallet,
+  accounts: AnyAccount[],
+  chains: Record<string, Chain>,
+): boolean {
+  return !isDefaultWalletName(name, wallet, accounts, chains);
+}
+
+function getWalletAccountId(wallet: Wallet, accounts: AnyAccount[]): AccountId | null {
+  const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
+
+  if (walletAccounts.length === 0) return null;
+
+  if (walletUtils.isPolkadotVaultGroup(wallet)) {
+    const isSingleAccount = wallet.accounts.length === 1;
+    return isSingleAccount ? (wallet.accounts[0]?.accountId ?? null) : wallet.rootAccountId;
+  }
+
+  if (walletUtils.isWalletConnectGroup(wallet)) {
+    const mainAccount =
+      walletAccounts.find(
+        account => isChainAccount(account) && 'chainId' in account && isPolkadotChain(account.chainId),
+      ) ?? walletAccounts.at(0);
+
+    return mainAccount?.accountId ?? null;
+  }
+
+  return walletAccounts[0]?.accountId ?? null;
+}
+
+function resolveWalletName({ wallet, accounts, contacts, identities, chains }: ResolveWalletNameParams): string {
+  const accountId = getWalletAccountId(wallet, accounts);
+  if (nullable(accountId)) {
+    return wallet.name;
+  }
+
+  const contact = contacts.find(contact => contact.accountId === accountId);
+  if (contact) {
+    return contact.name;
+  }
+
+  const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
+  if (isCustomWalletName(wallet.name, wallet, walletAccounts, chains)) {
+    return wallet.name;
+  }
+
+  for (const chainId of Object.keys(identities)) {
+    const identity = identities[chainId as keyof IdentityMap]?.[accountId];
+    if (identity) {
+      return identityService.getFullName(identity);
+    }
+  }
+
+  return wallet.name;
+}
+
+function resolveAccountName({
+  accountId,
+  chain,
+  accounts,
+  contacts,
+  identities,
+  chains,
+  title,
+}: ResolveAccountNameParams): string {
+  if (title) {
+    return title;
+  }
+
+  const contact = contacts.find(contact => contact.accountId === accountId);
+  if (contact) {
+    return contact.name;
+  }
+
+  for (const chainId of Object.keys(identities)) {
+    const identity = identities[chainId as keyof IdentityMap]?.[accountId];
+    if (identity) {
+      return identity.name;
+    }
+  }
+
+  const prefix =
+    chain?.addressPrefix ??
+    (() => {
+      const relatedAccount = accounts.find(account => account.accountId === accountId);
+      if (!relatedAccount || !('chainId' in relatedAccount)) return undefined;
+
+      const accountChain = chains[relatedAccount.chainId as ChainId];
+      return accountChain?.addressPrefix;
+    })();
+
+  return toShortAddress(toAddress(accountId, { prefix }), 5);
 }
 
 function hasPermissionToMakeActions(account: AnyAccount) {
@@ -383,6 +591,10 @@ export const accountService = {
 
   filterAccountsOnChain,
   filterAccountsByWallet,
+  getWalletAccountId,
+  resolveWalletName,
+  resolveAccountName,
+  isCustomWalletName,
 
   // graph
 

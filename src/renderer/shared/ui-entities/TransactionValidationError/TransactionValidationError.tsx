@@ -9,8 +9,24 @@ import { formatAsset, groupBy, nonNullable, nullable } from '@/shared/lib/utils'
 import { Alert } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type AnyAccount, type BalanceUpdateResult } from '@/domains/network';
+import { useWalletName } from '@/domains/network';
 import { ProxyTypeName } from '@/entities/proxy';
 import { WalletIcon } from '../WalletIcon/WalletIcon';
+
+const PermissionErrorItem = memo(({ wallet, permission }: { wallet: Wallet; permission: string }) => {
+  const { t } = useI18n();
+  const walletName = useWalletName(wallet);
+  const permissionTranslationKey = ProxyTypeName[permission as ProxyType] ?? permission;
+
+  return (
+    <Box as="span" direction="row" gap={1} verticalAlign="center">
+      <WalletIcon type={wallet.type} size={16} />
+      <span>
+        {walletName}: {t(permissionTranslationKey)}
+      </span>
+    </Box>
+  );
+});
 
 export type TransactionValidationFatalError = {
   message: string;
@@ -111,16 +127,7 @@ const TransactionPermissionError = ({
         const wallet = wallets.find(w => w.id === e.account.walletId);
         if (nullable(wallet)) return null;
 
-        const permissionTranslationKey = ProxyTypeName[e.permission as ProxyType] ?? e.permission;
-
-        return (
-          <Box key={`${wallet.name}${e.permission}`} as="span" direction="row" gap={1} verticalAlign="center">
-            <WalletIcon type={wallet.type} size={16} />
-            <span>
-              {wallet.name}: {t(permissionTranslationKey)}
-            </span>
-          </Box>
-        );
+        return <PermissionErrorItem key={`${wallet.id}${e.permission}`} wallet={wallet} permission={e.permission} />;
       })}
       <span data-testid={dataTestId}>{t('general.transactionErrors.permission.message')}</span>
     </Box>
@@ -142,6 +149,7 @@ const TransactionBalanceError = ({
   if (nullable(account)) return null;
   const wallet = wallets.find(w => w.id === account.walletId);
   if (nullable(wallet)) return null;
+  const walletName = useWalletName(wallet);
 
   const assetGroups = groupBy(errors, e => e.asset.symbol);
   const groupedByActionErrors = groupBy(errors, e => `${e.action}_${e.asset.symbol}`);
@@ -189,7 +197,7 @@ const TransactionBalanceError = ({
           components={{
             wallet: (
               <span className="relative top-1 -mt-1 inline-flex items-center gap-1">
-                <WalletIcon type={wallet.type} size={16} /> {wallet.name}
+                <WalletIcon type={wallet.type} size={16} /> {walletName}
               </span>
             ),
           }}

@@ -1,8 +1,17 @@
-import { afterEach, describe } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
-import { CryptoType, SigningType } from '@/shared/core';
-import { createAccountId, kusamaChainId, polkadotChain, polkadotChainId } from '@/shared/mocks';
+import { type Chain, type Contact, CryptoType, SigningType } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
+import {
+  createAccountId,
+  createSingleShardWallet,
+  kusamaChain,
+  kusamaChainId,
+  polkadotChain,
+  polkadotChainId,
+} from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+import { type IdentityMap } from '../identity/types';
 
 import { accountService } from './service';
 import { type AnyAccount, type ChainAccount, type UniversalAccount } from './types';
@@ -316,6 +325,305 @@ describe('account service', () => {
       });
 
       expect(accountService.findInitiators(accounts, polkadotChain)).toEqual([proxy]);
+    });
+  });
+
+  describe('resolveAccountName', () => {
+    const accountId = createAccountId('test');
+    const chains: Record<string, Chain> = {
+      [polkadotChainId]: polkadotChain,
+      [kusamaChainId]: kusamaChain,
+    };
+    const accounts: AnyAccount[] = [chainAccount];
+    const emptyContacts: Contact[] = [];
+    const emptyIdentities: IdentityMap = {};
+
+    it('should return title if provided', () => {
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+        title: 'Custom Title',
+      });
+
+      expect(result).toBe('Custom Title');
+    });
+
+    it('should return contact name if contact exists', () => {
+      const contacts: Contact[] = [
+        {
+          id: 1,
+          accountId,
+          name: 'Contact Name',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        },
+      ];
+
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Contact Name');
+    });
+
+    it('should prioritize contact over identity', () => {
+      const contacts: Contact[] = [
+        {
+          id: 1,
+          accountId,
+          name: 'Contact Name',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        },
+      ];
+
+      const identities: IdentityMap = {
+        [polkadotChainId]: {
+          [accountId]: {
+            chainId: polkadotChainId,
+            accountId,
+            name: 'Identity Name',
+            email: '',
+            image: '',
+          },
+        },
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts,
+        identities,
+        chains,
+      });
+
+      expect(result).toBe('Contact Name');
+    });
+
+    it('should return identity name if no contact', () => {
+      const identities: IdentityMap = {
+        [polkadotChainId]: {
+          [accountId]: {
+            chainId: polkadotChainId,
+            accountId,
+            name: 'Identity Name',
+            email: '',
+            image: '',
+          },
+        },
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts: emptyContacts,
+        identities,
+        chains,
+      });
+
+      expect(result).toBe('Identity Name');
+    });
+
+    it('should check identity across all chains', () => {
+      const identities: IdentityMap = {
+        [kusamaChainId]: {
+          [accountId]: {
+            chainId: kusamaChainId,
+            accountId,
+            name: 'Kusama Identity',
+            email: '',
+            image: '',
+          },
+        },
+      };
+
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts: emptyContacts,
+        identities,
+        chains,
+      });
+
+      expect(result).toBe('Kusama Identity');
+    });
+
+    it('should return short address if no contact or identity', () => {
+      const result = accountService.resolveAccountName({
+        accountId,
+        chain: polkadotChain,
+        accounts,
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toMatch(/^[A-Za-z0-9]{5}\.\.\.[A-Za-z0-9]{5}$/);
+    });
+  });
+
+  describe('resolveWalletName', () => {
+    const accountId = createAccountId('test');
+    const walletId = 1;
+    const chains: Record<string, Chain> = {
+      [polkadotChainId]: polkadotChain,
+      [kusamaChainId]: kusamaChain,
+    };
+    const emptyContacts: Contact[] = [];
+    const emptyIdentities: IdentityMap = {};
+
+    it('should return wallet name if no accountId found', () => {
+      const wallet = createSingleShardWallet(walletId, {
+        rootAccountId: accountId,
+        name: 'Test Wallet',
+      });
+
+      const accounts: AnyAccount[] = [];
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts,
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Test Wallet');
+    });
+
+    it('should return contact name if contact exists for wallet account', () => {
+      const wallet = createSingleShardWallet(walletId, {
+        rootAccountId: accountId,
+        name: 'Test Wallet',
+      });
+
+      const accounts: AnyAccount[] = [chainAccount];
+      const contacts: Contact[] = [
+        {
+          id: 1,
+          accountId,
+          name: 'Contact Name',
+          address: toAddress(accountId, { prefix: polkadotChain.addressPrefix }),
+        },
+      ];
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts,
+        contacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Contact Name');
+    });
+
+    it('should return custom wallet name if isCustomWalletName returns true', () => {
+      const wallet = createSingleShardWallet(walletId, {
+        rootAccountId: accountId,
+        name: 'Custom Wallet Name',
+      });
+
+      const accounts: AnyAccount[] = [chainAccount];
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts,
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Custom Wallet Name');
+    });
+
+    it('should return identity name if no contact and not custom name', () => {
+      const wallet = createSingleShardWallet(walletId, {
+        rootAccountId: accountId,
+        name: 'Default Wallet Name',
+      });
+
+      const accounts: AnyAccount[] = [chainAccount];
+      const identities: IdentityMap = {
+        [polkadotChainId]: {
+          [accountId]: {
+            chainId: polkadotChainId,
+            accountId,
+            name: 'Identity Name',
+            email: '',
+            image: '',
+          },
+        },
+      };
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts,
+        contacts: emptyContacts,
+        identities,
+        chains,
+      });
+
+      expect(result).toBe('Identity Name');
+    });
+
+    it('should check identity across all chains', () => {
+      const wallet = createSingleShardWallet(walletId, {
+        rootAccountId: accountId,
+        name: 'Default Wallet Name',
+      });
+
+      const accounts: AnyAccount[] = [chainAccount];
+      const identities: IdentityMap = {
+        [kusamaChainId]: {
+          [accountId]: {
+            chainId: kusamaChainId,
+            accountId,
+            name: 'Kusama Identity',
+            email: '',
+            image: '',
+          },
+        },
+      };
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts,
+        contacts: emptyContacts,
+        identities,
+        chains,
+      });
+
+      expect(result).toBe('Kusama Identity');
+    });
+
+    it('should return wallet name as fallback', () => {
+      const wallet = createSingleShardWallet(walletId, {
+        rootAccountId: accountId,
+        name: 'Fallback Wallet Name',
+      });
+
+      const accounts: AnyAccount[] = [chainAccount];
+
+      const result = accountService.resolveWalletName({
+        wallet,
+        accounts,
+        contacts: emptyContacts,
+        identities: emptyIdentities,
+        chains,
+      });
+
+      expect(result).toBe('Fallback Wallet Name');
     });
   });
 });

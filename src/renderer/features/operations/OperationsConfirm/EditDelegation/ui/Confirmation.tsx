@@ -5,7 +5,7 @@ import { type ReactNode, useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { formatAmount, nonNullable, nullable, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, LargeTitleText, Loader } from '@/shared/ui';
-import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { BalanceDiff, LockPeriodDiff, LockValueDiff, TracksDetails } from '@/entities/governance';
 import { SignButton } from '@/entities/operations';
@@ -13,6 +13,7 @@ import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { lockPeriodsModel, locksPeriodsAggregate } from '@/features/governance';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -93,7 +94,7 @@ export const Confirmation = ({
 
       <TransactionDetails chain={meta.chain} wallets={wallets} initiators={initiators} signatory={meta.signatory}>
         <DetailRow label={t('governance.addDelegation.confirmation.target')}>
-          <Account variant="short" chain={meta.chain} accountId={toAccountId(meta.target)} />
+          <NamedAccount variant="short" chain={meta.chain} accountId={toAccountId(meta.target)} />
         </DetailRow>
 
         <DetailRow label={t('governance.addDelegation.confirmation.tracks')}>

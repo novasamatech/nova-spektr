@@ -5,11 +5,12 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, nonNullable } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, IconButton } from '@/shared/ui';
-import { Account as AccountAddress, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Box, Checkbox, Modal, Tooltip } from '@/shared/ui-kit';
 import { type AnyAccount } from '@/domains/network';
 import { allTracks, locksService } from '@/entities/governance';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
@@ -98,13 +99,7 @@ export const YourDelegations = () => {
                 </Box>
 
                 <Box padding={[0, 3]}>
-                  <AccountAddress
-                    iconSize={20}
-                    title={account.name}
-                    accountId={account.accountId}
-                    chain={chain}
-                    variant="truncate"
-                  />
+                  <NamedAccount iconSize={20} accountId={account.accountId} chain={chain} variant="truncate" />
                 </Box>
 
                 <Box padding={[0, 3]} horizontalAlign="end">
