@@ -10,7 +10,7 @@ import { Button, CaptionText, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
-import { useBlockTime, useIdentity } from '@/domains/network';
+import { useBlockTimestamp, useIdentity } from '@/domains/network';
 import { type ValidationIssue, type VestingScheduleRaw } from '../lib/types';
 
 type TableData = VestingScheduleRaw & {
@@ -44,10 +44,29 @@ export const VestingSchedulePreview = memo(
 
     const showMore = () => setVisibleCount((prev) => prev + PAGE_SIZE);
 
+    const issuesByRow = useMemo(() => {
+      if (!issues) return new Map<number, ValidationIssue[]>();
+
+      return issues.reduce((acc, issue) => {
+        const list = acc.get(issue.row) || [];
+        list.push(issue);
+        acc.set(issue.row, list);
+
+        return acc;
+      }, new Map<number, ValidationIssue[]>());
+    }, [issues]);
+
+    const getRowIssues = useCallback((row: number) => issuesByRow.get(row) || [], [issuesByRow]);
+
+    const getFieldIssues = useCallback(
+      (row: number, field: keyof VestingScheduleRaw) => getRowIssues(row).filter((i) => i.path === field),
+      [getRowIssues],
+    );
+
     const renderCell = useCallback(
       (row: TableData, field: keyof VestingScheduleRaw, Component: React.ComponentType<CellComponentProps>) => {
-        const rowIssues = issues?.filter((i) => i.row === row.index) || [];
-        const fieldIssues = rowIssues.filter((i) => i.path === field);
+        const rowIssues = getRowIssues(row.index);
+        const fieldIssues = getFieldIssues(row.index, field);
         const hasErrors = fieldIssues.some((i) => i.severity === 'error');
         const status = getRowStatus(rowIssues);
 
@@ -62,7 +81,7 @@ export const VestingSchedulePreview = memo(
           </div>
         );
       },
-      [issues],
+      [getRowIssues, getFieldIssues],
     );
 
     const allData = useMemo(
@@ -92,8 +111,8 @@ export const VestingSchedulePreview = memo(
           width: '428px',
           render: (_, row) => {
             if (nullable(row.target) || nullable(chain)) return null;
-            const rowIssues = issues?.filter((i) => i.row === row.index) || [];
-            const fieldIssues = rowIssues.filter((i) => i.path === 'target');
+            const rowIssues = getRowIssues(row.index);
+            const fieldIssues = getFieldIssues(row.index, 'target');
             const status = getRowStatus(rowIssues);
 
             return (
@@ -200,7 +219,7 @@ export const VestingSchedulePreview = memo(
             ),
         },
       ],
-      [t, chain, asset, issues, timelineApi],
+      [t, chain, asset, getRowIssues, getFieldIssues, timelineApi],
     );
 
     return (
@@ -262,9 +281,9 @@ const StartingBlock = memo(
   }) => {
     const { t } = useI18n();
     const startingBlockHeight = pjsSchema.helpers.toBlockHeight(Number(startingBlock));
-    const { data: blockTime } = useBlockTime({
+    const { data: blockTime } = useBlockTimestamp({
       api: timelineApi,
-      blockHeight: startingBlockHeight ?? null,
+      blockHeight: startingBlockHeight,
     });
 
     const date = nonNullable(blockTime) ? format(blockTime, 'dd.MM.yyyy') : null;
