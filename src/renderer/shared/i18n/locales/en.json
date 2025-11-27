@@ -2635,7 +2635,8 @@
       },
       "table": {
         "buttons": {
-          "download": "Download"
+          "download": "Download",
+          "showMore": "Show more"
         },
         "footer": {
           "downloadDescription": "You can download parsed file to review them.",

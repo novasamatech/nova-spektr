@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { getExpectedBlockTime, nullable } from '@/shared/lib/utils';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { evidenceService, memberService, useEvidencePeriod } from '@/domains/collectives';
-import { useBlockTime } from '@/domains/network';
+import { useBlockTimestamp } from '@/domains/network';
 import {
   useFellowshipMember,
   useFellowshipMemberEvidence,
@@ -67,11 +67,11 @@ export const useRetentionPeriodDates = () => {
   const api = useFellowshipApi();
   const { data: period } = useRetentionPeriod();
 
-  const { data: fromDate, pending: fromPending } = useBlockTime({
+  const { data: fromDate, pending: fromPending } = useBlockTimestamp({
     api,
     blockHeight: period?.from ?? null,
   });
-  const { data: toDate, pending: toPending } = useBlockTime({
+  const { data: toDate, pending: toPending } = useBlockTimestamp({
     api,
     blockHeight: period?.to ?? null,
   });

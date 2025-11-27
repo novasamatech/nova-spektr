@@ -1,6 +1,6 @@
 import { type ApiPromise } from '@polkadot/api';
 import { format } from 'date-fns';
-import { type PropsWithChildren, useMemo } from 'react';
+import { type PropsWithChildren, memo, useCallback, useMemo, useState } from 'react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -10,7 +10,7 @@ import { Button, CaptionText, FootnoteText, Icon } from '@/shared/ui';
 import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
-import { useBlockTime, useIdentity } from '@/domains/network';
+import { useBlockTimestamp, useIdentity } from '@/domains/network';
 import { type ValidationIssue, type VestingScheduleRaw } from '../lib/types';
 
 type TableData = VestingScheduleRaw & {
@@ -35,194 +35,223 @@ type Props = PropsWithChildren & {
   onDownloadClick?: () => void;
 };
 
-export const VestingSchedulePreview = ({
-  vestingSchedule,
-  children,
-  timelineApi,
-  chain,
-  asset,
-  issues,
-  onDownloadClick,
-}: Props) => {
-  const { t } = useI18n();
+const PAGE_SIZE = 50;
 
-  const renderCell = (
-    row: TableData,
-    field: keyof VestingScheduleRaw,
-    Component: React.ComponentType<CellComponentProps>,
-  ) => {
-    const rowIssues = issues?.filter((i) => i.row === row.index) || [];
-    const fieldIssues = rowIssues.filter((i) => i.path === field);
-    const hasErrors = fieldIssues.some((i) => i.severity === 'error');
-    const status = getRowStatus(rowIssues);
+export const VestingSchedulePreview = memo(
+  ({ vestingSchedule, children, timelineApi, chain, asset, issues, onDownloadClick }: Props) => {
+    const { t } = useI18n();
+    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+    const showMore = () => setVisibleCount((prev) => prev + PAGE_SIZE);
+
+    const issuesByRow = useMemo(() => {
+      if (!issues) return new Map<number, ValidationIssue[]>();
+
+      return issues.reduce((acc, issue) => {
+        const list = acc.get(issue.row) || [];
+        list.push(issue);
+        acc.set(issue.row, list);
+
+        return acc;
+      }, new Map<number, ValidationIssue[]>());
+    }, [issues]);
+
+    const getRowIssues = useCallback((row: number) => issuesByRow.get(row) || [], [issuesByRow]);
+
+    const getFieldIssues = useCallback(
+      (row: number, field: keyof VestingScheduleRaw) => getRowIssues(row).filter((i) => i.path === field),
+      [getRowIssues],
+    );
+
+    const renderCell = useCallback(
+      (row: TableData, field: keyof VestingScheduleRaw, Component: React.ComponentType<CellComponentProps>) => {
+        const rowIssues = getRowIssues(row.index);
+        const fieldIssues = getFieldIssues(row.index, field);
+        const hasErrors = fieldIssues.some((i) => i.severity === 'error');
+        const status = getRowStatus(rowIssues);
+
+        return (
+          <div className={cnTw('flex flex-col items-end overflow-hidden', STATUS_TEXT_COLORS[status])}>
+            {hasErrors ? (
+              <span className="shrink-0 text-body">{row[field]}</span>
+            ) : (
+              <Component row={row} field={field} status={status} />
+            )}
+            {fieldIssues.length > 0 && <FieldIssues issue={fieldIssues[0]} />}
+          </div>
+        );
+      },
+      [getRowIssues, getFieldIssues],
+    );
+
+    const allData = useMemo(
+      () => vestingSchedule.map((vesting, index) => ({ ...vesting, index: index + 1 })),
+      [vestingSchedule],
+    );
+    const tableData = useMemo(() => allData.slice(0, visibleCount), [allData, visibleCount]);
+    const hasMore = visibleCount < allData.length;
+
+    const columns: Column<TableData>[] = useMemo(
+      () => [
+        {
+          key: 'index',
+          title: '',
+          width: '50px',
+          render: (_, row) => {
+            return (
+              <div className="flex justify-start">
+                <span className="shrink-0 text-body text-text-tertiary">{row.index}</span>
+              </div>
+            );
+          },
+        },
+        {
+          key: 'target',
+          title: t('vestedTransfer.parsedFile.table.headers.recipient'),
+          width: '428px',
+          render: (_, row) => {
+            if (nullable(row.target) || nullable(chain)) return null;
+            const rowIssues = getRowIssues(row.index);
+            const fieldIssues = getFieldIssues(row.index, 'target');
+            const status = getRowStatus(rowIssues);
+
+            return (
+              <div className={cnTw('flex flex-col overflow-hidden', STATUS_TEXT_COLORS[status])}>
+                <TargetAccount target={row.target} chain={chain} />
+                {fieldIssues.length > 0 && <FieldIssues issue={fieldIssues[0]} className="text-left" />}
+              </div>
+            );
+          },
+        },
+        {
+          key: 'startingBlock',
+          title: (
+            <div className="flex w-full justify-end gap-x-1">
+              <span>{t('vestedTransfer.parsedFile.table.headers.startBlock')}</span>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.startBlock')}</Tooltip.Content>
+              </Tooltip>
+            </div>
+          ),
+          width: '120px',
+          render: (_, row) =>
+            renderCell(row, 'startingBlock', ({ row, status }) => (
+              <StartingBlock timelineApi={timelineApi} status={status} startingBlock={row.startingBlock} />
+            )),
+        },
+        {
+          key: 'perBlock',
+          title: (
+            <div className="flex w-full justify-end gap-x-1">
+              <span>{t('vestedTransfer.parsedFile.table.headers.perBlock')}</span>
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div>
+                    <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.perBlock')}</Tooltip.Content>
+              </Tooltip>
+            </div>
+          ),
+          width: '120px',
+          render: (_, row) =>
+            renderCell(row, 'perBlock', ({ row }) =>
+              row.perBlock && asset ? (
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <div>
+                      <AssetBalance
+                        value={row.perBlock}
+                        asset={asset}
+                        showSymbol
+                        className="border-b border-filter-border text-inherit"
+                      />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    {t('vestedTransfer.parsedFile.table.hints.planks', {
+                      amount: NUM_FORMATTER.format(BigInt(row.perBlock)),
+                    })}
+                  </Tooltip.Content>
+                </Tooltip>
+              ) : (
+                <span className="shrink-0 text-body">{row.perBlock}</span>
+              ),
+            ),
+        },
+        {
+          key: 'locked',
+          title: (
+            <div className="flex w-full justify-end">
+              <span>{t('vestedTransfer.parsedFile.table.headers.locked')}</span>
+            </div>
+          ),
+          width: '120px',
+          render: (_, row) =>
+            renderCell(row, 'locked', ({ row }) =>
+              row.locked && asset ? (
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <div>
+                      <AssetBalance
+                        value={row.locked}
+                        asset={asset}
+                        showSymbol
+                        className="border-b border-filter-border text-inherit"
+                      />
+                    </div>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    {t('vestedTransfer.parsedFile.table.hints.planks', {
+                      amount: NUM_FORMATTER.format(BigInt(row.locked)),
+                    })}
+                  </Tooltip.Content>
+                </Tooltip>
+              ) : (
+                <span className="shrink-0 text-body">{row.locked}</span>
+              ),
+            ),
+        },
+      ],
+      [t, chain, asset, getRowIssues, getFieldIssues, timelineApi],
+    );
 
     return (
-      <div className={cnTw('flex flex-col items-end overflow-hidden', STATUS_TEXT_COLORS[status])}>
-        {hasErrors ? (
-          <span className="shrink-0 text-body">{row[field]}</span>
-        ) : (
-          <Component row={row} field={field} status={status} />
-        )}
-        {fieldIssues.length > 0 && <FieldIssues issue={fieldIssues[0]} />}
-      </div>
+      <Modal size="xl" height="fit">
+        <Modal.Trigger>{children}</Modal.Trigger>
+        <Modal.Title close>
+          <div className="flex gap-x-2">
+            {t('vestedTransfer.parsedFile.title')}&nbsp;
+            <span className="text-text-secondary">{vestingSchedule.length}</span>
+          </div>
+        </Modal.Title>
+        <Modal.Content>
+          <div className="px-2 pb-3">
+            <ScrollArea>
+              <Table columns={columns} data={tableData} cellAlign="top" className="w-full rounded-lg" />
+              {hasMore && (
+                <div className="flex justify-center py-3">
+                  <Button variant="text" onClick={showMore}>
+                    {t('vestedTransfer.parsedFile.table.buttons.showMore')}
+                  </Button>
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+        </Modal.Content>
+        <IssuesFooter issues={issues} onDownloadClick={onDownloadClick} />
+      </Modal>
     );
-  };
+  },
+);
 
-  const tableData: TableData[] = vestingSchedule.map((vesting, index) => ({ ...vesting, index: index + 1 }));
-
-  const columns: Column<TableData>[] = useMemo(
-    () => [
-      {
-        key: 'index',
-        title: '',
-        width: '50px',
-        render: (_, row) => {
-          return (
-            <div className="flex justify-center">
-              <span className="shrink-0 text-body text-text-tertiary">{row.index}</span>
-            </div>
-          );
-        },
-      },
-      {
-        key: 'target',
-        title: t('vestedTransfer.parsedFile.table.headers.recipient'),
-        width: '428px',
-        render: (_, row) => {
-          if (nullable(row.target) || nullable(chain)) return null;
-          const rowIssues = issues?.filter((i) => i.row === row.index) || [];
-          const fieldIssues = rowIssues.filter((i) => i.path === 'target');
-          const status = getRowStatus(rowIssues);
-
-          return (
-            <div className={cnTw('flex flex-col overflow-hidden', STATUS_TEXT_COLORS[status])}>
-              <TargetAccount target={row.target} chain={chain} />
-              {fieldIssues.length > 0 && <FieldIssues issue={fieldIssues[0]} className="text-left" />}
-            </div>
-          );
-        },
-      },
-      {
-        key: 'startingBlock',
-        title: (
-          <div className="flex w-full justify-end gap-x-1">
-            <span>{t('vestedTransfer.parsedFile.table.headers.startBlock')}</span>
-            <Tooltip>
-              <Tooltip.Trigger>
-                <div>
-                  <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-                </div>
-              </Tooltip.Trigger>
-              <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.startBlock')}</Tooltip.Content>
-            </Tooltip>
-          </div>
-        ),
-        width: '120px',
-        render: (_, row) =>
-          renderCell(row, 'startingBlock', ({ row, status }) => (
-            <StartingBlock timelineApi={timelineApi} status={status} startingBlock={row.startingBlock} />
-          )),
-      },
-      {
-        key: 'perBlock',
-        title: (
-          <div className="flex w-full justify-end gap-x-1">
-            <span>{t('vestedTransfer.parsedFile.table.headers.perBlock')}</span>
-            <Tooltip>
-              <Tooltip.Trigger>
-                <div>
-                  <Icon name="info" className="cursor-pointer hover:text-icon-hover" size={16} />
-                </div>
-              </Tooltip.Trigger>
-              <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.perBlock')}</Tooltip.Content>
-            </Tooltip>
-          </div>
-        ),
-        width: '120px',
-        render: (_, row) =>
-          renderCell(row, 'perBlock', ({ row }) =>
-            row.perBlock && asset ? (
-              <Tooltip>
-                <Tooltip.Trigger>
-                  <div>
-                    <AssetBalance
-                      value={row.perBlock}
-                      asset={asset}
-                      showSymbol
-                      className="border-b border-filter-border text-inherit"
-                    />
-                  </div>
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  {t('vestedTransfer.parsedFile.table.hints.planks', {
-                    amount: NUM_FORMATTER.format(BigInt(row.perBlock)),
-                  })}
-                </Tooltip.Content>
-              </Tooltip>
-            ) : (
-              <span className="shrink-0 text-body">{row.perBlock}</span>
-            ),
-          ),
-      },
-      {
-        key: 'locked',
-        title: (
-          <div className="flex w-full justify-end">
-            <span>{t('vestedTransfer.parsedFile.table.headers.locked')}</span>
-          </div>
-        ),
-        width: '120px',
-        render: (_, row) =>
-          renderCell(row, 'locked', ({ row }) =>
-            row.locked && asset ? (
-              <Tooltip>
-                <Tooltip.Trigger>
-                  <div>
-                    <AssetBalance
-                      value={row.locked}
-                      asset={asset}
-                      showSymbol
-                      className="border-b border-filter-border text-inherit"
-                    />
-                  </div>
-                </Tooltip.Trigger>
-                <Tooltip.Content>
-                  {t('vestedTransfer.parsedFile.table.hints.planks', {
-                    amount: NUM_FORMATTER.format(BigInt(row.locked)),
-                  })}
-                </Tooltip.Content>
-              </Tooltip>
-            ) : (
-              <span className="shrink-0 text-body">{row.locked}</span>
-            ),
-          ),
-      },
-    ],
-    [t, chain, asset, issues, timelineApi],
-  );
-
-  return (
-    <Modal size="xl" height="fit">
-      <Modal.Trigger>{children}</Modal.Trigger>
-      <Modal.Title close>
-        <div className="flex gap-x-2">
-          {t('vestedTransfer.parsedFile.title')}&nbsp;
-          <span className="text-text-secondary">{vestingSchedule.length}</span>
-        </div>
-      </Modal.Title>
-      <Modal.Content>
-        <div className="px-2 pb-3">
-          <ScrollArea>
-            <Table columns={columns} data={tableData} cellAlign="top" className="w-full rounded-lg" />
-          </ScrollArea>
-        </div>
-      </Modal.Content>
-      <IssuesFooter issues={issues} onDownloadClick={onDownloadClick} />
-    </Modal>
-  );
-};
-
-const FieldIssues = ({ issue, className }: { issue: ValidationIssue; className?: string }) => {
+const FieldIssues = memo(({ issue, className }: { issue: ValidationIssue; className?: string }) => {
   const { t } = useI18n();
 
   return (
@@ -232,53 +261,55 @@ const FieldIssues = ({ issue, className }: { issue: ValidationIssue; className?:
       </CaptionText>
     </div>
   );
-};
+});
 
-const TargetAccount = ({ target, chain }: { target: string; chain: Chain }) => {
+const TargetAccount = memo(({ target, chain }: { target: AccountId; chain: Chain }) => {
   const accountId = toAccountId(target);
   const { data: identity } = useIdentity(accountId, chain.chainId);
-  return <Account accountId={target as AccountId} title={identity?.name} chain={chain} variant="full" />;
-};
+  return <Account accountId={target} title={identity?.name} chain={chain} variant="full" />;
+});
 
-const StartingBlock = ({
-  timelineApi,
-  status,
-  startingBlock,
-}: {
-  timelineApi: ApiPromise | null;
-  status: RowStatus;
-  startingBlock: string;
-}) => {
-  const { t } = useI18n();
-  const startingBlockHeight = pjsSchema.helpers.toBlockHeight(Number(startingBlock));
-  const { data: blockTime } = useBlockTime({
-    api: timelineApi,
-    blockHeight: startingBlockHeight ?? null,
-  });
+const StartingBlock = memo(
+  ({
+    timelineApi,
+    status,
+    startingBlock,
+  }: {
+    timelineApi: ApiPromise | null;
+    status: RowStatus;
+    startingBlock: string;
+  }) => {
+    const { t } = useI18n();
+    const startingBlockHeight = pjsSchema.helpers.toBlockHeight(Number(startingBlock));
+    const { data: blockTime } = useBlockTimestamp({
+      api: timelineApi,
+      blockHeight: startingBlockHeight,
+    });
 
-  const date = nonNullable(blockTime) ? format(blockTime, 'dd.MM.yyyy') : null;
-  const time = nonNullable(blockTime) ? format(blockTime, 'H:mm') : null;
+    const date = nonNullable(blockTime) ? format(blockTime, 'dd.MM.yyyy') : null;
+    const time = nonNullable(blockTime) ? format(blockTime, 'H:mm') : null;
 
-  return (
-    <Tooltip>
-      <Tooltip.Trigger>
-        <div>
-          <span className={cnTw('shrink-0 border-b border-filter-border text-body', STATUS_TEXT_COLORS[status])}>
-            {NUM_FORMATTER.format(BigInt(startingBlock))}
-          </span>
-        </div>
-      </Tooltip.Trigger>
-      <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.startBlockTime', { date, time })}</Tooltip.Content>
-    </Tooltip>
-  );
-};
+    return (
+      <Tooltip>
+        <Tooltip.Trigger>
+          <div>
+            <span className={cnTw('shrink-0 border-b border-filter-border text-body', STATUS_TEXT_COLORS[status])}>
+              {NUM_FORMATTER.format(BigInt(startingBlock))}
+            </span>
+          </div>
+        </Tooltip.Trigger>
+        <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.startBlockTime', { date, time })}</Tooltip.Content>
+      </Tooltip>
+    );
+  },
+);
 
 type IssuesFooterProps = {
   issues?: ValidationIssue[] | null;
   onDownloadClick?: () => void;
 };
 
-const IssuesFooter = ({ issues, onDownloadClick }: IssuesFooterProps) => {
+const IssuesFooter = memo(({ issues, onDownloadClick }: IssuesFooterProps) => {
   const { t } = useI18n();
 
   if (nullable(onDownloadClick) || nullable(issues) || issues.length === 0) {
@@ -310,7 +341,7 @@ const IssuesFooter = ({ issues, onDownloadClick }: IssuesFooterProps) => {
       </div>
     </Modal.Footer>
   );
-};
+});
 
 const NUM_FORMATTER = new Intl.NumberFormat('en-US');
 
