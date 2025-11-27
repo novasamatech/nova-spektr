@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { evidenceService, memberService, useEvidencePeriod, useFeed } from '@/domains/collectives';
-import { useBlock, useBlockTime } from '@/domains/network';
+import { useBlock, useBlockTimestamp } from '@/domains/network';
 import { useFellowshipMember } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
 
@@ -47,11 +47,11 @@ export const usePromotionPeriodDates = () => {
   const api = useFellowshipApi();
   const { data: promotionPeriod } = usePromotionPeriod();
 
-  const { data: fromDate, pending: fromDatePending } = useBlockTime({
+  const { data: fromDate, pending: fromDatePending } = useBlockTimestamp({
     api,
     blockHeight: promotionPeriod?.from ?? null,
   });
-  const { data: toDate, pending: toDatePending } = useBlockTime({ api, blockHeight: promotionPeriod?.to ?? null });
+  const { data: toDate, pending: toDatePending } = useBlockTimestamp({ api, blockHeight: promotionPeriod?.to ?? null });
 
   return { data: { from: fromDate, to: toDate }, pending: fromDatePending || toDatePending };
 };
