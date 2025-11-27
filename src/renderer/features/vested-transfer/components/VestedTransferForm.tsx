@@ -206,7 +206,9 @@ const ValidationsAlert = () => {
   const [isAlertOpen, toggleAlert] = useState(true);
 
   useEffect(() => {
-    toggleAlert(true);
+    if (csvError || csvIssues?.length) {
+      toggleAlert(true);
+    }
   }, [csvError, csvIssues]);
 
   if (csvError === VestingCsvError.STRUCTURE) {
