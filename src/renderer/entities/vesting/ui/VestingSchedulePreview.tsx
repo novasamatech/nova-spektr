@@ -175,7 +175,23 @@ export const VestingSchedulePreview = ({
         render: (_, row) =>
           renderCell(row, 'locked', ({ row }) =>
             row.locked && asset ? (
-              <AssetBalance value={row.locked} asset={asset} showSymbol className="text-inherit" />
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div>
+                    <AssetBalance
+                      value={row.locked}
+                      asset={asset}
+                      showSymbol
+                      className="border-b border-filter-border text-inherit"
+                    />
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  {t('vestedTransfer.parsedFile.table.hints.planks', {
+                    amount: NUM_FORMATTER.format(BigInt(row.locked)),
+                  })}
+                </Tooltip.Content>
+              </Tooltip>
             ) : (
               <span className="shrink-0 text-body">{row.locked}</span>
             ),
