@@ -43,12 +43,12 @@ const useTimeToNextRank = () => {
   const promotionProgress = useUnit(promotion.$promotionProgress);
 
   useEffect(() => {
-    if (promotionProgress && promotionProgress.progressPercentage >= 100) {
+    if ((promotionProgress && promotionProgress.progressPercentage >= 100) || leftToPromotion === 0) {
       setTimeToNextRank(READY_FOR_PROMOTION);
       return;
     }
 
-    if (leftToPromotion && currentBlock && api) {
+    if (leftToPromotion !== null && leftToPromotion !== undefined && currentBlock && api) {
       getRelativeTimeFromApi(leftToPromotion, api).then(setTimeToNextRank);
       return;
     }
