@@ -879,8 +879,8 @@
           "submit": "Submit"
         },
         "promotionPeriodWarning": {
-          "title": "Are you sure you want to submit promotion report?",
-          "description": "Retention period in progress. Submit only if confident that your work meets expectations defined for the higher rank. Otherwise, continue contributing according to current rank requirements.",
+          "title": "Retention period ends in 30 days",
+          "description": "It is recommended to prioritize submitting the retention report before submitting promotion evidence to avoid being bumped.",
           "cancel": "Cancel",
           "submit": "Submit"
         },
