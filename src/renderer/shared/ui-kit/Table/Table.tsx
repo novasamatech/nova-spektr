@@ -14,14 +14,23 @@ export type Column<T> = {
   render?: (value: T[keyof T], item: T) => ReactNode;
 };
 
+const CELL_ALIGN_STYLES = {
+  top: 'align-top',
+  middle: 'align-middle',
+  bottom: 'align-bottom',
+} as const;
+
+export type CellAlign = keyof typeof CELL_ALIGN_STYLES;
+
 type TableProps<T> = {
   columns: Column<T>[];
   data: T[];
   className?: string;
+  cellAlign?: CellAlign;
   onSort?: (key: keyof T, direction: SortDirection) => void;
 };
 
-const TableComponent = <T,>({ columns, data, className, onSort }: TableProps<T>) => {
+const TableComponent = <T,>({ columns, data, className, cellAlign = 'middle', onSort }: TableProps<T>) => {
   const [sortKey, setSortKey] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
@@ -99,7 +108,7 @@ const TableComponent = <T,>({ columns, data, className, onSort }: TableProps<T>)
           {sortedData.map((item, index) => (
             <tr key={index} className="table-row">
               {columns.map(column => (
-                <td key={String(column.key)} className="table-cell">
+                <td key={String(column.key)} className={cnTw('table-cell', CELL_ALIGN_STYLES[cellAlign])}>
                   {column.render ? column.render(item[column.key], item) : String(item[column.key])}
                 </td>
               ))}
