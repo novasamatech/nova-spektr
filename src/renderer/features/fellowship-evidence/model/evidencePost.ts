@@ -1,7 +1,7 @@
 import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { createGate } from 'effector-react';
 import { reshape } from 'patronum';
 
-import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { createTxStore } from '@/shared/transactions';
 import { evidenceService } from '@/domains/collectives';
@@ -13,7 +13,7 @@ import { evidenceForm } from './evidenceForm';
 import { evidenceIPFS } from './evidenceIPFS';
 import { fellowshipEvidenceFeature } from './feature';
 
-const flow = createFlow(null);
+const flow = createGate();
 
 const { $api, $chain, $wallet, $wallets, $account } = reshape({
   source: fellowshipEvidenceFeature.input,
@@ -125,6 +125,9 @@ sample({
 const setStep = createEvent<'closed' | 'form' | 'submit'>();
 const $step = restore(setStep, 'closed');
 
+const setActiveWish = createEvent<'Promotion' | 'Retention' | null>();
+const $activeWish = restore(setActiveWish, null);
+
 const openSubmitModal = createEvent();
 const closeSubmitModal = createEvent();
 const $submitModalOpen = createStore(false);
@@ -148,9 +151,15 @@ sample({
 });
 
 sample({
+  clock: evidenceForm.evidenceUploaded,
+  source: evidenceForm.$wish,
+  target: $activeWish,
+});
+
+sample({
   clock: $step,
   filter: step => step === 'closed',
-  target: evidenceForm.reset,
+  target: [evidenceForm.reset, $activeWish.reinit],
 });
 
 sample({
@@ -191,6 +200,7 @@ export const evidencePost = {
   flow,
   $fee,
   $step,
+  $activeWish,
   $submitModalOpen,
   $wallet,
   $account,
@@ -198,6 +208,7 @@ export const evidencePost = {
   sign,
   saveToBasket,
   setStep,
+  setActiveWish,
   openSubmitModal,
   closeSubmitModal,
 };

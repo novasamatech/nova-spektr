@@ -1,7 +1,6 @@
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type PropsWithChildren, useEffect, useRef } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui';
@@ -31,33 +30,43 @@ export const MarkdownPreviewModal = ({
   const { t } = useI18n();
   const { toast } = useNotification();
   const toastIdRef = useRef<string | number | undefined>(undefined);
+  const isShowingToastRef = useRef(false);
 
   const isViewingSubmittedEvidence = nonNullable(evidenceContent);
 
-  useFlow(evidenceForm.flow, isViewingSubmittedEvidence ? { wish: null } : { wish });
+  useGate(evidenceForm.flow, isViewingSubmittedEvidence ? { wish: null } : { wish });
 
   const ipfsFileContent = useUnit(evidenceIPFS.$fileContent);
   const pendingIPFSData = useUnit(evidenceIPFS.$pendingData);
   const isUploadPending = useUnit(evidenceIPFS.uploadFileToIPFS.pending);
   const uploadError = useUnit(evidenceIPFS.$uploadError);
+  const activeWish = useUnit(evidenceForm.$wish);
+  const activeFlowType = useUnit(evidenceForm.$flowType);
 
   const isLoading = isUploadPending;
   const contentToShow = evidenceContent || pendingIPFSData?.content || ipfsFileContent || '';
-  const isActiveFlow = !isViewingSubmittedEvidence && isOpen;
+  const isActiveFlow = !isViewingSubmittedEvidence && isOpen && activeWish === wish && activeFlowType === flowType;
 
   useEffect(() => {
     if (!isActiveFlow) {
+      if (toastIdRef.current) {
+        toast.dismiss(toastIdRef.current);
+        toastIdRef.current = undefined;
+        isShowingToastRef.current = false;
+      }
       return;
     }
 
-    if (isUploadPending && !toastIdRef.current) {
+    if (isUploadPending && !isShowingToastRef.current) {
+      isShowingToastRef.current = true;
       toastIdRef.current = toast.loading(t('fellowship.salary.evidence.uploadingToIPFS'));
       return;
     }
 
-    if (!isUploadPending && toastIdRef.current) {
+    if (!isUploadPending && isShowingToastRef.current && toastIdRef.current) {
       toast.dismiss(toastIdRef.current);
       toastIdRef.current = undefined;
+      isShowingToastRef.current = false;
 
       if (uploadError) {
         toast.error(uploadError);
@@ -65,7 +74,7 @@ export const MarkdownPreviewModal = ({
         toast.success(t('fellowship.salary.evidence.uploadSuccess'));
       }
     }
-  }, [isUploadPending, uploadError, toast, t, isActiveFlow]);
+  }, [isUploadPending, uploadError, toast, t, isActiveFlow, wish, activeWish, flowType, activeFlowType]);
 
   const handleConfirm = () => {
     if (!isActiveFlow || !pendingIPFSData) {
