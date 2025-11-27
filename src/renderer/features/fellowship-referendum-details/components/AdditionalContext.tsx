@@ -1,5 +1,4 @@
-import { useTranslation } from 'react-i18next';
-
+import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { FootnoteText, SmallTitleText, TitleText } from '@/shared/ui/Typography';
@@ -19,7 +18,7 @@ type Props = {
 };
 
 export const AdditionalContext = ({ referendum }: Props) => {
-  const { t } = useTranslation();
+  const { t } = useI18n();
 
   const chain = useFellowshipChain();
   const { data: proposer } = useProposer(referendum);
