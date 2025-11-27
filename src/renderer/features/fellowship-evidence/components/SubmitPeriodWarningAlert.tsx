@@ -1,5 +1,6 @@
+import { Slot } from '@radix-ui/react-slot';
 import { differenceInDays } from 'date-fns';
-import { type PropsWithChildren, useCallback, useMemo, useState } from 'react';
+import { type HTMLAttributes, type ReactElement, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
@@ -8,16 +9,32 @@ import { ConfirmModal } from '@/shared/ui-kit';
 import { useRetentionPeriodDates } from '@/aggregates/fellowship-retention';
 import { PROMOTION_WARNING_THRESHOLD_DAYS, RETENTION_WARNING_THRESHOLD_DAYS } from '../constants';
 
-type Props = PropsWithChildren<{
+type RadixIntegration = Pick<
+  HTMLAttributes<Element>,
+  | 'onClick'
+  | 'onMouseDown'
+  | 'onMouseUp'
+  | 'onMouseEnter'
+  | 'onMouseLeave'
+  | 'onPointerDown'
+  | 'onPointerUp'
+  | 'onPointerMove'
+  | 'onPointerLeave'
+>;
+
+type Props = RadixIntegration & {
   wish: 'Promotion' | 'Retention';
   onConfirm: () => void;
-}>;
+  children: ReactElement;
+};
 
-export const SubmitPeriodWarningAlert = ({ wish, onConfirm, children }: Props) => {
+export const SubmitPeriodWarningAlert = ({ wish, onConfirm, children, ...radix }: Props) => {
   const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
 
   const { data: retentionPeriodDates } = useRetentionPeriodDates();
+
+  const translationKey = wish === 'Promotion' ? 'promotionPeriodWarning' : 'retentionPeriodWarning';
 
   const shouldShowWarning = useMemo(() => {
     if (nullable(retentionPeriodDates) || nullable(retentionPeriodDates.to)) {
@@ -27,7 +44,7 @@ export const SubmitPeriodWarningAlert = ({ wish, onConfirm, children }: Props) =
     const daysUntilEnd = differenceInDays(retentionPeriodDates.to, new Date());
 
     if (wish === 'Retention') {
-      return daysUntilEnd < RETENTION_WARNING_THRESHOLD_DAYS;
+      return daysUntilEnd > RETENTION_WARNING_THRESHOLD_DAYS;
     }
 
     if (wish === 'Promotion') {
@@ -37,29 +54,32 @@ export const SubmitPeriodWarningAlert = ({ wish, onConfirm, children }: Props) =
     return false;
   }, [wish, retentionPeriodDates]);
 
-  const translationKey = wish === 'Retention' ? 'retentionPeriodWarning' : 'promotionPeriodWarning';
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
 
-  const handleClick = useCallback(() => {
     if (shouldShowWarning) {
       setIsOpen(true);
     } else {
       onConfirm();
     }
-  }, [shouldShowWarning, onConfirm]);
 
-  const handleConfirm = useCallback(() => {
+    radix.onClick?.(e);
+  };
+
+  const handleConfirm = () => {
     setIsOpen(false);
     onConfirm();
-  }, [onConfirm]);
+  };
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     setIsOpen(false);
-  }, []);
+  };
 
   return (
     <>
-      <div onClick={handleClick}>{children}</div>
-
+      <Slot {...radix} onClick={handleClick}>
+        {children}
+      </Slot>
       <ConfirmModal
         isOpen={isOpen}
         title={t(`fellowship.salary.evidence.${translationKey}.title`)}

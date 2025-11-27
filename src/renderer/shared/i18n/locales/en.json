@@ -874,7 +874,7 @@
         "submitRetentionReport": "Submit retention report",
         "retentionPeriodWarning": {
           "title": "Are you sure you want to submit retention report?",
-          "description": "Retention period in progress. Submit only if confident that your work meets expectations defined for the current rank. Otherwise, continue contributing according to rank requirements.",
+          "description": "It might be too early to submit your retention report. We recommend submitting no earlier than month before the retention period ends. Please ensure you have gathered sufficient work evidence for the current retention period before submitting.",
           "cancel": "Cancel",
           "submit": "Submit"
         },
