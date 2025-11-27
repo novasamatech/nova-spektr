@@ -2597,7 +2597,7 @@
           "MAX_VESTING_SCHEDULES_REACHED": "Max vesting schedules reached",
           "MIN_VESTED_TRANSFER": "Min vested transfer",
           "OUT_OF_RANGE": "Value out of range",
-          "START_BLOCK_IN_PAST": "Block in the past",
+          "START_BLOCK_IN_PAST": "Block in the past. Make sure you are using relaychain block number",
           "UNKNOWN_ERROR": "Unknown error"
         },
         "invalidDataRow": "Row {row}",

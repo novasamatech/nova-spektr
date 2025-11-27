@@ -63,7 +63,7 @@ export const VestingSchedulePreview = ({
         ) : (
           <Component row={row} field={field} status={status} />
         )}
-        {fieldIssues.length > 0 && <FieldIssues issues={fieldIssues} />}
+        {fieldIssues.length > 0 && <FieldIssues issue={fieldIssues[0]} />}
       </div>
     );
   };
@@ -97,7 +97,7 @@ export const VestingSchedulePreview = ({
           return (
             <div className={cnTw('flex flex-col overflow-hidden', STATUS_TEXT_COLORS[status])}>
               <TargetAccount target={row.target} chain={chain} />
-              {fieldIssues.length > 0 && <FieldIssues issues={fieldIssues} />}
+              {fieldIssues.length > 0 && <FieldIssues issue={fieldIssues[0]} className="text-left" />}
             </div>
           );
         },
@@ -213,7 +213,7 @@ export const VestingSchedulePreview = ({
       <Modal.Content>
         <div className="px-2 pb-3">
           <ScrollArea>
-            <Table columns={columns} data={tableData} className="w-full rounded-lg" />
+            <Table columns={columns} data={tableData} cellAlign="top" className="w-full rounded-lg" />
           </ScrollArea>
         </div>
       </Modal.Content>
@@ -222,16 +222,14 @@ export const VestingSchedulePreview = ({
   );
 };
 
-const FieldIssues = ({ issues, className }: { issues: ValidationIssue[]; className?: string }) => {
+const FieldIssues = ({ issue, className }: { issue: ValidationIssue; className?: string }) => {
   const { t } = useI18n();
 
   return (
     <div className="flex flex-col">
-      {issues.map((issue) => (
-        <CaptionText key={issue.message} className={cnTw('text-inherit', className)}>
-          {t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
-        </CaptionText>
-      ))}
+      <CaptionText className={cnTw('text-right text-inherit', className)}>
+        {t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
+      </CaptionText>
     </div>
   );
 };
