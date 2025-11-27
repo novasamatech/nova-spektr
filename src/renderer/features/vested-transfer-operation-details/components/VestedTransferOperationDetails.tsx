@@ -1,11 +1,12 @@
 import { useUnit } from 'effector-react';
 
-import { type DecodedTransaction, TransactionType } from '@/shared/core';
+import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { Button, DetailRow } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { operationDetailsUtils } from '@/entities/operations';
 import { VestingSchedulePreview, type VestingScheduleRaw } from '@/entities/vesting';
 
 type Props = {
@@ -17,8 +18,9 @@ export const VestedTransferOperationDetails = ({ operation }: Props) => {
   const chains = useUnit(networkModel.$chains);
   const apis = useUnit(networkModel.$apis);
 
-  const { transaction, chainId } = operation;
+  const { chainId } = operation;
   const chain = chains[chainId];
+  const transaction = operationDetailsUtils.getCoreTx(operation);
 
   if (nullable(transaction) || nullable(chain)) return null;
 
@@ -42,7 +44,7 @@ export const VestedTransferOperationDetails = ({ operation }: Props) => {
   );
 };
 
-function extractVestingSchedule(tx: DecodedTransaction) {
+function extractVestingSchedule(tx: Transaction | DecodedTransaction) {
   const {
     target,
     schedule: { locked, perBlock, startingBlock },
