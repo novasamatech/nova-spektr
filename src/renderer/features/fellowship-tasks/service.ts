@@ -7,6 +7,7 @@ import {
   type Member,
   type OngoingReferendum,
   evidenceService,
+  memberService,
   referendumService,
   trackService,
 } from '@/domains/collectives';
@@ -267,7 +268,7 @@ const isRetentionReferendumAllowed = ({ referendum, members }: ReferendumAllowan
     return true;
   }
 
-  if (proposerMember.rank === 0 && trackService.isRetentionTrack(referendum.track)) {
+  if (trackService.isRetentionTrack(referendum.track) && memberService.isRetentionRestricted(proposerMember)) {
     return false;
   }
 
