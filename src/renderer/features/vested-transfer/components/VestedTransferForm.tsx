@@ -62,7 +62,7 @@ export const VestedTransferForm = () => {
 export const NetworkSelect = memo(() => {
   const { t } = useI18n();
 
-  const allChains = useUnit(formModel.$allChains);
+  const availableChains = useUnit(formModel.$availableChains);
   const {
     fields: { chain },
   } = useForm(formModel.form);
@@ -72,7 +72,7 @@ export const NetworkSelect = memo(() => {
       <ChainSelect
         placeholder={t('vestedTransfer.form.fields.network.placeholder')}
         value={chain.value}
-        options={allChains}
+        options={availableChains}
         onChange={chain.onChange}
       />
       <InputHint variant="error" active={chain.hasError}>
