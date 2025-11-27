@@ -3,7 +3,7 @@ import { type BN } from '@polkadot/util';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export type VestingScheduleRaw = {
-  target: string;
+  target: AccountId;
   locked: string;
   startingBlock: string;
   perBlock: string;
