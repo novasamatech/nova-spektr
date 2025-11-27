@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 import { type FormEvent, memo, useEffect, useMemo, useState } from 'react';
 
+import vested_transfer_template_url from '@/shared/assets/templates/vested-transfer-template.csv?url';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
@@ -16,9 +17,6 @@ import { VestingCsvError, VestingSchedulePreview } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 import { vestedTransferUtils } from '../utils';
-
-const CSV_TEMPLATE_LINK =
-  'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/templates/vested-transfer-template.csv';
 
 export const VestedTransferForm = () => {
   const { t } = useI18n();
@@ -169,7 +167,7 @@ const UploadCSV = () => {
       <div className="flex items-center justify-between gap-x-2">
         <FootnoteText className="text-text-tertiary">{t('vestedTransfer.form.fields.csvFile.label')}</FootnoteText>
         <div className="flex items-center gap-x-2">
-          <InfoLink url={CSV_TEMPLATE_LINK} className="ml-2" iconName="import" iconPosition="right">
+          <InfoLink url={vested_transfer_template_url} className="ml-2" iconName="import" iconPosition="right" download>
             {t('vestedTransfer.form.fields.csvFile.exampleButton')}
           </InfoLink>
           {showPreview && (
