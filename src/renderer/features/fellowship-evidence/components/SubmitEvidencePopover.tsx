@@ -29,6 +29,10 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
   const fromScratchEvidence = useUnit(evidenceForm.$evidence);
   const ipfsEvidence = useUnit(evidenceIPFS.$evidence);
   const flowType = useUnit(evidenceForm.$flowType);
+  const activeWish = useUnit(evidenceForm.$wish);
+
+  const shouldRenderUpload = ipfsStep === 'upload' && activeWish === wish;
+  const shouldRenderPreview = ipfsStep === 'preview' && activeWish === wish;
 
   const handleFromScratch = useCallback(() => {
     evidenceForm.setFlowType('fromScratch');
@@ -38,10 +42,11 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
 
   const handleUploadFromIPFS = useCallback(() => {
     evidenceIPFS.reset();
+    evidenceForm.flow.open({ wish });
     evidenceForm.setFlowType('ipfsUpload');
     evidenceIPFS.startFlow();
     setPopoverOpen(false);
-  }, []);
+  }, [wish]);
 
   const handleFromScratchClose = useCallback((open: boolean) => {
     setFromScratchOpen(open);
@@ -132,17 +137,19 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
 
       <SubmitEvidenceFromScratch wish={wish} isOpen={fromScratchOpen} onToggle={handleFromScratchClose} />
 
-      <IPFSUploadModal isOpen={ipfsStep === 'upload'} wish={wish} onToggle={handleIPFSUploadClose} />
+      {shouldRenderUpload && <IPFSUploadModal isOpen={true} wish={wish} onToggle={handleIPFSUploadClose} />}
 
-      <MarkdownPreviewModal
-        isOpen={ipfsStep === 'preview'}
-        wish={wish}
-        flowType="ipfsUpload"
-        onToggle={handleIPFSPreviewClose}
-        onBack={handleBackToUpload}
-      />
+      {shouldRenderPreview && (
+        <MarkdownPreviewModal
+          isOpen={true}
+          wish={wish}
+          flowType="ipfsUpload"
+          onToggle={handleIPFSPreviewClose}
+          onBack={handleBackToUpload}
+        />
+      )}
 
-      {nonNullable(ipfsEvidence) && flowType === 'ipfsUpload' && (
+      {nonNullable(ipfsEvidence) && flowType === 'ipfsUpload' && activeWish === wish && (
         <EvidencePostModal
           wish={wish}
           evidence={ipfsEvidence}
@@ -151,7 +158,7 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
         />
       )}
 
-      {nonNullable(fromScratchEvidence) && flowType === 'fromScratch' && (
+      {nonNullable(fromScratchEvidence) && flowType === 'fromScratch' && activeWish === wish && (
         <EvidencePostModal
           wish={wish}
           evidence={fromScratchEvidence}
