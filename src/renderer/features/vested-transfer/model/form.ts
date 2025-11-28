@@ -324,10 +324,13 @@ sample({
 
 sample({
   clock: validateFileFx.failData,
-  fn: (issues) => ({
-    csvError: VestingCsvError.DATA,
-    csvIssues: issues,
-  }),
+  fn: (issues) => {
+    return {
+      csvError: VestingCsvError.DATA,
+      // asserts can throw an error and not an array
+      csvIssues: Array.isArray(issues) ? issues : [issues],
+    };
+  },
   target: spread({
     csvError: $csvError,
     csvIssues: $csvIssues,
