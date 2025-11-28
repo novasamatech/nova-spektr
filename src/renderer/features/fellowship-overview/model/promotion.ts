@@ -79,7 +79,8 @@ const $promotionProgress = combine(
     const promotionPeriod = evidenceService.getPromotionPeriod(memberWithPromotionStart, periods);
     const windowStart = promotionWindow?.from ?? memberWithPromotionStart.lastPromotion;
     const blocksPassed = currentBlock - windowStart;
-    const progressPercentage = Math.min(100, (blocksPassed / promotionPeriod) * 100);
+    const calculatedProgress = (blocksPassed / promotionPeriod) * 100;
+    const progressPercentage = leftToPromotion === 0 ? 100 : Math.min(100, calculatedProgress);
 
     return {
       progressPercentage,

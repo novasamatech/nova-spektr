@@ -18,6 +18,7 @@ import { Operation } from './Operation';
 import { OperationsFilter } from './OperationsFilter';
 import { AccountNotFoundModal } from './modals/AccountNotFoundModal';
 import { AlreadySignedModal } from './modals/AlreadySignedModal';
+import { ConnectionTimeoutModal } from './modals/ConnectionTimeoutModal';
 import { NetworkNotAvailableModal } from './modals/NetworkNotAvailableModal';
 import { OperationNotFoundModal } from './modals/OperationNotFoundModal';
 
@@ -28,6 +29,7 @@ export const Operations = () => {
   const operations = useUnit(selectedWalletMultisigOperations.$list);
   const filteredTxs = useUnit(operationsContextModel.$filteredOperations);
   const focusedOperationId = useUnit(deepLinkModel.$focusedOperationId);
+  const isDeepLinkLoading = useUnit(deepLinkModel.$isDeepLinkLoading);
   const isLoading = useUnit(multisigOperation.requestOperations.pending);
 
   const [focusedRef, scrollToFocused] = useScrollTo<HTMLLIElement>(300);
@@ -70,7 +72,7 @@ export const Operations = () => {
           <Box horizontalAlign="center" verticalAlign="center" height="100%" padding={[0, 0, 10]}>
             {operations.length > 0 && <OperationsFilter operations={operations} />}
 
-            {isLoading && (
+            {(isLoading || isDeepLinkLoading) && (
               <div className="mt-4 flex w-full justify-center">
                 <Loader color="primary" size={25} />
               </div>
@@ -114,6 +116,7 @@ export const Operations = () => {
 
       <AccountNotFoundModal />
       <NetworkNotAvailableModal />
+      <ConnectionTimeoutModal />
       <OperationNotFoundModal />
       <AlreadySignedModal />
     </>

@@ -8,6 +8,7 @@ import {
   useFellowshipMemberLeftToDemotion,
   useFellowshipMemberLeftToPromotion,
 } from '@/aggregates/fellowship-member';
+import { useRetentionRequest } from '@/aggregates/fellowship-retention';
 import { RequestPromotion } from '../components/tasks/RequestPromotion';
 import { RequestRetention } from '../components/tasks/RequestRetention';
 import { type TaskDescription } from '../types';
@@ -20,6 +21,7 @@ export const useMemberEvidenceTasks = () => {
   const { data: evidence, pending: pendingEvidence } = useFellowshipMemberEvidence();
   const { data: leftToDemotion, pending: pendingDemotion } = useFellowshipMemberLeftToDemotion();
   const { data: leftToPromotion, pending: pendingPromotion } = useFellowshipMemberLeftToPromotion();
+  const { data: shouldRetentionRequest } = useRetentionRequest();
 
   const hasPromotionEvidence = evidence?.wish === 'Promotion';
   const hasRetentionEvidence = evidence?.wish === 'Retention';
@@ -28,7 +30,7 @@ export const useMemberEvidenceTasks = () => {
     const tasks: TaskDescription[] = [];
 
     if (nonNullable(member) && memberService.isCoreMember(member)) {
-      if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence === false) {
+      if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence && shouldRetentionRequest) {
         tasks.push({
           id: 'evidence',
           weight: 1,
@@ -40,8 +42,8 @@ export const useMemberEvidenceTasks = () => {
         memberService.canPromote(member) &&
         nonNullable(leftToPromotion) &&
         leftToPromotion <= 0 &&
-        hasPromotionEvidence === false &&
-        hasRetentionEvidence === false
+        hasPromotionEvidence &&
+        hasRetentionEvidence
       ) {
         tasks.push({
           id: 'evidence',

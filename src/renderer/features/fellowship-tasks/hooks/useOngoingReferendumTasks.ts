@@ -40,7 +40,11 @@ export const useOngoingReferendumTasks = () => {
       return nonNullable(votes.find(vote => vote.referendumId === referendum.id));
     };
 
-    const groups = groupBy(possibleReferendums, referendum => {
+    const filteredReferendums = possibleReferendums.filter(referendum =>
+      tasksService.isRetentionReferendumAllowed({ referendum, members }),
+    );
+
+    const groups = groupBy(filteredReferendums, referendum => {
       return trackService.isRetentionTrack(referendum.track) || trackService.isPromotionTrack(referendum.track)
         ? 'evidence'
         : 'other';
