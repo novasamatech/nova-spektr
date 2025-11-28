@@ -1,7 +1,8 @@
 import { createEffect, createStore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type Contact, kernelModel } from '@/shared/core';
+import { kernelModel } from '@/shared/core/model/kernel-model';
+import { type Contact } from '@/shared/core/types/contact';
 import { merge, splice } from '@/shared/lib/utils';
 
 const $contacts = createStore<Contact[]>([]);

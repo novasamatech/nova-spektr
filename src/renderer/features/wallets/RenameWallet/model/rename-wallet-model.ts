@@ -1,7 +1,7 @@
 import { attach, combine, createEffect, createEvent, restore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type Wallet } from '@/shared/core';
+import { AccountNameType, type Wallet } from '@/shared/core';
 import { createForm } from '@/shared/forms/createForm';
 import { type ValidationError } from '@/shared/forms/types';
 import { nonNullable } from '@/shared/lib/utils';
@@ -80,7 +80,7 @@ sample({
   fn: (walletToEdit, { name }) => {
     const accounts = walletUtils.isPolkadotVault(walletToEdit)
       ? walletToEdit.accounts
-      : walletToEdit.accounts?.map((acc) => ({ ...acc, name }));
+      : walletToEdit.accounts?.map((acc) => ({ ...acc, name, nameType: AccountNameType.CUSTOM }));
 
     return { ...walletToEdit, name, accounts };
   },

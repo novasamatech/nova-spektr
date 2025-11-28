@@ -22,12 +22,16 @@ export type WalletNameParams = {
 
 type NameCache = Record<string, string>;
 
-const $nameResolverSource = combine({
-  contacts: contactModel.$contacts,
-  identities: identity.$list,
-  chains: networkModel.$chains,
-  accounts: accounts.$list,
-});
+const getContactsStore = () => contactModel?.$contacts ?? createStore([]);
+
+const getNameResolverSource = () => {
+  return combine({
+    contacts: getContactsStore(),
+    identities: identity.$list,
+    chains: networkModel.$chains,
+    accounts: accounts.$list,
+  });
+};
 
 export const createAccountNameCacheKey = ({ accountId, chain, title }: AccountNameParams): string => {
   const chainKey = chain?.chainId ?? 'anyChain';
@@ -57,7 +61,7 @@ export const accountNameResource = createQueryResource<AccountNameParams>({
 })
   .request(
     attach({
-      source: $nameResolverSource,
+      source: getNameResolverSource(),
       effect: ({ contacts, identities, chains, accounts }, params) => {
         return accountService.resolveAccountName({
           accountId: params.accountId,
@@ -89,7 +93,7 @@ export const walletNameResource = createQueryResource<WalletNameParams>({
 })
   .request(
     attach({
-      source: $nameResolverSource,
+      source: getNameResolverSource(),
       effect: ({ contacts, identities, chains, accounts }, params) => {
         return accountService.resolveWalletName({
           wallet: params.wallet,
