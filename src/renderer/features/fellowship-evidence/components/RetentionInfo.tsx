@@ -12,7 +12,7 @@ import { evidenceInfo } from '../model/evidence';
 import { fellowshipEvidenceFeature } from '../model/feature';
 import { profile } from '../model/profile';
 
-import { EvidencePostFlowModal } from './EvidencePostFlowModal';
+import { EvidencePostFlowTrigger } from './EvidencePostFlowTrigger';
 
 export const RetentionInfo = memo(() => {
   const { t } = useI18n();
@@ -53,9 +53,9 @@ export const RetentionInfo = memo(() => {
               {timeLeft === 0 ? t('general.timeout.expired') : <Duration seconds={timeLeft / 1000} />}
             </SmallTitleText>
           </Box>
-          <EvidencePostFlowModal wish="Retention">
+          <EvidencePostFlowTrigger wish="Retention">
             <Button disabled={disabled}>{t('fellowship.salary.retentionSubmit')}</Button>
-          </EvidencePostFlowModal>
+          </EvidencePostFlowTrigger>
         </Box>
       )}
 
@@ -75,9 +75,9 @@ export const RetentionInfo = memo(() => {
                 }
               }}
             />
-            <EvidencePostFlowModal wish="Retention">
+            <EvidencePostFlowTrigger wish="Retention">
               <IconButton name="editKeys" size={16} />
-            </EvidencePostFlowModal>
+            </EvidencePostFlowTrigger>
           </Box>
         </Box>
       )}

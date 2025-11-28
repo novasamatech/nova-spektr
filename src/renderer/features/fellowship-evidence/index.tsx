@@ -15,6 +15,7 @@ import {
 } from '@/features/fellowship-tasks';
 
 import { EvidencePostFlowModal } from './components/EvidencePostFlowModal';
+import { EvidencePostFlowTrigger } from './components/EvidencePostFlowTrigger';
 import { EvidenceVotingConfirmation } from './components/EvidenceVotingConfirmation';
 import { MarkdownPreviewModal } from './components/MarkdownPreviewModal';
 import { RetentionInfo } from './components/RetentionInfo';
@@ -31,10 +32,16 @@ export {
   SubmitEvidenceConfirmation,
   EvidenceVotingConfirmation,
   SubmitEvidencePopover,
+  EvidencePostFlowTrigger,
 };
 
 fellowshipEvidenceFeature.inject(evidenceSlot, () => {
-  return <RetentionInfo />;
+  return (
+    <>
+      <RetentionInfo />
+      <EvidencePostFlowModal />
+    </>
+  );
 });
 
 fellowshipEvidenceFeature.inject(requestPromotionTaskActionSlot, () => {
@@ -103,11 +110,11 @@ fellowshipEvidenceFeature.inject(retentionEvidenceSubmitSlot, ({ mode, evidenceC
         <MarkdownPreviewModal isOpen={isOpen} evidenceContent={evidenceContent} wish="Retention" onToggle={setIsOpen}>
           <Button size="sm">{t('fellowship.retention.button.view')}</Button>
         </MarkdownPreviewModal>
-        <EvidencePostFlowModal wish="Retention">
+        <EvidencePostFlowTrigger wish="Retention">
           <Button className="shrink-0" size="sm" pallet="secondary" variant="fill" disabled={!canVote}>
             {t('fellowship.retention.button.edit')}
           </Button>
-        </EvidencePostFlowModal>
+        </EvidencePostFlowTrigger>
       </>
     );
   }
@@ -132,11 +139,11 @@ fellowshipEvidenceFeature.inject(promotionEvidenceSubmitSlot, ({ mode, evidenceC
         <MarkdownPreviewModal isOpen={isOpen} evidenceContent={evidenceContent} wish="Promotion" onToggle={setIsOpen}>
           <Button size="sm">{t('fellowship.promotion.submitted.viewButton')}</Button>
         </MarkdownPreviewModal>
-        <EvidencePostFlowModal wish="Promotion">
+        <EvidencePostFlowTrigger wish="Promotion">
           <Button size="sm" pallet="secondary" variant="fill" disabled={!canVote}>
             {t('fellowship.promotion.submitted.editButton')}
           </Button>
-        </EvidencePostFlowModal>
+        </EvidencePostFlowTrigger>
       </>
     );
   }
