@@ -87,6 +87,7 @@
       "loading": "Importing contacts...",
       "success": "Contacts imported"
     },
+    "contactDeleted": "Contact deleted",
     "removeConfirm": {
       "cancelButton": "Cancel",
       "confirmButton": "Delete",
@@ -94,7 +95,8 @@
       "title": "Delete contact"
     },
     "searchPlaceholder": "Search",
-    "title": "Address Book"
+    "title": "Address Book",
+    "undo": "Undo"
   },
   "assetBalance": {
     "locked": "Locked",

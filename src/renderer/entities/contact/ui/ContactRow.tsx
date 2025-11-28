@@ -5,7 +5,7 @@ import { useI18n } from '@/shared/i18n';
 import { Paths, createLink } from '@/shared/routes';
 import { IconButton, Plate } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
-import { ConfirmModal, Copy } from '@/shared/ui-kit';
+import { Copy, useNotification } from '@/shared/ui-kit';
 import { contactModel } from '../model/contact-model';
 
 type Props = {
@@ -15,13 +15,20 @@ type Props = {
 export const ContactRow = ({ contact }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const { toast } = useNotification();
 
   const handleEdit = () => {
     navigate(createLink(Paths.EDIT_CONTACT, {}, { id: [contact.id] }));
   };
 
-  const onDelete = async () => {
-    await contactModel.effects.deleteContactFx(contact.id);
+  const handleDelete = () => {
+    toast.success(t('addressBook.contactDeleted'), {
+      action: {
+        label: t('addressBook.undo'),
+        onClick: () => contactModel.effects.createContactFx(contact),
+      },
+    });
+    contactModel.effects.deleteContactFx(contact.id);
   };
 
   return (
@@ -36,18 +43,7 @@ export const ContactRow = ({ contact }: Props) => {
 
         <IconButton className="shrink-0 self-center text-icon-default" name="edit" onClick={handleEdit} />
 
-        <ConfirmModal
-          title={t('addressBook.removeConfirm.title')}
-          description={t('addressBook.removeConfirm.description', { name: contact.name })}
-          cancelText={t('addressBook.removeConfirm.cancelButton')}
-          confirmText={t('addressBook.removeConfirm.confirmButton')}
-          type="warning"
-          onConfirm={onDelete}
-        >
-          <ConfirmModal.Trigger>
-            <IconButton className="shrink-0 self-center text-icon-default" name="delete" />
-          </ConfirmModal.Trigger>
-        </ConfirmModal>
+        <IconButton className="shrink-0 self-center text-icon-default" name="delete" onClick={handleDelete} />
       </div>
     </Plate>
   );
