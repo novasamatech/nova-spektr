@@ -152,7 +152,6 @@ sample({
 
 sample({
   clock: evidenceForm.evidenceUploaded,
-  source: evidenceForm.$wish,
   target: $activeWish,
 });
 
