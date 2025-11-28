@@ -9,7 +9,6 @@ import { importContactsModel } from '../model/import-contacts-model';
 import { ImportConflictsModal } from './ImportConflictsModal';
 
 const LOADING_TOAST_DELAY = 500;
-const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
 
 export const ImportContactsButton = () => {
   const { t } = useI18n();
@@ -23,6 +22,7 @@ export const ImportContactsButton = () => {
   const hasSuccess = useUnit(importContactsModel.$hasSuccess);
   const showConflicts = useUnit(importContactsModel.$showConflicts);
   const isEmptyList = useUnit(importContactsModel.$isEmptyList);
+  const isFileTooLarge = useUnit(importContactsModel.$isFileTooLarge);
   const importedCount = useUnit(importContactsModel.$importedCount);
 
   useEffect(() => {
@@ -46,7 +46,9 @@ export const ImportContactsButton = () => {
   useEffect(() => {
     if (!hasError) return;
 
-    const description = isEmptyList ? (
+    const description = isFileTooLarge ? (
+      t('addressBook.importContacts.errors.fileTooLarge')
+    ) : isEmptyList ? (
       t('addressBook.importContacts.errors.emptyList')
     ) : (
       <div className="flex flex-col gap-2">
@@ -60,7 +62,7 @@ export const ImportContactsButton = () => {
 
     toast.error(t('addressBook.importContacts.errors.title'), { description });
     importContactsModel.events.resetState();
-  }, [hasError, isEmptyList, toast, t]);
+  }, [hasError, isFileTooLarge, isEmptyList, toast, t]);
 
   useEffect(() => {
     if (hasSuccess && !hasShownSuccess) {
@@ -81,14 +83,6 @@ export const ImportContactsButton = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error(t('addressBook.importContacts.errors.title'), {
-          description: t('addressBook.importContacts.errors.fileTooLarge'),
-        });
-        event.target.value = '';
-        return;
-      }
-
       importContactsModel.events.fileSelected(file);
     }
     // Reset input to allow selecting the same file again

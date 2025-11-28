@@ -13,6 +13,37 @@ const createMockFile = (data: unknown): File => {
 };
 
 describe('importContactsModel', () => {
+  describe('file size validation', () => {
+    it('should reject files larger than 1MB', async () => {
+      const largeContent = 'x'.repeat(2 * 1024 * 1024); // 2MB
+      const file = createMockFile(largeContent);
+
+      const scope = fork();
+
+      await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
+
+      const hasError = scope.getState(importContactsModel.$hasError);
+      const isFileTooLarge = scope.getState(importContactsModel.$isFileTooLarge);
+      const parsedContacts = scope.getState(importContactsModel.$parsedContacts);
+
+      expect(hasError).toBe(true);
+      expect(isFileTooLarge).toBe(true);
+      expect(parsedContacts).toBeNull();
+    });
+
+    it('should accept files smaller than 1MB', async () => {
+      const file = createMockFile(mockData.VALID_CONTACTS);
+
+      const scope = fork();
+
+      await allSettled(importContactsModel.events.fileSelected, { scope, params: file });
+
+      const isFileTooLarge = scope.getState(importContactsModel.$isFileTooLarge);
+
+      expect(isFileTooLarge).toBe(false);
+    });
+  });
+
   describe('parseFileFx', () => {
     it('should parse valid contacts from Polkadot.js export', async () => {
       const file = createMockFile(mockData.VALID_CONTACTS);
