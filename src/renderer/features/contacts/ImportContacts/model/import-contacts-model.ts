@@ -7,8 +7,6 @@ import { type AccountIdConflict } from '../lib/types';
 import { contactImportUtils } from '../lib/utils';
 import { type ContactImport } from '../lib/validation';
 
-type ImportState = 'idle' | 'loading' | 'error' | 'success' | 'conflicts';
-
 const fileSelected = createEvent<File>();
 const closeModal = createEvent();
 const replaceConflicts = createEvent();
@@ -20,6 +18,12 @@ const $parsedContacts = createStore<ContactImport[] | null>(null).reset(closeMod
 const $accountIdConflicts = createStore<AccountIdConflict[]>([]).reset(closeModal, resetState);
 const $importedCount = createStore<number>(0).reset(closeModal, resetState);
 const $isEmptyList = createStore<boolean>(false).reset(closeModal, resetState);
+
+// State flags
+const $isLoading = createStore<boolean>(false).reset(closeModal, resetState);
+const $hasError = createStore<boolean>(false).reset(closeModal, resetState);
+const $hasSuccess = createStore<boolean>(false).reset(closeModal, resetState);
+const $showConflicts = createStore<boolean>(false).reset(closeModal, resetState);
 
 // Parse file effect - returns ContactImport[] | null, never throws
 const parseFileFx = createEffect(contactImportUtils.parseJSON);
@@ -86,7 +90,6 @@ const replaceContactsFx = attach({
   ),
 });
 
-// Keep current contacts (only import non-conflicting)
 const importNonConflictingFx = attach({
   source: contactModel.$contacts,
   mapParams: (contacts: ContactImport[], existingContacts: Contact[]) => ({
@@ -95,17 +98,14 @@ const importNonConflictingFx = attach({
   }),
   effect: createEffect(
     async ({ contacts, existingContacts }: { contacts: ContactImport[]; existingContacts: Contact[] }) => {
-      // Filter out contacts with accountId conflicts
       const existingAccountIds = new Set(existingContacts.map((c) => c.accountId));
       const nonConflicting = contacts.filter((c) => {
         const accountId = toAccountId(c.address);
         return !existingAccountIds.has(accountId);
       });
 
-      // Resolve name conflicts for non-conflicting contacts
       const resolved = contactImportUtils.resolveNameConflicts(nonConflicting, existingContacts);
 
-      // Create new contacts
       const toCreate: Omit<Contact, 'id'>[] = resolved.map((contact) => ({
         name: contact.name,
         address: toAddress(contact.address),
@@ -121,19 +121,22 @@ const importNonConflictingFx = attach({
   ),
 });
 
-// Define stores
-const $importState = createStore<ImportState>('idle')
-  .on(fileSelected, () => 'loading')
-  .on(parseFileFx.doneData, (_, result) => {
-    if (!result.success) return 'error';
-    if (result.data.length === 0) return 'error';
-    return 'loading'; // Continue to conflict detection
-  })
-  .on(detectAccountIdConflictsFx.doneData, (_, conflicts) => {
-    return conflicts.length > 0 ? 'conflicts' : 'loading';
-  })
-  .on([replaceContactsFx.done, importNonConflictingFx.done], () => 'success')
-  .reset(closeModal, resetState);
+// Update state flags
+$isLoading
+  .on(fileSelected, () => true)
+  .on(parseFileFx.doneData, (_, result) => result.success && result.data.length > 0)
+  .on(detectAccountIdConflictsFx.doneData, (_, conflicts) => conflicts.length === 0)
+  .on([replaceContactsFx.done, importNonConflictingFx.done], () => false);
+
+$hasError
+  .on(fileSelected, () => false)
+  .on(parseFileFx.doneData, (_, result) => !result.success || result.data.length === 0);
+
+$hasSuccess.on(fileSelected, () => false).on([replaceContactsFx.done, importNonConflictingFx.done], () => true);
+
+$showConflicts
+  .on(fileSelected, () => false)
+  .on(detectAccountIdConflictsFx.doneData, (_, conflicts) => conflicts.length > 0);
 
 // When file is selected, parse it
 sample({
@@ -199,11 +202,14 @@ sample({
 });
 
 export const importContactsModel = {
-  $importState,
   $parsedContacts,
   $accountIdConflicts,
   $isEmptyList,
   $importedCount,
+  $isLoading,
+  $hasError,
+  $hasSuccess,
+  $showConflicts,
   events: {
     fileSelected,
     closeModal,
