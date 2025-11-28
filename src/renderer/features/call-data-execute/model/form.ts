@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type CallBase } from '@polkadot/types/types';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
-import { createGate } from 'effector-react';
 import { readonly, throttle } from 'patronum';
 
 import { type CallData, type Chain } from '@/shared/core';
@@ -45,7 +44,12 @@ type FormData = {
   callData: string;
 };
 
-const flow = createGate();
+// steps management
+
+const stepChanged = createEvent<Step>();
+const flowStarted = createEvent();
+const flowFinished = createEvent();
+const $step = readonly(restore(stepChanged, Step.NONE));
 
 const form: Form<FormData> = createForm<FormData>({
   fields: {
@@ -97,7 +101,7 @@ const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis)
 
 // extrinsic
 
-const $throttledCallData = restore(throttle(form.fields.callData.$value, 500), '').reset(flow.close);
+const $throttledCallData = restore(throttle(form.fields.callData.$value, 500), '').reset(flowFinished);
 
 const $transaction = $throttledCallData.map((callData): EncodedTransaction | null => {
   if (callData.length === 0) return null;
@@ -218,13 +222,8 @@ const { $errors, $valid } = createTxValidationStore({
   },
 });
 
-// steps management
-
-const stepChanged = createEvent<Step>();
-const $step = readonly(restore(stepChanged, Step.NONE));
-
 sample({
-  clock: [flow.open, flow.close],
+  clock: flowStarted,
   fn: () => Step.INIT,
   target: stepChanged,
 });
@@ -245,6 +244,12 @@ sample({
   clock: signModel.signed,
   fn: () => Step.SUBMIT,
   target: stepChanged,
+});
+
+sample({
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: [stepChanged, form.reset],
 });
 
 const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
@@ -283,7 +288,7 @@ sample({
 
 // Preselect initiator on form open
 sample({
-  clock: flow.open,
+  clock: flowStarted,
   source: {
     selectedWallet: walletSelect.$selectedWallet,
     allAccounts: walletModel.$availableAccounts,
@@ -302,7 +307,7 @@ sample({
 });
 
 sample({
-  clock: flow.open,
+  clock: flowStarted,
   source: {
     allChains: $allChains,
     selectedChain: form.fields.chain.$value,
@@ -358,11 +363,6 @@ sample({
 sample({
   clock: form.fields.chain.change,
   target: form.fields.callData.resetError,
-});
-
-sample({
-  clock: flow.close,
-  target: form.reset,
 });
 
 const $canSubmit = combine(
@@ -442,14 +442,13 @@ sample({
 
 sample({
   clock: signModel.signed,
-  source: flow.status,
-  filter: (open) => open,
+  source: $step,
+  filter: (step) => step !== Step.NONE,
   fn: (_, payload) => payload,
   target: submitModel.init,
 });
 
 export const formModel = {
-  flow,
   form,
   $canSubmit,
   $step,
@@ -466,4 +465,6 @@ export const formModel = {
   $showSignatories: $showSignatories,
 
   stepChanged,
+  flowStarted,
+  flowFinished,
 };

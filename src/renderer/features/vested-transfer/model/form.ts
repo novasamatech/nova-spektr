@@ -1,6 +1,5 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { createGate } from 'effector-react';
 import { readonly, spread } from 'patronum';
 
 import { chainsService } from '@/shared/api/network';
@@ -46,7 +45,12 @@ type FormData = {
   vestingSchedule: VestingSchedule[];
 };
 
-const flow = createGate();
+// steps management
+
+const stepChanged = createEvent<Step>();
+const flowStarted = createEvent();
+const flowFinished = createEvent();
+const $step = readonly(restore(stepChanged, Step.NONE));
 
 const form: Form<FormData> = createForm<FormData>({
   fields: {
@@ -227,9 +231,9 @@ sample({
 });
 
 const fileUploaded = createEvent<File>();
-const $parsedCsv = createStore<VestingScheduleRaw[] | null>(null).reset(flow.open);
-const $csvError = createStore<VestingCsvError | null>(null).reset(flow.open);
-const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(flow.open);
+const $parsedCsv = createStore<VestingScheduleRaw[] | null>(null).reset(flowStarted);
+const $csvError = createStore<VestingCsvError | null>(null).reset(flowStarted);
+const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(flowStarted);
 
 const parseFileFx = createEffect<File, VestingScheduleRaw[]>(async (file) => {
   const parsed = await vestedTransferUtils.parseCSV(file);
@@ -337,13 +341,8 @@ sample({
   }),
 });
 
-// steps management
-
-const stepChanged = createEvent<Step>();
-const $step = readonly(restore(stepChanged, Step.NONE));
-
 sample({
-  clock: [flow.open, flow.close],
+  clock: flowStarted,
   fn: () => Step.INIT,
   target: stepChanged,
 });
@@ -366,10 +365,16 @@ sample({
   target: stepChanged,
 });
 
+sample({
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: [stepChanged, form.reset],
+});
+
 // flow setup
 
 sample({
-  clock: [flow.open, $availableChains],
+  clock: [flowStarted, $availableChains],
   source: $availableChains,
   filter: (chains) => chains.length > 0,
   fn: (chains) => chains.at(0)!,
@@ -377,14 +382,14 @@ sample({
 });
 
 sample({
-  clock: [flow.open, $initiators],
+  clock: [flowStarted, $initiators],
   source: $initiators,
   fn: (initiators) => initiators.at(0) ?? null,
   target: form.fields.initiator.change,
 });
 
 sample({
-  clock: [flow.open, $signatories],
+  clock: [flowStarted, $signatories],
   source: $signatories,
   fn: (signatories) => signatories.at(0) ?? null,
   target: form.fields.signatory.change,
@@ -403,11 +408,6 @@ sample({
     $csvIssues.reinit,
     $fee.reinit,
   ],
-});
-
-sample({
-  clock: flow.close,
-  target: form.reset,
 });
 
 const $canSubmit = combine(
@@ -497,14 +497,13 @@ sample({
 
 sample({
   clock: signModel.signed,
-  source: flow.status,
-  filter: (open) => open,
+  source: $step,
+  filter: (step) => step !== Step.NONE,
   fn: (_, payload) => payload,
   target: submitModel.init,
 });
 
 export const formModel = {
-  flow,
   form,
   $chain: form.fields.chain.$value,
 
@@ -526,5 +525,7 @@ export const formModel = {
   $showSignatories: $showSignatories,
 
   stepChanged,
+  flowStarted,
+  flowFinished,
   fileUploaded,
 };

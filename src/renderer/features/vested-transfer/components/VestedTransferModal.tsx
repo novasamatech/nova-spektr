@@ -1,9 +1,10 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 
 import { type Chain } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { Modal } from '@/shared/ui-kit';
+import { useModalClose } from '@/shared/lib/hooks';
+import { Dropdown, Modal } from '@/shared/ui-kit';
 import { OperationTitle } from '@/entities/chain';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { formModel } from '../model/form';
@@ -13,22 +14,18 @@ import { vestedTransferUtils } from '../utils';
 import { Confirmation } from './Confirmation';
 import { VestedTransferForm } from './VestedTransferForm';
 
-type Props = {
-  isOpen: boolean;
-  onToggle: VoidFunction;
-};
-
-export const VestedTransferModal = ({ isOpen, onToggle }: Props) => {
-  useGate(formModel.flow);
-
+export const VestedTransferModal = () => {
   const { t } = useI18n();
+
   const step = useUnit(formModel.$step);
   const {
     fields: { chain },
   } = useForm(formModel.form);
 
+  const [isOpen, closeModal] = useModalClose(!vestedTransferUtils.isNoneStep(step), formModel.flowFinished);
+
   if (vestedTransferUtils.isSubmitStep(step)) {
-    return <OperationSubmit isOpen onClose={onToggle} />;
+    return <OperationSubmit isOpen={isOpen} onClose={closeModal} />;
   }
 
   const getModalTitle = (chain: Chain | null) => {
@@ -39,8 +36,19 @@ export const VestedTransferModal = ({ isOpen, onToggle }: Props) => {
     return <OperationTitle title={t('operations.modalTitles.vestedTransferOn')} chainId={chain.chainId} />;
   };
 
+  const handleModalToggle = (open: boolean) => {
+    if (open) {
+      formModel.flowStarted();
+    } else {
+      closeModal();
+    }
+  };
+
   return (
-    <Modal isOpen={isOpen} size="md" height="fit" onToggle={onToggle}>
+    <Modal isOpen={isOpen} size="md" height="fit" onToggle={handleModalToggle}>
+      <Modal.Trigger>
+        <Dropdown.Item>{t('navigation.vestedTransfersLabel')}</Dropdown.Item>
+      </Modal.Trigger>
       <Modal.Title close>{getModalTitle(chain.value)}</Modal.Title>
       <Modal.Content disableScroll>
         {vestedTransferUtils.isInitStep(step) && <VestedTransferForm />}
