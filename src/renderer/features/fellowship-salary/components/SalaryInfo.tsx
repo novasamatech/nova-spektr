@@ -130,7 +130,7 @@ export const SalaryInfo = memo(() => {
                       <FootnoteText className="text-text-secondary">
                         <Duration shortFormat seconds={timeLeft / 1000} />{' '}
                         {isPayoutRequested
-                          ? t('fellowship.salary.salaryInfo.timeToNextCircle')
+                          ? t('fellowship.salary.salaryInfo.timeToNextCycle')
                           : t('fellowship.salary.salaryInfo.timeToWithdraw')}
                       </FootnoteText>
 
