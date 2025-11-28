@@ -13,7 +13,7 @@ import { fellowshipEvidenceFeature } from '../model/feature';
 import { memberSalary } from '../model/memberSalary';
 import { profile } from '../model/profile';
 
-import { EvidencePostFlowModal } from './EvidencePostFlowModal';
+import { EvidencePostFlowTrigger } from './EvidencePostFlowTrigger';
 
 export const PromotionInfo = memo(() => {
   const { t } = useI18n();
@@ -71,9 +71,9 @@ export const PromotionInfo = memo(() => {
             )}
           </Box>
           {timeLeft === 0 && (
-            <EvidencePostFlowModal wish="Promotion">
+            <EvidencePostFlowTrigger wish="Promotion">
               <Button disabled={disabled}>{t('general.button.applyButton')}</Button>
-            </EvidencePostFlowModal>
+            </EvidencePostFlowTrigger>
           )}
         </Box>
       )}
@@ -85,9 +85,9 @@ export const PromotionInfo = memo(() => {
           </Box>
           <Box direction="row" gap={4}>
             <IconButton name="eye" size={16} onClick={openEvidence} />
-            <EvidencePostFlowModal wish="Promotion">
+            <EvidencePostFlowTrigger wish="Promotion">
               <IconButton name="editKeys" size={16} />
-            </EvidencePostFlowModal>
+            </EvidencePostFlowTrigger>
           </Box>
         </Box>
       )}

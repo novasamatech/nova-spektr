@@ -977,7 +977,7 @@
         "requestSalaryCall": "Request a {salary} salary within:",
         "requestSalarySuccess": "Salary requested",
         "selectBeneficiary": "Select beneficiary",
-        "timeToNextCircle": "until next circle",
+        "timeToNextCycle": "until next cycle",
         "timeToNextPayout": "to the next payout",
         "timeToRequest": "left to request",
         "timeToWithdraw": "left to withdraw"
@@ -1011,8 +1011,8 @@
         "importantVote": "OPINION MATTERS",
         "urgent": "LAST CALL"
       },
-      "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
-      "noAccountTitle": "List tasks is empty",
+      "noAccountDescription": "Account not found. Please add or create an account on the {chain} network.",
+      "noAccountTitle": "Task list is empty",
       "personal": "Personal",
       "reviewBasket": "Confirm now",
       "reviewBasketTitle_one": "Decision",
@@ -1085,7 +1085,7 @@
     },
     "title": "Fellowship",
     "tooltips": {
-      "noAccount": "Please add or create account to the { chain } network",
+      "noAccount": "Please add or create an account on the { chain } network",
       "noProfile": "You are not a fellowship member"
     },
     "voting": {
