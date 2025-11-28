@@ -29,6 +29,7 @@
       "delete": "Delete",
       "edit": "Edit"
     },
+    "contactDeleted": "Contact deleted",
     "contactList": {
       "emptySearchDescription": "Try to search for another name",
       "emptySearchLabel": "No contact with entered name were found",
@@ -87,7 +88,6 @@
       "loading": "Importing contacts...",
       "success": "Contacts imported"
     },
-    "contactDeleted": "Contact deleted",
     "removeConfirm": {
       "cancelButton": "Cancel",
       "confirmButton": "Delete",
