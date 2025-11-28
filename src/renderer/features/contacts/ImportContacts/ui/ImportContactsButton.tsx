@@ -9,6 +9,7 @@ import { importContactsModel } from '../model/import-contacts-model';
 import { ImportConflictsModal } from './ImportConflictsModal';
 
 const LOADING_TOAST_DELAY = 500;
+const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
 
 export const ImportContactsButton = () => {
   const { t } = useI18n();
@@ -80,8 +81,6 @@ export const ImportContactsButton = () => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check file size (max 5MB)
-      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
       if (file.size > MAX_FILE_SIZE) {
         toast.error(t('addressBook.importContacts.errors.title'), {
           description: t('addressBook.importContacts.errors.fileTooLarge'),
