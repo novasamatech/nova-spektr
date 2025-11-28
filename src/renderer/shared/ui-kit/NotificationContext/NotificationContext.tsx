@@ -120,9 +120,14 @@ export const NotificationProvider = ({ children }: PropsWithChildren) => {
 
       <Toaster
         icons={{
-          success: <Icon name="checkmarkOutline" size={20} className="text-icon-positive" />,
-          error: <Icon name="closeOutline" size={20} className="text-icon-negative" />,
-          loading: <Icon name="loader" size={20} className="animate-spin text-icon-accent" />,
+          success: <Icon name="checkmarkOutline" size={16} className="text-icon-positive" />,
+          error: <Icon name="closeOutline" size={16} className="text-icon-negative" />,
+          loading: <Icon name="loader" size={16} className="animate-spin text-icon-accent" />,
+        }}
+        toastOptions={{
+          classNames: {
+            icon: 'self-start mt-0.5',
+          },
         }}
       />
 
