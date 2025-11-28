@@ -14,31 +14,48 @@ type Props = PropsWithChildren<{
 
 export const EvidencePostFlowModal = ({ wish, children }: Props) => {
   const step = useUnit(evidencePost.$step);
+  const activeWish = useUnit(evidencePost.$activeWish);
   const evidence = useUnit(evidenceForm.$evidence);
+
+  const shouldShowForm = step === 'form' && activeWish === wish;
+  const shouldShowSubmit = step === 'submit' && activeWish === wish;
 
   const toggleForm = useCallback(
     (open: boolean) => {
-      evidencePost.setStep(open ? 'form' : 'closed');
+      if (open) {
+        evidenceForm.setFlowType('fromScratch');
+        evidencePost.setActiveWish(wish);
+        evidencePost.setStep('form');
+      } else {
+        evidencePost.setStep('closed');
+        evidencePost.setActiveWish(null);
+        evidenceForm.setFlowType(null);
+      }
     },
-    [evidencePost],
+    [wish],
   );
 
   const toggleConfirm = useCallback(
     (open: boolean, done: boolean) => {
       if (!open && step === 'submit') {
         evidencePost.setStep(done ? 'closed' : 'form');
+        if (done) {
+          evidencePost.setActiveWish(null);
+          evidenceForm.setFlowType(null);
+          evidenceForm.reset();
+        }
       }
     },
-    [step, evidencePost],
+    [step],
   );
 
   return (
     <>
-      <SubmitEvidenceFromScratch wish={wish} isOpen={step === 'form'} onToggle={toggleForm}>
+      <SubmitEvidenceFromScratch wish={wish} isOpen={shouldShowForm} onToggle={toggleForm}>
         {children}
       </SubmitEvidenceFromScratch>
       {nonNullable(evidence) && (
-        <EvidencePostModal wish={wish} evidence={evidence} isOpen={step === 'submit'} onToggle={toggleConfirm} />
+        <EvidencePostModal wish={wish} evidence={evidence} isOpen={shouldShowSubmit} onToggle={toggleConfirm} />
       )}
     </>
   );
