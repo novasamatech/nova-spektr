@@ -1,6 +1,6 @@
+import { useGate } from 'effector-react';
 import { useEffect, useState } from 'react';
 
-import { useFlow } from '@/shared/effector';
 import { useI18n } from '@/shared/i18n';
 import { Button, InputHint } from '@/shared/ui';
 import { Field, Input, InputFile, Modal, StepIndicator } from '@/shared/ui-kit';
@@ -14,7 +14,7 @@ type Props = {
 };
 
 export const IPFSUploadModal = ({ isOpen, onToggle, wish }: Props) => {
-  useFlow(evidenceForm.flow, { wish });
+  useGate(evidenceForm.flow, { wish });
 
   const { t } = useI18n();
   const [file, setFile] = useState<File | null>(null);

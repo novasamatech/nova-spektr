@@ -890,6 +890,18 @@
           "step2": "Review and submit",
           "title": "Preview Evidence"
         },
+        "promotionPeriodWarning": {
+          "cancel": "Cancel",
+          "description": "It is recommended to prioritize submitting the retention report before submitting promotion evidence to avoid being bumped.",
+          "submit": "Submit",
+          "title": "Retention period ends in 30 days"
+        },
+        "retentionPeriodWarning": {
+          "cancel": "Cancel",
+          "description": "It might be too early to submit your retention report. We recommend submitting no earlier than month before the retention period ends. Please ensure you have gathered sufficient work evidence for the current retention period before submitting.",
+          "submit": "Submit",
+          "title": "Are you sure you want to submit retention report?"
+        },
         "submitOptions": {
           "fromScratch": "From scratch",
           "uploadFromIPFS": "Upload from IPFS"

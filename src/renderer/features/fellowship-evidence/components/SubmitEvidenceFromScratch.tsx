@@ -1,5 +1,5 @@
 import { useForm } from 'effector-forms';
-import { useUnit } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { type FormEventHandler, type PropsWithChildren, memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
@@ -14,8 +14,10 @@ type Props = PropsWithChildren<{
 }>;
 
 export const SubmitEvidenceFromScratch = memo(({ isOpen, wish, children, onToggle }: Props) => {
+  useGate(evidenceForm.flow, { wish });
+
   const { t } = useI18n();
-  const { fields, submit } = useForm(evidenceForm.form);
+  const { fields, submit, hasError } = useForm(evidenceForm.form);
   const uploadError = useUnit(evidenceForm.$uploadError);
   const pending = useUnit(evidenceForm.post.pending);
 
@@ -90,7 +92,7 @@ export const SubmitEvidenceFromScratch = memo(({ isOpen, wish, children, onToggl
           {t('general.button.closeButton')}
         </Button>
         <Box grow={1} />
-        <Button isLoading={pending} disabled={pending} onClick={() => submit()}>
+        <Button isLoading={pending} disabled={pending || hasError()} onClick={() => submit()}>
           {t('general.button.submitButton')}
         </Button>
       </Modal.Footer>

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { getRelativeTimeFromApi, nullable } from '@/shared/lib/utils';
+import { getRelativeTimeFromApi, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, Duration } from '@/shared/ui';
 import { ProgressWithSegments, Skeleton } from '@/shared/ui-kit';
 import { type CoreMember, memberService } from '@/domains/collectives';
@@ -43,12 +43,12 @@ const useTimeToNextRank = () => {
   const promotionProgress = useUnit(promotion.$promotionProgress);
 
   useEffect(() => {
-    if (promotionProgress && promotionProgress.progressPercentage >= 100) {
+    if ((promotionProgress && promotionProgress.progressPercentage >= 100) || leftToPromotion === 0) {
       setTimeToNextRank(READY_FOR_PROMOTION);
       return;
     }
 
-    if (leftToPromotion && currentBlock && api) {
+    if (nonNullable(leftToPromotion) && currentBlock && api) {
       getRelativeTimeFromApi(leftToPromotion, api).then(setTimeToNextRank);
       return;
     }
