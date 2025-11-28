@@ -23,7 +23,6 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
   const { t } = useI18n();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [fromScratchOpen, setFromScratchOpen] = useState(false);
-  const [fromScratchSubmitOpen, setFromScratchSubmitOpen] = useState(false);
 
   const ipfsStep = useUnit(evidenceIPFS.$step);
   const submitModalOpen = useUnit(evidencePost.$submitModalOpen);
@@ -37,9 +36,11 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
 
   const handleFromScratch = useCallback(() => {
     evidenceForm.setFlowType('fromScratch');
-    setFromScratchOpen(true);
+    evidencePost.setActiveWish(wish);
+    evidencePost.setStep('form');
+    evidenceForm.flow.open({ wish });
     setPopoverOpen(false);
-  }, []);
+  }, [wish]);
 
   const handleUploadFromIPFS = useCallback(() => {
     evidenceIPFS.reset();
@@ -54,13 +55,16 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
     if (!open) {
       evidenceForm.setFlowType(null);
       evidenceForm.reset();
+      evidencePost.setActiveWish(null);
+      evidencePost.setStep('closed');
+      evidenceForm.flow.close({ wish: null });
     }
   }, []);
 
   useEffect(() => {
     if (nonNullable(fromScratchEvidence) && flowType === 'fromScratch' && fromScratchOpen) {
       setFromScratchOpen(false);
-      setFromScratchSubmitOpen(true);
+      evidencePost.setStep('submit');
     }
   }, [fromScratchEvidence, flowType, fromScratchOpen]);
 
@@ -93,14 +97,6 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
         evidenceForm.reset();
         evidenceIPFS.reset();
       }
-    }
-  }, []);
-
-  const handleFromScratchSubmitClose = useCallback((open: boolean, done: boolean) => {
-    setFromScratchSubmitOpen(open);
-    if (!open && done) {
-      evidenceForm.setFlowType(null);
-      evidenceForm.reset();
     }
   }, []);
 
@@ -154,15 +150,6 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
           evidence={ipfsEvidence}
           isOpen={submitModalOpen}
           onToggle={handleIPFSSubmitModalClose}
-        />
-      )}
-
-      {nonNullable(fromScratchEvidence) && flowType === 'fromScratch' && activeWish === wish && (
-        <EvidencePostModal
-          wish={wish}
-          evidence={fromScratchEvidence}
-          isOpen={fromScratchSubmitOpen}
-          onToggle={handleFromScratchSubmitClose}
         />
       )}
     </>
