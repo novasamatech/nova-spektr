@@ -69,8 +69,8 @@ function getMemberSalary(member: Member, salaries: Salaries) {
     };
   }
   return {
-    active: salaries.active.at(Math.max(0, member.rank - 1)) ?? BN_ZERO,
-    passive: salaries.passive.at(Math.max(0, member.rank - 1)) ?? BN_ZERO,
+    active: salaries.active.at(member.rank - 1) ?? BN_ZERO,
+    passive: salaries.passive.at(member.rank - 1) ?? BN_ZERO,
   };
 }
 
