@@ -129,6 +129,39 @@ const mergeEvents = (oldEvents: MultisigEvent[], events: MultisigEvent[]) =>
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
 
+const updateMultisigOperations = (
+  oldOperations: MultisigOperation[],
+  updated: MultisigOperation[],
+): MultisigOperation[] => {
+  return merge({
+    a: oldOperations,
+    b: updated,
+    filter: (a, b) => {
+      if (isEqual(a, b)) {
+        return false;
+      }
+
+      // Update should be skipped if the new record is in a "pending" state while the existing record is already completed.
+      // This can happen after operation approval, when the subquery indexer hasn't received that update yet.
+      if (b.status === 'pending' && a.status !== 'pending') {
+        return false;
+      }
+
+      return true;
+    },
+    mergeBy: a => a.id,
+    sort: (a, b) => a.blockCreated - b.blockCreated,
+    merge: (a, b) => ({
+      ...b,
+      callData: b.callData ?? a.callData,
+      callHash: b.callHash ?? a.callHash,
+      transaction: b.transaction ?? a.transaction,
+      section: b.section ?? a.section,
+      method: b.method ?? a.method,
+    }),
+  });
+};
+
 /**
  * Because we work with Events AT BEST, it may happen that our db has extra
  * operations that are not on the chain anymore nor were executed. We want to
@@ -164,33 +197,7 @@ const mergeMultisigOperations = (
     return true;
   });
 
-  return merge({
-    a: filtered,
-    b: update,
-    filter: (a, b) => {
-      if (isEqual(a, b)) {
-        return false;
-      }
-
-      // Update should be skipped if the new record is in a "pending" state while the existing record is already completed.
-      // This can happen after operation approval, when the subquery indexer hasn't received that update yet.
-      if (b.status === 'pending' && a.status !== 'pending') {
-        return false;
-      }
-
-      return true;
-    },
-    mergeBy: a => a.id,
-    sort: (a, b) => a.blockCreated - b.blockCreated,
-    merge: (a, b) => ({
-      ...b,
-      callData: b.callData ?? a.callData,
-      callHash: b.callHash ?? a.callHash,
-      transaction: b.transaction ?? a.transaction,
-      section: b.section ?? a.section,
-      method: b.method ?? a.method,
-    }),
-  });
+  return updateMultisigOperations(filtered, update);
 };
 
 export const multisigOperationService = {
@@ -201,6 +208,7 @@ export const multisigOperationService = {
 
   mergeEvents,
   mergeMultisigOperations,
+  updateMultisigOperations,
 
   isMultisigSupported,
   getOtherSignatories,

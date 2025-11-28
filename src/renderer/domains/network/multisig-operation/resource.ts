@@ -271,7 +271,7 @@ export const subscribeResource = createSubscriptionResource<RequestParams, Multi
       callback({ done: true, value: chainOperations });
 
       fetchOperationsHistory(accountId, apis, chainOperations, chains).then(historicOperations => {
-        callback({ done: true, value: historicOperations });
+        callback({ done: true, value: chainOperations.concat(historicOperations) });
       });
     });
 

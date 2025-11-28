@@ -110,16 +110,18 @@ deriveFromResources({
   store: $list,
   resources: [subscribeEventsResource],
   map: (state, { chainId, operationId, event }) => {
-    const operation = state.find(x => x.id === operationId && x.chainId === chainId);
-    if (!operation) return state;
+    const operationIndex = state.findIndex(x => x.id === operationId && x.chainId === chainId);
+    const operation = state[operationIndex];
 
-    const newOperation = {
+    if (operationIndex === -1 || !operation) return state;
+
+    const updatedOperation = {
       ...operation,
       status: event.status === 'reject' ? 'cancelled' : operation.status,
       events: multisigOperationService.mergeEvents(operation.events, [event]),
     };
 
-    return multisigOperationService.mergeMultisigOperations(state, [newOperation]);
+    return multisigOperationService.updateMultisigOperations(state, [updatedOperation]);
   },
 });
 
@@ -131,14 +133,14 @@ sample({
 sample({
   clock: addOperationsFx.doneData,
   source: $list,
-  fn: multisigOperationService.mergeMultisigOperations,
+  fn: multisigOperationService.updateMultisigOperations,
   target: $list,
 });
 
 sample({
   clock: updateOperationsFx.doneData,
   source: $list,
-  fn: multisigOperationService.mergeMultisigOperations,
+  fn: multisigOperationService.updateMultisigOperations,
   target: $list,
 });
 
