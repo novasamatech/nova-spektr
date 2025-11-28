@@ -62,6 +62,12 @@ function getCycleEnd(salaryCycle: SalaryCycle) {
 }
 
 function getMemberSalary(member: Member, salaries: Salaries) {
+  if (member.rank === 0) {
+    return {
+      active: BN_ZERO,
+      passive: BN_ZERO,
+    };
+  }
   return {
     active: salaries.active.at(Math.max(0, member.rank - 1)) ?? BN_ZERO,
     passive: salaries.passive.at(Math.max(0, member.rank - 1)) ?? BN_ZERO,
