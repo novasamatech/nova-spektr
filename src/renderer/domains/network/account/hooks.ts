@@ -17,11 +17,11 @@ type UseAccountNameParams = {
   title?: string;
 };
 
-export const useAccountName = ({ accountId, chain, title }: UseAccountNameParams): string => {
+export const useAccountName = ({ accountId, chain, title }: UseAccountNameParams) => {
   const params: AccountNameParams | null = accountId ? { accountId, chain, title } : null;
   const { data } = useResource(accountNameResource, {
     params,
-    defaultValue: '',
+    defaultValue: undefined,
     map: (cache, params) => {
       return cache[createAccountNameCacheKey(params)] ?? '';
     },
@@ -30,11 +30,11 @@ export const useAccountName = ({ accountId, chain, title }: UseAccountNameParams
   return data;
 };
 
-export const useWalletName = (wallet: Wallet | null | undefined): string => {
+export const useWalletName = (wallet: Wallet | null | undefined) => {
   const params: WalletNameParams | null = wallet ? { wallet } : null;
   const { data } = useResource(walletNameResource, {
     params,
-    defaultValue: '',
+    defaultValue: undefined,
     map: (cache, params) => {
       return cache[createWalletNameCacheKey(params)] ?? '';
     },

@@ -284,7 +284,7 @@ export const VaultWalletDetails = ({ wallet, onClose }: Props) => {
 
       <KeyConstructor
         isOpen={isConstructorModalOpen}
-        title={walletName}
+        title={walletName ?? ''}
         existingKeys={walletAccounts}
         onConfirm={handleConstructorKeys}
         onClose={toggleConstructorModal}

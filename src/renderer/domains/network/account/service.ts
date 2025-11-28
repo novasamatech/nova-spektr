@@ -10,6 +10,7 @@ import {
   type ChainId,
   type Contact,
   type Wallet,
+  WalletType,
 } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
 import { isEthereumAccountId, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
@@ -197,12 +198,24 @@ function getAccountAddressPrefix(
 function getWalletAccountId(wallet: Wallet, accounts: AnyAccount[]): AccountId | null {
   const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
 
-  if (walletAccounts.length === 0) return null;
+  if (walletAccounts.length > 0) {
+    return walletAccounts[0]?.accountId ?? null;
+  }
 
-  return walletAccounts[0]?.accountId ?? null;
+  if (
+    (wallet.type === WalletType.POLKADOT_VAULT || wallet.type === WalletType.SINGLE_PARITY_SIGNER) &&
+    'rootAccountId' in wallet
+  ) {
+    return wallet.rootAccountId as AccountId;
+  }
+
+  return null;
 }
 
 function resolveWalletName({ wallet, accounts, contacts, identities, chains }: ResolveWalletNameParams): string {
+  const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
+  const hasAccountsInList = walletAccounts.length > 0;
+
   const accountId = getWalletAccountId(wallet, accounts);
   if (nullable(accountId)) {
     return wallet.name;
@@ -213,7 +226,6 @@ function resolveWalletName({ wallet, accounts, contacts, identities, chains }: R
     return contact.name;
   }
 
-  const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
   const walletAccount = walletAccounts.find(account => account.accountId === accountId);
 
   if (walletAccount && walletAccount.nameType === AccountNameType.CUSTOM) {
@@ -225,8 +237,8 @@ function resolveWalletName({ wallet, accounts, contacts, identities, chains }: R
     return identityService.getFullName(identity);
   }
 
-  if (walletAccount?.name) {
-    return walletAccount.name;
+  if (!hasAccountsInList) {
+    return wallet.name;
   }
 
   const accountForPrefix = walletAccount ?? getAccountById(accounts, accountId);
