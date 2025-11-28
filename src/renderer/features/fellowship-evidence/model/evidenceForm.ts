@@ -1,9 +1,9 @@
 import { createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { createGate } from 'effector-react';
 import { t } from 'i18next';
 
 import { type HexString } from '@/shared/core';
-import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { evidenceService } from '@/domains/collectives';
 
@@ -12,7 +12,7 @@ import { evidenceService } from '@/domains/collectives';
 const skipUploading = createEvent();
 const setFlowType = createEvent<'fromScratch' | 'ipfsUpload' | null>();
 
-const flow = createFlow<{ wish: 'Promotion' | 'Retention' | null }>({ wish: null });
+const flow = createGate<{ wish: 'Promotion' | 'Retention' | null }>({ defaultState: { wish: null } });
 const $wish = flow.state.map(x => x.wish);
 const $evidence = createStore<HexString | null>(null);
 const $flowType = restore(setFlowType, null);
