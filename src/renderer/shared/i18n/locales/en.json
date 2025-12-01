@@ -25,6 +25,11 @@
     }
   },
   "addressBook": {
+    "actions": {
+      "delete": "Delete",
+      "edit": "Edit"
+    },
+    "contactDeleted": "Contact deleted",
     "contactList": {
       "emptySearchDescription": "Try to search for another name",
       "emptySearchLabel": "No contact with entered name were found",
@@ -65,6 +70,24 @@
       "typeAddressButton": "Type the address",
       "typeNameButton": "Type a name"
     },
+    "importContacts": {
+      "button": "Import",
+      "conflicts": {
+        "description": "Some contacts below already exists in your address book. Do you want to replace it or keep current versions?",
+        "keepCurrentButton": "Keep current",
+        "replaceButton": "Replace",
+        "title": "Import options"
+      },
+      "errors": {
+        "description": "Certain contacts don't match required format. Check guidelines on Wiki, update your file, and try uploading again.",
+        "emptyList": "File has no accounts to import",
+        "fileTooLarge": "File is too large. Maximum file size is 1MB",
+        "title": "Import failed",
+        "wikiLink": "Wiki guidelines"
+      },
+      "loading": "Importing contacts...",
+      "success": "Contacts imported"
+    },
     "removeConfirm": {
       "cancelButton": "Cancel",
       "confirmButton": "Delete",
@@ -72,7 +95,8 @@
       "title": "Delete contact"
     },
     "searchPlaceholder": "Search",
-    "title": "Address Book"
+    "title": "Address Book",
+    "undo": "Undo"
   },
   "assetBalance": {
     "locked": "Locked",

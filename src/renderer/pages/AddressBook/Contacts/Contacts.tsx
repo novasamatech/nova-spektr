@@ -4,13 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { useI18n } from '@/shared/i18n';
 import { Header } from '@/shared/ui';
 import { ContactList, ContactRow, EmptyContactList, EmptyFilteredContacts, contactModel } from '@/entities/contact';
-import {
-  ContactFilter,
-  CreateContactNavigation,
-  EditContactNavigation,
-  RemoveContactModal,
-  filterModel,
-} from '@/features/contacts';
+import { ContactFilter, CreateContactNavigation, ImportContactsButton, filterModel } from '@/features/contacts';
 
 export const Contacts = () => {
   const { t } = useI18n();
@@ -24,9 +18,12 @@ export const Contacts = () => {
     <>
       <div className="flex h-full flex-col">
         <Header title={t('addressBook.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-          <div className="grid grid-cols-[230px_1fr] items-center gap-x-3">
+          <div className="grid grid-cols-[230px_1fr] items-center gap-x-4">
             <ContactFilter />
-            <CreateContactNavigation />
+            <div className="flex justify-end gap-x-4">
+              <CreateContactNavigation />
+              <ImportContactsButton />
+            </div>
           </div>
         </Header>
 
@@ -39,10 +36,7 @@ export const Contacts = () => {
             {hasContacts && hasContactsFiltered && (
               <ContactList>
                 {contactsFiltered.map((contact) => (
-                  <ContactRow key={contact.id} contact={contact}>
-                    <EditContactNavigation contactId={contact.id} />
-                    <RemoveContactModal contactId={contact.id} name={contact.name} />
-                  </ContactRow>
+                  <ContactRow key={contact.id} contact={contact} />
                 ))}
               </ContactList>
             )}

@@ -14,6 +14,7 @@ import { Toaster, toast } from 'sonner';
 
 import { type ModalNotification, type ModalNotificationProps } from '@/shared/core/types/notificationService';
 import { DEFAULT_TRANSITION, nullable } from '@/shared/lib/utils';
+import { Icon } from '@/shared/ui';
 import { Modal } from '../Modal/Modal';
 
 type NotificationContextProps = {
@@ -117,7 +118,18 @@ export const NotificationProvider = ({ children }: PropsWithChildren) => {
     <NotificationContext.Provider value={value}>
       {children}
 
-      <Toaster />
+      <Toaster
+        icons={{
+          success: <Icon name="checkmarkOutline" size={16} className="text-icon-positive" />,
+          error: <Icon name="closeOutline" size={16} className="text-icon-negative" />,
+          loading: <Icon name="loader" size={16} className="animate-spin text-icon-accent" />,
+        }}
+        toastOptions={{
+          classNames: {
+            icon: 'self-start mt-0.5',
+          },
+        }}
+      />
 
       {currentModal && (
         <Modal isOpen={isModalOpen} size={currentModal.size} height={currentModal.height} onToggle={handleModalClose}>
