@@ -523,6 +523,7 @@ export const formModel = {
   $availableChains: $availableChains,
   $signatories: $signatories,
   $showSignatories: $showSignatories,
+  $minVestedTransfer,
 
   stepChanged,
   flowStarted,

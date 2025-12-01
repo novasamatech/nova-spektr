@@ -1,6 +1,8 @@
 import { type ApiPromise } from '@polkadot/api';
+import { type BN } from '@polkadot/util';
 import { format } from 'date-fns';
 import { type PropsWithChildren, memo, useCallback, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
@@ -11,7 +13,7 @@ import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useBlockTimestamp, useIdentity } from '@/domains/network';
-import { type ValidationIssue, type VestingScheduleRaw } from '../lib/types';
+import { type ValidationIssue, VestingFieldError, type VestingScheduleRaw } from '../lib/types';
 
 type TableData = VestingScheduleRaw & {
   index: number;
@@ -32,13 +34,14 @@ type Props = PropsWithChildren & {
   chain: Chain | null;
   asset: Asset | null;
   issues?: ValidationIssue[] | null;
+  minVestedTransfer?: BN | null;
   onDownloadClick?: () => void;
 };
 
 const PAGE_SIZE = 50;
 
 export const VestingSchedulePreview = memo(
-  ({ vestingSchedule, children, timelineApi, chain, asset, issues, onDownloadClick }: Props) => {
+  ({ vestingSchedule, children, timelineApi, chain, asset, issues, minVestedTransfer, onDownloadClick }: Props) => {
     const { t } = useI18n();
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
@@ -67,17 +70,22 @@ export const VestingSchedulePreview = memo(
       (row: TableData, field: keyof VestingScheduleRaw, Component: React.ComponentType<CellComponentProps>) => {
         const rowIssues = getRowIssues(row.index);
         const fieldIssues = getFieldIssues(row.index, field);
-        const hasErrors = fieldIssues.some((i) => i.severity === 'error');
         const status = getRowStatus(rowIssues);
+        const hasInvalidValue = fieldIssues.some(
+          (i) => i.severity === 'error' && i.message === VestingFieldError.INVALID_VALUE,
+        );
 
         return (
           <div className={cnTw('flex flex-col items-end overflow-hidden', STATUS_TEXT_COLORS[status])}>
-            {hasErrors ? (
+            {hasInvalidValue ? (
               <span className="shrink-0 text-body">{row[field]}</span>
             ) : (
               <Component row={row} field={field} status={status} />
             )}
-            {fieldIssues.length > 0 && <FieldIssues issue={fieldIssues[0]} />}
+
+            {fieldIssues.length > 0 && (
+              <FieldIssues issue={fieldIssues[0]} asset={asset} minVestedTransfer={minVestedTransfer} />
+            )}
           </div>
         );
       },
@@ -118,7 +126,14 @@ export const VestingSchedulePreview = memo(
             return (
               <div className={cnTw('flex flex-col overflow-hidden', STATUS_TEXT_COLORS[status])}>
                 <TargetAccount target={row.target} chain={chain} />
-                {fieldIssues.length > 0 && <FieldIssues issue={fieldIssues[0]} className="text-left" />}
+                {fieldIssues.length > 0 && (
+                  <FieldIssues
+                    issue={fieldIssues[0]}
+                    className="text-left"
+                    asset={asset}
+                    minVestedTransfer={minVestedTransfer}
+                  />
+                )}
               </div>
             );
           },
@@ -251,17 +266,55 @@ export const VestingSchedulePreview = memo(
   },
 );
 
-const FieldIssues = memo(({ issue, className }: { issue: ValidationIssue; className?: string }) => {
-  const { t } = useI18n();
+const FieldIssues = memo(
+  ({
+    issue,
+    className,
+    minVestedTransfer,
+    asset,
+  }: {
+    issue: ValidationIssue;
+    minVestedTransfer?: BN | null;
+    asset: Asset | null;
+    className?: string;
+  }) => {
+    const { t } = useI18n();
 
-  return (
-    <div className="flex flex-col">
-      <CaptionText className={cnTw('text-right text-inherit', className)}>
-        {t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
-      </CaptionText>
-    </div>
-  );
-});
+    const isMinVestedTransferError =
+      issue.message === VestingFieldError.MIN_VESTED_TRANSFER && nonNullable(minVestedTransfer);
+
+    if (isMinVestedTransferError && nonNullable(asset)) {
+      return (
+        <div className="flex flex-col">
+          <CaptionText className={cnTw('text-right text-inherit', className)}>
+            <Trans
+              t={t}
+              i18nKey="vestedTransfer.errors.csv.fieldErrors.MIN_VESTED_TRANSFER"
+              components={{
+                asset: (
+                  <AssetBalance
+                    className="text-caption text-inherit"
+                    value={minVestedTransfer}
+                    asset={asset}
+                    showSymbol
+                  />
+                ),
+              }}
+            />
+          </CaptionText>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col">
+        <CaptionText className={cnTw('text-right text-inherit', className)}>
+          {t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
+        </CaptionText>
+      </div>
+    );
+  },
+);
 
 const TargetAccount = memo(({ target, chain }: { target: AccountId; chain: Chain }) => {
   const accountId = toAccountId(target);
