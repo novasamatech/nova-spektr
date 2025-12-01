@@ -92,7 +92,7 @@ const PromotionEvidenceExistsWarningAlertInner = (
         isOpen={isOpen}
         title={t('fellowship.salary.evidence.promotionEvidenceExistsWarning.title')}
         description={
-          <FootnoteText className="text-text-tertiary" align="center">
+          <FootnoteText className="whitespace-pre-line text-text-tertiary" align="center">
             {t('fellowship.salary.evidence.promotionEvidenceExistsWarning.description')}
           </FootnoteText>
         }
