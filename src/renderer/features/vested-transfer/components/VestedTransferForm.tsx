@@ -1,5 +1,6 @@
 import { useUnit } from 'effector-react';
 import { type FormEvent, memo, useEffect, useMemo, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import vested_transfer_template_url from '@/shared/assets/templates/vested-transfer-template.csv?url';
 import { useForm } from '@/shared/forms';
@@ -13,7 +14,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { VestingCsvError, VestingSchedulePreview } from '@/entities/vesting';
+import { VestingCsvError, VestingFieldError, VestingSchedulePreview } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 import { vestedTransferUtils } from '../utils';
@@ -203,8 +204,10 @@ const ValidationsAlert = () => {
   const parsedCsv = useUnit(formModel.$parsedCsv);
   const csvError = useUnit(formModel.$csvError);
   const csvIssues = useUnit(formModel.$csvIssues);
-  const [isAlertOpen, toggleAlert] = useState(true);
+  const minVestedTransfer = useUnit(formModel.$minVestedTransfer);
+  const asset = useUnit(formModel.$asset);
 
+  const [isAlertOpen, toggleAlert] = useState(true);
   useEffect(() => {
     if (csvError || csvIssues?.length) {
       toggleAlert(true);
@@ -246,12 +249,39 @@ const ValidationsAlert = () => {
       variant={isError ? 'error' : 'warn'}
       onClose={() => toggleAlert(false)}
     >
-      {issues.map((issue) => (
-        <Alert.Item key={issue.row}>
-          {t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row })}:&nbsp;
-          {t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
-        </Alert.Item>
-      ))}
+      {issues.map((issue) => {
+        const isMinVestedTransferError =
+          issue.message === VestingFieldError.MIN_VESTED_TRANSFER && nonNullable(minVestedTransfer);
+
+        if (isMinVestedTransferError && nonNullable(asset)) {
+          return (
+            <Alert.Item key={issue.row}>
+              {t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row })}:&nbsp;
+              <Trans
+                t={t}
+                i18nKey="vestedTransfer.errors.csv.fieldErrors.MIN_VESTED_TRANSFER"
+                components={{
+                  asset: (
+                    <AssetBalance
+                      className="text-caption text-inherit"
+                      value={minVestedTransfer}
+                      asset={asset}
+                      showSymbol
+                    />
+                  ),
+                }}
+              />
+            </Alert.Item>
+          );
+        }
+
+        return (
+          <Alert.Item key={issue.row}>
+            {t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row })}:&nbsp;
+            {t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
+          </Alert.Item>
+        );
+      })}
       <div className="flex flex-col">
         {t('vestedTransfer.errors.csv.parsedFileDownloadDescription')}
         <Button

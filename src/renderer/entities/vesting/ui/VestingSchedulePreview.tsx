@@ -71,10 +71,17 @@ export const VestingSchedulePreview = memo(
         const rowIssues = getRowIssues(row.index);
         const fieldIssues = getFieldIssues(row.index, field);
         const status = getRowStatus(rowIssues);
+        const hasInvalidValue = fieldIssues.some(
+          (i) => i.severity === 'error' && i.message === VestingFieldError.INVALID_VALUE,
+        );
 
         return (
           <div className={cnTw('flex flex-col items-end overflow-hidden', STATUS_TEXT_COLORS[status])}>
-            <Component row={row} field={field} status={status} />
+            {hasInvalidValue ? (
+              <span className="shrink-0 text-body">{row[field]}</span>
+            ) : (
+              <Component row={row} field={field} status={status} />
+            )}
 
             {fieldIssues.length > 0 && (
               <FieldIssues issue={fieldIssues[0]} asset={asset} minVestedTransfer={minVestedTransfer} />
@@ -119,7 +126,14 @@ export const VestingSchedulePreview = memo(
             return (
               <div className={cnTw('flex flex-col overflow-hidden', STATUS_TEXT_COLORS[status])}>
                 <TargetAccount target={row.target} chain={chain} />
-                {fieldIssues.length > 0 && <FieldIssues issue={fieldIssues[0]} className="text-left" asset={asset} />}
+                {fieldIssues.length > 0 && (
+                  <FieldIssues
+                    issue={fieldIssues[0]}
+                    className="text-left"
+                    asset={asset}
+                    minVestedTransfer={minVestedTransfer}
+                  />
+                )}
               </div>
             );
           },
