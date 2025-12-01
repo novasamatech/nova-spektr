@@ -6,6 +6,7 @@ import { cnTw, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { BodyText, FootnoteText, Icon } from '@/shared/ui';
 import { Label } from '@/shared/ui-kit';
+import { useWalletName } from '@/domains/network';
 import { ChainIcon } from '../ChainIcon/ChainIcon';
 import { Identicon, type IdenticonIconTheme } from '../Identicon/Identicon';
 
@@ -36,6 +37,8 @@ export const WalletManagement = memo(
     label,
     checkBox,
   }: PropsWithChildren<Props>) => {
+    const walletName = useWalletName(wallet);
+
     return (
       <div
         className={cnTw(
@@ -73,7 +76,7 @@ export const WalletManagement = memo(
                   { 'text-text-primary': active },
                 )}
               >
-                {wallet.name}
+                {walletName}
               </BodyText>
               {
                 <div className="flex shrink-0 items-center gap-x-1">

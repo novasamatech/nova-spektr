@@ -3,11 +3,12 @@ import { memo, useMemo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { nullable, toAddress } from '@/shared/lib/utils';
 import { Separator, SmallTitleText } from '@/shared/ui';
-import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
+import { CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { type Evidence, type Referendum, useEvidenceToReferendumRelations, useMembers } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { useFellowshipApi, useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 import { Card } from './Card';
 import { VotingRecord } from './VotingRecord';
@@ -45,7 +46,7 @@ export const MemberProfile = memo(({ referendum, evidence }: Props) => {
           <Identicon address={toAddress(member.accountId)} size={52} />
           <Box gap={1.5}>
             <SmallTitleText>
-              <Account
+              <NamedAccount
                 hideIcon
                 hideAddress
                 accountId={member.accountId}

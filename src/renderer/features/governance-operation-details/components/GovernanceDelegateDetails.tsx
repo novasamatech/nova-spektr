@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { DetailRow, FootnoteText } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Skeleton } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
 import { TracksDetails } from '@/entities/governance';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { isUndelegateTransaction } from '@/entities/transaction';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 type Props = { operation: MultisigOperation };
 
@@ -68,7 +69,7 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
   if (delegationTarget) {
     result.push(
       <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-        <Account accountId={delegationTarget} variant="short" chain={chain} />
+        <NamedAccount accountId={delegationTarget} variant="short" chain={chain} />
       </DetailRow>,
     );
   }
@@ -76,7 +77,7 @@ export const GovernanceDelegateDetails = ({ operation }: Props) => {
   if (!delegationTarget && undelegationTarget) {
     result.push(
       <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-        <Account accountId={undelegationTarget} variant="short" chain={chain} />
+        <NamedAccount accountId={undelegationTarget} variant="short" chain={chain} />
       </DetailRow>,
     );
   }

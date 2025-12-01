@@ -4,6 +4,7 @@ import { type Wallet } from '@/shared/core';
 import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
+import { useWalletName } from '@/domains/network';
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
@@ -13,6 +14,8 @@ type Props = PropsWithChildren<{
 }>;
 
 export const WalletCardMd = ({ wallet, description, meta, children, onClick }: Props) => {
+  const walletName = useWalletName(wallet);
+
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
       if (!fn) return;
@@ -45,7 +48,7 @@ export const WalletCardMd = ({ wallet, description, meta, children, onClick }: P
                 'group-focus-within:text-text-primary group-hover:text-text-primary',
               )}
             >
-              {wallet.name}
+              {walletName}
             </BodyText>
             {meta}
           </div>

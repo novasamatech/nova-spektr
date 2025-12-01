@@ -7,10 +7,11 @@ import { useI18n } from '@/shared/i18n';
 import { useDeferredList } from '@/shared/lib/hooks';
 import { performSearch, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Box, Label, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
 import { EmptyAssetsState } from '@/entities/asset';
 import { accountUtils } from '@/entities/wallet';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { receiveModel } from '../model/receive-model';
 
 type Props = {
@@ -74,7 +75,7 @@ export const SelectAccount = ({ asset, chain }: Props) => {
                   onClick={() => receiveModel.selectAccount(account)}
                 >
                   <Box direction="row" gap={6} verticalAlign="center">
-                    <Account accountId={account.accountId} chain={chain} title={account.name} iconSize={20} />
+                    <NamedAccount accountId={account.accountId} chain={chain} iconSize={20} />
                     <AssetBalance value={account.balance} asset={asset} className="whitespace-nowrap text-inherit" />
                   </Box>
                 </button>
@@ -112,7 +113,7 @@ const ShardAccounts = ({ accounts, chain, asset }: ShardAccountsProps) => {
             onClick={() => receiveModel.selectAccount(account)}
           >
             <Box direction="row" gap={6} verticalAlign="center">
-              <Account accountId={account.accountId} chain={chain} iconSize={20} />
+              <NamedAccount accountId={account.accountId} chain={chain} iconSize={20} />
               <AssetBalance value={account.balance} asset={asset} className="whitespace-nowrap text-inherit" />
             </Box>
           </button>

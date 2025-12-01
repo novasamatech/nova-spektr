@@ -2,6 +2,7 @@ import { attach, createEffect, createStore, restore, sample } from 'effector';
 import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
+import { AccountNameType } from '@/shared/core';
 import { merge, nonNullable } from '@/shared/lib/utils';
 
 import { accountService } from './service';
@@ -20,7 +21,11 @@ const createAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promi
   if (accounts.length === 0) return [];
 
   const dbAccounts = await storageService.accounts2.createAll(
-    accounts.map(a => ({ ...a, id: accountService.uniqId(a) })),
+    accounts.map(a => ({
+      ...a,
+      id: accountService.uniqId(a),
+      nameType: a.nameType ?? AccountNameType.GENERATED,
+    })),
   );
 
   return dbAccounts ?? [];
