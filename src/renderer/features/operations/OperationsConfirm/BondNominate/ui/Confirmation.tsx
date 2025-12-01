@@ -5,13 +5,14 @@ import { useI18n } from '@/shared/i18n';
 import { useToggle } from '@/shared/lib/hooks';
 import { formatAmount, getNativeAsset, toAccountId } from '@/shared/lib/utils';
 import { Button, CaptionText, DetailRow, Duration, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AssetBalance, TransactionDetails } from '@/shared/ui-entities';
+import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { identity } from '@/domains/network';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { SelectedValidatorsModal, StakingPopover, UnstakingDuration, useStakingData } from '@/entities/staking';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type Config } from '../../../OperationsValidation';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
@@ -123,7 +124,11 @@ export const Confirmation = ({
 
           <DetailRow label={t('staking.confirmation.rewardsDestinationLabel')}>
             {confirm.meta.destination ? (
-              <Account accountId={toAccountId(confirm.meta.destination)} chain={confirm.meta.chain} variant="short" />
+              <NamedAccount
+                accountId={toAccountId(confirm.meta.destination)}
+                chain={confirm.meta.chain}
+                variant="short"
+              />
             ) : (
               <FootnoteText>{t('staking.confirmation.restakeRewards')}</FootnoteText>
             )}

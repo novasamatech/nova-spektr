@@ -8,9 +8,10 @@ import { useI18n } from '@/shared/i18n';
 import { toAccountId, toAddress } from '@/shared/lib/utils';
 import { referendaPallet } from '@/shared/pallet/referenda';
 import { Duration, FootnoteText, HelpText } from '@/shared/ui';
-import { Account, Address } from '@/shared/ui-entities';
+import { Address } from '@/shared/ui-entities';
 import { evidenceService } from '@/domains/collectives';
 import { type FeedRecord } from '@/domains/collectives';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { type ReferendumDetails } from '../types';
 
 import { ReferendumEventRecord, referendumEventRecordActionSlot } from './ReferendumEventRecord';
@@ -42,7 +43,7 @@ export const EventRecord = memo(
         <div className="flex items-center gap-2">
           <div className="min-w-0 grow text-button-small">
             {withFullAccountInfo ? (
-              <Account accountId={displayAccountId} chain={chain} title={name} variant="truncate" hideAddress />
+              <NamedAccount accountId={displayAccountId} chain={chain} variant="truncate" hideAddress />
             ) : (
               <Address
                 address={toAddress(displayAccountId, { prefix: chain.addressPrefix })}

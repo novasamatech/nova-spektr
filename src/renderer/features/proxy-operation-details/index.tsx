@@ -6,7 +6,6 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
@@ -20,6 +19,7 @@ import {
   isRemovePureProxyTransaction,
 } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 import { ProxyOperationTitle } from './components/ProxyOperationTitle';
 
@@ -75,7 +75,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isAddProxyTransaction(transaction) && delegate) {
       result.push(
         <DetailRow label={t('operation.details.delegateTo')} className="text-text-secondary">
-          <Account accountId={toAccountId(delegate)} variant="short" chain={chain} />
+          <NamedAccount accountId={toAccountId(delegate)} variant="short" chain={chain} />
         </DetailRow>,
       );
     }
@@ -83,7 +83,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isRemoveProxyTransaction(transaction) && delegate) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <Account accountId={toAccountId(delegate)} variant="short" chain={chain} />
+          <NamedAccount accountId={toAccountId(delegate)} variant="short" chain={chain} />
         </DetailRow>,
       );
     }
@@ -91,7 +91,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isRemovePureProxyTransaction(transaction) && sender) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <Account accountId={sender} variant="short" chain={chain} />
+          <NamedAccount accountId={sender} variant="short" chain={chain} />
         </DetailRow>,
       );
     }

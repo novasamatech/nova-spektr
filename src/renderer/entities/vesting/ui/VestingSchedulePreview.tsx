@@ -1,12 +1,19 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { type Asset, type Chain } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
+import { Account } from '@/shared/ui-entities/Account/Account';
 import { Modal, ScrollArea } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
+import { useAccountName } from '@/domains/network';
 import { type VestingSchedule } from '../lib/types';
+
+const AccountCell = memo(({ accountId, chain }: { accountId: AccountId; chain: Chain }) => {
+  const resolvedName = useAccountName({ accountId, chain });
+  return <Account accountId={accountId} chain={chain} title={resolvedName} variant="full" />;
+});
 
 type Props = {
   chain: Chain;
@@ -27,7 +34,7 @@ export const VestingSchedulePreview = ({ chain, asset, vestingSchedule, trigger 
         key: 'target',
         title: t('vestedTransfer.parsedFile.table.headers.recipient'),
         width: '470px',
-        render: (target) => <Account accountId={target as AccountId} chain={chain} variant="full" />,
+        render: (target) => <AccountCell accountId={target as AccountId} chain={chain} />,
       },
       {
         key: 'startingBlock',

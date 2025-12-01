@@ -2,12 +2,12 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { DetailRow } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { isXcmTransaction } from '@/entities/transaction';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 type Props = {
   operation: MultisigOperation;
@@ -27,7 +27,7 @@ export const TransferOperationDetails = ({ operation }: Props) => {
   if (destination) {
     result.push(
       <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
-        <Account accountId={destination} variant="short" chain={chains[operation.chainId]} />
+        <NamedAccount accountId={destination} variant="short" chain={chains[operation.chainId]} />
       </DetailRow>,
     );
   }
@@ -35,7 +35,7 @@ export const TransferOperationDetails = ({ operation }: Props) => {
   if (isXcmTransaction(transaction) && sender) {
     result.push(
       <DetailRow label={t('operation.details.sender')} className="text-text-secondary">
-        <Account accountId={sender} variant="short" chain={chains[operation.chainId]} />
+        <NamedAccount accountId={sender} variant="short" chain={chains[operation.chainId]} />
       </DetailRow>,
     );
   }

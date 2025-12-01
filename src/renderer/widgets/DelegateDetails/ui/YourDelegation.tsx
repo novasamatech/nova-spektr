@@ -4,11 +4,12 @@ import { Trans } from 'react-i18next';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, SmallTitleText } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
 import { allTracks, locksService } from '@/entities/governance';
 import { delegationModel } from '@/widgets/DelegationModal';
 import { editDelegationModel } from '@/widgets/EditDelegationModal';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { revokeDelegationModel } from '@/widgets/RevokeDelegationModal';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 
@@ -45,7 +46,7 @@ export const YourDelegation = () => {
           <DetailRow label={t('governance.addDelegation.accountsLabel', { count: activeAccounts.length })}>
             {accounts.length === 1 ? (
               <div className="overflow-hidden text-text-secondary">
-                <Account accountId={accounts?.[0].accountId} chain={chain} variant="short" />
+                <NamedAccount accountId={accounts?.[0].accountId} chain={chain} variant="short" />
               </div>
             ) : (
               <FootnoteText className="text-text-secondary">{accounts.length}</FootnoteText>

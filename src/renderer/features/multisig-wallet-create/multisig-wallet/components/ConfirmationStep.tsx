@@ -4,11 +4,12 @@ import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { Step, getNativeAsset } from '@/shared/lib/utils';
 import { BodyText, Button, Counter, DetailRow, Icon, IconButton, Separator } from '@/shared/ui';
-import { Account, TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
+import { TransactionValidationError, WalletIcon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { SignButton } from '@/entities/operations';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { confirmModel } from '../model/confirm-model';
 import { flowModel } from '../model/flow-model';
 import { formModel } from '../model/form-model';
@@ -84,7 +85,7 @@ export const ConfirmationStep = () => {
             <DetailRow label={t('createMultisigAccount.signingAccount')}>
               <div className="flex w-full items-center justify-end gap-x-2">
                 <div className="flex max-w-[348px] flex-col text-text-secondary">
-                  <Account variant="short" accountId={signer.accountId} chain={chain} />
+                  <NamedAccount variant="short" accountId={signer.accountId} chain={chain} />
                 </div>
               </div>
             </DetailRow>

@@ -4,11 +4,12 @@ import { type ReactNode } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, TransactionDetails } from '@/shared/ui-entities';
+import { TransactionDetails } from '@/shared/ui-entities';
 import { SignButton } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -57,7 +58,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         </DetailRow>
 
         <DetailRow label={t('proxy.details.revokeFor')} className="text-text-secondary">
-          <Account accountId={(spawner || delegate)!} chain={chain} variant="short" />
+          <NamedAccount accountId={(spawner || delegate)!} chain={chain} variant="short" />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />

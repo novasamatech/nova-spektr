@@ -6,8 +6,9 @@ import { useI18n } from '@/shared/i18n';
 import { useModalClose } from '@/shared/lib/hooks';
 import { formatAsset, nonNullable } from '@/shared/lib/utils';
 import { DetailRow, IconButton, Separator } from '@/shared/ui';
-import { Account, Hash } from '@/shared/ui-entities';
+import { Hash } from '@/shared/ui-entities';
 import { Copy, Modal } from '@/shared/ui-kit';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { networkSelectorModel } from '../../model/networkSelector';
 import { type AggregatedReferendum } from '../../types/structs';
 
@@ -46,7 +47,7 @@ export const AdvancedModal = ({ asset, referendum, onClose }: Props) => {
             className="text-right text-footnote text-text-secondary"
           >
             {submissionDeposit && chain ? (
-              <Account accountId={submissionDeposit.who} chain={chain} variant="short" />
+              <NamedAccount accountId={submissionDeposit.who} chain={chain} variant="short" />
             ) : null}
           </DetailRow>
 
