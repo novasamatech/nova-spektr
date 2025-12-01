@@ -37,13 +37,7 @@ sample({
 sample({
   clock: addNotificationsFx.doneData,
   source: $notifications,
-  fn: (notifications, newNotifications) => {
-    const updated = notifications.concat(newNotifications);
-    if (newNotifications.length > 0) {
-      console.log('[NOTIFICATIONS] Added to notifications store:', newNotifications.length);
-    }
-    return updated;
-  },
+  fn: (notifications, notification) => notifications.concat(notification),
   target: $notifications,
 });
 
