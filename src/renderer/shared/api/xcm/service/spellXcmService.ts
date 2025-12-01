@@ -3,7 +3,7 @@ import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN } from '@polkadot/util';
 
-import { type Asset, AssetType, type Chain } from '@/shared/core';
+import { type Asset, AssetType, type Chain, type ChainId } from '@/shared/core';
 import { CHAIN_ID_TO_SPELL_NAME_MAP, isEthereumAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
@@ -16,6 +16,7 @@ type XcmTransferParams = {
   senderAddress?: string;
   fromChainApi: ApiPromise;
   toChainApi: ApiPromise;
+  hopApiOverrides?: Record<string, ApiPromise>;
   onDryRunResult?: (result: {
     destination?: { success: boolean; failureReason?: string };
     failureChain?: string;
@@ -31,6 +32,7 @@ type XcmFeeParams = {
   senderAddress?: string;
   fromChainApi: ApiPromise;
   toChainApi: ApiPromise;
+  hopApiOverrides?: Record<string, ApiPromise>;
 };
 
 type XcmFeeResult = {
@@ -54,8 +56,104 @@ type BuilderConfig = {
   apiOverrides: Record<string, ApiPromise>;
 };
 
+type DryRunResult = {
+  hops?: { chain?: string | unknown }[];
+  destination?: { success: boolean; failureReason?: string };
+  failureChain?: string;
+  failureReason?: string;
+  failureSubReason?: string;
+  origin?: { success: boolean; fee?: bigint; currency?: string; asset?: unknown; weight?: unknown };
+  bridgeHub?: { success: boolean; fee?: bigint; currency?: string; asset?: unknown; weight?: unknown };
+  assetHub?: { success: boolean; fee?: bigint; currency?: string; asset?: unknown; weight?: unknown };
+};
+
+type DetectHopChainsParams = {
+  fromChain: Chain;
+  toChain: Chain;
+  asset: Asset;
+  testDestinationAddress: string;
+  testSenderAddress?: string;
+  fromChainApi: ApiPromise;
+  toChainApi: ApiPromise;
+  chains: Record<ChainId, Chain>;
+  apis: Record<ChainId, ApiPromise>;
+};
+
+type DetectHopChainsResult = {
+  hopApiOverrides: Record<string, ApiPromise>;
+  dryRunResult: DryRunResult;
+};
+
 function getSpellChainName(chain: Chain): string | null {
   return CHAIN_ID_TO_SPELL_NAME_MAP[chain.chainId] ?? null;
+}
+
+function getChainIdBySpellName(spellChainName: string): ChainId | null {
+  const entry = Object.entries(CHAIN_ID_TO_SPELL_NAME_MAP).find(([, name]) => name === spellChainName);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return entry ? (entry[0] as any as ChainId) : null;
+}
+
+function extractHopChainNames(
+  dryRunResult: DryRunResult | null | undefined,
+  fromChainName: string,
+  toChainName: string,
+): string[] {
+  if (!dryRunResult?.hops || !Array.isArray(dryRunResult.hops)) {
+    return [];
+  }
+
+  const hopChainNames = new Set<string>();
+
+  for (const hop of dryRunResult.hops) {
+    if (hop?.chain && typeof hop.chain === 'string') {
+      const hopChainName = hop.chain;
+      if (hopChainName !== fromChainName && hopChainName !== toChainName) {
+        hopChainNames.add(hopChainName);
+      }
+    }
+  }
+
+  return Array.from(hopChainNames);
+}
+
+function getHopApiOverrides(
+  hopChainNames: string[],
+  chains: Record<ChainId, Chain>,
+  apis: Record<ChainId, ApiPromise>,
+): Record<string, ApiPromise> {
+  if (hopChainNames.length === 0) {
+    return {};
+  }
+
+  const overrides: Record<string, ApiPromise> = {};
+
+  for (const hopChainName of hopChainNames) {
+    const hopChainId = getChainIdBySpellName(hopChainName);
+    if (hopChainId && chains[hopChainId] && apis[hopChainId]) {
+      overrides[hopChainName] = apis[hopChainId];
+      console.log('getHopApiOverrides: added API override for hop chain', {
+        hopChainName,
+        hopChainId,
+        chainName: chains[hopChainId]?.name,
+      });
+    } else {
+      console.warn('getHopApiOverrides: could not find API for hop chain', {
+        hopChainName,
+        hopChainId,
+        hasChain: hopChainId ? !!chains[hopChainId] : false,
+        hasApi: hopChainId ? !!apis[hopChainId] : false,
+      });
+    }
+  }
+
+  console.log('getHopApiOverrides: result', {
+    hopChainNames,
+    overridesCount: Object.keys(overrides).length,
+    overrideKeys: Object.keys(overrides),
+  });
+
+  return overrides;
 }
 
 function convertAddressToChainFormat(accountId: AccountId, targetChain: Chain, _targetChainName: string): string {
@@ -83,6 +181,7 @@ function createBuilderConfig(
   toChain: Chain,
   fromChainApi: ApiPromise,
   toChainApi: ApiPromise,
+  hopApiOverrides?: Record<string, ApiPromise>,
 ): BuilderConfig {
   const fromChainName = getSpellChainName(fromChain);
   const toChainName = getSpellChainName(toChain);
@@ -99,16 +198,31 @@ function createBuilderConfig(
     );
   }
 
+  const apiOverrides = {
+    [fromChainName]: fromChainApi,
+    [toChainName]: toChainApi,
+    ...hopApiOverrides,
+  };
+
+  console.log('createBuilderConfig: final API overrides', {
+    fromChainName,
+    toChainName,
+    hopOverridesCount: hopApiOverrides ? Object.keys(hopApiOverrides).length : 0,
+    totalOverridesCount: Object.keys(apiOverrides).length,
+    allOverrideKeys: Object.keys(apiOverrides),
+    hasHopOverrides: hopApiOverrides && Object.keys(hopApiOverrides).length > 0,
+  });
+
   return {
     abstractDecimals: true,
-    apiOverrides: {
-      [fromChainName]: fromChainApi,
-      [toChainName]: toChainApi,
-    },
+    apiOverrides,
   };
 }
 
-function buildXcmTransferBuilder(params: XcmTransferParams): BuilderResult | null {
+function buildXcmTransferBuilder(
+  params: XcmTransferParams | XcmFeeParams,
+  hopApiOverrides?: Record<string, ApiPromise>,
+): BuilderResult | null {
   const { fromChain, toChain, asset, amount, destinationAddress, senderAddress, fromChainApi, toChainApi } = params;
 
   const fromChainName = getSpellChainName(fromChain);
@@ -118,7 +232,8 @@ function buildXcmTransferBuilder(params: XcmTransferParams): BuilderResult | nul
     return null;
   }
 
-  const builderConfig = createBuilderConfig(fromChain, toChain, fromChainApi, toChainApi);
+  const finalHopOverrides = hopApiOverrides ?? ('hopApiOverrides' in params ? params.hopApiOverrides : undefined);
+  const builderConfig = createBuilderConfig(fromChain, toChain, fromChainApi, toChainApi, finalHopOverrides);
   const currencyInput = createCurrencyInput(asset, amount);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,12 +256,112 @@ function buildXcmTransferBuilder(params: XcmTransferParams): BuilderResult | nul
   };
 }
 
+async function detectHopChains(params: DetectHopChainsParams): Promise<DetectHopChainsResult> {
+  const {
+    fromChain,
+    toChain,
+    asset,
+    testDestinationAddress,
+    testSenderAddress,
+    fromChainApi,
+    toChainApi,
+    chains,
+    apis,
+  } = params;
+
+  const fromChainName = getSpellChainName(fromChain);
+  const toChainName = getSpellChainName(toChain);
+
+  if (!fromChainName || !toChainName) {
+    throw new Error(
+      `spellXcmService: detectHopChains failed - unsupported chains: ${fromChain.name} -> ${toChain.name}`,
+    );
+  }
+
+  console.log('detectHopChains: starting hop detection', {
+    fromChain: fromChain.name,
+    toChain: toChain.name,
+    asset: asset.symbol,
+  });
+
+  const testAmount = '1';
+  const testParams: XcmTransferParams = {
+    fromChain,
+    toChain,
+    asset,
+    amount: testAmount,
+    destinationAddress: testDestinationAddress,
+    senderAddress: testSenderAddress,
+    fromChainApi,
+    toChainApi,
+  };
+
+  const builderResult = buildXcmTransferBuilder(testParams);
+
+  if (!builderResult) {
+    throw new Error(`spellXcmService: detectHopChains failed to build builder`);
+  }
+
+  const { builder, fromChainName: builderFromName, toChainName: builderToName } = builderResult;
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawDryRunResult = await builder.dryRun();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dryRunResult = rawDryRunResult as any as DryRunResult;
+
+    const hasDestinationFailure = dryRunResult.destination && dryRunResult.destination.success === false;
+    const hasFailureChain = Boolean(dryRunResult.failureChain);
+    const hasFailureReason = Boolean(dryRunResult.destination?.failureReason);
+    const originSuccess = dryRunResult.origin?.success === true;
+
+    const isFailure = hasDestinationFailure || hasFailureChain || hasFailureReason;
+
+    if (isFailure) {
+      console.warn('detectHopChains: dry run failed', {
+        failureReason: dryRunResult.destination?.failureReason,
+        failureChain: dryRunResult.failureChain,
+        hasDestinationFailure,
+        hasFailureChain,
+        hasFailureReason,
+        originSuccess,
+      });
+      return {
+        hopApiOverrides: {},
+        dryRunResult,
+      };
+    }
+
+    if (!originSuccess && !dryRunResult.destination) {
+      console.warn('detectHopChains: dry run result missing success indicators', {
+        hasOrigin: Boolean(dryRunResult.origin),
+        hasDestination: Boolean(dryRunResult.destination),
+        originSuccess,
+      });
+    }
+
+    const hopChainNames = extractHopChainNames(dryRunResult, builderFromName, builderToName);
+
+    const hopApiOverrides = getHopApiOverrides(hopChainNames, chains, apis);
+
+    return {
+      hopApiOverrides,
+      dryRunResult,
+    };
+  } catch (error) {
+    console.error('detectHopChains: dry run error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
+
 async function getXcmFees(params: XcmFeeParams, abortSignal?: AbortSignal): Promise<XcmFeeResult | null> {
   if (abortSignal?.aborted) {
     return null;
   }
 
-  const builderResult = buildXcmTransferBuilder(params);
+  const builderResult = buildXcmTransferBuilder(params, params.hopApiOverrides);
 
   if (!builderResult) {
     return null;
@@ -178,7 +393,7 @@ async function getXcmFees(params: XcmFeeParams, abortSignal?: AbortSignal): Prom
 }
 
 async function buildTransfer(params: XcmTransferParams): Promise<XcmTransferResult> {
-  const builderResult = buildXcmTransferBuilder(params);
+  const builderResult = buildXcmTransferBuilder(params, params.hopApiOverrides);
 
   if (!builderResult) {
     const { fromChain, toChain } = params;
@@ -189,31 +404,46 @@ async function buildTransfer(params: XcmTransferParams): Promise<XcmTransferResu
 
   const { builder } = builderResult;
 
+  let dryRunResult: DryRunResult | undefined;
+
   try {
-    console.log('buildTransfer: performing dry run', {
-      amount: params.amount,
-      assetSymbol: params.asset.symbol,
-      destination: params.destinationAddress,
-    });
-    const dryRunResult = await builder.dryRun();
-    console.log('buildTransfer: dry run result', dryRunResult);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawDryRunResult = await builder.dryRun();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dryRunResult = rawDryRunResult as any as DryRunResult;
 
     if (params.onDryRunResult) {
       params.onDryRunResult(dryRunResult);
     }
+
+    if (!dryRunResult.destination?.success) {
+      const failureReason = dryRunResult.destination?.failureReason || 'Dry run failed';
+      const isDryRunApiUnavailable = failureReason.toLowerCase().includes('dryrunapi is not available');
+
+      if (!isDryRunApiUnavailable) {
+        throw new Error(failureReason);
+      }
+    }
   } catch (dryRunError) {
-    console.error('buildTransfer: dry run error', {
-      dryRunError: dryRunError instanceof Error ? dryRunError.message : String(dryRunError),
-    });
+    const errorMessage = dryRunError instanceof Error ? dryRunError.message : String(dryRunError);
+    const isDryRunApiUnavailable = errorMessage.toLowerCase().includes('dryrunapi is not available');
+
+    if (isDryRunApiUnavailable) {
+      return {
+        extrinsic: await builder.build(),
+      };
+    }
 
     if (params.onDryRunResult) {
       params.onDryRunResult({
         destination: {
           success: false,
-          failureReason: dryRunError instanceof Error ? dryRunError.message : String(dryRunError),
+          failureReason: errorMessage,
         },
       });
     }
+
+    throw dryRunError;
   }
 
   const extrinsic = await builder.build();
@@ -248,6 +478,7 @@ export const spellXcmService = {
   getAvailableTransfers,
   getSpellChainName,
   prepareAddressForChain,
-  createBuilderConfig,
+  detectHopChains,
   buildXcmTransferBuilder,
+  createBuilderConfig,
 };

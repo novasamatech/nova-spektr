@@ -534,18 +534,39 @@ const FeeSection = memo(() => {
       {isXcm ? (
         shouldShowFees ? (
           <>
-            <FeeWithLabel
-              label={t('operation.originNetworkFee')}
-              asset={nativeAsset}
-              fee={originFee}
-              isLoading={isDestinationFeeLoading}
-            />
-            <FeeWithLabel
-              label={t('operation.destinationNetworkFee')}
-              asset={nativeAsset}
-              fee={destinationFee}
-              isLoading={isDestinationFeeLoading}
-            />
+            {(() => {
+              const originFeeAvailable = originFee !== null;
+              const destinationFeeAvailable = destinationFee !== null;
+
+              const showOriginFee =
+                originFeeAvailable || (!originFeeAvailable && !destinationFeeAvailable && isDestinationFeeLoading);
+              const showDestinationFee =
+                destinationFeeAvailable || (!destinationFeeAvailable && !originFeeAvailable && isDestinationFeeLoading);
+
+              const originFeeLoading = isDestinationFeeLoading && !originFeeAvailable && !destinationFeeAvailable;
+              const destinationFeeLoading = isDestinationFeeLoading && !destinationFeeAvailable && !originFeeAvailable;
+
+              return (
+                <>
+                  {showOriginFee ? (
+                    <FeeWithLabel
+                      label={t('operation.originNetworkFee')}
+                      asset={nativeAsset}
+                      fee={originFee}
+                      isLoading={originFeeLoading}
+                    />
+                  ) : null}
+                  {showDestinationFee ? (
+                    <FeeWithLabel
+                      label={t('operation.destinationNetworkFee')}
+                      asset={nativeAsset}
+                      fee={destinationFee}
+                      isLoading={destinationFeeLoading}
+                    />
+                  ) : null}
+                </>
+              );
+            })()}
           </>
         ) : null
       ) : (
@@ -615,8 +636,21 @@ const AlertForDryRunError = memo(() => {
     return null;
   }
 
-  const isTooExpensive = buildTransferDryRunResult.failureReason === 'TooExpensive';
+  const failureReason = buildTransferDryRunResult.failureReason || '';
+  const isTooExpensive =
+    buildTransferDryRunResult.failureReason === 'TooExpensive' ||
+    failureReason.toLowerCase().includes('too low') ||
+    failureReason.toLowerCase().includes('cannot cover fees') ||
+    failureReason.toLowerCase().includes('insufficient');
   const chainName = xcmChain?.name || buildTransferDryRunResult.failureChain;
+
+  let cleanReason = failureReason;
+  if (failureReason.includes('Dry run failed:')) {
+    cleanReason = failureReason.replace('Dry run failed:', '').trim();
+  }
+  if (cleanReason.toLowerCase() === 'dry run failed') {
+    cleanReason = '';
+  }
 
   return (
     <Alert
@@ -632,13 +666,16 @@ const AlertForDryRunError = memo(() => {
             values={{
               chain: chainName,
             }}
+            components={{
+              br: <br />,
+            }}
           />
         ) : (
           <Trans
             t={t}
-            i18nKey="transfer.dryRunError.description"
+            i18nKey={cleanReason ? 'transfer.dryRunError.descriptionWithReason' : 'transfer.dryRunError.description'}
             values={{
-              reason: buildTransferDryRunResult.failureReason || 'Unknown',
+              reason: cleanReason,
               chain: chainName,
             }}
           />

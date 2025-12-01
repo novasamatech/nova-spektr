@@ -2539,11 +2539,12 @@
     "destinationCryptoError": "Unsupported address format for {network}",
     "destinationFormatError": "Address has incorrect format",
     "dryRunError": {
-      "description": "Dry run failed: {reason} on {chain} chain",
+      "description": "The transfer cannot be completed on {chain} chain.",
+      "descriptionWithReason": "The transfer cannot be completed on {chain} chain. {reason}",
       "title": "Transfer path unavailable"
     },
     "dryRunTooExpensive": {
-      "description": "The transfer amount is insufficient to cover execution fees on {chain} chain. Please increase the transfer amount.",
+      "description": "The transfer amount is insufficient to cover execution fees on {chain} chain.<br />Please increase the transfer amount.",
       "title": "Insufficient fees for transfer"
     },
     "editOperationButton": "Edit operation",

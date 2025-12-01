@@ -621,7 +621,9 @@ const $isMyselfXcmEnabled = combine(
   ({ isXcm, destinationAccounts }) => isXcm && destinationAccounts.length > 0,
 );
 
-const $hasDryRunError = xcmSpellTransferModel.$dryRunError.map((error) => error !== null);
+const $hasDryRunError = xcmSpellTransferModel.$buildTransferDryRunResult.map(
+  (result) => result !== null && result.success === false,
+);
 
 const $canSubmit = and(
   $valid,
