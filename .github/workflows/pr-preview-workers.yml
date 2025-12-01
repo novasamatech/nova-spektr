@@ -1,8 +1,8 @@
-name: Deploy PR Preview to Cloudflare Workers
+name: Deploy PR Preview to Cloudflare Pages
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, closed]
 
 concurrency:
   group: pr-preview-${{ github.event.pull_request.number }}
@@ -16,6 +16,7 @@ jobs:
   deploy-preview:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    if: github.event.action != 'closed'
 
     steps:
       - name: ⚙️ Checkout
@@ -23,6 +24,9 @@ jobs:
 
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
+
+      - name: 📦 Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: 📝 Update package.json version with commit SHA
         run: |
@@ -44,6 +48,30 @@ jobs:
           pnpm renderer:staging
           pnpm postbuild:staging
 
+      - name: 📦 Ensure Cloudflare Pages project exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          PROJECT_NAME="nova-spektr-pr-${{ github.event.pull_request.number }}"
+          
+          # Install wrangler via npm
+          echo "Installing wrangler..."
+          npm install -g wrangler
+          
+          # Check if project exists
+          echo "Checking if project ${PROJECT_NAME} exists..."
+          PROJECTS=$(wrangler pages project list --json 2>/dev/null || echo "[]")
+          
+          PROJECT_EXISTS=$(echo "$PROJECTS" | jq -r --arg name "$PROJECT_NAME" '.[] | select(.name == $name) | .name')
+          
+          if [ -z "$PROJECT_EXISTS" ]; then
+            echo "Project ${PROJECT_NAME} does not exist. Creating it now..."
+            pnpm wrangler pages project create "$PROJECT_NAME" --production-branch=${{ github.head_ref }}
+          else
+            echo "Project ${PROJECT_NAME} already exists."
+          fi
+
       - name: 🚀 Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
@@ -51,7 +79,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: .
-          command: pages deploy release/build --project-name=nova-spektr-pr --branch=${{ github.head_ref }}
+          command: pages deploy release/build --project-name=nova-spektr-pr-${{ github.event.pull_request.number }}
 
       - name: 💬 Comment PR with preview URL
         if: success()
@@ -132,3 +160,22 @@ jobs:
               repo: context.repo.repo,
               body: body
             });
+
+  cleanup-deployment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event.action == 'closed'
+    permissions:
+      contents: read
+
+    steps:
+      - name: ⚙️ Checkout
+        uses: actions/checkout@v4
+
+      - name: 🗑️ Delete Cloudflare Pages project
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: .
+          command: pages project delete nova-spektr-pr-${{ github.event.pull_request.number }} || echo "Project may have been already deleted or does not exist"
