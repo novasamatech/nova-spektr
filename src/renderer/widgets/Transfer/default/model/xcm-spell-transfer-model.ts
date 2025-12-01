@@ -82,6 +82,164 @@ const $apiDestination = combine(
   { skipVoid: false },
 );
 
+type DetectHopChainsParams = {
+  api: ApiPromise;
+  apiDestination: ApiPromise;
+  network: { chain: Chain; asset: Asset };
+  xcmChain: Chain;
+  chains: Record<ChainId, Chain>;
+  apis: Record<ChainId, ApiPromise>;
+};
+
+const detectHopChainsFx = takeLast({
+  fn: async (params: DetectHopChainsParams): Promise<DetectHopChainsResult | null> => {
+    const { api, apiDestination, network, xcmChain, chains, apis } = params;
+
+    if (network.chain.chainId === xcmChain.chainId) {
+      return null;
+    }
+
+    const fromChainName = spellXcmService.getSpellChainName(network.chain);
+    const toChainName = spellXcmService.getSpellChainName(xcmChain);
+
+    if (!fromChainName || !toChainName) {
+      return null;
+    }
+
+    const isDestinationEvm = isEvmChain(xcmChain);
+    const isSourceEvm = isEvmChain(network.chain);
+
+    const testDestination = isDestinationEvm ? toAccountId(TEST_EVM_ADDRESS) : TEST_ACCOUNTS[0];
+    const testSender = isSourceEvm ? toAccountId(TEST_EVM_ADDRESS) : TEST_ACCOUNTS[0];
+    const testDestinationAddress = spellXcmService.prepareAddressForChain(testDestination, xcmChain, toChainName);
+    const testSenderAddress = spellXcmService.prepareAddressForChain(testSender, network.chain, fromChainName);
+
+    try {
+      const result = await spellXcmService.detectHopChains({
+        fromChain: network.chain,
+        toChain: xcmChain,
+        asset: network.asset,
+        testDestinationAddress,
+        testSenderAddress,
+        fromChainApi: api,
+        toChainApi: apiDestination,
+        chains,
+        apis,
+      });
+
+      return result;
+    } catch (error) {
+      console.error('detectHopChainsFx: error', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  },
+  key: ({ network, xcmChain }) => `${network.chain.chainId}-${xcmChain.chainId}`,
+});
+
+const $detectHopChainsParams = combine(
+  {
+    api: $api,
+    apiDestination: $apiDestination,
+    network: $networkStore,
+    xcmChain: $xcmChain,
+    chains: networkModel.$chains,
+    apis: networkModel.$apis,
+  },
+  ({ api, apiDestination, network, xcmChain, chains, apis }) => {
+    if (!api || !apiDestination || !network || !xcmChain) {
+      return null;
+    }
+
+    if (network.chain.chainId === xcmChain.chainId) {
+      return null;
+    }
+
+    return {
+      api,
+      apiDestination,
+      network,
+      xcmChain,
+      chains,
+      apis,
+    };
+  },
+);
+
+const $hopApiOverrides = createStore<Record<string, ApiPromise>>({}).reset(xcmStarted, xcmStopped);
+
+sample({
+  clock: xcmChainSelected,
+  source: $detectHopChainsParams,
+  filter: (params): params is DetectHopChainsParams => params !== null,
+  target: detectHopChainsFx,
+});
+
+type DetectHopChainsResult = {
+  hopApiOverrides: Record<string, ApiPromise>;
+  dryRunResult: {
+    destination?: { success: boolean; failureReason?: string };
+    failureChain?: string;
+  };
+};
+
+sample({
+  clock: detectHopChainsFx.doneData,
+  filter: (result): result is DetectHopChainsResult => result !== null,
+  fn: (result) => {
+    if (!result) return {};
+    return result.hopApiOverrides;
+  },
+  target: $hopApiOverrides,
+});
+
+function shouldBlockOnDryRunError(failureReason?: string): boolean {
+  if (!failureReason) return false;
+  const blockingKeywords = ['TooExpensive'];
+  return blockingKeywords.some((keyword) => failureReason.includes(keyword));
+}
+
+sample({
+  clock: detectHopChainsFx.doneData,
+  filter: (result): result is DetectHopChainsResult => result !== null,
+  fn: (result) => {
+    if (!result) return null;
+    const dryRunResult = result.dryRunResult;
+    if (!dryRunResult.destination?.success) {
+      const failureReason = dryRunResult.destination?.failureReason;
+      const shouldBlock = shouldBlockOnDryRunError(failureReason);
+      if (!shouldBlock) {
+        return null;
+      }
+      return {
+        success: false,
+        failureReason,
+        failureChain: dryRunResult.failureChain,
+      };
+    }
+    return null;
+  },
+  target: buildTransferDryRunResult,
+});
+
+sample({
+  clock: detectHopChainsFx.failData,
+  fn: (error) => {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const shouldBlock = shouldBlockOnDryRunError(errorMessage);
+    if (!shouldBlock) {
+      return null;
+    }
+    return {
+      success: false,
+      failureReason: errorMessage,
+      failureChain: undefined,
+    };
+  },
+  target: buildTransferDryRunResult,
+});
+
 type FeeCalculationParams = {
   api: ApiPromise;
   apiDestination: ApiPromise;
@@ -90,11 +248,13 @@ type FeeCalculationParams = {
   destination: AccountId;
   rawAmount: string;
   initiatorAccountId: AccountId | null;
+  hopApiOverrides: Record<string, ApiPromise>;
 };
 
 const getXcmFeesFx = takeLast({
   fn: async (params: FeeCalculationParams, abortSignal: AbortSignal) => {
-    const { api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId } = params;
+    const { api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId, hopApiOverrides } =
+      params;
 
     if (network.chain.chainId === xcmChain.chainId) {
       return null;
@@ -124,6 +284,7 @@ const getXcmFeesFx = takeLast({
         senderAddress,
         fromChainApi: api,
         toChainApi: apiDestination,
+        hopApiOverrides,
       },
       abortSignal,
     );
@@ -140,8 +301,9 @@ const $feeCalculationParams = combine(
     destination: $destination,
     rawAmount: $rawAmount,
     initiatorAccountId: $initiatorAccountId,
+    hopApiOverrides: $hopApiOverrides,
   },
-  ({ api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId }) => {
+  ({ api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId, hopApiOverrides }) => {
     if (!api || !apiDestination || !network || !xcmChain || !destination || !rawAmount) {
       return null;
     }
@@ -158,12 +320,13 @@ const $feeCalculationParams = combine(
       destination,
       rawAmount,
       initiatorAccountId,
+      hopApiOverrides,
     };
   },
 );
 
 sample({
-  clock: [rawAmountChangedDebounced, destinationChangedDebounced, xcmChainSelected],
+  clock: [rawAmountChangedDebounced, destinationChangedDebounced],
   source: $feeCalculationParams,
   filter: (params): params is FeeCalculationParams => params !== null,
   target: getXcmFeesFx,
@@ -213,9 +376,16 @@ const $isDestinationFeeLoading = combine(
   {
     isPending: getXcmFeesFx.pending,
     feeParams: $feeCalculationParams,
+    originFee: $originFee,
+    destinationFee: $destinationFee,
   },
-  ({ isPending, feeParams }) => {
-    return isPending && feeParams !== null;
+  ({ isPending, feeParams, originFee, destinationFee }) => {
+    if (!feeParams) return false;
+    if (!isPending) return false;
+    if (originFee !== null || destinationFee !== null) {
+      return false;
+    }
+    return true;
   },
 );
 
@@ -287,11 +457,21 @@ type BuildTransferParams = {
   destination: AccountId;
   amount: string;
   initiatorAccountId: AccountId | null;
+  hopApiOverrides: Record<string, ApiPromise>;
 };
 
 const buildTransferFx = takeLast({
   fn: async (
-    { api, apiDestination, network, xcmChain, destination, amount, initiatorAccountId }: BuildTransferParams,
+    {
+      api,
+      apiDestination,
+      network,
+      xcmChain,
+      destination,
+      amount,
+      initiatorAccountId,
+      hopApiOverrides,
+    }: BuildTransferParams,
     abortSignal: AbortSignal,
   ) => {
     if (network.chain.chainId === xcmChain.chainId) {
@@ -337,17 +517,23 @@ const buildTransferFx = takeLast({
       senderAddress,
       fromChainApi: api,
       toChainApi: apiDestination,
+      hopApiOverrides,
       onDryRunResult: (dryRunResult) => {
         if (checkAborted()) {
           return;
         }
 
         if (dryRunResult && !dryRunResult.destination?.success) {
-          buildTransferDryRunResult({
-            success: false,
-            failureReason: dryRunResult.destination?.failureReason,
-            failureChain: dryRunResult.failureChain,
-          });
+          const failureReason = dryRunResult.destination?.failureReason || '';
+          const isDryRunApiUnavailable = failureReason.toLowerCase().includes('dryrunapi is not available');
+
+          if (!isDryRunApiUnavailable) {
+            buildTransferDryRunResult({
+              success: false,
+              failureReason,
+              failureChain: dryRunResult.failureChain,
+            });
+          }
         }
       },
     });
@@ -373,8 +559,9 @@ const $buildTransferParams = combine(
     destination: $destination,
     rawAmount: $rawAmount,
     initiatorAccountId: $initiatorAccountId,
+    hopApiOverrides: $hopApiOverrides,
   },
-  ({ api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId }) => {
+  ({ api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId, hopApiOverrides }) => {
     if (!api || !apiDestination || !network || !xcmChain || !destination || !rawAmount) {
       return null;
     }
@@ -383,7 +570,6 @@ const $buildTransferParams = combine(
       return null;
     }
 
-    // Validate that the destination address matches the chain type (EVM vs Substrate)
     if (!validateAddress(String(destination), xcmChain)) {
       return null;
     }
@@ -400,12 +586,13 @@ const $buildTransferParams = combine(
       destination,
       amount: rawAmount,
       initiatorAccountId,
+      hopApiOverrides,
     };
   },
 );
 
 sample({
-  clock: [xcmChainSelected, destinationChanged, rawAmountChanged, xcmStarted],
+  clock: [destinationChangedDebounced, rawAmountChangedDebounced],
   source: $buildTransferParams,
   filter: (params): params is BuildTransferParams => params !== null,
   target: buildTransferFx,
@@ -451,108 +638,6 @@ const $xcmData = combine(
   { skipVoid: false },
 );
 
-type DryRunParams = {
-  api: ApiPromise;
-  apiDestination: ApiPromise;
-  network: { chain: Chain; asset: Asset };
-  xcmChain: Chain;
-};
-
-const dryRunFx = takeLast({
-  fn: async (params: DryRunParams) => {
-    const { api, apiDestination, network, xcmChain } = params;
-
-    if (network.chain.chainId === xcmChain.chainId) {
-      return null;
-    }
-
-    const fromChainName = spellXcmService.getSpellChainName(network.chain);
-    const toChainName = spellXcmService.getSpellChainName(xcmChain);
-
-    if (!fromChainName || !toChainName) {
-      return null;
-    }
-
-    const isDestinationEvm = isEvmChain(xcmChain);
-    const isSourceEvm = isEvmChain(network.chain);
-
-    const testDestination = isDestinationEvm ? toAccountId(TEST_EVM_ADDRESS) : TEST_ACCOUNTS[0];
-    const testSender = isSourceEvm ? toAccountId(TEST_EVM_ADDRESS) : TEST_ACCOUNTS[0];
-    const testAmount = '1';
-    const destinationAddress = spellXcmService.prepareAddressForChain(testDestination, xcmChain, toChainName);
-    const senderAddress = spellXcmService.prepareAddressForChain(testSender, network.chain, fromChainName);
-
-    try {
-      const builderResult = spellXcmService.buildXcmTransferBuilder({
-        fromChain: network.chain,
-        toChain: xcmChain,
-        asset: network.asset,
-        amount: testAmount,
-        destinationAddress,
-        senderAddress,
-        fromChainApi: api,
-        toChainApi: apiDestination,
-      });
-
-      if (!builderResult) {
-        return null;
-      }
-
-      await builderResult.builder.dryRun();
-      return null;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return errorMessage;
-    }
-  },
-  key: () => 'xcmDryRun',
-});
-
-const $dryRunParams = combine(
-  {
-    api: $api,
-    apiDestination: $apiDestination,
-    network: $networkStore,
-    xcmChain: $xcmChain,
-  },
-  ({ api, apiDestination, network, xcmChain }) => {
-    if (!api || !apiDestination || !network || !xcmChain) {
-      return null;
-    }
-
-    if (network.chain.chainId === xcmChain.chainId) {
-      return null;
-    }
-
-    return {
-      api,
-      apiDestination,
-      network,
-      xcmChain,
-    };
-  },
-);
-
-sample({
-  clock: xcmChainSelected,
-  source: $dryRunParams,
-  filter: (params): params is DryRunParams => params !== null,
-  target: dryRunFx,
-});
-
-const $dryRunError = createStore<string | null>(null);
-
-sample({
-  clock: dryRunFx.doneData,
-  target: $dryRunError,
-});
-
-sample({
-  clock: [xcmChainSelected, xcmStarted, xcmStopped],
-  fn: () => null,
-  target: $dryRunError,
-});
-
 sample({
   clock: [rawAmountChanged, destinationChanged, xcmChainSelected, xcmStarted, xcmStopped],
   fn: () => null,
@@ -577,8 +662,8 @@ export const xcmSpellTransferModel = {
   $xcmChain,
   $isDestinationFeeLoading,
   $shouldShowFees,
-  $dryRunError,
   $buildTransferDryRunResult,
+  $hopApiOverrides,
 
   events: {
     xcmStarted,
