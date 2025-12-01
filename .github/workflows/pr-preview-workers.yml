@@ -51,7 +51,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           PROJECT_NAME="nova-spektr-pr-${{ github.event.pull_request.number }}"
-          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
           
           # Check if project exists
           echo "Checking if project ${PROJECT_NAME} exists..."
@@ -59,8 +58,7 @@ jobs:
             echo "Project ${PROJECT_NAME} already exists."
           else
             echo "Project ${PROJECT_NAME} does not exist. Creating it now..."
-            echo "Creating project with production branch: ${BRANCH_NAME}"
-            pnpm wrangler pages project create "$PROJECT_NAME" --production-branch="$BRANCH_NAME"
+            pnpm wrangler pages project create "$PROJECT_NAME" --production-branch=main
           fi
 
       - name: 🚀 Deploy to Cloudflare Pages
