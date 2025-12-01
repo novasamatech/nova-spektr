@@ -9,7 +9,7 @@ import { useToggle } from '@/shared/lib/hooks';
 import { cnTw, keys, toAccountId } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { CaptionText, DetailRow, FootnoteText, Icon } from '@/shared/ui';
-import { Account, AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
+import { AccountExplorers, AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type AnyAccount, type MultisigOperation, identity } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
@@ -30,6 +30,7 @@ import {
 } from '@/entities/transaction';
 import { walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 type Props = {
   operation: MultisigOperation;
@@ -52,6 +53,10 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
   const proxyType = operationDetailsUtils.getProxyType(operation);
   const destinationChain = operationDetailsUtils.getDestinationChain(operation);
   const destination = operationDetailsUtils.getDestination(operation, chains, destinationChain);
+  const delegateAccountId = delegate ? toAccountId(delegate) : null;
+  const spawnerAccountId = spawner ? toAccountId(spawner) : null;
+  const destinationAccountId = destination ? toAccountId(destination) : null;
+  const payeeAccountId = typeof payee === 'object' ? toAccountId(payee.Account) : null;
 
   const delegationTarget = operationDetailsUtils.getDelegationTarget(operation);
   const delegationTracks = operationDetailsUtils.getDelegationTracks(operation);
@@ -158,7 +163,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
           </DetailRow>
 
           <DetailRow label={t('operation.details.senderAccount')} className="text-text-secondary">
-            <Account chain={chain} accountId={proxied.account.accountId} variant="short" />
+            <NamedAccount chain={chain} accountId={proxied.account.accountId} variant="short" />
           </DetailRow>
 
           <hr className="border-filter-border" />
@@ -189,7 +194,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
           label={t(hasSender ? 'operation.details.sender' : 'operation.details.account')}
           className="text-text-secondary"
         >
-          <Account chain={chain} accountId={account.accountId} variant="short" />
+          <NamedAccount chain={chain} accountId={account.accountId} variant="short" />
         </DetailRow>
       )}
 
@@ -225,13 +230,13 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
 
       {isAddProxyTransaction(transaction) && delegate && (
         <DetailRow label={t('operation.details.delegateTo')} className="text-text-secondary">
-          <Account chain={chain} accountId={delegate} variant="short" />
+          {delegateAccountId && <NamedAccount chain={chain} accountId={delegateAccountId} variant="short" />}
         </DetailRow>
       )}
 
       {isRemoveProxyTransaction(transaction) && delegate && (
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <Account chain={chain} accountId={delegate} variant="short" />
+          {delegateAccountId && <NamedAccount chain={chain} accountId={delegateAccountId} variant="short" />}
         </DetailRow>
       )}
 
@@ -241,7 +246,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
             <FootnoteText className="text-text-secondary">{t(proxyUtils.getProxyTypeName(proxyType))}</FootnoteText>
           </DetailRow>
           <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-            <Account chain={chain} accountId={spawner} variant="short" />
+            {spawnerAccountId && <NamedAccount chain={chain} accountId={spawnerAccountId} variant="short" />}
           </DetailRow>
         </>
       )}
@@ -260,7 +265,7 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
 
       {destination && (
         <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
-          <Account chain={chain} accountId={destination} variant="short" />
+          {destinationAccountId && <NamedAccount chain={chain} accountId={destinationAccountId} variant="short" />}
         </DetailRow>
       )}
 
@@ -269,11 +274,9 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
           label={t('operation.details.payee')}
           className={cnTw('text-text-secondary', { 'pr-0': typeof payee === 'string' })}
         >
-          {typeof payee === 'string' ? (
-            t('staking.confirmation.restakeRewards')
-          ) : (
-            <Account chain={chain} accountId={payee.Account} variant="short" />
-          )}
+          {typeof payee === 'string'
+            ? t('staking.confirmation.restakeRewards')
+            : payeeAccountId && <NamedAccount chain={chain} accountId={payeeAccountId} variant="short" />}
         </DetailRow>
       )}
 
@@ -324,13 +327,13 @@ export const Details = ({ api, operation, account, chain, signatory }: Props) =>
 
       {delegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-          <Account chain={chain} accountId={delegationTarget} variant="short" />
+          <NamedAccount chain={chain} accountId={delegationTarget} variant="short" />
         </DetailRow>
       )}
 
       {!delegationTarget && undelegationTarget && (
         <DetailRow label={t('operation.details.delegationTarget')} className="text-text-secondary">
-          <Account chain={chain} accountId={undelegationTarget} variant="short" />
+          <NamedAccount chain={chain} accountId={undelegationTarget} variant="short" />
         </DetailRow>
       )}
 

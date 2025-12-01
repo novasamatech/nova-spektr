@@ -10,7 +10,7 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { FootnoteText, HeadlineText, IconButton, Separator } from '@/shared/ui';
 import { Address, ChainAccountsList, RootExplorers, WalletAccountIcon } from '@/shared/ui-entities';
 import { Box, Modal, ScrollArea, Tabs } from '@/shared/ui-kit';
-import { accountService, accounts } from '@/domains/network';
+import { accountService, accounts, useWalletName } from '@/domains/network';
 import { type AnyAccount } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -36,6 +36,7 @@ type Props = {
 };
 export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
   const { t } = useI18n();
+  const walletName = useWalletName(wallet);
 
   useGate(multisigWalletDetailsModel.flow, { wallet });
   useGate(walletDetailsModel.flow, { wallet });
@@ -247,7 +248,7 @@ export const MultisigWalletDetails = ({ wallet, onClose }: Props) => {
             {!isRenameInputOpen && (
               <>
                 <HeadlineText className="ml-1 truncate text-text-primary" as="h3">
-                  {wallet.name}
+                  {walletName}
                 </HeadlineText>
                 <div className="flex shrink-0 items-center gap-3 duration-300 animate-in fade-in-0">
                   <IconButton name="rename" size={16} onClick={toggleIsRenameInputOpen} />

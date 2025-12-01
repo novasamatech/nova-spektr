@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { Icon } from '@/shared/ui/Icon/Icon';
 import { FootnoteText } from '@/shared/ui/Typography';
+import { useAccountName } from '@/domains/network';
 import { Account } from '../Account/Account';
 
 import { Collapsible } from './Collapsible';
@@ -19,6 +20,7 @@ export const EthAccountsGroup = memo<EthAccountsGroupProps>(({ chains, bgColor }
   if (chains.length === 0) return null;
 
   const [chain, accountId] = chains[0]!;
+  const resolvedName = useAccountName({ accountId, chain });
 
   return (
     <Collapsible>
@@ -31,7 +33,7 @@ export const EthAccountsGroup = memo<EthAccountsGroupProps>(({ chains, bgColor }
             </FootnoteText>
           </div>
           <div className="min-w-0 text-text-secondary">
-            <Account variant="truncate" accountId={accountId} chain={chain} />
+            <Account variant="truncate" accountId={accountId} chain={chain} title={resolvedName} />
           </div>
         </div>
       </Collapsible.Trigger>

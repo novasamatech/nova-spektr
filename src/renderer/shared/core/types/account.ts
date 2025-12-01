@@ -7,6 +7,11 @@ import { type ChainId, type NoID } from './general';
 import { type ProxyType, type ProxyVariant } from './proxy';
 import { type Signatory } from './signatory';
 
+export const enum AccountNameType {
+  GENERATED = 'generated',
+  CUSTOM = 'custom',
+}
+
 export interface WatchOnlyAccount extends UniversalAccount {
   accountType: AccountType.WATCH_ONLY;
 }
