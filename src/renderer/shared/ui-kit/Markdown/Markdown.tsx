@@ -4,6 +4,7 @@ import { noop } from 'lodash';
 import { type ChangeEvent, memo, useState } from 'react';
 import ReactMarkdown, { type Components, type Options } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 
 import { useI18n } from '@/shared/i18n';
@@ -14,7 +15,7 @@ import { InfoLink } from '@/shared/ui/InfoLink/InfoLink';
 import { Checkbox } from '../Checkbox/Checkbox';
 
 const rehypeOptions: Options['remarkRehypeOptions'] = { allowDangerousHtml: true };
-const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw];
+const rehypePlugins: Options['rehypePlugins'] = [rehypeRaw, rehypeSanitize];
 const remarkPlugins: Options['remarkPlugins'] = [remarkGfm];
 
 const baseComponents: Components = {

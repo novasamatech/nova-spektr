@@ -11,6 +11,7 @@ import { useFellowshipApi, useFellowshipChain, useFellowshipIdentities } from '@
 
 export type MemberRow = CoreMember & {
   name?: string;
+  nameOrAccountId: string;
   salary: string;
   salaryAmount: number;
 };
@@ -45,7 +46,7 @@ export const MembersTable = memo(({ members }: MembersTableProps) => {
         },
       },
       {
-        key: 'name',
+        key: 'nameOrAccountId',
         title: t('fellowship.overview.members.table.account'),
         sortable: true,
         width: '452px',
@@ -109,9 +110,14 @@ export const MembersTable = memo(({ members }: MembersTableProps) => {
           salaryAmount = rawSalary.toNumber();
         }
 
+        const name = identities[member.accountId]
+          ? identityService.getFullName(identities[member.accountId])
+          : undefined;
+
         return {
           ...member,
-          name: identities[member.accountId] ? identityService.getFullName(identities[member.accountId]) : undefined,
+          name,
+          nameOrAccountId: name ?? member.accountId,
           salary: salaryText,
           salaryAmount,
         };

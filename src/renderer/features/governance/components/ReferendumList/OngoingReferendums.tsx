@@ -12,7 +12,7 @@ import { ListItemPlaceholder } from './ListItemPlaceholder';
 import { ReferendumItem } from './ReferendumItem';
 
 type Props = {
-  api?: ApiPromise;
+  timelineApi?: ApiPromise;
   chain?: Chain;
   asset?: Asset;
   referendums: AggregatedReferendum[];
@@ -33,7 +33,7 @@ const createPlaceholders = (size: number) => {
 
 export const OngoingReferendums = memo(
   ({
-    api,
+    timelineApi,
     chain,
     asset,
     referendums,
@@ -49,7 +49,8 @@ export const OngoingReferendums = memo(
 
     if (!isLoading && referendums.length === 0) return null;
 
-    const showList = (!isLoading || mixLoadingWithData) && nonNullable(api) && nonNullable(asset) && nonNullable(chain);
+    const showList =
+      (!isLoading || mixLoadingWithData) && nonNullable(timelineApi) && nonNullable(asset) && nonNullable(chain);
     const showPlaceholders = isLoading || mixLoadingWithData;
 
     return (
@@ -71,7 +72,7 @@ export const OngoingReferendums = memo(
                 <li key={referendum.referendumId}>
                   <AsyncItem fallback={<ListItemPlaceholder />}>
                     <ReferendumItem
-                      api={api}
+                      timelineApi={timelineApi}
                       chain={chain}
                       asset={asset}
                       referendum={referendum}

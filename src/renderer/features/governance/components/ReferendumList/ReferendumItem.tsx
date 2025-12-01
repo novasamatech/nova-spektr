@@ -23,7 +23,7 @@ import { VotingStatusBadge } from '../VotingStatusBadge';
 import { ListItem } from './ListItem';
 
 type Props = {
-  api: ApiPromise;
+  timelineApi: ApiPromise;
   chain: Chain;
   asset: Asset;
   referendum: AggregatedReferendum;
@@ -33,7 +33,7 @@ type Props = {
 };
 
 export const ReferendumItem = memo(
-  ({ api, chain, asset, referendum, isTitlesLoading, isApprovalThresholdsLoading, onSelect }: Props) => {
+  ({ timelineApi, chain, asset, referendum, isTitlesLoading, isApprovalThresholdsLoading, onSelect }: Props) => {
     const { t } = useI18n();
 
     const { referendumId, approvalThreshold } = referendum;
@@ -74,7 +74,7 @@ export const ReferendumItem = memo(
         <div className="flex w-full items-center gap-x-2">
           <VotingStatusBadge referendum={referendum} />
 
-          <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} api={api} />
+          <ReferendumEndTimer status={referendum.status} endBlock={referendum.end} timelineApi={timelineApi} />
 
           <div className="ml-auto flex text-text-secondary">
             {referendumId && (
