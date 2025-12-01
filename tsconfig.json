@@ -32,6 +32,6 @@
     "noEmit": true,
     "types": ["@polkadot/api-augment", "@testing-library/jest-dom", "vitest/globals"]
   },
-  "include": ["src", ".storybook", "tests", "scripts", "config", "workers", ".eslintrc.cjs", "*.ts", "*.js", "*.cjs"],
+  "include": ["src", ".storybook", "tests", "scripts", "config", ".eslintrc.cjs", "*.ts", "*.js", "*.cjs"],
   "exclude": ["node_modules"]
 }
