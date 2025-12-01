@@ -68,7 +68,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy release/build --project-name=${{ env.PROJECT_NAME }}
+          command: pages deploy release/build --project-name=${{ env.PROJECT_NAME }} --branch=${{ github.event.pull_request.head.ref }}
 
       - name: 💬 Comment PR with preview URL
         if: success()
