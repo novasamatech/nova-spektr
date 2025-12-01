@@ -102,7 +102,7 @@ deriveFromResources({
   store: $list,
   resources: [fetchResource, subscribeResource],
   map(state, operations) {
-    return multisigOperationService.mergeMultisigOperations(state, operations);
+    return multisigOperationService.updateMultisigOperations(state, operations);
   },
 });
 
@@ -121,7 +121,7 @@ deriveFromResources({
       events: multisigOperationService.mergeEvents(operation.events, [event]),
     };
 
-    return multisigOperationService.updateMultisigOperations(state, [updatedOperation]);
+    return multisigOperationService.mergeMultisigOperations(state, [updatedOperation]);
   },
 });
 
@@ -133,14 +133,14 @@ sample({
 sample({
   clock: addOperationsFx.doneData,
   source: $list,
-  fn: multisigOperationService.updateMultisigOperations,
+  fn: multisigOperationService.mergeMultisigOperations,
   target: $list,
 });
 
 sample({
   clock: updateOperationsFx.doneData,
   source: $list,
-  fn: multisigOperationService.updateMultisigOperations,
+  fn: multisigOperationService.mergeMultisigOperations,
   target: $list,
 });
 

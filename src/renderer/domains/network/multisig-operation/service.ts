@@ -129,7 +129,10 @@ const mergeEvents = (oldEvents: MultisigEvent[], events: MultisigEvent[]) =>
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
 
-const updateMultisigOperations = (
+/*
+ * Performs an actual merge of old operations with new operations with update if they have the same id.
+ */
+const mergeMultisigOperations = (
   oldOperations: MultisigOperation[],
   updated: MultisigOperation[],
 ): MultisigOperation[] => {
@@ -163,19 +166,17 @@ const updateMultisigOperations = (
 };
 
 /**
- * Because we work with Events AT BEST, it may happen that our db has extra
- * operations that are not on the chain anymore nor were executed. We want to
- * filter them out.
- *
- * For example, if we have a fork and operation was executed in the different
- * block than we first recevied event of.
- *
- * This function merges 2 sets of operations: old and update. It filters out old
- * pending operations that are not present in update. (Pending means that
- * operations comes from chain, as indexer supplies only not pending
+ * First this function filters out old operations that are not present in
+ * update. Then it merges the remaining operations with the update. (Pending
+ * means that operations comes from chain, as indexer supplies only not pending
  * operations)
+ *
+ * This is needed because we work with Events AT BEST, it may happen that our db
+ * has extra operations that are not on the chain anymore nor were executed. We
+ * want to filter them out. For example, if we have a fork and operation was
+ * executed in the different block than we first recevied event of.
  */
-const mergeMultisigOperations = (
+const updateMultisigOperations = (
   oldOperations: MultisigOperation[],
   update: MultisigOperation[],
 ): MultisigOperation[] => {
@@ -197,7 +198,7 @@ const mergeMultisigOperations = (
     return true;
   });
 
-  return updateMultisigOperations(filtered, update);
+  return mergeMultisigOperations(filtered, update);
 };
 
 export const multisigOperationService = {
@@ -207,8 +208,8 @@ export const multisigOperationService = {
   getMultisigAccountId,
 
   mergeEvents,
-  mergeMultisigOperations,
   updateMultisigOperations,
+  mergeMultisigOperations,
 
   isMultisigSupported,
   getOtherSignatories,
