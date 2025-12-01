@@ -55,7 +55,7 @@ multisigOperationsSDK(governanceOperationDetailFeature, {
     }
   },
   title({ operation, showCoreTransaction }) {
-    const { t: translator } = useI18n();
+    const { t } = useI18n();
     const chains = useUnit(networkModel.$chains);
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
@@ -65,12 +65,7 @@ multisigOperationsSDK(governanceOperationDetailFeature, {
       const amount = transaction && getTransactionAmount(transaction);
 
       return {
-        name: (
-          <TransactionTitle
-            className="flex-1 overflow-hidden"
-            title={translator(title || '', { asset: asset?.symbol })}
-          />
-        ),
+        name: <TransactionTitle className="flex-1 overflow-hidden" title={t(title || '', { asset: asset?.symbol })} />,
         amount:
           asset && amount ? (
             <Box width="160px" direction="row" gap={2} verticalAlign="center">
