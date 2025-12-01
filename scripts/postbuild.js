@@ -31,6 +31,11 @@ async function createPackageJSONDistVersion() {
 
   try {
     await writeFile(resolve(folders.devBuild, 'package.json'), JSON.stringify(packageJSONDistVersion, null, 2));
+
+    // Create _redirects file for Cloudflare Pages SPA routing
+    const redirectsContent =
+      '# Cloudflare Pages SPA routing configuration\n# This ensures client-side routing works correctly\n/*    /index.html   200\n';
+    await writeFile(resolve(folders.devBuild, '_redirects'), redirectsContent);
   } catch ({ message }) {
     console.log(`
     🛑 Something went wrong!\n
