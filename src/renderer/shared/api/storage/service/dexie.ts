@@ -15,6 +15,7 @@ import {
   type TWallet,
 } from '../lib/types';
 import {
+  addAccountNameType,
   migrateAccounts,
   migrateBasketTransactionAfterAddressRemoval,
   migrateCASBasket,
@@ -145,6 +146,8 @@ class DexieStorage extends Dexie {
       .upgrade((t) => t.table('balances').clear());
 
     this.version(40).upgrade(renameBlockNumberToEntropyBlockNumber);
+
+    this.version(41).upgrade(addAccountNameType);
 
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');

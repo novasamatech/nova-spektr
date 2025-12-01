@@ -167,3 +167,19 @@ export const useRetentionWidgetState = () => {
 
   return { data: state, pending };
 };
+
+export const useRetentionRequest = () => {
+  const { data: retentionState, pending } = useRetentionWidgetState();
+
+  if (nullable(retentionState)) {
+    return { data: false, pending };
+  }
+
+  return {
+    data:
+      retentionState === RetentionWidgetState.WARNING_APPROACHING ||
+      retentionState === RetentionWidgetState.WARNING_URGENT ||
+      retentionState === RetentionWidgetState.CRITICAL_LAST_CALL,
+    pending,
+  };
+};

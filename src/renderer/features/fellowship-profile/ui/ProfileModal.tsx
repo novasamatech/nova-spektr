@@ -5,12 +5,13 @@ import { useI18n } from '@/shared/i18n';
 import { nonNullable, nullable, toAddress } from '@/shared/lib/utils';
 import { Button, HeaderTitleText } from '@/shared/ui';
 import { IconButton } from '@/shared/ui/Buttons/IconButton/IconButton';
-import { Account, CollectiveRank, Identicon } from '@/shared/ui-entities';
+import { CollectiveRank, Identicon } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
 import { type Member, memberService } from '@/domains/collectives';
 import { accountService } from '@/domains/network';
 import { useFellowshipAccount, useFellowshipMember, useFellowshipMemberSalary } from '@/aggregates/fellowship-member';
 import { useFellowshipChain, useFellowshipIdentity } from '@/aggregates/fellowship-network';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 import { ActiveIndicator } from './ActiveIndicator';
 import { ActivityFeed } from './ActivityFeed';
@@ -65,7 +66,7 @@ export const ProfileModal = ({ children }: PropsWithChildren) => {
                   <Identicon address={toAddress(member.accountId)} size={48} />
                   <Box gap={2} grow={1}>
                     <HeaderTitleText>
-                      <Account
+                      <NamedAccount
                         accountId={member.accountId}
                         title={identity?.name}
                         chain={chain}

@@ -2,12 +2,13 @@ import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { BodyText } from '@/shared/ui';
-import { Account, CollectiveRank } from '@/shared/ui-entities';
+import { CollectiveRank } from '@/shared/ui-entities';
 import { type Column, Indicator, ScrollArea, Table } from '@/shared/ui-kit';
 import { type CoreMember, salaryService, useSalaries } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { useFellowshipMember } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 export type MemberRow = CoreMember & {
   name?: string;
@@ -55,7 +56,13 @@ export const MembersTable = memo(({ members }: MembersTableProps) => {
           return (
             <div className="flex items-center gap-[8px]">
               {chain && (
-                <Account accountId={member.accountId} title={member.name} chain={chain} iconSize={20} hideAddress />
+                <NamedAccount
+                  accountId={member.accountId}
+                  title={member.name}
+                  chain={chain}
+                  iconSize={20}
+                  hideAddress
+                />
               )}
               {isCurrentUser && (
                 <BodyText className="font-medium tracking-[-0.12px] text-text-positive">

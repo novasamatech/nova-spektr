@@ -3,6 +3,7 @@ import { not, or, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
+  AccountNameType,
   type ID,
   type MultisigAccount,
   type NoID,
@@ -16,13 +17,7 @@ import {
 import { groupBy, nonNullable, toKeysRecord } from '@/shared/lib/utils';
 // TODO wallet model should be either in wallets domain or wallets feature
 // eslint-disable-next-line boundaries/element-types
-import {
-  type AnyAccount,
-  type AnyAccountDraft,
-  type ChainAccount,
-  type UniversalAccount,
-  accounts,
-} from '@/domains/network';
+import { type AnyAccount, type AnyAccountDraft, accounts } from '@/domains/network';
 
 type DbWallet = Omit<Wallet, 'accounts'>;
 
@@ -77,9 +72,15 @@ const createWalletFx = createEffect(
 
     if (!dbWallet) return undefined;
 
-    const accountsPayload = accountDrafts.map(
-      (account) => ({ ...account, walletId: dbWallet.id }) as ChainAccount | UniversalAccount,
-    );
+    const accountsPayload = accountDrafts.reduce<AnyAccountDraft[]>((acc, account) => {
+      acc.push({
+        ...account,
+        walletId: dbWallet.id,
+        nameType: account.nameType ?? AccountNameType.CUSTOM,
+      } as AnyAccountDraft);
+
+      return acc;
+    }, []);
 
     const dbAccounts = await accounts.createAccounts(accountsPayload);
 
@@ -91,15 +92,19 @@ const createWalletsFx = createEffect(async (drafts: WalletCreateParams[]): Promi
   const createdWallets = await storageService.wallets.createAll(drafts.map((d) => d.wallet));
   if (!createdWallets) return [];
 
-  let accountsToCreate: AnyAccountDraft[] = [];
+  const accountsToCreate: AnyAccountDraft[] = [];
 
   for (const [index, wallet] of createdWallets.entries()) {
     const accounts = drafts.at(index)?.accounts;
     if (!accounts) continue;
 
-    accountsToCreate = accountsToCreate.concat(
-      accounts.map((account) => ({ ...account, walletId: wallet.id }) as AnyAccountDraft),
-    );
+    for (const account of accounts) {
+      accountsToCreate.push({
+        ...account,
+        walletId: wallet.id,
+        nameType: account.nameType ?? AccountNameType.GENERATED,
+      } as AnyAccountDraft);
+    }
   }
 
   const dbAccounts = await accounts.createAccounts(accountsToCreate);

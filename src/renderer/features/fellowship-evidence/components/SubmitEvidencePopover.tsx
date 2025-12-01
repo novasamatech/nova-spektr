@@ -13,6 +13,7 @@ import { EvidencePostModal } from './EvidencePostModal';
 import { IPFSUploadModal } from './IPFSUploadModal';
 import { MarkdownPreviewModal } from './MarkdownPreviewModal';
 import { SubmitEvidenceFromScratch } from './SubmitEvidenceFromScratch';
+import { SubmitPeriodWarningAlert } from './SubmitPeriodWarningAlert';
 
 type Props = PropsWithChildren<{
   wish: 'Promotion' | 'Retention';
@@ -22,39 +23,48 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
   const { t } = useI18n();
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [fromScratchOpen, setFromScratchOpen] = useState(false);
-  const [fromScratchSubmitOpen, setFromScratchSubmitOpen] = useState(false);
 
   const ipfsStep = useUnit(evidenceIPFS.$step);
   const submitModalOpen = useUnit(evidencePost.$submitModalOpen);
   const fromScratchEvidence = useUnit(evidenceForm.$evidence);
   const ipfsEvidence = useUnit(evidenceIPFS.$evidence);
   const flowType = useUnit(evidenceForm.$flowType);
+  const activeWish = useUnit(evidenceForm.$wish);
+
+  const shouldRenderUpload = ipfsStep === 'upload' && activeWish === wish;
+  const shouldRenderPreview = ipfsStep === 'preview' && activeWish === wish;
 
   const handleFromScratch = useCallback(() => {
     evidenceForm.setFlowType('fromScratch');
-    setFromScratchOpen(true);
+    evidencePost.setActiveWish(wish);
+    evidencePost.setStep('form');
+    evidenceForm.flow.open({ wish });
     setPopoverOpen(false);
-  }, []);
+  }, [wish]);
 
   const handleUploadFromIPFS = useCallback(() => {
     evidenceIPFS.reset();
+    evidenceForm.flow.open({ wish });
     evidenceForm.setFlowType('ipfsUpload');
     evidenceIPFS.startFlow();
     setPopoverOpen(false);
-  }, []);
+  }, [wish]);
 
   const handleFromScratchClose = useCallback((open: boolean) => {
     setFromScratchOpen(open);
     if (!open) {
       evidenceForm.setFlowType(null);
       evidenceForm.reset();
+      evidencePost.setActiveWish(null);
+      evidencePost.setStep('closed');
+      evidenceForm.flow.close({ wish: null });
     }
   }, []);
 
   useEffect(() => {
     if (nonNullable(fromScratchEvidence) && flowType === 'fromScratch' && fromScratchOpen) {
       setFromScratchOpen(false);
-      setFromScratchSubmitOpen(true);
+      evidencePost.setStep('submit');
     }
   }, [fromScratchEvidence, flowType, fromScratchOpen]);
 
@@ -90,14 +100,6 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
     }
   }, []);
 
-  const handleFromScratchSubmitClose = useCallback((open: boolean, done: boolean) => {
-    setFromScratchSubmitOpen(open);
-    if (!open && done) {
-      evidenceForm.setFlowType(null);
-      evidenceForm.reset();
-    }
-  }, []);
-
   const chevronIcon = <Icon name={popoverOpen ? 'up' : 'down'} size={16} className="text-white" />;
 
   const childWithIcon = isValidElement(children)
@@ -110,53 +112,44 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
         <Popover.Trigger>{childWithIcon}</Popover.Trigger>
         <Popover.Content>
           <Box padding={[1, 1]} gap={1}>
-            <div
-              className="cursor-pointer rounded px-3 py-2 hover:bg-action-background-hover"
-              onClick={handleFromScratch}
-            >
-              <FootnoteText className="text-text-secondary">
-                {t('fellowship.salary.evidence.submitOptions.fromScratch')}
-              </FootnoteText>
-            </div>
-            <div
-              className="cursor-pointer rounded px-3 py-2 hover:bg-action-background-hover"
-              onClick={handleUploadFromIPFS}
-            >
-              <FootnoteText className="text-text-secondary">
-                {t('fellowship.salary.evidence.submitOptions.uploadFromIPFS')}
-              </FootnoteText>
-            </div>
+            <SubmitPeriodWarningAlert wish={wish} onConfirm={handleFromScratch}>
+              <div className="cursor-pointer rounded px-3 py-2 hover:bg-action-background-hover">
+                <FootnoteText className="text-text-secondary">
+                  {t('fellowship.salary.evidence.submitOptions.fromScratch')}
+                </FootnoteText>
+              </div>
+            </SubmitPeriodWarningAlert>
+            <SubmitPeriodWarningAlert wish={wish} onConfirm={handleUploadFromIPFS}>
+              <div className="cursor-pointer rounded px-3 py-2 hover:bg-action-background-hover">
+                <FootnoteText className="text-text-secondary">
+                  {t('fellowship.salary.evidence.submitOptions.uploadFromIPFS')}
+                </FootnoteText>
+              </div>
+            </SubmitPeriodWarningAlert>
           </Box>
         </Popover.Content>
       </Popover>
 
       <SubmitEvidenceFromScratch wish={wish} isOpen={fromScratchOpen} onToggle={handleFromScratchClose} />
 
-      <IPFSUploadModal isOpen={ipfsStep === 'upload'} wish={wish} onToggle={handleIPFSUploadClose} />
+      {shouldRenderUpload && <IPFSUploadModal isOpen={true} wish={wish} onToggle={handleIPFSUploadClose} />}
 
-      <MarkdownPreviewModal
-        isOpen={ipfsStep === 'preview'}
-        wish={wish}
-        flowType="ipfsUpload"
-        onToggle={handleIPFSPreviewClose}
-        onBack={handleBackToUpload}
-      />
+      {shouldRenderPreview && (
+        <MarkdownPreviewModal
+          isOpen={true}
+          wish={wish}
+          flowType="ipfsUpload"
+          onToggle={handleIPFSPreviewClose}
+          onBack={handleBackToUpload}
+        />
+      )}
 
-      {nonNullable(ipfsEvidence) && flowType === 'ipfsUpload' && (
+      {nonNullable(ipfsEvidence) && flowType === 'ipfsUpload' && activeWish === wish && (
         <EvidencePostModal
           wish={wish}
           evidence={ipfsEvidence}
           isOpen={submitModalOpen}
           onToggle={handleIPFSSubmitModalClose}
-        />
-      )}
-
-      {nonNullable(fromScratchEvidence) && flowType === 'fromScratch' && (
-        <EvidencePostModal
-          wish={wish}
-          evidence={fromScratchEvidence}
-          isOpen={fromScratchSubmitOpen}
-          onToggle={handleFromScratchSubmitClose}
         />
       )}
     </>
