@@ -12,6 +12,9 @@ permissions:
   contents: write
   pull-requests: write
 
+env:
+  PROJECT_NAME: nova-spektr-pr-${{ github.event.pull_request.number }}
+
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
@@ -50,8 +53,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          PROJECT_NAME="nova-spektr-pr-${{ github.event.pull_request.number }}"
-          
           # Check if project exists
           echo "Checking if project ${PROJECT_NAME} exists..."
           if pnpm wrangler pages project list 2>/dev/null | grep -q "${PROJECT_NAME}"; then
@@ -67,8 +68,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: .
-          command: pages deploy release/build --project-name=nova-spektr-pr-${{ github.event.pull_request.number }}
+          command: pages deploy release/build --project-name=${{ env.PROJECT_NAME }}
 
       - name: 💬 Comment PR with preview URL
         if: success()
@@ -167,4 +167,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: .
-          command: pages project delete nova-spektr-pr-${{ github.event.pull_request.number }} || echo "Project may have been already deleted or does not exist"
+          command: pages project delete ${{ env.PROJECT_NAME }} || echo "Project may have been already deleted or does not exist"
