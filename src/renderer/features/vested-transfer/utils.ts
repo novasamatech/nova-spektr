@@ -111,6 +111,26 @@ async function parseCSV(file: File): Promise<ParseResult> {
   const fileContent = await file.text();
 
   try {
+    const headerCheck = parse(fileContent, {
+      to: 1,
+      trim: true,
+      comment: '#',
+      skip_empty_lines: true,
+    });
+
+    const parsedHeaders = headerCheck[0];
+    if (!parsedHeaders || parsedHeaders.length < CSV_COLUMNS.length) {
+      throw new Error('Invalid or missing headers.');
+    }
+
+    const headersMatch = CSV_COLUMNS.every(
+      (expectedCol, index) => expectedCol.toLowerCase().trim() === parsedHeaders[index]?.toLowerCase().trim(),
+    );
+
+    if (!headersMatch) {
+      throw new Error(`Headers don't match. Expected: ${CSV_COLUMNS.join(', ')}. Got: ${parsedHeaders.join(', ')}`);
+    }
+
     const data = parse<VestingScheduleRaw>(fileContent, {
       columns: CSV_COLUMNS,
       relax_column_count_more: true,
