@@ -2595,7 +2595,7 @@
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "INVALID_VALUE": "Invalid value",
           "MAX_VESTING_SCHEDULES_REACHED": "Max vesting schedules reached",
-          "MIN_VESTED_TRANSFER": "Min vested transfer",
+          "MIN_VESTED_TRANSFER": "Min vested transfer is <asset />",
           "OUT_OF_RANGE": "Value out of range",
           "START_BLOCK_IN_PAST": "Block in the past. Make sure you are using relaychain block number",
           "UNKNOWN_ERROR": "Unknown error"
@@ -2640,8 +2640,10 @@
         },
         "footer": {
           "downloadDescription": "You can download parsed file to review them.",
-          "errorsCount": "Found {count} errors.",
-          "warningsCount": "Found {count} warnings."
+          "errorsCount_one": "Found {count} error.",
+          "errorsCount_other": "Found {count} errors.",
+          "warningsCount_one": "Found {count} warning.",
+          "warningsCount_other": "Found {count} warnings."
         },
         "headers": {
           "locked": "Locked",

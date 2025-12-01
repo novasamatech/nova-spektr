@@ -134,6 +134,7 @@ const UploadCSV = () => {
   const csvError = useUnit(formModel.$csvError);
   const csvIssues = useUnit(formModel.$csvIssues);
   const apis = useUnit(networkModel.$apis);
+  const minVestedTransfer = useUnit(formModel.$minVestedTransfer);
 
   const timelineChainId = chain?.additional?.timelineChain;
   const timelineApi = (timelineChainId && apis[timelineChainId]) ?? (chain && apis[chain.chainId]) ?? null;
@@ -177,6 +178,7 @@ const UploadCSV = () => {
               asset={asset}
               vestingSchedule={parsedCsv}
               issues={csvIssues}
+              minVestedTransfer={minVestedTransfer}
               onDownloadClick={downloadCSVWithIssues}
             >
               {renderPreviewButton()}
