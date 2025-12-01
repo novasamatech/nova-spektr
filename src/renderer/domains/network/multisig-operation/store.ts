@@ -239,5 +239,6 @@ export const multisigOperation = {
   __test: {
     $list,
     $populated,
+    $previousList,
   },
 };
