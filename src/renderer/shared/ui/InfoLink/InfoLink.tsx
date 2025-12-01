@@ -48,6 +48,6 @@ export const InfoLink = ({
     {iconPosition === 'left' && iconName && <Icon name={iconName} size={16} className="text-inherit" />}
     {children}
     {iconPosition === 'right' && iconName && <Icon name={iconName} size={16} className="text-inherit" />}
-    {withLinkIcon && <Icon name="link" size={16} className="text-icon-default" />}
+    {withLinkIcon && <Icon name="link" size={16} className="inline pl-1 text-inherit" />}
   </a>
 );

@@ -5,7 +5,7 @@ import { type FormEvent, memo, useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
 import { TEST_IDS } from '@/shared/constants';
-import { type ChainId, type Wallet } from '@/shared/core';
+import { type Address as AddressType, type Chain, type ChainId } from '@/shared/core';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import {
@@ -21,6 +21,7 @@ import {
   validateAddress,
   withdrawableAmount,
 } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, CaptionText, FootnoteText, Icon, InputHint, Switch } from '@/shared/ui';
 import {
   AccountSelect,
@@ -31,7 +32,7 @@ import {
   WalletIcon,
 } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { accountService, accounts } from '@/domains/network';
+import { accountService, accounts, useAccountName } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
@@ -255,6 +256,13 @@ const XcmChainSelector = memo(() => {
 
 const { services, constants } = walletSelectFeature;
 
+const AccountAddressItem = memo(
+  ({ accountId, chain, address }: { accountId: AccountId; chain: Chain; address: AddressType }) => {
+    const resolvedName = useAccountName({ accountId, chain });
+    return <Address showIcon title={resolvedName} address={address} />;
+  },
+);
+
 const Destination = memo(() => {
   const { t } = useI18n();
 
@@ -266,13 +274,6 @@ const Destination = memo(() => {
   const wallets = useUnit(walletModel.$wallets);
   const accountsList = useUnit(walletModel.$availableAccounts);
   const network = useUnit(formModel.$networkStore);
-
-  const walletsMap = useMemo(() => {
-    return wallets.reduce<Record<number, Wallet>>((acc, wallet) => {
-      acc[wallet.id] = wallet;
-      return acc;
-    }, {});
-  }, [wallets]);
 
   const [query, setQuery] = useState('');
 
@@ -314,19 +315,12 @@ const Destination = memo(() => {
       const accountOptions: ComboboxItem[] = [];
 
       for (const account of accountsGroup) {
-        const wallet = walletsMap[account.walletId];
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
-
-        const title = nonNullable(wallet)
-          ? account.name === wallet.name
-            ? account.name
-            : `${account.name} (${wallet.name})`
-          : account.name;
 
         accountOptions.push({
           id: address,
           value: { address, walletId: account.walletId },
-          label: <Address showIcon title={title} address={address} />,
+          label: <AccountAddressItem accountId={account.accountId} chain={chain} address={address} />,
         });
       }
 

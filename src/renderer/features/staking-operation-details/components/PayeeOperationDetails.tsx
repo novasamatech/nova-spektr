@@ -3,10 +3,10 @@ import { useUnit } from 'effector-react';
 import { useI18n } from '@/shared/i18n';
 import { cnTw, toAccountId } from '@/shared/lib/utils';
 import { DetailRow } from '@/shared/ui';
-import { Account } from '@/shared/ui-entities';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 type Props = {
   operation: MultisigOperation;
@@ -30,7 +30,7 @@ export const PayeeOperationDetails = ({ operation }: Props) => {
         {typeof payee === 'string' ? (
           t('staking.confirmation.restakeRewards')
         ) : (
-          <Account accountId={toAccountId(payee.Account)} variant="short" chain={chains[operation.chainId]} />
+          <NamedAccount accountId={toAccountId(payee.Account)} variant="short" chain={chains[operation.chainId]} />
         )}
       </DetailRow>,
     );

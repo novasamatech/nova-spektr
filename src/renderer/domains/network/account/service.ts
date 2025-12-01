@@ -1,8 +1,19 @@
 import { type ApiPromise } from '@polkadot/api';
 
-import { type Asset, type AssetId, type Balance, type BalanceMap, type Chain, type ChainId } from '@/shared/core';
+import {
+  AccountNameType,
+  type Asset,
+  type AssetId,
+  type Balance,
+  type BalanceMap,
+  type Chain,
+  type ChainId,
+  type Contact,
+  type Wallet,
+  WalletType,
+} from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
-import { isEthereumAccountId, nullable } from '@/shared/lib/utils';
+import { isEthereumAccountId, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type TransactionValidationBalanceError,
@@ -11,6 +22,8 @@ import {
 } from '@/shared/ui-entities';
 import { balanceUtils } from '@/entities/balance';
 import { networkUtils } from '@/entities/network';
+import { identityService } from '../identity/service';
+import { type IdentityMap } from '../identity/types';
 import { type AnyTransaction } from '../transaction/types';
 
 import {
@@ -100,6 +113,179 @@ function filterAccountsOnChain(accounts: AnyAccount[], chain: Chain) {
 
 function filterAccountsByWallet(accounts: AnyAccount[], walletId: number) {
   return accounts.filter(account => account.walletId === walletId);
+}
+
+type ResolveWalletNameParams = {
+  wallet: Wallet;
+  accounts: AnyAccount[];
+  contacts: Contact[];
+  identities: IdentityMap;
+  chains: Record<string, Chain>;
+};
+
+type ResolveAccountNameParams = {
+  accountId: AccountId;
+  accounts: AnyAccount[];
+  contacts: Contact[];
+  identities: IdentityMap;
+  chains: Record<string, Chain>;
+  chain?: Chain | null;
+  title?: string;
+};
+
+function getAccountById(accounts: AnyAccount[], accountId: AccountId | null): AnyAccount | undefined {
+  if (nullable(accountId)) {
+    return undefined;
+  }
+
+  return accounts.find(account => account.accountId === accountId);
+}
+
+function getAccountIdentity(accountId: AccountId, identities: IdentityMap) {
+  for (const chainId of Object.keys(identities)) {
+    const identity = identities[chainId as keyof IdentityMap]?.[accountId];
+    if (identity) {
+      return identity;
+    }
+  }
+
+  return null;
+}
+
+function isCustomAccountName(account?: AnyAccount | null): account is AnyAccount {
+  if (!account?.name) {
+    return false;
+  }
+
+  return account.nameType === AccountNameType.CUSTOM;
+}
+
+function getRelatedChainId(account?: AnyAccount): ChainId | null {
+  if (!account) return null;
+
+  if ('chainId' in account && account.chainId) {
+    return account.chainId as ChainId;
+  }
+
+  if ('remarkChainId' in account && account.remarkChainId) {
+    return account.remarkChainId as ChainId;
+  }
+
+  return null;
+}
+
+function getAccountAddressPrefix(
+  chain: Chain | null | undefined,
+  relatedAccount: AnyAccount | undefined,
+  chains: Record<string, Chain>,
+): number | undefined {
+  if (chain?.addressPrefix !== undefined) {
+    return chain.addressPrefix;
+  }
+
+  if (!relatedAccount) {
+    return undefined;
+  }
+
+  const relatedChainId = getRelatedChainId(relatedAccount);
+  if (!relatedChainId) {
+    return undefined;
+  }
+
+  return chains[relatedChainId]?.addressPrefix;
+}
+
+function getWalletAccountId(wallet: Wallet, accounts: AnyAccount[]): AccountId | null {
+  const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
+
+  if (walletAccounts.length > 0) {
+    return walletAccounts[0]?.accountId ?? null;
+  }
+
+  if (
+    (wallet.type === WalletType.POLKADOT_VAULT || wallet.type === WalletType.SINGLE_PARITY_SIGNER) &&
+    'rootAccountId' in wallet
+  ) {
+    return wallet.rootAccountId as AccountId;
+  }
+
+  return null;
+}
+
+function resolveWalletName({ wallet, accounts, contacts, identities, chains }: ResolveWalletNameParams): string {
+  const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
+  const hasAccountsInList = walletAccounts.length > 0;
+
+  const accountId = getWalletAccountId(wallet, accounts);
+  if (nullable(accountId)) {
+    return wallet.name;
+  }
+
+  const contact = contacts.find(contact => contact.accountId === accountId);
+  if (contact) {
+    return contact.name;
+  }
+
+  const walletAccount = walletAccounts.find(account => account.accountId === accountId);
+
+  if (walletAccount && walletAccount.nameType === AccountNameType.CUSTOM) {
+    return walletAccount.name;
+  }
+
+  const identity = getAccountIdentity(accountId, identities);
+  if (identity) {
+    return identityService.getFullName(identity);
+  }
+
+  if (!hasAccountsInList) {
+    return wallet.name;
+  }
+
+  const accountForPrefix = walletAccount ?? getAccountById(accounts, accountId);
+  const prefix = getAccountAddressPrefix(undefined, accountForPrefix, chains);
+  return toShortAddress(toAddress(accountId, { prefix }), 5) || wallet.name;
+}
+
+function resolveAccountName({
+  accountId,
+  chain,
+  accounts,
+  contacts,
+  identities,
+  chains,
+  title,
+}: ResolveAccountNameParams): string {
+  if (title) {
+    return title;
+  }
+
+  const contact = contacts.find(contact => contact.accountId === accountId);
+  if (contact) {
+    return contact.name;
+  }
+
+  const relatedAccount = accounts.find(account => account.accountId === accountId);
+  if (relatedAccount && isCustomAccountName(relatedAccount)) {
+    return relatedAccount.name;
+  }
+
+  for (const chainId of Object.keys(identities)) {
+    const identity = identities[chainId as keyof IdentityMap]?.[accountId];
+    if (identity) {
+      return identity.name;
+    }
+  }
+
+  const prefix =
+    chain?.addressPrefix ??
+    (() => {
+      if (!relatedAccount || !('chainId' in relatedAccount)) return undefined;
+
+      const accountChain = chains[relatedAccount.chainId as ChainId];
+      return accountChain?.addressPrefix;
+    })();
+
+  return toShortAddress(toAddress(accountId, { prefix }), 5);
 }
 
 function hasPermissionToMakeActions(account: AnyAccount) {
@@ -383,6 +569,9 @@ export const accountService = {
 
   filterAccountsOnChain,
   filterAccountsByWallet,
+  getWalletAccountId,
+  resolveWalletName,
+  resolveAccountName,
 
   // graph
 

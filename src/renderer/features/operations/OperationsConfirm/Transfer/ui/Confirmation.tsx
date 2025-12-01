@@ -5,12 +5,13 @@ import { TEST_IDS } from '@/shared/constants';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, toAccountId } from '@/shared/lib/utils';
 import { Button, DetailRow, FootnoteText, Icon, Loader } from '@/shared/ui';
-import { Account, AssetBalance, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
+import { AssetBalance, TransactionDetails, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Tooltip } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { MultisigExistsAlert } from '../../common/MultisigExistsAlert';
 import { confirmModel } from '../model/confirm-model';
 
@@ -85,7 +86,7 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
         )}
 
         <DetailRow label={t('operation.details.recipient')} className="text-text-secondary">
-          <Account accountId={toAccountId(meta.destination)} chain={meta.destinationChain} variant="short" />
+          <NamedAccount accountId={toAccountId(meta.destination)} chain={meta.destinationChain} variant="short" />
         </DetailRow>
 
         <hr className="w-full border-filter-border pr-2" />

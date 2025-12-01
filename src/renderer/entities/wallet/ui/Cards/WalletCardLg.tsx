@@ -3,6 +3,7 @@ import { type PropsWithChildren, type ReactNode } from 'react';
 import { type Wallet } from '@/shared/core';
 import { FootnoteText, HeadlineText } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
+import { useWalletName } from '@/domains/network';
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
@@ -12,6 +13,8 @@ type Props = PropsWithChildren<{
 }>;
 
 export const WalletCardLg = ({ wallet, description, additionalInfo, children, withoutName }: Props) => {
+  const walletName = useWalletName(wallet);
+
   return (
     <div className="flex w-full min-w-0 items-center gap-x-2">
       <div className="relative">
@@ -21,7 +24,7 @@ export const WalletCardLg = ({ wallet, description, additionalInfo, children, wi
       <div className="flex min-w-0 flex-col">
         {!withoutName && (
           <HeadlineText className="ml-3 truncate text-text-primary" as="h3">
-            {wallet.name}
+            {walletName}
           </HeadlineText>
         )}
         {typeof description === 'string' ? (

@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { useI18n } from '@/shared/i18n';
 import { nullable } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
-import { Account, AssetBalance } from '@/shared/ui-entities';
+import { AssetBalance } from '@/shared/ui-entities';
 import { Box, Graphics, Modal, Skeleton, Tabs } from '@/shared/ui-kit';
 import { type AggregatedReferendum, ReferendumDetailsModal, networkSelectorModel } from '@/features/governance';
 import { VotedReferendumItem } from '@/features/governance/components/ReferendumList/VotedReferendumItem';
+import { NamedAccount } from '@/widgets/NameResolver';
 import { delegateDetailsModel } from '../model/delegate-details-model';
 import { type VotedReferendum, delegateSummaryModel } from '../model/delegate-summary-model';
 
@@ -122,7 +123,7 @@ const DelegationsList = () => {
       </div>
       {currentDelegations.map(([accountId, delegation]) => (
         <div key={accountId} className="flex items-center justify-between py-2">
-          <Account
+          <NamedAccount
             hideAddress
             iconSize={20}
             title={proposers[accountId]?.parent.name}
@@ -171,7 +172,7 @@ const DelegationReferendumList = ({ votedReferendums }: { votedReferendums: Vote
         <ReferendumDetailsModal
           referendum={selectedReferendum}
           chain={network.chain}
-          api={network.api}
+          timelineApi={network.timelineApi}
           asset={network.asset}
           showActions={false}
           onClose={() => setSelectedReferendum(null)}

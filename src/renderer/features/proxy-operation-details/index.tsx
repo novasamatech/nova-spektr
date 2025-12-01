@@ -6,7 +6,7 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
-import { Account, AssetBalance, AssetIcon } from '@/shared/ui-entities';
+import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
@@ -23,6 +23,7 @@ import {
   isRemovePureProxyTransaction,
 } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 export const proxyOperationDetailFeature = createFeature({
   name: 'proxy/operation-details',
@@ -92,7 +93,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isAddProxyTransaction(transaction) && delegate) {
       result.push(
         <DetailRow label={t('operation.details.delegateTo')} className="text-text-secondary">
-          <Account accountId={toAccountId(delegate)} variant="short" chain={chain} />
+          <NamedAccount accountId={toAccountId(delegate)} variant="short" chain={chain} />
         </DetailRow>,
       );
     }
@@ -100,7 +101,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isRemoveProxyTransaction(transaction) && delegate) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <Account accountId={toAccountId(delegate)} variant="short" chain={chain} />
+          <NamedAccount accountId={toAccountId(delegate)} variant="short" chain={chain} />
         </DetailRow>,
       );
     }
@@ -108,7 +109,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     if (isRemovePureProxyTransaction(transaction) && sender) {
       result.push(
         <DetailRow label={t('operation.details.revokeFor')} className="text-text-secondary">
-          <Account accountId={sender} variant="short" chain={chain} />
+          <NamedAccount accountId={sender} variant="short" chain={chain} />
         </DetailRow>,
       );
     }

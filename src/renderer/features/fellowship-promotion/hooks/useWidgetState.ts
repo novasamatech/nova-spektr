@@ -29,7 +29,7 @@ export const useWidgetState = () => {
       return PromotionWidgetState.REFERENDUM_CREATED;
     }
 
-    if (nonNullable(hasPromotionEvidence)) {
+    if (hasPromotionEvidence) {
       return PromotionWidgetState.EVIDENCE_SUBMITTED;
     }
 

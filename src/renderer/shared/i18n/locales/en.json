@@ -25,6 +25,11 @@
     }
   },
   "addressBook": {
+    "actions": {
+      "delete": "Delete",
+      "edit": "Edit"
+    },
+    "contactDeleted": "Contact deleted",
     "contactList": {
       "emptySearchDescription": "Try to search for another name",
       "emptySearchLabel": "No contact with entered name were found",
@@ -65,6 +70,24 @@
       "typeAddressButton": "Type the address",
       "typeNameButton": "Type a name"
     },
+    "importContacts": {
+      "button": "Import",
+      "conflicts": {
+        "description": "Some contacts below already exists in your address book. Do you want to replace it or keep current versions?",
+        "keepCurrentButton": "Keep current",
+        "replaceButton": "Replace",
+        "title": "Import options"
+      },
+      "errors": {
+        "description": "Certain contacts don't match required format. Check guidelines on Wiki, update your file, and try uploading again.",
+        "emptyList": "File has no accounts to import",
+        "fileTooLarge": "File is too large. Maximum file size is 1MB",
+        "title": "Import failed",
+        "wikiLink": "Wiki guidelines"
+      },
+      "loading": "Importing contacts...",
+      "success": "Contacts imported"
+    },
     "removeConfirm": {
       "cancelButton": "Cancel",
       "confirmButton": "Delete",
@@ -72,7 +95,8 @@
       "title": "Delete contact"
     },
     "searchPlaceholder": "Search",
-    "title": "Address Book"
+    "title": "Address Book",
+    "undo": "Undo"
   },
   "assetBalance": {
     "locked": "Locked",
@@ -160,6 +184,7 @@
       "proceedButton": "Delete",
       "title": "Delete this operation?"
     },
+    "removedFromBasket": "Transaction removed from basket",
     "searchPlaceholder": "Search",
     "selectAll": "Select all",
     "selectedStatus_one": "{ selected } out of { count } operation selected",
@@ -169,6 +194,7 @@
       "title": "Sign { transactions } operations"
     },
     "title": "Basket",
+    "undo": "Undo",
     "validationError": "Unavailable",
     "validationWarning": {
       "cancelButton": "Cancel",
@@ -496,8 +522,13 @@
         "imported": "has been imported with rank {rank}",
         "promoted": "has been promoted to rank {rank}",
         "proven": "proved his rank {rank}",
-        "submittedPromotion": "submitted evidence with a wish to promotion",
-        "submittedRetention": "submitted evidence with a wish to retention"
+        "referendumFallback": "created a referendum <link></link>",
+        "submittedPromotion": "submitted <evidence>evidence</evidence> with a wish to promotion",
+        "submittedRetention": "submitted <evidence>evidence</evidence> with a wish to retention"
+      },
+      "referendum": {
+        "promote": "created a referendum <link></link> to promote {target} to rank {rank}",
+        "retain": "created a referendum <link></link> to retain {target} at rank {rank}"
       },
       "viewList": "View list"
     },
@@ -717,7 +748,7 @@
       "title": "PROMOTION PERIOD",
       "waiting": {
         "dangerZoneTooltip": "Danger zone - promotion opportunity is imminent",
-        "description": "You will be eligible for promotion starting from {from}",
+        "description": "You will be eligible for promotion starting from {date}",
         "safeZoneTooltip": "Safe zone - plenty of time until promotion",
         "title": "Awaiting promotion opportunity",
         "untilOpportunity": "until promotion opportunity",
@@ -859,6 +890,18 @@
           "step2": "Review and submit",
           "title": "Preview Evidence"
         },
+        "promotionPeriodWarning": {
+          "cancel": "Cancel",
+          "description": "It is recommended to prioritize submitting the retention report before submitting promotion evidence to avoid being bumped.",
+          "submit": "Submit",
+          "title": "Retention period ends in 30 days"
+        },
+        "retentionPeriodWarning": {
+          "cancel": "Cancel",
+          "description": "It might be too early to submit your retention report. We recommend submitting no earlier than month before the retention period ends. Please ensure you have gathered sufficient work evidence for the current retention period before submitting.",
+          "submit": "Submit",
+          "title": "Are you sure you want to submit retention report?"
+        },
         "submitOptions": {
           "fromScratch": "From scratch",
           "uploadFromIPFS": "Upload from IPFS"
@@ -934,7 +977,7 @@
         "requestSalaryCall": "Request a {salary} salary within:",
         "requestSalarySuccess": "Salary requested",
         "selectBeneficiary": "Select beneficiary",
-        "timeToNextCircle": "until next circle",
+        "timeToNextCycle": "until next cycle",
         "timeToNextPayout": "to the next payout",
         "timeToRequest": "left to request",
         "timeToWithdraw": "left to withdraw"
@@ -968,8 +1011,8 @@
         "importantVote": "OPINION MATTERS",
         "urgent": "LAST CALL"
       },
-      "noAccountDescription": "Account not found. Please add or create account to the {chain} network.",
-      "noAccountTitle": "List tasks is empty",
+      "noAccountDescription": "Account not found. Please add or create an account on the {chain} network.",
+      "noAccountTitle": "Task list is empty",
       "personal": "Personal",
       "reviewBasket": "Confirm now",
       "reviewBasketTitle_one": "Decision",
@@ -1042,7 +1085,7 @@
     },
     "title": "Fellowship",
     "tooltips": {
-      "noAccount": "Please add or create account to the { chain } network",
+      "noAccount": "Please add or create an account on the { chain } network",
       "noProfile": "You are not a fellowship member"
     },
     "voting": {
@@ -1763,6 +1806,10 @@
     "approveButton": "Approve",
     "cancelTitle": "Reject",
     "closeButton": "Close",
+    "connectionTimeoutButton": "Close",
+    "connectionTimeoutDescription": "Can't connect to the network in 10 seconds. You can retry later with the same link.",
+    "connectionTimeoutRetryButton": "Retry",
+    "connectionTimeoutTitle": "Connection timeout",
     "contactSignatoriesTitle": "Contacts",
     "continueButton": "Continue",
     "createFlexibleMultisig": {

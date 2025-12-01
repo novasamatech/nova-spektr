@@ -1,33 +1,49 @@
 import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { useFeed } from '@/domains/collectives';
-import { identityService } from '@/domains/network';
-import { useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
+import { useCoreMembers, useFeed, useReferendums, useTracks } from '@/domains/collectives';
+import { useFellowshipApi, useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
 
 import { ActivityListView } from './ActivityListView';
-import { getDescription } from './utils';
+import { buildActivityRecords, collectActivityAccountIds } from './utils';
 
 export const ActivityList = memo(() => {
   const { t } = useI18n();
 
   const chain = useFellowshipChain();
+  const api = useFellowshipApi();
 
-  const { data: feed, pending } = useFeed({ palletType: 'fellowship', chain });
-  const { data: identities } = useFellowshipIdentities(feed.map(record => record.accountId));
+  const { data: feed, pending: feedPending } = useFeed({ palletType: 'fellowship', chain });
+  const { data: referendums, pending: referendumsPending } = useReferendums({ palletType: 'fellowship', api });
+  const { data: tracks, pending: tracksPending } = useTracks({ palletType: 'fellowship', api });
+  const { data: members } = useCoreMembers({ palletType: 'fellowship', api });
+
+  const allAccountIds = useMemo(
+    () =>
+      collectActivityAccountIds(
+        feed,
+        referendums ? new Map(referendums.map(r => [r.id, r])) : undefined,
+        members.map(m => m.accountId),
+      ),
+    [feed, referendums, members],
+  );
+
+  const { data: identities } = useFellowshipIdentities(allAccountIds);
 
   const records = useMemo(
     () =>
-      feed.map(record => {
-        const identity = identities[record.accountId];
-        return {
-          ...record,
-          name: identity ? identityService.getFullName(identity) : undefined,
-          description: getDescription(record, t),
-        };
+      buildActivityRecords({
+        feed,
+        referendums,
+        tracks,
+        identities,
+        chain,
+        t,
       }),
-    [identities, feed, t],
+    [feed, referendums, tracks, identities, chain, t],
   );
+
+  const pending = feedPending || referendumsPending || tracksPending;
 
   return (
     <div className="flex flex-col gap-3 py-4 pb-3">

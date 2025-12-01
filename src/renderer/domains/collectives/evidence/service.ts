@@ -7,6 +7,7 @@ import { nonNullable } from '@/shared/lib/utils';
 import { type BlockHeight, pjsSchema } from '@/shared/polkadotjs-schemas';
 import { type AnyAccount } from '@/domains/network';
 import { type CollectivePalletsType } from '../_lib/types';
+import { type FeedRecord } from '../feed/types';
 import { memberService } from '../member/service';
 import { type CoreMember, type Member } from '../member/types';
 
@@ -33,8 +34,60 @@ function getEvidenceUploadIpfsUrl() {
 }
 
 function getPromotionPeriod(member: CoreMember, periods: EvidencePeriods) {
-  const period = periods.minPromotionPeriod.at(member.rank) ?? pjsSchema.helpers.toBlockHeight(1);
-  return period;
+  const promotionPeriod = periods.minPromotionPeriod.at(member.rank) ?? 1;
+  return pjsSchema.helpers.toBlockHeight(Math.max(promotionPeriod, 1));
+}
+
+function getPromotionStartBlock(member: Member, feeds?: FeedRecord[]) {
+  if (!memberService.isCoreMember(member)) {
+    return null;
+  }
+
+  if (member.lastPromotion !== 0) {
+    return member.lastPromotion;
+  }
+
+  const importedRecord = feeds?.find(f => f.accountId === member.accountId && f.type === 'imported');
+
+  return importedRecord?.block ?? null;
+}
+
+function getMemberWithPromotionStart(member: Member, feeds?: FeedRecord[]) {
+  if (!memberService.isCoreMember(member)) {
+    return null;
+  }
+
+  const promotionStartBlock = getPromotionStartBlock(member, feeds);
+
+  if (!promotionStartBlock || promotionStartBlock === member.lastPromotion) {
+    return member;
+  }
+
+  return {
+    ...member,
+    lastPromotion: promotionStartBlock,
+  };
+}
+
+function getPromotionWindow(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+  const promotionPeriod = getPromotionPeriod(member, periods);
+  const start = member.lastPromotion;
+
+  if (currentBlock <= start) {
+    return {
+      from: start,
+      to: start + promotionPeriod,
+    };
+  }
+
+  const blocksPassed = currentBlock - start;
+  const periodsPassed = Math.floor(blocksPassed / promotionPeriod);
+  const windowStart = start + periodsPassed * promotionPeriod;
+
+  return {
+    from: windowStart,
+    to: windowStart + promotionPeriod,
+  };
 }
 
 function getEndPromotionBlock(member: Member, periods: EvidencePeriods) {
@@ -114,7 +167,10 @@ export const evidenceService = {
   getEvidenceUploadIpfsUrl,
   getCidByEvidence,
   getEvidenceFromCid,
+  getPromotionStartBlock,
+  getMemberWithPromotionStart,
   getPromotionPeriod,
+  getPromotionWindow,
   getEndPromotionBlock,
   getBlockUntilNextPromotion,
   getDemotionPeriod,

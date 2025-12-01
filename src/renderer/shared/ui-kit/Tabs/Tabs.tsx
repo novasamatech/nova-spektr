@@ -1,5 +1,5 @@
 import * as RadixTabs from '@radix-ui/react-tabs';
-import { Children, type PropsWithChildren, cloneElement, isValidElement, useDeferredValue } from 'react';
+import { Children, type PropsWithChildren, cloneElement, isValidElement } from 'react';
 
 import { cnTw } from '@/shared/lib/utils';
 import { Carousel } from '../Carousel/Carousel';
@@ -15,11 +15,9 @@ const Root = ({ value, onChange, children }: RootProps) => {
     isValidElement(child) ? cloneElement(child, { __index: index }) : null,
   );
 
-  const deferred = useDeferredValue(value);
-
   return (
     <RadixTabs.Root value={value} asChild onValueChange={onChange}>
-      <Carousel item={deferred} fixedHeight>
+      <Carousel item={value} fixedHeight>
         {indexedChildren}
       </Carousel>
     </RadixTabs.Root>

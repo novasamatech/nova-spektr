@@ -1,4 +1,5 @@
-import { attach, createEffect, createStore, sample, scopeBind } from 'effector';
+import { attach, createEffect, createStore, restore, sample, scopeBind } from 'effector';
+import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import { type HexString, type MultisigOperationNotification, type NoID, NotificationType } from '@/shared/core';
@@ -16,6 +17,11 @@ import { type MultisigOperation } from './types';
 
 const $list = createStore<MultisigOperation[]>([]);
 const $previousList = createStore<MultisigOperation[]>([]);
+
+const $populated = restore(
+  once($list.updates).map(() => true),
+  false,
+);
 
 const populateFx = createEffect(() =>
   storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
@@ -35,8 +41,17 @@ const removeTransactionsFx = createEffect((operations: MultisigOperation[]) => {
   return storageService.multisigOperations.deleteAll(operations.map(t => t.id)).then(result => result ?? []);
 });
 
-const syncOperationsFx = createQueuedEffect(async (operations: MultisigOperation[]) => {
-  await storageService.multisigOperations.insertAll(operations.map(serializeOperation));
+/**
+ * We want to sync operations between database and in-memory store. Its
+ * important to do so because operations can be deleted from the database
+ * without calling removeTransactionsFx (f.e. in case of fork).
+ */
+const syncInMemoryOperationsToDbFx = createQueuedEffect(async (allOperations: MultisigOperation[]) => {
+  const dbOperations = await storageService.multisigOperations.readAll();
+  const dbOperationIds = dbOperations.map(op => op.id);
+
+  await storageService.multisigOperations.deleteAll(dbOperationIds);
+  await storageService.multisigOperations.insertAll(allOperations.map(serializeOperation));
 });
 
 const $callDataUpdated = createStore<MultisigOperation | null>(null);
@@ -135,7 +150,7 @@ deriveFromResources({
   store: $list,
   resources: [fetchResource, subscribeResource],
   map(state, operations) {
-    return multisigOperationService.mergeMultisigOperations(state, operations);
+    return multisigOperationService.updateMultisigOperations(state, operations);
   },
 });
 
@@ -143,16 +158,18 @@ deriveFromResources({
   store: $list,
   resources: [subscribeEventsResource],
   map: (state, { chainId, operationId, event }) => {
-    const operation = state.find(x => x.id === operationId && x.chainId === chainId);
-    if (!operation) return state;
+    const operationIndex = state.findIndex(x => x.id === operationId && x.chainId === chainId);
+    const operation = state[operationIndex];
 
-    const newOperation = {
+    if (operationIndex === -1 || !operation) return state;
+
+    const updatedOperation = {
       ...operation,
       status: event.status === 'reject' ? 'cancelled' : operation.status,
       events: multisigOperationService.mergeEvents(operation.events, [event]),
     };
 
-    return multisigOperationService.mergeMultisigOperations(state, [newOperation]);
+    return multisigOperationService.mergeMultisigOperations(state, [updatedOperation]);
   },
 });
 
@@ -186,7 +203,8 @@ sample({
 
 sample({
   clock: $list,
-  target: syncOperationsFx,
+  filter: list => list.length > 0,
+  target: syncInMemoryOperationsToDbFx,
 });
 
 // Handle successful call data updates
@@ -204,6 +222,7 @@ sample({
 
 export const multisigOperation = {
   $list,
+  $populated: readonly($populated),
   $callDataUpdated,
 
   populate: populateFx,
@@ -216,4 +235,9 @@ export const multisigOperation = {
   unsubscribe: subscribeResource.unsubscribe,
   subscribeEvents: subscribeEventsResource.subscribe,
   unsubscribeEvents: subscribeEventsResource.unsubscribe,
+
+  __test: {
+    $list,
+    $populated,
+  },
 };

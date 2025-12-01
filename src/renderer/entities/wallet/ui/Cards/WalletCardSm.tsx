@@ -4,6 +4,7 @@ import { type Wallet } from '@/shared/core';
 import { cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
+import { useWalletName } from '@/domains/network';
 
 type Props = PropsWithChildren<{
   wallet: Wallet;
@@ -11,6 +12,8 @@ type Props = PropsWithChildren<{
 }>;
 
 export const WalletCardSm = ({ wallet, onClick, children }: Props) => {
+  const walletName = useWalletName(wallet);
+
   const handleClick = (fn?: () => void) => {
     return (event: MouseEvent<HTMLButtonElement>) => {
       if (!fn) return;
@@ -35,7 +38,7 @@ export const WalletCardSm = ({ wallet, onClick, children }: Props) => {
             'group-focus-within:text-text-primary group-hover:text-text-primary',
           )}
         >
-          {wallet.name}
+          {walletName}
         </FootnoteText>
       </button>
 

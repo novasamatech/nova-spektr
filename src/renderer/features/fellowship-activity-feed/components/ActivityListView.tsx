@@ -2,15 +2,16 @@ import { type PropsWithChildren, memo, useMemo } from 'react';
 
 import { useClock, useDeferredList } from '@/shared/lib/hooks';
 import { nullable } from '@/shared/lib/utils';
+import { Separator } from '@/shared/ui';
 import { AsyncItem } from '@/shared/ui-kit';
-import { type FeedRecord } from '@/domains/collectives';
 import { useFellowshipChain } from '@/aggregates/fellowship-network';
 
 import { ActivityPlaceholder } from './ActivityPlaceholder';
 import { EventRecord } from './EventRecord';
+import { type ActivityFeedItem } from './utils';
 
 type Props = {
-  feed: (FeedRecord & { description?: string; name?: string })[];
+  feed: ActivityFeedItem[];
   limit?: number;
   withFullAccountInfo?: boolean;
   pending: boolean;
@@ -28,21 +29,35 @@ export const ActivityListView = memo(
     if (nullable(chain)) return null;
 
     return (
-      <div className="flex h-full flex-col gap-y-5 pt-2 pb-4">
+      <div className="flex h-full flex-col pt-2 pb-4">
         {isLoading && placeholders}
 
-        {list.map(event => (
-          <AsyncItem key={`${event.block}-${event.accountId}-${event.type}`} fallback={placeholder}>
-            <EventRecord
-              event={event}
-              description={event.description}
-              duration={(now - event.at.getTime()) / 1000}
-              name={event.name}
-              chain={chain}
-              withFullAccountInfo={withFullAccountInfo}
-            />
-          </AsyncItem>
-        ))}
+        {list.map((event, index) => {
+          const key = `${event.block}-${event.accountId}-${event.type}`;
+          const isLast = index === list.length - 1;
+
+          return (
+            <div key={key} className="flex flex-col">
+              <AsyncItem fallback={placeholder}>
+                <EventRecord
+                  event={event}
+                  description={event.description}
+                  duration={(now - event.at.getTime()) / 1000}
+                  name={event.actorName || event.name}
+                  actorAccountId={event.actorAccountId}
+                  chain={chain}
+                  withFullAccountInfo={withFullAccountInfo}
+                  referendumDetails={event.referendumDetails}
+                />
+              </AsyncItem>
+              {!isLast && (
+                <div className="px-5">
+                  <Separator className="py-2.5" />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   },

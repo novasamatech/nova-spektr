@@ -5,18 +5,17 @@ import { useI18n } from '@/shared/i18n';
 import { nullable, performSearch, truncate } from '@/shared/lib/utils';
 import { Button, EmptyList } from '@/shared/ui';
 import { Box, Modal, SearchInput, Select } from '@/shared/ui-kit';
-import { useFeed } from '@/domains/collectives';
-import { identityService } from '@/domains/network';
-import { useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
+import { useFeed, useReferendums, useTracks } from '@/domains/collectives';
+import { useFellowshipApi, useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
 
 import { ActivityListView } from './ActivityListView';
-import { getDescription } from './utils';
+import { buildActivityRecords, collectActivityAccountIds } from './utils';
 
 type OrderKey = 'duration-asc' | 'duration-desc' | 'name-asc' | 'name-desc';
 
 const orderVariants: Record<OrderKey, { field: string; direction: 'asc' | 'desc' }> = {
-  'duration-asc': { field: 'duration', direction: 'asc' },
-  'duration-desc': { field: 'duration', direction: 'desc' },
+  'duration-asc': { field: 'duration', direction: 'desc' },
+  'duration-desc': { field: 'duration', direction: 'asc' },
   'name-asc': { field: 'name', direction: 'asc' },
   'name-desc': { field: 'name', direction: 'desc' },
 };
@@ -27,8 +26,19 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
   const { t } = useI18n();
 
   const chain = useFellowshipChain();
-  const { data: feed, pending } = useFeed({ palletType: 'fellowship', chain });
-  const { data: identities } = useFellowshipIdentities(feed.map(record => record.accountId));
+  const api = useFellowshipApi();
+  const { data: feed, pending: feedPending } = useFeed({ palletType: 'fellowship', chain });
+  const { data: referendums, pending: referendumsPending } = useReferendums({ palletType: 'fellowship', api });
+  const { data: tracks, pending: tracksPending } = useTracks({ palletType: 'fellowship', api });
+
+  const referendumsById = useMemo(
+    () => (referendums ? new Map(referendums.map(referendum => [referendum.id, referendum])) : undefined),
+    [referendums],
+  );
+
+  const allAccountIds = useMemo(() => collectActivityAccountIds(feed, referendumsById), [feed, referendumsById]);
+
+  const { data: identities } = useFellowshipIdentities(allAccountIds);
 
   const [query, setQuery] = useState('');
   const [limit, setLimit] = useState(LIMIT_STEP);
@@ -38,15 +48,15 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
   const records = useMemo(
     () =>
-      feed.map(record => {
-        const identity = identities[record.accountId];
-        return {
-          ...record,
-          name: identity ? identityService.getFullName(identity) : undefined,
-          description: getDescription(record, t),
-        };
+      buildActivityRecords({
+        feed,
+        referendums,
+        tracks,
+        identities,
+        chain,
+        t,
       }),
-    [identities, feed, t],
+    [feed, referendums, tracks, identities, chain, t],
   );
 
   const filteredList = useMemo(() => {
@@ -69,10 +79,17 @@ export const ActivityModal = ({ children }: PropsWithChildren) => {
 
   const sortedList = useMemo(() => {
     const orderVariant = orderVariants[orderKey];
-    return orderVariant ? orderBy(filteredList, orderVariant.field, orderVariant.direction) : filteredList;
+    if (!orderVariant) return filteredList;
+
+    if (orderVariant.field === 'duration') {
+      return orderBy(filteredList, [record => record.at.getTime()], [orderVariant.direction]);
+    }
+
+    return orderBy(filteredList, [orderVariant.field], [orderVariant.direction]);
   }, [filteredList, orderKey]);
 
   const shouldRenderMoreButton = limit < sortedList.length;
+  const pending = feedPending || referendumsPending || tracksPending;
 
   if (nullable(chain)) return children;
 

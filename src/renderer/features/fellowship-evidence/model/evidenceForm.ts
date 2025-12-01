@@ -1,18 +1,19 @@
-import { createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { createEffect, createEvent, createStore, merge, restore, sample } from 'effector';
 import { createForm } from 'effector-forms';
+import { createGate } from 'effector-react';
 import { t } from 'i18next';
 
 import { type HexString } from '@/shared/core';
-import { createFlow } from '@/shared/effector';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { evidenceService } from '@/domains/collectives';
 
 // flow
 
 const skipUploading = createEvent();
+const skipUploadingWithWish = createEvent<'Promotion' | 'Retention'>();
 const setFlowType = createEvent<'fromScratch' | 'ipfsUpload' | null>();
 
-const flow = createFlow<{ wish: 'Promotion' | 'Retention' | null }>({ wish: null });
+const flow = createGate<{ wish: 'Promotion' | 'Retention' | null }>({ defaultState: { wish: null } });
 const $wish = flow.state.map(x => x.wish);
 const $evidence = createStore<HexString | null>(null);
 const $flowType = restore(setFlowType, null);
@@ -132,14 +133,22 @@ sample({
 
 sample({
   clock: form.formValidated,
-  source: $evidence,
-  filter: nonNullable,
-  target: skipUploading,
+  source: { evidence: $evidence, wish: $wish },
+  filter: ({ evidence }) => nonNullable(evidence),
+  fn: data => data.wish!,
+  target: skipUploadingWithWish,
 });
 
 sample({
   clock: $evidence.updates,
-  filter: nonNullable,
+  source: { evidence: $evidence, wish: $wish },
+  filter: ({ evidence, wish }) => nonNullable(evidence) && nonNullable(wish),
+  fn: ({ wish }) => wish!,
+  target: skipUploadingWithWish,
+});
+
+sample({
+  clock: skipUploadingWithWish,
   target: skipUploading,
 });
 
@@ -155,9 +164,9 @@ sample({
   target: $evidence,
 });
 
-const evidenceUploaded = sample({
-  clock: [postEvidenceFx.done, skipUploading],
-}).map(() => undefined);
+const postEvidenceDoneWithWish = postEvidenceFx.done.map(result => result.params.wish);
+
+const evidenceUploaded = merge([postEvidenceDoneWithWish, skipUploadingWithWish]);
 
 // reset
 

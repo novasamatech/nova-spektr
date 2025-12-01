@@ -2,15 +2,17 @@ import { memo, useMemo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { BodyText } from '@/shared/ui';
-import { Account, CollectiveRank } from '@/shared/ui-entities';
+import { CollectiveRank } from '@/shared/ui-entities';
 import { type Column, Indicator, ScrollArea, Table } from '@/shared/ui-kit';
 import { type CoreMember, salaryService, useSalaries } from '@/domains/collectives';
 import { identityService } from '@/domains/network';
 import { useFellowshipMember } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipChain, useFellowshipIdentities } from '@/aggregates/fellowship-network';
+import { NamedAccount } from '@/widgets/NameResolver';
 
 export type MemberRow = CoreMember & {
   name?: string;
+  nameOrAccountId: string;
   salary: string;
   salaryAmount: number;
 };
@@ -45,7 +47,7 @@ export const MembersTable = memo(({ members }: MembersTableProps) => {
         },
       },
       {
-        key: 'name',
+        key: 'nameOrAccountId',
         title: t('fellowship.overview.members.table.account'),
         sortable: true,
         width: '452px',
@@ -54,7 +56,13 @@ export const MembersTable = memo(({ members }: MembersTableProps) => {
           return (
             <div className="flex items-center gap-[8px]">
               {chain && (
-                <Account accountId={member.accountId} title={member.name} chain={chain} iconSize={20} hideAddress />
+                <NamedAccount
+                  accountId={member.accountId}
+                  title={member.name}
+                  chain={chain}
+                  iconSize={20}
+                  hideAddress
+                />
               )}
               {isCurrentUser && (
                 <BodyText className="font-medium tracking-[-0.12px] text-text-positive">
@@ -109,9 +117,14 @@ export const MembersTable = memo(({ members }: MembersTableProps) => {
           salaryAmount = rawSalary.toNumber();
         }
 
+        const name = identities[member.accountId]
+          ? identityService.getFullName(identities[member.accountId])
+          : undefined;
+
         return {
           ...member,
-          name: identities[member.accountId] ? identityService.getFullName(identities[member.accountId]) : undefined,
+          name,
+          nameOrAccountId: name ?? member.accountId,
           salary: salaryText,
           salaryAmount,
         };
