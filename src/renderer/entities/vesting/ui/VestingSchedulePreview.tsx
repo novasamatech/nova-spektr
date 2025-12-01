@@ -195,8 +195,8 @@ export const VestingSchedulePreview = memo(
           ),
           width: '120px',
           render: (_, row) =>
-            renderCell(row, 'locked', ({ row }) => {
-              return row.locked && asset ? (
+            renderCell(row, 'locked', ({ row }) =>
+              row.locked && asset ? (
                 <Tooltip>
                   <Tooltip.Trigger>
                     <div>
@@ -216,8 +216,8 @@ export const VestingSchedulePreview = memo(
                 </Tooltip>
               ) : (
                 <span className="shrink-0 text-body">{row.locked}</span>
-              );
-            }),
+              ),
+            ),
         },
       ],
       [t, chain, asset, getRowIssues, getFieldIssues, timelineApi],
