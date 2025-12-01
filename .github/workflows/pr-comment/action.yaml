@@ -1,0 +1,84 @@
+name: PR Comment
+description: Create or update a PR comment. Updates existing comment if one with the same identifier exists.
+inputs:
+  pr-number:
+    description: "Pull request number"
+    required: true
+  comment-body:
+    description: "Body of the comment to create or update"
+    required: true
+  comment-identifier:
+    description: "Unique identifier string to find existing comments (e.g., '🚀 Preview Deployment Ready!')"
+    required: true
+  github-token:
+    description: "GitHub token for API access"
+    required: true
+    default: ${{ github.token }}
+outputs:
+  comment-id:
+    description: "ID of the created or updated comment"
+    value: ${{ steps.comment.outputs.comment-id }}
+  comment-created:
+    description: "Whether a new comment was created (true) or existing one was updated (false)"
+    value: ${{ steps.comment.outputs.comment-created }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create or Update PR Comment
+      id: comment
+      uses: actions/github-script@v7
+      env:
+        PR_NUMBER: ${{ inputs.pr-number }}
+        COMMENT_BODY: ${{ inputs.comment-body }}
+        COMMENT_IDENTIFIER: ${{ inputs.comment-identifier }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const prNumber = parseInt(process.env.PR_NUMBER);
+          const body = process.env.COMMENT_BODY;
+          const identifier = process.env.COMMENT_IDENTIFIER;
+          
+          // Find existing comment with the identifier
+          const comments = await github.rest.issues.listComments({
+            issue_number: prNumber,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+          });
+          
+          const existingComment = comments.data.find(
+            comment => 
+              comment.user.type === 'Bot' && 
+              comment.user.login === 'github-actions[bot]' &&
+              comment.body.includes(identifier)
+          );
+          
+          let commentId;
+          let commentCreated = false;
+          
+          if (existingComment) {
+            // Update existing comment
+            const response = await github.rest.issues.updateComment({
+              comment_id: existingComment.id,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+            commentId = response.data.id.toString();
+            console.log(`Updated existing comment #${commentId}`);
+          } else {
+            // Create new comment
+            const response = await github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+            commentId = response.data.id.toString();
+            commentCreated = true;
+            console.log(`Created new comment #${commentId}`);
+          }
+          
+          core.setOutput('comment-id', commentId);
+          core.setOutput('comment-created', commentCreated.toString());
+

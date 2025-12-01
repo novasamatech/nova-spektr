@@ -1,0 +1,36 @@
+name: Cleanup PR Preview
+
+on:
+  pull_request:
+    types: [closed]
+
+concurrency:
+  group: pr-preview-cleanup-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_NAME: nova-spektr-pr-${{ github.event.pull_request.number }}
+
+jobs:
+  cleanup-deployment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: ⚙️ Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: 🗑️ Delete Cloudflare Pages project
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: .
+          command: pages project delete ${{ env.PROJECT_NAME }} || echo "Project may have been already deleted or does not exist"
+
