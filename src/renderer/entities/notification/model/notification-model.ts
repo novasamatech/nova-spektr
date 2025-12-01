@@ -47,10 +47,6 @@ sample({
   target: $notifications,
 });
 
-$notifications.subscribe((notifications) => {
-  console.log({ notifications });
-});
-
 sample({
   clock: notificationsViewed,
   source: $notifications,
