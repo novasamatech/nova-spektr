@@ -25,9 +25,6 @@ jobs:
       - name: ⚙️ Install dependencies
         uses: ./.github/workflows/install-pnpm
 
-      - name: 📦 Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
       - name: 📝 Update package.json version with commit SHA
         run: |
           PR_COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
@@ -55,21 +52,13 @@ jobs:
         run: |
           PROJECT_NAME="nova-spektr-pr-${{ github.event.pull_request.number }}"
           
-          # Install wrangler via npm
-          echo "Installing wrangler..."
-          npm install -g wrangler
-          
           # Check if project exists
           echo "Checking if project ${PROJECT_NAME} exists..."
-          PROJECTS=$(wrangler pages project list --json 2>/dev/null || echo "[]")
-          
-          PROJECT_EXISTS=$(echo "$PROJECTS" | jq -r --arg name "$PROJECT_NAME" '.[] | select(.name == $name) | .name')
-          
-          if [ -z "$PROJECT_EXISTS" ]; then
+          if pnpm wrangler pages project list 2>/dev/null | grep -q "${PROJECT_NAME}"; then
+            echo "Project ${PROJECT_NAME} already exists."
+          else
             echo "Project ${PROJECT_NAME} does not exist. Creating it now..."
             pnpm wrangler pages project create "$PROJECT_NAME" --production-branch=${{ github.head_ref }}
-          else
-            echo "Project ${PROJECT_NAME} already exists."
           fi
 
       - name: 🚀 Deploy to Cloudflare Pages
