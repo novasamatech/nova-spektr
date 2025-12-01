@@ -3,6 +3,9 @@ name: Cleanup PR Preview
 on:
   pull_request:
     types: [closed]
+    branches:
+      - dev
+      - main
 
 concurrency:
   group: pr-preview-cleanup-${{ github.event.pull_request.number }}

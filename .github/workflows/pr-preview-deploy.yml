@@ -3,6 +3,9 @@ name: Deploy PR Preview
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    branches:
+      - dev
+      - main
 
 concurrency:
   group: pr-preview-deploy-${{ github.event.pull_request.number }}
