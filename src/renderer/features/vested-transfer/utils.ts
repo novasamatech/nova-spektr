@@ -48,7 +48,8 @@ function isSubmitStep(step: Step): boolean {
 
 const MAX_U32 = new BN(2).pow(new BN(32));
 const MAX_U128 = new BN(2).pow(new BN(128));
-const CSV_COLUMNS = ['target', 'locked', 'startingBlock', 'perBlock'];
+const CSV_HEADERS = ['target', 'locked', 'starting_block', 'per_block'];
+const VESTING_SCHEDULE_FIELDS = ['target', 'locked', 'startingBlock', 'perBlock'];
 const MAX_CSV_ROWS = 1000;
 
 const safeBN = () =>
@@ -111,8 +112,28 @@ async function parseCSV(file: File): Promise<ParseResult> {
   const fileContent = await file.text();
 
   try {
+    const headerCheck = parse(fileContent, {
+      to: 1,
+      trim: true,
+      comment: '#',
+      skip_empty_lines: true,
+    });
+
+    const parsedHeaders = headerCheck[0];
+    if (!parsedHeaders || parsedHeaders.length < CSV_HEADERS.length) {
+      throw new Error('Invalid or missing headers.');
+    }
+
+    const headersMatch = CSV_HEADERS.every(
+      (expectedCol, index) => expectedCol.toLowerCase().trim() === parsedHeaders[index]?.toLowerCase().trim(),
+    );
+
+    if (!headersMatch) {
+      throw new Error(`Headers don't match. Expected: ${CSV_HEADERS.join(', ')}. Got: ${parsedHeaders.join(', ')}`);
+    }
+
     const data = parse<VestingScheduleRaw>(fileContent, {
-      columns: CSV_COLUMNS,
+      columns: VESTING_SCHEDULE_FIELDS,
       relax_column_count_more: true,
       skip_empty_lines: true,
       comment: '#',
@@ -173,7 +194,7 @@ function validateCSV(records: VestingScheduleRaw[], schema: z.ZodSchema) {
 }
 
 function downloadCsvWithIssues(vestingSchedule: VestingScheduleRaw[], issues: ValidationIssue[]) {
-  const columns = [...CSV_COLUMNS, 'errors', 'warnings'];
+  const columns = [...CSV_HEADERS, 'errors', 'warnings'];
   const header = columns.join(',');
 
   const dataRows = vestingSchedule.map((row, index) => {
