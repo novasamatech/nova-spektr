@@ -129,44 +129,16 @@ const mergeEvents = (oldEvents: MultisigEvent[], events: MultisigEvent[]) =>
     sort: (a, b) => a.blockCreated - b.blockCreated,
   });
 
-/**
- * Because we work with Events AT BEST, it may happen that our db has extra
- * operations that are not on the chain anymore nor were executed. We want to
- * filter them out.
- *
- * For example, if we have a fork and operation was executed in the different
- * block than we first recevied event of.
- *
- * This function merges 2 sets of operations: old and update. It filters out old
- * pending operations that are not present in update. (Pending means that
- * operations comes from chain, as indexer supplies only not pending
- * operations)
+/*
+ * Performs an actual merge of old operations with new operations with update if they have the same id.
  */
 const mergeMultisigOperations = (
   oldOperations: MultisigOperation[],
-  update: MultisigOperation[],
+  updated: MultisigOperation[],
 ): MultisigOperation[] => {
-  const updatedPendingOperations = groupBy(
-    update.filter(o => o.status === 'pending'),
-    o => o.chainId,
-  );
-
-  const filtered = oldOperations.filter(o => {
-    // Indirect evidence of onchain operation
-    if (o.status !== 'pending') return true;
-
-    const group = updatedPendingOperations[o.chainId];
-
-    if (group) {
-      return group.some(o1 => o1.id === o.id);
-    }
-
-    return true;
-  });
-
   return merge({
-    a: filtered,
-    b: update,
+    a: oldOperations,
+    b: updated,
     filter: (a, b) => {
       if (isEqual(a, b)) {
         return false;
@@ -193,6 +165,42 @@ const mergeMultisigOperations = (
   });
 };
 
+/**
+ * First this function filters out old operations that are not present in
+ * update. Then it merges the remaining operations with the update. (Pending
+ * means that operations comes from chain, as indexer supplies only not pending
+ * operations)
+ *
+ * This is needed because we work with Events AT BEST, it may happen that our db
+ * has extra operations that are not on the chain anymore nor were executed. We
+ * want to filter them out. For example, if we have a fork and operation was
+ * executed in the different block than we first recevied event of.
+ */
+const updateMultisigOperations = (
+  oldOperations: MultisigOperation[],
+  update: MultisigOperation[],
+): MultisigOperation[] => {
+  const updatedPendingOperations = groupBy(
+    update.filter(o => o.status === 'pending'),
+    o => o.chainId,
+  );
+
+  const filtered = oldOperations.filter(o => {
+    // Indirect evidence of onchain operation
+    if (o.status !== 'pending') return true;
+
+    const group = updatedPendingOperations[o.chainId];
+
+    if (group) {
+      return group.some(o1 => o1.id === o.id);
+    }
+
+    return true;
+  });
+
+  return mergeMultisigOperations(filtered, update);
+};
+
 export const multisigOperationService = {
   getOperationId,
   getEventId,
@@ -200,6 +208,7 @@ export const multisigOperationService = {
   getMultisigAccountId,
 
   mergeEvents,
+  updateMultisigOperations,
   mergeMultisigOperations,
 
   isMultisigSupported,
