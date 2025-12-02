@@ -493,6 +493,7 @@ const {
       },
     ),
     balancePreservation: $balancePreservationStrategy,
+    excludeActions: combine($isXcm, (isXcm) => (isXcm ? ['fee'] : [])),
   },
 });
 

@@ -101,6 +101,7 @@ const { $errors: $validationErrors, $valid: $canSubmit } = createTxValidationSto
     originFee: $originFee,
     destinationFee: $destinationFee,
     balancePreservation: $balancePreservation,
+    excludeActions: combine($isXcm, (isXcm) => (isXcm ? ['fee'] : [])),
   },
 });
 
