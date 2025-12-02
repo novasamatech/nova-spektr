@@ -13,6 +13,7 @@ import { Account, AssetBalance } from '@/shared/ui-entities';
 import { Modal, ScrollArea, Tooltip } from '@/shared/ui-kit';
 import { type Column, Table } from '@/shared/ui-kit/Table';
 import { useBlockTimestamp, useIdentity } from '@/domains/network';
+import { AssetFiatBalance } from '@/entities/price';
 import { type ValidationIssue, VestingFieldError, type VestingScheduleRaw } from '../lib/types';
 
 type TableData = VestingScheduleRaw & {
@@ -151,13 +152,14 @@ export const VestingSchedulePreview = memo(
               row.locked && asset ? (
                 <Tooltip>
                   <Tooltip.Trigger>
-                    <div>
+                    <div className="flex flex-col items-end">
                       <AssetBalance
                         value={row.locked}
                         asset={asset}
                         showSymbol
                         className="border-b border-filter-border text-inherit"
                       />
+                      <AssetFiatBalance asset={asset} amount={row.locked} className="text-inherit" />
                     </div>
                   </Tooltip.Trigger>
                   <Tooltip.Content>
@@ -213,13 +215,14 @@ export const VestingSchedulePreview = memo(
               row.perBlock && asset ? (
                 <Tooltip>
                   <Tooltip.Trigger>
-                    <div>
+                    <div className="flex flex-col items-end">
                       <AssetBalance
                         value={row.perBlock}
                         asset={asset}
                         showSymbol
                         className="border-b border-filter-border text-inherit"
                       />
+                      <AssetFiatBalance asset={asset} amount={row.perBlock} className="text-inherit" />
                     </div>
                   </Tooltip.Trigger>
                   <Tooltip.Content>
