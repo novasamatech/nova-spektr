@@ -342,17 +342,32 @@ const StartingBlock = memo(
       blockHeight: startingBlockHeight,
     });
 
-    const date = nonNullable(blockTime) ? format(blockTime, 'dd.MM.yyyy') : null;
-    const time = nonNullable(blockTime) ? format(blockTime, 'H:mm') : null;
+    let date: string | null = null;
+    let time: string | null = null;
+
+    try {
+      if (nonNullable(blockTime)) {
+        date = format(blockTime, 'dd.MM.yyyy');
+        time = format(blockTime, 'H:mm');
+      }
+    } catch {
+      // format failed, leave date/time as null
+    }
+
+    const blockSpan = (
+      <span className={cnTw('shrink-0 border-b border-filter-border text-body', STATUS_TEXT_COLORS[status])}>
+        {NUM_FORMATTER.format(BigInt(startingBlock))}
+      </span>
+    );
+
+    if (!date || !time) {
+      return blockSpan;
+    }
 
     return (
       <Tooltip>
         <Tooltip.Trigger>
-          <div>
-            <span className={cnTw('shrink-0 border-b border-filter-border text-body', STATUS_TEXT_COLORS[status])}>
-              {NUM_FORMATTER.format(BigInt(startingBlock))}
-            </span>
-          </div>
+          <div>{blockSpan}</div>
         </Tooltip.Trigger>
         <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.startBlockTime', { date, time })}</Tooltip.Content>
       </Tooltip>
