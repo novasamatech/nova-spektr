@@ -99,7 +99,7 @@ export const DelegateRules = {
             asset: network.asset,
             balance: balance.native,
             fee: new BN(fee),
-            xcmFee: BN_ZERO,
+            originFee: BN_ZERO,
             destinationFee: BN_ZERO,
             isNative: true,
             isProxy: false,

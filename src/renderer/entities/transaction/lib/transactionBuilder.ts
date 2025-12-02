@@ -70,7 +70,7 @@ type TransferParams = {
       destinationChain: ChainId;
       spellExtrinsic?: SubmittableExtrinsic<'promise'>;
       destinationFee?: string;
-      xcmFee?: string;
+      originFee?: string;
     };
     transactionType: TransactionType;
   };

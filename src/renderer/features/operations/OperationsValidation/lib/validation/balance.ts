@@ -51,7 +51,7 @@ function insufficientBalanceForXcmFee(
     transferableAsset,
     transferableBalance,
     fee,
-    xcmFee,
+    originFee,
     destinationFee,
     amount,
 
@@ -65,19 +65,19 @@ function insufficientBalanceForXcmFee(
   const isAuthority = isProxy || isMultisig;
 
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
-  const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);
+  const originFeeBN = new BN(originFee || ZERO_BALANCE);
   const destinationFeeBN = new BN(destinationFee || ZERO_BALANCE);
   const feeBN = new BN(fee || ZERO_BALANCE);
 
   if (isNative) {
     const totalTransferableSpend = isAuthority
-      ? amountBN.add(destinationFeeBN).add(xcmFeeBN)
-      : amountBN.add(feeBN).add(destinationFeeBN).add(xcmFeeBN);
+      ? amountBN.add(destinationFeeBN).add(originFeeBN)
+      : amountBN.add(feeBN).add(destinationFeeBN).add(originFeeBN);
 
     return isLteThanBalance(totalTransferableSpend, transferableBalance);
   }
 
-  const totalTransferableSpend = isXcm ? amountBN.add(xcmFeeBN) : amountBN;
+  const totalTransferableSpend = isXcm ? amountBN.add(originFeeBN) : amountBN;
   const totalNativeSpend = isAuthority ? destinationFeeBN : destinationFeeBN.add(feeBN);
 
   return (
@@ -92,7 +92,7 @@ function insufficientBalanceForDeliveryFee(
     nativeBalance,
     transferableAsset,
     transferableBalance,
-    xcmFee,
+    originFee,
     destinationFee,
     amount,
     isNative,
@@ -106,7 +106,7 @@ function insufficientBalanceForDeliveryFee(
   }
 
   const amountBN = new BN(config.withFormatAmount ? formatAmount(amount, transferableAsset.precision) : amount);
-  const xcmFeeBN = new BN(xcmFee || ZERO_BALANCE);
+  const originFeeBN = new BN(originFee || ZERO_BALANCE);
 
-  return isLteThanBalance(amountBN.add(destinationFeeBN).add(xcmFeeBN), transferableBalance);
+  return isLteThanBalance(amountBN.add(destinationFeeBN).add(originFeeBN), transferableBalance);
 }

@@ -124,8 +124,8 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
               testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
             >
               <div className="flex flex-col items-end gap-y-0.5">
-                <AssetBalance value={meta.xcmFee} asset={nativeAsset} />
-                <AssetFiatBalance asset={nativeAsset} amount={meta.xcmFee} />
+                <AssetBalance value={meta.originFee} asset={nativeAsset} />
+                <AssetFiatBalance asset={nativeAsset} amount={meta.originFee} />
               </div>
             </DetailRow>
             {nonNullable(meta.destinationFee) && (

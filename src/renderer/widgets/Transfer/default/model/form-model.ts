@@ -60,7 +60,7 @@ type FormSubmitEvent = FormParams & {
   route: AnyAccount[];
   destinationChain: Chain;
   fee: BN;
-  xcmFee: BN;
+  originFee: BN;
   destinationFee: BN | null;
   multisigDeposit: BN;
   rawAmount: string;
@@ -824,7 +824,7 @@ const formSubmitFinished = sample({
       multisigDeposit,
       route,
       fee,
-      xcmFee: isXcm ? (originFee ?? BN_ZERO) : BN_ZERO,
+      originFee: isXcm ? (originFee ?? BN_ZERO) : BN_ZERO,
       destinationFee: isXcm ? (destinationFee ?? null) : null,
       balancePreservation,
     } satisfies FormSubmitEvent;

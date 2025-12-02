@@ -103,7 +103,7 @@ export type TransferAmountFeeStore = {
   isMultisig: boolean;
   isProxy: boolean;
   fee: BN;
-  xcmFee: BN;
+  originFee: BN;
   destinationFee: BN;
 };
 

@@ -224,14 +224,14 @@ const $txAsset = combine(
     amount: $amount,
     transferDirection: $transferDirection,
     xcmAsset: $xcmAsset,
-    xcmFee: $xcmFee,
+    originFee: $xcmFee,
   },
   (params) => {
     const { api, config, transferDirection, xcmAsset } = params;
 
     if (!api || !config || !transferDirection || !xcmAsset) return undefined;
 
-    const resultAmount = new BN(params.amount || 0).add(new BN(params.xcmFee || 0));
+    const resultAmount = new BN(params.amount || 0).add(new BN(params.originFee || 0));
     const isArray = transferDirection.type !== XcmTransferType.XTOKENS;
 
     return xcmService.getAssetLocation(

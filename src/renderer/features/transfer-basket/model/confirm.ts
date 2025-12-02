@@ -46,7 +46,7 @@ const prepareDataFx = createEffect(async ({ transaction, accounts, chains, apis 
     fee,
     // TODO: Calculate destination fee
     destinationFee: BN_ZERO,
-    xcmFee: transaction.coreTx.args.xcmFee || '0',
+    originFee: transaction.coreTx.args.originFee,
     multisigDeposit: BN_ZERO,
     balancePreservation: transaction.coreTx.type === TransactionType.TRANSFER ? 'keepAlive' : 'allowDeath',
   } satisfies TransferConfirmStore;
