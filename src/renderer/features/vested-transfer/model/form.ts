@@ -231,9 +231,11 @@ sample({
 });
 
 const fileUploaded = createEvent<File>();
-const $parsedCsv = createStore<VestingScheduleRaw[] | null>(null).reset(flowStarted);
-const $csvError = createStore<VestingCsvError | null>(null).reset(flowStarted);
-const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(flowStarted);
+const csvReset = [flowStarted, fileUploaded, form.fields.chain.change];
+const $fileName = createStore<string | null>(null).reset(csvReset);
+const $parsedCsv = createStore<VestingScheduleRaw[] | null>(null).reset(csvReset);
+const $csvError = createStore<VestingCsvError | null>(null).reset(csvReset);
+const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(csvReset);
 
 const parseFileFx = createEffect<File, VestingScheduleRaw[]>(async (file) => {
   const parsed = await vestedTransferUtils.parseCSV(file);
@@ -294,6 +296,12 @@ const validateFileFx = attach({
     } satisfies ValidateFileParams;
   },
   effect: rootValidateFileFx,
+});
+
+sample({
+  clock: fileUploaded,
+  fn: (file: File) => file.name,
+  target: $fileName,
 });
 
 sample({
@@ -403,10 +411,6 @@ sample({
     form.fields.signatory.resetError,
     form.fields.vestingSchedule.resetError,
     form.fields.vestingSchedule.reset,
-    $parsedCsv.reinit,
-    $csvError.reinit,
-    $csvIssues.reinit,
-    $fee.reinit,
   ],
 });
 
@@ -517,6 +521,7 @@ export const formModel = {
   $txErrors,
   $asset,
   $amount,
+  $fileName,
   $parsedCsv,
   $csvError,
   $csvIssues,
