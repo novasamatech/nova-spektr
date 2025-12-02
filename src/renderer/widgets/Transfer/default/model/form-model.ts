@@ -626,11 +626,17 @@ const $hasDryRunError = xcmSpellTransferModel.$buildTransferDryRunResult.map(
   (result) => result !== null && result.success === false,
 );
 
+const $isCoreTxReady = $coreTx.map(nonNullable);
+const $isTxReady = $tx.map(nonNullable);
+
+const $areTransactionsReady = and($isCoreTxReady, $isTxReady);
+
 const $canSubmit = and(
   $valid,
   not($hasDestinationBalanceError),
   or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
   not($hasDryRunError),
+  or(not($isXcm), $areTransactionsReady),
 );
 
 // Fields connections
@@ -827,6 +833,17 @@ const formSubmitFinished = sample({
 
 sample({
   clock: formSubmitFinished.filter({ fn: nonNullable }),
+  fn: (data) => {
+    console.log(
+      '[form-model] formSubmitted event triggered',
+      JSON.stringify({
+        destination: data.destination,
+        amount: data.amount,
+        destinationChain: data.destinationChain.chainId,
+      }),
+    );
+    return data;
+  },
   target: formSubmitted,
 });
 
