@@ -3,8 +3,8 @@ import { type FormEvent, type PropsWithChildren, useEffect, useState } from 'rea
 import { type Wallet } from '@/shared/core';
 import { useForm } from '@/shared/forms/useForm';
 import { useI18n } from '@/shared/i18n';
-import { Button, InputHint } from '@/shared/ui';
-import { Input, Modal } from '@/shared/ui-kit';
+import { Button, FootnoteText, InputHint } from '@/shared/ui';
+import { Input, Modal, useNotification } from '@/shared/ui-kit';
 import { renameWalletModel } from '../model/rename-wallet-model';
 
 type Props = PropsWithChildren<{
@@ -14,6 +14,7 @@ type Props = PropsWithChildren<{
 
 export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
   const { t } = useI18n();
+  const { toast } = useNotification();
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -25,6 +26,13 @@ export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
   const handleClose = () => {
     setIsOpen(false);
     onClose?.();
+  };
+
+  const handleSubmitSuccess = () => {
+    toast.success(t('walletDetails.common.renameWalletSuccessTitle'), {
+      description: t('walletDetails.common.renameWalletSuccessDescription'),
+    });
+    handleClose();
   };
 
   const onToggle = (isOpen: boolean) => {
@@ -42,8 +50,11 @@ export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
   }, [wallet, isOpen]);
 
   useEffect(() => {
-    renameWalletModel.callbackChanged({ onSubmit: handleClose });
-  }, [handleClose]);
+    renameWalletModel.callbackChanged({
+      onSubmit: handleSubmitSuccess,
+      onClose: handleClose,
+    });
+  }, [handleSubmitSuccess, handleClose]);
 
   const submitForm = (event: FormEvent) => {
     event.preventDefault();
@@ -51,7 +62,7 @@ export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
   };
 
   return (
-    <Modal size="sm" height="fit" isOpen={isOpen} onToggle={onToggle}>
+    <Modal size="md" height="fit" isOpen={isOpen} onToggle={onToggle}>
       <Modal.Trigger>{children}</Modal.Trigger>
       <Modal.Title close>{t('walletDetails.common.renameWallet')}</Modal.Title>
       <Modal.Content>
@@ -70,6 +81,7 @@ export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
             <InputHint variant="error" active={name.hasError}>
               {t(name.errorMessage)}
             </InputHint>
+            <FootnoteText className="text-text-tertiary">{t('walletDetails.common.renameWalletWarning')}</FootnoteText>
           </div>
 
           <Button className="ml-auto" size="sm" type="submit" disabled={name.value.trim() === ''}>

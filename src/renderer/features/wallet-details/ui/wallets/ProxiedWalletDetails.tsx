@@ -114,7 +114,7 @@ export const ProxiedWalletDetails = ({ wallet, onClose }: Props) => {
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
         <div className="flex flex-col gap-y-2.5 px-5 pb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between">
             <Box direction="row" verticalAlign="center" gap={2}>
               <div className="mr-1">
                 <WalletAccountIcon

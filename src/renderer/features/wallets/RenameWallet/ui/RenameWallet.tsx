@@ -4,7 +4,7 @@ import { type Wallet } from '@/shared/core';
 import { useForm } from '@/shared/forms/useForm';
 import { useI18n } from '@/shared/i18n';
 import { useClickOutside } from '@/shared/lib/hooks';
-import { IconButton } from '@/shared/ui';
+import { FootnoteText, IconButton } from '@/shared/ui';
 import { Input } from '@/shared/ui-kit';
 import { renameWalletModel } from '../model/rename-wallet-model';
 
@@ -33,7 +33,10 @@ export const RenameWallet = ({ wallet, isOpen, onClose }: Props) => {
   }, [wallet, isOpen]);
 
   useEffect(() => {
-    renameWalletModel.callbackChanged({ onSubmit: onClose });
+    renameWalletModel.callbackChanged({
+      onSubmit: onClose,
+      onClose: onClose,
+    });
   }, [onClose]);
 
   if (!isOpen) return null;
@@ -44,20 +47,22 @@ export const RenameWallet = ({ wallet, isOpen, onClose }: Props) => {
   };
 
   return (
-    <form ref={formRef} className="flex flex-1 items-center gap-4" onSubmit={submitForm}>
-      <Input
-        autoFocus
-        width="full"
-        height="md"
-        textSize="lg"
-        name="name"
-        placeholder={t('walletDetails.common.renameWallet')}
-        invalid={name.hasError}
-        value={name.value}
-        onChange={name.onChange}
-      />
-
-      <IconButton name="checkmark" disabled={name.value.trim() === ''} onClick={submitForm} />
-    </form>
+    <div className="ml-4 w-full">
+      <form className="flex flex-1 items-center gap-4" ref={formRef} onSubmit={submitForm}>
+        <Input
+          autoFocus
+          width="full"
+          height="md"
+          textSize="lg"
+          name="name"
+          placeholder={t('walletDetails.common.renameWallet')}
+          invalid={name.hasError}
+          value={name.value}
+          onChange={name.onChange}
+        />
+        <IconButton name="checkmark" disabled={name.value.trim() === ''} onClick={submitForm} />
+      </form>
+      <FootnoteText className="mt-2 text-text-tertiary">{t('walletDetails.common.renameWalletWarning')}</FootnoteText>
+    </div>
   );
 };
