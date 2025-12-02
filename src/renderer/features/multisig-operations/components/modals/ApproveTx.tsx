@@ -141,7 +141,6 @@ export const ApproveTxModal = memo(({ operation, account, api, chain, children }
             unsignedAccounts={unsignedAccounts}
             chain={chain}
             nativeAsset={nativeAsset}
-            asset={asset}
             operation={operation}
             onSubmit={onFormSubmit}
           />
