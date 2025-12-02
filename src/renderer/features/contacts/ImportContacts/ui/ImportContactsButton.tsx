@@ -3,12 +3,14 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, Icon, InfoLink } from '@/shared/ui';
-import { useNotification } from '@/shared/ui-kit';
+import { Tooltip, useNotification } from '@/shared/ui-kit';
 import { importContactsModel } from '../model/import-contacts-model';
 
 import { ImportConflictsModal } from './ImportConflictsModal';
 
 const LOADING_TOAST_DELAY = 500;
+
+const LINK = 'https://polkadot.js.org';
 
 export const ImportContactsButton = () => {
   const { t } = useI18n();
@@ -95,14 +97,32 @@ export const ImportContactsButton = () => {
 
   return (
     <>
-      <Button
-        size="sm"
-        prefixElement={<Icon name="import" size={16} className="text-inherit" />}
-        disabled={isLoading}
-        onClick={handleButtonClick}
-      >
-        {t('addressBook.importContacts.button')}
-      </Button>
+      <Tooltip enableHover delay={200}>
+        <Tooltip.Trigger>
+          <Button
+            size="sm"
+            prefixElement={<Icon name="import" size={16} className="text-inherit" />}
+            disabled={isLoading}
+            onClick={handleButtonClick}
+          >
+            {t('addressBook.importContacts.button')}
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <span>
+            {t('addressBook.importContacts.tooltip')}
+            <br />
+            <a
+              href="https://polkadot.js.org/apps/#/addresses"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pointer-events-auto cursor-pointer underline hover:text-gray-200"
+            >
+              {LINK}
+            </a>
+          </span>
+        </Tooltip.Content>
+      </Tooltip>
 
       <input
         ref={fileInputRef}

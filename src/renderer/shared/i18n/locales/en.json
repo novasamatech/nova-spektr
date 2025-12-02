@@ -86,7 +86,8 @@
         "wikiLink": "Wiki guidelines"
       },
       "loading": "Importing contacts...",
-      "success": "Contacts imported"
+      "success": "Contacts imported",
+      "tooltip": "Import JSON file exported from"
     },
     "removeConfirm": {
       "cancelButton": "Cancel",
