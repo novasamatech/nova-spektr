@@ -449,16 +449,21 @@ sample({
     initiatorWallet: $initiatorWallet,
     signatories: signatoryModel.$signatories,
     threshold: formModel.$threshold,
+    chainId: $chainId,
   },
-  filter: ({ multisigAccount, initiatorWallet, threshold }) => {
-    return nonNullable(multisigAccount) && nonNullable(initiatorWallet) && nonNullable(threshold);
-  },
-  fn: ({ multisigAccount, initiatorWallet, signatories, threshold }) => {
+  filter: ({ multisigAccount, initiatorWallet, threshold, chainId }) =>
+    nonNullable(multisigAccount) && nonNullable(initiatorWallet) && nonNullable(threshold) && nonNullable(chainId),
+  fn: ({ multisigAccount, initiatorWallet, signatories, threshold, chainId }) => {
     const notification: NoID<FlexibleMultisigOperationNotification> = {
       read: false,
       walletId: initiatorWallet!.id,
       type: NotificationType.FLEXIBLE_MULTISIG_EDITED,
       dateCreated: Date.now(),
+      status: 'info',
+      issuer: multisigAccount!.accountId,
+      title: 'Flexible multisig wallet edited',
+      description: `${threshold}/${signatories.length} threshold`,
+      chainId: chainId!,
       multisigAccountId: multisigAccount!.accountId,
       accountId: multisigAccount!.accountId,
       accountName: multisigAccount!.name,

@@ -21,7 +21,7 @@ type Props = {
 };
 
 export const MultisigOperationNotificationComponent = ({
-  notification: { callHash, callTimepoint, chainId, multisigAccountId, status, operationId },
+  notification: { callHash, callTimepoint, chainId, multisigAccountId, operationStatus, operationId },
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -95,7 +95,7 @@ export const MultisigOperationNotificationComponent = ({
     error: { name: 'closeOutline' as const, className: 'text-icon-negative' },
   };
 
-  const icon = iconConfig[status];
+  const icon = iconConfig[operationStatus];
 
   return (
     <div className="flex gap-x-2">

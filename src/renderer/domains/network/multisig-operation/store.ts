@@ -2,7 +2,13 @@ import { attach, createEffect, createStore, restore, sample, scopeBind } from 'e
 import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import { type HexString, type MultisigOperationNotification, type NoID, NotificationType } from '@/shared/core';
+import {
+  type HexString,
+  type MultisigOperationNotification,
+  type NoID,
+  type NotificationStatus,
+  NotificationType,
+} from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
@@ -100,13 +106,42 @@ const removeOperationsForAccountFx = attach({
   },
 });
 
+const getNotificationStatus = (operationStatus: 'created' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
+  switch (operationStatus) {
+    case 'created':
+      return 'info';
+    case 'executed':
+      return 'success';
+    case 'cancelled':
+    case 'error':
+      return 'error';
+  }
+};
+
+const getNotificationTitle = (operationStatus: 'created' | 'executed' | 'cancelled' | 'error'): string => {
+  switch (operationStatus) {
+    case 'created':
+      return 'Multisig operation created';
+    case 'executed':
+      return 'Multisig operation executed';
+    case 'cancelled':
+      return 'Multisig operation cancelled';
+    case 'error':
+      return 'Multisig operation error';
+  }
+};
+
 const createOperationNotification = (
   operation: MultisigOperation,
-  status: 'created' | 'executed' | 'cancelled' | 'error',
+  operationStatus: 'created' | 'executed' | 'cancelled' | 'error',
 ): NoID<MultisigOperationNotification> => ({
   type: NotificationType.MULTISIG_OPERATION,
   read: false,
   dateCreated: operation.timestamp ?? Date.now(),
+  status: getNotificationStatus(operationStatus),
+  issuer: operation.accountId,
+  title: getNotificationTitle(operationStatus),
+  description: operation.transaction ? `${operation.transaction.section}.${operation.transaction.method}` : undefined,
   multisigAccountId: operation.accountId,
   callHash: operation.callHash,
   callTimepoint: {
@@ -115,7 +150,7 @@ const createOperationNotification = (
   },
   chainId: operation.chainId,
   operationId: operation.id,
-  status,
+  operationStatus,
 });
 
 sample({

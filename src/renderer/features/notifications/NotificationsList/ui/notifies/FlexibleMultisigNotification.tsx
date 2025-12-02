@@ -6,12 +6,13 @@ import { Trans } from 'react-i18next';
 import { NotificationType, WalletType } from '@/shared/core';
 import { type FlexibleMultisigOperationNotification } from '@/shared/core/types/notification';
 import { useI18n } from '@/shared/i18n';
+import { toShortAddress } from '@/shared/lib/utils';
 import { BodyText, Icon } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Box } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { accountUtils } from '@/entities/wallet';
+import { accountUtils, walletModel } from '@/entities/wallet';
 
 type Props = {
   notification: FlexibleMultisigOperationNotification;
@@ -20,7 +21,7 @@ type Props = {
 export const FlexibleMultisigNotification = ({ notification }: Props) => {
   const { t } = useI18n();
 
-  const { threshold, signatories, accountName, walletId } = notification;
+  const { threshold, signatories, accountId, walletId } = notification;
 
   const $walletAccounts = useMemo(
     () => combine(accounts.$list, (accountsList) => accountsList.filter((account) => account.walletId === walletId)),
@@ -28,6 +29,12 @@ export const FlexibleMultisigNotification = ({ notification }: Props) => {
   );
 
   const walletAccounts = useUnit($walletAccounts);
+  const wallets = useUnit(walletModel.$wallets);
+
+  const walletName = useMemo(() => {
+    const wallet = wallets.find((w) => w.id === walletId);
+    return wallet?.name || toShortAddress(accountId, 5);
+  }, [wallets, walletId, accountId]);
 
   const chainId = useMemo(() => {
     const flexibleMultisigAccount = walletAccounts.find(accountUtils.isFlexibleMultisigAccount);
@@ -58,7 +65,7 @@ export const FlexibleMultisigNotification = ({ notification }: Props) => {
               values={{
                 threshold,
                 signatoriesLength: signatories.length,
-                name: accountName,
+                name: walletName,
               }}
               components={{
                 chain: chainId ? (

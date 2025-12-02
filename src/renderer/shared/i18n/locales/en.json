@@ -1640,6 +1640,7 @@
       "viewOperation": "View operation"
     },
     "noNotificationsDescription": "You don't have notifications yet",
+    "searchPlaceholder": "Search by wallet or event type",
     "title": "Notifications"
   },
   "onboarding": {
