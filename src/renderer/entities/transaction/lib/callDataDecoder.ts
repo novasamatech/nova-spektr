@@ -287,6 +287,52 @@ const getCallDataParser: Record<
       dest: decoded.args[1].toString(),
     };
   },
+  [TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      beneficiary: decoded.args[1].toString(),
+      assets: decoded.args[2].toString(),
+      feeAssetItem: decoded.args[3].toString(),
+    };
+  },
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      assets: decoded.args[1].toString(),
+      assetsTransferType: decoded.args[2].toString(),
+      remoteFeesId: decoded.args[3].toString(),
+      feesTransferType: decoded.args[4].toString(),
+      customXcmOnDest: decoded.args[5].toString(),
+      weightLimit: decoded.args[6].toString(),
+    };
+  },
+  [TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: (decoded): Record<string, any> => {
+    return {
+      dest: decoded.args[0].toString(),
+      assets: decoded.args[1].toString(),
+      assetsTransferType: decoded.args[2].toString(),
+      remoteFeesId: decoded.args[3].toString(),
+      feesTransferType: decoded.args[4].toString(),
+      customXcmOnDest: decoded.args[5].toString(),
+      weightLimit: decoded.args[6].toString(),
+    };
+  },
+  [TransactionType.XTOKENS_TRANSFER]: (decoded): Record<string, any> => {
+    return {
+      currencyId: decoded.args[0].toString(),
+      amount: decoded.args[1].toString(),
+      dest: decoded.args[2].toString(),
+      destWeightLimit: decoded.args[3]?.toString(),
+    };
+  },
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSETS]: (decoded): Record<string, any> => {
+    return {
+      assets: decoded.args[0].toString(),
+      feeItem: decoded.args[1]?.toString(),
+      dest: decoded.args[2].toString(),
+      destWeightLimit: decoded.args[3]?.toString(),
+    };
+  },
   [TransactionType.BOND]: (decoded): Record<string, any> => {
     const args: Record<string, any> = {};
     let index = 0;
@@ -563,6 +609,7 @@ const getXcmTxType = (method: string, section: string): TransactionType | undefi
     return {
       limitedReserveTransferAssets: TransactionType.XCM_LIMITED_TRANSFER,
       limitedTeleportAssets: TransactionType.XCM_TELEPORT,
+      transferAssetsUsingTypeAndThen: TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN,
     }[method];
   }
 
@@ -570,11 +617,18 @@ const getXcmTxType = (method: string, section: string): TransactionType | undefi
     return {
       limitedReserveTransferAssets: TransactionType.POLKADOT_XCM_LIMITED_TRANSFER,
       limitedTeleportAssets: TransactionType.POLKADOT_XCM_TELEPORT,
+      transferAssets: TransactionType.POLKADOT_XCM_TRANSFER_ASSETS,
+      reserveTransferAssets: TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW,
+      transferAssetsUsingTypeAndThen: TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN,
     }[method];
   }
 
-  if (method === 'transferMultiasset' && section === 'xTokens') {
-    return TransactionType.XTOKENS_TRANSFER_MULTIASSET;
+  if (section === 'xTokens') {
+    return {
+      transferMultiasset: TransactionType.XTOKENS_TRANSFER_MULTIASSET,
+      transfer: TransactionType.XTOKENS_TRANSFER,
+      transferMultiassets: TransactionType.XTOKENS_TRANSFER_MULTIASSETS,
+    }[method];
   }
 
   return undefined;

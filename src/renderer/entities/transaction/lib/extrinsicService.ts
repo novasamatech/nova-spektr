@@ -75,6 +75,11 @@ export const getExtrinsic: Record<
   [TransactionType.POLKADOT_XCM_TELEPORT]: handleXcmTransaction,
   [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: handleXcmTransaction,
   [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: handleXcmTransaction,
+  [TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: handleXcmTransaction,
+  [TransactionType.XTOKENS_TRANSFER]: handleXcmTransaction,
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSETS]: handleXcmTransaction,
   // controller arg removed from bond but changes not released yet
   // https://github.com/paritytech/substrate/pull/14039
   [TransactionType.BOND]: ({ controller, value, payee }, api) =>
