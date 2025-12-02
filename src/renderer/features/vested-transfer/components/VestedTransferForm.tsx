@@ -23,7 +23,6 @@ export const VestedTransferForm = () => {
   const { t } = useI18n();
 
   const { submit } = useForm(formModel.form);
-  const showSignatories = useUnit(formModel.$showSignatories);
   const canSubmit = useUnit(formModel.$canSubmit);
 
   const submitForm = (event: FormEvent) => {
@@ -41,7 +40,7 @@ export const VestedTransferForm = () => {
           <Box padding={[4, 5]} gap={4}>
             <TransactionValidationError errors={txErrors} wallets={wallets} />
             <NetworkSelect />
-            {showSignatories && <Signatories />}
+            <Signatories />
             <UploadCSV />
             <ValidationsAlert />
             <TotalAmountSection />
@@ -65,6 +64,10 @@ export const NetworkSelect = memo(() => {
   const {
     fields: { chain },
   } = useForm(formModel.form);
+
+  if (availableChains.length <= 1) {
+    return null;
+  }
 
   return (
     <Field text={t('vestedTransfer.form.fields.network.label')}>

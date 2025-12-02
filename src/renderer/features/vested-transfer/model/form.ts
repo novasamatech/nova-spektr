@@ -219,12 +219,6 @@ const $signatories = createSignatoriesStore({
   initiator: form.fields.initiator.$value,
 });
 
-const $showSignatories = combine(
-  $signatories,
-  form.fields.initiator.$value,
-  (signatories, initiator) => signatories.length > 1 || signatories.at(0)?.accountId !== initiator?.accountId,
-);
-
 sample({
   clock: $signatories,
   target: balanceSubModel.fetchAccounts,
@@ -527,7 +521,6 @@ export const formModel = {
   $csvIssues,
   $availableChains: $availableChains,
   $signatories: $signatories,
-  $showSignatories: $showSignatories,
   $minVestedTransfer,
 
   stepChanged,
