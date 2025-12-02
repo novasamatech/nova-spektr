@@ -1,9 +1,10 @@
 import { useUnit } from 'effector-react';
 import { useEffect, useRef, useState } from 'react';
+import { Trans } from 'react-i18next';
 
 import { useI18n } from '@/shared/i18n';
 import { Button, Icon, InfoLink } from '@/shared/ui';
-import { useNotification } from '@/shared/ui-kit';
+import { Tooltip, useNotification } from '@/shared/ui-kit';
 import { importContactsModel } from '../model/import-contacts-model';
 
 import { ImportConflictsModal } from './ImportConflictsModal';
@@ -95,14 +96,21 @@ export const ImportContactsButton = () => {
 
   return (
     <>
-      <Button
-        size="sm"
-        prefixElement={<Icon name="import" size={16} className="text-inherit" />}
-        disabled={isLoading}
-        onClick={handleButtonClick}
-      >
-        {t('addressBook.importContacts.button')}
-      </Button>
+      <Tooltip enableHover>
+        <Tooltip.Trigger>
+          <Button
+            size="sm"
+            prefixElement={<Icon name="import" size={16} className="text-inherit" />}
+            disabled={isLoading}
+            onClick={handleButtonClick}
+          >
+            {t('addressBook.importContacts.button')}
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <Trans t={t} i18nKey="addressBook.importContacts.tooltip" />
+        </Tooltip.Content>
+      </Tooltip>
 
       <input
         ref={fileInputRef}

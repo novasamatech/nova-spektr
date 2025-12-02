@@ -72,6 +72,7 @@
     },
     "importContacts": {
       "button": "Import",
+      "tooltip": "Import JSON file exported from polkadot.js.org/apps/#/addresses",
       "conflicts": {
         "description": "Some contacts below already exists in your address book. Do you want to replace it or keep current versions?",
         "keepCurrentButton": "Keep current",
