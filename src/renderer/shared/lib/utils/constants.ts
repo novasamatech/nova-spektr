@@ -116,6 +116,58 @@ export const DESTINATION_BLACKLIST: DestinationBlacklistEntry[] = [
     destination: 'Polkadot',
   },
   {
+    source: 'AssetHubPolkadot',
+    destination: 'AssetHubKusama',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'Karura',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'Kintsugi',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'Moonriver',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'CoretimeKusama',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'Altair',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'Amplitude',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'Basilisk',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'BifrostKusama',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'PeopleKusama',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'Shiden',
+  },
+  {
+    source: 'AssetHubPolkadot',
+    destination: 'Kusama',
+  },
+  {
+    source: 'Hydration',
+    destination: 'AssetHubPolkadot',
+  },
+  {
     destination: 'IntegriteePolkadot',
   },
   {
