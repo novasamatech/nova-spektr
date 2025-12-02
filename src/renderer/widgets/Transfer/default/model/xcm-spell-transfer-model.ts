@@ -439,10 +439,12 @@ const $transferDirection = combine(
     const isAvailable = transferDirections.includes(selectedChainName);
     if (!isAvailable) return undefined;
 
+    const destinationAsset = selectedChain.assets.find((asset) => asset.symbol === network.asset.symbol);
+
     return {
       destination: {
         chainId: toLocalChainId(selectedChain.chainId),
-        assetId: network.asset.assetId,
+        assetId: destinationAsset?.assetId ?? network.asset.assetId,
       },
     };
   },
