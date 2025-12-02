@@ -833,17 +833,6 @@ const formSubmitFinished = sample({
 
 sample({
   clock: formSubmitFinished.filter({ fn: nonNullable }),
-  fn: (data) => {
-    console.log(
-      '[form-model] formSubmitted event triggered',
-      JSON.stringify({
-        destination: data.destination,
-        amount: data.amount,
-        destinationChain: data.destinationChain.chainId,
-      }),
-    );
-    return data;
-  },
   target: formSubmitted,
 });
 

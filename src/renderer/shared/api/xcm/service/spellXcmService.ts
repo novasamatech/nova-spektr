@@ -159,11 +159,6 @@ function getHopApiOverrides(
     const hopChainId = getChainIdBySpellName(hopChainName);
     if (hopChainId && chains[hopChainId] && apis[hopChainId]) {
       overrides[hopChainName] = apis[hopChainId];
-      console.log('getHopApiOverrides: added API override for hop chain', {
-        hopChainName,
-        hopChainId,
-        chainName: chains[hopChainId]?.name,
-      });
     } else {
       console.warn('getHopApiOverrides: could not find API for hop chain', {
         hopChainName,
@@ -173,12 +168,6 @@ function getHopApiOverrides(
       });
     }
   }
-
-  console.log('getHopApiOverrides: result', {
-    hopChainNames,
-    overridesCount: Object.keys(overrides).length,
-    overrideKeys: Object.keys(overrides),
-  });
 
   return overrides;
 }
@@ -230,15 +219,6 @@ function createBuilderConfig(
     [toChainName]: toChainApi,
     ...hopApiOverrides,
   };
-
-  console.log('createBuilderConfig: final API overrides', {
-    fromChainName,
-    toChainName,
-    hopOverridesCount: hopApiOverrides ? Object.keys(hopApiOverrides).length : 0,
-    totalOverridesCount: Object.keys(apiOverrides).length,
-    allOverrideKeys: Object.keys(apiOverrides),
-    hasHopOverrides: hopApiOverrides && Object.keys(hopApiOverrides).length > 0,
-  });
 
   return {
     abstractDecimals: true,
@@ -304,12 +284,6 @@ async function detectHopChains(params: DetectHopChainsParams): Promise<DetectHop
       `spellXcmService: detectHopChains failed - unsupported chains: ${fromChain.name} -> ${toChain.name}`,
     );
   }
-
-  console.log('detectHopChains: starting hop detection', {
-    fromChain: fromChain.name,
-    toChain: toChain.name,
-    asset: asset.symbol,
-  });
 
   const testAmount = '1';
   const testParams: XcmTransferParams = {
