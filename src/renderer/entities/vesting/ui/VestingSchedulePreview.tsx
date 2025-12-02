@@ -354,20 +354,20 @@ const StartingBlock = memo(
       // format failed, leave date/time as null
     }
 
-    const blockSpan = (
+    const BlockComponent = (
       <span className={cnTw('shrink-0 border-b border-filter-border text-body', STATUS_TEXT_COLORS[status])}>
         {NUM_FORMATTER.format(BigInt(startingBlock))}
       </span>
     );
 
     if (!date || !time) {
-      return blockSpan;
+      return BlockComponent;
     }
 
     return (
       <Tooltip>
         <Tooltip.Trigger>
-          <div>{blockSpan}</div>
+          <div>{BlockComponent}</div>
         </Tooltip.Trigger>
         <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.startBlockTime', { date, time })}</Tooltip.Content>
       </Tooltip>
