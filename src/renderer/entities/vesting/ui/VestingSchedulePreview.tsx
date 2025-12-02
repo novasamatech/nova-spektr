@@ -333,23 +333,41 @@ const StartingBlock = memo(
     startingBlock: string;
   }) => {
     const { t } = useI18n();
-    const startingBlockHeight = pjsSchema.helpers.toBlockHeight(Number(startingBlock));
+
+    const blockNum = Number(startingBlock);
+    const startingBlockHeight = blockNum > 0 ? pjsSchema.helpers.toBlockHeight(blockNum) : null;
+
     const { data: blockTime } = useBlockTimestamp({
       api: timelineApi,
       blockHeight: startingBlockHeight,
     });
 
-    const date = nonNullable(blockTime) ? format(blockTime, 'dd.MM.yyyy') : null;
-    const time = nonNullable(blockTime) ? format(blockTime, 'H:mm') : null;
+    let date: string | null = null;
+    let time: string | null = null;
+
+    try {
+      if (nonNullable(blockTime)) {
+        date = format(blockTime, 'dd.MM.yyyy');
+        time = format(blockTime, 'H:mm');
+      }
+    } catch {
+      // format failed, leave date/time as null
+    }
+
+    const BlockComponent = (
+      <span className={cnTw('shrink-0 border-b border-filter-border text-body', STATUS_TEXT_COLORS[status])}>
+        {NUM_FORMATTER.format(BigInt(startingBlock))}
+      </span>
+    );
+
+    if (!date || !time) {
+      return BlockComponent;
+    }
 
     return (
       <Tooltip>
         <Tooltip.Trigger>
-          <div>
-            <span className={cnTw('shrink-0 border-b border-filter-border text-body', STATUS_TEXT_COLORS[status])}>
-              {NUM_FORMATTER.format(BigInt(startingBlock))}
-            </span>
-          </div>
+          <div>{BlockComponent}</div>
         </Tooltip.Trigger>
         <Tooltip.Content>{t('vestedTransfer.parsedFile.table.hints.startBlockTime', { date, time })}</Tooltip.Content>
       </Tooltip>
