@@ -131,6 +131,7 @@ const UploadCSV = () => {
 
   const chain = useUnit(formModel.$chain);
   const asset = useUnit(formModel.$asset);
+  const fileName = useUnit(formModel.$fileName);
   const parsedCsv = useUnit(formModel.$parsedCsv);
   const csvError = useUnit(formModel.$csvError);
   const csvIssues = useUnit(formModel.$csvIssues);
@@ -191,6 +192,7 @@ const UploadCSV = () => {
       <InputFile
         key={chain?.chainId}
         accept=".csv"
+        defaultFileName={fileName ?? undefined}
         placeholder={t('vestedTransfer.form.fields.csvFile.placeholder')}
         invalid={hasError}
         onChange={(file) => formModel.fileUploaded(file)}

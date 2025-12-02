@@ -231,6 +231,7 @@ sample({
 });
 
 const fileUploaded = createEvent<File>();
+const $fileName = createStore<string | null>(null);
 const $parsedCsv = createStore<VestingScheduleRaw[] | null>(null).reset(flowStarted);
 const $csvError = createStore<VestingCsvError | null>(null).reset(flowStarted);
 const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(flowStarted);
@@ -294,6 +295,12 @@ const validateFileFx = attach({
     } satisfies ValidateFileParams;
   },
   effect: rootValidateFileFx,
+});
+
+sample({
+  clock: fileUploaded,
+  fn: (file: File) => file.name,
+  target: $fileName,
 });
 
 sample({
@@ -403,6 +410,7 @@ sample({
     form.fields.signatory.resetError,
     form.fields.vestingSchedule.resetError,
     form.fields.vestingSchedule.reset,
+    $fileName.reinit,
     $parsedCsv.reinit,
     $csvError.reinit,
     $csvIssues.reinit,
@@ -517,6 +525,7 @@ export const formModel = {
   $txErrors,
   $asset,
   $amount,
+  $fileName,
   $parsedCsv,
   $csvError,
   $csvIssues,
