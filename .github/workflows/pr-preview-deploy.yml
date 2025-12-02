@@ -44,8 +44,8 @@ jobs:
 
       - name: 🏗️ Build renderer (staging)
         env:
-          CHAINS_FILE: chains
-          TOKENS_FILE: tokens
+          CHAINS_FILE: chains_dev
+          TOKENS_FILE: tokens_dev
         run: |
           pnpm clean:build
           pnpm renderer:staging
