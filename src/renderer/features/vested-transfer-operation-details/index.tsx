@@ -7,12 +7,18 @@ import { nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
 import { TransactionTitle, findCoreBatchAll, findCoreTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
+import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
 
+import { TransactionAmount } from './components/TransactionAmount';
 import { VestedTransferOperationDetails } from './components/VestedTransferOperationDetails';
 import { VestedTransferOperationTitle } from './components/VestedTransferOperationTitle';
 
 export const vestedTransferOperationDetailFeature = createFeature({
   name: 'vested-transfer/operation-details',
+});
+
+vestedTransferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
+  return <TransactionAmount operation={operation} />;
 });
 
 const getOperationTitle = (transactionType: TransactionType): string | undefined => {
