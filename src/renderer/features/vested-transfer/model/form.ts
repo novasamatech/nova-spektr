@@ -231,10 +231,11 @@ sample({
 });
 
 const fileUploaded = createEvent<File>();
-const $fileName = createStore<string | null>(null);
-const $parsedCsv = createStore<VestingScheduleRaw[] | null>(null).reset(flowStarted);
-const $csvError = createStore<VestingCsvError | null>(null).reset(flowStarted);
-const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(flowStarted);
+const csvReset = [flowStarted, fileUploaded, form.fields.chain.change];
+const $fileName = createStore<string | null>(null).reset(csvReset);
+const $parsedCsv = createStore<VestingScheduleRaw[] | null>(null).reset(csvReset);
+const $csvError = createStore<VestingCsvError | null>(null).reset(csvReset);
+const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(csvReset);
 
 const parseFileFx = createEffect<File, VestingScheduleRaw[]>(async (file) => {
   const parsed = await vestedTransferUtils.parseCSV(file);
@@ -410,11 +411,6 @@ sample({
     form.fields.signatory.resetError,
     form.fields.vestingSchedule.resetError,
     form.fields.vestingSchedule.reset,
-    $fileName.reinit,
-    $parsedCsv.reinit,
-    $csvError.reinit,
-    $csvIssues.reinit,
-    $fee.reinit,
   ],
 });
 
