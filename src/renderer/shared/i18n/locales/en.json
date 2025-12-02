@@ -1640,7 +1640,20 @@
       "viewOperation": "View operation"
     },
     "noNotificationsDescription": "You don't have notifications yet",
+    "noNotificationsFiltered": "No notifications match your filters",
     "searchPlaceholder": "Search by wallet or event type",
+    "settings": {
+      "eventOperationCreated": "Operation created",
+      "eventOperationExecuted": "Operation executed",
+      "eventOperationRejected": "Operation rejected",
+      "eventWalletCreated": "Wallet created",
+      "events": "Events",
+      "source": "Show notification from",
+      "sourceAll": "All",
+      "sourceOperations": "Operations",
+      "sourcePlaceholder": "Select source",
+      "sourceWallets": "Wallets"
+    },
     "title": "Notifications"
   },
   "onboarding": {

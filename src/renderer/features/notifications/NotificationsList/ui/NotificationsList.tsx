@@ -1,6 +1,7 @@
 import { useUnit } from 'effector-react';
 
 import { FootnoteText } from '@/shared/ui';
+import { AsyncItem } from '@/shared/ui-kit';
 import { notificationListModel } from '../model/notification-list-model';
 
 import { NotificationRow } from './NotificationRow';
@@ -19,7 +20,9 @@ export const NotificationsList = () => {
           <FootnoteText className="ml-2 flex h-8 items-center text-text-tertiary">{date}</FootnoteText>
           <ul className="flex flex-col gap-y-1.5">
             {notifications.map((notification) => (
-              <NotificationRow key={notification.id} notification={notification} />
+              <AsyncItem key={notification.id}>
+                <NotificationRow notification={notification} />
+              </AsyncItem>
             ))}
           </ul>
         </section>
