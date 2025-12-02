@@ -3,7 +3,7 @@ name: Build and push Docker images
 on:
   push:
     branches:
-      - dev
+      - main
     tags:
       - 'v*'
   pull_request:
@@ -46,8 +46,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-      - name: Set image label for the dev branch
-        if: ${{ github.ref_type == 'branch' && github.ref_name == 'dev' }}
+      - name: Set image label for the main branch
+        if: ${{ github.ref_type == 'branch' && github.ref_name == 'main' }}
         run: |
           echo "IMAGE_LABEL=latest" >> "$GITHUB_ENV"
           echo "BUILD_TYPE=development" >> "$GITHUB_ENV"
@@ -56,7 +56,7 @@ jobs:
         run: |
           echo "IMAGE_LABEL=stage" >> "$GITHUB_ENV"
       - name: Set image label for a tag or other branches
-        if: ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name != 'dev' && github.event_name != 'pull_request') }}
+        if: ${{ github.ref_type == 'tag' || (github.ref_type == 'branch' && github.ref_name != 'main' && github.event_name != 'pull_request') }}
         run: |
           echo "IMAGE_LABEL=${{ github.ref_name }}" >> "$GITHUB_ENV"
       - name: Set full name of the Docker image

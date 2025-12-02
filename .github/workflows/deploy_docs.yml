@@ -2,7 +2,7 @@ name: Deploy documentation to bucket
 on:
   push:
     branches:
-      - dev
+      - main
 
 concurrency:
   group: "docs-deploy"

@@ -2,7 +2,7 @@ name: Deploy storybook to bucket
 on:
   push:
     branches:
-      - dev
+      - main
 
 concurrency:
   group: "storybook-deploy"

@@ -10,7 +10,7 @@
 
 ![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/stepanLav/77132f25d05c7e9264cd410aef162a7e/raw/jest-coverage-main.json)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/novasamatech/nova-spektr)](https://github.com/novasamatech/nova-spektr/releases)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/novasamatech/nova-spektr/blob/dev/LICENSE.md)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/novasamatech/nova-spektr/blob/main/LICENSE.md)
 <br />
 [![Twitter URL](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com)](https://twitter.com/NovaSpektr)
 [![Telegram](https://img.shields.io/badge/Telegram-gray?logo=telegram)](https://t.me/NovaSpektr)
@@ -162,7 +162,7 @@ Sharing logs when you're contacting the support will speed up the problem fix.
 # Contributing
 
 Contributing guide is described in the
-[CONTRIBUTING.md](https://github.com/novasamatech/nova-spektr/blob/dev/CONTRIBUTING.md)
+[CONTRIBUTING.md](https://github.com/novasamatech/nova-spektr/blob/main/CONTRIBUTING.md)
 
 # Support
 
