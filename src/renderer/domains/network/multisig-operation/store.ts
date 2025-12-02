@@ -173,6 +173,7 @@ deriveFromResources({
   },
 });
 
+// write from store
 sample({
   clock: populateFx.doneData,
   target: [$list, $previousList],
