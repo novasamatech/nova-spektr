@@ -104,3 +104,30 @@ export const CHAIN_ID_TO_SPELL_NAME_MAP: Record<ChainId, string> = {
   '0xefb56e30d9b4a24099f88820987d0f45fb645992416535d87650d98e00f46fc4': 'CoretimePolkadot',
   '0x638cd2b9af4b3bb54b8c1f0d22711fc89924ca93300f0caf25a580432b29d050': 'CoretimeKusama',
 };
+
+export type DestinationBlacklistEntry = {
+  source?: string | null;
+  destination?: string | null;
+};
+
+export const DESTINATION_BLACKLIST: DestinationBlacklistEntry[] = [
+  {
+    source: 'AssetHubKusama',
+    destination: 'Polkadot',
+  },
+  {
+    destination: 'IntegriteePolkadot',
+  },
+  {
+    destination: 'Interlay',
+  },
+  {
+    destination: 'Pendulum',
+  },
+  {
+    destination: 'Phala',
+  },
+  {
+    destination: 'KiltSpiritnet',
+  },
+];

@@ -4,7 +4,13 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN } from '@polkadot/util';
 
 import { type Asset, AssetType, type Chain, type ChainId } from '@/shared/core';
-import { CHAIN_ID_TO_SPELL_NAME_MAP, isEthereumAccountId, toAddress } from '@/shared/lib/utils';
+import {
+  CHAIN_ID_TO_SPELL_NAME_MAP,
+  DESTINATION_BLACKLIST,
+  isEthereumAccountId,
+  nonNullable,
+  toAddress,
+} from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 type XcmTransferParams = {
@@ -83,6 +89,27 @@ type DetectHopChainsResult = {
   hopApiOverrides: Record<string, ApiPromise>;
   dryRunResult: DryRunResult;
 };
+
+function isRouteBlacklisted(sourceChainName: string, destinationChainName: string): boolean {
+  return DESTINATION_BLACKLIST.some((entry) => {
+    const hasSource = nonNullable(entry.source);
+    const hasDestination = nonNullable(entry.destination);
+
+    if (hasSource && hasDestination) {
+      return entry.source === sourceChainName && entry.destination === destinationChainName;
+    }
+
+    if (hasSource) {
+      return entry.source === sourceChainName;
+    }
+
+    if (hasDestination) {
+      return entry.destination === destinationChainName;
+    }
+
+    return false;
+  });
+}
 
 function getSpellChainName(chain: Chain): string | null {
   return CHAIN_ID_TO_SPELL_NAME_MAP[chain.chainId] ?? null;
@@ -453,7 +480,7 @@ async function buildTransfer(params: XcmTransferParams): Promise<XcmTransferResu
   };
 }
 
-async function getAvailableTransfers(fromChain: Chain, asset: Asset): Promise<string[]> {
+function getAvailableTransfers(fromChain: Chain, asset: Asset): string[] {
   const fromChainName = getSpellChainName(fromChain);
   if (!fromChainName) {
     return [];
@@ -462,7 +489,11 @@ async function getAvailableTransfers(fromChain: Chain, asset: Asset): Promise<st
   try {
     const currencyInput = createCurrencyInput(asset, '0');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return getSupportedDestinations(fromChainName as any, currencyInput);
+    const allDestinations = getSupportedDestinations(fromChainName as any, currencyInput);
+    const filteredDestinations = allDestinations.filter((destinationChainName) => {
+      return !isRouteBlacklisted(fromChainName, destinationChainName);
+    });
+    return filteredDestinations;
   } catch {
     return [];
   }
