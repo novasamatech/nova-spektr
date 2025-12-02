@@ -1,16 +1,18 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type Weight } from '@polkadot/types/interfaces';
+import { BN_ZERO } from '@polkadot/util';
 import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
 import { type Chain } from '@/shared/core';
+import { createStoreFromEffect } from '@/shared/effector';
 import { getNativeAsset, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
-  createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
+  getActionRequiredAmount,
 } from '@/shared/transactions';
 import {
   type AnyAccount,
@@ -188,11 +190,6 @@ const $extrinsic = combine($api, $tx, (api, tx) => {
   return getExtrinsic[tx.type](tx.args, api);
 });
 
-const { $multisigDeposit, $pending: $isDepositLoading } = createMultisigDeposit({
-  $api: $api,
-  $threshold: operationsContextModel.$multisigAccount.map(account => account?.threshold ?? null),
-});
-
 const $signingPayloads = combine(
   {
     api: $api,
@@ -215,7 +212,7 @@ const $signingPayloads = combine(
 );
 
 const validator = createTxValidator();
-const { $errors, $valid } = createTxValidationStore({
+const { $errors, $valid, $balanceValidationResults } = createTxValidationStore({
   validator,
   params: {
     api: $api,
@@ -223,6 +220,15 @@ const { $errors, $valid } = createTxValidationStore({
     balances: balanceModel.$balanceMap,
     route: $route,
     transaction: $tx,
+  },
+});
+
+const { $: $multisigDeposit, $pending: $isDepositLoading } = createStoreFromEffect({
+  defaultValue: BN_ZERO,
+  params: { results: $balanceValidationResults },
+  fn: ({ results }) => {
+    const actions = getActionRequiredAmount(results, 'multisig deposit');
+    return actions.reduce((deposit, action) => deposit.add(action.required), BN_ZERO);
   },
 });
 
