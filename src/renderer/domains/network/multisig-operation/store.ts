@@ -106,7 +106,7 @@ const createOperationNotification = (
 ): NoID<MultisigOperationNotification> => ({
   type: NotificationType.MULTISIG_OPERATION,
   read: false,
-  dateCreated: status === 'created' ? operation.timestamp || Date.now() : Date.now(),
+  dateCreated: operation.timestamp ?? Date.now(),
   multisigAccountId: operation.accountId,
   callHash: operation.callHash,
   callTimepoint: {
@@ -239,5 +239,6 @@ export const multisigOperation = {
   __test: {
     $list,
     $populated,
+    $previousList,
   },
 };
