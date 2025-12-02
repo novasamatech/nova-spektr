@@ -169,18 +169,24 @@ sample({
   }),
 });
 
-sample({
-  clock: renameWalletFx.doneData,
-  fn: (updatedWallet) => ({
-    walletId: updatedWallet.id,
-    data: updatedWallet,
-  }),
-  target: walletModel.events.updateWallet,
-});
+const $renamedWallet = restore(renameWalletFx.doneData, null);
 
 sample({
   clock: renameWalletFx.doneData,
   target: syncContactsOnWalletRenameFx,
+});
+
+sample({
+  clock: syncContactsOnWalletRenameFx.done,
+  source: $renamedWallet,
+  filter: Boolean,
+  fn: (wallet) => {
+    return {
+      walletId: wallet.id,
+      data: wallet,
+    };
+  },
+  target: walletModel.events.updateWallet,
 });
 
 sample({
