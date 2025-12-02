@@ -333,7 +333,10 @@ const StartingBlock = memo(
     startingBlock: string;
   }) => {
     const { t } = useI18n();
-    const startingBlockHeight = pjsSchema.helpers.toBlockHeight(Number(startingBlock));
+
+    const blockNum = Number(startingBlock);
+    const startingBlockHeight = blockNum > 0 ? pjsSchema.helpers.toBlockHeight(blockNum) : null;
+
     const { data: blockTime } = useBlockTimestamp({
       api: timelineApi,
       blockHeight: startingBlockHeight,
