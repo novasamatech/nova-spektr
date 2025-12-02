@@ -69,24 +69,12 @@ export const getExtrinsic: Record<
   ) => api.tx.multisig.approveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight),
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
     api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
-  [TransactionType.XCM_LIMITED_TRANSFER]: ({ spellExtrinsic }) => {
-    return spellExtrinsic as SubmittableExtrinsic<'promise'>;
-  },
-  [TransactionType.XCM_TELEPORT]: ({ spellExtrinsic }) => {
-    return spellExtrinsic as SubmittableExtrinsic<'promise'>;
-  },
-  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: ({ spellExtrinsic }) => {
-    return spellExtrinsic as SubmittableExtrinsic<'promise'>;
-  },
-  [TransactionType.POLKADOT_XCM_TELEPORT]: ({ spellExtrinsic }) => {
-    return spellExtrinsic as SubmittableExtrinsic<'promise'>;
-  },
-  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: ({ spellExtrinsic }) => {
-    return spellExtrinsic as SubmittableExtrinsic<'promise'>;
-  },
-  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ spellExtrinsic }) => {
-    return spellExtrinsic as SubmittableExtrinsic<'promise'>;
-  },
+  [TransactionType.XCM_LIMITED_TRANSFER]: handleXcmTransaction,
+  [TransactionType.XCM_TELEPORT]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_TELEPORT]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: handleXcmTransaction,
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: handleXcmTransaction,
   // controller arg removed from bond but changes not released yet
   // https://github.com/paritytech/substrate/pull/14039
   [TransactionType.BOND]: ({ controller, value, payee }, api) =>
@@ -189,6 +177,10 @@ export const getExtrinsic: Record<
     return beneficiary ? api.tx[`${pallet}Salary`].payoutOther(beneficiary) : api.tx[`${pallet}Salary`].payout();
   },
 };
+
+function handleXcmTransaction(args: Record<string, any>, _api: ApiPromise) {
+  return args.spellExtrinsic as SubmittableExtrinsic<'promise'>;
+}
 
 type WrapAsMultiParams<T extends Transaction = Transaction> = {
   api: ApiPromise;
