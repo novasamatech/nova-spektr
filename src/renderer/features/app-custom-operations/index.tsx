@@ -7,6 +7,6 @@ export { customOperationsSlot } from './ui/CustomOperations';
 export { appCustomOperationsFeature };
 
 appCustomOperationsFeature.inject(navigationCustomOperationsSlot, {
-  order: 1000,
+  order: 0,
   render: () => <CustomOperations />,
 });

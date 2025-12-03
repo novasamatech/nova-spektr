@@ -6,6 +6,6 @@ import { CallDataSubmit } from './ui/CallDataSubmitModal';
 export { callDataExecuteFeature };
 
 callDataExecuteFeature.inject(customOperationsSlot, {
-  order: 1,
+  order: 0,
   render: () => <CallDataSubmit />,
 });

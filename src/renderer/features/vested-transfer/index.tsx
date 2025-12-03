@@ -6,6 +6,6 @@ import { vestedTransferFeature } from './model/feature';
 export { vestedTransferFeature };
 
 vestedTransferFeature.inject(customOperationsSlot, {
-  order: 2,
+  order: 1,
   render: () => <VestedTransferModal />,
 });
