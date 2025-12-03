@@ -13,7 +13,7 @@ import { EvidencePostModal } from './EvidencePostModal';
 import { IPFSUploadModal } from './IPFSUploadModal';
 import { MarkdownPreviewModal } from './MarkdownPreviewModal';
 import { SubmitEvidenceFromScratch } from './SubmitEvidenceFromScratch';
-import { SubmitPeriodWarningAlert } from './SubmitPeriodWarningAlert';
+import { EvidenceWarningAlerts } from './alerts/EvidenceWarningAlerts';
 
 type Props = PropsWithChildren<{
   wish: 'Promotion' | 'Retention';
@@ -112,20 +112,20 @@ export const SubmitEvidencePopover = ({ wish, children }: Props) => {
         <Popover.Trigger>{childWithIcon}</Popover.Trigger>
         <Popover.Content>
           <Box padding={[1, 1]} gap={1}>
-            <SubmitPeriodWarningAlert wish={wish} onConfirm={handleFromScratch}>
+            <EvidenceWarningAlerts wish={wish} onConfirm={handleFromScratch}>
               <div className="cursor-pointer rounded px-3 py-2 hover:bg-action-background-hover">
                 <FootnoteText className="text-text-secondary">
                   {t('fellowship.salary.evidence.submitOptions.fromScratch')}
                 </FootnoteText>
               </div>
-            </SubmitPeriodWarningAlert>
-            <SubmitPeriodWarningAlert wish={wish} onConfirm={handleUploadFromIPFS}>
+            </EvidenceWarningAlerts>
+            <EvidenceWarningAlerts wish={wish} onConfirm={handleUploadFromIPFS}>
               <div className="cursor-pointer rounded px-3 py-2 hover:bg-action-background-hover">
                 <FootnoteText className="text-text-secondary">
                   {t('fellowship.salary.evidence.submitOptions.uploadFromIPFS')}
                 </FootnoteText>
               </div>
-            </SubmitPeriodWarningAlert>
+            </EvidenceWarningAlerts>
           </Box>
         </Popover.Content>
       </Popover>
