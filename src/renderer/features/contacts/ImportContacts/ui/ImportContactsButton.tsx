@@ -10,7 +10,7 @@ import { ImportConflictsModal } from './ImportConflictsModal';
 
 const LOADING_TOAST_DELAY = 500;
 
-const LINK = 'https://polkadot.js.org';
+const LINK = 'https://docs.novaspektr.io/address-book/import';
 
 export const ImportContactsButton = () => {
   const { t } = useI18n();
@@ -57,7 +57,7 @@ export const ImportContactsButton = () => {
         <span>{t('addressBook.importContacts.errors.description')}</span>
 
         <InfoLink withLinkIcon url="https://docs.novaspektr.io/address-book/import">
-          {t('addressBook.importContacts.errors.wikiLink')}
+          {t('addressBook.importContacts.wikiLink')}
         </InfoLink>
       </div>
     );
@@ -109,18 +109,18 @@ export const ImportContactsButton = () => {
           </Button>
         </Tooltip.Trigger>
         <Tooltip.Content>
-          <span>
-            {t('addressBook.importContacts.tooltip')}
-            <br />
+          <div className="flex flex-col gap-1">
+            <span>{t('addressBook.importContacts.tooltip')}</span>
             <a
-              href="https://polkadot.js.org/apps/#/addresses"
+              href={LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="pointer-events-auto cursor-pointer underline hover:text-gray-200"
+              className="pointer-events-auto inline-flex cursor-pointer items-center gap-1 underline hover:text-gray-200"
             >
-              {LINK}
+              {t('addressBook.importContacts.wikiLink')}
+              <Icon name="link" size={12} className="text-inherit" />
             </a>
-          </span>
+          </div>
         </Tooltip.Content>
       </Tooltip>
 

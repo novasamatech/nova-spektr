@@ -82,12 +82,12 @@
         "description": "Certain contacts don't match required format. Check guidelines on Wiki, update your file, and try uploading again.",
         "emptyList": "File has no accounts to import",
         "fileTooLarge": "File is too large. Maximum file size is 1MB",
-        "title": "Import failed",
-        "wikiLink": "Wiki guidelines"
+        "title": "Import failed"
       },
       "loading": "Importing contacts...",
       "success": "Contacts imported",
-      "tooltip": "Import JSON file exported from"
+      "tooltip": "Import address book from JSON file:",
+      "wikiLink": "Wiki guidelines"
     },
     "removeConfirm": {
       "cancelButton": "Cancel",
