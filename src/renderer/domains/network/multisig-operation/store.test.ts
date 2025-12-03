@@ -50,7 +50,10 @@ describe('domains/network/multisig-operation/store - notifications', () => {
       });
 
     const scope = fork({
-      values: new Map().set(multisigOperation.__test.$list, []).set(notificationModel.$notifications, []),
+      values: new Map()
+        .set(multisigOperation.__test.$list, [])
+        .set(multisigOperation.__test.$populated, true)
+        .set(notificationModel.$notifications, []),
     });
 
     await allSettled(multisigOperation.addOperations, { scope, params: [mockOperation] });
@@ -91,6 +94,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
       values: new Map()
         .set(multisigOperation.__test.$list, [initialOperation])
         .set(multisigOperation.__test.$previousList, [initialOperation])
+        .set(multisigOperation.__test.$populated, true)
         .set(notificationModel.$notifications, []),
     });
 
@@ -124,6 +128,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
       values: new Map()
         .set(multisigOperation.__test.$list, [initialOperation])
         .set(multisigOperation.__test.$previousList, [initialOperation])
+        .set(multisigOperation.__test.$populated, true)
         .set(notificationModel.$notifications, []),
     });
 
@@ -157,6 +162,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
       values: new Map()
         .set(multisigOperation.__test.$list, [initialOperation])
         .set(multisigOperation.__test.$previousList, [initialOperation])
+        .set(multisigOperation.__test.$populated, true)
         .set(notificationModel.$notifications, []),
     });
 
@@ -184,6 +190,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
       values: new Map()
         .set(multisigOperation.__test.$list, [initialOperation])
         .set(multisigOperation.__test.$previousList, [initialOperation])
+        .set(multisigOperation.__test.$populated, true)
         .set(notificationModel.$notifications, []),
     });
 
@@ -205,6 +212,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
       values: new Map()
         .set(multisigOperation.__test.$list, [initialOperation])
         .set(multisigOperation.__test.$previousList, [initialOperation])
+        .set(multisigOperation.__test.$populated, true)
         .set(notificationModel.$notifications, []),
     });
 
@@ -231,7 +239,10 @@ describe('domains/network/multisig-operation/store - notifications', () => {
       });
 
     const scope = fork({
-      values: new Map().set(multisigOperation.__test.$list, []).set(notificationModel.$notifications, []),
+      values: new Map()
+        .set(multisigOperation.__test.$list, [])
+        .set(multisigOperation.__test.$populated, true)
+        .set(notificationModel.$notifications, []),
     });
 
     await allSettled(multisigOperation.addOperations, { scope, params: [mockOperation1, mockOperation2] });
@@ -263,6 +274,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
       values: new Map()
         .set(multisigOperation.__test.$list, [existingOperation])
         .set(multisigOperation.__test.$previousList, [existingOperation])
+        .set(multisigOperation.__test.$populated, true)
         .set(notificationModel.$notifications, []),
     });
 
