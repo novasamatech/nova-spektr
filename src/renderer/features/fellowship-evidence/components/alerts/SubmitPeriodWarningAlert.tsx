@@ -7,7 +7,7 @@ import { nullable } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { ConfirmModal } from '@/shared/ui-kit';
 import { useRetentionPeriodDates } from '@/aggregates/fellowship-retention';
-import { PROMOTION_WARNING_THRESHOLD_DAYS, RETENTION_WARNING_THRESHOLD_DAYS } from '../constants';
+import { PROMOTION_WARNING_THRESHOLD_DAYS, RETENTION_WARNING_THRESHOLD_DAYS } from '../../constants';
 
 type RadixIntegration = Pick<
   HTMLAttributes<Element>,

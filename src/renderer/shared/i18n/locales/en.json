@@ -891,6 +891,12 @@
           "step2": "Review and submit",
           "title": "Preview Evidence"
         },
+        "promotionEvidenceExistsWarning": {
+          "cancel": "Cancel",
+          "description": "Promotion evidence already submitted. Submitting retention report will replace it.\n\nAt the end of the retention period, retention report must be submitted to avoid being bumped.",
+          "submit": "Submit",
+          "title": "Are you sure you want to submit retention report?"
+        },
         "promotionPeriodWarning": {
           "cancel": "Cancel",
           "description": "It is recommended to prioritize submitting the retention report before submitting promotion evidence to avoid being bumped.",
