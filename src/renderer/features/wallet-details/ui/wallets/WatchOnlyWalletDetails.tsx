@@ -68,7 +68,7 @@ export const WatchOnlyWalletDetails = ({ wallet, onClose }: Props) => {
     <Modal size="mdlg" height="full" isOpen={isModalOpen} onToggle={closeModal}>
       <Modal.Title close>{t('walletDetails.common.title')}</Modal.Title>
       <Modal.HeaderContent>
-        <div className="mb-4 flex items-center justify-between px-5 pt-4 pb-6">
+        <div className="mb-4 flex justify-between px-5 pt-4 pb-6">
           <Box direction="row" verticalAlign="center" gap={2}>
             <div className="mr-1">
               <WalletAccountIcon

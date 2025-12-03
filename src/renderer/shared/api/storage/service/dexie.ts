@@ -176,6 +176,10 @@ export const exportDb = async () => {
 
 export const importDb = async (blob: Blob) => {
   await importInto(dexie, blob, { acceptVersionDiff: true });
+
+  await dexie.transaction('rw', dexie.accounts2, async (t) => {
+    await addAccountNameType(t);
+  });
 };
 
 export const deleteDb = async () => {
