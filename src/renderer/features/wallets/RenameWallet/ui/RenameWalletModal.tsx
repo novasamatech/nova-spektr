@@ -1,10 +1,11 @@
-import { type FormEvent, type PropsWithChildren, useEffect, useState } from 'react';
+import { type FormEvent, type PropsWithChildren, useEffect, useMemo, useState } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { useForm } from '@/shared/forms/useForm';
 import { useI18n } from '@/shared/i18n';
 import { Button, FootnoteText, InputHint } from '@/shared/ui';
 import { Input, Modal, useNotification } from '@/shared/ui-kit';
+import { useWalletName } from '@/domains/network';
 import { renameWalletModel } from '../model/rename-wallet-model';
 
 type Props = PropsWithChildren<{
@@ -22,6 +23,18 @@ export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
     submit,
     fields: { name },
   } = useForm(renameWalletModel.$walletForm);
+
+  const resolvedWalletName = useWalletName(wallet);
+
+  const displayValue = useMemo(() => {
+    const isEdited = name.value !== wallet.name;
+
+    if (isEdited) {
+      return name.value;
+    }
+
+    return resolvedWalletName ?? name.value ?? '';
+  }, [name.value, resolvedWalletName, wallet.name]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -47,7 +60,7 @@ export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
     if (isOpen) {
       renameWalletModel.formInitiated(wallet);
     }
-  }, [wallet, isOpen]);
+  }, [isOpen]);
 
   useEffect(() => {
     renameWalletModel.callbackChanged({
@@ -75,7 +88,7 @@ export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
               height="sm"
               placeholder={t('walletDetails.common.renameWallet')}
               invalid={name.hasError}
-              value={name.value}
+              value={displayValue}
               onChange={name.onChange}
             />
             <InputHint variant="error" active={name.hasError}>
@@ -84,7 +97,7 @@ export const RenameWalletModal = ({ wallet, onClose, children }: Props) => {
             <FootnoteText className="text-text-tertiary">{t('walletDetails.common.renameWalletWarning')}</FootnoteText>
           </div>
 
-          <Button className="ml-auto" size="sm" type="submit" disabled={name.value.trim() === ''}>
+          <Button className="ml-auto" size="sm" type="submit" disabled={displayValue.trim() === ''}>
             {t('walletDetails.common.renameSaveButton')}
           </Button>
         </form>

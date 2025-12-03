@@ -5,8 +5,7 @@ import { AccountNameType, type Contact, type Wallet } from '@/shared/core';
 import { createForm } from '@/shared/forms/createForm';
 import { type ValidationError } from '@/shared/forms/types';
 import { toAddress } from '@/shared/lib/utils';
-import * as networkDomain from '@/domains/network';
-import { accountService, accounts } from '@/domains/network';
+import { type AnyAccount, accountService, accounts } from '@/domains/network';
 import { contactModel } from '@/entities/contact';
 import { walletModel, walletUtils } from '@/entities/wallet';
 
@@ -58,14 +57,65 @@ const $walletForm = createForm<{ name: string }>({
   validateOn: ['submit'],
 });
 
-const renameWalletFx = createEffect(async ({ id, accounts, ...rest }: Wallet): Promise<Wallet> => {
+const renameWalletFx = createEffect(async ({ id, accounts: walletAccounts, ...rest }: Wallet): Promise<Wallet> => {
   await storageService.wallets.update(id, rest);
-  await networkDomain.accounts.updateAccounts(accounts);
+  await accounts.updateAccounts(walletAccounts);
 
-  return { id, accounts, ...rest };
+  return { id, accounts: walletAccounts, ...rest };
 });
 
-const syncContactsOnWalletRenameFx = attach({
+const syncContactsOnWalletRenameFx = createEffect(
+  async ({
+    wallet,
+    existingContacts,
+    allAccounts,
+  }: {
+    wallet: Wallet;
+    existingContacts: Contact[];
+    allAccounts: AnyAccount[];
+  }) => {
+    const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
+    if (walletAccounts.length === 0) return;
+
+    const existingByAccountId = new Map(existingContacts.map((contact) => [contact.accountId, contact]));
+    const toUpdate: Contact[] = [];
+    const toCreate: Omit<Contact, 'id'>[] = [];
+
+    for (const account of walletAccounts) {
+      const accountId = account.accountId;
+      if (!accountId) continue;
+
+      const existingContact = existingByAccountId.get(accountId);
+
+      if (existingContact) {
+        if (existingContact.name !== wallet.name) {
+          toUpdate.push({
+            ...existingContact,
+            name: wallet.name,
+          });
+        }
+
+        continue;
+      }
+
+      toCreate.push({
+        name: wallet.name,
+        address: toAddress(accountId),
+        accountId,
+      });
+    }
+
+    if (toUpdate.length > 0) {
+      await contactModel.effects.updateContactsFx(toUpdate);
+    }
+
+    if (toCreate.length > 0) {
+      await contactModel.effects.createContactsFx(toCreate);
+    }
+  },
+);
+
+const syncContactsOnWalletRenameAttachedFx = attach({
   source: {
     contacts: contactModel.$contacts,
     accounts: accounts.$list,
@@ -75,56 +125,7 @@ const syncContactsOnWalletRenameFx = attach({
     existingContacts: source.contacts,
     allAccounts: source.accounts,
   }),
-  effect: createEffect(
-    async ({
-      wallet,
-      existingContacts,
-      allAccounts,
-    }: {
-      wallet: Wallet;
-      existingContacts: Contact[];
-      allAccounts: networkDomain.AnyAccount[];
-    }) => {
-      const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
-      if (walletAccounts.length === 0) return;
-
-      const existingByAccountId = new Map(existingContacts.map((contact) => [contact.accountId, contact]));
-      const toUpdate: Contact[] = [];
-      const toCreate: Omit<Contact, 'id'>[] = [];
-
-      for (const account of walletAccounts) {
-        const accountId = account.accountId;
-        if (!accountId) continue;
-
-        const existingContact = existingByAccountId.get(accountId);
-
-        if (existingContact) {
-          if (existingContact.name !== wallet.name) {
-            toUpdate.push({
-              ...existingContact,
-              name: wallet.name,
-            });
-          }
-
-          continue;
-        }
-
-        toCreate.push({
-          name: wallet.name,
-          address: toAddress(accountId),
-          accountId,
-        });
-      }
-
-      if (toUpdate.length > 0) {
-        await contactModel.effects.updateContactsFx(toUpdate);
-      }
-
-      if (toCreate.length > 0) {
-        await contactModel.effects.createContactsFx(toCreate);
-      }
-    },
-  ),
+  effect: syncContactsOnWalletRenameFx,
 });
 
 sample({
@@ -173,11 +174,11 @@ const $renamedWallet = restore(renameWalletFx.doneData, null);
 
 sample({
   clock: renameWalletFx.doneData,
-  target: syncContactsOnWalletRenameFx,
+  target: syncContactsOnWalletRenameAttachedFx,
 });
 
 sample({
-  clock: syncContactsOnWalletRenameFx.done,
+  clock: syncContactsOnWalletRenameAttachedFx.done,
   source: $renamedWallet,
   filter: Boolean,
   fn: (wallet) => {
@@ -190,7 +191,7 @@ sample({
 });
 
 sample({
-  clock: syncContactsOnWalletRenameFx.done,
+  clock: syncContactsOnWalletRenameAttachedFx.done,
   target: attach({
     source: $callbacks,
     effect: (state) => state?.onSubmit(),

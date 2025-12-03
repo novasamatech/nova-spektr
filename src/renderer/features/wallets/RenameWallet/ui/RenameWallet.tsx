@@ -30,7 +30,7 @@ export const RenameWallet = ({ wallet, isOpen, onClose }: Props) => {
     if (isOpen) {
       renameWalletModel.formInitiated(wallet);
     }
-  }, [wallet, isOpen]);
+  }, [isOpen]);
 
   useEffect(() => {
     renameWalletModel.callbackChanged({
