@@ -40,6 +40,7 @@ import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
+import { categorizeXcmError, getHumanReadableFailureReason } from '../lib/transfer-utils';
 import { formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
@@ -630,28 +631,27 @@ const AlertForDryRunError = memo(() => {
     return null;
   }
 
-  const failureReason = buildTransferDryRunResult.failureReason || '';
-  const isTooExpensive =
-    buildTransferDryRunResult.failureReason === 'TooExpensive' ||
-    failureReason.toLowerCase().includes('too low') ||
-    failureReason.toLowerCase().includes('cannot cover fees') ||
-    failureReason.toLowerCase().includes('insufficient');
+  const error = buildTransferDryRunResult.failureReason || '';
+  const errorInfo = categorizeXcmError(error);
+  const isTooExpensive = errorInfo.isTooExpensive;
+  const isFeesNotMet = errorInfo.isFeesNotMet;
+
   const chainName = xcmChain?.name || buildTransferDryRunResult.failureChain;
 
-  let cleanReason = failureReason;
-  if (failureReason.includes('Dry run failed:')) {
-    cleanReason = failureReason.replace('Dry run failed:', '').trim();
-  }
-  if (cleanReason.toLowerCase() === 'dry run failed') {
-    cleanReason = '';
-  }
+  const cleanReason = getHumanReadableFailureReason(error, buildTransferDryRunResult.failureChain);
+
+  const getTitle = () => {
+    if (isTooExpensive) {
+      return t('transfer.dryRunTooExpensive.title');
+    }
+    if (isFeesNotMet) {
+      return t('transfer.dryRunFeesNotMet.title');
+    }
+    return t('transfer.dryRunError.title');
+  };
 
   return (
-    <Alert
-      title={isTooExpensive ? t('transfer.dryRunTooExpensive.title') : t('transfer.dryRunError.title')}
-      variant="error"
-      active
-    >
+    <Alert title={getTitle()} variant="error" active>
       <FootnoteText className="max-w-full break-all text-text-primary">
         {isTooExpensive ? (
           <Trans
@@ -662,6 +662,15 @@ const AlertForDryRunError = memo(() => {
             }}
             components={{
               br: <br />,
+            }}
+          />
+        ) : isFeesNotMet ? (
+          <Trans
+            t={t}
+            i18nKey="transfer.dryRunFeesNotMet.description"
+            values={{
+              reason: cleanReason,
+              chain: chainName,
             }}
           />
         ) : (
@@ -685,13 +694,14 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
   const buildTransferDryRunResult = useUnit(xcmSpellTransferModel.$buildTransferDryRunResult);
   const hasDryRunError = Boolean(buildTransferDryRunResult && !buildTransferDryRunResult.success);
+  const isDisabled = !canSubmit || hasDryRunError;
 
   return (
     <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="transfer-form" type="submit" disabled={!canSubmit || hasDryRunError}>
+      <Button form="transfer-form" type="submit" disabled={isDisabled}>
         {t('transfer.continueButton')}
       </Button>
     </div>

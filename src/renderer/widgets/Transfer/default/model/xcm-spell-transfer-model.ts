@@ -5,6 +5,7 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { debounce } from 'patronum';
 
 import { spellXcmService } from '@/shared/api/xcm/service/spellXcmService';
+import { normalizeXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
 import { type Asset, type Chain, type ChainId, TransactionType } from '@/shared/core';
 import { takeLast } from '@/shared/effector';
 import {
@@ -129,8 +130,11 @@ const detectHopChainsFx = takeLast({
 
       return result;
     } catch (error) {
-      console.error('detectHopChainsFx: error', {
+      console.error('[TransferPath] detectHopChainsFx error', {
+        fromChain: network.chain.name,
+        toChain: xcmChain.name,
         error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       });
       throw error;
     }
@@ -179,8 +183,10 @@ sample({
 type DetectHopChainsResult = {
   hopApiOverrides: Record<string, ApiPromise>;
   dryRunResult: {
-    destination?: { success: boolean; failureReason?: string };
+    destination?: { success: boolean; failureReason?: string; failureSubReason?: string };
     failureChain?: string;
+    failureReason?: string;
+    failureSubReason?: string;
   };
 };
 
@@ -194,10 +200,15 @@ sample({
   target: $hopApiOverrides,
 });
 
-function shouldBlockOnDryRunError(failureReason?: string): boolean {
-  if (!failureReason) return false;
-  const blockingKeywords = ['TooExpensive'];
-  return blockingKeywords.some((keyword) => failureReason.includes(keyword));
+function isPathUnavailableError(error?: string, failureChain?: string): boolean {
+  if (!error) return false;
+  const isFeesNotMet = error === 'FeesNotMet';
+  const isOriginChainFailure = failureChain === 'origin';
+  if (isFeesNotMet && isOriginChainFailure) {
+    return false;
+  }
+  const pathUnavailableKeywords = ['TooExpensive', 'Unsupported', 'Unreachable', 'Barrier'];
+  return pathUnavailableKeywords.some((keyword) => error.includes(keyword));
 }
 
 sample({
@@ -207,15 +218,19 @@ sample({
     if (!result) return null;
     const dryRunResult = result.dryRunResult;
     if (!dryRunResult.destination?.success) {
-      const failureReason = dryRunResult.destination?.failureReason;
-      const shouldBlock = shouldBlockOnDryRunError(failureReason);
-      if (!shouldBlock) {
+      const error = normalizeXcmError(
+        dryRunResult.destination?.failureReason,
+        dryRunResult.destination?.failureSubReason,
+      );
+      const failureChain = dryRunResult.failureChain;
+      const isPathError = isPathUnavailableError(error, failureChain);
+      if (!isPathError) {
         return null;
       }
       return {
         success: false,
-        failureReason,
-        failureChain: dryRunResult.failureChain,
+        failureReason: error,
+        failureChain,
       };
     }
     return null;
@@ -227,8 +242,8 @@ sample({
   clock: detectHopChainsFx.failData,
   fn: (error) => {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    const shouldBlock = shouldBlockOnDryRunError(errorMessage);
-    if (!shouldBlock) {
+    const isPathError = isPathUnavailableError(errorMessage);
+    if (!isPathError) {
       return null;
     }
     return {
@@ -428,16 +443,24 @@ const $transferDirection = combine(
     network: $networkStore,
   },
   ({ xcmChainId, transferDirections, chains, network }) => {
-    if (!xcmChainId || !transferDirections || !network) return undefined;
+    if (!xcmChainId || !transferDirections || !network) {
+      return undefined;
+    }
 
     const selectedChain = chains[xcmChainId];
-    if (!selectedChain) return undefined;
+    if (!selectedChain) {
+      return undefined;
+    }
 
     const selectedChainName = spellXcmService.getSpellChainName(selectedChain);
-    if (!selectedChainName) return undefined;
+    if (!selectedChainName) {
+      return undefined;
+    }
 
     const isAvailable = transferDirections.includes(selectedChainName);
-    if (!isAvailable) return undefined;
+    if (!isAvailable) {
+      return undefined;
+    }
 
     const destinationAsset = selectedChain.assets.find((asset) => asset.symbol === network.asset.symbol);
 
@@ -525,15 +548,23 @@ const buildTransferFx = takeLast({
           return;
         }
 
-        if (dryRunResult && !dryRunResult.destination?.success) {
-          const failureReason = dryRunResult.destination?.failureReason || '';
-          const isDryRunApiUnavailable = failureReason.toLowerCase().includes('dryrunapi is not available');
+        const hasFailureReason = Boolean(dryRunResult?.failureReason);
+        const hasFailureChain = Boolean(dryRunResult?.failureChain);
+        const hasDestinationFailure = dryRunResult?.destination?.success === false;
+
+        if (dryRunResult && (hasFailureReason || hasFailureChain || hasDestinationFailure)) {
+          const error = normalizeXcmError(
+            dryRunResult.failureReason || dryRunResult.destination?.failureReason,
+            dryRunResult.failureSubReason || dryRunResult.destination?.failureSubReason,
+          );
+          const failureChain = dryRunResult.failureChain;
+          const isDryRunApiUnavailable = error.toLowerCase().includes('dryrunapi is not available');
 
           if (!isDryRunApiUnavailable) {
             buildTransferDryRunResult({
               success: false,
-              failureReason,
-              failureChain: dryRunResult.failureChain,
+              failureReason: error,
+              failureChain,
             });
           }
         }
@@ -595,6 +626,12 @@ const $buildTransferParams = combine(
 
 sample({
   clock: [destinationChangedDebounced, rawAmountChangedDebounced],
+  fn: () => null,
+  target: buildTransferDryRunResult,
+});
+
+sample({
+  clock: [destinationChangedDebounced, rawAmountChangedDebounced],
   source: $buildTransferParams,
   filter: (params): params is BuildTransferParams => params !== null,
   target: buildTransferFx,
@@ -602,6 +639,7 @@ sample({
 
 sample({
   clock: buildTransferFx.doneData,
+  fn: (extrinsic) => extrinsic,
   target: $spellExtrinsic,
 });
 

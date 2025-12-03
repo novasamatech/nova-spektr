@@ -8,6 +8,9 @@ import { CHAIN_ID_TO_SPELL_NAME_MAP, isEthereumAccountId, nonNullable, toAddress
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 import { XCM_DESTINATION_BLACKLIST, XCM_DESTINATION_WHITELIST, type XcmDestinationBlacklistEntry } from './constants';
+import { normalizeXcmError } from './xcm-error-utils';
+
+const DISABLE_XCM_BLACKLIST = true;
 
 type XcmTransferParams = {
   fromChain: Chain;
@@ -19,10 +22,7 @@ type XcmTransferParams = {
   fromChainApi: ApiPromise;
   toChainApi: ApiPromise;
   hopApiOverrides?: Record<string, ApiPromise>;
-  onDryRunResult?: (result: {
-    destination?: { success: boolean; failureReason?: string };
-    failureChain?: string;
-  }) => void;
+  onDryRunResult?: (result: DryRunResult) => void;
 };
 
 type XcmFeeParams = {
@@ -60,7 +60,7 @@ type BuilderConfig = {
 
 type DryRunResult = {
   hops?: { chain?: string | unknown }[];
-  destination?: { success: boolean; failureReason?: string };
+  destination?: { success: boolean; failureReason?: string; failureSubReason?: string };
   failureChain?: string;
   failureReason?: string;
   failureSubReason?: string;
@@ -87,6 +87,10 @@ type DetectHopChainsResult = {
 };
 
 function isRouteBlacklisted(sourceChainId: ChainId, destinationChainId: ChainId): boolean {
+  if (DISABLE_XCM_BLACKLIST) {
+    return false;
+  }
+
   return XCM_DESTINATION_BLACKLIST.some((entry: XcmDestinationBlacklistEntry) => {
     const hasSource = nonNullable(entry.sourceChainId);
     const hasDestination = nonNullable(entry.destinationChainId);
@@ -338,8 +342,12 @@ async function detectHopChains(params: DetectHopChainsParams): Promise<DetectHop
     const isFailure = hasDestinationFailure || hasFailureChain || hasFailureReason;
 
     if (isFailure) {
+      const error = normalizeXcmError(
+        dryRunResult.destination?.failureReason,
+        dryRunResult.destination?.failureSubReason,
+      );
       console.warn('detectHopChains: dry run failed', {
-        failureReason: dryRunResult.destination?.failureReason,
+        failureReason: error,
         failureChain: dryRunResult.failureChain,
         hasDestinationFailure,
         hasFailureChain,
@@ -436,12 +444,23 @@ async function buildTransfer(params: XcmTransferParams): Promise<XcmTransferResu
       params.onDryRunResult(dryRunResult);
     }
 
-    if (!dryRunResult.destination?.success) {
-      const failureReason = dryRunResult.destination?.failureReason || 'Dry run failed';
-      const isDryRunApiUnavailable = failureReason.toLowerCase().includes('dryrunapi is not available');
+    const hasFailureReason = Boolean(dryRunResult.failureReason);
+    const hasFailureChain = Boolean(dryRunResult.failureChain);
+    const hasDestinationFailure = dryRunResult.destination?.success === false;
 
-      if (!isDryRunApiUnavailable) {
-        throw new Error(failureReason);
+    if (hasFailureReason || hasFailureChain || hasDestinationFailure) {
+      const error =
+        normalizeXcmError(
+          dryRunResult.failureReason || dryRunResult.destination?.failureReason,
+          dryRunResult.failureSubReason || dryRunResult.destination?.failureSubReason,
+        ) || 'Dry run failed';
+      const isDryRunApiUnavailable = error.toLowerCase().includes('dryrunapi is not available');
+      const isFeesNotMet = error === 'FeesNotMet';
+      const isOriginChainFailure = dryRunResult.failureChain === 'origin';
+      const isLikelyOriginFeesNotMet = isFeesNotMet && isOriginChainFailure;
+
+      if (!isDryRunApiUnavailable && !isLikelyOriginFeesNotMet) {
+        throw new Error(error);
       }
     }
   } catch (dryRunError) {

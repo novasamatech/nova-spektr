@@ -2575,6 +2575,10 @@
       "descriptionWithReason": "The transfer cannot be completed on {chain} chain. {reason}",
       "title": "Transfer path unavailable"
     },
+    "dryRunFeesNotMet": {
+      "description": "The transfer cannot be completed on {chain} chain. {reason}",
+      "title": "Insufficient funds for transfer"
+    },
     "dryRunTooExpensive": {
       "description": "The transfer amount is insufficient to cover execution fees on {chain} chain.<br />Please increase the transfer amount.",
       "title": "Insufficient fees for transfer"

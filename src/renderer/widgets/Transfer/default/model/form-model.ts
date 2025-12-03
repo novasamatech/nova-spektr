@@ -1,5 +1,5 @@
 /* eslint-disable import-x/max-dependencies */
-import { type BN, BN_ZERO } from '@polkadot/util';
+import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { and, debounce, not, or, spread } from 'patronum';
 
@@ -42,6 +42,29 @@ import { transferValidator } from '@/features/operations/OperationsValidation';
 import { type NetworkStore } from '../lib/types';
 
 import { xcmSpellTransferModel } from './xcm-spell-transfer-model';
+
+function normalizeFee(fee: BN | null | undefined): BN {
+  return fee && !fee.isZero() ? fee : BN_ZERO;
+}
+
+function calculateMaxTransferableAmount(
+  availableBalance: BN,
+  originFee: BN | null | undefined,
+  destinationFee: BN | null | undefined,
+): BN {
+  let maxAmount = availableBalance;
+  const normalizedOriginFee = normalizeFee(originFee);
+  const normalizedDestinationFee = normalizeFee(destinationFee);
+
+  if (!normalizedOriginFee.isZero()) {
+    maxAmount = BN.max(BN_ZERO, maxAmount.sub(normalizedOriginFee));
+  }
+  if (!normalizedDestinationFee.isZero()) {
+    maxAmount = BN.max(BN_ZERO, maxAmount.sub(normalizedDestinationFee));
+  }
+
+  return maxAmount;
+}
 
 type FormParams = {
   initiator: AnyAccount | null;
@@ -86,6 +109,16 @@ const $isMaxModeEnabled = createStore(false)
   .on(setMaxMode, (_, update) => update)
   .reset(formInitiated);
 const $inputMode = $isMaxModeEnabled.map((isMaxModeEnabled) => (isMaxModeEnabled ? 'max' : 'regular'));
+
+const maxModeFinalAmountApplied = createEvent();
+const $hasMaxModeFinalAmountBeenApplied = createStore(false)
+  .on(maxModeFinalAmountApplied, () => true)
+  .reset(formInitiated, setMaxMode.filter({ fn: (enabled) => !enabled }));
+
+const $maxModeAvailableBalanceAfterFees = createStore<BN | null>(null).reset(
+  formInitiated,
+  setMaxMode.filter({ fn: (enabled) => !enabled }),
+);
 
 const $isEdSwitchVisible = createStore(false)
   .on(setMaxMode.filter({ fn: (value) => value }), () => true)
@@ -347,7 +380,6 @@ const $coreTx = combine(
     if (!isFormValid || !network || !initiator || !isConnected || !validateAddress(formValues.destination)) {
       return null;
     }
-
     if (isXcm && !xcmData) {
       return null;
     }
@@ -526,12 +558,37 @@ const $availableBalance = combine(
 );
 
 sample({
+  clock: setMaxMode.filter({ fn: (enabled) => enabled }),
   source: {
     balance: $availableBalance,
     balancePreservationStrategy: $balancePreservationStrategy,
   },
-  fn: ({ balance, balancePreservationStrategy }) => {
+  filter: ({ balance }) => nonNullable(balance),
+  fn: ({ balance, balancePreservationStrategy }) =>
+    balanceService.withdrawableAmount(balance!, balancePreservationStrategy),
+  target: $maxModeAvailableBalanceAfterFees,
+});
+
+sample({
+  source: {
+    balance: $availableBalance,
+    balancePreservationStrategy: $balancePreservationStrategy,
+    isMaxModeEnabled: $isMaxModeEnabled,
+    availableBalanceAfterFees: $maxModeAvailableBalanceAfterFees,
+    hasFinalAmountBeenApplied: $hasMaxModeFinalAmountBeenApplied,
+  },
+  fn: ({
+    balance,
+    balancePreservationStrategy,
+    isMaxModeEnabled,
+    availableBalanceAfterFees,
+    hasFinalAmountBeenApplied,
+  }) => {
     if (nullable(balance)) return null;
+
+    if (isMaxModeEnabled && nonNullable(availableBalanceAfterFees) && hasFinalAmountBeenApplied) {
+      return availableBalanceAfterFees;
+    }
 
     return balanceService.withdrawableAmount(balance, balancePreservationStrategy);
   },
@@ -743,6 +800,9 @@ sample({
 
 sample({
   clock: form.fields.amount.change,
+  source: $hasMaxModeFinalAmountBeenApplied,
+  filter: (hasFinalAmountBeenApplied) => !hasFinalAmountBeenApplied,
+  fn: (_, amount) => amount,
   target: xcmSpellTransferModel.events.rawAmountChanged,
 });
 
@@ -752,17 +812,138 @@ sample({
   target: xcmSpellTransferModel.events.initiatorAccountIdChanged,
 });
 
-// Max Mode: update amount field when max mode is enabled and available balance changes
 sample({
-  clock: [$available, setMaxMode.filter({ fn: (enabled) => enabled })],
+  clock: setMaxMode.filter({ fn: (enabled) => enabled }),
+  source: {
+    availableBalance: $available,
+    network: $networkStore,
+    isXcm: $isXcm,
+    originFee: xcmSpellTransferModel.$originFee,
+    destinationFee: xcmSpellTransferModel.$destinationFee,
+    asset: $asset,
+  },
+  filter: ({ availableBalance, network, asset }) =>
+    nonNullable(availableBalance) && nonNullable(network) && nonNullable(asset),
+  fn: ({ availableBalance, isXcm, originFee, destinationFee, asset }) => {
+    if (!isXcm) {
+      return toAssetPrecision(availableBalance!, asset!.precision);
+    }
+    const maxTransferableAmount = calculateMaxTransferableAmount(availableBalance!, originFee, destinationFee);
+    return toAssetPrecision(maxTransferableAmount, asset!.precision);
+  },
+  target: form.fields.amount.change,
+});
+
+sample({
+  clock: $available,
   source: {
     isMaxModeEnabled: $isMaxModeEnabled,
-    available: $available,
     network: $networkStore,
+    currentAmountValue: form.fields.amount.$value,
+    isRegularFeePending: $networkFeePending,
+    isXcm: $isXcm,
+    isXcmFeeLoading: xcmSpellTransferModel.$isDestinationFeeLoading,
+    isValidationPending: $validationPending,
+    hasFinalAmountBeenApplied: $hasMaxModeFinalAmountBeenApplied,
+    originFee: xcmSpellTransferModel.$originFee,
+    destinationFee: xcmSpellTransferModel.$destinationFee,
+    asset: $asset,
   },
-  filter: ({ isMaxModeEnabled, available, network }) =>
-    isMaxModeEnabled && nonNullable(available) && nonNullable(network),
-  fn: ({ available, network }) => toAssetPrecision(available!, network!.asset.precision),
+  filter: (
+    {
+      isMaxModeEnabled,
+      network,
+      currentAmountValue,
+      isRegularFeePending,
+      isXcm,
+      isXcmFeeLoading,
+      isValidationPending,
+      hasFinalAmountBeenApplied,
+      originFee,
+      destinationFee,
+      asset,
+    },
+    availableBalance,
+  ) => {
+    if (!isMaxModeEnabled || nullable(network) || nullable(availableBalance) || nullable(asset)) return false;
+    if (hasFinalAmountBeenApplied) return false;
+    const isAnyFeePending = isXcm ? isXcmFeeLoading : isRegularFeePending;
+    if (isAnyFeePending || isValidationPending) return false;
+    if (!isXcm) {
+      const newAmountValue = toAssetPrecision(availableBalance!, asset!.precision);
+      return currentAmountValue !== newAmountValue;
+    }
+    const maxTransferableAmount = calculateMaxTransferableAmount(availableBalance!, originFee, destinationFee);
+    if (maxTransferableAmount.isZero() && !availableBalance!.isZero()) {
+      return false;
+    }
+    const newAmountValue = toAssetPrecision(maxTransferableAmount, asset!.precision);
+    return currentAmountValue !== newAmountValue;
+  },
+  fn: ({ isXcm, originFee, destinationFee, asset, currentAmountValue }, availableBalance) => {
+    if (!isXcm) {
+      return toAssetPrecision(availableBalance!, asset!.precision);
+    }
+    const maxTransferableAmount = calculateMaxTransferableAmount(availableBalance!, originFee, destinationFee);
+    if (maxTransferableAmount.isZero() && !availableBalance!.isZero()) {
+      return currentAmountValue;
+    }
+    return toAssetPrecision(maxTransferableAmount, asset!.precision);
+  },
+  target: form.fields.amount.change,
+});
+
+const xcmFeesCalculatedForMaxMode = createEvent<{
+  availableBalanceAfterFees: BN;
+  maxTransferableAmountFormatted: string;
+}>();
+
+sample({
+  clock: [xcmSpellTransferModel.$originFee, xcmSpellTransferModel.$destinationFee],
+  source: {
+    isMaxModeEnabled: $isMaxModeEnabled,
+    isXcm: $isXcm,
+    isXcmFeeLoading: xcmSpellTransferModel.$isDestinationFeeLoading,
+    isRegularFeePending: $networkFeePending,
+    balance: $availableBalance,
+    balancePreservationStrategy: $balancePreservationStrategy,
+    network: $networkStore,
+    asset: $asset,
+    originFee: xcmSpellTransferModel.$originFee,
+    destinationFee: xcmSpellTransferModel.$destinationFee,
+  },
+  filter: ({ isMaxModeEnabled, isXcm, isXcmFeeLoading, isRegularFeePending, balance, network, asset }) => {
+    if (!isMaxModeEnabled || !isXcm || nullable(balance) || nullable(network) || nullable(asset)) return false;
+    return !isXcmFeeLoading && !isRegularFeePending;
+  },
+  fn: ({ balance, balancePreservationStrategy, originFee, destinationFee, asset }) => {
+    const availableBalanceAfterFees = balanceService.withdrawableAmount(balance!, balancePreservationStrategy);
+    const maxTransferableAmount = calculateMaxTransferableAmount(availableBalanceAfterFees, originFee, destinationFee);
+
+    return {
+      availableBalanceAfterFees,
+      maxTransferableAmountFormatted: toAssetPrecision(maxTransferableAmount, asset!.precision),
+    };
+  },
+  target: xcmFeesCalculatedForMaxMode,
+});
+
+sample({
+  clock: xcmFeesCalculatedForMaxMode,
+  fn: ({ availableBalanceAfterFees }) => availableBalanceAfterFees,
+  target: $maxModeAvailableBalanceAfterFees,
+});
+
+sample({
+  clock: xcmFeesCalculatedForMaxMode,
+  target: maxModeFinalAmountApplied,
+});
+
+sample({
+  clock: xcmFeesCalculatedForMaxMode,
+  source: $hasMaxModeFinalAmountBeenApplied,
+  filter: (hasFinalAmountBeenApplied) => hasFinalAmountBeenApplied,
+  fn: (_, { maxTransferableAmountFormatted }) => maxTransferableAmountFormatted,
   target: form.fields.amount.change,
 });
 
@@ -783,6 +964,7 @@ const formSubmitFinished = sample({
     destinationFee: xcmSpellTransferModel.$destinationFee,
     multisigDeposit: $multisigDeposit,
     balancePreservation: $balancePreservationStrategy,
+    hasDryRunError: $hasDryRunError,
   },
   fn: (
     {
@@ -798,6 +980,7 @@ const formSubmitFinished = sample({
       originFee,
       destinationFee,
       balancePreservation,
+      hasDryRunError,
     },
     form,
   ) => {
@@ -808,7 +991,8 @@ const formSubmitFinished = sample({
       nullable(fee) ||
       nullable(initiator) ||
       nullable(form.signatory) ||
-      !validateAddress(form.destination)
+      !validateAddress(form.destination) ||
+      hasDryRunError
     ) {
       return null;
     }
