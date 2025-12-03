@@ -21,16 +21,16 @@ import { fetchResource, subscribeEventsResource, subscribeResource } from './res
 import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
 
+const populateFx = createEffect(() =>
+  storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
+);
+
 const $list = createStore<MultisigOperation[]>([]);
 const $previousList = createStore<MultisigOperation[]>([]);
 
 const $populated = restore(
-  once($list.updates).map(() => true),
+  once(populateFx.doneData).map(() => true),
   false,
-);
-
-const populateFx = createEffect(() =>
-  storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
 );
 
 const addOperationsFx = createEffect(async (operations: MultisigOperation[]) => {
@@ -125,7 +125,7 @@ const getNotificationTitle = (operationStatus: 'created' | 'executed' | 'cancell
     case 'executed':
       return 'Multisig operation executed';
     case 'cancelled':
-      return 'Multisig operation cancelled';
+      return 'Multisig operation rejected';
     case 'error':
       return 'Multisig operation error';
   }
@@ -137,7 +137,7 @@ const createOperationNotification = (
 ): NoID<MultisigOperationNotification> => ({
   type: NotificationType.MULTISIG_OPERATION,
   read: false,
-  dateCreated: operation.timestamp ?? Date.now(),
+  dateCreated: Date.now(),
   status: getNotificationStatus(operationStatus),
   issuer: operation.accountId,
   title: getNotificationTitle(operationStatus),
@@ -150,23 +150,26 @@ const createOperationNotification = (
   },
   chainId: operation.chainId,
   operationId: operation.id,
-  operationStatus,
 });
 
 sample({
   clock: $list,
-  source: $previousList,
-  fn: (previousOperations, currentOperations) => {
-    const previousOpsMap = new Map(previousOperations.map(op => [op.id, op]));
+  source: {
+    prevState: $previousList,
+    populated: $populated,
+  },
+  filter: ({ populated }) => populated,
+  fn: ({ prevState }, update) => {
+    const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
     const notifications: NoID<MultisigOperationNotification>[] = [];
 
-    for (const currentOp of currentOperations) {
-      const previousOp = previousOpsMap.get(currentOp.id);
+    for (const item of update) {
+      const previousOp = previousOpsMap.get(item.id);
 
       if (!previousOp) {
-        notifications.push(createOperationNotification(currentOp, 'created'));
-      } else if (previousOp.status !== currentOp.status && currentOp.status !== 'pending') {
-        notifications.push(createOperationNotification(currentOp, currentOp.status));
+        notifications.push(createOperationNotification(item, 'created'));
+      } else if (previousOp.status !== item.status && item.status !== 'pending') {
+        notifications.push(createOperationNotification(item, item.status));
       }
     }
 
@@ -211,7 +214,7 @@ deriveFromResources({
 // write from store
 sample({
   clock: populateFx.doneData,
-  target: [$list, $previousList],
+  target: [$previousList, $list],
 });
 
 sample({

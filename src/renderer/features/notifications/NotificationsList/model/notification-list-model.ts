@@ -12,7 +12,10 @@ import { walletModel } from '@/entities/wallet';
 import { NotificationEvent, NotificationSource, notificationsSettingsModel } from '../../NotificationsSettings';
 
 const queryChanged = createEvent<string>();
-const $query = createStore<string>('').on(queryChanged, (_, query) => query);
+const pageOpened = createEvent();
+const $query = createStore<string>('')
+  .on(queryChanged, (_, query) => query)
+  .reset(pageOpened);
 
 const isWalletNotification = (notification: Notification): boolean => {
   return [
@@ -117,5 +120,6 @@ export const notificationListModel = {
   $notificationGroups,
   events: {
     queryChanged,
+    pageOpened,
   },
 };
