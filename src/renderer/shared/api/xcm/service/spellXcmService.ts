@@ -4,14 +4,10 @@ import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { BN } from '@polkadot/util';
 
 import { type Asset, AssetType, type Chain, type ChainId } from '@/shared/core';
-import {
-  CHAIN_ID_TO_SPELL_NAME_MAP,
-  DESTINATION_BLACKLIST,
-  isEthereumAccountId,
-  nonNullable,
-  toAddress,
-} from '@/shared/lib/utils';
+import { CHAIN_ID_TO_SPELL_NAME_MAP, isEthereumAccountId, nonNullable, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
+
+import { XCM_DESTINATION_BLACKLIST, XCM_DESTINATION_WHITELIST, type XcmDestinationBlacklistEntry } from './constants';
 
 type XcmTransferParams = {
   fromChain: Chain;
@@ -90,24 +86,47 @@ type DetectHopChainsResult = {
   dryRunResult: DryRunResult;
 };
 
-function isRouteBlacklisted(sourceChainName: string, destinationChainName: string): boolean {
-  return DESTINATION_BLACKLIST.some((entry) => {
-    const hasSource = nonNullable(entry.source);
-    const hasDestination = nonNullable(entry.destination);
+function isRouteBlacklisted(sourceChainId: ChainId, destinationChainId: ChainId): boolean {
+  return XCM_DESTINATION_BLACKLIST.some((entry: XcmDestinationBlacklistEntry) => {
+    const hasSource = nonNullable(entry.sourceChainId);
+    const hasDestination = nonNullable(entry.destinationChainId);
 
     if (hasSource && hasDestination) {
-      return entry.source === sourceChainName && entry.destination === destinationChainName;
+      return entry.sourceChainId === sourceChainId && entry.destinationChainId === destinationChainId;
     }
 
     if (hasSource) {
-      return entry.source === sourceChainName;
+      return entry.sourceChainId === sourceChainId;
     }
 
     if (hasDestination) {
-      return entry.destination === destinationChainName;
+      return entry.destinationChainId === destinationChainId;
     }
 
     return false;
+  });
+}
+
+function isRouteWhitelisted(
+  sourceChainId: ChainId,
+  destinationChainId: ChainId,
+  sourceAssetSymbol?: string,
+  destinationAssetSymbol?: string,
+): boolean {
+  return XCM_DESTINATION_WHITELIST.some((entry) => {
+    if (entry.sourceChainId !== sourceChainId || entry.destinationChainId !== destinationChainId) {
+      return false;
+    }
+
+    if (sourceAssetSymbol && entry.sourceAsset && entry.sourceAsset !== sourceAssetSymbol) {
+      return false;
+    }
+
+    if (destinationAssetSymbol && entry.destinationAsset && entry.destinationAsset !== destinationAssetSymbol) {
+      return false;
+    }
+
+    return true;
   });
 }
 
@@ -465,7 +484,16 @@ function getAvailableTransfers(fromChain: Chain, asset: Asset): string[] {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const allDestinations = getSupportedDestinations(fromChainName as any, currencyInput);
     const filteredDestinations = allDestinations.filter((destinationChainName) => {
-      return !isRouteBlacklisted(fromChainName, destinationChainName);
+      const destinationChainId = getChainIdBySpellName(destinationChainName);
+      if (!destinationChainId) {
+        return false;
+      }
+
+      if (isRouteBlacklisted(fromChain.chainId, destinationChainId)) {
+        return false;
+      }
+
+      return isRouteWhitelisted(fromChain.chainId, destinationChainId, asset.symbol);
     });
     return filteredDestinations;
   } catch {
