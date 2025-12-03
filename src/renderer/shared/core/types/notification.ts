@@ -56,7 +56,6 @@ export type MultisigOperationNotification = MultisigBaseNotification & {
   callTimepoint: Timepoint;
   chainId: ChainId;
   operationId: string;
-  operationStatus: 'created' | 'executed' | 'cancelled' | 'error';
 };
 
 export type ProxyAction = BaseNotification & {

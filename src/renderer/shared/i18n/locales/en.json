@@ -1627,16 +1627,17 @@
       "flexibleMultisigEditedTitle": "Flexible multisig has been edited",
       "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
-      "multisigOperationCreatedDescription": "A new operation has been created for <strong>{name}</strong>",
       "multisigOperationDetails": "by <wallet><walletIcon /> <name>{name}</name></wallet> on <chain /> with threshold { threshold } out of { signatories } signatories",
-      "multisigOperationErrorDescription": "An operation has failed for <strong>{name}</strong>",
-      "multisigOperationExecutedDescription": "An operation has been executed for <strong>{name}</strong>",
-      "multisigOperationRejectedDescription": "An operation has been rejected for <strong>{name}</strong>",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
       "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyRemovedTitle": "Delegated authority wallet has been removed",
       "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>",
+      "status": {
+        "created": "created",
+        "executed": "executed",
+        "rejected": "rejected"
+      },
       "viewOperation": "View operation"
     },
     "noNotificationsDescription": "You don't have notifications yet",

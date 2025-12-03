@@ -3,11 +3,11 @@ import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import { type MultisigOperationNotification } from '@/shared/core';
+import { type MultisigOperationNotification, type NotificationStatus } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatBalance } from '@/shared/lib/utils';
-import { BodyText, Button, Icon } from '@/shared/ui';
+import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { accounts, multisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
@@ -20,8 +20,26 @@ type Props = {
   notification: MultisigOperationNotification;
 };
 
+function getOperationStatus(status: NotificationStatus) {
+  switch (status) {
+    case 'error':
+      return 'notifications.details.status.rejected';
+    case 'success':
+      return 'notifications.details.status.executed';
+    case 'info':
+    default:
+      return 'notifications.details.status.created';
+  }
+}
+
+const iconConfig: Record<NotificationStatus, { name: IconNames; className: string }> = {
+  info: { name: 'info' as const, className: 'text-icon-accent' },
+  success: { name: 'checkmarkOutline' as const, className: 'text-icon-positive' },
+  error: { name: 'closeOutline' as const, className: 'text-icon-negative' },
+};
+
 export const MultisigOperationNotificationComponent = ({
-  notification: { callHash, callTimepoint, chainId, multisigAccountId, operationStatus, operationId },
+  notification: { callHash, callTimepoint, chainId, multisigAccountId, status, operationId },
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -88,14 +106,7 @@ export const MultisigOperationNotificationComponent = ({
       </span>
     ) : null;
 
-  const iconConfig = {
-    created: { name: 'info' as const, className: 'text-icon-accent' },
-    executed: { name: 'checkmarkOutline' as const, className: 'text-icon-positive' },
-    cancelled: { name: 'closeOutline' as const, className: 'text-icon-negative' },
-    error: { name: 'closeOutline' as const, className: 'text-icon-negative' },
-  };
-
-  const icon = iconConfig[operationStatus];
+  const icon = iconConfig[status];
 
   return (
     <div className="flex gap-x-2">
@@ -109,6 +120,7 @@ export const MultisigOperationNotificationComponent = ({
             <div className="flex items-center justify-start gap-2">
               <div className="inline">{operationTitle?.name}</div>
               {amountNode}
+              {t(getOperationStatus(status))}
             </div>
           </BodyText>
           <BodyText className="inline-flex flex-wrap items-center gap-y-2 text-text-secondary">

@@ -11,7 +11,10 @@ import { notificationModel } from '@/entities/notification';
 import { walletModel } from '@/entities/wallet';
 
 const queryChanged = createEvent<string>();
-const $query = createStore<string>('').on(queryChanged, (_, query) => query);
+const pageOpened = createEvent();
+const $query = createStore<string>('')
+  .on(queryChanged, (_, query) => query)
+  .reset(pageOpened);
 
 const $notificationGroups = combine(
   {
@@ -63,5 +66,6 @@ export const notificationListModel = {
   $notificationGroups,
   events: {
     queryChanged,
+    pageOpened,
   },
 };

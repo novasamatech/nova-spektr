@@ -4,7 +4,6 @@ import {
   type ChainId,
   type FlexibleMultisigOperationNotification,
   type MultisigCreated,
-  type MultisigOperationNotification,
   type Notification,
   NotificationType,
   type ProxyAction,
@@ -75,62 +74,16 @@ export async function migrateNotificationStructure(t: Transaction): Promise<void
         };
       }
 
-      case NotificationType.MULTISIG_OPERATION: {
-        const n = notification as OldNotification & Partial<MultisigOperationNotification>;
-
-        if (n.operationStatus) {
-          const status =
-            n.operationStatus === 'executed' ? 'success' : n.operationStatus === 'created' ? 'info' : 'error';
-          const title =
-            n.operationStatus === 'created'
-              ? 'Multisig operation created'
-              : n.operationStatus === 'executed'
-                ? 'Multisig operation executed'
-                : n.operationStatus === 'cancelled'
-                  ? 'Multisig operation cancelled'
-                  : 'Multisig operation error';
-
-          return {
-            ...notification,
-            status,
-            issuer: n.issuer,
-            title,
-            chainId: n.chainId,
-          };
-        }
-
-        return {
-          ...notification,
-          status: 'info',
-          issuer: n.issuer,
-          title: 'Multisig operation',
-          chainId: n.chainId,
-        };
-      }
-
-      case NotificationType.PROXY_CREATED: {
-        const n = notification as OldNotification & Partial<ProxyAction>;
-        const description = n.proxyType ? `${n.proxyType} proxy` : undefined;
-
-        return {
-          ...notification,
-          status: 'info',
-          issuer: n.proxyAccountId || ('' as AccountId),
-          title: 'Proxy created',
-          description,
-          chainId: n.chainId,
-        };
-      }
-
+      case NotificationType.PROXY_CREATED:
       case NotificationType.PROXY_REMOVED: {
         const n = notification as OldNotification & Partial<ProxyAction>;
         const description = n.proxyType ? `${n.proxyType} proxy` : undefined;
 
         return {
           ...notification,
-          status: 'error',
+          status: 'info',
           issuer: n.proxyAccountId || ('' as AccountId),
-          title: 'Proxy removed',
+          title: notification.type === NotificationType.PROXY_REMOVED ? 'Proxy removed' : 'Proxy created',
           description,
           chainId: n.chainId,
         };
