@@ -179,7 +179,8 @@ export const useRetentionRequest = () => {
     data:
       retentionState === RetentionWidgetState.WARNING_APPROACHING ||
       retentionState === RetentionWidgetState.WARNING_URGENT ||
-      retentionState === RetentionWidgetState.CRITICAL_LAST_CALL,
+      retentionState === RetentionWidgetState.CRITICAL_LAST_CALL ||
+      retentionState === RetentionWidgetState.CRITICAL_EXPIRED,
     pending,
   };
 };
