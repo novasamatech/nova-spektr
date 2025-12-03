@@ -5,7 +5,6 @@ import { combine, createEffect, createEvent, createStore, restore, sample } from
 import { createGate } from 'effector-react';
 
 import { type Chain } from '@/shared/core';
-import { createStoreFromEffect } from '@/shared/effector';
 import { getNativeAsset, nonNullable, nullable, validateCallData } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
@@ -223,29 +222,25 @@ const { $errors, $valid, $balanceValidationResults } = createTxValidationStore({
   },
 });
 
-const { $: $multisigDeposit, $pending: $isDepositLoading } = createStoreFromEffect({
-  defaultValue: BN_ZERO,
-  params: { results: $balanceValidationResults },
-  fn: ({ results }) => {
-    const actions = getActionRequiredAmount(results, 'multisig deposit');
-    return actions.reduce((deposit, action) => deposit.add(action.required), BN_ZERO);
-  },
+const $multisigDeposit = combine({ results: $balanceValidationResults }, ({ results }) => {
+  const actions = getActionRequiredAmount(results, 'multisig deposit');
+  return actions.reduce((deposit, action) => deposit.add(action.required), BN_ZERO);
 });
 
 const $canSubmit = combine(
   {
     valid: $valid,
     isFeeLoading: $isFeeLoading,
-    isDepositLoading: $isDepositLoading,
     signatory: $signatory,
     isDepositRequired: $isDepositRequired,
+    multisigDeposit: $multisigDeposit,
   },
-  ({ valid, isFeeLoading, isDepositLoading, signatory, isDepositRequired }) => {
+  ({ valid, isFeeLoading, signatory, isDepositRequired, multisigDeposit }) => {
     if (!nonNullable(signatory)) return false;
 
-    const depositPending = isDepositRequired && isDepositLoading;
+    const isDepositReady = !isDepositRequired || !multisigDeposit.isZero();
 
-    return valid && !isFeeLoading && !depositPending;
+    return valid && !isFeeLoading && isDepositReady;
   },
 );
 
@@ -254,7 +249,6 @@ export const approveModel = {
   $transaction: $tx,
   $fee,
   $isFeeLoading,
-  $isDepositLoading,
   $errors,
   $multisigDeposit,
   $isDepositRequired,
