@@ -1,8 +1,6 @@
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
-import { Box } from '@/shared/ui-kit';
-import { ChainTitle, XcmChains } from '@/entities/chain';
+import { AssetBalance } from '@/shared/ui-entities';
 import {
   TransactionTitle,
   findCoreTransaction,
@@ -44,20 +42,9 @@ multisigOperationsSDK(transferOperationDetailFeature, {
       const amount = transaction ? getTransactionAmount(transaction) : null;
 
       return {
-        name: (
-          <TransactionTitle
-            className="flex-1 overflow-hidden"
-            title={t('operations.titles.transfer', { asset: asset?.symbol })}
-          />
-        ),
-        amount:
-          asset && amount ? (
-            <Box width="160px" direction="row" gap={2} verticalAlign="center">
-              <AssetIcon asset={asset} size={32} />
-              <AssetBalance value={amount} asset={asset} />
-            </Box>
-          ) : undefined,
-        chain: <ChainTitle chainId={operation.chainId} className="w-[114px]" />,
+        title: t('operations.titles.transfer', { asset: asset?.symbol }),
+        amount: asset && amount ? { value: amount, asset } : undefined,
+        chainId: operation.chainId,
       };
     }
 
@@ -67,26 +54,10 @@ multisigOperationsSDK(transferOperationDetailFeature, {
       const amount = coreTx ? getTransactionAmount(coreTx) : null;
 
       return {
-        name: (
-          <TransactionTitle
-            className="flex-1 overflow-hidden"
-            title={t('operations.titles.crossChainTransfer', { asset: asset?.symbol })}
-          />
-        ),
-        amount:
-          asset && amount ? (
-            <Box width="160px" direction="row" gap={2} verticalAlign="center">
-              <AssetIcon asset={asset} size={32} />
-              <AssetBalance value={amount} asset={asset} />
-            </Box>
-          ) : undefined,
-        chain: (
-          <XcmChains
-            chainIdFrom={operation.chainId}
-            chainIdTo={transaction?.args.destinationChain}
-            className="w-[114px]"
-          />
-        ),
+        title: t('operations.titles.crossChainTransfer', { asset: asset?.symbol }),
+        amount: asset && amount ? { value: amount, asset } : undefined,
+        chainId: operation.chainId,
+        chainIdTo: transaction?.args.destinationChain,
       };
     }
   },

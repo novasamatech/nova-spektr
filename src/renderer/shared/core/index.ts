@@ -69,6 +69,7 @@ export type {
   FlexibleMultisigOperationNotification,
   MultisigOperationNotification,
   ProxyAction,
+  NotificationStatus,
 } from './types/notification';
 export { NotificationType } from './types/notification';
 

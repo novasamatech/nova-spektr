@@ -32,8 +32,8 @@ import {
   nonNullable,
   nullable,
   toAddress,
-  toShortAddress,
-} from '@/shared/lib/utils';
+  toShortAddress, truncate
+} from "@/shared/lib/utils";
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type AccountIdentity,
@@ -548,7 +548,9 @@ sample({
 
 // notifications
 
-const createNotificationsFromWallets = (wallets: { wallet: { id: number }; accounts: AnyAccount[] }[]) => {
+const createNotificationsFromWallets = (
+  wallets: { wallet: { id: number; name: string }; accounts: AnyAccount[] }[],
+) => {
   const notifications = wallets.flatMap(({ wallet, accounts }) => {
     return accounts.map((account) => {
       if (accountUtils.isMultisigAccount(account)) {
@@ -556,6 +558,11 @@ const createNotificationsFromWallets = (wallets: { wallet: { id: number }; accou
           read: false,
           type: NotificationType.MULTISIG_CREATED,
           dateCreated: Date.now(),
+          status: 'info',
+          issuer: account.accountId,
+          chainId: '0x' as ChainId,
+          title: 'Multisig wallet added',
+          description: `${wallet.name || truncate(account.accountId)} with threshold ${account.threshold} out of ${account.signatories.length}`,
           multisigAccountId: account.accountId,
           multisigAccountName: account.name,
           signatories: account.signatories.map((signatory) => signatory.accountId),
@@ -569,6 +576,11 @@ const createNotificationsFromWallets = (wallets: { wallet: { id: number }; accou
           walletId: wallet.id,
           type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
           dateCreated: Date.now(),
+          status: 'info',
+          issuer: account.accountId,
+          chainId: account.chainId,
+          title: 'Flexible multisig wallet added',
+          description: `${wallet.name || truncate(account.accountId)} with threshold ${account.threshold} out of ${account.signatories.length}`,
           multisigAccountId: account.accountId,
           accountId: account.accountId,
           accountName: account.name,
@@ -588,6 +600,10 @@ const createNotificationsFromWallets = (wallets: { wallet: { id: number }; accou
             proxiedAccountId: account.accountId,
             read: false,
             type: NotificationType.PROXY_CREATED,
+            status: 'info',
+            issuer: connection.proxyAccountId,
+            title: 'Delegated authority wallet added',
+            description: `${connection.proxyType} proxy`,
           } satisfies NoID<ProxyAction>;
         });
       }

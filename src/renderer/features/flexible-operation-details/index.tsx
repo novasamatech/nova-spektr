@@ -1,7 +1,6 @@
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { ChainTitle } from '@/entities/chain';
-import { TransactionTitle, isEditFlexibleTransaction } from '@/entities/transaction';
+import { isEditFlexibleTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
 import { FlexibleOperationTitle } from './components/FlexibleOperationTitle';
@@ -20,8 +19,8 @@ multisigOperationsSDK(flexibleOperationDetailFeature, {
     const { t } = useI18n();
     if (isEditFlexibleTransaction(operation.transaction)) {
       return {
-        name: <TransactionTitle className="flex-1 overflow-hidden" title={t('operations.titles.editFlexible')} />,
-        chain: <ChainTitle chainId={operation.chainId} className="w-[114px]" />,
+        title: t('operations.titles.editFlexible'),
+        chainId: operation.chainId,
       };
     }
   },

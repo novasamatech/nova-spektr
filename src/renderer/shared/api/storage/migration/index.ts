@@ -12,3 +12,4 @@ export { migrateBasketTransactionAfterAddressRemoval } from './migration-11';
 export { migrateDuplicateVaultDerivations } from './migration-12';
 export { renameBlockNumberToEntropyBlockNumber } from './migration-13';
 export { addAccountNameType } from './migration-14';
+export { migrateNotificationStructure } from './migration-15';

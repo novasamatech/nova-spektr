@@ -2,7 +2,13 @@ import { attach, createEffect, createStore, restore, sample, scopeBind } from 'e
 import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import { type HexString, type MultisigOperationNotification, type NoID, NotificationType } from '@/shared/core';
+import {
+  type HexString,
+  type MultisigOperationNotification,
+  type NoID,
+  type NotificationStatus,
+  NotificationType,
+} from '@/shared/core';
 import { createQueuedEffect } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
@@ -15,16 +21,16 @@ import { fetchResource, subscribeEventsResource, subscribeResource } from './res
 import { multisigOperationService } from './service';
 import { type MultisigOperation } from './types';
 
+const populateFx = createEffect(() =>
+  storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
+);
+
 const $list = createStore<MultisigOperation[]>([]);
 const $previousList = createStore<MultisigOperation[]>([]);
 
 const $populated = restore(
-  once($list.updates).map(() => true),
+  once(populateFx.doneData).map(() => true),
   false,
-);
-
-const populateFx = createEffect(() =>
-  storageService.multisigOperations.readAll().then(txs => txs.map(deserializeOperation)),
 );
 
 const addOperationsFx = createEffect(async (operations: MultisigOperation[]) => {
@@ -100,13 +106,39 @@ const removeOperationsForAccountFx = attach({
   },
 });
 
-const createOperationNotification = (
-  operation: MultisigOperation,
-  status: 'created' | 'executed' | 'cancelled' | 'error',
-): NoID<MultisigOperationNotification> => ({
+const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'info';
+    case 'executed':
+      return 'success';
+    case 'cancelled':
+    case 'error':
+      return 'error';
+  }
+};
+
+const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): string => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'Multisig operation created';
+    case 'executed':
+      return 'Multisig operation executed';
+    case 'cancelled':
+      return 'Multisig operation rejected';
+    case 'error':
+      return 'Multisig operation error';
+  }
+};
+
+const createOperationNotification = (operation: MultisigOperation): NoID<MultisigOperationNotification> => ({
   type: NotificationType.MULTISIG_OPERATION,
   read: false,
-  dateCreated: operation.timestamp ?? Date.now(),
+  dateCreated: Date.now(),
+  status: getNotificationStatus(operation.status),
+  issuer: operation.accountId,
+  title: getNotificationTitle(operation.status),
+  description: operation.transaction ? `${operation.transaction.section}.${operation.transaction.method}` : undefined,
   multisigAccountId: operation.accountId,
   callHash: operation.callHash,
   callTimepoint: {
@@ -115,23 +147,26 @@ const createOperationNotification = (
   },
   chainId: operation.chainId,
   operationId: operation.id,
-  status,
 });
 
 sample({
   clock: $list,
-  source: $previousList,
-  fn: (previousOperations, currentOperations) => {
-    const previousOpsMap = new Map(previousOperations.map(op => [op.id, op]));
+  source: {
+    prevState: $previousList,
+    populated: $populated,
+  },
+  filter: ({ populated }) => populated,
+  fn: ({ prevState }, update) => {
+    const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
     const notifications: NoID<MultisigOperationNotification>[] = [];
 
-    for (const currentOp of currentOperations) {
-      const previousOp = previousOpsMap.get(currentOp.id);
+    for (const item of update) {
+      const previousOp = previousOpsMap.get(item.id);
 
       if (!previousOp) {
-        notifications.push(createOperationNotification(currentOp, 'created'));
-      } else if (previousOp.status !== currentOp.status && currentOp.status !== 'pending') {
-        notifications.push(createOperationNotification(currentOp, currentOp.status));
+        notifications.push(createOperationNotification(item));
+      } else if (previousOp.status !== item.status && item.status !== 'pending') {
+        notifications.push(createOperationNotification(item));
       }
     }
 
@@ -173,9 +208,10 @@ deriveFromResources({
   },
 });
 
+// write from store
 sample({
   clock: populateFx.doneData,
-  target: [$list, $previousList],
+  target: [$previousList, $list],
 });
 
 sample({

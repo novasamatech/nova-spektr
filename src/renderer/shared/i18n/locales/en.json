@@ -82,11 +82,12 @@
         "description": "Certain contacts don't match required format. Check guidelines on Wiki, update your file, and try uploading again.",
         "emptyList": "File has no accounts to import",
         "fileTooLarge": "File is too large. Maximum file size is 1MB",
-        "title": "Import failed",
-        "wikiLink": "Wiki guidelines"
+        "title": "Import failed"
       },
       "loading": "Importing contacts...",
-      "success": "Contacts imported"
+      "success": "Contacts imported",
+      "tooltip": "Import address book from JSON file:",
+      "wikiLink": "Wiki guidelines"
     },
     "removeConfirm": {
       "cancelButton": "Cancel",
@@ -890,6 +891,12 @@
           "step2": "Review and submit",
           "title": "Preview Evidence"
         },
+        "promotionEvidenceExistsWarning": {
+          "cancel": "Cancel",
+          "description": "Promotion evidence already submitted. Submitting retention report will replace it.\n\nAt the end of the retention period, retention report must be submitted to avoid being bumped.",
+          "submit": "Submit",
+          "title": "Are you sure you want to submit retention report?"
+        },
         "promotionPeriodWarning": {
           "cancel": "Cancel",
           "description": "It is recommended to prioritize submitting the retention report before submitting promotion evidence to avoid being bumped.",
@@ -1627,19 +1634,21 @@
       "flexibleMultisigEditedTitle": "Flexible multisig has been edited",
       "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
-      "multisigOperationCreatedDescription": "A new operation has been created for <strong>{name}</strong>",
       "multisigOperationDetails": "by <wallet><walletIcon /> <name>{name}</name></wallet> on <chain /> with threshold { threshold } out of { signatories } signatories",
-      "multisigOperationErrorDescription": "An operation has failed for <strong>{name}</strong>",
-      "multisigOperationExecutedDescription": "An operation has been executed for <strong>{name}</strong>",
-      "multisigOperationRejectedDescription": "An operation has been rejected for <strong>{name}</strong>",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
       "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyRemovedTitle": "Delegated authority wallet has been removed",
       "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>",
+      "status": {
+        "created": "created",
+        "executed": "executed",
+        "rejected": "rejected"
+      },
       "viewOperation": "View operation"
     },
     "noNotificationsDescription": "You don't have notifications yet",
+    "searchPlaceholder": "Search by wallet or event type",
     "title": "Notifications"
   },
   "onboarding": {
@@ -2756,6 +2765,9 @@
       "renameSaveButton": "Save",
       "renameTitle": "Rename wallet",
       "renameWallet": "Enter wallet name",
+      "renameWalletSuccessDescription": "Address book contact name updated",
+      "renameWalletSuccessTitle": "Wallet renamed",
+      "renameWalletWarning": "Address book contact names update automatically after rename",
       "title": "Wallet details",
       "viewDetails": "View details",
       "walletRemoved": "Wallet removed",

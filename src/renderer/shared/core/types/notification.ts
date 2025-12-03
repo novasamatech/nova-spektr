@@ -18,11 +18,19 @@ export const enum NotificationType {
   MULTISIG_OPERATION = 'MultisigOperationNotification',
 }
 
+export type NotificationStatus = 'info' | 'success' | 'error';
+
 type BaseNotification = {
   id: ID;
   read: boolean;
   dateCreated: number;
   type: NotificationType;
+  status: NotificationStatus;
+  issuer: AccountId;
+  chainId: ChainId;
+  title: string;
+  description?: string;
+  deepLink?: string;
 };
 
 type MultisigBaseNotification = BaseNotification & {
@@ -48,7 +56,6 @@ export type MultisigOperationNotification = MultisigBaseNotification & {
   callTimepoint: Timepoint;
   chainId: ChainId;
   operationId: string;
-  status: 'created' | 'executed' | 'cancelled' | 'error';
 };
 
 export type ProxyAction = BaseNotification & {
