@@ -5,6 +5,7 @@ import { storageService } from '@/shared/api/storage';
 import { ConnectionStatus, type Transaction } from '@/shared/core';
 import { TEST_ACCOUNTS } from '@/shared/lib/utils';
 import { createVaultBaseAccount } from '@/shared/mocks';
+import { accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletModel } from '@/entities/wallet';
 import { signModel } from '@/features/operations/OperationSign/model/sign-model';
@@ -33,20 +34,21 @@ describe('widgets/AddProxyModal/model/add-proxy-model', () => {
     jest.spyOn(storageService.proxies, 'createAll').mockResolvedValue([]);
     jest.spyOn(storageService.proxies, 'updateAll').mockResolvedValue([]);
 
+    const account = createVaultBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] });
+
     const scope = fork({
       values: new Map()
         .set(networkModel.$apis, { '0x00': testApi })
         .set(networkModel.$chains, { '0x00': testChain })
         .set(networkModel.$connectionStatuses, { '0x00': ConnectionStatus.CONNECTED })
-        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet]),
+        .set(walletModel.__test.$rawWallets, [initiatorWallet, signerWallet])
+        .set(accounts.__test.$list, [account]),
     });
 
     await allSettled(addProxyModel.events.flowStarted, { scope, params: initiatorWallet });
 
     expect(scope.getState(addProxyModel.$chain)).toEqual(null);
     expect(scope.getState(addProxyModel.$step)).toEqual(Step.INIT);
-
-    const account = createVaultBaseAccount('1', { walletId: 1, accountId: TEST_ACCOUNTS[0] });
     await allSettled(formModel.formSubmitted, {
       scope,
       params: {

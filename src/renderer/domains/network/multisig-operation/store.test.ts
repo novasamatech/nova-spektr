@@ -68,7 +68,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
       },
       chainId: mockOperation.chainId,
       operationId: mockOperation.id,
-      status: 'created',
+      status: 'info',
     });
   });
 
@@ -100,7 +100,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     expect(mockNotifications).toHaveLength(1);
     expect(mockNotifications[0]).toMatchObject({
       type: NotificationType.MULTISIG_OPERATION,
-      status: 'executed',
+      status: 'success',
       operationId: updatedOperation.id,
     });
   });
@@ -133,7 +133,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     expect(mockNotifications).toHaveLength(1);
     expect(mockNotifications[0]).toMatchObject({
       type: NotificationType.MULTISIG_OPERATION,
-      status: 'cancelled',
+      status: 'error',
       operationId: updatedOperation.id,
     });
   });
@@ -277,13 +277,13 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     // First notification should be for the new operation with 'created' status
     expect(mockNotifications[0]).toMatchObject({
       operationId: 'new-op',
-      status: 'created',
+      status: 'info',
     });
 
     // Second notification should be for the updated operation with 'executed' status
     expect(mockNotifications[1]).toMatchObject({
       operationId: 'existing-op',
-      status: 'executed',
+      status: 'success',
     });
   });
 });
