@@ -130,28 +130,35 @@ const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancell
   }
 };
 
-const createOperationNotification = (operation: MultisigOperation): NoID<MultisigOperationNotification> => ({
-  type: NotificationType.MULTISIG_OPERATION,
-  read: false,
-  dateCreated: Date.now(),
-  status: getNotificationStatus(operation.status),
-  issuer: operation.accountId,
-  title: getNotificationTitle(operation.status),
-  description: operation.transaction ? `${operation.transaction.section}.${operation.transaction.method}` : undefined,
-  multisigAccountId: operation.accountId,
-  callHash: operation.callHash,
-  callTimepoint: {
-    height: operation.blockCreated,
-    index: operation.indexCreated,
-  },
-  chainId: operation.chainId,
-  operationId: operation.id,
-});
+const createOperationNotification = (
+  operation: MultisigOperation,
+): NoID<MultisigOperationNotification> & { key: string } => {
+  return {
+    key: `${NotificationType.MULTISIG_OPERATION}:${operation.id}:${operation.status}`,
+    type: NotificationType.MULTISIG_OPERATION,
+    read: false,
+    dateCreated: Date.now(),
+    status: getNotificationStatus(operation.status),
+    issuer: operation.accountId,
+    title: getNotificationTitle(operation.status),
+    description: operation.transaction
+      ? `${operation.transaction.section}.${operation.transaction.method}`
+      : undefined,
+    multisigAccountId: operation.accountId,
+    callHash: operation.callHash,
+    callTimepoint: {
+      height: operation.blockCreated,
+      index: operation.indexCreated,
+    },
+    chainId: operation.chainId,
+    operationId: operation.id,
+  };
+};
 
 const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {
     const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
-    const notifications: NoID<MultisigOperationNotification>[] = [];
+    const notifications: (NoID<MultisigOperationNotification> & { key: string })[] = [];
 
     for (const item of update) {
       const previousOp = previousOpsMap.get(item.id);

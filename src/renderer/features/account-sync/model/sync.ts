@@ -6,18 +6,16 @@ import {
   type ChainId,
   CryptoType,
   type FlexibleMultisigAccount,
-  type FlexibleMultisigOperationNotification,
   type FlexibleMultisigWallet,
   type MultisigAccount,
-  type MultisigCreated,
   type MultisigWallet,
   type NoID,
+  type Notification,
   NotificationType,
   type ProxiedAccount,
   type ProxiedConnection,
   type ProxiedWallet,
   type ProxyAccount,
-  type ProxyAction,
   type ProxyType,
   SigningType,
   type Wallet,
@@ -552,7 +550,7 @@ sample({
 const createNotificationsFromWallets = (
   wallets: { wallet: { id: number; name: string }; accounts: AnyAccount[] }[],
   chains: Record<ChainId, { addressPrefix?: number }>,
-) => {
+): NoID<Notification>[] => {
   const notifications = wallets.flatMap(({ wallet, accounts }) => {
     return accounts.map((account) => {
       if (accountUtils.isAnyMultisigAccount(account)) {
@@ -574,6 +572,7 @@ const createNotificationsFromWallets = (
 
         if (accountUtils.isFlexibleMultisigAccount(account)) {
           return {
+            key: `${NotificationType.FLEXIBLE_MULTISIG_CREATED}:${account.accountId}`,
             ...baseNotification,
             walletId: wallet.id,
             type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
@@ -581,23 +580,25 @@ const createNotificationsFromWallets = (
             title: 'Flexible multisig wallet added',
             accountId: account.accountId,
             accountName: account.name,
-          } satisfies NoID<FlexibleMultisigOperationNotification>;
+          };
         }
 
         if (accountUtils.isMultisigAccount(account)) {
           return {
+            key: `${NotificationType.MULTISIG_CREATED}:${account.accountId}`,
             ...baseNotification,
             type: NotificationType.MULTISIG_CREATED,
             chainId: account.remarkChainId!,
             title: 'Multisig wallet added',
             multisigAccountName: account.name,
-          } satisfies NoID<MultisigCreated>;
+          };
         }
       }
 
       if (accountUtils.isProxiedAccount(account)) {
         return account.connections.map((connection) => {
           return {
+            key: `${NotificationType.PROXY_CREATED}:${account.chainId}:${connection.proxyAccountId}:${account.accountId}`,
             chainId: account.chainId,
             dateCreated: Date.now(),
             proxyType: connection.proxyType,
@@ -610,7 +611,7 @@ const createNotificationsFromWallets = (
             issuer: connection.proxyAccountId,
             title: 'Delegated authority wallet added',
             description: `${connection.proxyType} proxy`,
-          } satisfies NoID<ProxyAction>;
+          };
         });
       }
 
@@ -618,7 +619,7 @@ const createNotificationsFromWallets = (
     });
   });
 
-  return notifications.flat().filter(nonNullable);
+  return notifications.flat().filter(nonNullable) as (NoID<Notification> & { key: string })[];
 };
 
 sample({
