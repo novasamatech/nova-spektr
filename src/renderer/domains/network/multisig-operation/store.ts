@@ -9,7 +9,7 @@ import {
   type NotificationStatus,
   NotificationType,
 } from '@/shared/core';
-import { createQueuedEffect } from '@/shared/effector';
+import { createQueuedEffect, pairwise } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
@@ -26,7 +26,6 @@ const populateFx = createEffect(() =>
 );
 
 const $list = createStore<MultisigOperation[]>([]);
-const $previousList = createStore<MultisigOperation[]>([]);
 
 const $populated = restore(
   once(populateFx.doneData).map(() => true),
@@ -149,14 +148,8 @@ const createOperationNotification = (operation: MultisigOperation): NoID<Multisi
   operationId: operation.id,
 });
 
-sample({
-  clock: $list,
-  source: {
-    prevState: $previousList,
-    populated: $populated,
-  },
-  filter: ({ populated }) => populated,
-  fn: ({ prevState }, update) => {
+const operationChanges = pairwise($list)
+  .map(({ prev: prevState, current: update }) => {
     const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
     const notifications: NoID<MultisigOperationNotification>[] = [];
 
@@ -171,14 +164,15 @@ sample({
     }
 
     return notifications;
-  },
-  target: notificationModel.events.notificationsAdded,
-});
+  })
+  .filter({ fn: notifications => notifications.length > 0 });
 
-// update previous list after notifications are sent
 sample({
-  clock: $list,
-  target: $previousList,
+  clock: operationChanges,
+  source: $populated,
+  filter: (populated, changes) => populated && !!changes.length,
+  fn: (_, notifications) => notifications,
+  target: notificationModel.events.notificationsAdded,
 });
 
 deriveFromResources({
@@ -211,7 +205,7 @@ deriveFromResources({
 // write from store
 sample({
   clock: populateFx.doneData,
-  target: [$previousList, $list],
+  target: $list,
 });
 
 sample({
@@ -275,6 +269,5 @@ export const multisigOperation = {
   __test: {
     $list,
     $populated,
-    $previousList,
   },
 };
