@@ -1,11 +1,11 @@
-import { navigationActionsSlot } from '@/features/app-shell';
+import { customOperationsSlot } from '@/features/app-custom-operations';
 
 import { callDataExecuteFeature } from './model/feature';
 import { CallDataSubmit } from './ui/CallDataSubmitModal';
 
 export { callDataExecuteFeature };
 
-callDataExecuteFeature.inject(navigationActionsSlot, {
-  order: 1000,
+callDataExecuteFeature.inject(customOperationsSlot, {
+  order: 0,
   render: () => <CallDataSubmit />,
 });
