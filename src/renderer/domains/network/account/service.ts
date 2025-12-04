@@ -197,12 +197,6 @@ function getAccountAddressPrefix(
 }
 
 function getWalletAccountId(wallet: Wallet, accounts: AnyAccount[]): AccountId | null {
-  const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
-
-  if (walletAccounts.length > 0) {
-    return walletAccounts[0]?.accountId ?? null;
-  }
-
   if (
     (wallet.type === WalletType.POLKADOT_VAULT || wallet.type === WalletType.SINGLE_PARITY_SIGNER) &&
     'rootAccountId' in wallet
@@ -210,7 +204,11 @@ function getWalletAccountId(wallet: Wallet, accounts: AnyAccount[]): AccountId |
     return wallet.rootAccountId as AccountId;
   }
 
-  return null;
+  const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
+
+  const universalAccount = walletAccounts.find(acc => isUniversalAccount(acc));
+
+  return universalAccount?.accountId ?? walletAccounts[0]?.accountId ?? null;
 }
 
 function resolveWalletName({ wallet, accounts, contacts, identities, chains }: ResolveWalletNameParams): string {

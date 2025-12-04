@@ -1,27 +1,23 @@
 import { useUnit } from 'effector-react';
-import { type FormEvent, memo, useMemo } from 'react';
+import { type FormEvent, memo, useEffect, useMemo, useState } from 'react';
 import { Trans } from 'react-i18next';
 
+import vested_transfer_template_url from '@/shared/assets/templates/vested-transfer-template.csv?url';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
-import { Alert, BodyText, Button, DetailRow, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
+import { Alert, Button, DetailRow, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
 import { AssetBalance, ChainSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
 import { accounts } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
+import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { VestingSchedulePreview } from '@/entities/vesting';
+import { VestingCsvError, VestingFieldError, VestingSchedulePreview } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
-import { FileErrors } from '../types';
 import { vestedTransferUtils } from '../utils';
-
-import { VestingSchedulePreviewWithErrors } from './VestingSchedulePreviewWithErrors';
-
-const CSV_TEMPLATE_LINK =
-  'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/templates/vested-transfer-template.csv';
 
 export const VestedTransferForm = () => {
   const { t } = useI18n();
@@ -47,7 +43,7 @@ export const VestedTransferForm = () => {
             <NetworkSelect />
             {showSignatories && <Signatories />}
             <UploadCSV />
-            <CSVErrors />
+            <ValidationsAlert />
             <TotalAmountSection />
             <FeeSection />
           </Box>
@@ -65,7 +61,7 @@ export const VestedTransferForm = () => {
 export const NetworkSelect = memo(() => {
   const { t } = useI18n();
 
-  const allChains = useUnit(formModel.$allChains);
+  const availableChains = useUnit(formModel.$availableChains);
   const {
     fields: { chain },
   } = useForm(formModel.form);
@@ -75,7 +71,7 @@ export const NetworkSelect = memo(() => {
       <ChainSelect
         placeholder={t('vestedTransfer.form.fields.network.placeholder')}
         value={chain.value}
-        options={allChains}
+        options={availableChains}
         onChange={chain.onChange}
       />
       <InputHint variant="error" active={chain.hasError}>
@@ -133,134 +129,175 @@ const Signatories = () => {
 const UploadCSV = () => {
   const { t } = useI18n();
 
-  const fileErrors = useUnit(formModel.$fileErrors);
-  const hasErrors = nonNullable(fileErrors) && nonNullable(fileErrors.details);
-
   const chain = useUnit(formModel.$chain);
   const asset = useUnit(formModel.$asset);
-  const parsedFile = useUnit(formModel.$parsedFile);
-  const vestingSchedule = useUnit(formModel.$vestingSchedule);
+  const fileName = useUnit(formModel.$fileName);
+  const parsedCsv = useUnit(formModel.$parsedCsv);
+  const csvError = useUnit(formModel.$csvError);
+  const csvIssues = useUnit(formModel.$csvIssues);
+  const apis = useUnit(networkModel.$apis);
+  const minVestedTransfer = useUnit(formModel.$minVestedTransfer);
 
-  const showPreview = !hasErrors && chain && asset && vestingSchedule && vestingSchedule.length > 0;
-  const showPreviewWithErrors = hasErrors && parsedFile && parsedFile.length > 0;
+  const timelineChainId = chain?.additional?.timelineChain;
+  const timelineApi = (timelineChainId && apis[timelineChainId]) ?? (chain && apis[chain.chainId]) ?? null;
 
-  const downloadCSVWithErrors = () => {
-    if (parsedFile && parsedFile.length > 0 && fileErrors && fileErrors.details) {
-      vestedTransferUtils.downloadCSVWithErrors(parsedFile, fileErrors.details);
+  const hasError = nonNullable(csvError);
+  const hasParsedCsv = parsedCsv && parsedCsv.length > 0;
+
+  const showPreview = (nullable(csvError) || csvError === VestingCsvError.DATA) && hasParsedCsv;
+  const showDisabledPreview = !showPreview;
+
+  const downloadCSVWithIssues = () => {
+    if (hasParsedCsv && csvIssues) {
+      vestedTransferUtils.downloadCsvWithIssues(parsedCsv, csvIssues);
     }
   };
 
+  const renderPreviewButton = ({ disabled = false }: { disabled?: boolean } = {}) => (
+    <Button
+      className="p-0"
+      size="sm"
+      variant="text"
+      disabled={disabled}
+      suffixElement={<Icon size={16} name="eye" className="text-icon-primary" />}
+    >
+      {t('vestedTransfer.parsedFile.buttons.openPreview')}
+    </Button>
+  );
+
   return (
     <label className="flex w-full flex-col gap-y-2">
-      <div className="gax-x-2 flex items-center justify-between">
+      <div className="flex items-center justify-between gap-x-2">
         <FootnoteText className="text-text-tertiary">{t('vestedTransfer.form.fields.csvFile.label')}</FootnoteText>
         <div className="flex items-center gap-x-2">
-          <InfoLink url={CSV_TEMPLATE_LINK} className="ml-2" iconName="import" iconPosition="right">
+          <InfoLink url={vested_transfer_template_url} className="ml-2" iconName="import" iconPosition="right" download>
             {t('vestedTransfer.form.fields.csvFile.exampleButton')}
           </InfoLink>
           {showPreview && (
             <VestingSchedulePreview
+              timelineApi={timelineApi}
               chain={chain}
               asset={asset}
-              vestingSchedule={vestingSchedule}
-              trigger={
-                <Button
-                  className="p-0"
-                  size="sm"
-                  variant="text"
-                  suffixElement={<Icon size={16} name="eye" className="text-icon-primary" />}
-                >
-                  {t('vestedTransfer.parsedFile.buttons.openPreview')}
-                </Button>
-              }
-            />
+              vestingSchedule={parsedCsv}
+              issues={csvIssues}
+              minVestedTransfer={minVestedTransfer}
+              onDownloadClick={downloadCSVWithIssues}
+            >
+              {renderPreviewButton()}
+            </VestingSchedulePreview>
           )}
-          {showPreviewWithErrors && fileErrors.details && (
-            <VestingSchedulePreviewWithErrors
-              vestingSchedule={parsedFile}
-              errors={fileErrors.details}
-              trigger={
-                <Button
-                  className="p-0"
-                  size="sm"
-                  variant="text"
-                  suffixElement={<Icon size={16} name="eye" className="text-icon-primary" />}
-                >
-                  {t('vestedTransfer.parsedFile.buttons.openPreview')}
-                </Button>
-              }
-              onDownloadClick={downloadCSVWithErrors}
-            />
-          )}
+          {showDisabledPreview && renderPreviewButton({ disabled: true })}
         </div>
       </div>
       <InputFile
         key={chain?.chainId}
         accept=".csv"
+        defaultFileName={fileName ?? undefined}
         placeholder={t('vestedTransfer.form.fields.csvFile.placeholder')}
-        invalid={hasErrors}
+        invalid={hasError}
         onChange={(file) => formModel.fileUploaded(file)}
       />
     </label>
   );
 };
 
-const CSVErrors = () => {
+const ValidationsAlert = () => {
   const { t } = useI18n();
+  const parsedCsv = useUnit(formModel.$parsedCsv);
+  const csvError = useUnit(formModel.$csvError);
+  const csvIssues = useUnit(formModel.$csvIssues);
+  const minVestedTransfer = useUnit(formModel.$minVestedTransfer);
+  const asset = useUnit(formModel.$asset);
 
-  const fileErrors = useUnit(formModel.$fileErrors);
-  const parsedFile = useUnit(formModel.$parsedFile);
+  const [isAlertOpen, toggleAlert] = useState(true);
+  useEffect(() => {
+    if (csvError || csvIssues?.length) {
+      toggleAlert(true);
+    }
+  }, [csvError, csvIssues]);
 
-  if (nullable(fileErrors)) return null;
-
-  if (fileErrors.code === FileErrors.INVALID_CSV_STRUCTURE) {
+  if (csvError === VestingCsvError.STRUCTURE) {
     return (
-      <Alert active title={t('vestedTransfer.errors.csv.parseFailedTitle')} variant="error">
-        <BodyText className="max-w-full tracking-tight">
-          <Trans t={t} i18nKey="vestedTransfer.errors.csv.invalidStructureDescription" />
-        </BodyText>
-      </Alert>
+      <InputHint variant="error" active>
+        {t('vestedTransfer.errors.csv.invalidStructureDescription')}
+      </InputHint>
     );
   }
 
-  if (nullable(parsedFile)) return null;
+  if (nullable(csvIssues)) {
+    return null;
+  }
 
-  const downloadCSVWithErrors = () => {
-    if (parsedFile.length > 0 && fileErrors.details) {
-      vestedTransferUtils.downloadCSVWithErrors(parsedFile, fileErrors.details);
+  const errors = csvIssues.filter((issue) => issue.severity === 'error');
+  const warnings = csvIssues.filter((issue) => issue.severity === 'warning');
+  const issues = errors.length > 0 ? errors : warnings;
+  const isError = errors.length > 0;
+  const count = issues.length;
+
+  if (count === 0) return null;
+
+  const downloadCSVWithIssues = () => {
+    if (parsedCsv?.length) {
+      vestedTransferUtils.downloadCsvWithIssues(parsedCsv, csvIssues);
     }
   };
 
-  if (fileErrors.code === FileErrors.INVALID_CSV_DATA && fileErrors?.details) {
-    const errorCount = Object.values(fileErrors.details).reduce((count, rows) => count + rows.length, 0);
+  const titleKey = isError ? 'vestedTransfer.errors.csv.errorTitle' : 'vestedTransfer.errors.csv.warningTitle';
 
-    return (
-      <Alert active title={t('vestedTransfer.errors.csv.invalidDataTitle', { errorCount })} variant="error">
-        {Object.entries(fileErrors?.details).map(([rowIndex, rowErrors]) =>
-          rowErrors.map((rowError) => (
-            <Alert.Item key={rowIndex}>
-              {t('vestedTransfer.errors.csv.invalidDataRow', { row: rowIndex })}:&nbsp;
-              {t(`vestedTransfer.errors.csv.rowErrors.${rowError}`)}
+  return (
+    <Alert
+      active={isAlertOpen}
+      title={t(titleKey, { count })}
+      variant={isError ? 'error' : 'warn'}
+      onClose={() => toggleAlert(false)}
+    >
+      {issues.map((issue) => {
+        const isMinVestedTransferError =
+          issue.message === VestingFieldError.MIN_VESTED_TRANSFER && nonNullable(minVestedTransfer);
+
+        if (isMinVestedTransferError && nonNullable(asset)) {
+          return (
+            <Alert.Item key={issue.row}>
+              {t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row })}:&nbsp;
+              <Trans
+                t={t}
+                i18nKey="vestedTransfer.errors.csv.fieldErrors.MIN_VESTED_TRANSFER"
+                components={{
+                  asset: (
+                    <AssetBalance
+                      className="text-caption text-inherit"
+                      value={minVestedTransfer}
+                      asset={asset}
+                      showSymbol
+                    />
+                  ),
+                }}
+              />
             </Alert.Item>
-          )),
-        )}
-        <div className="flex flex-col">
-          {t('vestedTransfer.errors.csv.parsedFileDownloadDescription')}
-          <Button
-            className="self-start p-0"
-            size="sm"
-            variant="text"
-            suffixElement={<Icon size={16} name="import" className="text-icon-primary" />}
-            onClick={downloadCSVWithErrors}
-          >
-            {t('vestedTransfer.parsedFile.buttons.parsedFile')}
-          </Button>
-        </div>
-      </Alert>
-    );
-  }
+          );
+        }
 
-  return null;
+        return (
+          <Alert.Item key={issue.row}>
+            {t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row })}:&nbsp;
+            {t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
+          </Alert.Item>
+        );
+      })}
+      <div className="flex flex-col">
+        {t('vestedTransfer.errors.csv.parsedFileDownloadDescription')}
+        <Button
+          className="self-start p-0"
+          size="sm"
+          variant="text"
+          suffixElement={<Icon size={16} name="import" className="text-icon-primary" />}
+          onClick={downloadCSVWithIssues}
+        >
+          {t('vestedTransfer.parsedFile.buttons.parsedFile')}
+        </Button>
+      </div>
+    </Alert>
+  );
 };
 
 const TotalAmountSection = () => {
@@ -269,7 +306,7 @@ const TotalAmountSection = () => {
   const amount = useUnit(formModel.$amount);
   const asset = useUnit(formModel.$asset);
 
-  if (!amount || !asset) return null;
+  if (nullable(amount) || nullable(asset)) return null;
 
   return (
     <DetailRow label={t('vestedTransfer.form.fields.amount.label')}>

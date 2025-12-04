@@ -54,7 +54,6 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
   const errors = useUnit(rejectModel.$errors);
   const fee = useUnit(rejectModel.$fee);
   const isFeeLoading = useUnit(rejectModel.$isFeeLoading);
-  const isDepositLoading = useUnit(rejectModel.$isDepositLoading);
   const multisigDeposit = useUnit(rejectModel.$multisigDeposit);
   const signAccount = useUnit(rejectModel.$signatory);
   const initiator = useUnit(rejectModel.$initiator);
@@ -151,7 +150,6 @@ export const RejectTxModal = memo(({ api, operation, chain, children }: Props) =
             chain={chain}
             fee={fee}
             isFeeLoading={isFeeLoading}
-            isDepositLoading={isDepositLoading}
             signAccount={signAccount}
             multisigDeposit={multisigDeposit}
             errors={errors}
