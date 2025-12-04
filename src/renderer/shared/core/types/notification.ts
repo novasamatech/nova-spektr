@@ -22,6 +22,7 @@ export type NotificationStatus = 'info' | 'success' | 'error';
 
 type BaseNotification = {
   id: ID;
+  key: string;
   read: boolean;
   dateCreated: number;
   type: NotificationType;

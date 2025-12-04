@@ -11,7 +11,6 @@ import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { accounts, multisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
-import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { deepLinkModel, operationTitleTransformer } from '@/features/multisig-operations';
 import { multisigService } from '@/features/multisig-wallet';
@@ -71,14 +70,14 @@ export const MultisigOperationNotificationComponent = ({
       })
     : null;
 
-  const transaction = useMemo(() => {
-    if (!operation || !multisigAccount) return null;
-    return showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
-  }, [operation, multisigAccount, showCoreTransaction]);
+  const formattedAmount = useMemo(() => {
+    if (!operationTitle?.amount) return null;
 
-  const amount = useMemo(() => (transaction ? getTransactionAmount(transaction) : null), [transaction]);
-  const asset = useTransactionAsset(transaction, chainId);
-  const formattedAmount = asset && amount ? formatBalance(amount, asset.precision) : null;
+    const { value, asset } = operationTitle.amount;
+    const { value: formattedValue, suffix } = formatBalance(value, asset.precision);
+
+    return `${formattedValue}${suffix} ${asset.symbol}`;
+  }, [operationTitle]);
 
   const handleViewOperation = () => {
     if (!multisigAccount) return;
@@ -98,14 +97,6 @@ export const MultisigOperationNotificationComponent = ({
     navigate(deepLink);
   };
 
-  const amountNode =
-    formattedAmount && asset ? (
-      <span>
-        {formattedAmount.value}
-        {formattedAmount.suffix} {asset.symbol}
-      </span>
-    ) : null;
-
   const icon = iconConfig[status];
 
   return (
@@ -118,8 +109,8 @@ export const MultisigOperationNotificationComponent = ({
         <div className="flex flex-col gap-y-2">
           <BodyText>
             <div className="flex items-center justify-start gap-2">
-              <div className="inline">{operationTitle?.name}</div>
-              {amountNode}
+              <div className="inline">{operationTitle?.title}</div>
+              {formattedAmount && <div className="inline">{formattedAmount}</div>}
               {t(getOperationStatus(status))}
             </div>
           </BodyText>

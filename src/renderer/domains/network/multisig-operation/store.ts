@@ -9,7 +9,7 @@ import {
   type NotificationStatus,
   NotificationType,
 } from '@/shared/core';
-import { createQueuedEffect } from '@/shared/effector';
+import { createQueuedEffect, pairwise } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
@@ -26,7 +26,6 @@ const populateFx = createEffect(() =>
 );
 
 const $list = createStore<MultisigOperation[]>([]);
-const $previousList = createStore<MultisigOperation[]>([]);
 
 const $populated = restore(
   once(populateFx.doneData).map(() => true),
@@ -106,9 +105,9 @@ const removeOperationsForAccountFx = attach({
   },
 });
 
-const getNotificationStatus = (operationStatus: 'created' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
+const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
   switch (operationStatus) {
-    case 'created':
+    case 'pending':
       return 'info';
     case 'executed':
       return 'success';
@@ -118,9 +117,9 @@ const getNotificationStatus = (operationStatus: 'created' | 'executed' | 'cancel
   }
 };
 
-const getNotificationTitle = (operationStatus: 'created' | 'executed' | 'cancelled' | 'error'): string => {
+const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): string => {
   switch (operationStatus) {
-    case 'created':
+    case 'pending':
       return 'Multisig operation created';
     case 'executed':
       return 'Multisig operation executed';
@@ -131,57 +130,52 @@ const getNotificationTitle = (operationStatus: 'created' | 'executed' | 'cancell
   }
 };
 
-const createOperationNotification = (
-  operation: MultisigOperation,
-  operationStatus: 'created' | 'executed' | 'cancelled' | 'error',
-): NoID<MultisigOperationNotification> => ({
-  type: NotificationType.MULTISIG_OPERATION,
-  read: false,
-  dateCreated: Date.now(),
-  status: getNotificationStatus(operationStatus),
-  issuer: operation.accountId,
-  title: getNotificationTitle(operationStatus),
-  description: operation.transaction ? `${operation.transaction.section}.${operation.transaction.method}` : undefined,
-  multisigAccountId: operation.accountId,
-  callHash: operation.callHash,
-  callTimepoint: {
-    height: operation.blockCreated,
-    index: operation.indexCreated,
-  },
-  chainId: operation.chainId,
-  operationId: operation.id,
-});
+const createOperationNotification = (operation: MultisigOperation): NoID<MultisigOperationNotification> => {
+  return {
+    key: `${NotificationType.MULTISIG_OPERATION}:${operation.id}:${operation.status}`,
+    type: NotificationType.MULTISIG_OPERATION,
+    read: false,
+    dateCreated: Date.now(),
+    status: getNotificationStatus(operation.status),
+    issuer: operation.accountId,
+    title: getNotificationTitle(operation.status),
+    description: operation.transaction ? `${operation.transaction.section}.${operation.transaction.method}` : undefined,
+    multisigAccountId: operation.accountId,
+    callHash: operation.callHash,
+    callTimepoint: {
+      height: operation.blockCreated,
+      index: operation.indexCreated,
+    },
+    chainId: operation.chainId,
+    operationId: operation.id,
+  };
+};
 
-sample({
-  clock: $list,
-  source: {
-    prevState: $previousList,
-    populated: $populated,
-  },
-  filter: ({ populated }) => populated,
-  fn: ({ prevState }, update) => {
+const operationChanges = pairwise($list)
+  .map(({ prev: prevState, current: update }) => {
     const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
-    const notifications: NoID<MultisigOperationNotification>[] = [];
+    const notifications: (NoID<MultisigOperationNotification> & { key: string })[] = [];
 
     for (const item of update) {
       const previousOp = previousOpsMap.get(item.id);
 
       if (!previousOp) {
-        notifications.push(createOperationNotification(item, 'created'));
+        notifications.push(createOperationNotification(item));
       } else if (previousOp.status !== item.status && item.status !== 'pending') {
-        notifications.push(createOperationNotification(item, item.status));
+        notifications.push(createOperationNotification(item));
       }
     }
 
     return notifications;
-  },
-  target: notificationModel.events.notificationsAdded,
-});
+  })
+  .filter({ fn: notifications => notifications.length > 0 });
 
-// update previous list after notifications are sent
 sample({
-  clock: $list,
-  target: $previousList,
+  clock: operationChanges,
+  source: $populated,
+  filter: (populated, changes) => populated && !!changes.length,
+  fn: (_, notifications) => notifications,
+  target: notificationModel.events.notificationsAdded,
 });
 
 deriveFromResources({
@@ -214,7 +208,7 @@ deriveFromResources({
 // write from store
 sample({
   clock: populateFx.doneData,
-  target: [$previousList, $list],
+  target: $list,
 });
 
 sample({
@@ -278,6 +272,5 @@ export const multisigOperation = {
   __test: {
     $list,
     $populated,
-    $previousList,
   },
 };

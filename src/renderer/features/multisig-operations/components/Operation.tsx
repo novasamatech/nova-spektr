@@ -1,6 +1,13 @@
-import { type ReactNode, memo, useMemo } from 'react';
+import { type BN } from '@polkadot/util';
+import { memo, useMemo } from 'react';
 
-import { type FlexibleMultisigAccount, type MultisigAccount } from '@/shared/core';
+import {
+  type Asset,
+  type AssetByChains,
+  type ChainId,
+  type FlexibleMultisigAccount,
+  type MultisigAccount,
+} from '@/shared/core';
 import { createTransformer, useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
 import { formatSectionAndMethod } from '@/shared/lib/utils';
@@ -9,7 +16,7 @@ import { IconButton } from '@/shared/ui/Buttons';
 import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
 import { Box, Copy, Tooltip } from '@/shared/ui-kit';
 import { type MultisigOperation } from '@/domains/network';
-import { ChainTitle } from '@/entities/chain';
+import { ChainTitle, XcmChains } from '@/entities/chain';
 import { OperationTitleDate, OperationTitleStatus } from '@/entities/operations';
 import {
   TransactionTitle,
@@ -30,9 +37,13 @@ type Props = {
 };
 
 export type OperationTitle = {
-  name?: ReactNode;
-  amount?: ReactNode;
-  chain?: ReactNode;
+  title?: string;
+  amount?: {
+    value: BN | string;
+    asset: Asset | AssetByChains;
+  };
+  sourceChainId?: ChainId;
+  destinationChainId?: ChainId; // For XCM transactions
 };
 
 export const operationTitleTransformer = createTransformer<
@@ -57,31 +68,19 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     showCoreTransaction,
   });
 
-  let title: OperationTitle;
+  let titleData: OperationTitle;
   if (externalTitle) {
-    title = externalTitle;
+    titleData = externalTitle;
   } else {
     const amount = coreTx ? getTransactionAmount(coreTx) : null;
 
-    title = {
-      name: (
-        <TransactionTitle
-          className="flex-1"
-          title={
-            coreTx?.section && coreTx?.method
-              ? formatSectionAndMethod(coreTx.section, coreTx.method)
-              : t('operations.titles.unknown')
-          }
-        />
-      ),
-      amount:
-        asset && amount ? (
-          <Box width="160px" direction="row" gap={2} verticalAlign="center">
-            <AssetIcon asset={asset} size={32} />
-            <AssetBalance value={amount} asset={asset} />
-          </Box>
-        ) : undefined,
-      chain: <ChainTitle chainId={operation.chainId} className="w-[114px]" />,
+    titleData = {
+      title:
+        coreTx?.section && coreTx?.method
+          ? formatSectionAndMethod(coreTx.section, coreTx.method)
+          : t('operations.titles.unknown'),
+      amount: asset && amount ? { value: amount, asset } : undefined,
+      sourceChainId: operation.chainId,
     };
   }
 
@@ -95,9 +94,23 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
           <div className="flex w-full items-center gap-4 overflow-hidden">
             <OperationTitleDate operation={operation} />
             <OperationIcon operation={operation} account={multisigAccount} />
-            {title.name}
-            {title.amount}
-            {title.chain}
+            {titleData.title && <TransactionTitle className="flex-1" title={titleData.title} />}
+            {titleData.amount && (
+              <Box width="160px" direction="row" gap={2} verticalAlign="center">
+                <AssetIcon asset={titleData.amount.asset} size={32} />
+                <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
+              </Box>
+            )}
+            {titleData.sourceChainId &&
+              (titleData.destinationChainId ? (
+                <XcmChains
+                  chainIdFrom={titleData.sourceChainId}
+                  chainIdTo={titleData.destinationChainId}
+                  className="w-[114px]"
+                />
+              ) : (
+                <ChainTitle chainId={titleData.sourceChainId} className="w-[114px]" />
+              ))}
           </div>
 
           <OperationTitleStatus operation={operation} account={multisigAccount} />

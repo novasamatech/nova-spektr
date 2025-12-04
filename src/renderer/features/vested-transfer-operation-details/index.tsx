@@ -7,17 +7,20 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { getNativeAsset, nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
-import { Box } from '@/shared/ui-kit';
-import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { TransactionTitle, findCoreBatchAll, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
+import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
 
+import { TransactionAmount } from './components/TransactionAmount';
 import { VestedTransferOperationDetails } from './components/VestedTransferOperationDetails';
 
 export const vestedTransferOperationDetailFeature = createFeature({
   name: 'vested-transfer/operation-details',
+});
+
+vestedTransferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
+  return <TransactionAmount operation={operation} />;
 });
 
 const getOperationTitle = (transactionType: TransactionType): string | undefined => {
@@ -30,7 +33,7 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
 
 const getOperationIcon = (transactionType: TransactionType): IconNames | undefined => {
   const Icons: { [key in TransactionType]?: IconNames } = {
-    [TransactionType.VESTED_TRANSFER]: 'transferMst',
+    [TransactionType.VESTED_TRANSFER]: 'vestedTransferMst',
   };
 
   return Icons[transactionType];
@@ -82,15 +85,9 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
       }
 
       return {
-        name: <TransactionTitle className="flex-1 overflow-hidden" title={t(title || '', { asset: asset?.symbol })} />,
-        amount:
-          asset && amount ? (
-            <Box width="160px" direction="row" gap={2} verticalAlign="center">
-              <AssetIcon asset={asset} size={32} />
-              <AssetBalance value={amount} asset={asset} />
-            </Box>
-          ) : undefined,
-        chain: <ChainTitle chainId={operation.chainId} className="w-[114px]" />,
+        title: title ? t(title, { asset: asset?.symbol }) : undefined,
+        amount: asset && amount ? { value: amount, asset } : undefined,
+        sourceChainId: operation.chainId,
       };
     }
   },

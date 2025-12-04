@@ -39,6 +39,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     const mockOperation = createMockOperation();
     const mockNotifications: MultisigOperationNotification[] = [];
 
+    jest.spyOn(storageService.multisigOperations, 'readAll').mockResolvedValue([]);
     jest.spyOn(storageService.multisigOperations, 'createAll').mockResolvedValue([mockOperation as any]);
     jest.spyOn(storageService.multisigOperations, 'deleteAll').mockResolvedValue([]);
     jest.spyOn(storageService.multisigOperations, 'insertAll').mockResolvedValue(undefined);
@@ -52,9 +53,12 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     const scope = fork({
       values: new Map()
         .set(multisigOperation.__test.$list, [])
-        .set(multisigOperation.__test.$populated, true)
+        .set(multisigOperation.__test.$populated, false)
         .set(notificationModel.$notifications, []),
     });
+
+    // Trigger initial populate to prime pairwise
+    await allSettled(multisigOperation.populate, { scope });
 
     await allSettled(multisigOperation.addOperations, { scope, params: [mockOperation] });
 
@@ -80,6 +84,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     const updatedOperation = createMockOperation({ status: 'executed' });
     const mockNotifications: MultisigOperationNotification[] = [];
 
+    jest.spyOn(storageService.multisigOperations, 'readAll').mockResolvedValue([initialOperation as any]);
     jest.spyOn(storageService.multisigOperations, 'updateAll').mockResolvedValue(undefined);
     jest.spyOn(storageService.multisigOperations, 'deleteAll').mockResolvedValue([]);
     jest.spyOn(storageService.multisigOperations, 'insertAll').mockResolvedValue(undefined);
@@ -92,11 +97,13 @@ describe('domains/network/multisig-operation/store - notifications', () => {
 
     const scope = fork({
       values: new Map()
-        .set(multisigOperation.__test.$list, [initialOperation])
-        .set(multisigOperation.__test.$previousList, [initialOperation])
-        .set(multisigOperation.__test.$populated, true)
+        .set(multisigOperation.__test.$list, [])
+        .set(multisigOperation.__test.$populated, false)
         .set(notificationModel.$notifications, []),
     });
+
+    // Trigger initial populate to prime pairwise
+    await allSettled(multisigOperation.populate, { scope });
 
     await allSettled(multisigOperation.updateOperations, { scope, params: [updatedOperation] });
 
@@ -114,6 +121,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     const updatedOperation = createMockOperation({ status: 'cancelled' });
     const mockNotifications: MultisigOperationNotification[] = [];
 
+    jest.spyOn(storageService.multisigOperations, 'readAll').mockResolvedValue([initialOperation as any]);
     jest.spyOn(storageService.multisigOperations, 'updateAll').mockResolvedValue(undefined);
     jest.spyOn(storageService.multisigOperations, 'deleteAll').mockResolvedValue([]);
     jest.spyOn(storageService.multisigOperations, 'insertAll').mockResolvedValue(undefined);
@@ -126,11 +134,13 @@ describe('domains/network/multisig-operation/store - notifications', () => {
 
     const scope = fork({
       values: new Map()
-        .set(multisigOperation.__test.$list, [initialOperation])
-        .set(multisigOperation.__test.$previousList, [initialOperation])
-        .set(multisigOperation.__test.$populated, true)
+        .set(multisigOperation.__test.$list, [])
+        .set(multisigOperation.__test.$populated, false)
         .set(notificationModel.$notifications, []),
     });
+
+    // Trigger initial populate to prime pairwise
+    await allSettled(multisigOperation.populate, { scope });
 
     await allSettled(multisigOperation.updateOperations, { scope, params: [updatedOperation] });
 
@@ -148,6 +158,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     const updatedOperation = createMockOperation({ status: 'error' });
     const mockNotifications: MultisigOperationNotification[] = [];
 
+    jest.spyOn(storageService.multisigOperations, 'readAll').mockResolvedValue([initialOperation as any]);
     jest.spyOn(storageService.multisigOperations, 'updateAll').mockResolvedValue(undefined);
     jest.spyOn(storageService.multisigOperations, 'deleteAll').mockResolvedValue([]);
     jest.spyOn(storageService.multisigOperations, 'insertAll').mockResolvedValue(undefined);
@@ -160,11 +171,13 @@ describe('domains/network/multisig-operation/store - notifications', () => {
 
     const scope = fork({
       values: new Map()
-        .set(multisigOperation.__test.$list, [initialOperation])
-        .set(multisigOperation.__test.$previousList, [initialOperation])
-        .set(multisigOperation.__test.$populated, true)
+        .set(multisigOperation.__test.$list, [])
+        .set(multisigOperation.__test.$populated, false)
         .set(notificationModel.$notifications, []),
     });
+
+    // Trigger initial populate to prime pairwise
+    await allSettled(multisigOperation.populate, { scope });
 
     await allSettled(multisigOperation.updateOperations, { scope, params: [updatedOperation] });
 
@@ -181,6 +194,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     const initialOperation = createMockOperation({ status: 'pending' });
     const updatedOperation = createMockOperation({ status: 'pending' });
 
+    jest.spyOn(storageService.multisigOperations, 'readAll').mockResolvedValue([initialOperation as any]);
     jest.spyOn(storageService.multisigOperations, 'updateAll').mockResolvedValue(undefined);
     jest.spyOn(storageService.multisigOperations, 'deleteAll').mockResolvedValue([]);
     jest.spyOn(storageService.multisigOperations, 'insertAll').mockResolvedValue(undefined);
@@ -188,11 +202,13 @@ describe('domains/network/multisig-operation/store - notifications', () => {
 
     const scope = fork({
       values: new Map()
-        .set(multisigOperation.__test.$list, [initialOperation])
-        .set(multisigOperation.__test.$previousList, [initialOperation])
-        .set(multisigOperation.__test.$populated, true)
+        .set(multisigOperation.__test.$list, [])
+        .set(multisigOperation.__test.$populated, false)
         .set(notificationModel.$notifications, []),
     });
+
+    // Trigger initial populate to prime pairwise
+    await allSettled(multisigOperation.populate, { scope });
 
     await allSettled(multisigOperation.updateOperations, { scope, params: [updatedOperation] });
 
@@ -203,6 +219,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     const initialOperation = createMockOperation({ status: 'executed' });
     const updatedOperation = createMockOperation({ status: 'pending' });
 
+    jest.spyOn(storageService.multisigOperations, 'readAll').mockResolvedValue([initialOperation as any]);
     jest.spyOn(storageService.multisigOperations, 'updateAll').mockResolvedValue(undefined);
     jest.spyOn(storageService.multisigOperations, 'deleteAll').mockResolvedValue([]);
     jest.spyOn(storageService.multisigOperations, 'insertAll').mockResolvedValue(undefined);
@@ -210,11 +227,13 @@ describe('domains/network/multisig-operation/store - notifications', () => {
 
     const scope = fork({
       values: new Map()
-        .set(multisigOperation.__test.$list, [initialOperation])
-        .set(multisigOperation.__test.$previousList, [initialOperation])
-        .set(multisigOperation.__test.$populated, true)
+        .set(multisigOperation.__test.$list, [])
+        .set(multisigOperation.__test.$populated, false)
         .set(notificationModel.$notifications, []),
     });
+
+    // Trigger initial populate to prime pairwise
+    await allSettled(multisigOperation.populate, { scope });
 
     await allSettled(multisigOperation.updateOperations, { scope, params: [updatedOperation] });
 
@@ -226,6 +245,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     const mockOperation2 = createMockOperation({ id: 'op-2' });
     const mockNotifications: MultisigOperationNotification[] = [];
 
+    jest.spyOn(storageService.multisigOperations, 'readAll').mockResolvedValue([]);
     jest
       .spyOn(storageService.multisigOperations, 'createAll')
       .mockResolvedValue([mockOperation1, mockOperation2] as any);
@@ -241,9 +261,12 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     const scope = fork({
       values: new Map()
         .set(multisigOperation.__test.$list, [])
-        .set(multisigOperation.__test.$populated, true)
+        .set(multisigOperation.__test.$populated, false)
         .set(notificationModel.$notifications, []),
     });
+
+    // Trigger initial populate to prime pairwise
+    await allSettled(multisigOperation.populate, { scope });
 
     await allSettled(multisigOperation.addOperations, { scope, params: [mockOperation1, mockOperation2] });
 
@@ -259,6 +282,7 @@ describe('domains/network/multisig-operation/store - notifications', () => {
     const updatedExistingOperation = createMockOperation({ id: 'existing-op', status: 'executed' });
     const mockNotifications: MultisigOperationNotification[] = [];
 
+    jest.spyOn(storageService.multisigOperations, 'readAll').mockResolvedValue([existingOperation as any]);
     jest.spyOn(storageService.multisigOperations, 'createAll').mockResolvedValue([newOperation] as any);
     jest.spyOn(storageService.multisigOperations, 'updateAll').mockResolvedValue(undefined);
     jest.spyOn(storageService.multisigOperations, 'deleteAll').mockResolvedValue([]);
@@ -272,11 +296,13 @@ describe('domains/network/multisig-operation/store - notifications', () => {
 
     const scope = fork({
       values: new Map()
-        .set(multisigOperation.__test.$list, [existingOperation])
-        .set(multisigOperation.__test.$previousList, [existingOperation])
-        .set(multisigOperation.__test.$populated, true)
+        .set(multisigOperation.__test.$list, [])
+        .set(multisigOperation.__test.$populated, false)
         .set(notificationModel.$notifications, []),
     });
+
+    // Trigger initial populate to prime pairwise
+    await allSettled(multisigOperation.populate, { scope });
 
     // Add new operation
     await allSettled(multisigOperation.addOperations, { scope, params: [newOperation] });
