@@ -437,8 +437,9 @@ const Amount = memo(() => {
   const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
+  const isXcm = useUnit(formModel.$isXcm);
 
-  const showMaxButton = accountAvailableBalance?.gtn(0) ?? false;
+  const showMaxButton = !isXcm && (accountAvailableBalance?.gtn(0) ?? false);
   const showEDSwitch = useUnit(formModel.$showEDSwitch);
 
   if (!network) {
