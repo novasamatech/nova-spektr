@@ -2,14 +2,14 @@ import { useStoreMap, useUnit } from 'effector-react';
 import { keyBy, uniqBy } from 'lodash';
 import { type PropsWithChildren, type ReactNode, useMemo, useState } from 'react';
 
-import { type Address as AccountAddress, type ID } from '@/shared/core';
+import { type Address as AccountAddress, type Chain, type ID, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { entries, includesMultiple, nonNullable, toAccountId, toAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Button, CaptionText } from '@/shared/ui';
 import { Address, Identicon, WalletIcon } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Modal } from '@/shared/ui-kit';
-import { accountService } from '@/domains/network';
+import { type AnyAccount, accountService, useAccountName, useWalletName } from '@/domains/network';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelectFeature } from '@/features/wallet-select';
 import { beneficiary } from '../model/beneficiary';
@@ -31,6 +31,22 @@ type ComboboxGroup = {
   id: string;
   label: ReactNode;
   items: ComboboxItem[];
+};
+
+type AccountAddressItemProps = {
+  account: AnyAccount;
+  wallet: Wallet | undefined;
+  chain: Chain;
+  address: AccountAddress;
+};
+
+const AccountAddressItem = ({ account, wallet, chain, address }: AccountAddressItemProps) => {
+  const accountName = useAccountName({ accountId: account.accountId, chain });
+  const walletName = useWalletName(wallet);
+
+  const title = wallet && walletName && accountName !== walletName ? `${accountName} (${walletName})` : accountName;
+
+  return <Address showIcon title={title} address={address} />;
 };
 
 export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
@@ -98,16 +114,10 @@ export const SalaryEditBeneficiaryModal = ({ disabled, children }: Props) => {
         const wallet = walletsMap[account.walletId];
         const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
 
-        const title = wallet
-          ? account.name === wallet.name
-            ? account.name
-            : `${account.name} (${wallet.name})`
-          : account.name;
-
         accountOptions.push({
           id: address,
           value: { address, walletId: account.walletId },
-          label: <Address showIcon title={title} address={address} />,
+          label: <AccountAddressItem account={account} wallet={wallet} chain={chain} address={address} />,
         });
       }
 

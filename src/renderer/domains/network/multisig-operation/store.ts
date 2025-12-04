@@ -154,7 +154,7 @@ const createOperationNotification = (operation: MultisigOperation): NoID<Multisi
 const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {
     const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
-    const notifications: NoID<MultisigOperationNotification>[] = [];
+    const notifications: (NoID<MultisigOperationNotification> & { key: string })[] = [];
 
     for (const item of update) {
       const previousOp = previousOpsMap.get(item.id);

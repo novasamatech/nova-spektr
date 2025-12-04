@@ -1,10 +1,10 @@
 import { type ApiPromise } from '@polkadot/api';
 import { BN } from '@polkadot/util';
 
-import { type BlockHeight, type Chain, type ChainId } from '@/shared/core';
+import { type BlockHeight, type ChainId } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 
-import { type ExistingVestingScheduleMap } from './types';
+import { type ExistingVestingSchedule } from './types';
 
 export const vestingService = {
   getMinStartingBlock,
@@ -13,8 +13,8 @@ export const vestingService = {
   getExistingVestingSchedules,
 };
 
-function getMinStartingBlock(currentBlock: Record<ChainId, BlockHeight>, chain: Chain): BN {
-  const minStartingBlock = currentBlock[chain.chainId];
+function getMinStartingBlock(currentBlock: Record<ChainId, BlockHeight>, timelineChainId: ChainId): BN {
+  const minStartingBlock = currentBlock[timelineChainId];
   return new BN(minStartingBlock);
 }
 
@@ -28,7 +28,7 @@ function getMaxVestingSchedules(api: ApiPromise): BN {
 
 async function getExistingVestingSchedules(api: ApiPromise) {
   const vestingEntries = await api.query.vesting.vesting.entries();
-  const existingVestingSchedules: ExistingVestingScheduleMap = {};
+  const existingVestingSchedules: ExistingVestingSchedule = {};
 
   for (const [key, value] of vestingEntries) {
     const schedules = value.unwrapOr([]);
