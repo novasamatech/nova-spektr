@@ -57,7 +57,7 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
       return {
         title: t(title || ''),
         amount: asset && amount ? { value: amount, asset } : undefined,
-        chainId: operation.chainId,
+        sourceChainId: operation.chainId,
       };
     }
   },

@@ -64,7 +64,7 @@ multisigOperationsSDK(governanceOperationDetailFeature, {
       return {
         title: t(title || '', { asset: asset?.symbol }),
         amount: asset && amount ? { value: amount, asset } : undefined,
-        chainId: operation.chainId,
+        sourceChainId: operation.chainId,
       };
     }
   },

@@ -42,8 +42,8 @@ export type OperationTitle = {
     value: BN | string;
     asset: Asset | AssetByChains;
   };
-  chainId?: ChainId;
-  chainIdTo?: ChainId; // For XCM transactions
+  sourceChainId?: ChainId;
+  destinationChainId?: ChainId; // For XCM transactions
 };
 
 export const operationTitleTransformer = createTransformer<
@@ -80,7 +80,7 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
           ? formatSectionAndMethod(coreTx.section, coreTx.method)
           : t('operations.titles.unknown'),
       amount: asset && amount ? { value: amount, asset } : undefined,
-      chainId: operation.chainId,
+      sourceChainId: operation.chainId,
     };
   }
 
@@ -101,11 +101,15 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
                 <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />
               </Box>
             )}
-            {titleData.chainId &&
-              (titleData.chainIdTo ? (
-                <XcmChains chainIdFrom={titleData.chainId} chainIdTo={titleData.chainIdTo} className="w-[114px]" />
+            {titleData.sourceChainId &&
+              (titleData.destinationChainId ? (
+                <XcmChains
+                  chainIdFrom={titleData.sourceChainId}
+                  chainIdTo={titleData.destinationChainId}
+                  className="w-[114px]"
+                />
               ) : (
-                <ChainTitle chainId={titleData.chainId} className="w-[114px]" />
+                <ChainTitle chainId={titleData.sourceChainId} className="w-[114px]" />
               ))}
           </div>
 

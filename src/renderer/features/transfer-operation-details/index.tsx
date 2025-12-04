@@ -44,7 +44,7 @@ multisigOperationsSDK(transferOperationDetailFeature, {
       return {
         title: t('operations.titles.transfer', { asset: asset?.symbol }),
         amount: asset && amount ? { value: amount, asset } : undefined,
-        chainId: operation.chainId,
+        sourceChainId: operation.chainId,
       };
     }
 

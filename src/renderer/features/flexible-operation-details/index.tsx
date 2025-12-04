@@ -20,7 +20,7 @@ multisigOperationsSDK(flexibleOperationDetailFeature, {
     if (isEditFlexibleTransaction(operation.transaction)) {
       return {
         title: t('operations.titles.editFlexible'),
-        chainId: operation.chainId,
+        sourceChainId: operation.chainId,
       };
     }
   },
