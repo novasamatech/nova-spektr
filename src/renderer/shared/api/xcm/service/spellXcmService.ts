@@ -10,8 +10,6 @@ import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { XCM_DESTINATION_BLACKLIST, XCM_DESTINATION_WHITELIST, type XcmDestinationBlacklistEntry } from './constants';
 import { normalizeXcmError } from './xcm-error-utils';
 
-const DISABLE_XCM_BLACKLIST = false;
-
 type XcmTransferParams = {
   fromChain: Chain;
   toChain: Chain;
@@ -87,10 +85,6 @@ type DetectHopChainsResult = {
 };
 
 function isRouteBlacklisted(sourceChainId: ChainId, destinationChainId: ChainId): boolean {
-  if (DISABLE_XCM_BLACKLIST) {
-    return false;
-  }
-
   return XCM_DESTINATION_BLACKLIST.some((entry: XcmDestinationBlacklistEntry) => {
     const hasSource = nonNullable(entry.sourceChainId);
     const hasDestination = nonNullable(entry.destinationChainId);
