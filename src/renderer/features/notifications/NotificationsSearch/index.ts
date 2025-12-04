@@ -1,1 +1,1 @@
-export { NotificationsSearch } from './ui/NotificationsSearch';
+export { NotificationsFilters } from './ui/NotificationsFilters';

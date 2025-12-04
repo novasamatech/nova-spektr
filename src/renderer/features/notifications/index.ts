@@ -1,4 +1,4 @@
 export { NotificationsList, notificationListModel } from './NotificationsList';
 export { EmptyNotifications } from './EmptyNotifications';
-export { NotificationsSearch } from './NotificationsSearch';
+export { NotificationsFilters } from './NotificationsSearch';
 export { NotificationsSettings } from './NotificationsSettings';

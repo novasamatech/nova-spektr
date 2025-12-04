@@ -17,45 +17,55 @@ const $query = createStore<string>('')
   .on(queryChanged, (_, query) => query)
   .reset(pageOpened);
 
-const isWalletNotification = (notification: Notification): boolean => {
-  return [
+type NotificationFilter = (notification: Notification) => boolean;
+
+// Source type matchers
+const isWalletNotification: NotificationFilter = (notification) =>
+  [
     NotificationType.MULTISIG_CREATED,
     NotificationType.FLEXIBLE_MULTISIG_CREATED,
     NotificationType.FLEXIBLE_MULTISIG_EDITED,
     NotificationType.PROXY_CREATED,
     NotificationType.PROXY_REMOVED,
   ].includes(notification.type);
+
+const isOperationNotification: NotificationFilter = (notification) =>
+  notification.type === NotificationType.MULTISIG_OPERATION;
+
+// Event type matchers configuration
+const EVENT_MATCHERS: Record<NotificationEvent, NotificationFilter> = {
+  [NotificationEvent.WALLET_CREATED]: (n) =>
+    [
+      NotificationType.MULTISIG_CREATED,
+      NotificationType.FLEXIBLE_MULTISIG_CREATED,
+      NotificationType.PROXY_CREATED,
+    ].includes(n.type),
+  [NotificationEvent.OPERATION_CREATED]: (n) => n.type === NotificationType.MULTISIG_OPERATION && n.status === 'info',
+  [NotificationEvent.OPERATION_EXECUTED]: (n) =>
+    n.type === NotificationType.MULTISIG_OPERATION && n.status === 'success',
+  [NotificationEvent.OPERATION_REJECTED]: (n) => n.type === NotificationType.MULTISIG_OPERATION && n.status === 'error',
 };
 
-const isOperationNotification = (notification: Notification): boolean => {
-  return notification.type === NotificationType.MULTISIG_OPERATION;
+// Filter factories
+const createSourceFilter = (source: NotificationSource): NotificationFilter => {
+  if (source === NotificationSource.OPERATIONS) return isOperationNotification;
+  if (source === NotificationSource.WALLETS) return isWalletNotification;
+  return () => true;
 };
 
-const matchesEventFilter = (notification: Notification, events: Set<NotificationEvent>): boolean => {
-  if (notification.type === NotificationType.MULTISIG_OPERATION) {
-    const opNotification = notification as Notification & { operationStatus?: string };
-    if (opNotification.operationStatus === 'created' && !events.has(NotificationEvent.OPERATION_CREATED)) {
-      return false;
+const createEventFilter = (enabledEvents: Set<NotificationEvent>): NotificationFilter => {
+  return (notification) => {
+    for (const [event, matcher] of Object.entries(EVENT_MATCHERS)) {
+      if (matcher(notification) && !enabledEvents.has(event as NotificationEvent)) {
+        return false;
+      }
     }
-    if (opNotification.operationStatus === 'executed' && !events.has(NotificationEvent.OPERATION_EXECUTED)) {
-      return false;
-    }
-    if (opNotification.operationStatus === 'cancelled' && !events.has(NotificationEvent.OPERATION_REJECTED)) {
-      return false;
-    }
-  } else if (isWalletNotification(notification)) {
-    if (
-      [
-        NotificationType.MULTISIG_CREATED,
-        NotificationType.FLEXIBLE_MULTISIG_CREATED,
-        NotificationType.PROXY_CREATED,
-      ].includes(notification.type) &&
-      !events.has(NotificationEvent.WALLET_CREATED)
-    ) {
-      return false;
-    }
-  }
-  return true;
+    return true;
+  };
+};
+
+const composeFilters = (...filters: NotificationFilter[]): NotificationFilter => {
+  return (notification) => filters.every((filter) => filter(notification));
 };
 
 const $notificationGroups = combine(
@@ -71,18 +81,14 @@ const $notificationGroups = combine(
   ({ notifications, query, chains, wallets, identities, source, events }) => {
     if (notifications.length === 0) return [];
 
-    let sourceFiltered = notifications;
+    const sourceFilter = createSourceFilter(source);
+    const eventFilter = createEventFilter(events);
+    const combinedFilter = composeFilters(sourceFilter, eventFilter);
 
-    if (source === NotificationSource.OPERATIONS) {
-      sourceFiltered = notifications.filter(isOperationNotification);
-    } else if (source === NotificationSource.WALLETS) {
-      sourceFiltered = notifications.filter(isWalletNotification);
-    }
+    const filtered = notifications.filter(combinedFilter);
 
-    const eventFiltered = sourceFiltered.filter((notification) => matchesEventFilter(notification, events));
-
-    const filteredNotifications = performSearch({
-      records: eventFiltered,
+    const searched = performSearch({
+      records: filtered,
       query,
       getMeta: (notification: Notification) => {
         const issuerWallet = wallets.find((w) => w.accounts.some((acc) => acc.accountId === notification.issuer));
@@ -106,13 +112,13 @@ const $notificationGroups = combine(
       },
     });
 
-    const sorted = filteredNotifications.sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0));
+    const sorted = searched.sort((a, b) => (b.dateCreated || 0) - (a.dateCreated || 0));
 
-    const group = groupBy(sorted, ({ dateCreated }) => {
+    const grouped = groupBy(sorted, ({ dateCreated }) => {
       return format(new Date(dateCreated || 0), 'PP', { locale: enGB });
     });
 
-    return Object.entries(group);
+    return Object.entries(grouped);
   },
 );
 

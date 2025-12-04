@@ -5,8 +5,8 @@ import { Header } from '@/shared/ui';
 import { notificationModel } from '@/entities/notification';
 import {
   EmptyNotifications,
+  NotificationsFilters,
   NotificationsList,
-  NotificationsSearch,
   notificationListModel,
 } from '@/features/notifications';
 
@@ -21,7 +21,7 @@ export const Notifications = () => {
   return (
     <div className="flex h-full flex-col">
       <Header title={t('notifications.title')} titleClass="py-[3px]" headerClass="pt-4 pb-[15px]">
-        <NotificationsSearch />
+        <NotificationsFilters />
       </Header>
 
       <NotificationsList />
