@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import {
   AccountNameType,
+  AccountType,
   type Asset,
   type AssetId,
   type Balance,
@@ -285,7 +286,13 @@ function resolveAccountName({
       return accountChain?.addressPrefix;
     })();
 
-  return toShortAddress(toAddress(accountId, { prefix }), 5);
+  const isShardAccount =
+    relatedAccount &&
+    isChainAccount(relatedAccount) &&
+    'accountType' in relatedAccount &&
+    (relatedAccount as Record<string, unknown>)['accountType'] === AccountType.SHARD;
+
+  return toShortAddress(toAddress(accountId, { prefix }), isShardAccount ? 16 : 5);
 }
 
 function hasPermissionToMakeActions(account: AnyAccount) {
