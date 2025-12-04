@@ -15,6 +15,7 @@ type Props = {
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   onClick?: VoidFunction;
+  inline?: boolean;
 };
 
 export const ButtonLink = ({
@@ -28,15 +29,23 @@ export const ButtonLink = ({
   prefixElement,
   suffixElement,
   onClick,
+  inline = false,
 }: PropsWithChildren<Props>) => {
   const classes = cnTw(
-    'flex cursor-pointer items-center justify-center gap-x-2 font-medium outline-offset-1 select-none',
+    inline
+      ? 'inline cursor-pointer font-medium'
+      : 'flex cursor-pointer items-center justify-center gap-x-2 font-medium outline-offset-1 select-none',
     {
       'cursor-not-allowed': disabled,
     },
-    SizeClass[size],
-    variant !== 'text' && Padding[size],
-    ViewClass[`${variant}_${pallet}`](disabled),
+    !inline && SizeClass[size],
+    !inline && variant !== 'text' && Padding[size],
+    inline
+      ? cnTw('border-transparent bg-transparent text-primary-button-background-default', {
+          'text-primary-button-background-inactive': disabled,
+          'hover:text-primary-button-background-hover active:text-primary-button-background-active': !disabled,
+        })
+      : ViewClass[`${variant}_${pallet}`](disabled),
     className,
   );
 

@@ -17,6 +17,7 @@ const addNotificationsFx = createEffect(async (notifications: NoID<Notification>
 });
 
 const notificationsAdded = createEvent<NoID<Notification>[]>();
+const notificationsAddedComplete = createEvent<Notification[]>();
 
 // Filter out duplicates and add IDs
 sample({
@@ -47,6 +48,11 @@ sample({
     return newNotifications;
   },
   target: addNotificationsFx,
+});
+
+sample({
+  clock: addNotificationsFx.doneData,
+  target: notificationsAddedComplete,
 });
 
 const markAllAsReadFx = createEffect((notifications: Notification[]): Promise<Notification[]> => {
@@ -116,6 +122,7 @@ export const notificationModel = {
   events: {
     notificationsStarted: populateNotificationsFx,
     notificationsAdded,
+    notificationsAddedComplete,
     notificationsViewed,
     notificationEdited,
   },

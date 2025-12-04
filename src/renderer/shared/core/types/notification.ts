@@ -31,7 +31,10 @@ type BaseNotification = {
   chainId: ChainId;
   title: string;
   description?: string;
-  deepLink?: string;
+  deepLink?: {
+    title: string;
+    link: string;
+  };
 };
 
 type MultisigBaseNotification = BaseNotification & {

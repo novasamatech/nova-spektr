@@ -1650,7 +1650,11 @@
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "searchPlaceholder": "Search by wallet or event type",
-    "title": "Notifications"
+    "title": "Notifications",
+    "toast": {
+      "viewDetails": "View Details",
+      "viewOperations": "View operations"
+    }
   },
   "onboarding": {
     "accountAddressLabel": "Account address",

@@ -10,8 +10,10 @@ import {
   NotificationType,
 } from '@/shared/core';
 import { createQueuedEffect, pairwise } from '@/shared/effector';
+import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
+import { Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
@@ -131,6 +133,11 @@ const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancell
 };
 
 const createOperationNotification = (operation: MultisigOperation): NoID<MultisigOperationNotification> => {
+  const description =
+    operation.transaction?.section && operation.transaction?.method
+      ? formatSectionAndMethod(operation.transaction.section, operation.transaction.method)
+      : undefined;
+
   return {
     key: `${NotificationType.MULTISIG_OPERATION}:${operation.id}:${operation.status}`,
     type: NotificationType.MULTISIG_OPERATION,
@@ -139,7 +146,11 @@ const createOperationNotification = (operation: MultisigOperation): NoID<Multisi
     status: getNotificationStatus(operation.status),
     issuer: operation.accountId,
     title: getNotificationTitle(operation.status),
-    description: operation.transaction ? `${operation.transaction.section}.${operation.transaction.method}` : undefined,
+    description,
+    deepLink: {
+      title: 'notifications.toast.viewOperations',
+      link: Paths.OPERATIONS,
+    },
     multisigAccountId: operation.accountId,
     callHash: operation.callHash,
     callTimepoint: {
@@ -151,30 +162,28 @@ const createOperationNotification = (operation: MultisigOperation): NoID<Multisi
   };
 };
 
-const operationChanges = pairwise($list)
-  .map(({ prev: prevState, current: update }) => {
-    const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
-    const notifications: (NoID<MultisigOperationNotification> & { key: string })[] = [];
+const operationChanges = pairwise($list).map(({ prev: prevState, current: update }) => {
+  const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
+  const operationsToNotify: MultisigOperation[] = [];
 
-    for (const item of update) {
-      const previousOp = previousOpsMap.get(item.id);
+  for (const item of update) {
+    const previousOp = previousOpsMap.get(item.id);
 
-      if (!previousOp) {
-        notifications.push(createOperationNotification(item));
-      } else if (previousOp.status !== item.status && item.status !== 'pending') {
-        notifications.push(createOperationNotification(item));
-      }
+    if (!previousOp) {
+      operationsToNotify.push(item);
+    } else if (previousOp.status !== item.status && item.status !== 'pending') {
+      operationsToNotify.push(item);
     }
+  }
 
-    return notifications;
-  })
-  .filter({ fn: notifications => notifications.length > 0 });
+  return operationsToNotify;
+});
 
 sample({
   clock: operationChanges,
   source: $populated,
-  filter: (populated, changes) => populated && !!changes.length,
-  fn: (_, notifications) => notifications,
+  filter: (populated, operations) => populated && operations.length > 0,
+  fn: (_, operations) => operations.map(createOperationNotification),
   target: notificationModel.events.notificationsAdded,
 });
 

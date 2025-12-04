@@ -1,11 +1,12 @@
 import { useGate } from 'effector-react';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useNavigate, useRoutes, useSearchParams } from 'react-router-dom';
 
 import { logger } from '@/shared/config/utils';
 import { ConfirmDialogProvider } from '@/shared/providers';
 import { deepLinkService } from '@/domains/app';
 import { navigationModel } from '@/features/navigation';
+import { NotificationsPortal } from '@/features/notifications/NotificationsPortal/NotificationsPortal';
 import { ROUTES_CONFIG } from '@/pages/index';
 
 import { bootstrap } from './bootstrap';
@@ -39,7 +40,12 @@ export const App = () => {
   return (
     <ConfirmDialogProvider>
       <StatusModalProvider>
-        <GraphqlProvider>{appRoutes}</GraphqlProvider>
+        <GraphqlProvider>
+          <Suspense fallback={null}>
+            <NotificationsPortal />
+          </Suspense>
+          {appRoutes}
+        </GraphqlProvider>
       </StatusModalProvider>
     </ConfirmDialogProvider>
   );
