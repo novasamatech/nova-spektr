@@ -636,10 +636,16 @@ const AlertForDryRunError = memo(() => {
   const errorInfo = categorizeXcmError(error);
   const isTooExpensive = errorInfo.isTooExpensive;
   const isFeesNotMet = errorInfo.isFeesNotMet;
+  const isInsufficientBalance = errorInfo.isInsufficientBalance;
+  const failureChain = buildTransferDryRunResult.failureChain;
 
-  const chainName = xcmChain?.name || buildTransferDryRunResult.failureChain;
+  if (isInsufficientBalance) {
+    return null;
+  }
 
-  const cleanReason = getHumanReadableFailureReason(error, buildTransferDryRunResult.failureChain);
+  const chainName = xcmChain?.name || failureChain;
+
+  const cleanReason = getHumanReadableFailureReason(error, failureChain);
 
   const getTitle = () => {
     if (isTooExpensive) {
