@@ -49,7 +49,7 @@ export const NotificationsSettings = memo(() => {
       <Popover.Content>
         <div className="min-h-[350px]">
           <Box width="270px" padding={4} gap={3}>
-            <SmallTitleText>{t('notifications.settings.wallets')}</SmallTitleText>
+            <SmallTitleText>{t('notifications.settings.showNotificationsFrom')}</SmallTitleText>
             <div className="relative z-10">
               <MultiSelect
                 placeholder={t('notifications.settings.wallets')}

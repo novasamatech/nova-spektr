@@ -1658,6 +1658,7 @@
       "eventWalletCreated": "Wallet created",
       "events": "Events",
       "selectAll": "Select all",
+      "showNotificationsFrom": "Show notifications from",
       "source": "Show notification from",
       "sourceAll": "All",
       "sourceOperations": "Operations",
