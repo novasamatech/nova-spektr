@@ -2,7 +2,6 @@ import { type ApiPromise } from '@polkadot/api';
 
 import {
   AccountNameType,
-  AccountType,
   type Asset,
   type AssetId,
   type Balance,
@@ -206,7 +205,8 @@ function getWalletAccountId(wallet: Wallet, accounts: AnyAccount[]): AccountId |
 
   const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
 
-  const universalAccount = walletAccounts.find(acc => acc.type === 'universal');
+  const universalAccount = walletAccounts.find(acc => isUniversalAccount(acc));
+
   return universalAccount?.accountId ?? walletAccounts[0]?.accountId ?? null;
 }
 
@@ -283,13 +283,7 @@ function resolveAccountName({
       return accountChain?.addressPrefix;
     })();
 
-  const isShardAccount =
-    relatedAccount &&
-    isChainAccount(relatedAccount) &&
-    'accountType' in relatedAccount &&
-    (relatedAccount as Record<string, unknown>)['accountType'] === AccountType.SHARD;
-
-  return toShortAddress(toAddress(accountId, { prefix }), isShardAccount ? 16 : 5);
+  return toShortAddress(toAddress(accountId, { prefix }), 5);
 }
 
 function hasPermissionToMakeActions(account: AnyAccount) {
