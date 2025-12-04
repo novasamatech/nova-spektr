@@ -1,30 +1,30 @@
-name: 'Run System Tests'
-description: 'Executes Playwright system tests and sends notification to Telegram'
+name: "Run System Tests"
+description: "Executes Playwright system tests and sends notification to Telegram"
 
 inputs:
   telegram_token:
-    description: 'Telegram Bot Token'
+    description: "Telegram Bot Token"
     required: true
   telegram_to:
-    description: 'Telegram Channel ID'
+    description: "Telegram Channel ID"
     required: true
   test_grep:
-    description: 'Test grep pattern'
+    description: "Test grep pattern"
     required: true
 
 runs:
   using: "composite"
   steps:
-    - id: playwright_tests
-      shell: bash
-      run: |
-        allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
-
     - name: Create Allure testplan if missing
       shell: bash
       run: |
         mkdir -p .allure
         echo '{}' > .allure/testplan.json
+
+    - id: playwright_tests
+      shell: bash
+      run: |
+        allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
 
     - shell: bash
       run: |
