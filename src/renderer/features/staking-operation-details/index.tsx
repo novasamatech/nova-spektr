@@ -64,7 +64,7 @@ multisigOperationsSDK(stakingOperationDetailFeature, {
       const amount = transaction && getTransactionAmount(transaction);
 
       return {
-        title: t(title || ''),
+        title: title ? t(title) : undefined,
         amount: asset && amount ? { value: amount, asset } : undefined,
         sourceChainId: operation.chainId,
       };

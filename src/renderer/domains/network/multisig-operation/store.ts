@@ -130,23 +130,26 @@ const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancell
   }
 };
 
-const createOperationNotification = (operation: MultisigOperation): NoID<MultisigOperationNotification> => ({
-  type: NotificationType.MULTISIG_OPERATION,
-  read: false,
-  dateCreated: Date.now(),
-  status: getNotificationStatus(operation.status),
-  issuer: operation.accountId,
-  title: getNotificationTitle(operation.status),
-  description: operation.transaction ? `${operation.transaction.section}.${operation.transaction.method}` : undefined,
-  multisigAccountId: operation.accountId,
-  callHash: operation.callHash,
-  callTimepoint: {
-    height: operation.blockCreated,
-    index: operation.indexCreated,
-  },
-  chainId: operation.chainId,
-  operationId: operation.id,
-});
+const createOperationNotification = (operation: MultisigOperation): NoID<MultisigOperationNotification> => {
+  return {
+    key: `${NotificationType.MULTISIG_OPERATION}:${operation.id}:${operation.status}`,
+    type: NotificationType.MULTISIG_OPERATION,
+    read: false,
+    dateCreated: Date.now(),
+    status: getNotificationStatus(operation.status),
+    issuer: operation.accountId,
+    title: getNotificationTitle(operation.status),
+    description: operation.transaction ? `${operation.transaction.section}.${operation.transaction.method}` : undefined,
+    multisigAccountId: operation.accountId,
+    callHash: operation.callHash,
+    callTimepoint: {
+      height: operation.blockCreated,
+      index: operation.indexCreated,
+    },
+    chainId: operation.chainId,
+    operationId: operation.id,
+  };
+};
 
 const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {

@@ -79,7 +79,7 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
       }
 
       return {
-        title: t(title || '', { asset: asset?.symbol }),
+        title: title ? t(title, { asset: asset?.symbol }) : undefined,
         amount: asset && amount ? { value: amount, asset } : undefined,
         sourceChainId: operation.chainId,
       };

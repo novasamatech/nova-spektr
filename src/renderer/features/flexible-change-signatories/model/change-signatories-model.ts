@@ -455,6 +455,7 @@ sample({
     nonNullable(multisigAccount) && nonNullable(initiatorWallet) && nonNullable(threshold) && nonNullable(chainId),
   fn: ({ multisigAccount, initiatorWallet, signatories, threshold, chainId }) => {
     const notification: NoID<FlexibleMultisigOperationNotification> = {
+      key: `${NotificationType.FLEXIBLE_MULTISIG_EDITED}:${multisigAccount!.accountId}`,
       read: false,
       walletId: initiatorWallet!.id,
       type: NotificationType.FLEXIBLE_MULTISIG_EDITED,
