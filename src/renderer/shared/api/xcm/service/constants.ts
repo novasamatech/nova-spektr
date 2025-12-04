@@ -92,6 +92,22 @@ export const XCM_DESTINATION_BLACKLIST: XcmDestinationBlacklistEntry[] = [
     sourceChainId: '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2', // Polkadot Collectives
     destinationChainId: '0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464', // Polkadot Bridge Hub
   },
+  {
+    sourceChainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3', // Polkadot Relay
+    destinationChainId: '0xafdc188f45c71dacbaa0b62e16a91f726c7b8699a9748cdf715459de6b7f366d', // Hydration
+  },
+  {
+    sourceChainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3', // Polkadot Relay
+    destinationChainId: '0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b', // Bifrost Polkadot
+  },
+  {
+    sourceChainId: '0x262e1b2ad728475fd6fe88e62d34c200abe6fd693931ddad144059b1eb884e5b', // Bifrost Polkadot
+    destinationChainId: '0xfe58ea77779b7abda7da4ec526d14db9b1e9cd40a217c34892af80a9b332b76d', // Moonbeam
+  },
+  {
+    sourceChainId: '0x9f28c6a68e0fc9646eff64935684f6eeeece527e37bbe1f213d22caa1d9d6bed', // Bifrost Kusama
+    destinationChainId: '0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b', // Moonriver
+  },
 ];
 
 export const XCM_DESTINATION_WHITELIST: XcmDestinationWhitelistEntry[] = [
