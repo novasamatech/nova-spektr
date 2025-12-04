@@ -2,6 +2,7 @@ import { type ApiPromise } from '@polkadot/api';
 
 import {
   AccountNameType,
+  AccountType,
   type Asset,
   type AssetId,
   type Balance,
@@ -196,12 +197,6 @@ function getAccountAddressPrefix(
 }
 
 function getWalletAccountId(wallet: Wallet, accounts: AnyAccount[]): AccountId | null {
-  const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
-
-  if (walletAccounts.length > 0) {
-    return walletAccounts[0]?.accountId ?? null;
-  }
-
   if (
     (wallet.type === WalletType.POLKADOT_VAULT || wallet.type === WalletType.SINGLE_PARITY_SIGNER) &&
     'rootAccountId' in wallet
@@ -209,7 +204,10 @@ function getWalletAccountId(wallet: Wallet, accounts: AnyAccount[]): AccountId |
     return wallet.rootAccountId as AccountId;
   }
 
-  return null;
+  const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
+
+  const universalAccount = walletAccounts.find(acc => acc.type === 'universal');
+  return universalAccount?.accountId ?? walletAccounts[0]?.accountId ?? null;
 }
 
 function resolveWalletName({ wallet, accounts, contacts, identities, chains }: ResolveWalletNameParams): string {
@@ -285,7 +283,13 @@ function resolveAccountName({
       return accountChain?.addressPrefix;
     })();
 
-  return toShortAddress(toAddress(accountId, { prefix }), 5);
+  const isShardAccount =
+    relatedAccount &&
+    isChainAccount(relatedAccount) &&
+    'accountType' in relatedAccount &&
+    (relatedAccount as Record<string, unknown>)['accountType'] === AccountType.SHARD;
+
+  return toShortAddress(toAddress(accountId, { prefix }), isShardAccount ? 16 : 5);
 }
 
 function hasPermissionToMakeActions(account: AnyAccount) {
