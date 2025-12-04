@@ -10,11 +10,17 @@ import { type IconNames } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { TransactionTitle, findCoreBatchAll, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
+import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
 
+import { TransactionAmount } from './components/TransactionAmount';
 import { VestedTransferOperationDetails } from './components/VestedTransferOperationDetails';
 
 export const vestedTransferOperationDetailFeature = createFeature({
   name: 'vested-transfer/operation-details',
+});
+
+vestedTransferOperationDetailFeature.inject(confirmTransactionInfoSlot, ({ operation }) => {
+  return <TransactionAmount operation={operation} />;
 });
 
 const getOperationTitle = (transactionType: TransactionType): string | undefined => {
@@ -27,7 +33,7 @@ const getOperationTitle = (transactionType: TransactionType): string | undefined
 
 const getOperationIcon = (transactionType: TransactionType): IconNames | undefined => {
   const Icons: { [key in TransactionType]?: IconNames } = {
-    [TransactionType.VESTED_TRANSFER]: 'transferMst',
+    [TransactionType.VESTED_TRANSFER]: 'vestedTransferMst',
   };
 
   return Icons[transactionType];

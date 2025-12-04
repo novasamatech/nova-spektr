@@ -1,10 +1,9 @@
-import { useGate, useUnit } from 'effector-react';
+import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { useToggle } from '@/shared/lib/hooks';
-import { Button } from '@/shared/ui';
-import { Modal } from '@/shared/ui-kit';
+import { useModalClose } from '@/shared/lib/hooks';
+import { Dropdown, Modal } from '@/shared/ui-kit';
 import { OperationSign, OperationSubmit } from '@/features/operations';
 import { Step } from '../lib/types';
 import { callDataUtils } from '../lib/utils';
@@ -15,30 +14,27 @@ import { Confirmation } from './Confirmation';
 
 export const CallDataSubmit = memo(() => {
   const { t } = useI18n();
-  const [open, toggleModal] = useToggle(false);
-
-  return (
-    <>
-      <Button pallet="secondary" size="sm" onClick={toggleModal}>
-        {t('callData.title')}
-      </Button>
-      {open ? <CallDataSubmitModal onToggle={toggleModal} /> : null}
-    </>
-  );
-});
-
-export const CallDataSubmitModal = ({ onToggle }: { onToggle: VoidFunction }) => {
-  useGate(formModel.flow);
-
-  const { t } = useI18n();
   const step = useUnit(formModel.$step);
 
+  const [isOpen, closeModal] = useModalClose(!callDataUtils.isNoneStep(step), formModel.flowFinished);
+
   if (callDataUtils.isSubmitStep(step)) {
-    return <OperationSubmit isOpen onClose={onToggle} />;
+    return <OperationSubmit isOpen={isOpen} onClose={closeModal} />;
   }
 
+  const handleModalToggle = (open: boolean) => {
+    if (open) {
+      formModel.flowStarted();
+    } else {
+      closeModal();
+    }
+  };
+
   return (
-    <Modal isOpen size="md" height="fit" onToggle={onToggle}>
+    <Modal isOpen={isOpen} size="md" height="fit" onToggle={handleModalToggle}>
+      <Modal.Trigger>
+        <Dropdown.Item>{t('navigation.callDataLabel')}</Dropdown.Item>
+      </Modal.Trigger>
       <Modal.Title close>{t('callData.title')}</Modal.Title>
       <Modal.Content disableScroll>
         {callDataUtils.isInitStep(step) && <CallDataForm />}
@@ -47,4 +43,4 @@ export const CallDataSubmitModal = ({ onToggle }: { onToggle: VoidFunction }) =>
       </Modal.Content>
     </Modal>
   );
-};
+});

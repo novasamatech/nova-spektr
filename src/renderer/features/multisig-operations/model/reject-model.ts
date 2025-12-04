@@ -1,3 +1,4 @@
+import { BN_ZERO } from '@polkadot/util';
 import { combine, createStore, sample } from 'effector';
 import { createGate } from 'effector-react';
 
@@ -5,10 +6,10 @@ import { type Chain, type Transaction } from '@/shared/core';
 import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import {
   createComplexTxStore,
-  createMultisigDeposit,
   createSignatoriesStore,
   createTxValidationStore,
   createTxValidator,
+  getActionRequiredAmount,
 } from '@/shared/transactions';
 import {
   type AnyAccount,
@@ -113,13 +114,8 @@ const {
   transaction: $transaction,
 });
 
-const { $multisigDeposit, $pending: $pendingMultisigDepositFee } = createMultisigDeposit({
-  $api: $api,
-  $threshold: operationsContextModel.$multisigAccount.map(account => account?.threshold ?? null),
-});
-
 const validator = createTxValidator();
-const { $errors, $valid } = createTxValidationStore({
+const { $errors, $valid, $balanceValidationResults } = createTxValidationStore({
   validator,
   params: {
     api: $api,
@@ -130,12 +126,16 @@ const { $errors, $valid } = createTxValidationStore({
   },
 });
 
+const $multisigDeposit = combine({ results: $balanceValidationResults }, ({ results }) => {
+  const actions = getActionRequiredAmount(results, 'multisig deposit');
+  return actions.reduce((deposit, action) => deposit.add(action.required), BN_ZERO);
+});
+
 export const rejectModel = {
   flow,
   $transaction: $tx,
   $fee,
   $isFeeLoading,
-  $isDepositLoading: $pendingMultisigDepositFee,
   $multisigDeposit,
   $signatory,
   $initiator,

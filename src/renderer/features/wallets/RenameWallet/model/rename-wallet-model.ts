@@ -77,40 +77,29 @@ const syncContactsOnWalletRenameFx = createEffect(
     const walletAccounts = accountService.filterAccountsByWallet(allAccounts, wallet.id);
     if (walletAccounts.length === 0) return;
 
-    const existingByAccountId = new Map(existingContacts.map((contact) => [contact.accountId, contact]));
-    const toUpdate: Contact[] = [];
-    const toCreate: Omit<Contact, 'id'>[] = [];
+    const mainAccountId = accountService.getWalletAccountId(wallet, allAccounts);
 
-    for (const account of walletAccounts) {
-      const accountId = account.accountId;
-      if (!accountId) continue;
+    if (!mainAccountId) return;
 
-      const existingContact = existingByAccountId.get(accountId);
+    const existingContact = existingContacts.find((contact) => contact.accountId === mainAccountId);
 
-      if (existingContact) {
-        if (existingContact.name !== wallet.name) {
-          toUpdate.push({
+    if (existingContact) {
+      if (existingContact.name !== wallet.name) {
+        await contactModel.effects.updateContactsFx([
+          {
             ...existingContact,
             name: wallet.name,
-          });
-        }
-
-        continue;
+          },
+        ]);
       }
-
-      toCreate.push({
-        name: wallet.name,
-        address: toAddress(accountId),
-        accountId,
-      });
-    }
-
-    if (toUpdate.length > 0) {
-      await contactModel.effects.updateContactsFx(toUpdate);
-    }
-
-    if (toCreate.length > 0) {
-      await contactModel.effects.createContactsFx(toCreate);
+    } else {
+      await contactModel.effects.createContactsFx([
+        {
+          name: wallet.name,
+          address: toAddress(mainAccountId),
+          accountId: mainAccountId,
+        },
+      ]);
     }
   },
 );

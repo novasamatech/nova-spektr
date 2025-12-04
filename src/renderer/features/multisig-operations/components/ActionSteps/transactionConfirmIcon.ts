@@ -12,7 +12,8 @@ const TransactionIcons: Record<TransactionType, IconNames> = {
   [TransactionType.MULTISIG_AS_MULTI]: 'transferConfirm',
   [TransactionType.MULTISIG_APPROVE_AS_MULTI]: 'transferConfirm',
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: 'transferConfirm',
-  [TransactionType.VESTED_TRANSFER]: 'transferConfirm',
+  // Vested transfer
+  [TransactionType.VESTED_TRANSFER]: 'vestedTransferConfirm',
   // XCM
   [TransactionType.XCM_LIMITED_TRANSFER]: 'crossChainConfirm',
   [TransactionType.XCM_TELEPORT]: 'crossChainConfirm',

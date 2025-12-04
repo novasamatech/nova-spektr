@@ -38,7 +38,6 @@ type Props = {
   multisigDeposit: BN;
   valid: boolean;
   isFeeLoading: boolean;
-  isDepositLoading: boolean;
   isDepositRequired?: boolean;
   onSign: () => void;
   onGoBack?: () => void;
@@ -57,7 +56,6 @@ export const Confirmation = ({
   multisigDeposit,
   valid,
   isFeeLoading,
-  isDepositLoading,
   onSign,
   onGoBack,
   errors,
@@ -70,7 +68,8 @@ export const Confirmation = ({
 
   const signerWallet = wallets.find(w => w.id === signAccount?.walletId);
 
-  const depositPending = isDepositRequired && isDepositLoading;
+  const hasRequiredDeposit = !isDepositRequired || !multisigDeposit.isZero();
+  const canSign = !isFeeLoading && hasRequiredDeposit && valid;
 
   const xcmConfig = useUnit(xcmTransferModel.$config);
   const transaction = operation.transaction;
@@ -113,9 +112,7 @@ export const Confirmation = ({
       {initiator && signAccount && (
         <Details api={api} operation={operation} account={initiator} chain={chain} signatory={signAccount} />
       )}
-      {asset && isDepositRequired && (
-        <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} isLoading={isDepositLoading} />
-      )}
+      {asset && isDepositRequired && <MultisigDepositFee asset={asset} multisigDeposit={multisigDeposit} />}
       {asset && <FeeWithLabel fee={fee} asset={asset} isLoading={isFeeLoading} />}
       {isXcmTransaction(transaction) && xcmConfig && xcmApi && asset && (
         <DetailRow label={t('operation.xcmFee')} className="text-text-primary">
@@ -128,12 +125,7 @@ export const Confirmation = ({
             {t('operation.goBackButton')}
           </Button>
         )}
-        <SignButton
-          disabled={isFeeLoading || depositPending || !valid}
-          className="ml-auto"
-          type={signerWallet?.type}
-          onClick={onSign}
-        />
+        <SignButton disabled={!canSign} className="ml-auto" type={signerWallet?.type} onClick={onSign} />
       </div>
     </div>
   );
