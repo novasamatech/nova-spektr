@@ -84,6 +84,14 @@ export const XCM_DESTINATION_BLACKLIST: XcmDestinationBlacklistEntry[] = [
   {
     destinationChainId: '0x411f057b9107718c9624d6aa4a3f23c1653898297f3d4d529d9bb6511a39dd21', // KILT
   },
+  {
+    sourceChainId: '0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464', // Polkadot Bridge Hub
+    destinationChainId: '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2', // Polkadot Collectives
+  },
+  {
+    sourceChainId: '0x46ee89aa2eedd13e988962630ec9fb7565964cf5023bb351f2b6b25c1b68b0b2', // Polkadot Collectives
+    destinationChainId: '0xdcf691b5a3fbe24adc99ddc959c0561b973e329b1aef4c4b22e7bb2ddecb4464', // Polkadot Bridge Hub
+  },
 ];
 
 export const XCM_DESTINATION_WHITELIST: XcmDestinationWhitelistEntry[] = [
