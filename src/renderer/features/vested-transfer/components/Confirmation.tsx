@@ -38,7 +38,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   }));
 
   const timelineChainId = chain.additional?.timelineChain;
-  const timelineApi = (timelineChainId && apis[timelineChainId]) ?? apis[chain.chainId] ?? null;
+  const timelineApi = (timelineChainId && apis[timelineChainId]) ?? null;
   const asset = getNativeAsset(chain.assets);
 
   return (
