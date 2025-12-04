@@ -1657,11 +1657,13 @@
       "eventOperationRejected": "Operation rejected",
       "eventWalletCreated": "Wallet created",
       "events": "Events",
+      "selectAll": "Select all",
       "source": "Show notification from",
       "sourceAll": "All",
       "sourceOperations": "Operations",
       "sourcePlaceholder": "Select source",
-      "sourceWallets": "Wallets"
+      "sourceWallets": "Wallets",
+      "wallets": "Wallets"
     },
     "title": "Notifications"
   },

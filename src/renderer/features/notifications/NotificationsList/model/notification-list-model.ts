@@ -3,13 +3,13 @@ import { enGB } from 'date-fns/locale/en-GB';
 import { combine, createEvent, createStore } from 'effector';
 import { groupBy } from 'lodash';
 
-import { type Notification, NotificationType } from '@/shared/core';
+import { type ID, type Notification, NotificationType } from '@/shared/core';
 import { performSearch } from '@/shared/lib/utils';
 import { identity } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { walletModel } from '@/entities/wallet';
-import { NotificationEvent, NotificationSource, notificationsSettingsModel } from '../../NotificationsSettings';
+import { NotificationEvent, notificationsSettingsModel } from '../../NotificationsSettings';
 
 const queryChanged = createEvent<string>();
 const pageOpened = createEvent();
@@ -18,19 +18,6 @@ const $query = createStore<string>('')
   .reset(pageOpened);
 
 type NotificationFilter = (notification: Notification) => boolean;
-
-// Source type matchers
-const isWalletNotification: NotificationFilter = (notification) =>
-  [
-    NotificationType.MULTISIG_CREATED,
-    NotificationType.FLEXIBLE_MULTISIG_CREATED,
-    NotificationType.FLEXIBLE_MULTISIG_EDITED,
-    NotificationType.PROXY_CREATED,
-    NotificationType.PROXY_REMOVED,
-  ].includes(notification.type);
-
-const isOperationNotification: NotificationFilter = (notification) =>
-  notification.type === NotificationType.MULTISIG_OPERATION;
 
 // Event type matchers configuration
 const EVENT_MATCHERS: Record<NotificationEvent, NotificationFilter> = {
@@ -47,10 +34,21 @@ const EVENT_MATCHERS: Record<NotificationEvent, NotificationFilter> = {
 };
 
 // Filter factories
-const createSourceFilter = (source: NotificationSource): NotificationFilter => {
-  if (source === NotificationSource.OPERATIONS) return isOperationNotification;
-  if (source === NotificationSource.WALLETS) return isWalletNotification;
-  return () => true;
+const createWalletFilter = (
+  selectedWalletIds: Set<ID>,
+  wallets: ReturnType<typeof walletModel.$allWallets.getState>,
+): NotificationFilter => {
+  return (notification) => {
+    // If no wallets selected, show no notifications
+    if (selectedWalletIds.size === 0) return false;
+
+    // Check if the notification's issuer belongs to any of the selected wallets
+    return Array.from(selectedWalletIds).some((walletId) => {
+      const wallet = wallets.find((w) => w.id === walletId);
+      if (!wallet) return false;
+      return wallet.accounts.some((acc) => acc.accountId === notification.issuer);
+    });
+  };
 };
 
 const createEventFilter = (enabledEvents: Set<NotificationEvent>): NotificationFilter => {
@@ -73,17 +71,17 @@ const $notificationGroups = combine(
     notifications: notificationModel.$notifications,
     query: $query,
     chains: networkModel.$chains,
-    wallets: walletModel.$wallets,
+    wallets: walletModel.$allWallets,
     identities: identity.$list,
-    source: notificationsSettingsModel.$notificationSource,
+    selectedWalletIds: notificationsSettingsModel.$selectedWalletIds,
     events: notificationsSettingsModel.$notificationEvents,
   },
-  ({ notifications, query, chains, wallets, identities, source, events }) => {
+  ({ notifications, query, chains, wallets, identities, selectedWalletIds, events }) => {
     if (notifications.length === 0) return [];
 
-    const sourceFilter = createSourceFilter(source);
+    const walletFilter = createWalletFilter(selectedWalletIds, wallets);
     const eventFilter = createEventFilter(events);
-    const combinedFilter = composeFilters(sourceFilter, eventFilter);
+    const combinedFilter = composeFilters(walletFilter, eventFilter);
 
     const filtered = notifications.filter(combinedFilter);
 

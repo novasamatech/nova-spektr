@@ -1,11 +1,5 @@
-export const NOTIFICATION_SOURCE = 'notification_source';
 export const NOTIFICATION_EVENTS = 'notification_events';
-
-export enum NotificationSource {
-  ALL = 'all',
-  OPERATIONS = 'operations',
-  WALLETS = 'wallets',
-}
+export const SELECTED_WALLET_IDS = 'selected_wallet_ids';
 
 export enum NotificationEvent {
   WALLET_CREATED = 'wallet_created',
