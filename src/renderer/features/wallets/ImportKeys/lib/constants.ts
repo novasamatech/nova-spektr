@@ -5,6 +5,3 @@ export const PATH_ERRORS = [
   DerivationValidationError.PASSWORD_PATH,
   DerivationValidationError.ETHEREUM_SINGLE_SLASH,
 ];
-
-export const TEMPLATE_GITHUB_LINK =
-  'https://raw.githubusercontent.com/novasamatech/nova-spektr-utils/main/templates/dd-template.yaml';

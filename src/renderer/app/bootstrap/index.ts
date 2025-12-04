@@ -11,6 +11,7 @@ import { notificationModel } from '@/entities/notification';
 import { proxyModel } from '@/entities/proxy';
 import { walletModel } from '@/entities/wallet';
 import { governanceMetaProvider } from '@/aggregates/governance-meta-provider';
+import { appCustomOperationsFeature } from '@/features/app-custom-operations';
 import { assetsSettingsModel, portfolioModel } from '@/features/assets';
 import { assetsNavigationFeature } from '@/features/assets-navigation';
 import { basketNavigationFeature } from '@/features/basket-navigation';
@@ -75,6 +76,7 @@ export const bootstrap = () => {
     stakingNavigationFeature,
     governanceNavigationFeature,
     vestedTransferFeature,
+    appCustomOperationsFeature,
 
     import('@/features/wallet-select').then(({ walletSelectFeature }) => walletSelectFeature.feature),
     import('@/features/wallet-details').then(({ walletDetailsFeature }) => walletDetailsFeature),

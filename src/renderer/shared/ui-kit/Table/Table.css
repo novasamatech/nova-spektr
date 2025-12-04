@@ -63,15 +63,6 @@
   opacity: 1;
 }
 
-.table-header-cell:last-child {
-  text-align: right;
-}
-
-.table-header-cell:last-child .table-header-content {
-  justify-content: flex-end;
-}
-
-
 .table-body {
   border-top: none;
 }

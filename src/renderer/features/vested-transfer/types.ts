@@ -1,7 +1,7 @@
 import { type BN } from '@polkadot/util';
 
 import { type Chain } from '@/shared/core';
-import { type ExistingVestingScheduleMap } from '@/entities/vesting';
+import { type ExistingVestingSchedule } from '@/entities/vesting';
 
 export const enum Step {
   NONE,
@@ -11,49 +11,10 @@ export const enum Step {
   SUBMIT,
 }
 
-export type VestingScheduleRaw = {
-  target: string;
-  locked: string;
-  startingBlock: string;
-  perBlock: string;
-};
-
-export enum FileErrors {
-  INVALID_CSV_STRUCTURE = 'INVALID_CSV_STRUCTURE',
-  INVALID_CSV_DATA = 'INVALID_CSV_DATA',
-}
-
-export enum RowErrors {
-  INVALID_SS58_ADDRESS = 'INVALID_SS58_ADDRESS',
-  MAX_VESTING_SCHEDULES_REACHED = 'MAX_VESTING_SCHEDULES_REACHED',
-
-  LOCKED_OUT_OF_RANGE = 'LOCKED_OUT_OF_RANGE',
-  PER_BLOCK_OUT_OF_RANGE = 'PER_BLOCK_OUT_OF_RANGE',
-  START_BLOCK_OUT_OF_RANGE = 'START_BLOCK_OUT_OF_RANGE',
-  START_BLOCK_IN_PAST = 'START_BLOCK_IN_PAST',
-
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
-  INVALID_VALUE = 'INVALID_VALUE',
-}
-
-type RowIndex = number;
-
-export type ErrorRecord = Record<RowIndex, RowErrors[]>;
-
-export class VestingScheduleError extends Error {
-  constructor(
-    public code: FileErrors,
-    public details?: ErrorRecord,
-  ) {
-    super(code);
-    this.name = 'VestingScheduleError';
-  }
-}
-
-export type VestingScheduleSchemaOptions = {
+export type ValidationSchemaOptions = {
   chain: Chain;
   minStartingBlock: BN;
   minVestedTransfer: BN;
   maxVestingSchedules: BN;
-  existingVestingSchedules: ExistingVestingScheduleMap;
+  existingVestingSchedules: ExistingVestingSchedule;
 };
