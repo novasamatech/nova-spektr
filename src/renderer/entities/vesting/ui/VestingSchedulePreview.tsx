@@ -117,7 +117,7 @@ export const VestingSchedulePreview = memo(
         {
           key: 'target',
           title: t('vestedTransfer.parsedFile.table.headers.recipient'),
-          width: '428px',
+          width: '460px',
           render: (_, row) => {
             if (nullable(row.target) || nullable(chain)) return null;
             const rowIssues = getRowIssues(row.index);
@@ -209,7 +209,7 @@ export const VestingSchedulePreview = memo(
               </Tooltip>
             </div>
           ),
-          width: '120px',
+          width: '170px',
           render: (_, row) =>
             renderCell(row, 'perBlock', ({ row }) =>
               row.perBlock && asset ? (
