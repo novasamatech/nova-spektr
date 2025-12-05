@@ -1,12 +1,12 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { type PolkadotVaultGroup, type Wallet, type WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
 import { isEthereumAccountId, nullable, performSearch } from '@/shared/lib/utils';
 import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
+import { accounts, useWalletsName } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelect, walletSelectService } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
@@ -26,17 +26,21 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
   const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const chains = useUnit(networkModel.$chains);
 
-  const filteredWallets = performSearch({
-    query,
-    records: wallets,
-    getMeta: wallet => ({
-      allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
-    }),
-    weights: {
-      name: 1,
-      allAddresses: 0.8,
-    },
-  });
+  const resolvedWallets = useWalletsName(wallets);
+
+  const filteredWallets = useMemo(() => {
+    return performSearch({
+      query,
+      records: resolvedWallets,
+      getMeta: wallet => ({
+        allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
+      }),
+      weights: {
+        name: 1,
+        allAddresses: 0.8,
+      },
+    });
+  }, [resolvedWallets, query, allAccounts, chains]);
 
   if (filteredWallets.length === 0) {
     return null;
@@ -52,8 +56,9 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
       <Accordion.Content>
         <Box gap={1} padding={[1, 0, 0]}>
           {filteredWallets.map(wallet => {
-            const isSingleAccount = wallet.accounts.length === 1;
-            const accountId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
+            const vaultWallet = wallet as PolkadotVaultGroup;
+            const isSingleAccount = vaultWallet.accounts.length === 1;
+            const accountId = isSingleAccount ? vaultWallet.accounts[0]?.accountId : vaultWallet.rootAccountId;
             if (nullable(accountId)) return null;
 
             const isEthereum = isEthereumAccountId(accountId);

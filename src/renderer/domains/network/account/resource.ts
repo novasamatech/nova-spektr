@@ -54,7 +54,7 @@ export const createWalletNameCacheKey = ({ wallet }: WalletNameParams): string =
 };
 
 const $accountNameCache = createStore<NameCache>({});
-const $walletNameCache = createStore<NameCache>({});
+export const $walletNameCache = createStore<NameCache>({});
 
 export const accountNameResource = createQueryResource<AccountNameParams>({
   key: createAccountNameCacheKey,
@@ -88,31 +88,45 @@ export const accountNameResource = createQueryResource<AccountNameParams>({
   })
   .build();
 
-export const walletNameResource = createQueryResource<WalletNameParams>({
-  key: createWalletNameCacheKey,
+type WalletsNameParams = {
+  wallets: Wallet[];
+};
+
+export const walletsNameResource = createQueryResource<WalletsNameParams>({
+  key: ({ wallets }) =>
+    wallets
+      .map(w => w.id)
+      .sort()
+      .join(','),
 })
   .request(
     attach({
       source: getNameResolverSource(),
-      effect: ({ contacts, identities, chains, accounts }, params) => {
-        return accountService.resolveWalletName({
-          wallet: params.wallet,
-          contacts,
-          identities,
-          chains,
-          accounts,
-        });
+      effect: ({ contacts, identities, chains, accounts }, { wallets }) => {
+        const result: Record<string, string> = {};
+
+        for (const wallet of wallets) {
+          const key = createWalletNameCacheKey({ wallet });
+          const name = accountService.resolveWalletName({
+            wallet,
+            contacts,
+            identities,
+            chains,
+            accounts,
+          });
+          result[key] = name;
+        }
+
+        return result;
       },
     }),
   )
   .cache({
     store: $walletNameCache,
-    map(cache, result, params) {
-      const key = createWalletNameCacheKey(params);
-
+    map(cache, result) {
       return {
         ...cache,
-        [key]: result,
+        ...result,
       };
     },
   })

@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { type Wallet, WalletType } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -7,6 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
+import { useWalletsName } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletsModel } from '../model/wallets';
@@ -24,11 +25,15 @@ export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
   const wallets = useUnit(walletsModel.$wallets);
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
 
-  const filteredWallets = performSearch({
-    query,
-    records: wallets,
-    weights: { name: 1 },
-  });
+  const resolvedWallets = useWalletsName(wallets);
+
+  const filteredWallets = useMemo(() => {
+    return performSearch({
+      query,
+      records: resolvedWallets,
+      weights: { name: 1 },
+    });
+  }, [resolvedWallets, query]);
 
   if (filteredWallets.length === 0) {
     return null;

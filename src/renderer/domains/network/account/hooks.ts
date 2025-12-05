@@ -1,14 +1,14 @@
 import { type Chain, type Wallet } from '@/shared/core';
+import { nullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { useResource } from '@/shared/query';
 
 import {
   type AccountNameParams,
-  type WalletNameParams,
   accountNameResource,
   createAccountNameCacheKey,
-  createWalletNameCacheKey,
-  walletNameResource,
+  createWalletNameCacheKey as getWalletKey,
+  walletsNameResource,
 } from './resource';
 
 type UseAccountNameParams = {
@@ -31,14 +31,36 @@ export const useAccountName = ({ accountId, chain, title }: UseAccountNameParams
 };
 
 export const useWalletName = (wallet: Wallet | null | undefined) => {
-  const params: WalletNameParams | null = wallet ? { wallet } : null;
-  const { data } = useResource(walletNameResource, {
-    params,
-    defaultValue: undefined,
-    map: (cache, params) => {
-      return cache[createWalletNameCacheKey(params)] ?? '';
+  if (!wallet) {
+    return null;
+  }
+
+  const resolvedWallets = useWalletsName([wallet]);
+
+  return resolvedWallets[0]?.name ?? wallet.name;
+};
+
+export const useWalletsName = (wallets: Wallet[]) => {
+  const { data: walletNames } = useResource(walletsNameResource, {
+    params: nullable(wallets) || wallets.length === 0 ? null : { wallets },
+    defaultValue: {},
+    map: (cache, { wallets }) => {
+      const result: Record<string, string> = {};
+      for (const wallet of wallets) {
+        const key = getWalletKey({ wallet });
+        result[key] = cache[key] ?? wallet.name;
+      }
+      return result;
     },
   });
 
-  return data;
+  if (nullable(wallets) || wallets.length === 0) {
+    return wallets || [];
+  }
+
+  return wallets.map(wallet => {
+    const key = getWalletKey({ wallet });
+    const resolvedName = walletNames[key];
+    return resolvedName ? { ...wallet, name: resolvedName } : wallet;
+  });
 };
