@@ -2,7 +2,7 @@ import { type BN } from '@polkadot/util';
 
 import { type TxConfirmInfo, createTransactionConfirmStore } from '@/shared/transactions';
 import { networkModel } from '@/entities/network';
-import { type VestingSchedule } from '@/entities/vesting';
+import { type ValidationIssue, type VestingSchedule } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { selectedWalletMultisigOperations } from '@/aggregates/selected-wallet-multisig-operations';
 
@@ -12,6 +12,7 @@ export type VestedTransferConfirm = TxConfirmInfo & {
   hasMultisigAccount: boolean;
   multisigDeposit: BN;
   vestingSchedule: VestingSchedule[];
+  issues: ValidationIssue[] | null;
 };
 
 const confirmStore = createTransactionConfirmStore<VestedTransferConfirm>({
