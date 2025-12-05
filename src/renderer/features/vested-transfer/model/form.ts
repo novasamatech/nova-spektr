@@ -437,8 +437,10 @@ const showConfirmation = sample({
     hasMultisigAccount: $hasMultisigAccount,
     multisigDeposit: $multisigDeposit,
     vestingSchedule: form.fields.vestingSchedule.$value,
+    issues: $csvIssues,
   },
-  fn: (source, form) => {
+  fn: (sourceData, form) => {
+    const { issues, ...source } = sourceData;
     if (!nonNullableMap(source) || !nonNullableMap(form)) return null;
 
     return {
@@ -453,6 +455,7 @@ const showConfirmation = sample({
       hasMultisigAccount: source.hasMultisigAccount,
       multisigDeposit: source.multisigDeposit,
       vestingSchedule: source.vestingSchedule,
+      issues: issues,
     } satisfies VestedTransferConfirm;
   },
 });
