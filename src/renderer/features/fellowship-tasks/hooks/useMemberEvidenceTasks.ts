@@ -30,7 +30,7 @@ export const useMemberEvidenceTasks = () => {
     const tasks: TaskDescription[] = [];
 
     if (nonNullable(member) && memberService.isCoreMember(member)) {
-      if (nonNullable(leftToDemotion) && leftToDemotion > 0 && hasRetentionEvidence && shouldRetentionRequest) {
+      if (shouldRetentionRequest && !hasRetentionEvidence) {
         tasks.push({
           id: 'evidence',
           weight: 1,
@@ -55,7 +55,15 @@ export const useMemberEvidenceTasks = () => {
       }
     }
     return tasks;
-  }, [operations, member, leftToDemotion, leftToPromotion, hasPromotionEvidence, hasRetentionEvidence]);
+  }, [
+    operations,
+    member,
+    leftToDemotion,
+    leftToPromotion,
+    hasPromotionEvidence,
+    hasRetentionEvidence,
+    shouldRetentionRequest,
+  ]);
 
   return {
     data: tasks,

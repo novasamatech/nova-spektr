@@ -1,10 +1,9 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { attach, combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
-import { createGate } from 'effector-react';
-import { readonly } from 'patronum';
+import { readonly, spread } from 'patronum';
 
 import { chainsService } from '@/shared/api/network';
-import { type Chain } from '@/shared/core';
+import { type Chain, ChainOptions } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { assert, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
@@ -20,15 +19,20 @@ import { type AnyAccount, accountService, accounts, balanceService, block } from
 import { balanceModel } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { transactionBuilder } from '@/entities/transaction';
-import { type ExistingVestingScheduleMap, type VestingSchedule, vestingService } from '@/entities/vesting';
+import {
+  type ValidationIssue,
+  VestingCsvError,
+  type VestingSchedule,
+  type VestingScheduleRaw,
+  vestingService,
+} from '@/entities/vesting';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
 // TODO move balances subscription to balance model
 import { balanceSubModel } from '@/features/assets-balances';
 import { signModel } from '@/features/operations/OperationSign';
 import { submitModel } from '@/features/operations/OperationSubmit';
-import { proxiesUtils } from '@/features/proxies';
-import { Step, type VestingScheduleError, type VestingScheduleRaw } from '../types';
+import { Step, type ValidationSchemaOptions } from '../types';
 import { vestedTransferUtils } from '../utils';
 
 import { type VestedTransferConfirm, confirmModel } from './confirm';
@@ -41,7 +45,12 @@ type FormData = {
   vestingSchedule: VestingSchedule[];
 };
 
-const flow = createGate();
+// steps management
+
+const stepChanged = createEvent<Step>();
+const flowStarted = createEvent();
+const flowFinished = createEvent();
+const $step = readonly(restore(stepChanged, Step.NONE));
 
 const form: Form<FormData> = createForm<FormData>({
   fields: {
@@ -74,8 +83,6 @@ const form: Form<FormData> = createForm<FormData>({
 const $amount = form.fields.vestingSchedule.$value.map((vestingSchedule) =>
   vestingSchedule.reduce((amount, vestingRecord) => amount.add(vestingRecord.locked), new BN(0)),
 );
-const $fileErrors = createStore<VestingScheduleError | null>(null).reset(flow.open);
-const fileUploaded = createEvent<File>();
 
 const $asset = form.fields.chain.$value.map((c) => (c ? getNativeAsset(c.assets) : null));
 const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis) =>
@@ -85,7 +92,10 @@ const $api = combine(form.fields.chain.$value, networkModel.$apis, (chain, apis)
 const { $: $minStartingBlock } = createStoreFromEffect({
   defaultValue: null,
   params: { currentBlock: block.$currentBlock, chain: form.fields.chain.$value },
-  fn: ({ currentBlock, chain }) => new BN(vestingService.getMinStartingBlock(currentBlock, chain)),
+  fn: ({ currentBlock, chain }) => {
+    const timelineChainId = chain.additional?.timelineChain ?? chain.chainId;
+    return new BN(vestingService.getMinStartingBlock(currentBlock, timelineChainId));
+  },
 });
 
 const { $: $minVestedTransfer } = createStoreFromEffect({
@@ -182,17 +192,17 @@ const $multisigDeposit = combine({ results: $balanceValidationResults }, ({ resu
   return actions.reduce((deposit, action) => deposit.add(action.required), BN_ZERO);
 });
 
-const $allChains = networkModel.$chains.map((chains) => Object.values(chains));
-
 const $availableChains = combine(
   {
-    chains: $allChains,
+    chains: networkModel.$chains,
     selectedAccounts: walletSelect.$selectedAccounts,
   },
   ({ chains, selectedAccounts }) => {
-    const proxyChains = chains.filter(proxiesUtils.isPureProxy);
-    const filteredChains = proxyChains.filter((chain) => {
-      return selectedAccounts.some((account) => accountService.isAccountAvailableOnChain(account, chain));
+    const filteredChains = Object.values(chains).filter((chain) => {
+      return (
+        selectedAccounts.some((account) => accountService.isAccountAvailableOnChain(account, chain)) &&
+        chain.options?.includes(ChainOptions.VESTED_TRANSFER)
+      );
     });
     return chainsService.sortChains(filteredChains);
   },
@@ -220,36 +230,40 @@ sample({
   target: balanceSubModel.fetchAccounts,
 });
 
-const $parsedFile = createStore<VestingScheduleRaw[] | null>(null).reset(flow.open);
+const fileUploaded = createEvent<File>();
+const csvReset = [flowStarted, fileUploaded, form.fields.chain.change];
+const $fileName = createStore<string | null>(null).reset(csvReset);
+const $parsedCsv = createStore<VestingScheduleRaw[] | null>(null).reset(csvReset);
+const $csvError = createStore<VestingCsvError | null>(null).reset(csvReset);
+const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(csvReset);
 
-const parseFileFx = createEffect<File, VestingScheduleRaw[], VestingScheduleError>((file) => {
-  return vestedTransferUtils.parseCSV(file);
+const parseFileFx = createEffect<File, VestingScheduleRaw[]>(async (file) => {
+  const parsed = await vestedTransferUtils.parseCSV(file);
+  if (parsed.success) {
+    return parsed.data;
+  }
+
+  throw new Error();
 });
 
 type ValidateFileParams = {
   parsedFile: VestingScheduleRaw[];
-  chain: Chain;
-  minStartingBlock: BN;
-  minVestedTransfer: BN;
-  maxVestingSchedules: BN;
-  existingVestingSchedules: ExistingVestingScheduleMap;
+  validationSchemaOptions: ValidationSchemaOptions;
 };
+type ValidateFileResults = { data: VestingSchedule[]; issues: ValidationIssue[] };
+const rootValidateFileFx = createEffect<ValidateFileParams, ValidateFileResults, ValidationIssue[]>((params) => {
+  const schema = vestedTransferUtils.createValidationSchema(params.validationSchemaOptions);
 
-const rootValidateFileFx = createEffect<ValidateFileParams, VestingSchedule[], VestingScheduleError>(
-  ({ parsedFile, chain, minStartingBlock, minVestedTransfer, maxVestingSchedules, existingVestingSchedules }) => {
-    const schema = vestedTransferUtils.createVestingScheduleSchema({
-      chain,
-      minStartingBlock,
-      minVestedTransfer,
-      maxVestingSchedules,
-      existingVestingSchedules,
-    });
+  const validated = vestedTransferUtils.validateCSV(params.parsedFile, schema);
 
-    const validatedData = vestedTransferUtils.validateCSV(parsedFile, schema);
+  if (validated.success) {
+    const transformSchema = vestedTransferUtils.createTransformSchema();
+    const validatedData = params.parsedFile.map((record) => transformSchema.parse(record));
+    return { data: validatedData, issues: validated.issues };
+  }
 
-    return validatedData;
-  },
-);
+  throw validated.issues;
+});
 
 const validateFileFx = attach({
   source: {
@@ -272,14 +286,22 @@ const validateFileFx = attach({
 
     return {
       parsedFile,
-      chain,
-      minStartingBlock,
-      minVestedTransfer,
-      maxVestingSchedules,
-      existingVestingSchedules,
-    };
+      validationSchemaOptions: {
+        chain,
+        minStartingBlock,
+        minVestedTransfer,
+        maxVestingSchedules,
+        existingVestingSchedules,
+      },
+    } satisfies ValidateFileParams;
   },
   effect: rootValidateFileFx,
+});
+
+sample({
+  clock: fileUploaded,
+  fn: (file: File) => file.name,
+  target: $fileName,
 });
 
 sample({
@@ -289,37 +311,46 @@ sample({
 
 sample({
   clock: parseFileFx.doneData,
-  target: [$parsedFile, validateFileFx],
+  target: [$parsedCsv, validateFileFx],
 });
 
 sample({
   clock: parseFileFx.failData,
-  target: $fileErrors,
+  fn: () => VestingCsvError.STRUCTURE,
+  target: $csvError,
 });
 
 sample({
   clock: validateFileFx.doneData,
-  target: form.fields.vestingSchedule.change,
-});
-
-sample({
-  clock: validateFileFx.doneData,
-  fn: () => null,
-  target: $fileErrors,
+  fn: ({ data, issues }) => ({
+    data,
+    issues: issues.length > 0 ? issues : null,
+    csvError: null,
+  }),
+  target: spread({
+    data: form.fields.vestingSchedule.change,
+    issues: $csvIssues,
+    csvError: $csvError,
+  }),
 });
 
 sample({
   clock: validateFileFx.failData,
-  target: $fileErrors,
+  fn: (issues) => {
+    return {
+      csvError: VestingCsvError.DATA,
+      // asserts can throw an error and not an array
+      csvIssues: Array.isArray(issues) ? issues : [issues],
+    };
+  },
+  target: spread({
+    csvError: $csvError,
+    csvIssues: $csvIssues,
+  }),
 });
 
-// steps management
-
-const stepChanged = createEvent<Step>();
-const $step = readonly(restore(stepChanged, Step.NONE));
-
 sample({
-  clock: [flow.open, flow.close],
+  clock: flowStarted,
   fn: () => Step.INIT,
   target: stepChanged,
 });
@@ -342,10 +373,16 @@ sample({
   target: stepChanged,
 });
 
+sample({
+  clock: flowFinished,
+  fn: () => Step.NONE,
+  target: [stepChanged, form.reset],
+});
+
 // flow setup
 
 sample({
-  clock: [flow.open, $availableChains],
+  clock: [flowStarted, $availableChains],
   source: $availableChains,
   filter: (chains) => chains.length > 0,
   fn: (chains) => chains.at(0)!,
@@ -353,36 +390,28 @@ sample({
 });
 
 sample({
-  clock: [flow.open, $initiators],
+  clock: [flowStarted, $initiators],
   source: $initiators,
   fn: (initiators) => initiators.at(0) ?? null,
   target: form.fields.initiator.change,
 });
 
 sample({
-  clock: [flow.open, $signatories],
+  clock: [flowStarted, $signatories],
   source: $signatories,
   fn: (signatories) => signatories.at(0) ?? null,
   target: form.fields.signatory.change,
 });
 
 sample({
-  clock: form.fields.chain.change,
+  clock: [form.fields.chain.change, fileUploaded],
   target: [
     form.fields.chain.resetError,
     form.fields.initiator.resetError,
     form.fields.signatory.resetError,
     form.fields.vestingSchedule.resetError,
     form.fields.vestingSchedule.reset,
-    $fileErrors.reinit,
-    $parsedFile.reinit,
-    $fee.reinit,
   ],
-});
-
-sample({
-  clock: flow.close,
-  target: form.reset,
 });
 
 const $canSubmit = combine(
@@ -408,8 +437,10 @@ const showConfirmation = sample({
     hasMultisigAccount: $hasMultisigAccount,
     multisigDeposit: $multisigDeposit,
     vestingSchedule: form.fields.vestingSchedule.$value,
+    issues: $csvIssues,
   },
-  fn: (source, form) => {
+  fn: (sourceData, form) => {
+    const { issues, ...source } = sourceData;
     if (!nonNullableMap(source) || !nonNullableMap(form)) return null;
 
     return {
@@ -424,6 +455,7 @@ const showConfirmation = sample({
       hasMultisigAccount: source.hasMultisigAccount,
       multisigDeposit: source.multisigDeposit,
       vestingSchedule: source.vestingSchedule,
+      issues: issues,
     } satisfies VestedTransferConfirm;
   },
 });
@@ -472,17 +504,15 @@ sample({
 
 sample({
   clock: signModel.signed,
-  source: flow.status,
-  filter: (open) => open,
+  source: $step,
+  filter: (step) => step !== Step.NONE,
   fn: (_, payload) => payload,
   target: submitModel.init,
 });
 
 export const formModel = {
-  flow,
   form,
   $chain: form.fields.chain.$value,
-  $vestingSchedule: form.fields.vestingSchedule.$value,
 
   $canSubmit,
   $step,
@@ -494,13 +524,17 @@ export const formModel = {
   $txErrors,
   $asset,
   $amount,
-  $parsedFile,
-  $fileErrors,
-  $allChains: $allChains,
+  $fileName,
+  $parsedCsv,
+  $csvError,
+  $csvIssues,
   $availableChains: $availableChains,
   $signatories: $signatories,
   $showSignatories: $showSignatories,
+  $minVestedTransfer,
 
   stepChanged,
+  flowStarted,
+  flowFinished,
   fileUploaded,
 };

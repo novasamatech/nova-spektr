@@ -35,7 +35,8 @@ export const $defaultFeatures = createStore({
   multisigRemark: false,
   callData: true,
   hiddenWallets: true,
-  vestedTransfer: false,
+  vestedTransfer: true,
+  appCustomOperations: true,
 
   // experimental feature
   dappBrowser: false,
