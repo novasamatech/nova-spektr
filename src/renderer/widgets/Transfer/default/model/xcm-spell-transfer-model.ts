@@ -16,6 +16,7 @@ import {
   toLocalChainId,
   validateAddress,
 } from '@/shared/lib/utils';
+import { toAssetPrecision, toPrecision } from '@/shared/lib/utils/balance';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { networkModel } from '@/entities/network';
 
@@ -577,8 +578,7 @@ const buildTransferFx = takeLast({
 
     return result.extrinsic;
   },
-  key: ({ network, xcmChain, destination, amount }) =>
-    `${network.chain.chainId}-${xcmChain.chainId}-${destination}-${amount}`,
+  key: ({ network, xcmChain, destination }) => `${network.chain.chainId}-${xcmChain.chainId}-${destination}`,
 });
 
 const $spellExtrinsic = createStore<SubmittableExtrinsic<'promise'> | null>(null).reset(xcmStarted, xcmStopped);
@@ -593,8 +593,23 @@ const $buildTransferParams = combine(
     rawAmount: $rawAmount,
     initiatorAccountId: $initiatorAccountId,
     hopApiOverrides: $hopApiOverrides,
+    destinationFee: $destinationFee,
+    isFeeLoading: getXcmFeesFx.pending,
+    feeCalculationParams: $feeCalculationParams,
   },
-  ({ api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId, hopApiOverrides }) => {
+  ({
+    api,
+    apiDestination,
+    network,
+    xcmChain,
+    destination,
+    rawAmount,
+    initiatorAccountId,
+    hopApiOverrides,
+    destinationFee,
+    isFeeLoading,
+    feeCalculationParams,
+  }) => {
     if (!api || !apiDestination || !network || !xcmChain || !destination || !rawAmount) {
       return null;
     }
@@ -611,13 +626,28 @@ const $buildTransferParams = combine(
       return null;
     }
 
+    const canCalculateFees = feeCalculationParams !== null;
+    const feesNotReady = destinationFee === null;
+    const isActivelyCalculatingFees = canCalculateFees && feesNotReady && isFeeLoading;
+
+    if (isActivelyCalculatingFees) {
+      return null;
+    }
+
+    let adjustedAmount = rawAmount;
+    if (destinationFee && !destinationFee.isZero()) {
+      const rawAmountBN = toPrecision(rawAmount, network.asset.precision);
+      const adjustedAmountBN = rawAmountBN.add(destinationFee);
+      adjustedAmount = toAssetPrecision(adjustedAmountBN, network.asset.precision);
+    }
+
     return {
       api,
       apiDestination,
       network,
       xcmChain,
       destination,
-      amount: rawAmount,
+      amount: adjustedAmount,
       initiatorAccountId,
       hopApiOverrides,
     };
@@ -631,7 +661,13 @@ sample({
 });
 
 sample({
-  clock: [destinationChangedDebounced, rawAmountChangedDebounced],
+  clock: [
+    destinationChangedDebounced,
+    rawAmountChangedDebounced,
+    $destinationFee,
+    getXcmFeesFx.done,
+    getXcmFeesFx.fail,
+  ],
   source: $buildTransferParams,
   filter: (params): params is BuildTransferParams => params !== null,
   target: buildTransferFx,
@@ -639,6 +675,7 @@ sample({
 
 sample({
   clock: buildTransferFx.doneData,
+  filter: (extrinsic): extrinsic is SubmittableExtrinsic<'promise'> => extrinsic !== null,
   fn: (extrinsic) => extrinsic,
   target: $spellExtrinsic,
 });
