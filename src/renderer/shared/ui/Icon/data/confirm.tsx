@@ -14,6 +14,7 @@ import StartStakingIcon from '@/shared/assets/images/confirm/start-staking.svg?j
 import TransferIcon from '@/shared/assets/images/confirm/transfer.svg?jsx';
 import UnknownIcon from '@/shared/assets/images/confirm/unknown-operation.svg?jsx';
 import UnstakeIcon from '@/shared/assets/images/confirm/unstake.svg?jsx';
+import VestedTransferIcon from '@/shared/assets/images/confirm/vested-transfer.svg?jsx';
 import RedeemIcon from '@/shared/assets/images/confirm/withdraw-unstake.svg?jsx';
 
 const ConfirmImages = {
@@ -34,6 +35,7 @@ const ConfirmImages = {
   multisigCreationConfirm: { svg: MultisigCreationIcon },
   activateConfirm: { svg: ActivateIcon },
   deactivateConfirm: { svg: DeactivateIcon },
+  vestedTransferConfirm: { svg: VestedTransferIcon },
 } as const;
 
 export type Confirm = keyof typeof ConfirmImages;

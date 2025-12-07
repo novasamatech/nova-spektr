@@ -12,8 +12,41 @@ const populateNotificationsFx = createEffect((): Promise<Notification[]> => {
   return storageService.notifications.readAll();
 });
 
-const addNotificationsFx = createEffect((notifications: NoID<Notification>[]): Promise<Notification[]> => {
+const addNotificationsFx = createEffect(async (notifications: NoID<Notification>[]): Promise<Notification[]> => {
   return storageService.notifications.createAll(notifications).then((r) => r ?? []);
+});
+
+const notificationsAdded = createEvent<NoID<Notification>[]>();
+
+// Filter out duplicates and add IDs
+sample({
+  clock: notificationsAdded,
+  source: $notifications,
+  fn: (existingNotifications, incomingNotifications) => {
+    const existingKeys = new Set(existingNotifications.map((n) => n.key));
+    const duplicates: string[] = [];
+
+    const newNotifications: NoID<Notification>[] = [];
+
+    for (const notification of incomingNotifications) {
+      if (existingKeys.has(notification.key)) {
+        duplicates.push(`${notification.type} (key: ${notification.key})`);
+        continue;
+      }
+
+      newNotifications.push(notification);
+    }
+
+    if (duplicates.length > 0) {
+      console.warn(
+        `[Notifications] Attempted to add ${duplicates.length} duplicate notification(s):`,
+        duplicates.join(', '),
+      );
+    }
+
+    return newNotifications;
+  },
+  target: addNotificationsFx,
 });
 
 const markAllAsReadFx = createEffect((notifications: Notification[]): Promise<Notification[]> => {
@@ -82,7 +115,7 @@ export const notificationModel = {
   $unreadCount,
   events: {
     notificationsStarted: populateNotificationsFx,
-    notificationsAdded: addNotificationsFx,
+    notificationsAdded,
     notificationsViewed,
     notificationEdited,
   },

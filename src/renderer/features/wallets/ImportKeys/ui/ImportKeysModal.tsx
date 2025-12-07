@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
 import { useEffect } from 'react';
 
+import derivations_template_url from '@/shared/assets/templates/polkadot-vault-derivations-template.yaml?url';
 import { type DraftAccount, type VaultChainAccount, type VaultShardAccount } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
 import { nonNullable } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { Alert, Button, InfoLink, InputHint } from '@/shared/ui';
 import { InputFile, Modal } from '@/shared/ui-kit';
-import { TEMPLATE_GITHUB_LINK } from '../lib/constants';
 import { importKeysUtils } from '../lib/import-keys-utils';
 import { type DerivationKeyDraft } from '../lib/types';
 import { importKeysModel } from '../model/import-keys-model';
@@ -99,7 +99,7 @@ export const ImportKeysModal = ({ isOpen, rootAccountId, existingKeys, onConfirm
             ))}
           </Alert>
 
-          <InfoLink url={TEMPLATE_GITHUB_LINK} className="ml-2" iconName="import" iconPosition="right">
+          <InfoLink url={derivations_template_url} className="ml-2" iconName="import" iconPosition="right" download>
             {t('dynamicDerivations.importKeys.downloadTemplateButton')}
           </InfoLink>
         </div>

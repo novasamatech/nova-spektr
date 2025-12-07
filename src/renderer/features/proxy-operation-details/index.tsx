@@ -6,9 +6,6 @@ import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
 import { getAssetById, toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
-import { AssetBalance, AssetIcon } from '@/shared/ui-entities';
-import { Box } from '@/shared/ui-kit';
-import { ChainTitle } from '@/entities/chain';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
 import { proxyUtils } from '@/entities/proxy';
@@ -58,15 +55,9 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
       const amount = transaction && getTransactionAmount(transaction);
 
       return {
-        name: <TransactionTitle className="flex-1 overflow-hidden" title={t(title || '')} />,
-        amount:
-          asset && amount ? (
-            <Box width="160px" direction="row" gap={2} verticalAlign="center">
-              <AssetIcon asset={asset} size={32} />
-              <AssetBalance value={amount} asset={asset} />
-            </Box>
-          ) : undefined,
-        chain: <ChainTitle chainId={operation.chainId} className="w-[114px]" />,
+        title: title ? t(title) : undefined,
+        amount: asset && amount ? { value: amount, asset } : undefined,
+        sourceChainId: operation.chainId,
       };
     }
   },

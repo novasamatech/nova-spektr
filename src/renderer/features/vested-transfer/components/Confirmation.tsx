@@ -2,14 +2,15 @@ import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, Icon, Separator } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
+import { networkModel } from '@/entities/network';
 import { SignButton } from '@/entities/operations';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { VestingSchedulePreview } from '@/entities/vesting';
+import { VestingSchedulePreview, type VestingScheduleRaw } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { confirmModel } from '../model/confirm';
 
@@ -20,21 +21,30 @@ type Props = {
 export const Confirmation = memo(({ onGoBack }: Props) => {
   const { t } = useI18n();
 
+  const apis = useUnit(networkModel.$apis);
   const wallets = useUnit(walletModel.$wallets);
   const confirms = useUnit(confirmModel.$confirms);
   const confirm = confirms.at(0) ?? null;
 
   if (!confirm) return null;
 
-  const { initiator, signatory, chain, fee, amount, hasMultisigAccount, multisigDeposit, vestingSchedule } =
+  const { initiator, signatory, chain, fee, amount, hasMultisigAccount, multisigDeposit, vestingSchedule, issues } =
     confirm.meta;
+  const vestingScheduleRaw: VestingScheduleRaw[] = vestingSchedule.map((vesting) => ({
+    target: vesting.target,
+    locked: vesting.locked.toString(),
+    startingBlock: vesting.startingBlock.toString(),
+    perBlock: vesting.perBlock.toString(),
+  }));
 
+  const timelineChainId = chain.additional?.timelineChain;
+  const timelineApi = nonNullable(timelineChainId) ? apis[timelineChainId] : apis[chain.chainId];
   const asset = getNativeAsset(chain.assets);
 
   return (
     <>
       <div className="mb-2 flex flex-col items-center gap-y-3">
-        <Icon className="text-icon-default" name="transferConfirm" size={60} />
+        <Icon className="text-icon-default" name="vestedTransferConfirm" size={60} />
 
         <div className="flex flex-col items-center gap-y-1">
           <AssetBalance
@@ -51,15 +61,16 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
         <TransactionDetails chain={chain} wallets={wallets} initiators={[initiator]} signatory={signatory}>
           <DetailRow label={t('vestedTransfer.confirmation.labels.parsedFile')}>
             <VestingSchedulePreview
+              timelineApi={timelineApi}
               chain={chain}
               asset={asset}
-              vestingSchedule={vestingSchedule}
-              trigger={
-                <Button className="p-0" size="sm" variant="text">
-                  {t('vestedTransfer.parsedFile.buttons.openPreview')}
-                </Button>
-              }
-            />
+              vestingSchedule={vestingScheduleRaw}
+              issues={issues}
+            >
+              <Button className="p-0" size="sm" variant="text">
+                {t('vestedTransfer.parsedFile.buttons.openPreview')}
+              </Button>
+            </VestingSchedulePreview>
           </DetailRow>
 
           <Separator className="border-filter-border" />
