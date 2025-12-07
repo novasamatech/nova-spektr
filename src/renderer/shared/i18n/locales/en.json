@@ -2645,7 +2645,8 @@
     },
     "errors": {
       "csv": {
-        "errorTitle": "Found {count} errors",
+        "errorTitle_one": "Found {count} error",
+        "errorTitle_other": "Found {count} errors",
         "fieldErrors": {
           "INVALID_SS58_ADDRESS": "Invalid SS58 address format",
           "INVALID_VALUE": "Invalid value",
@@ -2658,7 +2659,8 @@
         "invalidDataRow": "Row {row}",
         "invalidStructureDescription": "File couldn’t be read or contains invalid CSV structure. Check column headers and formatting, then try uploading again.",
         "parsedFileDownloadDescription": "You can download parsed file to review them or open the preview. Please edit your file and upload it again.",
-        "warningTitle": "Found {count} warnings"
+        "warningTitle_one": "Found {count} warning",
+        "warningTitle_other": "Found {count} warnings"
       },
       "form": {
         "chainRequired": "Chain is required",
