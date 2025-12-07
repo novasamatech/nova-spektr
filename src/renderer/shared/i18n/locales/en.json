@@ -1652,6 +1652,12 @@
     "searchPlaceholder": "Search by wallet or event type",
     "title": "Notifications",
     "toast": {
+      "flexibleMultisigWalletsCreated": "{{count}} flexible multisig wallets created",
+      "multisigOperationsAdded": "{{count}} multisig operations added",
+      "multisigWalletsCreated": "{{count}} multisig wallets created",
+      "notifications": "{{count}} notifications",
+      "proxiesCreated": "{{count}} proxies created",
+      "proxiesRemoved": "{{count}} proxies removed",
       "viewDetails": "View Details",
       "viewOperations": "View operations"
     }
