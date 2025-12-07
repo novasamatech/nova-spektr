@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 import { memo } from 'react';
 
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable } from '@/shared/lib/utils';
 import { Button, DetailRow, Icon, Separator } from '@/shared/ui';
 import { AssetBalance, TransactionDetails } from '@/shared/ui-entities';
 import { Box, Modal } from '@/shared/ui-kit';
@@ -28,7 +28,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
 
   if (!confirm) return null;
 
-  const { initiator, signatory, chain, fee, amount, hasMultisigAccount, multisigDeposit, vestingSchedule } =
+  const { initiator, signatory, chain, fee, amount, hasMultisigAccount, multisigDeposit, vestingSchedule, issues } =
     confirm.meta;
   const vestingScheduleRaw: VestingScheduleRaw[] = vestingSchedule.map((vesting) => ({
     target: vesting.target,
@@ -38,7 +38,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
   }));
 
   const timelineChainId = chain.additional?.timelineChain;
-  const timelineApi = (timelineChainId && apis[timelineChainId]) ?? apis[chain.chainId] ?? null;
+  const timelineApi = nonNullable(timelineChainId) ? apis[timelineChainId] : apis[chain.chainId];
   const asset = getNativeAsset(chain.assets);
 
   return (
@@ -65,6 +65,7 @@ export const Confirmation = memo(({ onGoBack }: Props) => {
               chain={chain}
               asset={asset}
               vestingSchedule={vestingScheduleRaw}
+              issues={issues}
             >
               <Button className="p-0" size="sm" variant="text">
                 {t('vestedTransfer.parsedFile.buttons.openPreview')}
