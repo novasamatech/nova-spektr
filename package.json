@@ -260,7 +260,8 @@
     "vite-plugin-svgr": "4.5.0",
     "vite-plugin-target": "0.1.1",
     "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.4"
+    "vitest": "3.2.4",
+    "wrangler": "4.51.0"
   },
   "sideEffects": [
     "*.css"

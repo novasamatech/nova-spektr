@@ -1,0 +1,130 @@
+# Documentation: docs/workflow/cloudflare-pr-preview.md
+name: Deploy PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - dev
+      - main
+
+concurrency:
+  group: pr-preview-deploy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  PROJECT_NAME: nova-spektr-pr-${{ github.event.pull_request.number }}
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: ⚙️ Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Install dependencies
+        uses: ./.github/workflows/install-pnpm
+
+      - name: 📝 Update package.json version with commit SHA
+        run: |
+          PR_COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+          COMMIT_SHA="${PR_COMMIT_SHA:-${{ github.sha }}}"
+          COMMIT_SHA_SHORT=$(echo "${COMMIT_SHA}" | cut -c1-8)
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          NEW_VERSION="${CURRENT_VERSION}-${COMMIT_SHA_SHORT}"
+          node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); pkg.version = '${NEW_VERSION}'; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');"
+          echo "Updated version to: ${NEW_VERSION}"
+          echo "COMMIT_SHA=${COMMIT_SHA_SHORT}" >> $GITHUB_ENV
+
+      - name: 🏗️ Build renderer (staging)
+        env:
+          CHAINS_FILE: chains_dev
+          TOKENS_FILE: tokens_dev
+        run: |
+          pnpm clean:build
+          pnpm renderer:staging
+          pnpm postbuild:staging
+
+      - name: 📦 Ensure Cloudflare Pages project exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Check if project exists
+          echo "Checking if project ${PROJECT_NAME} exists..."
+          if pnpm wrangler pages project list 2>/dev/null | grep -q "${PROJECT_NAME}"; then
+            echo "Project ${PROJECT_NAME} already exists."
+          else
+            echo "Project ${PROJECT_NAME} does not exist. Creating it now..."
+            pnpm wrangler pages project create "$PROJECT_NAME" --production-branch=main
+          fi
+
+      - name: 🚀 Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy release/build --project-name=${{ env.PROJECT_NAME }} --branch=${{ github.event.pull_request.head.ref }}
+
+      - name: 💬 Prepare comment body
+        id: prepare-comment
+        if: always()
+        env:
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
+          PREVIEW_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ "$DEPLOY_OUTCOME" == "success" ]; then
+            {
+              echo "COMMENT_BODY<<EOF"
+              echo "## 🚀 Preview Deployment Ready!"
+              echo ""
+              echo "Your PR preview has been deployed to Cloudflare Pages!"
+              echo ""
+              echo "**Preview URL:** $PREVIEW_URL"
+              echo ""
+              echo "**Branch:** \`$BRANCH\`"
+              echo "**Deployed Commit:** $COMMIT_SHA"
+              echo "**PR:** #$PR_NUMBER"
+              echo ""
+              echo "> ⚠️ Note: The deployment may take a few minutes to propagate. If the URL doesn't work immediately, wait a moment and try again."
+              echo ""
+              echo "---"
+              echo "*This preview will be automatically updated when you push new commits to this PR.*"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+          else
+            {
+              echo "COMMENT_BODY<<EOF"
+              echo "## ❌ Preview Deployment Failed"
+              echo ""
+              echo "The preview deployment failed. Please check the workflow logs for details."
+              echo ""
+              echo "**PR:** #$PR_NUMBER"
+              echo ""
+              echo "Common issues:"
+              echo "- Build errors in the renderer"
+              echo "- Network issues during deployment"
+              echo "- Cloudflare API authentication problems"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: 💬 Comment PR with deployment status
+        if: always()
+        uses: ./.github/workflows/pr-comment
+        with:
+          pr-number: ${{ github.event.pull_request.number }}
+          comment-identifier: "Preview Deployment"
+          comment-body: ${{ steps.prepare-comment.outputs.COMMENT_BODY }}
+
