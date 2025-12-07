@@ -13,18 +13,20 @@ export const CustomOperations = () => {
   const customOperations = useSlot(customOperationsSlot);
 
   return (
-    <Dropdown width="trigger" align="center" keepOpen open={isActionsOpen} onToggle={toggleIsActionsOpen}>
-      <Dropdown.Trigger>
-        <Button
-          pallet="secondary"
-          size="sm"
-          className="justify-center"
-          suffixElement={<Icon name={isActionsOpen ? 'up' : 'down'} size={16} className="text-inherit" />}
-        >
-          {t('navigation.customOperationLabel')}
-        </Button>
-      </Dropdown.Trigger>
-      <Dropdown.Content>{customOperations}</Dropdown.Content>
-    </Dropdown>
+    <div className="px-3.5">
+      <Dropdown width="trigger" align="center" keepOpen open={isActionsOpen} onToggle={toggleIsActionsOpen}>
+        <Dropdown.Trigger>
+          <Button
+            pallet="secondary"
+            size="sm"
+            className="w-full justify-center"
+            suffixElement={<Icon name={isActionsOpen ? 'up' : 'down'} size={16} className="text-inherit" />}
+          >
+            {t('navigation.customOperationLabel')}
+          </Button>
+        </Dropdown.Trigger>
+        <Dropdown.Content>{customOperations}</Dropdown.Content>
+      </Dropdown>
+    </div>
   );
 };

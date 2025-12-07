@@ -43,10 +43,11 @@ const addNotificationsFx = createEffect(async (notifications: NoID<Notification>
 });
 
 const notificationsAdded = createEvent<NoID<Notification>[]>();
+const notificationsFiltered = createEvent<NoID<Notification>[]>();
 const notificationsAddedComplete = createEvent<Notification[]>();
 const batchedNotificationsReady = createEvent<NotificationToast[]>();
 
-// Filter out duplicates and add IDs
+// Filter out duplicates
 sample({
   clock: notificationsAdded,
   source: $notifications,
@@ -74,6 +75,13 @@ sample({
 
     return newNotifications;
   },
+  target: notificationsFiltered,
+});
+
+// Only call effect if there are notifications to add
+sample({
+  clock: notificationsFiltered,
+  filter: (notifications) => notifications.length > 0,
   target: addNotificationsFx,
 });
 
