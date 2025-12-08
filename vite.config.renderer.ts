@@ -26,7 +26,6 @@ const config: UserConfigFn = async ({ mode, command }) => {
   const { defineConfig } = await import('vite');
   const { default: tsconfigPaths } = await import('vite-tsconfig-paths');
   const { default: svgr } = await import('vite-plugin-svgr');
-  const { default: favicons } = await import('@peterek/vite-plugin-favicons');
   const { default: react } = await import('@vitejs/plugin-react-swc');
   const { default: mkcert } = await import('vite-plugin-mkcert');
   const { compression, defineAlgorithm } = await import('vite-plugin-compression2');
@@ -122,25 +121,7 @@ const config: UserConfigFn = async ({ mode, command }) => {
           },
         },
       }),
-      favicons(
-        mode === 'development'
-          ? resolve(folders.rendererRoot, 'app/favicon.dev.png')
-          : resolve(folders.rendererRoot, 'app/favicon.png'),
-        {
-          appName: 'Nova Spektr',
-          appShortName: 'Spektr',
-          appDescription:
-            'Enterprise desktop wallet for Polkadot supporting multisigs, staking, light clients and more',
-          icons: {
-            android: true,
-            appleIcon: true,
-            appleStartup: true,
-            favicons: true,
-            windows: true,
-            yandex: true,
-          },
-        },
-      ),
+      // Favicon handling moved to react-helmet in App.tsx for dynamic badge support
 
       isProd &&
         command === 'build' &&

@@ -1,8 +1,10 @@
-import { useGate } from 'effector-react';
+import { useGate, useUnit } from 'effector-react';
 import { useEffect } from 'react';
+import { Helmet } from 'react-helmet';
 import { useNavigate, useRoutes, useSearchParams } from 'react-router-dom';
 
 import { logger } from '@/shared/config/utils';
+import { faviconModel } from '@/shared/lib/favicon-model';
 import { ConfirmDialogProvider } from '@/shared/providers';
 import { deepLinkService } from '@/domains/app';
 import { navigationModel } from '@/features/navigation';
@@ -18,6 +20,7 @@ export const App = () => {
   const navigate = useNavigate();
   const appRoutes = useRoutes(ROUTES_CONFIG);
   const [searchParams, setSearchParams] = useSearchParams();
+  const faviconUrl = useUnit(faviconModel.$faviconUrl);
 
   useGate(navigationModel.gates.flow, { navigate });
 
@@ -37,10 +40,15 @@ export const App = () => {
   }, [searchParams, setSearchParams]);
 
   return (
-    <ConfirmDialogProvider>
-      <StatusModalProvider>
-        <GraphqlProvider>{appRoutes}</GraphqlProvider>
-      </StatusModalProvider>
-    </ConfirmDialogProvider>
+    <>
+      <Helmet>
+        <link rel="icon" type="image/png" href={faviconUrl} />
+      </Helmet>
+      <ConfirmDialogProvider>
+        <StatusModalProvider>
+          <GraphqlProvider>{appRoutes}</GraphqlProvider>
+        </StatusModalProvider>
+      </ConfirmDialogProvider>
+    </>
   );
 };

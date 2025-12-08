@@ -2,6 +2,7 @@
 
 import { kernelModel } from '@/shared/core';
 import { createFeature, registerFeatures } from '@/shared/feature';
+import { faviconModel } from '@/shared/lib/favicon-model';
 import { isWeb } from '@/shared/lib/utils';
 import { config as collectivesConfig, trackService } from '@/domains/collectives';
 import { accounts, multisigOperation } from '@/domains/network';
@@ -57,6 +58,7 @@ const populate = async () => {
   kernelModel.events.appStarted();
   assetsSettingsModel.events.assetsStarted();
   notificationModel.events.notificationsStarted();
+  faviconModel.events.faviconInitialized();
 };
 
 export const bootstrap = () => {
