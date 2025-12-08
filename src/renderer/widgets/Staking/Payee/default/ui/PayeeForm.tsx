@@ -9,7 +9,7 @@ import { Button, Combobox, DetailRow, FootnoteText, Icon, InputHint, RadioGroup 
 import { type RadioOption } from '@/shared/ui/types';
 import { AssetBalance, Identicon, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
+import { accounts, useAccountsName } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel } from '@/entities/transaction';
@@ -101,6 +101,7 @@ const Destination = () => {
   const network = useUnit(formModel.$networkStore);
   const destinationAccounts = useUnit(formModel.$destinationAccounts);
   const destinationQuery = useUnit(formModel.$destinationQuery);
+  const resolvedDestinationAccounts = useAccountsName(destinationAccounts, network?.chain);
 
   const [payout, setPayout] = useState('');
   const [activeOptionId, setActiveOptionId] = useState<string>('0');
@@ -118,7 +119,7 @@ const Destination = () => {
     title: dest.title,
   }));
 
-  const destinationOptions = destinationAccounts.map((account) => {
+  const destinationOptions = resolvedDestinationAccounts.map((account) => {
     const address = toAddress(account.accountId, { prefix: network.chain.addressPrefix });
 
     return {

@@ -9,6 +9,7 @@ import { identity } from '../identity/store';
 
 import { accountService } from './service';
 import { accounts } from './store';
+import { type AnyAccount } from './types';
 
 export type AccountNameParams = {
   accountId: AccountId;
@@ -18,6 +19,11 @@ export type AccountNameParams = {
 
 export type WalletNameParams = {
   wallet: Wallet;
+};
+
+export type AccountsNameParams = {
+  accounts: AnyAccount[];
+  chain?: Chain | null;
 };
 
 type NameCache = Record<string, string>;
@@ -53,7 +59,7 @@ export const createWalletNameCacheKey = ({ wallet }: WalletNameParams): string =
   return [wallet.id, wallet.name, wallet.type, rootAccountId ?? 'none', accountsKey].join(':');
 };
 
-const $accountNameCache = createStore<NameCache>({});
+export const $accountNameCache = createStore<NameCache>({});
 export const $walletNameCache = createStore<NameCache>({});
 
 export const accountNameResource = createQueryResource<AccountNameParams>({
@@ -123,6 +129,55 @@ export const walletsNameResource = createQueryResource<WalletsNameParams>({
   )
   .cache({
     store: $walletNameCache,
+    map(cache, result) {
+      return {
+        ...cache,
+        ...result,
+      };
+    },
+  })
+  .build();
+
+export const accountsNameResource = createQueryResource<AccountsNameParams>({
+  key: ({ accounts, chain }) => {
+    const chainKey = chain?.chainId ?? 'anyChain';
+    const accountIds = accounts
+      .map(a => a.accountId)
+      .sort()
+      .join(',');
+    return `${chainKey}:${accountIds}`;
+  },
+})
+  .request(
+    attach({
+      source: getNameResolverSource(),
+      effect: ({ contacts, identities, chains, accounts: allAccounts }, { accounts, chain }) => {
+        const result: Record<string, string> = {};
+
+        for (const account of accounts) {
+          const key = createAccountNameCacheKey({
+            accountId: account.accountId,
+            chain,
+            title: undefined,
+          });
+          const name = accountService.resolveAccountName({
+            accountId: account.accountId,
+            chain,
+            title: undefined,
+            contacts,
+            identities,
+            chains,
+            accounts: allAccounts,
+          });
+          result[key] = name;
+        }
+
+        return result;
+      },
+    }),
+  )
+  .cache({
+    store: $accountNameCache,
     map(cache, result) {
       return {
         ...cache,

@@ -24,13 +24,18 @@ function getBalance(v: { account: AnyAccount; balance: BN | string } | AnyAccoun
 type SignatoryProps = {
   signatory: { account: AnyAccount; balance: BN | string } | AnyAccount;
   network: { chain: Chain; asset: Asset };
+  allAccounts: AnyAccount[];
 };
 
-const SignatoryItem = ({ signatory, network }: SignatoryProps) => {
+const SignatoryItem = ({ signatory, network, allAccounts }: SignatoryProps) => {
   const signer = getAccount(signatory);
   const balance = getBalance(signatory);
   const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
-  const accountName = useAccountName({ accountId: signer.accountId, chain: network.chain });
+  const accountName = useAccountName({
+    accountId: signer.accountId,
+    chain: network.chain,
+    accounts: network ? allAccounts : undefined,
+  });
 
   return (
     <Select.Item value={signer.id.toString()}>
@@ -103,7 +108,7 @@ export const SignatorySelect = ({
         onChange={value => selectSigner(value)}
       >
         {signatories.map(v => (
-          <SignatoryItem key={getAccount(v).id} signatory={v} network={network} />
+          <SignatoryItem key={getAccount(v).id} signatory={v} network={network} allAccounts={allAccounts} />
         ))}
       </Select>
       <InputHint variant="error" active={hasError}>

@@ -32,7 +32,7 @@ import {
   WalletIcon,
 } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { accountService, accounts, useAccountName } from '@/domains/network';
+import { accountService, accounts, useAccountName, useAccountsName } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
@@ -293,10 +293,12 @@ const Destination = memo(() => {
     setQuery('');
   }, [chain]);
 
+  const resolvedAccounts = useAccountsName(accountsList, chain);
+
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (nullable(chain)) return [];
 
-    const filteredAccounts = accountsList.filter((account) => {
+    const filteredAccounts = resolvedAccounts.filter((account) => {
       const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
       const queryPass = includesMultiple([account.name, address], query);
@@ -339,7 +341,7 @@ const Destination = memo(() => {
     }
 
     return ownAccountOptions;
-  }, [query, chain, wallets, accountsList]);
+  }, [query, chain, resolvedAccounts, wallets, initiator.value]);
 
   const contactOptions = useMemo<ComboboxGroup[]>(() => {
     if (validateAddress(query, chain)) return [];
@@ -409,7 +411,6 @@ const Destination = memo(() => {
             </Combobox.Group>
           ))}
         </Combobox>
-
         {isMyselfXcmEnabled && (
           <Button pallet="secondary" testId={TEST_IDS.OPERATIONS.MYSELF_BUTTON} onClick={handleChange}>
             {t('transfer.myselfButton')}
