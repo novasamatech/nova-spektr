@@ -15,16 +15,16 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - id: playwright_tests
+      shell: bash
+      run: |
+        allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
+
     - name: Create Allure testplan if missing
       shell: bash
       run: |
         mkdir -p .allure
         echo '{}' > .allure/testplan.json
-
-    - id: playwright_tests
-      shell: bash
-      run: |
-        allurectl watch -- npx playwright test --grep ${{ inputs.test_grep }}
 
     - shell: bash
       run: |
