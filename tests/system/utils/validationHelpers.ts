@@ -23,7 +23,7 @@ export function getValidationLocators(page: Page, v: Validation) {
       return [balance, page.getByTestId(ValidationElements.sendingAmountError)];
     case Validation.networkFee:
       return [balance, page.getByTestId(ValidationElements.networkFeeAmountError)];
-    case Validation.xcmFee:
+    case Validation.originFee:
       return [balance, page.getByTestId(ValidationElements.crossChainFeeAmountError)];
     case Validation.deliveryFee:
       return [balance, page.getByTestId(ValidationElements.deliveryFeeAmountError)];

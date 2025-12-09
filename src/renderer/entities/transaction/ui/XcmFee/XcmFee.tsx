@@ -3,10 +3,11 @@ import { BN, BN_ZERO } from '@polkadot/util';
 import { useUnit } from 'effector-react';
 import { memo, useEffect, useState } from 'react';
 
-import { type XcmConfig, xcmService } from '@/shared/api/xcm';
-import { type Asset, type DecodedTransaction, type Transaction } from '@/shared/core';
-import { toLocalChainId } from '@/shared/lib/utils';
+import { spellXcmService } from '@/shared/api/xcm';
+import { type Asset, type ChainId, type DecodedTransaction, type Transaction } from '@/shared/core';
+import { toAddress } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
+import { networkModel } from '@/entities/network';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '../FeeLoader/FeeLoader';
 
@@ -14,16 +15,29 @@ type Props = {
   api: ApiPromise;
   multiply?: number;
   asset: Asset;
-  config: XcmConfig;
   transaction?: Transaction | DecodedTransaction | null;
   className?: string;
   onFeeChange?: (fee: BN) => void;
   onFeeLoading?: (loading: boolean) => void;
+  fee?: BN | null;
+  isLoading?: boolean;
 };
 
 export const XcmFee = memo(
-  ({ api, multiply = 1, config, asset, transaction, className, onFeeChange, onFeeLoading }: Props) => {
+  ({
+    api,
+    multiply = 1,
+    asset,
+    transaction,
+    className,
+    onFeeChange,
+    onFeeLoading,
+    fee: externalFee,
+    isLoading: externalIsLoading,
+  }: Props) => {
     const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
+    const chains = useUnit(networkModel.$chains);
+    const apis = useUnit(networkModel.$apis);
 
     const [fee, setFee] = useState(BN_ZERO);
     const [isLoading, setIsLoading] = useState(false);
@@ -34,46 +48,85 @@ export const XcmFee = memo(
     };
 
     useEffect(() => {
-      onFeeLoading?.(isLoading);
-    }, [isLoading]);
+      const loading = externalIsLoading !== undefined ? externalIsLoading : isLoading;
+      onFeeLoading?.(loading);
+    }, [isLoading, externalIsLoading, onFeeLoading]);
 
     useEffect(() => {
+      if (externalFee !== undefined && externalFee !== null) {
+        updateFee(externalFee);
+        if (externalIsLoading !== undefined) {
+          setIsLoading(externalIsLoading);
+        }
+        return;
+      }
+
       const handleFee = (fee: BN) => {
         updateFee(fee);
         setIsLoading(false);
       };
 
       setIsLoading(true);
-      if (!transaction?.accountId) {
+      if (!transaction?.accountId || !transaction.args.destinationChain) {
         handleFee(BN_ZERO);
-
         return;
       }
 
-      const originChainId = toLocalChainId(transaction.chainId);
-      const destinationChainId = toLocalChainId(transaction.args.destinationChain);
-      const configChain = config.chains.find((c) => c.chainId === originChainId);
-      const configAsset = configChain?.assets.find((a) => a.assetId === asset.assetId);
-      const configXcmTransfer = configAsset?.xcmTransfers.find((t) => t.destination.chainId === destinationChainId);
+      const originChain = chains[transaction.chainId];
+      const destinationChain = chains[transaction.args.destinationChain as ChainId];
 
-      if (originChainId && configXcmTransfer && configAsset) {
-        xcmService
-          .getEstimatedFee(
-            api,
-            config,
-            config.assetsLocation[configAsset.assetLocation],
-            originChainId,
-            configXcmTransfer,
-            transaction.args.xcmAsset,
-            transaction.args.xcmDest,
-          )
-          .then(handleFee);
-      } else {
+      if (!originChain || !destinationChain) {
         handleFee(BN_ZERO);
+        return;
       }
-    }, [transaction]);
 
-    if (isLoading) {
+      const fromChainApi = apis[transaction.chainId];
+      const toChainApi = apis[transaction.args.destinationChain as ChainId];
+
+      if (!fromChainApi || !toChainApi) {
+        handleFee(BN_ZERO);
+        return;
+      }
+
+      const builderConfig = spellXcmService.createBuilderConfig(
+        originChain,
+        destinationChain,
+        fromChainApi,
+        toChainApi,
+      );
+
+      if (Object.keys(builderConfig.apiOverrides).length === 0) {
+        handleFee(BN_ZERO);
+        return;
+      }
+
+      const amount = transaction.args.value;
+      const destination = transaction.args.dest || transaction.accountId.toString();
+      const senderAddress = transaction.accountId
+        ? toAddress(transaction.accountId, { prefix: originChain.addressPrefix })
+        : undefined;
+
+      spellXcmService
+        .getXcmFees({
+          fromChain: originChain,
+          toChain: destinationChain,
+          asset,
+          amount,
+          destinationAddress: destination,
+          senderAddress,
+          fromChainApi,
+          toChainApi,
+        })
+        .then((fees) => {
+          handleFee(fees?.destinationFee || BN_ZERO);
+        })
+        .catch(() => {
+          handleFee(BN_ZERO);
+        });
+    }, [transaction, chains, apis, api, asset, externalFee, externalIsLoading]);
+
+    const loading = externalIsLoading !== undefined ? externalIsLoading : isLoading;
+    if (loading) {
       return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
     }
 
