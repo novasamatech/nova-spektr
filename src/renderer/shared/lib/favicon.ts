@@ -4,7 +4,7 @@
 
 const BADGE_COLOR = '#4649f6'; // Badge color
 const BADGE_SIZE_RATIO = 0.375; // Badge size as ratio of favicon size (GOOD STATE - 0.25 * 1.5)
-const BADGE_BORDER_WIDTH = 3; // White border around badge for better visibility (trying 3px padding)
+const WHITE_PADDING = 8; // White padding around badge in pixels
 
 /**
  * Draws a circular badge on the favicon
@@ -35,22 +35,23 @@ export function drawFaviconBadge(faviconUrl: string, showBadge: boolean): Promis
       // Draw badge if needed
       if (showBadge) {
         const badgeSize = size * BADGE_SIZE_RATIO;
-        const badgeRadius = badgeSize / 2;
-        const whiteCircleRadius = badgeRadius + BADGE_BORDER_WIDTH;
+        const coloredRadius = badgeSize / 2;
+        const totalRadius = coloredRadius + WHITE_PADDING;
         // Position in top-right corner with small padding
-        const badgeX = size - whiteCircleRadius - 2;
-        const badgeY = whiteCircleRadius + 2;
+        const margin = 3;
+        const centerX = size - totalRadius - margin;
+        const centerY = totalRadius + margin;
 
-        // Draw bigger white circle
-        ctx.beginPath();
-        ctx.arc(badgeX, badgeY, whiteCircleRadius, 0, 2 * Math.PI);
+        // Draw large white circle as background
         ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, totalRadius, 0, 2 * Math.PI);
         ctx.fill();
 
-        // Draw slightly smaller colored circle on top
-        ctx.beginPath();
-        ctx.arc(badgeX, badgeY, badgeRadius, 0, 2 * Math.PI);
+        // Draw colored badge circle in the center
         ctx.fillStyle = BADGE_COLOR;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, coloredRadius, 0, 2 * Math.PI);
         ctx.fill();
       }
 
