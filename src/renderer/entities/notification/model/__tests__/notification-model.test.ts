@@ -1,7 +1,7 @@
 import { allSettled, fork } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type Notification, NotificationType } from '@/shared/core';
+import { type ChainId, type HexString, type Notification, NotificationType } from '@/shared/core';
 import { toAccountId } from '@/shared/lib/utils';
 import { notificationModel } from '../notification-model';
 
@@ -41,7 +41,7 @@ describe('entities/notification/model/notification-model', () => {
       status: 'info' as const,
       issuer: toAccountId('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'),
       title: 'Multisig wallet added',
-      chainId: '0x123' as any,
+      chainId: '0x123' as ChainId,
       multisigAccountId: toAccountId('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'),
       signatories: [],
       threshold: 2,
@@ -52,7 +52,7 @@ describe('entities/notification/model/notification-model', () => {
     const spyCreate = jest
       .spyOn(storageService.notifications, 'createAll')
       .mockImplementation(async (notifications) => {
-        return notifications as any;
+        return notifications.map((n, index) => ({ ...n, id: index + 1 })) as Notification[];
       });
 
     const scope = fork({
@@ -77,9 +77,9 @@ describe('entities/notification/model/notification-model', () => {
       issuer: toAccountId('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'),
       title: 'Multisig operation created',
       multisigAccountId: toAccountId('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'),
-      callHash: '0xabcd' as any,
+      callHash: '0xabcd' as HexString,
       callTimepoint: { height: 100, index: 1 },
-      chainId: '0x123' as any,
+      chainId: '0x123' as ChainId,
       operationId: 'operation-1',
     };
 
@@ -88,7 +88,7 @@ describe('entities/notification/model/notification-model', () => {
     const firstCreateSpy = jest
       .spyOn(storageService.notifications, 'createAll')
       .mockImplementation(async (notifications) => {
-        return notifications as any;
+        return notifications.map((n, index) => ({ ...n, id: index + 1 })) as Notification[];
       });
 
     const scope = fork({
@@ -130,9 +130,9 @@ describe('entities/notification/model/notification-model', () => {
       issuer: toAccountId('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'),
       title: 'Multisig operation created',
       multisigAccountId: toAccountId('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'),
-      callHash: '0xabcd' as any,
+      callHash: '0xabcd' as HexString,
       callTimepoint: { height: 100, index: 1 },
-      chainId: '0x123' as any,
+      chainId: '0x123' as ChainId,
       operationId: 'operation-1',
     };
 
@@ -145,9 +145,9 @@ describe('entities/notification/model/notification-model', () => {
       issuer: toAccountId('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'),
       title: 'Multisig operation executed',
       multisigAccountId: toAccountId('5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY'),
-      callHash: '0xabcd' as any,
+      callHash: '0xabcd' as HexString,
       callTimepoint: { height: 100, index: 1 },
-      chainId: '0x123' as any,
+      chainId: '0x123' as ChainId,
       operationId: 'operation-1',
     };
 
@@ -155,7 +155,7 @@ describe('entities/notification/model/notification-model', () => {
     const spyCreate = jest
       .spyOn(storageService.notifications, 'createAll')
       .mockImplementation(async (notifications) => {
-        return notifications as any;
+        return notifications.map((n, index) => ({ ...n, id: index + 1 })) as Notification[];
       });
 
     const scope = fork({
@@ -170,7 +170,7 @@ describe('entities/notification/model/notification-model', () => {
 
     // Both should be created with different IDs
     expect(spyCreate).toHaveBeenCalled();
-    const createdNotifications = spyCreate.mock.calls[0][0] as Notification[];
+    const createdNotifications = scope.getState(notificationModel.$notifications);
     expect(createdNotifications).toHaveLength(2);
     expect(createdNotifications[0].id).not.toBe(createdNotifications[1].id);
   });

@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { type DecodedTransaction, type Transaction, TransactionType } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nullable } from '@/shared/lib/utils';
+import { getNativeAsset, nonNullable, nullable } from '@/shared/lib/utils';
 import { Button, DetailRow } from '@/shared/ui';
 import { type MultisigOperation } from '@/domains/network';
 import { networkModel } from '@/entities/network';
@@ -25,7 +25,7 @@ export const VestedTransferOperationDetails = ({ operation }: Props) => {
   if (nullable(transaction) || nullable(chain)) return null;
 
   const timelineChainId = chain.additional?.timelineChain;
-  const timelineApi = (timelineChainId && apis[timelineChainId]) ?? apis[chain.chainId] ?? null;
+  const timelineApi = nonNullable(timelineChainId) ? apis[timelineChainId] : apis[chain.chainId];
   const asset = getNativeAsset(chain.assets);
 
   const vestingSchedule: VestingScheduleRaw[] =

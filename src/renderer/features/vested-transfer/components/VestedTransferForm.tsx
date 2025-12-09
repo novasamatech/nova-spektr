@@ -14,7 +14,7 @@ import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel } from '@/entities/network';
 import { AssetFiatBalance } from '@/entities/price';
 import { FeeWithLabel, MultisigDepositFee } from '@/entities/transaction';
-import { VestingCsvError, VestingFieldError, VestingSchedulePreview } from '@/entities/vesting';
+import { type ValidationIssue, VestingCsvError, VestingFieldError, VestingSchedulePreview } from '@/entities/vesting';
 import { walletModel } from '@/entities/wallet';
 import { formModel } from '../model/form';
 import { vestedTransferUtils } from '../utils';
@@ -139,7 +139,7 @@ const UploadCSV = () => {
   const minVestedTransfer = useUnit(formModel.$minVestedTransfer);
 
   const timelineChainId = chain?.additional?.timelineChain;
-  const timelineApi = (timelineChainId && apis[timelineChainId]) ?? (chain && apis[chain.chainId]) ?? null;
+  const timelineApi = nonNullable(timelineChainId) ? apis[timelineChainId] : ((chain && apis[chain.chainId]) ?? null);
 
   const hasError = nonNullable(csvError);
   const hasParsedCsv = parsedCsv && parsedCsv.length > 0;
@@ -209,10 +209,13 @@ const ValidationsAlert = () => {
   const minVestedTransfer = useUnit(formModel.$minVestedTransfer);
   const asset = useUnit(formModel.$asset);
 
-  const [isAlertOpen, toggleAlert] = useState(true);
+  const [isErrorAlertOpen, toggleErrorAlert] = useState(true);
+  const [isWarningAlertOpen, toggleWarningAlert] = useState(true);
+
   useEffect(() => {
     if (csvError || csvIssues?.length) {
-      toggleAlert(true);
+      toggleErrorAlert(true);
+      toggleWarningAlert(true);
     }
   }, [csvError, csvIssues]);
 
@@ -224,17 +227,14 @@ const ValidationsAlert = () => {
     );
   }
 
-  if (nullable(csvIssues)) {
+  if (nullable(csvIssues) || csvIssues.length === 0) {
     return null;
   }
 
   const errors = csvIssues.filter((issue) => issue.severity === 'error');
   const warnings = csvIssues.filter((issue) => issue.severity === 'warning');
-  const issues = errors.length > 0 ? errors : warnings;
-  const isError = errors.length > 0;
-  const count = issues.length;
-
-  if (count === 0) return null;
+  const hasErrors = errors.length > 0;
+  const hasWarnings = warnings.length > 0;
 
   const downloadCSVWithIssues = () => {
     if (parsedCsv?.length) {
@@ -242,61 +242,87 @@ const ValidationsAlert = () => {
     }
   };
 
-  const titleKey = isError ? 'vestedTransfer.errors.csv.errorTitle' : 'vestedTransfer.errors.csv.warningTitle';
+  const DownloadSection = () => (
+    <div className="flex flex-col">
+      {t('vestedTransfer.errors.csv.parsedFileDownloadDescription')}
+      <Button
+        className="self-start p-0"
+        size="sm"
+        variant="text"
+        suffixElement={<Icon size={16} name="import" className="text-icon-primary" />}
+        onClick={downloadCSVWithIssues}
+      >
+        {t('vestedTransfer.parsedFile.buttons.parsedFile')}
+      </Button>
+    </div>
+  );
+
+  const renderIssueItem = (issue: ValidationIssue) => {
+    const rowPrefix = t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row });
+
+    return (
+      <Alert.Item key={issue.row}>
+        {rowPrefix}:&nbsp;
+        {t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
+      </Alert.Item>
+    );
+  };
+
+  const renderErrorItem = (issue: ValidationIssue) => {
+    const isMinVestedTransferError =
+      issue.message === VestingFieldError.MIN_VESTED_TRANSFER && nonNullable(minVestedTransfer) && nonNullable(asset);
+
+    if (isMinVestedTransferError) {
+      const rowPrefix = t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row });
+      return (
+        <Alert.Item key={issue.row}>
+          {rowPrefix}:&nbsp;
+          <Trans
+            t={t}
+            i18nKey="vestedTransfer.errors.csv.fieldErrors.MIN_VESTED_TRANSFER"
+            components={{
+              asset: (
+                <AssetBalance
+                  className="text-caption text-inherit"
+                  value={minVestedTransfer}
+                  asset={asset}
+                  showSymbol
+                />
+              ),
+            }}
+          />
+        </Alert.Item>
+      );
+    }
+
+    return renderIssueItem(issue);
+  };
 
   return (
-    <Alert
-      active={isAlertOpen}
-      title={t(titleKey, { count })}
-      variant={isError ? 'error' : 'warn'}
-      onClose={() => toggleAlert(false)}
-    >
-      {issues.map((issue) => {
-        const isMinVestedTransferError =
-          issue.message === VestingFieldError.MIN_VESTED_TRANSFER && nonNullable(minVestedTransfer);
-
-        if (isMinVestedTransferError && nonNullable(asset)) {
-          return (
-            <Alert.Item key={issue.row}>
-              {t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row })}:&nbsp;
-              <Trans
-                t={t}
-                i18nKey="vestedTransfer.errors.csv.fieldErrors.MIN_VESTED_TRANSFER"
-                components={{
-                  asset: (
-                    <AssetBalance
-                      className="text-caption text-inherit"
-                      value={minVestedTransfer}
-                      asset={asset}
-                      showSymbol
-                    />
-                  ),
-                }}
-              />
-            </Alert.Item>
-          );
-        }
-
-        return (
-          <Alert.Item key={issue.row}>
-            {t('vestedTransfer.errors.csv.invalidDataRow', { row: issue.row })}:&nbsp;
-            {t(`vestedTransfer.errors.csv.fieldErrors.${issue.message}`)}
-          </Alert.Item>
-        );
-      })}
-      <div className="flex flex-col">
-        {t('vestedTransfer.errors.csv.parsedFileDownloadDescription')}
-        <Button
-          className="self-start p-0"
-          size="sm"
-          variant="text"
-          suffixElement={<Icon size={16} name="import" className="text-icon-primary" />}
-          onClick={downloadCSVWithIssues}
+    <>
+      {hasErrors && (
+        <Alert
+          active={isErrorAlertOpen}
+          title={t('vestedTransfer.errors.csv.errorTitle', { count: errors.length })}
+          variant="error"
+          onClose={() => toggleErrorAlert(false)}
         >
-          {t('vestedTransfer.parsedFile.buttons.parsedFile')}
-        </Button>
-      </div>
-    </Alert>
+          {errors.map(renderErrorItem)}
+          <DownloadSection />
+        </Alert>
+      )}
+      {hasWarnings && (
+        <Alert
+          active={isWarningAlertOpen}
+          title={t('vestedTransfer.errors.csv.warningTitle', { count: warnings.length })}
+          variant="warn"
+          onClose={() => toggleWarningAlert(false)}
+        >
+          {warnings.map(renderIssueItem)}
+          <DownloadSection />
+        </Alert>
+      )}
+    </>
   );
 };
 
@@ -327,7 +353,7 @@ const FeeSection = () => {
   const multisigDeposit = useUnit(formModel.$multisigDeposit);
   const hasMultisigAccount = useUnit(formModel.$hasMultisigAccount);
 
-  if (!asset || !fee) return null;
+  if (!asset) return null;
 
   return (
     <>
