@@ -2,7 +2,7 @@ import { useUnit } from 'effector-react';
 
 import { useI18n } from '@/shared/i18n';
 import { toAddress } from '@/shared/lib/utils';
-import { Button } from '@/shared/ui';
+import { Button, SmallTitleText } from '@/shared/ui';
 import { Address } from '@/shared/ui-entities';
 import { Modal } from '@/shared/ui-kit';
 import { importContactsModel } from '../model/import-contacts-model';
@@ -29,11 +29,13 @@ export const ImportConflictsModal = ({ onClose }: Props) => {
       <Modal.Title close>{t('addressBook.importContacts.conflicts.title')}</Modal.Title>
       <Modal.Content>
         <div className="mt-4 flex flex-col items-start gap-y-4 px-5">
-          <p className="text-body text-text-secondary">{t('addressBook.importContacts.conflicts.description')}</p>
+          <SmallTitleText className="text-text-primary">
+            {t('addressBook.importContacts.conflicts.description')}
+          </SmallTitleText>
 
-          <div className="max-h-96 w-full space-y-2 overflow-y-auto">
+          <div className="max-h-96 w-full overflow-y-auto">
             {accountIdConflicts.map((conflict, index) => (
-              <div key={index} className="rounded-md border border-container-border p-3">
+              <div key={index} className="py-2">
                 <Address
                   address={toAddress(conflict.existing.address)}
                   showIcon
