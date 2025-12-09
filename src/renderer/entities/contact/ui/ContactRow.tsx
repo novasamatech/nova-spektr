@@ -25,7 +25,7 @@ export const ContactRow = ({ contact }: Props) => {
     toast.success(t('addressBook.contactDeleted'), {
       action: {
         label: t('addressBook.undo'),
-        onClick: () => contactModel.effects.createContactFx(contact),
+        onClick: () => contactModel.effects.undoDeleteContactFx(contact),
       },
     });
     contactModel.effects.deleteContactFx(contact.id);
