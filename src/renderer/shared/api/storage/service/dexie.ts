@@ -24,6 +24,7 @@ import {
   migrateEvents,
   migrateMultishardAccounts,
   migrateMultisigAccounts,
+  migrateNotificationStructure,
   migratePVAccounts,
   migrateRevoteToVote,
   migrateWallets,
@@ -149,6 +150,8 @@ class DexieStorage extends Dexie {
 
     this.version(41).upgrade(addAccountNameType);
 
+    this.version(42).upgrade(migrateNotificationStructure);
+
     this.connections = this.table('connections');
     this.balances2 = this.table('balances2');
     this.wallets = this.table('wallets');
@@ -177,8 +180,9 @@ export const exportDb = async () => {
 export const importDb = async (blob: Blob) => {
   await importInto(dexie, blob, { acceptVersionDiff: true });
 
-  await dexie.transaction('rw', dexie.accounts2, async (t) => {
+  await dexie.transaction('rw', dexie.accounts2, dexie.notifications, async (t) => {
     await addAccountNameType(t);
+    await migrateNotificationStructure(t);
   });
 };
 

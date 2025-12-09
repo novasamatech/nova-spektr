@@ -4,12 +4,13 @@ import { combineEvents, spread } from 'patronum';
 import {
   AccountType,
   type ChainId,
+  type CreateNotificationParams,
   CryptoType,
   type FlexibleMultisigAccount,
-  type FlexibleMultisigOperationNotification,
+  type FlexibleMultisigCreatedParams,
   type FlexibleMultisigWallet,
   type MultisigAccount,
-  type MultisigCreated,
+  type MultisigCreatedParams,
   type MultisigWallet,
   type NoID,
   NotificationType,
@@ -17,7 +18,7 @@ import {
   type ProxiedConnection,
   type ProxiedWallet,
   type ProxyAccount,
-  type ProxyAction,
+  type ProxyActionParams,
   type ProxyType,
   SigningType,
   type Wallet,
@@ -33,6 +34,7 @@ import {
   nullable,
   toAddress,
   toShortAddress,
+  truncate,
 } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
@@ -548,67 +550,90 @@ sample({
 
 // notifications
 
-const createNotificationsFromWallets = (wallets: { wallet: { id: number }; accounts: AnyAccount[] }[]) => {
-  const notifications = wallets.flatMap(({ wallet, accounts }) => {
-    return accounts.map((account) => {
-      if (accountUtils.isMultisigAccount(account)) {
-        return {
-          read: false,
-          type: NotificationType.MULTISIG_CREATED,
-          dateCreated: Date.now(),
-          multisigAccountId: account.accountId,
-          multisigAccountName: account.name,
-          signatories: account.signatories.map((signatory) => signatory.accountId),
-          threshold: account.threshold,
-        } satisfies NoID<MultisigCreated>;
-      }
+const createNotificationsFromWallets = (
+  wallets: { wallet: { id: number; name: string }; accounts: AnyAccount[] }[],
+  chains: Record<ChainId, { addressPrefix?: number }>,
+): CreateNotificationParams[] => {
+  return wallets
+    .flatMap(({ wallet, accounts }) => {
+      return accounts.map((account) => {
+        if (accountUtils.isAnyMultisigAccount(account)) {
+          const chainId = accountUtils.isFlexibleMultisigAccount(account) ? account.chainId : account.remarkChainId;
+          const chain = chainId ? chains[chainId] : undefined;
+          const name = wallet.name || truncate(toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+          const description = `${name} with threshold ${account.threshold} out of ${account.signatories.length}`;
 
-      if (accountUtils.isFlexibleMultisigAccount(account)) {
-        return {
-          read: false,
-          walletId: wallet.id,
-          type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
-          dateCreated: Date.now(),
-          multisigAccountId: account.accountId,
-          accountId: account.accountId,
-          accountName: account.name,
-          signatories: account.signatories.map((signatory) => signatory.accountId),
-          threshold: account.threshold,
-        } satisfies NoID<FlexibleMultisigOperationNotification>;
-      }
+          const baseNotification = {
+            status: 'info' as const,
+            issuer: account.accountId,
+            description,
+            multisigAccountId: account.accountId,
+            signatories: account.signatories.map((signatory) => signatory.accountId),
+            threshold: account.threshold,
+          };
 
-      if (accountUtils.isProxiedAccount(account)) {
-        return account.connections.map((connection) => {
-          return {
-            chainId: account.chainId,
-            dateCreated: Date.now(),
-            proxyType: connection.proxyType,
-            proxyAccountId: connection.proxyAccountId,
-            proxyVariant: account.proxyVariant,
-            proxiedAccountId: account.accountId,
-            read: false,
-            type: NotificationType.PROXY_CREATED,
-          } satisfies NoID<ProxyAction>;
-        });
-      }
+          if (accountUtils.isFlexibleMultisigAccount(account)) {
+            return {
+              key: `${NotificationType.FLEXIBLE_MULTISIG_CREATED}:${account.accountId}`,
+              ...baseNotification,
+              walletId: wallet.id,
+              type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
+              chainId: account.chainId,
+              title: 'Flexible multisig wallet added',
+              accountId: account.accountId,
+              accountName: account.name,
+            } satisfies FlexibleMultisigCreatedParams;
+          }
 
-      return null;
-    });
-  });
+          if (accountUtils.isMultisigAccount(account)) {
+            return {
+              key: `${NotificationType.MULTISIG_CREATED}:${account.accountId}`,
+              ...baseNotification,
+              type: NotificationType.MULTISIG_CREATED,
+              chainId: account.remarkChainId!,
+              title: 'Multisig wallet added',
+              multisigAccountName: account.name,
+            } satisfies MultisigCreatedParams;
+          }
+        }
 
-  return notifications.flat().filter(nonNullable);
+        if (accountUtils.isProxiedAccount(account)) {
+          return account.connections.map((connection) => {
+            return {
+              key: `${NotificationType.PROXY_CREATED}:${account.chainId}:${connection.proxyAccountId}:${account.accountId}`,
+              chainId: account.chainId,
+              proxyType: connection.proxyType,
+              proxyAccountId: connection.proxyAccountId,
+              proxyVariant: account.proxyVariant,
+              proxiedAccountId: account.accountId,
+              type: NotificationType.PROXY_CREATED,
+              status: 'info',
+              issuer: connection.proxyAccountId,
+              title: 'Delegated authority wallet added',
+              description: `${connection.proxyType} proxy`,
+            } satisfies ProxyActionParams;
+          });
+        }
+
+        return null;
+      });
+    })
+    .flat()
+    .filter(nonNullable);
 };
 
 sample({
   clock: createWalletsFx.doneData,
-  fn: (wallets) => createNotificationsFromWallets(wallets),
+  source: networkModel.$chains,
+  fn: (chains, wallets) => createNotificationsFromWallets(wallets, chains),
   target: notificationModel.events.notificationsAdded,
 });
 
 sample({
   clock: walletModel.createWallet.doneData,
-  filter: (result) => result !== undefined,
-  fn: (result) => createNotificationsFromWallets([result!]),
+  source: networkModel.$chains,
+  filter: (_, result) => nonNullable(result),
+  fn: (chains, result) => createNotificationsFromWallets([result!], chains),
   target: notificationModel.events.notificationsAdded,
 });
 
