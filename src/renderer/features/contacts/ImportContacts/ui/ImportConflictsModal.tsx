@@ -49,11 +49,11 @@ export const ImportConflictsModal = ({ onClose }: Props) => {
         </div>
       </Modal.Content>
       <Modal.Footer align="end">
-        <Button variant="fill" pallet="secondary" onClick={handleKeepCurrent}>
-          {t('addressBook.importContacts.conflicts.keepCurrentButton')}
-        </Button>
-        <Button variant="fill" onClick={handleReplace}>
+        <Button variant="fill" pallet="secondary" onClick={handleReplace}>
           {t('addressBook.importContacts.conflicts.replaceButton')}
+        </Button>
+        <Button variant="fill" onClick={handleKeepCurrent}>
+          {t('addressBook.importContacts.conflicts.keepCurrentButton')}
         </Button>
       </Modal.Footer>
     </Modal>
