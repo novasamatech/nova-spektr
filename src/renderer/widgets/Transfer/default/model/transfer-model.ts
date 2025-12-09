@@ -69,7 +69,18 @@ sample({
 
 sample({
   clock: formModel.formSubmitted,
-  fn: ({ tx, coreTx, initiator, signatory, amount, destination, destinationChain, fee, xcmFee, multisigDeposit }) => {
+  fn: ({
+    tx,
+    coreTx,
+    initiator,
+    signatory,
+    amount,
+    destination,
+    destinationChain,
+    fee,
+    originFee,
+    multisigDeposit,
+  }) => {
     const store = {
       initiator,
       signatory,
@@ -77,7 +88,7 @@ sample({
       destination,
       destinationChain,
       fee,
-      xcmFee,
+      originFee,
       multisigDeposit,
     } satisfies TransferStore;
 
@@ -116,8 +127,8 @@ const readyToConfirm = sample({
       amount: form.amount,
       rawAmount: form.rawAmount,
       fee: form.fee,
-      xcmFee: form.xcmFee,
-      deliveryFee: form.deliveryFee,
+      originFee: form.originFee,
+      destinationFee: form.destinationFee,
       multisigDeposit: form.multisigDeposit,
       balancePreservation: form.balancePreservation,
     };
