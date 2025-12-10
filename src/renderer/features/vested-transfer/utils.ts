@@ -1,8 +1,9 @@
 import { BN, BN_ZERO } from '@polkadot/util';
 import { parse } from 'csv-parse/sync';
+import { cloneDeep } from 'lodash';
 import { z } from 'zod';
 
-import { downloadFiles, toAccountId, validateAddress } from '@/shared/lib/utils';
+import { downloadFiles, nullable, toAccountId, validateAddress } from '@/shared/lib/utils';
 import {
   type ValidationIssue,
   VestingFieldError,
@@ -83,7 +84,7 @@ function createValidationSchema(options: ValidationSchemaOptions) {
       .refine((value) => validateAddress(value, chain), VestingFieldError.INVALID_SS58_ADDRESS)
       .transform(toAccountId)
       .refine((accountId) => {
-        const existingSchedulesCount = existingVestingSchedules[accountId]?.length ?? 0;
+        const existingSchedulesCount = existingVestingSchedules[accountId] ?? 0;
         return new BN(existingSchedulesCount).lt(maxVestingSchedules);
       }, VestingFieldError.MAX_VESTING_SCHEDULES_REACHED),
 
@@ -148,7 +149,8 @@ async function parseCSV(file: File): Promise<ParseResult> {
   }
 }
 
-function validateCSV(records: VestingScheduleRaw[], schema: z.ZodSchema) {
+function validateCSV(records: VestingScheduleRaw[], options: ValidationSchemaOptions) {
+  const validationOptions = cloneDeep(options);
   const issues: ValidationIssue[] = [];
 
   for (let i = 0; i < records.length; i++) {
@@ -156,7 +158,14 @@ function validateCSV(records: VestingScheduleRaw[], schema: z.ZodSchema) {
     const rowIndex = i + 1;
 
     try {
+      const schema = createValidationSchema(validationOptions);
       schema.parse(record);
+      const targetAccountId = toAccountId(record.target);
+      if (nullable(validationOptions.existingVestingSchedules[targetAccountId])) {
+        validationOptions.existingVestingSchedules[targetAccountId] = 1;
+      } else {
+        validationOptions.existingVestingSchedules[targetAccountId] += 1;
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         for (const issue of error.issues) {
