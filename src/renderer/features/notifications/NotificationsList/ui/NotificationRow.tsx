@@ -33,6 +33,7 @@ const Notifications: Record<NotificationType, (n: Notification) => ReactNode> = 
   ),
   [NotificationType.PROXY_CREATED]: (n) => <ProxyCreatedNotification notification={n as ProxyAction} />,
   [NotificationType.PROXY_REMOVED]: (n) => <ProxyRemovedNotification notification={n as ProxyAction} />,
+  [NotificationType.MULTISIG_OPERATION]: () => null,
 };
 
 type Props = {

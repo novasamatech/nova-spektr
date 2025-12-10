@@ -2,11 +2,17 @@ import { attach, createEffect, createStore, restore, sample, scopeBind } from 'e
 import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import { type HexString } from '@/shared/core';
-import { createQueuedEffect } from '@/shared/effector';
+import {
+  type CreateMultisigOperationParams,
+  type HexString,
+  type NotificationStatus,
+  NotificationType,
+} from '@/shared/core';
+import { createQueuedEffect, pairwise } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
+import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
 
 import { deserializeOperation, serializeOperation } from './helpers';
@@ -96,6 +102,77 @@ const removeOperationsForAccountFx = attach({
     const operationsToRemove = operations.filter(o => o.accountId === accountId);
     return remove(operationsToRemove);
   },
+});
+
+const getNotificationStatus = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): NotificationStatus => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'info';
+    case 'executed':
+      return 'success';
+    case 'cancelled':
+    case 'error':
+      return 'error';
+  }
+};
+
+const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancelled' | 'error'): string => {
+  switch (operationStatus) {
+    case 'pending':
+      return 'Multisig operation created';
+    case 'executed':
+      return 'Multisig operation executed';
+    case 'cancelled':
+      return 'Multisig operation rejected';
+    case 'error':
+      return 'Multisig operation error';
+  }
+};
+
+const createOperationNotification = (operation: MultisigOperation): CreateMultisigOperationParams => {
+  return {
+    key: `${NotificationType.MULTISIG_OPERATION}:${operation.id}:${operation.status}`,
+    type: NotificationType.MULTISIG_OPERATION,
+    status: getNotificationStatus(operation.status),
+    issuer: operation.accountId,
+    title: getNotificationTitle(operation.status),
+    description: operation.transaction ? `${operation.transaction.section}.${operation.transaction.method}` : undefined,
+    multisigAccountId: operation.accountId,
+    callHash: operation.callHash,
+    callTimepoint: {
+      height: operation.blockCreated,
+      index: operation.indexCreated,
+    },
+    chainId: operation.chainId,
+    operationId: operation.id,
+  };
+};
+
+const operationChanges = pairwise($list)
+  .map(({ prev: prevState, current: update }) => {
+    const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
+    const notifications: CreateMultisigOperationParams[] = [];
+
+    for (const item of update) {
+      const previousOp = previousOpsMap.get(item.id);
+
+      if (!previousOp) {
+        notifications.push(createOperationNotification(item));
+      } else if (previousOp.status !== item.status && item.status !== 'pending') {
+        notifications.push(createOperationNotification(item));
+      }
+    }
+
+    return notifications;
+  })
+  .filter({ fn: notifications => notifications.length > 0 });
+
+sample({
+  clock: operationChanges,
+  source: $populated,
+  filter: (populated, changes) => populated && changes.length > 0,
+  fn: (_, notifications) => notifications,
+  target: notificationModel.events.notificationsAdded,
 });
 
 deriveFromResources({

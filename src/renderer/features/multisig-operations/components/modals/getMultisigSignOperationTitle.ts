@@ -32,6 +32,16 @@ const TransactionTitlesModal: Record<TransactionType, (crossChain: boolean) => s
     `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: crossChain =>
     `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.XTOKENS_TRANSFER]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSETS]: crossChain =>
+    `operations.modalTitles.${crossChain ? 'transferFrom' : 'transferOn'}`,
   // Staking
   [TransactionType.BOND]: () => 'operations.modalTitles.startStakingOn',
   [TransactionType.NOMINATE]: () => 'operations.modalTitles.nominateOn',

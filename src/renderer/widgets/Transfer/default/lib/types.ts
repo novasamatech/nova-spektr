@@ -25,7 +25,7 @@ export type TransferStore = {
   destinationChain: Chain;
 
   fee: BN;
-  xcmFee: BN;
+  originFee: BN;
   multisigDeposit: BN;
 };
 

@@ -20,6 +20,9 @@ importers:
       '@novasamatech/spektr-dapp-host-container':
         specifier: 0.0.12
         version: 0.0.12
+      '@paraspell/sdk-pjs':
+        specifier: ^11.14.6
+        version: 11.14.6(@polkadot/api-base@16.4.8)(@polkadot/api@16.4.8)(@polkadot/types@16.4.8)(@polkadot/util-crypto@13.5.6(@polkadot/util@13.5.6))(@polkadot/util@13.5.6)(typescript@5.9.2)(zod@4.0.14)
       '@polkadot-api/descriptors':
         specifier: file:.papi/descriptors
         version: file:.papi/descriptors(polkadot-api@1.20.0(@swc/core@1.13.5(@swc/helpers@0.5.17))(jiti@2.5.1)(postcss@8.5.6)(rxjs@7.8.2)(tsx@4.20.3)(yaml@2.7.1))
@@ -560,6 +563,9 @@ packages:
 
   '@adobe/css-tools@4.4.3':
     resolution: {integrity: sha512-VQKMkwriZbaOgVCby1UDY/LDk5fIjhQicCvVPFqfe+69fWaPWydbWJ3wRt59/YzIwda1I81loas3oCoHxnqvdA==}
+
+  '@adraffy/ens-normalize@1.10.1':
+    resolution: {integrity: sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==}
 
   '@adraffy/ens-normalize@1.11.0':
     resolution: {integrity: sha512-/3DDPKHqqIqxUULp8yP4zODUY1i+2xvVWsv8A79xGWdCAG+8sb0hRh0Rk2QyOJUnnbyPUAZYcpBuRe3nS2OIUg==}
@@ -1786,6 +1792,9 @@ packages:
     resolution: {integrity: sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw==}
     engines: {node: ^14.21.3 || >=16}
 
+  '@noble/curves@1.2.0':
+    resolution: {integrity: sha512-oYclrNgRaM9SsBUBVbb8M6DTV7ZHRTKugureoYEncY5c65HOmRzvSiTE3y5CYaPYJA/GVkrhXEoF0M3Ya9PMnw==}
+
   '@noble/curves@1.8.0':
     resolution: {integrity: sha512-j84kjAbzEnQHaSIhRPUmB3/eVXu2k3dKPl2LOrR8fSOIL+89U+7lV117EWHtq/GHM3ReGHM46iRBdZfpc4HRUQ==}
     engines: {node: ^14.21.3 || >=16}
@@ -1801,6 +1810,10 @@ packages:
   '@noble/curves@1.9.7':
     resolution: {integrity: sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==}
     engines: {node: ^14.21.3 || >=16}
+
+  '@noble/hashes@1.3.2':
+    resolution: {integrity: sha512-MVC8EAQp7MvEcm30KWENFjgR+Mkmf+D189XJTkFIlwohU5hcBbn1ZkKq7KVTi2Hme3PMGF390DaL52beVrIihQ==}
+    engines: {node: '>= 16'}
 
   '@noble/hashes@1.7.0':
     resolution: {integrity: sha512-HXydb0DgzTpDPwbVeDGCG1gIu7X6+AuU6Zl6av/E/KG8LMsvPntvq+w17CHRpKBmN6Ybdrt1eP3k4cj8DJa78w==}
@@ -1969,6 +1982,27 @@ packages:
     resolution: {integrity: sha512-BR1bIRWOMqkf8IoU576YDhij1Wd/Zf2kX/kCI0b2qzCKC8wcc2GQJaaRMCpzvCCrmliO4vtJ6RITp/AnoYUUmQ==}
     cpu: [x64]
     os: [win32]
+
+  '@paraspell/assets@11.14.6':
+    resolution: {integrity: sha512-699fCCGGF5azTskuJqvN+iNPxHLz4/no+o+icQDdC5TUBr8tIxIgt41UP9o0DbxS4K5YJ7tCgoD1R/hHh/grtw==}
+
+  '@paraspell/pallets@11.14.6':
+    resolution: {integrity: sha512-XMHroDWcnuIrE6pYGiHckdUaRU8n0V8e9OteqOD19cWwZW/vk53tEEcXaqYxJ24BsmYcs5Jof6UZCoGdwS8ULg==}
+
+  '@paraspell/sdk-common@11.14.6':
+    resolution: {integrity: sha512-LegoedkbD+gslwmNEW7s7yUeI7ctvXAKZUme/Jp1fKo3ZqMBxOWZ0HtIqqDv+dIWUxGyXEXtc5dqeJJYHfDsNA==}
+
+  '@paraspell/sdk-core@11.14.6':
+    resolution: {integrity: sha512-Ngi+glIaFU9dUS6JapLLu+0liZY4xQC9rMZ2hHPBUzESP63aUZ1dN6dhNRMetgBqQTBNbpu6ux0TTfbe9y2YBw==}
+
+  '@paraspell/sdk-pjs@11.14.6':
+    resolution: {integrity: sha512-fIxtvL8otZxSKiRxCbmkGh7Of2ZQ0ZkTeFW3Ul1zJcy1u6CeJKEcP/WGu3AzJ6DRFDJHeZvbuVQ03YyZpa9h/w==}
+    peerDependencies:
+      '@polkadot/api': '>= 16.0 < 17'
+      '@polkadot/api-base': '>= 16.0 < 17'
+      '@polkadot/types': '>= 16.0 < 17'
+      '@polkadot/util': '>= 13'
+      '@polkadot/util-crypto': '>= 13'
 
   '@peterek/vite-plugin-favicons@2.1.0':
     resolution: {integrity: sha512-jx2eg6xXTXB+zezx6tPoS3WVlO7Kfep+brnmt4P5Jf4sdbNul1HqhyzlsRHORbXgs/MxF3fmRiaRU3dcgs49wQ==}
@@ -3097,6 +3131,18 @@ packages:
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
 
+  '@snowbridge/api@0.2.12':
+    resolution: {integrity: sha512-HkDc5zCxD3WPxfX3U4cDqkeifk6HHxmDtIFGKZNipp9Oe9ZGc+a+a8sH479POtcHAlXJF5IObXjjpGHQCtv/XA==}
+
+  '@snowbridge/base-types@0.2.12':
+    resolution: {integrity: sha512-TnJzosDRoMS2byRGquwTEY8Vw4OckiycSwenYS2NcYo6v7ECJXqSx5tQEbBHzFXmU77k8WyyuRyawHJX6HuPnQ==}
+
+  '@snowbridge/contract-types@0.2.12':
+    resolution: {integrity: sha512-xqFbjR2rDL/smR/ro4uf2qKu7UPrgagagULHTheYo29NXfFYENXgExPFcnd4F6fPjoCJ18gTauMIv8mOK3M49Q==}
+
+  '@snowbridge/contracts@0.2.12':
+    resolution: {integrity: sha512-XBl4F/4G9r/gHESzUDeO493Dk7V90TBAaEE1QcHNtsFbkz3vc3BgJgvqHDYgD5+m2S65SWnDBCMN8V1w5Iz79Q==}
+
   '@storybook/addon-a11y@9.1.12':
     resolution: {integrity: sha512-K7Ssk9MXwjGVtxFRBRsqE1zhZXZJbEaya/4TaFcBxE2JJLd2myNEsU27m6xkiYda3Qgu5GfDSYqdwYCUaFPMWA==}
     peerDependencies:
@@ -3633,6 +3679,9 @@ packages:
   '@types/node@22.17.0':
     resolution: {integrity: sha512-bbAKTCqX5aNVryi7qXVMi+OkB3w/OyblodicMbvE38blyAz7GxXf6XYhklokijuPwwVg9sDLKRxt0ZHXQwZVfQ==}
 
+  '@types/node@22.7.5':
+    resolution: {integrity: sha512-jML7s2NAzMWc//QSJ1a3prpk78cOPchGvXJsC3C6R6PSMoooztvRVQEz89gmBTBY1SPMaqo5teB4uNHPdetShQ==}
+
   '@types/node@24.7.0':
     resolution: {integrity: sha512-IbKooQVqUBrlzWTi79E8Fw78l8k1RNtlDDNWsFZs7XonuQSJ8oNYfEeclhprUldXISRMLzBpILuKgPlIxm+/Yw==}
 
@@ -4029,6 +4078,17 @@ packages:
   abbrev@1.1.1:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
 
+  abitype@1.1.0:
+    resolution: {integrity: sha512-6Vh4HcRxNMLA0puzPjM5GBgT4aAcFGKZzSgAXvuZ27shJP6NEpielTuqbBmZILR5/xd0PizkBGy5hReKz9jl5A==}
+    peerDependencies:
+      typescript: '>=5.0.4'
+      zod: ^3.22.0 || ^4.0.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+      zod:
+        optional: true
+
   abitype@1.1.1:
     resolution: {integrity: sha512-Loe5/6tAgsBukY95eGaPSDmQHIjRZYQq8PB1MpsNccDIK8WiV+Uw6WzaIXipvaxTEL2yEB0OpEaQv3gs8pkS9Q==}
     peerDependencies:
@@ -4056,6 +4116,9 @@ packages:
     resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
     engines: {node: '>=0.4.0'}
     hasBin: true
+
+  aes-js@4.0.0-beta.5:
+    resolution: {integrity: sha512-G965FqalsNyrPqgEGON7nIx1e/OVENSgiEIzyC63haUMuvNnwIgIjMs52hlTCKhkBny7A2ORNlfY9Zu+jmGk1Q==}
 
   agent-base@6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
@@ -5752,6 +5815,10 @@ packages:
   ethereum-blockies-base64@1.0.2:
     resolution: {integrity: sha512-Vg2HTm7slcWNKaRhCUl/L3b4KrB8ohQXdd5Pu3OI897EcR6tVRvUqdTwAyx+dnmoDzj8e2bwBLDQ50ByFmcz6w==}
 
+  ethers@6.15.0:
+    resolution: {integrity: sha512-Kf/3ZW54L4UT0pZtsY/rf+EkBU7Qi5nnhonjUb8yTXcxH3cdcWrV2cRyk0Xk/4jK6OoHhxxZHriyhje20If2hQ==}
+    engines: {node: '>=14.0.0'}
+
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
 
@@ -6688,6 +6755,11 @@ packages:
   isomorphic-timers-promises@1.0.1:
     resolution: {integrity: sha512-u4sej9B1LPSxTGKB/HiuzvEQnXH0ECYkSVQU39koSwmFAxhlEAFl9RdTvLv4TOTQUgBS5O3O5fwUxk6byBZ+IQ==}
     engines: {node: '>=10'}
+
+  isows@1.0.7:
+    resolution: {integrity: sha512-I1fSfDCZL5P0v33sVqeTDSpcstAg/N+wF5HS033mogOVIp4B+oHC7oOCsA3axAbBSGTJ8QubbNmnIRN/h8U7hg==}
+    peerDependencies:
+      ws: '*'
 
   istanbul-lib-coverage@3.2.2:
     resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
@@ -7741,6 +7813,14 @@ packages:
 
   ox@0.9.3:
     resolution: {integrity: sha512-KzyJP+fPV4uhuuqrTZyok4DC7vFzi7HLUFiUNEmpbyh59htKWkOC98IONC1zgXJPbHAhQgqs6B0Z6StCGhmQvg==}
+    peerDependencies:
+      typescript: '>=5.4.0'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  ox@0.9.6:
+    resolution: {integrity: sha512-8SuCbHPvv2eZLYXrNmC0EC12rdzXQLdhnOMlHDW2wiCPLxBrOOJwX5L5E61by+UjTPOryqQiRSnjIKCI+GykKg==}
     peerDependencies:
       typescript: '>=5.4.0'
     peerDependenciesMeta:
@@ -9444,6 +9524,9 @@ packages:
   tslib@2.6.2:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
 
+  tslib@2.7.0:
+    resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
+
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
@@ -9554,6 +9637,9 @@ packages:
 
   underscore.string@3.3.6:
     resolution: {integrity: sha512-VoC83HWXmCrF6rgkyxS9GHv8W9Q5nhMKho+OadDJGzL2oDYbYEppBaCMH6pFlwLeqj2QS+hhkw2kpXkSdD1JxQ==}
+
+  undici-types@6.19.8:
+    resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
 
   undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
@@ -9786,6 +9872,14 @@ packages:
 
   vfile@6.0.3:
     resolution: {integrity: sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q==}
+
+  viem@2.39.0:
+    resolution: {integrity: sha512-rCN+IfnMESlrg/iPyyVL+M9NS/BHzyyNy72470tFmbTuscY3iPaZGMtJDcHKKV8TC6HV9DjWk0zWX6cpu0juyA==}
+    peerDependencies:
+      typescript: '>=5.0.4'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   viewport-dimensions@0.2.0:
     resolution: {integrity: sha512-94JqlKxEP4m7WO+N3rm4tFRGXZmXXwSPQCoV+EPxDnn8YAGiLU3T+Ha1imLreAjXsHl0K+ELnIqv64i1XZHLFQ==}
@@ -10124,6 +10218,18 @@ packages:
       utf-8-validate:
         optional: true
 
+  ws@8.17.1:
+    resolution: {integrity: sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   ws@8.18.3:
     resolution: {integrity: sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==}
     engines: {node: '>=10.0.0'}
@@ -10276,6 +10382,8 @@ snapshots:
   7zip-bin@5.2.0: {}
 
   '@adobe/css-tools@4.4.3': {}
+
+  '@adraffy/ens-normalize@1.10.1': {}
 
   '@adraffy/ens-normalize@1.11.0': {}
 
@@ -11516,6 +11624,10 @@ snapshots:
 
   '@noble/ciphers@1.3.0': {}
 
+  '@noble/curves@1.2.0':
+    dependencies:
+      '@noble/hashes': 1.3.2
+
   '@noble/curves@1.8.0':
     dependencies:
       '@noble/hashes': 1.7.0
@@ -11531,6 +11643,8 @@ snapshots:
   '@noble/curves@1.9.7':
     dependencies:
       '@noble/hashes': 1.8.0
+
+  '@noble/hashes@1.3.2': {}
 
   '@noble/hashes@1.7.0': {}
 
@@ -11652,6 +11766,49 @@ snapshots:
 
   '@pagefind/windows-x64@1.3.0':
     optional: true
+
+  '@paraspell/assets@11.14.6':
+    dependencies:
+      '@paraspell/sdk-common': 11.14.6
+
+  '@paraspell/pallets@11.14.6':
+    dependencies:
+      '@paraspell/sdk-common': 11.14.6
+
+  '@paraspell/sdk-common@11.14.6': {}
+
+  '@paraspell/sdk-core@11.14.6(typescript@5.9.2)(zod@4.0.14)':
+    dependencies:
+      '@noble/hashes': 1.8.0
+      '@paraspell/assets': 11.14.6
+      '@paraspell/pallets': 11.14.6
+      '@paraspell/sdk-common': 11.14.6
+      '@scure/base': 2.0.0
+      viem: 2.39.0(typescript@5.9.2)(zod@4.0.14)
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - zod
+
+  '@paraspell/sdk-pjs@11.14.6(@polkadot/api-base@16.4.8)(@polkadot/api@16.4.8)(@polkadot/types@16.4.8)(@polkadot/util-crypto@13.5.6(@polkadot/util@13.5.6))(@polkadot/util@13.5.6)(typescript@5.9.2)(zod@4.0.14)':
+    dependencies:
+      '@paraspell/sdk-core': 11.14.6(typescript@5.9.2)(zod@4.0.14)
+      '@polkadot/api': 16.4.8
+      '@polkadot/api-base': 16.4.8
+      '@polkadot/types': 16.4.8
+      '@polkadot/util': 13.5.6
+      '@polkadot/util-crypto': 13.5.6(@polkadot/util@13.5.6)
+      '@snowbridge/api': 0.2.12
+      '@snowbridge/contract-types': 0.2.12
+      ethers: 6.15.0
+      viem: 2.39.0(typescript@5.9.2)(zod@4.0.14)
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - typescript
+      - utf-8-validate
+      - zod
 
   '@peterek/vite-plugin-favicons@2.1.0(vite@7.1.11(@types/node@22.17.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.37.0)(tsx@4.20.3)(yaml@2.7.1))':
     dependencies:
@@ -13040,6 +13197,33 @@ snapshots:
 
   '@sindresorhus/merge-streams@4.0.0': {}
 
+  '@snowbridge/api@0.2.12':
+    dependencies:
+      '@polkadot/api': 16.4.8
+      '@polkadot/keyring': 13.5.6(@polkadot/util-crypto@13.5.6(@polkadot/util@13.5.6))(@polkadot/util@13.5.6)
+      '@polkadot/types': 16.4.8
+      '@polkadot/util': 13.5.6
+      '@polkadot/util-crypto': 13.5.6(@polkadot/util@13.5.6)
+      '@snowbridge/base-types': 0.2.12
+      '@snowbridge/contract-types': 0.2.12
+      ethers: 6.15.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
+  '@snowbridge/base-types@0.2.12': {}
+
+  '@snowbridge/contract-types@0.2.12':
+    dependencies:
+      '@snowbridge/contracts': 0.2.12
+      ethers: 6.15.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@snowbridge/contracts@0.2.12': {}
+
   '@storybook/addon-a11y@9.1.12(storybook@9.1.12(@testing-library/dom@10.4.0)(prettier@3.6.2)(vite@7.1.11(@types/node@22.17.0)(jiti@2.5.1)(lightningcss@1.30.1)(terser@5.37.0)(tsx@4.20.3)(yaml@2.7.1)))':
     dependencies:
       '@storybook/global': 5.0.0
@@ -13590,6 +13774,10 @@ snapshots:
   '@types/node@22.17.0':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/node@22.7.5':
+    dependencies:
+      undici-types: 6.19.8
 
   '@types/node@24.7.0':
     dependencies:
@@ -14213,6 +14401,11 @@ snapshots:
 
   abbrev@1.1.1: {}
 
+  abitype@1.1.0(typescript@5.9.2)(zod@4.0.14):
+    optionalDependencies:
+      typescript: 5.9.2
+      zod: 4.0.14
+
   abitype@1.1.1(typescript@5.9.2)(zod@4.0.14):
     optionalDependencies:
       typescript: 5.9.2
@@ -14233,6 +14426,8 @@ snapshots:
       acorn: 8.15.0
 
   acorn@8.15.0: {}
+
+  aes-js@4.0.0-beta.5: {}
 
   agent-base@6.0.2:
     dependencies:
@@ -16446,6 +16641,19 @@ snapshots:
     dependencies:
       pnglib: 0.0.1
 
+  ethers@6.15.0:
+    dependencies:
+      '@adraffy/ens-normalize': 1.10.1
+      '@noble/curves': 1.2.0
+      '@noble/hashes': 1.3.2
+      '@types/node': 22.7.5
+      aes-js: 4.0.0-beta.5
+      tslib: 2.7.0
+      ws: 8.17.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   eventemitter3@5.0.1: {}
 
   events@3.3.0: {}
@@ -17618,6 +17826,10 @@ snapshots:
   isnumeric@0.2.0: {}
 
   isomorphic-timers-promises@1.0.1: {}
+
+  isows@1.0.7(ws@8.18.3):
+    dependencies:
+      ws: 8.18.3
 
   istanbul-lib-coverage@3.2.2: {}
 
@@ -19080,6 +19292,21 @@ snapshots:
       safe-push-apply: 1.0.0
 
   ox@0.9.3(typescript@5.9.2)(zod@4.0.14):
+    dependencies:
+      '@adraffy/ens-normalize': 1.11.0
+      '@noble/ciphers': 1.3.0
+      '@noble/curves': 1.9.1
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.1.1(typescript@5.9.2)(zod@4.0.14)
+      eventemitter3: 5.0.1
+    optionalDependencies:
+      typescript: 5.9.2
+    transitivePeerDependencies:
+      - zod
+
+  ox@0.9.6(typescript@5.9.2)(zod@4.0.14):
     dependencies:
       '@adraffy/ens-normalize': 1.11.0
       '@noble/ciphers': 1.3.0
@@ -21024,6 +21251,8 @@ snapshots:
 
   tslib@2.6.2: {}
 
+  tslib@2.7.0: {}
+
   tslib@2.8.1: {}
 
   tsup@8.5.0(@swc/core@1.13.5(@swc/helpers@0.5.17))(jiti@2.5.1)(postcss@8.5.6)(tsx@4.20.3)(typescript@5.9.3)(yaml@2.7.1):
@@ -21150,6 +21379,8 @@ snapshots:
     dependencies:
       sprintf-js: 1.1.3
       util-deprecate: 1.0.2
+
+  undici-types@6.19.8: {}
 
   undici-types@6.21.0: {}
 
@@ -21394,6 +21625,23 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
+
+  viem@2.39.0(typescript@5.9.2)(zod@4.0.14):
+    dependencies:
+      '@noble/curves': 1.9.1
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.1.0(typescript@5.9.2)(zod@4.0.14)
+      isows: 1.0.7(ws@8.18.3)
+      ox: 0.9.6(typescript@5.9.2)(zod@4.0.14)
+      ws: 8.18.3
+    optionalDependencies:
+      typescript: 5.9.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+      - zod
 
   viewport-dimensions@0.2.0: {}
 
@@ -21777,6 +22025,8 @@ snapshots:
       write-json-file: 6.0.0
 
   ws@7.5.10: {}
+
+  ws@8.17.1: {}
 
   ws@8.18.3: {}
 

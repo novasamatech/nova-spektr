@@ -7,6 +7,7 @@ import { type Chain, ChainOptions } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { assert, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   createComplexTxStore,
   createInitiatorsStore,
@@ -113,7 +114,22 @@ const { $: $maxVestingSchedules } = createStoreFromEffect({
 const { $: $existingVestingSchedules } = createStoreFromEffect({
   defaultValue: null,
   params: { api: $api },
-  fn: ({ api }) => vestingService.getExistingVestingSchedules(api),
+  fn: async ({ api }) => {
+    const vestingSchedules = await vestingService.getExistingVestingSchedules(api);
+    const accountIds = Object.keys(vestingSchedules);
+
+    const existingVestingSchedules: ValidationSchemaOptions['existingVestingSchedules'] = {};
+
+    for (const accountId of accountIds) {
+      if (nullable(existingVestingSchedules[accountId as AccountId])) {
+        existingVestingSchedules[accountId as AccountId] = 1;
+      } else {
+        existingVestingSchedules[accountId as AccountId] += 1;
+      }
+    }
+
+    return existingVestingSchedules;
+  },
 });
 
 const $coreTx = combine(
@@ -252,9 +268,7 @@ type ValidateFileParams = {
 };
 type ValidateFileResults = { data: VestingSchedule[]; issues: ValidationIssue[] };
 const rootValidateFileFx = createEffect<ValidateFileParams, ValidateFileResults, ValidationIssue[]>((params) => {
-  const schema = vestedTransferUtils.createValidationSchema(params.validationSchemaOptions);
-
-  const validated = vestedTransferUtils.validateCSV(params.parsedFile, schema);
+  const validated = vestedTransferUtils.validateCSV(params.parsedFile, params.validationSchemaOptions);
 
   if (validated.success) {
     const transformSchema = vestedTransferUtils.createTransformSchema();

@@ -31,7 +31,10 @@ type BaseNotification = {
   chainId: ChainId;
   title: string;
   description?: string;
-  deepLink?: string;
+  link?: {
+    title: string;
+    path: string;
+  };
 };
 
 type MultisigBaseNotification = BaseNotification & {
@@ -73,8 +76,13 @@ export type Notification =
 
 type NotificationInput<T extends Notification> = Omit<T, 'id' | 'read' | 'dateCreated'>;
 
-export type MultisigCreatedParams = NotificationInput<MultisigCreated>;
-export type FlexibleMultisigCreatedParams = NotificationInput<FlexibleMultisigOperationNotification>;
-export type ProxyActionParams = NotificationInput<ProxyAction>;
+export type CreateMultisigCreatedParams = NotificationInput<MultisigCreated>;
+export type CreateFlexibleMultisigOperationParams = NotificationInput<FlexibleMultisigOperationNotification>;
+export type CreateMultisigOperationParams = NotificationInput<MultisigOperationNotification>;
+export type CreateProxyActionParams = NotificationInput<ProxyAction>;
 
-export type CreateNotificationParams = MultisigCreatedParams | FlexibleMultisigCreatedParams | ProxyActionParams;
+export type CreateNotificationParams =
+  | CreateMultisigCreatedParams
+  | CreateFlexibleMultisigOperationParams
+  | CreateMultisigOperationParams
+  | CreateProxyActionParams;

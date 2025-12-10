@@ -116,37 +116,41 @@ export const Confirmation = ({ id = 0, secondaryActionButton, hideSignButton, on
           </DetailRow>
         )}
 
-        <DetailRow
-          label={<FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>}
-          className="text-text-primary"
-          testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
-        >
-          <div className="flex flex-col items-end gap-y-0.5">
-            <AssetBalance value={meta.fee} asset={nativeAsset} />
-            <AssetFiatBalance asset={nativeAsset} amount={meta.fee} />
-          </div>
-        </DetailRow>
-
-        {isXcm && (
+        {isXcm ? (
+          <>
+            <DetailRow
+              label={<FootnoteText className="text-text-tertiary">{t('operation.originNetworkFee')}</FootnoteText>}
+              className="text-text-primary"
+              testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
+            >
+              <div className="flex flex-col items-end gap-y-0.5">
+                <AssetBalance value={meta.originFee} asset={nativeAsset} />
+                <AssetFiatBalance asset={nativeAsset} amount={meta.originFee} />
+              </div>
+            </DetailRow>
+            {nonNullable(meta.destinationFee) && (
+              <DetailRow
+                label={
+                  <FootnoteText className="text-text-tertiary">{t('operation.destinationNetworkFee')}</FootnoteText>
+                }
+                className="text-text-primary"
+              >
+                <div className="flex flex-col items-end gap-y-0.5">
+                  <AssetBalance value={meta.destinationFee} asset={nativeAsset} />
+                  <AssetFiatBalance asset={nativeAsset} amount={meta.destinationFee} />
+                </div>
+              </DetailRow>
+            )}
+          </>
+        ) : (
           <DetailRow
-            label={<FootnoteText className="text-text-tertiary">{t('operation.xcmFee')}</FootnoteText>}
+            label={<FootnoteText className="text-text-tertiary">{t('operation.networkFee')}</FootnoteText>}
             className="text-text-primary"
+            testId={TEST_IDS.OPERATIONS.CONFIRM_NETWORK_FEE}
           >
             <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={meta.xcmFee} asset={meta.asset} />
-              <AssetFiatBalance asset={meta.asset} amount={meta.xcmFee} />
-            </div>
-          </DetailRow>
-        )}
-
-        {isXcm && nonNullable(meta.deliveryFee) && (
-          <DetailRow
-            label={<FootnoteText className="text-text-tertiary">{t('operation.deliveryFee')}</FootnoteText>}
-            className="text-text-primary"
-          >
-            <div className="flex flex-col items-end gap-y-0.5">
-              <AssetBalance value={meta.deliveryFee} asset={nativeAsset} />
-              <AssetFiatBalance asset={nativeAsset} amount={meta.deliveryFee} />
+              <AssetBalance value={meta.fee} asset={nativeAsset} />
+              <AssetFiatBalance asset={nativeAsset} amount={meta.fee} />
             </div>
           </DetailRow>
         )}
