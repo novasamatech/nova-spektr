@@ -14,8 +14,6 @@ import { confirmTransactionInfoSlot } from '@/features/multisig-operations';
 
 import { TransactionAmount } from './components/TransactionAmount';
 import { TransferOperationDetails } from './components/TransferOperationDetails';
-import { TransferOperationTitle } from './components/TransferOperationTitle';
-import { XcmTransferOperationTitle } from './components/XcmTransferOperationTitle';
 
 export const transferOperationDetailFeature = createFeature({
   name: 'transfer/operations',
@@ -36,12 +34,31 @@ multisigOperationsSDK(transferOperationDetailFeature, {
     }
   },
   title({ operation, showCoreTransaction }) {
+    const { t } = useI18n();
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
+
     if (isTransferTransaction(transaction)) {
-      return <TransferOperationTitle transaction={transaction} chainId={operation.chainId} />;
+      const asset = useTransactionAsset(transaction, operation.chainId);
+      const amount = transaction ? getTransactionAmount(transaction) : null;
+
+      return {
+        title: t('operations.titles.transfer', { asset: asset?.symbol }),
+        amount: asset && amount ? { value: amount, asset } : undefined,
+        sourceChainId: operation.chainId,
+      };
     }
+
     if (isXcmTransaction(transaction)) {
-      return <XcmTransferOperationTitle transaction={transaction} chainId={operation.chainId} />;
+      const coreTx = findCoreTransaction(transaction);
+      const asset = useTransactionAsset(coreTx, operation.chainId);
+      const amount = coreTx ? getTransactionAmount(coreTx) : null;
+
+      return {
+        title: t('operations.titles.crossChainTransfer', { asset: asset?.symbol }),
+        amount: asset && amount ? { value: amount, asset } : undefined,
+        sourceChainId: operation.chainId,
+        destinationChainId: transaction?.args.destinationChain,
+      };
     }
   },
   logTitle({ operation, showCoreTransaction }) {
