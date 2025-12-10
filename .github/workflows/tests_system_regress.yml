@@ -23,6 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  NODE_OPTIONS: "--max-old-space-size=8192"
   CI: true
   ALLURE_ENDPOINT: https://nova.testops.cloud/
   ALLURE_PROJECT_ID: 1
