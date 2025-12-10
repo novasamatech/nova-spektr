@@ -7,3 +7,4 @@ export { Operations } from './components/Operations';
 export { SignatorySelectModal } from './components/modals/SignatorySelectModal';
 
 export { multisigOperationsFeature } from './model/feature';
+export { deepLinkModel } from './model/deep-link';
