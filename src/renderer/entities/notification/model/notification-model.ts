@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type NoID, type Notification } from '@/shared/core';
+import { type CreateNotificationParams, type NoID, type Notification } from '@/shared/core';
 import { merge } from '@/shared/lib/utils';
 
 const $notifications = createStore<Notification[]>([]);
@@ -12,8 +12,14 @@ const populateNotificationsFx = createEffect((): Promise<Notification[]> => {
   return storageService.notifications.readAll();
 });
 
-const addNotificationsFx = createEffect((notifications: NoID<Notification>[]): Promise<Notification[]> => {
-  return storageService.notifications.createAll(notifications).then((r) => r ?? []);
+const addNotificationsFx = createEffect(async (notifications: CreateNotificationParams[]): Promise<Notification[]> => {
+  const notificationsWithMetadata: NoID<Notification>[] = notifications.map((notification) => ({
+    ...notification,
+    read: false,
+    dateCreated: Date.now(),
+  }));
+
+  return storageService.notifications.createAll(notificationsWithMetadata).then((r) => r ?? []);
 });
 
 const markAllAsReadFx = createEffect((notifications: Notification[]): Promise<Notification[]> => {
@@ -26,12 +32,49 @@ const editNotificationFx = createEffect((notification: Notification): Promise<No
   return storageService.notifications.update(notification.id, notification).then(() => notification);
 });
 
+const notificationsAdded = createEvent<CreateNotificationParams[]>();
 const notificationsViewed = createEvent();
 const notificationEdited = createEvent<Notification>();
 
 sample({
   clock: populateNotificationsFx.doneData,
   target: $notifications,
+});
+
+// Filter out duplicates and add notifications
+sample({
+  clock: notificationsAdded,
+  source: $notifications,
+  filter: (existingNotifications, incomingNotifications) => {
+    const existingKeys = new Set(existingNotifications.map((n) => n.key));
+
+    return incomingNotifications.some((n) => !existingKeys.has(n.key));
+  },
+  fn: (existingNotifications, incomingNotifications) => {
+    const existingKeys = new Set(existingNotifications.map((n) => n.key));
+    const duplicates: string[] = [];
+
+    const newNotifications: CreateNotificationParams[] = [];
+
+    for (const notification of incomingNotifications) {
+      if (existingKeys.has(notification.key)) {
+        duplicates.push(`${notification.type} (key: ${notification.key})`);
+        continue;
+      }
+
+      newNotifications.push(notification);
+    }
+
+    if (duplicates.length > 0) {
+      console.warn(
+        `[Notifications] Attempted to add ${duplicates.length} duplicate notification(s):`,
+        duplicates.join(', '),
+      );
+    }
+
+    return newNotifications;
+  },
+  target: addNotificationsFx,
 });
 
 sample({
@@ -82,7 +125,7 @@ export const notificationModel = {
   $unreadCount,
   events: {
     notificationsStarted: populateNotificationsFx,
-    notificationsAdded: addNotificationsFx,
+    notificationsAdded,
     notificationsViewed,
     notificationEdited,
   },
