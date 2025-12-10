@@ -6,8 +6,8 @@ import {
   useFellowshipMember,
   useFellowshipMemberEvidence,
   useFellowshipMemberLeftToDemotion,
-  useFellowshipMemberLeftToPromotion,
 } from '@/aggregates/fellowship-member';
+import { usePromotionCountdown } from '@/aggregates/fellowship-promotion';
 import { useRetentionRequest } from '@/aggregates/fellowship-retention';
 import { RequestPromotion } from '../components/tasks/RequestPromotion';
 import { RequestRetention } from '../components/tasks/RequestRetention';
@@ -20,7 +20,7 @@ export const useMemberEvidenceTasks = () => {
   const { data: member, pending: pendingMember } = useFellowshipMember();
   const { data: evidence, pending: pendingEvidence } = useFellowshipMemberEvidence();
   const { data: leftToDemotion, pending: pendingDemotion } = useFellowshipMemberLeftToDemotion();
-  const { data: leftToPromotion, pending: pendingPromotion } = useFellowshipMemberLeftToPromotion();
+  const { data: promotionCountdown, pending: pendingPromotion } = usePromotionCountdown();
   const { data: shouldRetentionRequest } = useRetentionRequest();
 
   const hasPromotionEvidence = evidence?.wish === 'Promotion';
@@ -40,10 +40,8 @@ export const useMemberEvidenceTasks = () => {
         });
       } else if (
         memberService.canPromote(member) &&
-        nonNullable(leftToPromotion) &&
-        leftToPromotion <= 0 &&
-        hasPromotionEvidence &&
-        hasRetentionEvidence
+        promotionCountdown?.canSubmitPromotionEvidence &&
+        !hasPromotionEvidence
       ) {
         tasks.push({
           id: 'evidence',
@@ -59,7 +57,7 @@ export const useMemberEvidenceTasks = () => {
     operations,
     member,
     leftToDemotion,
-    leftToPromotion,
+    promotionCountdown,
     hasPromotionEvidence,
     hasRetentionEvidence,
     shouldRetentionRequest,

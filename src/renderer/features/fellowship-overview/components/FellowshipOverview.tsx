@@ -8,6 +8,7 @@ import { ProgressWithSegments, Skeleton } from '@/shared/ui-kit';
 import { type CoreMember, memberService } from '@/domains/collectives';
 import { useFellowshipMember, useFellowshipMemberLeftToPromotion } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipBlock } from '@/aggregates/fellowship-network';
+import { usePromotionCountdown } from '@/aggregates/fellowship-promotion';
 import { READY_FOR_PROMOTION } from '../model/constants';
 import { modal } from '../model/modal';
 import { promotion } from '../model/promotion';
@@ -39,11 +40,16 @@ const useTimeToNextRank = () => {
   const api = useFellowshipApi();
   const { data: currentBlock } = useFellowshipBlock();
   const { data: leftToPromotion } = useFellowshipMemberLeftToPromotion();
+  const { data: promotionCountdown } = usePromotionCountdown();
 
   const promotionProgress = useUnit(promotion.$promotionProgress);
 
   useEffect(() => {
-    if ((promotionProgress && promotionProgress.progressPercentage >= 100) || leftToPromotion === 0) {
+    if (
+      promotionCountdown?.canSubmitPromotionEvidence ||
+      (promotionProgress && promotionProgress.progressPercentage >= 100) ||
+      leftToPromotion === 0
+    ) {
       setTimeToNextRank(READY_FOR_PROMOTION);
       return;
     }
@@ -54,7 +60,7 @@ const useTimeToNextRank = () => {
     }
 
     setTimeToNextRank(null);
-  }, [leftToPromotion, currentBlock, api, promotionProgress]);
+  }, [leftToPromotion, currentBlock, api, promotionProgress, promotionCountdown?.canSubmitPromotionEvidence]);
 
   return timeToNextRank;
 };
