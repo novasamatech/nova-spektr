@@ -9,6 +9,7 @@ import { identity } from '../identity/store';
 
 import { accountService } from './service';
 import { accounts } from './store';
+import { type AnyAccount } from './types';
 
 export type AccountNameParams = {
   accountId: AccountId;
@@ -18,6 +19,11 @@ export type AccountNameParams = {
 
 export type WalletNameParams = {
   wallet: Wallet;
+};
+
+export type AccountsNameParams = {
+  accounts: AnyAccount[];
+  chain?: Chain | null;
 };
 
 type NameCache = Record<string, string>;
@@ -53,8 +59,8 @@ export const createWalletNameCacheKey = ({ wallet }: WalletNameParams): string =
   return [wallet.id, wallet.name, wallet.type, rootAccountId ?? 'none', accountsKey].join(':');
 };
 
-const $accountNameCache = createStore<NameCache>({});
-const $walletNameCache = createStore<NameCache>({});
+export const $accountNameCache = createStore<NameCache>({});
+export const $walletNameCache = createStore<NameCache>({});
 
 export const accountNameResource = createQueryResource<AccountNameParams>({
   key: createAccountNameCacheKey,
@@ -88,31 +94,94 @@ export const accountNameResource = createQueryResource<AccountNameParams>({
   })
   .build();
 
-export const walletNameResource = createQueryResource<WalletNameParams>({
-  key: createWalletNameCacheKey,
+type WalletsNameParams = {
+  wallets: Wallet[];
+};
+
+export const walletsNameResource = createQueryResource<WalletsNameParams>({
+  key: ({ wallets }) =>
+    wallets
+      .map(w => w.id)
+      .sort()
+      .join(','),
 })
   .request(
     attach({
       source: getNameResolverSource(),
-      effect: ({ contacts, identities, chains, accounts }, params) => {
-        return accountService.resolveWalletName({
-          wallet: params.wallet,
-          contacts,
-          identities,
-          chains,
-          accounts,
-        });
+      effect: ({ contacts, identities, chains, accounts }, { wallets }) => {
+        const result: Record<string, string> = {};
+
+        for (const wallet of wallets) {
+          const key = createWalletNameCacheKey({ wallet });
+          const name = accountService.resolveWalletName({
+            wallet,
+            contacts,
+            identities,
+            chains,
+            accounts,
+          });
+          result[key] = name;
+        }
+
+        return result;
       },
     }),
   )
   .cache({
     store: $walletNameCache,
-    map(cache, result, params) {
-      const key = createWalletNameCacheKey(params);
-
+    map(cache, result) {
       return {
         ...cache,
-        [key]: result,
+        ...result,
+      };
+    },
+  })
+  .build();
+
+export const accountsNameResource = createQueryResource<AccountsNameParams>({
+  key: ({ accounts, chain }) => {
+    const chainKey = chain?.chainId ?? 'anyChain';
+    const accountIds = accounts
+      .map(a => a.accountId)
+      .sort()
+      .join(',');
+    return `${chainKey}:${accountIds}`;
+  },
+})
+  .request(
+    attach({
+      source: getNameResolverSource(),
+      effect: ({ contacts, identities, chains, accounts: allAccounts }, { accounts, chain }) => {
+        const result: Record<string, string> = {};
+
+        for (const account of accounts) {
+          const key = createAccountNameCacheKey({
+            accountId: account.accountId,
+            chain,
+            title: undefined,
+          });
+          const name = accountService.resolveAccountName({
+            accountId: account.accountId,
+            chain,
+            title: undefined,
+            contacts,
+            identities,
+            chains,
+            accounts: allAccounts,
+          });
+          result[key] = name;
+        }
+
+        return result;
+      },
+    }),
+  )
+  .cache({
+    store: $accountNameCache,
+    map(cache, result) {
+      return {
+        ...cache,
+        ...result,
       };
     },
   })
