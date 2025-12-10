@@ -47,7 +47,7 @@ export enum Validation {
   balance = 'balance error',
   sendingAmount = 'sending amount error',
   networkFee = 'network fee error',
-  xcmFee = 'xcm-fee error',
+  originFee = 'origin-fee error',
   deliveryFee = 'delivery fee error',
   multisigDeposit = 'multisig deposit error',
   proxyDeposit = 'proxy deposit error',
