@@ -75,3 +75,16 @@ export type Notification =
   | FlexibleMultisigOperationNotification
   | MultisigOperationNotification
   | ProxyAction;
+
+type NotificationInput<T extends Notification> = Omit<T, 'id' | 'read' | 'dateCreated'>;
+
+export type CreateMultisigCreatedParams = NotificationInput<MultisigCreated>;
+export type CreateFlexibleMultisigOperationParams = NotificationInput<FlexibleMultisigOperationNotification>;
+export type CreateMultisigOperationParams = NotificationInput<MultisigOperationNotification>;
+export type CreateProxyActionParams = NotificationInput<ProxyAction>;
+
+export type CreateNotificationParams =
+  | CreateMultisigCreatedParams
+  | CreateFlexibleMultisigOperationParams
+  | CreateMultisigOperationParams
+  | CreateProxyActionParams;

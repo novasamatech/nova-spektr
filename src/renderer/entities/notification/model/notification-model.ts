@@ -2,7 +2,7 @@ import { createEffect, createEvent, createStore, sample } from 'effector';
 import { delay } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
-import { type NoID, type Notification, NotificationType } from '@/shared/core';
+import { type NoID, type Notification, NotificationType, type CreateNotificationParams } from '@/shared/core';
 import { merge } from '@/shared/lib/utils';
 
 const BATCH_DELAY = 1000;
@@ -38,12 +38,18 @@ const populateNotificationsFx = createEffect((): Promise<Notification[]> => {
   return storageService.notifications.readAll();
 });
 
-const addNotificationsFx = createEffect(async (notifications: NoID<Notification>[]): Promise<Notification[]> => {
-  return storageService.notifications.createAll(notifications).then((r) => r ?? []);
+const addNotificationsFx = createEffect(async (notifications: CreateNotificationParams[]): Promise<Notification[]> => {
+  const notificationsWithMetadata: NoID<Notification>[] = notifications.map((notification) => ({
+    ...notification,
+    read: false,
+    dateCreated: Date.now(),
+  }));
+
+  return storageService.notifications.createAll(notificationsWithMetadata).then((r) => r ?? []);
 });
 
-const notificationsAdded = createEvent<NoID<Notification>[]>();
-const notificationsFiltered = createEvent<NoID<Notification>[]>();
+const notificationsAdded = createEvent<CreateNotificationParams[]>();
+const notificationsFiltered = createEvent<CreateNotificationParams[]>();
 const notificationsAddedComplete = createEvent<Notification[]>();
 const batchedNotificationsReady = createEvent<NotificationToast[]>();
 
@@ -55,7 +61,7 @@ sample({
     const existingKeys = new Set(existingNotifications.map((n) => n.key));
     const duplicates: string[] = [];
 
-    const newNotifications: NoID<Notification>[] = [];
+    const newNotifications: CreateNotificationParams[] = [];
 
     for (const notification of incomingNotifications) {
       if (existingKeys.has(notification.key)) {

@@ -56,8 +56,8 @@ multisigOperationsSDK(transferOperationDetailFeature, {
       return {
         title: t('operations.titles.crossChainTransfer', { asset: asset?.symbol }),
         amount: asset && amount ? { value: amount, asset } : undefined,
-        chainId: operation.chainId,
-        chainIdTo: transaction?.args.destinationChain,
+        sourceChainId: operation.chainId,
+        destinationChainId: transaction?.args.destinationChain,
       };
     }
   },

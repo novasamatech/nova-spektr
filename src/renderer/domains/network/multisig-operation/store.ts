@@ -3,9 +3,8 @@ import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
+  type CreateMultisigOperationParams,
   type HexString,
-  type MultisigOperationNotification,
-  type NoID,
   type NotificationStatus,
   NotificationType,
 } from '@/shared/core';
@@ -132,21 +131,13 @@ const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancell
   }
 };
 
-const createOperationNotification = (operation: MultisigOperation): NoID<MultisigOperationNotification> => {
-  const description =
-    operation.transaction?.section && operation.transaction?.method
-      ? formatSectionAndMethod(operation.transaction.section, operation.transaction.method)
-      : undefined;
-
+const createOperationNotification = (operation: MultisigOperation): CreateMultisigOperationParams => {
   return {
     key: `${NotificationType.MULTISIG_OPERATION}:${operation.id}:${operation.status}`,
     type: NotificationType.MULTISIG_OPERATION,
-    read: false,
-    dateCreated: Date.now(),
     status: getNotificationStatus(operation.status),
     issuer: operation.accountId,
     title: getNotificationTitle(operation.status),
-    description,
     deepLink: {
       title: 'notifications.toast.viewOperations',
       link: Paths.OPERATIONS,
@@ -162,21 +153,22 @@ const createOperationNotification = (operation: MultisigOperation): NoID<Multisi
   };
 };
 
-const operationChanges = pairwise($list).map(({ prev: prevState, current: update }) => {
-  const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
-  const operationsToNotify: MultisigOperation[] = [];
+const operationChanges = pairwise($list)
+  .map(({ prev: prevState, current: update }) => {
+    const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
+    const notifications: CreateMultisigOperationParams[] = [];
 
   for (const item of update) {
     const previousOp = previousOpsMap.get(item.id);
 
     if (!previousOp) {
-      operationsToNotify.push(item);
+      notifications.push(item);
     } else if (previousOp.status !== item.status && item.status !== 'pending') {
-      operationsToNotify.push(item);
+      notifications.push(item);
     }
   }
 
-  return operationsToNotify;
+  return notifications;
 });
 
 sample({

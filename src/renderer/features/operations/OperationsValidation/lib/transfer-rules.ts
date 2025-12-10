@@ -150,7 +150,7 @@ export const TransferRules = {
         { network, isProxy, isMultisig, isNative, isXcm, balance, ...fee }: TransferAmountFeeStore,
       ) => {
         if (!network) return false;
-        if (!isXcm || !isProxy || !isMultisig || !fee.deliveryFee || !balance) return true;
+        if (!isXcm || !isProxy || !isMultisig || !fee.destinationFee || !balance) return true;
 
         return balanceValidation.insufficientBalanceForDeliveryFee(
           {
@@ -208,54 +208,18 @@ export const transferValidator = createTxValidator<{
   sourceChain: Chain;
   sourceAsset: Asset;
   destinationChain: Chain;
-  xcmFee: BN;
-  deliveryFee: BN;
+  originFee: BN;
+  destinationFee: BN;
   balancePreservation: BalancePreservation;
 }>({
   // ATTENTION - this order is important, this is how it's calculated on chain
   additionalBalanceRules: [
-    // cross-chain fee
-    // withdraws from initiator in source asset (can be any asset)
-    ({ route, xcmFee, destinationChain, sourceChain, sourceAsset, getBalance }) => {
+    // origin fee (network fee)
+    // withdraws from initiator in native asset with keepAlive
+    ({ route, originFee, destinationChain, sourceChain, asset, getBalance }) => {
       // works only in case of xcm transfer
       if (destinationChain.chainId === sourceChain.chainId) return;
-      if (xcmFee.isZero()) return;
-
-      const initiator = accountService.findInitiator(route);
-      assert(initiator, 'Initiator not found');
-
-      const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
-      assert(balance, `Balance for account ${initiator.accountId} not found`);
-
-      return {
-        account: initiator,
-        balance: balanceService.tryWithdraw(balance, xcmFee, 'keepAlive'),
-        asset: sourceAsset,
-        action: 'cross-chain fee',
-      };
-    },
-    // amount
-    // withdraws from initiator in source asset (can be any asset)
-    ({ route, amount, sourceChain, sourceAsset, getBalance, balancePreservation }) => {
-      const initiator = accountService.findInitiator(route);
-      assert(initiator, 'Initiator not found');
-
-      if (amount.isZero()) return;
-
-      const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
-      assert(balance, `Balance for account ${initiator.accountId} not found`);
-
-      return {
-        account: initiator,
-        balance: balanceService.tryWithdraw(balance, amount, balancePreservation),
-        asset: sourceAsset,
-        action: 'sending amount',
-      };
-    },
-    // delivery fee
-    // withdraws from initiator in native asset
-    ({ route, deliveryFee, sourceChain, asset, getBalance }) => {
-      if (deliveryFee.isZero()) return;
+      if (originFee.isZero()) return;
 
       const initiator = accountService.findInitiator(route);
       assert(initiator, 'Initiator not found');
@@ -265,9 +229,42 @@ export const transferValidator = createTxValidator<{
 
       return {
         account: initiator,
-        balance: balanceService.tryWithdraw(balance, deliveryFee, 'allowDeath'),
+        balance: balanceService.tryWithdraw(balance, originFee, 'keepAlive'),
         asset: asset,
-        action: 'delivery fee',
+        action: 'origin fee',
+      };
+    },
+    // amount + destination fee (for XCM) or just amount (for same-chain)
+    // withdraws from initiator in source asset
+    ({
+      route,
+      amount,
+      destinationFee,
+      sourceChain,
+      sourceAsset,
+      getBalance,
+      balancePreservation,
+      destinationChain,
+    }) => {
+      const initiator = accountService.findInitiator(route);
+      assert(initiator, 'Initiator not found');
+
+      if (amount.isZero()) return;
+
+      const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
+      assert(balance, `Balance for account ${initiator.accountId} not found`);
+
+      // For XCM transfers, combine amount + destination fee with keepAlive
+      // For same-chain transfers, use only amount with user's balancePreservation choice
+      const isXcm = destinationChain.chainId !== sourceChain.chainId;
+      const totalAmount = isXcm && destinationFee && !destinationFee.isZero() ? amount.add(destinationFee) : amount;
+      const preservation = isXcm ? 'keepAlive' : balancePreservation;
+
+      return {
+        account: initiator,
+        balance: balanceService.tryWithdraw(balance, totalAmount, preservation),
+        asset: sourceAsset,
+        action: 'sending amount',
       };
     },
   ],
