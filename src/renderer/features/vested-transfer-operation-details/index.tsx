@@ -79,7 +79,7 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
       let amount: string | BN | null = null;
       if (transaction?.type === TransactionType.BATCH_ALL) {
         const batchAmounts: string[] = transaction.args?.transactions?.map(getTransactionAmount);
-        amount = batchAmounts.reduce((amount, currentAmount) => amount.add(new BN(currentAmount)), new BN(0));
+        amount = batchAmounts.reduce((acc, currentAmount) => acc.add(new BN(currentAmount)), new BN(0));
       } else {
         amount = transaction && getTransactionAmount(transaction);
       }
