@@ -62,7 +62,7 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
 
     if (nullable(transaction)) {
-      return;
+      return null;
     }
 
     const transactionFromBatchAll = findCoreBatchAll(transaction);
