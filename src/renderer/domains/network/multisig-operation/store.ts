@@ -170,7 +170,7 @@ const operationChanges = pairwise($list)
 sample({
   clock: operationChanges,
   source: $populated,
-  filter: (populated, changes) => populated && !!changes.length,
+  filter: (populated, changes) => populated && changes.length > 0,
   fn: (_, notifications) => notifications,
   target: notificationModel.events.notificationsAdded,
 });
