@@ -4,15 +4,17 @@ import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import { type MultisigOperationNotification, type NotificationStatus } from '@/shared/core';
+import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatBalance, formatSectionAndMethod } from '@/shared/lib/utils';
+import { formatSectionAndMethod } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
-import { WalletIcon } from '@/shared/ui-entities';
+import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
 import { accounts, multisigOperation } from '@/domains/network';
 import { ChainTitle } from '@/entities/chain';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
+import { operationTitleTransformer } from '@/features/multisig-operations';
 import { multisigService } from '@/features/multisig-wallet';
 
 type Props = {
@@ -69,20 +71,23 @@ export const MultisigOperationNotificationComponent = ({
   const asset = useTransactionAsset(coreTx, chainId);
   const amount = coreTx ? getTransactionAmount(coreTx) : null;
 
-  const title = useMemo(() => {
-    if (coreTx?.section && coreTx?.method) {
-      return formatSectionAndMethod(coreTx.section, coreTx.method);
+  const externalTitle = operation
+    ? useTransformer(operationTitleTransformer, { operation, showCoreTransaction: !!showCoreTransaction })
+    : null;
+
+  const titleData = useMemo(() => {
+    if (externalTitle) {
+      return externalTitle;
     }
-    return t('operations.titles.unknown');
-  }, [coreTx, t]);
 
-  const formattedAmount = useMemo(() => {
-    if (!amount || !asset) return null;
-
-    const { value: formattedValue, suffix } = formatBalance(amount, asset.precision);
-
-    return `${formattedValue}${suffix} ${asset.symbol}`;
-  }, [amount, asset]);
+    return {
+      title:
+        coreTx?.section && coreTx?.method
+          ? formatSectionAndMethod(coreTx.section, coreTx.method)
+          : t('operations.titles.unknown'),
+      amount: asset && amount ? { value: amount, asset } : undefined,
+    };
+  }, [externalTitle, coreTx, asset, amount, t]);
 
   const handleViewOperation = () => {
     if (!multisigAccount) return;
@@ -110,9 +115,9 @@ export const MultisigOperationNotificationComponent = ({
         <div className="flex flex-col gap-y-2">
           <BodyText>
             <div className="flex items-center justify-start gap-2">
-              <div className="inline">{title}</div>
-              {formattedAmount && <div className="inline">{formattedAmount}</div>}
-              {t(getOperationStatus(status))}
+              {titleData.title && <span>{titleData.title}</span>}
+              {titleData.amount && <AssetBalance value={titleData.amount.value} asset={titleData.amount.asset} />}
+              <span>{t(getOperationStatus(status))}</span>
             </div>
           </BodyText>
           <BodyText className="inline-flex flex-wrap items-center gap-y-2 text-text-secondary">
@@ -125,9 +130,13 @@ export const MultisigOperationNotificationComponent = ({
                 signatories: multisigAccount?.signatories.length,
               }}
               components={{
-                chain: <ChainTitle chainId={chainId} fontClass="text-text-secondary text-body" />,
-                walletIcon: <span className="mx-1">{wallet && <WalletIcon size={16} type={wallet.type} />}</span>,
-                wallet: <p className="inline-flex" />,
+                chain: (
+                  <span className="mx-2">
+                    <ChainTitle chainId={chainId} fontClass="text-text-secondary text-body " />
+                  </span>
+                ),
+                walletIcon: <span className="mr-1">{wallet && <WalletIcon size={16} type={wallet.type} />}</span>,
+                wallet: <p className="mx-2 inline-flex" />,
                 name: <span className="text-button-large text-text-primary" />,
               }}
             />
