@@ -40,10 +40,6 @@ export const useAccountsNames = (accounts: AnyAccount[], chain?: Chain | null) =
     },
   });
 
-  if (nullable(accounts) || accounts.length === 0) {
-    return accounts || [];
-  }
-
   return accounts.map(account => {
     const key = createAccountNameCacheKey({
       accountId: account.accountId,
