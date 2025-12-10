@@ -1,5 +1,5 @@
 import { useUnit } from 'effector-react';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { type Wallet } from '@/shared/core';
 import { Slot, createSlot } from '@/shared/di';
@@ -8,7 +8,7 @@ import { performSearch } from '@/shared/lib/utils';
 import { Icon, type IconNames } from '@/shared/ui';
 import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Label } from '@/shared/ui-kit';
-import { accounts } from '@/domains/network';
+import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelect, walletSelectService } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
@@ -29,17 +29,21 @@ export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Prop
   const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const chains = useUnit(networkModel.$chains);
 
-  const filteredWallets = performSearch({
-    query,
-    records: wallets,
-    getMeta: (wallet) => ({
-      allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
-    }),
-    weights: {
-      name: 1,
-      allAddresses: 0.8,
-    },
-  });
+  const resolvedWallets = useWalletsNames(wallets);
+
+  const filteredWallets = useMemo(() => {
+    return performSearch({
+      query,
+      records: resolvedWallets,
+      getMeta: (wallet) => ({
+        allAddresses: walletSelectService.composeWalletMeta(wallet, allAccounts, chains),
+      }),
+      weights: {
+        name: 1,
+        allAddresses: 0.8,
+      },
+    });
+  }, [resolvedWallets, query, allAccounts, chains]);
 
   if (filteredWallets.length === 0) {
     return null;

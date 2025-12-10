@@ -82,6 +82,7 @@
     "@ariakit/react": "0.4.17",
     "@headlessui/react": "^1.7.19",
     "@novasamatech/spektr-dapp-host-container": "0.0.12",
+    "@paraspell/sdk-pjs": "^11.14.6",
     "@polkadot-api/descriptors": "file:.papi/descriptors",
     "@polkadot-api/merkleize-metadata": "1.1.26",
     "@polkadot/api": "16.4.8",
