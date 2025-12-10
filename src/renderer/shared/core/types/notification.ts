@@ -31,7 +31,10 @@ type BaseNotification = {
   chainId: ChainId;
   title: string;
   description?: string;
-  deepLink?: string;
+  link?: {
+    title: string;
+    path: string;
+  };
 };
 
 type MultisigBaseNotification = BaseNotification & {
@@ -55,7 +58,6 @@ export type FlexibleMultisigOperationNotification = MultisigBaseNotification & {
 export type MultisigOperationNotification = MultisigBaseNotification & {
   callHash: CallHash;
   callTimepoint: Timepoint;
-  operationId: string;
 };
 
 export type ProxyAction = BaseNotification & {

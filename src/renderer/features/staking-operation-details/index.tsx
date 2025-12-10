@@ -1,14 +1,16 @@
+import { useUnit } from 'effector-react';
 import { t } from 'i18next';
 
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { getAssetById } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
-import { TransactionTitle, findCoreTransaction } from '@/entities/transaction';
+import { networkModel } from '@/entities/network';
+import { TransactionTitle, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
 import { PayeeOperationDetails } from './components/PayeeOperationDetails';
-import { StakingOperationTitle } from './components/StakingOperationTitle';
 import { ValidatorsOperationDetails } from './components/ValidatorsOperationDetails';
 
 export const stakingOperationDetailFeature = createFeature({
@@ -52,10 +54,20 @@ multisigOperationsSDK(stakingOperationDetailFeature, {
     }
   },
   title({ operation, showCoreTransaction }) {
+    const { t } = useI18n();
+    const chains = useUnit(networkModel.$chains);
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
+
     if (title) {
-      return <StakingOperationTitle operation={operation} title={title} />;
+      const asset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
+      const amount = transaction && getTransactionAmount(transaction);
+
+      return {
+        title: title ? t(title) : undefined,
+        amount: asset && amount ? { value: amount, asset } : undefined,
+        sourceChainId: operation.chainId,
+      };
     }
   },
   logTitle({ operation, showCoreTransaction }) {

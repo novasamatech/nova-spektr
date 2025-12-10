@@ -101,7 +101,7 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     await transferModal.expectValidationsVisible([
       Validation.sendingAmount,
       Validation.networkFee,
-      Validation.xcmFee,
+      Validation.originFee,
       Validation.deliveryFee,
     ]);
   });

@@ -4,7 +4,7 @@ import { t } from 'i18next';
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { toAccountId } from '@/shared/lib/utils';
+import { getAssetById, toAccountId } from '@/shared/lib/utils';
 import { DetailRow, FootnoteText } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { operationDetailsUtils } from '@/entities/operations';
@@ -12,6 +12,7 @@ import { proxyUtils } from '@/entities/proxy';
 import {
   TransactionTitle,
   findCoreTransaction,
+  getTransactionAmount,
   isAddProxyTransaction,
   isManageProxyTransaction,
   isProxyTypeTransaction,
@@ -20,8 +21,6 @@ import {
 } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 import { NamedAccount } from '@/widgets/NameResolver';
-
-import { ProxyOperationTitle } from './components/ProxyOperationTitle';
 
 export const proxyOperationDetailFeature = createFeature({
   name: 'proxy/operation-details',
@@ -46,10 +45,20 @@ multisigOperationsSDK(proxyOperationDetailFeature, {
     }
   },
   title({ operation, showCoreTransaction }) {
+    const { t } = useI18n();
+    const chains = useUnit(networkModel.$chains);
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
+
     if (title) {
-      return <ProxyOperationTitle operation={operation} title={title} />;
+      const asset = transaction && getAssetById(transaction.args.asset, chains[operation.chainId]?.assets);
+      const amount = transaction && getTransactionAmount(transaction);
+
+      return {
+        title: title ? t(title) : undefined,
+        amount: asset && amount ? { value: amount, asset } : undefined,
+        sourceChainId: operation.chainId,
+      };
     }
   },
   logTitle({ operation, showCoreTransaction }) {

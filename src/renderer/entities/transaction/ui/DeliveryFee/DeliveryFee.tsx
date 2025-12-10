@@ -17,8 +17,17 @@ type Props = {
 export const DeliveryFee = memo(({ fee, loading, asset, className }: Props) => {
   const fiatFlag = useUnit(priceProviderModel.$fiatFlag);
 
-  if (loading || !fee) {
+  if (loading) {
     return <FeeLoader fiatFlag={Boolean(fiatFlag)} />;
+  }
+
+  if (!fee) {
+    return (
+      <div className="flex flex-col items-end gap-y-0.5">
+        <AssetBalance value="N/A" asset={asset} className={className} />
+        <AssetFiatBalance asset={asset} amount="N/A" />
+      </div>
+    );
   }
 
   return (

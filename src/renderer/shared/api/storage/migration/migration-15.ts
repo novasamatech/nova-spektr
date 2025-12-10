@@ -10,7 +10,7 @@ import {
 } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-type OldNotification = Omit<Notification, 'status' | 'issuer' | 'title' | 'description' | 'deepLink'>;
+type OldNotification = Omit<Notification, 'status' | 'issuer' | 'title' | 'description' | 'link'>;
 
 /**
  * Migration to add status, issuer, title, and description fields to existing

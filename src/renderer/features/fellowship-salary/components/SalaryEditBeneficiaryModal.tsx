@@ -41,7 +41,10 @@ type AccountAddressItemProps = {
 };
 
 const AccountAddressItem = ({ account, wallet, chain, address }: AccountAddressItemProps) => {
-  const accountName = useAccountName({ accountId: account.accountId, chain });
+  const accountName = useAccountName({
+    accountId: account.accountId,
+    chain,
+  });
   const walletName = useWalletName(wallet);
 
   const title = wallet && walletName && accountName !== walletName ? `${accountName} (${walletName})` : accountName;

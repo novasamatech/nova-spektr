@@ -1,3 +1,4 @@
+import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type Weight } from '@polkadot/types/interfaces';
 import { type BN } from '@polkadot/util';
 import { camelCase } from 'lodash';
@@ -66,11 +67,10 @@ type TransferParams = {
   balancePreservation: BalancePreservation;
   xcmData?: {
     args: {
-      xcmAsset?: NonNullable<unknown>;
-      xcmWeight: string;
-      xcmDest?: NonNullable<unknown>;
-      xcmBeneficiary?: NonNullable<unknown>;
       destinationChain: ChainId;
+      spellExtrinsic?: SubmittableExtrinsic<'promise'>;
+      destinationFee?: string;
+      originFee?: string;
     };
     transactionType: TransactionType;
   };
