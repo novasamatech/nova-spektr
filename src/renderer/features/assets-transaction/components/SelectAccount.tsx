@@ -9,6 +9,7 @@ import { performSearch, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Box, Label, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
+import { useAccountsNames } from '@/domains/network';
 import { EmptyAssetsState } from '@/entities/asset';
 import { accountUtils } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
@@ -36,20 +37,21 @@ export const SelectAccount = ({ asset, chain }: Props) => {
   const deferredQuery = useDeferredValue(query);
   const { list, isLoading } = useDeferredList({ list: chainAccounts });
 
+  const resolvedAccounts = useAccountsNames(list, chain);
+
   const filteredAccounts = useMemo(() => {
     return performSearch({
       query: deferredQuery,
-      records: list,
+      records: resolvedAccounts,
       getMeta: (account) => ({
         address: toAddress(account.accountId, { prefix: chain.addressPrefix }),
-        name: account.name,
       }),
       weights: {
         name: 1,
         address: 0.5,
       },
     });
-  }, [list, chain, deferredQuery]);
+  }, [resolvedAccounts, chain, deferredQuery]);
 
   const accountsGroup: AccountsWithBalance[] = useMemo(
     () => accountUtils.getAccountsAndShardGroups(filteredAccounts),

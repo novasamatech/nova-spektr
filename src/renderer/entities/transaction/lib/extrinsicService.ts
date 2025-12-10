@@ -7,8 +7,7 @@ import { collectivePallet } from '@/shared/pallet/collective';
 import { collectiveCorePallet } from '@/shared/pallet/collectiveCore';
 import { multisigOperationService } from '@/domains/network';
 
-import { DEFAULT_FEE_ASSET_ITEM } from './common/constants';
-import { hasDestWeight, isControllerMissing, isOldMultisigPallet } from './common/utils';
+import { isControllerMissing, isOldMultisigPallet } from './common/utils';
 
 /**
  * Converts asset value to appropriate format for createType. If the value is
@@ -70,36 +69,17 @@ export const getExtrinsic: Record<
   ) => api.tx.multisig.approveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight),
   [TransactionType.MULTISIG_CANCEL_AS_MULTI]: ({ threshold, otherSignatories, maybeTimepoint, callHash }, api) =>
     api.tx.multisig.cancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash),
-  [TransactionType.XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-    return api.tx.xcmPallet.limitedReserveTransferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
-      Unlimited: true,
-    });
-  },
-  [TransactionType.XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-    return api.tx.xcmPallet.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
-      Unlimited: true,
-    });
-  },
-  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-    return api.tx.polkadotXcm.limitedReserveTransferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
-      Unlimited: true,
-    });
-  },
-  [TransactionType.POLKADOT_XCM_TELEPORT]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-    return api.tx.polkadotXcm.limitedTeleportAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
-      Unlimited: true,
-    });
-  },
-  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: ({ xcmDest, xcmBeneficiary, xcmAsset }, api) => {
-    return api.tx.polkadotXcm.transferAssets(xcmDest, xcmBeneficiary, xcmAsset, DEFAULT_FEE_ASSET_ITEM, {
-      Unlimited: true,
-    });
-  },
-  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: ({ xcmDest, xcmAsset, xcmWeight }, api) => {
-    const weight = hasDestWeight(api) ? xcmWeight : { Unlimited: true };
-
-    return api.tx.xTokens.transferMultiasset(xcmAsset, xcmDest, weight);
-  },
+  [TransactionType.XCM_LIMITED_TRANSFER]: handleXcmTransaction,
+  [TransactionType.XCM_TELEPORT]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_LIMITED_TRANSFER]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_TELEPORT]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS]: handleXcmTransaction,
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSET]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_RESERVE_WITHDRAW]: handleXcmTransaction,
+  [TransactionType.POLKADOT_XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: handleXcmTransaction,
+  [TransactionType.XCM_TRANSFER_ASSETS_USING_TYPE_AND_THEN]: handleXcmTransaction,
+  [TransactionType.XTOKENS_TRANSFER]: handleXcmTransaction,
+  [TransactionType.XTOKENS_TRANSFER_MULTIASSETS]: handleXcmTransaction,
   // controller arg removed from bond but changes not released yet
   // https://github.com/paritytech/substrate/pull/14039
   [TransactionType.BOND]: ({ controller, value, payee }, api) =>
@@ -202,6 +182,10 @@ export const getExtrinsic: Record<
     return beneficiary ? api.tx[`${pallet}Salary`].payoutOther(beneficiary) : api.tx[`${pallet}Salary`].payout();
   },
 };
+
+function handleXcmTransaction(args: Record<string, any>, _api: ApiPromise) {
+  return args.spellExtrinsic as SubmittableExtrinsic<'promise'>;
+}
 
 type WrapAsMultiParams<T extends Transaction = Transaction> = {
   api: ApiPromise;

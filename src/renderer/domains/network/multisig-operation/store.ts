@@ -3,9 +3,8 @@ import { once, readonly } from 'patronum';
 
 import { storageService } from '@/shared/api/storage';
 import {
+  type CreateMultisigOperationParams,
   type HexString,
-  type MultisigOperationNotification,
-  type NoID,
   type NotificationStatus,
   NotificationType,
 } from '@/shared/core';
@@ -130,12 +129,10 @@ const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancell
   }
 };
 
-const createOperationNotification = (operation: MultisigOperation): NoID<MultisigOperationNotification> => {
+const createOperationNotification = (operation: MultisigOperation): CreateMultisigOperationParams => {
   return {
     key: `${NotificationType.MULTISIG_OPERATION}:${operation.id}:${operation.status}`,
     type: NotificationType.MULTISIG_OPERATION,
-    read: false,
-    dateCreated: Date.now(),
     status: getNotificationStatus(operation.status),
     issuer: operation.accountId,
     title: getNotificationTitle(operation.status),
@@ -154,7 +151,7 @@ const createOperationNotification = (operation: MultisigOperation): NoID<Multisi
 const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {
     const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
-    const notifications: (NoID<MultisigOperationNotification> & { key: string })[] = [];
+    const notifications: CreateMultisigOperationParams[] = [];
 
     for (const item of update) {
       const previousOp = previousOpsMap.get(item.id);

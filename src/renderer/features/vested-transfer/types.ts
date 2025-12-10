@@ -1,7 +1,7 @@
 import { type BN } from '@polkadot/util';
 
 import { type Chain } from '@/shared/core';
-import { type ExistingVestingSchedule } from '@/entities/vesting';
+import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 export const enum Step {
   NONE,
@@ -16,5 +16,5 @@ export type ValidationSchemaOptions = {
   minStartingBlock: BN;
   minVestedTransfer: BN;
   maxVestingSchedules: BN;
-  existingVestingSchedules: ExistingVestingSchedule;
+  existingVestingSchedules: Record<AccountId, number>;
 };

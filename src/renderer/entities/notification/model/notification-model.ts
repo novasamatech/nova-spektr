@@ -1,7 +1,7 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type NoID, type Notification } from '@/shared/core';
+import { type CreateNotificationParams, type NoID, type Notification } from '@/shared/core';
 import { merge } from '@/shared/lib/utils';
 
 const $notifications = createStore<Notification[]>([]);
@@ -12,12 +12,18 @@ const populateNotificationsFx = createEffect((): Promise<Notification[]> => {
   return storageService.notifications.readAll();
 });
 
-const addNotificationsFx = createEffect(async (notifications: NoID<Notification>[]): Promise<Notification[]> => {
-  return storageService.notifications.createAll(notifications).then((r) => r ?? []);
+const addNotificationsFx = createEffect(async (notifications: CreateNotificationParams[]): Promise<Notification[]> => {
+  const notificationsWithMetadata: NoID<Notification>[] = notifications.map((notification) => ({
+    ...notification,
+    read: false,
+    dateCreated: Date.now(),
+  }));
+
+  return storageService.notifications.createAll(notificationsWithMetadata).then((r) => r ?? []);
 });
 
-const notificationsAdded = createEvent<NoID<Notification>[]>();
-const notificationsFiltered = createEvent<NoID<Notification>[]>();
+const notificationsAdded = createEvent<CreateNotificationParams[]>();
+const notificationsFiltered = createEvent<CreateNotificationParams[]>();
 
 // Filter out duplicates
 sample({
@@ -27,7 +33,7 @@ sample({
     const existingKeys = new Set(existingNotifications.map((n) => n.key));
     const duplicates: string[] = [];
 
-    const newNotifications: NoID<Notification>[] = [];
+    const newNotifications: CreateNotificationParams[] = [];
 
     for (const notification of incomingNotifications) {
       if (existingKeys.has(notification.key)) {

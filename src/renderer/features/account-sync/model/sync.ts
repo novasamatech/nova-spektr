@@ -4,21 +4,21 @@ import { combineEvents, spread } from 'patronum';
 import {
   AccountType,
   type ChainId,
+  type CreateFlexibleMultisigOperationParams,
+  type CreateMultisigCreatedParams,
+  type CreateNotificationParams,
+  type CreateProxyActionParams,
   CryptoType,
   type FlexibleMultisigAccount,
-  type FlexibleMultisigOperationNotification,
   type FlexibleMultisigWallet,
   type MultisigAccount,
-  type MultisigCreated,
   type MultisigWallet,
   type NoID,
-  type Notification,
   NotificationType,
   type ProxiedAccount,
   type ProxiedConnection,
   type ProxiedWallet,
   type ProxyAccount,
-  type ProxyAction,
   type ProxyType,
   SigningType,
   type Wallet,
@@ -553,7 +553,7 @@ sample({
 const createNotificationsFromWallets = (
   wallets: { wallet: { id: number; name: string }; accounts: AnyAccount[] }[],
   chains: Record<ChainId, { addressPrefix?: number }>,
-): NoID<Notification>[] => {
+): CreateNotificationParams[] => {
   return wallets
     .flatMap(({ wallet, accounts }) => {
       return accounts.map((account) => {
@@ -564,8 +564,6 @@ const createNotificationsFromWallets = (
           const description = `${name} with threshold ${account.threshold} out of ${account.signatories.length}`;
 
           const baseNotification = {
-            read: false,
-            dateCreated: Date.now(),
             status: 'info' as const,
             issuer: account.accountId,
             description,
@@ -584,7 +582,7 @@ const createNotificationsFromWallets = (
               title: 'Flexible multisig wallet added',
               accountId: account.accountId,
               accountName: account.name,
-            } satisfies NoID<FlexibleMultisigOperationNotification>;
+            } satisfies CreateFlexibleMultisigOperationParams;
           }
 
           if (accountUtils.isMultisigAccount(account)) {
@@ -595,7 +593,7 @@ const createNotificationsFromWallets = (
               chainId: account.remarkChainId!,
               title: 'Multisig wallet added',
               multisigAccountName: account.name,
-            } satisfies NoID<MultisigCreated>;
+            } satisfies CreateMultisigCreatedParams;
           }
         }
 
@@ -604,18 +602,16 @@ const createNotificationsFromWallets = (
             return {
               key: `${NotificationType.PROXY_CREATED}:${account.chainId}:${connection.proxyAccountId}:${account.accountId}`,
               chainId: account.chainId,
-              dateCreated: Date.now(),
               proxyType: connection.proxyType,
               proxyAccountId: connection.proxyAccountId,
               proxyVariant: account.proxyVariant,
               proxiedAccountId: account.accountId,
-              read: false,
               type: NotificationType.PROXY_CREATED,
               status: 'info',
               issuer: connection.proxyAccountId,
               title: 'Delegated authority wallet added',
               description: `${connection.proxyType} proxy`,
-            } satisfies NoID<ProxyAction>;
+            } satisfies CreateProxyActionParams;
           });
         }
 
