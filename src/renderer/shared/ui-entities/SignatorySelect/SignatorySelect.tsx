@@ -30,7 +30,10 @@ const SignatoryItem = ({ signatory, network }: SignatoryProps) => {
   const signer = getAccount(signatory);
   const balance = getBalance(signatory);
   const address = toAddress(signer.accountId, { prefix: network.chain.addressPrefix });
-  const accountName = useAccountName({ accountId: signer.accountId, chain: network.chain });
+  const accountName = useAccountName({
+    accountId: signer.accountId,
+    chain: network.chain,
+  });
 
   return (
     <Select.Item value={signer.id.toString()}>
