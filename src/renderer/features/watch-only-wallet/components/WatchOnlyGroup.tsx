@@ -7,7 +7,7 @@ import { useI18n } from '@/shared/i18n';
 import { performSearch } from '@/shared/lib/utils';
 import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
-import { useWalletsName } from '@/domains/network';
+import { useWalletsNames } from '@/domains/network';
 import { walletSelect } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 import { walletsModel } from '../model/wallets';
@@ -25,7 +25,7 @@ export const WatchOnlyGroup = memo(({ query, onSelect }: Props) => {
   const wallets = useUnit(walletsModel.$wallets);
   const selectedWallet = useUnit(walletSelect.$selectedWallet);
 
-  const resolvedWallets = useWalletsName(wallets);
+  const resolvedWallets = useWalletsNames(wallets);
 
   const filteredWallets = useMemo(() => {
     return performSearch({

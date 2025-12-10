@@ -32,7 +32,7 @@ import {
   WalletIcon,
 } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { accountService, accounts, useAccountName, useAccountsName } from '@/domains/network';
+import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
@@ -296,7 +296,7 @@ const Destination = memo(() => {
     setQuery('');
   }, [chain]);
 
-  const resolvedAccounts = useAccountsName(accountsList, chain);
+  const resolvedAccounts = useAccountsNames(accountsList, chain);
 
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (nullable(chain)) return [];

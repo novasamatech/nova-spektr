@@ -8,7 +8,7 @@ import { performSearch } from '@/shared/lib/utils';
 import { Icon, type IconNames } from '@/shared/ui';
 import { WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box, Label } from '@/shared/ui-kit';
-import { accounts, useWalletsName } from '@/domains/network';
+import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelect, walletSelectService } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
@@ -29,7 +29,7 @@ export const WalletGroup = memo(({ wallets, icon, query, title, onSelect }: Prop
   const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const chains = useUnit(networkModel.$chains);
 
-  const resolvedWallets = useWalletsName(wallets);
+  const resolvedWallets = useWalletsNames(wallets);
 
   const filteredWallets = useMemo(() => {
     return performSearch({

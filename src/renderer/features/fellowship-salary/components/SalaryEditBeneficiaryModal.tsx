@@ -44,7 +44,6 @@ const AccountAddressItem = ({ account, wallet, chain, address }: AccountAddressI
   const accountName = useAccountName({
     accountId: account.accountId,
     chain,
-    accounts: [account],
   });
   const walletName = useWalletName(wallet);
 

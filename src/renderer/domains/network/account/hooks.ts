@@ -17,12 +17,15 @@ type UseAccountNameParams = {
   accountId: AccountId | null | undefined;
   chain?: Chain | null;
   title?: string;
-  accounts?: AnyAccount[];
 };
 
-export const useAccountsName = (accounts: AnyAccount[], chain?: Chain | null) => {
+export const useAccountsNames = (accounts: AnyAccount[], chain?: Chain | null) => {
+  if (nullable(accounts) || accounts.length === 0) {
+    return [];
+  }
+
   const { data: accountNames } = useResource(accountsNameResource, {
-    params: nullable(accounts) || accounts.length === 0 ? null : { accounts, chain },
+    params: { accounts, chain },
     defaultValue: {},
     map: (cache, { accounts, chain }) => {
       const result: Record<string, string> = {};
@@ -30,7 +33,6 @@ export const useAccountsName = (accounts: AnyAccount[], chain?: Chain | null) =>
         const key = createAccountNameCacheKey({
           accountId: account.accountId,
           chain,
-          title: undefined,
         });
         result[key] = cache[key] ?? account.name;
       }
@@ -46,41 +48,32 @@ export const useAccountsName = (accounts: AnyAccount[], chain?: Chain | null) =>
     const key = createAccountNameCacheKey({
       accountId: account.accountId,
       chain,
-      title: undefined,
     });
     const resolvedName = accountNames[key];
     return resolvedName ? { ...account, name: resolvedName } : account;
   });
 };
 
-export const useAccountName = ({ accountId, chain, title, accounts: externalAccounts }: UseAccountNameParams) => {
-  if (!accountId) {
-    return title;
-  }
-
-  const account =
-    externalAccounts?.length && accountId ? (externalAccounts.find(a => a.accountId === accountId) ?? null) : null;
-
-  if (account) {
-    const resolvedAccounts = useAccountsName([account], chain);
-    const resolvedAccount = resolvedAccounts.at(0);
-
-    return resolvedAccount?.name ?? account.name ?? title ?? '';
-  }
-
-  const params: AccountNameParams = { accountId, chain, title };
+export const useAccountName = ({ accountId, chain, title }: UseAccountNameParams) => {
+  const params: AccountNameParams | null = accountId ? { accountId, chain, title } : null;
   const { data } = useResource(accountNameResource, {
     params,
-    defaultValue: title,
-    map: (cache, params) => cache[createAccountNameCacheKey(params)] ?? title ?? '',
+    defaultValue: undefined,
+    map: (cache, params) => {
+      return cache[createAccountNameCacheKey(params)] ?? '';
+    },
   });
 
   return data;
 };
 
-export const useWalletsName = (wallets: Wallet[]) => {
+export const useWalletsNames = (wallets: Wallet[]) => {
+  if (nullable(wallets) || wallets.length === 0) {
+    return [];
+  }
+
   const { data: walletNames } = useResource(walletsNameResource, {
-    params: nullable(wallets) || wallets.length === 0 ? null : { wallets },
+    params: { wallets },
     defaultValue: {},
     map: (cache, { wallets }) => {
       const result: Record<string, string> = {};
@@ -91,10 +84,6 @@ export const useWalletsName = (wallets: Wallet[]) => {
       return result;
     },
   });
-
-  if (nullable(wallets) || wallets.length === 0) {
-    return wallets || [];
-  }
 
   return wallets.map(wallet => {
     const key = getWalletKey({ wallet });
@@ -108,7 +97,7 @@ export const useWalletName = (wallet: Wallet | null | undefined) => {
     return null;
   }
 
-  const resolvedWallets = useWalletsName([wallet]);
+  const resolvedWallets = useWalletsNames([wallet]);
 
   return resolvedWallets[0]?.name ?? wallet.name;
 };

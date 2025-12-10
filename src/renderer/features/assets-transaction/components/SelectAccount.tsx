@@ -9,7 +9,7 @@ import { performSearch, toAddress } from '@/shared/lib/utils';
 import { BodyText, FootnoteText } from '@/shared/ui';
 import { AssetBalance } from '@/shared/ui-entities';
 import { Box, Label, ScrollArea, SearchInput, Skeleton } from '@/shared/ui-kit';
-import { useAccountsName } from '@/domains/network';
+import { useAccountsNames } from '@/domains/network';
 import { EmptyAssetsState } from '@/entities/asset';
 import { accountUtils } from '@/entities/wallet';
 import { NamedAccount } from '@/widgets/NameResolver';
@@ -37,7 +37,7 @@ export const SelectAccount = ({ asset, chain }: Props) => {
   const deferredQuery = useDeferredValue(query);
   const { list, isLoading } = useDeferredList({ list: chainAccounts });
 
-  const resolvedAccounts = useAccountsName(list, chain);
+  const resolvedAccounts = useAccountsNames(list, chain);
 
   const filteredAccounts = useMemo(() => {
     return performSearch({

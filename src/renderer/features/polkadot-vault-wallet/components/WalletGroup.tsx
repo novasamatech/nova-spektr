@@ -6,8 +6,9 @@ import { Slot, createSlot } from '@/shared/di';
 import { isEthereumAccountId, nullable, performSearch } from '@/shared/lib/utils';
 import { WalletIcon, WalletManagement } from '@/shared/ui-entities';
 import { Accordion, Box } from '@/shared/ui-kit';
-import { accounts, useWalletsName } from '@/domains/network';
+import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
+import { walletUtils } from '@/entities/wallet';
 import { walletSelect, walletSelectService } from '@/aggregates/wallet-select';
 import { WalletFiatBalance } from '@/features/wallet-fiat-balance';
 
@@ -26,7 +27,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
   const selectedWalletId = useUnit(walletSelect.$selectedWalletId);
   const chains = useUnit(networkModel.$chains);
 
-  const resolvedWallets = useWalletsName(wallets);
+  const resolvedWallets = useWalletsNames(wallets);
 
   const filteredWallets = useMemo(() => {
     return performSearch({
@@ -56,9 +57,10 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
       <Accordion.Content>
         <Box gap={1} padding={[1, 0, 0]}>
           {filteredWallets.map(wallet => {
-            const vaultWallet = wallet as PolkadotVaultGroup;
-            const isSingleAccount = vaultWallet.accounts.length === 1;
-            const accountId = isSingleAccount ? vaultWallet.accounts[0]?.accountId : vaultWallet.rootAccountId;
+            if (!walletUtils.isPolkadotVaultGroup(wallet)) return null;
+
+            const isSingleAccount = wallet.accounts.length === 1;
+            const accountId = isSingleAccount ? wallet.accounts[0]?.accountId : wallet.rootAccountId;
             if (nullable(accountId)) return null;
 
             const isEthereum = isEthereumAccountId(accountId);

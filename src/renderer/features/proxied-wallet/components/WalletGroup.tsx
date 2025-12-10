@@ -7,7 +7,7 @@ import { performSearch } from '@/shared/lib/utils';
 import { Icon } from '@/shared/ui';
 import { WalletIcon } from '@/shared/ui-entities';
 import { Accordion, Box, Tooltip } from '@/shared/ui-kit';
-import { accounts, useWalletsName } from '@/domains/network';
+import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelectService } from '@/aggregates/wallet-select';
 
@@ -26,7 +26,7 @@ export const WalletGroup = memo(({ wallets, walletType, query, title, onSelect }
   const allAccounts = useUnit(accounts.$list);
   const chains = useUnit(networkModel.$chains);
 
-  const resolvedWallets = useWalletsName(wallets);
+  const resolvedWallets = useWalletsNames(wallets);
 
   const filteredWallets = useMemo(() => {
     return performSearch({

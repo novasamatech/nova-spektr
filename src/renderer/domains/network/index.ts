@@ -22,7 +22,7 @@ export { accountSync } from './account-sync/store';
 export { accountSyncService } from './account-sync/service';
 export type { SyncedMultisigAccount, SyncedProxyAccount, SyncedAccount } from './account-sync/types';
 
-export { useAccountName, useAccountsName, useWalletName, useWalletsName } from './account/hooks';
+export { useAccountName, useAccountsNames, useWalletName, useWalletsNames } from './account/hooks';
 export { $accountNameCache, createAccountNameCacheKey, accountsNameResource } from './account/resource';
 
 export { balanceService } from './balance/service';

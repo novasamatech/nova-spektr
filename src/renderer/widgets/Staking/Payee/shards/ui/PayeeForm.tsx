@@ -9,7 +9,7 @@ import { Button, Combobox, DetailRow, FootnoteText, Icon, InputHint, MultiSelect
 import { type RadioOption } from '@/shared/ui/types';
 import { AssetBalance, Identicon } from '@/shared/ui-entities';
 import { Tooltip } from '@/shared/ui-kit';
-import { useAccountsName } from '@/domains/network';
+import { useAccountsNames } from '@/domains/network';
 import { AssetFiatBalance, priceProviderModel } from '@/entities/price';
 import { FeeLoader } from '@/entities/transaction';
 import { AccountAddress, ProxyWalletAlert, accountUtils, walletUtils } from '@/entities/wallet';
@@ -136,7 +136,7 @@ const Destination = () => {
   const network = useUnit(formModel.$networkStore);
   const destinationAccounts = useUnit(formModel.$destinationAccounts);
   const destinationQuery = useUnit(formModel.$destinationQuery);
-  const resolvedDestinationAccounts = useAccountsName(destinationAccounts, network?.chain);
+  const resolvedDestinationAccounts = useAccountsNames(destinationAccounts, network?.chain);
 
   const [payout, setPayout] = useState('');
   const [activeOptionId, setActiveOptionId] = useState<string>('0');

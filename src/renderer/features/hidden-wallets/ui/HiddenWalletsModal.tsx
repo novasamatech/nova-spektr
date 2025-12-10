@@ -6,7 +6,7 @@ import { entries, groupBy, performSearch } from '@/shared/lib/utils';
 import { BodyText, Button, FootnoteText, Icon, Plate, SmallTitleText } from '@/shared/ui';
 import { Animation } from '@/shared/ui/Animation/Animation';
 import { Box, Checkbox, Modal, SearchInput, useNotification } from '@/shared/ui-kit';
-import { accounts, useWalletsName } from '@/domains/network';
+import { accounts, useWalletsNames } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { walletSelectService } from '@/aggregates/wallet-select';
 import { hiddenWalletsBalancesModel } from '../model/balances';
@@ -51,7 +51,7 @@ export const HiddenWalletsModal = () => {
     return unsubscribe;
   }, [notification, t]);
 
-  const resolvedWallets = useWalletsName(hiddenWallets);
+  const resolvedWallets = useWalletsNames(hiddenWallets);
 
   const filteredWallets = useMemo(() => {
     return performSearch({

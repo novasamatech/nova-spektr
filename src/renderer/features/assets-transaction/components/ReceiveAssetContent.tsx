@@ -26,7 +26,6 @@ export const ReceiveAssetContent = ({ chain, asset }: Props) => {
   const resolvedName = useAccountName({
     accountId: selectedAccount?.accountId ?? null,
     chain,
-    accounts: selectedAccount ? [selectedAccount] : undefined,
   });
 
   if (!selectedAccount) return null;

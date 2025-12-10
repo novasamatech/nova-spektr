@@ -46,21 +46,13 @@ export const TransactionDetails = memo(({ wallets, chain, initiators, signatory,
   const initiatorMeta = useTransformer(accountNodeConfigTransformer, { account: firstInitiator || signatory, t });
   const initiatorWalletType = initiatorMeta ? initiatorMeta.title.toLowerCase() : '';
   const isComplexAccountStructure = nullable(initiators.find(i => i === signatory));
-  const resolvedAccounts = useMemo(() => {
-    const list: AnyAccount[] = [];
-    if (signatory) list.push(signatory);
-    return [...list, ...initiators];
-  }, [initiators, signatory]);
-
   const firstInitiatorName = useAccountName({
     accountId: firstInitiator?.accountId ?? null,
     chain,
-    accounts: resolvedAccounts,
   });
   const signatoryName = useAccountName({
     accountId: signatory?.accountId ?? null,
     chain,
-    accounts: resolvedAccounts,
   });
 
   return (
