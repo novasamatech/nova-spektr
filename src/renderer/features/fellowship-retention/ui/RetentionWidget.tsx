@@ -3,7 +3,7 @@ import { type PropsWithChildren, type ReactNode, memo, useMemo } from 'react';
 
 import { Slot, createSlot } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { cnTw, getExpectedBlockTime, nonNullable, nullable } from '@/shared/lib/utils';
+import { cnTw, nonNullable, nullable } from '@/shared/lib/utils';
 import { CaptionText, FootnoteText, Icon, TitleText } from '@/shared/ui';
 import { Box, Skeleton, type TimelineStep } from '@/shared/ui-kit';
 import {
@@ -13,6 +13,7 @@ import {
   useEvidencesContent,
   votingHistoryService,
 } from '@/domains/collectives';
+import { useBlockTime } from '@/domains/network';
 import { useFellowshipMemberEvidence, useMemberRetentionReferendum } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipBlock, useFellowshipChain } from '@/aggregates/fellowship-network';
 import {
@@ -320,6 +321,7 @@ const useRetentionData = () => {
   const { t } = useI18n();
   const api = useFellowshipApi();
   const { data: currentBlock } = useFellowshipBlock();
+  const { data: blockTime } = useBlockTime(api);
   const { data: retentionPeriodDates } = useRetentionPeriodDates();
   const { data: retentionPeriod } = useRetentionPeriod();
 
@@ -373,9 +375,9 @@ const useRetentionData = () => {
   }, [t, retentionPeriodDates, fromDateFormatted, toDateFormatted]);
 
   const timelineValue = useMemo(() => {
-    if (nullable(api) || nullable(retentionPeriod) || nullable(currentBlock)) return 0;
+    if (nullable(api) || nullable(retentionPeriod) || nullable(currentBlock) || nullable(blockTime)) return 0;
 
-    const blockTimeMs = getExpectedBlockTime(api).toNumber();
+    const blockTimeMs = blockTime.toNumber();
     if (!Number.isFinite(blockTimeMs) || blockTimeMs <= 0) return 0;
 
     const fromBlock = Number(retentionPeriod.from);
@@ -410,7 +412,7 @@ const useRetentionData = () => {
     return (
       SAFE_ZONE_LENGTH + WARNING_ZONE_LENGTH + Math.min(DANGER_ZONE_LENGTH, Math.max(0, progress * DANGER_ZONE_LENGTH))
     );
-  }, [api, retentionPeriod, currentBlock]);
+  }, [api, retentionPeriod, currentBlock, blockTime]);
 
   return {
     retentionPeriod,
