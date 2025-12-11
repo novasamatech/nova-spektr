@@ -5,6 +5,8 @@ import { type CSSProperties, memo, useMemo } from 'react';
 
 import { useTheme } from '../Theme/useTheme';
 
+const DEFAULT_JSON_EXPAND_DEPTH = 10;
+
 type Props = {
   value: object;
   name?: string;
@@ -36,6 +38,7 @@ export const Json = memo(({ value, name, sortKeys }: Props) => {
       shortenTextAfterLength={50}
       style={viewerTheme}
       objectSortKeys={sortKeys}
+      shouldExpandNodeInitially={(_, { level }) => level <= DEFAULT_JSON_EXPAND_DEPTH}
     >
       <ReactJsonViewer.Null render={() => <span style={{ color: 'var(--w-rjv-type-null-color)' }}>null</span>} />
     </ReactJsonViewer>
