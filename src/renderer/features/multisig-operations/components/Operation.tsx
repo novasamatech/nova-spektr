@@ -68,6 +68,8 @@ export const Operation = memo(({ operation, multisigAccount, isDefaultOpen = fal
     showCoreTransaction,
   });
 
+  console.log({ externalTitle, operation });
+
   let titleData: OperationTitle;
   if (externalTitle) {
     titleData = externalTitle;

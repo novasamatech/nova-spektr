@@ -1,7 +1,14 @@
 import { createEffect, createEvent, createStore, sample } from 'effector';
 
 import { storageService } from '@/shared/api/storage';
-import { type CreateNotificationParams, type NoID, type Notification } from '@/shared/core';
+import {
+  type CreateNotificationParams,
+  type NoID,
+  type Notification,
+  type NotificationStatus,
+  type NotificationType,
+} from '@/shared/core';
+import { createBuffer } from '@/shared/effector';
 import { merge } from '@/shared/lib/utils';
 
 const $notifications = createStore<Notification[]>([]);
@@ -87,6 +94,53 @@ sample({
   target: $notifications,
 });
 
+const batchedNotifications = createBuffer({
+  source: notificationsFiltered.map((ns) => ns).filterMap((ns) => (ns.length > 0 ? ns : undefined)),
+  timeframe: 1000,
+}).map((batches): ToastData[] => {
+  const notifications = batches.flat();
+  const grouped = new Map<NotificationType, CreateNotificationParams[]>();
+
+  for (const notification of notifications) {
+    const existing = grouped.get(notification.type) ?? [];
+    grouped.set(notification.type, [...existing, notification]);
+  }
+
+  const toasts: ToastData[] = [];
+  for (const [, items] of grouped) {
+    if (items.length > 1) {
+      const first = items[0];
+      const batchParams = first.batch;
+
+      toasts.push({
+        title: batchParams.title,
+        description: batchParams.description,
+        status: first.status,
+        link: batchParams.link,
+        count: items.length,
+      });
+    } else {
+      const item = items[0];
+      toasts.push({ ...item });
+    }
+  }
+
+  return toasts;
+});
+
+const $toasts = createStore<ToastData[]>([]).on(batchedNotifications, (_, update) => update);
+
+export type ToastData = {
+  title: string;
+  description?: string;
+  status: NotificationStatus;
+  link?: {
+    title: string;
+    path: string;
+  };
+  count?: number;
+};
+
 sample({
   clock: notificationsViewed,
   source: $notifications,
@@ -126,10 +180,12 @@ export const notificationModel = {
   $notifications,
   $hasUnread,
   $unreadCount,
+  $toasts,
   events: {
     notificationsStarted: populateNotificationsFx,
     notificationsAdded,
     notificationsViewed,
     notificationEdited,
+    notificationsSaved: addNotificationsFx.doneData,
   },
 };
