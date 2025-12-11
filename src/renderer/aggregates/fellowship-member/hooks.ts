@@ -147,7 +147,7 @@ export const useFellowshipMemberEndPromotionBlock = () => {
     const memberWithPromotionStart = evidenceService.getMemberWithPromotionStart(member, feed);
 
     if (nonNullable(memberWithPromotionStart)) {
-      const window = evidenceService.getPromotionWindow(memberWithPromotionStart, periods, block);
+      const window = evidenceService.getPromotionWindow(memberWithPromotionStart, periods);
       data = window.to;
     }
   }
