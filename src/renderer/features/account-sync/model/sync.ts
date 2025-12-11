@@ -4,13 +4,14 @@ import { combineEvents, spread } from 'patronum';
 import {
   AccountType,
   type ChainId,
+  type CreateFlexibleMultisigOperationParams,
+  type CreateMultisigCreatedParams,
   type CreateNotificationParams,
+  type CreateProxyActionParams,
   CryptoType,
   type FlexibleMultisigAccount,
-  type FlexibleMultisigCreatedParams,
   type FlexibleMultisigWallet,
   type MultisigAccount,
-  type MultisigCreatedParams,
   type MultisigWallet,
   type NoID,
   NotificationType,
@@ -18,7 +19,6 @@ import {
   type ProxiedConnection,
   type ProxiedWallet,
   type ProxyAccount,
-  type ProxyActionParams,
   type ProxyType,
   SigningType,
   type Wallet,
@@ -582,7 +582,7 @@ const createNotificationsFromWallets = (
               title: 'Flexible multisig wallet added',
               accountId: account.accountId,
               accountName: account.name,
-            } satisfies FlexibleMultisigCreatedParams;
+            } satisfies CreateFlexibleMultisigOperationParams;
           }
 
           if (accountUtils.isMultisigAccount(account)) {
@@ -593,7 +593,7 @@ const createNotificationsFromWallets = (
               chainId: account.remarkChainId!,
               title: 'Multisig wallet added',
               multisigAccountName: account.name,
-            } satisfies MultisigCreatedParams;
+            } satisfies CreateMultisigCreatedParams;
           }
         }
 
@@ -611,7 +611,7 @@ const createNotificationsFromWallets = (
               issuer: connection.proxyAccountId,
               title: 'Delegated authority wallet added',
               description: `${connection.proxyType} proxy`,
-            } satisfies ProxyActionParams;
+            } satisfies CreateProxyActionParams;
           });
         }
 

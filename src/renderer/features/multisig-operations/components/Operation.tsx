@@ -47,7 +47,7 @@ export type OperationTitle = {
 };
 
 export const operationTitleTransformer = createTransformer<
-  { operation: MultisigOperation; showCoreTransaction?: boolean },
+  { operation?: MultisigOperation; showCoreTransaction?: boolean },
   OperationTitle
 >();
 
