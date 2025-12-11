@@ -20,10 +20,8 @@ type UseAccountNameParams = {
 };
 
 export const useAccountsNames = (accounts: AnyAccount[], chain?: Chain | null) => {
-  const isEmpty = nullable(accounts) || accounts.length === 0;
-
   const { data: accountNames } = useResource(accountsNameResource, {
-    params: isEmpty ? null : { accounts, chain },
+    params: accounts.length === 0 ? null : { accounts, chain },
     defaultValue: {},
     map: (cache, { accounts, chain }) => {
       const result: Record<string, string> = {};
@@ -37,8 +35,6 @@ export const useAccountsNames = (accounts: AnyAccount[], chain?: Chain | null) =
       return result;
     },
   });
-
-  if (isEmpty) return [];
 
   return accounts.map(account => {
     const key = createAccountNameCacheKey({
