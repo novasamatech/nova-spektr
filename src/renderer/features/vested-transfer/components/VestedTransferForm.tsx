@@ -5,7 +5,7 @@ import { Trans } from 'react-i18next';
 import vested_transfer_template_url from '@/shared/assets/templates/vested-transfer-template.csv?url';
 import { useForm } from '@/shared/forms';
 import { useI18n } from '@/shared/i18n';
-import { getNativeAsset, nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
+import { nonNullable, nullable, transferableAmount } from '@/shared/lib/utils';
 import { Alert, Button, DetailRow, FootnoteText, Icon, InfoLink, InputHint } from '@/shared/ui';
 import { AssetBalance, ChainSelect, SignatorySelect, TransactionValidationError } from '@/shared/ui-entities';
 import { Box, Field, InputFile, Modal, ScrollArea } from '@/shared/ui-kit';
@@ -347,13 +347,11 @@ const TotalAmountSection = () => {
 const FeeSection = () => {
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
-  const chain = useUnit(formModel.form.fields.chain.$value);
-  const asset = chain ? getNativeAsset(chain.assets) : null;
-
   const multisigDeposit = useUnit(formModel.$multisigDeposit);
   const hasMultisigAccount = useUnit(formModel.$hasMultisigAccount);
+  const asset = useUnit(formModel.$asset);
 
-  if (!asset) return null;
+  if (nullable(asset)) return null;
 
   return (
     <>
