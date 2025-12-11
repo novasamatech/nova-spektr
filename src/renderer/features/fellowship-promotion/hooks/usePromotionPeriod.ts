@@ -26,7 +26,7 @@ export const usePromotionPeriod = () => {
       return null;
     }
 
-    const window = evidenceService.getPromotionWindow(memberWithPromotionStart, periods, currentBlock);
+    const window = evidenceService.getPromotionWindow(memberWithPromotionStart, periods);
     const from = Number(window.from);
     const to = Number(window.to);
 

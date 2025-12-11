@@ -1,5 +1,6 @@
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
+import { nullable } from '@/shared/lib/utils';
 import { AssetBalance } from '@/shared/ui-entities';
 import {
   TransactionTitle,
@@ -35,6 +36,9 @@ multisigOperationsSDK(transferOperationDetailFeature, {
   },
   title({ operation, showCoreTransaction }) {
     const { t } = useI18n();
+
+    if (nullable(operation)) return null;
+
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
 
     if (isTransferTransaction(transaction)) {
