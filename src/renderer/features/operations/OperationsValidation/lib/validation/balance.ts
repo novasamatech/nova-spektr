@@ -70,15 +70,31 @@ function insufficientBalanceForXcmFee(
   const feeBN = new BN(fee || ZERO_BALANCE);
 
   if (isNative) {
-    const totalTransferableSpend = isAuthority
-      ? amountBN.add(destinationFeeBN).add(originFeeBN)
-      : amountBN.add(feeBN).add(destinationFeeBN).add(originFeeBN);
+    if (isXcm) {
+      const originFeeSpend = originFeeBN;
+      const userAmountWithDestinationFeeSpend = amountBN.add(destinationFeeBN);
+      const totalTransferableSpend = originFeeSpend.add(userAmountWithDestinationFeeSpend);
+
+      return isLteThanBalance(totalTransferableSpend, transferableBalance);
+    }
+
+    const totalTransferableSpend = isAuthority ? amountBN.add(originFeeBN) : amountBN.add(feeBN).add(originFeeBN);
 
     return isLteThanBalance(totalTransferableSpend, transferableBalance);
   }
 
-  const totalTransferableSpend = isXcm ? amountBN.add(originFeeBN) : amountBN;
-  const totalNativeSpend = isAuthority ? destinationFeeBN : destinationFeeBN.add(feeBN);
+  if (isXcm) {
+    const userAmountWithDestinationFeeSpend = amountBN.add(destinationFeeBN);
+    const originFeeSpend = originFeeBN;
+
+    return (
+      isLteThanBalance(userAmountWithDestinationFeeSpend, transferableBalance) &&
+      isLteThanBalance(originFeeSpend, nativeBalance)
+    );
+  }
+
+  const totalTransferableSpend = amountBN;
+  const totalNativeSpend = isAuthority ? BN_ZERO : feeBN;
 
   return (
     isLteThanBalance(totalTransferableSpend, transferableBalance) && isLteThanBalance(totalNativeSpend, nativeBalance)

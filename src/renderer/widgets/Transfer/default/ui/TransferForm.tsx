@@ -628,8 +628,13 @@ const AlertForDryRunError = memo(() => {
   const { t } = useI18n();
   const buildTransferDryRunResult = useUnit(xcmSpellTransferModel.$buildTransferDryRunResult);
   const xcmChain = useUnit(xcmSpellTransferModel.$xcmChain);
+  const errors = useUnit(formModel.$errors);
 
   if (!buildTransferDryRunResult || buildTransferDryRunResult.success) {
+    return null;
+  }
+
+  if (errors.length > 0) {
     return null;
   }
 

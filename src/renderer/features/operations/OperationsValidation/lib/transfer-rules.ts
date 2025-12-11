@@ -259,10 +259,17 @@ export const transferValidator = createTxValidator<{
       const isXcm = destinationChain.chainId !== sourceChain.chainId;
       const totalAmount = isXcm && destinationFee && !destinationFee.isZero() ? amount.add(destinationFee) : amount;
       const preservation = isXcm ? 'keepAlive' : balancePreservation;
+      const withdrawalResult = balanceService.tryWithdraw(balance, totalAmount, preservation);
 
       return {
         account: initiator,
-        balance: balanceService.tryWithdraw(balance, totalAmount, preservation),
+        balance:
+          isXcm && destinationFee && !destinationFee.isZero()
+            ? {
+                ...withdrawalResult,
+                required: amount,
+              }
+            : withdrawalResult,
         asset: sourceAsset,
         action: 'sending amount',
       };
