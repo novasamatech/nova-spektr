@@ -10,7 +10,6 @@ import {
   type ChainId,
   type Contact,
   type Wallet,
-  WalletType,
 } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
 import { isEthereumAccountId, keys, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
@@ -22,7 +21,7 @@ import {
 } from '@/shared/ui-entities';
 import { balanceUtils } from '@/entities/balance';
 import { networkUtils } from '@/entities/network';
-import { accountUtils } from '@/entities/wallet';
+import { walletUtils } from '@/entities/wallet';
 import { identityService } from '../identity/service';
 import { type IdentityMap } from '../identity/types';
 import { type AnyTransaction } from '../transaction/types';
@@ -153,7 +152,7 @@ function getAccountIdentity(accountId: AccountId, identities: IdentityMap) {
   return null;
 }
 
-function isCustomAccountName(account?: AnyAccount | null) {
+function isCustomAccountName(account: AnyAccount) {
   if (!account?.name) {
     return false;
   }
@@ -168,8 +167,8 @@ function getRelatedChainId(account?: AnyAccount): ChainId | null {
     return account.chainId;
   }
 
-  if (accountUtils.isMultisigAccount(account)) {
-    return account.remarkChainId ?? null;
+  if ('remarkChainId' in account && account.remarkChainId) {
+    return account.remarkChainId as ChainId;
   }
 
   return null;
@@ -197,11 +196,8 @@ function getAccountAddressPrefix(
 }
 
 function getWalletAccountId(wallet: Wallet, accounts: AnyAccount[]): AccountId | null {
-  if (
-    (wallet.type === WalletType.POLKADOT_VAULT || wallet.type === WalletType.SINGLE_PARITY_SIGNER) &&
-    'rootAccountId' in wallet
-  ) {
-    return wallet.rootAccountId as AccountId;
+  if (walletUtils.isPolkadotVault(wallet) || walletUtils.isSingleShard(wallet)) {
+    return wallet.rootAccountId;
   }
 
   const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
