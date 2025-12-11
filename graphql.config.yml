@@ -22,6 +22,6 @@ projects:
       - src/renderer/entities/staking/**
 
   SubQuery Collectives:
-    schema: https://subquery-collectives-polkadot-prod.novasama-tech.org
+    schema: http://localhost:3000
     include:
       - src/renderer/domains/collectives/**

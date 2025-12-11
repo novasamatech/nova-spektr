@@ -7,6 +7,8 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, SmallTitleText } from '@/shared/ui';
 import { Box, Skeleton } from '@/shared/ui-kit';
 import { type OngoingReferendum, referendumService } from '@/domains/collectives';
+import { useReferendumSummary } from '@/domains/governance';
+import { useConnectedReferendum } from '../../hooks/useConnectedReferendum';
 import { useMetadata } from '../../hooks/useMetadata';
 import { useRfcProposalSummary } from '../../hooks/useRfcProposalSummary';
 import { tasksService } from '../../service';
@@ -51,12 +53,34 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
 
   const { data: meta, pending: pendingMetadata } = useMetadata(referendum);
   const { data: rfc, pending: pendingSummary } = useRfcProposalSummary(referendum);
+  const { data: connectedGovernanceReferendum } = useConnectedReferendum(referendum.id);
+  const { data: connectedGovernanceReferendumSummary, pending: pendingConnectedGovernanceReferendumSummary } =
+    useReferendumSummary({
+      chainId: connectedGovernanceReferendum?.chainId,
+      referendumIds: [connectedGovernanceReferendum?.referendumId],
+    });
 
+  const isSpendProposal = referendum.proposal ? referendumService.isSpendProposal(referendum.proposal) : false;
   const isRFCProposal = referendum.proposal ? referendumService.isRfcProposal(referendum.proposal) : false;
-  const isPending = referendum && (isRFCProposal ? pendingSummary : pendingMetadata);
+
+  const isPending = useMemo(() => {
+    if (!referendum) return false;
+    if (isRFCProposal) return pendingSummary;
+    return pendingMetadata;
+  }, [referendum, isRFCProposal, pendingSummary, pendingConnectedGovernanceReferendumSummary, pendingMetadata]);
 
   const content = useMemo(() => {
     if (isPending) return;
+
+    const connectedGovernanceReferendumSummaryText =
+      connectedGovernanceReferendumSummary?.[connectedGovernanceReferendum?.referendumId].summary;
+    if (connectedGovernanceReferendum && connectedGovernanceReferendumSummaryText) {
+      return (
+        <ReferendumTaskMarkdown compact>
+          {tasksService.cutMarkdown(connectedGovernanceReferendumSummaryText)}
+        </ReferendumTaskMarkdown>
+      );
+    }
 
     if (rfc?.summary) {
       return <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(rfc.summary)}</ReferendumTaskMarkdown>;
@@ -70,12 +94,10 @@ export const OngoingReferendumVoting = ({ referendum, tags, transaction }: Props
   }, [meta, rfc, isPending]);
 
   const title = useMemo(() => {
-    const isSpendProposal = referendum.proposal ? referendumService.isSpendProposal(referendum.proposal) : false;
-
     return isSpendProposal
       ? t('governance.referendums.spendReferendumTitle')
       : t('governance.referendums.referendumTitle', { index: referendum.id });
-  }, [referendum.proposal]);
+  }, [isSpendProposal, referendum.id]);
 
   return (
     <Box direction="row" gap={2}>

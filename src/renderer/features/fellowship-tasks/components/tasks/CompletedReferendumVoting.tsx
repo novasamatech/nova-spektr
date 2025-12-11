@@ -7,6 +7,8 @@ import { type ReferendumId } from '@/shared/pallet/referenda';
 import { FootnoteText, Icon, type IconNames, SmallTitleText } from '@/shared/ui';
 import { Box } from '@/shared/ui-kit';
 import { type CompletedReferendum } from '@/domains/collectives';
+import { useReferendumSummary } from '@/domains/governance';
+import { useConnectedReferendum } from '../../hooks/useConnectedReferendum';
 import { useMetadata } from '../../hooks/useMetadata';
 import { tasksService } from '../../service';
 import { ReferendumTaskMarkdown } from '../ReferendumTaskMarkdown';
@@ -39,19 +41,31 @@ export const CompletedReferendumVoting = memo(({ referendum }: Props) => {
   const { t } = useI18n();
 
   const { data: meta } = useMetadata(referendum);
+  const { data: connectedGovernanceReferendum } = useConnectedReferendum(referendum.id);
+  const { data: connectedGovernanceReferendumSummary } = useReferendumSummary({
+    chainId: connectedGovernanceReferendum?.chainId,
+    referendumIds: [connectedGovernanceReferendum?.referendumId],
+  });
 
   const type = referendum.type;
   const label = getStatusLabel(type, t);
 
-  const content = useMemo(
-    () =>
-      meta?.description ? (
-        <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(meta.description)}</ReferendumTaskMarkdown>
-      ) : (
-        t('fellowship.tasks.task.anyReferendum.noDescription')
-      ),
-    [meta],
-  );
+  const content = useMemo(() => {
+    const connectedGovernanceReferendumSummaryText =
+      connectedGovernanceReferendumSummary?.[connectedGovernanceReferendum?.referendumId].summary;
+    if (connectedGovernanceReferendum && connectedGovernanceReferendumSummaryText) {
+      return (
+        <ReferendumTaskMarkdown compact>
+          {tasksService.cutMarkdown(connectedGovernanceReferendumSummaryText)}
+        </ReferendumTaskMarkdown>
+      );
+    }
+    return meta?.description ? (
+      <ReferendumTaskMarkdown compact>{tasksService.cutMarkdown(meta.description)}</ReferendumTaskMarkdown>
+    ) : (
+      t('fellowship.tasks.task.anyReferendum.noDescription')
+    );
+  }, [meta, connectedGovernanceReferendum, connectedGovernanceReferendumSummary]);
 
   return (
     <Slot

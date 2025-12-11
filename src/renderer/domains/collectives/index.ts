@@ -5,7 +5,7 @@ export type { CollectivePalletsType } from './_lib/types';
 
 export { referendum } from './referendum/store';
 export { referendumService } from './referendum/service';
-export { useReferendums } from './referendum/hooks';
+export { useReferendums, useReferendumsMapToGovernance } from './referendum/hooks';
 export type {
   ApprovedReferendum,
   OngoingReferendum,

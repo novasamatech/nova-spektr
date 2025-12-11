@@ -10,6 +10,7 @@ import { useMetadata } from '../hooks/useMetadata';
 
 import { AdditionalContext } from './AdditionalContext';
 import { Card } from './Card';
+import { ConnectedGovernanceReferendum } from './ConnectedGovernanceReferendum';
 
 type Props = {
   referendum: Referendum | null;
@@ -48,6 +49,7 @@ export const ReferendumDescription = memo(({ referendum, evidence }: Props) => {
 
       {shouldRenderEvidenceAlert ? <NoEvidence /> : null}
 
+      {nonNullable(referendum) && <ConnectedGovernanceReferendum referendumId={referendum.id} />}
       <div className="flex-1">
         <AdditionalContext referendum={referendum} />
       </div>
