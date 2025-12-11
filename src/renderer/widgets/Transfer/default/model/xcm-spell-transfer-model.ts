@@ -1,7 +1,7 @@
 import { type ApiPromise } from '@polkadot/api';
 import { type SubmittableExtrinsic } from '@polkadot/api/types';
 import { type BN } from '@polkadot/util';
-import { combine, createEffect, createEvent, createStore, restore, sample } from 'effector';
+import { combine, createEvent, createStore, restore, sample } from 'effector';
 import { debounce } from 'patronum';
 
 import { spellXcmService } from '@/shared/api/xcm/service/spellXcmService';
@@ -267,6 +267,57 @@ type FeeCalculationParams = {
   hopApiOverrides: Record<string, ApiPromise>;
 };
 
+type FakeFeeCalculationParams = {
+  api: ApiPromise;
+  apiDestination: ApiPromise;
+  network: { chain: Chain; asset: Asset };
+  xcmChain: Chain;
+  hopApiOverrides: Record<string, ApiPromise>;
+};
+
+const getXcmFeesWithFakeDataFx = takeLast({
+  fn: async (params: FakeFeeCalculationParams, abortSignal: AbortSignal) => {
+    const { api, apiDestination, network, xcmChain, hopApiOverrides } = params;
+
+    if (network.chain.chainId === xcmChain.chainId) {
+      return null;
+    }
+
+    const fromChainName = spellXcmService.getSpellChainName(network.chain);
+    const toChainName = spellXcmService.getSpellChainName(xcmChain);
+
+    if (!fromChainName || !toChainName) {
+      return null;
+    }
+
+    const isDestinationEvm = isEvmChain(xcmChain);
+    const isSourceEvm = isEvmChain(network.chain);
+
+    const testDestination = isDestinationEvm ? toAccountId(TEST_EVM_ADDRESS) : TEST_ACCOUNTS[0];
+    const testSender = isSourceEvm ? toAccountId(TEST_EVM_ADDRESS) : TEST_ACCOUNTS[0];
+    const testDestinationAddress = spellXcmService.prepareAddressForChain(testDestination, xcmChain, toChainName);
+    const testSenderAddress = spellXcmService.prepareAddressForChain(testSender, network.chain, fromChainName);
+
+    const testAmount = '1';
+
+    return spellXcmService.getXcmFees(
+      {
+        fromChain: network.chain,
+        toChain: xcmChain,
+        asset: network.asset,
+        amount: testAmount,
+        destinationAddress: testDestinationAddress,
+        senderAddress: testSenderAddress,
+        fromChainApi: api,
+        toChainApi: apiDestination,
+        hopApiOverrides,
+      },
+      abortSignal,
+    );
+  },
+  key: ({ network, xcmChain }) => `fakeXcmFeeCalculation-${network.chain.chainId}-${xcmChain.chainId}`,
+});
+
 const getXcmFeesFx = takeLast({
   fn: async (params: FeeCalculationParams, abortSignal: AbortSignal) => {
     const { api, apiDestination, network, xcmChain, destination, rawAmount, initiatorAccountId, hopApiOverrides } =
@@ -308,6 +359,33 @@ const getXcmFeesFx = takeLast({
   key: () => 'xcmFeeCalculation',
 });
 
+const $fakeFeeCalculationParams = combine(
+  {
+    api: $api,
+    apiDestination: $apiDestination,
+    network: $networkStore,
+    xcmChain: $xcmChain,
+    hopApiOverrides: $hopApiOverrides,
+  },
+  ({ api, apiDestination, network, xcmChain, hopApiOverrides }) => {
+    if (!api || !apiDestination || !network || !xcmChain) {
+      return null;
+    }
+
+    if (network.chain.chainId === xcmChain.chainId) {
+      return null;
+    }
+
+    return {
+      api,
+      apiDestination,
+      network,
+      xcmChain,
+      hopApiOverrides,
+    };
+  },
+);
+
 const $feeCalculationParams = combine(
   {
     api: $api,
@@ -342,6 +420,13 @@ const $feeCalculationParams = combine(
 );
 
 sample({
+  clock: xcmChainSelected,
+  source: $fakeFeeCalculationParams,
+  filter: (params): params is FakeFeeCalculationParams => params !== null,
+  target: getXcmFeesWithFakeDataFx,
+});
+
+sample({
   clock: [rawAmountChangedDebounced, destinationChangedDebounced],
   source: $feeCalculationParams,
   filter: (params): params is FeeCalculationParams => params !== null,
@@ -349,6 +434,22 @@ sample({
 });
 
 const isAbortError = (err: unknown) => err && typeof err === 'object' && 'name' in err && err.name === 'AbortError';
+
+sample({
+  clock: getXcmFeesWithFakeDataFx.doneData,
+  source: { destination: $destination, rawAmount: $rawAmount },
+  filter: ({ destination, rawAmount }) => !destination || !rawAmount,
+  fn: (_source, fees) => fees?.destinationFee ?? null,
+  target: $destinationFee,
+});
+
+sample({
+  clock: getXcmFeesWithFakeDataFx.doneData,
+  source: { destination: $destination, rawAmount: $rawAmount },
+  filter: ({ destination, rawAmount }) => !destination || !rawAmount,
+  fn: (_source, fees) => fees?.originFee ?? null,
+  target: $originFee,
+});
 
 sample({
   clock: getXcmFeesFx.doneData,
@@ -363,6 +464,22 @@ sample({
 });
 
 sample({
+  clock: getXcmFeesWithFakeDataFx.failData,
+  source: { destination: $destination, rawAmount: $rawAmount },
+  filter: ({ destination, rawAmount }, error) => !isAbortError(error) && (!destination || !rawAmount),
+  fn: () => null,
+  target: $destinationFee,
+});
+
+sample({
+  clock: getXcmFeesWithFakeDataFx.failData,
+  source: { destination: $destination, rawAmount: $rawAmount },
+  filter: ({ destination, rawAmount }, error) => !isAbortError(error) && (!destination || !rawAmount),
+  fn: () => null,
+  target: $originFee,
+});
+
+sample({
   clock: getXcmFeesFx.failData,
   filter: (error) => !isAbortError(error),
   fn: () => null,
@@ -377,13 +494,13 @@ sample({
 });
 
 sample({
-  clock: [xcmChainSelected, rawAmountChangedDebounced, destinationChangedDebounced],
+  clock: xcmChainSelected,
   fn: () => null,
   target: $destinationFee,
 });
 
 sample({
-  clock: [xcmChainSelected, rawAmountChangedDebounced, destinationChangedDebounced],
+  clock: xcmChainSelected,
   fn: () => null,
   target: $originFee,
 });
@@ -391,17 +508,26 @@ sample({
 const $isDestinationFeeLoading = combine(
   {
     isPending: getXcmFeesFx.pending,
+    isFakePending: getXcmFeesWithFakeDataFx.pending,
     feeParams: $feeCalculationParams,
-    originFee: $originFee,
-    destinationFee: $destinationFee,
+    fakeFeeParams: $fakeFeeCalculationParams,
+    destination: $destination,
+    rawAmount: $rawAmount,
   },
-  ({ isPending, feeParams, originFee, destinationFee }) => {
-    if (!feeParams) return false;
-    if (!isPending) return false;
-    if (originFee !== null || destinationFee !== null) {
-      return false;
+  ({ isPending, isFakePending, feeParams, fakeFeeParams, destination, rawAmount }) => {
+    const hasRealData = feeParams !== null;
+    const hasFakeData = fakeFeeParams !== null && !hasRealData;
+    const hasBothRealFields = destination !== null && rawAmount !== null;
+
+    if (hasRealData) {
+      return isPending;
     }
-    return true;
+
+    if (hasFakeData && !hasBothRealFields) {
+      return isFakePending;
+    }
+
+    return false;
   },
 );
 
@@ -416,23 +542,11 @@ const $shouldShowFees = combine(
   },
 );
 
-const getAvailableTransfersFx = createEffect(
-  async ({ network }: { network: { chain: Chain; asset: Asset } | null }) => {
-    if (!network) return [];
-    return spellXcmService.getAvailableTransfers(network.chain, network.asset);
-  },
-);
-
 const $transferDirections = createStore<string[]>([]).reset(xcmStarted, xcmStopped);
 
 sample({
   clock: xcmStarted,
-  source: { network: $networkStore },
-  target: getAvailableTransfersFx,
-});
-
-sample({
-  clock: getAvailableTransfersFx.doneData,
+  fn: ({ chain, asset }) => spellXcmService.getAvailableTransfers(chain, asset),
   target: $transferDirections,
 });
 
