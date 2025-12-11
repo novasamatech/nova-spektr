@@ -1,4 +1,4 @@
-import { useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { type MultisigOperationNotification, type NotificationStatus } from '@/shared/core';
 import { useTransformer } from '@/shared/di';
 import { useI18n } from '@/shared/i18n';
-import { formatSectionAndMethod } from '@/shared/lib/utils';
+import { formatSectionAndMethod, nonNullable } from '@/shared/lib/utils';
 import { Paths } from '@/shared/routes';
 import { BodyText, Button, Icon, type IconNames } from '@/shared/ui';
 import { AssetBalance, WalletIcon } from '@/shared/ui-entities';
@@ -44,26 +44,32 @@ export const MultisigOperationNotificationComponent = ({
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const allAccounts = useUnit(accounts.$list);
-  const operations = useUnit(multisigOperation.$list);
-  const wallets = useUnit(walletModel.$wallets);
 
-  const operation = useMemo(() => operations.find((op) => op.id === operationId), [operations, operationId]);
+  const operation = useStoreMap({
+    store: multisigOperation.$list,
+    keys: [operationId],
+    fn: (operations) => operations.find((op) => op.id === operationId),
+  });
 
-  const multisigAccount = useMemo(
-    () =>
+  const multisigAccount = useStoreMap({
+    store: accounts.$list,
+    keys: [multisigAccountId],
+    fn: (allAccounts) =>
       allAccounts
         .filter(accountUtils.isAnyMultisigAccount)
         .find((acc) => multisigService.getMultisigAccountId(acc) === multisigAccountId),
-    [allAccounts, multisigAccountId],
-  );
+  });
 
-  const wallet = useMemo(
-    () => wallets.find((w) => multisigAccount && w.accounts.some((acc) => acc.accountId === multisigAccount.accountId)),
-    [wallets, multisigAccount],
-  );
+  const wallet = useStoreMap({
+    store: walletModel.$wallets,
+    keys: [multisigAccount],
+    fn: (wallets) => {
+      if (!multisigAccount) return null;
+      return wallets.find((w) => w.accounts.some((acc) => acc.accountId === multisigAccount.accountId));
+    },
+  });
 
-  const showCoreTransaction = multisigAccount && accountUtils.isFlexibleMultisigAccount(multisigAccount);
+  const showCoreTransaction = nonNullable(multisigAccount) && accountUtils.isFlexibleMultisigAccount(multisigAccount);
   const coreTx = showCoreTransaction
     ? findCoreTransaction(operation?.transaction ?? null)
     : (operation?.transaction ?? null);
@@ -71,9 +77,10 @@ export const MultisigOperationNotificationComponent = ({
   const asset = useTransactionAsset(coreTx, chainId);
   const amount = coreTx ? getTransactionAmount(coreTx) : null;
 
-  const externalTitle = operation
-    ? useTransformer(operationTitleTransformer, { operation, showCoreTransaction: !!showCoreTransaction })
-    : null;
+  const externalTitle = useTransformer(operationTitleTransformer, {
+    operation,
+    showCoreTransaction: showCoreTransaction,
+  });
 
   const titleData = useMemo(() => {
     if (externalTitle) {
