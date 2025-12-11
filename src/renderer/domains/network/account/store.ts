@@ -25,6 +25,7 @@ const createAccountsFx = createEffect(async (accounts: AnyAccountDraft[]): Promi
       ...a,
       id: accountService.uniqId(a),
       nameType: a.nameType ?? AccountNameType.GENERATED,
+      createdAt: a.createdAt ?? Date.now(),
     })),
   );
 
