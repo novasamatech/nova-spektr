@@ -4,7 +4,7 @@ import { t } from 'i18next';
 import { TransactionType } from '@/shared/core';
 import { createFeature } from '@/shared/feature';
 import { useI18n } from '@/shared/i18n';
-import { getAssetById } from '@/shared/lib/utils';
+import { getAssetById, nullable } from '@/shared/lib/utils';
 import { type IconNames } from '@/shared/ui';
 import { networkModel } from '@/entities/network';
 import { TransactionTitle, findCoreTransaction, getTransactionAmount } from '@/entities/transaction';
@@ -54,6 +54,9 @@ multisigOperationsSDK(governanceOperationDetailFeature, {
   title({ operation, showCoreTransaction }) {
     const { t } = useI18n();
     const chains = useUnit(networkModel.$chains);
+
+    if (nullable(operation)) return null;
+
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
     const title = transaction?.type && getOperationTitle(transaction.type);
 

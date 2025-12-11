@@ -59,6 +59,9 @@ multisigOperationsSDK(vestedTransferOperationDetailFeature, {
   },
   title({ operation, showCoreTransaction }) {
     const chains = useUnit(networkModel.$chains);
+
+    if (nullable(operation)) return null;
+
     const transaction = showCoreTransaction ? findCoreTransaction(operation.transaction) : operation.transaction;
 
     if (nullable(transaction)) {

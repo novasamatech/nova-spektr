@@ -1635,11 +1635,18 @@
       "flexibleMultisigEditedTitle": "Flexible multisig has been edited",
       "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
+      "multisigOperationDetails": "in <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
       "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyRemovedTitle": "Delegated authority wallet has been removed",
-      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>"
+      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>",
+      "status": {
+        "created": "created",
+        "executed": "executed",
+        "rejected": "rejected"
+      },
+      "viewOperation": "View Operation"
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"

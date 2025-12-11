@@ -33,6 +33,7 @@ const editNotificationFx = createEffect((notification: Notification): Promise<No
 });
 
 const notificationsAdded = createEvent<CreateNotificationParams[]>();
+const notificationsFiltered = createEvent<CreateNotificationParams[]>();
 const notificationsViewed = createEvent();
 const notificationEdited = createEvent<Notification>();
 
@@ -41,15 +42,10 @@ sample({
   target: $notifications,
 });
 
-// Filter out duplicates and add notifications
+// Filter out duplicates
 sample({
   clock: notificationsAdded,
   source: $notifications,
-  filter: (existingNotifications, incomingNotifications) => {
-    const existingKeys = new Set(existingNotifications.map((n) => n.key));
-
-    return incomingNotifications.some((n) => !existingKeys.has(n.key));
-  },
   fn: (existingNotifications, incomingNotifications) => {
     const existingKeys = new Set(existingNotifications.map((n) => n.key));
     const duplicates: string[] = [];
@@ -74,6 +70,13 @@ sample({
 
     return newNotifications;
   },
+  target: notificationsFiltered,
+});
+
+// Only call effect if there are notifications to add
+sample({
+  clock: notificationsFiltered,
+  filter: (notifications) => notifications.length > 0,
   target: addNotificationsFx,
 });
 
