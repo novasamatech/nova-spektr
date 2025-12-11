@@ -7,6 +7,7 @@ import { type Chain, ChainOptions } from '@/shared/core';
 import { createStoreFromEffect } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
 import { assert, getNativeAsset, nonNullable, nonNullableMap, nullable } from '@/shared/lib/utils';
+import { createAccountId } from '@/shared/mocks';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   createComplexTxStore,
@@ -37,7 +38,6 @@ import { Step, type ValidationSchemaOptions } from '../types';
 import { vestedTransferUtils } from '../utils';
 
 import { type VestedTransferConfirm, confirmModel } from './confirm';
-import { vestedTransferFeature } from './feature';
 
 type FormData = {
   chain: Chain | null;
@@ -139,7 +139,7 @@ const $coreTx = combine(
     vestingSchedule: form.fields.vestingSchedule.$value,
   },
   ({ chain, signatory, vestingSchedule }) => {
-    if (!chain || !signatory || vestingSchedule.length === 0) return null;
+    if (nullable(chain) || nullable(signatory) || vestingSchedule.length === 0) return null;
 
     return transactionBuilder.buildVestedTransfer({
       chain: chain,
@@ -149,11 +149,40 @@ const $coreTx = combine(
   },
 );
 
+const $feeCoreTx = combine(
+  {
+    chain: form.fields.chain.$value,
+    signatory: form.fields.signatory.$value,
+  },
+  ({ chain, signatory }) => {
+    if (nullable(chain) || nullable(signatory)) return null;
+
+    return transactionBuilder.buildVestedTransfer({
+      chain: chain,
+      accountId: signatory.accountId,
+      vestingSchedule: [
+        {
+          target: createAccountId(1),
+          locked: new BN(1000000000000),
+          perBlock: new BN(1000000000000),
+          startingBlock: new BN(100),
+        },
+        {
+          target: createAccountId(2),
+          locked: new BN(2000000000000),
+          perBlock: new BN(2000000000000),
+          startingBlock: new BN(200),
+        },
+      ],
+    });
+  },
+);
+
 const { $fee, $pendingFee, $tx, $route } = createComplexTxStore({
-  active: vestedTransferFeature.isRunning,
   api: $api,
   chain: form.fields.chain.$value,
   transaction: $coreTx,
+  feeTransaction: $feeCoreTx,
   accounts: accounts.$list,
   initiator: form.fields.initiator.$value,
   signatory: form.fields.signatory.$value,
