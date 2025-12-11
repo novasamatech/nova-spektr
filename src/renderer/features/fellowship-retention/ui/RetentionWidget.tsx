@@ -13,10 +13,12 @@ import {
   useEvidencesContent,
   votingHistoryService,
 } from '@/domains/collectives';
+import { useBlockTime } from '@/domains/network';
 import { useFellowshipMemberEvidence, useMemberRetentionReferendum } from '@/aggregates/fellowship-member';
-import { useFellowshipChain } from '@/aggregates/fellowship-network';
+import { useFellowshipApi, useFellowshipBlock, useFellowshipChain } from '@/aggregates/fellowship-network';
 import {
   DANGER_THRESHOLD_DAYS,
+  MS_PER_DAY,
   RetentionWidgetState,
   WARNING_THRESHOLD_DAYS,
   useRetentionPeriod,
@@ -317,6 +319,9 @@ const ReferendumCreated = memo(() => {
 
 const useRetentionData = () => {
   const { t } = useI18n();
+  const api = useFellowshipApi();
+  const { data: currentBlock } = useFellowshipBlock();
+  const { data: blockTime } = useBlockTime(api);
   const { data: retentionPeriodDates } = useRetentionPeriodDates();
   const { data: retentionPeriod } = useRetentionPeriod();
 
@@ -369,21 +374,45 @@ const useRetentionData = () => {
     ];
   }, [t, retentionPeriodDates, fromDateFormatted, toDateFormatted]);
 
-  // Calculate timeline position directly from elapsed time
   const timelineValue = useMemo(() => {
-    if (nullable(retentionPeriodDates) || nullable(retentionPeriodDates.from) || nullable(retentionPeriodDates.to))
-      return 0;
+    if (nullable(api) || nullable(retentionPeriod) || nullable(currentBlock) || nullable(blockTime)) return 0;
 
-    const now = new Date();
-    const totalDuration = differenceInMilliseconds(retentionPeriodDates.to, retentionPeriodDates.from);
+    const blockTimeMs = blockTime.toNumber();
+    if (!Number.isFinite(blockTimeMs) || blockTimeMs <= 0) return 0;
 
-    if (totalDuration <= 0) return 0;
+    const fromBlock = Number(retentionPeriod.from);
+    const toBlock = Number(retentionPeriod.to);
+    const nowBlock = Number(currentBlock);
 
-    const elapsed = differenceInMilliseconds(now, retentionPeriodDates.from);
-    const progress = Math.min(elapsed / totalDuration, 1);
+    if (!Number.isFinite(fromBlock) || !Number.isFinite(toBlock) || toBlock <= fromBlock) return 0;
 
-    return progress * TOTAL_LENGTH;
-  }, [retentionPeriodDates]);
+    const warningBlocks = Math.ceil((WARNING_THRESHOLD_DAYS * MS_PER_DAY) / blockTimeMs);
+    const dangerBlocks = Math.ceil((DANGER_THRESHOLD_DAYS * MS_PER_DAY) / blockTimeMs);
+
+    const warningStartBlock = Math.max(fromBlock, toBlock - warningBlocks);
+    const dangerStartBlock = Math.max(fromBlock, toBlock - dangerBlocks);
+
+    const safeSegment = Math.max(1, warningStartBlock - fromBlock);
+    const warningSegment = Math.max(1, dangerStartBlock - warningStartBlock);
+    const dangerSegment = Math.max(1, toBlock - dangerStartBlock);
+
+    const clampedNow = Math.min(Math.max(nowBlock, fromBlock), toBlock);
+
+    if (clampedNow < warningStartBlock) {
+      const progress = (clampedNow - fromBlock) / safeSegment;
+      return Math.min(SAFE_ZONE_LENGTH, Math.max(0, progress * SAFE_ZONE_LENGTH));
+    }
+
+    if (clampedNow < dangerStartBlock) {
+      const progress = (clampedNow - warningStartBlock) / warningSegment;
+      return SAFE_ZONE_LENGTH + Math.min(WARNING_ZONE_LENGTH, Math.max(0, progress * WARNING_ZONE_LENGTH));
+    }
+
+    const progress = (clampedNow - dangerStartBlock) / dangerSegment;
+    return (
+      SAFE_ZONE_LENGTH + WARNING_ZONE_LENGTH + Math.min(DANGER_ZONE_LENGTH, Math.max(0, progress * DANGER_ZONE_LENGTH))
+    );
+  }, [api, retentionPeriod, currentBlock, blockTime]);
 
   return {
     retentionPeriod,
