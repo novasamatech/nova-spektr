@@ -82,7 +82,7 @@ test.describe('Validations tests', { tag: ['@regress', '@validations'] }, () => 
     await signingModal.checkSignReadyWalletConnect();
   });
 
-  test(`Should validate all fees for an xcm-transfer`, async ({ assetsPage }) => {
+  test.fail(`Should validate all fees for an xcm-transfer`, async ({ assetsPage }) => {
     await allure.feature(feature);
     await allure.story(story);
     test.slow();

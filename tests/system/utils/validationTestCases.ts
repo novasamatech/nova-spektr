@@ -16,7 +16,7 @@ export const validationConstants = {
   },
   missingAccountValidation: {
     multisigName: 'Msig_missing_account_test',
-    chainName: 'Novasama Testnet - Governance',
+    chainName: 'Kusama Asset Hub',
     assetId: 0,
   },
   permissionsValidation: {
