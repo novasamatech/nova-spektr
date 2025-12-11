@@ -14,6 +14,7 @@ import { useFellowshipApi, useFellowshipBlock, useFellowshipChain } from '@/aggr
 export const DANGER_THRESHOLD_DAYS = 2;
 export const WARNING_THRESHOLD_DAYS = 14;
 export const APPROACHING_THRESHOLD_DAYS = 30;
+export const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 export enum RetentionWidgetState {
   WAITING = 'waiting',
