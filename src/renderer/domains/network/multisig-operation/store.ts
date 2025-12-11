@@ -11,11 +11,11 @@ import {
 import { createQueuedEffect, pairwise } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
-import { type AnyAccount } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
 import { accounts } from '../account/store';
+import { type AnyAccount } from '../account/types';
 
 import { deserializeOperation, serializeOperation } from './helpers';
 import { fetchResource, subscribeEventsResource, subscribeResource } from './resource';
