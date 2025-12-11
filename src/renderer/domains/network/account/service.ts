@@ -13,7 +13,7 @@ import {
   WalletType,
 } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
-import { isEthereumAccountId, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
+import { isEthereumAccountId, keys, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import {
   type TransactionValidationBalanceError,
@@ -22,6 +22,7 @@ import {
 } from '@/shared/ui-entities';
 import { balanceUtils } from '@/entities/balance';
 import { networkUtils } from '@/entities/network';
+import { accountUtils } from '@/entities/wallet';
 import { identityService } from '../identity/service';
 import { type IdentityMap } from '../identity/types';
 import { type AnyTransaction } from '../transaction/types';
@@ -142,8 +143,8 @@ function getAccountById(accounts: AnyAccount[], accountId: AccountId | null): An
 }
 
 function getAccountIdentity(accountId: AccountId, identities: IdentityMap) {
-  for (const chainId of Object.keys(identities)) {
-    const identity = identities[chainId as keyof IdentityMap]?.[accountId];
+  for (const chainId of keys(identities)) {
+    const identity = identities[chainId]?.[accountId];
     if (identity) {
       return identity;
     }
@@ -152,7 +153,7 @@ function getAccountIdentity(accountId: AccountId, identities: IdentityMap) {
   return null;
 }
 
-function isCustomAccountName(account?: AnyAccount | null): account is AnyAccount {
+function isCustomAccountName(account?: AnyAccount | null) {
   if (!account?.name) {
     return false;
   }
@@ -163,12 +164,12 @@ function isCustomAccountName(account?: AnyAccount | null): account is AnyAccount
 function getRelatedChainId(account?: AnyAccount): ChainId | null {
   if (!account) return null;
 
-  if ('chainId' in account && account.chainId) {
-    return account.chainId as ChainId;
+  if (accountService.isChainAccount(account)) {
+    return account.chainId;
   }
 
-  if ('remarkChainId' in account && account.remarkChainId) {
-    return account.remarkChainId as ChainId;
+  if (accountUtils.isMultisigAccount(account)) {
+    return account.remarkChainId ?? null;
   }
 
   return null;
@@ -267,21 +268,21 @@ function resolveAccountName({
     return relatedAccount.name;
   }
 
-  for (const chainId of Object.keys(identities)) {
-    const identity = identities[chainId as keyof IdentityMap]?.[accountId];
+  for (const chainId of keys(identities)) {
+    const identity = identities[chainId]?.[accountId];
     if (identity) {
       return identity.name;
     }
   }
 
-  const prefix =
-    chain?.addressPrefix ??
-    (() => {
-      if (!relatedAccount || !('chainId' in relatedAccount)) return undefined;
+  let prefix = chain?.addressPrefix;
 
-      const accountChain = chains[relatedAccount.chainId as ChainId];
-      return accountChain?.addressPrefix;
-    })();
+  if (!prefix) {
+    if (relatedAccount && accountService.isChainAccount(relatedAccount)) {
+      const accountChain = chains[relatedAccount.chainId];
+      prefix = accountChain?.addressPrefix;
+    }
+  }
 
   return toShortAddress(toAddress(accountId, { prefix }), 5);
 }

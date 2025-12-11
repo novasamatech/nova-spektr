@@ -20,12 +20,10 @@ type UseAccountNameParams = {
 };
 
 export const useAccountsNames = (accounts: AnyAccount[], chain?: Chain | null) => {
-  if (nullable(accounts) || accounts.length === 0) {
-    return [];
-  }
+  const isEmpty = nullable(accounts) || accounts.length === 0;
 
   const { data: accountNames } = useResource(accountsNameResource, {
-    params: { accounts, chain },
+    params: isEmpty ? null : { accounts, chain },
     defaultValue: {},
     map: (cache, { accounts, chain }) => {
       const result: Record<string, string> = {};
@@ -39,6 +37,8 @@ export const useAccountsNames = (accounts: AnyAccount[], chain?: Chain | null) =
       return result;
     },
   });
+
+  if (isEmpty) return [];
 
   return accounts.map(account => {
     const key = createAccountNameCacheKey({
@@ -64,12 +64,10 @@ export const useAccountName = ({ accountId, chain, title }: UseAccountNameParams
 };
 
 export const useWalletsNames = (wallets: Wallet[]) => {
-  if (nullable(wallets) || wallets.length === 0) {
-    return [];
-  }
+  const isEmpty = nullable(wallets) || wallets.length === 0;
 
   const { data: walletNames } = useResource(walletsNameResource, {
-    params: { wallets },
+    params: isEmpty ? null : { wallets },
     defaultValue: {},
     map: (cache, { wallets }) => {
       const result: Record<string, string> = {};
@@ -81,6 +79,8 @@ export const useWalletsNames = (wallets: Wallet[]) => {
     },
   });
 
+  if (isEmpty) return [];
+
   return wallets.map(wallet => {
     const key = getWalletKey({ wallet });
     const resolvedName = walletNames[key];
@@ -89,11 +89,9 @@ export const useWalletsNames = (wallets: Wallet[]) => {
 };
 
 export const useWalletName = (wallet: Wallet | null | undefined) => {
-  if (!wallet) {
-    return null;
-  }
+  const resolvedWallets = useWalletsNames(wallet ? [wallet] : []);
 
-  const resolvedWallets = useWalletsNames([wallet]);
+  if (!wallet) return null;
 
   return resolvedWallets[0]?.name ?? wallet.name;
 };
