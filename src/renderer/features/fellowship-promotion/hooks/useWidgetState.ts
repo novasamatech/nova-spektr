@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { useMemberPromotionReferendum } from '@/aggregates/fellowship-member';
+import { usePromotionCountdown } from '@/aggregates/fellowship-promotion';
 
-import { useLeftToPromotion } from './useLeftToPromotion';
 import { usePromotionEvidence } from './usePromotionEvidence';
 
 export enum PromotionWidgetState {
@@ -14,14 +14,14 @@ export enum PromotionWidgetState {
 }
 
 export const useWidgetState = () => {
-  const { data: leftToPromotion, pending: leftPending } = useLeftToPromotion();
+  const { data: countdown, pending: countdownPending } = usePromotionCountdown();
   const { data: evidence, pending: evidencePending } = usePromotionEvidence();
   const { data: referendum, pending: referendumPending } = useMemberPromotionReferendum();
 
   const hasPromotionEvidence = evidence?.wish === 'Promotion';
 
   const state = useMemo(() => {
-    if (nullable(leftToPromotion) || leftToPromotion > 0) {
+    if (nullable(countdown) || !countdown.canSubmitPromotionEvidence) {
       return PromotionWidgetState.WAITING_OPPORTUNITY;
     }
 
@@ -34,10 +34,10 @@ export const useWidgetState = () => {
     }
 
     return PromotionWidgetState.EVIDENCE_CAN_BE_SUBMITTED;
-  }, [leftToPromotion, hasPromotionEvidence, referendum]);
+  }, [countdown, hasPromotionEvidence, referendum]);
 
   return {
     data: state,
-    pending: leftPending || evidencePending || referendumPending,
+    pending: countdownPending || evidencePending || referendumPending,
   };
 };

@@ -69,24 +69,14 @@ function getMemberWithPromotionStart(member: Member, feeds?: FeedRecord[]) {
   };
 }
 
-function getPromotionWindow(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
+function getPromotionWindow(member: CoreMember, periods: EvidencePeriods) {
   const promotionPeriod = getPromotionPeriod(member, periods);
   const start = member.lastPromotion;
-
-  if (currentBlock <= start) {
-    return {
-      from: start,
-      to: start + promotionPeriod,
-    };
-  }
-
-  const blocksPassed = currentBlock - start;
-  const periodsPassed = Math.floor(blocksPassed / promotionPeriod);
-  const windowStart = start + periodsPassed * promotionPeriod;
+  const end = start + promotionPeriod;
 
   return {
-    from: windowStart,
-    to: windowStart + promotionPeriod,
+    from: start,
+    to: end,
   };
 }
 
@@ -100,9 +90,8 @@ function getEndPromotionBlock(member: Member, periods: EvidencePeriods) {
 }
 
 function getBlockUntilNextPromotion(member: CoreMember, periods: EvidencePeriods, currentBlock: BlockHeight) {
-  const promotionPeriod = getPromotionPeriod(member, periods);
-  const gone = currentBlock - member.lastPromotion;
-  return Math.max(0, promotionPeriod - gone) as BlockHeight;
+  const window = getPromotionWindow(member, periods);
+  return Math.max(0, window.to - currentBlock) as BlockHeight;
 }
 
 function getDemotionPeriod(member: CoreMember, periods: EvidencePeriods) {
