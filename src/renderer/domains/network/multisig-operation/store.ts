@@ -138,6 +138,14 @@ const createOperationNotification = (
 ): CreateMultisigOperationParams => {
   const description = walletName ? `by ${walletName}` : undefined;
 
+  const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
+    chainId: operation.chainId,
+    callHash: operation.callHash,
+    accountId: operation.accountId,
+    blockCreated: operation.blockCreated,
+    indexCreated: operation.indexCreated,
+  });
+
   return {
     key: `${NotificationType.MULTISIG_OPERATION}:${operation.id}:${operation.status}`,
     type: NotificationType.MULTISIG_OPERATION,
@@ -154,8 +162,8 @@ const createOperationNotification = (
     chainId: operation.chainId,
     operationId: operation.id,
     link: {
-      title: 'notifications.toast.viewOperations',
-      path: Paths.OPERATIONS,
+      title: 'notifications.details.viewOperation',
+      path: relativeLink,
     },
     batch: {
       title: 'notifications.toast.batch.multisigOperationsUpdated',

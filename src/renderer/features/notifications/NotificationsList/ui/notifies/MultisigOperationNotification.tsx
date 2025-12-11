@@ -1,4 +1,4 @@
-import { useStoreMap, useUnit } from 'effector-react';
+import { useStoreMap } from 'effector-react';
 import { useMemo } from 'react';
 import { Trans } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -44,9 +44,6 @@ export const MultisigOperationNotificationComponent = ({
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const allAccounts = useUnit(accounts.$list);
-  const operations = useUnit(multisigOperation.$list);
-  const wallets = useUnit(walletModel.$wallets);
 
   const operation = useStoreMap({
     store: multisigOperation.$list,
