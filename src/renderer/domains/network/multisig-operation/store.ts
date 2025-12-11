@@ -14,6 +14,8 @@ import { deriveFromResources } from '@/shared/resource';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
+import { accounts } from '../account/store';
+import { type AnyAccount } from '../account/types';
 
 import { deserializeOperation, serializeOperation } from './helpers';
 import { fetchResource, subscribeEventsResource, subscribeResource } from './resource';
@@ -151,27 +153,37 @@ const createOperationNotification = (operation: MultisigOperation): CreateMultis
 const operationChanges = pairwise($list)
   .map(({ prev: prevState, current: update }) => {
     const previousOpsMap = new Map(prevState.map(op => [op.id, op]));
-    const notifications: CreateMultisigOperationParams[] = [];
+    const changes: MultisigOperation[] = [];
 
     for (const item of update) {
       const previousOp = previousOpsMap.get(item.id);
 
       if (!previousOp) {
-        notifications.push(createOperationNotification(item));
+        changes.push(item);
       } else if (previousOp.status !== item.status && item.status !== 'pending') {
-        notifications.push(createOperationNotification(item));
+        changes.push(item);
       }
     }
 
-    return notifications;
+    return changes;
   })
   .filter({ fn: notifications => notifications.length > 0 });
 
 sample({
   clock: operationChanges,
-  source: $populated,
-  filter: (populated, changes) => populated && changes.length > 0,
-  fn: (_, notifications) => notifications,
+  source: { populated: $populated, accountsList: accounts.$list },
+  filter: ({ populated }) => populated,
+  fn: ({ accountsList }, operations) => {
+    const accountsMap = new Map<AccountId, AnyAccount>(accountsList.map(account => [account.accountId, account]));
+
+    return operations
+      .filter(operation => {
+        const account = accountsMap.get(operation.accountId);
+
+        return !account?.createdAt || operation.timestamp >= account.createdAt;
+      })
+      .map(createOperationNotification);
+  },
   target: notificationModel.events.notificationsAdded,
 });
 

@@ -1,4 +1,5 @@
 import { createFeature } from '@/shared/feature';
+import { useI18n } from '@/shared/i18n';
 import { isEditFlexibleTransaction } from '@/entities/transaction';
 import { multisigOperationsSDK } from '@/sdk/multisig-operations';
 
@@ -15,8 +16,12 @@ multisigOperationsSDK(flexibleOperationDetailFeature, {
     }
   },
   title({ operation }) {
+    const { t } = useI18n();
     if (isEditFlexibleTransaction(operation.transaction)) {
-      return <FlexibleOperationTitle operation={operation} title="operations.titles.editFlexible" />;
+      return {
+        title: t('operations.titles.editFlexible'),
+        sourceChainId: operation.chainId,
+      };
     }
   },
   logTitle({ operation }) {

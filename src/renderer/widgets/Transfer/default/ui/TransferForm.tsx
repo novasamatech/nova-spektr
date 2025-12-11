@@ -32,15 +32,17 @@ import {
   WalletIcon,
 } from '@/shared/ui-entities';
 import { Box, Combobox, Field, Select, Tooltip } from '@/shared/ui-kit';
-import { accountService, accounts, useAccountName } from '@/domains/network';
+import { accountService, accounts, useAccountName, useAccountsNames } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { ChainTitle } from '@/entities/chain';
 import { contactModel } from '@/entities/contact';
-import { DeliveryFeeWithLabel, FeeWithLabel, MultisigDepositWithLabel, XcmFeeWithLabel } from '@/entities/transaction';
+import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
+import { categorizeXcmError, getHumanReadableFailureReason } from '../lib/transfer-utils';
 import { formModel } from '../model/form-model';
+import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
 type Props = {
   onGoBack: () => void;
@@ -75,6 +77,7 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
     <div className="flex flex-col gap-4 px-5 py-4">
       <TransactionValidationError errors={errors} wallets={wallets} />
       <DestinationBalanceAlert />
+      <AlertForDryRunError />
       <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
         <XcmChainSelector />
         <InitiatorSelector />
@@ -293,10 +296,12 @@ const Destination = memo(() => {
     setQuery('');
   }, [chain]);
 
+  const resolvedAccounts = useAccountsNames(accountsList, chain);
+
   const walletsOptions = useMemo<ComboboxGroup[]>(() => {
     if (nullable(chain)) return [];
 
-    const filteredAccounts = accountsList.filter((account) => {
+    const filteredAccounts = resolvedAccounts.filter((account) => {
       const isChainMatch = accountService.isAccountAvailableOnChain(account, chain);
       const address = toAddress(account.accountId, { prefix: chain.addressPrefix });
       const queryPass = includesMultiple([account.name, address], query);
@@ -339,7 +344,7 @@ const Destination = memo(() => {
     }
 
     return ownAccountOptions;
-  }, [query, chain, wallets, accountsList]);
+  }, [query, chain, resolvedAccounts, wallets, initiator.value]);
 
   const contactOptions = useMemo<ComboboxGroup[]>(() => {
     if (validateAddress(query, chain)) return [];
@@ -409,7 +414,6 @@ const Destination = memo(() => {
             </Combobox.Group>
           ))}
         </Combobox>
-
         {isMyselfXcmEnabled && (
           <Button pallet="secondary" testId={TEST_IDS.OPERATIONS.MYSELF_BUTTON} onClick={handleChange}>
             {t('transfer.myselfButton')}
@@ -434,8 +438,9 @@ const Amount = memo(() => {
   const accountAvailableBalance = useUnit(formModel.$available);
   const network = useUnit(formModel.$networkStore);
   const isExistentialDepositEnabled = useUnit(formModel.$isExistentialDepositEnabled);
+  const isXcm = useUnit(formModel.$isXcm);
 
-  const showMaxButton = accountAvailableBalance?.gtn(0) ?? false;
+  const showMaxButton = !isXcm && (accountAvailableBalance?.gtn(0) ?? false);
   const showEDSwitch = useUnit(formModel.$showEDSwitch);
 
   if (!network) {
@@ -497,51 +502,73 @@ const FeeSection = memo(() => {
   const initiator = useUnit(formModel.form.fields.initiator.$value);
   const api = useUnit(formModel.$api);
   const network = useUnit(formModel.$networkStore);
-  const coreTx = useUnit(formModel.$coreTx);
-  const feeTx = useUnit(formModel.$feeTx);
   const isXcm = useUnit(formModel.$isXcm);
-  const xcmConfig = useUnit(formModel.$xcmConfig);
-  const xcmApi = useUnit(formModel.$xcmApi);
   const fee = useUnit(formModel.$fee);
   const pendingFee = useUnit(formModel.$pendingFee);
-  const deliveryFee = useUnit(formModel.$deliveryFee);
+  const originFee = useUnit(formModel.$originFee);
+  const destinationFee = useUnit(formModel.$destinationFee);
+  const isDestinationFeeLoading = useUnit(xcmSpellTransferModel.$isDestinationFeeLoading);
+  const shouldShowFees = useUnit(xcmSpellTransferModel.$shouldShowFees);
 
   if (!network) {
     return null;
   }
 
   const isMultisig = initiator && accountUtils.isAnyMultisigAccount(initiator);
+  const nativeAsset = getNativeAsset(network.chain.assets)!;
 
   return (
     <div className="flex flex-col gap-y-2">
       {isMultisig && (
         <MultisigDepositWithLabel
           api={api}
-          asset={getNativeAsset(network.chain.assets)}
+          asset={nativeAsset}
           threshold={initiator.threshold || 1}
           onDepositChange={(deposit) => formModel.multisigDepositChanged(new BN(deposit))}
         />
       )}
 
-      <FeeWithLabel
-        label={t('operation.networkFee')}
-        asset={getNativeAsset(network.chain.assets)!}
-        fee={fee}
-        isLoading={pendingFee}
-      />
+      {isXcm ? (
+        shouldShowFees ? (
+          <>
+            {(() => {
+              const originFeeAvailable = originFee !== null;
+              const destinationFeeAvailable = destinationFee !== null;
 
-      {isXcm && xcmApi && xcmConfig && (
-        <XcmFeeWithLabel
-          api={xcmApi}
-          config={xcmConfig}
-          asset={network.asset}
-          transaction={coreTx || feeTx}
-          onFeeChange={formModel.xcmFeeChanged}
-          onFeeLoading={formModel.isXcmFeeLoadingChanged}
-        />
+              const showOriginFee =
+                originFeeAvailable || (!originFeeAvailable && !destinationFeeAvailable && isDestinationFeeLoading);
+              const showDestinationFee =
+                destinationFeeAvailable || (!destinationFeeAvailable && !originFeeAvailable && isDestinationFeeLoading);
+
+              const originFeeLoading = isDestinationFeeLoading && !originFeeAvailable && !destinationFeeAvailable;
+              const destinationFeeLoading = isDestinationFeeLoading && !destinationFeeAvailable && !originFeeAvailable;
+
+              return (
+                <>
+                  {showOriginFee ? (
+                    <FeeWithLabel
+                      label={t('operation.originNetworkFee')}
+                      asset={nativeAsset}
+                      fee={originFee}
+                      isLoading={originFeeLoading}
+                    />
+                  ) : null}
+                  {showDestinationFee ? (
+                    <FeeWithLabel
+                      label={t('operation.destinationNetworkFee')}
+                      asset={nativeAsset}
+                      fee={destinationFee}
+                      isLoading={destinationFeeLoading}
+                    />
+                  ) : null}
+                </>
+              );
+            })()}
+          </>
+        ) : null
+      ) : (
+        <FeeWithLabel label={t('operation.networkFee')} asset={nativeAsset} fee={fee} isLoading={pendingFee} />
       )}
-
-      {isXcm && <DeliveryFeeWithLabel fee={deliveryFee} asset={getNativeAsset(network.chain.assets)!} />}
     </div>
   );
 });
@@ -597,17 +624,92 @@ const AlertForAccountDeath = memo(() => {
   );
 });
 
+const AlertForDryRunError = memo(() => {
+  const { t } = useI18n();
+  const buildTransferDryRunResult = useUnit(xcmSpellTransferModel.$buildTransferDryRunResult);
+  const xcmChain = useUnit(xcmSpellTransferModel.$xcmChain);
+
+  if (!buildTransferDryRunResult || buildTransferDryRunResult.success) {
+    return null;
+  }
+
+  const error = buildTransferDryRunResult.failureReason || '';
+  const errorInfo = categorizeXcmError(error);
+  const isTooExpensive = errorInfo.isTooExpensive;
+  const isFeesNotMet = errorInfo.isFeesNotMet;
+  const isInsufficientBalance = errorInfo.isInsufficientBalance;
+  const failureChain = buildTransferDryRunResult.failureChain;
+
+  if (isInsufficientBalance) {
+    return null;
+  }
+
+  const chainName = xcmChain?.name || failureChain;
+
+  const cleanReason = getHumanReadableFailureReason(error, failureChain);
+
+  const getTitle = () => {
+    if (isTooExpensive) {
+      return t('transfer.dryRunTooExpensive.title');
+    }
+    if (isFeesNotMet) {
+      return t('transfer.dryRunFeesNotMet.title');
+    }
+    return t('transfer.dryRunError.title');
+  };
+
+  return (
+    <Alert title={getTitle()} variant="error" active>
+      <FootnoteText className="max-w-full break-all text-text-primary">
+        {isTooExpensive ? (
+          <Trans
+            t={t}
+            i18nKey="transfer.dryRunTooExpensive.description"
+            values={{
+              chain: chainName,
+            }}
+            components={{
+              br: <br />,
+            }}
+          />
+        ) : isFeesNotMet ? (
+          <Trans
+            t={t}
+            i18nKey="transfer.dryRunFeesNotMet.description"
+            values={{
+              reason: cleanReason,
+              chain: chainName,
+            }}
+          />
+        ) : (
+          <Trans
+            t={t}
+            i18nKey={cleanReason ? 'transfer.dryRunError.descriptionWithReason' : 'transfer.dryRunError.description'}
+            values={{
+              reason: cleanReason,
+              chain: chainName,
+            }}
+          />
+        )}
+      </FootnoteText>
+    </Alert>
+  );
+});
+
 const ActionsSection = memo(({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
+  const buildTransferDryRunResult = useUnit(xcmSpellTransferModel.$buildTransferDryRunResult);
+  const hasDryRunError = Boolean(buildTransferDryRunResult && !buildTransferDryRunResult.success);
+  const isDisabled = !canSubmit || hasDryRunError;
 
   return (
     <div className="mt-4 flex items-center justify-between">
       <Button variant="text" onClick={onGoBack}>
         {t('operation.goBackButton')}
       </Button>
-      <Button form="transfer-form" type="submit" disabled={!canSubmit}>
+      <Button form="transfer-form" type="submit" disabled={isDisabled}>
         {t('transfer.continueButton')}
       </Button>
     </div>

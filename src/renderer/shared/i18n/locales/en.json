@@ -1635,11 +1635,18 @@
       "flexibleMultisigEditedTitle": "Flexible multisig has been edited",
       "multisigCreatedDescription": "<strong>{name}</strong>  with threshold { threshold } out of { signatoriesLength }",
       "multisigCreatedTitle": "New multisig wallet added",
+      "multisigOperationDetails": "in <wallet><walletIcon /><name>{name}</name></wallet>  on  <chain />",
       "proxyCreatedDetails": "<chain />  is now available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyCreatedTitle": "New delegated authority wallet added",
       "proxyRemovedDetails": "<chain />  is no longer available for your <wallet><walletIcon /> {name}</wallet>  to control {operations}",
       "proxyRemovedTitle": "Delegated authority wallet has been removed",
-      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>"
+      "proxyWalletAction": "<strong>{name}</strong>  with <address><identicon /> {address}</address>",
+      "status": {
+        "created": "created",
+        "executed": "executed",
+        "rejected": "rejected"
+      },
+      "viewOperation": "View Operation"
     },
     "noNotificationsDescription": "You don't have notifications yet",
     "title": "Notifications"
@@ -1823,6 +1830,7 @@
     "deliveryFee": "Delivery fee",
     "deliveryFeeErrorDescription": "The account<account />doesn't have enough tokens to pay the delivery fee of {fee} {symbol}<br />Transferable balance: {balance} {symbol}. Please top up the balance and of this account and try again.",
     "deliveryFeeErrorTitle": "Not enough tokens to pay the delivery fee",
+    "destinationNetworkFee": "Destination Network Fee",
     "details": {
       "accessType": "Access type",
       "account": "Account",
@@ -1878,6 +1886,7 @@
     "operationNotFoundButton": "Close",
     "operationNotFoundDescription": "The operation you're trying to access could not be found.\nPlease check the parameters and try again.",
     "operationNotFoundTitle": "Operation not found",
+    "originNetworkFee": "Origin Network Fee",
     "proxyFeeErrorDescription": "Delegated authority<wallet />doesn't have enough balance to pay the network fee of {fee} {symbol}<br />Available balance to pay fee: {balance} {symbol}",
     "proxyFeeErrorTitle": "Not enough tokens to pay the fee",
     "rejectButton": "Reject",
@@ -2568,6 +2577,19 @@
     "destinationChainPlaceholder": "Select recipient network",
     "destinationCryptoError": "Unsupported address format for {network}",
     "destinationFormatError": "Address has incorrect format",
+    "dryRunError": {
+      "description": "The transfer cannot be completed on {chain} chain.",
+      "descriptionWithReason": "The transfer cannot be completed on {chain} chain. {reason}",
+      "title": "Transfer path unavailable"
+    },
+    "dryRunFeesNotMet": {
+      "description": "The transfer cannot be completed on {chain} chain. {reason}",
+      "title": "Insufficient funds for transfer"
+    },
+    "dryRunTooExpensive": {
+      "description": "The transfer amount is insufficient to cover execution fees on {chain} chain.<br />Please increase the transfer amount.",
+      "title": "Insufficient fees for transfer"
+    },
     "editOperationButton": "Edit operation",
     "executing": "Submitting operation",
     "expired": "Transaction expired",

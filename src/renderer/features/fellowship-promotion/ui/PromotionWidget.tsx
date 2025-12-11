@@ -13,9 +13,10 @@ import {
   useEvidencesContent,
   votingHistoryService,
 } from '@/domains/collectives';
-import { useBlock } from '@/domains/network';
+import { useBlock, useBlockTime } from '@/domains/network';
 import { useFellowshipMember, useMemberPromotionReferendum } from '@/aggregates/fellowship-member';
 import { useFellowshipApi, useFellowshipChain } from '@/aggregates/fellowship-network';
+import { getPromotionGreenStartBlock } from '@/aggregates/fellowship-promotion';
 import { usePromotionEvidence, usePromotionEvidenceSubmissionDate } from '../hooks/usePromotionEvidence';
 import { usePromotionPeriod, usePromotionPeriodDates } from '../hooks/usePromotionPeriod';
 import { useVotes } from '../hooks/useVotes';
@@ -53,7 +54,7 @@ export const PromotionWidget = memo(({ member }: Props) => {
       {
         baseColorClass: cnTw('bg-badge-green-background'),
         filledColorClass: cnTw('bg-text-positive'),
-        onHoverTooltipText: t('fellowship.promotion.canSubmit.submitEvidenceTooltip', { to: toDateFormatted }),
+        onHoverTooltipText: t('fellowship.promotion.canSubmit.submitAnytime'),
         length: 2,
       },
     ],
@@ -252,6 +253,7 @@ const usePromotionData = () => {
   const { data: promotionPeriodDates } = usePromotionPeriodDates();
   const { data: promotionPeriod } = usePromotionPeriod();
   const { data: currentBlock } = useBlock(api);
+  const { data: blockTime } = useBlockTime(api);
   const { data: member } = useFellowshipMember();
 
   const fromDateFormatted =
@@ -263,13 +265,38 @@ const usePromotionData = () => {
       ? formatDate(promotionPeriodDates.to, 'dd.MM.yy')
       : null;
 
-  const timelineValue = useMemo(
-    () =>
-      promotionPeriod && currentBlock
-        ? (10 * (currentBlock - promotionPeriod.from)) / (promotionPeriod.to - promotionPeriod.from)
-        : 0,
-    [promotionPeriod, currentBlock],
-  );
+  const timelineValue = useMemo(() => {
+    if (nullable(promotionPeriod) || nullable(currentBlock) || nullable(blockTime)) return 0;
+
+    const blockTimeMs = blockTime.toNumber();
+    if (!Number.isFinite(blockTimeMs) || blockTimeMs <= 0) return 0;
+
+    const from = Number(promotionPeriod.from);
+    const to = Number(promotionPeriod.to);
+    const now = Number(currentBlock);
+
+    if (!Number.isFinite(from) || !Number.isFinite(to) || to <= from) return 0;
+
+    const greenStart = getPromotionGreenStartBlock(from, to, blockTimeMs);
+
+    const clampedNow = Math.min(Math.max(now, from), to);
+
+    const firstSegment = Math.max(0, greenStart - from);
+    const secondSegment = Math.max(1, to - greenStart);
+
+    if (firstSegment === 0) {
+      const progress = (clampedNow - from) / secondSegment;
+      return Math.min(10, 8 + progress * 2);
+    }
+
+    if (clampedNow <= greenStart) {
+      const progress = (clampedNow - from) / firstSegment;
+      return Math.min(8, Math.max(0, progress * 8));
+    }
+
+    const progress = (clampedNow - greenStart) / secondSegment;
+    return Math.min(10, 8 + progress * 2);
+  }, [promotionPeriod, currentBlock, blockTime]);
 
   return {
     promotionPeriod,

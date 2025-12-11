@@ -32,3 +32,9 @@ function isSubmitStep(step: Step): boolean {
 function isBasketStep(step: Step): boolean {
   return step === Step.BASKET;
 }
+
+export {
+  categorizeXcmError,
+  getHumanReadableXcmError as getHumanReadableFailureReason,
+  normalizeXcmError,
+} from '@/shared/api/xcm/service/xcm-error-utils';

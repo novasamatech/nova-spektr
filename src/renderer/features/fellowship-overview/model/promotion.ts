@@ -53,7 +53,7 @@ const $promotionWindow = combine(
       return null;
     }
 
-    return evidenceService.getPromotionWindow(memberWithPromotionStart, periods, currentBlock);
+    return evidenceService.getPromotionWindow(memberWithPromotionStart, periods);
   },
 );
 
