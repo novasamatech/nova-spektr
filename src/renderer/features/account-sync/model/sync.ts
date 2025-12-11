@@ -582,6 +582,10 @@ const createNotificationsFromWallets = (
               title: 'Flexible multisig wallet added',
               accountId: account.accountId,
               accountName: account.name,
+              batch: {
+                title: 'notifications.toast.batch.flexibleMultisigWalletsAdded',
+                description: 'notifications.toast.batch.walletsAddedDescription',
+              },
             } satisfies CreateFlexibleMultisigOperationParams;
           }
 
@@ -593,6 +597,10 @@ const createNotificationsFromWallets = (
               chainId: account.remarkChainId!,
               title: 'Multisig wallet added',
               multisigAccountName: account.name,
+              batch: {
+                title: 'notifications.toast.batch.multisigWalletsAdded',
+                description: 'notifications.toast.batch.walletsAddedDescription',
+              },
             } satisfies CreateMultisigCreatedParams;
           }
         }
@@ -611,6 +619,10 @@ const createNotificationsFromWallets = (
               issuer: connection.proxyAccountId,
               title: 'Delegated authority wallet added',
               description: `${connection.proxyType} proxy`,
+              batch: {
+                title: 'notifications.toast.batch.delegatedAuthorityWalletsAdded',
+                description: 'notifications.toast.batch.walletsAddedDescription',
+              },
             } satisfies CreateProxyActionParams;
           });
         }

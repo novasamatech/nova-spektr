@@ -468,6 +468,10 @@ sample({
       accountName: multisigAccount!.name,
       signatories: signatories.map((signatory) => toAccountId(signatory.address)),
       threshold: threshold!,
+      batch: {
+        title: 'notifications.toast.batch.flexibleMultisigWalletsEdited',
+        description: 'notifications.toast.batch.walletsAddedDescription',
+      },
     };
 
     return [notification];

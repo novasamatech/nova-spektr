@@ -38,4 +38,5 @@ export { useBlock, useBlockTime, useBlockTimestamp } from './block/hooks';
 
 export { multisigOperation } from './multisig-operation/store';
 export { multisigOperationService } from './multisig-operation/service';
+export type { MultisigOperationDeepLinkParams } from './multisig-operation/service';
 export type { MultisigEvent, MultisigOperation } from './multisig-operation/types';
