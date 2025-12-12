@@ -5,7 +5,7 @@ import { createGate } from 'effector-react';
 
 import { type Chain, type ChainId, type Wallet } from '@/shared/core';
 import { type ProxyAccount, type ProxyType } from '@/shared/core/types/proxy';
-import { nonNullable } from '@/shared/lib/utils';
+import { entries, nonNullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
 import { createSubscriptionResource, deriveFromResources } from '@/shared/resource';
 import { type AnyAccount, accountService, accountSync, accounts } from '@/domains/network';
@@ -111,8 +111,8 @@ const subscribeToChainsFx = createEffect(
     apis: Record<ChainId, ApiPromise>;
     allAccounts: AnyAccount[];
   }) => {
-    for (const [chainId, chain] of Object.entries(chains)) {
-      const api = apis[chainId as ChainId];
+    for (const [chainId, chain] of entries(chains)) {
+      const api = apis[chainId];
       if (api) {
         walletProxiesSubscription.subscribe({
           api,
@@ -179,9 +179,8 @@ const $walletProxyGroups = combine(
     if (!wallet) return [];
 
     const groups = [];
-    for (const [chainIdStr, chainProxies] of Object.entries(chainsProxies)) {
+    for (const [chainId, chainProxies] of entries(chainsProxies)) {
       if (chainProxies.proxies.length > 0) {
-        const chainId = chainIdStr;
         const totalDeposit = chainProxies.deposit;
 
         groups.push({

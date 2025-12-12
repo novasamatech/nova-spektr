@@ -49,7 +49,8 @@ export const createAccountNameCacheKey = ({ accountId, chain, title }: AccountNa
 export const createWalletNameCacheKey = ({ wallet }: WalletNameParams): string => {
   const accountsKey = wallet.accounts
     .map(account => {
-      const chainKey = 'chainId' in account && account.chainId ? account.chainId : 'anyChain';
+      const isChainAccount = accountService.isChainAccount(account);
+      const chainKey = isChainAccount ? account.chainId : 'anyChain';
       return `${account.accountId}:${chainKey}`;
     })
     .join(',');

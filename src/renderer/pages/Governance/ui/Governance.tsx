@@ -1,5 +1,5 @@
 import { useGate, useUnit } from 'effector-react';
-import { Suspense, lazy, useEffect, useLayoutEffect } from 'react';
+import { Suspense, lazy, useEffect, useLayoutEffect, useMemo } from 'react';
 import { Outlet, generatePath, useParams } from 'react-router-dom';
 
 import { type Chain, type ChainId } from '@/shared/core';
@@ -41,7 +41,6 @@ const UnlockModalShards = lazy(() =>
 
 export const Governance = () => {
   useGate(governancePageAggregate.gates.flow);
-  const networks = useUnit(networkModel.$chains);
 
   const { t } = useI18n();
 
@@ -49,7 +48,14 @@ export const Governance = () => {
 
   const selectedChain = useUnit(networkSelectorModel.$governanceChain);
   const selectedAccounts = useUnit(walletSelect.$selectedAccounts);
-  const isAccountWithShards = selectedAccounts.find((account) => accountUtils.isAccountWithShards(account));
+  const hasDelegations = useUnit(delegationAggregate.$hasDelegations);
+  const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
+  const networks = useUnit(networkModel.$chains);
+
+  const isAccountWithShards = useMemo(
+    () => selectedAccounts.find((account) => accountUtils.isAccountWithShards(account)),
+    [selectedAccounts],
+  );
 
   useEffect(() => {
     if (!selectedChain || referendumId) return;
@@ -77,9 +83,6 @@ export const Governance = () => {
       navigationModel.events.navigateTo(path);
     }
   }, [chainId]);
-
-  const hasDelegations = useUnit(delegationAggregate.$hasDelegations);
-  const isApiConnected = useUnit(networkSelectorModel.$isApiConnected);
 
   const unlockFlowStarted = isAccountWithShards ? unlockAggregateShards.flowStarted : unlockAggregate.flowStarted;
 
