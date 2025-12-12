@@ -1605,6 +1605,15 @@
     "title": "Log",
     "unknownMessage": " made an unknown action"
   },
+  "multiTransfer": {
+    "errors": {
+      "form": {
+        "chainRequired": "Chain is required",
+        "csvRequired": "CSV file is required",
+        "signatoryRequired": "Signatory is required"
+      }
+    }
+  },
   "multisigOperations": {
     "noSignatory": "Add signatory wallet before making multisig operation",
     "title": "Multisig Operations"
