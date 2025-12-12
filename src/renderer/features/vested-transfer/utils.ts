@@ -52,6 +52,7 @@ const MAX_U128 = new BN(2).pow(new BN(128));
 const CSV_HEADERS = ['target', 'locked', 'starting_block', 'per_block'];
 const VESTING_SCHEDULE_FIELDS = ['target', 'locked', 'startingBlock', 'perBlock'];
 const MAX_CSV_ROWS = 1000;
+const MAX_ROW_SIZE = 200;
 
 const safeBN = () =>
   z.string().transform((value, ctx) => {
@@ -118,6 +119,7 @@ async function parseCSV(file: File): Promise<ParseResult> {
       trim: true,
       comment: '#',
       skip_empty_lines: true,
+      max_record_size: MAX_ROW_SIZE,
     });
 
     const parsedHeaders = headerCheck[0];
@@ -141,6 +143,7 @@ async function parseCSV(file: File): Promise<ParseResult> {
       trim: true,
       from: 2,
       to: MAX_CSV_ROWS + 1,
+      max_record_size: MAX_ROW_SIZE,
     });
     return { success: true, data };
   } catch (error) {
