@@ -10,6 +10,7 @@ const story = 'Transfers';
 
 test.describe('XCM transfers', { tag: ['@xcm-transfers', '@regress'] }, () => {
   for (const { chainName, assetId, xcmChainName, amount, recipient } of xcmTransferTestCases) {
+    // TODO: remove fail flag after the bug is fixed (#5327)
     test.fail(
       `Polkadot Vault, single wallet, can make regular xcm transfer from ${chainName} to ${xcmChainName}`,
       async ({ loginPage }) => {
