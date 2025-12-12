@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { MockProvider } from '@polkadot/rpc-provider/mock';
 import { TypeRegistry } from '@polkadot/types';
 
-import { type Chain, type ChainId } from '@/shared/core';
+import { type Chain, type ChainId, type HexString } from '@/shared/core';
 import { TEST_ADDRESS, toAccountId } from '@/shared/lib/utils';
 import { polkadotChain } from '@/shared/mocks';
 import { decodeCallData } from '../callDataDecoder';
@@ -287,4 +287,25 @@ describe('entities/transaction/lib/callDataDecoder', () => {
       type: 'payee',
     });
   });
+
+  test('should decode deeply nested batch calls', async () => {
+    const DEPTH = 200;
+    const BATCH_HEX = '180004';
+    const REMARK_HEX = '00000c313233';
+    const callData = ('0x' + BATCH_HEX.repeat(DEPTH) + REMARK_HEX) as HexString;
+    const transaction = decodeCallData(api, TEST_ACCOUNT_ID, callData, chains);
+
+    function isValidTransaction(tx: any): boolean {
+      const hasChildren = tx.args?.transactions?.length > 0;
+
+      if (hasChildren && tx.method !== 'batch') return false;
+      if (tx.method === 'batch' && !hasChildren) return false;
+      if (tx.method === 'remark' && hasChildren) return false;
+
+      return hasChildren ? tx.args.transactions.every(isValidTransaction) : true;
+    }
+
+    expect(transaction).toBeDefined();
+    expect(isValidTransaction(transaction)).toBe(true);
+  }, 30000);
 });
