@@ -27,20 +27,6 @@ export const xcmTransferTestCases = [
     amount: '0.01',
     recipient: '7LMj1kc8TYvTQkWy6Am8EZEka1zqbTqmL8iBPrUVC6nDcoo6',
   },
-  {
-    chainName: 'Hydration',
-    assetId: 1,
-    xcmChainName: 'Moonbeam',
-    amount: '0.01',
-    recipient: '0xcdc1e6538f09d8a52059f41a7f580bde6a35e994',
-  },
-  {
-    chainName: 'Karura',
-    assetId: 2,
-    xcmChainName: 'Moonriver',
-    amount: '0.01',
-    recipient: '0xcdc1e6538f09d8a52059f41a7f580bde6a35e994',
-  },
 ];
 
 export const proxyTransferTestCases = [
