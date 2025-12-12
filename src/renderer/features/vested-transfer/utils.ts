@@ -110,9 +110,9 @@ function isFieldWarning(value: unknown): value is VestingFieldWarning {
 
 type ParseResult = { success: true; data: VestingScheduleRaw[] } | { success: false };
 async function parseCSV(file: File): Promise<ParseResult> {
-  const fileContent = await file.text();
-
   try {
+    const fileContent = await file.text();
+
     const headerCheck = parse(fileContent, {
       to: 1,
       trim: true,
