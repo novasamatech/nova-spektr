@@ -10,6 +10,7 @@ import {
   type ChainId,
   type Contact,
   type Wallet,
+  WalletType,
 } from '@/shared/core';
 import { createAnyOf, createPipeline, createTransformer } from '@/shared/di';
 import { isEthereumAccountId, keys, nullable, toAddress, toShortAddress } from '@/shared/lib/utils';
@@ -21,7 +22,6 @@ import {
 } from '@/shared/ui-entities';
 import { balanceUtils } from '@/entities/balance';
 import { networkUtils } from '@/entities/network';
-import { walletUtils } from '@/entities/wallet';
 import { identityService } from '../identity/service';
 import { type IdentityMap } from '../identity/types';
 import { type AnyTransaction } from '../transaction/types';
@@ -196,8 +196,8 @@ function getAccountAddressPrefix(
 }
 
 function getWalletAccountId(wallet: Wallet, accounts: AnyAccount[]): AccountId | null {
-  if (walletUtils.isPolkadotVault(wallet) || walletUtils.isSingleShard(wallet)) {
-    return wallet.rootAccountId;
+  if (wallet.type === WalletType.POLKADOT_VAULT || wallet.type === WalletType.SINGLE_PARITY_SIGNER) {
+    return 'rootAccountId' in wallet ? (wallet.rootAccountId as AccountId) : null;
   }
 
   const walletAccounts = filterAccountsByWallet(accounts, wallet.id);
