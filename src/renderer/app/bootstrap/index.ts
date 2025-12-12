@@ -139,6 +139,7 @@ export const bootstrap = () => {
 
     import('@/features/import-db').then(({ importDBFeature }) => importDBFeature),
     import('@/features/hidden-wallets').then(({ hiddenWalletsFeature }) => hiddenWalletsFeature),
+    import('@/features/notifications/NotificationsSettings').then(({ notificationsSettingsFeature }) => notificationsSettingsFeature),
 
     import('@/features/fellowship-promotion').then(({ fellowshipPromotionFeature }) => fellowshipPromotionFeature),
     import('@/features/fellowship-retention').then(({ fellowshipRetentionFeature }) => fellowshipRetentionFeature),
