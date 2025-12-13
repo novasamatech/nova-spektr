@@ -1,5 +1,6 @@
 import { allSettled, fork } from 'effector';
 
+import { localStorageService } from '@/shared/api/local-storage';
 import { storageService } from '@/shared/api/storage';
 import {
   type CreateNotificationParams,
@@ -114,6 +115,7 @@ const createScopeWithFilters = async (
     params: {
       selectedWalletIds,
       notificationEvents: enabledEvents,
+      soundEnabled: false,
     },
   });
 
@@ -147,7 +149,7 @@ describe('entities/notification/model/notification-model', () => {
       // Wallets are stored internally - we verify by checking that filtering works
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
-        params: { selectedWalletIds: [1], notificationEvents: ALL_EVENTS },
+        params: { selectedWalletIds: [1], notificationEvents: ALL_EVENTS, soundEnabled: false },
       });
 
       // The wallet IDs should now be available for filtering
@@ -162,7 +164,7 @@ describe('entities/notification/model/notification-model', () => {
       await allSettled(notificationModel.events.walletsUpdated, { scope, params: [mockWallet] });
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
-        params: { selectedWalletIds: [1], notificationEvents: ALL_EVENTS },
+        params: { selectedWalletIds: [1], notificationEvents: ALL_EVENTS, soundEnabled: false },
       });
 
       // Now add wallet 2 (new wallet)
@@ -182,13 +184,13 @@ describe('entities/notification/model/notification-model', () => {
       await allSettled(notificationModel.events.walletsUpdated, { scope, params: [mockWallet, mockWallet2] });
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
-        params: { selectedWalletIds: [1, 2], notificationEvents: ALL_EVENTS },
+        params: { selectedWalletIds: [1, 2], notificationEvents: ALL_EVENTS, soundEnabled: false },
       });
 
       // User deliberately disables wallet 2 by saving settings with only wallet 1
       await allSettled(notificationModel.events.settingsSaved, {
         scope,
-        params: { selectedWalletIds: [1], notificationEvents: ALL_EVENTS },
+        params: { selectedWalletIds: [1], notificationEvents: ALL_EVENTS, soundEnabled: false },
       });
 
       // Same wallets update again (no new wallets)
@@ -577,6 +579,68 @@ describe('entities/notification/model/notification-model', () => {
 
       const result = scope.getState(notificationModel.$notifications);
       expect(result[0].title).toBe('Updated title');
+    });
+  });
+
+  describe('sound settings', () => {
+    const SOUND_ENABLED_KEY = 'notification_sound_enabled';
+
+    test('should have sound disabled by default', () => {
+      const scope = fork();
+      expect(scope.getState(notificationModel.$soundEnabled)).toBe(false);
+    });
+
+    test('should update $soundEnabled when settingsSaved is called', async () => {
+      vi.spyOn(localStorageService, 'saveToStorage').mockImplementation((_, value) => value);
+
+      const scope = fork();
+
+      await allSettled(notificationModel.events.settingsSaved, {
+        scope,
+        params: {
+          selectedWalletIds: [],
+          notificationEvents: ALL_EVENTS,
+          soundEnabled: true,
+        },
+      });
+
+      expect(scope.getState(notificationModel.$soundEnabled)).toBe(true);
+    });
+
+    test('should persist sound setting to localStorage when settingsSaved is called', async () => {
+      const saveSpy = vi.spyOn(localStorageService, 'saveToStorage').mockImplementation((_, value) => value);
+
+      const scope = fork();
+
+      await allSettled(notificationModel.events.settingsSaved, {
+        scope,
+        params: {
+          selectedWalletIds: [],
+          notificationEvents: ALL_EVENTS,
+          soundEnabled: true,
+        },
+      });
+
+      expect(saveSpy).toHaveBeenCalledWith(SOUND_ENABLED_KEY, true);
+    });
+
+    test('should allow toggling sound setting off', async () => {
+      vi.spyOn(localStorageService, 'saveToStorage').mockImplementation((_, value) => value);
+
+      const scope = fork({
+        values: new Map().set(notificationModel.$soundEnabled, true),
+      });
+
+      await allSettled(notificationModel.events.settingsSaved, {
+        scope,
+        params: {
+          selectedWalletIds: [],
+          notificationEvents: ALL_EVENTS,
+          soundEnabled: false,
+        },
+      });
+
+      expect(scope.getState(notificationModel.$soundEnabled)).toBe(false);
     });
   });
 });

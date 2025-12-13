@@ -574,7 +574,7 @@ const createNotificationsFromWallets = (
 
           if (accountUtils.isFlexibleMultisigAccount(account)) {
             return {
-              key: `${NotificationType.FLEXIBLE_MULTISIG_CREATED}:${account.accountId}`,
+              key: `${NotificationType.FLEXIBLE_MULTISIG_CREATED}:${account.chainId}:${account.accountId}:${wallet.id}`,
               ...baseNotification,
               walletId: wallet.id,
               type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
@@ -591,7 +591,7 @@ const createNotificationsFromWallets = (
 
           if (accountUtils.isMultisigAccount(account)) {
             return {
-              key: `${NotificationType.MULTISIG_CREATED}:${account.accountId}`,
+              key: `${NotificationType.MULTISIG_CREATED}:${account.remarkChainId}:${account.accountId}:${wallet.id}`,
               ...baseNotification,
               type: NotificationType.MULTISIG_CREATED,
               chainId: account.remarkChainId!,
@@ -608,7 +608,7 @@ const createNotificationsFromWallets = (
         if (accountUtils.isProxiedAccount(account)) {
           return account.connections.map((connection) => {
             return {
-              key: `${NotificationType.PROXY_CREATED}:${account.chainId}:${connection.proxyAccountId}:${account.accountId}`,
+              key: `${NotificationType.PROXY_CREATED}:${account.chainId}:${connection.proxyAccountId}:${account.accountId}:${wallet.id}`,
               chainId: account.chainId,
               proxyType: connection.proxyType,
               proxyAccountId: connection.proxyAccountId,

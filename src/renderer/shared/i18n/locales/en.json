@@ -2271,6 +2271,7 @@
     },
     "notificationsSettings": {
       "eventOperationCreated": "Operation created",
+      "general": "General",
       "eventOperationExecuted": "Operation executed",
       "eventOperationRejected": "Operation rejected",
       "eventWalletCreated": "Wallet created",
@@ -2279,6 +2280,8 @@
       "preferences": "Preferences",
       "preferencesDescription": "Select wallets and events to be notified about their activity by displaying popup",
       "saveButton": "Save",
+      "soundEnabled": "Sound notification",
+      "soundRestricted": "Sound is restricted by your browser. Please allow audio in site settings.",
       "walletsMultiPlaceholder": "Wallets",
       "walletsPlaceholder": "Select wallets"
     },
