@@ -1,16 +1,19 @@
 import { type BN } from '@polkadot/util';
 
+import { type Serializable } from '@/shared/core';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-export type MultiTransferRowRaw = {
-  recipient: string;
-  amount: string;
+type Row<T> = {
+  raw: string;
+  parsed: T | null;
 };
 
 export type MultiTransferRow = {
-  recipient: AccountId;
-  amount: BN;
+  recipient: Row<AccountId>;
+  amount: Row<BN>;
 };
+
+export type MultiTransferRowSerialized = Serializable<MultiTransferRow>;
 
 export enum MultiTransferCsvError {
   STRUCTURE = 'STRUCTURE',
@@ -25,7 +28,7 @@ export enum MultiTransferFieldError {
 }
 
 export type RowIndex = number;
-export type RowValues = 'recipient' | 'amount';
+export type RowValues = keyof MultiTransferRow;
 export type ValidationIssue = {
   row: RowIndex;
   path: RowValues;
