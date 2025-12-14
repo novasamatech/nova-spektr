@@ -44,12 +44,26 @@ const destinationChangedDebounced = debounce({
 
 const $networkStore = restore(xcmStarted, null);
 const $xcmChainId = restore(xcmChainSelected, null).reset(xcmStarted, xcmStopped);
-const $originFee = createStore<BN | null>(null).reset(xcmStarted, xcmStopped);
-const $destinationFee = createStore<BN | null>(null).reset(xcmStarted, xcmStopped);
+const $realOriginFee = createStore<BN | null>(null).reset(xcmStarted, xcmStopped);
+const $realDestinationFee = createStore<BN | null>(null).reset(xcmStarted, xcmStopped);
+const $fakeOriginFee = createStore<BN | null>(null).reset(xcmStarted, xcmStopped);
+const $fakeDestinationFee = createStore<BN | null>(null).reset(xcmStarted, xcmStopped);
 const $destination = restore(destinationChanged, null).reset(xcmStarted, xcmStopped);
+
 const $rawAmount = restore(rawAmountChanged, null).reset(xcmStarted, xcmStopped);
 const $initiatorAccountId = restore(initiatorAccountIdChanged, null).reset(xcmStarted, xcmStopped);
 const $buildTransferDryRunResult = restore(buildTransferDryRunResult, null).reset(xcmStarted, xcmStopped);
+
+const $originFee = combine({ realFee: $realOriginFee, fakeFee: $fakeOriginFee }, ({ realFee, fakeFee }) => {
+  return realFee ?? fakeFee;
+});
+
+const $destinationFee = combine(
+  { realFee: $realDestinationFee, fakeFee: $fakeDestinationFee },
+  ({ realFee, fakeFee }) => {
+    return realFee ?? fakeFee;
+  },
+);
 
 const $xcmChain = combine(
   {
@@ -420,7 +434,7 @@ const $feeCalculationParams = combine(
 );
 
 sample({
-  clock: xcmChainSelected,
+  clock: [xcmChainSelected, destinationChanged, $fakeFeeCalculationParams],
   source: $fakeFeeCalculationParams,
   filter: (params): params is FakeFeeCalculationParams => params !== null,
   target: getXcmFeesWithFakeDataFx,
@@ -437,72 +451,66 @@ const isAbortError = (err: unknown) => err && typeof err === 'object' && 'name' 
 
 sample({
   clock: getXcmFeesWithFakeDataFx.doneData,
-  source: { destination: $destination, rawAmount: $rawAmount },
-  filter: ({ destination, rawAmount }) => !destination || !rawAmount,
-  fn: (_source, fees) => fees?.destinationFee ?? null,
-  target: $destinationFee,
+  fn: (fees) => fees?.destinationFee ?? null,
+  target: $fakeDestinationFee,
 });
 
 sample({
   clock: getXcmFeesWithFakeDataFx.doneData,
-  source: { destination: $destination, rawAmount: $rawAmount },
-  filter: ({ destination, rawAmount }) => !destination || !rawAmount,
-  fn: (_source, fees) => fees?.originFee ?? null,
-  target: $originFee,
+  fn: (fees) => fees?.originFee ?? null,
+  target: $fakeOriginFee,
 });
 
 sample({
   clock: getXcmFeesFx.doneData,
   fn: (fees) => fees?.destinationFee ?? null,
-  target: $destinationFee,
+  target: $realDestinationFee,
 });
 
 sample({
   clock: getXcmFeesFx.doneData,
   fn: (fees) => fees?.originFee ?? null,
-  target: $originFee,
+  target: $realOriginFee,
 });
 
 sample({
   clock: getXcmFeesWithFakeDataFx.failData,
-  source: { destination: $destination, rawAmount: $rawAmount },
-  filter: ({ destination, rawAmount }, error) => !isAbortError(error) && (!destination || !rawAmount),
+  filter: (error) => !isAbortError(error),
   fn: () => null,
-  target: $destinationFee,
+  target: $fakeDestinationFee,
 });
 
 sample({
   clock: getXcmFeesWithFakeDataFx.failData,
-  source: { destination: $destination, rawAmount: $rawAmount },
-  filter: ({ destination, rawAmount }, error) => !isAbortError(error) && (!destination || !rawAmount),
+  filter: (error) => !isAbortError(error),
   fn: () => null,
-  target: $originFee,
+  target: $fakeOriginFee,
 });
 
 sample({
   clock: getXcmFeesFx.failData,
   filter: (error) => !isAbortError(error),
   fn: () => null,
-  target: $destinationFee,
+  target: $realDestinationFee,
 });
 
 sample({
   clock: getXcmFeesFx.failData,
   filter: (error) => !isAbortError(error),
   fn: () => null,
-  target: $originFee,
+  target: $realOriginFee,
 });
 
 sample({
   clock: xcmChainSelected,
   fn: () => null,
-  target: $destinationFee,
+  target: [$fakeDestinationFee, $realDestinationFee],
 });
 
 sample({
   clock: xcmChainSelected,
   fn: () => null,
-  target: $originFee,
+  target: [$fakeOriginFee, $realOriginFee],
 });
 
 const $isDestinationFeeLoading = combine(
@@ -511,20 +519,17 @@ const $isDestinationFeeLoading = combine(
     isFakePending: getXcmFeesWithFakeDataFx.pending,
     feeParams: $feeCalculationParams,
     fakeFeeParams: $fakeFeeCalculationParams,
-    destination: $destination,
-    rawAmount: $rawAmount,
   },
-  ({ isPending, isFakePending, feeParams, fakeFeeParams, destination, rawAmount }) => {
+  ({ isPending, isFakePending, feeParams, fakeFeeParams }) => {
     const hasRealData = feeParams !== null;
-    const hasFakeData = fakeFeeParams !== null && !hasRealData;
-    const hasBothRealFields = destination !== null && rawAmount !== null;
+    const hasFakeData = fakeFeeParams !== null;
 
-    if (hasRealData) {
-      return isPending;
+    if (isFakePending && hasFakeData) {
+      return true;
     }
 
-    if (hasFakeData && !hasBothRealFields) {
-      return isFakePending;
+    if (isPending && hasRealData) {
+      return true;
     }
 
     return false;
