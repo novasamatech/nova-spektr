@@ -2271,10 +2271,10 @@
     },
     "notificationsSettings": {
       "eventOperationCreated": "Operation created",
-      "general": "General",
       "eventOperationExecuted": "Operation executed",
       "eventOperationRejected": "Operation rejected",
       "eventWalletCreated": "Wallet created",
+      "general": "General",
       "modalTitle": "Notifications settings",
       "plateTitle": "Notifications",
       "preferences": "Preferences",
