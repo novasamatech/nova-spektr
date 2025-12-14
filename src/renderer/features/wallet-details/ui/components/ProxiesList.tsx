@@ -1,13 +1,13 @@
 import { useUnit } from 'effector-react';
+import { memo, useCallback } from 'react';
 
-import { type ChainId, type ProxiedAccount, type Wallet } from '@/shared/core';
+import { type ProxiedAccount, type Wallet } from '@/shared/core';
 import { useI18n } from '@/shared/i18n';
-import { cnTw } from '@/shared/lib/utils';
+import { assert, cnTw } from '@/shared/lib/utils';
 import { FootnoteText } from '@/shared/ui';
 import { Skeleton } from '@/shared/ui-kit';
 import { accountService, accounts } from '@/domains/network';
 import { networkModel } from '@/entities/network';
-import { accountUtils } from '@/entities/wallet';
 import { proxyRemoveFeature } from '@/features/proxy-remove';
 import { type Proxy, walletProxiesModel } from '../../model/wallet-proxies-model';
 
@@ -26,7 +26,7 @@ type Props = {
   className?: string;
 };
 
-export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = true }: Props) => {
+export const ProxiesList = memo(({ className, wallet, hasProxies, canCreateProxy = true }: Props) => {
   const { t } = useI18n();
 
   const chains = useUnit(networkModel.$chains);
@@ -35,24 +35,26 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
   const allAccounts = useUnit(accounts.$list);
   const isLoading = useUnit(walletProxiesModel.$isLoading);
 
-  const handleDeleteProxy = (proxyAccount: Proxy) => {
-    const chain = chains[proxyAccount.chainId];
-    if (!chain) return;
+  const handleDeleteProxy = useCallback(
+    (proxyAccount: Proxy) => {
+      const chain = chains[proxyAccount.chainId];
+      if (!chain) return;
 
-    const proxiedAccount = allAccounts.find(
-      account =>
-        account.accountId === proxyAccount.proxiedAccountId &&
-        accountUtils.isProxiedAccount(account) &&
-        accountService.isAccountAvailableOnChain(account, chain),
-    );
+      const proxiedAccount = allAccounts.find(
+        account =>
+          account.accountId === proxyAccount.proxiedAccountId &&
+          accountService.isAccountAvailableOnChain(account, chain),
+      );
 
-    if (proxiedAccount) {
+      assert(proxiedAccount, 'Proxied account not found');
+
       removeProxyModel.flowStarted({
         proxied: proxiedAccount as ProxiedAccount,
         proxy: proxyAccount,
       });
-    }
-  };
+    },
+    [chains, allAccounts],
+  );
 
   const renderProxyGroups = () => {
     if (isLoading) {
@@ -61,13 +63,11 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
 
     return walletProxyGroups
       .filter(({ chainId }) => {
-        const typedChainId = chainId as ChainId;
-        return chainsProxies[typedChainId]?.proxies.length > 0;
+        return chainsProxies[chainId]?.proxies.length > 0;
       })
       .map(({ chainId, totalDeposit }) => {
-        const typedChainId = chainId as ChainId;
-        const chain = chains[typedChainId];
-        const chainProxies = chainsProxies[typedChainId];
+        const chain = chains[chainId];
+        const chainProxies = chainsProxies[chainId];
         const proxies = chainProxies?.proxies || [];
 
         return (
@@ -112,10 +112,10 @@ export const ProxiesList = ({ className, wallet, hasProxies, canCreateProxy = tr
       <RemoveProxy wallet={wallet} />
     </div>
   );
-};
+});
 
-const LoadingSkeleton = () => (
+const LoadingSkeleton = memo(() => (
   <div className="flex items-center py-2">
     <Skeleton width="100%" height={14} />
   </div>
-);
+));
