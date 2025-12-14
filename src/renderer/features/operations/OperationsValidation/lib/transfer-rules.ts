@@ -253,23 +253,13 @@ export const transferValidator = createTxValidator<{
 
       const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
       assert(balance, `Balance for account ${initiator.accountId} not found`);
-
-      // For XCM transfers, combine amount + destination fee with keepAlive
-      // For same-chain transfers, use only amount with user's balancePreservation choice
       const isXcm = destinationChain.chainId !== sourceChain.chainId;
-      const totalAmount = isXcm && destinationFee && !destinationFee.isZero() ? amount.add(destinationFee) : amount;
+      const totalAmount = isXcm && destinationFee?.gtn(0) ? amount.add(destinationFee) : amount;
       const preservation = isXcm ? 'keepAlive' : balancePreservation;
-      const withdrawalResult = balanceService.tryWithdraw(balance, totalAmount, preservation);
 
       return {
         account: initiator,
-        balance:
-          isXcm && destinationFee && !destinationFee.isZero()
-            ? {
-                ...withdrawalResult,
-                required: amount,
-              }
-            : withdrawalResult,
+        balance: balanceService.tryWithdraw(balance, totalAmount, preservation),
         asset: sourceAsset,
         action: 'sending amount',
       };
