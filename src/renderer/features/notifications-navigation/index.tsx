@@ -5,7 +5,7 @@ import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
 import { notificationModel } from '@/entities/notification';
-import { faviconModel, NavItem, navigationBottomLinksSlot } from '@/features/app-shell';
+import { NavItem, faviconModel, navigationBottomLinksSlot } from '@/features/app-shell';
 
 export const notificationsNavigationFeature = createFeature({
   name: 'notifications/navigation',
