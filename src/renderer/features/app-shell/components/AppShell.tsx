@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import { createSlot, useSlot } from '@/shared/di';
 
 import { Navigation } from './Navigation';
+import { NotificationsPortal } from './NotificationsPortal';
 
 export const navigationHeaderSlot = createSlot();
 export const modalsSlot = createSlot();
@@ -22,6 +23,7 @@ export const AppShell = memo(() => {
         <Outlet />
       </main>
       {modals}
+      <NotificationsPortal />
     </div>
   );
 });

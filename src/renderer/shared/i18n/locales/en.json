@@ -1650,7 +1650,18 @@
       "viewOperation": "View Operation"
     },
     "noNotificationsDescription": "You don't have notifications yet",
-    "title": "Notifications"
+    "title": "Notifications",
+    "toast": {
+      "batch": {
+        "delegatedAuthorityWalletsAdded": "{count} delegated authority wallets added",
+        "flexibleMultisigWalletsAdded": "{count} flexible multisig wallets added",
+        "flexibleMultisigWalletsEdited": "{count} flexible multisig wallets edited",
+        "multisigOperationsUpdated": "{count} multisig operations updated",
+        "multisigWalletsAdded": "{count} multisig wallets added",
+        "walletsAddedDescription": "Open the wallet selector to see the full list"
+      },
+      "viewOperations": "View Operations"
+    }
   },
   "onboarding": {
     "accountAddressLabel": "Account address",
