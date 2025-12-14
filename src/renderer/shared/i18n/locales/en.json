@@ -1214,7 +1214,7 @@
         "section": "the {action} of {balance}"
       },
       "fatal": {
-        "intro": "Internal error:"
+        "intro": "Dry run error:"
       },
       "permission": {
         "intro": "Some wallet in the execution route has access restrictions set by the proxy connection.",

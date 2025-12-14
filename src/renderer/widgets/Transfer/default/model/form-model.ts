@@ -526,6 +526,7 @@ const {
     ),
     balancePreservation: $balancePreservationStrategy,
     excludeActions: combine($isXcm, (isXcm) => (isXcm ? ['fee'] : [])),
+    dryRunResult: xcmSpellTransferModel.$buildTransferDryRunResult,
   },
 });
 
@@ -679,10 +680,6 @@ const $isMyselfXcmEnabled = combine(
   ({ isXcm, destinationAccounts }) => isXcm && destinationAccounts.length > 0,
 );
 
-const $hasDryRunError = xcmSpellTransferModel.$buildTransferDryRunResult.map(
-  (result) => result !== null && result.success === false,
-);
-
 const $isCoreTxReady = $coreTx.map(nonNullable);
 const $isTxReady = $tx.map(nonNullable);
 
@@ -692,7 +689,6 @@ const $canSubmit = and(
   $valid,
   not($hasDestinationBalanceError),
   or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
-  not($hasDryRunError),
   or(not($isXcm), $areTransactionsReady),
 );
 
@@ -964,7 +960,6 @@ const formSubmitFinished = sample({
     destinationFee: xcmSpellTransferModel.$destinationFee,
     multisigDeposit: $multisigDeposit,
     balancePreservation: $balancePreservationStrategy,
-    hasDryRunError: $hasDryRunError,
   },
   fn: (
     {
@@ -980,7 +975,6 @@ const formSubmitFinished = sample({
       originFee,
       destinationFee,
       balancePreservation,
-      hasDryRunError,
     },
     form,
   ) => {
@@ -991,8 +985,7 @@ const formSubmitFinished = sample({
       nullable(fee) ||
       nullable(initiator) ||
       nullable(form.signatory) ||
-      !validateAddress(form.destination) ||
-      hasDryRunError
+      !validateAddress(form.destination)
     ) {
       return null;
     }

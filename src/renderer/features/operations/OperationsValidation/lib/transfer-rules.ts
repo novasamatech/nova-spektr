@@ -2,6 +2,7 @@ import { BN } from '@polkadot/util';
 import { type Store } from 'effector';
 import { t } from 'i18next';
 
+import { getHumanReadableXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
 import { type Asset, type Chain } from '@/shared/core';
 import { assert, formatAmount, validateAddress } from '@/shared/lib/utils';
 import { createTxValidator } from '@/shared/transactions';
@@ -203,6 +204,12 @@ export const TransferRules = {
   },
 };
 
+export type DryRunResult = {
+  success: boolean | null;
+  failureReason?: string;
+  failureChain?: string;
+};
+
 export const transferValidator = createTxValidator<{
   amount: BN;
   sourceChain: Chain;
@@ -211,6 +218,7 @@ export const transferValidator = createTxValidator<{
   originFee: BN;
   destinationFee: BN;
   balancePreservation: BalancePreservation;
+  dryRunResult: DryRunResult;
 }>({
   // ATTENTION - this order is important, this is how it's calculated on chain
   additionalBalanceRules: [
@@ -262,6 +270,21 @@ export const transferValidator = createTxValidator<{
         balance: balanceService.tryWithdraw(balance, totalAmount, preservation),
         asset: sourceAsset,
         action: 'sending amount',
+      };
+    },
+  ],
+  dryRunRules: [
+    ({ dryRunResult }) => {
+      if (dryRunResult.success !== false) {
+        return undefined;
+      }
+
+      const errorMessage = dryRunResult.failureReason
+        ? getHumanReadableXcmError(dryRunResult.failureReason, dryRunResult.failureChain)
+        : t('transfer.dryRunError.title');
+
+      return {
+        message: errorMessage,
       };
     },
   ],

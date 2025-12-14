@@ -69,9 +69,8 @@ export const TransactionValidationError = memo(({ wallets, errors }: Props) => {
     for (const error of fatalErrors) {
       errorNodes.push(
         <span data-testid={TEST_IDS.VALIDATIONS.FATAL}>
-          <span className="font-bold">{t('general.transactionErrors.fatal.intro')}</span>
-          <br />
-          <span className="break-all">{error.message}</span>
+          {t('general.transactionErrors.fatal.intro')}
+          <span className="break-all"> {error.message}</span>
         </span>,
       );
     }
