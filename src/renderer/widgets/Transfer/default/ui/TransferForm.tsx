@@ -538,8 +538,8 @@ const FeeSection = memo(() => {
               const showDestinationFee =
                 destinationFeeAvailable || (!destinationFeeAvailable && !originFeeAvailable && isDestinationFeeLoading);
 
-              const originFeeLoading = isDestinationFeeLoading && !originFeeAvailable && !destinationFeeAvailable;
-              const destinationFeeLoading = isDestinationFeeLoading && !destinationFeeAvailable && !originFeeAvailable;
+              const originFeeLoading = isDestinationFeeLoading;
+              const destinationFeeLoading = isDestinationFeeLoading;
 
               return (
                 <>
