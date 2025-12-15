@@ -59,7 +59,7 @@ export const toAccountId = (value: string): AccountId => {
     return u8aToHex(decodeAddress(value)) as AccountId;
   } catch {
     // TODO WTF
-    throw new Error(`Failed to convert address to account id: ${value}`);
+    return '0x00' as AccountId;
   }
 };
 
