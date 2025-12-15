@@ -8,7 +8,7 @@ import { cnTw, toAddress } from '@/shared/lib/utils';
 import { LabelText, SmallTitleText } from '@/shared/ui/Typography';
 import { Address } from '@/shared/ui-entities/Address/Address';
 import { AsyncItem, useIntersectionObserver } from '@/shared/ui-kit';
-import { type AccountNode, identity, identityService } from '@/domains/network';
+import { type AccountNode, useAccountName } from '@/domains/network';
 import { walletModel, walletUtils } from '@/entities/wallet';
 import { accountNodeConfigTransformer } from '@/sdk/account';
 import { accountsStructureModel } from '../model/accountsStructureModel';
@@ -24,7 +24,6 @@ type AccountStructureNodeProps = {
 export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProps) => {
   const { t } = useI18n();
   const highlightedNodesIds = useUnit(accountsStructureModel.$highlightedNodesIds);
-  const identities = useUnit(identity.$list);
   const chain = useUnit(accountsStructureModel.$selectedChain);
   const heldAccountNode = useUnit(accountsStructureModel.$heldAccountNode);
   const wallets = useUnit(walletModel.$wallets);
@@ -34,14 +33,10 @@ export const AccountStructureNode = memo(({ data, id }: AccountStructureNodeProp
   const connections = useNodeConnections();
   const hasIncoming = useMemo(() => connections.some((conn) => conn.target === id), [connections, id]);
   const hasOutgoing = useMemo(() => connections.some((conn) => conn.source === id), [connections, id]);
-  const title = useMemo(() => {
-    if (data.node.account.name) {
-      return data.node.account.name;
-    }
-
-    const accountIdentity = chain ? identities[chain.chainId]?.[data.node.account.accountId] : undefined;
-    return accountIdentity ? identityService.getFullName(accountIdentity) : '';
-  }, [identities, chain, data.node.account]);
+  const title = useAccountName({
+    accountId: data.node.account.accountId,
+    chain,
+  });
 
   const wallet = walletUtils.getWalletById(wallets, data.node.account.walletId);
   const config = useTransformer(accountNodeConfigTransformer, { account: data.node.account, wallet: wallet, t });
