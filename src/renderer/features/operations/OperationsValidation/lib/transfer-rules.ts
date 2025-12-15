@@ -253,11 +253,11 @@ export const transferValidator = createTxValidator<{
       const balance = getBalance(initiator.accountId, sourceChain.chainId, sourceAsset.assetId);
       assert(balance, `Balance for account ${initiator.accountId} not found`);
       const isXcm = destinationChain.chainId !== sourceChain.chainId;
-      const strategy = isXcm ? 'keepAlive' : balancePreservation;
+      const preservation = isXcm ? 'keepAlive' : balancePreservation;
 
       return {
         account: initiator,
-        balance: balanceService.tryWithdraw(balance, amount, strategy),
+        balance: balanceService.tryWithdraw(balance, amount, preservation),
         asset: sourceAsset,
         action: 'sending amount',
       };
