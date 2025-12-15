@@ -19,6 +19,7 @@ import { callDataExecuteFeature } from '@/features/call-data-execute';
 import { contactsNavigationFeature } from '@/features/contacts-navigation';
 import { fellowshipNavigationFeature } from '@/features/fellowship-navigation';
 import { governanceNavigationFeature } from '@/features/governance-navigation';
+import { multiTransferFeature } from '@/features/multi-transfer';
 import { notificationsNavigationFeature } from '@/features/notifications-navigation';
 import { operationsNavigationFeature } from '@/features/operations-navigation';
 import { settingsNavigationFeature } from '@/features/settings-navigation';
@@ -76,6 +77,7 @@ export const bootstrap = () => {
     stakingNavigationFeature,
     governanceNavigationFeature,
     vestedTransferFeature,
+    multiTransferFeature,
     appCustomOperationsFeature,
 
     import('@/features/wallet-select').then(({ walletSelectFeature }) => walletSelectFeature.feature),
