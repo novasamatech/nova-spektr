@@ -627,7 +627,8 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
 
   const canSubmit = useUnit(formModel.$canSubmit);
   const isPreparingTransaction = useUnit(formModel.$isPreparingTransaction);
-  const isLoading = isPreparingTransaction;
+  const errors = useUnit(formModel.$errors);
+  const isLoading = isPreparingTransaction && errors.length === 0;
 
   return (
     <div className="mt-4 flex flex-col gap-2">
