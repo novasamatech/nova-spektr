@@ -282,13 +282,19 @@ const $parsedCsv = createStore<VestingScheduleRaw[] | null>(null).reset(csvReset
 const $csvError = createStore<VestingCsvError | null>(null).reset(csvReset);
 const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(csvReset);
 
+const MAX_FILE_SIZE = 1024 * 1024; // 1MB in bytes
 const parseFileFx = createEffect<File, VestingScheduleRaw[]>(async (file) => {
-  const parsed = await vestedTransferUtils.parseCSV(file);
-  if (parsed.success) {
-    return parsed.data;
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error('File too large');
   }
 
-  throw new Error();
+  const parsed = await vestedTransferUtils.parseCSV(file);
+
+  if (!parsed.success) {
+    throw new Error('Invalid CSV file');
+  }
+
+  return parsed.data;
 });
 
 type ValidateFileParams = {
