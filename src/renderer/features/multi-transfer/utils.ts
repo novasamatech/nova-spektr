@@ -6,7 +6,7 @@ import { downloadFiles, toAccountId, validateAddress } from '@/shared/lib/utils'
 import {
   MultiTransferCsvError,
   MultiTransferFieldError,
-  type MultiTransferRowRaw,
+  type MultiTransferRowSerialized,
   type ValidationIssue,
 } from '@/entities/multi-transfer';
 
@@ -24,7 +24,9 @@ export const multiTransferUtils = {
   downloadCsvWithIssues,
 };
 
-type ParseResult = { success: true; data: MultiTransferRowRaw[] } | { success: false; error: MultiTransferCsvError };
+type ParseResult =
+  | { success: true; data: MultiTransferRowSerialized[] }
+  | { success: false; error: MultiTransferCsvError };
 
 async function parseCSV(file: File): Promise<ParseResult> {
   const fileContent = await file.text();
@@ -49,7 +51,7 @@ async function parseCSV(file: File): Promise<ParseResult> {
       return { success: false, error: MultiTransferCsvError.STRUCTURE };
     }
 
-    const data = parse<MultiTransferRowRaw>(fileContent, {
+    const data = parse<MultiTransferRowSerialized>(fileContent, {
       columns: CSV_FIELDS,
       relax_column_count_more: true,
       skip_empty_lines: true,
@@ -97,7 +99,7 @@ function isFieldError(value: unknown): value is MultiTransferFieldError {
   return typeof value === 'string' && Object.values(MultiTransferFieldError).includes(value as MultiTransferFieldError);
 }
 
-function validateCSV(records: MultiTransferRowRaw[], options: ValidationSchemaOptions) {
+function validateCSV(records: MultiTransferRowSerialized[], options: ValidationSchemaOptions) {
   const issues: ValidationIssue[] = [];
 
   for (let i = 0; i < records.length; i++) {
@@ -138,7 +140,7 @@ function validateCSV(records: MultiTransferRowRaw[], options: ValidationSchemaOp
   };
 }
 
-function downloadCsvWithIssues(rows: MultiTransferRowRaw[], issues: ValidationIssue[]) {
+function downloadCsvWithIssues(rows: MultiTransferRowSerialized[], issues: ValidationIssue[]) {
   const columns = [...CSV_HEADERS, 'errors'];
   const header = columns.join(',');
 

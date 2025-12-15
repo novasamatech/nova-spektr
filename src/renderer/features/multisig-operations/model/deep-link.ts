@@ -11,9 +11,8 @@ import {
 } from '@/shared/core';
 import { nonNullable, nullable } from '@/shared/lib/utils';
 import { pjsSchema } from '@/shared/polkadotjs-schemas';
-import { Paths } from '@/shared/routes';
 import { deepLinkService } from '@/domains/app';
-import { accounts, multisigOperation } from '@/domains/network';
+import { accounts, multisigOperation, multisigOperationService } from '@/domains/network';
 import { networkModel } from '@/entities/network';
 import { accountUtils } from '@/entities/wallet';
 import { walletSelect } from '@/aggregates/wallet-select';
@@ -351,15 +350,13 @@ function generateMultisigOperationDeepLink(
   operation: MultisigOperationDeepLinkData,
   account: MultisigAccount | FlexibleMultisigAccount,
 ): string {
-  const params = new URLSearchParams({
+  return multisigOperationService.generateMultisigOperationDeepLink({
     chainId: operation.chainId,
     callHash: operation.callHash,
     accountId: account.accountId,
-    blockCreated: operation.blockCreated.toString(),
-    indexCreated: operation.indexCreated.toString(),
+    blockCreated: operation.blockCreated,
+    indexCreated: operation.indexCreated,
   });
-
-  return `${window.location.origin}/#${Paths.OPERATIONS}?${params.toString()}`;
 }
 
 export function getOperationIdFromDeepLink(data: MultisigOperationDeepLinkData): string {

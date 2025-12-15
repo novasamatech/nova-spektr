@@ -20,6 +20,15 @@ export const enum NotificationType {
 
 export type NotificationStatus = 'info' | 'success' | 'error';
 
+export type BatchParams = {
+  title: string;
+  description?: string;
+  link?: {
+    title: string;
+    path: string;
+  };
+};
+
 type BaseNotification = {
   id: ID;
   key: string;
@@ -74,7 +83,9 @@ export type Notification =
   | MultisigOperationNotification
   | ProxyAction;
 
-type NotificationInput<T extends Notification> = Omit<T, 'id' | 'read' | 'dateCreated'>;
+type NotificationInput<T extends Notification> = Omit<T, 'id' | 'read' | 'dateCreated'> & {
+  batch: BatchParams;
+};
 
 export type CreateMultisigCreatedParams = NotificationInput<MultisigCreated>;
 export type CreateFlexibleMultisigOperationParams = NotificationInput<FlexibleMultisigOperationNotification>;

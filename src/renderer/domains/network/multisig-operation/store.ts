@@ -11,6 +11,7 @@ import {
 import { createQueuedEffect, pairwise } from '@/shared/effector';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 import { deriveFromResources } from '@/shared/resource';
+import { Paths } from '@/shared/routes';
 import { networkModel } from '@/entities/network';
 import { notificationModel } from '@/entities/notification';
 import { decodeCallData } from '@/entities/transaction';
@@ -131,14 +132,27 @@ const getNotificationTitle = (operationStatus: 'pending' | 'executed' | 'cancell
   }
 };
 
-const createOperationNotification = (operation: MultisigOperation): CreateMultisigOperationParams => {
+const createOperationNotification = (
+  operation: MultisigOperation,
+  walletName?: string,
+): CreateMultisigOperationParams => {
+  const description = walletName ? `by ${walletName}` : undefined;
+
+  const relativeLink = multisigOperationService.generateMultisigOperationRelativeLink({
+    chainId: operation.chainId,
+    callHash: operation.callHash,
+    accountId: operation.accountId,
+    blockCreated: operation.blockCreated,
+    indexCreated: operation.indexCreated,
+  });
+
   return {
     key: `${NotificationType.MULTISIG_OPERATION}:${operation.id}:${operation.status}`,
     type: NotificationType.MULTISIG_OPERATION,
     status: getNotificationStatus(operation.status),
     issuer: operation.accountId,
     title: getNotificationTitle(operation.status),
-    description: operation.transaction ? `${operation.transaction.section}.${operation.transaction.method}` : undefined,
+    description,
     multisigAccountId: operation.accountId,
     callHash: operation.callHash,
     callTimepoint: {
@@ -147,6 +161,17 @@ const createOperationNotification = (operation: MultisigOperation): CreateMultis
     },
     chainId: operation.chainId,
     operationId: operation.id,
+    link: {
+      title: 'notifications.details.viewOperation',
+      path: relativeLink,
+    },
+    batch: {
+      title: 'notifications.toast.batch.multisigOperationsUpdated',
+      link: {
+        title: 'notifications.toast.viewOperations',
+        path: Paths.OPERATIONS,
+      },
+    },
   };
 };
 
@@ -182,7 +207,11 @@ sample({
 
         return !account?.createdAt || operation.timestamp >= account.createdAt;
       })
-      .map(createOperationNotification);
+      .map(operation => {
+        const account = accountsMap.get(operation.accountId);
+
+        return createOperationNotification(operation, account?.name);
+      });
   },
   target: notificationModel.events.notificationsAdded,
 });

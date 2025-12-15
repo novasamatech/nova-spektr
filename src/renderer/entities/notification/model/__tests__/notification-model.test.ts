@@ -38,6 +38,9 @@ const newNotificationParams: CreateNotificationParams[] = [
     signatories: [mockAccountId],
     threshold: 2,
     multisigAccountName: 'New Multisig',
+    batch: {
+      title: 'Multisig wallets added',
+    },
   },
 ];
 

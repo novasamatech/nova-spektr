@@ -15,6 +15,7 @@ type Props = {
   prefixElement?: ReactNode;
   suffixElement?: ReactNode;
   onClick?: VoidFunction;
+  inline?: boolean;
 };
 
 export const ButtonLink = ({
@@ -28,9 +29,11 @@ export const ButtonLink = ({
   prefixElement,
   suffixElement,
   onClick,
+  inline = false,
 }: PropsWithChildren<Props>) => {
   const classes = cnTw(
-    'flex cursor-pointer items-center justify-center gap-x-2 font-medium outline-offset-1 select-none',
+    'cursor-pointer items-center justify-center gap-x-2 font-medium outline-offset-1 select-none',
+    inline ? 'inline-flex hover:underline' : 'flex',
     {
       'cursor-not-allowed': disabled,
     },
