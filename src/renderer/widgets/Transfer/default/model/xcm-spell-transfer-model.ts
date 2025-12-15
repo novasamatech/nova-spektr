@@ -234,7 +234,7 @@ sample({
         failureChain,
       };
     }
-    return { success: null };
+    return { success: true };
   },
   target: buildTransferDryRunResult,
 });
@@ -568,6 +568,8 @@ const buildTransferFx = takeLast({
               failureChain,
             });
           }
+        } else if (dryRunResult && dryRunResult.destination?.success === true) {
+          buildTransferDryRunResult({ success: true });
         }
       },
     });

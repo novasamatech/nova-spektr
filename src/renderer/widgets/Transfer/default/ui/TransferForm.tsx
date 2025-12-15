@@ -630,7 +630,7 @@ const AlertForDryRunError = memo(() => {
   const xcmChain = useUnit(xcmSpellTransferModel.$xcmChain);
   const errors = useUnit(formModel.$errors);
 
-  if (!buildTransferDryRunResult || buildTransferDryRunResult.success) {
+  if (!buildTransferDryRunResult || buildTransferDryRunResult.success !== false) {
     return null;
   }
 
@@ -706,7 +706,7 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
 
   const canSubmit = useUnit(formModel.$canSubmit);
   const buildTransferDryRunResult = useUnit(xcmSpellTransferModel.$buildTransferDryRunResult);
-  const hasDryRunError = Boolean(buildTransferDryRunResult && !buildTransferDryRunResult.success);
+  const hasDryRunError = buildTransferDryRunResult?.success === false;
   const isDisabled = !canSubmit || hasDryRunError;
 
   return (
