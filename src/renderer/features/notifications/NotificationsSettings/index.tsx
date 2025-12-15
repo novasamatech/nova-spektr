@@ -4,7 +4,7 @@ import { notificationsSettingsFeature } from './model/feature';
 import { notificationsSettingsModel } from './model/notifications-settings-model';
 import { NotificationsSettingsModal } from './ui/NotificationsSettingsModal';
 
-export { notificationsSettingsModel, notificationsSettingsFeature };
+export { notificationsSettingsModel, notificationsSettingsFeature, NotificationsSettingsModal };
 
 notificationsSettingsFeature.inject(generalActionsSlot, {
   order: 1,
