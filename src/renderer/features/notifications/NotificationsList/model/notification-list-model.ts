@@ -4,6 +4,7 @@ import { format } from 'date-fns/format';
 import { enGB } from 'date-fns/locale/en-GB';
 import { combine, createEvent, restore } from 'effector';
 import { groupBy, orderBy } from 'lodash';
+import { debounce } from 'patronum';
 
 import { type Notification } from '@/shared/core';
 import { performSearch, toAddress } from '@/shared/lib/utils';
@@ -13,6 +14,7 @@ import { walletModel } from '@/entities/wallet';
 
 const queryChanged = createEvent<string>();
 const $query = restore(queryChanged, '');
+const $debouncedQuery = restore(debounce(queryChanged, 300), '');
 
 type NotificationMeta = {
   chainName: string;
@@ -23,7 +25,7 @@ type NotificationMeta = {
 const $filteredNotifications = combine(
   {
     notifications: notificationModel.$notifications,
-    query: $query,
+    query: $debouncedQuery,
     chains: networkModel.$chains,
     wallets: walletModel.$wallets,
   },
@@ -69,9 +71,19 @@ const $notificationGroups = combine($filteredNotifications, (notifications) => {
   return Object.entries(group);
 });
 
+const $isSearchEmpty = combine(
+  {
+    query: $debouncedQuery,
+    filtered: $filteredNotifications,
+    all: notificationModel.$notifications,
+  },
+  ({ query, filtered, all }) => query.length > 0 && filtered.length === 0 && all.length > 0,
+);
+
 export const notificationListModel = {
   $notificationGroups,
   $query,
+  $isSearchEmpty,
   events: {
     queryChanged,
   },
