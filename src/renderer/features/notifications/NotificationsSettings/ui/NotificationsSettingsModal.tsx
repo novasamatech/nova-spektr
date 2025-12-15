@@ -9,6 +9,7 @@ import {
   FootnoteText,
   HelpText,
   Icon,
+  IconButton,
   MultiSelect,
   Plate,
   SmallTitleText,
@@ -32,17 +33,20 @@ export const NotificationsSettingsModal = () => {
   const wallets = useUnit(walletModel.$allWallets);
   const savedSelectedWalletIds = useUnit(notificationsSettingsModel.$selectedWalletIds);
   const savedNotificationEvents = useUnit(notificationsSettingsModel.$notificationEvents);
+  const savedSoundEnabled = useUnit(notificationsSettingsModel.$soundEnabled);
 
   const [selectedWalletIds, setSelectedWalletIds] = useState(() => savedSelectedWalletIds);
   const [enabledEvents, setEnabledEvents] = useState(() => savedNotificationEvents);
+  const [soundEnabled, setSoundEnabled] = useState(() => savedSoundEnabled);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setSelectedWalletIds(savedSelectedWalletIds);
       setEnabledEvents(savedNotificationEvents);
+      setSoundEnabled(savedSoundEnabled);
     }
-  }, [isOpen, savedSelectedWalletIds, savedNotificationEvents]);
+  }, [isOpen, savedSelectedWalletIds, savedNotificationEvents, savedSoundEnabled]);
 
   const walletOptions = useMemo(
     () =>
@@ -76,8 +80,15 @@ export const NotificationsSettingsModal = () => {
     notificationsSettingsModel.events.settingsSaved({
       selectedWalletIds: [...selectedWalletIds],
       notificationEvents: [...enabledEvents],
+      soundEnabled,
     });
     setIsOpen(false);
+  };
+
+  const handlePlaySound = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    notificationsSettingsModel.events.soundPlayed();
   };
 
   return (
@@ -95,6 +106,28 @@ export const NotificationsSettingsModal = () => {
 
       <Modal.Content>
         <hr className="border-divider" />
+        <div className="flex flex-col gap-y-4 px-5 py-4">
+          <div className="flex flex-col gap-y-2">
+            <SmallTitleText className="text-text-primary">{t('settings.notificationsSettings.general')}</SmallTitleText>
+            <Switch
+              checked={soundEnabled}
+              labelPosition="left"
+              variant="accent"
+              className="gap-x-2"
+              onChange={() => setSoundEnabled(!soundEnabled)}
+            >
+              <div className="flex items-center gap-x-1">
+                <FootnoteText className="text-text-primary">
+                  {t('settings.notificationsSettings.soundEnabled')}
+                </FootnoteText>
+                <IconButton name="volume" size={16} className="p-0 pl-1" onClick={handlePlaySound} />
+              </div>
+            </Switch>
+          </div>
+        </div>
+
+        <hr className="border-divider" />
+
         <div className="flex flex-col gap-y-4 px-5 py-4">
           <div className="flex flex-col gap-y-4">
             <div className="flex flex-col gap-y-2">

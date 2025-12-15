@@ -65,6 +65,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
         params: {
           selectedWalletIds: [1, 2],
           notificationEvents: [NotificationEvent.WALLET_CREATED, NotificationEvent.OPERATION_CREATED],
+          soundEnabled: false,
         },
       });
 
@@ -102,6 +103,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
             NotificationEvent.OPERATION_EXECUTED,
             NotificationEvent.OPERATION_REJECTED,
           ],
+          soundEnabled: false,
         },
       });
 
@@ -130,6 +132,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
         params: {
           selectedWalletIds: [1],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
+          soundEnabled: false,
         },
       });
 
@@ -154,6 +157,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
         params: {
           selectedWalletIds: [2],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
+          soundEnabled: false,
         },
       });
 
@@ -188,6 +192,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
         params: {
           selectedWalletIds: [1, 2],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
+          soundEnabled: false,
         },
       });
 
@@ -199,6 +204,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
         params: {
           selectedWalletIds: [1],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
+          soundEnabled: false,
         },
       });
 
@@ -228,6 +234,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
         params: {
           selectedWalletIds: [1],
           notificationEvents: [], // Empty - all events disabled
+          soundEnabled: false,
         },
       });
 
@@ -252,6 +259,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
         params: {
           selectedWalletIds: [], // Empty - no wallets selected
           notificationEvents: [NotificationEvent.WALLET_CREATED],
+          soundEnabled: false,
         },
       });
 
@@ -282,6 +290,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
         params: {
           selectedWalletIds: [1],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
+          soundEnabled: false,
         },
       });
 
@@ -308,6 +317,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
         params: {
           selectedWalletIds: [2],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
+          soundEnabled: false,
         },
       });
 
@@ -316,6 +326,30 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       expect(walletIds.has(1)).toBe(false);
       expect(walletIds.has(2)).toBe(true);
       expect(walletIds.has(3)).toBe(false);
+    });
+  });
+
+  describe('sound settings', () => {
+    test('should have sound disabled by default', () => {
+      const scope = fork();
+      expect(scope.getState(notificationsSettingsModel.$soundEnabled)).toBe(false);
+    });
+
+    test('should update $soundEnabled when settingsSaved is called', async () => {
+      vi.spyOn(localStorageService, 'saveToStorage').mockImplementation((_, value) => value);
+
+      const scope = fork();
+
+      await allSettled(notificationsSettingsModel.events.settingsSaved, {
+        scope,
+        params: {
+          selectedWalletIds: [],
+          notificationEvents: [],
+          soundEnabled: true,
+        },
+      });
+
+      expect(scope.getState(notificationsSettingsModel.$soundEnabled)).toBe(true);
     });
   });
 });
