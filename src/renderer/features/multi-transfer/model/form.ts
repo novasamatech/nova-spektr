@@ -3,13 +3,13 @@ import { attach, combine, createEffect, createEvent, createStore, restore, sampl
 import { chainsService } from '@/shared/api/network';
 import { type Chain, ChainOptions } from '@/shared/core';
 import { type Form, createForm } from '@/shared/forms';
-import { nonNullable, nullable } from '@/shared/lib/utils';
+import { assert, nullable } from '@/shared/lib/utils';
 import { createInitiatorsStore, createSignatoriesStore } from '@/shared/transactions';
 import { type AnyAccount, accountService } from '@/domains/network';
 import {
   MultiTransferCsvError,
   type MultiTransferRow,
-  type MultiTransferRowRaw,
+  type MultiTransferRowSerialized,
   type ValidationIssue,
 } from '@/entities/multi-transfer';
 import { networkModel } from '@/entities/network';
@@ -59,12 +59,12 @@ const fileUploaded = createEvent<File>();
 const csvReset = [fileUploaded, form.fields.chain.change];
 
 const $fileName = createStore<string | null>(null).reset(csvReset);
-const $parsedCsvRaw = createStore<MultiTransferRowRaw[] | null>(null).reset(csvReset);
+const $parsedCsvRaw = createStore<MultiTransferRowSerialized[] | null>(null).reset(csvReset);
 const $parsedCsv = createStore<MultiTransferRow[] | null>(null).reset(csvReset);
 const $csvError = createStore<MultiTransferCsvError | null>(null).reset(csvReset);
 const $csvIssues = createStore<ValidationIssue[] | null>(null).reset(csvReset);
 
-const parseFileFx = createEffect<File, MultiTransferRowRaw[], MultiTransferCsvError>(async (file) => {
+const parseFileFx = createEffect<File, MultiTransferRowSerialized[], MultiTransferCsvError>(async (file) => {
   const parsed = await multiTransferUtils.parseCSV(file);
   if (parsed.success) return parsed.data;
 
@@ -72,7 +72,7 @@ const parseFileFx = createEffect<File, MultiTransferRowRaw[], MultiTransferCsvEr
 });
 
 type ValidateFileParams = {
-  parsedFile: MultiTransferRowRaw[];
+  parsedFile: MultiTransferRowSerialized[];
   validationSchemaOptions: ValidationSchemaOptions;
 };
 
@@ -86,7 +86,19 @@ const rootValidateFileFx = createEffect<ValidateFileParams, ValidateFileResults,
 
   if (validated.success) {
     const schema = multiTransferUtils.createValidationSchema(params.validationSchemaOptions);
-    const data = params.parsedFile.map((record) => schema.parse(record));
+    const data = params.parsedFile.map((record) => {
+      const parsed = schema.parse(record);
+      return {
+        recipient: {
+          raw: record.recipient.raw,
+          parsed: parsed.recipient,
+        },
+        amount: {
+          raw: record.amount.raw,
+          parsed: parsed.amount,
+        },
+      };
+    });
 
     return { data, issues: validated.issues };
   }
@@ -95,11 +107,10 @@ const rootValidateFileFx = createEffect<ValidateFileParams, ValidateFileResults,
 });
 
 const validateFileFx = attach({
-  source: form.fields.chain.$value,
-  mapParams: (parsedFile: MultiTransferRowRaw[], chain) => {
-    if (nullable(chain)) {
-      throw new Error('Chain is required to validate file');
-    }
+  source: { chain: form.fields.chain.$value },
+  mapParams: (parsedFile: MultiTransferRowSerialized[], { chain }) => {
+    assert(parsedFile);
+    assert(chain);
 
     return {
       parsedFile,
@@ -166,9 +177,6 @@ sample({
 
 sample({
   clock: parseFileFx.doneData,
-  source: form.fields.chain.$value,
-  filter: nonNullable,
-  fn: (chain, parsedFile) => parsedFile,
   target: validateFileFx,
 });
 
