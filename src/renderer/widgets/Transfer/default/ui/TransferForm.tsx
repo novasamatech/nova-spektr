@@ -40,7 +40,6 @@ import { FeeWithLabel, MultisigDepositWithLabel } from '@/entities/transaction';
 import { AccountSelectModal, accountUtils, walletModel } from '@/entities/wallet';
 import { AmountInput } from '@/features/assets-balances';
 import { walletSelectFeature } from '@/features/wallet-select';
-import { categorizeXcmError, getHumanReadableFailureReason } from '../lib/transfer-utils';
 import { formModel } from '../model/form-model';
 import { xcmSpellTransferModel } from '../model/xcm-spell-transfer-model';
 
@@ -77,7 +76,6 @@ export const TransferForm = memo(({ onGoBack }: Props) => {
     <div className="flex flex-col gap-4 px-5 py-4">
       <TransactionValidationError errors={errors} wallets={wallets} />
       <DestinationBalanceAlert />
-      <AlertForDryRunError />
       <form id="transfer-form" className="flex flex-col gap-y-4" onSubmit={submitForm}>
         <XcmChainSelector />
         <InitiatorSelector />
@@ -624,99 +622,23 @@ const AlertForAccountDeath = memo(() => {
   );
 });
 
-const AlertForDryRunError = memo(() => {
-  const { t } = useI18n();
-  const buildTransferDryRunResult = useUnit(xcmSpellTransferModel.$buildTransferDryRunResult);
-  const xcmChain = useUnit(xcmSpellTransferModel.$xcmChain);
-  const errors = useUnit(formModel.$errors);
-
-  if (!buildTransferDryRunResult || buildTransferDryRunResult.success !== false) {
-    return null;
-  }
-
-  if (errors.length > 0) {
-    return null;
-  }
-
-  const error = buildTransferDryRunResult.failureReason || '';
-  const errorInfo = categorizeXcmError(error);
-  const isTooExpensive = errorInfo.isTooExpensive;
-  const isFeesNotMet = errorInfo.isFeesNotMet;
-  const isInsufficientBalance = errorInfo.isInsufficientBalance;
-  const failureChain = buildTransferDryRunResult.failureChain;
-
-  if (isInsufficientBalance) {
-    return null;
-  }
-
-  const chainName = xcmChain?.name || failureChain;
-
-  const cleanReason = getHumanReadableFailureReason(error, failureChain);
-
-  const getTitle = () => {
-    if (isTooExpensive) {
-      return t('transfer.dryRunTooExpensive.title');
-    }
-    if (isFeesNotMet) {
-      return t('transfer.dryRunFeesNotMet.title');
-    }
-    return t('transfer.dryRunError.title');
-  };
-
-  return (
-    <Alert title={getTitle()} variant="error" active>
-      <FootnoteText className="max-w-full break-all text-text-primary">
-        {isTooExpensive ? (
-          <Trans
-            t={t}
-            i18nKey="transfer.dryRunTooExpensive.description"
-            values={{
-              chain: chainName,
-            }}
-            components={{
-              br: <br />,
-            }}
-          />
-        ) : isFeesNotMet ? (
-          <Trans
-            t={t}
-            i18nKey="transfer.dryRunFeesNotMet.description"
-            values={{
-              reason: cleanReason,
-              chain: chainName,
-            }}
-          />
-        ) : (
-          <Trans
-            t={t}
-            i18nKey={cleanReason ? 'transfer.dryRunError.descriptionWithReason' : 'transfer.dryRunError.description'}
-            values={{
-              reason: cleanReason,
-              chain: chainName,
-            }}
-          />
-        )}
-      </FootnoteText>
-    </Alert>
-  );
-});
-
 const ActionsSection = memo(({ onGoBack }: Props) => {
   const { t } = useI18n();
 
   const canSubmit = useUnit(formModel.$canSubmit);
-  const buildTransferDryRunResult = useUnit(xcmSpellTransferModel.$buildTransferDryRunResult);
-  const hasDryRunError = buildTransferDryRunResult?.success === false;
-  const isDisabled = !canSubmit || hasDryRunError;
+  const isPreparingTransaction = useUnit(formModel.$isPreparingTransaction);
+  const isLoading = isPreparingTransaction;
 
   return (
-    <div className="mt-4 flex items-center justify-between">
-      <Button variant="text" onClick={onGoBack}>
-        {t('operation.goBackButton')}
-      </Button>
-      <Button form="transfer-form" type="submit" disabled={isDisabled}>
-        {t('transfer.continueButton')}
-      </Button>
+    <div className="mt-4 flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <Button variant="text" onClick={onGoBack}>
+          {t('operation.goBackButton')}
+        </Button>
+        <Button form="transfer-form" type="submit" disabled={!canSubmit} isLoading={isLoading}>
+          {t('transfer.continueButton')}
+        </Button>
+      </div>
     </div>
   );
 });

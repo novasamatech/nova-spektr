@@ -28,7 +28,9 @@ export { WalletIcon } from './WalletIcon/WalletIcon';
 export { VotingButtonWithTooltip } from './VotingButtonWithTooltip/VotingButtonWithTooltip';
 export {
   TransactionValidationError,
-  type TransactionValidationFatalError,
   type TransactionValidationBalanceError,
+  type TransactionValidationDryRunError,
+  type TransactionValidationFatalError,
+  type TransactionValidationNetworkError,
   type TransactionValidationPermissionError,
 } from './TransactionValidationError/TransactionValidationError';

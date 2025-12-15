@@ -1,9 +1,11 @@
 /* eslint-disable import-x/max-dependencies */
 import { BN, BN_ZERO } from '@polkadot/util';
 import { combine, createEvent, createStore, restore, sample } from 'effector';
+import { t } from 'i18next';
 import { and, debounce, not, or, spread } from 'patronum';
 
 import { spellXcmService } from '@/shared/api/xcm';
+import { categorizeXcmError } from '@/shared/api/xcm/service/xcm-error-utils';
 import { type Address, type Asset, type Chain, type Transaction } from '@/shared/core';
 import { createSubscription } from '@/shared/effector';
 import { type Form, createForm } from '@/shared/forms';
@@ -31,6 +33,7 @@ import {
   createSignatoriesStore,
   createTxValidationStore,
 } from '@/shared/transactions';
+import { type TransactionValidationDryRunError, type TransactionValidationNetworkError } from '@/shared/ui-entities';
 import { type AnyAccount, type BalancePreservation, accountService, accounts, balanceService } from '@/domains/network';
 import { balanceModel, balanceUtils } from '@/entities/balance';
 import { networkModel, networkUtils } from '@/entities/network';
@@ -535,14 +538,14 @@ const errorsDebounced = debounce({
   timeout: 300,
 });
 
-const $errors = createStore($errorsImmediate.defaultState).reset(formInitiated);
+const $validationErrors = createStore($errorsImmediate.defaultState).reset(formInitiated);
 
 sample({
   clock: errorsDebounced,
   source: $validationPending,
   filter: (pending) => !pending,
   fn: (_, errors) => errors,
-  target: $errors,
+  target: $validationErrors,
 });
 
 // available balance
@@ -685,11 +688,23 @@ const $isTxReady = $tx.map(nonNullable);
 
 const $areTransactionsReady = and($isCoreTxReady, $isTxReady);
 
+const $hasDryRunError = combine(
+  {
+    isXcm: $isXcm,
+    buildTransferDryRunResult: xcmSpellTransferModel.$buildTransferDryRunResult,
+  },
+  ({ isXcm, buildTransferDryRunResult }) => {
+    if (!isXcm) return false;
+    return buildTransferDryRunResult?.success === false;
+  },
+);
+
 const $canSubmit = and(
   $valid,
   not($hasDestinationBalanceError),
   or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
   or(not($isXcm), $areTransactionsReady),
+  or(not($isXcm), not($hasDryRunError)),
 );
 
 // Fields connections
@@ -1013,6 +1028,93 @@ sample({
   target: formSubmitted,
 });
 
+const $hasAmountAndAddress = combine(
+  {
+    amount: form.fields.amount.$value,
+    destination: form.fields.destination.$value,
+  },
+  ({ amount, destination }) => {
+    return Boolean(amount && destination && validateAddress(destination));
+  },
+);
+
+const $errors = combine(
+  {
+    validationErrors: $validationErrors,
+    hasAmountAndAddress: $hasAmountAndAddress,
+    isChainConnected: $isChainConnected,
+    isFormValid: form.$isValid,
+    network: $networkStore,
+    buildTransferDryRunResult: xcmSpellTransferModel.$buildTransferDryRunResult,
+    xcmChain: xcmSpellTransferModel.$xcmChain,
+  },
+  ({
+    validationErrors,
+    hasAmountAndAddress,
+    isChainConnected,
+    isFormValid,
+    network,
+    buildTransferDryRunResult,
+    xcmChain,
+  }) => {
+    const result: (
+      | (typeof validationErrors)[number]
+      | TransactionValidationNetworkError
+      | TransactionValidationDryRunError
+    )[] = [...validationErrors];
+
+    if (validationErrors.length > 0) return result;
+    if (!hasAmountAndAddress || !isFormValid) return result;
+
+    if (!isChainConnected && network) {
+      result.push({
+        networkError: true,
+        message: t('transfer.networkConnectionError', { network: network.chain.name }),
+      });
+      return result;
+    }
+
+    if (buildTransferDryRunResult?.success === false && isChainConnected) {
+      const failureReason = buildTransferDryRunResult.failureReason || '';
+      const errorInfo = categorizeXcmError(failureReason);
+
+      if (!errorInfo.isInsufficientBalance) {
+        result.push({
+          dryRunError: true,
+          failureReason,
+          failureChain: buildTransferDryRunResult.failureChain,
+          chainName: xcmChain?.name,
+        });
+      }
+    }
+
+    return result;
+  },
+);
+
+const $isPreparingTransaction = combine(
+  {
+    hasAmountAndAddress: $hasAmountAndAddress,
+    isFormValid: form.$isValid,
+    isXcm: $isXcm,
+    isDestinationFeeLoading: xcmSpellTransferModel.$isDestinationFeeLoading,
+    pendingFee: $networkFeePending,
+    coreTx: $coreTx,
+    tx: $tx,
+    xcmData: xcmSpellTransferModel.$xcmData,
+  },
+  ({ hasAmountAndAddress, isFormValid, isXcm, isDestinationFeeLoading, pendingFee, coreTx, tx, xcmData }) => {
+    if (!hasAmountAndAddress || !isFormValid) return false;
+
+    if (isXcm && !xcmData) return true;
+    if (isXcm && isDestinationFeeLoading) return true;
+    if (!isXcm && pendingFee) return true;
+    if (!coreTx || !tx) return true;
+
+    return false;
+  },
+);
+
 export const formModel = {
   form,
 
@@ -1060,6 +1162,8 @@ export const formModel = {
   $showEDSwitch,
   $showAccountDeathAlert,
   $isNative,
+
+  $isPreparingTransaction,
 
   formInitiated,
   formCleared: form.reset,
