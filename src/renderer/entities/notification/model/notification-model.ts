@@ -267,21 +267,22 @@ sample({
   },
   fn: ({ existingNotifications, enabledAccountIds, enabledEventMatchers }, incomingNotifications) => {
     const existingKeys = new Set(existingNotifications.map((n) => n.key));
-    const duplicates: string[] = [];
 
     const newNotifications: CreateNotificationParams[] = [];
 
     for (const notification of incomingNotifications) {
       if (existingKeys.has(notification.key)) {
-        duplicates.push(`${notification.type} (key: ${notification.key})`);
+        // filter out duplicates
         continue;
       }
 
       if (!enabledAccountIds.has(notification.issuer)) {
+        // filter out disabled accounts
         continue;
       }
 
       if (!enabledEventMatchers.some((matcher) => matcher(notification))) {
+        // filter out disabled events
         continue;
       }
 
