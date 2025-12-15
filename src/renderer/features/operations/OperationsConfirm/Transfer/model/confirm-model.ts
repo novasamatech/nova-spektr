@@ -1,5 +1,5 @@
 import { BN } from '@polkadot/util';
-import { combine, createEvent, createStore, sample } from 'effector';
+import { combine, createEvent, sample } from 'effector';
 
 import { type Address, type Asset, type Chain } from '@/shared/core';
 import { getNativeAsset } from '@/shared/lib/utils';
@@ -101,7 +101,6 @@ const { $errors: $validationErrors, $valid: $canSubmit } = createTxValidationSto
     destinationFee: $destinationFee,
     balancePreservation: $balancePreservation,
     excludeActions: combine($isXcm, (isXcm) => (isXcm ? ['fee'] : [])),
-    dryRunResult: createStore({ success: true }),
   },
 });
 

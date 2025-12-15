@@ -218,7 +218,7 @@ export const transferValidator = createTxValidator<{
   originFee: BN;
   destinationFee: BN;
   balancePreservation: BalancePreservation;
-  dryRunResult: DryRunResult;
+  dryRunResult?: DryRunResult;
 }>({
   // ATTENTION - this order is important, this is how it's calculated on chain
   additionalBalanceRules: [
@@ -284,7 +284,7 @@ export const transferValidator = createTxValidator<{
   ],
   dryRunRules: [
     ({ dryRunResult }) => {
-      if (dryRunResult.success !== false) {
+      if (!dryRunResult || dryRunResult.success !== false) {
         return undefined;
       }
 
