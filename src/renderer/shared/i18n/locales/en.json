@@ -1619,6 +1619,7 @@
     "governance": "Governance",
     "historyLabel": "History",
     "mstOperationLabel": "Operations",
+    "multiTransferLabel": "Multi-transfer",
     "multipleWalletsLabel": "Multiple wallets",
     "notificationsLabel": "Notifications",
     "settingsLabel": "Settings",

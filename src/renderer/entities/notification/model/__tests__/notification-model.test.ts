@@ -262,11 +262,15 @@ describe('entities/notification/model/notification-model', () => {
           },
         ];
 
-        const scope = await createScopeWithFilters([mockWallet], [1], [
-          NotificationEvent.OPERATION_CREATED,
-          NotificationEvent.OPERATION_EXECUTED,
-          NotificationEvent.OPERATION_REJECTED,
-        ]);
+        const scope = await createScopeWithFilters(
+          [mockWallet],
+          [1],
+          [
+            NotificationEvent.OPERATION_CREATED,
+            NotificationEvent.OPERATION_EXECUTED,
+            NotificationEvent.OPERATION_REJECTED,
+          ],
+        );
 
         await allSettled(notificationModel.events.notificationsAdded, { scope, params: walletCreatedNotification });
 
@@ -289,11 +293,15 @@ describe('entities/notification/model/notification-model', () => {
           } as unknown as CreateNotificationParams,
         ];
 
-        const scope = await createScopeWithFilters([mockWallet], [1], [
-          NotificationEvent.WALLET_CREATED,
-          NotificationEvent.OPERATION_EXECUTED,
-          NotificationEvent.OPERATION_REJECTED,
-        ]);
+        const scope = await createScopeWithFilters(
+          [mockWallet],
+          [1],
+          [
+            NotificationEvent.WALLET_CREATED,
+            NotificationEvent.OPERATION_EXECUTED,
+            NotificationEvent.OPERATION_REJECTED,
+          ],
+        );
 
         await allSettled(notificationModel.events.notificationsAdded, { scope, params: operationCreatedNotification });
 
@@ -316,11 +324,11 @@ describe('entities/notification/model/notification-model', () => {
           } as unknown as CreateNotificationParams,
         ];
 
-        const scope = await createScopeWithFilters([mockWallet], [1], [
-          NotificationEvent.WALLET_CREATED,
-          NotificationEvent.OPERATION_CREATED,
-          NotificationEvent.OPERATION_REJECTED,
-        ]);
+        const scope = await createScopeWithFilters(
+          [mockWallet],
+          [1],
+          [NotificationEvent.WALLET_CREATED, NotificationEvent.OPERATION_CREATED, NotificationEvent.OPERATION_REJECTED],
+        );
 
         await allSettled(notificationModel.events.notificationsAdded, { scope, params: operationExecutedNotification });
 
@@ -343,11 +351,11 @@ describe('entities/notification/model/notification-model', () => {
           } as unknown as CreateNotificationParams,
         ];
 
-        const scope = await createScopeWithFilters([mockWallet], [1], [
-          NotificationEvent.WALLET_CREATED,
-          NotificationEvent.OPERATION_CREATED,
-          NotificationEvent.OPERATION_EXECUTED,
-        ]);
+        const scope = await createScopeWithFilters(
+          [mockWallet],
+          [1],
+          [NotificationEvent.WALLET_CREATED, NotificationEvent.OPERATION_CREATED, NotificationEvent.OPERATION_EXECUTED],
+        );
 
         await allSettled(notificationModel.events.notificationsAdded, { scope, params: operationRejectedNotification });
 
@@ -453,11 +461,15 @@ describe('entities/notification/model/notification-model', () => {
         const spyCreate = vi.spyOn(storageService.notifications, 'createAll').mockResolvedValue([]);
 
         // Only wallet 2 selected AND wallet_created disabled
-        const scope = await createScopeWithFilters([mockWallet, mockWallet2], [2], [
-          NotificationEvent.OPERATION_CREATED,
-          NotificationEvent.OPERATION_EXECUTED,
-          NotificationEvent.OPERATION_REJECTED,
-        ]);
+        const scope = await createScopeWithFilters(
+          [mockWallet, mockWallet2],
+          [2],
+          [
+            NotificationEvent.OPERATION_CREATED,
+            NotificationEvent.OPERATION_EXECUTED,
+            NotificationEvent.OPERATION_REJECTED,
+          ],
+        );
 
         await allSettled(notificationModel.events.notificationsAdded, { scope, params: newNotificationParams });
 
@@ -468,11 +480,15 @@ describe('entities/notification/model/notification-model', () => {
         const spyCreate = vi.spyOn(storageService.notifications, 'createAll').mockResolvedValue([]);
 
         // Wallet 1 selected but event disabled
-        const scope = await createScopeWithFilters([mockWallet], [1], [
-          NotificationEvent.OPERATION_CREATED,
-          NotificationEvent.OPERATION_EXECUTED,
-          NotificationEvent.OPERATION_REJECTED,
-        ]);
+        const scope = await createScopeWithFilters(
+          [mockWallet],
+          [1],
+          [
+            NotificationEvent.OPERATION_CREATED,
+            NotificationEvent.OPERATION_EXECUTED,
+            NotificationEvent.OPERATION_REJECTED,
+          ],
+        );
 
         await allSettled(notificationModel.events.notificationsAdded, { scope, params: newNotificationParams });
 
@@ -496,11 +512,15 @@ describe('entities/notification/model/notification-model', () => {
         vi.spyOn(storageService.notifications, 'createAll').mockResolvedValue([]);
 
         // Wallet 1 selected but wallet_created disabled
-        const scope = await createScopeWithFilters([mockWallet], [1], [
-          NotificationEvent.OPERATION_CREATED,
-          NotificationEvent.OPERATION_EXECUTED,
-          NotificationEvent.OPERATION_REJECTED,
-        ]);
+        const scope = await createScopeWithFilters(
+          [mockWallet],
+          [1],
+          [
+            NotificationEvent.OPERATION_CREATED,
+            NotificationEvent.OPERATION_EXECUTED,
+            NotificationEvent.OPERATION_REJECTED,
+          ],
+        );
 
         await allSettled(notificationModel.events.notificationsAdded, { scope, params: newNotificationParams });
 

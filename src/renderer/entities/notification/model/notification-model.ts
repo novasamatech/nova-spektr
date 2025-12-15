@@ -394,7 +394,6 @@ export const notificationModel = {
   $unreadCount,
   $toasts,
 
-  // Settings state (for UI)
   $notificationEvents,
   $selectedWalletIds,
   $soundEnabled,
