@@ -267,13 +267,11 @@ sample({
   },
   fn: ({ existingNotifications, enabledAccountIds, enabledEventMatchers }, incomingNotifications) => {
     const existingKeys = new Set(existingNotifications.map((n) => n.key));
-    const duplicates: string[] = [];
 
     const newNotifications: CreateNotificationParams[] = [];
 
     for (const notification of incomingNotifications) {
       if (existingKeys.has(notification.key)) {
-        duplicates.push(`${notification.type} (key: ${notification.key})`);
         continue;
       }
 

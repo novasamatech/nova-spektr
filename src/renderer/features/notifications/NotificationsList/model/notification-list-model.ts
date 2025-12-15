@@ -43,7 +43,6 @@ const $filteredNotifications = combine(
         const chainName = chain?.name ?? '';
 
         const wallet = wallets.find((w) => w.accounts.some((a) => a.accountId === notification.issuer));
-        console.log({ wallet });
         const walletName = wallet?.name ?? '';
 
         const issuerAddress = toAddress(notification.issuer, { prefix: chain?.addressPrefix });
@@ -57,10 +56,6 @@ const $filteredNotifications = combine(
     });
   },
 );
-
-$filteredNotifications.subscribe((filteredNotifications) => {
-  console.log({ filteredNotifications });
-});
 
 const $notificationGroups = combine($filteredNotifications, (notifications) => {
   if (notifications.length === 0) return [];
