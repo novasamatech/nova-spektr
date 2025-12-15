@@ -1,4 +1,5 @@
 import { combine, createEffect, createEvent, createStore, sample } from 'effector';
+import { throttle } from 'patronum';
 
 import { localStorageService } from '@/shared/api/local-storage';
 import { storageService } from '@/shared/api/storage';
@@ -16,11 +17,12 @@ import { createBuffer } from '@/shared/effector';
 import { merge } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
-// LocalStorage keys for settings persistence
 const NOTIFICATION_EVENTS_KEY = 'notification_events';
 const SELECTED_WALLET_IDS_KEY = 'notification_selected_wallet_ids';
+const SOUND_ENABLED_KEY = 'notification_sound_enabled';
 
-// Default events (all enabled)
+const SOUND_THROTTLE_MS = 1000;
+
 const ALL_EVENTS = [
   NotificationEvent.WALLET_CREATED,
   NotificationEvent.OPERATION_CREATED,
@@ -28,30 +30,23 @@ const ALL_EVENTS = [
   NotificationEvent.OPERATION_REJECTED,
 ];
 
-// Load initial values from localStorage
 const initialNotificationEvents = localStorageService.getFromStorage(NOTIFICATION_EVENTS_KEY, ALL_EVENTS);
 const initialSelectedWalletIds = localStorageService.getFromStorage<ID[] | null>(SELECTED_WALLET_IDS_KEY, null);
-
-// ==================== Notifications State ====================
+const initialSoundEnabled = localStorageService.getFromStorage(SOUND_ENABLED_KEY, false);
 
 const $notifications = createStore<Notification[]>([]);
 const $unreadCount = $notifications.map((notifications) => notifications.reduce((acc, n) => acc + (n.read ? 0 : 1), 0));
 const $hasUnread = $unreadCount.map((count) => count > 0);
 
-// ==================== Settings State ====================
-
 const $notificationEvents = createStore<Set<NotificationEvent>>(new Set(initialNotificationEvents));
 const $selectedWalletIds = createStore<Set<ID>>(
   initialSelectedWalletIds === null ? new Set() : new Set(initialSelectedWalletIds),
 );
+const $soundEnabled = createStore(initialSoundEnabled);
 
-// Track whether user has ever saved settings (to distinguish "never set" from "deliberately empty")
 const $hasUserSavedSettings = createStore(initialSelectedWalletIds !== null);
 
-// Internal wallets store - populated from higher layer (feature/bootstrap)
 const $wallets = createStore<Wallet[]>([]);
-// Track known wallet IDs separately for detecting new wallets
-// This is updated AFTER auto-enable logic processes, so we can detect new wallets
 const $knownWalletIds = createStore<Set<ID>>(new Set());
 const walletsUpdated = createEvent<Wallet[]>();
 
@@ -60,7 +55,6 @@ sample({
   target: $wallets,
 });
 
-// Derived: pre-computed Set of account IDs from selected wallets for O(1) filtering
 const $enabledAccountIds = combine($wallets, $selectedWalletIds, (wallets, selectedWalletIds): Set<AccountId> => {
   const accountIds = new Set<AccountId>();
 
@@ -75,7 +69,6 @@ const $enabledAccountIds = combine($wallets, $selectedWalletIds, (wallets, selec
   return accountIds;
 });
 
-// Event type matchers for settings-based filtering
 const EVENT_MATCHERS: Record<NotificationEvent, (n: CreateNotificationParams) => boolean> = {
   [NotificationEvent.WALLET_CREATED]: (n) =>
     [
@@ -91,7 +84,6 @@ const EVENT_MATCHERS: Record<NotificationEvent, (n: CreateNotificationParams) =>
 
 type EventMatcher = (n: CreateNotificationParams) => boolean;
 
-// Derived: pre-computed array of matcher functions from enabled events
 const $enabledEventMatchers = $notificationEvents.map((enabledEvents): EventMatcher[] => {
   const matchers: EventMatcher[] = [];
 
@@ -105,17 +97,17 @@ const $enabledEventMatchers = $notificationEvents.map((enabledEvents): EventMatc
   return matchers;
 });
 
-// ==================== Events ====================
-
 const notificationsAdded = createEvent<CreateNotificationParams[]>();
 const notificationsFiltered = createEvent<CreateNotificationParams[]>();
 const notificationsViewed = createEvent();
 const notificationEdited = createEvent<Notification>();
 
-// Settings events
-const settingsSaved = createEvent<{ selectedWalletIds: ID[]; notificationEvents: NotificationEvent[] }>();
-
-// ==================== Effects ====================
+const settingsSaved = createEvent<{
+  selectedWalletIds: ID[];
+  notificationEvents: NotificationEvent[];
+  soundEnabled: boolean;
+}>();
+const soundPlayed = createEvent();
 
 const populateNotificationsFx = createEffect((): Promise<Notification[]> => {
   return storageService.notifications.readAll();
@@ -149,9 +141,24 @@ const saveSelectedWalletIdsFx = createEffect((value: ID[]): ID[] => {
   return localStorageService.saveToStorage(SELECTED_WALLET_IDS_KEY, value);
 });
 
-// ==================== Settings Logic ====================
+const saveSoundEnabledFx = createEffect((value: boolean): boolean => {
+  return localStorageService.saveToStorage(SOUND_ENABLED_KEY, value);
+});
 
-// Initialize with all wallets if no saved selection (first time user)
+const playSoundFx = createEffect(async (): Promise<void> => {
+  const audio = new Audio(new URL('../../../shared/assets/sounds/notification.mp3', import.meta.url).href);
+  await audio.play();
+});
+
+const playSoundRequested = createEvent();
+
+const playSoundThrottled = throttle(playSoundRequested, SOUND_THROTTLE_MS);
+
+sample({
+  clock: playSoundThrottled,
+  target: playSoundFx,
+});
+
 sample({
   clock: walletsUpdated,
   source: { selectedIds: $selectedWalletIds, hasUserSaved: $hasUserSavedSettings },
@@ -160,16 +167,12 @@ sample({
   target: $selectedWalletIds,
 });
 
-// Auto-enable new wallets that weren't deliberately disabled
-// New wallet = exists in incoming but wasn't known before (not in $knownWalletIds)
 sample({
   clock: walletsUpdated,
   source: { selectedIds: $selectedWalletIds, knownWalletIds: $knownWalletIds, hasUserSaved: $hasUserSavedSettings },
   filter: ({ hasUserSaved }, incomingWallets) => hasUserSaved && incomingWallets.length > 0,
   fn: ({ selectedIds, knownWalletIds }, incomingWallets) => {
-    const newWalletIds = incomingWallets
-      .filter((w) => !knownWalletIds.has(w.id))
-      .map((w) => w.id);
+    const newWalletIds = incomingWallets.filter((w) => !knownWalletIds.has(w.id)).map((w) => w.id);
 
     if (newWalletIds.length === 0) return selectedIds;
 
@@ -183,14 +186,12 @@ sample({
   target: $selectedWalletIds,
 });
 
-// Update known wallet IDs after processing (must be after auto-enable logic)
 sample({
   clock: walletsUpdated,
   fn: (wallets) => new Set(wallets.map((w) => w.id)),
   target: $knownWalletIds,
 });
 
-// Update stores when settings are saved
 sample({
   clock: settingsSaved,
   fn: ({ notificationEvents }) => new Set(notificationEvents),
@@ -203,14 +204,12 @@ sample({
   target: $selectedWalletIds,
 });
 
-// Mark that user has saved settings (for auto-enable new wallets logic)
 sample({
   clock: settingsSaved,
   fn: () => true,
   target: $hasUserSavedSettings,
 });
 
-// Persist to localStorage when settings are saved
 sample({
   clock: settingsSaved,
   fn: ({ notificationEvents }) => notificationEvents,
@@ -224,11 +223,41 @@ sample({
 });
 
 sample({
+  clock: settingsSaved,
+  fn: ({ soundEnabled }) => soundEnabled,
+  target: $soundEnabled,
+});
+
+sample({
+  clock: settingsSaved,
+  fn: ({ soundEnabled }) => soundEnabled,
+  target: saveSoundEnabledFx,
+});
+
+sample({
+  clock: settingsSaved,
+  source: $soundEnabled,
+  filter: (wasEnabled, { soundEnabled }) => !wasEnabled && soundEnabled,
+  target: playSoundFx,
+});
+
+sample({
+  clock: notificationsFiltered,
+  source: $soundEnabled,
+  filter: (soundEnabled, notifications) => soundEnabled && notifications.length > 0,
+  target: playSoundRequested,
+});
+
+sample({
+  clock: soundPlayed,
+  target: playSoundFx,
+});
+
+sample({
   clock: populateNotificationsFx.doneData,
   target: $notifications,
 });
 
-// Filter out duplicates and apply settings-based filtering
 sample({
   clock: notificationsAdded,
   source: {
@@ -249,32 +278,15 @@ sample({
         continue;
       }
 
-      // Apply settings-based filters
-      if (enabledAccountIds.size === 0 || !enabledAccountIds.has(notification.issuer)) {
-        filteredOut.push(`${notification.type} (wallet filter)`);
+      if (!enabledAccountIds.has(notification.issuer)) {
         continue;
       }
 
       if (!enabledEventMatchers.some((matcher) => matcher(notification))) {
-        filteredOut.push(`${notification.type} (event filter)`);
         continue;
       }
 
       newNotifications.push(notification);
-    }
-
-    if (duplicates.length > 0) {
-      console.warn(
-        `[Notifications] Attempted to add ${duplicates.length} duplicate notification(s):`,
-        duplicates.join(', '),
-      );
-    }
-
-    if (filteredOut.length > 0) {
-      console.info(
-        `[Notifications] Filtered out ${filteredOut.length} notification(s) by settings:`,
-        filteredOut.join(', '),
-      );
     }
 
     return newNotifications;
@@ -282,7 +294,6 @@ sample({
   target: notificationsFiltered,
 });
 
-// Only call effect if there are notifications to add
 sample({
   clock: notificationsFiltered,
   filter: (notifications) => notifications.length > 0,
@@ -384,9 +395,9 @@ export const notificationModel = {
   $unreadCount,
   $toasts,
 
-  // Settings state (for UI)
   $notificationEvents,
   $selectedWalletIds,
+  $soundEnabled,
 
   events: {
     notificationsStarted: populateNotificationsFx,
@@ -396,5 +407,6 @@ export const notificationModel = {
     notificationsSaved: addNotificationsFx.doneData,
     settingsSaved,
     walletsUpdated,
+    soundPlayed,
   },
 };

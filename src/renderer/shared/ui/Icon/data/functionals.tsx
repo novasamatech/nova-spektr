@@ -56,6 +56,7 @@ import ThumbUpIcon from '@/shared/assets/images/functionals/thumb-up.svg?jsx';
 import UpdateIcon from '@/shared/assets/images/functionals/update.svg?jsx';
 import UploadFileIcon from '@/shared/assets/images/functionals/upload-file.svg?jsx';
 import ViewValidatorsIcon from '@/shared/assets/images/functionals/view-validators.svg?jsx';
+import VolumeIcon from '@/shared/assets/images/functionals/volume.svg?jsx';
 import VotedIcon from '@/shared/assets/images/functionals/voted.svg?jsx';
 import VotingCheckFilled from '@/shared/assets/images/functionals/voting-check-filled.svg?jsx';
 import WarnCutoutIcon from '@/shared/assets/images/functionals/warning-cutout.svg?jsx';
@@ -126,6 +127,7 @@ const FunctionalImages = {
   delegate: { svg: DelegateIcon },
   changeSignatories: { svg: ChangeSignatoriesIcon },
   history: { svg: HistoryIcon },
+  volume: { svg: VolumeIcon },
 } as const;
 
 export type Functional = keyof typeof FunctionalImages;
