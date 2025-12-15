@@ -368,7 +368,7 @@ const confirmEvent = sample({
         chain: chain,
         tx,
         coreTx,
-        spawner: toAccountId(removeProxyStore.spawner),
+        spawner: removeProxyStore.spawner ? toAccountId(removeProxyStore.spawner) : undefined,
         delegate: toAccountId(removeProxyStore.proxyAccount.accountId),
         proxyType: removeProxyStore.proxyType,
         fee: fee.toString(),
