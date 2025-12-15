@@ -1,14 +1,31 @@
+import { sample } from 'effector';
 import { useUnit } from 'effector-react';
 
 import { $features } from '@/shared/config/features';
 import { createFeature } from '@/shared/feature';
 import { Paths } from '@/shared/routes';
 import { notificationModel } from '@/entities/notification';
-import { NavItem, navigationBottomLinksSlot } from '@/features/app-shell';
+import { NavItem, faviconModel, navigationBottomLinksSlot } from '@/features/app-shell';
 
 export const notificationsNavigationFeature = createFeature({
   name: 'notifications/navigation',
   enable: $features.map(({ notifications }) => notifications),
+});
+
+const BADGE_SOURCE = 'notifications';
+
+sample({
+  clock: notificationModel.$hasUnread,
+  filter: (hasUnread) => hasUnread,
+  fn: () => BADGE_SOURCE,
+  target: faviconModel.events.badgeSourceAdded,
+});
+
+sample({
+  clock: notificationModel.$hasUnread,
+  filter: (hasUnread) => !hasUnread,
+  fn: () => BADGE_SOURCE,
+  target: faviconModel.events.badgeSourceRemoved,
 });
 
 notificationsNavigationFeature.inject(navigationBottomLinksSlot, {
