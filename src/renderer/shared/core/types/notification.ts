@@ -18,6 +18,14 @@ export const enum NotificationType {
   MULTISIG_OPERATION = 'MultisigOperationNotification',
 }
 
+// User-facing notification event categories for settings
+export enum NotificationEvent {
+  WALLET_CREATED = 'wallet_created',
+  OPERATION_CREATED = 'operation_created',
+  OPERATION_EXECUTED = 'operation_executed',
+  OPERATION_REJECTED = 'operation_rejected',
+}
+
 export type NotificationStatus = 'info' | 'success' | 'error';
 
 export type BatchParams = {
