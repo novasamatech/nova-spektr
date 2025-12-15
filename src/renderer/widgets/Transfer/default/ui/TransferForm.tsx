@@ -628,7 +628,8 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
   const canSubmit = useUnit(formModel.$canSubmit);
   const isPreparingTransaction = useUnit(formModel.$isPreparingTransaction);
   const errors = useUnit(formModel.$errors);
-  const isLoading = isPreparingTransaction && errors.length === 0;
+  const hasErrors = errors.length > 0;
+  const isLoading = isPreparingTransaction && !hasErrors;
 
   return (
     <div className="mt-4 flex flex-col gap-2">
@@ -636,7 +637,7 @@ const ActionsSection = memo(({ onGoBack }: Props) => {
         <Button variant="text" onClick={onGoBack}>
           {t('operation.goBackButton')}
         </Button>
-        <Button form="transfer-form" type="submit" disabled={!canSubmit} isLoading={isLoading}>
+        <Button form="transfer-form" type="submit" disabled={!canSubmit || hasErrors} isLoading={isLoading}>
           {t('transfer.continueButton')}
         </Button>
       </div>
