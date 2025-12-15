@@ -689,6 +689,7 @@ const $isTxReady = $tx.map(nonNullable);
 const $areTransactionsReady = and($isCoreTxReady, $isTxReady);
 
 const $canSubmit = and(
+  form.$isValid,
   $valid,
   not($hasDestinationBalanceError),
   or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
