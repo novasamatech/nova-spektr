@@ -15,7 +15,7 @@ export const importDBFeature = createFeature({
 });
 
 importDBFeature.inject(generalActionsSlot, {
-  order: 1,
+  order: 999,
   render: () => <ImportDBSetting />,
 });
 
