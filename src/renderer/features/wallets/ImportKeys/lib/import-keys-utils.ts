@@ -52,15 +52,23 @@ export const importKeysUtils = {
   getErrorsText,
 };
 
+function isValidAccountIdOrReserved(key: string): boolean {
+  if (key === 'version' || key.startsWith('0x')) return true;
+  try {
+    toAccountId(key);
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function isYamlStructureValid(result: unknown): result is ParsedImportFile {
   const isVersionValid =
     result && typeof result === 'object' && 'version' in result && result.version === IMPORT_FILE_VERSION;
   if (!isVersionValid) return false;
 
-  const hasPublicKey = Object.keys(result).every(
-    // @ts-expect-error 0x00 is not account id
-    (key) => key.startsWith('0x') || toAccountId(key) !== '0x00' || key === 'version',
-  );
+  const hasPublicKey = Object.keys(result).every(isValidAccountIdOrReserved);
   if (!hasPublicKey) return false;
 
   const genesisHashes = Object.values(result).filter((x) => typeof x === 'object') as ImportFileChain[];
@@ -104,9 +112,7 @@ function parseTextFile(fileContent: string): ParsedData | null {
   const publicAddressMatch = lines[1].match(/^public address: (0x[a-fA-F0-9]{64})$/);
   if (!publicAddressMatch) return null;
   const key = publicAddressMatch[1];
-  // @ts-expect-error 0x00 is not account id
-  const hasPublicKey = key.startsWith('0x') || toAccountId(key) !== '0x00';
-  if (!hasPublicKey) return null;
+  if (!isValidAccountIdOrReserved(key)) return null;
 
   let currentChainId = '';
   const derivationPaths = [];
