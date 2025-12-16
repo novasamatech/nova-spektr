@@ -1214,7 +1214,10 @@
         "section": "the {action} of {balance}"
       },
       "fatal": {
-        "intro": "Internal error:"
+        "intro": "Dry run error:"
+      },
+      "network": {
+        "title": "Network connection error"
       },
       "permission": {
         "intro": "Some wallet in the execution route has access restrictions set by the proxy connection.",
@@ -2642,6 +2645,7 @@
     },
     "multisigTransactionExist": "Multisig transaction already exists",
     "myselfButton": "Myself",
+    "networkConnectionError": "The {network} network is not connected. Go to Settings → Network to select a different RPC endpoint.",
     "networkDeposit": "Multisig deposit",
     "networkDepositHint": "The deposit stays locked on the depositor’s account until the multisig operation is executed or rejected",
     "networkFee": "Network fee",
