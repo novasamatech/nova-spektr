@@ -47,9 +47,6 @@ const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
 
 const $populated = createStore(false);
 
-// Track when connections enter CONNECTING state
-const $connectingStartTimes = createStore<Record<ChainId, number>>({});
-
 // Promise-based mutex to prevent concurrent API creation for the same chain
 // Stores the promise of the API creation in progress, allowing concurrent requests to await the same promise
 const apiCreationPromises = new Map<ChainId, Promise<ApiPromise>>();
@@ -379,24 +376,12 @@ sample({
 
 sample({
   clock: createProviderFx.done,
-  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
-  fn: ({ statuses, startTimes }, { params }) => {
-    const now = Date.now();
-    return {
-      newStatuses: {
-        ...statuses,
-        [params.chainId]: ConnectionStatus.CONNECTING,
-      },
-      newStartTimes: {
-        ...startTimes,
-        [params.chainId]: now,
-      },
-    };
-  },
-  target: spread({
-    newStatuses: $connectionStatuses,
-    newStartTimes: $connectingStartTimes,
+  source: $connectionStatuses,
+  fn: (statuses, { params }) => ({
+    ...statuses,
+    [params.chainId]: ConnectionStatus.CONNECTING,
   }),
+  target: $connectionStatuses,
 });
 
 sample({
@@ -422,18 +407,13 @@ sample({
 // HINT: We cannot rely on Provider.onConnected because it fires BEFORE we have API
 sample({
   clock: createApiFx.done,
-  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
-  fn: ({ statuses, startTimes }, { params }) => {
-    const { [params.chainId]: _, ...newStartTimes } = startTimes;
-    return {
-      newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED },
-      newStartTimes,
-      event: { chainId: params.chainId, status: ConnectionStatus.CONNECTED },
-    };
-  },
+  source: $connectionStatuses,
+  fn: (statuses, { params }) => ({
+    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED },
+    event: { chainId: params.chainId, status: ConnectionStatus.CONNECTED },
+  }),
   target: spread({
     newStatuses: $connectionStatuses,
-    newStartTimes: $connectingStartTimes,
     event: connectionStatusChanged,
   }),
 });
@@ -441,18 +421,13 @@ sample({
 // Add error handling for createApiFx failures
 sample({
   clock: createApiFx.fail,
-  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
-  fn: ({ statuses, startTimes }, { params }) => {
-    const { [params.chainId]: _, ...newStartTimes } = startTimes;
-    return {
-      newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
-      newStartTimes,
-      event: { chainId: params.chainId, status: ConnectionStatus.ERROR },
-    };
-  },
+  source: $connectionStatuses,
+  fn: (statuses, { params }) => ({
+    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
+    event: { chainId: params.chainId, status: ConnectionStatus.ERROR },
+  }),
   target: spread({
     newStatuses: $connectionStatuses,
-    newStartTimes: $connectingStartTimes,
     event: connectionStatusChanged,
   }),
 });
@@ -460,54 +435,39 @@ sample({
 // Add error handling for createProviderFx failures
 sample({
   clock: createProviderFx.fail,
-  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
-  fn: ({ statuses, startTimes }, { params }) => {
-    const { [params.chainId]: _, ...newStartTimes } = startTimes;
-    return {
-      newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
-      newStartTimes,
-      event: { chainId: params.chainId, status: ConnectionStatus.ERROR },
-    };
-  },
+  source: $connectionStatuses,
+  fn: (statuses, { params }) => ({
+    newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
+    event: { chainId: params.chainId, status: ConnectionStatus.ERROR },
+  }),
   target: spread({
     newStatuses: $connectionStatuses,
-    newStartTimes: $connectingStartTimes,
     event: connectionStatusChanged,
   }),
 });
 
 sample({
   clock: disconnected,
-  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
-  fn: ({ statuses, startTimes }, chainId) => {
-    const { [chainId]: _, ...newStartTimes } = startTimes;
-    return {
-      newStatuses: { ...statuses, [chainId]: ConnectionStatus.DISCONNECTED },
-      newStartTimes,
-      event: { chainId, status: ConnectionStatus.DISCONNECTED },
-    };
-  },
+  source: $connectionStatuses,
+  fn: (statuses, chainId) => ({
+    newStatuses: { ...statuses, [chainId]: ConnectionStatus.DISCONNECTED },
+    event: { chainId, status: ConnectionStatus.DISCONNECTED },
+  }),
   target: spread({
     newStatuses: $connectionStatuses,
-    newStartTimes: $connectingStartTimes,
     event: connectionStatusChanged,
   }),
 });
 
 sample({
   clock: failed,
-  source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
-  fn: ({ statuses, startTimes }, chainId) => {
-    const { [chainId]: _, ...newStartTimes } = startTimes;
-    return {
-      newStatuses: { ...statuses, [chainId]: ConnectionStatus.ERROR },
-      newStartTimes,
-      event: { chainId, status: ConnectionStatus.ERROR },
-    };
-  },
+  source: $connectionStatuses,
+  fn: (statuses, chainId) => ({
+    newStatuses: { ...statuses, [chainId]: ConnectionStatus.ERROR },
+    event: { chainId, status: ConnectionStatus.ERROR },
+  }),
   target: spread({
     newStatuses: $connectionStatuses,
-    newStartTimes: $connectingStartTimes,
     event: connectionStatusChanged,
   }),
 });
