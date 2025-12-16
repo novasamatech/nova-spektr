@@ -15,7 +15,6 @@ import { ChainTitle } from '@/entities/chain';
 import { findCoreTransaction, getTransactionAmount, useTransactionAsset } from '@/entities/transaction';
 import { accountUtils, walletModel } from '@/entities/wallet';
 import { operationTitleTransformer } from '@/features/multisig-operations';
-import { multisigService } from '@/features/multisig-wallet';
 
 type Props = {
   notification: MultisigOperationNotification;
@@ -40,7 +39,7 @@ const iconConfig: Record<NotificationStatus, { name: IconNames; className: strin
 };
 
 export const MultisigOperationNotificationComponent = ({
-  notification: { callHash, callTimepoint, chainId, multisigAccountId, status, operationId },
+  notification: { callHash, callTimepoint, chainId, issuer, status, operationId },
 }: Props) => {
   const { t } = useI18n();
   const navigate = useNavigate();
@@ -53,11 +52,8 @@ export const MultisigOperationNotificationComponent = ({
 
   const multisigAccount = useStoreMap({
     store: accounts.$list,
-    keys: [multisigAccountId],
-    fn: (allAccounts) =>
-      allAccounts
-        .filter(accountUtils.isAnyMultisigAccount)
-        .find((acc) => multisigService.getMultisigAccountId(acc) === multisigAccountId),
+    keys: [issuer],
+    fn: (allAccounts) => allAccounts.filter(accountUtils.isAnyMultisigAccount).find((acc) => acc.accountId === issuer),
   });
 
   const wallet = useStoreMap({
@@ -132,7 +128,7 @@ export const MultisigOperationNotificationComponent = ({
               t={t}
               i18nKey="notifications.details.multisigOperationDetails"
               values={{
-                name: wallet?.name || multisigAccount?.name || multisigAccountId,
+                name: wallet?.name || multisigAccount?.name || issuer,
                 threshold: multisigAccount?.threshold,
                 signatories: multisigAccount?.signatories.length,
               }}

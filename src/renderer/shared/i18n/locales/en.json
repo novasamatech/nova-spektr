@@ -1649,7 +1649,10 @@
       },
       "viewOperation": "View Operation"
     },
+    "emptySearchDescription": "Update the search or cancel filtering",
+    "emptySearchTitle": "Nothing was found",
     "noNotificationsDescription": "You don't have notifications yet",
+    "searchPlaceholder": "Search by wallet or event type",
     "title": "Notifications",
     "toast": {
       "batch": {
@@ -2269,6 +2272,22 @@
       "title": "Networks",
       "titleAdd": "Add custom node",
       "titleEdit": "Edit custom node"
+    },
+    "notificationsSettings": {
+      "eventOperationCreated": "Operation created",
+      "eventOperationExecuted": "Operation executed",
+      "eventOperationRejected": "Operation rejected",
+      "eventWalletCreated": "Wallet created",
+      "general": "General",
+      "modalTitle": "Notifications settings",
+      "plateTitle": "Notifications",
+      "preferences": "Preferences",
+      "preferencesDescription": "Select wallets and events to be notified about their activity by displaying popup",
+      "saveButton": "Save",
+      "soundEnabled": "Sound notification",
+      "soundRestricted": "Sound is restricted by your browser. Please allow audio in site settings.",
+      "walletsMultiPlaceholder": "Wallets",
+      "walletsPlaceholder": "Select wallets"
     },
     "overview": {
       "generalLabel": "General",

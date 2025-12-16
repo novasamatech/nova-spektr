@@ -560,13 +560,12 @@ const createNotificationsFromWallets = (
         if (accountUtils.isAnyMultisigAccount(account)) {
           const chainId = accountUtils.isFlexibleMultisigAccount(account) ? account.chainId : account.remarkChainId;
           const chain = chainId ? chains[chainId] : undefined;
-          const name = wallet.name || truncate(toAddress(account.accountId, { prefix: chain?.addressPrefix }));
-          const description = `${name} with threshold ${account.threshold} out of ${account.signatories.length}`;
+          const address = truncate(toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+          const name = wallet.name || address;
 
           const baseNotification = {
             status: 'info' as const,
             issuer: account.accountId,
-            description,
             multisigAccountId: account.accountId,
             signatories: account.signatories.map((signatory) => signatory.accountId),
             threshold: account.threshold,
@@ -574,12 +573,13 @@ const createNotificationsFromWallets = (
 
           if (accountUtils.isFlexibleMultisigAccount(account)) {
             return {
-              key: `${NotificationType.FLEXIBLE_MULTISIG_CREATED}:${account.accountId}`,
+              key: `${NotificationType.FLEXIBLE_MULTISIG_CREATED}:${account.chainId}:${account.accountId}:${wallet.id}`,
               ...baseNotification,
               walletId: wallet.id,
               type: NotificationType.FLEXIBLE_MULTISIG_CREATED,
               chainId: account.chainId,
               title: 'Flexible multisig wallet added',
+              description: `${name} with threshold ${account.threshold} out of ${account.signatories.length}`,
               accountId: account.accountId,
               accountName: account.name,
               batch: {
@@ -591,11 +591,12 @@ const createNotificationsFromWallets = (
 
           if (accountUtils.isMultisigAccount(account)) {
             return {
-              key: `${NotificationType.MULTISIG_CREATED}:${account.accountId}`,
+              key: `${NotificationType.MULTISIG_CREATED}:${account.remarkChainId}:${account.accountId}:${wallet.id}`,
               ...baseNotification,
               type: NotificationType.MULTISIG_CREATED,
               chainId: account.remarkChainId!,
               title: 'Multisig wallet added',
+              description: `${name} with threshold ${account.threshold} out of ${account.signatories.length}`,
               multisigAccountName: account.name,
               batch: {
                 title: 'notifications.toast.batch.multisigWalletsAdded',
@@ -606,9 +607,13 @@ const createNotificationsFromWallets = (
         }
 
         if (accountUtils.isProxiedAccount(account)) {
+          const chain = chains[account.chainId];
+
           return account.connections.map((connection) => {
+            const proxiedAddress = truncate(toAddress(account.accountId, { prefix: chain?.addressPrefix }));
+
             return {
-              key: `${NotificationType.PROXY_CREATED}:${account.chainId}:${connection.proxyAccountId}:${account.accountId}`,
+              key: `${NotificationType.PROXY_CREATED}:${account.chainId}:${connection.proxyAccountId}:${account.accountId}:${wallet.id}`,
               chainId: account.chainId,
               proxyType: connection.proxyType,
               proxyAccountId: connection.proxyAccountId,
@@ -618,7 +623,7 @@ const createNotificationsFromWallets = (
               status: 'info',
               issuer: connection.proxyAccountId,
               title: 'Delegated authority wallet added',
-              description: `${connection.proxyType} proxy`,
+              description: `${connection.proxyType} for ${account.proxyVariant} ${proxiedAddress}`,
               batch: {
                 title: 'notifications.toast.batch.delegatedAuthorityWalletsAdded',
                 description: 'notifications.toast.batch.walletsAddedDescription',

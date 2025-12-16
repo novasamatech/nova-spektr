@@ -6,3 +6,5 @@ export {
   navigationCustomOperationsSlot,
 } from './components/Navigation';
 export { navigationHeaderSlot, modalsSlot } from './components/AppShell';
+export { Favicon } from './components/Favicon';
+export { faviconModel } from './model/favicon-model';
