@@ -6,7 +6,7 @@ import { notificationsSettingsModel } from '../notifications-settings-model';
 
 // LocalStorage keys matching those in notification-model.ts
 const NOTIFICATION_EVENTS_KEY = 'notification_events';
-const SELECTED_WALLET_IDS_KEY = 'notification_selected_wallet_ids';
+const DISABLED_WALLET_IDS_KEY = 'notification_disabled_wallet_ids';
 
 describe('features/notifications/NotificationsSettings/model/notifications-settings-model', () => {
   beforeEach(() => {
@@ -27,17 +27,15 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       expect(events.size).toBe(4);
     });
 
-    test('should start with empty wallet selection when no wallets are loaded yet', () => {
-      // When there's no saved selection (null) and no wallets loaded,
-      // the store starts empty and will be populated when wallets load
+    test('should start with empty disabled wallet list (all wallets enabled)', () => {
       const scope = fork({
-        values: new Map().set(notificationsSettingsModel.$selectedWalletIds, new Set()),
+        values: new Map().set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
-      const selectedIds = scope.getState(notificationsSettingsModel.$selectedWalletIds);
+      const disabledIds = scope.getState(notificationsSettingsModel.$disabledWalletIds);
 
-      // Initially empty, will be filled when wallets load
-      expect(selectedIds.size).toBe(0);
+      // Initially empty - no wallets disabled means all enabled
+      expect(disabledIds.size).toBe(0);
     });
   });
 
@@ -56,14 +54,14 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
               NotificationEvent.OPERATION_REJECTED,
             ]),
           )
-          .set(notificationsSettingsModel.$selectedWalletIds, new Set([1, 2])),
+          .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
       // Save with only some events enabled
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [1, 2],
+          disabledWalletIds: [],
           notificationEvents: [NotificationEvent.WALLET_CREATED, NotificationEvent.OPERATION_CREATED],
           soundEnabled: false,
         },
@@ -75,7 +73,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       ]);
     });
 
-    test('should save selected wallet IDs to localStorage when settingsSaved is called', async () => {
+    test('should save disabled wallet IDs to localStorage when settingsSaved is called', async () => {
       const saveSpy = vi.spyOn(localStorageService, 'saveToStorage');
 
       const scope = fork({
@@ -89,14 +87,14 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
               NotificationEvent.OPERATION_REJECTED,
             ]),
           )
-          .set(notificationsSettingsModel.$selectedWalletIds, new Set([1, 2])),
+          .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
-      // Save with only one wallet selected
+      // Save with wallet 2 disabled
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [1],
+          disabledWalletIds: [2],
           notificationEvents: [
             NotificationEvent.WALLET_CREATED,
             NotificationEvent.OPERATION_CREATED,
@@ -107,7 +105,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
         },
       });
 
-      expect(saveSpy).toHaveBeenCalledWith(SELECTED_WALLET_IDS_KEY, [1]);
+      expect(saveSpy).toHaveBeenCalledWith(DISABLED_WALLET_IDS_KEY, [2]);
     });
 
     test('should update $notificationEvents store when settingsSaved is called', async () => {
@@ -124,13 +122,13 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
               NotificationEvent.OPERATION_REJECTED,
             ]),
           )
-          .set(notificationsSettingsModel.$selectedWalletIds, new Set([1])),
+          .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [1],
+          disabledWalletIds: [],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
           soundEnabled: false,
         },
@@ -143,30 +141,30 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       expect(events.has(NotificationEvent.OPERATION_CREATED)).toBe(false);
     });
 
-    test('should update $selectedWalletIds store when settingsSaved is called', async () => {
+    test('should update $disabledWalletIds store when settingsSaved is called', async () => {
       vi.spyOn(localStorageService, 'saveToStorage').mockImplementation((_, value) => value);
 
       const scope = fork({
         values: new Map()
           .set(notificationsSettingsModel.$notificationEvents, new Set([NotificationEvent.WALLET_CREATED]))
-          .set(notificationsSettingsModel.$selectedWalletIds, new Set([1, 2, 3])),
+          .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [2],
+          disabledWalletIds: [1, 3],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
           soundEnabled: false,
         },
       });
 
-      const selectedIds = scope.getState(notificationsSettingsModel.$selectedWalletIds);
+      const disabledIds = scope.getState(notificationsSettingsModel.$disabledWalletIds);
 
-      expect(selectedIds.size).toBe(1);
-      expect(selectedIds.has(2)).toBe(true);
-      expect(selectedIds.has(1)).toBe(false);
-      expect(selectedIds.has(3)).toBe(false);
+      expect(disabledIds.size).toBe(2);
+      expect(disabledIds.has(1)).toBe(true);
+      expect(disabledIds.has(3)).toBe(true);
+      expect(disabledIds.has(2)).toBe(false);
     });
 
     test('should persist settings across multiple save operations', async () => {
@@ -183,14 +181,14 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
               NotificationEvent.OPERATION_REJECTED,
             ]),
           )
-          .set(notificationsSettingsModel.$selectedWalletIds, new Set([1, 2])),
+          .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
       // First save - disable some events
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [1, 2],
+          disabledWalletIds: [],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
           soundEnabled: false,
         },
@@ -198,24 +196,24 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
 
       expect(saveSpy).toHaveBeenCalledWith(NOTIFICATION_EVENTS_KEY, [NotificationEvent.WALLET_CREATED]);
 
-      // Second save - change wallet selection
+      // Second save - disable a wallet
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [1],
+          disabledWalletIds: [2],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
           soundEnabled: false,
         },
       });
 
-      expect(saveSpy).toHaveBeenCalledWith(SELECTED_WALLET_IDS_KEY, [1]);
+      expect(saveSpy).toHaveBeenCalledWith(DISABLED_WALLET_IDS_KEY, [2]);
 
       // Verify final state
       const events = scope.getState(notificationsSettingsModel.$notificationEvents);
-      const walletIds = scope.getState(notificationsSettingsModel.$selectedWalletIds);
+      const disabledWalletIds = scope.getState(notificationsSettingsModel.$disabledWalletIds);
 
       expect(events.size).toBe(1);
-      expect(walletIds.size).toBe(1);
+      expect(disabledWalletIds.size).toBe(1);
     });
   });
 
@@ -226,13 +224,13 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       const scope = fork({
         values: new Map()
           .set(notificationsSettingsModel.$notificationEvents, new Set([NotificationEvent.WALLET_CREATED]))
-          .set(notificationsSettingsModel.$selectedWalletIds, new Set([1])),
+          .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [1],
+          disabledWalletIds: [],
           notificationEvents: [], // Empty - all events disabled
           soundEnabled: false,
         },
@@ -245,29 +243,29 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       expect(events.size).toBe(0);
     });
 
-    test('should allow saving empty wallet selection (no wallets selected)', async () => {
+    test('should allow saving all wallets disabled', async () => {
       const saveSpy = vi.spyOn(localStorageService, 'saveToStorage').mockImplementation((_, value) => value);
 
       const scope = fork({
         values: new Map()
           .set(notificationsSettingsModel.$notificationEvents, new Set([NotificationEvent.WALLET_CREATED]))
-          .set(notificationsSettingsModel.$selectedWalletIds, new Set([1])),
+          .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [], // Empty - no wallets selected
+          disabledWalletIds: [1, 2, 3], // All wallets disabled
           notificationEvents: [NotificationEvent.WALLET_CREATED],
           soundEnabled: false,
         },
       });
 
-      expect(saveSpy).toHaveBeenCalledWith(SELECTED_WALLET_IDS_KEY, []);
+      expect(saveSpy).toHaveBeenCalledWith(DISABLED_WALLET_IDS_KEY, [1, 2, 3]);
 
-      const selectedIds = scope.getState(notificationsSettingsModel.$selectedWalletIds);
+      const disabledIds = scope.getState(notificationsSettingsModel.$disabledWalletIds);
 
-      expect(selectedIds.size).toBe(0);
+      expect(disabledIds.size).toBe(3);
     });
   });
 
@@ -281,14 +279,14 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
             notificationsSettingsModel.$notificationEvents,
             new Set([NotificationEvent.WALLET_CREATED, NotificationEvent.OPERATION_CREATED]),
           )
-          .set(notificationsSettingsModel.$selectedWalletIds, new Set([1])),
+          .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
       // Disable OPERATION_CREATED
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [1],
+          disabledWalletIds: [],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
           soundEnabled: false,
         },
@@ -302,30 +300,30 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       expect(events.has(NotificationEvent.OPERATION_REJECTED)).toBe(false);
     });
 
-    test('should restore saved wallet IDs after settingsSaved', async () => {
+    test('should restore saved disabled wallet IDs after settingsSaved', async () => {
       vi.spyOn(localStorageService, 'saveToStorage').mockImplementation((_, value) => value);
 
       const scope = fork({
         values: new Map()
           .set(notificationsSettingsModel.$notificationEvents, new Set([NotificationEvent.WALLET_CREATED]))
-          .set(notificationsSettingsModel.$selectedWalletIds, new Set([1, 2, 3])),
+          .set(notificationsSettingsModel.$disabledWalletIds, new Set()),
       });
 
-      // Select only wallet 2
+      // Disable wallet 2
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [2],
+          disabledWalletIds: [2],
           notificationEvents: [NotificationEvent.WALLET_CREATED],
           soundEnabled: false,
         },
       });
 
-      const walletIds = scope.getState(notificationsSettingsModel.$selectedWalletIds);
+      const disabledWalletIds = scope.getState(notificationsSettingsModel.$disabledWalletIds);
 
-      expect(walletIds.has(1)).toBe(false);
-      expect(walletIds.has(2)).toBe(true);
-      expect(walletIds.has(3)).toBe(false);
+      expect(disabledWalletIds.has(1)).toBe(false);
+      expect(disabledWalletIds.has(2)).toBe(true);
+      expect(disabledWalletIds.has(3)).toBe(false);
     });
   });
 
@@ -343,7 +341,7 @@ describe('features/notifications/NotificationsSettings/model/notifications-setti
       await allSettled(notificationsSettingsModel.events.settingsSaved, {
         scope,
         params: {
-          selectedWalletIds: [],
+          disabledWalletIds: [],
           notificationEvents: [],
           soundEnabled: true,
         },

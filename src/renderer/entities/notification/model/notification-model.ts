@@ -18,7 +18,7 @@ import { merge } from '@/shared/lib/utils';
 import { type AccountId } from '@/shared/polkadotjs-schemas';
 
 const NOTIFICATION_EVENTS_KEY = 'notification_events';
-const SELECTED_WALLET_IDS_KEY = 'notification_selected_wallet_ids';
+const DISABLED_WALLET_IDS_KEY = 'notification_disabled_wallet_ids';
 const SOUND_ENABLED_KEY = 'notification_sound_enabled';
 
 const SOUND_THROTTLE_MS = 1000;
@@ -31,7 +31,7 @@ const ALL_EVENTS = [
 ];
 
 const initialNotificationEvents = localStorageService.getFromStorage(NOTIFICATION_EVENTS_KEY, ALL_EVENTS);
-const initialSelectedWalletIds = localStorageService.getFromStorage<ID[] | null>(SELECTED_WALLET_IDS_KEY, null);
+const initialDisabledWalletIds = localStorageService.getFromStorage<ID[]>(DISABLED_WALLET_IDS_KEY, []);
 const initialSoundEnabled = localStorageService.getFromStorage(SOUND_ENABLED_KEY, false);
 
 const $notifications = createStore<Notification[]>([]);
@@ -39,15 +39,10 @@ const $unreadCount = $notifications.map((notifications) => notifications.reduce(
 const $hasUnread = $unreadCount.map((count) => count > 0);
 
 const $notificationEvents = createStore<Set<NotificationEvent>>(new Set(initialNotificationEvents));
-const $selectedWalletIds = createStore<Set<ID>>(
-  initialSelectedWalletIds === null ? new Set() : new Set(initialSelectedWalletIds),
-);
+const $disabledWalletIds = createStore<Set<ID>>(new Set(initialDisabledWalletIds));
 const $soundEnabled = createStore(initialSoundEnabled);
 
-const $hasUserSavedSettings = createStore(initialSelectedWalletIds !== null);
-
 const $wallets = createStore<Wallet[]>([]);
-const $knownWalletIds = createStore<Set<ID>>(new Set());
 const walletsUpdated = createEvent<Wallet[]>();
 
 sample({
@@ -55,11 +50,11 @@ sample({
   target: $wallets,
 });
 
-const $enabledAccountIds = combine($wallets, $selectedWalletIds, (wallets, selectedWalletIds): Set<AccountId> => {
+const $disabledAccountIds = combine($wallets, $disabledWalletIds, (wallets, disabledWalletIds): Set<AccountId> => {
   const accountIds = new Set<AccountId>();
 
   for (const wallet of wallets) {
-    if (selectedWalletIds.has(wallet.id)) {
+    if (disabledWalletIds.has(wallet.id)) {
       for (const account of wallet.accounts) {
         accountIds.add(account.accountId);
       }
@@ -103,7 +98,7 @@ const notificationsViewed = createEvent();
 const notificationEdited = createEvent<Notification>();
 
 const settingsSaved = createEvent<{
-  selectedWalletIds: ID[];
+  disabledWalletIds: ID[];
   notificationEvents: NotificationEvent[];
   soundEnabled: boolean;
 }>();
@@ -137,8 +132,8 @@ const saveNotificationEventsFx = createEffect((value: NotificationEvent[]): Noti
   return localStorageService.saveToStorage(NOTIFICATION_EVENTS_KEY, value);
 });
 
-const saveSelectedWalletIdsFx = createEffect((value: ID[]): ID[] => {
-  return localStorageService.saveToStorage(SELECTED_WALLET_IDS_KEY, value);
+const saveDisabledWalletIdsFx = createEffect((value: ID[]): ID[] => {
+  return localStorageService.saveToStorage(DISABLED_WALLET_IDS_KEY, value);
 });
 
 const saveSoundEnabledFx = createEffect((value: boolean): boolean => {
@@ -160,39 +155,6 @@ sample({
 });
 
 sample({
-  clock: walletsUpdated,
-  source: { selectedIds: $selectedWalletIds, hasUserSaved: $hasUserSavedSettings },
-  filter: ({ selectedIds, hasUserSaved }, wallets) => !hasUserSaved && selectedIds.size === 0 && wallets.length > 0,
-  fn: (_, wallets) => new Set(wallets.map((w) => w.id)),
-  target: $selectedWalletIds,
-});
-
-sample({
-  clock: walletsUpdated,
-  source: { selectedIds: $selectedWalletIds, knownWalletIds: $knownWalletIds, hasUserSaved: $hasUserSavedSettings },
-  filter: ({ hasUserSaved }, incomingWallets) => hasUserSaved && incomingWallets.length > 0,
-  fn: ({ selectedIds, knownWalletIds }, incomingWallets) => {
-    const newWalletIds = incomingWallets.filter((w) => !knownWalletIds.has(w.id)).map((w) => w.id);
-
-    if (newWalletIds.length === 0) return selectedIds;
-
-    const updated = new Set(selectedIds);
-    for (const id of newWalletIds) {
-      updated.add(id);
-    }
-
-    return updated;
-  },
-  target: $selectedWalletIds,
-});
-
-sample({
-  clock: walletsUpdated,
-  fn: (wallets) => new Set(wallets.map((w) => w.id)),
-  target: $knownWalletIds,
-});
-
-sample({
   clock: settingsSaved,
   fn: ({ notificationEvents }) => new Set(notificationEvents),
   target: $notificationEvents,
@@ -200,14 +162,8 @@ sample({
 
 sample({
   clock: settingsSaved,
-  fn: ({ selectedWalletIds }) => new Set(selectedWalletIds),
-  target: $selectedWalletIds,
-});
-
-sample({
-  clock: settingsSaved,
-  fn: () => true,
-  target: $hasUserSavedSettings,
+  fn: ({ disabledWalletIds }) => new Set(disabledWalletIds),
+  target: $disabledWalletIds,
 });
 
 sample({
@@ -218,8 +174,8 @@ sample({
 
 sample({
   clock: settingsSaved,
-  fn: ({ selectedWalletIds }) => selectedWalletIds,
-  target: saveSelectedWalletIdsFx,
+  fn: ({ disabledWalletIds }) => disabledWalletIds,
+  target: saveDisabledWalletIdsFx,
 });
 
 sample({
@@ -261,13 +217,12 @@ sample({
 sample({
   clock: notificationsAdded,
   source: {
-    existingNotifications: $notifications,
-    enabledAccountIds: $enabledAccountIds,
+    notifications: $notifications,
+    disabledAccountIds: $disabledAccountIds,
     enabledEventMatchers: $enabledEventMatchers,
   },
-  fn: ({ existingNotifications, enabledAccountIds, enabledEventMatchers }, incomingNotifications) => {
-    const existingKeys = new Set(existingNotifications.map((n) => n.key));
-
+  fn: ({ notifications, disabledAccountIds, enabledEventMatchers }, incomingNotifications) => {
+    const existingKeys = new Set(notifications.map((n) => n.key));
     const newNotifications: CreateNotificationParams[] = [];
 
     for (const notification of incomingNotifications) {
@@ -275,12 +230,10 @@ sample({
         // filter out duplicates
         continue;
       }
-
-      if (!enabledAccountIds.has(notification.issuer)) {
+      if (disabledAccountIds.has(notification.issuer)) {
         // filter out disabled accounts
         continue;
       }
-
       if (!enabledEventMatchers.some((matcher) => matcher(notification))) {
         // filter out disabled events
         continue;
@@ -396,7 +349,7 @@ export const notificationModel = {
   $toasts,
 
   $notificationEvents,
-  $selectedWalletIds,
+  $disabledWalletIds,
   $soundEnabled,
 
   events: {

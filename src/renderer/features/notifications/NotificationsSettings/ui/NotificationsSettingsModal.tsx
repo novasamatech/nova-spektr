@@ -37,11 +37,11 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   const { t } = useI18n();
 
   const wallets = useUnit(walletModel.$allWallets);
-  const savedSelectedWalletIds = useUnit(notificationsSettingsModel.$selectedWalletIds);
+  const savedDisabledWalletIds = useUnit(notificationsSettingsModel.$disabledWalletIds);
   const savedNotificationEvents = useUnit(notificationsSettingsModel.$notificationEvents);
   const savedSoundEnabled = useUnit(notificationsSettingsModel.$soundEnabled);
 
-  const [selectedWalletIds, setSelectedWalletIds] = useState(() => savedSelectedWalletIds);
+  const [disabledWalletIds, setDisabledWalletIds] = useState(() => savedDisabledWalletIds);
   const [enabledEvents, setEnabledEvents] = useState(() => savedNotificationEvents);
   const [soundEnabled, setSoundEnabled] = useState(() => savedSoundEnabled);
   const [internalIsOpen, setInternalIsOpen] = useState(false);
@@ -50,13 +50,19 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
   const setIsOpen = isControlled ? onToggle! : setInternalIsOpen;
 
+  // Selected wallet IDs for MultiSelect (enabled = not disabled)
+  const selectedWalletIds = useMemo(
+    () => new Set(wallets.filter((w) => !disabledWalletIds.has(w.id)).map((w) => w.id)),
+    [wallets, disabledWalletIds],
+  );
+
   useEffect(() => {
     if (isOpen) {
-      setSelectedWalletIds(savedSelectedWalletIds);
+      setDisabledWalletIds(savedDisabledWalletIds);
       setEnabledEvents(savedNotificationEvents);
       setSoundEnabled(savedSoundEnabled);
     }
-  }, [isOpen, savedSelectedWalletIds, savedNotificationEvents, savedSoundEnabled]);
+  }, [isOpen, savedDisabledWalletIds, savedNotificationEvents, savedSoundEnabled]);
 
   const walletOptions = useMemo(
     () =>
@@ -83,12 +89,13 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
   };
 
   const handleWalletChange = (options: { id: string }[]) => {
-    setSelectedWalletIds(new Set(options.map((opt) => Number(opt.id))));
+    const enabledIds = new Set(options.map((opt) => Number(opt.id)));
+    setDisabledWalletIds(new Set(wallets.filter((w) => !enabledIds.has(w.id)).map((w) => w.id)));
   };
 
   const handleSave = () => {
     notificationsSettingsModel.events.settingsSaved({
-      selectedWalletIds: [...selectedWalletIds],
+      disabledWalletIds: [...disabledWalletIds],
       notificationEvents: [...enabledEvents],
       soundEnabled,
     });

@@ -5,7 +5,7 @@ import { walletModel } from '@/entities/wallet';
 
 // Re-export settings state from notification entity
 const $notificationEvents = notificationModel.$notificationEvents;
-const $selectedWalletIds = notificationModel.$selectedWalletIds;
+const $disabledWalletIds = notificationModel.$disabledWalletIds;
 const $soundEnabled = notificationModel.$soundEnabled;
 
 // Connect wallet updates to notification model
@@ -18,7 +18,7 @@ sample({
 export const notificationsSettingsModel = {
   // Stores (from entity)
   $notificationEvents,
-  $selectedWalletIds,
+  $disabledWalletIds,
   $soundEnabled,
 
   // Events (from entity)
