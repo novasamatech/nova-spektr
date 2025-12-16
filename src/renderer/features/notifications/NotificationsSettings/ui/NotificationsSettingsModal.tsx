@@ -162,6 +162,7 @@ export const NotificationsSettingsModal = ({ isOpen: controlledIsOpen, onToggle,
               multiPlaceholder={t('settings.notificationsSettings.walletsMultiPlaceholder')}
               selectedIds={[...selectedWalletIds].map(String)}
               options={walletOptions}
+              showSelectAll
               onChange={handleWalletChange}
             />
           </div>

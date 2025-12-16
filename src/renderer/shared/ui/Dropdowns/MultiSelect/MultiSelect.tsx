@@ -1,6 +1,7 @@
 import * as RadixPopover from '@radix-ui/react-popover';
 import { useId, useMemo, useState } from 'react';
 
+import { useI18n } from '@/shared/i18n';
 import { cnTw } from '@/shared/lib/utils';
 import { Checkbox, useTheme } from '@/shared/ui-kit';
 import { Icon } from '../../Icon/Icon';
@@ -19,6 +20,7 @@ type Props = {
   options: DropdownOption[];
   tabIndex?: number;
   theme?: Theme;
+  showSelectAll?: boolean;
   onChange: (data: DropdownResult[]) => void;
 };
 
@@ -34,7 +36,9 @@ export const MultiSelect = ({
   onChange,
   tabIndex,
   theme = 'light',
+  showSelectAll = false,
 }: Props) => {
+  const { t } = useI18n();
   const id = useId();
   const { portalContainer } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
@@ -43,6 +47,8 @@ export const MultiSelect = ({
     () => options.filter((option) => selectedIds?.includes(option.id)),
     [options, selectedIds],
   );
+
+  const allSelected = options.length > 0 && selectedOptions.length === options.length;
 
   const getSelectButtonElement = () => {
     if (selectedOptions.length === 0) {
@@ -86,6 +92,14 @@ export const MultiSelect = ({
     onChange(newSelection);
   };
 
+  const handleSelectAllClick = () => {
+    if (allSelected) {
+      onChange([]);
+    } else {
+      onChange(options.map((o) => ({ id: o.id, value: o.value })));
+    }
+  };
+
   const selectElement = (
     <RadixPopover.Root open={isOpen} onOpenChange={setIsOpen}>
       <div className={cnTw('relative', className)}>
@@ -120,6 +134,35 @@ export const MultiSelect = ({
               OptionsContainerStyleTheme[theme],
             )}
           >
+            {showSelectAll && (
+              <>
+                <div
+                  role="option"
+                  aria-selected={allSelected}
+                  className={cnTw(OptionStyle, OptionStyleTheme[theme](false, false), 'w-full cursor-pointer text-left')}
+                  onClick={handleSelectAllClick}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleSelectAllClick();
+                    }
+                  }}
+                  tabIndex={0}
+                >
+                  <div
+                    className={cnTw(
+                      'pointer-events-none w-full',
+                      allSelected ? 'text-text-primary' : 'text-text-secondary',
+                    )}
+                  >
+                    <Checkbox checked={allSelected}>{t('general.input.selectAll')}</Checkbox>
+                  </div>
+                </div>
+
+                <hr className="my-1 border-divider" />
+              </>
+            )}
+
             {options.map(({ id: optionId, value, element }) => {
               const isSelected = selectedIds.includes(optionId);
 
