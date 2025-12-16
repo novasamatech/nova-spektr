@@ -10,7 +10,7 @@ import { accountUtils, walletModel, walletUtils } from '@/entities/wallet';
 import { signatoryModel } from './signatory-model';
 
 const MIN_THRESHOLD = 2;
-export const DEFAULT_SUBSTRATE_CHAIN: ChainId = '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'; // Polkadot
+export const DEFAULT_SUBSTRATE_CHAIN: ChainId = '0x68d56f15f85d3136970ec16946040bc1752654e906147f7e43e9d539d7c3de2f'; // Polkadot AH
 export const DEFAULT_EVM_CHAIN: ChainId = '0xf6ee56e9c5277df5b4ce6ae9983ee88f3cbed27d31beeb98f9f84f997a1ab0b9'; // Mythos
 
 export type FormParams = {
