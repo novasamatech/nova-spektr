@@ -47,9 +47,8 @@ const $metadataSubscriptions = createStore<Record<ChainId, VoidFn>>({});
 
 const $populated = createStore(false);
 
-// Track when connections enter CONNECTING state to detect stuck connections
+// Track when connections enter CONNECTING state
 const $connectingStartTimes = createStore<Record<ChainId, number>>({});
-const STUCK_CONNECTION_THRESHOLD = 60000; // 60 seconds
 
 // Mutex to prevent concurrent API creation for the same chain
 const apiCreationLocks = new Set<ChainId>();
@@ -114,13 +113,6 @@ type CreateProviderParams = {
 };
 const createProviderFx = createEffect(
   ({ chainId, nodes, metadata, providerType, DEBUG_NETWORKS }: CreateProviderParams) => {
-    console.log(`[DEBUG] createProviderFx START for chainId: ${chainId}`, {
-      providerType,
-      nodesCount: nodes?.length || 0,
-      hasMetadata: !!metadata,
-      DEBUG_NETWORKS,
-    });
-
     const boundDisconnected = scopeBind(disconnected, { safe: true });
     const boundFailed = scopeBind(failed, { safe: true });
     const boundChainConnected = scopeBind(chainConnected, { safe: true });
@@ -131,45 +123,18 @@ const createProviderFx = createEffect(
       { nodes, metadata },
       {
         onConnected: () => {
-          console.log(`[DEBUG] Provider onConnected event for chainId: ${chainId}`, {
-            timestamp: new Date().toISOString(),
-          });
-          // VALIDATION: Check if API exists and is connected when provider reconnects
+          // Check if API exists and is connected when provider reconnects
           // eslint-disable-next-line effector/no-getState
           const currentApis = $apis.getState();
-          // eslint-disable-next-line effector/no-getState
-          const currentStatuses = $connectionStatuses.getState();
-          // eslint-disable-next-line effector/no-getState
-          const currentProviders = $providers.getState();
           const api = currentApis[chainId];
-          const status = currentStatuses[chainId];
-          const provider = currentProviders[chainId];
 
-          console.log(`[VALIDATION] Provider onConnected - checking state for chainId: ${chainId}`, {
-            hasApi: !!api,
-            apiIsConnected: api?.isConnected,
-            apiIsReady: api?.isReady,
-            currentStatus: status,
-            hasProvider: !!provider,
-            providerType: provider?.constructor.name,
-          });
-
-          // FIX: Trigger API recreation when provider reconnects but API is missing or disconnected
+          // Trigger API recreation when provider reconnects but API is missing or disconnected
           // Use mutex to prevent concurrent API creation
           if (!api || !api.isConnected) {
             // Check if API creation is already in progress for this chain
             if (apiCreationLocks.has(chainId)) {
-              console.log(
-                `[MUTEX] API creation already in progress for chainId: ${chainId}, skipping duplicate request`,
-              );
               return;
             }
-
-            console.warn(`[VALIDATION] Provider reconnected but API missing/disconnected for chainId: ${chainId}`, {
-              shouldTriggerApiCreation: true,
-              currentStatus: status,
-            });
-            console.log(`[FIX] Triggering chainConnected event to recreate API for chainId: ${chainId}`);
             boundChainConnected(chainId);
           }
 
@@ -178,16 +143,16 @@ const createProviderFx = createEffect(
           }
         },
         onDisconnected: () => {
-          console.log(`[DEBUG] Provider onDisconnected event for chainId: ${chainId}`);
           if (DEBUG_NETWORKS) {
             console.info('🟠 Provider disconnected ==> ', chainId);
           }
           boundDisconnected(chainId);
         },
         onError: (error?: unknown) => {
-          console.error(`[DEBUG] Provider onError event for chainId: ${chainId}`, error);
           if (DEBUG_NETWORKS) {
-            console.info('🔴 Provider error ==> ', chainId);
+            console.info('🔴 Provider error ==> ', chainId, error);
+          } else {
+            console.error('Provider error:', chainId, error);
           }
           boundFailed(chainId);
         },
@@ -195,15 +160,10 @@ const createProviderFx = createEffect(
     );
 
     provider.onMetadataReceived(({ metadata, metadataVersion, runtimeVersion }) => {
-      console.log(`[DEBUG] Provider metadata received for chainId: ${chainId}`, {
-        metadataVersion,
-        runtimeVersion,
-      });
       metadataReceived({ chainId, metadata, metadataVersion, runtimeVersion });
     });
 
     if (providerType === ProviderType.WEB_SOCKET) {
-      console.log(`[DEBUG] createProviderFx COMPLETE (WebSocket) for chainId: ${chainId}`);
       return provider;
     }
 
@@ -212,15 +172,10 @@ const createProviderFx = createEffect(
      * Client section -
      * https://github.com/polkadot-js/api/tree/master/packages/rpc-provider#readme
      */
-    console.log(`[DEBUG] createProviderFx CONNECTING (Light Client) for chainId: ${chainId}`);
     return provider
       .connect()
-      .then(() => {
-        console.log(`[DEBUG] createProviderFx COMPLETE (Light Client) for chainId: ${chainId}`);
-        return provider;
-      })
+      .then(() => provider)
       .catch((error) => {
-        console.error(`[DEBUG] createProviderFx ERROR (Light Client connect) for chainId: ${chainId}`, error);
         throw error;
       });
   },
@@ -234,9 +189,8 @@ type CreateApiParams = {
   existingApi: ApiPromise | null;
 };
 const createApiFx = createEffect(async ({ chainId, provider, existingApi }: CreateApiParams): Promise<ApiPromise> => {
-  // MUTEX: Check if API creation is already in progress for this chain
+  // Mutex: Check if API creation is already in progress for this chain
   if (apiCreationLocks.has(chainId)) {
-    console.log(`[MUTEX] API creation already in progress for chainId: ${chainId}, skipping duplicate request`);
     // Wait for the existing API creation to complete
     // eslint-disable-next-line effector/no-getState
     const currentApis = $apis.getState();
@@ -256,103 +210,25 @@ const createApiFx = createEffect(async ({ chainId, provider, existingApi }: Crea
     throw new Error(`API creation already in progress for chainId: ${chainId}`);
   }
 
-  // MUTEX: Acquire lock
+  // Mutex: Acquire lock
   apiCreationLocks.add(chainId);
-  console.log(`[MUTEX] Acquired lock for API creation, chainId: ${chainId}`);
 
   try {
-    console.log(`[DEBUG] createApiFx START for chainId: ${chainId}`, {
-      hasExistingApi: nonNullable(existingApi),
-      providerType: provider.constructor.name,
-    });
-
     if (nonNullable(existingApi)) {
-      // VALIDATION: Check if existing API is actually usable
-      const apiIsConnected = existingApi.isConnected;
-      const apiIsReady = existingApi.isReady;
-
-      console.log(`[VALIDATION] createApiFx - existing API check for chainId: ${chainId}`, {
-        apiIsConnected,
-        apiIsReady: typeof apiIsReady === 'object' ? 'Promise' : apiIsReady,
-        apiType: existingApi.constructor.name,
-      });
-
-      // FIX: If API exists but is disconnected, create a new one instead of reusing the disconnected one
-      if (!apiIsConnected) {
-        console.warn(`[VALIDATION] Existing API is disconnected for chainId: ${chainId}`, {
-          shouldRecreate: true,
-          currentApiState: {
-            isConnected: apiIsConnected,
-            hasProvider: !!provider,
-          },
-        });
-        console.log(`[FIX] Creating new API instead of reusing disconnected API for chainId: ${chainId}`);
+      // If API exists but is disconnected, create a new one instead of reusing the disconnected one
+      if (!existingApi.isConnected) {
         // Fall through to create a new API
       } else {
-        console.log(`[DEBUG] createApiFx SKIP (existing API is connected) for chainId: ${chainId}`);
         return Promise.resolve(existingApi);
       }
     }
 
     const api = networkService.createApi(chainId, provider);
-    const startTime = Date.now();
-    const CONNECTION_TIMEOUT = 30000; // 30 seconds
-
-    // Set up timeout detection
-    const timeoutId = setTimeout(() => {
-      const elapsed = Date.now() - startTime;
-      console.warn(`[DEBUG] createApiFx TIMEOUT WARNING for chainId: ${chainId}`, {
-        elapsedMs: elapsed,
-        apiIsConnected: api.isConnected,
-        apiIsReady: api.isReady,
-      });
-    }, CONNECTION_TIMEOUT);
-
-    try {
-      console.log(`[DEBUG] createApiFx WAITING for api.isReady for chainId: ${chainId}`);
-
-      // VALIDATION: Log provider state before waiting
-      type ProviderWithMethods = { connect?: () => unknown; disconnect?: () => unknown };
-      const providerWithMethods: ProviderWithMethods = provider;
-      console.log(`[VALIDATION] createApiFx - provider state before api.isReady for chainId: ${chainId}`, {
-        providerType: provider.constructor.name,
-        providerHasConnect: typeof providerWithMethods.connect === 'function',
-        providerHasDisconnect: typeof providerWithMethods.disconnect === 'function',
-      });
-
-      // VALIDATION: Check if api.isReady is actually a promise
-      const readyPromise = api.isReady;
-      if (!(readyPromise instanceof Promise)) {
-        console.error(`[VALIDATION] api.isReady is not a Promise for chainId: ${chainId}`, {
-          type: typeof readyPromise,
-          value: readyPromise,
-        });
-      }
-
-      await readyPromise;
-      const elapsed = Date.now() - startTime;
-      console.log(`[DEBUG] createApiFx SUCCESS for chainId: ${chainId}`, {
-        elapsedMs: elapsed,
-        apiIsConnected: api.isConnected,
-      });
-      clearTimeout(timeoutId);
-      return api;
-    } catch (error) {
-      clearTimeout(timeoutId);
-      const elapsed = Date.now() - startTime;
-      console.error(`[DEBUG] createApiFx ERROR for chainId: ${chainId}`, {
-        error,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined,
-        elapsedMs: elapsed,
-        apiIsConnected: api.isConnected,
-      });
-      throw error;
-    }
+    await api.isReady;
+    return api;
   } finally {
-    // MUTEX: Release lock
+    // Mutex: Release lock
     apiCreationLocks.delete(chainId);
-    console.log(`[MUTEX] Released lock for API creation, chainId: ${chainId}`);
   }
 });
 
@@ -507,15 +383,10 @@ sample({
 sample({
   clock: createProviderFx.done,
   source: $providers,
-  fn: (providers, { params, result: provider }) => {
-    console.log(`[DEBUG] createProviderFx.done - storing provider for chainId: ${params.chainId}`, {
-      providerType: provider.constructor.name,
-    });
-    return {
-      ...providers,
-      [params.chainId]: provider,
-    };
-  },
+  fn: (providers, { params, result: provider }) => ({
+    ...providers,
+    [params.chainId]: provider,
+  }),
   target: $providers,
 });
 
@@ -524,10 +395,6 @@ sample({
   source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
   fn: ({ statuses, startTimes }, { params }) => {
     const now = Date.now();
-    console.log(`[DEBUG] Setting CONNECTING status for chainId: ${params.chainId}`, {
-      previousStatus: statuses[params.chainId],
-      timestamp: new Date().toISOString(),
-    });
     return {
       newStatuses: {
         ...statuses,
@@ -547,29 +414,12 @@ sample({
 
 sample({
   clock: createProviderFx.done,
-  source: { apis: $apis, statuses: $connectionStatuses },
-  fn: ({ apis, statuses }, { params, result: provider }) => {
-    const existingApi = apis[params.chainId];
-
-    console.log(`[DEBUG] Triggering createApiFx after provider creation for chainId: ${params.chainId}`, {
-      hasExistingApi: !!existingApi,
-    });
-
-    // VALIDATION: Log detailed state when triggering createApiFx
-    console.log(`[VALIDATION] Triggering createApiFx - state check for chainId: ${params.chainId}`, {
-      hasExistingApi: !!existingApi,
-      existingApiIsConnected: existingApi?.isConnected,
-      currentStatus: statuses[params.chainId],
-      providerType: provider.constructor.name,
-      willUseExistingApi: !!existingApi && existingApi.isConnected,
-    });
-
-    return {
-      chainId: params.chainId,
-      provider,
-      existingApi: existingApi ?? null,
-    };
-  },
+  source: $apis,
+  fn: (apis, { params, result: provider }) => ({
+    chainId: params.chainId,
+    provider,
+    existingApi: apis[params.chainId] ?? null,
+  }),
   target: createApiFx,
 });
 
@@ -577,10 +427,6 @@ sample({
   clock: createApiFx.done,
   source: $apis,
   fn: (apis, { result, params }) => {
-    console.log(`[DEBUG] createApiFx.done - storing API for chainId: ${params.chainId}`, {
-      apiIsConnected: result.isConnected,
-      apiIsReady: result.isReady,
-    });
     return { ...apis, [params.chainId]: result };
   },
   target: $apis,
@@ -591,12 +437,6 @@ sample({
   clock: createApiFx.done,
   source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
   fn: ({ statuses, startTimes }, { params }) => {
-    const elapsed = startTimes[params.chainId] ? Date.now() - startTimes[params.chainId] : 0;
-    console.log(`[DEBUG] Setting CONNECTED status for chainId: ${params.chainId}`, {
-      previousStatus: statuses[params.chainId],
-      elapsedMs: elapsed,
-      timestamp: new Date().toISOString(),
-    });
     const { [params.chainId]: _, ...newStartTimes } = startTimes;
     return {
       newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.CONNECTED },
@@ -615,14 +455,7 @@ sample({
 sample({
   clock: createApiFx.fail,
   source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
-  fn: ({ statuses, startTimes }, { params, error }) => {
-    const elapsed = startTimes[params.chainId] ? Date.now() - startTimes[params.chainId] : 0;
-    console.error(`[DEBUG] createApiFx.fail - setting ERROR status for chainId: ${params.chainId}`, {
-      error,
-      previousStatus: statuses[params.chainId],
-      elapsedMs: elapsed,
-      timestamp: new Date().toISOString(),
-    });
+  fn: ({ statuses, startTimes }, { params }) => {
     const { [params.chainId]: _, ...newStartTimes } = startTimes;
     return {
       newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
@@ -641,14 +474,7 @@ sample({
 sample({
   clock: createProviderFx.fail,
   source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
-  fn: ({ statuses, startTimes }, { params, error }) => {
-    const elapsed = startTimes[params.chainId] ? Date.now() - startTimes[params.chainId] : 0;
-    console.error(`[DEBUG] createProviderFx.fail - setting ERROR status for chainId: ${params.chainId}`, {
-      error,
-      previousStatus: statuses[params.chainId],
-      elapsedMs: elapsed,
-      timestamp: new Date().toISOString(),
-    });
+  fn: ({ statuses, startTimes }, { params }) => {
     const { [params.chainId]: _, ...newStartTimes } = startTimes;
     return {
       newStatuses: { ...statuses, [params.chainId]: ConnectionStatus.ERROR },
@@ -667,12 +493,6 @@ sample({
   clock: disconnected,
   source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
   fn: ({ statuses, startTimes }, chainId) => {
-    const elapsed = startTimes[chainId] ? Date.now() - startTimes[chainId] : 0;
-    console.log(`[DEBUG] disconnected event - setting DISCONNECTED status for chainId: ${chainId}`, {
-      previousStatus: statuses[chainId],
-      elapsedMs: elapsed,
-      timestamp: new Date().toISOString(),
-    });
     const { [chainId]: _, ...newStartTimes } = startTimes;
     return {
       newStatuses: { ...statuses, [chainId]: ConnectionStatus.DISCONNECTED },
@@ -691,12 +511,6 @@ sample({
   clock: failed,
   source: { statuses: $connectionStatuses, startTimes: $connectingStartTimes },
   fn: ({ statuses, startTimes }, chainId) => {
-    const elapsed = startTimes[chainId] ? Date.now() - startTimes[chainId] : 0;
-    console.error(`[DEBUG] failed event - setting ERROR status for chainId: ${chainId}`, {
-      previousStatus: statuses[chainId],
-      elapsedMs: elapsed,
-      timestamp: new Date().toISOString(),
-    });
     const { [chainId]: _, ...newStartTimes } = startTimes;
     return {
       newStatuses: { ...statuses, [chainId]: ConnectionStatus.ERROR },
@@ -815,59 +629,6 @@ sample({
     oldMetadata: removeMetadataFx,
   }),
 });
-
-// Periodic check for stuck connections
-const checkStuckConnectionsFx = createEffect(() => {
-  const now = Date.now();
-  // eslint-disable-next-line effector/no-getState
-  const statuses = $connectionStatuses.getState();
-  // eslint-disable-next-line effector/no-getState
-  const startTimes = $connectingStartTimes.getState();
-  // eslint-disable-next-line effector/no-getState
-  const apis = $apis.getState();
-  // eslint-disable-next-line effector/no-getState
-  const providers = $providers.getState();
-
-  const stuckConnections: { chainId: ChainId; elapsed: number }[] = [];
-
-  // Use Object.keys to get properly typed ChainId keys
-  // Object.keys returns string[] but we know all keys are ChainId from the store type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const chainIds = Object.keys(statuses) as ChainId[];
-  for (const chainId of chainIds) {
-    const status = statuses[chainId];
-    if (status === ConnectionStatus.CONNECTING) {
-      const startTime = startTimes[chainId];
-      if (startTime) {
-        const elapsed = now - startTime;
-        if (elapsed > STUCK_CONNECTION_THRESHOLD) {
-          stuckConnections.push({ chainId, elapsed });
-          const api = apis[chainId];
-          const provider = providers[chainId];
-          console.warn(`[DEBUG] STUCK CONNECTION DETECTED for chainId: ${chainId}`, {
-            elapsedMs: elapsed,
-            hasApi: !!api,
-            hasProvider: !!provider,
-            apiIsConnected: api?.isConnected,
-            apiIsReady: api?.isReady,
-            timestamp: new Date().toISOString(),
-          });
-        }
-      }
-    }
-  }
-
-  if (stuckConnections.length > 0) {
-    console.error(`[DEBUG] Found ${stuckConnections.length} stuck connection(s):`, stuckConnections);
-  }
-});
-
-// Run stuck connection check every 30 seconds
-if (typeof window !== 'undefined') {
-  setInterval(() => {
-    checkStuckConnectionsFx();
-  }, 30000);
-}
 
 export const networkModel = {
   $populated,
