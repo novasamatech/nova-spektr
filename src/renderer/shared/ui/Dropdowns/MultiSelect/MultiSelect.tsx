@@ -139,7 +139,12 @@ export const MultiSelect = ({
                 <div
                   role="option"
                   aria-selected={allSelected}
-                  className={cnTw(OptionStyle, OptionStyleTheme[theme](false, false), 'w-full cursor-pointer text-left')}
+                  className={cnTw(
+                    OptionStyle,
+                    OptionStyleTheme[theme](false, false),
+                    'w-full cursor-pointer text-left',
+                  )}
+                  tabIndex={0}
                   onClick={handleSelectAllClick}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -147,7 +152,6 @@ export const MultiSelect = ({
                       handleSelectAllClick();
                     }
                   }}
-                  tabIndex={0}
                 >
                   <div
                     className={cnTw(
@@ -171,7 +175,12 @@ export const MultiSelect = ({
                   key={optionId}
                   role="option"
                   aria-selected={isSelected}
-                  className={cnTw(OptionStyle, OptionStyleTheme[theme](false, false), 'w-full cursor-pointer text-left')}
+                  className={cnTw(
+                    OptionStyle,
+                    OptionStyleTheme[theme](false, false),
+                    'w-full cursor-pointer text-left',
+                  )}
+                  tabIndex={0}
                   onClick={() => handleOptionClick({ id: optionId, value, element })}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -179,7 +188,6 @@ export const MultiSelect = ({
                       handleOptionClick({ id: optionId, value, element });
                     }
                   }}
-                  tabIndex={0}
                 >
                   <div
                     className={cnTw(
