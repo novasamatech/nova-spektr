@@ -206,10 +206,6 @@ const createApiFx = createEffect(async ({ chainId, provider, existingApi }: Crea
   const apiPromise = (async (): Promise<ApiPromise> => {
     try {
       // If API exists but is disconnected, create a new one instead of reusing the disconnected one
-      if (nonNullable(existingApi) && !existingApi.isConnected) {
-        // Fall through to create a new API
-      }
-
       const api = networkService.createApi(chainId, provider);
       await api.isReady;
       return api;
