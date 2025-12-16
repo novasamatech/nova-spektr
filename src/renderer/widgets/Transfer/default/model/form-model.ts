@@ -700,6 +700,7 @@ const $hasDryRunError = combine(
 );
 
 const $canSubmit = and(
+  form.$isValid,
   $valid,
   not($hasDestinationBalanceError),
   or(not($isXcm), not(xcmSpellTransferModel.$isDestinationFeeLoading)),
